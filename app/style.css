@@ -152,7 +152,8 @@ a{color:var(--acc)}
 /* ---------- modal ---------- */
 #modal-root{position:fixed;inset:0;z-index:100;display:none}
 #modal-root.open{display:block}
-.mback{position:absolute;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(3px)}
+.mback{position:absolute;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);
+  touch-action:none;overscroll-behavior:none}
 .sheet{position:absolute;left:0;right:0;bottom:0;background:var(--bg2);
   border-radius:22px 22px 0 0;padding:10px 18px calc(22px + var(--sab));
   max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch;animation:slideup .28s;

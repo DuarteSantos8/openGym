@@ -252,6 +252,26 @@ function bindMediaToggle(media, ex) {
   };
 }
 
+/* ---------- body scroll lock (iOS-safe) while a modal is open ---------- */
+function currentScrollY() {
+  return 'slock' in document.body.dataset ? +document.body.dataset.slock : (window.scrollY || 0);
+}
+function lockBodyScroll() {
+  if ('slock' in document.body.dataset) return;
+  const y = window.scrollY || 0;
+  document.body.dataset.slock = y;
+  const st = document.body.style;
+  st.position = 'fixed'; st.top = -y + 'px'; st.left = '0'; st.right = '0'; st.width = '100%';
+}
+function unlockBodyScroll() {
+  if (!('slock' in document.body.dataset)) return;
+  const y = +document.body.dataset.slock;
+  delete document.body.dataset.slock;
+  const st = document.body.style;
+  st.position = st.top = st.left = st.right = st.width = '';
+  window.scrollTo(0, y);
+}
+
 /* ---------- modal system ---------- */
 const modalRoot = $('#modal-root');
 let modalStack = [];
@@ -260,10 +280,11 @@ function openModal(html, kind) {
   wrap.innerHTML = `<div class="mback"></div><div class="${kind || 'sheet'}">${kind === 'center' ? '' : '<div class="grab"></div>'}${html}</div>`;
   modalRoot.appendChild(wrap);
   modalRoot.classList.add('open');
+  lockBodyScroll();
   const close = () => {
     wrap.remove();
     modalStack = modalStack.filter(m => m !== api);
-    if (!modalRoot.children.length) modalRoot.classList.remove('open');
+    if (!modalRoot.children.length) { modalRoot.classList.remove('open'); unlockBodyScroll(); }
   };
   wrap.querySelector('.mback').addEventListener('click', () => { if (!wrap.dataset.lock) close(); });
   const api = { el: wrap, close, lock: v => { wrap.dataset.lock = v ? '1' : ''; } };
@@ -279,10 +300,11 @@ function openModal(html, kind) {
       if (startY === null) return;
       delta = e.touches[0].clientY - startY;
       if (delta > 0 && sh.scrollTop <= 0) {
+        e.preventDefault();               // only the sheet moves, never the page behind
         sh.style.transition = 'none';
         sh.style.transform = `translateY(${delta}px)`;
       } else delta = 0;
-    }, { passive: true });
+    }, { passive: false });
     sh.addEventListener('touchend', () => {
       if (startY === null) return;
       sh.style.transition = 'transform .2s';
@@ -466,22 +488,27 @@ function nav(hash) { location.hash = hash; }
 function route() { renderView(); updateTabbar(); }
 function renderView() {
   const h = (location.hash || '#home').slice(1);
+  // re-rendering the same view (range chips, toggles, …) keeps the scroll position;
+  // only an actual view change jumps to the top
+  const sameView = renderView._last === h;
+  renderView._last = h;
+  const keepY = sameView ? currentScrollY() : 0;
   const [view, ...rest] = h.split('/');
   clearInterval(elapsedInt);
   closeAllModals();
   const app = $('#app');
-  window.scrollTo(0, 0);
-  if (!USER && !isGuest()) return viewLogin(app);
-  if (view === 'plan' && rest[0] === 'r') return viewRoutineEdit(app, rest[1]);
-  switch (view) {
-    case 'plan': return viewPlan(app);
-    case 'workout': return viewWorkout(app);
-    case 'stats': return viewStats(app);
-    case 'library': return viewLibrary(app);
-    case 'settings': return viewSettings(app);
-    case 'history': return viewHistory(app);
-    default: return viewHome(app);
+  if (!USER && !isGuest()) viewLogin(app);
+  else if (view === 'plan' && rest[0] === 'r') viewRoutineEdit(app, rest[1]);
+  else switch (view) {
+    case 'plan': viewPlan(app); break;
+    case 'workout': viewWorkout(app); break;
+    case 'stats': viewStats(app); break;
+    case 'library': viewLibrary(app); break;
+    case 'settings': viewSettings(app); break;
+    case 'history': viewHistory(app); break;
+    default: viewHome(app);
   }
+  window.scrollTo(0, keepY);
 }
 window.addEventListener('hashchange', route);
 document.querySelectorAll('#tabbar button').forEach(b => b.addEventListener('click', () => {
