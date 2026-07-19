@@ -106,4 +106,5 @@ more starter plans, exercise-data languages, import from other trackers.
 
 ## License
 
-[MIT](LICENSE). Exercise images/GIFs are fetched from the upstream dataset and keep their own terms.
+Code: [MIT](LICENSE). Exercise images/GIFs are fetched from the upstream dataset and keep their
+own terms — see [NOTICE.md](NOTICE.md).
