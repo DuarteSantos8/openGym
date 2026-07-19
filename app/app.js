@@ -638,7 +638,7 @@ function viewHome(app) {
   const plannedPerWeek = Object.keys(S.week).filter(k => S.week[k]).length;
   const lastW = S.workouts[S.workouts.length-1];
 
-  const bwSpark = lineChart(S.bodyweight.slice(-30).map(b => ({t: b.t || new Date(b.d).getTime(), y: b.w, d: b.d})), {h: 90, axes: false, unit: S.unit});
+  const bwSpark = lineChart(S.bodyweight.slice(-30).map(b => ({t: b.t || new Date(b.d).getTime(), y: b.w, d: b.d})), {h: 130, unit: S.unit});
 
   app.innerHTML = `
   <div class="hdr">
@@ -704,9 +704,9 @@ function viewHome(app) {
   </div><div>
 
   <div class="tiles">
-    <div class="tile"><div class="l">This week</div><div class="v">${wThisWeek}<span class="muted" style="font-size:1rem">${plannedPerWeek ? ' / ' + plannedPerWeek : ''}</span></div></div>
-    <div class="tile"><div class="l">Week streak</div><div class="v">${streakWeeks()} 🔥</div></div>
-    <div class="tile"><div class="l">Total workouts</div><div class="v">${S.workouts.length}</div></div>
+    <div class="tile tappable" data-open-cal><div class="l">This week 📅</div><div class="v">${wThisWeek}<span class="muted" style="font-size:1rem">${plannedPerWeek ? ' / ' + plannedPerWeek : ''}</span></div></div>
+    <div class="tile tappable" data-open-cal><div class="l">Week streak 📅</div><div class="v">${streakWeeks()} 🔥</div></div>
+    <div class="tile tappable" data-open-cal><div class="l">Total workouts</div><div class="v">${S.workouts.length}</div></div>
     <div class="tile"><div class="l">Last volume</div><div class="v" style="font-size:1.15rem">${lastW ? fmtVol(lastW.vol) : '—'}</div></div>
   </div>
 
@@ -724,6 +724,7 @@ function viewHome(app) {
   $('#wk-prev').onclick = () => { weekOffset--; route(); };
   $('#wk-next').onclick = () => { weekOffset++; route(); };
   app.querySelectorAll('[data-date]').forEach(el => el.addEventListener('click', () => dayOverrideSheet(el.dataset.date)));
+  app.querySelectorAll('[data-open-cal]').forEach(el => el.addEventListener('click', () => calendarSheet()));
   const bs = $('#btn-start-today'); if (bs) bs.onclick = () => startFlow(routine.id);
   const ba = $('#btn-start-any'); if (ba) ba.onclick = () => nav('#workout');
   const br = $('#btn-resume'); if (br) br.onclick = () => nav('#workout');
@@ -750,6 +751,63 @@ function bindWorkoutItems(root) {
     const w = S.workouts.find(x => x.id === el.dataset.wid);
     if (w) workoutDetailSheet(w);
   }));
+}
+
+/* ---------- full month calendar (from streak/week tiles) ---------- */
+const MONTHS_LONG = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+function calendarSheet(startDate) {
+  const cur = startDate ? new Date(startDate) : new Date();
+  cur.setDate(1);
+  const m = openModal('<div id="cal-wrap"></div>');
+  const wrap = m.el.querySelector('#cal-wrap');
+  const draw = () => {
+    const y = cur.getFullYear(), mo = cur.getMonth();
+    const byDay = {};
+    S.workouts.forEach(w => (byDay[w.d] = byDay[w.d] || []).push(w));
+    const startOffset = (new Date(y, mo, 1).getDay() + 6) % 7;   // Mon-start
+    const daysIn = new Date(y, mo + 1, 0).getDate();
+    let cells = '';
+    for (let i = 0; i < startOffset; i++) cells += '<div></div>';
+    for (let d = 1; d <= daysIn; d++) {
+      const iso = y + '-' + String(mo + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+      const ws = byDay[iso];
+      const eff = effectiveRoutineId(iso);
+      const ovr = S.dayPlan[iso] !== undefined;
+      cells += `<button class="cal-d${ws ? ' has' : ''}${iso === todayISO() ? ' today' : ''}" data-cal="${iso}">
+        <span>${d}</span><i class="${ws ? 'done' : ovr && eff ? 'ovr' : eff ? 'plan' : ''}"></i></button>`;
+    }
+    const monthWs = S.workouts.filter(w => w.d.startsWith(y + '-' + String(mo + 1).padStart(2, '0')));
+    const monthVol = monthWs.reduce((a, w) => a + (w.vol || 0), 0);
+    wrap.innerHTML = `
+      <div class="row between" style="margin-bottom:2px">
+        <button class="iconbtn" id="cal-prev">‹</button>
+        <h3 style="margin:0">${MONTHS_LONG[mo]} ${y}</h3>
+        <button class="iconbtn" id="cal-next">›</button>
+      </div>
+      <div class="small muted" style="text-align:center">${monthWs.length ? monthWs.length + ' workout' + (monthWs.length > 1 ? 's' : '') + ' · ' + fmtVol(monthVol) : 'No workouts this month'}</div>
+      <div class="cal-grid">${['Mo','Tu','We','Th','Fr','Sa','Su'].map(l => `<div class="cal-h">${l}</div>`).join('')}${cells}</div>
+      <div class="cal-legend">
+        <span><i style="background:var(--acc)"></i>Trained</span>
+        <span><i style="background:var(--blue)"></i>Planned</span>
+        <span><i style="background:var(--orange)"></i>Rescheduled</span>
+      </div>
+      <div class="small dim" style="text-align:center;margin-top:10px">Tap a trained day for details · tap any other day to plan a session</div>`;
+    wrap.querySelector('#cal-prev').onclick = () => { cur.setMonth(cur.getMonth() - 1); draw(); };
+    wrap.querySelector('#cal-next').onclick = () => { cur.setMonth(cur.getMonth() + 1); draw(); };
+    wrap.querySelectorAll('[data-cal]').forEach(b => b.addEventListener('click', () => {
+      const iso = b.dataset.cal;
+      const ws = byDay[iso];
+      if (!ws) { m.close(); dayOverrideSheet(iso); return; }
+      if (ws.length === 1) { m.close(); workoutDetailSheet(ws[0]); return; }
+      m.close();
+      const lm = openModal(`<h3>${fmtDate(iso, true)}</h3><div class="list">${ws.map(workoutItem).join('')}</div>`);
+      lm.el.querySelectorAll('[data-wid]').forEach(el => el.addEventListener('click', () => {
+        const w = S.workouts.find(x => x.id === el.dataset.wid);
+        if (w) { lm.close(); workoutDetailSheet(w); }
+      }));
+    }));
+  };
+  draw();
 }
 
 /* ---------- per-date session override ---------- */

@@ -81,7 +81,8 @@ a{color:var(--acc)}
 #tabbar button.on{color:var(--txt)}
 #tabbar button.start{margin-top:-26px}
 #tabbar button.start .cir{width:58px;height:58px;border-radius:50%;background:var(--acc);
-  display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(163,230,53,.35)}
+  display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(163,230,53,.35);
+  box-shadow:0 6px 20px color-mix(in srgb, var(--acc) 45%, transparent)}
 #tabbar button.start .cir svg{width:26px;height:26px;stroke:#111;stroke-width:2.2}
 #tabbar button.start span{color:var(--acc)}
 #tabbar button.start.rec .cir{background:var(--orange);box-shadow:0 6px 20px rgba(251,146,60,.4);animation:pulse 1.6s infinite}
@@ -247,6 +248,23 @@ a{color:var(--acc)}
 .capitalize{text-transform:capitalize}
 h4.sec{font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);margin:20px 0 10px;font-weight:700}
 .steps-list{padding-left:20px;color:var(--mut);font-size:.9rem;line-height:1.55;display:flex;flex-direction:column;gap:8px}
+
+/* month calendar sheet */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:12px}
+.cal-h{text-align:center;font-size:.64rem;color:var(--dim);font-weight:700;text-transform:uppercase;padding:2px 0}
+.cal-d{aspect-ratio:1;border-radius:12px;background:var(--card);border:1px solid var(--line);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  font-weight:600;font-size:.88rem;color:var(--txt)}
+.cal-d:active{background:var(--card2)}
+.cal-d.has{background:var(--accT);border-color:var(--acc)}
+.cal-d.today{border-color:var(--txt);border-width:2px}
+.cal-d i{width:6px;height:6px;border-radius:50%;background:transparent}
+.cal-d i.done{background:var(--acc)}
+.cal-d i.plan{background:var(--blue)}
+.cal-d i.ovr{background:var(--orange)}
+.cal-legend{display:flex;gap:14px;justify-content:center;margin-top:12px;font-size:.7rem;color:var(--dim)}
+.cal-legend i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px}
+.tile.tappable:active{background:var(--card2)}
 
 /* accent swatches (settings) */
 .swatches{display:flex;gap:10px;flex-wrap:wrap}
