@@ -1,6 +1,6 @@
 /* GymLog service worker — network-first for app shell, cache-first for media */
-const CACHE = 'gymlog-v10';
-const SHELL = ['./', 'index.html', 'style.css?v=10', 'app.js?v=10', 'data.js?v=10', 'manifest.json'];
+const CACHE = 'gymlog-v11';
+const SHELL = ['./', 'index.html', 'style.css?v=11', 'app.js?v=11', 'data.js?v=11', 'manifest.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));

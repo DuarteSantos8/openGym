@@ -81,6 +81,11 @@ function beep(freq, dur, when) {
 let USER = null;
 const isGuest = () => localStorage.getItem('gym_guest') === '1';
 const webauthnOK = () => !!(window.PublicKeyCredential && navigator.credentials);
+/* platform-aware wording — same WebAuthn underneath, different branding on top */
+const IS_APPLE = /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent);
+const IS_ANDROID = /Android/.test(navigator.userAgent);
+const BIO = IS_APPLE ? 'Face ID / Touch ID' : IS_ANDROID ? 'fingerprint or face unlock' : 'your fingerprint, face or PIN';
+const VAULT = IS_APPLE ? 'iCloud Keychain' : IS_ANDROID ? 'Google Password Manager' : 'your password manager';
 async function api(path, opts) {
   const r = await fetch(path, Object.assign({ headers: { 'Content-Type': 'application/json' } }, opts));
   const data = await r.json().catch(() => ({}));
@@ -241,9 +246,9 @@ function streakWeeks() {
 }
 
 /* ---------- media ---------- */
-const imgEl = (ex, cls) => `<img class="${cls||'thumb'}" loading="lazy" src="img/${ex.img}" alt="">`;
+const imgEl = (ex, cls) => `<img class="${cls||'thumb'}" loading="lazy" decoding="async" src="img/${ex.img}" alt="">`;
 /* big autoplay animation for single-exercise views; tap pauses (swaps to still) */
-const mediaEl = (ex, id) => `<div class="exmedia"${id ? ` id="${id}"` : ''}><img src="gif/${ex.gif}" alt="${esc(ex.n)}"><span class="gifhint">⏸ tap to pause</span></div>`;
+const mediaEl = (ex, id) => `<div class="exmedia"${id ? ` id="${id}"` : ''}><img decoding="async" src="gif/${ex.gif}" alt="${esc(ex.n)}"><span class="gifhint">⏸ tap to pause</span></div>`;
 function bindMediaToggle(media, ex) {
   if (!media) return;
   media.onclick = () => {
@@ -511,6 +516,7 @@ function renderView() {
   clearInterval(elapsedInt);
   closeAllModals();
   const app = $('#app');
+  if (!sameView) { app.classList.remove('vfade'); void app.offsetWidth; app.classList.add('vfade'); }
   if (!USER && !isGuest()) viewLogin(app);
   else if (view === 'plan' && rest[0] === 'r') viewRoutineEdit(app, rest[1]);
   else switch (view) {
@@ -560,7 +566,7 @@ function viewLogin(app) {
       <div style="height:10px"></div>` : `
       <div class="card small muted" style="text-align:left">This browser doesn't support passkeys — you can still use GymLog locally on this device.</div>`}
     <button class="btn ghost dim" id="lg-guest">Continue without account</button>
-    <div class="dim small" style="margin-top:26px;line-height:1.5">Passkeys use Face ID / Touch ID — no passwords.<br>Each profile keeps its own plan, workouts & body weight.</div>
+    <div class="dim small" style="margin-top:26px;line-height:1.5">Passkeys use ${BIO} — no passwords.<br>Each profile keeps its own plan, workouts & body weight.</div>
   </div>`;
   const bi = $('#lg-in');
   if (bi) bi.onclick = async () => {
@@ -579,7 +585,7 @@ function viewLogin(app) {
 function registerSheet(fromSettings) {
   const m = openModal(`
     <h3>Create your profile ✨</h3>
-    <div class="muted small" style="margin-bottom:14px">Pick a name, then confirm with Face ID / Touch ID. The passkey is saved in your iCloud Keychain — no password needed.</div>
+    <div class="muted small" style="margin-bottom:14px">Pick a name, then confirm with ${BIO}. The passkey is saved in ${VAULT} — no password needed.</div>
     <input class="input" id="rg-name" placeholder="Your name" maxlength="40" autocomplete="name">
     <div style="height:12px"></div>
     <button class="btn primary" id="rg-go">Create passkey</button>`);
@@ -1753,7 +1759,7 @@ function viewSettings(app) {
 
   <div class="card">
     <h2>Tip</h2>
-    <div class="small muted" style="line-height:1.5">📱 In Safari: <b>Share → Add to Home Screen</b> to install GymLog as a full-screen app. All data stays on this device (localStorage) — export a backup now and then!</div>
+    <div class="small muted" style="line-height:1.5">📱 ${IS_ANDROID ? 'In Chrome: <b>⋮ menu → Add to Home screen</b>' : 'In Safari: <b>Share → Add to Home Screen</b>'} to install GymLog as a full-screen app. ${USER ? 'Your data syncs with your profile — sign in anywhere to see it.' : 'Guest data stays on this device — export a backup now and then!'}</div>
   </div>
   <div class="dim small" style="text-align:center;margin-top:8px">GymLog · exercise data: hasaneyldrm/exercises-dataset (CC)</div>
   </div>
