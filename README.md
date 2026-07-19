@@ -1,53 +1,109 @@
-# GymLog 🏋️
+<div align="center">
 
-Persönlicher Gym- & Körpergewicht-Tracker als mobile-first Web-App (PWA) —
-mit Apple-Passkey-Login (Face ID) und eigenem Profil pro Person.
+# 🏋️ openGym
 
-**Live:** https://gym.duarte-santos.ch
+**A self-hosted gym & body-weight tracker you actually own.**
+
+Plan your week, run guided workouts, track every set and your body weight over time —
+on your phone, synced across devices, behind your own passkey login. No account on someone
+else's server, no subscription, no ads. Just `docker compose up`.
+
+Mobile-first PWA · passkey (Face ID / fingerprint) login · works on iOS & Android · MIT licensed
+
+</div>
+
+---
+
+## Why
+
+Most workout apps lock your data behind a login on their servers, nag you to upgrade, or
+disappear when the startup does. openGym is the opposite: **it runs on your box, your data
+stays in a folder you control, and it's yours to fork.** It still feels modern — installable
+as a home-screen app, passkey sign-in, offline support, sync across your phone and laptop.
 
 ## Features
 
-- **Dashboard** — Wochenübersicht, Today-Card, Körpergewicht-Kurve, Streak & Volumen-Tiles
-- **Trainingsplan** — Wochenplan (Wochentag → Routine) + Routine-Editor mit Übungs-Picker
-  (1'324 Übungen mit Animationen, Suche + Muskelgruppen-Filter)
-- **Umplanen per Kalender** — einzelne Tage überschreiben (krank / verpasst / andere Session),
-  ohne den Wochenplan zu ändern
-- **Workout-Flow** — Start erkennt den Wochentag und startet die heutige Session direkt.
-  Vorher wird immer das Körpergewicht abgefragt. Sätze abhaken, Gewichte vom letzten Mal
-  vorausgefüllt, Rest-Timer mit Beep, Progression-Hints, PR-Erkennung
-- **Gewichts-Tracking pro Übung** — am Ende jeder Übung wird das Arbeitsgewicht bestätigt;
-  das höchste je eingegebene Gewicht ist beim nächsten Mal der Startwert
-- **Stats** — GitHub-Style Activity-Heatmap (12 Monate), Körpergewicht-Chart,
-  Kraft-Progression pro Übung, komplette Historie
-- **Passkeys statt Passwörter** — WebAuthn mit Face ID / Touch ID, Profile synchronisieren
-  über Geräte; Gast-Modus (nur lokal) möglich
-- **PWA** — „Zum Home-Bildschirm", offline-fähig (Service Worker)
+- **Dashboard** — week overview, today's workout, body-weight curve with a goal line, streak & volume tiles
+- **Weekly plan** — assign a routine to each weekday, plus a routine editor over a library of **1,324 exercises** (searchable, with animated demos)
+- **Reschedule any day** — sick, missed a session, or fewer gym days this week? Move a workout to another day without touching your weekly plan
+- **Guided workouts** — it knows what day it is and starts today's session; asks your body weight first, pre-fills your weights from last time, checks off sets, rest timer, PR detection, per-exercise weight tracking that auto-sets your next default
+- **Body-weight tracking** — interactive chart with month/kg axes, drag to read any day, set a target weight drawn right through the graph
+- **Activity heatmap** — a GitHub-style year view, shaded by time spent training
+- **Passkeys, not passwords** — WebAuthn login with Face ID / Touch ID / fingerprint; each profile keeps its own data, synced across devices
+- **Themes** — light/dark + 8 accent colors, saved to your profile
+- **Yours to keep** — one-tap JSON export/import, guest mode, no telemetry
 
-## Struktur
+## Quick start (self-host)
 
-```
-app/       Frontend — handgebaute Static-SPA, kein Build-Step (Vanilla JS, Hash-Routing)
-api/       Backend — Node 22, kein Framework, @simplewebauthn/server, JSON-File-Storage
-scripts/   fetch-media.sh lädt die Übungs-Bilder/GIFs (nicht im Repo, ~140 MB)
-```
-
-## Übungs-Medien
-
-Die Übungsdaten (`app/data.js`) und Medien stammen aus
-[hasaneyldrm/exercises-dataset](https://github.com/hasaneyldrm/exercises-dataset).
-Bilder/GIFs sind nicht eingecheckt — einmalig holen mit:
+You need [Docker](https://docs.docker.com/get-docker/) with Compose.
 
 ```bash
-./scripts/fetch-media.sh   # füllt app/img/ (12 MB) und app/gif/ (126 MB)
+git clone https://github.com/DuarteSantos8/gym-app opengym
+cd opengym
+cp .env.example .env
+docker compose up -d
 ```
 
-## Betrieb
+Open **http://localhost:8080**, tap **Create profile**, and you're in. First launch downloads
+the exercise media (~140 MB) once; after that it's instant.
 
-- `app/` wird von einem beliebigen Static-Server ausgeliefert (nginx); JS/CSS/HTML mit
-  `no-cache`, `img/`+`gif/` lange cachen. Assets sind mit `?v=N` versioniert.
-- `api/` läuft als Container (siehe `api/Dockerfile`), Env: `RP_ID` (Domain), `ORIGIN`
-  (https-Origin), `DATA_DIR` (Volume, default `/data`). Reverse-Proxy routet `/api/*`
-  auf Port 3000 der API, alles andere auf die Static-Site — **gleiche Domain**, sonst
-  funktionieren Passkeys nicht.
-- User/Credentials liegen in `DATA_DIR/db.json`, App-State pro User in
-  `DATA_DIR/state-<uid>.json`, Session-Secret in `DATA_DIR/secret` → Volume sichern.
+> Want it reachable from your phone over the internet with passkeys? You'll need an HTTPS
+> domain — it's a two-line change in `.env`. See **[docs/SELF_HOSTING.md](docs/SELF_HOSTING.md)**.
+
+## How it works
+
+```
+┌─────────────┐        ┌──────────────────────────────┐
+│  Your phone │──HTTPS─▶│  web  (nginx)                │
+│  / laptop   │        │   ├─ serves the app (static) │
+└─────────────┘        │   └─ proxies /api ──────────┐│
+                       └──────────────────────────────┘│
+                                                        ▼
+                                        ┌──────────────────────────┐
+                                        │  api  (Node + WebAuthn)  │
+                                        │   └─ ./data (JSON files) │
+                                        └──────────────────────────┘
+```
+
+- **app/** — the frontend: a hand-built static SPA (vanilla JS, no build step, hash routing)
+- **api/** — the backend: Node with no framework, one dependency (`@simplewebauthn/server`), storing everything as plain JSON files under `./data`
+- **web/** — nginx that serves the app and proxies `/api` to the backend, so everything is on **one origin** (passkeys require this)
+
+Everything is deliberately small and readable — the whole app is a few files you can audit in an afternoon.
+
+## Your data
+
+Lives in `./data` on your host:
+
+- `db.json` — profiles + public passkey credentials
+- `state-<user>.json` — each user's plan, workouts, body weight, settings
+- `secret` — the key that signs session cookies
+
+**Back up the `./data` folder** and you've backed up everything. Passkey private keys never
+touch the server — they stay in your phone's secure hardware / your password manager.
+
+## Configuration
+
+All via `.env` (see `.env.example`):
+
+| Variable   | What it is                                    | Default                 |
+|------------|-----------------------------------------------|-------------------------|
+| `RP_ID`    | Hostname passkeys are bound to                | `localhost`             |
+| `ORIGIN`   | Full URL the app is served from               | `http://localhost:8080` |
+| `WEB_PORT` | Host port for the web UI                      | `8080`                  |
+| `RP_NAME`  | Name shown in the passkey prompt              | `openGym`               |
+
+## Tech
+
+Vanilla JS SPA · Node (no framework) · nginx · Docker Compose · WebAuthn ·
+exercise data from [hasaneyldrm/exercises-dataset](https://github.com/hasaneyldrm/exercises-dataset).
+No frontend build, no database server, no cloud dependencies.
+
+## Contributing
+
+Issues and PRs welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). Good first issues:
+more starter plans, exercise-data languages, import from other trackers.
+
+## License
+
+[MIT](LICENSE). Exercise images/GIFs are fetched from the upstream dataset and keep their own terms.

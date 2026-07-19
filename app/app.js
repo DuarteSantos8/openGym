@@ -1,6 +1,6 @@
 'use strict';
 /* ============================================================
-   GymLog — personal gym & body-weight tracker
+   openGym — personal gym & body-weight tracker
    Static SPA, localStorage, exercise data from data.js (EXDB)
    ============================================================ */
 
@@ -557,14 +557,14 @@ function viewLogin(app) {
   app.innerHTML = `
   <div class="narrow" style="display:flex;flex-direction:column;justify-content:center;min-height:78vh;text-align:center">
     <div style="font-size:4rem">🏋️</div>
-    <h1 style="font-size:2.2rem;font-weight:800;letter-spacing:-.02em;margin:8px 0 4px">GymLog</h1>
+    <h1 style="font-size:2.2rem;font-weight:800;letter-spacing:-.02em;margin:8px 0 4px">openGym</h1>
     <div class="muted" style="margin-bottom:34px">Your workouts. Your weights. Your profile.</div>
     ${webauthnOK() ? `
       <button class="btn primary" id="lg-in">👤 Sign in with passkey</button>
       <div style="height:10px"></div>
       <button class="btn" id="lg-new">✨ Create new profile</button>
       <div style="height:10px"></div>` : `
-      <div class="card small muted" style="text-align:left">This browser doesn't support passkeys — you can still use GymLog locally on this device.</div>`}
+      <div class="card small muted" style="text-align:left">This browser doesn't support passkeys — you can still use openGym locally on this device.</div>`}
     <button class="btn ghost dim" id="lg-guest">Continue without account</button>
     <div class="dim small" style="margin-top:26px;line-height:1.5">Passkeys use ${BIO} — no passwords.<br>Each profile keeps its own plan, workouts & body weight.</div>
   </div>`;
@@ -653,7 +653,7 @@ function viewHome(app) {
 
   app.innerHTML = `
   <div class="hdr">
-    <div><h1>${USER ? 'Hi ' + esc(USER.name) + ' 💪' : 'GymLog 🏋️'}</h1><div class="sub">${today.toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'long'})}</div></div>
+    <div><h1>${USER ? 'Hi ' + esc(USER.name) + ' 💪' : 'openGym 🏋️'}</h1><div class="sub">${today.toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'long'})}</div></div>
     <button class="iconbtn" id="btn-settings">⚙️</button>
   </div>
 
@@ -1821,9 +1821,9 @@ function viewSettings(app) {
 
   <div class="card">
     <h2>Tip</h2>
-    <div class="small muted" style="line-height:1.5">📱 ${IS_ANDROID ? 'In Chrome: <b>⋮ menu → Add to Home screen</b>' : 'In Safari: <b>Share → Add to Home Screen</b>'} to install GymLog as a full-screen app. ${USER ? 'Your data syncs with your profile — sign in anywhere to see it.' : 'Guest data stays on this device — export a backup now and then!'}</div>
+    <div class="small muted" style="line-height:1.5">📱 ${IS_ANDROID ? 'In Chrome: <b>⋮ menu → Add to Home screen</b>' : 'In Safari: <b>Share → Add to Home Screen</b>'} to install openGym as a full-screen app. ${USER ? 'Your data syncs with your profile — sign in anywhere to see it.' : 'Guest data stays on this device — export a backup now and then!'}</div>
   </div>
-  <div class="dim small" style="text-align:center;margin-top:8px">GymLog · exercise data: hasaneyldrm/exercises-dataset (CC)</div>
+  <div class="dim small" style="text-align:center;margin-top:8px">openGym · exercise data: hasaneyldrm/exercises-dataset (CC)</div>
   </div>
   `;
 
@@ -1857,7 +1857,7 @@ function viewSettings(app) {
     rd.onload = () => {
       try {
         const data = JSON.parse(rd.result);
-        if (!data.workouts || !data.routines) throw new Error('not a GymLog backup');
+        if (!data.workouts || !data.routines) throw new Error('not a openGym backup');
         if (!confirm('Replace all current data with this backup?')) return;
         S = Object.assign(JSON.parse(JSON.stringify(DEF)), data);
         save(); toast('Backup imported ✓'); route();

@@ -1,6 +1,6 @@
 {
-  "name": "GymLog",
-  "short_name": "GymLog",
+  "name": "openGym",
+  "short_name": "openGym",
   "description": "Personal gym & body weight tracker",
   "start_url": "./",
   "scope": "./",

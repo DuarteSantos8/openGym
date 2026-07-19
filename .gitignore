@@ -1,8 +1,13 @@
-# Übungs-Medien (via scripts/fetch-media.sh aus hasaneyldrm/exercises-dataset)
+# Exercise media — fetched on first `docker compose up` (or via scripts/fetch-media.sh)
 app/img/
 app/gif/
 
-node_modules/
+# Runtime data — users, passkeys, per-user state, session secret
 data/
+
+# Local config
+.env
+
+node_modules/
 *.log
 .DS_Store

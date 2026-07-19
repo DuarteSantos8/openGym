@@ -1,4 +1,4 @@
-/* gym-api — passkey (WebAuthn) auth + per-user state storage for GymLog
+/* opengym-api — passkey (WebAuthn) auth + per-user state storage for openGym
    No framework, JSON-file storage, signed session cookies.               */
 import http from 'node:http';
 import crypto from 'node:crypto';
@@ -11,11 +11,13 @@ import {
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
-const RP_ID = process.env.RP_ID || 'gym.duarte-santos.ch';
-const ORIGIN = process.env.ORIGIN || 'https://gym.duarte-santos.ch';
-const RP_NAME = 'GymLog';
+const RP_ID = process.env.RP_ID || 'localhost';
+const ORIGIN = process.env.ORIGIN || 'http://localhost:8080';
+const RP_NAME = process.env.RP_NAME || 'openGym';
 const SESSION_DAYS = 365;
 const MAX_BODY = 5 * 1024 * 1024;
+// Secure cookies require HTTPS; over plain http://localhost the flag would drop the cookie
+const SECURE = /^https:/i.test(ORIGIN) ? ' Secure;' : '';
 
 fs.mkdirSync(DATA, { recursive: true });
 
@@ -67,9 +69,9 @@ function readSession(req) {
   return db.users.find(u => u.id === uid) || null;
 }
 function sessionCookie(uid) {
-  return `gymsid=${makeSession(uid)}; Path=/; Max-Age=${SESSION_DAYS * 86400}; HttpOnly; Secure; SameSite=Lax`;
+  return `gymsid=${makeSession(uid)}; Path=/; Max-Age=${SESSION_DAYS * 86400}; HttpOnly;${SECURE} SameSite=Lax`;
 }
-const clearCookie = 'gymsid=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax';
+const clearCookie = `gymsid=; Path=/; Max-Age=0; HttpOnly;${SECURE} SameSite=Lax`;
 
 /* ---------- challenge store (in-memory, 5 min TTL) ---------- */
 const challenges = new Map(); // cid -> {challenge, name?, uid?, exp}

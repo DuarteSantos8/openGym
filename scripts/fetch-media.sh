@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
-# Holt die Übungs-Bilder (JPG) und Animationen (GIF) aus dem Upstream-Dataset.
-# Nicht im Repo, weil ~140 MB Binärdaten und 1:1 aus hasaneyldrm/exercises-dataset.
+# Manually download the exercise images (JPG) and animations (GIF).
+# You normally DON'T need this — `docker compose up` fetches them automatically.
+# Use it only if you run the app without Docker. Source: hasaneyldrm/exercises-dataset (CC).
 set -euo pipefail
 cd "$(dirname "$0")/.."
-tmp=$(mktemp -d)
+tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 git clone --depth 1 https://github.com/hasaneyldrm/exercises-dataset "$tmp"
 mkdir -p app/img app/gif
 cp "$tmp"/images/*.jpg app/img/
 cp "$tmp"/videos/*.gif app/gif/
-echo "OK: $(ls app/img | wc -l) Bilder, $(ls app/gif | wc -l) GIFs"
+echo "✓ $(ls app/img | wc -l) images, $(ls app/gif | wc -l) GIFs"

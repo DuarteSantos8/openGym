@@ -1,0 +1,48 @@
+name: opengym
+
+services:
+  # One-time: download the exercise images + GIFs into ./app (skipped if already there).
+  # ~140 MB, from github.com/hasaneyldrm/exercises-dataset (CC).
+  media:
+    image: alpine/git
+    volumes:
+      - ./app/img:/out/img
+      - ./app/gif:/out/gif
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        if [ -z "$$(ls -A /out/img 2>/dev/null)" ]; then
+          echo "↓ Downloading exercise media (~140 MB, one time)…"
+          git clone --depth 1 https://github.com/hasaneyldrm/exercises-dataset /tmp/ds
+          cp /tmp/ds/images/*.jpg /out/img/ && cp /tmp/ds/videos/*.gif /out/gif/
+          echo "✓ Exercise media ready ($$(ls /out/img | wc -l) images)."
+        else
+          echo "✓ Exercise media already present — skipping download."
+        fi
+    restart: "no"
+
+  # Passkey auth + per-user data (Node, no framework).
+  api:
+    build: ./api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - PORT=3000            # internal port (nginx proxies here) — do not change
+      - DATA_DIR=/data
+    volumes:
+      - ./data:/data         # users, passkeys, per-user state, session secret — BACK THIS UP
+
+  # Serves the app and proxies /api → api (single origin for passkeys).
+  web:
+    image: nginx:alpine
+    restart: unless-stopped
+    depends_on:
+      media:
+        condition: service_completed_successfully
+      api:
+        condition: service_started
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    volumes:
+      - ./app:/usr/share/nginx/html:ro
+      - ./web/nginx.conf:/etc/nginx/conf.d/default.conf:ro
