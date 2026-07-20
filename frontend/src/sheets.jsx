@@ -411,7 +411,7 @@ function TopWeight({ entryIdx, close }) {
     })
     close()
     if (advance && unitDone) {
-      if (isLastUnit) finishWorkout()
+      if (isLastUnit) workoutCompleteSheet()               // whole workout done → finish/continue prompt
       else update(s => { s.active.cur = units[unitIdx + 1][0] })
     } else toast('Tracked — next time starts at ' + fmtNum(S().exWeights[entry.id].w) + ' ' + st.unit + ' 📈')
   }
@@ -421,12 +421,25 @@ function TopWeight({ entryIdx, close }) {
     <div className="bwin"><input ref={ref} type="number" inputMode="decimal" step="0.5" value={v} onChange={e => setV(e.target.value)} /><span>{st.unit}</span></div>
     {prevBest > 0 ? <div className="small dim" style={{ textAlign: 'center', marginBottom: 12 }}>Previous best: {fmtNum(prevBest)} {st.unit}{maxSet > prevBest && <span style={{ color: 'var(--gold)' }}> — new record! 🏆</span>}</div> : <div style={{ height: 4 }} />}
     {unitDone ? <>
-      <button className="btn primary" onClick={() => commit(true)}>{isLastUnit ? 'Save & finish 🏁' : 'Save & next exercise ›'}</button>
+      <button className="btn primary" onClick={() => commit(true)}>{isLastUnit ? 'Save ✓' : 'Save & next exercise ›'}</button>
       <div style={{ height: 8 }} /><button className="btn ghost dim" onClick={() => commit(false)}>Just close</button>
     </> : <button className="btn primary" onClick={() => commit(false)}>Save weight</button>}
   </>
 }
 export const topWeightSheet = entryIdx => ui().openSheet(close => <TopWeight entryIdx={entryIdx} close={close} />)
+
+// Shown when the last exercise's last set is checked — finish, or keep going.
+function WorkoutComplete({ close }) {
+  return <div style={{ textAlign: 'center', padding: '8px 0' }}>
+    <div style={{ fontSize: '3rem' }}>🎉</div>
+    <h3 style={{ margin: '8px 0' }}>That's the whole workout!</h3>
+    <div className="muted small" style={{ marginBottom: 16 }}>Every exercise done — great work. Finish up, or keep going and add another exercise.</div>
+    <button className="btn primary" onClick={() => { close(); finishWorkout() }}>Finish workout 🏁</button>
+    <div style={{ height: 8 }} />
+    <button className="btn" onClick={() => { close(); useUI.getState().toast('Keep going 💪 — tap “+ Add exercise” below') }}>Continue workout</button>
+  </div>
+}
+export const workoutCompleteSheet = () => ui().openSheet(close => <WorkoutComplete close={close} />, { kind: 'center' })
 
 function FinishSummary({ w, prs, close }) {
   const st = useStore(s => s.S)

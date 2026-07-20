@@ -7,7 +7,7 @@ import { effectiveRoutine, lastEntryFor, bestWeightFor, buildSets, setsDoneActiv
 import { fmtNum, fmtDate, todayISO, DAYN } from '../lib/format.js'
 import { beep, vibrate } from '../lib/sound.js'
 import Media from '../components/Media.jsx'
-import { startFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, topWeightSheet, finishWorkout } from '../sheets.jsx'
+import { startFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, topWeightSheet, finishWorkout, workoutCompleteSheet } from '../sheets.jsx'
 
 /* ---------- start chooser (no active workout) ---------- */
 function StartChooser() {
@@ -121,7 +121,8 @@ function ActiveWorkout() {
 
   const toggle = (idx, i) => {
     const cardioEntry = isCardio(A.entries[idx].id)
-    let askTop = false, exJustDone = false
+    const isLastUnit = unitIdx >= units.length - 1
+    let askTop = false, exJustDone = false, workoutDone = false
     mutEntry(idx, e => {
       e.sets[i].done = !e.sets[i].done
       if (e.sets[i].done) {
@@ -130,10 +131,14 @@ function ActiveWorkout() {
         const unitDone = unit.every(ui => (ui === idx ? e : A.entries[ui]).sets.every(x => x.done))
         if (isLastExInUnit && !unitDone) startRest(S.restSec)
         else if (unitDone) stopRest()
+        if (unitDone && isLastUnit) workoutDone = true      // last exercise's last set → done
         if (e.sets.every(x => x.done)) { exJustDone = true; if (!cardioEntry && !e.asked) { e.asked = true; askTop = true } }
       }
     })
+    // non-cardio: topWeight first (it chains into the finish/continue prompt on the last unit).
+    // cardio or already-confirmed: go straight to the prompt.
     if (askTop) topWeightSheet(idx)
+    else if (workoutDone) workoutCompleteSheet()
     else if (exJustDone && cardioEntry) useUI.getState().toast('Cardio logged 🏃')
   }
 
@@ -172,7 +177,13 @@ function ActiveWorkout() {
       s.active.cur = s.active.entries.length - 1
     })))}>+ Add exercise</button>
     <div style={{ height: 10 }} />
-    <button className="btn primary" onClick={finishWorkout}>Finish workout 🏁</button>
+    {(() => {
+      const exDone = A.entries.filter(e => e.sets.length && e.sets.every(s => s.done)).length
+      const allDone = A.entries.length > 0 && exDone === A.entries.length
+      return <button className={allDone ? 'btn primary' : 'btn ghost dim'} onClick={finishWorkout}>
+        {allDone ? 'Finish workout 🏁' : `Finish workout early · ${exDone}/${A.entries.length} exercises`}
+      </button>
+    })()}
     <div style={{ height: 40 }} />
   </div>
 }
