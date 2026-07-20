@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { EXIDX } from '../lib/exercises.js'
-import { effectiveRoutine, lastEntryFor, bestWeightFor, buildSets, setsDoneActive } from '../lib/history.js'
+import { effectiveRoutine, lastEntryFor, bestWeightFor, buildSets, setsDoneActive, supersetUnits, unitOf } from '../lib/history.js'
 import { fmtNum, fmtDate, todayISO, DAYN } from '../lib/format.js'
 import { beep, vibrate } from '../lib/sound.js'
 import Media from '../components/Media.jsx'
@@ -37,23 +37,47 @@ function StartChooser() {
   </div>
 }
 
-/* ---------- one set row ---------- */
-function SetRow({ entry, i, unit, last, onToggle, onWeight, onReps }) {
-  const s = entry.sets[i]
-  return <div className={'setrow' + (s.done ? ' done' : '')}>
-    <div className="n">{i + 1}</div>
-    <div className="step w">
-      <button onClick={() => onWeight(Math.max(0, (s.w || 0) - 2.5))}>−</button>
-      <input type="number" inputMode="decimal" value={s.w} onFocus={e => e.target.select()} onChange={e => onWeight(e.target.value === '' ? 0 : Math.max(0, parseFloat(e.target.value) || 0))} />
-      <button onClick={() => onWeight(Math.max(0, (s.w || 0) + 2.5))}>+</button>
+/* ---------- one exercise block (used standalone or inside a superset card) ---------- */
+function ExerciseBlock({ entryIdx, compact, onToggle, onWeight, onReps, onAddSet }) {
+  const S = useStore(s => s.S)
+  const entry = S.active.entries[entryIdx]
+  const ex = EXIDX[entry.id]
+  const last = lastEntryFor(S, entry.id)
+  const best = bestWeightFor(S, entry.id)
+  const hint = last && last.sets.length >= (entry.target.sets || 1) && last.sets.every(s => s.r >= entry.target.reps) && last.sets[0].w > 0
+    ? Math.max(...last.sets.map(s => s.w)) + 2.5 : null
+  return <>
+    <Media ex={ex} key={entry.id} compact={compact} />
+    <div className="row between" style={{ marginBottom: 6 }}>
+      <div style={{ fontSize: compact ? '1.05rem' : '1.2rem', fontWeight: 800, textTransform: 'capitalize', lineHeight: 1.2 }}>{ex.n}</div>
+      <button className="iconbtn" onClick={() => exerciseDetailSheet(ex)}>ℹ️</button>
     </div>
-    <div className="step r">
-      <button onClick={() => onReps(Math.max(0, (s.r || 0) - 1))}>−</button>
-      <input type="number" inputMode="numeric" value={s.r} onFocus={e => e.target.select()} onChange={e => onReps(e.target.value === '' ? 0 : Math.max(0, Math.round(parseFloat(e.target.value) || 0)))} />
-      <button onClick={() => onReps(Math.max(0, (s.r || 0) + 1))}>+</button>
+    <div className="row" style={{ gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+      <span className="tag">{ex.tg || ex.bp}</span><span className="tag">{ex.eq}</span>
+      {best > 0 && <span className="tag">Best: {fmtNum(best)} {S.unit}</span>}
     </div>
-    <button className={'ck' + (s.done ? ' on' : '')} onClick={onToggle}><svg viewBox="0 0 24 24"><path d="m4.5 12.5 5 5 10-11" /></svg></button>
-  </div>
+    {last && <div className="small dim" style={{ marginBottom: 4 }}>Last time ({fmtDate(last.d)}): {last.sets.map(s => fmtNum(s.w) + '×' + s.r).join(', ')}</div>}
+    {hint && <button className="tag acc" style={{ border: 'none' }} onClick={() => onWeight(-1, hint)}>💡 Last time you hit all reps — try {fmtNum(hint)} {S.unit}</button>}
+    <div className="card" style={{ marginTop: 10, marginBottom: 0 }}>
+      <div className="sethead"><span className="n-sp" /><span className="w-sp">Weight ({S.unit})</span><span className="r-sp">Reps</span><span className="ck-sp" /></div>
+      {entry.sets.map((s, i) => <div key={i} className={'setrow' + (s.done ? ' done' : '')}>
+        <div className="n">{i + 1}</div>
+        <div className="step w">
+          <button onClick={() => onWeight(i, Math.max(0, (s.w || 0) - 2.5))}>−</button>
+          <input type="number" inputMode="decimal" value={s.w} onFocus={e => e.target.select()} onChange={e => onWeight(i, e.target.value === '' ? 0 : Math.max(0, parseFloat(e.target.value) || 0))} />
+          <button onClick={() => onWeight(i, Math.max(0, (s.w || 0) + 2.5))}>+</button>
+        </div>
+        <div className="step r">
+          <button onClick={() => onReps(i, Math.max(0, (s.r || 0) - 1))}>−</button>
+          <input type="number" inputMode="numeric" value={s.r} onFocus={e => e.target.select()} onChange={e => onReps(i, e.target.value === '' ? 0 : Math.max(0, Math.round(parseFloat(e.target.value) || 0)))} />
+          <button onClick={() => onReps(i, Math.max(0, (s.r || 0) + 1))}>+</button>
+        </div>
+        <button className={'ck' + (s.done ? ' on' : '')} onClick={() => onToggle(i)}><svg viewBox="0 0 24 24"><path d="m4.5 12.5 5 5 10-11" /></svg></button>
+      </div>)}
+      <div style={{ height: 8 }} />
+      <button className="btn sm" onClick={onAddSet}>+ Add set</button>
+    </div>
+  </>
 }
 
 /* ---------- active workout ---------- */
@@ -65,45 +89,39 @@ function ActiveWorkout() {
   const A = S.active
   const [elapsed, setElapsed] = useState('0:00')
 
-  const cur = Math.min(A.cur, Math.max(0, A.entries.length - 1))
-  const entry = A.entries[cur]
-
   useEffect(() => {
-    const tick = () => {
-      const sec = Math.floor((Date.now() - A.start) / 1000)
-      setElapsed(Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0'))
-    }
+    const tick = () => { const sec = Math.floor((Date.now() - A.start) / 1000); setElapsed(Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0')) }
     tick(); const iv = setInterval(tick, 1000); return () => clearInterval(iv)
   }, [A.start])
 
+  const units = supersetUnits(A.entries)
+  const cur = Math.min(A.cur, Math.max(0, A.entries.length - 1))
+  const unit = A.entries.length ? unitOf(units, cur) : []
+  const unitIdx = units.findIndex(u => u === unit)
+  const isSuperset = unit.length > 1
+
   const total = A.entries.reduce((n, e) => n + e.sets.length, 0)
   const done = setsDoneActive(A)
-  const ex = entry ? EXIDX[entry.id] : null
-  const last = entry ? lastEntryFor(S, entry.id) : null
-  const best = entry ? bestWeightFor(S, entry.id) : 0
-  const hint = last && entry && last.sets.length >= (entry.target.sets || 1) && last.sets.every(s => s.r >= entry.target.reps) && last.sets[0].w > 0
-    ? Math.max(...last.sets.map(s => s.w)) + 2.5 : null
 
-  const mutEntry = fn => update(s => { fn(s.active.entries[cur]) }, true)
+  const mutEntry = (idx, fn) => update(s => { fn(s.active.entries[idx]) }, true)
+  const setWeight = (idx, i, v) => { if (i === -1) mutEntry(idx, e => e.sets.forEach(s => { if (!s.done) s.w = v })); else mutEntry(idx, e => { e.sets[i].w = v }) }
+  const setReps = (idx, i, v) => mutEntry(idx, e => { e.sets[i].r = v })
+  const addSet = idx => mutEntry(idx, e => { const l = e.sets[e.sets.length - 1]; e.sets.push({ w: l ? l.w : 0, r: l ? l.r : e.target.reps, done: false }) })
 
-  const toggle = i => {
+  const toggle = (idx, i) => {
     let askTop = false
-    mutEntry(e => {
+    mutEntry(idx, e => {
       e.sets[i].done = !e.sets[i].done
       if (e.sets[i].done) {
         beep(S.sound, 1040, 0.12); vibrate(30)
-        const allDone = e.sets.every(x => x.done)
-        const isLastEx = cur >= A.entries.length - 1
-        if (!allDone) startRest(S.restSec)
-        else { stopRest(); useUI.getState().toast(isLastEx ? 'All sets done — Finish 🏁' : 'Exercise done ✓') }
-        if (allDone && !e.asked) { e.asked = true; askTop = true }
+        const isLastExInUnit = idx === unit[unit.length - 1]
+        const unitDone = unit.every(ui => (ui === idx ? e : A.entries[ui]).sets.every(x => x.done))
+        if (isLastExInUnit && !unitDone) startRest(S.restSec)
+        else if (unitDone) stopRest()
+        if (e.sets.every(x => x.done) && !e.asked) { e.asked = true; askTop = true }
       }
     })
-    if (askTop) {
-      const e2 = S.active.entries[cur]
-      const maxW = Math.max(0, ...entry.sets.map(x => x.w || 0), entry.target.weight || 0, (S.exWeights[entry.id] || {}).w || 0)
-      if (maxW > 0) topWeightSheet(entry)
-    }
+    if (askTop) topWeightSheet(idx)
   }
 
   return <div className="narrow">
@@ -114,35 +132,26 @@ function ActiveWorkout() {
     </div>
     <div className="wprog"><i style={{ width: (total ? done / total * 100 : 0) + '%' }} /></div>
 
-    {entry ? <>
-      <div className="muted small" style={{ marginBottom: 6 }}>Exercise {cur + 1} / {A.entries.length}</div>
-      <Media ex={ex} key={entry.id} />
-      <div className="row between" style={{ marginBottom: 6 }}>
-        <div style={{ fontSize: '1.2rem', fontWeight: 800, textTransform: 'capitalize', lineHeight: 1.2 }}>{ex.n}</div>
-        <button className="iconbtn" onClick={() => exerciseDetailSheet(ex)}>ℹ️</button>
-      </div>
-      <div className="row" style={{ gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-        <span className="tag">{ex.tg || ex.bp}</span><span className="tag">{ex.eq}</span>
-        {best > 0 && <span className="tag">Best: {fmtNum(best)} {S.unit}</span>}
-      </div>
-      {last && <div className="small dim" style={{ marginBottom: 4 }}>Last time ({fmtDate(last.d)}): {last.sets.map(s => fmtNum(s.w) + '×' + s.r).join(', ')}</div>}
-      {hint && <button className="tag acc" style={{ border: 'none' }} onClick={() => { mutEntry(e => e.sets.forEach(s => { if (!s.done) s.w = hint })); useUI.getState().toast('Weights bumped to ' + fmtNum(hint) + ' ' + S.unit + ' 💪') }}>💡 Last time you hit all reps — try {fmtNum(hint)} {S.unit}</button>}
-
-      <div className="card" style={{ marginTop: 10 }}>
-        <div className="sethead"><span className="n-sp" /><span className="w-sp">Weight ({S.unit})</span><span className="r-sp">Reps</span><span className="ck-sp" /></div>
-        {entry.sets.map((s, i) => <SetRow key={i} entry={entry} i={i} unit={S.unit} last={last}
-          onToggle={() => toggle(i)}
-          onWeight={v => mutEntry(e => { e.sets[i].w = v })}
-          onReps={v => mutEntry(e => { e.sets[i].r = v })} />)}
-        <div style={{ height: 8 }} />
-        <button className="btn sm" onClick={() => mutEntry(e => { const l = e.sets[e.sets.length - 1]; e.sets.push({ w: l ? l.w : 0, r: l ? l.r : e.target.reps, done: false }) })}>+ Add set</button>
-      </div>
+    {A.entries.length ? <>
+      <div className="muted small" style={{ marginBottom: 6 }}>{isSuperset ? `Superset ${unitIdx + 1} / ${units.length}` : `Exercise ${unitIdx + 1} / ${units.length}`}</div>
+      {isSuperset ? (
+        <div className="ss-card">
+          <div className="ss-hd">🔗 Superset · do these back-to-back, rest after both</div>
+          {unit.map((idx, k) => <div key={idx} className="ss-ex">
+            {k > 0 && <div className="ss-amp">+</div>}
+            <ExerciseBlock entryIdx={idx} compact
+              onToggle={i => toggle(idx, i)} onWeight={(i, v) => setWeight(idx, i, v)} onReps={(i, v) => setReps(idx, i, v)} onAddSet={() => addSet(idx)} />
+          </div>)}
+        </div>
+      ) : (
+        <ExerciseBlock entryIdx={cur} onToggle={i => toggle(cur, i)} onWeight={(i, v) => setWeight(cur, i, v)} onReps={(i, v) => setReps(cur, i, v)} onAddSet={() => addSet(cur)} />
+      )}
     </> : <div className="empty"><div className="ico">🎯</div>Freestyle workout — add your first exercise.</div>}
 
     <div style={{ height: 12 }} />
     <div className="row">
-      <button className="btn" disabled={cur === 0 || !entry} onClick={() => update(s => { s.active.cur = Math.max(0, cur - 1) })}>‹ Prev</button>
-      <button className="btn" disabled={cur >= A.entries.length - 1} onClick={() => update(s => { s.active.cur = Math.min(s.active.entries.length - 1, cur + 1) })}>Next ›</button>
+      <button className="btn" disabled={unitIdx <= 0} onClick={() => update(s => { s.active.cur = units[unitIdx - 1][0] })}>‹ Prev</button>
+      <button className="btn" disabled={unitIdx < 0 || unitIdx >= units.length - 1} onClick={() => update(s => { s.active.cur = units[unitIdx + 1][0] })}>Next ›</button>
     </div>
     <div style={{ height: 10 }} />
     <button className="btn" onClick={() => exercisePicker(ex => exConfigSheet(ex, null, cfg => update(s => {

@@ -306,3 +306,18 @@ h4.sec{font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(-
   .exmedia img{height:400px}
   .hm-wrap{display:flex;flex-direction:column;align-items:center}
 }
+
+/* ---------- supersets ---------- */
+/* editor: grouped exercises get a left accent + a label */
+.ss-label{font-size:.66rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--acc);margin:6px 0 4px 4px;display:flex;align-items:center;gap:5px}
+.item.in-ss{border-left:3px solid var(--acc)}
+.iconbtn.on-ss{background:var(--accT);border-color:var(--acc);color:var(--acc)}
+/* workout: superset card holds both exercises */
+.ss-card{border:1.5px solid var(--acc);border-radius:var(--r);padding:14px;
+  background:color-mix(in srgb, var(--acc) 6%, var(--card))}
+.ss-hd{font-size:.72rem;font-weight:800;letter-spacing:.04em;color:var(--acc);
+  margin-bottom:12px;text-align:center}
+.ss-ex{position:relative}
+.ss-amp{text-align:center;font-size:1.3rem;font-weight:800;color:var(--acc);margin:14px 0 8px}
+.exmedia.compact img{height:190px}

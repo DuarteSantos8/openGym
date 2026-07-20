@@ -3,7 +3,7 @@ import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { EXDB, EXIDX, BODYPARTS } from './lib/exercises.js'
 import { fmtDate, fmtNum, fmtVol, fmtDur, todayISO, uid, DAYN, MONTHS_LONG, ACCENTS } from './lib/format.js'
-import { lastEntryFor, bestWeightFor, buildSets, effectiveRoutineId, workoutVolume, setsDone, setsDoneActive, lastBW } from './lib/history.js'
+import { lastEntryFor, bestWeightFor, buildSets, effectiveRoutineId, workoutVolume, setsDone, setsDoneActive, lastBW, supersetUnits, unitOf } from './lib/history.js'
 import { beep, vibrate } from './lib/sound.js'
 import { nav } from './lib/nav.js'
 import Media, { Thumb } from './components/Media.jsx'
@@ -145,25 +145,40 @@ function AddToRoutine({ ex, close }) {
 export const addToRoutineSheet = ex => ui().openSheet(close => <AddToRoutine ex={ex} close={close} />)
 
 /* ============================ exercise picker ============================ */
+// Exercises already used in your routines or past workouts (for the "Chosen" filter + a marker).
+function usageMap(st) {
+  const u = {}
+  st.routines.forEach(r => r.ex.forEach(e => { u[e.id] = (u[e.id] || 0) + 1 }))
+  st.workouts.forEach(w => w.entries.forEach(e => { u[e.id] = (u[e.id] || 0) + 1 }))
+  return u
+}
 function ExercisePicker({ onPick, close }) {
+  const st = useStore(s => s.S)
+  const usage = usageMap(st)
   const [q, setQ] = useState('')
-  const [bp, setBp] = useState('')
+  const [bp, setBp] = useState('')          // '' = all, '★' = chosen, else a body part
   const [shown, setShown] = useState(50)
   const ql = q.toLowerCase().trim()
-  const f = EXDB.filter(e => (!bp || e.bp === bp) && (!ql || e.n.includes(ql) || e.tg.includes(ql) || e.eq.includes(ql)))
+  let f = EXDB.filter(e =>
+    (bp === '★' ? usage[e.id] : (!bp || e.bp === bp)) &&
+    (!ql || e.n.includes(ql) || e.tg.includes(ql) || e.eq.includes(ql)))
+  if (bp === '★') f = [...f].sort((a, b) => (usage[b.id] - usage[a.id]) || (a.n < b.n ? -1 : 1))
+  const chosenCount = Object.keys(usage).length
   return <>
     <h3>Add exercise</h3>
     <div className="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
       <input className="input" placeholder={`Search ${EXDB.length} exercises…`} value={q} onChange={e => { setQ(e.target.value); setShown(50) }} /></div>
     <div className="chips" style={{ margin: '10px 0' }}>
+      {chosenCount > 0 && <button className={'chip' + (bp === '★' ? ' on' : '')} onClick={() => { setBp('★'); setShown(50) }}>⭐ Chosen ({chosenCount})</button>}
       <button className={'chip' + (!bp ? ' on' : '')} onClick={() => { setBp(''); setShown(50) }}>All</button>
       {BODYPARTS.map(b => <button key={b} className={'chip' + (bp === b ? ' on' : '')} onClick={() => { setBp(b); setShown(50) }}>{b}</button>)}
     </div>
     <div className="list">
-      {f.slice(0, shown).map(e => <div key={e.id} className="item" onClick={() => { close(); onPick(e) }}>
-        <Thumb ex={e} /><div className="grow"><div className="tt">{e.n}</div><div className="ss">{(e.tg || e.bp)} · {e.eq}</div></div><span className="chev">+</span>
+      {f.slice(0, shown).map(e => <div key={e.id} className="item" onClick={() => onPick(e)}>
+        <Thumb ex={e} /><div className="grow"><div className="tt">{e.n}</div><div className="ss">{(e.tg || e.bp)} · {e.eq}</div></div>
+        {usage[e.id] && <span className="tag acc">⭐</span>}<span className="chev">+</span>
       </div>)}
-      {f.length === 0 && <div className="empty">No match 🤷</div>}
+      {f.length === 0 && <div className="empty">{bp === '★' ? 'Nothing chosen yet — add exercises and they’ll show up here.' : 'No match 🤷'}</div>}
     </div>
     {f.length > shown && <><div style={{ height: 8 }} /><button className="btn" onClick={() => setShown(s => s + 50)}>Show more</button></>}
   </>
@@ -322,48 +337,56 @@ export function startFlow(routineId) {
 export function beginWorkout(routineId, bw) {
   const st = S()
   const r = routineId ? st.routines.find(x => x.id === routineId) : null
-  const entries = (r ? r.ex : []).map(cfg => ({ id: cfg.id, target: { ...cfg }, sets: buildSets(st, cfg) }))
+  const entries = (r ? r.ex : []).map(cfg => ({ id: cfg.id, sg: cfg.sg, target: { ...cfg }, sets: buildSets(st, cfg) }))
   update(s => {
     s.active = { id: uid(), d: todayISO(), start: Date.now(), routineId, name: r ? r.name : 'Freestyle', bw: bw || null, cur: 0, entries }
   })
   useUI.getState().stopRest()
   nav('/workout')
 }
-function TopWeight({ entry, close }) {
+function TopWeight({ entryIdx, close }) {
   const st = useStore(s => s.S)
   const A = st.active
+  const entry = A.entries[entryIdx]
   const ex = EXIDX[entry.id]
   const maxSet = Math.max(0, ...entry.sets.filter(s => s.done).map(s => s.w || 0))
   const prevBest = Math.max((st.exWeights[entry.id] || {}).w || 0, bestWeightFor(st, entry.id))
   const [v, setV] = useState(String(Math.max(maxSet, prevBest) || entry.target.weight || 0))
-  const isLastEx = A && A.cur >= A.entries.length - 1
   const ref = useRef(null)
   useEffect(() => { setTimeout(() => { ref.current?.focus(); ref.current?.select() }, 250) }, [])
+
+  const units = supersetUnits(A.entries)
+  const unit = unitOf(units, entryIdx)
+  const unitDone = unit.every(i => A.entries[i].sets.every(s => s.done))
+  const unitIdx = units.findIndex(u => u === unit)
+  const isLastUnit = unitIdx === units.length - 1
+
   const commit = advance => {
     const n = parseFloat(v)
     if (!isFinite(n) || n < 0) { toast('Enter a valid weight'); return }
     update(s => {
-      const e = s.active.entries.find(x => x === s.active.entries[A.cur]) || s.active.entries[A.cur]
-      s.active.entries[A.cur].topW = n
+      s.active.entries[entryIdx].topW = n
       const cur = s.exWeights[entry.id]
       s.exWeights[entry.id] = { w: Math.max(n, cur ? cur.w : 0), d: todayISO() }
     })
     close()
-    if (advance && A) {
-      if (isLastEx) finishWorkout()
-      else update(s => { s.active.cur = Math.min(s.active.entries.length - 1, s.active.cur + 1) })
+    if (advance && unitDone) {
+      if (isLastUnit) finishWorkout()
+      else update(s => { s.active.cur = units[unitIdx + 1][0] })
     } else toast('Tracked — next time starts at ' + fmtNum(S().exWeights[entry.id].w) + ' ' + st.unit + ' 📈')
   }
   return <>
     <h3 className="capitalize">✅ {ex.n} done</h3>
-    <div className="muted small">Confirm the weight you worked with — your highest becomes the default next time.</div>
+    <div className="muted small">Confirm the weight you worked with — your highest becomes the default next time.{!unitDone && unit.length > 1 ? ' Then finish the superset partner.' : ''}</div>
     <div className="bwin"><input ref={ref} type="number" inputMode="decimal" step="0.5" value={v} onChange={e => setV(e.target.value)} /><span>{st.unit}</span></div>
     {prevBest > 0 ? <div className="small dim" style={{ textAlign: 'center', marginBottom: 12 }}>Previous best: {fmtNum(prevBest)} {st.unit}{maxSet > prevBest && <span style={{ color: 'var(--gold)' }}> — new record! 🏆</span>}</div> : <div style={{ height: 4 }} />}
-    <button className="btn primary" onClick={() => commit(true)}>{isLastEx ? 'Save & finish 🏁' : 'Save & next exercise ›'}</button>
-    <div style={{ height: 8 }} /><button className="btn ghost dim" onClick={() => commit(false)}>Just close</button>
+    {unitDone ? <>
+      <button className="btn primary" onClick={() => commit(true)}>{isLastUnit ? 'Save & finish 🏁' : 'Save & next exercise ›'}</button>
+      <div style={{ height: 8 }} /><button className="btn ghost dim" onClick={() => commit(false)}>Just close</button>
+    </> : <button className="btn primary" onClick={() => commit(false)}>Save weight</button>}
   </>
 }
-export const topWeightSheet = entry => ui().openSheet(close => <TopWeight entry={entry} close={close} />)
+export const topWeightSheet = entryIdx => ui().openSheet(close => <TopWeight entryIdx={entryIdx} close={close} />)
 
 function FinishSummary({ w, prs, close }) {
   const st = useStore(s => s.S)

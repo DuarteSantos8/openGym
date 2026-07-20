@@ -57,6 +57,19 @@ export function setsDoneActive(A) {
 }
 export const lastBW = S => (S.bodyweight.length ? S.bodyweight[S.bodyweight.length - 1] : null)
 
+// Group consecutive items sharing a superset id (sg) into "units" of indices.
+// items may be routine exercises ({sg}) or active-workout entries ({sg}).
+export function supersetUnits(items) {
+  const units = []
+  items.forEach((e, i) => {
+    const prev = items[i - 1]
+    if (i > 0 && e.sg && prev && prev.sg && e.sg === prev.sg) units[units.length - 1].push(i)
+    else units.push([i])
+  })
+  return units
+}
+export function unitOf(units, idx) { return units.find(u => u.includes(idx)) || [idx] }
+
 export function streakWeeks(S) {
   if (!S.workouts.length) return 0
   const weeks = new Set(S.workouts.map(w => weekKey(w.d)))
