@@ -45,4 +45,4 @@ Open an issue with: what you did, what you expected, what happened, and your bro
 about login/passkeys, include your `RP_ID`/`ORIGIN` (not the `data/` contents) — most login
 issues are an origin mismatch.
 
-By contributing you agree your work is licensed under the project's [MIT License](LICENSE).
+By contributing you agree your work is licensed under the project's [GNU AGPL v3.0](LICENSE).

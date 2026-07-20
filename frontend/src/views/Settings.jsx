@@ -93,7 +93,10 @@ export default function Settings() {
 
     <div className="card"><h2>Tip</h2>
       <div className="small muted" style={{ lineHeight: 1.5 }}>📱 {IS_ANDROID ? 'In Chrome: ⋮ menu → Add to Home screen' : 'In Safari: Share → Add to Home Screen'} to install openGym as a full-screen app. {user ? 'Your data syncs with your profile — sign in anywhere to see it.' : 'Guest data stays on this device — export a backup now and then!'}</div></div>
-    <div className="dim small" style={{ textAlign: 'center', marginTop: 8 }}>openGym · exercise data: hasaneyldrm/exercises-dataset (CC)</div>
+    <div className="dim small" style={{ textAlign: 'center', marginTop: 8, lineHeight: 1.6 }}>
+      openGym · free & open source (AGPL v3)<br />
+      <a href="https://github.com/DuarteSantos8/openGym" target="_blank" rel="noopener">source code</a> · exercise data: hasaneyldrm/exercises-dataset (CC)
+    </div>
   </div>
 }
 
