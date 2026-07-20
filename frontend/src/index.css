@@ -321,3 +321,11 @@ h4.sec{font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(-
 .ss-ex{position:relative}
 .ss-amp{text-align:center;font-size:1.3rem;font-weight:800;color:var(--acc);margin:14px 0 8px}
 .exmedia.compact img{height:190px}
+
+/* ---------- home: today's session row under the week strip ---------- */
+.today-row{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  margin-top:12px;padding:11px 13px;border-radius:13px;background:var(--bg2);border:1px solid var(--line)}
+.today-row:active{background:var(--card2)}
+.today-row .lbl2{font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.today-row .ttl{font-weight:700;font-size:.98rem;line-height:1.2;text-transform:capitalize;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

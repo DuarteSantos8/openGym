@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { effectiveRoutine, effectiveRoutineId, streakWeeks, lastBW, setsDoneActive } from '../lib/history.js'
-import { fmtNum, fmtDate, todayISO, isoOf, weekKey, DAYS, DAYN } from '../lib/format.js'
+import { fmtNum, fmtDate, todayISO, isoOf, weekKey, DAYS } from '../lib/format.js'
 import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, startFlow, loadStarterPlan, bwDeltaColor } from '../sheets.jsx'
+import LineChart from '../components/LineChart.jsx'
 
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
 export default function Home() {
@@ -35,6 +36,10 @@ export default function Home() {
 
   const wThisWeek = S.workouts.filter(w => weekKey(w.d) === weekKey(todayISO())).length
   const plannedPerWeek = Object.keys(S.week).filter(k => S.week[k]).length
+  const bwPoints = S.bodyweight.slice(-30).map(b => ({ t: b.t || new Date(b.d).getTime(), y: b.w, d: b.d }))
+
+  // today's session shown right under the week strip
+  const onToday = () => { if (S.active) nav('/workout'); else if (routine) startFlow(routine.id); else dayOverrideSheet(todayISO()) }
 
   return <div className="narrow">
     <div className="hdr">
@@ -49,36 +54,26 @@ export default function Home() {
         <button className="iconbtn" style={{ width: 32, height: 32 }} onClick={() => setWeekOffset(w => w + 1)}>›</button>
       </div>
       <div className="week">{strip}</div>
-      <div className="small dim" style={{ marginTop: 8, textAlign: 'center' }}>Tap a day to plan or move a session</div>
+      <div className="today-row" onClick={onToday}>
+        <div className="row" style={{ gap: 9, minWidth: 0 }}>
+          <span style={{ fontSize: '1.35rem', flex: 'none' }}>{S.active ? '⏱️' : routine ? (routine.emoji || '💪') : '😌'}</span>
+          <div style={{ minWidth: 0 }}>
+            <div className="lbl2">Today</div>
+            <div className="ttl">{S.active ? S.active.name + ' — in progress' : routine ? routine.name : 'Rest day'}{todayOvr && routine ? ' · rescheduled' : ''}</div>
+          </div>
+        </div>
+        {S.active ? <span className="tag" style={{ color: 'var(--orange)', borderColor: 'var(--orange)' }}>Resume ▶</span>
+          : routine ? <span className="tag acc">Start ▶</span>
+          : <span className="chev">＋</span>}
+      </div>
     </div>
 
-    {S.active ? (
-      <div className="card" style={{ borderColor: 'var(--orange)' }}>
-        <h2 style={{ color: 'var(--orange)' }}>Workout in progress</h2>
-        <div className="row between">
-          <div><div className="big">{S.active.name}</div><div className="muted small">{setsDoneActive(S.active)} sets logged</div></div>
-          <button className="btn sm primary" onClick={() => nav('/workout')}>Resume ▶</button>
-        </div>
-      </div>
-    ) : (
+    {!S.routines.length && !S.active && (
       <div className="card">
-        <h2>Today</h2>
-        {routine ? <>
-          <div className="row between" style={{ marginBottom: 12 }}>
-            <div><div className="big">{routine.name}</div><div className="muted small">{routine.ex.length} exercises · ~{routine.ex.length * 8} min{todayOvr && <span style={{ color: 'var(--orange)' }}> · rescheduled</span>}</div></div>
-            <div style={{ fontSize: '2rem' }}>{routine.emoji || '💪'}</div>
-          </div>
-          <button className="btn primary" onClick={() => startFlow(routine.id)}>Start workout</button>
-        </> : S.routines.length ? <>
-          <div className="big" style={{ marginBottom: 4 }}>Rest day 😌</div>
-          <div className="muted small" style={{ marginBottom: 12 }}>Nothing planned for {DAYN[today.getDay()]} — recovery counts too. Feeling strong anyway?</div>
-          <button className="btn" onClick={() => nav('/workout')}>Start a workout anyway</button>
-        </> : <>
-          <div className="big" style={{ marginBottom: 4 }}>Welcome! 👋</div>
-          <div className="muted small" style={{ marginBottom: 12 }}>Set up your weekly routine to get going — or load a ready-made Push / Pull / Legs plan.</div>
-          <button className="btn primary" onClick={loadStarterPlan}>Load starter plan (PPL)</button>
-          <div style={{ height: 8 }} /><button className="btn" onClick={() => nav('/plan')}>Build my own plan</button>
-        </>}
+        <div className="big" style={{ marginBottom: 4 }}>Welcome! 👋</div>
+        <div className="muted small" style={{ marginBottom: 12 }}>Set up your weekly routine to get going — or load a ready-made Push / Pull / Legs plan.</div>
+        <button className="btn primary" onClick={loadStarterPlan}>Load starter plan (PPL)</button>
+        <div style={{ height: 8 }} /><button className="btn" onClick={() => nav('/plan')}>Build my own plan</button>
       </div>
     )}
 
@@ -97,8 +92,8 @@ export default function Home() {
           <span className="dim small" style={{ marginLeft: 'auto' }}>{fmtDate(bw.d, true)}</span>
         </div>
         {S.targetW && <div className="small" style={{ color: 'var(--gold)', marginTop: 2 }}>🎯 Goal {fmtNum(S.targetW)} {S.unit} · {Math.abs(S.targetW - bw.w) < 0.05 ? 'reached! 🎉' : fmtNum(Math.abs(S.targetW - bw.w)) + ' ' + S.unit + ' to ' + (S.targetW > bw.w ? 'gain' : 'lose')}</div>}
-        <button className="btn ghost accent" style={{ marginTop: 10 }} onClick={() => nav('/stats')}>📈 Weight trend & progress ›</button>
-      </> : <div className="muted small">No entries yet — log your weight to start tracking. It's also asked before every workout.</div>}
+        <div className="chart" style={{ marginTop: 8 }}><LineChart points={bwPoints} h={130} unit={S.unit} goal={S.targetW} /></div>
+      </> : <div className="muted small">No entries yet — log your weight to start the curve. It's also asked before every workout.</div>}
     </div>
 
     <div className="card tappable" style={{ cursor: 'pointer' }} onClick={() => calendarSheet()}>
