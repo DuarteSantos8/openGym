@@ -6,31 +6,31 @@ to keep it that way — easy to read, easy to self-host.
 ## Project layout
 
 ```
-app/    frontend — one static SPA (index.html, app.js, style.css, data.js). No build step.
-api/    backend  — server.js (Node, no framework), one dependency (@simplewebauthn/server).
-web/    nginx config that serves app/ and proxies /api to the backend.
-docs/   self-hosting guide.
+frontend/  React + Vite app (src/views, src/components, src/store, src/lib). Builds to static files.
+api/       backend — server.js (Node, no framework), one dependency (@simplewebauthn/server).
+web/       multi-stage Dockerfile (builds frontend → nginx) + nginx.conf (serves app, proxies /api).
+media/     exercise img/gif (gitignored, fetched at runtime).
+docs/      self-hosting guide.
 ```
 
 ## Running for development
 
 ```bash
 cp .env.example .env
-docker compose up -d --build
-# edit files in app/ (no build needed — just reload) or api/ (docker compose restart api)
+docker compose up -d --build      # api + web + media on :8080
+# frontend hot reload:
+cd frontend && npm install && npm run dev
 ```
-
-Frontend changes are plain HTML/CSS/JS — edit and refresh. When you change `app/*.js|css`,
-bump the `?v=N` query in `index.html` and `sw.js` so clients and the service worker refetch.
 
 ## Guidelines
 
-- **Keep it dependency-light.** New npm packages in `api/` are a hard sell; the frontend has none.
-- **No build step for the frontend.** Vanilla JS, please.
-- **Match the style.** Small functions, clear names, comments only where the "why" isn't obvious.
-- **Don't commit** the exercise media (`app/img`, `app/gif`) or `data/` — they're gitignored.
-- **Test the flow** you touched. There's a jsdom smoke test used during development; at minimum,
-  click through the affected screens in a browser before opening a PR.
+- **Keep it dependency-light.** The frontend uses React + Router + Zustand and nothing else;
+  new deps (front or back) are a hard sell. `api/` has exactly one dependency — keep it that way.
+- **Match the style.** Small components, clear names, comments only where the "why" isn't obvious.
+  State lives in the Zustand store (`src/store`); pure helpers in `src/lib`.
+- **Don't commit** the exercise media (`media/`) or `data/` — they're gitignored.
+- **Test the flow** you touched — click through the affected screens (and the workout flow) in a
+  browser before opening a PR.
 
 ## Good first issues
 

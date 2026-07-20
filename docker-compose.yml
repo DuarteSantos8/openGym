@@ -1,13 +1,13 @@
 name: opengym
 
 services:
-  # One-time: download the exercise images + GIFs into ./app (skipped if already there).
+  # One-time: download the exercise images + GIFs into ./media (skipped if already there).
   # ~140 MB, from github.com/hasaneyldrm/exercises-dataset (CC).
   media:
     image: alpine/git
     volumes:
-      - ./app/img:/out/img
-      - ./app/gif:/out/gif
+      - ./media/img:/out/img
+      - ./media/gif:/out/gif
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
@@ -32,9 +32,12 @@ services:
     volumes:
       - ./data:/data         # users, passkeys, per-user state, session secret — BACK THIS UP
 
-  # Serves the app and proxies /api → api (single origin for passkeys).
+  # Builds the React frontend (multi-stage) and serves it, proxying /api → api
+  # and the exercise media from the shared volume. Single origin for passkeys.
   web:
-    image: nginx:alpine
+    build:
+      context: .
+      dockerfile: web/Dockerfile
     restart: unless-stopped
     depends_on:
       media:
@@ -44,5 +47,5 @@ services:
     ports:
       - "${WEB_PORT:-8080}:80"
     volumes:
-      - ./app:/usr/share/nginx/html:ro
-      - ./web/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./media/img:/usr/share/nginx/html/img:ro
+      - ./media/gif:/usr/share/nginx/html/gif:ro

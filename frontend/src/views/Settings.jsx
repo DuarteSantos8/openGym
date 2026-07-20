@@ -1,0 +1,118 @@
+import { useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useStore, DEF, hasData } from '../store/useStore.js'
+import { useUI } from '../store/useUI.js'
+import { ACCENTS, todayISO } from '../lib/format.js'
+import { webauthnOK, passkeyLogin, passkeyRegister, IS_ANDROID } from '../lib/api.js'
+import { loadStarterPlan } from '../sheets.jsx'
+
+export default function Settings() {
+  const nav = useNavigate()
+  const S = useStore(s => s.S)
+  const user = useStore(s => s.user)
+  const { update, replaceState, setUser, pullState, pushState, signOut } = useStore()
+  const toast = useUI(s => s.toast)
+  const fileRef = useRef(null)
+
+  const doExport = () => {
+    const blob = new Blob([JSON.stringify(S, null, 2)], { type: 'application/json' })
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'opengym-backup-' + todayISO() + '.json'; a.click(); URL.revokeObjectURL(a.href)
+    toast('Backup exported ✓')
+  }
+  const doImport = ev => {
+    const f = ev.target.files[0]; if (!f) return
+    const rd = new FileReader()
+    rd.onload = () => {
+      try {
+        const data = JSON.parse(rd.result)
+        if (!data.workouts || !data.routines) throw new Error('not an openGym backup')
+        if (!confirm('Replace all current data with this backup?')) return
+        replaceState(Object.assign(JSON.parse(JSON.stringify(DEF)), data), true); toast('Backup imported ✓')
+      } catch (e) { toast('Import failed: ' + e.message) }
+    }
+    rd.readAsText(f)
+  }
+  const signInHere = async () => {
+    try { const u = await passkeyLogin(); setUser(u); await pullState(); toast('Welcome back, ' + u.name + ' 💪') }
+    catch (e) { if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') toast(e.message || 'Sign-in failed') }
+  }
+  const registerHere = () => useUI.getState().openSheet(close => <RegisterInline close={close} setUser={setUser} pushState={pushState} pullState={pullState} toast={toast} />)
+
+  return <div className="narrow">
+    <div className="hdr"><button className="iconbtn" onClick={() => nav('/home')}>‹</button><div style={{ flex: 1, marginLeft: 12 }}><h1>Settings</h1></div></div>
+
+    <div className="card">
+      <h2>Account</h2>
+      {user ? <div className="row between">
+        <div><b>{user.name}</b><div className="small muted">Signed in with passkey — data syncs to this profile.</div></div>
+        <button className="btn sm danger" onClick={() => { if (confirm('Sign out? Local data is synced to your profile first, then cleared from this device.')) { signOut(); nav('/home') } }}>Sign out</button>
+      </div> : <>
+        <div className="small muted" style={{ marginBottom: 10 }}>Guest mode — data lives only in this browser. Create a passkey profile to keep it safe and separate per person.</div>
+        {webauthnOK() ? <>
+          <button className="btn primary" onClick={registerHere}>✨ Create passkey profile</button>
+          <div style={{ height: 8 }} /><button className="btn" onClick={signInHere}>👤 Sign in with passkey</button>
+        </> : <div className="small dim">Passkeys not supported in this browser.</div>}
+      </>}
+    </div>
+
+    <div className="card">
+      <h2>Appearance <span className="dim" style={{ textTransform: 'none', letterSpacing: 0 }}>· synced with your profile</span></h2>
+      <div className="row between" style={{ padding: '8px 0' }}>
+        <span>Theme</span>
+        <div className="chips">
+          <button className={'chip' + (S.theme !== 'light' ? ' on' : '')} onClick={() => update(s => { s.theme = 'dark' })}>🌙 Dark</button>
+          <button className={'chip' + (S.theme === 'light' ? ' on' : '')} onClick={() => update(s => { s.theme = 'light' })}>☀️ Light</button>
+        </div>
+      </div>
+      <div style={{ padding: '8px 0' }}>
+        <div style={{ marginBottom: 10 }}>Accent color</div>
+        <div className="swatches">{Object.entries(ACCENTS).map(([k, c]) => <button key={k} className={'swatch' + ((S.accent || 'lime') === k ? ' on' : '')} style={{ background: c }} onClick={() => update(s => { s.accent = k })} />)}</div>
+      </div>
+    </div>
+
+    <div className="card">
+      <h2>Units & timer</h2>
+      <div className="row between" style={{ padding: '8px 0' }}><span>Weight unit</span>
+        <div className="chips"><button className={'chip' + (S.unit === 'kg' ? ' on' : '')} onClick={() => update(s => { s.unit = 'kg' })}>kg</button>
+          <button className={'chip' + (S.unit === 'lb' ? ' on' : '')} onClick={() => update(s => { s.unit = 'lb' })}>lb</button></div></div>
+      <div className="row between" style={{ padding: '8px 0' }}><span>Rest timer</span>
+        <select className="input" style={{ width: 120 }} value={S.restSec} onChange={e => update(s => { s.restSec = +e.target.value })}>
+          {[60, 90, 120, 150, 180].map(v => <option key={v} value={v}>{v}s</option>)}</select></div>
+      <div className="row between" style={{ padding: '8px 0' }}><span>Sounds</span>
+        <button className={'chip' + (S.sound ? ' on' : '')} onClick={() => update(s => { s.sound = !s.sound })}>{S.sound ? 'On 🔔' : 'Off 🔕'}</button></div>
+      <div className="small dim" style={{ marginTop: 6 }}>Note: switching units only changes the label — logged numbers are not converted.</div>
+    </div>
+
+    <div className="card">
+      <h2>Data</h2>
+      <button className="btn" onClick={doExport}>⬇️ Export backup (JSON)</button>
+      <div style={{ height: 8 }} /><button className="btn" onClick={() => fileRef.current.click()}>⬆️ Import backup</button>
+      <input ref={fileRef} type="file" accept=".json,application/json" style={{ display: 'none' }} onChange={doImport} />
+      <div style={{ height: 8 }} /><button className="btn" onClick={loadStarterPlan}>Load starter plan (PPL)</button>
+      <div style={{ height: 8 }} /><button className="btn danger" onClick={() => { if (confirm('Delete ALL data (plan, workouts, body weight)?') && confirm('Really sure? This cannot be undone.')) { replaceState(JSON.parse(JSON.stringify(DEF)), true); nav('/home'); toast('All data reset') } }}>Reset everything</button>
+    </div>
+
+    <div className="card"><h2>Tip</h2>
+      <div className="small muted" style={{ lineHeight: 1.5 }}>📱 {IS_ANDROID ? 'In Chrome: ⋮ menu → Add to Home screen' : 'In Safari: Share → Add to Home Screen'} to install openGym as a full-screen app. {user ? 'Your data syncs with your profile — sign in anywhere to see it.' : 'Guest data stays on this device — export a backup now and then!'}</div></div>
+    <div className="dim small" style={{ textAlign: 'center', marginTop: 8 }}>openGym · exercise data: hasaneyldrm/exercises-dataset (CC)</div>
+  </div>
+}
+
+function RegisterInline({ close, setUser, pushState, pullState, toast }) {
+  const nameRef = useRef(null)
+  const go = async () => {
+    const n = (nameRef.current.value || '').trim()
+    if (!n) { toast('Enter a name'); return }
+    try {
+      const u = await passkeyRegister(n); setUser(u); close()
+      if (hasData(useStore.getState().S)) { await pushState(); toast('Profile created — data moved into it ✓') }
+      else { await pullState(); toast('Welcome, ' + u.name + ' 💪') }
+    } catch (e) { if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') toast(e.message || 'Registration failed') }
+  }
+  return <>
+    <h3>Create your profile ✨</h3>
+    <div className="muted small" style={{ marginBottom: 14 }}>Pick a name, then confirm with your device.</div>
+    <input ref={nameRef} className="input" placeholder="Your name" maxLength={40} />
+    <div style={{ height: 12 }} /><button className="btn primary" onClick={go}>Create passkey</button>
+  </>
+}

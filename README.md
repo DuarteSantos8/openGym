@@ -65,11 +65,11 @@ the exercise media (~140 MB) once; after that it's instant.
                                         └──────────────────────────┘
 ```
 
-- **app/** — the frontend: a hand-built static SPA (vanilla JS, no build step, hash routing)
+- **frontend/** — the app: **React + Vite** (React Router + Zustand), built to static files inside Docker
 - **api/** — the backend: Node with no framework, one dependency (`@simplewebauthn/server`), storing everything as plain JSON files under `./data`
-- **web/** — nginx that serves the app and proxies `/api` to the backend, so everything is on **one origin** (passkeys require this)
+- **web/** — a multi-stage Docker image that builds the frontend and serves it with nginx, proxying `/api` to the backend so everything is on **one origin** (passkeys require this)
 
-Everything is deliberately small and readable — the whole app is a few files you can audit in an afternoon.
+You never need Node or a build step locally — `docker compose up` builds the frontend inside the container. It's still small and readable: a component tree you can audit in an afternoon.
 
 ## Your data
 
@@ -95,9 +95,26 @@ All via `.env` (see `.env.example`):
 
 ## Tech
 
-Vanilla JS SPA · Node (no framework) · nginx · Docker Compose · WebAuthn ·
+React + Vite (React Router, Zustand) · Node (no framework) · nginx · Docker Compose · WebAuthn ·
 exercise data from [hasaneyldrm/exercises-dataset](https://github.com/hasaneyldrm/exercises-dataset).
-No frontend build, no database server, no cloud dependencies.
+No database server, no cloud dependencies — the frontend builds inside Docker, so self-hosting
+stays a one-command `docker compose up`.
+
+## Development
+
+Frontend (hot reload against a running backend):
+
+```bash
+cd frontend
+npm install
+npm run dev            # Vite dev server on :5173, proxies /api and media to :3000 / :8888
+```
+
+Or just run the whole stack in Docker and rebuild on change:
+
+```bash
+docker compose up -d --build
+```
 
 ## Contributing
 

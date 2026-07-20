@@ -1,6 +1,6 @@
 # Exercise media — fetched on first `docker compose up` (or via scripts/fetch-media.sh)
-app/img/
-app/gif/
+media/img/
+media/gif/
 
 # Runtime data — users, passkeys, per-user state, session secret
 data/
@@ -8,6 +8,8 @@ data/
 # Local config
 .env
 
+# Build output / deps
+frontend/dist/
 node_modules/
 *.log
 .DS_Store
