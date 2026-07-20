@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { HashRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import { HashRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { useStore } from './store/useStore.js'
 import { ACCENTS } from './lib/format.js'
 import { setNav } from './lib/nav.js'
@@ -28,17 +28,20 @@ function applyPrefs(theme, accent) {
 
 function Shell() {
   const navigate = useNavigate()
+  const loc = useLocation()
   const { S, user, ready } = useStore()
   const isGuest = useStore(s => s.isGuest())
   useEffect(() => { setNav(navigate) }, [navigate])
   useEffect(() => { applyPrefs(S.theme, S.accent) }, [S.theme, S.accent])
+  // every tab/route change starts at the top of the page
+  useEffect(() => { window.scrollTo(0, 0) }, [loc.pathname])
 
   const authed = user || isGuest
   if (!ready && !authed) return <div id="app"><div style={{ paddingTop: '42vh', textAlign: 'center', fontSize: '2.2rem' }}>🏋️</div></div>
 
   return (
     <>
-      <div id="app" className="vfade" key={location.hash}>
+      <div id="app" className="vfade" key={loc.pathname}>
         {!authed ? <Login /> : (
           <Routes>
             <Route path="/home" element={<Home />} />

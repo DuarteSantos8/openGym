@@ -28,21 +28,34 @@ export function loadStarterPlan() {
   toast('Starter plan loaded — Mon Push · Wed Pull · Fri Legs')
 }
 
+/* ============================ weight picker (shared: body weight + goal) ============================ */
+function WeightInput({ value, setValue, unit }) {
+  const clamp = x => Math.max(20, Math.min(300, Math.round((x || 0) * 10) / 10))
+  const range = useRef(null)
+  if (!range.current) { const s = value || 70; range.current = [Math.max(30, Math.round(s - 20)), Math.min(250, Math.round(s + 20))] }
+  const [lo, hi] = range.current
+  const sv = Math.max(lo, Math.min(hi, value))
+  const pct = ((sv - lo) / (hi - lo)) * 100
+  return <>
+    <div className="bwstep">
+      <button className="bw-pm" onClick={() => setValue(p => clamp(p - 0.1))} aria-label="minus">−</button>
+      <div className="bw-read">{fmtNum(value)}<span className="u"> {unit}</span></div>
+      <button className="bw-pm" onClick={() => setValue(p => clamp(p + 0.1))} aria-label="plus">+</button>
+    </div>
+    <input className="bw-slider" type="range" min={lo} max={hi} step="0.1" value={sv}
+      onChange={e => setValue(clamp(parseFloat(e.target.value)))}
+      style={{ '--track': `linear-gradient(90deg, var(--acc) ${pct}%, var(--bg2) ${pct}%)` }} />
+  </>
+}
+
 /* ============================ body weight ============================ */
 function BwSheet({ required, onDone, close }) {
   const st = useStore(s => s.S)
   const unit = st.unit
   const bw = lastBW(st)
-  const start = bw ? bw.w : 70
-  const [v, setV] = useState(start)
-  const clamp = x => Math.max(20, Math.min(300, Math.round((x || 0) * 10) / 10))
-  const set = x => setV(clamp(x))                 // absolute (slider)
-  const step = d => setV(p => clamp(p + d))       // relative (buttons/chips) — safe for rapid taps
-  // fixed slider window around the starting value (buttons/quick chips can go beyond)
-  const lo = Math.max(30, Math.round(start - 20))
-  const hi = Math.min(250, Math.round(start + 20))
+  const [v, setV] = useState(bw ? bw.w : 70)
   const save = () => {
-    const n = clamp(v)
+    const n = Math.round((v || 0) * 10) / 10
     if (!n || n <= 0) { toast('Enter a valid weight'); return }
     update(s => {
       const iso = todayISO()
@@ -58,14 +71,7 @@ function BwSheet({ required, onDone, close }) {
   return <>
     <h3>{required ? 'Quick check-in ⚖️' : 'Log body weight'}</h3>
     <div className="muted small">{required ? 'Slide or tap to set your weight — tracked before every workout so your curve stays honest.' : 'Today, ' + fmtDate(todayISO(), true)}</div>
-    <div className="bwstep">
-      <button className="bw-pm" onClick={() => step(-0.1)} aria-label="minus">−</button>
-      <div className="bw-read">{fmtNum(v)}<span className="u"> {unit}</span></div>
-      <button className="bw-pm" onClick={() => step(0.1)} aria-label="plus">+</button>
-    </div>
-    <input className="bw-slider" type="range" min={lo} max={hi} step="0.1"
-      value={Math.max(lo, Math.min(hi, v))} onChange={e => set(parseFloat(e.target.value))}
-      style={{ '--track': `linear-gradient(90deg, var(--acc) ${((Math.max(lo, Math.min(hi, v)) - lo) / (hi - lo)) * 100}%, var(--bg2) ${((Math.max(lo, Math.min(hi, v)) - lo) / (hi - lo)) * 100}%)` }} />
+    <WeightInput value={v} setValue={setV} unit={unit} />
     <div style={{ height: 14 }} />
     <button className="btn primary" onClick={save}>{required ? 'Save & start workout' : 'Save'}</button>
     {required && <>
@@ -99,16 +105,15 @@ export function bwDeltaColor(delta, currentW) {
 function GoalSheet({ close }) {
   const st = S()
   const bw = lastBW(st)
-  const [v, setV] = useState(st.targetW || (bw ? String(bw.w) : ''))
-  const ref = useRef(null)
-  useEffect(() => { setTimeout(() => { ref.current?.focus(); ref.current?.select() }, 250) }, [])
+  const [v, setV] = useState(st.targetW || (bw ? bw.w : 70))
   return <>
     <h3>Target weight 🎯</h3>
     <div className="muted small">Your goal is drawn as a line through the weight charts, and gains/losses are colored by whether they move toward it.</div>
-    <div className="bwin"><input ref={ref} type="number" inputMode="decimal" step="0.5" value={v} onChange={e => setV(e.target.value)} placeholder="0.0" /><span>{st.unit}</span></div>
+    <WeightInput value={v} setValue={setV} unit={st.unit} />
+    <div style={{ height: 14 }} />
     <button className="btn primary" onClick={() => {
-      const n = parseFloat(v)
-      if (!n || n <= 0 || n > 400) { toast('Enter a valid weight'); return }
+      const n = Math.round((v || 0) * 10) / 10
+      if (!n || n <= 0) { toast('Enter a valid weight'); return }
       update(s => { s.targetW = n }); close()
       const b = lastBW(S()); toast('Goal set: ' + fmtNum(n) + ' ' + st.unit + (b ? ' (' + fmtNum(Math.abs(n - b.w)) + ' to go)' : ''))
     }}>Save goal</button>

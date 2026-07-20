@@ -9,6 +9,12 @@ function Sheet({ sheet }) {
 
   const onTouchStart = e => {
     const el = ref.current
+    // a gesture that begins on a slider (or opted-out control) belongs to that control,
+    // not to the sheet's swipe-to-dismiss — so it keeps working while you drag
+    if (e.target.closest && e.target.closest('input[type=range], [data-nodrag]')) {
+      drag.current = { startY: null, delta: 0 }
+      return
+    }
     drag.current = { startY: el.scrollTop <= 0 ? e.touches[0].clientY : null, delta: 0 }
   }
   const onTouchMove = e => {
