@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions & contributing
+    url: https://github.com/DuarteSantos8/openGym/blob/main/CONTRIBUTING.md
+    about: Read the project layout, dev setup, and guidelines before opening an issue.

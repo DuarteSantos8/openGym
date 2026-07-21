@@ -1,0 +1,29 @@
+name: Feature request
+description: Suggest an idea or improvement for openGym
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: What are you trying to do that openGym doesn't support today?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed approach
+      description: How would you like it to work? Rough ideas are fine.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: deps
+    attributes:
+      label: Dependencies
+      description: >
+        openGym is intentionally dependency-light — new packages (front or back) are a hard
+        sell. See [CONTRIBUTING.md](../../CONTRIBUTING.md).
+      options:
+        - label: This doesn't require adding a new dependency
