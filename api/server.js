@@ -56,7 +56,12 @@ async function sendPush(userId, payload) {
   const body = JSON.stringify(payload);
   let dirty = false;
   await Promise.all(subs.map(async sub => {
-    try { await webpush.sendNotification({ endpoint: sub.endpoint, keys: sub.keys }, body); }
+    // urgency 'high' is the one lever we have over delivery speed — iOS/Android throttle
+    // low-urgency background push more aggressively under battery-saving modes. TTL is left
+    // at the library default (long) so a briefly-offline device still gets it once reconnected,
+    // rather than risking it being dropped for the sake of shaving off latency that TTL doesn't
+    // actually control anyway.
+    try { await webpush.sendNotification({ endpoint: sub.endpoint, keys: sub.keys }, body, { urgency: 'high' }); }
     catch (e) {
       console.error('push send failed', userId, e.statusCode, e.body || e.message);
       if (e.statusCode === 404 || e.statusCode === 410) {
@@ -125,7 +130,9 @@ setInterval(() => {
       tag: 'day-reminder'
     });
   }
-}, 60000).unref();
+// Checked every 10s (not 60s) — ticks aren't aligned to the top of the minute, so a 60s
+// interval could sit on your target minute for up to 59s before noticing. 10s caps that at ~9s.
+}, 10000).unref();
 
 /* ---------- sessions (signed cookie) ---------- */
 function sign(payload) {
