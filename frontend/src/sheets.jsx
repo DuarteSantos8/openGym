@@ -258,7 +258,7 @@ function ExConfig({ ex, existing, onSave, onDelete, close }) {
       {cardio && <span className="tag acc">🏃 Cardio</span>}
       <span className="tag">{ex.tg || ex.bp}</span><span className="tag">{ex.eq}</span>
     </div>
-    <div className="row" style={{ justifyContent: 'space-around', marginBottom: 18 }}>
+    <div className="row cfgrow" style={{ marginBottom: 18 }}>
       {cardio ? <>
         <Stepper label="Intervals" value={c.sets} step={1} decimal={false} onChange={v => setC(x => ({ ...x, sets: v }))} />
         <Stepper label="Minutes" value={c.min} step={1} decimal={false} onChange={v => setC(x => ({ ...x, min: v }))} />

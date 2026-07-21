@@ -29,11 +29,11 @@ button,.chip,.tile,.item,.wday,.cal-d,.ck,.swatch,.emoji-cell,.hm-c,#tabbar,.ste
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 /* html carries the theme background too, so the iOS scroll-lock (position:fixed on body)
    can never expose a grey strip below the app when a modal opens */
-html{font-size:16px;background:var(--bg);overscroll-behavior:none}
+html{font-size:16px;background:var(--bg);overscroll-behavior:none;overflow-x:clip}
 body{
   background:var(--bg); color:var(--txt);
   font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,sans-serif;
-  min-height:100vh; overscroll-behavior-y:none;
+  min-height:100vh; overscroll-behavior-y:none; overflow-x:clip;
   -webkit-font-smoothing:antialiased; touch-action:manipulation;
 }
 button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
@@ -144,6 +144,12 @@ a{color:var(--acc)}
 .step input{width:58px;text-align:center;background:none;border:none;font-size:1.05rem;font-weight:700;outline:none;
   -moz-appearance:textfield;appearance:textfield}
 .step input::-webkit-inner-spin-button{display:none}
+/* exercise-config sheet: three steppers side by side must shrink to fit narrow phones */
+.cfgrow{gap:8px}
+.cfgrow>div{flex:1;min-width:0}
+.cfgrow .step button{width:32px}
+.cfgrow .step input{width:100%;min-width:0}
+.cfgrow .small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* ---------- workout ---------- */
 .wprog{height:5px;background:var(--bg2);border-radius:99px;overflow:hidden;margin-bottom:14px}

@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.1.2 — 2026-07-21
+
+- 📱 Fixed the exercise-config sheet (Sets / Reps / Weight, and the cardio variant) overflowing the
+  screen edge on narrow phones — the Weight stepper was clipped and could make the whole page pan
+  sideways in iOS Safari. Steppers now shrink to fit the viewport. (#10)
+- 🛡️ Added a global horizontal-overflow guard so a single too-wide element can no longer knock the
+  page layout off-scale.
+
 ## v1.1.1 — 2026-07-21
 
 Reliability fixes for the push notifications shipped in v1.1.0, found through live testing:
