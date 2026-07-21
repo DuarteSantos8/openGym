@@ -58,6 +58,7 @@ async function sendPush(userId, payload) {
   await Promise.all(subs.map(async sub => {
     try { await webpush.sendNotification({ endpoint: sub.endpoint, keys: sub.keys }, body); }
     catch (e) {
+      console.error('push send failed', userId, e.statusCode, e.body || e.message);
       if (e.statusCode === 404 || e.statusCode === 410) {
         db.subs = db.subs.filter(s => s.endpoint !== sub.endpoint); dirty = true;
       }
