@@ -109,14 +109,10 @@ rest-timer-over, and a reminder on days you have a workout planned but haven't l
 Turn it on per-profile in **Settings → Notifications** (requires a signed-in passkey profile and
 HTTPS — see section 3).
 
-No setup needed server-side: VAPID keys are generated on first run and saved to `./data/vapid.json`.
-The one thing worth setting is your timezone, so the day reminder fires at the time you actually
-picked rather than UTC:
-
-```bash
-# .env
-TZ=Europe/Zurich
-```
+No setup needed server-side, and nothing to configure per timezone: VAPID keys are generated on
+first run and saved to `./data/vapid.json`, and each user's browser reports its own timezone
+automatically when they turn the reminder on — it fires at their local time, and follows them if
+they travel, regardless of what timezone the server itself runs in.
 
 ## 7. Updating
 
@@ -147,6 +143,6 @@ downloaded media are untouched.
 | Media didn't download | `docker compose logs media`. Re-run `docker compose up -d`, or run `./scripts/fetch-media.sh`. |
 | Port 8080 already used | Set `WEB_PORT=9090` in `.env` (and update `ORIGIN` for local testing). |
 | No "Notifications" option in Settings | Requires a signed-in profile and HTTPS (or `localhost`) — guest mode and plain HTTP over LAN can't subscribe. |
-| Day reminder fires at the wrong time | Set `TZ=Continent/City` in `.env` and restart (see section 6). Defaults to UTC. |
+| Day reminder fires at the wrong time | Toggle it off and on in Settings so it re-detects your browser's timezone (also happens automatically on every app load — see section 6). |
 | Want to reset a stuck login | Delete the cookie in your browser; sessions are just signed cookies. |
 | `docker compose pull` fails with "denied" / "unauthorized" | The prebuilt images aren't published yet, or need to be, or the GHCR package is still private — build from source instead (`docker compose up -d --build`). |
