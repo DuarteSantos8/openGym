@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- 🐳 Prebuilt Docker images published to `ghcr.io/duartesantos8/opengym-{api,web}` (amd64 + arm64)
+  via GitHub Actions, so self-hosting no longer requires building from source. `docker compose pull`
+  grabs them; `docker compose up -d --build` still builds locally if you'd rather.
 - 🔔 Push notifications: rest-timer-over alert (fires even if the app is closed) and an optional
   daily reminder on days you have a workout planned but haven't logged one yet. Opt in per-profile
   in Settings — requires a signed-in passkey profile. Backend gains one dependency (`web-push`);

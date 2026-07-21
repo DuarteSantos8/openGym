@@ -11,11 +11,14 @@ Requirements: [Docker](https://docs.docker.com/get-docker/) with the Compose plu
 git clone https://github.com/DuarteSantos8/gym-app opengym
 cd opengym
 cp .env.example .env
+docker compose pull   # prebuilt images from ghcr.io (amd64 + arm64) — or skip and build from source
 docker compose up -d
 ```
 
 - First start downloads the exercise images/GIFs (~140 MB) once into `app/img` and `app/gif`.
 - Open **http://localhost:8080** and create a profile with a passkey.
+- Rather build from source than pull prebuilt images? Skip `docker compose pull` and run
+  `docker compose up -d --build` instead — no Node needed locally either way.
 
 Check it's healthy:
 
@@ -117,6 +120,16 @@ TZ=Europe/Zurich
 
 ## 7. Updating
 
+Running prebuilt images:
+
+```bash
+git pull                    # picks up compose/config changes
+docker compose pull
+docker compose up -d
+```
+
+Building from source instead:
+
 ```bash
 git pull
 docker compose up -d --build
@@ -136,3 +149,4 @@ downloaded media are untouched.
 | No "Notifications" option in Settings | Requires a signed-in profile and HTTPS (or `localhost`) — guest mode and plain HTTP over LAN can't subscribe. |
 | Day reminder fires at the wrong time | Set `TZ=Continent/City` in `.env` and restart (see section 6). Defaults to UTC. |
 | Want to reset a stuck login | Delete the cookie in your browser; sessions are just signed cookies. |
+| `docker compose pull` fails with "denied" / "unauthorized" | The prebuilt images aren't published yet, or need to be, or the GHCR package is still private — build from source instead (`docker compose up -d --build`). |
