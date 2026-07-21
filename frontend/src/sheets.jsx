@@ -48,7 +48,7 @@ export function loadStarterPlan() {
 // attempt) makes the thumb's position unpredictable: every time it grows, everything already
 // placed on it shifts toward one side. A static range never has that problem, at the cost of
 // coarser precision per pixel — the +/- buttons cover exact values.
-const W_LO = 20, W_HI = 300
+const W_LO = 1, W_HI = 300
 function WeightInput({ value, setValue, unit }) {
   const clamp = x => Math.max(W_LO, Math.min(W_HI, Math.round((x || 0) * 10) / 10))
   const sv = Math.max(W_LO, Math.min(W_HI, value))
@@ -56,9 +56,15 @@ function WeightInput({ value, setValue, unit }) {
   const onSlide = v => setValue(clamp(v))
   return <>
     <div className="bwstep">
-      <button className="bw-pm" onClick={() => onSlide(value - 0.1)} aria-label="minus">−</button>
+      <button className="bw-pm" onClick={() => onSlide(value - 0.1)} aria-label="minus 0.1">−</button>
       <div className="bw-read">{fmtNum(value)}<span className="u"> {unit}</span></div>
-      <button className="bw-pm" onClick={() => onSlide(value + 0.1)} aria-label="plus">+</button>
+      <button className="bw-pm" onClick={() => onSlide(value + 0.1)} aria-label="plus 0.1">+</button>
+    </div>
+    <div className="chips" style={{ justifyContent: 'center', margin: '8px 0' }}>
+      <button className="chip" onClick={() => onSlide(value - 1)}>−1</button>
+      <button className="chip" onClick={() => onSlide(value - 0.5)}>−0.5</button>
+      <button className="chip" onClick={() => onSlide(value + 0.5)}>+0.5</button>
+      <button className="chip" onClick={() => onSlide(value + 1)}>+1</button>
     </div>
     <input className="bw-slider" type="range" min={W_LO} max={W_HI} step="0.5" value={sv}
       onChange={e => onSlide(parseFloat(e.target.value))}
