@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { EXDB, EXIDX, BODYPARTS, isCardio } from './lib/exercises.js'
@@ -44,29 +44,23 @@ export function loadStarterPlan() {
 }
 
 /* ============================ weight picker (shared: body weight + goal) ============================ */
+// Fixed range, not a moving window — a window that resizes itself mid-drag (the previous
+// attempt) makes the thumb's position unpredictable: every time it grows, everything already
+// placed on it shifts toward one side. A static range never has that problem, at the cost of
+// coarser precision per pixel — the +/- buttons cover exact values.
+const W_LO = 20, W_HI = 300
 function WeightInput({ value, setValue, unit }) {
-  const clamp = x => Math.max(20, Math.min(300, Math.round((x || 0) * 10) / 10))
-  const HALF = 60 // slider window half-width — generous enough that most values never need to extend it
-  const range = useRef(null)
-  if (!range.current) { const s = value || 70; range.current = [Math.max(20, Math.round(s - HALF)), Math.min(300, Math.round(s + HALF))] }
-  const [lo, hi] = range.current
-  const sv = Math.max(lo, Math.min(hi, value))
-  const pct = ((sv - lo) / (hi - lo)) * 100
-  // Dragging (or stepping) to either edge extends the window further instead of getting stuck
-  // there — the old fixed window (computed once, ±20) is exactly what capped the slider at ~90kg.
-  const onSlide = v => {
-    const n = clamp(v)
-    if (n <= lo && lo > 20) range.current = [Math.max(20, lo - HALF), hi]
-    if (n >= hi && hi < 300) range.current = [lo, Math.min(300, hi + HALF)]
-    setValue(n)
-  }
+  const clamp = x => Math.max(W_LO, Math.min(W_HI, Math.round((x || 0) * 10) / 10))
+  const sv = Math.max(W_LO, Math.min(W_HI, value))
+  const pct = ((sv - W_LO) / (W_HI - W_LO)) * 100
+  const onSlide = v => setValue(clamp(v))
   return <>
     <div className="bwstep">
       <button className="bw-pm" onClick={() => onSlide(value - 0.1)} aria-label="minus">−</button>
       <div className="bw-read">{fmtNum(value)}<span className="u"> {unit}</span></div>
       <button className="bw-pm" onClick={() => onSlide(value + 0.1)} aria-label="plus">+</button>
     </div>
-    <input className="bw-slider" type="range" min={lo} max={hi} step="0.1" value={sv}
+    <input className="bw-slider" type="range" min={W_LO} max={W_HI} step="0.5" value={sv}
       onChange={e => onSlide(parseFloat(e.target.value))}
       style={{ '--track': `linear-gradient(90deg, var(--acc) ${pct}%, var(--bg2) ${pct}%)` }} />
   </>
