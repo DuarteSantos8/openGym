@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.2.1 — 2026-07-22
+## v1.1.3 — 2026-07-22
 
 - ⌨️ Weight and other numeric fields now accept a comma as decimal separator ("33,5") — iOS
   decimal keyboards in many locales only offer a comma, which previously reset the field to 0.
