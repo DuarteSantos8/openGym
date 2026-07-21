@@ -328,5 +328,9 @@ export default {
   'Delete “{0}”?': 'Удалить «{0}»?',
   'It will be removed from your routines. Already-logged workouts keep their sets.': 'Оно будет убрано из ваших программ. Записанные тренировки сохранят свои подходы.',
   'Exercise deleted': 'Упражнение удалено',
-  'Finish your current workout first': 'Сначала завершите текущую тренировку'
+  'Finish your current workout first': 'Сначала завершите текущую тренировку',
+  'Description (optional) — setup, cues, anything you want to remember': 'Описание (необязательно) — настройка, подсказки, всё, что хотите запомнить',
+  'Delete exercise': 'Удалить упражнение',
+  'Edit or delete this exercise': 'Изменить или удалить это упражнение',
+  'Remove from routine': 'Убрать из программы'
 }

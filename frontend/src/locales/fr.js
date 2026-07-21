@@ -328,5 +328,9 @@ export default {
   'Delete “{0}”?': 'Supprimer « {0} » ?',
   'It will be removed from your routines. Already-logged workouts keep their sets.': 'Il sera retiré de vos routines. Les séances déjà enregistrées gardent leurs séries.',
   'Exercise deleted': 'Exercice supprimé',
-  'Finish your current workout first': 'Terminez d’abord votre séance en cours'
+  'Finish your current workout first': 'Terminez d’abord votre séance en cours',
+  'Description (optional) — setup, cues, anything you want to remember': 'Description (facultatif) — installation, conseils, ce que vous voulez retenir',
+  'Delete exercise': 'Supprimer l’exercice',
+  'Edit or delete this exercise': 'Modifier ou supprimer cet exercice',
+  'Remove from routine': 'Retirer de la routine'
 }

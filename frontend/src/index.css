@@ -134,6 +134,9 @@ a{color:var(--acc)}
 .input{width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:12px;
   padding:13px 14px;font-size:1rem;outline:none}
 .input:focus{border-color:var(--acc)}
+textarea.input{min-height:88px;resize:vertical;line-height:1.45}
+.exnote{background:var(--bg2);border-radius:12px;padding:12px 14px;line-height:1.5;
+  white-space:pre-wrap;font-size:.92rem;margin-bottom:10px}
 .search{position:relative}
 .search .input{padding-left:40px}
 .search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:17px;height:17px;

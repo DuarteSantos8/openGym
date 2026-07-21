@@ -328,5 +328,9 @@ export default {
   'Delete “{0}”?': '“{0}” 삭제할까요?',
   'It will be removed from your routines. Already-logged workouts keep their sets.': '루틴에서 제거됩니다. 이미 기록된 운동은 세트를 유지합니다.',
   'Exercise deleted': '운동 삭제됨',
-  'Finish your current workout first': '진행 중인 운동을 먼저 마치세요'
+  'Finish your current workout first': '진행 중인 운동을 먼저 마치세요',
+  'Description (optional) — setup, cues, anything you want to remember': '설명 (선택) — 세팅, 큐, 기억하고 싶은 모든 것',
+  'Delete exercise': '운동 삭제',
+  'Edit or delete this exercise': '이 운동 편집 또는 삭제',
+  'Remove from routine': '루틴에서 제거'
 }

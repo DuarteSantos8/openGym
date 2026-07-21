@@ -328,5 +328,9 @@ export default {
   'Delete “{0}”?': '“{0}” silinsin mi?',
   'It will be removed from your routines. Already-logged workouts keep their sets.': 'Rutinlerinden kaldırılacak. Kayıtlı antrenmanlar setlerini korur.',
   'Exercise deleted': 'Egzersiz silindi',
-  'Finish your current workout first': 'Önce mevcut antrenmanını bitir'
+  'Finish your current workout first': 'Önce mevcut antrenmanını bitir',
+  'Description (optional) — setup, cues, anything you want to remember': 'Açıklama (isteğe bağlı) — kurulum, ipuçları, hatırlamak istediklerin',
+  'Delete exercise': 'Egzersizi sil',
+  'Edit or delete this exercise': 'Bu egzersizi düzenle veya sil',
+  'Remove from routine': 'Rutinden çıkar'
 }

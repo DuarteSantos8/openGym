@@ -328,5 +328,9 @@ export default {
   'Delete “{0}”?': '“{0}” हटाएं?',
   'It will be removed from your routines. Already-logged workouts keep their sets.': 'यह आपकी रूटीन से हट जाएगी। दर्ज की गई वर्कआउट में सेट बने रहेंगे।',
   'Exercise deleted': 'एक्सरसाइज़ हटाई गई',
-  'Finish your current workout first': 'पहले चल रही वर्कआउट पूरी करें'
+  'Finish your current workout first': 'पहले चल रही वर्कआउट पूरी करें',
+  'Description (optional) — setup, cues, anything you want to remember': 'विवरण (वैकल्पिक) — सेटअप, संकेत, जो कुछ भी याद रखना चाहें',
+  'Delete exercise': 'एक्सरसाइज़ हटाएं',
+  'Edit or delete this exercise': 'इस एक्सरसाइज़ को संपादित या हटाएं',
+  'Remove from routine': 'रूटीन से हटाएं'
 }

@@ -7,13 +7,18 @@ Custom exercises — add movements that aren't in the catalogue. (#11)
 - ✨ **Create your own exercise** from the exercise picker or the Exercises tab: a name and a
   body part is all it takes. Your search text is pre-filled as the name, so "no match" flows
   straight into "create it".
+- 📝 **Optional description** — setup, cues, anything you want to remember. It shows on the
+  exercise's detail and config sheets (where a built-in exercise would show its animation),
+  and it's searchable, so you can find your own exercises by their cues too.
 - 🏋️ Custom exercises behave like built-in ones everywhere — routines, supersets, workout
   logging, weight suggestions, PRs, stats and history. The animation stays blank by design.
 - 🏃 Pick the *cardio* body part and it logs time + speed instead of weight × reps, like the
   built-in cardio exercises.
-- ✏️ Edit (rename / change body part) or delete your custom exercises from their detail sheet.
-  Deleting removes them from your routines; already-logged workouts keep their sets and still
-  show the exercise name.
+- ✏️ Edit (rename, change body part or description) or delete your custom exercises — from
+  their detail sheet in the Exercises tab, or straight from the exercise inside a routine via
+  "Edit or delete this exercise". Deleting removes them from your routines; already-logged
+  workouts keep their sets and still show the exercise name. (The routine sheet's old "Remove
+  exercise" button is now labelled "Remove from routine", so the two are no longer confusable.)
 - 🌍 Fully translated into all 12 UI languages, and synced to your profile like the rest of
   your data.
 

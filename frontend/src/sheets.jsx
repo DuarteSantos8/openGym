@@ -161,6 +161,7 @@ function ExerciseDetail({ ex, close }) {
       <span className="tag">🛠 {t(ex.eq)}</span>
       {(ex.sm || []).slice(0, 3).map((s, i) => <span key={i} className="tag">{t(s)}</span>)}
     </div>
+    {ex.desc && <div className="exnote">{ex.desc}</div>}
     {best > 0 && <div className="small" style={{ marginBottom: 6 }}>🏆 {t('Best:')} <b className="accent">{fmtNum(best)} {st.unit}</b>{last ? ` · ${t('last')} ${fmtDate(last.d)}: ${last.sets.map(s => setLabel(ex.id, s)).join(', ')}` : ''}</div>}
     <button className="btn primary" style={{ margin: '10px 0 4px' }} onClick={() => addToRoutineSheet(ex)}>{t('＋ Add to my plan')}</button>
     {ex.custom && <div className="row" style={{ gap: 8, marginTop: 8 }}>
@@ -211,17 +212,19 @@ export const addToRoutineSheet = ex => ui().openSheet(close => <AddToRoutine ex=
 function CustomExForm({ existing, prefill, onDone, close }) {
   const [n, setN] = useState(existing ? existing.n : (prefill || ''))
   const [bp, setBp] = useState(existing ? existing.bp : '')
+  const [desc, setDesc] = useState(existing ? (existing.desc || '') : '')
   const save = () => {
     const name = n.trim()
     if (!name) { toast(t('Give it a name')); return }
     if (!bp) { toast(t('Pick a body part')); return }
     const dup = allExercises(S()).find(e => e.n.toLowerCase() === name.toLowerCase() && e.id !== (existing || {}).id)
     if (dup) { toast(t('“{0}” already exists', dup.n)); return }
+    const d = desc.trim().slice(0, 1000)
     let id = existing && existing.id
-    if (existing) update(s => { const c = (s.customEx || []).find(x => x.id === id); if (c) { c.n = name; c.bp = bp } })
+    if (existing) update(s => { const c = (s.customEx || []).find(x => x.id === id); if (c) { c.n = name; c.bp = bp; c.desc = d } })
     else {
       id = 'c' + uid()
-      update(s => { (s.customEx = s.customEx || []).push({ id, n: name, bp, tg: '', eq: 'custom', custom: true }) })
+      update(s => { (s.customEx = s.customEx || []).push({ id, n: name, bp, desc: d, tg: '', eq: 'custom', custom: true }) })
     }
     close()
     toast(existing ? t('Saved ✓') : t('“{0}” created ✓', name))
@@ -235,7 +238,11 @@ function CustomExForm({ existing, prefill, onDone, close }) {
       {BODYPARTS.map(b => <button key={b} className={'chip' + (bp === b ? ' on' : '')} onClick={() => setBp(b)}>{t(b)}</button>)}
     </div>
     {bp === 'cardio' && <div className="small dim" style={{ marginBottom: 10 }}>🏃 {t('Cardio exercises log time + speed instead of weight × reps.')}</div>}
+    <textarea className="input" rows={4} maxLength={1000} placeholder={t('Description (optional) — setup, cues, anything you want to remember')}
+      value={desc} onChange={e => setDesc(e.target.value)} />
+    <div style={{ height: 14 }} />
     <button className="btn primary" onClick={save}>{existing ? t('Save') : t('Create exercise')}</button>
+    {existing && <><div style={{ height: 8 }} /><button className="btn danger" onClick={() => { close(); deleteCustomEx(existing) }}>🗑 {t('Delete exercise')}</button></>}
   </>
 }
 export const customExSheet = (existing, onDone, prefill) => ui().openSheet(close => <CustomExForm existing={existing} prefill={prefill} onDone={onDone} close={close} />)
@@ -278,7 +285,7 @@ function ExercisePicker({ onPick, close }) {
   const all = allExercises(st)
   let f = all.filter(e =>
     (bp === '★' ? usage[e.id] : (!bp || e.bp === bp)) &&
-    (!ql || e.n.toLowerCase().includes(ql) || e.tg.includes(ql) || e.eq.includes(ql)))
+    (!ql || e.n.toLowerCase().includes(ql) || e.tg.includes(ql) || e.eq.includes(ql) || (e.desc || '').toLowerCase().includes(ql)))
   if (bp === '★') f = [...f].sort((a, b) => (usage[b.id] - usage[a.id]) || (a.n < b.n ? -1 : 1))
   const chosenCount = Object.keys(usage).length
   return <>
@@ -323,6 +330,7 @@ function ExConfig({ ex, existing, onSave, onDelete, close }) {
       {cardio && <span className="tag acc">🏃 {t('Cardio')}</span>}
       <span className="tag">{t(ex.tg || ex.bp)}</span><span className="tag">{t(ex.eq)}</span>
     </div>
+    {ex.desc && <div className="exnote">{ex.desc}</div>}
     <div className="row cfgrow" style={{ marginBottom: 18 }}>
       {cardio ? <>
         <Stepper label={t('Intervals')} value={c.sets} step={1} decimal={false} onChange={v => setC(x => ({ ...x, sets: v }))} />
@@ -335,7 +343,8 @@ function ExConfig({ ex, existing, onSave, onDelete, close }) {
       </>}
     </div>
     <button className="btn primary" onClick={save}>{existing ? t('Save') : t('Add to routine')}</button>
-    {onDelete && <><div style={{ height: 8 }} /><button className="btn danger" onClick={() => { close(); onDelete() }}>{t('Remove exercise')}</button></>}
+    {ex.custom && <><div style={{ height: 8 }} /><button className="btn" onClick={() => { close(); customExSheet(ex) }}>✏️ {t('Edit or delete this exercise')}</button></>}
+    {onDelete && <><div style={{ height: 8 }} /><button className="btn danger" onClick={() => { close(); onDelete() }}>{t('Remove from routine')}</button></>}
   </>
 }
 export const exConfigSheet = (ex, existing, onSave, onDelete) => ui().openSheet(close => <ExConfig ex={ex} existing={existing} onSave={onSave} onDelete={onDelete} close={close} />)
