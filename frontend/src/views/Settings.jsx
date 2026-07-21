@@ -133,11 +133,6 @@ function NotificationsCard({ S, update, toast }) {
         <div><span>Push notifications</span><div className="small muted">Rest-timer alerts, even if openGym is closed.</div></div>
         <button className={'chip' + (on ? ' on' : '')} disabled={busy} onClick={toggle}>{on ? 'On 🔔' : 'Off 🔕'}</button>
       </div>
-      <div className="small dim" style={{ margin: '2px 0 6px' }}>
-        ⚠️ Delivery isn't instant or guaranteed — it depends on Apple/Google's push service and your
-        phone's battery settings, and can arrive up to a couple minutes late (or occasionally not at
-        all). Don't rely on it for anything time-critical.
-      </div>
       {on && <>
         <div className="row between" style={{ padding: '8px 0' }}>
           <span>Workout day reminder</span>
