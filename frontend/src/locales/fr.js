@@ -334,5 +334,9 @@ export default {
   'Edit or delete this exercise': 'Modifier ou supprimer cet exercice',
   'Remove from routine': 'Retirer de la routine',
   'Minimize': 'Réduire',
-  'Expand': 'Agrandir'
+  'Expand': 'Agrandir',
+  'Invite code': 'Code d’invitation',
+  'This app is invite-only — enter the code you were given.': 'Cette appli est sur invitation — saisissez le code qu’on vous a donné.',
+  'An invite code is required': 'Un code d’invitation est requis',
+  'Admin dashboard': 'Tableau d’administration'
 }

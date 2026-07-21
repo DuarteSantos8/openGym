@@ -15,6 +15,10 @@ const DATA = process.env.DATA_DIR || '/data';
 const RP_ID = process.env.RP_ID || 'localhost';
 const ORIGIN = process.env.ORIGIN || 'http://localhost:8080';
 const RP_NAME = process.env.RP_NAME || 'openGym';
+// Admin dashboard (issue): admins are matched by uid; INVITE_ONLY gates new signups behind a
+// code the admin generates. Both default off so a fresh self-hosted instance stays open.
+const ADMIN_UIDS = (process.env.ADMIN_UIDS || '').split(',').map(s => s.trim()).filter(Boolean);
+const INVITE_ONLY = /^(1|true|yes|on)$/i.test(process.env.INVITE_ONLY || '');
 const SESSION_DAYS = 365;
 const MAX_BODY = 5 * 1024 * 1024;
 // Secure cookies require HTTPS; over plain http://localhost the flag would drop the cookie
@@ -28,9 +32,11 @@ if (!fs.existsSync(secretFile)) fs.writeFileSync(secretFile, crypto.randomBytes(
 const SECRET = fs.readFileSync(secretFile, 'utf8').trim();
 
 const dbFile = path.join(DATA, 'db.json');
-let db = { users: [], creds: [], subs: [] };
+let db = { users: [], creds: [], subs: [], invites: [] };
 try { db = JSON.parse(fs.readFileSync(dbFile, 'utf8')); } catch {}
 db.subs = db.subs || [];
+db.invites = db.invites || [];
+const isAdmin = user => !!user && (user.admin === true || ADMIN_UIDS.includes(user.id));
 function saveDb() { atomicWrite(dbFile, JSON.stringify(db, null, 2)); }
 function atomicWrite(file, content) {
   const tmp = file + '.tmp';
@@ -163,7 +169,16 @@ function readSession(req) {
   if (!payload) return null;
   const [uid, exp] = payload.split(':');
   if (!uid || +exp < Date.now()) return null;
-  return db.users.find(u => u.id === uid) || null;
+  const user = db.users.find(u => u.id === uid) || null;
+  if (user && user.disabled) return null;   // disabled accounts are locked out everywhere
+  return user;
+}
+// Guard for /api/admin/* — resolves the caller and 401/403s if they aren't an admin.
+function requireAdmin(req, res) {
+  const user = readSession(req);
+  if (!user) { json(res, 401, { error: 'not signed in' }); return null; }
+  if (!isAdmin(user)) { json(res, 403, { error: 'forbidden' }); return null; }
+  return user;
 }
 function sessionCookie(uid) {
   return `gymsid=${makeSession(uid)}; Path=/; Max-Age=${SESSION_DAYS * 86400}; HttpOnly;${SECURE} SameSite=Lax`;
@@ -212,16 +227,22 @@ const b64uToBuf = s => Buffer.from(s, 'base64url');
 const routes = {
   'GET /api/health': async (req, res) => json(res, 200, { ok: true, users: db.users.length }),
 
+  // Public config the login screen needs before anyone is signed in.
+  'GET /api/config': async (req, res) => json(res, 200, { invite_only: INVITE_ONLY }),
+
   'GET /api/me': async (req, res) => {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
-    json(res, 200, { user: { id: user.id, name: user.name } });
+    json(res, 200, { user: { id: user.id, name: user.name, admin: isAdmin(user) } });
   },
 
   'POST /api/register/options': async (req, res) => {
     const body = await readBody(req);
     const name = String(body.name || '').trim().slice(0, 40);
     if (!name) return json(res, 400, { error: 'name required' });
+    const code = String(body.code || '').trim().toUpperCase();
+    if (INVITE_ONLY && !db.invites.some(i => i.code === code && !i.usedBy && !i.revoked))
+      return json(res, 403, { error: 'a valid invite code is required' });
     const uid = crypto.randomBytes(12).toString('base64url');
     const options = await generateRegistrationOptions({
       rpName: RP_NAME, rpID: RP_ID,
@@ -230,7 +251,7 @@ const routes = {
       authenticatorSelection: { residentKey: 'required', userVerification: 'preferred' },
       excludeCredentials: []
     });
-    const cid = putChallenge({ challenge: options.challenge, name, uid });
+    const cid = putChallenge({ challenge: options.challenge, name, uid, code });
     json(res, 200, { cid, options });
   },
 
@@ -251,7 +272,14 @@ const routes = {
     if (!verification.verified) return json(res, 400, { error: 'not verified' });
     const { credential } = verification.registrationInfo;
     if (db.creds.find(x => x.id === credential.id)) return json(res, 409, { error: 'credential already registered' });
+    // Re-check the invite at the last moment (it may have been used/revoked since options), then burn it.
+    let invite = null;
+    if (INVITE_ONLY) {
+      invite = db.invites.find(i => i.code === c.code && !i.usedBy && !i.revoked);
+      if (!invite) return json(res, 403, { error: 'invite code is no longer valid — ask for a new one' });
+    }
     const user = { id: c.uid, name: c.name, created: new Date().toISOString() };
+    if (invite) { user.invitedBy = invite.code; invite.usedBy = user.id; invite.usedAt = user.created; }
     db.users.push(user);
     db.creds.push({
       id: credential.id, userId: user.id,
@@ -260,7 +288,7 @@ const routes = {
       transports: body.credential?.response?.transports || []
     });
     saveDb();
-    json(res, 200, { user: { id: user.id, name: user.name } }, { 'Set-Cookie': sessionCookie(user.id) });
+    json(res, 200, { user: { id: user.id, name: user.name, admin: isAdmin(user) } }, { 'Set-Cookie': sessionCookie(user.id) });
   },
 
   'POST /api/login/options': async (req, res) => {
@@ -298,7 +326,8 @@ const routes = {
     saveDb();
     const user = db.users.find(u => u.id === cred.userId);
     if (!user) return json(res, 500, { error: 'user missing' });
-    json(res, 200, { user: { id: user.id, name: user.name } }, { 'Set-Cookie': sessionCookie(user.id) });
+    if (user.disabled) return json(res, 403, { error: 'this account has been disabled' });
+    json(res, 200, { user: { id: user.id, name: user.name, admin: isAdmin(user) } }, { 'Set-Cookie': sessionCookie(user.id) });
   },
 
   'POST /api/logout': async (req, res) => json(res, 200, { ok: true }, { 'Set-Cookie': clearCookie }),
@@ -366,6 +395,85 @@ const routes = {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
     cancelRestTimer(user.id);
+    json(res, 200, { ok: true });
+  },
+
+  /* ---------- admin dashboard ---------- */
+  // One row per user, cheap enough for a personal instance (reads each state file once).
+  'GET /api/admin/users': async (req, res) => {
+    if (!requireAdmin(req, res)) return;
+    const users = db.users.map(u => {
+      const S = readState(u.id) || {};
+      const workouts = S.workouts || [];
+      const last = workouts[workouts.length - 1];
+      return {
+        id: u.id, name: u.name, created: u.created || null,
+        disabled: !!u.disabled, admin: isAdmin(u), invitedBy: u.invitedBy || null,
+        workouts: workouts.length,
+        lastWorkout: last ? last.d : null,
+        lastSync: S._ts || null,
+        hasPush: db.subs.some(s => s.userId === u.id)
+      };
+    });
+    json(res, 200, { users, invite_only: INVITE_ONLY });
+  },
+
+  // Drill-down: full workout history + body-weight log for one user.
+  'GET /api/admin/user': async (req, res) => {
+    if (!requireAdmin(req, res)) return;
+    const id = new URL(req.url, 'http://x').searchParams.get('id');
+    const u = db.users.find(x => x.id === id);
+    if (!u) return json(res, 404, { error: 'no such user' });
+    const S = readState(u.id) || {};
+    json(res, 200, {
+      user: { id: u.id, name: u.name, created: u.created || null, disabled: !!u.disabled, admin: isAdmin(u), invitedBy: u.invitedBy || null },
+      unit: S.unit || 'kg',
+      lastSync: S._ts || null,
+      routines: (S.routines || []).map(r => ({ id: r.id, name: r.name, emoji: r.emoji, count: (r.ex || []).length })),
+      bodyweight: S.bodyweight || [],
+      workouts: (S.workouts || []).slice().reverse()   // newest first for display
+    });
+  },
+
+  'POST /api/admin/user/disable': async (req, res) => {
+    if (!requireAdmin(req, res)) return;
+    const body = await readBody(req);
+    const u = db.users.find(x => x.id === body.id);
+    if (!u) return json(res, 404, { error: 'no such user' });
+    if (isAdmin(u)) return json(res, 400, { error: 'cannot disable an admin' });
+    u.disabled = !!body.disabled;
+    saveDb();
+    json(res, 200, { ok: true, id: u.id, disabled: u.disabled });
+  },
+
+  'GET /api/admin/invites': async (req, res) => {
+    if (!requireAdmin(req, res)) return;
+    // resolve usedBy uid → name for display
+    const invites = db.invites.map(i => ({
+      ...i, usedByName: i.usedBy ? (db.users.find(u => u.id === i.usedBy) || {}).name || null : null
+    }));
+    json(res, 200, { invites, invite_only: INVITE_ONLY });
+  },
+
+  'POST /api/admin/invites/new': async (req, res) => {
+    const admin = requireAdmin(req, res); if (!admin) return;
+    const body = await readBody(req);
+    let code;
+    do { code = crypto.randomBytes(4).toString('hex').toUpperCase(); } while (db.invites.some(i => i.code === code));
+    const invite = { code, note: String(body.note || '').slice(0, 60), createdBy: admin.id, created: new Date().toISOString() };
+    db.invites.push(invite);
+    saveDb();
+    json(res, 200, { invite });
+  },
+
+  'POST /api/admin/invites/revoke': async (req, res) => {
+    if (!requireAdmin(req, res)) return;
+    const body = await readBody(req);
+    const inv = db.invites.find(i => i.code === String(body.code || '').toUpperCase());
+    if (!inv) return json(res, 404, { error: 'no such code' });
+    if (inv.usedBy) return json(res, 400, { error: 'already used — cannot revoke' });
+    db.invites = db.invites.filter(i => i.code !== inv.code);
+    saveDb();
     json(res, 200, { ok: true });
   }
 };

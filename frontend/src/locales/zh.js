@@ -334,5 +334,9 @@ export default {
   'Edit or delete this exercise': '编辑或删除此动作',
   'Remove from routine': '从计划中移除',
   'Minimize': '缩小',
-  'Expand': '放大'
+  'Expand': '放大',
+  'Invite code': '邀请码',
+  'This app is invite-only — enter the code you were given.': '此应用仅限邀请——请输入你收到的邀请码。',
+  'An invite code is required': '需要邀请码',
+  'Admin dashboard': '管理后台'
 }

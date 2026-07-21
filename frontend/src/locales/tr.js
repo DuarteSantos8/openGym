@@ -334,5 +334,9 @@ export default {
   'Edit or delete this exercise': 'Bu egzersizi düzenle veya sil',
   'Remove from routine': 'Rutinden çıkar',
   'Minimize': 'Küçült',
-  'Expand': 'Büyüt'
+  'Expand': 'Büyüt',
+  'Invite code': 'Davet kodu',
+  'This app is invite-only — enter the code you were given.': 'Bu uygulama yalnızca davetle — sana verilen kodu gir.',
+  'An invite code is required': 'Bir davet kodu gerekli',
+  'Admin dashboard': 'Yönetici paneli'
 }

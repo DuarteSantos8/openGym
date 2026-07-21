@@ -334,5 +334,9 @@ export default {
   'Edit or delete this exercise': 'इस एक्सरसाइज़ को संपादित या हटाएं',
   'Remove from routine': 'रूटीन से हटाएं',
   'Minimize': 'छोटा करें',
-  'Expand': 'बड़ा करें'
+  'Expand': 'बड़ा करें',
+  'Invite code': 'इनवाइट कोड',
+  'This app is invite-only — enter the code you were given.': 'यह ऐप केवल इनवाइट से है — आपको दिया गया कोड डालें।',
+  'An invite code is required': 'एक इनवाइट कोड आवश्यक है',
+  'Admin dashboard': 'एडमिन डैशबोर्ड'
 }

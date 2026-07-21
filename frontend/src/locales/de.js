@@ -352,5 +352,9 @@ export default {
   'Edit or delete this exercise': 'Übung bearbeiten oder löschen',
   'Remove from routine': 'Aus Routine entfernen',
   'Minimize': 'Verkleinern',
-  'Expand': 'Vergrössern'
+  'Expand': 'Vergrössern',
+  'Invite code': 'Einladungscode',
+  'This app is invite-only — enter the code you were given.': 'Diese App ist nur mit Einladung — gib den Code ein, den du erhalten hast.',
+  'An invite code is required': 'Ein Einladungscode ist erforderlich',
+  'Admin dashboard': 'Admin-Dashboard'
 }

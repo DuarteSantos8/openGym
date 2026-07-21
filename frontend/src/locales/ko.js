@@ -334,5 +334,9 @@ export default {
   'Edit or delete this exercise': '이 운동 편집 또는 삭제',
   'Remove from routine': '루틴에서 제거',
   'Minimize': '축소',
-  'Expand': '확대'
+  'Expand': '확대',
+  'Invite code': '초대 코드',
+  'This app is invite-only — enter the code you were given.': '이 앱은 초대 전용입니다 — 받은 코드를 입력하세요.',
+  'An invite code is required': '초대 코드가 필요합니다',
+  'Admin dashboard': '관리자 대시보드'
 }

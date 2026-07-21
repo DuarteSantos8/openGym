@@ -44,10 +44,13 @@ export default function Settings() {
 
     <div className="card">
       <h2>{t('Account')}</h2>
-      {user ? <div className="row between">
+      {user ? <>
+        <div className="row between">
         <div><b>{user.name}</b><div className="small muted">{t('Signed in with passkey — data syncs to this profile.')}</div></div>
         <button className="btn sm danger" onClick={() => confirmSheet({ title: t('Sign out?'), message: t('Your data is synced to your profile first, then cleared from this device.'), confirmText: t('Sign out'), danger: true, onConfirm: () => { signOut(); nav('/home') } })}>{t('Sign out')}</button>
-      </div> : <>
+        </div>
+        {user.admin && <><div style={{ height: 10 }} /><button className="btn sm" onClick={() => nav('/admin')}>🛠️ {t('Admin dashboard')}</button></>}
+      </> : <>
         <div className="small muted" style={{ marginBottom: 10 }}>{t('Guest mode — data lives only in this browser. Create a passkey profile to keep it safe and separate per person.')}</div>
         {webauthnOK() ? <>
           <button className="btn primary" onClick={registerHere}>✨ {t('Create passkey profile')}</button>
