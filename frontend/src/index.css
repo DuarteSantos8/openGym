@@ -162,6 +162,8 @@ textarea.input{min-height:88px;resize:vertical;line-height:1.45}
 .exmedia img{width:100%;height:340px;object-fit:contain;display:block}
 .exmedia .gifhint{position:absolute;right:10px;bottom:10px;background:rgba(0,0,0,.62);color:#fff;
   border-radius:99px;padding:4px 11px;font-size:.72rem;font-weight:600}
+.exmedia .giftoggle{position:absolute;left:10px;bottom:10px;background:rgba(0,0,0,.62);color:#fff;
+  border:none;border-radius:99px;padding:5px 12px;font-size:.72rem;font-weight:600;cursor:pointer}
 .sethead{display:flex;align-items:center;gap:9px;padding-bottom:2px;
   font-size:.66rem;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
 .sethead .n-sp{width:26px;flex:none}
@@ -333,6 +335,8 @@ h4.sec{font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(-
 .ss-ex{position:relative}
 .ss-amp{text-align:center;font-size:1.3rem;font-weight:800;color:var(--acc);margin:14px 0 8px}
 .exmedia.compact img{height:190px}
+/* minimized workout animation — small enough to keep the set rows in view (issue #12) */
+.exmedia.mini img{height:88px}
 
 /* ---------- home: today's session row under the week strip ---------- */
 .today-row{display:flex;align-items:center;justify-content:space-between;gap:10px;

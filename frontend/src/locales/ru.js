@@ -332,5 +332,7 @@ export default {
   'Description (optional) — setup, cues, anything you want to remember': 'Описание (необязательно) — настройка, подсказки, всё, что хотите запомнить',
   'Delete exercise': 'Удалить упражнение',
   'Edit or delete this exercise': 'Изменить или удалить это упражнение',
-  'Remove from routine': 'Убрать из программы'
+  'Remove from routine': 'Убрать из программы',
+  'Minimize': 'Свернуть',
+  'Expand': 'Развернуть'
 }

@@ -332,5 +332,7 @@ export default {
   'Description (optional) — setup, cues, anything you want to remember': 'विवरण (वैकल्पिक) — सेटअप, संकेत, जो कुछ भी याद रखना चाहें',
   'Delete exercise': 'एक्सरसाइज़ हटाएं',
   'Edit or delete this exercise': 'इस एक्सरसाइज़ को संपादित या हटाएं',
-  'Remove from routine': 'रूटीन से हटाएं'
+  'Remove from routine': 'रूटीन से हटाएं',
+  'Minimize': 'छोटा करें',
+  'Expand': 'बड़ा करें'
 }

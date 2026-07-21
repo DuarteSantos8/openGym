@@ -332,5 +332,7 @@ export default {
   'Description (optional) — setup, cues, anything you want to remember': 'Descrição (opcional) — preparação, dicas, o que quiseres lembrar',
   'Delete exercise': 'Eliminar exercício',
   'Edit or delete this exercise': 'Editar ou eliminar este exercício',
-  'Remove from routine': 'Remover da rotina'
+  'Remove from routine': 'Remover da rotina',
+  'Minimize': 'Minimizar',
+  'Expand': 'Ampliar'
 }

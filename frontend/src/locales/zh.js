@@ -332,5 +332,7 @@ export default {
   'Description (optional) — setup, cues, anything you want to remember': '描述（可选）——设置、要点，任何你想记住的内容',
   'Delete exercise': '删除动作',
   'Edit or delete this exercise': '编辑或删除此动作',
-  'Remove from routine': '从计划中移除'
+  'Remove from routine': '从计划中移除',
+  'Minimize': '缩小',
+  'Expand': '放大'
 }

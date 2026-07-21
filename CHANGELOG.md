@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.1.3 — 2026-07-22
+
+- 🔎 **Minimize the exercise animation during a workout** (#12). A ⤡ Minimize / ⤢ Expand button
+  on the animation shrinks it to a thin strip so the set rows sit right under your thumb — no more
+  scrolling past a big GIF to tick off a set. Your choice is remembered and applied to every
+  exercise and future workout until you change it, so you set it once. Tapping the animation still
+  pauses/plays it as before.
+
 ## v1.1.2 — 2026-07-22
 
 Custom exercises, full localization, and input fixes.

@@ -69,7 +69,7 @@ function ExerciseBlock({ entryIdx, compact, onToggle, onField, onBumpAll, onAddS
     </div>
   )
   return <>
-    <Media ex={ex} key={entry.id} compact={compact} />
+    <Media ex={ex} key={entry.id} compact={compact} minimizable />
     <div className="row between" style={{ marginBottom: 6 }}>
       <div style={{ fontSize: compact ? '1.05rem' : '1.2rem', fontWeight: 800, textTransform: 'capitalize', lineHeight: 1.2 }}>{ex.n}</div>
       <button className="iconbtn" onClick={() => exerciseDetailSheet(ex)}>ℹ️</button>

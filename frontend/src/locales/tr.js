@@ -332,5 +332,7 @@ export default {
   'Description (optional) — setup, cues, anything you want to remember': 'Açıklama (isteğe bağlı) — kurulum, ipuçları, hatırlamak istediklerin',
   'Delete exercise': 'Egzersizi sil',
   'Edit or delete this exercise': 'Bu egzersizi düzenle veya sil',
-  'Remove from routine': 'Rutinden çıkar'
+  'Remove from routine': 'Rutinden çıkar',
+  'Minimize': 'Küçült',
+  'Expand': 'Büyüt'
 }

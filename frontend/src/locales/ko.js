@@ -332,5 +332,7 @@ export default {
   'Description (optional) — setup, cues, anything you want to remember': '설명 (선택) — 세팅, 큐, 기억하고 싶은 모든 것',
   'Delete exercise': '운동 삭제',
   'Edit or delete this exercise': '이 운동 편집 또는 삭제',
-  'Remove from routine': '루틴에서 제거'
+  'Remove from routine': '루틴에서 제거',
+  'Minimize': '축소',
+  'Expand': '확대'
 }

@@ -1,16 +1,25 @@
 import { useState } from 'react'
 import { imgSrc, gifSrc } from '../lib/exercises.js'
+import { useStore } from '../store/useStore.js'
 import { t } from '../lib/i18n.js'
 
 // Big autoplaying animation; tap toggles to the still frame. `compact` shrinks it (superset cards).
 // Custom exercises have no media — the animation stays blank by design (issue #11).
-export default function Media({ ex, id, compact }) {
+// `minimizable` (workout view) adds a persistent minimize/expand control so the animation stops
+// eating the screen; the chosen size is saved to settings and carries across exercises and
+// future workouts (issue #12).
+export default function Media({ ex, id, compact, minimizable }) {
   const [playing, setPlaying] = useState(true)
+  const gifSize = useStore(s => s.S.gifSize)
+  const update = useStore(s => s.update)
   if (!ex.gif) return null
+  const mini = minimizable && gifSize === 'mini'
+  const toggleSize = e => { e.stopPropagation(); update(s => { s.gifSize = mini ? 'full' : 'mini' }) }
   return (
-    <div className={'exmedia' + (compact ? ' compact' : '')} id={id} onClick={() => setPlaying(p => !p)}>
+    <div className={'exmedia' + (compact ? ' compact' : '') + (mini ? ' mini' : '')} id={id} onClick={() => setPlaying(p => !p)}>
       <img decoding="async" src={playing ? gifSrc(ex) : imgSrc(ex)} alt={ex.n} />
-      <span className="gifhint">{playing ? '⏸ ' + t('tap to pause') : '▶ ' + t('tap to play')}</span>
+      {minimizable && <button className="giftoggle" onClick={toggleSize}>{mini ? '⤢ ' + t('Expand') : '⤡ ' + t('Minimize')}</button>}
+      {!mini && <span className="gifhint">{playing ? '⏸ ' + t('tap to pause') : '▶ ' + t('tap to play')}</span>}
     </div>
   )
 }
