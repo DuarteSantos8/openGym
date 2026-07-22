@@ -285,6 +285,7 @@ export default {
   'back': 'dos', 'cardio': 'cardio', 'chest': 'pectoraux', 'lower arms': 'avant-bras',
   'lower legs': 'mollets', 'neck': 'cou', 'shoulders': 'épaules',
   'upper arms': 'bras', 'upper legs': 'cuisses', 'waist': 'abdos',
+  'Any equipment': 'Tout équipement',
   'assisted': 'assisté', 'band': 'élastique', 'barbell': 'barre', 'body weight': 'poids du corps',
   'bosu ball': 'bosu', 'cable': 'poulie', 'dumbbell': 'haltère',
   'elliptical machine': 'vélo elliptique', 'ez barbell': 'barre EZ', 'hammer': 'marteau',

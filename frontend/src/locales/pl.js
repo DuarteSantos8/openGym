@@ -285,6 +285,7 @@ export default {
   'back': 'plecy', 'cardio': 'cardio', 'chest': 'klatka', 'lower arms': 'przedramiona',
   'lower legs': 'łydki', 'neck': 'kark', 'shoulders': 'barki',
   'upper arms': 'ramiona', 'upper legs': 'uda', 'waist': 'brzuch',
+  'Any equipment': 'Dowolny sprzęt',
   'assisted': 'z asystą', 'band': 'guma', 'barbell': 'sztanga', 'body weight': 'masa ciała',
   'bosu ball': 'bosu', 'cable': 'wyciąg', 'dumbbell': 'hantla',
   'elliptical machine': 'orbitrek', 'ez barbell': 'sztanga łamana', 'hammer': 'młot',

@@ -285,6 +285,7 @@ export default {
   'back': 'спина', 'cardio': 'кардио', 'chest': 'грудь', 'lower arms': 'предплечья',
   'lower legs': 'голени', 'neck': 'шея', 'shoulders': 'плечи',
   'upper arms': 'руки', 'upper legs': 'бёдра', 'waist': 'пресс',
+  'Any equipment': 'Любой инвентарь',
   'assisted': 'с поддержкой', 'band': 'лента', 'barbell': 'штанга', 'body weight': 'свой вес',
   'bosu ball': 'босу', 'cable': 'блок', 'dumbbell': 'гантель',
   'elliptical machine': 'эллипсоид', 'ez barbell': 'EZ-гриф', 'hammer': 'молот',

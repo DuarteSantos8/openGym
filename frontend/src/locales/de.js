@@ -302,6 +302,7 @@ export default {
   'lower legs': 'Unterschenkel', 'neck': 'Nacken', 'shoulders': 'Schultern',
   'upper arms': 'Oberarme', 'upper legs': 'Oberschenkel', 'waist': 'Rumpf',
   // --- data terms: equipment ---
+  'Any equipment': 'Alle Geräte',
   'assisted': 'assistiert', 'band': 'Band', 'barbell': 'Langhantel', 'body weight': 'Körpergewicht',
   'bosu ball': 'Bosu-Ball', 'cable': 'Kabelzug', 'dumbbell': 'Kurzhantel',
   'elliptical machine': 'Crosstrainer', 'ez barbell': 'SZ-Stange', 'hammer': 'Hammer',

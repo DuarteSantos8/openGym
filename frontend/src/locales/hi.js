@@ -285,6 +285,7 @@ export default {
   'back': 'पीठ', 'cardio': 'कार्डियो', 'chest': 'छाती', 'lower arms': 'अग्रबाहु',
   'lower legs': 'पिंडलियाँ', 'neck': 'गर्दन', 'shoulders': 'कंधे',
   'upper arms': 'बाजू', 'upper legs': 'जाँघें', 'waist': 'पेट',
+  'Any equipment': 'कोई भी उपकरण',
   'assisted': 'सहायता प्राप्त', 'band': 'बैंड', 'barbell': 'बारबेल', 'body weight': 'शरीर का वज़न',
   'bosu ball': 'बोसु बॉल', 'cable': 'केबल', 'dumbbell': 'डम्बल',
   'elliptical machine': 'एलिप्टिकल मशीन', 'ez barbell': 'EZ बारबेल', 'hammer': 'हैमर',

@@ -285,6 +285,7 @@ export default {
   'back': '등', 'cardio': '유산소', 'chest': '가슴', 'lower arms': '전완',
   'lower legs': '종아리', 'neck': '목', 'shoulders': '어깨',
   'upper arms': '팔', 'upper legs': '허벅지', 'waist': '복부',
+  'Any equipment': '모든 장비',
   'assisted': '보조', 'band': '밴드', 'barbell': '바벨', 'body weight': '맨몸',
   'bosu ball': '보수볼', 'cable': '케이블', 'dumbbell': '덤벨',
   'elliptical machine': '일립티컬', 'ez barbell': 'EZ바', 'hammer': '해머',

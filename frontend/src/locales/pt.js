@@ -285,6 +285,7 @@ export default {
   'back': 'costas', 'cardio': 'cardio', 'chest': 'peito', 'lower arms': 'antebraços',
   'lower legs': 'gémeos', 'neck': 'pescoço', 'shoulders': 'ombros',
   'upper arms': 'braços', 'upper legs': 'pernas', 'waist': 'abdómen',
+  'Any equipment': 'Qualquer equipamento',
   'assisted': 'assistido', 'band': 'banda', 'barbell': 'barra', 'body weight': 'peso corporal',
   'bosu ball': 'bosu', 'cable': 'cabo', 'dumbbell': 'haltere',
   'elliptical machine': 'elíptica', 'ez barbell': 'barra EZ', 'hammer': 'martelo',

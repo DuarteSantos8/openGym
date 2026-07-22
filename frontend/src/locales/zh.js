@@ -285,6 +285,7 @@ export default {
   'back': '背部', 'cardio': '有氧', 'chest': '胸部', 'lower arms': '前臂',
   'lower legs': '小腿', 'neck': '颈部', 'shoulders': '肩部',
   'upper arms': '上臂', 'upper legs': '大腿', 'waist': '腰腹',
+  'Any equipment': '所有器械',
   'assisted': '辅助', 'band': '弹力带', 'barbell': '杠铃', 'body weight': '自重',
   'bosu ball': '波速球', 'cable': '绳索', 'dumbbell': '哑铃',
   'elliptical machine': '椭圆机', 'ez barbell': '曲杆杠铃', 'hammer': '锤',

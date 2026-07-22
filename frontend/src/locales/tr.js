@@ -285,6 +285,7 @@ export default {
   'back': 'sırt', 'cardio': 'kardiyo', 'chest': 'göğüs', 'lower arms': 'ön kollar',
   'lower legs': 'baldırlar', 'neck': 'boyun', 'shoulders': 'omuzlar',
   'upper arms': 'üst kollar', 'upper legs': 'bacaklar', 'waist': 'karın',
+  'Any equipment': 'Tüm ekipmanlar',
   'assisted': 'destekli', 'band': 'bant', 'barbell': 'halter', 'body weight': 'vücut ağırlığı',
   'bosu ball': 'bosu topu', 'cable': 'kablo', 'dumbbell': 'dambıl',
   'elliptical machine': 'eliptik bisiklet', 'ez barbell': 'EZ bar', 'hammer': 'çekiç',
