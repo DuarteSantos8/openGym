@@ -1,20 +1,11 @@
 # Changelog
 
-## v1.1.5 — 2026-07-22
+## v1.1.3 — 2026-07-22
 
-- 🏋️ **Filter exercises by equipment** (#6). A second filter row under the body parts lets you
-  narrow the list to what you actually have — body weight, dumbbell, barbell, cable, band, and so
-  on — in both the Exercises library and the exercise picker. The options adapt to what you've
-  already selected and are ordered by how many exercises use them, so every combination on screen
-  has results behind it and the row stays short. Building a bodyweight-only plan is now two taps
-  per body part.
-- ⏱️ **Fixed: the rest timer froze at 0:01** (#14) instead of counting down to the end. It also
-  meant the timer could only be cleared with Skip, and a redundant "rest over" push notification
-  could still fire.
+Admin dashboard for self-hosters (opt-in — off by default), equipment filtering, and
+workout-screen fixes.
 
-## v1.1.4 — 2026-07-22
-
-Admin dashboard for self-hosters (opt-in — off by default).
+### Admin dashboard
 
 - 🛠️ **Admin dashboard** (Settings → Admin dashboard) for whoever runs the instance: a users
   overview with workout counts and last-active times, plus a per-user drill-down into their full
@@ -29,13 +20,22 @@ Admin dashboard for self-hosters (opt-in — off by default).
   `INVITE_ONLY=1`; both default off, so a fresh instance stays open with no admin. See
   `.env.example`. Admin access is gated by your passkey and enforced server-side.
 
-## v1.1.3 — 2026-07-22
+### Exercises & workout
 
+- 🏋️ **Filter exercises by equipment** (#6). A second filter row under the body parts lets you
+  narrow the list to what you actually have — body weight, dumbbell, barbell, cable, band, and so
+  on — in both the Exercises library and the exercise picker. The options adapt to what you've
+  already selected and are ordered by how many exercises use them, so every combination on screen
+  has results behind it and the row stays short. Building a bodyweight-only plan is now two taps
+  per body part.
 - 🔎 **Minimize the exercise animation during a workout** (#12). A ⤡ Minimize / ⤢ Expand button
   on the animation shrinks it to a thin strip so the set rows sit right under your thumb — no more
   scrolling past a big GIF to tick off a set. Your choice is remembered and applied to every
   exercise and future workout until you change it, so you set it once. Tapping the animation still
   pauses/plays it as before.
+- ⏱️ **Fixed: the rest timer froze at 0:01** (#14) instead of counting down to the end. It also
+  meant the timer could only be cleared with Skip, and a redundant "rest over" push notification
+  could still fire.
 
 ## v1.1.2 — 2026-07-22
 
