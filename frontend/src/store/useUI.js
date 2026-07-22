@@ -40,26 +40,26 @@ export const useUI = create((set, get) => ({
     set({ timer: { left: sec, total: sec, endsAt } })
     pushRestTimer(sec)
     timerTick = () => {
-      const t = get().timer
-      if (!t) return
-      const left = Math.max(0, Math.round((t.endsAt - Date.now()) / 1000))
-      if (left === t.left) return
+      const tm = get().timer
+      if (!tm) return
+      const left = Math.max(0, Math.round((tm.endsAt - Date.now()) / 1000))
+      if (left === tm.left) return
       const snd = useStore.getState().S.sound
       if (left <= 0) {
         beep(snd, 880, 0.15); beep(snd, 880, 0.15, 0.25); beep(snd, 1320, 0.4, 0.5)
         vibrate([200, 100, 200]); get().toast(t('Rest over — next set! 💪')); get().stopRest(); return
       }
       if (left <= 3) beep(snd, 660, 0.1)
-      set({ timer: { ...t, left } })
+      set({ timer: { ...tm, left } })
     }
     timerInt = setInterval(timerTick, 1000)
     document.addEventListener('visibilitychange', timerTick)
   },
   addRest(sec) {
-    const t = get().timer
-    if (!t) return
-    const left = t.left + sec
-    set({ timer: { ...t, left, total: t.total + sec, endsAt: t.endsAt + sec * 1000 } })
+    const tm = get().timer
+    if (!tm) return
+    const left = tm.left + sec
+    set({ timer: { ...tm, left, total: tm.total + sec, endsAt: tm.endsAt + sec * 1000 } })
     pushRestTimer(left)
   },
   stopRest() {
