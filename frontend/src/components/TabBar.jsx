@@ -3,13 +3,7 @@ import { useStore } from '../store/useStore.js'
 import { effectiveRoutine } from '../lib/history.js'
 import { todayISO } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
-
-const ICONS = {
-  home: <path d="M3 10.5 12 3l9 7.5M5 9.5V21h14V9.5" />,
-  plan: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M8 3v4M16 3v4M3 11h18" /></>,
-  stats: <path d="M4 20V10M10 20V4M16 20v-8M22 20H2" />,
-  library: <><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></>
-}
+import Icon from './Icon.jsx'
 
 export default function TabBar({ onStart }) {
   const nav = useNavigate()
@@ -28,18 +22,22 @@ export default function TabBar({ onStart }) {
     }
     nav('/workout')
   }
-  const Icon = ({ k }) => <svg viewBox="0 0 24 24">{ICONS[k]}</svg>
+  const Tab = ({ k, icon, to, label }) => (
+    <button className={on(k) ? 'on' : ''} onClick={() => nav(to)}>
+      <Icon name={icon} /><span>{label}</span>
+    </button>
+  )
 
   return (
     <nav id="tabbar">
-      <button className={on('home') ? 'on' : ''} onClick={() => nav('/home')}><Icon k="home" /><span>{t('Home')}</span></button>
-      <button className={on('plan') ? 'on' : ''} onClick={() => nav('/plan')}><Icon k="plan" /><span>{t('Plan')}</span></button>
+      <Tab k="home" icon="house" to="/home" label={t('Home')} />
+      <Tab k="plan" icon="calendar" to="/plan" label={t('Plan')} />
       <button className={'start' + (S.active ? ' rec' : '')} onClick={startWorkout}>
-        <span className="cir"><svg viewBox="0 0 24 24"><path d="M6.5 6.5v11M17.5 6.5v11M2.5 9.5v5M21.5 9.5v5M6.5 12h11" /></svg></span>
+        <span className="cir"><Icon name={S.active ? 'play' : 'dumbbell'} /></span>
         <span>{S.active ? t('Resume') : t('Start')}</span>
       </button>
-      <button className={on('stats') ? 'on' : ''} onClick={() => nav('/stats')}><Icon k="stats" /><span>{t('Stats')}</span></button>
-      <button className={on('library') ? 'on' : ''} onClick={() => nav('/library')}><Icon k="library" /><span>{t('Exercises')}</span></button>
+      <Tab k="stats" icon="chart" to="/stats" label={t('Stats')} />
+      <Tab k="library" icon="list" to="/library" label={t('Exercises')} />
     </nav>
   )
 }

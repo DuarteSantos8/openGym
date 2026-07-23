@@ -9,8 +9,10 @@ import { beep, vibrate } from '../lib/sound.js'
 import { t } from '../lib/i18n.js'
 import { api } from '../lib/api.js'
 import Media from '../components/Media.jsx'
-import NumField from '../components/NumField.jsx'
 import { startFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, topWeightSheet, finishWorkout, workoutCompleteSheet, confirmSheet } from '../sheets.jsx'
+import Icon from '../components/Icon.jsx'
+import { Button, Check, NumberField } from '../components/ui.jsx'
+import { glyphOf } from '../lib/glyphs.js'
 
 /* ---------- start chooser (no active workout) ---------- */
 function StartChooser() {
@@ -25,18 +27,18 @@ function StartChooser() {
       <h2 className="accent">{t("Today's plan")}{todayOvr ? ' · ' + t('rescheduled') : ''}</h2>
       <div className="row between" style={{ marginBottom: 12 }}>
         <div><div className="big">{todayR.name}</div><div className="muted small">{t('{0} exercises', todayR.ex.length)}</div></div>
-        <div style={{ fontSize: '2rem' }}>{todayR.emoji || '💪'}</div>
+        <span className="lrow-i" style={{ width: 38, height: 38, borderRadius: 9, fontSize: 22 }}><Icon name={glyphOf(todayR.emoji)} /></span>
       </div>
-      <button className="btn primary" onClick={() => startFlow(todayR.id)}>{t('Start {0} ▶', todayR.name)}</button>
+      <Button variant="primary" icon="play" onClick={() => startFlow(todayR.id)}>{t('Start {0}', todayR.name)}</Button>
     </div>}
     {others.length > 0 && <><h4 className="sec">{t('Other routines')}</h4>
       <div className="list">{others.map(r => <div key={r.id} className="item" onClick={() => startFlow(r.id)}>
-        <div style={{ fontSize: '1.5rem', flex: 'none' }}>{r.emoji || '💪'}</div>
+        <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
         <div className="grow"><div className="tt">{r.name}</div><div className="ss">{t('{0} exercises', r.ex.length)}</div></div>
-        <span className="tag acc">{t('Start ▶')}</span></div>)}</div></>}
+        <span className="tag acc">{t('Start')}</span></div>)}</div></>}
     <div style={{ height: 14 }} />
-    <button className="btn" onClick={() => startFlow(null)}>🎯 {t('Freestyle workout (pick as you go)')}</button>
-    {!S.routines.length && <><div style={{ height: 10 }} /><button className="btn primary" onClick={() => nav('/plan')}>{t('Build a plan first')}</button></>}
+    <Button icon="shuffle" onClick={() => startFlow(null)}>{t('Freestyle workout (pick as you go)')}</Button>
+    {!S.routines.length && <><div style={{ height: 10 }} /><Button variant="primary" onClick={() => nav('/plan')}>{t('Build a plan first')}</Button></>}
   </div>
 }
 
@@ -62,38 +64,40 @@ function ExerciseBlock({ entryIdx, compact, onToggle, onField, onBumpAll, onAddS
     ? Math.max(...last.sets.map(s => s.w)) + 2.5 : null
   const col1 = cardio ? { f: 'min', step: 1, dec: false, hd: t('Duration (min)') } : { f: 'w', step: 2.5, dec: true, hd: t('Weight ({0})', S.unit) }
   const col2 = cardio ? { f: 'speed', step: 0.5, dec: true, hd: t('Speed (km/h)') } : { f: 'r', step: 1, dec: false, hd: t('Reps') }
+  // Uses the shared stepper markup so a set row picks up the same control styling
+  // as every other +/- field in the app.
   const cell = (s, i, col, cls) => (
-    <div className={'step ' + cls}>
-      <button onClick={() => onField(i, col.f, Math.max(0, Math.round(((s[col.f] || 0) - col.step) * 100) / 100))}>−</button>
-      <NumField decimal={col.dec} value={s[col.f] ?? ''} onChange={v => onField(i, col.f, v)} />
-      <button onClick={() => onField(i, col.f, Math.max(0, Math.round(((s[col.f] || 0) + col.step) * 100) / 100))}>+</button>
+    <div className={'stp ' + cls}>
+      <button aria-label="Decrease" onClick={() => onField(i, col.f, Math.max(0, Math.round(((s[col.f] || 0) - col.step) * 100) / 100))}><Icon name="minus" /></button>
+      <span className="val"><NumberField decimal={col.dec} value={s[col.f] ?? ''} onChange={v => onField(i, col.f, v)} /></span>
+      <button aria-label="Increase" onClick={() => onField(i, col.f, Math.max(0, Math.round(((s[col.f] || 0) + col.step) * 100) / 100))}><Icon name="plus" /></button>
     </div>
   )
   return <>
     <Media ex={ex} key={entry.id} compact={compact} minimizable />
     <div className="row between" style={{ marginBottom: 6 }}>
-      <div style={{ fontSize: compact ? '1.05rem' : '1.2rem', fontWeight: 800, textTransform: 'capitalize', lineHeight: 1.2 }}>{ex.n}</div>
-      <button className="iconbtn" onClick={() => exerciseDetailSheet(ex)}>ℹ️</button>
+      <div style={{ fontSize: compact ? 17 : 20, fontWeight: 600, letterSpacing: '-.02em', textTransform: 'capitalize', lineHeight: 1.2 }}>{ex.n}</div>
+      <button className="iconbtn" aria-label={t('Details')} onClick={() => exerciseDetailSheet(ex)}><Icon name="info" /></button>
     </div>
     <div className="row" style={{ gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-      {cardio && <span className="tag acc">🏃 {t('Cardio')}</span>}
+      {cardio && <span className="tag acc"><Icon name="figureRun" />{t('Cardio')}</span>}
       <span className="tag">{t(ex.tg || ex.bp)}</span><span className="tag">{t(ex.eq)}</span>
       {best > 0 && <span className="tag">{t('Best:')} {fmtNum(best)} {S.unit}</span>}
     </div>
     {last && <div className="small dim" style={{ marginBottom: 4 }}>{t('Last time')} ({fmtDate(last.d)}): {last.sets.map(s => setLabel(entry.id, s)).join(', ')}</div>}
-    {hint && <button className="tag acc" style={{ border: 'none' }} onClick={() => { onBumpAll('w', hint); useUI.getState().toast(t('Weights bumped to {0} 💪', fmtNum(hint) + ' ' + S.unit)) }}>💡 {t('Last time you hit all reps — try {0}', fmtNum(hint) + ' ' + S.unit)}</button>}
+    {hint && <button className="tag acc" style={{ border: 'none', textAlign: 'left' }} onClick={() => { onBumpAll('w', hint); useUI.getState().toast(t('Weights bumped to {0}', fmtNum(hint) + ' ' + S.unit)) }}><Icon name="lightbulb" />{t('Last time you hit all reps — try {0}', fmtNum(hint) + ' ' + S.unit)}</button>}
     <div className="card" style={{ marginTop: 10, marginBottom: 0 }}>
       <div className="sethead"><span className="n-sp" /><span className="w-sp">{col1.hd}</span><span className="r-sp">{col2.hd}</span><span className="ck-sp" /></div>
       {entry.sets.map((s, i) => <div key={i} className={'setrow' + (s.done ? ' done' : '')}>
         <div className="n">{i + 1}</div>
         {cell(s, i, col1, 'w')}
         {cell(s, i, col2, 'r')}
-        <button className={'ck' + (s.done ? ' on' : '')} onClick={() => onToggle(i)}><svg viewBox="0 0 24 24"><path d="m4.5 12.5 5 5 10-11" /></svg></button>
+        <Check checked={s.done} onChange={() => onToggle(i)} />
       </div>)}
       <div style={{ height: 8 }} />
       <div className="row">
-        <button className="btn sm" disabled={entry.sets.length <= 1} onClick={onRemoveSet}>− {t('Remove set')}</button>
-        <button className="btn sm" onClick={onAddSet}>+ {t('Add set')}</button>
+        <Button size="sm" icon="minus" disabled={entry.sets.length <= 1} onClick={onRemoveSet}>{t('Remove set')}</Button>
+        <Button size="sm" icon="plus" onClick={onAddSet}>{t('Add set')}</Button>
       </div>
     </div>
   </>
@@ -145,7 +149,7 @@ function ActiveWorkout() {
     // cardio or already-confirmed: go straight to the prompt.
     if (askTop) topWeightSheet(idx)
     else if (workoutDone) workoutCompleteSheet()
-    else if (exJustDone && cardioEntry) useUI.getState().toast(t('Cardio logged 🏃'))
+    else if (exJustDone && cardioEntry) useUI.getState().toast(t('Cardio logged'))
   }
 
   // Live-presence heartbeat so the admin dashboard can show who's training now. Signed-in only —
@@ -177,9 +181,9 @@ function ActiveWorkout() {
 
   return <div className="narrow">
     <div className="hdr">
-      <button className="iconbtn" onClick={() => confirmSheet({ title: t('Discard workout?'), message: t('The sets you logged in this session will be lost.'), confirmText: t('Discard'), danger: true, onConfirm: () => { update(s => { s.active = null }); stopRest(); nav('/home') } })}>✕</button>
-      <div style={{ textAlign: 'center' }}><div style={{ fontWeight: 800 }}>{A.name}</div><div className="sub"><Elapsed start={A.start} /> · {t('{0} sets', done + '/' + total)}</div></div>
-      <button className="iconbtn" style={{ color: 'var(--acc)' }} onClick={finishWorkout}>✓</button>
+      <button className="iconbtn" aria-label={t('Discard')} onClick={() => confirmSheet({ title: t('Discard workout?'), message: t('The sets you logged in this session will be lost.'), confirmText: t('Discard'), danger: true, onConfirm: () => { update(s => { s.active = null }); stopRest(); nav('/home') } })}><Icon name="xmark" /></button>
+      <div style={{ textAlign: 'center' }}><div style={{ fontWeight: 600 }}>{A.name}</div><div className="sub"><Elapsed start={A.start} /> · {t('{0} sets', done + '/' + total)}</div></div>
+      <button className="iconbtn" style={{ color: 'var(--acc)' }} aria-label={t('Finish')} onClick={finishWorkout}><Icon name="check" /></button>
     </div>
     <div className="wprog"><i style={{ width: (total ? done / total * 100 : 0) + '%' }} /></div>
 
@@ -187,7 +191,7 @@ function ActiveWorkout() {
       <div className="muted small" style={{ marginBottom: 6 }}>{isSuperset ? t('Superset {0} / {1}', unitIdx + 1, units.length) : t('Exercise {0} / {1}', unitIdx + 1, units.length)}</div>
       {isSuperset ? (
         <div className="ss-card">
-          <div className="ss-hd">🔗 {t('Superset · do these back-to-back, rest after both')}</div>
+          <div className="ss-hd"><Icon name="link" />{t('Superset · do these back-to-back, rest after both')}</div>
           {unit.map((idx, k) => <div key={idx} className="ss-ex">
             {k > 0 && <div className="ss-amp">+</div>}
             <ExerciseBlock entryIdx={idx} compact
@@ -197,24 +201,24 @@ function ActiveWorkout() {
       ) : (
         <ExerciseBlock entryIdx={cur} onToggle={i => toggle(cur, i)} onField={(i, f, v) => setField(cur, i, f, v)} onBumpAll={(f, v) => bumpAll(cur, f, v)} onAddSet={() => addSet(cur)} onRemoveSet={() => removeSet(cur)} />
       )}
-    </> : <div className="empty"><div className="ico">🎯</div>{t('Freestyle workout — add your first exercise.')}</div>}
+    </> : <div className="empty"><div className="ico"><Icon name="shuffle" /></div>{t('Freestyle workout — add your first exercise.')}</div>}
 
     <div style={{ height: 12 }} />
     <div className="row">
-      <button className="btn" disabled={unitIdx <= 0} onClick={() => update(s => { s.active.cur = units[unitIdx - 1][0] })}>‹ {t('Prev')}</button>
-      <button className="btn" disabled={unitIdx < 0 || unitIdx >= units.length - 1} onClick={() => update(s => { s.active.cur = units[unitIdx + 1][0] })}>{t('Next')} ›</button>
+      <Button icon="chevronLeft" disabled={unitIdx <= 0} onClick={() => update(s => { s.active.cur = units[unitIdx - 1][0] })}>{t('Prev')}</Button>
+      <Button trailingIcon="chevronRight" disabled={unitIdx < 0 || unitIdx >= units.length - 1} onClick={() => update(s => { s.active.cur = units[unitIdx + 1][0] })}>{t('Next')}</Button>
     </div>
     <div style={{ height: 10 }} />
-    <button className="btn" onClick={() => exercisePicker(ex => exConfigSheet(ex, null, cfg => update(s => {
+    <Button onClick={() => exercisePicker(ex => exConfigSheet(ex, null, cfg => update(s => {
       s.active.entries.push({ id: ex.id, target: { ...cfg }, sets: buildSets(s, { ...cfg, id: ex.id }) })
       s.active.cur = s.active.entries.length - 1
-    })))}>+ {t('Add exercise')}</button>
+    })))} icon="plus">{t('Add exercise')}</Button>
     <div style={{ height: 10 }} />
     {(() => {
       const exDone = A.entries.filter(e => e.sets.length && e.sets.every(s => s.done)).length
       const allDone = A.entries.length > 0 && exDone === A.entries.length
       return <button className={allDone ? 'btn primary' : 'btn ghost dim'} onClick={finishWorkout}>
-        {allDone ? t('Finish workout 🏁') : t('Finish workout early · {0} exercises', exDone + '/' + A.entries.length)}
+        {allDone ? t('Finish workout') : t('Finish workout early · {0} exercises', exDone + '/' + A.entries.length)}
       </button>
     })()}
     <div style={{ height: 40 }} />

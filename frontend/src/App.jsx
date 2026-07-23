@@ -1,10 +1,13 @@
 import { useEffect } from 'react'
 import { HashRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { useStore } from './store/useStore.js'
+import { useUI } from './store/useUI.js'
+import { bindUI } from './components/ui.jsx'
 import { ACCENTS } from './lib/format.js'
 import { setLang, useLang } from './lib/i18n.js'
 import { setNav } from './lib/nav.js'
 import { startFlow } from './sheets.jsx'
+import Icon from './components/Icon.jsx'
 import TabBar from './components/TabBar.jsx'
 import Modals from './components/Modals.jsx'
 import Toast from './components/Toast.jsx'
@@ -20,12 +23,14 @@ import Library from './views/Library.jsx'
 import Settings from './views/Settings.jsx'
 import Admin from './views/Admin.jsx'
 
+bindUI(useUI)   // lets the shared controls open sheets without importing the store at module scope
+
 function applyPrefs(theme, accent) {
   const de = document.documentElement
   de.dataset.theme = theme === 'light' ? 'light' : 'dark'
   de.dataset.accent = ACCENTS[accent] ? accent : 'lime'
   const meta = document.querySelector('meta[name="theme-color"]')
-  if (meta) meta.content = de.dataset.theme === 'light' ? '#f2f4f7' : '#0c0e12'
+  if (meta) meta.content = de.dataset.theme === 'light' ? '#f2f2f7' : '#000000'
 }
 
 function Shell() {
@@ -42,7 +47,13 @@ function Shell() {
   useEffect(() => { window.scrollTo(0, 0) }, [loc.pathname])
 
   const authed = user || isGuest
-  if (!ready && !authed) return <div id="app"><div style={{ paddingTop: '42vh', textAlign: 'center', fontSize: '2.2rem' }}>🏋️</div></div>
+  if (!ready && !authed) return (
+    <div id="app">
+      <div style={{ paddingTop: '44vh', display: 'flex', justifyContent: 'center', fontSize: 34, color: 'var(--label-3)' }}>
+        <Icon name="dumbbell" />
+      </div>
+    </div>
+  )
 
   return (
     <>

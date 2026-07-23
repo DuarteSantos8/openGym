@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { imgSrc, gifSrc } from '../lib/exercises.js'
 import { useStore } from '../store/useStore.js'
 import { t } from '../lib/i18n.js'
+import Icon from './Icon.jsx'
 
 // Big autoplaying animation; tap toggles to the still frame. `compact` shrinks it (superset cards).
 // Custom exercises have no media — the animation stays blank by design (issue #11).
@@ -18,13 +19,21 @@ export default function Media({ ex, id, compact, minimizable }) {
   return (
     <div className={'exmedia' + (compact ? ' compact' : '') + (mini ? ' mini' : '')} id={id} onClick={() => setPlaying(p => !p)}>
       <img decoding="async" src={playing ? gifSrc(ex) : imgSrc(ex)} alt={ex.n} />
-      {minimizable && <button className="giftoggle" onClick={toggleSize}>{mini ? '⤢ ' + t('Expand') : '⤡ ' + t('Minimize')}</button>}
-      {!mini && <span className="gifhint">{playing ? '⏸ ' + t('tap to pause') : '▶ ' + t('tap to play')}</span>}
+      {minimizable && (
+        <button className="giftoggle" onClick={toggleSize}>
+          <Icon name={mini ? 'expand' : 'minimize'} />{mini ? t('Expand') : t('Minimize')}
+        </button>
+      )}
+      {!mini && (
+        <span className="gifhint">
+          <Icon name={playing ? 'pause' : 'play'} />{playing ? t('tap to pause') : t('tap to play')}
+        </span>
+      )}
     </div>
   )
 }
 
 export function Thumb({ ex }) {
-  if (!ex.img) return <div className="thumb thumb-x">🏋️</div>
+  if (!ex.img) return <div className="thumb thumb-x"><Icon name="dumbbell" /></div>
   return <img className="thumb" loading="lazy" decoding="async" src={imgSrc(ex)} alt="" />
 }
