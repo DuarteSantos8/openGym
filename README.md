@@ -52,9 +52,13 @@ as a home-screen app, passkey sign-in, offline support, sync across your phone a
 - ▶️ **Guided workouts** — it knows what day it is and starts today's session; asks your body weight first, pre-fills your weights from last time, rest timer, PR detection, per-exercise weight tracking
 - 🔗 **Supersets** — build them, and log them back-to-back with a rest only after the pair
 - 🏃 **Cardio** — log time + speed, not just weight × reps
+- 🔧 **Filter by equipment** — narrow the library to what you actually own; the options adapt to what you've picked, so every combination on screen has results behind it
+- ✨ **Your own exercises** — a name and a body part is enough; they behave like built-in ones everywhere, with an optional description instead of an animation
 - 🟩 **Activity heatmap** — a GitHub-style year view, shaded by time spent training
+- 🔔 **Push notifications** — rest-timer alerts even with the app closed, plus an optional reminder on days you have a workout planned but haven't logged one. Opt in per profile; keys are generated on first run, nothing to configure
 - 🔑 **Passkeys, not passwords** — Face ID / Touch ID / fingerprint login; each profile keeps its own data, synced across devices
-- 🎨 **Themes** — light/dark + 8 accent colors, saved to your profile
+- 🛠️ **Admin dashboard** (optional) — for whoever runs the instance: who's training right now, per-user history, disable accounts, and invite-only signup. Off by default, so a fresh instance stays open with no admin
+- 🎨 **Designed, not assembled** — light/dark themes and 8 accent colors saved to your profile, over a hand-drawn icon set instead of emoji, so it looks the same on every phone
 - 🌍 **12 languages** — full UI translation (EN, DE, ES, FR, IT, PT, PL, TR, RU, ZH, KO, HI); exercise instructions localized in 10 of them, loaded on demand so the app stays fast
 - 📦 **Yours to keep** — one-tap JSON export/import, guest mode, **no telemetry**
 
@@ -108,12 +112,16 @@ server — they stay in your phone's secure hardware / your password manager.
 
 All via `.env` (see `.env.example`):
 
-| Variable   | What it is                        | Default                 |
-|------------|-----------------------------------|-------------------------|
-| `RP_ID`    | Hostname passkeys are bound to    | `localhost`             |
-| `ORIGIN`   | Full URL the app is served from   | `http://localhost:8080` |
-| `WEB_PORT` | Host port for the web UI          | `8080`                  |
-| `RP_NAME`  | Name shown in the passkey prompt  | `openGym`               |
+| Variable      | What it is                                           | Default                 |
+|---------------|------------------------------------------------------|-------------------------|
+| `RP_ID`       | Hostname passkeys are bound to                       | `localhost`             |
+| `ORIGIN`      | Full URL the app is served from                      | `http://localhost:8080` |
+| `WEB_PORT`    | Host port for the web UI                             | `8080`                  |
+| `RP_NAME`     | Name shown in the passkey prompt                     | `openGym`               |
+| `ADMIN_UIDS`  | User ids that get the admin dashboard (comma-separated) | *(none)*             |
+| `INVITE_ONLY` | Require an invite code to create a profile           | *(off)*                 |
+
+Push notification keys are generated on first run and saved to `./data/vapid.json` — nothing to set.
 
 ## Roadmap
 

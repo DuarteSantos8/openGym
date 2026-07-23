@@ -87,9 +87,25 @@ Visit `https://gym.example.com`, create your profile, and add it to your home sc
 
 ## 4. Multiple users
 
-Anyone who can reach the URL can create their own profile — each gets isolated data. There's no
-admin/invite system by design; if you want it private, keep it behind your VPN, an auth proxy
-(Authelia, Cloudflare Access…), or just don't share the URL.
+Anyone who can reach the URL can create their own profile — each gets isolated data. That's the
+default: open signup, no admin.
+
+If you'd rather control who gets in, two optional settings in `.env` turn that around:
+
+```bash
+ADMIN_UIDS=youruserid      # comma-separated; these users get the admin dashboard
+INVITE_ONLY=1              # new profiles need an invite code
+```
+
+Register your own passkey profile first, then find your id in `./data/db.json` under `users[].id`
+and put it in `ADMIN_UIDS`. You'll get an **Admin dashboard** link in Settings: who's training
+right now, each user's workout history and body weight, the ability to disable an account (signed
+out and locked out everywhere until you re-enable it), and — with `INVITE_ONLY=1` — generating and
+revoking invite codes. Existing accounts keep working when you switch invite-only on. Admin access
+is gated by your passkey and enforced server-side, so it needs no separate login.
+
+Prefer to keep the whole thing off the open internet? A VPN or an auth proxy (Authelia, Cloudflare
+Access…) in front still works, and composes with the above.
 
 ## 5. Backups
 
