@@ -71,6 +71,7 @@ as a home-screen app, passkey sign-in, offline support, sync across your phone a
 - 🛠️ **Admin dashboard** (optional) — for whoever runs the instance: who's training right now, per-user history, disable accounts, and invite-only signup. Off by default, so a fresh instance stays open with no admin
 - 🎨 **Designed, not assembled** — light/dark themes and 8 accent colors saved to your profile, over a hand-drawn icon set instead of emoji, so it looks the same on every phone
 - 🌍 **12 languages** — full UI translation (EN, DE, ES, FR, IT, PT, PL, TR, RU, ZH, KO, HI); exercise instructions localized in 10 of them, loaded on demand so the app stays fast
+- 📥 **Bring your history with you** — import from **FitNotes** (Android and iOS), **Strong** and **Hevy**, or body weight straight out of an **Apple Health** export. Exercise names are matched against the library and anything unrecognised becomes one of your own exercises, so nothing in the file is dropped
 - 📦 **Yours to keep** — one-tap JSON export/import, guest mode, **no telemetry**
 
 ## Quick start (self-host)
@@ -139,7 +140,7 @@ Push notification keys are generated on first run and saved to `./data/vapid.jso
 Rough, community-driven — ideas and PRs welcome:
 
 - [ ] More starter plans (upper/lower, full-body, 5×5)
-- [ ] Importers from Strong / Hevy (CSV → openGym JSON)
+- [x] Importers from FitNotes / Strong / Hevy, and body weight from Apple Health
 - [ ] Body measurements (waist, arms…) alongside weight
 - [ ] Per-exercise notes & plate calculator
 - [ ] Exercise instructions in German & Portuguese (UI is translated; upstream dataset doesn't ship these yet)

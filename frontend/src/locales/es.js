@@ -380,5 +380,24 @@ export default {
   'Adductors': 'Aductores',
   'Hip flexors': 'Flexores de cadera',
   'Calves': 'Gemelos',
-  'Shins': 'Tibiales'
+  'Shins': 'Tibiales',
+  // --- import from another app ---
+  'Import from another app': 'Importar de otra app',
+  'FitNotes, Strong, Hevy — or body weight from Apple Health': 'FitNotes, Strong, Hevy — o peso corporal de Apple Health',
+  'Import from {0}': 'Importar de {0}',
+  'Import history': 'Importar historial',
+  'Weigh-ins': 'Pesajes',
+  'Exercises matched': 'Ejercicios reconocidos',
+  'Added as your own': 'Añadidos como propios',
+  'The file is in {0} and your profile is in {1} — weights will be converted.': 'El archivo está en {0} y tu perfil en {1} — los pesos se convertirán.',
+  'The file does not say which unit it uses — numbers are imported as they are.': 'El archivo no indica la unidad — los números se importan tal cual.',
+  '{0} days already have data here and will be left alone.': '{0} días ya tienen datos aquí y no se tocarán.',
+  'Not in the library — added as your own exercises': 'No están en la biblioteca — añadidos como ejercicios propios',
+  'Nothing new to import': 'Nada nuevo que importar',
+  '{0} workouts imported': '{0} entrenamientos importados',
+  '{0} weigh-ins imported': '{0} pesajes importados',
+  'Could not read that file': 'No se pudo leer ese archivo',
+  'That file is empty': 'Ese archivo está vacío',
+  'That file\'s columns aren\'t recognised — see the docs for supported apps.': 'No se reconocen las columnas del archivo — consulta la documentación.',
+  'Nothing to import from that file': 'No hay nada que importar de ese archivo'
 }

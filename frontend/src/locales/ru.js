@@ -380,5 +380,24 @@ export default {
   'Adductors': 'Приводящие',
   'Hip flexors': 'Сгибатели бедра',
   'Calves': 'Икры',
-  'Shins': 'Голени'
+  'Shins': 'Голени',
+  // --- import from another app ---
+  'Import from another app': 'Импорт из другого приложения',
+  'FitNotes, Strong, Hevy — or body weight from Apple Health': 'FitNotes, Strong, Hevy — или вес из Apple Health',
+  'Import from {0}': 'Импорт из {0}',
+  'Import history': 'Импорт истории',
+  'Weigh-ins': 'Взвешивания',
+  'Exercises matched': 'Распознано упражнений',
+  'Added as your own': 'Добавлено как свои',
+  'The file is in {0} and your profile is in {1} — weights will be converted.': 'Файл в {0}, а профиль в {1} — веса будут пересчитаны.',
+  'The file does not say which unit it uses — numbers are imported as they are.': 'В файле не указана единица — числа импортируются как есть.',
+  '{0} days already have data here and will be left alone.': 'В {0} дней уже есть данные — они останутся без изменений.',
+  'Not in the library — added as your own exercises': 'Нет в библиотеке — добавлены как свои упражнения',
+  'Nothing new to import': 'Нечего импортировать',
+  '{0} workouts imported': 'Импортировано тренировок: {0}',
+  '{0} weigh-ins imported': 'Импортировано взвешиваний: {0}',
+  'Could not read that file': 'Не удалось прочитать файл',
+  'That file is empty': 'Файл пуст',
+  'That file\'s columns aren\'t recognised — see the docs for supported apps.': 'Колонки не распознаны — список поддерживаемых приложений в документации.',
+  'Nothing to import from that file': 'В этом файле нечего импортировать'
 }

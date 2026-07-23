@@ -380,5 +380,24 @@ export default {
   'Adductors': 'एडक्टर',
   'Hip flexors': 'हिप फ्लेक्सर',
   'Calves': 'पिंडली',
-  'Shins': 'पिंडली की हड्डी'
+  'Shins': 'पिंडली की हड्डी',
+  // --- import from another app ---
+  'Import from another app': 'दूसरे ऐप से आयात करें',
+  'FitNotes, Strong, Hevy — or body weight from Apple Health': 'FitNotes, Strong, Hevy — या Apple Health से वज़न',
+  'Import from {0}': '{0} से आयात करें',
+  'Import history': 'इतिहास आयात करें',
+  'Weigh-ins': 'वज़न मापन',
+  'Exercises matched': 'पहचाने गए व्यायाम',
+  'Added as your own': 'अपने रूप में जोड़े',
+  'The file is in {0} and your profile is in {1} — weights will be converted.': 'फ़ाइल {0} में है और आपकी प्रोफ़ाइल {1} में — वज़न बदले जाएंगे।',
+  'The file does not say which unit it uses — numbers are imported as they are.': 'फ़ाइल में इकाई नहीं दी — संख्याएँ जस की तस आयात होंगी।',
+  '{0} days already have data here and will be left alone.': '{0} दिनों में पहले से डेटा है, वे अछूते रहेंगे।',
+  'Not in the library — added as your own exercises': 'लाइब्रेरी में नहीं — अपने व्यायाम के रूप में जोड़े गए',
+  'Nothing new to import': 'आयात करने को कुछ नया नहीं',
+  '{0} workouts imported': '{0} वर्कआउट आयात हुए',
+  '{0} weigh-ins imported': '{0} वज़न रिकॉर्ड आयात हुए',
+  'Could not read that file': 'वह फ़ाइल पढ़ी नहीं जा सकी',
+  'That file is empty': 'वह फ़ाइल खाली है',
+  'That file\'s columns aren\'t recognised — see the docs for supported apps.': 'फ़ाइल के कॉलम पहचाने नहीं गए — समर्थित ऐप्स के लिए दस्तावेज़ देखें।',
+  'Nothing to import from that file': 'उस फ़ाइल से आयात करने को कुछ नहीं'
 }

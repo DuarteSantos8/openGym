@@ -380,5 +380,24 @@ export default {
   'Adductors': '내전근',
   'Hip flexors': '고관절 굴곡근',
   'Calves': '종아리',
-  'Shins': '정강이'
+  'Shins': '정강이',
+  // --- import from another app ---
+  'Import from another app': '다른 앱에서 가져오기',
+  'FitNotes, Strong, Hevy — or body weight from Apple Health': 'FitNotes, Strong, Hevy — 또는 Apple 건강의 체중',
+  'Import from {0}': '{0}에서 가져오기',
+  'Import history': '기록 가져오기',
+  'Weigh-ins': '체중 기록',
+  'Exercises matched': '인식된 운동',
+  'Added as your own': '내 운동으로 추가',
+  'The file is in {0} and your profile is in {1} — weights will be converted.': '파일은 {0}, 프로필은 {1} — 무게가 변환됩니다.',
+  'The file does not say which unit it uses — numbers are imported as they are.': '파일에 단위가 없습니다 — 숫자를 그대로 가져옵니다.',
+  '{0} days already have data here and will be left alone.': '{0}일은 이미 데이터가 있어 그대로 둡니다.',
+  'Not in the library — added as your own exercises': '라이브러리에 없음 — 내 운동으로 추가됨',
+  'Nothing new to import': '가져올 새 항목이 없습니다',
+  '{0} workouts imported': '운동 {0}개를 가져왔습니다',
+  '{0} weigh-ins imported': '체중 기록 {0}개를 가져왔습니다',
+  'Could not read that file': '파일을 읽을 수 없습니다',
+  'That file is empty': '파일이 비어 있습니다',
+  'That file\'s columns aren\'t recognised — see the docs for supported apps.': '열을 인식할 수 없습니다 — 지원 앱은 문서를 참고하세요.',
+  'Nothing to import from that file': '이 파일에서 가져올 내용이 없습니다'
 }

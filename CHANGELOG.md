@@ -1,5 +1,25 @@
 # Changelog
 
+## Unreleased
+
+- 📥 **Import your history from another app.** Settings → Data → *Import from another app*
+  reads an export from **FitNotes** (both the Android and the FitNotes 2 iOS format),
+  **Strong** and **Hevy**, and pulls body-weight history out of an **Apple Health** export.
+  Anything else with a date, an exercise name and weight/reps columns is read too.
+  - Every row becomes a set, grouped into workouts by date, so your history arrives with
+    its real dates rather than as one lump. Hevy and Strong also carry session length, so
+    the activity heatmap fills in properly.
+  - Exercise names are matched against the 1,324-exercise library — parenthetical
+    qualifiers like "(Barbell)" and shorthand like BB/DB are normalised, and a curated
+    table covers the plain names people actually log ("Bench Press", "Squat", "RDL").
+    Where a name is genuinely ambiguous it is *not* guessed at: it becomes one of your own
+    exercises instead, because filing years of training under the wrong lift is worse than
+    an unmatched name you can see and fix.
+  - A summary shows what will happen — workouts, sets, how many exercises matched, which
+    ones didn't, and whether weights need converting — before anything is written.
+  - Importing is idempotent: days you already have data for are left alone, so running it
+    twice, or importing from two apps, never duplicates a workout.
+
 ## v1.2.1 — 2026-07-23
 
 A muscle map across the app, and a live demo you can try without installing anything.

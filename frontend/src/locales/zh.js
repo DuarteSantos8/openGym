@@ -380,5 +380,24 @@ export default {
   'Adductors': '内收肌',
   'Hip flexors': '髋屈肌',
   'Calves': '小腿',
-  'Shins': '胫前肌'
+  'Shins': '胫前肌',
+  // --- import from another app ---
+  'Import from another app': '从其他应用导入',
+  'FitNotes, Strong, Hevy — or body weight from Apple Health': 'FitNotes、Strong、Hevy — 或来自 Apple 健康的体重',
+  'Import from {0}': '从 {0} 导入',
+  'Import history': '导入历史记录',
+  'Weigh-ins': '称重记录',
+  'Exercises matched': '已匹配动作',
+  'Added as your own': '添加为自定义',
+  'The file is in {0} and your profile is in {1} — weights will be converted.': '文件使用 {0}，你的配置使用 {1} — 重量将被换算。',
+  'The file does not say which unit it uses — numbers are imported as they are.': '文件未标明单位 — 数字按原样导入。',
+  '{0} days already have data here and will be left alone.': '有 {0} 天已存在数据，将保持不变。',
+  'Not in the library — added as your own exercises': '不在动作库中 — 已添加为自定义动作',
+  'Nothing new to import': '没有新内容可导入',
+  '{0} workouts imported': '已导入 {0} 次训练',
+  '{0} weigh-ins imported': '已导入 {0} 条称重记录',
+  'Could not read that file': '无法读取该文件',
+  'That file is empty': '该文件是空的',
+  'That file\'s columns aren\'t recognised — see the docs for supported apps.': '无法识别该文件的列 — 支持的应用请见文档。',
+  'Nothing to import from that file': '该文件中没有可导入的内容'
 }

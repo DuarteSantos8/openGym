@@ -15,6 +15,7 @@ import { Button, Slider } from './components/ui.jsx'
 import { glyphOf, GLYPH_GROUPS, DEFAULT_GLYPH } from './lib/glyphs.js'
 import BodyMap from './components/BodyMap.jsx'
 import { loadOfWorkouts } from './lib/muscles.js'
+import { parseImport, mergeImport } from './lib/import-csv.js'
 
 const S = () => useStore.getState().S
 const update = (...a) => useStore.getState().update(...a)
@@ -118,6 +119,90 @@ function BwSheet({ required, onDone, close }) {
 export function bwSheet(opts = {}) {
   const h = ui().openSheet(close => <BwSheet {...opts} close={close} />, { locked: !!opts.required })
   return h
+}
+
+/* ============================ import from another app ============================ */
+// Shows what a parsed export would actually do before anything is written. An import is
+// the one action where "just try it" is expensive — it's someone's entire training
+// history — so the numbers, the unit conversion and the exercises we couldn't recognise
+// are all on screen before the confirm button.
+function ImportSummary({ parsed, close }) {
+  const st = useStore(s => s.S)
+  const isBW = parsed.kind === 'bodyweight'
+  const have = isBW
+    ? parsed.bodyweight.filter(b => st.bodyweight.some(x => x.d === b.d)).length
+    : parsed.workouts.filter(w => st.workouts.some(x => x.d === w.d)).length
+  const fresh = (isBW ? parsed.bodyweight.length : parsed.workouts.length) - have
+
+  const doImport = () => {
+    let res
+    update(s => { res = mergeImport(s, parsed) })
+    close()
+    toast(isBW
+      ? t('{0} weigh-ins imported', res.added)
+      : t('{0} workouts imported', res.added))
+  }
+
+  return <>
+    <h3>{parsed.source ? t('Import from {0}', parsed.source) : t('Import history')}</h3>
+    <div className="muted small" style={{ marginBottom: 12 }}>
+      {parsed.from === parsed.to ? fmtDate(parsed.from, true) : fmtDate(parsed.from, true) + ' – ' + fmtDate(parsed.to, true)}
+    </div>
+
+    <div className="tiles" style={{ textAlign: 'left' }}>
+      {isBW ? <>
+        <div className="tile"><div className="l">{t('Weigh-ins')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{parsed.bodyweight.length}</div></div>
+        <div className="tile"><div className="l">{t('New')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{fresh}</div></div>
+      </> : <>
+        <div className="tile"><div className="l">{t('Workouts')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{parsed.workouts.length}</div></div>
+        <div className="tile"><div className="l">{t('Sets')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{parsed.sets}</div></div>
+        <div className="tile"><div className="l">{t('Exercises matched')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{parsed.matched}</div></div>
+        <div className="tile"><div className="l">{t('Added as your own')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{parsed.created}</div></div>
+      </>}
+    </div>
+
+    {parsed.converted && <div className="small" style={{ color: 'var(--yellow)', marginBottom: 10 }}>
+      {t('The file is in {0} and your profile is in {1} — weights will be converted.', parsed.fileUnit, st.unit)}
+    </div>}
+    {!isBW && !parsed.fileUnit && <div className="small dim" style={{ marginBottom: 10 }}>
+      {t('The file does not say which unit it uses — numbers are imported as they are.')}
+    </div>}
+    {have > 0 && <div className="small dim" style={{ marginBottom: 10 }}>
+      {t('{0} days already have data here and will be left alone.', have)}
+    </div>}
+    {!isBW && parsed.unmatchedNames.length > 0 && <>
+      <h4 className="sec">{t('Not in the library — added as your own exercises')}</h4>
+      <div className="mchips" style={{ marginBottom: 12 }}>
+        {parsed.unmatchedNames.slice(0, 12).map(n => <span key={n} className="mchip capitalize">{n}</span>)}
+        {parsed.unmatchedNames.length > 12 && <span className="mchip">+{parsed.unmatchedNames.length - 12}</span>}
+      </div>
+    </>}
+
+    <Button variant="primary" onClick={doImport} disabled={!fresh}>
+      {fresh ? t('Import') : t('Nothing new to import')}
+    </Button>
+    <div style={{ height: 8 }} />
+    <Button variant="ghost" className="dim" onClick={close}>{t('Cancel')}</Button>
+  </>
+}
+
+/** Read a CSV/XML export, then show what it would do. */
+export function importFromApp(file, onDone) {
+  const rd = new FileReader()
+  rd.onload = () => {
+    let parsed
+    try { parsed = parseImport(String(rd.result), { unit: S().unit }) }
+    catch (e) { toast(t('Could not read that file')); return }
+    if (parsed.error === 'empty') { toast(t('That file is empty')); return }
+    if (parsed.error) { toast(t("That file's columns aren't recognised — see the docs for supported apps.")); return }
+    if (parsed.kind === 'bodyweight' ? !parsed.bodyweight.length : !parsed.workouts.length) {
+      toast(t('Nothing to import from that file')); return
+    }
+    ui().openSheet(close => <ImportSummary parsed={parsed} close={close} />)
+    onDone && onDone()
+  }
+  rd.onerror = () => toast(t('Could not read that file'))
+  rd.readAsText(file)
 }
 
 /* ============================ target weight ============================ */

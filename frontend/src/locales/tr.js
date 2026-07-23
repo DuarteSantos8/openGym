@@ -380,5 +380,24 @@ export default {
   'Adductors': 'Adduktörler',
   'Hip flexors': 'Kalça fleksörleri',
   'Calves': 'Baldırlar',
-  'Shins': 'İncik'
+  'Shins': 'İncik',
+  // --- import from another app ---
+  'Import from another app': 'Başka uygulamadan içe aktar',
+  'FitNotes, Strong, Hevy — or body weight from Apple Health': 'FitNotes, Strong, Hevy — veya Apple Health\'ten vücut ağırlığı',
+  'Import from {0}': '{0} uygulamasından içe aktar',
+  'Import history': 'Geçmişi içe aktar',
+  'Weigh-ins': 'Tartımlar',
+  'Exercises matched': 'Eşleşen egzersizler',
+  'Added as your own': 'Kendi egzersizin olarak eklendi',
+  'The file is in {0} and your profile is in {1} — weights will be converted.': 'Dosya {0}, profilin {1} — ağırlıklar dönüştürülecek.',
+  'The file does not say which unit it uses — numbers are imported as they are.': 'Dosya birimi belirtmiyor — sayılar olduğu gibi aktarılıyor.',
+  '{0} days already have data here and will be left alone.': '{0} günde zaten veri var, bunlara dokunulmayacak.',
+  'Not in the library — added as your own exercises': 'Kütüphanede yok — kendi egzersizlerin olarak eklendi',
+  'Nothing new to import': 'İçe aktarılacak yeni bir şey yok',
+  '{0} workouts imported': '{0} antrenman içe aktarıldı',
+  '{0} weigh-ins imported': '{0} tartım içe aktarıldı',
+  'Could not read that file': 'Dosya okunamadı',
+  'That file is empty': 'Bu dosya boş',
+  'That file\'s columns aren\'t recognised — see the docs for supported apps.': 'Sütunlar tanınmadı — desteklenen uygulamalar için belgelere bak.',
+  'Nothing to import from that file': 'Bu dosyada içe aktarılacak bir şey yok'
 }
