@@ -399,5 +399,12 @@ export default {
   'Could not read that file': 'Не удалось прочитать файл',
   'That file is empty': 'Файл пуст',
   'That file\'s columns aren\'t recognised — see the docs for supported apps.': 'Колонки не распознаны — список поддерживаемых приложений в документации.',
-  'Nothing to import from that file': 'В этом файле нечего импортировать'
+  'Nothing to import from that file': 'В этом файле нечего импортировать',
+  // --- mobile build ---
+  'Your data': 'Ваши данные',
+  'All data stays on this phone': 'Все данные остаются на этом телефоне',
+  'No account, no cloud — back it up anytime with Export below.': 'Без аккаунта и облака — в любой момент сделайте резервную копию через «Экспорт» ниже.',
+  'Reminds you at this time on days that have a routine planned.': 'Напоминает в это время в дни с запланированной программой.',
+  'Workout day': 'День тренировки',
+  '{0} is on the plan today — let’s go!': 'Сегодня по плану {0} — вперёд!'
 }

@@ -399,5 +399,12 @@ export default {
   'Could not read that file': '无法读取该文件',
   'That file is empty': '该文件是空的',
   'That file\'s columns aren\'t recognised — see the docs for supported apps.': '无法识别该文件的列 — 支持的应用请见文档。',
-  'Nothing to import from that file': '该文件中没有可导入的内容'
+  'Nothing to import from that file': '该文件中没有可导入的内容',
+  // --- mobile build ---
+  'Your data': '你的数据',
+  'All data stays on this phone': '所有数据都保存在这部手机上',
+  'No account, no cloud — back it up anytime with Export below.': '无需账号、无需云端——随时可用下方的导出功能备份。',
+  'Reminds you at this time on days that have a routine planned.': '在安排了训练计划的日子，此时间提醒你。',
+  'Workout day': '训练日',
+  '{0} is on the plan today — let’s go!': '今天的计划是{0}——加油！'
 }

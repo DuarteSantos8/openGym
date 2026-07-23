@@ -1,0 +1,9 @@
+{
+  "appId": "ch.duartesantos.opengym",
+  "appName": "openGym",
+  "webDir": "dist",
+  "backgroundColor": "#0c0e12",
+  "android": {
+    "allowMixedContent": false
+  }
+}

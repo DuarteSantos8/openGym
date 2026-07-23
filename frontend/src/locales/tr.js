@@ -399,5 +399,12 @@ export default {
   'Could not read that file': 'Dosya okunamadı',
   'That file is empty': 'Bu dosya boş',
   'That file\'s columns aren\'t recognised — see the docs for supported apps.': 'Sütunlar tanınmadı — desteklenen uygulamalar için belgelere bak.',
-  'Nothing to import from that file': 'Bu dosyada içe aktarılacak bir şey yok'
+  'Nothing to import from that file': 'Bu dosyada içe aktarılacak bir şey yok',
+  // --- mobile build ---
+  'Your data': 'Verileriniz',
+  'All data stays on this phone': 'Tüm veriler bu telefonda kalır',
+  'No account, no cloud — back it up anytime with Export below.': 'Hesap yok, bulut yok — aşağıdaki Dışa aktar ile istediğiniz zaman yedekleyin.',
+  'Reminds you at this time on days that have a routine planned.': 'Rutin planlanmış günlerde bu saatte hatırlatır.',
+  'Workout day': 'Antrenman günü',
+  '{0} is on the plan today — let’s go!': 'Bugün planda {0} var — hadi!'
 }

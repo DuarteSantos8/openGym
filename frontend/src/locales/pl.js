@@ -399,5 +399,12 @@ export default {
   'Could not read that file': 'Nie udało się odczytać pliku',
   'That file is empty': 'Ten plik jest pusty',
   'That file\'s columns aren\'t recognised — see the docs for supported apps.': 'Nie rozpoznano kolumn — obsługiwane aplikacje znajdziesz w dokumentacji.',
-  'Nothing to import from that file': 'Brak danych do importu z tego pliku'
+  'Nothing to import from that file': 'Brak danych do importu z tego pliku',
+  // --- mobile build ---
+  'Your data': 'Twoje dane',
+  'All data stays on this phone': 'Wszystkie dane zostają na tym telefonie',
+  'No account, no cloud — back it up anytime with Export below.': 'Bez konta i chmury — w każdej chwili zrób kopię przez Eksport poniżej.',
+  'Reminds you at this time on days that have a routine planned.': 'Przypomina o tej godzinie w dni z zaplanowaną rutyną.',
+  'Workout day': 'Dzień treningu',
+  '{0} is on the plan today — let’s go!': 'Dziś w planie: {0} — do dzieła!'
 }

@@ -399,5 +399,12 @@ export default {
   'Could not read that file': 'वह फ़ाइल पढ़ी नहीं जा सकी',
   'That file is empty': 'वह फ़ाइल खाली है',
   'That file\'s columns aren\'t recognised — see the docs for supported apps.': 'फ़ाइल के कॉलम पहचाने नहीं गए — समर्थित ऐप्स के लिए दस्तावेज़ देखें।',
-  'Nothing to import from that file': 'उस फ़ाइल से आयात करने को कुछ नहीं'
+  'Nothing to import from that file': 'उस फ़ाइल से आयात करने को कुछ नहीं',
+  // --- mobile build ---
+  'Your data': 'आपका डेटा',
+  'All data stays on this phone': 'सारा डेटा इसी फ़ोन पर रहता है',
+  'No account, no cloud — back it up anytime with Export below.': 'न खाता, न क्लाउड — नीचे एक्सपोर्ट से कभी भी बैकअप लें।',
+  'Reminds you at this time on days that have a routine planned.': 'जिन दिनों रूटीन प्लान है, उस समय याद दिलाता है।',
+  'Workout day': 'वर्कआउट का दिन',
+  '{0} is on the plan today — let’s go!': 'आज प्लान में {0} है — चलो शुरू करें!'
 }

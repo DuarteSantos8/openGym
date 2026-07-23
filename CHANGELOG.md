@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+- 📱 **Standalone mobile app.** The same frontend now also builds as a native iPhone /
+  Android app (Capacitor) — the install-and-done flavor of openGym: no account, no server,
+  no sync. Everything stays on the phone.
+  - State is mirrored into a file in the app's private storage on every change, so your
+    log survives even when the OS evicts WebView storage (iOS does).
+  - The workout-day reminder becomes a **native notification** scheduled on the weekdays
+    your plan actually has a routine — no push server involved.
+  - Backups go out through the OS **share sheet** (Files, AirDrop, mail…).
+  - Exercise images/animations load from the same CDN as the live demo.
+  - `npm run build:mobile`, then open `android/` in Android Studio or `ios/` in Xcode —
+    see **docs/MOBILE.md**. `NOTICE.md` now carries an AGPL §7 app-store exception.
+
 - 📥 **Import your history from another app.** Settings → Data → *Import from another app*
   reads an export from **FitNotes** (both the Android and the FitNotes 2 iOS format),
   **Strong** and **Hevy**, and pulls body-weight history out of an **Apple Health** export.

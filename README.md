@@ -94,6 +94,14 @@ a build step locally either way.
 > Want it reachable from your phone over the internet with passkeys? You'll need an HTTPS
 > domain — a two-line change in `.env`. See **[docs/SELF_HOSTING.md](docs/SELF_HOSTING.md)**.
 
+## Mobile app (no server at all)
+
+The same codebase also builds a **standalone iPhone / Android app** (Capacitor): no account,
+no sync, no backend — everything stays on the phone, with native workout-day reminders and
+share-sheet backups. Self-hosting gets you multi-device sync and profiles for friends &
+family; the mobile app is the install-and-done flavor. Build it yourself from
+**[docs/MOBILE.md](docs/MOBILE.md)** — store listings are on the roadmap.
+
 ## How it works
 
 ```
@@ -139,6 +147,7 @@ Push notification keys are generated on first run and saved to `./data/vapid.jso
 
 Rough, community-driven — ideas and PRs welcome:
 
+- [x] Standalone mobile app — built from this repo today (see docs/MOBILE.md); App Store / Play Store listings pending
 - [ ] More starter plans (upper/lower, full-body, 5×5)
 - [x] Importers from FitNotes / Strong / Hevy, and body weight from Apple Health
 - [ ] Body measurements (waist, arms…) alongside weight

@@ -399,5 +399,12 @@ export default {
   'Could not read that file': '파일을 읽을 수 없습니다',
   'That file is empty': '파일이 비어 있습니다',
   'That file\'s columns aren\'t recognised — see the docs for supported apps.': '열을 인식할 수 없습니다 — 지원 앱은 문서를 참고하세요.',
-  'Nothing to import from that file': '이 파일에서 가져올 내용이 없습니다'
+  'Nothing to import from that file': '이 파일에서 가져올 내용이 없습니다',
+  // --- mobile build ---
+  'Your data': '내 데이터',
+  'All data stays on this phone': '모든 데이터는 이 휴대폰에만 저장됩니다',
+  'No account, no cloud — back it up anytime with Export below.': '계정도 클라우드도 없음 — 아래 내보내기로 언제든 백업하세요.',
+  'Reminds you at this time on days that have a routine planned.': '루틴이 계획된 날 이 시간에 알려 드립니다.',
+  'Workout day': '운동하는 날',
+  '{0} is on the plan today — let’s go!': '오늘은 {0} 하는 날이에요 — 화이팅!'
 }
