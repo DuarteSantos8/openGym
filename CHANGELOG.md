@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## v1.2.1 — 2026-07-23
+
+A muscle map across the app, and a live demo you can try without installing anything.
 
 - 💪 **Muscle map.** Three places now show which muscles your training actually reaches, drawn on a
   front-and-back body diagram shaded like the activity heatmap — more accent means more work.
