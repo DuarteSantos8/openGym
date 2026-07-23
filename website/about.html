@@ -62,22 +62,17 @@
   <p class="who" style="color:var(--faint)">— <a href="https://duarte-santos.ch" rel="noopener">Duarte Santos</a></p>
 
   <h2>Milestones</h2>
-  <ul class="tl">
+  <!-- The releases below are a static fallback: site.js replaces them with the live list
+       of published GitHub releases, so this page never needs manual updating. Only the
+       first entry (pre-GitHub) is permanent. -->
+  <ul class="tl" id="milestones">
     <li><b>The personal app</b><span class="when">early summer 2026</span>
       <p>A hand-written vanilla-JS page on my own server. One user, zero ambitions.</p></li>
-    <li><b>v1.0 — open-sourced</b><span class="when">July 20, 2026</span>
+    <li data-fallback><b>v1.0.0 — open-sourced</b><span class="when">July 20, 2026</span>
       <p>Docker-Compose self-hosting, passkey profiles, guided workouts, 1,324-exercise
          library. AGPL from day one.</p></li>
-    <li><b>v1.1 — the community version</b><span class="when">July 21–22, 2026</span>
-      <p>Twelve UI languages, custom exercises, equipment filters, supersets &amp; cardio
-         polish, push notifications with workout reminders, an admin dashboard with
-         invite-only signup.</p></li>
-    <li><b>v1.2 — redesign, muscle map &amp; demo</b><span class="when">July 23, 2026</span>
-      <p>A full visual redesign with a hand-drawn icon set, the muscle-balance body map,
-         a browser demo, and importers that bring your history over from other apps.</p></li>
-    <li><b>v1.2.2 — the mobile app</b><span class="when">July 23, 2026</span>
-      <p>The standalone Android app: everything on your phone, no account, no server —
-         distributed as a plain APK from this site, deliberately store-free.</p></li>
+    <li data-fallback><b>Every release since</b><span class="when">ongoing</span>
+      <p>See the full list on <a href="https://github.com/DuarteSantos8/openGym/releases" rel="noopener">GitHub → Releases</a>.</p></li>
   </ul>
 
   <h2>Principles</h2>
