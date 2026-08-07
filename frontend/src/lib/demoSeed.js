@@ -145,7 +145,7 @@ export function buildDemoState() {
   if (!byWeekday[today.getDay()] && !workouts.some(w => w.d === tIso)) {
     const order = [push, pull, legs]
     const lastName = workouts.length ? workouts[workouts.length - 1].name : legs.name
-    dayPlan[tIso] = order[(order.findIndex(r => r.name === lastName) + 1) % order.length].id
+    dayPlan[tIso] = [order[(order.findIndex(r => r.name === lastName) + 1) % order.length].id]
   }
 
   return {

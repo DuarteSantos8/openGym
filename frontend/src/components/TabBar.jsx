@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
-import { effectiveRoutine } from '../lib/history.js'
+import { effectiveRoutines } from '../lib/history.js'
 import { todayISO } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
 import Icon from './Icon.jsx'
@@ -17,8 +17,8 @@ export default function TabBar({ onStart }) {
 
   const startWorkout = () => {
     if (!S.active) {
-      const r = effectiveRoutine(S, todayISO())
-      if (r && r.ex.length) { onStart(r.id); return }
+      const plans = effectiveRoutines(S, todayISO())
+      if (plans.length === 1 && plans[0].ex.length) { onStart(plans[0].id); return }
     }
     nav('/workout')
   }

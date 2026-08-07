@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { modeOf, isTimed, fmtSec, setLabel, defaultConfig, buildSets, freestyleConfig, exLine, workoutVolume, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, removeRowAt } from './history.js'
+import { modeOf, isTimed, fmtSec, setLabel, defaultConfig, buildSets, freestyleConfig, exLine, workoutVolume, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, removeRowAt, effectiveRoutineIds, effectiveRoutineId, normalizeDayPlan } from './history.js'
 import { EXDB } from './exercises.js'
 
 // Real ids out of the shipped catalogue, so the body-part fallback is exercised for real.
@@ -527,5 +527,44 @@ describe('session row helpers', () => {
     const next = removeRowAt(rows, 0)
     expect(next.length).toBe(1)
     expect(next[0].w).toBe(70)
+
+describe('multiple plans per day', () => {
+  const routines = [{ id: 'morning' }, { id: 'evening' }, { id: 'weekly' }]
+  const monday = '2026-01-05'
+
+  it('migrates a legacy scalar override to a list without mutating the loaded object', () => {
+    const state = { dayPlan: { [monday]: 'morning' } }
+    const migrated = normalizeDayPlan(state)
+
+    expect(migrated).not.toBe(state)
+    expect(migrated.dayPlan).toEqual({ [monday]: ['morning'] })
+    expect(state.dayPlan[monday]).toBe('morning')
+  })
+
+  it('keeps legacy scalar overrides and rest overrides effective', () => {
+    const legacy = { routines, week: { 1: 'weekly' }, dayPlan: { [monday]: 'morning' } }
+    const rest = { routines, week: { 1: 'weekly' }, dayPlan: { [monday]: 'rest' } }
+
+    expect(effectiveRoutineIds(legacy, monday)).toEqual(['morning'])
+    expect(effectiveRoutineId(legacy, monday)).toBe('morning')
+    expect(effectiveRoutineIds(rest, monday)).toEqual([])
+    expect(effectiveRoutineId(rest, monday)).toBe(null)
+  })
+
+  it('returns every valid routine in a multi-plan override in stored order', () => {
+    const state = {
+      routines,
+      week: { 1: 'weekly' },
+      dayPlan: { [monday]: ['evening', 'morning', 'evening', 'missing'] }
+    }
+
+    expect(effectiveRoutineIds(state, monday)).toEqual(['evening', 'morning'])
+    expect(effectiveRoutineId(state, monday)).toBe('evening')
+  })
+
+  it('falls back to the weekly plan when there is no date override', () => {
+    const state = { routines, week: { 1: 'weekly' }, dayPlan: {} }
+    expect(effectiveRoutineIds(state, monday)).toEqual(['weekly'])
+
   })
 })

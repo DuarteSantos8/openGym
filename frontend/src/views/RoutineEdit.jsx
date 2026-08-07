@@ -102,7 +102,14 @@ export default function RoutineEdit() {
         update(s => {
           s.routines = s.routines.filter(x => x.id !== id)
           Object.keys(s.week).forEach(k => { if (s.week[k] === id) delete s.week[k] })
-          Object.keys(s.dayPlan).forEach(k => { if (s.dayPlan[k] === id) delete s.dayPlan[k] })
+          Object.keys(s.dayPlan).forEach(k => {
+            const value = s.dayPlan[k]
+            if (Array.isArray(value)) {
+              const kept = value.filter(x => x !== id)
+              if (kept.length) s.dayPlan[k] = kept
+              else delete s.dayPlan[k]
+            } else if (value === id) delete s.dayPlan[k]
+          })
         })
         nav('/plan')
       }
