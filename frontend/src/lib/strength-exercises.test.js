@@ -93,18 +93,29 @@ describe('strengthExerciseRows', () => {
     expect(muscleRows[0].name).toBe('Bench Press')
   })
 
-  it('applies the primary muscle decay to the expected current 1RM', () => {
+  it('applies the exercise own decay to the expected current 1RM', () => {
     const S = unitState([workout(3, [bench]), workout(30, [squat])])
     const rows = strengthExerciseRows(S, NOW)
     const benchRow = rows.find(r => r.id === 'bench')
     const squatRow = rows.find(r => r.id === 'squat')
-    // chest trained 3 days ago -> still inside the 14-day full-retention plateau
+    // bench last done 3 days ago -> still inside the 14-day full-retention plateau
     expect(benchRow.decay).toBe(1)
     expect(benchRow.current).toBe(102)
-    // quadriceps trained 30 days ago -> 16 days past the plateau at a 28-day half-life
-    const quadDecay = 0.5 ** (16 / 28)
-    expect(squatRow.decay).toBeCloseTo(quadDecay, 4)
-    expect(squatRow.current).toBeCloseTo(Math.round(116.7 * quadDecay * 10) / 10, 2)
+    // squat last done 30 days ago -> 16 days past the plateau at a 28-day half-life
+    const squatDecay = 0.5 ** (16 / 28)
+    expect(squatRow.decay).toBeCloseTo(squatDecay, 4)
+    expect(squatRow.current).toBeCloseTo(Math.round(116.7 * squatDecay * 10) / 10, 2)
+  })
+
+  it('keeps the exercise own decay even when its muscle is kept fresh by other work', () => {
+    // bench last done 30 days ago, but chest is fresh (fly trained 3 days ago): the row
+    // speaks for the exercise, so bench still shows its own decline.
+    const S = unitState([workout(30, [bench]), workout(3, [fly])])
+    const rows = strengthExerciseRows(S, NOW)
+    const benchRow = rows.find(r => r.id === 'bench')
+    const benchDecay = 0.5 ** (16 / 28)
+    expect(benchRow.decay).toBeCloseTo(benchDecay, 4)
+    expect(benchRow.current).toBeCloseTo(Math.round(102 * benchDecay * 10) / 10, 2)
   })
 })
 
@@ -123,18 +134,16 @@ describe('strengthExerciseRowsForMuscle', () => {
     expect(flyRow.current).toBe(28)
   })
 
-  it('uses the tapped muscle decay even when it differs from the exercise primary', () => {
-    const S = unitState([workout(30, [bench]), workout(3, [fly])])
+  it('the tapped muscle filters the list; the row decay stays the exercise own', () => {
+    const S = unitState([workout(3, [bench]), workout(30, [fly])])
     const rows = strengthExerciseRowsForMuscle(S, NOW, 'triceps')
     const benchRow = rows.find(r => r.id === 'bench')
-    // bench's own primary is chest (fresh via fly 3 days ago), but the map's tapped muscle
-    // is triceps, whose latest stimulus is the 30-day-old bench - the row reads the decay of
-    // the muscle the user is looking at, not the exercise's own primary
+    // bench trains triceps secondarily (0.4), so it appears under the tapped triceps -
+    // but the decay is bench's own (3 days ago -> full), not triceps' stale muscle value.
     expect(benchRow.weight).toBe(0.4)
     expect(benchRow.primary).toBe('chest')
-    const tricepsDecay = 0.5 ** (16 / 28)
-    expect(benchRow.decay).toBeCloseTo(tricepsDecay, 4)
-    expect(benchRow.current).toBeCloseTo(Math.round(102 * tricepsDecay * 10) / 10, 2)
+    expect(benchRow.decay).toBe(1)
+    expect(benchRow.current).toBe(102)
   })
 
   it('returns nothing for a muscle nothing trains', () => {

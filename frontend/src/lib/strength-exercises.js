@@ -1,16 +1,40 @@
 // Per-exercise rows for the Strength view: best estimated 1RM from the user's own logged
-// sets, the retained-strength decay that applies to the exercise, and the expected CURRENT
-// 1RM (= estimate x retained strength). Muscle mapping is catalogue-first (EXIDX), exactly
-// like the fatigue/strength maps - so the decay a row shows always matches the muscle the
-// map shows - falling back to the workout entry's logged snapshot (muscleWeights) for
-// exercises no longer in the catalogue.
+// sets, the exercise's OWN retained-strength decay (same 14-day plateau / 28-day half-life
+// / 0.5 floor model as the muscle map, applied to the exercise's last done work set), and
+// the expected CURRENT 1RM (= estimate x decay). The body map keeps the per-muscle model;
+// the exercise list deliberately reads per-exercise, so an old exercise shows its own
+// decline even when its muscle is kept fresh by other work. Muscle mapping is
+// catalogue-first (EXIDX), exactly like the fatigue/strength maps, falling back to the
+// logged snapshot (muscleWeights) for exercises no longer in the catalogue.
 import { best1RM } from './onerm.js'
-import { strengthOf } from './recovery.js'
+import { STRENGTH_FULL_MS, STRENGTH_HALF_LIFE_MS, STRENGTH_FLOOR, halfLifeDecay } from './recovery.js'
 import { musclesOf } from './muscles.js'
 import { EXIDX } from './exercises.js'
 import { historyUnitCompatible } from './workout-model.js'
 
 const round1 = value => Math.round(value * 10) / 10
+
+// Same retained-strength curve the muscle map uses, applied to one exercise's age.
+function strengthFromAge(ageMs) {
+  if (!Number.isFinite(ageMs) || ageMs < 0) return STRENGTH_FLOOR
+  if (ageMs <= STRENGTH_FULL_MS) return 1
+  return Math.max(STRENGTH_FLOOR, halfLifeDecay(ageMs - STRENGTH_FULL_MS, STRENGTH_HALF_LIFE_MS))
+}
+
+// Timestamp of the exercise's latest completed WORK set (warm-ups excluded - they are prep,
+// not stimulus, and the strength model is built on effective work).
+function lastWorkSetAt(S, id) {
+  let latest = -Infinity
+  for (const workout of S?.workouts || []) {
+    if (!historyUnitCompatible(workout, S.unit)) continue
+    const ts = workout.start || new Date(workout.d).getTime()
+    if (!Number.isFinite(ts) || ts <= latest) continue
+    const entry = (workout.entries || []).find(e => e.id === id)
+    if (!entry) continue
+    if ((entry.sets || []).some(s => s.done === true && !s.warmup)) latest = ts
+  }
+  return Number.isFinite(latest) ? latest : null
+}
 
 function snapshotWeights(entry) {
   const catalogue = entry && typeof entry === 'object' ? EXIDX[entry.id] : null
@@ -25,8 +49,8 @@ function snapshotWeights(entry) {
   return musclesOf(entry)
 }
 
-// Highest-weight muscle of an exercise - the one whose decay governs the exercise's
-// expected current 1RM when no muscle is selected on the map.
+// Highest-weight muscle of an exercise - used for the primary/secondary badge and the
+// per-muscle link, not for the decay (the exercise's own decay is what the row shows).
 export function primaryMuscleOf(entry) {
   const weights = snapshotWeights(entry)
   let best = null
@@ -55,28 +79,27 @@ function firstEntryWithId(S, id) {
 
 /**
  * Strength rows for every exercise with an estimate: best estimated 1RM (work sets only,
- * warm-ups excluded), the estimate's date, the exercise's primary muscle, that muscle's
- * retained strength, and the expected current 1RM (estimate x decay). Sorted by expected
- * current 1RM, strongest first. Exercises without a usable estimate are omitted - a made-up
- * number is worse than no number.
+ * warm-ups excluded), the estimate's date, the exercise's primary muscle, the exercise's
+ * OWN decay (from its last done work set), and the expected current 1RM (estimate x decay).
+ * Sorted by expected current 1RM, strongest first. Exercises without a usable estimate are
+ * omitted - a made-up number is worse than no number.
  */
 export function strengthExerciseRows(S, now) {
   const workouts = S?.workouts || []
-  const strength = strengthOf(workouts, now)
   const ids = [...new Set(workouts.flatMap(w => (w.entries || []).map(e => e.id)))]
   const rows = []
   for (const id of ids) {
     const best = best1RM(S, id)
     if (!best) continue
     const entry = firstEntryWithId(S, id)
-    const primary = primaryMuscleOf(entry)
-    const decay = primary ? (strength[primary.slug] ?? 0.5) : 0.5
+    const lastAt = lastWorkSetAt(S, id)
+    const decay = lastAt == null ? STRENGTH_FLOOR : strengthFromAge(Number(now) - lastAt)
     rows.push({
       id,
       name: exerciseName(entry) || id,
       est: best.est,
       estDate: best.d,
-      primary: primary ? primary.slug : null,
+      primary: primaryMuscleOf(entry) ? primaryMuscleOf(entry).slug : null,
       decay,
       current: round1(best.est * decay),
     })
@@ -85,14 +108,12 @@ export function strengthExerciseRows(S, now) {
 }
 
 /**
- * Strength rows for the exercises whose logged snapshot includes `slug`, each with its
- * muscle weight (1 = primary, 0.4 = secondary), the estimate, and the expected current 1RM
- * under THAT muscle's decay - the map's selected muscle is the one whose decay is shown.
+ * Strength rows for the exercises whose logged snapshot includes `slug` (primary 1 /
+ * secondary 0.4 badge), each with the exercise's OWN decay and expected current 1RM - the
+ * tapped muscle filters the list, the row still speaks for the exercise.
  */
 export function strengthExerciseRowsForMuscle(S, now, slug) {
   const workouts = S?.workouts || []
-  const strength = strengthOf(workouts, now)
-  const decay = strength[slug] ?? 0.5
   const seen = new Map()
   for (const workout of workouts) {
     if (!historyUnitCompatible(workout, S.unit)) continue
@@ -103,6 +124,8 @@ export function strengthExerciseRowsForMuscle(S, now, slug) {
       if (!weight) continue
       const best = best1RM(S, entry.id)
       if (!best) continue
+      const lastAt = lastWorkSetAt(S, entry.id)
+      const decay = lastAt == null ? STRENGTH_FLOOR : strengthFromAge(Number(now) - lastAt)
       const primary = primaryMuscleOf(entry)
       seen.set(entry.id, {
         id: entry.id,
