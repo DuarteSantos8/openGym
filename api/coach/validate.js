@@ -282,8 +282,17 @@ export function validateReview(data, plan) {
       case 'sec': if (!isInt(c.after, 5, 3600) ) { errors.push(`${where}.after must be seconds (5-3600)`); return; } break;
       case 'cardio': {
         const a = c.after || {};
-        if (!isInt(a.min, 1, 180) && !isNum(a.speed)) { errors.push(`${where}.after must carry min and/or speed`); return; }
-        out.after = { ...(isInt(a.min, 1, 180) ? { min: a.min } : {}), ...(isNum(a.speed) && a.speed > 0 ? { speed: a.speed } : {}) };
+        // Distance is the third dimension endurance work is actually prescribed in: a run and a
+        // row are set by how far, not by a km/h dial. Metres, capped at 200 km — far past any
+        // session anyone plans, and low enough that a stray unit conversion is caught here.
+        if (!isInt(a.min, 1, 180) && !isNum(a.speed) && !isInt(a.dist, 1, 200000)) {
+          errors.push(`${where}.after must carry min, dist and/or speed`); return;
+        }
+        out.after = {
+          ...(isInt(a.min, 1, 180) ? { min: a.min } : {}),
+          ...(isInt(a.dist, 1, 200000) ? { dist: a.dist } : {}),
+          ...(isNum(a.speed) && a.speed > 0 ? { speed: a.speed } : {})
+        };
         break;
       }
       case 'inc': if (!isNum(c.after) || c.after <= 0) { errors.push(`${where}.after must be a positive increment`); return; } break;

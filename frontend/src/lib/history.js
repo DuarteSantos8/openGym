@@ -40,6 +40,26 @@ export const sideReps = reps => (reps || 0) / 2
 // that stayed odd would put a rep on one side and not the other.
 export const repStep = cfg => (isPerSide(cfg) ? 2 : 1)
 
+/* Endurance readings, all derived rather than stored.
+ *
+ * A cardio set records what actually happened — minutes, and (new) distance in metres. Pace and
+ * the rowing 500 m split are computed from those two, never entered, for the same reason the
+ * per-side split is derived: a number that is sometimes typed and sometimes calculated is the
+ * one that goes wrong.
+ *
+ * Metres rather than the profile's unit so a 5,000 m run and a 2,000 m row are exact and
+ * comparable; display converts, exactly as it already does for weights.
+ */
+export const hasDist = s => Number(s && s.dist) > 0
+/** min/km — how runners actually talk about a run. */
+export const paceOf = (min, dist) => (min > 0 && dist > 0) ? (min / (dist / 1000)) : null
+/** Time per 500 m in seconds — the universal unit on an erg, where km/h is meaningless. */
+export const splitOf = (min, dist) => (min > 0 && dist > 0) ? (min * 60) / (dist / 500) : null
+/** "5 km", or "800 m" below a kilometre. */
+export const fmtDist = m => (m >= 1000) ? `${fmtNum(m / 1000)} km` : `${Math.round(m || 0)} m`
+/** "5:30 /km" */
+export const fmtPace = p => p == null ? '' : `${Math.floor(p)}:${String(Math.round((p % 1) * 60)).padStart(2, '0')} /km`
+
 // mm:ss for a work duration — seconds alone read badly past a minute ("90 s" vs "1:30").
 export function fmtSec(sec) {
   const n = Math.max(0, Math.round(Number(sec) || 0))
@@ -94,7 +114,16 @@ const effortTail = s => {
 export function setLabel(id, s, cfg) {
   const c = cfg || { id }
   const mode = modeOf(c)
-  if (mode === 'cardio') return `${s.min || 0} min @ ${fmtNum(s.speed || 0)} km/h`
+  if (mode === 'cardio') {
+    // Distance is the better record when it exists: it is what a run or a row is measured by,
+    // and pace falls out of it. A treadmill set carrying only a speed reads exactly as before.
+    if (hasDist(s)) {
+      const p = paceOf(s.min, s.dist)
+      return `${fmtDist(s.dist)} · ${s.min || 0} min${p ? ' · ' + fmtPace(p) : ''}`
+    }
+    // No distance recorded: byte-for-byte what it rendered before this existed.
+    return `${s.min || 0} min @ ${fmtNum(s.speed || 0)} km/h`
+  }
   if (mode === 'time') return fmtSec(s.sec) + (s.w > 0 ? ` · ${fmtNum(s.w)}` : '')
   // Bodyweight reads as what you did — "12", or "+10 × 12" once there is a belt involved —
   // rather than "0×12", which says a set was performed with no weight and means nothing.
@@ -124,7 +153,10 @@ export function exLine(cfg, unit) {
   const n = cfg.sets || 1
   // Added weight reads as added: "+10 kg" on a dip belt, "60 kg" on a barbell.
   const load = cfg.weight ? ' · ' + (isBw(cfg) ? '+' : '') + fmtNum(cfg.weight) + ' ' + unit : ''
-  if (mode === 'cardio') return `${n} × ${cfg.min || 20} min @ ${fmtNum(cfg.speed || 8)} km/h`
+  if (mode === 'cardio') {
+    if (cfg.dist > 0) return `${n} × ${fmtDist(cfg.dist)}${cfg.min ? ' · ' + cfg.min + ' min' : ''}`
+    return `${n} × ${cfg.min || 20} min @ ${fmtNum(cfg.speed || 8)} km/h`
+  }
   if (mode === 'time') return `${n} × ${fmtSec(cfg.sec || 45)}${load}`
   // This is the line with room for it, so the split is spelled out: "3 × 16 · 8/side".
   const split = isPerSide(cfg) ? ' · ' + t('{0}/side', fmtNum(sideReps(cfg.reps))) : ''

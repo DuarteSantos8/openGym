@@ -1,7 +1,10 @@
-import { EXDB } from './exercises-data.js'
+import { EXDB as DATASET } from './exercises-data.js'
+import { EXTRA } from './exercises-extra.js'
 import { t } from './i18n.js'
 
-export { EXDB }
+/* The vendored dataset plus openGym's own rows. Merged here rather than in the data file so a
+   dataset refresh cannot drop them — see exercises-extra.js. */
+export const EXDB = [...DATASET, ...EXTRA]
 export const EXIDX = {}
 EXDB.forEach(e => { EXIDX[e.id] = e })
 export const BODYPARTS = [...new Set(EXDB.map(e => e.bp))].sort()

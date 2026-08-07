@@ -284,3 +284,32 @@ test('every allowed change type has a validator that accepts a well-formed insta
     assert.equal(r.ok, true, `${type} should validate: ${JSON.stringify(r.errors)}`);
   }
 });
+
+test('a cardio change may be prescribed by distance, not just by a speed dial', () => {
+  const tgt = { routineId: 'r1', exId: '0007' };   // any exercise in the plan
+  // Distance alone is a complete prescription: that is how a run or a row is actually set.
+  const byDist = review([change({ type: 'cardio', target: tgt, after: { dist: 5000 } })]);
+  assert.equal(byDist.ok, true);
+  assert.equal(byDist.proposal.changes[0].after.dist, 5000);
+
+  // The old shapes keep working, unchanged.
+  assert.equal(review([change({ type: 'cardio', target: tgt, after: { min: 30 } })]).ok, true);
+  assert.equal(review([change({ type: 'cardio', target: tgt, after: { min: 25, speed: 9 } })]).ok, true);
+
+  // Bounds: metres, capped well past any real session, so a unit slip is caught here.
+  assert.equal(review([change({ type: 'cardio', target: tgt, after: { dist: 0 } })]).ok, false);
+  assert.equal(review([change({ type: 'cardio', target: tgt, after: { dist: 500000 } })]).ok, false);
+  assert.equal(review([change({ type: 'cardio', target: tgt, after: {} })]).ok, false);
+});
+
+test('the first-party endurance exercises are in the library the validator checks against', () => {
+  // The vendored dataset has no rowing machine and nothing for running outdoors; these are
+  // openGym's own rows, and a proposal naming one has to resolve like any other exercise.
+  for (const id of ['og-run-outdoor', 'og-rower', 'og-treadmill-run', 'og-elliptical-run']) {
+    const r = review([change({
+      type: 'add-exercise', target: { routineId: 'r1' },
+      after: { id, sets: 1, mode: 'cardio' }
+    })]);
+    assert.equal(r.ok, true, `${id} should resolve: ${JSON.stringify(r.errors)}`);
+  }
+});
