@@ -137,7 +137,7 @@ function referenceTonnage(workouts, slug, now, bodyweightKg, oneRms) {
 // Yield one weighted stimulus per completed set. The stimulus is the set's tonnage scaled by
 // the exercise's per-muscle weights (primary 1, secondary 0.4), so one set of 50 reps at
 // medium weight registers real volume instead of counting like one set of 5.
-function completedStimuli(workouts, include, bodyweightKg, oneRms) {
+function completedStimuli(workouts, include, bodyweightKg, oneRms, includeSet) {
   const stimuli = []
   for (const workout of workouts || []) {
     const timestamp = workoutTimestamp(workout)
@@ -146,6 +146,7 @@ function completedStimuli(workouts, include, bodyweightKg, oneRms) {
       const weights = musclesOf(EXIDX[entry.id])
       for (const set of entry.sets || []) {
         if (set?.done !== true) continue
+        if (includeSet && !includeSet(set)) continue
         const tonnage = setTonnage(EXIDX[entry.id], set, bodyweightKg, oneRms.get(entry.id))
         if (tonnage <= 0) continue
         for (const [slug, weight] of Object.entries(weights)) {
@@ -225,7 +226,7 @@ export function strengthOf(workouts, now) {
   const current = Number(now)
   const latest = Object.fromEntries(MUSCLES.map(slug => [slug, -Infinity]))
   const oneRms = exercise1RMs(workouts, -Infinity)
-  const stimuli = completedStimuli(workouts, () => true, null, oneRms)
+  const stimuli = completedStimuli(workouts, () => true, null, oneRms, set => !set?.warmup)
   for (const stimulus of stimuli) {
     if (stimulus.timestamp > latest[stimulus.slug]) latest[stimulus.slug] = stimulus.timestamp
   }
