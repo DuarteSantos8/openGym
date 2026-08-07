@@ -104,9 +104,15 @@ function cancelRestTimer(userId) {
 }
 
 // "Workout planned today" reminder — one per user per day, at their chosen time.
-// Duplicated (not imported) from frontend/src/lib/history.js effectiveRoutineId — tiny pure helper, not worth sharing across the two runtimes.
+// Duplicated (not imported) from frontend/src/lib/history.js effectiveRoutineIds — tiny pure
+// helper, not worth sharing across the two runtimes. Legacy scalar values are still accepted;
+// new date overrides are arrays and the first valid routine drives the single daily reminder.
 function effectiveRoutineId(S, iso) {
   const ov = S.dayPlan?.[iso];
+  if (Array.isArray(ov)) {
+    if (ov.includes('rest')) return null;
+    return ov.find(id => id && S.routines?.some(r => r.id === id)) || null;
+  }
   if (ov === 'rest') return null;
   if (ov && S.routines?.some(r => r.id === ov)) return ov;
   const wd = new Date(iso + 'T12:00:00').getDay();

@@ -527,6 +527,8 @@ describe('session row helpers', () => {
     const next = removeRowAt(rows, 0)
     expect(next.length).toBe(1)
     expect(next[0].w).toBe(70)
+  })
+})
 
 describe('multiple plans per day', () => {
   const routines = [{ id: 'morning' }, { id: 'evening' }, { id: 'weekly' }]
@@ -549,6 +551,12 @@ describe('multiple plans per day', () => {
     expect(effectiveRoutineId(legacy, monday)).toBe('morning')
     expect(effectiveRoutineIds(rest, monday)).toEqual([])
     expect(effectiveRoutineId(rest, monday)).toBe(null)
+  })
+
+  it('keeps the weekly fallback for a stale legacy override after read migration', () => {
+    const state = normalizeDayPlan({ routines, week: { 1: 'weekly' }, dayPlan: { [monday]: 'missing' } })
+
+    expect(effectiveRoutineIds(state, monday)).toEqual(['weekly'])
   })
 
   it('returns every valid routine in a multi-plan override in stored order', () => {

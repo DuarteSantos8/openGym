@@ -208,10 +208,11 @@ export function effectiveRoutineIds(S, iso) {
   if (asRoutineIds(raw).includes('rest')) return []
 
   const ids = validRoutineIds(S, raw)
-  if (ids.length || !hasOverride || Array.isArray(raw)) return ids
+  if (ids.length || !hasOverride || (Array.isArray(raw) && raw.length === 0)) return ids
 
-  // Preserve the old scalar helper's behavior for a stale/unknown override: fall back to the
-  // weekly routine rather than turning a bad id into an unexpected rest day.
+  // Preserve the old helper's behavior for a stale/unknown override: fall back to the weekly
+  // routine rather than turning a bad legacy id into an unexpected rest day. Empty arrays remain
+  // explicit rest overrides, while a list containing valid ids already returned above.
   return validRoutineIds(S, S?.week?.[wd])
 }
 
