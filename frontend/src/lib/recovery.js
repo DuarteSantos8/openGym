@@ -71,7 +71,11 @@ const epley1RM = (load, reps) => load * (1 + Math.min(reps || 1, REP_CAP) / 30)
 // intensity (load / its exercise's estimated 1RM) is what defines a hard set: the same
 // tonnage at 90% of your 1RM is far more fatiguing than at 50%, and the estimate is always
 // the user's own, so beginners and experts are treated by the same relative scale.
+// Memoised per (workouts, cutoff): fatigueOf and strengthOf both call it on the same
+// workouts array each 60-second tick, and the map is a pure function of those two inputs.
+let oneRmCache = { workouts: undefined, cutoff: NaN, map: new Map() }
 function exercise1RMs(workouts, cutoff) {
+  if (oneRmCache.workouts === workouts && oneRmCache.cutoff === cutoff) return oneRmCache.map
   const best = new Map()
   for (const workout of workouts || []) {
     const timestamp = workoutTimestamp(workout)
@@ -84,6 +88,7 @@ function exercise1RMs(workouts, cutoff) {
       }
     }
   }
+  oneRmCache = { workouts, cutoff, map: best }
   return best
 }
 
@@ -101,37 +106,48 @@ function setTonnage(ex, set, bodyweightKg, oneRm) {
   const reps = set?.r || 1
   let load = set?.w || 0
   if (!load && ex?.eq === 'body weight') load = bodyweightKg || BODYWEIGHT_REF_LOAD
-  if (set?.unit === 'lb') load *= 0.45359237
   const raw = load * reps
   if (!(oneRm > 0) || !(load > 0)) return raw
   return raw * Math.min(1, load / oneRm) ** 1.5
 }
 
-// The user's own reference volume for a muscle: the mean per-session tonnage over the scan
+// The user's own reference volume per muscle: the mean per-session tonnage over the scan
 // window (raw session sums, not decayed). With fewer than FATIGUE_MIN_SESSIONS of history the
 // reference stays at FATIGUE_REF_VOLUME so a light or new user still sees a sensible curve.
-function referenceTonnage(workouts, slug, now, bodyweightKg, oneRms) {
+// ONE pass over history accumulates every muscle at once (the previous per-slug version
+// walked the whole history once per muscle - 18 scans on every 60-second tick).
+function referenceTonnages(workouts, now, bodyweightKg, oneRms) {
   const cutoff = Number(now) - FATIGUE_SCAN_MS
-  const sessions = []
+  const sessions = Object.fromEntries(MUSCLES.map(slug => [slug, []]))
   for (const workout of workouts || []) {
     const timestamp = workoutTimestamp(workout)
     if (!Number.isFinite(timestamp) || timestamp <= cutoff) continue
-    let sum = 0
+    const sums = Object.fromEntries(MUSCLES.map(slug => [slug, 0]))
     for (const entry of workout.entries || []) {
       const weights = musclesOf(EXIDX[entry.id])
-      const weight = weights[slug]
-      if (!weight) continue
       for (const set of entry.sets || []) {
         if (set?.done !== true) continue
-        sum += setTonnage(EXIDX[entry.id], set, bodyweightKg, oneRms.get(entry.id)) * weight
+        const tonnage = setTonnage(EXIDX[entry.id], set, bodyweightKg, oneRms.get(entry.id))
+        if (tonnage <= 0) continue
+        for (const [slug, weight] of Object.entries(weights)) {
+          if (Object.prototype.hasOwnProperty.call(MUSCLES_BY_SLUG, slug)) {
+            sums[slug] += tonnage * weight
+          }
+        }
       }
     }
-    if (sum > 0) sessions.push(sum)
+    for (const slug of MUSCLES) {
+      if (sums[slug] > 0) sessions[slug].push(sums[slug])
+    }
   }
-  if (sessions.length >= FATIGUE_MIN_SESSIONS) {
-    return sessions.reduce((a, b) => a + b, 0) / sessions.length
+  const out = {}
+  for (const slug of MUSCLES) {
+    const list = sessions[slug]
+    out[slug] = list.length >= FATIGUE_MIN_SESSIONS
+      ? list.reduce((a, b) => a + b, 0) / list.length
+      : FATIGUE_REF_VOLUME
   }
-  return FATIGUE_REF_VOLUME
+  return out
 }
 
 // Yield one weighted stimulus per completed set. The stimulus is the set's tonnage scaled by
@@ -188,6 +204,11 @@ function fatigueValue(events, now, refVolume = FATIGUE_REF_VOLUME) {
  * decayed to `now`, and normalised with the saturation curve 1 - exp(-v / FATIGUE_REF_VOLUME).
  * The result always contains every drawable muscle slug.
  *
+ * The personalised reference is the user's OWN 30-day average, so the yardstick moves with
+ * them: a month of steadily rising volume raises the reference in step and never reads as
+ * accumulating fatigue, while a deload reads MORE fatigued as the average decays. That
+ * "relative to your own capacity" semantics is deliberate, not a bug.
+ *
  * @param {Array<object>} workouts Workout history with `start`/`d` and entry set arrays.
  * @param {number} now Current time in milliseconds; injected to keep this function deterministic.
  * @returns {Record<string, number>} Fatigue values keyed by every drawable muscle slug.
@@ -203,9 +224,9 @@ export function fatigueOf(workouts, now, opts = {}) {
 
   const result = emptyMuscleMap(0)
   if (!Number.isFinite(current)) return result
+  const refVolumes = referenceTonnages(workouts, current, bodyweightKg, oneRms)
   for (const slug of MUSCLES) {
-    const refVolume = referenceTonnage(workouts, slug, current, bodyweightKg, oneRms)
-    result[slug] = fatigueValue(byMuscle[slug], current, refVolume)
+    result[slug] = fatigueValue(byMuscle[slug], current, refVolumes[slug])
   }
   return result
 }
