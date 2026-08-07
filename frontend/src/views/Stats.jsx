@@ -37,7 +37,7 @@ function latestMuscleTraining(workouts) {
   return latest
 }
 
-const FATIGUE_LEVELS = [
+export const FATIGUE_LEVELS = [
   { at: 0, level: 0 },
   { at: 0.15, level: 1 },
   { at: 0.25, level: 2 },
@@ -45,7 +45,7 @@ const FATIGUE_LEVELS = [
   { at: 0.55, level: 4, exclusive: true },
 ]
 
-const STRENGTH_LEVELS = [
+export const STRENGTH_LEVELS = [
   { at: STRENGTH_FLOOR, level: 0 },
   { at: 0.625, level: 1 },
   { at: 0.75, level: 2 },
@@ -100,7 +100,15 @@ function MuscleBalance({ S }) {
   const [sel, setSel] = useState(null)
   const now = useNow()
   const workouts = S.workouts
-  const fatigue = useMemo(() => fatigueOf(workouts, now), [workouts, now])
+  // The user's own last registered bodyweight drives bodyweight-exercise tonnage.
+  const bodyweightKg = useMemo(() => {
+    const entries = S.bodyweight || []
+    if (!entries.length) return null
+    const last = entries.slice().sort((a, b) => String(a.d).localeCompare(String(b.d))).at(-1)
+    if (!last || !(last.w > 0)) return null
+    return S.unit === 'lb' ? last.w * 0.45359237 : last.w
+  }, [S.bodyweight, S.unit])
+  const fatigue = useMemo(() => fatigueOf(workouts, now, { bodyweightKg }), [workouts, now, bodyweightKg])
   const strength = useMemo(() => strengthOf(workouts, now), [workouts, now])
   const lastTrained = useMemo(() => latestMuscleTraining(workouts), [workouts])
   const { worked: strengthOrder } = rankOf(strength)
