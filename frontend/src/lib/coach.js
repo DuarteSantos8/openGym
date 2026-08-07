@@ -68,6 +68,7 @@ export function canonicalPlan(S) {
           sec: mode === 'time' ? (e.sec || 0) : 0,
           min: mode === 'cardio' ? (e.min || 0) : 0,
           speed: mode === 'cardio' ? (e.speed || 0) : 0,
+          dist: mode === 'cardio' ? (e.dist || 0) : 0,
           weight: mode === 'cardio' ? 0 : (e.weight || 0),
           prog: e.prog || '', inc: e.inc || 0, repsMin: e.repsMin || 0, repsMax: e.repsMax || 0,
           bodyweight: isBw(e), side: isPerSide(e),
@@ -83,7 +84,7 @@ export function canonicalPlan(S) {
 export function hashPlan(plan) {
   const canon = JSON.stringify({
     routines: (plan?.routines || []).map(r => [r.id, r.name, r.prog, (r.ex || []).map(e =>
-      [e.id, e.mode, e.sets, e.reps, e.sec, e.min, e.speed, e.weight, e.prog, e.inc,
+      [e.id, e.mode, e.sets, e.reps, e.sec, e.min, e.speed, e.dist, e.weight, e.prog, e.inc,
         e.repsMin, e.repsMax, e.bodyweight, e.side, e.sg].join(':')
     )]),
     week: Object.keys(plan?.week || {}).sort().map(k => k + '=' + plan.week[k])

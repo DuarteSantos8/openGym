@@ -20,11 +20,16 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const src = join(root, 'frontend', 'src', 'lib', 'exercises-data.js');
+const extra = join(root, 'frontend', 'src', 'lib', 'exercises-extra.js');
 const out = join(root, 'api', 'coach', 'library.json');
 
+/* Mirrors the merge exercises.js performs. Imported separately rather than through exercises.js
+   because that module pulls in i18n and the browser-side helpers, which this script has no use
+   for and cannot load. If the merge changes shape, both sides change together. */
 const { EXDB } = await import(pathToFileURL(src).href);
-const index = EXDB.map(e => ({ id: e.id, n: e.n, bp: e.bp, tg: e.tg, eq: e.eq }));
-const json = JSON.stringify({ generated_from: 'frontend/src/lib/exercises-data.js', count: index.length, exercises: index }) + '\n';
+const { EXTRA } = await import(pathToFileURL(extra).href);
+const index = [...EXDB, ...EXTRA].map(e => ({ id: e.id, n: e.n, bp: e.bp, tg: e.tg, eq: e.eq }));
+const json = JSON.stringify({ generated_from: 'frontend/src/lib/exercises-data.js + exercises-extra.js', count: index.length, exercises: index }) + '\n';
 
 if (process.argv.includes('--check')) {
   let current = null;

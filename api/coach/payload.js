@@ -97,7 +97,12 @@ function cleanEx(e) {
   const o = { id: e.id, name: LIB_BY_ID.get(e.id)?.n || null, sets: e.sets };
   const mode = modeOf(e, LIB_BY_ID.get(e.id));
   o.mode = mode;
-  if (mode === 'cardio') { if (e.min != null) o.min = e.min; if (e.speed != null) o.speed = e.speed; }
+  if (mode === 'cardio') {
+    if (e.min != null) o.min = e.min;
+    if (e.speed != null) o.speed = e.speed;
+    // Without this the Coach cannot see that a 5 km run is a 5 km run.
+    if (e.dist != null) o.dist = e.dist;
+  }
   else if (mode === 'time') { if (e.sec != null) o.sec = e.sec; if (e.weight) o.weight = e.weight; }
   else { if (e.reps != null) o.reps = e.reps; if (e.weight) o.weight = e.weight; }
   if (e.prog) o.prog = e.prog;
@@ -136,6 +141,7 @@ export function canonicalPlan(S) {
           sec: mode === 'time' ? (e.sec || 0) : 0,
           min: mode === 'cardio' ? (e.min || 0) : 0,
           speed: mode === 'cardio' ? (e.speed || 0) : 0,
+          dist: mode === 'cardio' ? (e.dist || 0) : 0,
           weight: mode === 'cardio' ? 0 : (e.weight || 0),
           prog: e.prog || '', inc: e.inc || 0, repsMin: e.repsMin || 0, repsMax: e.repsMax || 0,
           // Resolved rather than copied: the fingerprint has to change when a plan starts

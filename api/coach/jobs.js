@@ -345,7 +345,7 @@ async function invoke(adapter, cfg, payload, jobDir, env, job, repair) {
 export function hashPlan(plan) {
   const canon = JSON.stringify({
     routines: (plan?.routines || []).map(r => [r.id, r.name, r.prog, (r.ex || []).map(e =>
-      [e.id, e.mode, e.sets, e.reps, e.sec, e.min, e.speed, e.weight, e.prog, e.inc,
+      [e.id, e.mode, e.sets, e.reps, e.sec, e.min, e.speed, e.dist, e.weight, e.prog, e.inc,
         e.repsMin, e.repsMax, e.bodyweight, e.side, e.sg].join(':')
     )]),
     week: Object.keys(plan?.week || {}).sort().map(k => k + '=' + plan.week[k])

@@ -396,3 +396,27 @@ describe('workoutVolume', () => {
     expect(workoutVolume(w)).toBe(0)
   })
 })
+
+describe('endurance readings', () => {
+  it('derives pace and the rowing split rather than storing them', async () => {
+    const { paceOf, splitOf, fmtPace, fmtDist } = await import('./history.js')
+    // 5 km in 25 min is 5:00 /km.
+    expect(paceOf(25, 5000)).toBeCloseTo(5, 5)
+    expect(fmtPace(paceOf(25, 5000))).toBe('5:00 /km')
+    // 2 km row in 8 min is a 2:00 /500m split — the unit an erg actually shows.
+    expect(splitOf(8, 2000)).toBeCloseTo(120, 5)
+    // Nothing to derive from nothing.
+    expect(paceOf(0, 5000)).toBe(null)
+    expect(splitOf(10, 0)).toBe(null)
+    expect(fmtDist(5000)).toBe('5 km')
+    expect(fmtDist(800)).toBe('800 m')
+  })
+
+  it('a cardio set with no distance reads exactly as it did before', async () => {
+    const { setLabel } = await import('./history.js')
+    const cfg = { id: 'og-run-outdoor', mode: 'cardio' }
+    expect(setLabel(cfg.id, { min: 20, speed: 10 }, cfg)).toBe('20 min @ 10 km/h')
+    // …and with a distance it reads as the run it was.
+    expect(setLabel(cfg.id, { min: 25, dist: 5000 }, cfg)).toBe('5 km · 25 min · 5:00 /km')
+  })
+})

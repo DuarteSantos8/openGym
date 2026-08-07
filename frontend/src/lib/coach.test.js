@@ -443,3 +443,19 @@ describe('validation', () => {
     expect(validateProposal({ changes: [change()] })).toBe(true)
   })
 })
+
+describe('endurance work', () => {
+  it('a changed distance moves the plan fingerprint', () => {
+    // The repsMax lesson: canonicalPlan reporting a field the hash then discards means a plan
+    // that genuinely moved reads as untouched, and every proposal about it looks fresh.
+    const cardio = d => state({ routines: [{ id: 'r1', name: 'Run', ex: [{ id: 'og-run-outdoor', mode: 'cardio', sets: 1, min: 30, dist: d }] }] })
+    expect(planHash(cardio(5000))).not.toBe(planHash(cardio(8000)))
+    expect(planHash(cardio(5000))).toBe(planHash(cardio(5000)))
+  })
+
+  it('still agrees with the server field for field, distance included', () => {
+    const S = state({ routines: [{ id: 'r1', name: 'Row', ex: [{ id: 'og-rower', mode: 'cardio', sets: 1, min: 20, dist: 5000 }] }] })
+    expect(canonicalPlan(S)).toEqual(serverPayload.canonicalPlan(S))
+    expect(planHash(S)).toBe(serverHashPlan(serverPayload.canonicalPlan(S)))
+  })
+})
