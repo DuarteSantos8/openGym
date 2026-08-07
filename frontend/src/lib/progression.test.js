@@ -450,3 +450,56 @@ describe('applyPrescription', () => {
     expect(applyPrescription(sets, { kind: 'up', weight: 60, sets: 1 })).toHaveLength(sets.length)
   })
 })
+
+
+describe('warm-up rows in session reads (round 3)', () => {
+  it('readSession ignores warm-up rows for reps, count, low and ok', () => {
+    // An undone warm-up (r 0) must not poison `ok` forever; its lighter reps must not
+    // drag `low`/`count` - the warm-up is prep, the session is the work rows.
+    const s = readSession({ id: LIFT, target: { sets: 2, reps: 5, mode: 'reps' }, sets: [
+      { w: 20, r: 8, done: true, warmup: true },
+      { w: 60, r: 5, done: true },
+      { w: 60, r: 6, done: true },
+    ] })
+    expect(s.count).toBe(2)
+    expect(s.low).toBe(5)
+    expect(s.reps).toEqual([5, 6])
+    expect(s.ok).toBe(true)
+  })
+
+  it('readSession keeps an undone warm-up out of held/ok in time mode', () => {
+    const s = readSession({ id: LIFT, target: { sets: 2, sec: 45, mode: 'time' }, sets: [
+      { sec: 45, done: true, warmup: true },
+      { sec: 45, done: true },
+      { sec: 30, done: true },
+    ] })
+    expect(s.held).toEqual([45, 30])
+    expect(s.ok).toBe(false) // the 30s work row is the miss, not the warm-up
+  })
+})
+
+describe('applyPrescription never touches warm-up rows (round 3)', () => {
+  it('leaves a done warm-up exactly as logged', () => {
+    const sets = [
+      { w: 20, r: 8, done: true, warmup: true },
+      { w: 60, r: 5, done: true },
+      { w: 60, r: 5, done: false },
+    ]
+    const out = applyPrescription(sets, { kind: 'up', weight: 62.5, reps: 5 })
+    expect(out[0]).toEqual({ w: 20, r: 8, done: true, warmup: true })
+    expect(out[1]).toEqual({ w: 60, r: 5, done: true })
+    expect(out[2]).toEqual({ w: 62.5, r: 5, done: false })
+  })
+
+  it('grows the work rows, not the warm-up rows, when the policy adds sets', () => {
+    const sets = [
+      { w: 20, r: 8, done: true, warmup: true },
+      { w: 60, r: 5, done: true },
+      { w: 60, r: 5, done: false },
+    ]
+    const out = applyPrescription(sets, { kind: 'up', weight: 62.5, reps: 5, sets: 4 })
+    expect(out.filter(s => !s.warmup)).toHaveLength(4) // 2 existing + 2 grown
+    expect(out.filter(s => s.warmup)).toHaveLength(1)  // warm-up untouched
+    expect(out[0]).toEqual({ w: 20, r: 8, done: true, warmup: true })
+  })
+})

@@ -154,6 +154,8 @@ export default {
   'Last time you hit all reps — try {0}': '지난번에 모든 횟수를 채웠어요 — {0}에 도전해 보세요',
   'Weights bumped to {0}': '무게를 {0}(으)로 올렸어요',
   'Remove set': '세트 빼기',
+  'Warm-up': '워밍업',
+  'Add warm-up set': '워밍업 세트 추가',
   'Add set': '세트 추가',
   'Cardio logged': '유산소 기록됨',
   'Discard workout?': '운동을 버릴까요?',
@@ -564,4 +566,5 @@ export default {
   '{0} sets of {1} — time to add weight or move to a harder variation.': '{1}회 {0}세트 — 이제 무게를 올리거나 더 어려운 동작으로 넘어가세요.',
   '{0} per side': '한쪽당 {0}회',
   'You still log the total: {0} is {1} per side.': '기록은 그대로 합계로 합니다: {0}회는 한쪽당 {1}회입니다.',
+  '{0} sets · {1} work': '{0} 세트 · {1} 작업',
 }

@@ -559,6 +559,9 @@ h4.sec{
 .setrow+.setrow::before{
   content:'';position:absolute;left:32px;right:0;top:0;height:var(--hair);background:var(--sep);
 }
+.setph{margin:8px 0 2px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);display:flex;align-items:center;gap:10px}
+.setph::after{content:'';flex:1;height:1px;background:var(--sep)}
+.setsep{height:1px;background:var(--sep);margin:9px 0}
 .setrow .n{
   width:24px;height:24px;border-radius:50%;background:var(--surface-2);color:var(--label-2);
   display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;flex:none;

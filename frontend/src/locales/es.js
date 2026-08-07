@@ -154,6 +154,8 @@ export default {
   'Last time you hit all reps — try {0}': 'La última vez completaste todas las reps — prueba {0}',
   'Weights bumped to {0}': 'Pesos subidos a {0}',
   'Remove set': 'Quitar serie',
+  'Warm-up': 'Calentamiento',
+  'Add warm-up set': 'Añadir serie de calentamiento',
   'Add set': 'Añadir serie',
   'Cardio logged': 'Cardio registrado',
   'Discard workout?': '¿Descartar entrenamiento?',
@@ -564,4 +566,5 @@ export default {
   '{0} sets of {1} — time to add weight or move to a harder variation.': '{0} series de {1}: toca añadir peso o pasar a una variante más difícil.',
   '{0} per side': '{0} por lado',
   'You still log the total: {0} is {1} per side.': 'Sigues registrando el total: {0} son {1} por lado.',
+  '{0} sets · {1} work': '{0} series · {1} trabajo',
 }

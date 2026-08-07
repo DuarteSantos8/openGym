@@ -108,7 +108,7 @@ export function loadOf(items) {
  */
 export const loadOfWorkouts = (workouts, pick) =>
   loadOf((workouts || []).flatMap(w =>
-    (w.entries || []).map(e => ({ id: e.id, sets: (e.sets || []).filter(s => s.done && (!pick || pick(s))).length }))))
+    (w.entries || []).map(e => ({ id: e.id, sets: (e.sets || []).filter(s => s.done && !s.warmup && (!pick || pick(s))).length }))))
 
 /** Load a routine *would* produce, from its planned set counts. */
 export const loadOfRoutine = routine =>
@@ -116,7 +116,7 @@ export const loadOfRoutine = routine =>
 
 /** Load for a workout still in progress — the sets ticked so far. */
 export const loadOfActive = active =>
-  loadOf((active?.entries || []).map(e => ({ id: e.id, sets: (e.sets || []).filter(s => s.done).length })))
+  loadOf((active?.entries || []).map(e => ({ id: e.id, sets: (e.sets || []).filter(s => s.done && !s.warmup).length })))
 
 /**
  * Shade buckets 0–4 per muscle.

@@ -154,6 +154,8 @@ export default {
   'Last time you hit all reps — try {0}': 'पिछली बार सारे रेप्स पूरे किए — {0} आज़माएँ',
   'Weights bumped to {0}': 'वज़न बढ़ाकर {0} किया',
   'Remove set': 'सेट हटाएँ',
+  'Warm-up': 'वार्म-अप',
+  'Add warm-up set': 'वार्म-अप सेट जोड़ें',
   'Add set': 'सेट जोड़ें',
   'Cardio logged': 'कार्डियो दर्ज हुआ',
   'Discard workout?': 'वर्कआउट छोड़ें?',
@@ -564,4 +566,5 @@ export default {
   '{0} sets of {1} — time to add weight or move to a harder variation.': '{1} रेप्स के {0} सेट — अब वज़न बढ़ाने या किसी कठिन वैरिएशन पर जाने का समय।',
   '{0} per side': 'प्रति तरफ़ {0}',
   'You still log the total: {0} is {1} per side.': 'आप कुल ही दर्ज करते हैं: {0} यानी प्रति तरफ़ {1}।',
+  '{0} sets · {1} work': '{0} सेट · {1} काम',
 }

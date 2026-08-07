@@ -146,3 +146,19 @@ describe('is1RMRecord', () => {
     expect(is1RMRecord(S, 'bench', { id: 'bench', sets: [{ w: 200, r: 5, done: false }] })).toBeNull()
   })
 })
+
+
+describe('warm-up sets and 1RM', () => {
+  const ENTRY = { id: 'warm-test', sets: [
+    { w: 20, r: 8, done: true, warmup: true },
+    { w: 80, r: 5, done: true },
+  ] }
+
+  it('does not let a ticked-off warm-up set set or raise the estimated 1RM', () => {
+    const working = { id: 'warm-test', sets: [{ w: 80, r: 5, done: true }] }
+    expect(bestSetOf(ENTRY)).toEqual(bestSetOf(working))
+    expect(best1RM({ workouts: [{ entries: [ENTRY] }] }, 'warm-test')).toEqual(
+      best1RM({ workouts: [{ entries: [working] }] }, 'warm-test'),
+    )
+  })
+})

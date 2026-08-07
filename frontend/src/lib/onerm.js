@@ -44,7 +44,7 @@ export function estimate1RM(w, r, formula = DEFAULT_FORMULA) {
 export function bestSetOf(entry, formula = DEFAULT_FORMULA) {
   let best = null
   ;(entry?.sets || []).forEach(s => {
-    if (!s.done) return
+    if (!s.done || s.warmup) return
     const est = estimate1RM(s.w, s.r, formula)
     if (est !== null && (!best || est > best.est)) best = { est, w: Number(s.w), r: Math.round(Number(s.r)) }
   })

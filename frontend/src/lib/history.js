@@ -270,3 +270,49 @@ export function streakWeeks(S) {
   }
   return streak
 }
+
+/**
+ * Cascade a weight change forward: following sets of the same warm-up flag that are still
+ * undone take the new value (null deletes the key). Done sets are never rewritten.
+ */
+export function cascadeWeight(rows, from, value) {
+  const warm = !!rows[from]?.warmup
+  const next = rows.slice()
+  for (let j = from + 1; j < next.length; j++) {
+    if (!!next[j].warmup === warm && !next[j].done) {
+      if (value == null) delete next[j].w
+      else next[j].w = value
+    }
+  }
+  return next
+}
+
+/** Insert a warm-up row before the first work row, copying the preceding warm-up's values. */
+export function insertWarmupRow(rows, mode, target) {
+  const firstWork = rows.findIndex(x => !x.warmup)
+  const at = firstWork === -1 ? rows.length : firstWork
+  const l = rows[at - 1] || rows[rows.length - 1]
+  const warm = mode === 'cardio'
+    ? { min: l ? l.min : (target.min || 20), speed: l ? l.speed : (target.speed || 8), done: false, warmup: true }
+    : mode === 'time'
+      ? { sec: l ? l.sec : (target.sec || 45), w: l ? (l.w || 0) : (target.weight || 0), done: false, warmup: true }
+      : { w: l ? l.w : 0, r: l ? l.r : target.reps, done: false, warmup: true }
+  const next = rows.slice()
+  next.splice(at, 0, warm)
+  return next
+}
+
+/** Remove the row at `i`, never emptying the entry below one row. */
+export function removeRowAt(rows, i) {
+  if (rows.length <= 1) return rows.slice()
+  const next = rows.slice()
+  next.splice(i, 1)
+  return next
+}
+
+/** Completed non-warm-up sets across a workout's entries. */
+export function workSetsDone(w) {
+  return (w?.entries || []).reduce(
+    (n, e) => n + (e.sets || []).filter(s => s.done && !s.warmup).length, 0,
+  )
+}

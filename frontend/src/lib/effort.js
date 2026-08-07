@@ -44,7 +44,7 @@ export const scaleName = kind => EFFORT[kind].hd
 function eachDoneSet(S, fn) {
   ;(S.workouts || []).forEach(w =>
     (w.entries || []).forEach(e =>
-      (e.sets || []).forEach(s => { if (s.done) fn(s, w, e) })))
+      (e.sets || []).forEach(s => { if (s.done && !s.warmup) fn(s, w, e) })))
 }
 
 // A window in days, counted back from now. 0 = everything, which is also what an empty

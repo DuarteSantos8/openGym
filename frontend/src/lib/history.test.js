@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { modeOf, isTimed, fmtSec, setLabel, defaultConfig, buildSets, freestyleConfig, exLine, workoutVolume, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep } from './history.js'
+import { modeOf, isTimed, fmtSec, setLabel, defaultConfig, buildSets, freestyleConfig, exLine, workoutVolume, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, removeRowAt } from './history.js'
 import { EXDB } from './exercises.js'
 
 // Real ids out of the shipped catalogue, so the body-part fallback is exercised for real.
@@ -476,5 +476,56 @@ describe('workoutVolume', () => {
   it('leaves an unloaded bodyweight set at zero volume rather than inventing a number', () => {
     const w = { entries: [{ id: BW, target: { bodyweight: true }, sets: [{ w: 0, r: 20, done: true }] }] }
     expect(workoutVolume(w)).toBe(0)
+  })
+})
+
+
+describe('session row helpers', () => {
+  it('cascadeWeight propagates to same-flag undone rows and never rewrites done sets', () => {
+    const rows = [
+      { warmup: true, w: 20, done: true },
+      { warmup: true, w: 20, done: false },
+      { w: 60, done: true },
+      { w: 60, done: false },
+      { w: 60, done: false },
+    ]
+    const next = cascadeWeight(rows, 2, 62.5)
+    expect(next[2].w).toBe(60)             // done set untouched
+    expect(next[3].w).toBe(62.5)           // same flag (work), undone
+    expect(next[4].w).toBe(62.5)           // same flag (work), undone
+    expect(next[1].w).toBe(20)             // different flag (warm-up) untouched
+  })
+
+  it('cascadeWeight deleting the weight removes the key from following undone rows only', () => {
+    const rows = [
+      { w: 60, done: true },
+      { w: 60, done: false },
+      { w: 60, done: false },
+    ]
+    const next = cascadeWeight(rows, 0, null)
+    expect(next[0].w).toBe(60)             // done set untouched
+    expect('w' in next[1]).toBe(false)
+    expect('w' in next[2]).toBe(false)
+  })
+
+  it('insertWarmupRow inserts before the first work row and copies the last warm-up values', () => {
+    const rows = [
+      { warmup: true, w: 20, r: 8, done: true },
+      { warmup: true, w: 30, r: 8, done: false },
+      { w: 60, r: 8, done: false },
+    ]
+    const next = insertWarmupRow(rows, 'reps', { reps: 8 })
+    expect(next.length).toBe(4)
+    expect(next[2].warmup).toBe(true)
+    expect(next[2].w).toBe(30)             // copies the preceding warm-up
+    expect(next[3].w).toBe(60)             // work row still after the warm-up block
+  })
+
+  it('removeRowAt never empties an entry below one row', () => {
+    expect(removeRowAt([{ w: 60 }], 0).length).toBe(1)
+    const rows = [{ w: 60 }, { w: 70 }]
+    const next = removeRowAt(rows, 0)
+    expect(next.length).toBe(1)
+    expect(next[0].w).toBe(70)
   })
 })
