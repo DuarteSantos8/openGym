@@ -186,8 +186,8 @@ function MuscleBalance({ S }) {
       {sel ? <>
         <h4 className="sec" style={{ marginTop: 14 }}>{t('Exercises')} · {t(MUSCLE_NAME[sel])}</h4>
         {muscleExercises.length ? muscleExercises.map(row => (
-          <div key={row.id} className="mrow">
-            <span className="nm" style={{ whiteSpace: 'normal', lineHeight: 1.35 }}>
+          <div key={row.id} className="mrow" style={{ minHeight: 48, alignItems: 'stretch' }}>
+            <span className="nm" style={{ whiteSpace: 'normal', lineHeight: 1.35, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {row.name}
                 {row.primary === sel
@@ -196,8 +196,8 @@ function MuscleBalance({ S }) {
               </span>
               <span className="small dim" style={{ display: 'block', fontWeight: 400 }}>{t('Est. 1RM')}: {fmtNum(row.est)} {S.unit} · {fmtDate(row.estDate, true)}</span>
             </span>
-            <span className="bar"><i style={{ width: Math.round(row.decay * 100) + '%' }} /></span>
-            <span className="v">{fmtNum(row.current)} {S.unit}<span className="dim"> · {Math.round(row.decay * 100)}%</span></span>
+            <span className="bar" style={{ alignSelf: 'center' }}><i style={{ width: Math.round(row.decay * 100) + '%' }} /></span>
+            <span className="v" style={{ alignSelf: 'center' }}>{fmtNum(row.current)} {S.unit}<span className="dim"> · {Math.round(row.decay * 100)}%</span></span>
           </div>
         )) : <div className="muted small">{t('No exercises with an estimated 1RM yet.')}</div>}
       </> : <div className="muted small" style={{ marginTop: 10 }}>{t('Tap a muscle to see its exercises.')}</div>}
