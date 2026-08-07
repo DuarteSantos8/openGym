@@ -443,3 +443,26 @@ describe('validation', () => {
     expect(validateProposal({ changes: [change()] })).toBe(true)
   })
 })
+
+describe('the gate has something real to read', () => {
+  it('the store actually exposes the `config` field every Coach entry point reads', async () => {
+    // coachAvailable(config, …) is false when `config` is undefined, which is indistinguishable
+    // from "this instance has no Coach". The views were ported once without the store field they
+    // depend on, so every Coach surface silently vanished on every instance: no entry point, and
+    // /#/coach redirecting straight back to /home. A missing key must fail here, not in a browser.
+    // Asserted against the source rather than the live store: useStore touches `document` at
+    // import time, so it cannot be instantiated in this environment. Crude, but it fails on
+    // exactly the two edits that broke it — dropping the field, or dropping the fetch.
+    const { readFileSync } = await import('node:fs')
+    const src = readFileSync(new URL('../store/useStore.js', import.meta.url), 'utf8')
+    expect(src).toMatch(/\bconfig:\s*null\b/)
+    expect(src).toMatch(/set\(\s*\{\s*config:\s*await api\(['"]\/api\/config['"]\)/)
+  })
+
+  it('a configured instance with a signed-in user opens the gate', () => {
+    // The exact shape GET /api/config returns when the Coach is on.
+    const config = { invite_only: false, coach: { enabled: true, provider: 'claude', authMode: 'instance' } }
+    expect(coachAvailable(config, { id: 'u' })).toBe(true)
+    expect(coachAvailable(undefined, { id: 'u' })).toBe(false)   // the bug, pinned
+  })
+})
