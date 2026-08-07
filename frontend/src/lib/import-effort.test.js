@@ -93,7 +93,8 @@ describe('importing effort from another app', () => {
   it('leaves a file without any rating column exactly as it was', () => {
     const p = rows(FITNOTES, '2026-01-12,Bench Press,Chest,60,10,,,')
     const s = setsOf(p)[0]
-    expect(s).toEqual({ w: 60, r: 10, done: true })
+    // the legacy profile-unit path now stamps the resolved unit so the record stays compatible
+    expect(s).toEqual({ w: 60, r: 10, done: true, unit: 'kg' })
     expect(p.rpeSets + p.rirSets).toBe(0)
   })
 

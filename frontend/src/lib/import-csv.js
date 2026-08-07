@@ -404,7 +404,15 @@ export function parseWorkoutCSV(text, { unit = 'kg' } = {}) {
   const workouts = dates.map(d => {
     const day = byDate.get(d)
     const entries = [...day.ex.entries()].map(([id, ss]) => {
-      const conv2 = ss.map(({ u, ...s }) => (s.w !== undefined ? { ...s, w: convRow({ ...s, u }) } : s))
+      const conv2 = ss.map(({ u, ...s }) => {
+        if (s.w === undefined) return s
+        const convertedSet = { ...s, w: convRow({ ...s, u }) }
+        // A row without its own unit follows the file's, and a file that says nothing
+        // is taken to already be in the profile's unit - so every positive weighted set
+        // must carry the stamp: unit-aware consumers (history, stats, the model) rely
+        // on a weighted set always being resolvable to its unit.
+        return s.w > 0 ? { ...convertedSet, unit } : convertedSet
+      })
       const mx = Math.max(0, ...conv2.map(s => s.w || 0))
       return { id, sets: conv2, topW: mx || null }
     })
