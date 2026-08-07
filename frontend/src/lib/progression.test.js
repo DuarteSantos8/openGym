@@ -502,4 +502,13 @@ describe('applyPrescription never touches warm-up rows (round 3)', () => {
     expect(out.filter(s => s.warmup)).toHaveLength(1)  // warm-up untouched
     expect(out[0]).toEqual({ w: 20, r: 8, done: true, warmup: true })
   })
+
+  it('an all-warm-up entry terminates and stays untouched', () => {
+    const sets = [
+      { w: 20, r: 8, done: true, warmup: true },
+      { w: 25, r: 6, done: true, warmup: true },
+    ]
+    const out = applyPrescription(sets, { kind: 'up', weight: 62.5, reps: 5, sets: 4 })
+    expect(out).toEqual(sets) // no work row to seed growth from - nothing grows, no loop
+  })
 })

@@ -267,7 +267,10 @@ export function applyPrescription(sets, p) {
   // row that is already there: a session in progress must not lose a set it has logged.
   const workRows = out.filter(s => !s.warmup)
   if (p.sets > workRows.length) {
-    const seed = workRows[workRows.length - 1] || out[out.length - 1]
+    // An all-warm-up entry has no work row to seed growth from - growing warm-up copies
+    // would both invent work and never terminate the loop. Leave the entry untouched.
+    if (!workRows.length) return out
+    const seed = workRows[workRows.length - 1]
     while (out.filter(s => !s.warmup).length < p.sets) out.push({ ...seed, done: false })
   }
   return out
