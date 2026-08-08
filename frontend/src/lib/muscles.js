@@ -7,7 +7,7 @@
 // map can actually draw, via ALIAS below. Anything genuinely undrawable (hands,
 // ankles, "cardiovascular system") maps to null and is dropped rather than guessed at.
 
-import { EXIDX } from './exercises.js'
+import { EXIDX , smOf } from './exercises.js'
 
 // The muscles a map can shade, in head-to-toe order — also the order of any list
 // built from them, so "what am I neglecting" reads top-down like a body.
@@ -78,7 +78,7 @@ export function musclesOf(ex) {
     if (slug) out[slug] = Math.max(out[slug] || 0, w)
   }
   add(ex.tg, 1)
-  ;(ex.sm || []).forEach(m => add(m, SECONDARY))
+  ;smOf(ex).forEach(m => add(m, SECONDARY))
   // Nothing recognised (custom exercises, or a target we don't draw) — use the body part.
   if (!Object.keys(out).length) Object.assign(out, BY_BODYPART[ex.bp] || {})
   return out

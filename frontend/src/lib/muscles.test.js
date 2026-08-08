@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { EXIDX } from './exercises.js'
+import { EXIDX, EXDB, smOf } from './exercises.js'
 import { musclesOf } from './muscles.js'
 
 // The catalogue keeps the source dataset's secondary-muscle spellings; musclesOf maps
@@ -29,5 +29,16 @@ describe('catalogue secondary muscles', () => {
         deltoids: 0.4,
       })
     }
+  })
+})
+
+
+describe('catalogue secondary additions', () => {
+  it('enriches the muscle map without mutating the raw dataset', () => {
+    const raw = EXDB.find(e => e.id === '0027')
+    expect(raw.sm).not.toContain('rear deltoids')
+    expect(smOf(raw)).toContain('rear deltoids')
+    // the alias collapses onto the deltoids slug in the canonical muscle map
+    expect(musclesOf(raw)).toHaveProperty('deltoids')
   })
 })
