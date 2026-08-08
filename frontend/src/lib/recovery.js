@@ -1,3 +1,4 @@
+import { isWarmupRow } from './workout-model.js'
 import { EXIDX } from './exercises.js'
 import { MUSCLES, musclesOf } from './muscles.js'
 
@@ -57,6 +58,11 @@ function emptyMuscleMap(value) {
   return Object.fromEntries(MUSCLES.map(slug => [slug, value]))
 }
 
+function setUnitFor(set, entry, workout) {
+  const u = set?.unit || entry?.unit || entry?.target?.unit || workout?.unit || null
+  return u ? String(u).toLowerCase() : 'kg'
+}
+
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value))
 }
@@ -78,8 +84,9 @@ function exercise1RMs(workouts, cutoff) {
     if (!Number.isFinite(timestamp) || timestamp <= cutoff) continue
     for (const entry of workout.entries || []) {
       for (const set of entry.sets || []) {
-        if (set?.done !== true || !(set.w > 0) || !(set.r > 0)) continue
-        const est = epley1RM(set.w, set.r)
+        if (set?.done !== true || !(set.w > 0) || !(set.r > 0) || isWarmupRow(set)) continue
+        const unit = setUnitFor(set, entry, workout)
+        const est = epley1RM(unit === 'lb' ? set.w * 0.45359237 : set.w, set.r)
         if (!best.has(entry.id) || est > best.get(entry.id)) best.set(entry.id, est)
       }
     }
@@ -91,7 +98,7 @@ function exercise1RMs(workouts, cutoff) {
 // The exponent saturates the "hard set" effect - a set at 90% of your 1RM counts ~0.81 of its
 // raw tonnage, one at 50% only ~0.35. Cardio, timed holds, and sets whose exercise has no
 // 1RM history stay unweighted (duration proxies, or intensity 1 for the first sessions).
-function setTonnage(ex, set, bodyweightKg, oneRm) {
+function setTonnage(ex, entry, set, bodyweightKg, oneRm, unit) {
   if (ex?.bp === 'cardio') {
     return Math.max(set?.min || 0, (set?.sec || 0) / 60) * CARDIO_TONNAGE_PER_MIN
   }
@@ -99,9 +106,10 @@ function setTonnage(ex, set, bodyweightKg, oneRm) {
     return (set.sec / 60) * CARDIO_TONNAGE_PER_MIN
   }
   const reps = set?.r || 1
-  let load = set?.w || 0
-  if (!load && ex?.eq === 'body weight') load = bodyweightKg || BODYWEIGHT_REF_LOAD
-  if (set?.unit === 'lb') load *= 0.45359237
+  // Bodyweight-targeted work: the body IS the load, and any added weight adds to it.
+  const bodyweightTargeted = ex?.eq === 'body weight' || !!(entry?.target && entry.target.bodyweight)
+  let load = bodyweightTargeted ? (bodyweightKg || BODYWEIGHT_REF_LOAD) + (set?.w || 0) : (set?.w || 0)
+  if ((unit || set?.unit) === 'lb') load *= 0.45359237
   const raw = load * reps
   if (!(oneRm > 0) || !(load > 0)) return raw
   return raw * Math.min(1, load / oneRm) ** 1.5
@@ -123,7 +131,7 @@ function referenceTonnage(workouts, slug, now, bodyweightKg, oneRms) {
       if (!weight) continue
       for (const set of entry.sets || []) {
         if (set?.done !== true) continue
-        sum += setTonnage(EXIDX[entry.id], set, bodyweightKg, oneRms.get(entry.id)) * weight
+        sum += setTonnage(EXIDX[entry.id], entry, set, bodyweightKg, oneRms.get(entry.id), setUnitFor(set, entry, workout)) * weight
       }
     }
     if (sum > 0) sessions.push(sum)
@@ -147,7 +155,7 @@ function completedStimuli(workouts, include, bodyweightKg, oneRms, includeSet) {
       for (const set of entry.sets || []) {
         if (set?.done !== true) continue
         if (includeSet && !includeSet(set)) continue
-        const tonnage = setTonnage(EXIDX[entry.id], set, bodyweightKg, oneRms.get(entry.id))
+        const tonnage = setTonnage(EXIDX[entry.id], entry, set, bodyweightKg, oneRms.get(entry.id), setUnitFor(set, entry, workout))
         if (tonnage <= 0) continue
         for (const [slug, weight] of Object.entries(weights)) {
           if (Object.prototype.hasOwnProperty.call(MUSCLES_BY_SLUG, slug)) {
@@ -197,7 +205,7 @@ export function fatigueOf(workouts, now, opts = {}) {
   const cutoff = current - FATIGUE_SCAN_MS
   const bodyweightKg = opts.bodyweightKg || null
   const oneRms = exercise1RMs(workouts, cutoff)
-  const stimuli = completedStimuli(workouts, timestamp => timestamp > cutoff, bodyweightKg, oneRms)
+  const stimuli = completedStimuli(workouts, timestamp => timestamp > cutoff, bodyweightKg, oneRms, set => !isWarmupRow(set))
   const byMuscle = Object.fromEntries(MUSCLES.map(slug => [slug, []]))
   for (const stimulus of stimuli) byMuscle[stimulus.slug].push(stimulus)
 
@@ -226,7 +234,7 @@ export function strengthOf(workouts, now) {
   const current = Number(now)
   const latest = Object.fromEntries(MUSCLES.map(slug => [slug, -Infinity]))
   const oneRms = exercise1RMs(workouts, -Infinity)
-  const stimuli = completedStimuli(workouts, () => true, null, oneRms, set => set?.phase !== 'warmup')
+  const stimuli = completedStimuli(workouts, () => true, null, oneRms, set => !isWarmupRow(set))
   for (const stimulus of stimuli) {
     if (stimulus.timestamp > latest[stimulus.slug]) latest[stimulus.slug] = stimulus.timestamp
   }

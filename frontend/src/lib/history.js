@@ -1,7 +1,7 @@
 // Pure helpers over the state object S (ported 1:1 from the vanilla app).
 import { todayISO, isoOf, weekKey, fmtNum } from './format.js'
 import { isCardio, isBodyweightEq } from './exercises.js'
-import { normalizePhase, modeForSet, modeForEntry, setVolume, historyUnitCompatible, historyEntryCompatible } from './workout-model.js'
+import { normalizePhase, modeForSet, modeForEntry, setVolume, historyUnitCompatible, historyEntryCompatible, isWarmupRow } from './workout-model.js'
 import { workRowsForMode } from './workout-runtime.js'
 // i18n-core, not i18n: this file is imported by mcp/, which is plain Node with no Vite and no
 // React. i18n.js is the Vite half — import.meta.glob over the locale packs, useSyncExternalStore
@@ -320,7 +320,7 @@ export function workSetsDone(w) {
 }
 
 const METRIC_MODES = ['reps', 'time', 'cardio']
-const completedRowsForMode = (entry, mode) => workRowsForMode(entry, mode).filter(s => s.done === true)
+const completedRowsForMode = (entry, mode) => workRowsForMode(entry, mode).filter(s => s.done === true && !isWarmupRow(s))
 
 export function metricRowsForEntry(entry, mode) {
   const requested = typeof mode === 'string' ? mode.trim().toLowerCase() : ''
@@ -372,6 +372,7 @@ export function volumeByPhase(w, expectedUnit = null) {
   ;(w?.entries || []).forEach(entry => {
     if (!historyEntryCompatible(entry, expectedUnit, w.unit)) return
     ;(entry.sets || []).forEach(set => {
+      if (isWarmupRow(set)) return
       const phase = normalizePhase(set.phase, 'work')
       out[phase] = (out[phase] || 0) + setVolume(set, entry.target || entry)
     })
@@ -387,7 +388,7 @@ export function setsByPhase(w, expectedUnit = null) {
   ;(w?.entries || []).forEach(entry => {
     if (!historyEntryCompatible(entry, expectedUnit, w.unit)) return
     ;(entry.sets || []).forEach(set => {
-      if (!set.done) return
+      if (!set.done || isWarmupRow(set)) return
       const phase = normalizePhase(set.phase, 'work')
       out[phase] = (out[phase] || 0) + 1
     })

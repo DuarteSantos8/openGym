@@ -696,5 +696,6 @@ export default {
   'When an exercise is done': 'When an exercise is done',
   'Weights in this file are in': 'Weights in this file are in',
   'Default weight from full sets only': 'Default weight from full sets only',
-  'Missed reps on the last set do not set the next default': 'Missed reps on the last set do not set the next default'
+  'Missed reps on the last set do not set the next default': 'Missed reps on the last set do not set the next default',
+  'The file does not say which unit it uses — numbers are imported as they are.': 'Dosya hangi birimi kullandığını söylemiyor — sayılar olduğu gibi aktarılır.'
 }

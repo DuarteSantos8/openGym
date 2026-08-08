@@ -26,11 +26,11 @@ const NOW = Date.UTC(2026, 0, 1, 12)
 // Keep fixtures tied to the shipped catalogue while making the expected stimulus explicit.
 const SINGLE = EXDB.find(ex => {
   const weights = musclesOf(ex)
-  return ex.bp !== 'cardio' && Object.keys(weights).length === 1 && Object.values(weights)[0] === 1
+  return ex.bp !== 'cardio' && ex.eq !== 'body weight' && Object.keys(weights).length === 1 && Object.values(weights)[0] === 1
 })
 const WEIGHTED = EXDB.find(ex => {
   const weights = musclesOf(ex)
-  return ex.bp !== 'cardio' && Object.values(weights).includes(0.4)
+  return ex.bp !== 'cardio' && ex.eq !== 'body weight' && Object.values(weights).includes(0.4)
 })
 if (!SINGLE || !WEIGHTED) throw new Error('recovery tests require single- and secondary-weight fixtures')
 
@@ -313,4 +313,45 @@ describe('warm-up phases in strength and fatigue', () => {
     const fatigue = fatigueOf(workouts, now)
     expect(fatigue.chest).toBeGreaterThan(0)
   })
+
+describe('review regressions: units and bodyweight semantics', () => {
+  const BW_EX = EXDB.find(ex => ex.eq === 'body weight' && ex.bp !== 'cardio' && Object.values(musclesOf(ex)).includes(1))
+  const bwSlug = BW_EX ? Object.keys(musclesOf(BW_EX)).find(slug => musclesOf(BW_EX)[slug] === 1) : null
+  if (!BW_EX || !bwSlug) throw new Error('recovery regression tests need a bodyweight exercise fixture')
+
+  it('treats kg and lb records as the same stimulus (physical equivalence)', () => {
+    const kg = [doneWorkoutAt(SINGLE.id, NOW, 1)]
+    const lb = [doneWorkoutAt(SINGLE.id, NOW, 1)]
+    lb[0].unit = 'lb'
+    lb[0].entries[0].sets[0].w = 176.3696 // = 80 kg
+    expect(fatigueOf(lb, NOW)[SINGLE_SLUG]).toBeCloseTo(fatigueOf(kg, NOW)[SINGLE_SLUG], 6)
+    expect(fatigueOf(lb, NOW)[SINGLE_SLUG]).toBeCloseTo(1 - Math.exp(-V / FATIGUE_REF_VOLUME), 6)
+  })
+
+  it('bodyweight work counts the body, and added load only adds to it', () => {
+    const unloaded = [workoutAt(BW_EX.id, NOW, [{ done: true, w: 0, r: 10 }])]
+    const loaded = [workoutAt(BW_EX.id, NOW, [{ done: true, w: 10, r: 10 }])]
+    const base = fatigueOf(unloaded, NOW)[bwSlug]
+    const plus = fatigueOf(loaded, NOW)[bwSlug]
+    expect(base).toBeGreaterThan(0)          // unloaded bodyweight work still stimulates
+    expect(plus).toBeGreaterThan(base)       // adding load never reduces the stimulus
+    expect(strengthOf(unloaded, NOW)[bwSlug]).toBe(1) // completed bw work resets strength
+  })
+
+  it('excludes warm-ups in either schema (boolean and phase)', () => {
+    const boolWarm = [workoutAt(SINGLE.id, NOW, [
+      { done: true, w: 120, r: 5, warmup: true },
+      { done: true, w: 80, r: 8 },
+    ])]
+    const phaseWarm = [workoutAt(SINGLE.id, NOW, [
+      { done: true, w: 120, r: 5, phase: 'warmup' },
+      { done: true, w: 80, r: 8 },
+    ])]
+    const expected = 1 - Math.exp(-V / FATIGUE_REF_VOLUME)
+    expect(fatigueOf(boolWarm, NOW)[SINGLE_SLUG]).toBeCloseTo(expected, 10)
+    expect(fatigueOf(phaseWarm, NOW)[SINGLE_SLUG]).toBeCloseTo(expected, 10)
+    expect(strengthOf(boolWarm, NOW)[SINGLE_SLUG]).toBe(1)
+    expect(strengthOf(phaseWarm, NOW)[SINGLE_SLUG]).toBe(1)
+  })
+})
 })

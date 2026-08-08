@@ -6,6 +6,11 @@
 // by the workout, progression, history, and statistics layers without mutating the source.
 
 export const PHASES = ['warmup', 'work']
+
+/** Canonical warm-up test: an explicit phase wins, legacy boolean falls back. */
+export function isWarmupRow(set) {
+  return !!(set && (set.phase === 'warmup' || set.warmup === true))
+}
 export const MODES = ['reps', 'time', 'cardio']
 export const TARGET_MODES = ['reps', 'time']
 export const TARGET_KINDS = ['fixed', 'amrap']
@@ -191,7 +196,10 @@ export function historyUnitCompatible(input, expectedUnit = null) {
   if (historyUnitAmbiguous(input)) return false
   const expected = normalizeWeightUnit(expectedUnit)
   const unit = historyUnitFor(input)
-  if (!unit) return false
+  // No provenance at all = legacy main-schema record: assume the profile unit so
+  // normal persisted history (which never wrote units) stays visible. Records that
+  // DO carry unit fields are still fail-closed on ambiguity/mismatch.
+  if (!unit) return true
   if (!expected) return true
   if (unit === LEGACY_WEIGHT_UNIT) return !hasPositiveWeight(input)
   return unit === expected

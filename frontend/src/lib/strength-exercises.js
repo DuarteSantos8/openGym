@@ -10,7 +10,7 @@ import { best1RM } from './onerm.js'
 import { STRENGTH_FULL_MS, STRENGTH_HALF_LIFE_MS, STRENGTH_FLOOR, halfLifeDecay } from './recovery.js'
 import { musclesOf } from './muscles.js'
 import { EXIDX } from './exercises.js'
-import { historyUnitCompatible } from './workout-model.js'
+import { historyUnitCompatible , isWarmupRow } from './workout-model.js'
 
 const round1 = value => Math.round(value * 10) / 10
 
@@ -31,7 +31,7 @@ function lastWorkSetAt(S, id) {
     if (!Number.isFinite(ts) || ts <= latest) continue
     const entry = (workout.entries || []).find(e => e.id === id)
     if (!entry) continue
-    if ((entry.sets || []).some(s => s.done === true && !s.warmup)) latest = ts
+    if ((entry.sets || []).some(s => s.done === true && !isWarmupRow(s))) latest = ts
   }
   return Number.isFinite(latest) ? latest : null
 }

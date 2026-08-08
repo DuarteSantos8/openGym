@@ -1,22 +1,26 @@
 import { useEffect, useRef } from 'react'
 import { fmtVol, isoOf, todayISO, MONTHS } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
+import { workoutVolume } from '../lib/history.js'
+import { historyUnitCompatible } from '../lib/workout-model.js'
 
 // GitHub-style activity heatmap, shaded by time trained per day.
-export default function Heatmap({ S, onDay }) {
+export default function Heatmap({ S, onDay, metric = 'time' }) {
   const wrapRef = useRef(null)
   useEffect(() => { if (wrapRef.current) wrapRef.current.scrollLeft = wrapRef.current.scrollWidth }, [])
 
   const agg = {}
   S.workouts.forEach(w => {
+    if (!historyUnitCompatible(w, S.unit)) return
     const a = agg[w.d] = agg[w.d] || { n: 0, vol: 0, min: 0 }
-    a.n++; a.vol += w.vol || 0
+    a.n++; a.vol += workoutVolume(w, S.unit)
     a.min += Math.max(0, Math.round(((w.end || w.start) - w.start) / 60000))
   })
-  const mins = Object.values(agg).map(a => a.min).filter(v => v > 0).sort((a, b) => a - b)
-  const q = p => (mins.length ? mins[Math.min(mins.length - 1, Math.floor(p * mins.length))] : 0)
+  const valueOf = a => (metric === 'vol' ? (a && a.vol) || 0 : (a && a.min) || 0)
+  const vals = Object.values(agg).map(valueOf).filter(v => v > 0).sort((a, b) => a - b)
+  const q = p => (vals.length ? vals[Math.min(vals.length - 1, Math.floor(p * vals.length))] : 0)
   const t1 = q(0.25), t2 = q(0.5), t3 = q(0.75)
-  const level = a => !a ? 0 : !a.min ? 1 : a.min >= t3 ? 4 : a.min >= t2 ? 3 : a.min >= t1 ? 2 : 1
+  const level = a => !a ? 0 : !valueOf(a) ? 1 : valueOf(a) >= t3 ? 4 : valueOf(a) >= t2 ? 3 : valueOf(a) >= t1 ? 2 : 1
 
   const today = new Date(); today.setHours(12, 0, 0, 0)
   const end = new Date(today); end.setDate(today.getDate() - ((today.getDay() + 6) % 7))
@@ -51,6 +55,6 @@ export default function Heatmap({ S, onDay }) {
         <div className="hm-grid">{cols}</div>
       </div>
     </div>
-    <div className="hm-legend">{t('Less time')} <div className="hm-c l0" /><div className="hm-c l1" /><div className="hm-c l2" /><div className="hm-c l3" /><div className="hm-c l4" /> {t('More time')}</div>
+    <div className="hm-legend">{t(metric === 'vol' ? 'Less volume' : 'Less time')} <div className="hm-c l0" /><div className="hm-c l1" /><div className="hm-c l2" /><div className="hm-c l3" /><div className="hm-c l4" /> {t(metric === 'vol' ? 'More volume' : 'More time')}</div>
   </>
 }
