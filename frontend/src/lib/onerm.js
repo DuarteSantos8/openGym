@@ -1,3 +1,4 @@
+import { isWarmupRow } from './workout-model.js'
 // Estimated one-rep max (issue #18).
 //
 // Deliberately knows nothing about the exercise database: an estimate needs a weight AND a
@@ -44,7 +45,7 @@ export function estimate1RM(w, r, formula = DEFAULT_FORMULA) {
 export function bestSetOf(entry, formula = DEFAULT_FORMULA) {
   let best = null
   ;(entry?.sets || []).forEach(s => {
-    if (!s.done || s.warmup) return
+    if (!s.done || isWarmupRow(s)) return
     const est = estimate1RM(s.w, s.r, formula)
     if (est !== null && (!best || est > best.est)) best = { est, w: Number(s.w), r: Math.round(Number(s.r)) }
   })

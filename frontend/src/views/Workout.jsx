@@ -14,6 +14,7 @@ import Icon from '../components/Icon.jsx'
 import { Button, Check, NumberField } from '../components/ui.jsx'
 import { nextPrescription, applyPrescription } from '../lib/progression.js'
 import { glyphOf } from '../lib/glyphs.js'
+import { isWarmupRow } from '../lib/workout-model.js'
 
 /* ---------- start chooser (no active workout) ---------- */
 function StartChooser() {
@@ -132,13 +133,14 @@ function ExerciseBlock({ entryIdx, compact, onToggle, onField, onAddSet, onRemov
       {/* the header carries the same eff3 sizing as the rows, or the labels drift off their columns */}
       <div className={'sethead' + (col3 ? ' eff3' : '')}><span className="n-sp" /><span className="w-sp">{col1.hd}</span>{col2 && <span className="r-sp">{col2.hd}</span>}{col3 && <span className="eff-sp">{col3.hd}</span>}{timed && <span className="ck-sp" />}<span className="ck-sp" /></div>
       {entry.sets.map((s, i) => {
-        const warmBefore = i > 0 && !!entry.sets[i - 1].warmup
-        const isFirstWarmup = !!s.warmup && !warmBefore
+        const warm = isWarmupRow(s)
+        const warmBefore = i > 0 && isWarmupRow(entry.sets[i - 1])
+        const isFirstWarmup = warm && !warmBefore
         // Numbering restarts per phase: with two warm-ups the first work set reads 1, not 3.
-        const phaseNum = entry.sets.slice(0, i + 1).filter(x => (x.warmup === true) === (s.warmup === true)).length
+        const phaseNum = entry.sets.slice(0, i + 1).filter(x => isWarmupRow(x) === warm).length
         return <div key={i}>
           {isFirstWarmup && <div className="setph">{t('Warm-up')}</div>}
-          {!s.warmup && warmBefore && <div className="setsep" />}
+          {!warm && warmBefore && <div className="setsep" />}
           <div className={'setrow' + (s.done ? ' done' : '') + (col3 ? ' eff3' : '')}>
             <div className="n">{phaseNum}</div>
             {cell(s, i, col1, 'w')}
@@ -148,7 +150,7 @@ function ExerciseBlock({ entryIdx, compact, onToggle, onField, onAddSet, onRemov
                 set off itself. The checkbox stays for anyone who timed it on their own watch. */}
             {timed && <button className="setgo" aria-label={t('Start set')} disabled={s.done || !!working}
               onClick={() => onStartTimed(i)}><Icon name="play" /></button>}
-            {s.warmup && <button className="iconbtn" style={{ fontSize: 13 }} aria-label={t('Remove set')}
+            {warm && <button className="iconbtn" style={{ fontSize: 13 }} aria-label={t('Remove set')}
               disabled={entry.sets.length <= 1} onClick={() => onRemoveSetAt(i)}><Icon name="xmark" /></button>}
             <Check checked={s.done} onChange={() => onToggle(i)} />
           </div>
