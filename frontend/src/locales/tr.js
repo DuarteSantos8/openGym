@@ -567,4 +567,7 @@ export default {
   '{0} per side': 'Taraf başına {0}',
   'You still log the total: {0} is {1} per side.': 'Toplamı kaydetmeye devam ediyorsun: {0}, taraf başına {1} demek.',
   '{0} sets · {1} work': '{0} set · {1} çalışma',
+  'Today’s sessions': 'Bugünkü seanslar',
+  'Choose a session': 'Bir seans seç',
+  'Every planned session is done today — pick another routine or go freestyle.': 'Bugünkü tüm planlı seanslar tamamlandı — başka bir rutin seç veya serbest çalış.'
 }

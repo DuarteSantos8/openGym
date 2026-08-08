@@ -177,16 +177,54 @@ export function bestWeightFor(S, exId) {
   }))
   return best
 }
-export function effectiveRoutineId(S, iso) {
-  const ov = S.dayPlan[iso]
-  if (ov === 'rest') return null
-  if (ov && S.routines.some(r => r.id === ov)) return ov
+// Day overrides used to be one routine id (or the special `rest` value). New writes use a
+// list, but every load path runs this copy-on-read normalizer so old backups and server state
+// become the new shape without changing callers that still hold an old object.
+export function normalizeDayPlan(S) {
+  if (!S || !S.dayPlan || typeof S.dayPlan !== 'object' || Array.isArray(S.dayPlan)) return S
+  const dayPlan = {}
+  Object.entries(S.dayPlan).forEach(([iso, value]) => {
+    dayPlan[iso] = Array.isArray(value) ? value.slice() : [value]
+  })
+  return { ...S, dayPlan }
+}
+
+const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key)
+const asRoutineIds = value => Array.isArray(value) ? value : value == null || value === '' ? [] : [value]
+const knownRoutineIds = S => new Set((S?.routines || []).map(r => r.id))
+const validRoutineIds = (S, value) => {
+  const known = knownRoutineIds(S)
+  return [...new Set(asRoutineIds(value).filter(id => id && id !== 'rest' && known.has(id)))]
+}
+
+// All routines effective for a day, in the order stored by the plan. `week` deliberately stays
+// scalar: it is the recurring fallback, while a date override can add morning + evening plans.
+// A `rest` override is exclusive, and an empty list is the same explicit no-plan override.
+export function effectiveRoutineIds(S, iso) {
+  const dayPlan = S?.dayPlan || {}
+  const hasOverride = hasOwn(dayPlan, iso)
   const wd = new Date(iso + 'T12:00:00').getDay()
-  return S.week[wd] || null
+  const raw = hasOverride ? dayPlan[iso] : S?.week?.[wd]
+  if (asRoutineIds(raw).includes('rest')) return []
+
+  const ids = validRoutineIds(S, raw)
+  if (ids.length || !hasOverride || (Array.isArray(raw) && raw.length === 0)) return ids
+
+  // Preserve the old helper's behavior for a stale/unknown override: fall back to the weekly
+  // routine rather than turning a bad legacy id into an unexpected rest day. Empty arrays remain
+  // explicit rest overrides, while a list containing valid ids already returned above.
+  return validRoutineIds(S, S?.week?.[wd])
+}
+
+export function effectiveRoutineId(S, iso) {
+  return effectiveRoutineIds(S, iso)[0] || null
+}
+export function effectiveRoutines(S, iso) {
+  const routines = new Map((S?.routines || []).map(r => [r.id, r]))
+  return effectiveRoutineIds(S, iso).map(id => routines.get(id)).filter(Boolean)
 }
 export function effectiveRoutine(S, iso) {
-  const id = effectiveRoutineId(S, iso)
-  return id ? S.routines.find(r => r.id === id) || null : null
+  return effectiveRoutines(S, iso)[0] || null
 }
 export function buildSets(S, cfg, options = {}) {
   const last = lastEntryFor(S, cfg.id)

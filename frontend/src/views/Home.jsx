@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
-import { effectiveRoutine, effectiveRoutineId, streakWeeks, lastBW, setsDoneActive } from '../lib/history.js'
+import { effectiveRoutines, effectiveRoutineIds, streakWeeks, lastBW, setsDoneActive } from '../lib/history.js'
 import { fmtNum, fmtDate, todayISO, isoOf, weekKey, DAYS } from '../lib/format.js'
 import { t, dateLocale } from '../lib/i18n.js'
-import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, startFlow, loadStarterPlan, bwDeltaColor } from '../sheets.jsx'
+import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, startFlow, startSessionSheet, loadStarterPlan, bwDeltaColor } from '../sheets.jsx'
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
@@ -18,8 +18,9 @@ export default function Home() {
   const [weekOffset, setWeekOffset] = useState(0)
 
   const today = new Date()
-  const routine = effectiveRoutine(S, todayISO())
-  const todayOvr = S.dayPlan[todayISO()] !== undefined
+  const todayPlans = effectiveRoutines(S, todayISO())
+  const routine = todayPlans[0]
+  const todayOvr = Object.prototype.hasOwnProperty.call(S.dayPlan || {}, todayISO())
   const bw = lastBW(S)
   const prevBW = S.bodyweight.length > 1 ? S.bodyweight[S.bodyweight.length - 2] : null
   const delta = bw && prevBW ? bw.w - prevBW.w : null
@@ -30,8 +31,8 @@ export default function Home() {
   for (let i = 0; i < 7; i++) {
     const d = new Date(monday); d.setDate(monday.getDate() + i)
     const iso = isoOf(d)
-    const eff = effectiveRoutineId(S, iso), ovr = S.dayPlan[iso] !== undefined, done = doneDays.has(iso)
-    const dot = done ? ' done' : ovr && eff ? ' ovr' : eff ? ' plan' : ''
+    const eff = effectiveRoutineIds(S, iso), ovr = Object.prototype.hasOwnProperty.call(S.dayPlan || {}, iso), done = doneDays.has(iso)
+    const dot = done ? ' done' : ovr && eff.length ? ' ovr' : eff.length ? ' plan' : ''
     strip.push(<div key={i} className={'wday' + (iso === todayISO() ? ' today' : '')} onClick={() => dayOverrideSheet(iso)}>
       <div className="lbl">{t(DAYS[d.getDay()])}</div><div className="num">{d.getDate()}</div><div className={'dot' + dot} /></div>)
   }
@@ -43,7 +44,7 @@ export default function Home() {
   const bwPoints = S.bodyweight.slice(-30).map(b => ({ t: b.t || new Date(b.d).getTime(), y: b.w, d: b.d }))
 
   // today's session shown right under the week strip
-  const onToday = () => { if (S.active) nav('/workout'); else if (routine) startFlow(routine.id); else dayOverrideSheet(todayISO()) }
+  const onToday = () => { if (S.active) nav('/workout'); else if (todayPlans.length === 1) startFlow(routine.id); else if (todayPlans.length > 1) startSessionSheet(); else dayOverrideSheet(todayISO()) }
 
   return <div className="narrow">
     <div className="hdr">
@@ -65,7 +66,7 @@ export default function Home() {
           </span>
           <div style={{ minWidth: 0 }}>
             <div className="lbl2">{t('Today')}</div>
-            <div className="ttl">{S.active ? t('{0} — in progress', S.active.name) : routine ? routine.name : t('Rest day')}{todayOvr && routine ? ' · ' + t('rescheduled') : ''}</div>
+            <div className="ttl">{S.active ? t('{0} — in progress', S.active.name) : todayPlans.length ? todayPlans.map(r => r.name).join(' + ') : t('Rest day')}{todayOvr && todayPlans.length ? ' · ' + t('rescheduled') : ''}</div>
           </div>
         </div>
         {S.active ? <span className="tag" style={{ color: 'var(--orange)', background: 'color-mix(in srgb,var(--orange) 16%,transparent)' }}>{t('Resume')}</span>

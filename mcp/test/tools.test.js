@@ -183,6 +183,18 @@ describe('get_week_plan', () => {
     expect(r.today_routine_name).toBe('Leg Day')
   })
 
+  test('a multi-plan override exposes every routine while keeping singular fields compatible', () => {
+    const legs = S.routines.find(r => r.name === 'Leg Day')
+    const push = S.routines.find(r => r.name === 'Push Day')
+    S.dayPlan[FAKE_TODAY_ISO] = [legs.id, push.id]
+
+    const r = call('get_week_plan')
+    expect(r.today_routine_ids).toEqual([legs.id, push.id])
+    expect(r.today_routine_names).toEqual(['Leg Day', 'Push Day'])
+    expect(r.today_routine_id).toBe(legs.id)
+    expect(r.today_routine_name).toBe('Leg Day')
+  })
+
   test('empty week + no override → today has no routine (a quiet Sunday)', () => {
     S.week = {}
     S.dayPlan = {}

@@ -567,4 +567,7 @@ export default {
   '{0} per side': '每侧 {0} 次',
   'You still log the total: {0} is {1} per side.': '你记录的仍然是总数：{0} 表示每侧 {1} 次。',
   '{0} sets · {1} work': '{0} 组 · {1} 工作',
+  'Today’s sessions': '今天的训练',
+  'Choose a session': '选择训练',
+  'Every planned session is done today — pick another routine or go freestyle.': '今天计划的训练均已完成 — 选择其他计划或自由训练。'
 }

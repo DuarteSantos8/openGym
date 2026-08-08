@@ -567,4 +567,7 @@ export default {
   '{0} per side': '{0} por lado',
   'You still log the total: {0} is {1} per side.': 'Continuas a registar o total: {0} são {1} por lado.',
   '{0} sets · {1} work': '{0} séries · {1} trabalho',
+  'Today’s sessions': 'Sessões de hoje',
+  'Choose a session': 'Escolher uma sessão',
+  'Every planned session is done today — pick another routine or go freestyle.': 'Todas as sessões de hoje estão feitas — escolha outra rotina ou treine livre.'
 }

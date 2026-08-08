@@ -5,6 +5,7 @@ import { registerCustom } from '../lib/exercises.js'
 import { DEMO, DEMO_SEEDED } from '../lib/demo.js'
 import { guestAllowed } from '../lib/guest.js'
 import { MOBILE, nativeLoad, nativeSave, syncReminder } from '../lib/mobile.js'
+import { normalizeDayPlan } from '../lib/history.js'
 
 const KEY = 'gym_state_v1'
 export const DEF = {
@@ -23,7 +24,7 @@ const clone = o => JSON.parse(JSON.stringify(o))
 function loadState() {
   try {
     const raw = localStorage.getItem(KEY)
-    if (raw) return Object.assign(clone(DEF), JSON.parse(raw))
+    if (raw) return normalizeDayPlan(Object.assign(clone(DEF), JSON.parse(raw)))
   } catch (e) { /* ignore */ }
   return clone(DEF)
 }
@@ -42,10 +43,11 @@ export const useStore = create((set, get) => {
   }
 
   const persist = (S, push = true) => {
-    S._ts = Date.now()
-    registerCustom(S.customEx)
-    localStorage.setItem(KEY, JSON.stringify(S))
-    set({ S })
+    const next = normalizeDayPlan(S)
+    next._ts = Date.now()
+    registerCustom(next.customEx)
+    localStorage.setItem(KEY, JSON.stringify(next))
+    set({ S: next })
     if (MOBILE) nativePersist()
     if (push && get().user) {
       clearTimeout(pushTm)
@@ -91,7 +93,7 @@ export const useStore = create((set, get) => {
       mut(S)
       persist(S, push)
     },
-    replaceState(S, push = false) { persist(clone(S), push) },
+    replaceState(S, push = false) { persist(normalizeDayPlan(clone(S)), push) },
 
     isGuest: () => localStorage.getItem('gym_guest') === '1',
     setGuest(v) { if (v) localStorage.setItem('gym_guest', '1'); else localStorage.removeItem('gym_guest'); set({}) },
@@ -125,7 +127,7 @@ export const useStore = create((set, get) => {
         const dirty = localStorage.getItem('gym_dirty') === '1'
         if (state && (!hasData(S) || ((state._ts || 0) >= (S._ts || 0) && !dirty))) {
           const active = S.active
-          const next = Object.assign(clone(DEF), state)
+          const next = normalizeDayPlan(Object.assign(clone(DEF), state))
           if (active) next.active = active
           persist(next, false)
         } else if (hasData(S)) { await get().pushState() }
@@ -164,7 +166,7 @@ export const useStore = create((set, get) => {
         const saved = await nativeLoad()
         const S = get().S
         if (saved && (!hasData(S) || (saved._ts || 0) >= (S._ts || 0))) {
-          persist(Object.assign(clone(DEF), saved), false)
+          persist(normalizeDayPlan(Object.assign(clone(DEF), saved)), false)
         } else if (hasData(S)) {
           nativeSave(S)   // first run after an update from a file-less version: seed the mirror
         }

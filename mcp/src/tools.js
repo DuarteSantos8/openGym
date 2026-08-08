@@ -7,7 +7,7 @@ import {
   setLabel, exLine, muscleName, policyName, friendlyDuration, ratio, muscleOrder
 } from './labels.js'
 import {
-  modeOf, workoutVolume, setsDone, effectiveRoutine, effectiveRoutineId
+  modeOf, workoutVolume, setsDone, effectiveRoutineIds, effectiveRoutines
 } from '../../frontend/src/lib/history.js'
 import { EXIDX, exOr } from '../../frontend/src/lib/exercises.js'
 import {
@@ -134,7 +134,7 @@ export const getRoutine = {
 /** get_week_plan — what's scheduled each weekday + today. */
 export const getWeekPlan = {
   name: 'get_week_plan',
-  description: 'Show the user\'s weekly plan: which routine (if any) is assigned to each weekday, keyed by JS getDay() (Sunday=0, Monday=1, … Saturday=6 — the same convention the openGym state file uses). Also reports today\'s date and what routine applies today, accounting for one-off overrides the user may have set for a specific date (a "rest" override cancels the day).',
+  description: 'Show the user\'s weekly plan: which routine (if any) is assigned to each weekday, keyed by JS getDay() (Sunday=0, Monday=1, … Saturday=6 — the same convention the openGym state file uses). Also reports today\'s date and every routine that applies today, accounting for one-off overrides the user may have set for a specific date (a "rest" override cancels the day). Singular today_routine_id/name fields remain as the first routine for compatibility.',
   schema: {},
   handler: () => {
     const S = getState()
@@ -142,6 +142,8 @@ export const getWeekPlan = {
     const today = new Date()
     const isoToday = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0')
     const todayWd = today.getDay()
+    const todayRoutineIds = effectiveRoutineIds(S, isoToday)
+    const todayRoutines = effectiveRoutines(S, isoToday)
     return {
       today: isoToday,
       weekdays: [0, 1, 2, 3, 4, 5, 6].map(d => {
@@ -159,8 +161,12 @@ export const getWeekPlan = {
           override_for_today_or_null: overrideForToday
         }
       }),
-      today_routine_id: effectiveRoutineId(S, isoToday),
-      today_routine_name: effectiveRoutine(S, isoToday)?.name || null
+      // Keep the original singular fields for existing MCP clients; the plural fields expose
+      // every startable plan when a date has a multi-routine override.
+      today_routine_ids: todayRoutineIds,
+      today_routine_names: todayRoutines.map(r => r.name),
+      today_routine_id: todayRoutineIds[0] || null,
+      today_routine_name: todayRoutines[0]?.name || null
     }
   }
 }

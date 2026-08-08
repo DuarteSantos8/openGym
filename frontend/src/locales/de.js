@@ -584,4 +584,7 @@ export default {
   '{0} per side': '{0} pro Seite',
   'You still log the total: {0} is {1} per side.': 'Du trägst weiterhin die Gesamtzahl ein: {0} sind {1} pro Seite.',
   '{0} sets · {1} work': '{0} Sätze · {1} Arbeit',
+  'Today’s sessions': 'Heutige Einheiten',
+  'Choose a session': 'Einheit wählen',
+  'Every planned session is done today — pick another routine or go freestyle.': 'Alle geplanten Einheiten sind heute erledigt — wähle eine andere Routine oder trainiere frei.'
 }
