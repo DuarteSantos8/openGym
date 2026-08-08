@@ -567,4 +567,7 @@ export default {
   '{0} per side': '{0} на сторону',
   'You still log the total: {0} is {1} per side.': 'Ты по-прежнему записываешь общее число: {0} — это {1} на сторону.',
   '{0} sets · {1} work': '{0} подходов · {1} рабочих',
+  'Today’s sessions': 'Сегодняшние тренировки',
+  'Choose a session': 'Выбрать тренировку',
+  'Every planned session is done today — pick another routine or go freestyle.': 'Все запланированные тренировки на сегодня выполнены — выберите другую или тренируйтесь свободно.'
 }

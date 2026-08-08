@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
-import { DAYN, uid, exCount, todayISO, fmtDate } from '../lib/format.js'
-import { effectiveRoutines } from '../lib/history.js'
+import { DAYN, uid, exCount, todayISO, fmtDate, isoOf } from '../lib/format.js'
+import { effectiveRoutines, effectiveRoutineIds } from '../lib/history.js'
 import { t } from '../lib/i18n.js'
 import { dayAssignSheet, dayOverrideSheet, loadStarterPlan, planToolsSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
@@ -10,6 +10,13 @@ import { Button } from '../components/ui.jsx'
 import { glyphOf, DEFAULT_GLYPH } from '../lib/glyphs.js'
 
 export default function Plan() {
+  // The next real date for a weekday - tapping a day opens the multi-plan picker for it.
+  const nextDateOf = d => {
+    const t = new Date(todayISO() + 'T12:00:00')
+    const diff = (d - t.getDay() + 7) % 7
+    t.setDate(t.getDate() + diff)
+    return isoOf(t)
+  }
   const nav = useNavigate()
   const S = useStore(s => s.S)
   const update = useStore(s => s.update)
@@ -32,9 +39,22 @@ export default function Plan() {
       <div className="list" style={{ display: 'flex', flexDirection: 'column' }}>
         {[1, 2, 3, 4, 5, 6, 0].map(d => {
           const r = S.routines.find(x => x.id === S.week[d])
-          return <div key={d} className="item" onClick={() => dayAssignSheet(d)}>
-            <div className="grow"><div className="tt">{t(DAYN[d])}</div></div>
-            {r ? <span className="tag acc"><Icon name={glyphOf(r.emoji)} />{r.name}</span> : <span className="tag">{t('Rest')}</span>}
+          const iso = nextDateOf(d)
+          const dayPlans = effectiveRoutineIds(S, iso)
+          const overridden = Object.prototype.hasOwnProperty.call(S.dayPlan || {}, iso)
+          const shown = overridden && dayPlans.length ? dayPlans : (r ? [r.id] : [])
+          return <div key={d} className="item" onClick={() => dayOverrideSheet(iso)}>
+            <div className="grow">
+              <div className="row" style={{ alignItems: 'flex-start', gap: 8, flexWrap: 'wrap' }}>
+                <div className="tt">{t(DAYN[d])}</div>
+                {shown.length ? <div className="row" style={{ gap: 4, flexWrap: 'wrap', justifyContent: 'flex-end', flex: '1 1 auto', minWidth: 0, maxHeight: 64, overflow: 'hidden' }}>
+                  {shown.map((pid, i) => {
+                    const pr = S.routines.find(x => x.id === pid)
+                    return pr ? <span key={pid} className="tag acc" style={{ marginRight: 0 }}><Icon name={glyphOf(pr.emoji)} />{overridden && <b style={{ marginRight: 3 }}>{i + 1}.</b>}{pr.name}</span> : null
+                  })}
+                </div> : <span className="tag">{t('Rest')}</span>}
+              </div>
+            </div>
             <Icon name="chevronRight" className="chev" /></div>
         })}
       </div>

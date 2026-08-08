@@ -567,4 +567,7 @@ export default {
   '{0} per side': 'प्रति तरफ़ {0}',
   'You still log the total: {0} is {1} per side.': 'आप कुल ही दर्ज करते हैं: {0} यानी प्रति तरफ़ {1}।',
   '{0} sets · {1} work': '{0} सेट · {1} काम',
+  'Today’s sessions': 'आज के सेशन',
+  'Choose a session': 'सेशन चुनें',
+  'Every planned session is done today — pick another routine or go freestyle.': 'आज की सभी नियोजित सेशन पूरी हो चुकी हैं — कोई दूसरी रूटीन चुनें या फ्रीस्टाइल करें।'
 }

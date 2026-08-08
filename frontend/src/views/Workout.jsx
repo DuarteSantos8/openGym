@@ -23,17 +23,29 @@ function StartChooser() {
   const todayOvr = Object.prototype.hasOwnProperty.call(S.dayPlan || {}, todayISO())
   const plannedIds = new Set(todayPlans.map(r => r.id))
   const others = S.routines.filter(r => !plannedIds.has(r.id))
-  const todayLabel = todayPlans.length ? todayPlans.map(r => r.name).join(', ') : t('rest day, but no one’s stopping you')
+  const iso = todayISO()
+  const doneToday = new Set()
+  ;(S.workouts || []).forEach(w => { if (String(w.d || '').slice(0, 10) === iso && w.routineId) doneToday.add(w.routineId) })
+  const todayLabel = todayPlans.length ? todayPlans.map(r => r.name).join(', ') : t('rest day, but no one\u2019s stopping you')
   return <div className="narrow">
-    <div className="hdr"><div><h1>{t('Start workout')}</h1><div className="sub">{t(DAYN[new Date().getDay()])} — {todayPlans.length ? t('today is {0}', todayLabel) : todayLabel}</div></div></div>
-    {todayPlans.map(todayR => <div key={todayR.id} className="card" style={{ borderColor: 'var(--acc)' }}>
-      <h2 className="accent">{t("Today's plan")}{todayOvr ? ' · ' + t('rescheduled') : ''}</h2>
-      <div className="row between" style={{ marginBottom: 12 }}>
-        <div><div className="big">{todayR.name}</div><div className="muted small">{exCount(todayR.ex.length)}</div></div>
-        <span className="lrow-i" style={{ width: 38, height: 38, borderRadius: 9, fontSize: 22 }}><Icon name={glyphOf(todayR.emoji)} /></span>
+    <div className="hdr"><div><h1>{t('Start workout')}</h1><div className="sub">{t(DAYN[new Date().getDay()])} \u2014 {todayPlans.length ? t('today is {0}', todayLabel) : todayLabel}</div></div></div>
+    {todayPlans.length === 1 && !doneToday.has(todayPlans[0].id) && (
+      <div className="card" style={{ borderColor: 'var(--acc)' }}>
+        <h2 className="accent">{t("Today's plan")}{todayOvr ? ' \u00b7 ' + t('rescheduled') : ''}</h2>
+        <div className="row between" style={{ marginBottom: 12 }}>
+          <div><div className="big">{todayPlans[0].name}</div><div className="muted small">{exCount(todayPlans[0].ex.length)}</div></div>
+          <span className="lrow-i" style={{ width: 38, height: 38, borderRadius: 9, fontSize: 22 }}><Icon name={glyphOf(todayPlans[0].emoji)} /></span>
+        </div>
+        <Button variant="primary" icon="play" onClick={() => startFlow(todayPlans[0].id)}>{t('Start {0}', todayPlans[0].name)}</Button>
       </div>
-      <Button variant="primary" icon="play" onClick={() => startFlow(todayR.id)}>{t('Start {0}', todayR.name)}</Button>
-    </div>)}
+    )}
+    {todayPlans.length > 1 && (
+      <div className="card">
+        <h2 className="accent">{t('Today’s sessions')}</h2>
+        <div className="muted small" style={{ marginBottom: 10 }}>{todayLabel}</div>
+        <Button variant="primary" icon="play" onClick={() => startSessionSheet()}>{t('Choose a session')}</Button>
+      </div>
+    )}
     {others.length > 0 && <><h4 className="sec">{t('Other routines')}</h4>
       <div className="list">{others.map(r => <div key={r.id} className="item" onClick={() => startFlow(r.id)}>
         <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>

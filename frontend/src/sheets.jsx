@@ -3,7 +3,7 @@ import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf } from './lib/exercises.js'
 import { fmtDate, fmtNum, fmtVol, fmtDur, durPart, todayISO, uid, exCount, DAYN, MONTHS_LONG, ACCENTS } from './lib/format.js'
-import { lastEntryFor, bestWeightFor, buildSets, effectiveRoutineId, effectiveRoutineIds, workoutVolume, setsDone, setsDoneActive, lastBW, supersetUnits, unitOf, setLabel, defaultConfig, cleanupSg, modeOf, effortOf, isBw, isPerSide, sideReps, workSetsDone } from './lib/history.js'
+import { lastEntryFor, bestWeightFor, buildSets, effectiveRoutineId, effectiveRoutineIds, effectiveRoutines, workoutVolume, setsDone, setsDoneActive, lastBW, supersetUnits, unitOf, setLabel, defaultConfig, cleanupSg, modeOf, effortOf, isBw, isPerSide, sideReps, workSetsDone } from './lib/history.js'
 import { beep, vibrate } from './lib/sound.js'
 import { t, instrFor, getLang, INSTR_LANGS } from './lib/i18n.js'
 import { nav } from './lib/nav.js'
@@ -724,11 +724,15 @@ function DayOverride({ iso, close }) {
   return <>
     <h3>{fmtDate(iso, true)}</h3>
     <div className="muted small" style={{ marginBottom: 12 }}>{t('Weekly plan:')} {weeklyR ? weeklyR.name : t('Rest')}{hasOvr && <span style={{ color: 'var(--orange)' }}> · {t('changed for this day')}</span>}<br />{t('Pick one or more routines for this date. Tap a selected routine to remove it.')}</div>
+    <Button size="sm" variant="tinted" icon="calendar" style={{ marginBottom: 10 }} onClick={() => dayAssignSheet(wd)}>{t('Change the weekly plan for {0}', t(DAYN[wd]))}</Button>
     <div className="list">
       {st.routines.map(r => <div key={r.id} className="item" onClick={() => toggle(r.id)}>
         <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
         <div className="grow"><div className="tt">{r.name}</div><div className="ss">{exCount(r.ex.length)}</div></div>
-        {selected.includes(r.id) && <Icon name="check" className="accent" />}</div>)}
+        {selected.includes(r.id) && <span className="row" style={{ gap: 6 }}>
+          <span style={{ background: 'var(--acc)', color: '#fff', borderRadius: 99, minWidth: 20, height: 20, padding: '0 5px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700 }}>{selected.indexOf(r.id) + 1}</span>
+          <Icon name="check" className="accent" />
+        </span>}</div>)}
       <div className="item" onClick={() => setSelected([])}><span className="lrow-i" style={{ background: 'var(--surface-3)' }}><Icon name="moon" /></span><div className="grow"><div className="tt">{t('Rest / skip this day')}</div></div>{!selected.length && <Icon name="check" className="accent" />}</div>
       {hasOvr && <div className="item" onClick={backToWeekly}><span className="lrow-i" style={{ background: 'var(--surface-3)' }}><Icon name="reset" /></span><div className="grow"><div className="tt">{t('Back to weekly plan')}</div></div></div>}
     </div>
@@ -831,6 +835,53 @@ export function WorkoutRow({ w, onClick }) {
 }
 
 /* ============================ workout lifecycle ============================ */
+// Session picker for days with multiple planned sessions (owner flow: small planner-style
+// buttons side by side, first uncompleted auto-selected, completed sessions ticked + greyed).
+// A sheet on purpose: swipe down to dismiss.
+function StartSessions({ close }) {
+  const S = useStore(s => s.S)
+  const todayPlans = effectiveRoutines(S, todayISO())
+  const iso = todayISO()
+  const doneToday = new Set()
+  ;(S.workouts || []).forEach(w => { if (String(w.d || '').slice(0, 10) === iso && w.routineId) doneToday.add(w.routineId) })
+  const [chosen, setChosen] = useState(() => {
+    const firstOpen = todayPlans.find(r => !doneToday.has(r.id))
+    return firstOpen ? firstOpen.id : (todayPlans.length ? todayPlans[0].id : null)
+  })
+  const selected = todayPlans.find(r => r.id === chosen) || null
+  const others = S.routines.filter(r => !todayPlans.some(p => p.id === r.id))
+  const go = id => { close(); startFlow(id) }
+  return <>
+    <h3>{t('Start workout')}</h3>
+    <div className="row" style={{ gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+      {todayPlans.map(r => {
+        const done = doneToday.has(r.id)
+        const on = !done && r.id === chosen
+        return <button key={r.id} disabled={done} onClick={() => setChosen(r.id)}
+          className={'tag' + (on ? ' acc' : '')}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 5, cursor: 'pointer', opacity: done ? .5 : 1, padding: '7px 11px' }}>
+          <Icon name={glyphOf(r.emoji)} /> {r.name} {done && <Icon name="check" className="accent" />}
+        </button>
+      })}
+    </div>
+    {selected
+      ? <Button variant="primary" icon="play" style={{ width: '100%' }} onClick={() => go(selected.id)}>{t('Start {0}', selected.name)}</Button>
+      : <div className="muted small" style={{ marginBottom: 10 }}>{t('Every planned session is done today \u2014 pick another routine or go freestyle.')}</div>}
+    {others.length > 0 && <>
+      <h4 className="sec">{t('Other routines')}</h4>
+      <div className="row" style={{ gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+        {others.map(r => <button key={r.id} onClick={() => go(r.id)}
+          className="tag" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, cursor: 'pointer', padding: '7px 11px' }}>
+          <Icon name={glyphOf(r.emoji)} /> {r.name}
+        </button>)}
+      </div>
+    </>}
+    <div style={{ height: 10 }} />
+    <Button icon="shuffle" style={{ width: '100%' }} onClick={() => go(null)}>{t('Freestyle workout (pick as you go)')}</Button>
+  </>
+}
+export const startSessionSheet = () => ui().openSheet(close => <StartSessions close={close} />)
+
 export function startFlow(routineId) {
   bwSheet({ required: true, onDone: bw => beginWorkout(routineId, bw) })
 }

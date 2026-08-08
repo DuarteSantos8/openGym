@@ -567,4 +567,7 @@ export default {
   '{0} per side': '한쪽당 {0}회',
   'You still log the total: {0} is {1} per side.': '기록은 그대로 합계로 합니다: {0}회는 한쪽당 {1}회입니다.',
   '{0} sets · {1} work': '{0} 세트 · {1} 작업',
+  'Today’s sessions': '오늘의 세션',
+  'Choose a session': '세션 선택',
+  'Every planned session is done today — pick another routine or go freestyle.': '오늘 계획된 세션이 모두 완료되었습니다 — 다른 루틴을 고르거나 자유 운동하세요.'
 }

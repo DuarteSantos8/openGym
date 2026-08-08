@@ -3,6 +3,7 @@ import { useStore } from '../store/useStore.js'
 import { effectiveRoutines } from '../lib/history.js'
 import { todayISO } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
+import { startSessionSheet } from '../sheets.jsx'
 import Icon from './Icon.jsx'
 
 export default function TabBar({ onStart }) {
@@ -19,6 +20,7 @@ export default function TabBar({ onStart }) {
     if (!S.active) {
       const plans = effectiveRoutines(S, todayISO())
       if (plans.length === 1 && plans[0].ex.length) { onStart(plans[0].id); return }
+      if (plans.length > 1) { startSessionSheet(); return }
     }
     nav('/workout')
   }
