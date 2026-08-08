@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { estimate1RM, bestSetOf, e1rmSeries, best1RM, is1RMRecord, FORMULAS } from './onerm.js'
-import { stampCompletedWorkout } from './workout-model.js'
+import { estimate1RM, bestSetOf, e1rmSeries, best1RM, is1RMRecord, REP_CAP, FORMULAS } from './onerm.js'
 
 describe('estimate1RM', () => {
   it('returns the load unchanged for a single rep', () => {
@@ -20,10 +19,10 @@ describe('estimate1RM', () => {
     expect(Number.isInteger(estimate1RM(100, 3) * 10)).toBe(true)
   })
 
-  it('keeps valid high-repetition inputs usable instead of applying an unrelated target cap', () => {
-    expect(estimate1RM(100, 12)).toBe(140)
-    expect(estimate1RM(100, 13)).toBe(143.3)
-    expect(estimate1RM(60, 30)).toBe(120)
+  it('refuses reps beyond the cap rather than guessing', () => {
+    expect(estimate1RM(100, REP_CAP)).not.toBeNull()
+    expect(estimate1RM(100, REP_CAP + 1)).toBeNull()
+    expect(estimate1RM(60, 30)).toBeNull()
   })
 
   it('rejects invalid, zero and negative input', () => {
@@ -54,8 +53,8 @@ describe('estimate1RM', () => {
     expect(spread(1)).toBe(0)                       // one rep is measured, not estimated
     for (let r = 2; r <= 8; r++) expect(spread(r)).toBeLessThan(6)
     const upTo = []
-    for (let r = 1; r < 12; r++) upTo.push(spread(r))
-    expect(spread(12)).toBeGreaterThan(Math.max(...upTo))
+    for (let r = 1; r < REP_CAP; r++) upTo.push(spread(r))
+    expect(spread(REP_CAP)).toBeGreaterThan(Math.max(...upTo))   // why REP_CAP exists
   })
 
   it('falls back to the default for an unknown formula name', () => {
@@ -78,14 +77,6 @@ describe('bestSetOf', () => {
     expect(bestSetOf(entry).w).toBe(100)
   })
 
-  it('excludes explicitly marked warm-up sets from estimated 1RM', () => {
-    const entry = { id: 'x', sets: [
-      { phase: 'warmup', w: 200, r: 5, done: true },
-      { phase: 'work', w: 100, r: 5, done: true }
-    ] }
-    expect(bestSetOf(entry)).toEqual({ est: 116.7, w: 100, r: 5 })
-  })
-
   it('ignores topW, which carries no rep count', () => {
     const entry = { id: 'x', topW: 200, sets: [{ w: 100, r: 5, done: true }] }
     expect(bestSetOf(entry).est).toBe(116.7)
@@ -97,47 +88,9 @@ describe('bestSetOf', () => {
     expect(bestSetOf({ id: 'p', sets: [{ sec: 60, w: 20, done: true }] })).toBeNull()
   })
 
-  it('rejects a legacy timed set even when a stale reps field is present', () => {
-    expect(bestSetOf({ id: 'p', sets: [{ sec: 60, w: 200, r: 5, done: true }] })).toBeNull()
-    expect(bestSetOf({ id: 'p', target: { mode: 'time', sec: 45 }, sets: [{ sec: 60, w: 200, r: 5, done: true }] })).toBeNull()
-  })
-
-  it('rejects rep-shaped rows when the persisted target is explicitly timed', () => {
-    expect(bestSetOf({ id: 'p', target: { mode: 'time', sec: 45 }, sets: [
-      { w: 200, r: 5, done: true }
-    ] })).toBeNull()
-  })
-
-  it('rejects a mixed-mode entry instead of deriving 1RM from reps beside timed work', () => {
-    const entry = { id: 'mixed', target: { mode: 'reps' }, sets: [
-      { mode: 'reps', w: 100, r: 5, done: true },
-      { mode: 'time', sec: 45, w: 20, done: true }
-    ] }
-    expect(bestSetOf(entry)).toBeNull()
-  })
-
-  it('keeps mixed-mode 1RM rejection when explicit reps work sits under a timed parent', () => {
-    const entry = { id: 'mixed-timed-parent', target: { mode: 'time', sec: 45 }, sets: [
-      { phase: 'work', mode: 'reps', w: 100, r: 5, done: true },
-      { phase: 'work', mode: 'time', sec: 45, w: 200, done: true }
-    ] }
-    expect(bestSetOf(entry)).toBeNull()
-  })
-
   it('survives a missing or empty entry', () => {
     expect(bestSetOf(null)).toBeNull()
     expect(bestSetOf({ sets: [] })).toBeNull()
-  })
-
-  it('includes a completed high-rep AMRAP result in the unit-compatible 1RM series', () => {
-    const state = {
-      unit: 'kg',
-      workouts: [{ unit: 'kg', d: '2026-02-01', start: 1, entries: [{ id: 'bench',
-        target: { mode: 'reps', kind: 'amrap', amrapMinReps: 5 },
-        sets: [{ unit: 'kg', phase: 'work', w: 60, r: 15, done: true }]
-      }] }]
-    }
-    expect(e1rmSeries(state, 'bench')).toEqual([{ t: 1, d: '2026-02-01', y: 90, w: 60, r: 15 }])
   })
 })
 
@@ -192,19 +145,20 @@ describe('is1RMRecord', () => {
     expect(is1RMRecord(S, 'plank', { id: 'plank', sets: [{ sec: 90, done: true }] })).toBeNull()
     expect(is1RMRecord(S, 'bench', { id: 'bench', sets: [{ w: 200, r: 5, done: false }] })).toBeNull()
   })
+})
 
-  it('accepts a non-mutating current-unit completion clone and rejects an incompatible clone', () => {
-    const activeEntry = { id: 'bench', target: { mode: 'reps' }, sets: [
-      { phase: 'work', w: 60, r: 5, done: true }
-    ] }
-    const raw = JSON.parse(JSON.stringify(activeEntry))
-    const currentUnit = { unit: 'kg', workouts: [] }
-    const kgEntry = stampCompletedWorkout({ entries: [activeEntry] }, 'kg').entries[0]
-    const lbEntry = stampCompletedWorkout({ entries: [activeEntry] }, 'lb').entries[0]
 
-    expect(kgEntry.sets[0].unit).toBe('kg')
-    expect(is1RMRecord(currentUnit, 'bench', kgEntry)).toEqual({ est: 70, w: 60, r: 5, prev: 0 })
-    expect(is1RMRecord(currentUnit, 'bench', lbEntry)).toBeNull()
-    expect(activeEntry).toEqual(raw)
+describe('warm-up sets and 1RM', () => {
+  const ENTRY = { id: 'warm-test', sets: [
+    { w: 20, r: 8, done: true, warmup: true },
+    { w: 80, r: 5, done: true },
+  ] }
+
+  it('does not let a ticked-off warm-up set set or raise the estimated 1RM', () => {
+    const working = { id: 'warm-test', sets: [{ w: 80, r: 5, done: true }] }
+    expect(bestSetOf(ENTRY)).toEqual(bestSetOf(working))
+    expect(best1RM({ workouts: [{ entries: [ENTRY] }] }, 'warm-test')).toEqual(
+      best1RM({ workouts: [{ entries: [working] }] }, 'warm-test'),
+    )
   })
 })

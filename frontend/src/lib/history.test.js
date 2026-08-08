@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { modeOf, isTimed, fmtSec, setLabel, defaultConfig, buildSets, exLine, workoutVolume, volumeByPhase, setsByPhase, lastEntryFor, bestWeightFor, bestWeightForEntry, metricModeForEntry, metricRowsForEntry, workoutsForUnit, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep , freestyleConfig } from './history.js'
+import { modeOf, isTimed, fmtSec, setLabel, defaultConfig, buildSets, freestyleConfig, exLine, workoutVolume, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, removeRowAt } from './history.js'
 import { EXDB } from './exercises.js'
-import { historyUnitCompatible } from './workout-model.js'
 
 // Real ids out of the shipped catalogue, so the body-part fallback is exercised for real.
 const CARDIO = EXDB.find(e => e.bp === 'cardio').id
@@ -29,11 +28,6 @@ describe('modeOf', () => {
   it('ignores a mode it does not know rather than trusting a bad file', () => {
     expect(modeOf({ id: LIFT, mode: 'nonsense' })).toBe('reps')
     expect(modeOf({ id: CARDIO, mode: '' })).toBe('cardio')
-  })
-
-  it('recognises legacy timed/cardio fields when an explicit mode was not persisted', () => {
-    expect(modeOf({ id: LIFT, sec: 60 })).toBe('time')
-    expect(modeOf({ id: LIFT, min: 20, speed: 9 })).toBe('cardio')
   })
 
   it('exposes the timed check', () => {
@@ -73,12 +67,6 @@ describe('setLabel', () => {
     expect(setLabel(CARDIO, {})).toBe('0 min @ 0 km/h')
   })
 
-  it('uses row-specific modes when warm-up and work modes are mixed', () => {
-    expect(setLabel(LIFT, { phase: 'warmup', mode: 'reps', w: 20, r: 8 }, { mode: 'time', sec: 45 }))
-      .toBe('20×8')
-    expect(setLabel(LIFT, { phase: 'work', mode: 'time', sec: 45, w: 20 }, { mode: 'reps', reps: 5 }))
-      .toBe('0:45 · 20')
-  })
   it('appends RIR when present, including a valid 0', () => {
     expect(setLabel(LIFT, { w: 60, r: 10, rir: 2 })).toBe('60×10 (RIR 2)')
     expect(setLabel(LIFT, { w: 60, r: 10, rir: 1.5 })).toBe('60×10 (RIR 1.5)')
@@ -456,34 +444,9 @@ describe('buildSets', () => {
       .toEqual([{ w: 40, r: 8, done: false }])
   })
 
-  it('still prefers an explicitly current confirmed working weight for reps sets', () => {
-    const S = { unit: 'kg', exWeights: { [LIFT]: { w: 75, unit: 'kg' } }, workouts: [{ unit: 'kg', d: '2026-01-01', entries: [{ id: LIFT, sets: [{ unit: 'kg', w: 60, r: 10, done: true }] }] }] }
+  it('still prefers the confirmed working weight for reps sets', () => {
+    const S = { exWeights: { [LIFT]: { w: 75 } }, workouts: [{ d: '2026-01-01', entries: [{ id: LIFT, sets: [{ w: 60, r: 10, done: true }] }] }] }
     expect(buildSets(S, { id: LIFT, sets: 1, reps: 8, weight: 50 })).toEqual([{ w: 75, r: 10, done: false }])
-  })
-
-  it('does not reuse a cached pound weight while the profile is in kilograms', () => {
-    const S = { unit: 'kg', exWeights: { [LIFT]: { w: 135, unit: 'lb', d: '2026-01-01' } }, workouts: [] }
-    expect(buildSets(S, { id: LIFT, sets: 1, reps: 8, weight: 60 })).toEqual([{ w: 60, r: 8, done: false }])
-  })
-
-  it('does not reuse an untagged legacy cache in either unit', () => {
-    const S = { unit: 'lb', exWeights: { [LIFT]: { w: 135, d: '2026-01-01' } }, workouts: [] }
-    expect(buildSets(S, { id: LIFT, sets: 1, reps: 8, weight: 100 })).toEqual([{ w: 100, r: 8, done: false }])
-  })
-
-  it('honours a workout-start resolved load over a stale confirmed weight', () => {
-    const S = { exWeights: { [LIFT]: { w: 75 } }, workouts: [] }
-    expect(buildSets(S, { id: LIFT, sets: 1, reps: 8, weight: 50, resolvedWeight: 35 }))
-      .toEqual([{ w: 35, r: 8, done: false }])
-  })
-
-  it('keeps mode-specific history separate across a reps/time mode switch', () => {
-    const S = { exWeights: {}, workouts: [
-      { d: '2026-01-01', entries: [{ id: LIFT, sets: [{ w: 60, r: 10, done: true }] }] },
-      { d: '2026-01-02', entries: [{ id: LIFT, target: { mode: 'time' }, sets: [{ sec: 70, w: 10, done: true }] }] }
-    ] }
-    expect(buildSets(S, { id: LIFT, mode: 'reps', sets: 1, reps: 8, weight: 40 })).toEqual([{ w: 60, r: 10, done: false }])
-    expect(buildSets(S, { id: LIFT, mode: 'time', sets: 1, sec: 45, weight: 0 })).toEqual([{ sec: 70, w: 10, done: false }])
   })
 
   it('can preserve each last set weight for freestyle instead of using the working-weight hint', () => {
@@ -505,181 +468,6 @@ describe('workoutVolume', () => {
     expect(workoutVolume(w)).toBe(600)
   })
 
-  it('attributes completed volume and completed sets by phase', () => {
-    const w = { entries: [
-      { id: LIFT, target: { mode: 'time' }, sets: [
-        { phase: 'warmup', mode: 'reps', w: 20, r: 10, done: true },
-        { phase: 'work', mode: 'time', sec: 45, w: 20, done: true }
-      ] },
-      { id: LIFT, sets: [{ phase: 'work', w: 60, r: 5, done: true }] }
-    ] }
-    expect(volumeByPhase(w)).toEqual({ warmup: 200, work: 300 })
-    expect(setsByPhase(w)).toEqual({ warmup: 1, work: 2 })
-  })
-
-  it('does not treat a targetless timed record as a best reps weight', () => {
-    const S = { workouts: [
-      { d: '2026-01-01', entries: [{ id: LIFT, sets: [{ w: 200, r: 5, sec: 60, done: true }] }] },
-      { d: '2026-01-02', entries: [{ id: LIFT, sets: [{ w: 70, r: 5, done: true }] }] }
-    ] }
-    expect(lastEntryFor(S, LIFT, 'reps').sets[0].w).toBe(70)
-    expect(lastEntryFor(S, LIFT, 'time').sets[0].sec).toBe(60)
-    expect(bestWeightFor(S, LIFT)).toBe(70)
-  })
-
-  it('does not reuse rep-shaped rows from a persisted timed target', () => {
-    const S = { workouts: [
-      { d: '2026-01-01', entries: [{ id: LIFT, target: { mode: 'time', sec: 45 }, topW: 999, sets: [{ w: 200, r: 5, done: true }] }] },
-      { d: '2026-01-02', entries: [{ id: LIFT, target: { mode: 'reps', reps: 5 }, sets: [{ w: 70, r: 5, done: true }] }] }
-    ] }
-    expect(lastEntryFor(S, LIFT, 'reps').sets[0].w).toBe(70)
-    expect(bestWeightFor(S, LIFT)).toBe(70)
-  })
-
-  it('uses an explicit completed reps row under a timed target for strength state', () => {
-    const S = { unit: 'kg', workouts: [
-      { unit: 'kg', d: '2026-01-01', entries: [{ id: LIFT, unit: 'kg', target: { mode: 'time', sec: 45 }, topW: 200, sets: [
-        { phase: 'work', mode: 'reps', unit: 'kg', w: 100, r: 5, done: true },
-        { phase: 'work', mode: 'time', unit: 'kg', w: 200, sec: 60, done: true }
-      ] }] },
-      { unit: 'kg', d: '2026-01-02', entries: [{ id: LIFT, target: { mode: 'reps', reps: 5 }, sets: [
-        { phase: 'work', mode: 'reps', unit: 'kg', w: 90, r: 5, done: true }
-      ] }] }
-    ] }
-
-    expect(bestWeightFor(S, LIFT)).toBe(100)
-    expect(90 > bestWeightFor(S, LIFT)).toBe(false)
-  })
-
-  it('uses the explicit reps row under a timed parent and never trusts stale topW', () => {
-    const entry = { id: LIFT, unit: 'kg', target: { mode: 'time', sec: 45 }, topW: 200, sets: [
-      { phase: 'work', mode: 'reps', unit: 'kg', w: 100, r: 5, done: true }
-    ] }
-    expect(metricModeForEntry(entry)).toBe('reps')
-    expect(metricRowsForEntry(entry, 'reps')).toEqual([entry.sets[0]])
-    expect(bestWeightForEntry(entry)).toBe(100)
-    expect(bestWeightFor({ unit: 'kg', workouts: [{ unit: 'kg', entries: [entry] }] }, LIFT)).toBe(100)
-  })
-
-  it('uses topW only for an otherwise wholly reps-compatible entry', () => {
-    const entry = { target: { mode: 'reps', reps: 5 }, topW: 80, sets: [
-      { phase: 'work', mode: 'reps', w: 60, r: 5, done: true }
-    ] }
-    expect(bestWeightForEntry(entry)).toBe(80)
-  })
-
-  it('selects only completed rows for a mixed Stats metric and keeps non-reps rows separate', () => {
-    const entry = { target: { mode: 'time', sec: 45 }, sets: [
-      { phase: 'warmup', mode: 'reps', w: 20, r: 8, done: true },
-      { phase: 'work', mode: 'reps', w: 100, r: 5, done: true },
-      { phase: 'work', mode: 'time', w: 200, sec: 60, done: true },
-      { phase: 'work', mode: 'reps', w: 110, r: 5, done: false }
-    ] }
-    expect(metricModeForEntry(entry)).toBe('reps')
-    expect(metricRowsForEntry(entry, 'reps')).toEqual([entry.sets[1]])
-    expect(metricRowsForEntry(entry, 'time')).toEqual([entry.sets[2]])
-    expect(metricRowsForEntry(entry, 'cardio')).toEqual([])
-  })
-
-  it('keeps explicit reps rows under a timed parent in the reps history cache', () => {
-    const S = { exWeights: {}, workouts: [{ d: '2026-01-01', entries: [{ id: LIFT,
-      target: { mode: 'time', sec: 45 }, sets: [
-        { phase: 'work', mode: 'reps', w: 100, r: 5, done: true },
-        { phase: 'work', mode: 'time', w: 200, sec: 60, done: true }
-      ]
-    }] }] }
-    expect(lastEntryFor(S, LIFT, 'reps').sets).toEqual([S.workouts[0].entries[0].sets[0]])
-    expect(buildSets(S, { id: LIFT, mode: 'reps', sets: 1, reps: 5, weight: 40 }))
-      .toEqual([{ w: 100, r: 5, done: false }])
-  })
-
-  it('excludes an unannotated rep-shaped row under a timed parent from historical best weight', () => {
-    const S = { unit: 'kg', workouts: [
-      { unit: 'kg', d: '2026-01-01', entries: [{ id: LIFT, target: { mode: 'time', sec: 45 }, topW: 200, sets: [
-        { phase: 'work', unit: 'kg', w: 200, r: 12, done: true }
-      ] }] },
-      { unit: 'kg', d: '2026-01-02', entries: [{ id: LIFT, target: { mode: 'reps', reps: 5 }, sets: [
-        { phase: 'work', mode: 'reps', unit: 'kg', w: 100, r: 5, done: true }
-      ] }] }
-    ] }
-
-    expect(bestWeightFor(S, LIFT)).toBe(100)
-  })
-
-  it('uses authoritative reps work rows from a mixed entry for load PR comparison', () => {
-    const S = { unit: 'kg', workouts: [
-      { unit: 'kg', d: '2026-01-01', entries: [{ id: LIFT, target: { mode: 'reps', reps: 5 }, sets: [
-        { phase: 'work', mode: 'reps', unit: 'kg', w: 100, r: 5, done: true },
-        { phase: 'work', mode: 'time', unit: 'kg', w: 200, sec: 60, done: true }
-      ] }] },
-      { unit: 'kg', d: '2026-01-02', entries: [{ id: LIFT, target: { mode: 'reps', reps: 5 }, sets: [
-        { phase: 'work', mode: 'reps', unit: 'kg', w: 90, r: 5, done: true }
-      ] }] }
-    ] }
-
-    expect(bestWeightFor(S, LIFT)).toBe(100)
-    expect(90 > bestWeightFor(S, LIFT)).toBe(false)
-  })
-
-  it('does not treat timed-only work as a strength weight', () => {
-    const S = { unit: 'kg', workouts: [{
-      unit: 'kg', d: '2026-01-03', entries: [{ id: LIFT, target: { mode: 'time', sec: 60 }, sets: [
-        { phase: 'work', mode: 'time', unit: 'kg', w: 200, sec: 60, done: true }
-      ] }]
-    }] }
-
-    expect(bestWeightFor(S, LIFT)).toBe(0)
-  })
-
-  it('excludes unitless weighted legacy history while retaining no-load bodyweight and timed rows', () => {
-    const S = { unit: 'kg', workouts: [
-      { d: '2026-01-03', entries: [{ id: LIFT, sets: [{ w: 135, r: 5, done: true }] }] },
-      { d: '2026-01-04', entries: [{ id: LIFT, sets: [{ w: 0, r: 10, done: true }] }] },
-      { d: '2026-01-05', entries: [{ id: LIFT, target: { mode: 'time', sets: 1, sec: 45 }, sets: [{ sec: 45, w: 0, done: true }] }] }
-    ] }
-    expect(historyUnitCompatible(S.workouts[0], S.unit)).toBe(false)
-    expect(historyUnitCompatible(S.workouts[1], S.unit)).toBe(true)
-    expect(historyUnitCompatible(S.workouts[2], S.unit)).toBe(true)
-    expect(workoutsForUnit(S)).toHaveLength(2)
-    expect(lastEntryFor(S, LIFT, 'reps').sets[0]).toMatchObject({ w: 0, r: 10 })
-    expect(bestWeightFor(S, LIFT)).toBe(0)
-    expect(workoutVolume(S.workouts[0], S.unit)).toBe(0)
-  })
-
-  it('uses the profile unit for legacy rows but does not carry a different-unit row forward', () => {
-    const S = { unit: 'kg', workouts: [
-      { d: '2026-01-01', unit: 'lb', entries: [{ id: LIFT, sets: [{ unit: 'lb', w: 200, r: 5, done: true }] }] },
-      { d: '2026-01-02', unit: 'kg', entries: [{ id: LIFT, sets: [{ unit: 'kg', w: 70, r: 5, done: true }] }] }
-    ] }
-    expect(lastEntryFor(S, LIFT, 'reps').sets[0].w).toBe(70)
-    expect(bestWeightFor(S, LIFT)).toBe(70)
-  })
-
-  it('rejects a latest entry whose working sets mix weight units', () => {
-    const S = { unit: 'kg', workouts: [{ d: '2026-01-01', entries: [{ id: LIFT, sets: [
-      { unit: 'kg', w: 70, r: 5, done: true }, { unit: 'lb', w: 200, r: 5, done: true }
-    ] }] }] }
-    expect(lastEntryFor(S, LIFT, 'reps')).toBeNull()
-    expect(bestWeightFor(S, LIFT)).toBe(0)
-  })
-
-  it('uses one unit-compatible workout set for visible Home counts', () => {
-    const S = { unit: 'kg', workouts: [
-      { id: 'current', d: '2026-01-01', unit: 'kg', entries: [{ id: LIFT,
-        sets: [{ unit: 'kg', w: 60, r: 5, done: true }] }] },
-      { id: 'other-unit', d: '2026-01-02', unit: 'lb', entries: [{ id: LIFT,
-        sets: [{ unit: 'lb', w: 135, r: 5, done: true }] }] },
-      { id: 'mixed', d: '2026-01-03', unit: 'kg', entries: [{ id: LIFT, sets: [
-        { unit: 'kg', w: 60, r: 5, done: true }, { unit: 'lb', w: 135, r: 5, done: true }
-      ] }] },
-      { id: 'legacy-weight', d: '2026-01-04', entries: [{ id: LIFT,
-        sets: [{ w: 60, r: 5, done: true }] }] },
-      { id: 'legacy-bodyweight', d: '2026-01-05', entries: [{ id: LIFT,
-        sets: [{ w: 0, r: 10, done: true }] }] }
-    ] }
-
-    expect(workoutsForUnit(S).map(workout => workout.id)).toEqual(['current', 'legacy-bodyweight'])
-  })
   it('needs no per-side case — the logged reps are already both sides (issue #31)', () => {
     const w = { entries: [{ id: LIFT, target: { side: true }, sets: [{ w: 20, r: 16, done: true }] }] }
     expect(workoutVolume(w)).toBe(320)
@@ -688,5 +476,56 @@ describe('workoutVolume', () => {
   it('leaves an unloaded bodyweight set at zero volume rather than inventing a number', () => {
     const w = { entries: [{ id: BW, target: { bodyweight: true }, sets: [{ w: 0, r: 20, done: true }] }] }
     expect(workoutVolume(w)).toBe(0)
+  })
+})
+
+
+describe('session row helpers', () => {
+  it('cascadeWeight propagates to same-flag undone rows and never rewrites done sets', () => {
+    const rows = [
+      { warmup: true, w: 20, done: true },
+      { warmup: true, w: 20, done: false },
+      { w: 60, done: true },
+      { w: 60, done: false },
+      { w: 60, done: false },
+    ]
+    const next = cascadeWeight(rows, 2, 62.5)
+    expect(next[2].w).toBe(60)             // done set untouched
+    expect(next[3].w).toBe(62.5)           // same flag (work), undone
+    expect(next[4].w).toBe(62.5)           // same flag (work), undone
+    expect(next[1].w).toBe(20)             // different flag (warm-up) untouched
+  })
+
+  it('cascadeWeight deleting the weight removes the key from following undone rows only', () => {
+    const rows = [
+      { w: 60, done: true },
+      { w: 60, done: false },
+      { w: 60, done: false },
+    ]
+    const next = cascadeWeight(rows, 0, null)
+    expect(next[0].w).toBe(60)             // done set untouched
+    expect('w' in next[1]).toBe(false)
+    expect('w' in next[2]).toBe(false)
+  })
+
+  it('insertWarmupRow inserts before the first work row and copies the last warm-up values', () => {
+    const rows = [
+      { warmup: true, w: 20, r: 8, done: true },
+      { warmup: true, w: 30, r: 8, done: false },
+      { w: 60, r: 8, done: false },
+    ]
+    const next = insertWarmupRow(rows, 'reps', { reps: 8 })
+    expect(next.length).toBe(4)
+    expect(next[2].warmup).toBe(true)
+    expect(next[2].w).toBe(30)             // copies the preceding warm-up
+    expect(next[3].w).toBe(60)             // work row still after the warm-up block
+  })
+
+  it('removeRowAt never empties an entry below one row', () => {
+    expect(removeRowAt([{ w: 60 }], 0).length).toBe(1)
+    const rows = [{ w: 60 }, { w: 70 }]
+    const next = removeRowAt(rows, 0)
+    expect(next.length).toBe(1)
+    expect(next[0].w).toBe(70)
   })
 })
