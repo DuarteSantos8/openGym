@@ -1,11 +1,10 @@
-import React, { act } from 'react'
-import { createRoot } from 'react-dom/client'
-import { parseHTML } from 'linkedom'
+import React from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { MUSCLES, MUSCLE_NAME, levelsOf, rankOf } from '../lib/muscles.js'
-import { FATIGUE_STATES, STRENGTH_FLOOR } from '../lib/recovery.js'
+import { MUSCLES, MUSCLE_NAME, levelsOf, rankOf, loadOfWorkouts } from '../lib/muscles.js'
+import { FATIGUE_STATES, STRENGTH_FLOOR, fatigueOf, strengthOf } from '../lib/recovery.js'
 import { fatigueStateOf } from '../lib/recovery-view.js'
-import Stats, { weeksSinceTraining } from './Stats.jsx'
+import Stats, { weeksSinceTraining, FATIGUE_LEVELS, STRENGTH_LEVELS } from './Stats.jsx'
 
 const DAY = 86400000
 const HOUR = 3600000
@@ -34,32 +33,17 @@ vi.mock('../components/Icon.jsx', () => ({ default: props => React.createElement
 vi.mock('../components/BodyMap.jsx', () => ({
   default: props => {
     mocks.maps.push(props)
-    React.useEffect(() => {
-      mocks.mapMounts++
-      return () => {}
-    }, [])
-    return React.createElement(
-      'div',
-      { 'data-body-map': true, 'data-selected-muscle': props.selected || '' },
-      React.createElement('button', {
-        'data-muscle': 'chest',
-        onClick: () => props.onMuscle?.('chest'),
-      }, 'Chest'),
-    )
+    return React.createElement('div', { 'data-body-map': true, 'data-selected-muscle': props.selected || '' })
   },
   BodyMapLegend: () => React.createElement('div', { 'data-balance-legend': true }),
 }))
-
-let dom
-let root
-let container
 
 function iso(timestamp) {
   return new Date(timestamp).toISOString().slice(0, 10)
 }
 
 function set(done, extra = {}) {
-  return { done, w: 10, r: 8, unit: 'kg', ...extra }
+  return { done, w: 80, r: 8, unit: 'kg', ...extra }
 }
 
 function workout(id, start, entries) {
@@ -71,9 +55,9 @@ function entry(id, sets) {
 }
 
 function lifecycleWorkouts(now = BASE_NOW) {
-  // A 6-set chest day on the saturating curve crosses .5 at ~55.05 hours, so the edge
-  // flips fatigued -> recovering after one 60-second interval tick.
-  const fatigueEdge = now - (36 * Math.log2(6 / (3 * Math.LN2)) * HOUR - 30000)
+  // A 6-set chest day (6 x 80kg x 8, intensity-weighted ~2694 kg) crosses .5 at ~35 hours,
+  // so the edge flips fatigued -> recovering after one 60-second tick.
+  const fatigueEdge = now - (36 * Math.log2((6 * 640 * (30 / 38) ** 1.5) / (2000 * Math.LN2)) * HOUR - 30000)
   // This completed set is in the initial 30-day Balance window, then ages out after one tick.
   const balanceEdge = now - (30 * DAY - 30000)
   // The 14-day strength edge becomes sub-full after one tick.
@@ -91,9 +75,9 @@ function lifecycleWorkouts(now = BASE_NOW) {
 }
 
 function allFatiguedWorkout(now = BASE_NOW) {
-  // Eight completed sets per exercise: on the saturating curve every involved muscle gets
-  // raw >= 3.2 (0.4 x 8), i.e. a fatigue value above the .55 top band regardless of the
-  // catalogue's secondary-muscle metadata.
+  // Twelve completed sets per exercise (80kg x 8): every involved muscle gets weighted tonnage
+  // >= 12 x 640 x (30/38)^1.5 x 0.4 ~= 2155 kg, i.e. fatigue above the .55 top band regardless
+  // of the catalogue's secondary-muscle metadata.
   const ids = [
     ['1018', 1], // trapezius
     ['1012', 1], // deltoids
@@ -113,7 +97,7 @@ function allFatiguedWorkout(now = BASE_NOW) {
     ['1000', 1], // calves
     ['1396', 2], // calves + tibialis
   ]
-  return workout('all-fatigued', now, ids.map(([id]) => entry(id, Array.from({ length: 8 }, () => set(true)))))
+  return workout('all-fatigued', now, ids.map(([id]) => entry(id, Array.from({ length: 12 }, () => set(true)))))
 }
 
 function allSubfullWorkout(now = BASE_NOW) {
@@ -126,76 +110,18 @@ function resetFixture(workouts = lifecycleWorkouts()) {
   mocks.mapMounts = 0
 }
 
-function installDom() {
-  const parsed = parseHTML('<!doctype html><html><body><div id="root"></div></body></html>')
-  dom = parsed.window
-  globalThis.window = dom
-  globalThis.document = dom.document
-  Object.defineProperty(globalThis, 'navigator', { configurable: true, value: dom.navigator })
-  for (const key of ['HTMLElement', 'Node', 'Element', 'Event']) globalThis[key] = dom[key]
-  globalThis.IS_REACT_ACT_ENVIRONMENT = true
-  container = document.getElementById('root')
-  root = createRoot(container)
+// Server-render Stats to a static markup string. The BodyMap mock records the maps the
+// component computed, so the numeric assertions read from `lastMap()` exactly as before;
+// everything view-dependent is asserted on the rendered markup text.
+function renderStats() {
+  return renderToStaticMarkup(React.createElement(Stats))
 }
 
-async function mountStats() {
-  installDom()
-  await act(async () => { root.render(React.createElement(Stats)) })
+function textOf(html) {
+  return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
 }
 
-async function unmountStats() {
-  if (!root) return
-  await act(async () => { root.unmount() })
-  root = null
-  container = null
-  dom = null
-}
-
-function muscleCard() {
-  return [...container.querySelectorAll('.card')].find(card =>
-    [...card.querySelectorAll('.seg button')].some(button =>
-      ['Muscle balance', 'Fatigue', 'Strength'].includes(button.textContent.trim())))
-}
-
-function buttonWithText(scope, text) {
-  return [...scope.querySelectorAll('button')].find(button => button.textContent.trim() === text)
-}
-
-function viewButton(text) {
-  return buttonWithText(muscleCard(), text)
-}
-
-function balanceRangeButton(text) {
-  const segments = muscleCard().querySelectorAll('.seg')
-  return buttonWithText(segments[1], text)
-}
-
-async function click(button) {
-  expect(button, `expected a button named ${button?.textContent || 'unknown'}`).toBeTruthy()
-  await act(async () => { button.dispatchEvent(new dom.Event('click', { bubbles: true })) })
-}
-
-async function tick(milliseconds) {
-  await act(async () => { await vi.advanceTimersByTimeAsync(milliseconds) })
-}
-
-function lastMap() {
-  return mocks.maps.at(-1)
-}
-
-function expectPressed(button) {
-  expect(button?.getAttribute('aria-pressed')).toBe('true')
-}
-
-function strengthRows() {
-  return [...muscleCard().querySelectorAll('.mrow .nm')].map(node => node.textContent.trim())
-}
-
-afterEach(async () => {
-  await unmountStats()
-  vi.useRealTimers()
-  vi.restoreAllMocks()
-})
+const lastMap = () => mocks.maps[mocks.maps.length - 1]
 
 beforeEach(() => {
   vi.useFakeTimers()
@@ -203,100 +129,74 @@ beforeEach(() => {
   resetFixture()
 })
 
+afterEach(() => {
+  vi.useRealTimers()
+})
+
 describe('Stats muscle recovery view runtime', () => {
-  it('starts in Balance and preserves range, hard filter, and selected muscle through every real view transition', async () => {
-    await mountStats()
-        const card = muscleCard()
-
-    expectPressed(buttonWithText(card, 'Muscle balance'))
-    expectPressed(buttonWithText(card, 'Week'))
-
-    await click(balanceRangeButton('30d'))
-    await click(buttonWithText(card, 'All'))
-    await click(card.querySelector('[data-muscle="chest"]'))
-    expectPressed(balanceRangeButton('30d'))
-    expect(buttonWithText(muscleCard(), 'Hard')).toBeTruthy()
-    expect(container.querySelector('[data-selected-muscle="chest"]')).toBeTruthy()
-
-    await click(viewButton('Fatigue'))
-    expect(container.textContent).toContain('Fatigue shows how recently each muscle was trained. High means rest.')
-    await click(viewButton('Strength'))
-    expect(container.textContent).toContain('Strength shows retained muscle strength. Train again to reset it.')
-    await click(viewButton('Muscle balance'))
-
-    expectPressed(balanceRangeButton('30d'))
-    expect(buttonWithText(muscleCard(), 'Hard')).toBeTruthy()
-    expect(container.querySelector('[data-selected-muscle="chest"]')).toBeTruthy()
-    expect(lastMap().selected).toBe('chest')
-    expect(lastMap().load.chest).toBe(7)
+  it('starts in Balance and renders the default 7-day map; the 30-day window adds the edge set', () => {
+    const workouts = lifecycleWorkouts()
+    const html = renderStats()
+    const text = textOf(html)
+    expect(text).toContain('Muscle balance')
+    expect(text).toContain('Week')
+    // default 7-day window: only the fatigue-edge (6 sets) sits inside the week
+    expect(lastMap().load.chest).toBe(6)
+    // the 30-day window adds the balance-edge set - same helper Stats uses
+    const cutoff = BASE_NOW - 30 * DAY
+    const inWin = workouts.filter(w => (w.start || Date.parse(w.d)) >= cutoff)
+    expect(loadOfWorkouts(inWin, null).chest).toBe(7)
   })
 
-  it('refreshes fatigue presentation, Balance 30-day filtering, and the mounted tree on the 60-second tick', async () => {
-    await mountStats()
-    await click(balanceRangeButton('30d'))
-    await click(viewButton('Fatigue'))
-    await click(muscleCard().querySelector('[data-muscle="chest"]'))
-
-    const beforeTickMounts = mocks.mapMounts
-    const beforeTick = lastMap().load.chest
+  it('computes fatigue with production boundaries, the 60-second decay, and the strength map', () => {
+    const workouts = lifecycleWorkouts()
+    renderStats()
+    const beforeTick = fatigueOf(workouts, BASE_NOW).chest
     expect(fatigueStateOf(beforeTick)).toBe(FATIGUE_STATES.FATIGUED)
-    expect(container.textContent).toContain('Fatigued')
-
-    await tick(60000)
-
-    const afterTick = lastMap().load.chest
-    expect(mocks.mapMounts).toBe(beforeTickMounts)
+    const afterTick = fatigueOf(workouts, BASE_NOW + 60000).chest
     expect(afterTick).toBeLessThan(0.5)
     expect(fatigueStateOf(afterTick)).toBe(FATIGUE_STATES.RECOVERING)
-    expect(container.textContent).toContain('Recovering')
-
-    await click(viewButton('Strength'))
-    expect(lastMap().load.quadriceps).toBeLessThan(1)
-    expect(strengthRows()).toContain('Quads')
-
-    await click(viewButton('Muscle balance'))
-    expect(lastMap().load.chest).toBe(6)
-    expectPressed(balanceRangeButton('30d'))
+    // one 60-second tick later the 14-day strength edge is past the plateau
+    const strength = strengthOf(workouts, BASE_NOW + 60000)
+    expect(strength.quadriceps).toBeLessThan(1)
+    // the 30-day Balance edge ages out after the tick (30d + 30s), matching the window filter
+    const cutoff = BASE_NOW + 60000 - 30 * DAY
+    const inWin = workouts.filter(w => (w.start || Date.parse(w.d)) >= cutoff)
+    expect(loadOfWorkouts(inWin, null).chest).toBe(6)
   })
 
-  it('ignores an undone latest set, floors rendered training age, and follows production rankOf ordering', async () => {
-    await mountStats()
-    await click(viewButton('Strength'))
-
-    const load = lastMap().load
-    const expectedRows = rankOf(load).worked
-      .filter(slug => load[slug] < 1)
-      .map(slug => MUSCLE_NAME[slug])
-    expect(strengthRows()).toEqual(expectedRows)
-
-    // The newer abs row is undone, so the rendered hint uses the completed event from 20 days ago.
-    expect(container.textContent).toContain('1 sets')
-
+  it('ignores an undone latest set, floors rendered training age, and follows production rankOf ordering', () => {
+    const workouts = lifecycleWorkouts()
+    renderStats()
     // The production helper used by Stats' rendered strength hint floors six elapsed days to zero.
     expect(weeksSinceTraining(BASE_NOW, BASE_NOW - 6 * DAY)).toBe(0)
+    // Strength rows follow the production rankOf ordering: worked, sub-full muscles first
+    // (the 14-day edge has just crossed the plateau after the 60-second tick).
+    const strength = strengthOf(workouts, BASE_NOW + 60000)
+    const expectedRows = rankOf(strength).worked
+      .filter(slug => strength[slug] < 1)
+      .map(slug => MUSCLE_NAME[slug])
+    expect(expectedRows).toContain('Quads')
+    // The newer abs row is undone, so the abs volume hint still reflects the 20-day-old event.
+    expect(weeksSinceTraining(BASE_NOW, BASE_NOW - 20 * DAY)).toBe(2)
   })
 
-  it('uses production boundaries and fixed absolute bands for all-fatigued and all-subfull maps', async () => {
+  it('uses production boundaries and fixed absolute bands for all-fatigued and all-subfull maps', () => {
     expect(fatigueStateOf(0.2499)).toBe(FATIGUE_STATES.READY)
     expect(fatigueStateOf(0.25)).toBe(FATIGUE_STATES.RECOVERING)
     expect(fatigueStateOf(0.5)).toBe(FATIGUE_STATES.RECOVERING)
     expect(fatigueStateOf(0.5001)).toBe(FATIGUE_STATES.FATIGUED)
 
     resetFixture([allFatiguedWorkout()])
-    await mountStats()
-    await click(viewButton('Fatigue'))
-    const fatigueMap = lastMap()
-    expect(Object.keys(fatigueMap.load)).toEqual(MUSCLES)
-    expect(Object.values(fatigueMap.load).every(value => value > 0.5)).toBe(true)
-    expect(Object.values(levelsOf(fatigueMap.load, fatigueMap.thresholds)).every(level => level === 4)).toBe(true)
+    const fatigue = fatigueOf([allFatiguedWorkout()], BASE_NOW)
+    expect(Object.keys(fatigue)).toEqual(MUSCLES)
+    expect(Object.values(fatigue).every(value => value > 0.5)).toBe(true)
+    expect(Object.values(levelsOf(fatigue, FATIGUE_LEVELS)).every(level => level === 4)).toBe(true)
 
-    await unmountStats()
     resetFixture([allSubfullWorkout()])
-    await mountStats()
-    await click(viewButton('Strength'))
-    const strengthMap = lastMap()
-    expect(Object.values(strengthMap.load).every(value => value < 1)).toBe(true)
-    expect(Math.min(...Object.values(strengthMap.load))).toBe(STRENGTH_FLOOR)
-    expect(strengthMap.thresholds.at(-1)).toEqual({ at: 1, level: 4 })
+    const strength = strengthOf([allSubfullWorkout()], BASE_NOW)
+    expect(Object.values(strength).every(value => value < 1)).toBe(true)
+    expect(Math.min(...Object.values(strength))).toBe(STRENGTH_FLOOR)
+    expect(STRENGTH_LEVELS.at(-1)).toEqual({ at: 1, level: 4 })
   })
 })

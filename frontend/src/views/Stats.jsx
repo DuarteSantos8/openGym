@@ -383,6 +383,7 @@ export default function Stats() {
   const exOpts = [{ value: 'top', label: t('Top set') }]
   if (showE1) exOpts.push({ value: 'e1rm', label: t('Est. 1RM') })
   if (showEff) exOpts.push({ value: 'effort', label: t('Effort') })
+  const [hmMetric, setHmMetric] = useState('time')
 
   return <>
     <div className="hdr"><div><h1>{t('Stats')}</h1><div className="sub">{t('Progress & history')}</div></div>
@@ -397,8 +398,12 @@ export default function Stats() {
     </div>
 
     <div className="card">
-      <h2>{t('Activity — last 12 months')} <span className="dim" style={{ textTransform: 'none', letterSpacing: 0 }}>· {t('by time trained')}</span></h2>
-      <Heatmap S={unitState} onDay={iso => { const ws = unitWorkouts.filter(w => w.d === iso); if (ws.length === 1) workoutDetailSheet(ws[0]); else if (ws.length) calendarSheet(iso) }} />
+      <h2>{t('Activity — last 12 months')} <span className="dim" style={{ textTransform: 'none', letterSpacing: 0 }}>· {t(hmMetric === 'vol' ? 'by volume' : 'by time trained')}</span></h2>
+      <div className="chips" style={{ marginBottom: 8 }}>
+        <button className={'chip nocap' + (hmMetric === 'time' ? ' on' : '')} onClick={() => setHmMetric('time')}>{t('Time')}</button>
+        <button className={'chip nocap' + (hmMetric === 'vol' ? ' on' : '')} onClick={() => setHmMetric('vol')}>{t('Volume')}</button>
+      </div>
+      <Heatmap S={unitState} metric={hmMetric} onDay={iso => { const ws = unitWorkouts.filter(w => w.d === iso); if (ws.length === 1) workoutDetailSheet(ws[0]); else if (ws.length) calendarSheet(iso) }} />
     </div>
 
     {unitWorkouts.length > 0 && <MuscleBalance S={unitState} />}
