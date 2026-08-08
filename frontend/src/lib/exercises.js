@@ -13,12 +13,17 @@ const SECONDARY_ADDITIONS = {
   '0861': ['rear deltoids'], // cable seated row
 }
 
+// Secondary muscles for an exercise, with the small conservative additions applied as an
+// overlay. The raw dataset is never mutated - consumers that want the pristine catalogue
+// (export, print, import) keep reading EXDB untouched, while the muscle map sees the
+// enriched list. Values follow the dataset's existing alias vocabulary.
+export const smOf = ex => {
+  const base = Array.isArray(ex?.sm) ? ex.sm : (ex?.sm ? [ex.sm] : [])
+  return [...new Set([...base, ...(SECONDARY_ADDITIONS[ex?.id] || [])])]
+}
+
 export const EXIDX = {}
-EXDB.forEach(e => {
-  const additions = SECONDARY_ADDITIONS[e.id]
-  if (additions) e.sm = [...new Set([...(e.sm || []), ...additions])]
-  EXIDX[e.id] = e
-})
+EXDB.forEach(e => { EXIDX[e.id] = e })
 export const BODYPARTS = [...new Set(EXDB.map(e => e.bp))].sort()
 
 // Equipment options present in a given list of exercises, most common first (issue #6).
