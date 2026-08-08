@@ -238,6 +238,7 @@ export default {
   'Sign in with passkey': 'Mit Passkey anmelden',
   'Create new profile': 'Neues Profil erstellen',
   "This browser doesn't support passkeys — you can still use openGym locally on this device.": 'Dieser Browser unterstützt keine Passkeys — du kannst openGym trotzdem lokal auf diesem Gerät nutzen.',
+  "This browser doesn't support passkeys, and this instance requires an account. Try a browser or device with passkey support.": 'Dieser Browser unterstützt keine Passkeys, und dieser Server verlangt ein Konto. Probier einen Browser oder ein Gerät mit Passkey-Unterstützung.',
   'Continue without account': 'Ohne Konto fortfahren',
   'Passkeys use {0} — no passwords.': 'Passkeys nutzen {0} — keine Passwörter.',
   'Each profile keeps its own plan, workouts & body weight.': 'Jedes Profil hat seinen eigenen Plan, Trainings & Körpergewicht.',
@@ -704,9 +705,9 @@ export default {
   'secondary': 'sekundär',
   'No exercises with an estimated 1RM yet.': 'Noch keine Übungen mit geschätztem 1RM.',
   'Tap a muscle to see its exercises.': 'Tippe auf einen Muskel, um seine Übungen zu sehen.',
-  'Less volume': 'Less volume',
-  'More volume': 'More volume',
-  'by volume': 'by volume',
+  'Less volume': 'Weniger Volumen',
+  'More volume': 'Mehr Volumen',
+  'by volume': 'nach Volumen',
   'Default progression': 'Default progression',
   'App default (linear for reps)': 'App default (linear for reps)',
   'Show exercise summary': 'Show exercise summary',
@@ -714,5 +715,6 @@ export default {
   'Weights in this file are in': 'Weights in this file are in',
   'Default weight from full sets only': 'Default weight from full sets only',
   'Missed reps on the last set do not set the next default': 'Missed reps on the last set do not set the next default',
-  'The file does not say which unit it uses — numbers are imported as they are.': 'Die Datei nennt keine Einheit — die Zahlen werden unverändert übernommen.'
+  'The file does not say which unit it uses — numbers are imported as they are.': 'Die Datei nennt keine Einheit — die Zahlen werden unverändert übernommen.',
+  '{0} sets · {1} work': '{0} Sätze · {1} Arbeit'
 }

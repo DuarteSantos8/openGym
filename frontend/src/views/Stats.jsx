@@ -20,7 +20,7 @@ import {
   effortHistogram, isHardSet, HARD_RIR
 } from '../lib/effort.js'
 import { Button, Segmented, SelectRow } from '../components/ui.jsx'
-import { historyUnitCompatible } from '../lib/workout-model.js'
+import { historyUnitCompatible, isWarmupRow } from '../lib/workout-model.js'
 
 // Which muscles the training in a window actually hit — and, the point of the card,
 // which ones it keeps missing. Shading is relative within the window (lib/muscles.js).
@@ -30,8 +30,9 @@ function latestMuscleTraining(workouts) {
     const timestamp = Number(workout?.start || new Date(workout?.d).getTime())
     if (!Number.isFinite(timestamp)) continue
     for (const entry of workout.entries || []) {
-      if (!(entry.sets || []).some(set => set?.done === true)) continue
-      for (const slug of Object.keys(musclesOf(EXIDX[entry.id]))) {
+      if (!(entry.sets || []).some(set => set?.done === true && !isWarmupRow(set))) continue
+      const exercise = EXIDX[entry.id] || entry.exercise || entry
+      for (const slug of Object.keys(musclesOf(exercise))) {
         if (latest[slug] == null || timestamp > latest[slug]) latest[slug] = timestamp
       }
     }

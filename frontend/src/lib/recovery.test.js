@@ -338,6 +338,15 @@ describe('review regressions: units and bodyweight semantics', () => {
     expect(strengthOf(unloaded, NOW)[bwSlug]).toBe(1) // completed bw work resets strength
   })
 
+  it('keeps the bodyweight baseline in kilograms when added load is recorded in pounds', () => {
+    const kg = workoutAt(BW_EX.id, NOW, [{ done: true, w: 10, r: 10, unit: 'kg' }])
+    kg.unit = 'kg'
+    const lb = workoutAt(BW_EX.id, NOW, [{ done: true, w: 22.0462262, r: 10, unit: 'lb' }])
+    lb.unit = 'lb'
+    expect(fatigueOf([lb], NOW, { bodyweightKg: 80 })[bwSlug])
+      .toBeCloseTo(fatigueOf([kg], NOW, { bodyweightKg: 80 })[bwSlug], 6)
+  })
+
   it('excludes warm-ups in either schema (boolean and phase)', () => {
     const boolWarm = [workoutAt(SINGLE.id, NOW, [
       { done: true, w: 120, r: 5, warmup: true },
@@ -347,11 +356,21 @@ describe('review regressions: units and bodyweight semantics', () => {
       { done: true, w: 120, r: 5, phase: 'warmup' },
       { done: true, w: 80, r: 8 },
     ])]
-    const expected = 1 - Math.exp(-V / FATIGUE_REF_VOLUME)
+    const expected = 1 - Math.exp(-(120 * 5 + V) / FATIGUE_REF_VOLUME)
     expect(fatigueOf(boolWarm, NOW)[SINGLE_SLUG]).toBeCloseTo(expected, 10)
     expect(fatigueOf(phaseWarm, NOW)[SINGLE_SLUG]).toBeCloseTo(expected, 10)
     expect(strengthOf(boolWarm, NOW)[SINGLE_SLUG]).toBe(1)
     expect(strengthOf(phaseWarm, NOW)[SINGLE_SLUG]).toBe(1)
+  })
+
+  it('keeps warm-up work in fatigue while excluding it from retained strength', () => {
+    const booleanWarmup = [workoutAt(SINGLE.id, NOW, [{ done: true, w: 20, r: 8, warmup: true }])]
+    const phaseWarmup = [workoutAt(SINGLE.id, NOW, [{ done: true, w: 20, r: 8, phase: 'warmup' }])]
+    const expected = 1 - Math.exp(-(20 * 8) / FATIGUE_REF_VOLUME)
+    expect(fatigueOf(booleanWarmup, NOW)[SINGLE_SLUG]).toBeCloseTo(expected, 10)
+    expect(fatigueOf(phaseWarmup, NOW)[SINGLE_SLUG]).toBeCloseTo(expected, 10)
+    expect(strengthOf(booleanWarmup, NOW)[SINGLE_SLUG]).toBe(STRENGTH_FLOOR)
+    expect(strengthOf(phaseWarmup, NOW)[SINGLE_SLUG]).toBe(STRENGTH_FLOOR)
   })
 })
 })

@@ -1,4 +1,4 @@
-import { modeForSet, normalizePhase, normalizePhaseList, normalizeMode, normalizeTargetKind, amrapMinRepsFor, withoutWorkLoad, isWarmupOnlyTarget } from './workout-model.js'
+import { modeForSet, normalizePhase, phaseForSet, normalizePhaseList, normalizeMode, normalizeTargetKind, amrapMinRepsFor, withoutWorkLoad, isWarmupOnlyTarget } from './workout-model.js'
 
 const objectOf = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {}
 const finite = value => {
@@ -76,7 +76,7 @@ export function normalizeRestSettings(input = {}) {
 
 /** Resolve rest with set > exercise > routine > global precedence. */
 export function restSecondsFor(set = {}, exercise = {}, routine = {}, globalRest = 90) {
-  const phase = normalizePhase(set.phase, 'work')
+  const phase = phaseForSet(set)
   const field = phase === 'warmup' ? 'warmupRestSec' : 'workRestSec'
   const values = [set[field], set.restSec, exercise[field], routine[field], globalRest]
   for (const value of values) {
@@ -127,7 +127,7 @@ function theoretical1RM(history = [], fallbackTarget = {}) {
     : (source.target && typeof source.target === 'object' ? source.target : objectOf(fallbackTarget))
   let best = 0
   for (const set of sets) {
-    const phase = normalizePhase(set.phase, 'work')
+    const phase = phaseForSet(set)
     const w = positive(set.w ?? set.weight, 0)
     const reps = positiveInt(set.r ?? set.reps, 0)
     if (phase !== 'work' || modeForSet(set, target) !== 'reps' || set.done !== true || w <= 0 || reps < 1) continue
@@ -143,7 +143,7 @@ function maxWorkWeight(input = []) {
   let best = 0
   let found = false
   for (const set of sets) {
-    if (normalizePhase(set?.phase, 'work') !== 'work') continue
+    if (phaseForSet(set) !== 'work') continue
     found = true
     const weight = positive(set?.w ?? set?.weight, 0)
     if (weight > best) best = weight
@@ -252,7 +252,7 @@ export function addSetForEntry(entry = {}) {
   const warmupOnly = isWarmupOnlyTarget(target, source)
 
   if (warmupOnly) {
-    const lastWarmup = [...sets].reverse().find(set => normalizePhase(set?.phase, 'work') === 'warmup')
+    const lastWarmup = [...sets].reverse().find(set => phaseForSet(set) === 'warmup')
     if (lastWarmup) return { ...lastWarmup, phase: 'warmup', done: false }
     const configured = Array.isArray(target.warmup) ? target.warmup[target.warmup.length - 1] : null
     const warmupTarget = configured
@@ -262,7 +262,7 @@ export function addSetForEntry(entry = {}) {
   }
 
   const last = sets[sets.length - 1]
-  const lastWork = [...sets].reverse().find(set => normalizePhase(set?.phase, 'work') === 'work')
+  const lastWork = [...sets].reverse().find(set => phaseForSet(set) === 'work')
   const workSource = lastWork || last
   const mode = modeForTarget(target, source)
   if (mode === 'cardio') {
@@ -284,7 +284,7 @@ export function prependWarmupSets(config = {}, workSets = [], history = [], incr
     .filter(set => selected == null || selected.has(set.phase))
   const work = (Array.isArray(workSets) ? workSets : []).map(set => ({
     ...set,
-    phase: normalizePhase(set.phase, 'work'),
+    phase: phaseForSet(set),
     mode: normalizeMode(set.mode, set.sec != null ? 'time' : 'reps'),
     ...(positiveInt(config.prepSec, 0) > 0 && normalizeMode(set.mode, set.sec != null ? 'time' : 'reps') === 'time'
       ? { prepSec: positiveInt(config.prepSec, 0) } : {})
@@ -306,7 +306,7 @@ export function warmupConfigForEntry(entry = {}) {
   const target = objectOf(source.target)
   const configured = Array.isArray(target.warmup) ? target.warmup : []
   const rows = (Array.isArray(source.sets) ? source.sets : [])
-    .filter(set => normalizePhase(set?.phase, 'work') === 'warmup')
+    .filter(set => phaseForSet(set) === 'warmup')
   const warmup = rows.map((set, index) => {
     const mode = modeForSet(set, target)
     const derived = {
@@ -325,11 +325,11 @@ export function warmupConfigForEntry(entry = {}) {
 export function applyWarmupConfigToEntry(entry = {}, config = {}, history = [], increment = 0) {
   const source = objectOf(entry)
   const sets = Array.isArray(source.sets) ? source.sets : []
-  const oldWarmups = sets.filter(set => normalizePhase(set?.phase, 'work') === 'warmup')
-  const workSets = sets.filter(set => normalizePhase(set?.phase, 'work') === 'work')
+  const oldWarmups = sets.filter(set => phaseForSet(set) === 'warmup')
+  const workSets = sets.filter(set => phaseForSet(set) === 'work')
   const target = { ...objectOf(source.target), ...objectOf(config) }
   const configuredWarmups = prependWarmupSets(target, workSets, history, increment)
-    .filter(set => normalizePhase(set?.phase, 'work') === 'warmup')
+    .filter(set => phaseForSet(set) === 'warmup')
     .map((set, index) => oldWarmups[index]?.done === true
       ? { ...set, ...oldWarmups[index], phase: 'warmup' }
       : set)
@@ -343,8 +343,8 @@ export function applyWarmupConfigToEntry(entry = {}, config = {}, history = [], 
 export function applyWorkConfigToEntry(entry = {}, config = {}, history = [], increment = 0) {
   const source = objectOf(entry)
   const sets = Array.isArray(source.sets) ? source.sets : []
-  const warmups = sets.filter(set => normalizePhase(set?.phase, 'work') === 'warmup')
-  const workSets = sets.filter(set => normalizePhase(set?.phase, 'work') === 'work')
+  const warmups = sets.filter(set => phaseForSet(set) === 'warmup')
+  const workSets = sets.filter(set => phaseForSet(set) === 'work')
   const target = { ...objectOf(source.target), ...objectOf(config) }
   const count = Math.max(1, Math.round(Number(target.sets) || workSets.length || 3))
   const rebuilt = []
@@ -405,10 +405,10 @@ export function isAmrapEntry(entry = {}) {
 /** Only the final work row is the result row for a reps/time AMRAP target. */
 export function isAmrapResult(entry = {}, setIndex) {
   if (!isAmrapEntry(entry) || !Array.isArray(entry.sets) || !entry.sets[setIndex]) return false
-  if (normalizePhase(entry.sets[setIndex].phase, 'work') !== 'work') return false
+  if (phaseForSet(entry.sets[setIndex]) !== 'work') return false
   let lastWork = -1
   entry.sets.forEach((set, index) => {
-    if (normalizePhase(set?.phase, 'work') === 'work') lastWork = index
+    if (phaseForSet(set) === 'work') lastWork = index
   })
   return setIndex === lastWork
 }
@@ -435,7 +435,7 @@ export function timerDurationForSet(entry = {}, setIndex) {
 /** Return a completed final AMRAP result in the same phase/mode/target vocabulary as history. */
 export function amrapResultFor(entry = {}) {
   if (!isAmrapEntry(entry) || !Array.isArray(entry.sets)) return null
-  const index = entry.sets.findLastIndex(set => normalizePhase(set?.phase, 'work') === 'work')
+  const index = entry.sets.findLastIndex(set => phaseForSet(set) === 'work')
   if (index < 0 || !isAmrapResult(entry, index)) return null
   const set = entry.sets[index]
   if (!set || set.done !== true) return null
@@ -458,7 +458,7 @@ export function timerDurationFor(target = {}) {
 }
 
 export function hasWorkRows(entry = {}) {
-  return Array.isArray(entry.sets) && entry.sets.some(set => normalizePhase(set?.phase, 'work') === 'work')
+  return Array.isArray(entry.sets) && entry.sets.some(set => phaseForSet(set) === 'work')
 }
 
 /** Completed-state-independent work rows whose authoritative mode matches the requested mode. */
@@ -467,7 +467,7 @@ export function workRowsForMode(entry = {}, mode = 'reps') {
   const target = objectOf(source.target || source)
   const expectedMode = normalizeMode(mode, 'reps')
   return (Array.isArray(source.sets) ? source.sets : [])
-    .filter(set => normalizePhase(set?.phase, 'work') === 'work' && modeForSet(set, target) === expectedMode)
+    .filter(set => phaseForSet(set) === 'work' && modeForSet(set, target) === expectedMode)
 }
 
 // Heaviest weight lifted to the FULL target in this entry: done work sets that hit

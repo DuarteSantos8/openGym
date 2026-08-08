@@ -107,9 +107,13 @@ function setTonnage(ex, entry, set, bodyweightKg, oneRm, unit) {
   }
   const reps = set?.r || 1
   // Bodyweight-targeted work: the body IS the load, and any added weight adds to it.
+  const normalizedUnit = String(unit || set?.unit || 'kg').toLowerCase()
   const bodyweightTargeted = ex?.eq === 'body weight' || !!(entry?.target && entry.target.bodyweight)
-  let load = bodyweightTargeted ? (bodyweightKg || BODYWEIGHT_REF_LOAD) + (set?.w || 0) : (set?.w || 0)
-  if ((unit || set?.unit) === 'lb') load *= 0.45359237
+  const addedLoad = Number(set?.w) || 0
+  const addedLoadKg = normalizedUnit === 'lb' ? addedLoad * 0.45359237 : addedLoad
+  let load = bodyweightTargeted
+    ? (bodyweightKg || BODYWEIGHT_REF_LOAD) + addedLoadKg
+    : (normalizedUnit === 'lb' ? addedLoadKg : addedLoad)
   const raw = load * reps
   if (!(oneRm > 0) || !(load > 0)) return raw
   return raw * Math.min(1, load / oneRm) ** 1.5
@@ -126,12 +130,13 @@ function referenceTonnage(workouts, slug, now, bodyweightKg, oneRms) {
     if (!Number.isFinite(timestamp) || timestamp <= cutoff) continue
     let sum = 0
     for (const entry of workout.entries || []) {
-      const weights = musclesOf(EXIDX[entry.id])
+      const exercise = EXIDX[entry.id] || entry.exercise || entry
+      const weights = musclesOf(exercise)
       const weight = weights[slug]
       if (!weight) continue
       for (const set of entry.sets || []) {
         if (set?.done !== true) continue
-        sum += setTonnage(EXIDX[entry.id], entry, set, bodyweightKg, oneRms.get(entry.id), setUnitFor(set, entry, workout)) * weight
+        sum += setTonnage(exercise, entry, set, bodyweightKg, oneRms.get(entry.id), setUnitFor(set, entry, workout)) * weight
       }
     }
     if (sum > 0) sessions.push(sum)
@@ -151,11 +156,12 @@ function completedStimuli(workouts, include, bodyweightKg, oneRms, includeSet) {
     const timestamp = workoutTimestamp(workout)
     if (!Number.isFinite(timestamp) || !include(timestamp)) continue
     for (const entry of workout.entries || []) {
-      const weights = musclesOf(EXIDX[entry.id])
+      const exercise = EXIDX[entry.id] || entry.exercise || entry
+      const weights = musclesOf(exercise)
       for (const set of entry.sets || []) {
         if (set?.done !== true) continue
         if (includeSet && !includeSet(set)) continue
-        const tonnage = setTonnage(EXIDX[entry.id], entry, set, bodyweightKg, oneRms.get(entry.id), setUnitFor(set, entry, workout))
+        const tonnage = setTonnage(exercise, entry, set, bodyweightKg, oneRms.get(entry.id), setUnitFor(set, entry, workout))
         if (tonnage <= 0) continue
         for (const [slug, weight] of Object.entries(weights)) {
           if (Object.prototype.hasOwnProperty.call(MUSCLES_BY_SLUG, slug)) {
@@ -205,7 +211,7 @@ export function fatigueOf(workouts, now, opts = {}) {
   const cutoff = current - FATIGUE_SCAN_MS
   const bodyweightKg = opts.bodyweightKg || null
   const oneRms = exercise1RMs(workouts, cutoff)
-  const stimuli = completedStimuli(workouts, timestamp => timestamp > cutoff, bodyweightKg, oneRms, set => !isWarmupRow(set))
+  const stimuli = completedStimuli(workouts, timestamp => timestamp > cutoff, bodyweightKg, oneRms)
   const byMuscle = Object.fromEntries(MUSCLES.map(slug => [slug, []]))
   for (const stimulus of stimuli) byMuscle[stimulus.slug].push(stimulus)
 

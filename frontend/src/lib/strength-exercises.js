@@ -42,7 +42,9 @@ function snapshotWeights(entry) {
     const weights = musclesOf(catalogue)
     if (Object.keys(weights).length) return weights
   }
-  const direct = entry && typeof entry === 'object' ? entry.muscleWeights : null
+  const direct = entry && typeof entry === 'object'
+    ? (entry.muscleWeights || entry.muscleSnapshot?.muscleWeights)
+    : null
   if (direct && typeof direct === 'object' && !Array.isArray(direct) && Object.keys(direct).length) {
     return direct
   }
@@ -65,6 +67,7 @@ function exerciseName(entry) {
   // catalogue (or the registered custom) is the canonical name source.
   const ex = entry && typeof entry === 'object' ? EXIDX[entry.id] : null
   if (ex?.n) return ex.n
+  if (entry?.muscleSnapshot?.n) return entry.muscleSnapshot.n
   return entry && typeof entry === 'object' && entry.n ? entry.n : null
 }
 

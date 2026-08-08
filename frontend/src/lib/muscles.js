@@ -72,6 +72,18 @@ const SECONDARY = 0.4   // a supporting muscle counts this much against a primar
 
 const arrayOf = value => Array.isArray(value) ? value : value == null || value === '' ? [] : [value]
 
+// Completed history entries may retain a nested snapshot after their custom exercise is
+// deleted from the profile catalogue. Prefer that snapshot when the outer entry has no muscle
+// metadata of its own, while keeping direct/legacy entry fields authoritative when present.
+function metadataOf(ex) {
+  if (!ex || typeof ex !== 'object') return ex
+  const hasDirect = ['muscleGroups', 'muscles', 'targetMuscles'].some(key => Object.prototype.hasOwnProperty.call(ex, key))
+    || [ex.tg, ex.mg, ...arrayOf(ex.sm)].some(value => value != null && value !== '')
+  return !hasDirect && ex.muscleSnapshot && typeof ex.muscleSnapshot === 'object' && !Array.isArray(ex.muscleSnapshot)
+    ? ex.muscleSnapshot
+    : ex
+}
+
 function explicitGroupsOf(ex) {
   if (!ex || typeof ex !== 'object') return null
   if (Object.prototype.hasOwnProperty.call(ex, 'muscleGroups')) {
@@ -91,10 +103,11 @@ function explicitGroupsOf(ex) {
 
 /** True only when the catalogue explicitly supplied muscle groups, not a body-part fallback. */
 export function hasExplicitMuscleMetadata(ex) {
-  if (!ex || typeof ex !== 'object') return false
-  const groups = explicitGroupsOf(ex)
+  const source = metadataOf(ex)
+  if (!source || typeof source !== 'object') return false
+  const groups = explicitGroupsOf(source)
   if (groups && groups.some(value => canonicalMuscle(value))) return true
-  return [ex.tg, ex.mg, ...arrayOf(ex.sm)].some(value => canonicalMuscle(value))
+  return [source.tg, source.mg, ...arrayOf(source.sm)].some(value => canonicalMuscle(value))
 }
 
 function canonicalMuscle(value) {
@@ -105,14 +118,15 @@ function canonicalMuscle(value) {
 
 /** Canonical unique muscle groups, accepting both new arrays and legacy single fields. */
 export function muscleGroupsOf(ex) {
-  const explicit = explicitGroupsOf(ex)
-  const source = explicit || [ex?.tg, ex?.mg, ...arrayOf(smOf(ex))]
+  const sourceEx = metadataOf(ex)
+  const explicit = explicitGroupsOf(sourceEx)
+  const source = explicit || [sourceEx?.tg, sourceEx?.mg, ...arrayOf(smOf(sourceEx))]
   const out = []
   source.forEach(value => {
     const slug = canonicalMuscle(value)
     if (slug && !out.includes(slug)) out.push(slug)
   })
-  if (!out.length && explicit == null) Object.keys(BY_BODYPART[ex?.bp] || {}).forEach(slug => { if (!out.includes(slug)) out.push(slug) })
+  if (!out.length && explicit == null) Object.keys(BY_BODYPART[sourceEx?.bp] || {}).forEach(slug => { if (!out.includes(slug)) out.push(slug) })
   return out
 }
 
@@ -129,6 +143,8 @@ export function matchesMuscleGroups(ex, requested) {
 /** Muscles one exercise trains: { slug: 0…1 }. Duplicate metadata never adds load twice. */
 export function musclesOf(ex) {
   if (!ex) return {}
+  const sourceEx = metadataOf(ex)
+  if (sourceEx !== ex) return musclesOf(sourceEx)
   if (ex.muscleWeights && typeof ex.muscleWeights === 'object' && !Array.isArray(ex.muscleWeights)) {
     const snapshot = {}
     MUSCLES.forEach(slug => {

@@ -38,6 +38,16 @@ describe('multi-muscle exercise metadata', () => {
       sets: [{ done: true }]
     }] }])).toEqual({ chest: 1, triceps: 1 })
   })
+
+  it('reads the persisted nested muscle snapshot after a custom exercise is deleted', () => {
+    expect(loadOfWorkouts([{ entries: [{
+      id: 'deleted-custom', muscleSnapshot: { n: 'Deleted custom', muscleWeights: { chest: 1 } },
+      sets: [
+        { done: true, phase: 'warmup', w: 120, r: 5 },
+        { done: true, phase: 'work', warmup: true, w: 60, r: 5 },
+      ]
+    }] }])).toEqual({ chest: 1 })
+  })
 })
 
 describe('catalogue secondary muscles', () => {

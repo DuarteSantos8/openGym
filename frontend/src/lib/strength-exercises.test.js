@@ -93,6 +93,19 @@ describe('strengthExerciseRows', () => {
     expect(muscleRows[0].name).toBe('Bench Press')
   })
 
+  it('uses nested exercise snapshots for a deleted custom exercise', () => {
+    const deleted = {
+      id: 'deleted-custom',
+      muscleSnapshot: { n: 'Deleted custom', muscleWeights: { chest: 1 } },
+      sets: [{ phase: 'work', warmup: true, w: 80, r: 8, done: true, unit: 'kg' }],
+    }
+    const S = unitState([workout(3, [deleted])])
+    const rows = strengthExerciseRows(S, NOW)
+    expect(rows).toHaveLength(1)
+    expect(rows[0]).toMatchObject({ id: 'deleted-custom', name: 'Deleted custom', primary: 'chest', est: 101.3 })
+    expect(strengthExerciseRowsForMuscle(S, NOW, 'chest')[0].name).toBe('Deleted custom')
+  })
+
   it('applies the exercise own decay to the expected current 1RM', () => {
     const S = unitState([workout(3, [bench]), workout(30, [squat])])
     const rows = strengthExerciseRows(S, NOW)

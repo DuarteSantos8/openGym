@@ -225,6 +225,7 @@ export default {
   'Sign in with passkey': 'Se connecter avec une passkey',
   'Create new profile': 'Créer un nouveau profil',
   "This browser doesn't support passkeys — you can still use openGym locally on this device.": 'Ce navigateur ne prend pas en charge les passkeys — tu peux quand même utiliser openGym localement sur cet appareil.',
+  "This browser doesn't support passkeys, and this instance requires an account. Try a browser or device with passkey support.": 'Ce navigateur ne prend pas en charge les passkeys, et ce serveur exige un compte. Essaie un navigateur ou un appareil compatible avec les passkeys.',
   'Continue without account': 'Continuer sans compte',
   'Passkeys use {0} — no passwords.': 'Les passkeys utilisent {0} — pas de mots de passe.',
   'Each profile keeps its own plan, workouts & body weight.': 'Chaque profil garde son plan, ses séances et son poids corporel.',
@@ -687,9 +688,9 @@ export default {
   'secondary': 'secondaire',
   'No exercises with an estimated 1RM yet.': 'Aucun exercice avec un 1RM estimé pour l\'instant.',
   'Tap a muscle to see its exercises.': 'Touchez un muscle pour voir ses exercices.',
-  'Less volume': 'Less volume',
-  'More volume': 'More volume',
-  'by volume': 'by volume',
+  'Less volume': 'Moins de volume',
+  'More volume': 'Plus de volume',
+  'by volume': 'par volume',
   'Default progression': 'Default progression',
   'App default (linear for reps)': 'App default (linear for reps)',
   'Show exercise summary': 'Show exercise summary',
@@ -697,5 +698,6 @@ export default {
   'Weights in this file are in': 'Weights in this file are in',
   'Default weight from full sets only': 'Default weight from full sets only',
   'Missed reps on the last set do not set the next default': 'Missed reps on the last set do not set the next default',
-  'The file does not say which unit it uses — numbers are imported as they are.': 'Le fichier ne précise pas l’unité utilisée — les nombres sont importés tels quels.'
+  'The file does not say which unit it uses — numbers are imported as they are.': 'Le fichier ne précise pas l’unité utilisée — les nombres sont importés tels quels.',
+  '{0} sets · {1} work': '{0} séries · {1} travail'
 }

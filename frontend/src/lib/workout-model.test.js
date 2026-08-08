@@ -3,6 +3,7 @@ import {
   PHASES,
   TARGET_KINDS,
   normalizePhase,
+  isWarmupRow,
   normalizeTarget,
   normalizePlannedSet,
   normalizeLoggedSet,
@@ -39,6 +40,13 @@ describe('normalizePhase', () => {
     expect(normalizePhase(null)).toBe('work')
     expect(normalizePhase('warm-up')).toBe('warmup')
     expect(normalizePhase('not-a-phase')).toBe('work')
+  })
+
+  it('resolves phase-tagged and legacy boolean warm-ups without letting a stale flag win', () => {
+    expect(isWarmupRow({ warmup: true })).toBe(true)
+    expect(isWarmupRow({ phase: 'warmup' })).toBe(true)
+    expect(isWarmupRow({ phase: 'warm-up' })).toBe(true)
+    expect(isWarmupRow({ phase: 'work', warmup: true })).toBe(false)
   })
 })
 
@@ -115,6 +123,11 @@ describe('normalizePlannedSet and normalizeLoggedSet', () => {
     expect(normalizeLoggedSet({ done: true, sec: 38, w: 0 }, { mode: 'time', kind: 'amrap', sec: 30, cap: 90 })).toEqual({
       phase: 'work', done: true, w: 0, r: null, sec: 38, cap: null
     })
+  })
+
+  it('normalizes a legacy boolean warm-up without letting the target default erase it', () => {
+    expect(normalizeLoggedSet({ warmup: true, done: true, w: 20, r: 8 }, { mode: 'reps', reps: 8 }))
+      .toMatchObject({ phase: 'warmup', done: true, w: 20, r: 8 })
   })
 
   it('normalizes a legacy entry without synthesizing a target from actual results', () => {
@@ -206,6 +219,12 @@ describe('phase eligibility and volume', () => {
     expect(isProgressionEligible({ phase: 'work', done: false, w: 60, r: 5 })).toBe(false)
   })
 
+  it('excludes a legacy boolean warm-up from progression and 1RM eligibility', () => {
+    const warmup = { warmup: true, done: true, w: 60, r: 5 }
+    expect(isProgressionEligible(warmup, { mode: 'reps' })).toBe(false)
+    expect(is1RMEligible(warmup, { mode: 'reps' })).toBe(false)
+  })
+
   it('accepts actual reps above an AMRAP minimum without capping the result or 1RM eligibility', () => {
     const target = { mode: 'reps', kind: 'amrap', amrapMinReps: 5 }
     const set = { phase: 'work', done: true, w: 60, r: 12 }
@@ -220,8 +239,16 @@ describe('weight-unit compatibility and caches', () => {
     expect(historyUnitFor({ sets: [{ w: 60, r: 5 }] })).toBe('legacy')
     expect(historyUnitFor({ unit: 'kg', sets: [{ w: 60, r: 5 }] })).toBeNull()
     expect(historyUnitFor({ sets: [{ unit: 'kg', w: 60 }, { unit: 'lb', w: 130 }] })).toBeNull()
-    expect(historyUnitCompatible({ sets: [{ w: 60, r: 5 }] }, 'kg')).toBe(false)
+    expect(historyUnitCompatible({ sets: [{ w: 60, r: 5 }] }, 'kg')).toBe(true)
     expect(historyUnitCompatible({ sets: [{ unit: 'lb', w: 130 }] }, 'kg')).toBe(false)
+  })
+
+  it('keeps untagged legacy history visible in the active profile unit', () => {
+    const legacy = {
+      d: '2026-01-01',
+      entries: [{ id: 'squat', sets: [{ done: true, w: 60, r: 5 }] }],
+    }
+    expect(historyUnitCompatible(legacy, 'kg')).toBe(true)
   })
 
   it('uses confirmed cache values only when their unit exactly matches', () => {
@@ -350,14 +377,14 @@ describe('partial weight-unit isolation', () => {
   it('keeps zero-load and timed rows compatible without inventing a unit', () => {
     expect(historyUnitCompatible({ w: 0, r: 10, done: true }, 'kg')).toBe(true)
     expect(historyUnitCompatible({ mode: 'time', sec: 45, w: 0, done: true }, 'kg')).toBe(true)
-    expect(historyUnitCompatible({ w: 60, r: 5, done: true }, 'kg')).toBe(false)
+    expect(historyUnitCompatible({ w: 60, r: 5, done: true }, 'kg')).toBe(true)
     expect(historyUnitCompatible({ unit: 'kg', w: 60, r: 5, done: true }, 'kg')).toBe(true)
   })
 
   it('passes the expected unit through direct progression and 1RM eligibility checks', () => {
     const set = { phase: 'work', w: 60, r: 5, done: true }
-    expect(isProgressionEligible(set, { mode: 'reps' }, 'kg')).toBe(false)
-    expect(is1RMEligible(set, { mode: 'reps' }, 'kg')).toBe(false)
+    expect(isProgressionEligible(set, { mode: 'reps' }, 'kg')).toBe(true)
+    expect(is1RMEligible(set, { mode: 'reps' }, 'kg')).toBe(true)
     expect(isProgressionEligible({ ...set, unit: 'kg' }, { mode: 'reps' }, 'kg')).toBe(true)
     expect(is1RMEligible({ ...set, unit: 'kg' }, { mode: 'reps' }, 'kg')).toBe(true)
   })

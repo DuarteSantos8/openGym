@@ -116,6 +116,17 @@ describe('effortSummary', () => {
   it('survives a profile with no training at all', () => {
     expect(effortSummary({ workouts: [] }, 30)).toEqual({ done: 0, rated: 0, hard: 0, avg: null, hardPct: null })
   })
+
+  it('uses phase as authoritative while retaining legacy boolean warm-up fallback', () => {
+    const summary = effortSummary(S(W(1, [
+      { rir: 0, phase: 'warmup' },
+      { rir: 1, phase: 'work', warmup: true },
+      { rir: 2 }, { rir: 2 }, { rir: 2 }, { rir: 2 },
+    ])), 0)
+    expect(summary.done).toBe(5)
+    expect(summary.rated).toBe(5)
+    expect(summary.hard).toBe(5)
+  })
 })
 
 describe('hasEffort', () => {

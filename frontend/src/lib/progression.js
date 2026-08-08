@@ -18,6 +18,7 @@
 
 import { modeOf, repStep } from './history.js'
 import { EXIDX } from './exercises.js'
+import { isWarmupRow } from './workout-model.js'
 
 export const POLICIES = ['off', 'linear', 'greyskull', 'double', 'time']
 
@@ -103,7 +104,7 @@ export function readSession(entry, fallback) {
   const mode = modeOf({ ...target, id: entry && entry.id })
   // Warm-up rows are prep, not the session: one filtered read beats guarding every consumer
   // below (an undone warm-up otherwise poisons `ok` forever and its reps drag `low`/`count`).
-  const sets = ((entry && entry.sets) || []).filter(s => !s.warmup)
+  const sets = ((entry && entry.sets) || []).filter(s => !isWarmupRow(s))
   const planned = target.sets || sets.length
   const enough = sets.length >= planned
 
@@ -134,7 +135,7 @@ export function sessionsFor(S, exId, fallback) {
   const out = []
   ;(S.workouts || []).forEach(w => {
     const entry = w.entries.find(e => e.id === exId)
-    if (entry && entry.sets.some(s => s.done && !s.warmup)) out.push({ d: w.d, ...readSession(entry, fallback) })
+    if (entry && entry.sets.some(s => s.done && !isWarmupRow(s))) out.push({ d: w.d, ...readSession(entry, fallback) })
   })
   return out
 }
@@ -255,7 +256,7 @@ export function applyPrescription(sets, p) {
     // Never rewrite a logged set, and never rewrite a warm-up: the prescription speaks to
     // the work rows only (a ticked warm-up falling through here would be the data-loss the
     // cascade fix removed, two files over).
-    if (s.done || s.warmup) return s
+    if (s.done || isWarmupRow(s)) return s
     const o = { ...s }
     if (p.weight != null) o.w = p.weight
     if (p.reps != null) o.r = p.reps
@@ -265,10 +266,10 @@ export function applyPrescription(sets, p) {
   // A policy that decided on a set count gets to grow the list — bodyweight progression adds
   // a set where a barbell would have added a plate. Only ever upwards, and only by copying a
   // row that is already there: a session in progress must not lose a set it has logged.
-  const workRows = out.filter(s => !s.warmup)
+  const workRows = out.filter(s => !isWarmupRow(s))
   if (p.sets > workRows.length) {
     const seed = workRows[workRows.length - 1] || out[out.length - 1]
-    while (out.filter(s => !s.warmup).length < p.sets) out.push({ ...seed, done: false })
+    while (out.filter(s => !isWarmupRow(s)).length < p.sets) out.push({ ...seed, done: false })
   }
   return out
 }

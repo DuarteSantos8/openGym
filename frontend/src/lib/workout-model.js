@@ -7,9 +7,16 @@
 
 export const PHASES = ['warmup', 'work']
 
-/** Canonical warm-up test: an explicit phase wins, legacy boolean falls back. */
+/** Resolve a row's phase without allowing a stale legacy flag to override an explicit phase. */
+export function phaseForSet(set, fallback = 'work') {
+  if (!set || typeof set !== 'object') return normalizePhase(undefined, fallback)
+  if (set.phase != null && set.phase !== '') return normalizePhase(set.phase, fallback)
+  return set.warmup === true ? 'warmup' : normalizePhase(undefined, fallback)
+}
+
+/** Canonical warm-up test: an explicit phase wins; the legacy boolean fills its absence. */
 export function isWarmupRow(set) {
-  return !!(set && (set.phase === 'warmup' || set.warmup === true))
+  return phaseForSet(set) === 'warmup'
 }
 export const MODES = ['reps', 'time', 'cardio']
 export const TARGET_MODES = ['reps', 'time']
@@ -201,7 +208,10 @@ export function historyUnitCompatible(input, expectedUnit = null) {
   // DO carry unit fields are still fail-closed on ambiguity/mismatch.
   if (!unit) return true
   if (!expected) return true
-  if (unit === LEGACY_WEIGHT_UNIT) return !hasPositiveWeight(input)
+  // Unit-less records are the original profile-local history shape. Their loads were entered
+  // under the active profile unit, so keep them visible without claiming that the serialized
+  // source unit was known. Ambiguous records were rejected above before this compatibility path.
+  if (unit === LEGACY_WEIGHT_UNIT) return true
   return unit === expected
 }
 
@@ -420,7 +430,7 @@ export function modeForEntry(input, fallback = null) {
   const source = objectOf(input)
   const target = has(source, 'target') ? objectOf(source.target) : source
   const sets = Array.isArray(source.sets) ? source.sets : []
-  const workSets = sets.filter(set => normalizePhase(set?.phase, 'work') === 'work')
+  const workSets = sets.filter(set => phaseForSet(set) === 'work')
   const observedSets = workSets.length ? workSets : sets
   const signalModes = [...new Set(observedSets.map(set => modeForSet(set, target)))]
   const targetMode = inferredTargetModeOf(target)
@@ -504,7 +514,7 @@ export function normalizePlannedSet(input, defaults = {}) {
   const source = objectOf(input)
   const targetInput = has(source, 'target') ? source.target : source
   const target = normalizeTarget(targetInput, defaults)
-  const phase = normalizePhase(source.phase, target.phase)
+  const phase = phaseForSet(source, target.phase)
   return { phase, target: { ...target, phase } }
 }
 
@@ -518,7 +528,7 @@ export function normalizeLoggedSet(input, targetInput = {}) {
   const target = normalizeTarget(targetInput)
   const result = objectOf(source.result)
   const mode = modeForSet(source, targetInput)
-  const phase = normalizePhase(source.phase, target.phase)
+  const phase = phaseForSet(source, target.phase)
   const done = source.done === true
   const w = nonNegative(valueOf(source, ['w', 'weight']) ?? valueOf(result, ['w', 'weight']), 0)
   const repsValue = valueOf(source, ['r', 'reps', 'actualReps']) ?? valueOf(result, ['r', 'reps', 'actualReps'])
@@ -566,7 +576,7 @@ export function normalizeEntry(input, defaults = {}) {
     || (has(source, 'sets') && typeof source.sets === 'number')
   const targetSource = hasNestedTarget ? nestedTarget : hasFlatTarget ? source : null
   const target = targetSource ? normalizeTarget(targetSource, { ...defaults, phase: source.phase ?? defaults.phase }) : null
-  const phase = normalizePhase(source.phase, target?.phase || defaults.phase)
+  const phase = phaseForSet(source, target?.phase || defaults.phase)
   const targetForSets = target ? { ...target, phase } : { phase }
   const out = {
     id: source.id ?? null,
@@ -591,6 +601,7 @@ function normalizedSetForEligibility(set, target) {
 /** A completed, explicitly work-phase set is eligible for progression/stall calculations. */
 export function isProgressionEligible(set, target, expectedUnit = null) {
   if (!historyUnitCompatible(set, expectedUnit)) return false
+  if (isWarmupRow(set)) return false
   const { set: normalized } = normalizedSetForEligibility(set, target)
   return normalized.done && normalized.phase === 'work'
 }
@@ -602,6 +613,7 @@ export function isProgressionEligible(set, target, expectedUnit = null) {
  */
 export function is1RMEligible(set, target, expectedUnit = null) {
   if (!historyUnitCompatible(set, expectedUnit)) return false
+  if (isWarmupRow(set)) return false
   const { set: normalized, target: normalizedTarget, mode, explicitSetMode } = normalizedSetForEligibility(set, target)
   return normalized.done && normalized.phase === 'work' && mode === 'reps'
     && normalizedTarget.mode === 'reps'

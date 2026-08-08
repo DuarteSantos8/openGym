@@ -49,6 +49,8 @@ describe('independent rest settings', () => {
     expect(restSecondsFor({ phase: 'work' }, exercise, routine, 90)).toBe(95)
     expect(restSecondsFor({ phase: 'warmup' }, {}, {}, 90)).toBe(90)
     expect(restSecondsFor({ phase: 'warmup' }, { warmupRestSec: 0 }, routine, 90)).toBe(0)
+    expect(restSecondsFor({ warmup: true }, exercise, routine, 90)).toBe(40)
+    expect(restSecondsFor({ phase: 'work', warmup: true }, exercise, routine, 90)).toBe(95)
   })
 
   it('resolves timed preparation independently and allows it to be disabled', () => {

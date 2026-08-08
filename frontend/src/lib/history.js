@@ -1,7 +1,7 @@
 // Pure helpers over the state object S (ported 1:1 from the vanilla app).
 import { todayISO, isoOf, weekKey, fmtNum } from './format.js'
 import { isCardio, isBodyweightEq } from './exercises.js'
-import { normalizePhase, modeForSet, modeForEntry, setVolume, historyUnitCompatible, historyEntryCompatible, isWarmupRow } from './workout-model.js'
+import { phaseForSet, modeForSet, modeForEntry, setVolume, historyUnitCompatible, historyEntryCompatible, isWarmupRow } from './workout-model.js'
 import { workRowsForMode } from './workout-runtime.js'
 // i18n-core, not i18n: this file is imported by mcp/, which is plain Node with no Vite and no
 // React. i18n.js is the Vite half — import.meta.glob over the locale packs, useSyncExternalStore
@@ -172,10 +172,7 @@ export function freestyleConfig(S, cfg) {
 export function bestWeightFor(S, exId) {
   let best = 0
   S.workouts.forEach(w => w.entries.forEach(e => {
-    if (e.id === exId) {
-      e.sets.forEach(s => { if (s.done && s.w > best) best = s.w })
-      if (e.topW && e.topW > best) best = e.topW
-    }
+    if (e.id === exId) best = Math.max(best, bestWeightForEntry(e))
   }))
   return best
 }
@@ -278,10 +275,10 @@ export function streakWeeks(S) {
  * undone take the new value (null deletes the key). Done sets are never rewritten.
  */
 export function cascadeWeight(rows, from, value) {
-  const warm = !!rows[from]?.warmup
+  const warm = isWarmupRow(rows[from])
   const next = rows.slice()
   for (let j = from + 1; j < next.length; j++) {
-    if (!!next[j].warmup === warm && !next[j].done) {
+    if (isWarmupRow(next[j]) === warm && !next[j].done) {
       if (value == null) delete next[j].w
       else next[j].w = value
     }
@@ -291,14 +288,14 @@ export function cascadeWeight(rows, from, value) {
 
 /** Insert a warm-up row before the first work row, copying the preceding warm-up's values. */
 export function insertWarmupRow(rows, mode, target) {
-  const firstWork = rows.findIndex(x => !x.warmup)
+  const firstWork = rows.findIndex(x => !isWarmupRow(x))
   const at = firstWork === -1 ? rows.length : firstWork
   const l = rows[at - 1] || rows[rows.length - 1]
   const warm = mode === 'cardio'
-    ? { min: l ? l.min : (target.min || 20), speed: l ? l.speed : (target.speed || 8), done: false, warmup: true }
+    ? { min: l ? l.min : (target.min || 20), speed: l ? l.speed : (target.speed || 8), done: false, phase: 'warmup', warmup: true }
     : mode === 'time'
-      ? { sec: l ? l.sec : (target.sec || 45), w: l ? (l.w || 0) : (target.weight || 0), done: false, warmup: true }
-      : { w: l ? l.w : 0, r: l ? l.r : target.reps, done: false, warmup: true }
+      ? { sec: l ? l.sec : (target.sec || 45), w: l ? (l.w || 0) : (target.weight || 0), done: false, phase: 'warmup', warmup: true }
+      : { w: l ? l.w : 0, r: l ? l.r : target.reps, done: false, phase: 'warmup', warmup: true }
   const next = rows.slice()
   next.splice(at, 0, warm)
   return next
@@ -315,12 +312,13 @@ export function removeRowAt(rows, i) {
 /** Completed non-warm-up sets across a workout's entries. */
 export function workSetsDone(w) {
   return (w?.entries || []).reduce(
-    (n, e) => n + (e.sets || []).filter(s => s.done && !s.warmup).length, 0,
+    (n, e) => n + (e.sets || []).filter(s => s.done && !isWarmupRow(s)).length, 0,
   )
 }
 
 const METRIC_MODES = ['reps', 'time', 'cardio']
 const completedRowsForMode = (entry, mode) => workRowsForMode(entry, mode).filter(s => s.done === true && !isWarmupRow(s))
+const phaseOfSet = set => phaseForSet(set)
 
 export function metricRowsForEntry(entry, mode) {
   const requested = typeof mode === 'string' ? mode.trim().toLowerCase() : ''
@@ -342,7 +340,7 @@ export function metricModeForEntry(entry, fallback = null) {
 export function bestWeightForEntry(entry = {}) {
   const target = entry.target || entry
   const workRows = Array.isArray(entry.sets)
-    ? entry.sets.filter(s => normalizePhase(s?.phase, 'work') === 'work')
+    ? entry.sets.filter(s => phaseForSet(s) === 'work')
     : []
   const repsRows = metricRowsForEntry(entry, 'reps')
   if (!repsRows.length) return 0
@@ -372,8 +370,7 @@ export function volumeByPhase(w, expectedUnit = null) {
   ;(w?.entries || []).forEach(entry => {
     if (!historyEntryCompatible(entry, expectedUnit, w.unit)) return
     ;(entry.sets || []).forEach(set => {
-      if (isWarmupRow(set)) return
-      const phase = normalizePhase(set.phase, 'work')
+      const phase = phaseOfSet(set)
       out[phase] = (out[phase] || 0) + setVolume(set, entry.target || entry)
     })
   })
@@ -388,8 +385,8 @@ export function setsByPhase(w, expectedUnit = null) {
   ;(w?.entries || []).forEach(entry => {
     if (!historyEntryCompatible(entry, expectedUnit, w.unit)) return
     ;(entry.sets || []).forEach(set => {
-      if (!set.done || isWarmupRow(set)) return
-      const phase = normalizePhase(set.phase, 'work')
+      if (!set.done) return
+      const phase = phaseOfSet(set)
       out[phase] = (out[phase] || 0) + 1
     })
   })
@@ -400,7 +397,7 @@ export function entryVolumeByPhase(entry, expectedUnit = null, inheritedUnit = n
   const out = { warmup: 0, work: 0 }
   if (!historyEntryCompatible(entry, expectedUnit, inheritedUnit)) return out
   ;(entry?.sets || []).forEach(set => {
-    const phase = normalizePhase(set.phase, 'work')
+    const phase = phaseOfSet(set)
     out[phase] = (out[phase] || 0) + setVolume(set, entry.target || entry)
   })
   return out

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { modeOf, isTimed, fmtSec, setLabel, defaultConfig, buildSets, freestyleConfig, exLine, workoutVolume, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, removeRowAt } from './history.js'
+import { modeOf, isTimed, fmtSec, setLabel, defaultConfig, buildSets, freestyleConfig, exLine, workoutVolume, bestWeightFor, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, removeRowAt, workSetsDone, volumeByPhase, setsByPhase } from './history.js'
 import { EXDB } from './exercises.js'
 
 // Real ids out of the shipped catalogue, so the body-part fallback is exercised for real.
@@ -476,6 +476,34 @@ describe('workoutVolume', () => {
   it('leaves an unloaded bodyweight set at zero volume rather than inventing a number', () => {
     const w = { entries: [{ id: BW, target: { bodyweight: true }, sets: [{ w: 0, r: 20, done: true }] }] }
     expect(workoutVolume(w)).toBe(0)
+  })
+
+  it('recognizes both warm-up schemas in phase totals and work-set counts', () => {
+    const w = {
+      unit: 'kg',
+      entries: [{
+        id: LIFT,
+        unit: 'kg',
+        sets: [
+          { warmup: true, unit: 'kg', w: 20, r: 5, done: true },
+          { phase: 'warmup', unit: 'kg', w: 30, r: 5, done: true },
+          { phase: 'work', unit: 'kg', w: 60, r: 5, done: true },
+        ],
+      }],
+    }
+    expect(workSetsDone(w)).toBe(1)
+    expect(volumeByPhase(w, 'kg')).toEqual({ warmup: 250, work: 300 })
+    expect(setsByPhase(w, 'kg')).toEqual({ warmup: 2, work: 1 })
+  })
+
+  it('does not use a warm-up as the previous best working weight', () => {
+    expect(bestWeightFor({ workouts: [{ entries: [{ id: LIFT, topW: 120, sets: [
+      { phase: 'warmup', done: true, w: 120 },
+      { phase: 'work', done: true, w: 80 },
+    ] }] }] }, LIFT)).toBe(120)
+    expect(bestWeightFor({ workouts: [{ entries: [{ id: LIFT, topW: 120, sets: [
+      { phase: 'warmup', done: true, w: 120 },
+    ] }] }] }, LIFT)).toBe(0)
   })
 })
 

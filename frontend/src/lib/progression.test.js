@@ -476,6 +476,17 @@ describe('warm-up rows in session reads (round 3)', () => {
     expect(s.held).toEqual([45, 30])
     expect(s.ok).toBe(false) // the 30s work row is the miss, not the warm-up
   })
+
+  it('uses phase as authoritative and falls back to the legacy warm-up flag', () => {
+    const s = readSession({ id: LIFT, target: { sets: 1, reps: 5 }, sets: [
+      { phase: 'warmup', w: 120, r: 20, done: true },
+      { phase: 'work', warmup: true, w: 60, r: 5, done: true },
+    ] })
+    expect(s.count).toBe(1)
+    expect(s.weight).toBe(60)
+    expect(s.low).toBe(5)
+    expect(s.ok).toBe(true)
+  })
 })
 
 describe('applyPrescription never touches warm-up rows (round 3)', () => {

@@ -225,6 +225,7 @@ export default {
   'Sign in with passkey': 'Iniciar sesión con passkey',
   'Create new profile': 'Crear perfil nuevo',
   "This browser doesn't support passkeys — you can still use openGym locally on this device.": 'Este navegador no admite passkeys — aun así puedes usar openGym localmente en este dispositivo.',
+  "This browser doesn't support passkeys, and this instance requires an account. Try a browser or device with passkey support.": 'Este navegador no admite passkeys y este servidor requiere una cuenta. Prueba con un navegador o dispositivo compatible con passkeys.',
   'Continue without account': 'Continuar sin cuenta',
   'Passkeys use {0} — no passwords.': 'Las passkeys usan {0} — sin contraseñas.',
   'Each profile keeps its own plan, workouts & body weight.': 'Cada perfil guarda su propio plan, entrenamientos y peso corporal.',
@@ -687,9 +688,9 @@ export default {
   'secondary': 'secundario',
   'No exercises with an estimated 1RM yet.': 'Aún no hay ejercicios con 1RM estimado.',
   'Tap a muscle to see its exercises.': 'Toca un músculo para ver sus ejercicios.',
-  'Less volume': 'Less volume',
-  'More volume': 'More volume',
-  'by volume': 'by volume',
+  'Less volume': 'Menos volumen',
+  'More volume': 'Más volumen',
+  'by volume': 'por volumen',
   'Default progression': 'Default progression',
   'App default (linear for reps)': 'App default (linear for reps)',
   'Show exercise summary': 'Show exercise summary',
@@ -697,5 +698,6 @@ export default {
   'Weights in this file are in': 'Weights in this file are in',
   'Default weight from full sets only': 'Default weight from full sets only',
   'Missed reps on the last set do not set the next default': 'Missed reps on the last set do not set the next default',
-  'The file does not say which unit it uses — numbers are imported as they are.': 'El archivo no indica qué unidad usa: los números se importan tal cual.'
+  'The file does not say which unit it uses — numbers are imported as they are.': 'El archivo no indica qué unidad usa: los números se importan tal cual.',
+  '{0} sets · {1} work': '{0} series · {1} trabajo'
 }
