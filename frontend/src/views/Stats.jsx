@@ -108,8 +108,8 @@ function MuscleBalance({ S }) {
     if (!last || !(last.w > 0)) return null
     return S.unit === 'lb' ? last.w * 0.45359237 : last.w
   }, [S.bodyweight, S.unit])
-  const fatigue = useMemo(() => fatigueOf(workouts, now, { bodyweightKg }), [workouts, now, bodyweightKg])
-  const strength = useMemo(() => strengthOf(workouts, now), [workouts, now])
+  const fatigue = useMemo(() => fatigueOf(workouts, now, { bodyweightKg, unit: S.unit }), [workouts, now, bodyweightKg, S.unit])
+  const strength = useMemo(() => strengthOf(workouts, now, { bodyweightKg, unit: S.unit }), [workouts, now, bodyweightKg, S.unit])
   const lastTrained = useMemo(() => latestMuscleTraining(workouts), [workouts])
   const { worked: strengthOrder } = rankOf(strength)
   const detrained = strengthOrder.filter(slug => strength[slug] < 1)

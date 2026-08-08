@@ -15,7 +15,7 @@ import {
   halfLifeDecay,
   strengthOf,
 } from './recovery.js'
-import { EXDB } from './exercises.js'
+import { EXDB, registerCustom } from './exercises.js'
 import { MUSCLES, musclesOf } from './muscles.js'
 import { fatigueStateOf } from './recovery-view.js'
 
@@ -312,5 +312,79 @@ describe('warm-up flag in strength and fatigue', () => {
     // but the warm-up still contributes to the fatigue stimulus (real mechanical work)
     const fatigue = fatigueOf(workouts, now)
     expect(fatigue.chest).toBeGreaterThan(0)
+  })
+})
+
+describe('canonical loads and configured bodyweight', () => {
+  const loaded = EXDB.find(ex => {
+    const weights = musclesOf(ex)
+    return ex.bp !== 'cardio' && ex.eq !== 'body weight'
+      && Object.keys(weights).length === 1 && Object.values(weights)[0] === 1
+  })
+  const bodyweight = EXDB.find(ex => ex.bp !== 'cardio' && ex.eq === 'body weight')
+  if (!loaded || !bodyweight) throw new Error('recovery tests require loaded and bodyweight fixtures')
+  const loadedSlug = Object.keys(musclesOf(loaded))[0]
+  const bodyweightSlug = Object.keys(musclesOf(bodyweight))[0]
+  const stampedWorkout = ({ id, start, unit, weight, target, bw }) => ({
+    d: new Date(start).toISOString(), start, unit, bw,
+    entries: [{ id, target, sets: [{ done: true, w: weight, r: 8 }] }],
+  })
+
+  it('gives kg and physically equivalent stamped-pound histories the same fatigue', () => {
+    const kg = stampedWorkout({ id: loaded.id, start: NOW, unit: 'kg', weight: 80 })
+    const lb = stampedWorkout({ id: loaded.id, start: NOW, unit: 'lb', weight: 176.3696 })
+
+    expect(fatigueOf([lb], NOW, { unit: 'kg' })[loadedSlug])
+      .toBeCloseTo(fatigueOf([kg], NOW, { unit: 'kg' })[loadedSlug], 6)
+  })
+
+  it('normalizes mixed stamped units before computing the moving reference volume', () => {
+    const starts = [NOW - 3 * DAY, NOW - 2 * DAY, NOW - DAY, NOW]
+    const kg = starts.map(start => stampedWorkout({ id: loaded.id, start, unit: 'kg', weight: 80 }))
+    const mixed = starts.map((start, i) => stampedWorkout({
+      id: loaded.id, start, unit: i % 2 ? 'lb' : 'kg', weight: i % 2 ? 176.3696 : 80,
+    }))
+
+    expect(fatigueOf(mixed, NOW, { unit: 'kg' })[loadedSlug])
+      .toBeCloseTo(fatigueOf(kg, NOW, { unit: 'kg' })[loadedSlug], 6)
+  })
+
+  it('treats an unstamped legacy history as being in the profile unit', () => {
+    const kg = stampedWorkout({ id: loaded.id, start: NOW, unit: 'kg', weight: 80 })
+    const legacyLb = { ...kg, unit: undefined, entries: [{ ...kg.entries[0], sets: [{ done: true, w: 176.3696, r: 8 }] }] }
+
+    expect(fatigueOf([legacyLb], NOW, { unit: 'lb' })[loadedSlug])
+      .toBeCloseTo(fatigueOf([kg], NOW, { unit: 'kg' })[loadedSlug], 6)
+  })
+
+  it('uses configured bodyweight for a non-catalogue bodyweight target', () => {
+    const workout = stampedWorkout({
+      id: loaded.id, start: NOW, unit: 'kg', weight: 0,
+      target: { bodyweight: true }, bw: 80,
+    })
+
+    expect(fatigueOf([workout], NOW, { unit: 'kg' })[loadedSlug]).toBeGreaterThan(0)
+    expect(strengthOf([workout], NOW, { unit: 'kg' })[loadedSlug]).toBe(1)
+  })
+
+  it('adds external load to bodyweight instead of replacing the body mass', () => {
+    const unloaded = stampedWorkout({ id: bodyweight.id, start: NOW, unit: 'kg', weight: 0, bw: 80 })
+    const loadedSet = { done: true, w: 10, r: 8 }
+    const added = { ...unloaded, entries: [{ ...unloaded.entries[0], sets: [loadedSet] }] }
+
+    expect(fatigueOf([added], NOW, { unit: 'kg' })[bodyweightSlug])
+      .toBeGreaterThan(fatigueOf([unloaded], NOW, { unit: 'kg' })[bodyweightSlug])
+  })
+
+  it('lets explicitly configured custom bodyweight work reset strength', () => {
+    const id = 'recovery-custom-bodyweight'
+    registerCustom([{ id, n: 'Custom bodyweight', bp: 'chest', tg: 'chest', eq: 'custom', sm: [] }])
+    try {
+      const workout = stampedWorkout({ id, start: NOW, unit: 'kg', weight: 0, bw: 80, target: { bodyweight: true } })
+      expect(fatigueOf([workout], NOW, { unit: 'kg' }).chest).toBeGreaterThan(0)
+      expect(strengthOf([workout], NOW, { unit: 'kg' }).chest).toBe(1)
+    } finally {
+      registerCustom([])
+    }
   })
 })
