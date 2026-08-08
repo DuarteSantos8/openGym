@@ -142,6 +142,60 @@ export function cleanupSg(ex) {
   })
 }
 
+// Return the contiguous run around an entry that shares its superset id. A repeated id in a
+// separated part of the list is deliberately not included: the display semantics are adjacent
+// entries sharing one id, not every entry that happens to carry that id.
+function contiguousSgGroup(items, idx) {
+  const sg = items[idx]?.sg
+  if (!sg) return [idx]
+  let first = idx
+  let last = idx
+  while (first > 0 && items[first - 1]?.sg === sg) first--
+  while (last + 1 < items.length && items[last + 1]?.sg === sg) last++
+  return Array.from({ length: last - first + 1 }, (_, i) => first + i)
+}
+
+function freshSg(items, first, second) {
+  const base = `sg-${Math.min(first, second)}-${Math.max(first, second)}`
+  let sg = base
+  let n = 2
+  while (items.some(e => e.sg === sg)) sg = `${base}-${n++}`
+  return sg
+}
+
+// Purely pair two adjacent entries. Existing contiguous groups on either side are merged, so
+// pairing the end of one group with the start of another produces one display unit. A caller can
+// provide a group id (useful when restoring a known id); otherwise an existing id is preferred,
+// with a deterministic unused id for two previously ungrouped entries.
+export function pairAdjacent(items, first, second, groupId) {
+  if (!Array.isArray(items)) throw new TypeError('Superset entries must be an array')
+  if (!Number.isInteger(first) || !Number.isInteger(second) || !items[first] || !items[second]) {
+    throw new RangeError('Superset entry indexes are invalid')
+  }
+  if (Math.abs(first - second) !== 1) throw new RangeError('Superset entries must be adjacent')
+
+  const next = items.map(e => ({ ...e }))
+  const left = Math.min(first, second)
+  const right = Math.max(first, second)
+  const group = groupId || next[left].sg || next[right].sg || freshSg(next, left, right)
+  const members = new Set([...contiguousSgGroup(next, left), ...contiguousSgGroup(next, right)])
+  members.forEach(i => { next[i].sg = group })
+  return next
+}
+
+// Remove one entry from its superset and clean any ids that no longer have an adjacent partner.
+// This is pure so the active workout can replace its entries atomically through the store.
+export function unpairSuperset(items, idx) {
+  if (!Array.isArray(items)) throw new TypeError('Superset entries must be an array')
+  if (!Number.isInteger(idx) || !items[idx]) throw new RangeError('Superset entry index is invalid')
+  const next = items.map(e => ({ ...e }))
+  delete next[idx].sg
+  next.forEach((e, i) => {
+    if (e.sg && !(next[i - 1]?.sg === e.sg || next[i + 1]?.sg === e.sg)) delete e.sg
+  })
+  return next
+}
+
 export function lastEntryFor(S, exId) {
   for (let i = S.workouts.length - 1; i >= 0; i--) {
     const en = S.workouts[i].entries.find(e => e.id === exId)

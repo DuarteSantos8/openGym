@@ -162,7 +162,7 @@ export default {
   'The sets you logged in this session will be lost.': 'Bu oturumda kaydettiğin setler kaybolacak.',
   'Superset {0} / {1}': 'Süperset {0} / {1}',
   'Exercise {0} / {1}': 'Egzersiz {0} / {1}',
-  'Superset · do these back-to-back, rest after both': 'Süperset · art arda yap, ikisinden sonra dinlen',
+  'Superset · do these back-to-back, rest when done': 'Süperset · art arda yap, sonunda dinlen',
   'Freestyle workout — add your first exercise.': 'Serbest antrenman — ilk egzersizini ekle.',
   'Finish workout early · {0} exercises': 'Erken bitir · {0} egzersiz',
   'Rest over — next set!': 'Dinlenme bitti — sıradaki set!',
@@ -567,4 +567,7 @@ export default {
   '{0} per side': 'Taraf başına {0}',
   'You still log the total: {0} is {1} per side.': 'Toplamı kaydetmeye devam ediyorsun: {0}, taraf başına {1} demek.',
   '{0} sets · {1} work': '{0} set · {1} çalışma',
+  'Make superset with previous': 'Öncekiyle superset yap',
+  'Make superset with next': 'Sonrakiyle superset yap',
+  'Unpair': 'Ayır'
 }

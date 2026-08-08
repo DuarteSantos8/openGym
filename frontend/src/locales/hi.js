@@ -162,7 +162,7 @@ export default {
   'The sets you logged in this session will be lost.': 'इस सत्र में दर्ज किए सेट खो जाएँगे।',
   'Superset {0} / {1}': 'सुपरसेट {0} / {1}',
   'Exercise {0} / {1}': 'व्यायाम {0} / {1}',
-  'Superset · do these back-to-back, rest after both': 'सुपरसेट · इन्हें लगातार करें, दोनों के बाद आराम',
+  'Superset · do these back-to-back, rest when done': 'सुपरसेट · इन्हें लगातार करें, अंत में आराम',
   'Freestyle workout — add your first exercise.': 'फ्रीस्टाइल वर्कआउट — पहला व्यायाम जोड़ें।',
   'Finish workout early · {0} exercises': 'जल्दी समाप्त करें · {0} व्यायाम',
   'Rest over — next set!': 'आराम खत्म — अगला सेट!',
@@ -567,4 +567,7 @@ export default {
   '{0} per side': 'प्रति तरफ़ {0}',
   'You still log the total: {0} is {1} per side.': 'आप कुल ही दर्ज करते हैं: {0} यानी प्रति तरफ़ {1}।',
   '{0} sets · {1} work': '{0} सेट · {1} काम',
+  'Make superset with previous': 'पिछले के साथ सुपरसेट',
+  'Make superset with next': 'अगले के साथ सुपरसेट',
+  'Unpair': 'अलग करें'
 }

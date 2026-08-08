@@ -169,7 +169,7 @@ export default {
   'The sets you logged in this session will be lost.': 'Die in dieser Einheit eingetragenen Sätze gehen verloren.',
   'Superset {0} / {1}': 'Supersatz {0} / {1}',
   'Exercise {0} / {1}': 'Übung {0} / {1}',
-  'Superset · do these back-to-back, rest after both': 'Supersatz · direkt nacheinander, Pause erst danach',
+  'Superset · do these back-to-back, rest when done': 'Supersatz · direkt nacheinander, Pause erst danach',
   'Freestyle workout — add your first exercise.': 'Freies Training — füge deine erste Übung hinzu.',
   'Finish workout early · {0} exercises': 'Training vorzeitig beenden · {0} Übungen',
   'Rest over — next set!': 'Pause vorbei — nächster Satz!',
@@ -584,4 +584,7 @@ export default {
   '{0} per side': '{0} pro Seite',
   'You still log the total: {0} is {1} per side.': 'Du trägst weiterhin die Gesamtzahl ein: {0} sind {1} pro Seite.',
   '{0} sets · {1} work': '{0} Sätze · {1} Arbeit',
+  'Make superset with previous': 'Mit vorheriger Übung kombinieren',
+  'Make superset with next': 'Mit nächster Übung kombinieren',
+  'Unpair': 'Trennen'
 }

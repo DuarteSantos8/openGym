@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { modeOf, isTimed, fmtSec, setLabel, defaultConfig, buildSets, freestyleConfig, exLine, workoutVolume, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, removeRowAt } from './history.js'
+import { modeOf, isTimed, fmtSec, setLabel, defaultConfig, buildSets, freestyleConfig, exLine, workoutVolume, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, removeRowAt, pairAdjacent, unpairSuperset, supersetUnits } from './history.js'
 import { EXDB } from './exercises.js'
 
 // Real ids out of the shipped catalogue, so the body-part fallback is exercised for real.
@@ -8,6 +8,49 @@ const CARDIO = EXDB.find(e => e.bp === 'cardio').id
 // defaults to bodyweight and would quietly send every label test down the other path.
 const LIFT = EXDB.find(e => e.bp !== 'cardio' && e.eq !== 'body weight').id
 const BW = EXDB.find(e => e.eq === 'body weight').id
+
+describe('superset editing', () => {
+  it('pairs adjacent entries without mutating the source and keeps the display units contiguous', () => {
+    const entries = [{ id: 'a' }, { id: 'b' }, { id: 'c' }]
+
+    const paired = pairAdjacent(entries, 1, 2, 'sg-new')
+
+    expect(paired).toEqual([{ id: 'a' }, { id: 'b', sg: 'sg-new' }, { id: 'c', sg: 'sg-new' }])
+    expect(entries).toEqual([{ id: 'a' }, { id: 'b' }, { id: 'c' }])
+    expect(supersetUnits(paired)).toEqual([[0], [1, 2]])
+  })
+
+  it('merges both contiguous groups when their boundary entries are paired', () => {
+    const entries = [
+      { id: 'a', sg: 'left' }, { id: 'b', sg: 'left' },
+      { id: 'c', sg: 'right' }, { id: 'd', sg: 'right' }
+    ]
+
+    const merged = pairAdjacent(entries, 1, 2)
+
+    expect(merged.map(e => e.sg)).toEqual(['left', 'left', 'left', 'left'])
+    expect(entries.map(e => e.sg)).toEqual(['left', 'left', 'right', 'right'])
+  })
+
+  it('unpairs one entry and removes sg values left without an adjacent partner', () => {
+    const entries = [
+      { id: 'a', sg: 'group' }, { id: 'b', sg: 'group' }, { id: 'c', sg: 'group' },
+      { id: 'd', sg: 'orphan' }
+    ]
+
+    const unpaired = unpairSuperset(entries, 1)
+
+    expect(unpaired).toEqual([{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }])
+    expect(entries.map(e => e.sg)).toEqual(['group', 'group', 'group', 'orphan'])
+  })
+
+  it('rejects a non-adjacent pairing request', () => {
+    const entries = [{ id: 'a' }, { id: 'b' }, { id: 'c' }]
+
+    expect(() => pairAdjacent(entries, 0, 2, 'sg-invalid')).toThrow(/adjacent/)
+    expect(entries).toEqual([{ id: 'a' }, { id: 'b' }, { id: 'c' }])
+  })
+})
 
 describe('modeOf', () => {
   it('falls back to the body part when a plan has no mode — every existing plan keeps working', () => {

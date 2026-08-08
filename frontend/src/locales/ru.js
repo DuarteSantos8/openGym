@@ -162,7 +162,7 @@ export default {
   'The sets you logged in this session will be lost.': 'Подходы, записанные в этой сессии, будут потеряны.',
   'Superset {0} / {1}': 'Суперсет {0} / {1}',
   'Exercise {0} / {1}': 'Упражнение {0} / {1}',
-  'Superset · do these back-to-back, rest after both': 'Суперсет · выполняй подряд, отдых после обоих',
+  'Superset · do these back-to-back, rest when done': 'Суперсет · выполняй подряд, отдых в конце',
   'Freestyle workout — add your first exercise.': 'Свободная тренировка — добавь первое упражнение.',
   'Finish workout early · {0} exercises': 'Завершить раньше · упражнений: {0}',
   'Rest over — next set!': 'Отдых окончен — следующий подход!',
@@ -567,4 +567,7 @@ export default {
   '{0} per side': '{0} на сторону',
   'You still log the total: {0} is {1} per side.': 'Ты по-прежнему записываешь общее число: {0} — это {1} на сторону.',
   '{0} sets · {1} work': '{0} подходов · {1} рабочих',
+  'Make superset with previous': 'Суперсет с предыдущим',
+  'Make superset with next': 'Суперсет со следующим',
+  'Unpair': 'Разъединить'
 }
