@@ -687,4 +687,14 @@ export default {
   'secondary': '보조',
   'No exercises with an estimated 1RM yet.': '추정 1RM이 있는 운동이 아직 없습니다.',
   'Tap a muscle to see its exercises.': '근육을 눌러 해당 운동을 확인하세요.',
+  'Less volume': 'Less volume',
+  'More volume': 'More volume',
+  'by volume': 'by volume',
+  'Default progression': 'Default progression',
+  'App default (linear for reps)': 'App default (linear for reps)',
+  'Show exercise summary': 'Show exercise summary',
+  'When an exercise is done': 'When an exercise is done',
+  'Weights in this file are in': 'Weights in this file are in',
+  'Default weight from full sets only': 'Default weight from full sets only',
+  'Missed reps on the last set do not set the next default': 'Missed reps on the last set do not set the next default'
 }

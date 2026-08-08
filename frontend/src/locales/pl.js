@@ -687,4 +687,14 @@ export default {
   'secondary': 'drugorzędny',
   'No exercises with an estimated 1RM yet.': 'Brak ćwiczeń z oszacowanym 1RM.',
   'Tap a muscle to see its exercises.': 'Dotknij mięśnia, aby zobaczyć jego ćwiczenia.',
+  'Less volume': 'Less volume',
+  'More volume': 'More volume',
+  'by volume': 'by volume',
+  'Default progression': 'Default progression',
+  'App default (linear for reps)': 'App default (linear for reps)',
+  'Show exercise summary': 'Show exercise summary',
+  'When an exercise is done': 'When an exercise is done',
+  'Weights in this file are in': 'Weights in this file are in',
+  'Default weight from full sets only': 'Default weight from full sets only',
+  'Missed reps on the last set do not set the next default': 'Missed reps on the last set do not set the next default'
 }

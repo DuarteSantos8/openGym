@@ -1,6 +1,8 @@
 // Pure helpers over the state object S (ported 1:1 from the vanilla app).
 import { todayISO, isoOf, weekKey, fmtNum } from './format.js'
 import { isCardio, isBodyweightEq } from './exercises.js'
+import { normalizePhase, modeForSet, modeForEntry, setVolume, workoutVolumeFromEntries, historyUnitCompatible, historyEntryCompatible, cachedWeightFor } from './workout-model.js'
+import { workRowsForMode } from './workout-runtime.js'
 // i18n-core, not i18n: this file is imported by mcp/, which is plain Node with no Vite and no
 // React. i18n.js is the Vite half — import.meta.glob over the locale packs, useSyncExternalStore
 // for the hook — and it re-exports this very `t` from core, so nothing changes here except what
@@ -18,9 +20,16 @@ import { t } from './i18n-core.js'
 export function modeOf(cfg) {
   const m = cfg && cfg.mode
   if (m === 'reps' || m === 'time' || m === 'cardio') return m
+  if (cfg && (cfg.sec != null || cfg.seconds != null || cfg.durationSec != null)) return 'time'
+  if (cfg && (cfg.min != null || cfg.speed != null)) return 'cardio'
   return isCardio(cfg && cfg.id) ? 'cardio' : 'reps'
 }
 export const isTimed = cfg => modeOf(cfg) === 'time'
+
+/** Mode of a workout entry, including records that predate explicit targets. */
+export function entryMode(entry) {
+  return modeForEntry(entry, modeOf({ id: entry?.id }))
+}
 
 // Two flags that ride on top of a mode rather than making new ones (issues #31/#32), because
 // "bodyweight" and "per side" are true of a rep set and of a timed hold alike:
@@ -97,7 +106,9 @@ const effortTail = s => {
 // entry or a workout entry); passing an id alone keeps the old body-part behaviour.
 export function setLabel(id, s, cfg) {
   const c = cfg || { id }
-  const mode = modeOf(c)
+  // Row mode is authoritative when a phase uses a different mode from its parent target.
+  // Preserve the old id-only cardio fallback for legacy callers.
+  const mode = !cfg && isCardio(id) ? 'cardio' : modeForSet(s, c)
   if (mode === 'cardio') return `${s.min || 0} min @ ${fmtNum(s.speed || 0)} km/h`
   if (mode === 'time') return fmtSec(s.sec) + (s.w > 0 ? ` · ${fmtNum(s.w)}` : '')
   // Bodyweight reads as what you did — "12", or "+10 × 12" once there is a belt involved —
@@ -142,16 +153,66 @@ export function cleanupSg(ex) {
   })
 }
 
-export function lastEntryFor(S, exId) {
+export function lastEntryFor(S, exId, desiredMode) {
   for (let i = S.workouts.length - 1; i >= 0; i--) {
-    const en = S.workouts[i].entries.find(e => e.id === exId)
+    const workout = S.workouts[i]
+    if (!historyUnitCompatible(workout, S.unit)) continue
+    const en = workout.entries.find(e => e.id === exId)
+    if (en && !historyEntryCompatible(en, S.unit, workout.unit)) continue
     // `target` is what the session prescribed; finished workouts carry it so labels and the
     // progression engine can read a session back the way it was logged. Older workouts have
     // none — modeOf() falls back to the body part for them, which is what they were.
-    if (en && en.sets.some(s => s.done)) return { d: S.workouts[i].d, sets: en.sets.filter(s => s.done), target: en.target || null }
+    const workSets = en
+      ? (desiredMode
+        ? workRowsForMode(en, desiredMode)
+        : en.sets.filter(s => normalizePhase(s.phase, 'work') === 'work'))
+        .filter(s => s.done === true)
+      : []
+    if (workSets.length) return { d: workout.d, sets: workSets, target: en.target || null }
   }
   return null
 }
+
+const METRIC_MODES = ['reps', 'time', 'cardio']
+const completedRowsForMode = (entry, mode) => workRowsForMode(entry, mode).filter(s => s.done === true)
+
+/** Completed work rows for one chart/strength metric, resolved through the row mode contract. */
+export function metricRowsForEntry(entry, mode) {
+  const requested = typeof mode === 'string' ? mode.trim().toLowerCase() : ''
+  const resolved = METRIC_MODES.includes(requested) ? requested : metricModeForEntry(entry)
+  return resolved ? completedRowsForMode(entry, resolved) : []
+}
+
+/** The authoritative metric for an entry; reps rows take precedence over timed/cardio rows. */
+export function metricModeForEntry(entry, fallback = null) {
+  for (const mode of METRIC_MODES) {
+    if (completedRowsForMode(entry, mode).length) return mode
+  }
+  return modeForEntry(entry, fallback)
+}
+
+/** Best strength weight from completed work-phase reps rows, with a guarded legacy topW fallback. */
+export function bestWeightForEntry(entry = {}) {
+  const target = entry.target || entry
+  const workRows = Array.isArray(entry.sets)
+    ? entry.sets.filter(s => normalizePhase(s?.phase, 'work') === 'work')
+    : []
+  const repsRows = metricRowsForEntry(entry, 'reps')
+  if (!repsRows.length) return 0
+
+  let best = 0
+  repsRows.forEach(set => {
+    const weight = Number(set?.w)
+    if (Number.isFinite(weight) && weight > best) best = weight
+  })
+
+  const parentMode = modeForSet({}, target)
+  const hasNonRepsWorkRow = workRows.some(set => modeForSet(set, target) !== 'reps')
+  const topWeight = Number(entry.topW)
+  if (parentMode === 'reps' && !hasNonRepsWorkRow && Number.isFinite(topWeight) && topWeight > best) best = topWeight
+  return best
+}
+
 
 // A freestyle exercise starts with the last target the user actually trained, rather than the
 // generic config sheet defaults used when there is no history. The set rows themselves are still
@@ -169,12 +230,15 @@ export function freestyleConfig(S, cfg) {
 }
 export function bestWeightFor(S, exId) {
   let best = 0
-  S.workouts.forEach(w => w.entries.forEach(e => {
-    if (e.id === exId) {
-      e.sets.forEach(s => { if (s.done && s.w > best) best = s.w })
-      if (e.topW && e.topW > best) best = e.topW
-    }
-  }))
+  S.workouts.forEach(w => {
+    if (!historyUnitCompatible(w, S.unit)) return
+    w.entries.forEach(e => {
+      if (e.id !== exId) return
+      if (!historyEntryCompatible(e, S.unit, w.unit)) return
+      const entryBest = bestWeightForEntry(e)
+      if (entryBest > best) best = entryBest
+    })
+  })
   return best
 }
 export function effectiveRoutineId(S, iso) {
@@ -189,10 +253,11 @@ export function effectiveRoutine(S, iso) {
   return id ? S.routines.find(r => r.id === id) || null : null
 }
 export function buildSets(S, cfg, options = {}) {
-  const last = lastEntryFor(S, cfg.id)
   const n = Math.max(1, cfg.sets || 1)
   const mode = modeOf(cfg)
+  const last = lastEntryFor(S, cfg.id, mode)
   const preferLast = !!options.preferLast
+
   const sets = []
   // Last time's set at the same position, falling back to its final set when the plan grew.
   const prevAt = i => (last ? (last.sets[i] || last.sets[last.sets.length - 1]) : null)
@@ -214,23 +279,63 @@ export function buildSets(S, cfg, options = {}) {
     }
     return sets
   }
-  const conf = S.exWeights[cfg.id]
+  const conf = cachedWeightFor(S.exWeights?.[cfg.id], S.unit)
   for (let i = 0; i < n; i++) {
     const prev = prevAt(i)
     const usable = prev && prev.r > 0 ? prev : null
     // Planned sessions may use the confirmed working weight, while freestyle should reproduce
     // the load of each matching set when that option is requested.
-    const w = preferLast && usable ? usable.w : (conf && conf.w > 0 ? conf.w : (usable ? usable.w : cfg.weight))
+    const w = preferLast && usable ? usable.w : (cfg.resolvedWeight != null ? cfg.resolvedWeight : (conf > 0 ? conf : (usable ? usable.w : cfg.weight)))
     sets.push({ w, r: usable ? usable.r : cfg.reps, done: false })
   }
   return sets
 }
-export function workoutVolume(w) {
-  let v = 0
-  // No special case for unilateral work: a per-side set logs its total, so both sides are
-  // already in the rep count that arrives here.
-  w.entries.forEach(e => e.sets.forEach(s => { if (s.done) v += (s.w || 0) * (s.r || 0) }))
-  return v
+export function workoutVolume(w, expectedUnit = null) {
+  return workoutVolumeFromEntries(w, expectedUnit)
+}
+
+/** All completed workouts safe to show or aggregate for the current profile unit. */
+export function workoutsForUnit(S) {
+  return (S?.workouts || []).filter(workout => historyUnitCompatible(workout, S?.unit))
+}
+
+/** Completed volume grouped by explicit phase. Timed/cardio rows remain zero volume. */
+export function volumeByPhase(w, expectedUnit = null) {
+  const out = { warmup: 0, work: 0 }
+  if (!historyUnitCompatible(w, expectedUnit)) return out
+  ;(w?.entries || []).forEach(entry => {
+    if (!historyEntryCompatible(entry, expectedUnit, w.unit)) return
+    ;(entry.sets || []).forEach(set => {
+      const phase = normalizePhase(set.phase, 'work')
+      out[phase] = (out[phase] || 0) + setVolume(set, entry.target || entry)
+    })
+  })
+  return out
+}
+
+/** Completed set counts grouped by phase for review screens and migration checks. */
+export function setsByPhase(w, expectedUnit = null) {
+  const out = { warmup: 0, work: 0 }
+  if (!historyUnitCompatible(w, expectedUnit)) return out
+  ;(w?.entries || []).forEach(entry => {
+    if (!historyEntryCompatible(entry, expectedUnit, w.unit)) return
+    ;(entry.sets || []).forEach(set => {
+      if (!set.done) return
+      const phase = normalizePhase(set.phase, 'work')
+      out[phase] = (out[phase] || 0) + 1
+    })
+  })
+  return out
+}
+
+export function entryVolumeByPhase(entry, expectedUnit = null, inheritedUnit = null) {
+  const out = { warmup: 0, work: 0 }
+  if (!historyEntryCompatible(entry, expectedUnit, inheritedUnit)) return out
+  ;(entry?.sets || []).forEach(set => {
+    const phase = normalizePhase(set.phase, 'work')
+    out[phase] = (out[phase] || 0) + setVolume(set, entry.target || entry)
+  })
+  return out
 }
 export function setsDone(w) {
   let n = 0
@@ -258,8 +363,9 @@ export function supersetUnits(items) {
 export function unitOf(units, idx) { return units.find(u => u.includes(idx)) || [idx] }
 
 export function streakWeeks(S) {
-  if (!S.workouts.length) return 0
-  const weeks = new Set(S.workouts.map(w => weekKey(w.d)))
+  const workouts = workoutsForUnit(S)
+  if (!workouts.length) return 0
+  const weeks = new Set(workouts.map(w => weekKey(w.d)))
   let streak = 0
   const cur = new Date()
   for (let i = 0; i < 520; i++) {
@@ -269,50 +375,4 @@ export function streakWeeks(S) {
     cur.setDate(cur.getDate() - 7)
   }
   return streak
-}
-
-/**
- * Cascade a weight change forward: following sets of the same warm-up flag that are still
- * undone take the new value (null deletes the key). Done sets are never rewritten.
- */
-export function cascadeWeight(rows, from, value) {
-  const warm = !!rows[from]?.warmup
-  const next = rows.slice()
-  for (let j = from + 1; j < next.length; j++) {
-    if (!!next[j].warmup === warm && !next[j].done) {
-      if (value == null) delete next[j].w
-      else next[j].w = value
-    }
-  }
-  return next
-}
-
-/** Insert a warm-up row before the first work row, copying the preceding warm-up's values. */
-export function insertWarmupRow(rows, mode, target) {
-  const firstWork = rows.findIndex(x => !x.warmup)
-  const at = firstWork === -1 ? rows.length : firstWork
-  const l = rows[at - 1] || rows[rows.length - 1]
-  const warm = mode === 'cardio'
-    ? { min: l ? l.min : (target.min || 20), speed: l ? l.speed : (target.speed || 8), done: false, warmup: true }
-    : mode === 'time'
-      ? { sec: l ? l.sec : (target.sec || 45), w: l ? (l.w || 0) : (target.weight || 0), done: false, warmup: true }
-      : { w: l ? l.w : 0, r: l ? l.r : target.reps, done: false, warmup: true }
-  const next = rows.slice()
-  next.splice(at, 0, warm)
-  return next
-}
-
-/** Remove the row at `i`, never emptying the entry below one row. */
-export function removeRowAt(rows, i) {
-  if (rows.length <= 1) return rows.slice()
-  const next = rows.slice()
-  next.splice(i, 1)
-  return next
-}
-
-/** Completed non-warm-up sets across a workout's entries. */
-export function workSetsDone(w) {
-  return (w?.entries || []).reduce(
-    (n, e) => n + (e.sets || []).filter(s => s.done && !s.warmup).length, 0,
-  )
 }

@@ -5,10 +5,13 @@ import { MUSCLES, musclesOf } from './muscles.js'
 // A "normal" hard session for one muscle, in primary-set equivalents. The saturation curve
 // 1 - exp(-stimulus / REF) maps any session size onto [0,1) so volume raises the starting
 // fatigue level without ever pinning it, and the value can then fade asymptotically.
-export const FATIGUE_REF_VOLUME = 3
+export const FATIGUE_REF_VOLUME = 2000  // default reference: kg of intensity-weighted volume per session
+export const FATIGUE_MIN_SESSIONS = 3  // sessions needed before the reference personalises to the user's own average
 // Computational bound for the stimulus scan, not a semantic cliff: after 30 days (20
 // half-lives) a session contributes below 1e-6 to the accumulated value.
 export const FATIGUE_SCAN_MS = 30 * 24 * 60 * 60 * 1000
+export const BODYWEIGHT_REF_LOAD = 75  // kg assumed for bodyweight exercises when no load is logged
+export const CARDIO_TONNAGE_PER_MIN = 50  // duration proxy for cardio/timed work
 
 /** Exponential half-life for fatigue stimulus. */
 export const FATIGUE_HALF_LIFE_MS = 129600000
@@ -58,10 +61,83 @@ function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value))
 }
 
-// Yield one weighted stimulus per completed set. Repeating the exercise's muscle weights for
-// every done set is equivalent to multiplying musclesOf(ex) by the completed-set count while
-// preserving the workout/set shape already used by the app.
-function completedStimuli(workouts, include) {
+// Epley one-rep-max estimate, matching onerm.js (REP_CAP included so high-rep sets do not
+// inflate the estimate). Used only to express a set's intensity relative to the lifter's own
+// capacity - the same formula the app already shows for estimated 1RM.
+const REP_CAP = 12
+const epley1RM = (load, reps) => load * (1 + Math.min(reps || 1, REP_CAP) / 30)
+
+// Best recent Epley estimate per exercise, from done sets inside the scan window. A set's
+// intensity (load / its exercise's estimated 1RM) is what defines a hard set: the same
+// tonnage at 90% of your 1RM is far more fatiguing than at 50%, and the estimate is always
+// the user's own, so beginners and experts are treated by the same relative scale.
+function exercise1RMs(workouts, cutoff) {
+  const best = new Map()
+  for (const workout of workouts || []) {
+    const timestamp = workoutTimestamp(workout)
+    if (!Number.isFinite(timestamp) || timestamp <= cutoff) continue
+    for (const entry of workout.entries || []) {
+      for (const set of entry.sets || []) {
+        if (set?.done !== true || !(set.w > 0) || !(set.r > 0)) continue
+        const est = epley1RM(set.w, set.r)
+        if (!best.has(entry.id) || est > best.get(entry.id)) best.set(entry.id, est)
+      }
+    }
+  }
+  return best
+}
+
+// Intensity-weighted tonnage for one completed set: load x reps x (load / exercise 1RM)^1.5.
+// The exponent saturates the "hard set" effect - a set at 90% of your 1RM counts ~0.81 of its
+// raw tonnage, one at 50% only ~0.35. Cardio, timed holds, and sets whose exercise has no
+// 1RM history stay unweighted (duration proxies, or intensity 1 for the first sessions).
+function setTonnage(ex, set, bodyweightKg, oneRm) {
+  if (ex?.bp === 'cardio') {
+    return Math.max(set?.min || 0, (set?.sec || 0) / 60) * CARDIO_TONNAGE_PER_MIN
+  }
+  if (set?.sec != null && set?.r == null) {
+    return (set.sec / 60) * CARDIO_TONNAGE_PER_MIN
+  }
+  const reps = set?.r || 1
+  let load = set?.w || 0
+  if (!load && ex?.eq === 'body weight') load = bodyweightKg || BODYWEIGHT_REF_LOAD
+  if (set?.unit === 'lb') load *= 0.45359237
+  const raw = load * reps
+  if (!(oneRm > 0) || !(load > 0)) return raw
+  return raw * Math.min(1, load / oneRm) ** 1.5
+}
+
+// The user's own reference volume for a muscle: the mean per-session tonnage over the scan
+// window (raw session sums, not decayed). With fewer than FATIGUE_MIN_SESSIONS of history the
+// reference stays at FATIGUE_REF_VOLUME so a light or new user still sees a sensible curve.
+function referenceTonnage(workouts, slug, now, bodyweightKg, oneRms) {
+  const cutoff = Number(now) - FATIGUE_SCAN_MS
+  const sessions = []
+  for (const workout of workouts || []) {
+    const timestamp = workoutTimestamp(workout)
+    if (!Number.isFinite(timestamp) || timestamp <= cutoff) continue
+    let sum = 0
+    for (const entry of workout.entries || []) {
+      const weights = musclesOf(EXIDX[entry.id])
+      const weight = weights[slug]
+      if (!weight) continue
+      for (const set of entry.sets || []) {
+        if (set?.done !== true) continue
+        sum += setTonnage(EXIDX[entry.id], set, bodyweightKg, oneRms.get(entry.id)) * weight
+      }
+    }
+    if (sum > 0) sessions.push(sum)
+  }
+  if (sessions.length >= FATIGUE_MIN_SESSIONS) {
+    return sessions.reduce((a, b) => a + b, 0) / sessions.length
+  }
+  return FATIGUE_REF_VOLUME
+}
+
+// Yield one weighted stimulus per completed set. The stimulus is the set's tonnage scaled by
+// the exercise's per-muscle weights (primary 1, secondary 0.4), so one set of 50 reps at
+// medium weight registers real volume instead of counting like one set of 5.
+function completedStimuli(workouts, include, bodyweightKg, oneRms, includeSet) {
   const stimuli = []
   for (const workout of workouts || []) {
     const timestamp = workoutTimestamp(workout)
@@ -70,9 +146,12 @@ function completedStimuli(workouts, include) {
       const weights = musclesOf(EXIDX[entry.id])
       for (const set of entry.sets || []) {
         if (set?.done !== true) continue
+        if (includeSet && !includeSet(set)) continue
+        const tonnage = setTonnage(EXIDX[entry.id], set, bodyweightKg, oneRms.get(entry.id))
+        if (tonnage <= 0) continue
         for (const [slug, weight] of Object.entries(weights)) {
           if (Object.prototype.hasOwnProperty.call(MUSCLES_BY_SLUG, slug)) {
-            stimuli.push({ slug, timestamp, stimulus: weight })
+            stimuli.push({ slug, timestamp, stimulus: tonnage * weight })
           }
         }
       }
@@ -83,7 +162,7 @@ function completedStimuli(workouts, include) {
 
 const MUSCLES_BY_SLUG = Object.fromEntries(MUSCLES.map(slug => [slug, true]))
 
-function fatigueValue(events, now) {
+function fatigueValue(events, now, refVolume = FATIGUE_REF_VOLUME) {
   if (!events.length) return 0
   events.sort((a, b) => a.timestamp - b.timestamp)
 
@@ -97,7 +176,7 @@ function fatigueValue(events, now) {
   value *= halfLifeDecay(now - lastTimestamp, FATIGUE_HALF_LIFE_MS)
   // Normalise the accumulated stimulus to a saturating fatigue level: more volume starts
   // higher but never pins, and the value fades asymptotically - no window-edge cliff.
-  return 1 - Math.exp(-value / FATIGUE_REF_VOLUME)
+  return 1 - Math.exp(-value / refVolume)
 }
 
 /**
@@ -113,16 +192,21 @@ function fatigueValue(events, now) {
  * @param {number} now Current time in milliseconds; injected to keep this function deterministic.
  * @returns {Record<string, number>} Fatigue values keyed by every drawable muscle slug.
  */
-export function fatigueOf(workouts, now) {
+export function fatigueOf(workouts, now, opts = {}) {
   const current = Number(now)
   const cutoff = current - FATIGUE_SCAN_MS
-  const stimuli = completedStimuli(workouts, timestamp => timestamp > cutoff)
+  const bodyweightKg = opts.bodyweightKg || null
+  const oneRms = exercise1RMs(workouts, cutoff)
+  const stimuli = completedStimuli(workouts, timestamp => timestamp > cutoff, bodyweightKg, oneRms)
   const byMuscle = Object.fromEntries(MUSCLES.map(slug => [slug, []]))
   for (const stimulus of stimuli) byMuscle[stimulus.slug].push(stimulus)
 
   const result = emptyMuscleMap(0)
   if (!Number.isFinite(current)) return result
-  for (const slug of MUSCLES) result[slug] = fatigueValue(byMuscle[slug], current)
+  for (const slug of MUSCLES) {
+    const refVolume = referenceTonnage(workouts, slug, current, bodyweightKg, oneRms)
+    result[slug] = fatigueValue(byMuscle[slug], current, refVolume)
+  }
   return result
 }
 
@@ -141,7 +225,8 @@ export function fatigueOf(workouts, now) {
 export function strengthOf(workouts, now) {
   const current = Number(now)
   const latest = Object.fromEntries(MUSCLES.map(slug => [slug, -Infinity]))
-  const stimuli = completedStimuli(workouts, () => true)
+  const oneRms = exercise1RMs(workouts, -Infinity)
+  const stimuli = completedStimuli(workouts, () => true, null, oneRms, set => set?.phase !== 'warmup')
   for (const stimulus of stimuli) {
     if (stimulus.timestamp > latest[stimulus.slug]) latest[stimulus.slug] = stimulus.timestamp
   }

@@ -687,4 +687,14 @@ export default {
   'secondary': '次要',
   'No exercises with an estimated 1RM yet.': '暂无估算1RM的动作。',
   'Tap a muscle to see its exercises.': '点击肌肉查看其动作。',
+  'Less volume': 'Less volume',
+  'More volume': 'More volume',
+  'by volume': 'by volume',
+  'Default progression': 'Default progression',
+  'App default (linear for reps)': 'App default (linear for reps)',
+  'Show exercise summary': 'Show exercise summary',
+  'When an exercise is done': 'When an exercise is done',
+  'Weights in this file are in': 'Weights in this file are in',
+  'Default weight from full sets only': 'Default weight from full sets only',
+  'Missed reps on the last set do not set the next default': 'Missed reps on the last set do not set the next default'
 }
