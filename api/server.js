@@ -494,6 +494,7 @@ const routes = {
       lastSync: S._ts || null,
       routines: (S.routines || []).map(r => ({ id: r.id, name: r.name, emoji: r.emoji, count: (r.ex || []).length })),
       bodyweight: S.bodyweight || [],
+      measurements: S.measurements || [],
       workouts: (S.workouts || []).slice().reverse()   // newest first for display
     });
   },
