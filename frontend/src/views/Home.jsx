@@ -9,6 +9,8 @@ import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
 import { glyphOf } from '../lib/glyphs.js'
+import { enabledMeasurementFields, latestMeasurement, measurementUnit, toMeasurementDisplay } from '../lib/measurements.js'
+import { measurementLogSheet } from './Measurements.jsx'
 
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
 export default function Home() {
@@ -41,6 +43,12 @@ export default function Home() {
   const wThisWeek = S.workouts.filter(w => weekKey(w.d) === weekKey(todayISO())).length
   const plannedPerWeek = Object.keys(S.week).filter(k => S.week[k]).length
   const bwPoints = S.bodyweight.slice(-30).map(b => ({ t: b.t || new Date(b.d).getTime(), y: b.w, d: b.d }))
+  const measurementSummary = enabledMeasurementFields(S).map(field => {
+    const latest = latestMeasurement(S, field.key)
+    if (!latest) return null
+    const value = field.key === 'bodyFat' ? latest.value : toMeasurementDisplay(latest.value, S.unit)
+    return { field, value, d: latest.entry.d, unit: field.key === 'bodyFat' ? '%' : measurementUnit(S.unit) }
+  }).filter(Boolean).slice(0, 3)
 
   // today's session shown right under the week strip
   const onToday = () => { if (S.active) nav('/workout'); else if (routine) startFlow(routine.id); else dayOverrideSheet(todayISO()) }
@@ -114,6 +122,19 @@ export default function Home() {
         )}
         <div className="chart" style={{ marginTop: 8 }}><LineChart points={bwPoints} h={130} unit={S.unit} goal={S.targetW} /></div>
       </> : <div className="muted small">{t("No entries yet — log your weight to start the curve. It's also asked before every workout.")}</div>}
+    </div>
+
+    <div className="card">
+      <div className="row between" style={{ marginBottom: measurementSummary.length ? 10 : 0 }}>
+        <h2 style={{ margin: 0 }}>{t('Body measurements')}</h2>
+        <div className="row" style={{ gap: 8 }}>
+          <Button size="sm" icon="plus" onClick={() => measurementLogSheet()}>{t('Log')}</Button>
+          <button className="iconbtn" onClick={() => nav('/measurements')} aria-label={t('View measurements')}><Icon name="chevronRight" /></button>
+        </div>
+      </div>
+      {measurementSummary.length ? <div className="measure-home-grid">{measurementSummary.map(({ field, value, d, unit }) => <button key={field.key} onClick={() => nav('/measurements')}>
+        <span>{t(field.label)}</span><b>{fmtNum(value)} {unit}</b><i>{fmtDate(d, true)}</i>
+      </button>)}</div> : <button className="measure-empty" onClick={() => nav('/measurements')}>{t('No measurements yet — choose what you track and log your first check-in.')} <Icon name="chevronRight" /></button>}
     </div>
 
     <div className="card tappable" style={{ cursor: 'pointer' }} onClick={() => calendarSheet()}>

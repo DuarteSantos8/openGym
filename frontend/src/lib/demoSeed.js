@@ -3,6 +3,7 @@
 import { isoOf, uid } from './format.js'
 import { starterRoutines } from './starter.js'
 import { modeOf } from './history.js'
+import { emptyMeasurement } from './measurements.js'
 
 // Starting weight and weekly increment per exercise of the starter plan (kg).
 // Chest dips are body-weight only here, so they log reps at 0 added weight.
@@ -61,6 +62,12 @@ const monday = date => { const d = new Date(date); d.setDate(d.getDate() - ((d.g
 // per-set effort ratings on most (not all) of it.
 export function buildDemoState() {
   const rnd = rng(20260723)
+  // Measurements draw from their own stream. They are logged on a different cadence than the
+  // training they sit next to, so taking them from `rnd` would slide every later draw along —
+  // the weigh-in jitter, the missed-session roll, the rep drop-offs, the session start times —
+  // and silently rewrite the demo history that mcp/test/tools.test.js pins exact values against.
+  // Anything added here later wants its own generator too, not a share of this one.
+  const mrnd = rng(20260724)
   const [push, pull, legs] = starterRoutines()
   const byWeekday = { 1: push, 3: pull, 5: legs }
 
@@ -70,6 +77,7 @@ export function buildDemoState() {
 
   const workouts = []
   const bodyweight = []
+  const measurements = []
   const exWeights = {}
   const best = {}
 
@@ -83,6 +91,28 @@ export function buildDemoState() {
     if (day.getDay() === 1 || day.getDay() === 4) {
       const w = BW_FROM + (BW_TO - BW_FROM) * p + (rnd() - 0.5) * 0.7
       bodyweight.push({ d: iso, w: Math.round(w * 10) / 10, t: at(day, 7, 30) })
+    }
+
+    // A fortnightly tape check gives every measurement chart enough points to be useful in
+    // the public demo. The asymmetry is intentional and small — real bodies are not mirrored.
+    if (day.getDay() === 0 && weekIdx % 2 === 0) {
+      const e = emptyMeasurement(iso)
+      e.t = at(day, 8, 10)
+      e.neck = Math.round((39.8 - p * 0.8 + (mrnd() - 0.5) * 0.2) * 10) / 10
+      e.shoulders = Math.round((119.5 + p * 1.6 + (mrnd() - 0.5) * 0.4) * 10) / 10
+      e.chest = Math.round((103 - p * 1.4 + (mrnd() - 0.5) * 0.3) * 10) / 10
+      e.waist = Math.round((89 - p * 7.2 + (mrnd() - 0.5) * 0.5) * 10) / 10
+      e.hips = Math.round((101 - p * 3.1 + (mrnd() - 0.5) * 0.3) * 10) / 10
+      e.upperArmLeft = Math.round((35.2 + p * 0.9 + (mrnd() - 0.5) * 0.2) * 10) / 10
+      e.upperArmRight = Math.round((35.5 + p * 0.9 + (mrnd() - 0.5) * 0.2) * 10) / 10
+      e.forearmLeft = Math.round((28.6 + p * 0.4) * 10) / 10
+      e.forearmRight = Math.round((28.9 + p * 0.4) * 10) / 10
+      e.thighLeft = Math.round((58.1 + p * 0.5) * 10) / 10
+      e.thighRight = Math.round((58.5 + p * 0.5) * 10) / 10
+      e.calfLeft = Math.round((38.2 + p * 0.3) * 10) / 10
+      e.calfRight = Math.round((38.5 + p * 0.3) * 10) / 10
+      e.bodyFat = Math.round((20.4 - p * 3.8 + (mrnd() - 0.5) * 0.3) * 10) / 10
+      measurements.push(e)
     }
 
     const routine = byWeekday[day.getDay()]
@@ -152,7 +182,7 @@ export function buildDemoState() {
     routines: [push, pull, legs],
     week: { 1: push.id, 3: pull.id, 5: legs.id },
     dayPlan,
-    workouts, bodyweight, exWeights,
+    workouts, bodyweight, measurements, exWeights,
     targetW: TARGET_W,
     // The history is rated, so the demo turns the column on and the stats get a scale to
     // label their aggregates with instead of guessing one (see displayScale).

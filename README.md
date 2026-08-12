@@ -57,6 +57,7 @@ as a home-screen app, passkey sign-in, offline support, sync across your phone a
 ## Features
 
 - ⚖️ **Body-weight tracking** — interactive chart with a goal line you set, gains/losses colored by whether they move toward it
+- 📏 **Body measurements** — track neck, shoulders, chest, waist, hips, left/right arms and legs, body fat and your own custom measurements, with a curve for each
 - 🏋️ **Weekly plan** — a routine per weekday, over a library of **1,324 exercises** (searchable, with animated demos)
 - 🗓️ **Reschedule any day** — sick, missed a session, or fewer gym days this week? Move a workout to another day without touching your weekly plan
 - ▶️ **Guided workouts** — it knows what day it is and starts today's session; asks your body weight first, pre-fills your weights from last time, rest timer, PR detection, per-exercise weight tracking
@@ -170,7 +171,7 @@ Rough, community-driven — ideas and PRs welcome:
 - [ ] More starter plans (upper/lower, full-body, 5×5)
 - [x] Importers from FitNotes / Strong / Hevy (including the RPE they record), and body weight from Apple Health
 - [x] Effort per set — RIR or RPE, whichever scale you think in
-- [ ] Body measurements (waist, arms…) alongside weight
+- [x] Body measurements (waist, arms…) alongside weight
 - [ ] Per-exercise notes & plate calculator
 - [ ] Exercise instructions in German & Portuguese (UI is translated; upstream dataset doesn't ship these yet)
 
