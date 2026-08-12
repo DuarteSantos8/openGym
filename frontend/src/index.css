@@ -324,17 +324,17 @@ h4.sec{
   background:none;border:none;transition:background var(--fast);
 }
 .wday .lbl{font-size:11px;color:var(--label-3);font-weight:500;text-transform:uppercase;letter-spacing:.03em}
-.wday .num{font-size:17px;font-weight:400;margin:4px 0;letter-spacing:-.012em}
-.wday .dot{width:5px;height:5px;border-radius:50%;background:transparent;margin:0 auto}
+.wday .num{font-size:17px;font-weight:400;margin:2px auto;letter-spacing:-.012em;
+  width:31px;height:31px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.wday .dot{width:5px;height:5px;border-radius:50%;background:transparent;margin:9px auto 0}
 .wday .dot.plan{background:var(--label-3)}
 .wday .dot.ovr{background:var(--orange)}
 .wday .dot.done{background:var(--acc)}
 .wday:active{background:var(--surface-2)}
-.wday.today .num{
-  background:var(--acc);color:var(--on-acc);font-weight:600;
-  width:31px;height:31px;border-radius:50%;display:flex;align-items:center;
-  justify-content:center;margin:2px auto;
-}
+.wday.today .num{background:var(--acc);color:var(--on-acc);font-weight:600}
+.wday.sel .num{outline:2px solid var(--acc);outline-offset:2px}
+.wday.today.sel .num{outline-color:var(--orange)}
+.wday.sel{background:color-mix(in srgb,var(--acc) 8%,transparent)}
 
 /* ----------------------------------------------------------------- list -- */
 .list{display:flex;flex-direction:column;gap:8px}

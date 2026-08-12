@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
-import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, smOf } from './lib/exercises.js'
+import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, smOf, exOr } from './lib/exercises.js'
 import { fmtDate, fmtNum, fmtVol, fmtDur, durPart, todayISO, uid, exCount, DAYN, MONTHS_LONG, ACCENTS } from './lib/format.js'
 import { lastEntryFor, bestWeightFor, buildSets, effectiveRoutineId, workoutVolume, setsDone, setsDoneActive, lastBW, supersetUnits, unitOf, setLabel, defaultConfig, cleanupSg, modeOf, effortOf, isBw, isPerSide, sideReps, workSetsDone } from './lib/history.js'
 import { beep, vibrate } from './lib/sound.js'
-import { t, instrFor, getLang, INSTR_LANGS } from './lib/i18n.js'
+import { t, instrFor, getLang, INSTR_LANGS, dateLocale } from './lib/i18n.js'
 import { nav } from './lib/nav.js'
 import { starterRoutines } from './lib/starter.js'
 import Media, { Thumb } from './components/Media.jsx'
@@ -20,6 +20,7 @@ import { buildPlanBundle, parsePlan, mergePlan, printPlan } from './lib/plan-sha
 import { estimate1RM, best1RM, is1RMRecord, REP_CAP } from './lib/onerm.js'
 import { nextPrescription, applyPrescription, policyFor, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC, MAX_BW_SETS } from './lib/progression.js'
 import { MOBILE, shareExport } from './lib/mobile.js'
+import { programmeColourForItem, programmeItemsForDate, programmeLabelForItem, programmeNameForItem } from './lib/programmes-ui.js'
 
 const S = () => useStore.getState().S
 const update = (...a) => useStore.getState().update(...a)
@@ -729,6 +730,153 @@ function DayOverride({ iso, close }) {
 }
 export const dayOverrideSheet = iso => ui().openSheet(close => <DayOverride iso={iso} close={close} />)
 
+function routineIdsForDate(state, iso) {
+  const hasOverride = Object.prototype.hasOwnProperty.call(state.dayPlan || {}, iso)
+  const raw = hasOverride ? state.dayPlan[iso] : state.week?.[new Date(iso + 'T12:00:00').getDay()]
+  if (raw == null || raw === '' || raw === 'rest') return []
+  const ids = Array.isArray(raw) ? raw : [raw]
+  const available = new Set((state.routines || []).map(routine => String(routine.id)))
+  return [...new Set(ids.filter(id => available.has(String(id))))]
+}
+
+function routinesForDate(state, iso) {
+  const routines = new Map((state.routines || []).map(routine => [String(routine.id), routine]))
+  return routineIdsForDate(state, iso).map(id => routines.get(String(id))).filter(Boolean)
+}
+
+function targetOf(config = {}) {
+  const nested = config.target && typeof config.target === 'object' && !Array.isArray(config.target)
+    ? config.target
+    : {}
+  // Legacy plans keep mode/sets at the top level. New snapshots can override individual
+  // prescription fields under `target`, so merge rather than discarding either shape.
+  return { ...config, ...nested }
+}
+
+function lastLoggedWorkWeight(state, exerciseId) {
+  for (let workoutIndex = (state.workouts || []).length - 1; workoutIndex >= 0; workoutIndex--) {
+    const workout = state.workouts[workoutIndex]
+    for (let entryIndex = (workout.entries || []).length - 1; entryIndex >= 0; entryIndex--) {
+      const entry = workout.entries[entryIndex]
+      if (String(entry?.id) !== String(exerciseId)) continue
+      for (let setIndex = (entry.sets || []).length - 1; setIndex >= 0; setIndex--) {
+        const set = entry.sets[setIndex]
+        const warmup = set?.warmup === true || set?.phase === 'warmup'
+        const weight = Number(set?.w ?? set?.weight)
+        if (set?.done && !warmup && Number.isFinite(weight) && weight > 0) return weight
+      }
+    }
+  }
+  return 0
+}
+
+function plannedWeightFor(state, config) {
+  const target = targetOf(config)
+  const resolved = Number(target.resolvedWeight)
+  if (Number.isFinite(resolved) && resolved > 0) return resolved
+  const prescribed = Number(target.weight)
+  if (Number.isFinite(prescribed) && prescribed > 0) return prescribed
+  return lastLoggedWorkWeight(state, config.id)
+}
+
+function plannedLine(state, config) {
+  const target = targetOf(config)
+  const sets = Math.max(1, Number(target.sets) || 1)
+  const timed = target.mode === 'time' || target.sec != null || target.seconds != null || target.time != null
+  if (timed) return `${sets} × ${Number(target.sec ?? target.seconds ?? target.time) || 0}s`
+  const cardio = target.mode === 'cardio' || target.min != null
+  if (cardio) return `${sets} × ${Number(target.min) || 0} min${target.speed ? ' @ ' + fmtNum(target.speed) + ' km/h' : ''}`
+  const reps = target.reps ?? target.r ?? ''
+  const weight = plannedWeightFor(state, config)
+  return `${sets} × ${reps}${weight > 0 ? ' @ ' + fmtNum(weight) + ' ' + (state.unit || 'kg') : ''}`
+}
+
+function DayView({ iso, close }) {
+  const state = useStore(s => s.S)
+  const plans = routinesForDate(state, iso)
+  const programmes = programmeItemsForDate(state, iso)
+  const freestyle = (state.workouts || []).filter(workout => workout.d === iso && !workout.routineId)
+  const blocks = [
+    ...plans.map(routine => ({ key: 'routine:' + routine.id, type: 'routine', routineId: routine.id, name: routine.name, emoji: routine.emoji, colour: 'var(--acc)', exercises: routine.ex || [] })),
+    ...programmes.map(item => {
+      const live = (state.routines || []).find(routine => String(routine.id) === String(item.routineId))
+      // The snapshot carries the cycle-specific targets (including editor-resolved weights).
+      // A live routine is only a compatibility fallback for old programme records.
+      const routine = Array.isArray(item.routineSnapshot?.ex) ? item.routineSnapshot : live || item.routineSnapshot || {}
+      return {
+        key: item.instanceId,
+        type: 'programme',
+        routineId: routine.id || item.routineId,
+        name: routine.name || programmeLabelForItem(state, item),
+        subtitle: programmeNameForItem(state, item),
+        emoji: routine.emoji,
+        colour: programmeColourForItem(state, item) || 'var(--surface-3)',
+        exercises: routine.ex || [],
+      }
+    }),
+    ...freestyle.map(workout => ({
+      key: 'freestyle:' + workout.id,
+      type: 'freestyle',
+      name: workout.name || t('Freestyle'),
+      emoji: null,
+      colour: 'var(--surface-2)',
+      exercises: (workout.entries || []).map(entry => ({ ...entry, target: entry.target || {} })),
+    })),
+  ]
+  const rows = blocks.flatMap(block => block.exercises.map(config => {
+    const target = targetOf(config)
+    const sets = Math.max(1, Number(target.sets) || 1)
+    const timed = target.mode === 'time' || target.sec != null || target.seconds != null || target.time != null
+    const reps = timed ? 0 : Number(target.reps ?? target.r) || 0
+    const weight = timed ? 0 : plannedWeightFor(state, config)
+    return { sets, volume: sets * reps * weight }
+  }))
+  const totalSets = rows.reduce((sum, row) => sum + row.sets, 0)
+  const totalVolume = rows.reduce((sum, row) => sum + row.volume, 0)
+  const label = iso === todayISO()
+    ? t('Today')
+    : new Date(iso + 'T12:00:00').toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })
+  if (!blocks.length) return <>
+    <h3>{label}</h3>
+    <div className="muted" style={{ padding: '14px 4px' }}>{t('Rest day — no sessions scheduled.')}</div>
+    <div style={{ height: 10 }} /><Button variant="primary" onClick={close}>{t('Done')}</Button>
+  </>
+  return <>
+    <h3>{label}</h3>
+    <div className="small muted" style={{ marginBottom: 10 }}>
+      {[exCount(rows.length), `${totalSets} ${t('sets')}`, totalVolume > 0 ? fmtVol(totalVolume, state.unit || 'kg') : null].filter(Boolean).join(' · ')}
+    </div>
+    <div className="list">
+      {blocks.map(block => <div key={block.key} className="item" style={{ alignItems: 'flex-start', cursor: block.type === 'freestyle' ? 'default' : 'pointer' }}
+        onClick={block.type === 'freestyle' ? undefined : () => { close(); nav('/plan/r/' + block.routineId) }}>
+        <span className="lrow-i" style={{ background: block.colour }}><Icon name={block.emoji ? glyphOf(block.emoji) : 'sparkles'} /></span>
+        <div className="grow">
+          <div className="tt">{block.name}</div>
+          {block.subtitle && <div className="small muted" style={{ marginBottom: 3 }}>{block.subtitle}</div>}
+          {block.exercises.map((config, index) => {
+            const supersetStart = config.sg && block.exercises[index + 1]?.sg === config.sg && block.exercises[index - 1]?.sg !== config.sg
+            return <div key={index}>
+              {supersetStart && <div className="small accent" style={{ marginTop: 4 }}><Icon name="link" /> {t('Superset')}</div>}
+              <div className="small muted" style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
+                <span>{state.customEx?.find(exercise => String(exercise.id) === String(config.id))?.n || exOr(config.id).n}</span>
+                <span style={{ whiteSpace: 'nowrap' }}>{plannedLine(state, config)}</span>
+              </div>
+            </div>
+          })}
+          {!block.exercises.length && <div className="small muted">{t('No exercises')}</div>}
+          {block.type === 'freestyle' && <div className="small dim" style={{ marginTop: 5 }}>{t('Completed freestyle session')}</div>}
+        </div>
+        {block.type === 'freestyle' ? null : <Icon name="chevronRight" className="muted" />}
+      </div>)}
+    </div>
+    <div style={{ height: 10 }} /><Button variant="primary" onClick={close}>{t('Done')}</Button>
+  </>
+}
+
+export function dayViewSheet(iso) {
+  ui().openSheet(close => <DayView iso={iso} close={close} />)
+}
+
 function DayAssign({ day, close }) {
   const st = useStore(s => s.S)
   const set = v => { update(s => { if (v) s.week[day] = v; else delete s.week[day] }); close() }
@@ -820,12 +968,15 @@ export function WorkoutRow({ w, onClick }) {
 }
 
 /* ============================ workout lifecycle ============================ */
-export function startFlow(routineId) {
-  bwSheet({ required: true, onDone: bw => beginWorkout(routineId, bw) })
+export function startFlow(routineId, programmeItem = null) {
+  bwSheet({ required: true, onDone: bw => beginWorkout(routineId, bw, programmeItem) })
 }
-export function beginWorkout(routineId, bw) {
+export function beginWorkout(routineId, bw, programmeItem = null) {
   const st = S()
-  const r = routineId ? st.routines.find(x => x.id === routineId) : null
+  const routineSnapshot = programmeItem?.routineSnapshot
+  const r = Array.isArray(routineSnapshot?.ex)
+    ? routineSnapshot
+    : routineId ? st.routines.find(x => String(x.id) === String(routineId)) : null
   // The prescription is applied as the session is built, so you walk up to the bar with the
   // right weight already on the screen instead of being told about it afterwards. `plan` is
   // kept on the entry purely so the workout can explain the number it chose.
@@ -834,7 +985,19 @@ export function beginWorkout(routineId, bw) {
     return { id: cfg.id, sg: cfg.sg, target: { ...cfg }, plan, sets: applyPrescription(buildSets(st, cfg), plan) }
   })
   update(s => {
-    s.active = { id: uid(), d: todayISO(), start: Date.now(), routineId, name: r ? r.name : t('Freestyle'), bw: bw || null, cur: 0, entries }
+    s.active = {
+      id: uid(), d: todayISO(), start: Date.now(), routineId, name: r ? r.name : t('Freestyle'), bw: bw || null, cur: 0, entries,
+      ...(programmeItem?.instanceId ? {
+        sessionType: 'programme',
+        programmeInstance: {
+          instanceId: programmeItem.instanceId,
+          programmeId: programmeItem.programmeId,
+          cycleId: programmeItem.cycleId,
+          weekIndex: programmeItem.weekIndex,
+          weekday: programmeItem.weekday,
+        },
+      } : {}),
+    }
   })
   useUI.getState().stopRest()
   nav('/workout')
@@ -948,6 +1111,8 @@ function doFinishWorkout() {
   })
   const w = {
     id: A.id, d: A.d, start: A.start, end: Date.now(), routineId: A.routineId, name: A.name, bw: A.bw,
+    ...(A.sessionType ? { sessionType: A.sessionType } : {}),
+    ...(A.programmeInstance ? { programmeInstance: A.programmeInstance } : {}),
     // `target` (what the session prescribed) is kept alongside the sets: without it a
     // finished workout cannot say whether it hit its reps, and a timed session reads back
     // as "0 reps". It is what the progression engine works from.
