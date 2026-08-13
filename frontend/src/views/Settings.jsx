@@ -4,7 +4,7 @@ import { useStore, DEF, hasData } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { ACCENTS, todayISO, localTZ } from '../lib/format.js'
 import { effortOf } from '../lib/history.js'
-import { api, webauthnOK, passkeyLogin, passkeyRegister, IS_ANDROID } from '../lib/api.js'
+import { api, webauthnOK, passkeyLogin, passkeyRegister, passkeyAdd, listPasskeys, deletePasskey, createDeviceLink, BIO, IS_ANDROID } from '../lib/api.js'
 import { pushSupported, enablePush, disablePush, sendTestPush } from '../lib/push.js'
 import { wakeLockSupported } from '../lib/wakelock.js'
 import { t, LANGS, INSTR_LANGS } from '../lib/i18n.js'
@@ -87,6 +87,7 @@ export default function Settings() {
       </> : user ? <>
         <Row icon="personCircle" iconTint="var(--grey)" title={user.name} subtitle={t('Signed in with passkey — data syncs to this profile.')} />
         {user.admin && <Row icon="wrench" iconTint="var(--indigo)" title={t('Admin dashboard')} accessory="chevron" onClick={() => nav('/admin')} />}
+        <PasskeysCard user={user} toast={toast} />
         <Row icon="signOut" iconTint="var(--red)" title={t('Sign out')} danger onClick={() => confirmSheet({ title: t('Sign out?'), message: t('Your data is synced to your profile first, then cleared from this device.'), confirmText: t('Sign out'), danger: true, onConfirm: () => { signOut(); nav('/home') } })} />
         <Row icon="shield" iconTint="var(--red)" title={t('Sign out everywhere')} subtitle={t('Ends this profile’s sessions on all your devices.')} danger onClick={signOutEverywhere} />
       </> : webauthnOK() ? <>
@@ -356,5 +357,96 @@ function RegisterInline({ close, setUser, pushState, pullState, toast }) {
       <div className="dim small" style={{ marginTop: 6 }}>{t('This app is invite-only — enter the code you were given.')}</div>
     </>}
     <div style={{ height: 12 }} /><Button variant="primary" onClick={go}>{t('Create passkey')}</Button>
+  </>
+}
+
+function passkeyLabel(p, i) {
+  const via = (p.transports || []).includes('internal') ? t('This device') : t('Passkey')
+  return p.created ? `${via} · ${t('Added {0}', new Date(p.created).toLocaleDateString())}` : `${via} ${i + 1}`
+}
+
+function PasskeysCard({ user, toast }) {
+  const [keys, setKeys] = useState(null)
+  const refresh = () => listPasskeys().then(r => setKeys(r.passkeys || [])).catch(() => setKeys([]))
+  useEffect(() => { refresh() }, [])
+  const n = keys?.length || 0
+  const addHere = () => useUI.getState().openSheet(close => <AddPasskeySheet close={close} toast={toast} onDone={refresh} />)
+  const addDevice = () => useUI.getState().openSheet(close => <DeviceLinkSheet close={close} toast={toast} />)
+  const remove = p => confirmSheet({
+    title: t('Remove this passkey?'),
+    message: t('You cannot sign in with it afterwards. Keep at least one.'),
+    confirmText: t('Delete'), danger: true,
+    onConfirm: async () => {
+      try { const r = await deletePasskey(p.id); setKeys(r.passkeys || []); toast(t('Passkey removed')) }
+      catch (e) { toast(e.message || t('Could not remove passkey')) }
+    }
+  })
+  return <>
+    <Row icon="key" iconTint="var(--acc)"
+      title={t('Passkeys')}
+      subtitle={keys == null ? '' : n === 1 ? t('{0} passkey', 1) : t('{0} passkeys', n)} />
+    {(keys || []).map((p, i) => (
+      <Row key={p.id} icon="lock" iconTint="var(--grey)" title={passkeyLabel(p, i)}
+        subtitle={n > 1 ? t('Delete') : null}
+        danger={n > 1} onClick={n > 1 ? () => remove(p) : undefined} />
+    ))}
+    {webauthnOK() && <Row icon="plus" iconTint="var(--acc)" title={t('Add passkey on this device')}
+      subtitle={t('Then this phone or computer can sign in as {0}.', user.name)}
+      accessory="chevron" onClick={addHere} />}
+    <Row icon="link" iconTint="var(--blue)" title={t('Add another device')}
+      subtitle={t('Creates a 15-minute link. Open it on the new device, then create a passkey there.')}
+      accessory="chevron" onClick={addDevice} />
+  </>
+}
+
+export function AddPasskeySheet({ close, toast, onDone, afterLink }) {
+  const ttoast = toast || (msg => useUI.getState().toast(msg))
+  const go = async () => {
+    try {
+      await passkeyAdd()
+      onDone?.()
+      close()
+      ttoast(t('Passkey added'))
+    } catch (e) {
+      if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') ttoast(e.message || t('Could not add a passkey'))
+    }
+  }
+  return <>
+    <h3>{t('Add passkey on this device')}</h3>
+    <div className="muted small" style={{ marginBottom: 14 }}>
+      {afterLink
+        ? t('Welcome back — add a passkey on this device so you can sign in next time.')
+        : t('Confirm with {0}. The passkey stays on this device — next time you sign in with it.', BIO)}
+    </div>
+    <Button variant="primary" onClick={go}>{t('Create passkey')}</Button>
+  </>
+}
+
+function DeviceLinkSheet({ close, toast }) {
+  const [url, setUrl] = useState('')
+  const [err, setErr] = useState('')
+  useEffect(() => {
+    createDeviceLink()
+      .then(r => setUrl(r.url || ''))
+      .catch(e => setErr(e.message || t('Could not create a device link')))
+  }, [])
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(url)
+      toast(t('Copied'))
+    } catch {
+      toast(url)
+    }
+  }
+  return <>
+    <h3>{t('Add another device')}</h3>
+    <div className="muted small" style={{ marginBottom: 14 }}>{t('This link expires in 15 minutes and works once.')}</div>
+    {err ? <div className="muted small">{err}</div> : !url ? <div className="muted small">…</div> : <>
+      <div className="card small" style={{ wordBreak: 'break-all', textAlign: 'left' }}>{url}</div>
+      <div style={{ height: 12 }} />
+      <Button variant="primary" onClick={copy}>{t('Copy link')}</Button>
+    </>}
+    <div style={{ height: 10 }} />
+    <Button variant="ghost" onClick={close}>{t('Done')}</Button>
   </>
 }

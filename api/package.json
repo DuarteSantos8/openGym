@@ -6,7 +6,8 @@
   "main": "server.js",
   "license": "AGPL-3.0-or-later",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node --test *.test.js"
   },
   "dependencies": {
     "@simplewebauthn/server": "^13.1.1",
