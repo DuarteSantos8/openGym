@@ -9,6 +9,8 @@ import {
   generateAuthenticationOptions, verifyAuthenticationResponse
 } from '@simplewebauthn/server';
 import webpush from 'web-push';
+import { createDeviceLink, claimDeviceLink, deviceLinkUrl } from './device-link.js';
+import { addPasskeyRecord, listPasskeys, removePasskeyRecord } from './passkeys-store.js';
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
@@ -45,6 +47,7 @@ let db = { users: [], creds: [], subs: [], invites: [] };
 try { db = JSON.parse(fs.readFileSync(dbFile, 'utf8')); } catch {}
 db.subs = db.subs || [];
 db.invites = db.invites || [];
+db.deviceLinks = db.deviceLinks || [];
 const isAdmin = user => !!user && (user.admin === true || ADMIN_UIDS.includes(user.id));
 function saveDb() { atomicWrite(dbFile, JSON.stringify(db, null, 2)); }
 function atomicWrite(file, content) {
@@ -194,9 +197,14 @@ function readSession(req) {
   return user;
 }
 // Guard for /api/admin/* — resolves the caller and 401/403s if they aren't an admin.
-function requireAdmin(req, res) {
+function requireUser(req, res) {
   const user = readSession(req);
   if (!user) { json(res, 401, { error: 'not signed in' }); return null; }
+  return user;
+}
+function requireAdmin(req, res) {
+  const user = requireUser(req, res);
+  if (!user) return null;
   if (!isAdmin(user)) { json(res, 403, { error: 'forbidden' }); return null; }
   return user;
 }
@@ -359,6 +367,91 @@ const routes = {
     saveDb();
     const user = db.users.find(u => u.id === cred.userId);
     if (!user) return json(res, 500, { error: 'user missing' });
+    if (user.disabled) return json(res, 403, { error: 'this account has been disabled' });
+    json(res, 200, { user: { id: user.id, name: user.name, admin: isAdmin(user) } }, { 'Set-Cookie': sessionCookie(user) });
+  },
+
+  // Extra passkey on an existing profile (phone after Windows Hello, a second laptop…).
+  'GET /api/passkeys': async (req, res) => {
+    const user = requireUser(req, res);
+    if (!user) return;
+    json(res, 200, { passkeys: listPasskeys(db, user.id) });
+  },
+
+  'POST /api/passkeys/add/options': async (req, res) => {
+    const user = requireUser(req, res);
+    if (!user) return;
+    const excludeCredentials = db.creds
+      .filter(c => c.userId === user.id)
+      .map(c => ({ id: c.id, transports: c.transports || [] }));
+    const options = await generateRegistrationOptions({
+      rpName: RP_NAME, rpID: RP_ID,
+      userID: Buffer.from(user.id), userName: user.name, userDisplayName: user.name,
+      attestationType: 'none',
+      authenticatorSelection: { residentKey: 'required', userVerification: 'preferred' },
+      excludeCredentials
+    });
+    const cid = putChallenge({ challenge: options.challenge, uid: user.id, kind: 'add' });
+    json(res, 200, { cid, options });
+  },
+
+  'POST /api/passkeys/add/verify': async (req, res) => {
+    const user = requireUser(req, res);
+    if (!user) return;
+    const body = await readBody(req);
+    const c = takeChallenge(body.cid);
+    if (!c || c.kind !== 'add' || c.uid !== user.id) return json(res, 400, { error: 'challenge expired — try again' });
+    let verification;
+    try {
+      verification = await verifyRegistrationResponse({
+        response: body.credential,
+        expectedChallenge: c.challenge,
+        expectedOrigin: ORIGIN,
+        expectedRPID: RP_ID,
+        requireUserVerification: false
+      });
+    } catch (e) { return json(res, 400, { error: 'verification failed: ' + e.message }); }
+    if (!verification.verified) return json(res, 400, { error: 'not verified' });
+    const { credential } = verification.registrationInfo;
+    const added = addPasskeyRecord(db, user.id, {
+      id: credential.id,
+      publicKey: Buffer.from(credential.publicKey).toString('base64url'),
+      counter: credential.counter || 0,
+      transports: body.credential?.response?.transports || []
+    });
+    if (added.error) return json(res, 409, { error: added.error });
+    saveDb();
+    json(res, 200, { ok: true, passkeys: listPasskeys(db, user.id) });
+  },
+
+  'POST /api/passkeys/delete': async (req, res) => {
+    const user = requireUser(req, res);
+    if (!user) return;
+    const body = await readBody(req);
+    const removed = removePasskeyRecord(db, user.id, String(body.id || ''));
+    if (removed.error === 'keep at least one passkey') return json(res, 400, { error: removed.error });
+    if (removed.error) return json(res, 404, { error: removed.error });
+    saveDb();
+    json(res, 200, { ok: true, passkeys: listPasskeys(db, user.id) });
+  },
+
+  // One-time 15-minute URL: open on a new device to inherit this session, then add a passkey.
+  'POST /api/devices/link': async (req, res) => {
+    const user = requireUser(req, res);
+    if (!user) return;
+    const link = createDeviceLink(db, user.id);
+    saveDb();
+    json(res, 200, { url: deviceLinkUrl(ORIGIN, link.token), exp: link.exp });
+  },
+
+  'POST /api/devices/claim': async (req, res) => {
+    const body = await readBody(req);
+    const result = claimDeviceLink(db, String(body.token || ''));
+    saveDb();
+    if (result.error === 'link expired') return json(res, 410, { error: 'link expired' });
+    if (result.error) return json(res, 404, { error: result.error });
+    const user = db.users.find(u => u.id === result.userId);
+    if (!user) return json(res, 404, { error: 'user missing' });
     if (user.disabled) return json(res, 403, { error: 'this account has been disabled' });
     json(res, 200, { user: { id: user.id, name: user.name, admin: isAdmin(user) } }, { 'Set-Cookie': sessionCookie(user) });
   },

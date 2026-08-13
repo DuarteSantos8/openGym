@@ -4,7 +4,7 @@ import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { bindUI } from './components/ui.jsx'
 import { ACCENTS } from './lib/format.js'
-import { setLang, useLang } from './lib/i18n.js'
+import { setLang, useLang, t } from './lib/i18n.js'
 import { setNav } from './lib/nav.js'
 import { useWakeLock } from './lib/wakelock.js'
 import { startFlow } from './sheets.jsx'
@@ -22,7 +22,7 @@ import Workout from './views/Workout.jsx'
 import Stats from './views/Stats.jsx'
 import History from './views/History.jsx'
 import Library from './views/Library.jsx'
-import Settings from './views/Settings.jsx'
+import Settings, { AddPasskeySheet } from './views/Settings.jsx'
 import Admin from './views/Admin.jsx'
 
 bindUI(useUI)   // lets the shared controls open sheets without importing the store at module scope
@@ -40,8 +40,20 @@ function Shell() {
   const loc = useLocation()
   const { S, user, ready } = useStore()
   const isGuest = useStore(s => s.isGuest())
+  const pendingAddPasskey = useStore(s => s.pendingAddPasskey)
+  const linkError = useStore(s => s.linkError)
   const langV = useLang()   // re-renders the whole shell when the language (pack) changes
   useEffect(() => { setNav(navigate) }, [navigate])
+  useEffect(() => {
+    if (!ready || !linkError) return
+    useStore.setState({ linkError: null })
+    useUI.getState().toast(t('Link expired or already used'))
+  }, [ready, linkError])
+  useEffect(() => {
+    if (!ready || !pendingAddPasskey || !user) return
+    useStore.setState({ pendingAddPasskey: false })
+    useUI.getState().openSheet(close => <AddPasskeySheet close={close} afterLink />)
+  }, [ready, pendingAddPasskey, user])
   useEffect(() => { applyPrefs(S.theme, S.accent) }, [S.theme, S.accent])
   useEffect(() => { setLang(S.lang || 'en') }, [S.lang])
   useEffect(() => { document.documentElement.lang = S.lang || 'en' }, [langV, S.lang])

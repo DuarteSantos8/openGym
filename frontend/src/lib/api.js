@@ -57,3 +57,14 @@ export async function passkeyLogin() {
   const res = await api('/api/login/verify', { method: 'POST', body: JSON.stringify({ cid, credential: credToJSON(cred) }) })
   return res.user
 }
+
+export async function passkeyAdd() {
+  const { cid, options } = await api('/api/passkeys/add/options', { method: 'POST', body: '{}' })
+  const cred = await navigator.credentials.create({ publicKey: toCreationOptions(options) })
+  return api('/api/passkeys/add/verify', { method: 'POST', body: JSON.stringify({ cid, credential: credToJSON(cred) }) })
+}
+
+export const listPasskeys = () => api('/api/passkeys')
+export const deletePasskey = id => api('/api/passkeys/delete', { method: 'POST', body: JSON.stringify({ id }) })
+export const createDeviceLink = () => api('/api/devices/link', { method: 'POST', body: '{}' })
+export const claimDeviceLink = token => api('/api/devices/claim', { method: 'POST', body: JSON.stringify({ token }) })

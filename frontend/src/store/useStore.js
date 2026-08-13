@@ -1,5 +1,6 @@
 import { create } from 'zustand'
-import { api } from '../lib/api.js'
+import { api, claimDeviceLink } from '../lib/api.js'
+import { linkTokenFromSearch, stripLinkFromUrl } from '../lib/device-link.js'
 import { localTZ } from '../lib/format.js'
 import { registerCustom } from '../lib/exercises.js'
 import { DEMO, DEMO_SEEDED } from '../lib/demo.js'
@@ -84,6 +85,8 @@ export const useStore = create((set, get) => {
     S: (() => { const s = loadState(); registerCustom(s.customEx); return s })(),
     user: (() => { try { return JSON.parse(localStorage.getItem('gym_user')) || null } catch { return null } })(),
     ready: false,
+    pendingAddPasskey: false,
+    linkError: null,
 
     // Mutate a draft of S via producer fn, then persist + schedule sync.
     update(mut, push = true) {
@@ -189,6 +192,21 @@ export const useStore = create((set, get) => {
       // an unreachable server must not be allowed to lock anyone out (#42).
       const cfg = await get().loadConfig()
       if (!guestAllowed(cfg)) get().setGuest(false)
+      // A device-link URL signs this browser into the existing profile before /api/me runs,
+      // so a phone that was previously a guest still lands in the right account.
+      const linkToken = typeof window !== 'undefined' ? linkTokenFromSearch(window.location.search) : ''
+      if (linkToken) {
+        stripLinkFromUrl()
+        try {
+          const claimed = await claimDeviceLink(linkToken)
+          get().setUser(claimed.user)
+          await get().pullState()
+          set({ pendingAddPasskey: true, linkError: null, ready: true })
+          return
+        } catch (e) {
+          set({ linkError: e.status === 410 || /expired/i.test(e.message || '') ? 'expired' : 'bad' })
+        }
+      }
       try {
         const me = await api('/api/me')
         get().setUser(me.user)
