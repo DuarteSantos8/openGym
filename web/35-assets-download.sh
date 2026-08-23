@@ -1,4 +1,6 @@
 #!/bin/sh
+set -e
+
 ASSETS_URL="${ASSETS_URL:-https://github.com/hasaneyldrm/exercises-dataset/archive/refs/heads/main.zip}"
 ASSETS_FOLDER="${ASSETS_FOLDER:-exercises-dataset-main}"
 NEEDS_UPDATE="${NEEDS_UPDATE:-false}"
@@ -26,8 +28,8 @@ if [ "$NEEDS_UPDATE" = "true" ]; then
   Reusing this media yourself, commercially or not, needs your own license
   from Gym visual. Details in NOTICE.md."
 
-    wget "$ASSETS_URL" -O /tmp/main.zip
-    unzip /tmp/main.zip -d /tmp -q
+    wget "$ASSETS_URL" -O /tmp/main.zip || { echo "✗ Failed to download exercise media." >&2 ; exit 1; }
+    unzip /tmp/main.zip -d /tmp -q || { echo "✗ Failed to extract exercise media." >&2 ; exit 1; }
     # CP -f Override, -u Copy only newer files
     cp -fu /tmp/${ASSETS_FOLDER}/images/*.jpg $WORKING_DIR/img/ && echo "✓ Exercise images ready ($(ls $WORKING_DIR/img/ | wc -l) images)."
     cp -fu /tmp/${ASSETS_FOLDER}/videos/*.gif $WORKING_DIR/gif/ && echo "✓ Exercise gif's ready ($(ls $WORKING_DIR/gif | wc -l) images)."
