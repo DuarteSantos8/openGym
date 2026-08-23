@@ -173,6 +173,7 @@ All via `.env` (see `.env.example`):
 | `INVITE_ONLY` | Require an invite code to create a profile           | *(off)*                 |
 | `ALLOW_GUEST` | Offer "Continue without account" — set `0` to require a profile | *(on)*       |
 | `VAPID_SUBJECT` | Contact URL sent with push notifications           | your `ORIGIN`           |
+| `SKIP_ASSETS_DOWNLOAD` | Skip Assets update and download on a first start if set to `true`. For additional Assets options please refer to [`web\35-assets-download.sh`](web\35-assets-download.sh) | *(none)* |
 
 Push notification keys are generated on first run and saved to `./data/vapid.json` — nothing to set.
 `DATA_DIR` is pinned to `/data` by `docker-compose.yml` and mapped to `./data` on the host; change the

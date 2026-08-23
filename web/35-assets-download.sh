@@ -1,11 +1,19 @@
 #!/bin/sh
 set -e
 
+# Assets URL with exercise images and gifs. You can override it with your own dataset if you want. Shall be a zip file.
 ASSETS_URL="${ASSETS_URL:-https://github.com/hasaneyldrm/exercises-dataset/archive/refs/heads/main.zip}"
+# Assets folder name inside the zip file. You can override it with your own dataset if you want.
 ASSETS_FOLDER="${ASSETS_FOLDER:-exercises-dataset-main}"
+# Flag to force update the exercise media. If set to true, it will download the assets again even if they are already present.
 NEEDS_UPDATE="${NEEDS_UPDATE:-false}"
+# Working directory where the assets will be extracted. You can override it with your own path if you want.
 WORKING_DIR="${WORKING_DIR:-/usr/share/nginx/html}"
 
+# Skip download if SKIP_ASSETS_DOWNLOAD is 
+if [  "$SKIP_ASSETS_DOWNLOAD" = "true" ]; then
+    exit 0
+fi
 
 # Check if file exist - download happens at least once.
 if [ ! -f "$WORKING_DIR/img/LAST_UPDATE" ]; then
@@ -39,7 +47,7 @@ if [ "$NEEDS_UPDATE" = "true" ]; then
 
     rm -r /tmp/${ASSETS_FOLDER} /tmp/main.zip && echo "Cleanup complete."
 else
-    echo "✓ Exercise media already present — skipping download. Last update $(cat $WORKING_DIR/img/LAST_UPDATE)"
+    echo "✓ Exercise media already present — skipping download. Last update $(cat $WORKING_DIR/img/LAST_UPDATE)."
 fi
 
 exit 0
