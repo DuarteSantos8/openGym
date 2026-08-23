@@ -31,8 +31,10 @@ LABEL maintainer="Duarte Santos https://gitea.com/DuarteSantos" \
     org.opencontainers.image.created=$BUILD_DATE
 
 COPY web/nginx.conf.template /etc/nginx/templates/default.conf.template
+COPY --chmod=555 web/35-assets-download.sh /docker-entrypoint.d/35-assets-download.sh
 COPY --from=build /app/dist /usr/share/nginx/html
-# exercise media (img/gif) is mounted at runtime from the media volume
+# exercise media (img/gif) is mounted at runtime from the media volume. But needs to be created prior
+RUN mkdir /usr/share/nginx/html/img /usr/share/nginx/html/gif
 
 # Set Default ENVs for nginx
 ENV NGINX_PORT=80
