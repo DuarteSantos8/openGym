@@ -831,3 +831,49 @@ describe('drop-sets and rest-pause sets in progression', () => {
     expect(out[1]).toEqual({ type: 'dropset', w: 0, r: 10, done: false })
   })
 })
+
+describe('distance progression', () => {
+  const cfg = { id: LIFT, mode: 'distance', sets: 2, sec: 600, m: 400, prog: 'distance' }
+  const T = { sets: 2, sec: 600, m: 400, mode: 'distance' }
+  const distHist = rows => ({
+    unit: 'kg',
+    workouts: rows.map((row, i) => ({
+      d: '2026-03-0' + (i + 1),
+      entries: [{ id: LIFT, target: T, sets: row.map(m => ({ sec: 600, m, done: true })) }]
+    }))
+  })
+
+  it('judges a session by the metres covered inside the cap', () => {
+    const s = readSession({ id: LIFT, target: T, sets: [{ sec: 600, m: 400, done: true }, { sec: 600, m: 380, done: true }] })
+    expect(s.mode).toBe('distance')
+    expect(s.ok).toBe(false)      // one set fell short of 400 m
+    expect(s.best).toBe(400)
+    expect(readSession({ id: LIFT, target: T, sets: [{ sec: 600, m: 410, done: true }, { sec: 600, m: 402, done: true }] }).ok).toBe(true)
+  })
+
+  it('has no automatic policy unless one is picked', () => {
+    expect(POLICIES_FOR.distance).toEqual(['off', 'distance'])
+    expect(nextPrescription(distHist([[400, 400]]), { id: LIFT, mode: 'distance', sets: 2, sec: 600, m: 400 }).kind).toBe('off')
+  })
+
+  it('adds metres when every set beat the distance inside the cap', () => {
+    const p = nextPrescription({ unit: 'kg', ...distHist([[400, 400]]) }, cfg)
+    expect(p.kind).toBe('up')
+    expect(p.m).toBe(410)               // cap stays, distance steps by 10 m
+    expect(p.sec).toBeUndefined()
+    expect(p.why[1]).toMatch(/410 m/)
+  })
+
+  it('repeats the target when a set fell short', () => {
+    const p = nextPrescription(distHist([[400, 380]]), cfg)
+    expect(p.kind).toBe('hold')
+    expect(p.m).toBe(400)
+  })
+
+  it('applies a distance prescription to unbuilt rows only', () => {
+    const sets = [{ sec: 600, m: 400, done: false }]
+    const out = applyPrescription(sets, { kind: 'up', m: 410 })
+    expect(out[0].m).toBe(410)
+    expect(out[0].sec).toBe(600)        // cap untouched
+  })
+})

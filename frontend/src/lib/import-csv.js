@@ -422,9 +422,18 @@ export function parseWorkoutCSV(text, { unit = 'kg' } = {}) {
     }
 
     const isCardio = (km > 0 || mins > 0) && !reps
+    // A distance row with a duration but no reps is a capped distance set ({ sec, m }), not a
+    // cardio row — an unknown-pace carry is not the same kind of work as a treadmill interval,
+    // and forcing it through min@speed would invent a speed the exporter never logged.
+    const kmC = Number(km) || 0
+    // A capped-distance set is short work: above ~5 km automatically logged (km-only columns
+    // have no per-set seconds anyway), cardio keeps its pace semantics instead.
+    const isDistance = secs > 0 && kmC > 0 && kmC < 5 && !reps
     // `u` carries the row's own unit into the conversion pass below and is dropped there —
     // it never reaches the stored set.
-    const set = isCardio
+    const set = isDistance
+      ? { sec: Math.round(secs), m: Math.round(kmC * 1000), done: true, ...(warmup ? { phase: 'warmup' } : {}) }
+      : isCardio
       ? { min: mins || 0, speed: mins > 0 ? Math.round(km / (mins / 60) * 10) / 10 : 0, done: true, ...(warmup ? { phase: 'warmup' } : {}) }
       : { w, r: reps || 0, done: true, u: rowUnit, ...(warmup ? { phase: 'warmup' } : {}) }
     // Effort rides along only where the app can show it again: a weighted rep set. A treadmill
