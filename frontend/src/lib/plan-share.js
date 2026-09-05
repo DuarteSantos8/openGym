@@ -9,7 +9,7 @@
 //     a page break — each exercise, and each routine that fits, stays in one place.
 
 import { EXIDX, isBodyweightEq } from './exercises.js'
-import { modeOf, fmtSec, isBw, isPerSide, sideReps, MAX_PLANNED_WARMUPS } from './history.js'
+import { modeOf, fmtSec, fmtDistance, isBw, isPerSide, sideReps, MAX_PLANNED_WARMUPS } from './history.js'
 import { deriveSessionName } from './session-merge.js'
 import { uid, todayISO, DAYN, weekOrder, weekStartOf, fmtNum, exCount } from './format.js'
 import { t, exerciseNameFor } from './i18n-core.js'
@@ -25,6 +25,12 @@ function cleanEx(e) {
   if (mode === 'cardio') {
     if (e.min != null) o.min = e.min
     if (e.speed != null) o.speed = e.speed
+  } else if (mode === 'distance') {
+    // The mode travels like time's, or a distance set arriving on the other end would read
+    // as reps of whatever number of "reps" the metre count spelled.
+    o.mode = 'distance'
+    if (e.sec != null) o.sec = e.sec
+    if (e.m != null) o.m = e.m
   } else if (mode === 'time') {
     // Written out even though 'reps' is the fallback for a non-cardio id: a plan file that
     // dropped the mode would turn a 45-second plank into a 45-rep one at the other end.
@@ -39,7 +45,7 @@ function cleanEx(e) {
   // it disagrees with the catalogue, since agreeing is what the other end already assumes.
   if (e.bodyweight != null && e.bodyweight !== isBodyweightEq(e.id)) o.bodyweight = e.bodyweight
   // Only on reps work — `side` counts reps, and a timed hold has none to split.
-  if (e.side && mode !== 'time' && mode !== 'cardio') o.side = true
+  if (e.side && mode !== 'time' && mode !== 'cardio' && mode !== 'distance') o.side = true
   // Progression settings travel with the plan — a shared Greyskull routine that arrives
   // without its rule is just a list of weights.
   if (e.prog) o.prog = e.prog
@@ -213,6 +219,10 @@ function scheme(e, unit) {
   const mode = modeOf(e)
   if (mode === 'cardio') {
     const body = `${e.min || 20} min @ ${fmtNum(e.speed || 8)} km/h`
+    return sets > 1 ? `${sets} × ${body}` : body
+  }
+  if (mode === 'distance') {
+    const body = `${fmtSec(e.sec || 600)} · ${fmtDistance(e.m || 400, unit)}`
     return sets > 1 ? `${sets} × ${body}` : body
   }
   let s = mode === 'time' ? `${sets} × ${fmtSec(e.sec || 45)}` : `${sets} × ${e.reps ?? 10}`

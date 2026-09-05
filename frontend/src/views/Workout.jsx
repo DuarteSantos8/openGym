@@ -127,6 +127,7 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
   const mode = modeOf({ ...(entry.target || {}), id: entry.id })
   const cardio = mode === 'cardio'
   const timed = mode === 'time'
+  const distMode = mode === 'distance'
   const last = lastEntryFor(S, entry.id)
   const standingNote = exNoteFor(S, entry.id)
   // Only worth surfacing while there is still work left: once the exercise is finished, a note
@@ -154,8 +155,10 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
   const repCol = { f: 'r', step: repStep(cfg), dec: false, hd: t('Reps') }
   const col1 = cardio ? { f: 'min', step: 1, dec: false, hd: t('Duration (min)') }
     : timed ? { f: 'sec', step: 5, dec: false, hd: t('Seconds') }
+      : distMode ? { f: 'sec', step: 5, dec: false, hd: t('Time cap') }
       : (bw && !added) ? repCol : loadCol
   const col2 = cardio ? { f: 'speed', step: 0.5, dec: true, hd: t('Speed (km/h)') }
+    : distMode ? { f: 'm', step: 5, dec: false, hd: t('Distance (m)') }
     : timed ? ((bw && !added) ? null : loadCol)
       : (bw && !added) ? null : repCol
   // Effort (RIR or RPE, whichever the profile logs) only makes sense for weighted rep sets,
@@ -393,7 +396,7 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
       {t('From {0}:', fmtDate(pinnedNote.d, true))} {pinnedNote.note}
     </div>}
     {entry.note && <div className="exnote">{entry.note}</div>}
-    {last && <div className="small dim" style={{ marginBottom: 4 }}>{t('Last time')} ({fmtDate(last.d)}): {last.sets.map(s => setLabel(entry.id, s, last.target)).join(', ')}</div>}
+    {last && <div className="small dim" style={{ marginBottom: 4 }}>{t('Last time')} ({fmtDate(last.d)}): {last.sets.map(s => setLabel(entry.id, s, last.target, S.unit)).join(', ')}</div>}
     {/* Bar + plates for barbell work: what to load per side for the set in front of you
         (first undone set; the heaviest row once everything is checked). The logged number
         stays the total — this chip is the split, and tapping it edits the bar's own weight
@@ -598,6 +601,7 @@ function ActiveWorkout() {
     const l = e.sets[e.sets.length - 1]
     const m = modeOf({ ...(e.target || {}), id: e.id })
     if (m === 'cardio') e.sets.push({ min: l ? l.min : (e.target.min || 20), speed: l ? l.speed : (e.target.speed || 8), done: false })
+    else if (m === 'distance') e.sets.push({ sec: l ? l.sec : (e.target.sec || 600), m: l ? l.m : (e.target.m || 400), done: false })
     else if (m === 'time') e.sets.push({ sec: l ? l.sec : (e.target.sec || 45), w: l ? (l.w || 0) : (e.target.weight || 0), done: false })
     else {
       const row = { w: l ? l.w : 0, r: l ? l.r : e.target.reps, done: false }

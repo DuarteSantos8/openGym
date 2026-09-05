@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { nextTrainingDay, modeOf, isTimed, fmtSec, setLabel, defaultConfig, buildSets, freestyleConfig, exLine, workoutVolume, bestWeightFor, bestWeightForEntry, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, removeRowAt, workSetsDone, setsDone, setsDoneActive, setUnits, doneUnits, setUnitsTotal, pairAdjacent, unpairSuperset, supersetUnits, applyIntensifierPlan, pinnedNoteFor, exNoteFor, effectiveRoutineIds, effectiveRoutines, effectiveRoutineId, effectiveRoutine, lastEntryFor, entryExcluded } from './history.js'
+import { nextTrainingDay, modeOf, isTimed, fmtSec, setLabel, defaultConfig, buildSets, freestyleConfig, exLine, workoutVolume, bestWeightFor, bestWeightForEntry, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, removeRowAt, workSetsDone, setsDone, setsDoneActive, setUnits, doneUnits, setUnitsTotal, pairAdjacent, unpairSuperset, supersetUnits, applyIntensifierPlan, pinnedNoteFor, exNoteFor, effectiveRoutineIds, effectiveRoutines, effectiveRoutineId, effectiveRoutine, lastEntryFor, entryExcluded, fmtDistance } from './history.js'
 import { makeSideSet, setSideField, toggleSide } from './workout-model.js'
 import { EXDB } from './exercises.js'
 
@@ -24,6 +24,7 @@ describe('modeOf', () => {
     expect(modeOf({ id: LIFT, mode: 'time' })).toBe('time')
     expect(modeOf({ id: CARDIO, mode: 'reps' })).toBe('reps')
     expect(modeOf({ id: CARDIO, mode: 'time' })).toBe('time')
+    expect(modeOf({ id: LIFT, mode: 'distance' })).toBe('distance')
   })
 
   it('ignores a mode it does not know rather than trusting a bad file', () => {
@@ -61,6 +62,22 @@ describe('setLabel', () => {
     expect(setLabel(CARDIO, { min: 20, speed: 9 })).toBe('20 min @ 9 km/h')
     expect(setLabel(LIFT, { sec: 45, w: 0 }, { mode: 'time' })).toBe('0:45')
     expect(setLabel(LIFT, { sec: 90, w: 20 }, { mode: 'time' })).toBe('1:30 · 20')
+  })
+
+  it('describes a distance set as cap · distance, in the profile unit', () => {
+    expect(setLabel(LIFT, { sec: 600, m: 400 }, { mode: 'distance' })).toBe('10:00 · 400 m')
+    expect(setLabel(LIFT, { sec: 600, m: 400 }, { mode: 'distance' }, 'kg')).toBe('10:00 · 400 m')
+    expect(setLabel(LIFT, { sec: 600, m: 400 }, { mode: 'distance' }, 'lb')).toBe('10:00 · 1,312.3 ft')
+  })
+
+  it('falls back to stored metres when the caller has no unit', () => {
+    // a caller without unit access must not guess the profile — metres is the stored truth
+    expect(setLabel(LIFT, { sec: 600, m: 400 }, { mode: 'distance' }, undefined)).toBe('10:00 · 400 m')
+  })
+
+  it('is defensive about junk distance input', () => {
+    expect(setLabel(LIFT, { sec: 600 }, { mode: 'distance' })).toBe('10:00 · 0 m')
+    expect(setLabel(LIFT, {}, { mode: 'distance' })).toBe('0:00 · 0 m')
   })
 
   it('reads a legacy set with no config exactly as before', () => {
@@ -258,6 +275,7 @@ describe('defaultConfig', () => {
     expect(defaultConfig(LIFT)).toEqual({ sets: 3, reps: 10, weight: 0, mode: 'reps' })
     expect(defaultConfig(CARDIO)).toEqual({ sets: 1, min: 20, speed: 8 })
     expect(defaultConfig(LIFT, 'time')).toEqual({ sets: 3, sec: 45, weight: 0, mode: 'time' })
+    expect(defaultConfig(LIFT, 'distance')).toEqual({ sets: 3, sec: 600, m: 400, mode: 'distance' })
   })
   it('seeds the bodyweight flag from the catalogue, and only when it is true', () => {
     expect(defaultConfig(BW)).toEqual({ sets: 3, reps: 10, weight: 0, mode: 'reps', bodyweight: true })
@@ -332,6 +350,8 @@ describe('exLine', () => {
     expect(exLine({ id: LIFT, sets: 3, sec: 45, mode: 'time' }, 'kg')).toBe('3 × 0:45')
     expect(exLine({ id: LIFT, sets: 2, sec: 90, weight: 20, mode: 'time' }, 'kg')).toBe('2 × 1:30 · 20 kg')
     expect(exLine({ id: CARDIO, sets: 1, min: 20, speed: 8 }, 'kg')).toBe('1 × 20 min @ 8 km/h')
+    expect(exLine({ id: LIFT, sets: 2, sec: 600, m: 400, mode: 'distance' }, 'kg')).toBe('2 × 10:00 · 400 m')
+    expect(exLine({ id: LIFT, sets: 1, sec: 600, m: 400, mode: 'distance' }, 'lb')).toBe('1 × 10:00 · 1,312.3 ft')
   })
 })
 
@@ -461,6 +481,28 @@ describe('buildSets', () => {
   it('builds cardio sets unchanged', () => {
     expect(buildSets(emptyS, { id: CARDIO, sets: 1, min: 25, speed: 9 }))
       .toEqual([{ min: 25, speed: 9, done: false }])
+  })
+
+  it('builds distance sets, carrying the planned cap and metres', () => {
+    expect(buildSets(emptyS, { id: LIFT, mode: 'distance', sets: 2, sec: 600, m: 400 }))
+      .toEqual([{ sec: 600, m: 400, done: false }, { sec: 600, m: 400, done: false }])
+  })
+
+  it('falls back to the field-carry defaults when a distance plan has no numbers', () => {
+    expect(buildSets(emptyS, { id: LIFT, mode: 'distance', sets: 1 }))
+      .toEqual([{ sec: 600, m: 400, done: false }])
+  })
+
+  it('carries last distance set forward within the mode', () => {
+    const S = { exWeights: {}, workouts: [{ d: '2026-01-01', entries: [{ id: LIFT, target: { mode: 'distance' }, sets: [{ sec: 480, m: 320, done: true }] }] }] }
+    expect(buildSets(S, { id: LIFT, mode: 'distance', sets: 1, sec: 600, m: 400 }))
+      .toEqual([{ sec: 480, m: 320, done: false }])
+  })
+
+  it('does not seed metres from a rep count or a hold when an exercise switches to distance', () => {
+    const S = { exWeights: {}, workouts: [{ d: '2026-01-01', entries: [{ id: LIFT, sets: [{ w: 60, r: 10, done: true }, { sec: 70, w: 10, done: true }] }] }] }
+    expect(buildSets(S, { id: LIFT, mode: 'distance', sets: 1, sec: 600, m: 400 }))
+      .toEqual([{ sec: 600, m: 400, done: false }])
   })
 
   it('carries last time\'s numbers forward within the same mode', () => {

@@ -671,6 +671,13 @@ export const PT_BR_OVERRIDES = {
   'Download & Install': 'Baixar e instalar',
   'Starting download…': 'Iniciando download…',
   'Downloading update…': 'Baixando atualização…',
+
+  // distance logging mode
+  'Distance': 'Distância',
+  'Time cap': 'Limite de tempo',
+  'Distance (m)': 'Distância (m)',
+  'Farthest distance per workout': 'Maior distância por treino',
+  'Step (m)': 'Passo (m)',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
