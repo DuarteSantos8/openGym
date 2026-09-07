@@ -13,7 +13,38 @@ export const webauthnOK = () => typeof window.PublicKeyCredential !== 'undefined
 // same-origin cookies, so remoteBase/remoteToken stay empty and api() behaves exactly as before.
 let remoteBase = ''
 let remoteToken = null
-export function setRemoteAuth(base, token) { remoteBase = base || ''; remoteToken = token || null }
+const assetUrls = new Map()
+function clearAssetUrls() {
+  for (const url of assetUrls.values()) { try { URL.revokeObjectURL(url) } catch {} }
+  assetUrls.clear()
+}
+export function setRemoteAuth(base, token) {
+  const nextBase = String(base || '').replace(/\/+$/, '')
+  const nextToken = token || null
+  if (nextBase !== remoteBase || nextToken !== remoteToken) clearAssetUrls()
+  remoteBase = nextBase
+  remoteToken = nextToken
+  // Exercise renderers are deliberately kept Node-safe and cannot import this module (it reads
+  // browser globals). A tiny global bridge lets a paired mobile WebView resolve private image
+  // paths against the same remote API while the desktop app continues to use same-origin URLs.
+  globalThis.__opengymRemoteBase = remoteBase
+  globalThis.__opengymRemoteAssetVersion = (globalThis.__opengymRemoteAssetVersion || 0) + 1
+}
+
+// Custom images are private API resources. Desktop same-origin renders can use the relative path
+// directly; a paired mobile WebView has to fetch the bytes with its scoped bearer and render a
+// short-lived object URL instead. Tokens never appear in a URL or an <img> attribute.
+export async function assetObjectUrl(id) {
+  const path = '/api/assets/' + encodeURIComponent(String(id || ''))
+  if (!remoteToken) return path
+  const cacheKey = remoteBase + '|' + id
+  if (assetUrls.has(cacheKey)) return assetUrls.get(cacheKey)
+  const response = await fetch(remoteBase + path, { headers: { Authorization: 'Bearer ' + remoteToken, Accept: 'image/*' } })
+  if (!response.ok) throw new Error('private image unavailable')
+  const url = URL.createObjectURL(await response.blob())
+  assetUrls.set(cacheKey, url)
+  return url
+}
 
 export async function api(path, opts) {
   const headers = Object.assign({ 'Content-Type': 'application/json' }, opts && opts.headers)
@@ -33,6 +64,20 @@ export async function pairRedeem(serverBase, code) {
   const data = await r.json().catch(() => ({}))
   if (!r.ok) { const e = new Error(data.error || ('HTTP ' + r.status)); e.status = r.status; throw e }
   return data
+}
+
+// Custom-exercise images are sent as bounded base64 JSON so the same authenticated API works in
+// the browser and the Capacitor WebView. The API validates the MIME signature and size before it
+// writes an immutable asset; the exercise reference is attached only after this call succeeds.
+export async function uploadAsset(file) {
+  if (!file) throw new Error('image required')
+  const bytes = new Uint8Array(await file.arrayBuffer())
+  let binary = ''
+  for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000))
+  return api('/api/assets', {
+    method: 'POST',
+    body: JSON.stringify({ mime: file.type, data: btoa(binary) })
+  })
 }
 
 const bufToB64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')

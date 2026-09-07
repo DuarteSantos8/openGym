@@ -2,20 +2,17 @@
 
 A [Model Context Protocol](https://modelcontextprotocol.io) bridge that lets an external LLM
 application (Claude Desktop, Cursor, Cline, Continue, etc.) read your openGym profile —
-routines, workouts, body-weight log, estimated 1RMs, and muscle balance — directly from your
-self-hosted `./data` directory.
-
-It is read-only, runs locally as a stdio process spawned by the LLM client, adds no new
-container, and requires no extra authentication. The LLM never sees passkeys, VAPID keys, or
-session secrets — it can only read the same `state-<uid>.json` files the openGym api already
-writes.
+routines, workouts, body-weight log, estimated 1RMs, and muscle balance — using either the
+legacy local stdio process or the opt-in Streamable HTTP gateway. The HTTP gateway has no
+profile-data mount: every request carries a scoped, expiring bearer grant minted in Settings.
+The LLM never sees passkeys, VAPID keys, or session secrets.
 
 The numbers it answers with are computed by the **same pure functions the React UI uses**
 (`frontend/src/lib/*.js`) — `estimate1RM`, `loadOfWorkouts`, `effectiveRoutine`, etc. — so a
 "what's my bench 1RM?" answer matches the Stats screen exactly.
 
-> Phase 1 of a multi-phase plan. Read-only today; long-lived token auth + write tools are
-> planned but not shipped yet. See **Roadmap** below.
+The local stdio process remains read-only. The HTTP gateway can submit a validated routine
+proposal for an explicit in-app approval; it never writes a routine directly.
 
 ## Quick start
 
@@ -67,7 +64,7 @@ the server's stderr.
 
 ## Tools
 
-Eight read-only tools in v1:
+Eleven read-only tools plus two proposal/readback tools are available:
 
 | Tool | What it answers |
 |---|---|
@@ -79,6 +76,9 @@ Eight read-only tools in v1:
 | `get_bodyweight` | Weigh-ins with the latest weight, the goal line, and deltas vs goal. |
 | `estimate_1rm` | All-time best 1RM for an exercise + the trend, or a PR table across all exercises. |
 | `muscle_balance` | Which muscles I've trained this week/month/all-time, ranked + which I've neglected. |
+| `list_exercises`, `search_exercises`, `get_exercise` | Traverse the built-in and profile custom exercise catalogue. |
+| `propose_routine` | Submit a validated draft for in-app approval (HTTP gateway only). |
+| `get_routine_proposal` | Inspect a pending or approved proposal (HTTP gateway only). |
 
 Each tool returns JSON the LLM can format as it likes; structured fields (sets, dates, levels)
 are pre-formatted into human-readable labels in `src/labels.js` so the LLM doesn't need to
@@ -99,12 +99,11 @@ dependencies landed in `frontend/`, no public exports changed.
 ## Design constraints honoured
 
 - **One runtime dependency beyond the MCP SDK:** none. No database driver, no HTTP framework.
-- **No new container.** stdio transport is spawned by the LLM client; nothing to add to
-  `docker-compose.yml`.
-- **No new auth.** The filesystem is the boundary — same as `docker compose` running on the
-  user's box. No passkey material, VAPID keys, or session secrets ever cross it.
-- **No telemetry, no network.** Reads `./data/*.json` and exits when the LLM client
-  disconnects.
+- **Scoped remote auth.** The HTTP gateway stores no profile files and accepts only grants
+  minted by the signed-in app; grants can be revoked without restarting it.
+- **No second profile writer.** Proposal approval and ordinary sync both use the API's
+  conditional state writer; the gateway itself never mounts `/data`.
+- The local stdio process still reads `./data/*.json` and exits when its client disconnects.
 
 ## Tests
 
@@ -112,7 +111,7 @@ dependencies landed in `frontend/`, no public exports changed.
 cd mcp && npm test
 ```
 
-32 cases seeding state from `frontend/src/lib/demoSeed.js` (the same deterministic fixture
+36 cases seeding state from `frontend/src/lib/demoSeed.js` (the same deterministic fixture
 the public demo runs on). Pins JSON shape and the user-facing edge cases: rest-day override,
 missing routine, zero-workout history, no synced state, superset links, three 1RM formulas.
 "Today" is pinned via `vi.useFakeTimers({ now: ..., toFake: ['Date'] })` so date-dependent
@@ -121,15 +120,11 @@ their own 92 tests in `frontend/src/lib/*.test.js`.
 
 ## Roadmap
 
-- **Done (Phase 1):** read-only stdio, 8 tools, direct `./data` access.
+- **Done (Phase 1):** read-only stdio, catalogue + progress tools, direct `./data` access.
 - **Phase 1.5:** a `progression_next` tool (what does the policy prescribe next?). No new
   deps; small surface area.
-- **Phase 2:** read+write over stdio. Requires a long-lived token auth path minted from the
-  admin dashboard (new `./data/tokens.json`) and a write-lock against the web UI's read-modify-
-  write of `state-<uid>.json`. Tools: `log_workout`, `add_bodyweight`, `edit_routine`,
-  `assign_weekday`, `override_day`.
-- **Phase 3:** Streamable HTTP transport, opt-in 4th container in `docker-compose.yml`. Same
-  tool implementations, second transport — the MCP SDK supports both behind one tool registration.
+- **Done (Phase 2/3):** scoped Streamable HTTP transport in the optional `mcp` Compose service;
+  proposals are validated, idempotent, and require an app-side approval with `If-Match`.
 
 ## License
 

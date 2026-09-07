@@ -13,6 +13,11 @@ import {
 import webpush from 'web-push';
 import { dayReminderPush, restTimerPush, testPush } from './push-messages.js';
 import { verifyError } from './verify-error.js';
+import {
+  StorageCorruptError, durableAtomicWrite, etagFor, normalizeIfMatch, readJson,
+  isSafeId
+} from './storage.js';
+import { EXDB } from '../frontend/src/lib/exercises-data.js';
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
@@ -33,7 +38,13 @@ const ALLOW_GUEST = !/^(0|false|no|off)$/i.test(process.env.ALLOW_GUEST || '');
 // internet don't want the same number. Only affects cookies minted from now on — the expiry is
 // baked into each cookie when it's issued, so lowering this never cuts an existing session short.
 const SESSION_DAYS = Math.max(1, +(process.env.SESSION_DAYS || 90) || 90);
-const MAX_BODY = 5 * 1024 * 1024;
+const MAX_BODY = 16 * 1024 * 1024;
+// Personalization services are opt-in. A missing env var must preserve the existing deployment
+// surface; Compose enables them only when an operator explicitly sets the flags to 1/true.
+const enabled = name => /^(1|true|yes|on)$/i.test(process.env[name] || '');
+const MCP_ENABLED = enabled('MCP_ENABLED');
+const PROPOSALS_ENABLED = enabled('MCP_PROPOSALS_ENABLED');
+const ASSETS_ENABLED = enabled('CUSTOM_IMAGES_ENABLED');
 // Secure cookies require HTTPS; over plain http://localhost the flag would drop the cookie
 const SECURE = /^https:/i.test(ORIGIN) ? ' Secure;' : '';
 
@@ -41,24 +52,213 @@ fs.mkdirSync(DATA, { recursive: true });
 
 /* ---------- secret + db ---------- */
 const secretFile = path.join(DATA, 'secret');
-if (!fs.existsSync(secretFile)) fs.writeFileSync(secretFile, crypto.randomBytes(32).toString('hex'), { mode: 0o600 });
-const SECRET = fs.readFileSync(secretFile, 'utf8').trim();
-
 const dbFile = path.join(DATA, 'db.json');
 let db = { users: [], creds: [], subs: [], invites: [] };
-try { db = JSON.parse(fs.readFileSync(dbFile, 'utf8')); } catch {}
+let dbError = null;
+try {
+  const parsed = readJson(dbFile, { missing: undefined });
+  if (parsed !== undefined && (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) || !Array.isArray(parsed.users) || !Array.isArray(parsed.creds))) {
+    throw new Error('db.json has an invalid shape');
+  }
+  if (parsed !== undefined) db = parsed;
+} catch (error) { dbError = error; }
+let SECRET;
+try { SECRET = fs.readFileSync(secretFile, 'utf8').trim(); }
+catch (error) {
+  if (dbError) SECRET = crypto.randomBytes(32).toString('hex');
+  else {
+    SECRET = crypto.randomBytes(32).toString('hex');
+    durableAtomicWrite(secretFile, SECRET, 0o600);
+  }
+}
 db.subs = db.subs || [];
 db.invites = db.invites || [];
 const isAdmin = user => !!user && (user.admin === true || ADMIN_UIDS.includes(user.id));
-function saveDb() { atomicWrite(dbFile, JSON.stringify(db, null, 2)); }
+function storageFailure(res, error = dbError) {
+  const code = error?.code === 'STORAGE_CORRUPT' ? 'storage_corrupt' : 'storage_unavailable';
+  return json(res, 503, { error: code, message: 'persistent storage is unavailable; no write was accepted' });
+}
+function requireWritable(res) {
+  if (!dbError) return true;
+  storageFailure(res, dbError);
+  return false;
+}
+function saveDb() {
+  if (dbError) throw dbError;
+  durableAtomicWrite(dbFile, JSON.stringify(db, null, 2), 0o600);
+}
 function atomicWrite(file, content) {
-  const tmp = file + '.tmp';
-  fs.writeFileSync(tmp, content);
-  fs.renameSync(tmp, file);
+  durableAtomicWrite(file, content, 0o600);
 }
 const stateFile = uid => path.join(DATA, 'state-' + uid.replace(/[^a-zA-Z0-9_-]/g, '') + '.json');
+const stateTxnFile = uid => path.join(DATA, '.state-txn-' + uid.replace(/[^a-zA-Z0-9_-]/g, '') + '.json');
 function readState(uid) {
-  try { return JSON.parse(fs.readFileSync(stateFile(uid), 'utf8')); } catch { return null; }
+  recoverStateTxn(uid);
+  return readJson(stateFile(uid), { missing: null });
+}
+function readStateRecord(uid) {
+  recoverStateTxn(uid);
+  const file = stateFile(uid);
+  const raw = fs.existsSync(file) ? fs.readFileSync(file) : null;
+  if (raw === null) return { state: null, etag: '"0"' };
+  let state;
+  try { state = JSON.parse(raw.toString('utf8')); }
+  catch (error) { throw new StorageCorruptError(file, error); }
+  if (!state || typeof state !== 'object' || Array.isArray(state)) throw new StorageCorruptError(file, new Error('state is not an object'));
+  return { state, etag: etagFor(raw) };
+}
+function writeState(uid, state) {
+  const text = JSON.stringify(state);
+  durableAtomicWrite(stateFile(uid), text, 0o600);
+  return etagFor(text);
+}
+// A single API process is the intended deployment. This queue still makes the read/compare/write
+// section atomic when two HTTP requests arrive in the same event-loop turn; a second writer must
+// not be pointed at the bind mount without replacing this with an inter-process lock.
+const stateLocks = new Map();
+async function withStateLock(uid, fn) {
+  const previous = stateLocks.get(uid) || Promise.resolve();
+  let release;
+  const current = new Promise(resolve => { release = resolve; });
+  stateLocks.set(uid, current);
+  await previous;
+  try { return await fn(); }
+  finally { release(); if (stateLocks.get(uid) === current) stateLocks.delete(uid); }
+}
+
+const receiptFile = path.join(DATA, 'idempotency.json');
+let receipts = { entries: [] };
+let receiptsError = null;
+try {
+  const parsed = readJson(receiptFile, { missing: undefined });
+  if (parsed !== undefined) {
+    if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.entries)) throw new Error('idempotency.json has an invalid shape');
+    receipts = parsed;
+  }
+} catch (error) { receiptsError = error; }
+function saveReceipts() {
+  if (receiptsError) throw receiptsError;
+  // Failure injection is used only by the disposable acceptance harness to prove that a journal
+  // survives a receipt-write failure. It is inert unless an operator explicitly sets this
+  // test-only variable and never changes authorization or normal deployment behavior.
+  if (saveReceipts.failures > 0) { saveReceipts.failures--; throw new Error('test-injected receipt write failure'); }
+  // Keep the receipt file bounded; old keys cannot be safely replayed forever.
+  const cutoff = Date.now() - 30 * 86400000;
+  receipts.entries = receipts.entries.filter(e => e.ts > cutoff).slice(-20000);
+  durableAtomicWrite(receiptFile, JSON.stringify(receipts, null, 2), 0o600);
+}
+saveReceipts.failures = Math.max(0, Math.floor(Number(process.env.OPENGYM_TEST_FAIL_RECEIPT_WRITES) || 0));
+const requestHash = body => crypto.createHash('sha256').update(JSON.stringify(body)).digest('hex');
+
+// PUT /api/data updates two durable files (the profile and the idempotency receipt). A process
+// crash between those renames must not turn a retried request into a false 412 or a duplicate
+// write. The small per-user journal is written first and replayed before any subsequent read;
+// replay is idempotent and leaves the journal in place until both files are durable.
+function durableUnlink(file) {
+  try { fs.unlinkSync(file); }
+  catch (error) { if (error?.code === 'ENOENT') return; throw error; }
+  const dirFd = fs.openSync(path.dirname(file), 'r');
+  try { fs.fsyncSync(dirFd); } finally { fs.closeSync(dirFd); }
+}
+function recoverStateTxn(uid) {
+  const file = stateTxnFile(uid);
+  if (!fs.existsSync(file)) return;
+  let txn;
+  try { txn = readJson(file); }
+  catch (error) { throw error; }
+  if (!txn || typeof txn !== 'object' || Array.isArray(txn) || !txn.state || typeof txn.state !== 'object' || Array.isArray(txn.state)) {
+    throw new StorageCorruptError(file, new Error('state transaction has an invalid shape'));
+  }
+  const text = JSON.stringify(txn.state);
+  const revision = etagFor(text);
+  const receipt = txn.receipt;
+  const stateHash = receipt?.stateHash || receipt?.hash;
+  if (!receipt || receipt.uid !== uid || !receipt.key || stateHash !== requestHash(txn.state) || receipt.revision !== revision) {
+    throw new StorageCorruptError(file, new Error('state transaction receipt is invalid'));
+  }
+  if (receiptsError) throw receiptsError;
+  const prior = receipts.entries.find(e => e.uid === uid && e.key === receipt.key);
+  if (prior && (prior.hash !== receipt.hash || prior.revision !== receipt.revision ||
+    (prior.stateHash && receipt.stateHash && prior.stateHash !== receipt.stateHash))) {
+    throw new StorageCorruptError(file, new Error('state transaction conflicts with its receipt'));
+  }
+  // The journal is the source of truth for this operation. Replaying the same bytes after a
+  // crash is safe because both writes are complete-file replacements and the receipt is keyed.
+  // Validate an existing receipt first so a corrupt/conflicting journal can never overwrite a
+  // good profile copy that was already acknowledged.
+  durableAtomicWrite(stateFile(uid), text, 0o600);
+  if (!prior) receipts.entries.push(receipt);
+  // Always persist, even when an in-memory receipt already exists from an earlier failed save.
+  // Only the on-disk receipt makes a retry idempotent after a process restart.
+  saveReceipts();
+  durableUnlink(file);
+}
+
+/* ---------- scoped MCP grants + private assets ---------- */
+const grantFile = path.join(DATA, 'mcp-grants.json');
+const GRANT_SCOPES = new Set(['exercise:read', 'routine:read', 'workout:read', 'bodyweight:read', 'progress:read', 'routine:propose']);
+const MAX_PROPOSALS = 500;
+let grants = { grants: [] };
+let grantsError = null;
+try {
+  const parsed = readJson(grantFile, { missing: undefined });
+  if (parsed !== undefined) {
+    if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.grants)) throw new Error('mcp-grants.json has an invalid shape');
+    grants = parsed;
+  }
+} catch (error) { grantsError = error; }
+function persistentError() {
+  return dbError || receiptsError || (MCP_ENABLED && grantsError) || null;
+}
+const grantHash = token => crypto.createHash('sha256').update(String(token)).digest('hex');
+function saveGrants() {
+  if (grantsError) throw grantsError;
+  durableAtomicWrite(grantFile, JSON.stringify(grants, null, 2), 0o600);
+}
+function grantToken() { return crypto.randomBytes(32).toString('base64url'); }
+function grantView(g) {
+  return { id: g.id, name: g.name, uid: g.uid, scopes: g.scopes, created: g.created, expires: g.expires, revoked: !!g.revoked, lastUsed: g.lastUsed || null };
+}
+function grantFor(req, scope) {
+  if (grantsError || dbError) return null;
+  const auth = String(req.headers.authorization || '');
+  if (!auth.startsWith('Bearer ')) return null;
+  const hash = grantHash(auth.slice(7).trim());
+  const g = grants.grants.find(x => x.tokenHash === hash && !x.revoked && (!x.expires || x.expires > Date.now()));
+  if (!g || !db.users.some(u => u.id === g.uid && !u.disabled)) return null;
+  if (scope && !g.scopes.includes(scope)) return null;
+  g.lastUsed = Date.now();
+  // Last-use telemetry is intentionally best effort and is not needed for authorization.
+  try { saveGrants(); } catch {}
+  return g;
+}
+function requireGrant(req, res, scope) {
+  const grant = grantFor(req, scope);
+  if (!grant) {
+    res.setHeader('WWW-Authenticate', 'Bearer');
+    json(res, 403, { error: scope ? 'insufficient_scope' : 'invalid_token', scope: scope || null });
+    return null;
+  }
+  return grant;
+}
+const uploadDir = uid => path.join(DATA, 'uploads', uid);
+const assetFile = (uid, id) => path.join(uploadDir(uid), id);
+const assetRef = (S, id) => (S?.customEx || []).find(e => e.media?.id === id)?.media || null;
+const allowedImage = new Map([
+  ['image/jpeg', b => b.length > 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff],
+  ['image/png', b => b.length > 8 && b.subarray(0, 8).equals(Buffer.from('89504e470d0a1a0a', 'hex'))],
+  ['image/webp', b => b.length > 12 && b.toString('ascii', 0, 4) === 'RIFF' && b.toString('ascii', 8, 12) === 'WEBP']
+]);
+function imageBytes(body) {
+  const mime = String(body?.mime || '').toLowerCase();
+  const check = allowedImage.get(mime);
+  if (!check) throw Object.assign(new Error('unsupported image type'), { code: 'IMAGE_TYPE' });
+  const encoded = String(body?.data || '');
+  if (!encoded || encoded.length > 14 * 1024 * 1024) throw Object.assign(new Error('image exceeds 10 MiB'), { code: 'IMAGE_SIZE' });
+  let bytes;
+  try { bytes = Buffer.from(encoded, 'base64'); } catch { throw Object.assign(new Error('invalid image data'), { code: 'IMAGE_DATA' }); }
+  if (!bytes.length || bytes.length > 10 * 1024 * 1024 || !check(bytes)) throw Object.assign(new Error('invalid image data'), { code: 'IMAGE_DATA' });
+  return { mime, bytes };
 }
 
 /* ---------- push notifications (Web Push / VAPID) ---------- */
@@ -206,7 +406,8 @@ function userNow(tz) {
 setInterval(() => {
   for (const user of db.users) {
     if (!db.subs.some(s => s.userId === user.id)) continue;
-    const S = readState(user.id);
+    let S;
+    try { S = readState(user.id); } catch (e) { console.error('reminder state unreadable', user.id, e.message); continue; }
     if (!S?.reminder?.on) continue;
     const now = userNow(S.reminder.tz || 'UTC');
     if (!now || S.reminder.time !== now.hhmm) continue;
@@ -397,12 +598,12 @@ function json(res, code, obj, extraHeaders) {
   res.writeHead(code, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', ...(extraHeaders || {}) });
   res.end(body);
 }
-function readBody(req) {
+function readBody(req, maxBytes = MAX_BODY) {
   return new Promise((resolve, reject) => {
     let size = 0; const chunks = [];
     req.on('data', d => {
       size += d.length;
-      if (size > MAX_BODY) { reject(new Error('body too large')); req.destroy(); return; }
+      if (size > maxBytes) { reject(new Error('body too large')); req.destroy(); return; }
       chunks.push(d);
     });
     req.on('end', () => {
@@ -523,7 +724,9 @@ if (AUDIT_ON) {
 
 /* ---------- routes ---------- */
 const routes = {
-  'GET /api/health': async (req, res) => json(res, 200, { ok: true, users: db.users.length }),
+  'GET /api/health': async (req, res) => persistentError()
+    ? storageFailure(res, persistentError())
+    : json(res, 200, { ok: true, users: db.users.length }),
 
   // Public config the login screen needs before anyone is signed in.
   'GET /api/config': async (req, res) => json(res, 200, { invite_only: INVITE_ONLY, allow_guest: ALLOW_GUEST }),
@@ -532,6 +735,106 @@ const routes = {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
     json(res, 200, { user: { id: user.id, name: user.name, admin: isAdmin(user) } });
+  },
+
+  // Named, narrow grants are minted from an already authenticated browser session. The bearer
+  // token is returned once; only its hash and revocation metadata are retained on disk.
+  'GET /api/mcp/grants': async (req, res) => {
+    if (!MCP_ENABLED) return json(res, 404, { error: 'feature disabled' });
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    if (grantsError) return storageFailure(res, grantsError);
+    json(res, 200, { grants: grants.grants.filter(g => g.uid === user.id).map(grantView) });
+  },
+
+  'POST /api/mcp/grants': async (req, res) => {
+    if (!MCP_ENABLED) return json(res, 404, { error: 'feature disabled' });
+    if (!requireWritable(res) || grantsError) return grantsError ? storageFailure(res, grantsError) : undefined;
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const body = await readBody(req);
+    const scopes = [...new Set(Array.isArray(body.scopes) ? body.scopes.map(String) : [])];
+    if (!scopes.length || scopes.some(s => !GRANT_SCOPES.has(s))) return json(res, 400, { error: 'invalid scopes', allowed: [...GRANT_SCOPES] });
+    const days = Math.max(1, Math.min(365, Number(body.days) || 30));
+    const token = grantToken();
+    const grant = {
+      id: crypto.randomBytes(12).toString('base64url'), uid: user.id,
+      name: String(body.name || 'MCP client').trim().slice(0, 80) || 'MCP client',
+      scopes, tokenHash: grantHash(token), created: new Date().toISOString(), expires: Date.now() + days * 86400000
+    };
+    grants.grants.push(grant);
+    try { saveGrants(); } catch (e) { grants.grants.pop(); return storageFailure(res, e); }
+    json(res, 201, { grant: grantView(grant), token });
+  },
+
+  'POST /api/mcp/grants/revoke': async (req, res) => {
+    if (!MCP_ENABLED) return json(res, 404, { error: 'feature disabled' });
+    if (!requireWritable(res) || grantsError) return grantsError ? storageFailure(res, grantsError) : undefined;
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const body = await readBody(req);
+    const grant = grants.grants.find(g => g.id === body.id && g.uid === user.id);
+    if (!grant) return json(res, 404, { error: 'no such grant' });
+    grant.revoked = Date.now();
+    try { saveGrants(); } catch (e) { return storageFailure(res, e); }
+    json(res, 200, { ok: true, id: grant.id, revoked: true });
+  },
+
+  // Used by the remote MCP transport to validate a token on every request. This makes revocation
+  // effective without restarting the MCP container and never accepts a caller-supplied user id.
+  'GET /api/mcp/introspect': async (req, res) => {
+    if (!MCP_ENABLED) return json(res, 404, { error: 'feature disabled' });
+    const grant = requireGrant(req, res);
+    if (!grant) return;
+    const user = db.users.find(u => u.id === grant.uid);
+    json(res, 200, { user: { id: user.id, name: user.name }, grant: grantView(grant) });
+  },
+
+  'GET /api/mcp/catalog': async (req, res) => {
+    if (!MCP_ENABLED) return json(res, 404, { error: 'feature disabled' });
+    const grant = requireGrant(req, res, 'exercise:read');
+    if (!grant) return;
+    let S;
+    try { S = readState(grant.uid) || {}; } catch (e) { return storageFailure(res, e); }
+    const q = new URL(req.url, 'http://x').searchParams;
+    const offset = Math.max(0, Number(q.get('offset')) || 0);
+    const limit = Math.max(1, Math.min(200, Number(q.get('limit')) || 100));
+    const custom = (S.customEx || []).map(e => ({ ...e, custom: true, media: undefined }));
+    const all = [...custom, ...EXDB];
+    const page = all.slice(offset, offset + limit);
+    json(res, 200, { offset, limit, total: all.length, next_offset: offset + page.length < all.length ? offset + page.length : null, exercises: page });
+  },
+
+  // Scope-filtered state snapshots keep the MCP service stateless and unmounted from /data.
+  'GET /api/mcp/state': async (req, res) => {
+    if (!MCP_ENABLED) return json(res, 404, { error: 'feature disabled' });
+    const query = new URL(req.url, 'http://x').searchParams;
+    const scope = query.get('scope');
+    const grant = requireGrant(req, res, scope);
+    if (!grant) return;
+    const requestedUid = query.get('uid');
+    if (requestedUid && requestedUid !== grant.uid) return json(res, 403, { error: 'cross-user access denied' });
+    let record;
+    try { record = readStateRecord(grant.uid); } catch (e) { return storageFailure(res, e); }
+    const S = record.state;
+    if (!S) return json(res, 200, { state: null, revision: record.etag });
+    const state = { unit: S.unit || 'kg' };
+    if (scope === 'exercise:read') state.customEx = S.customEx || [];
+    if (scope === 'routine:read') Object.assign(state, { routines: S.routines || [], week: S.week || {}, dayPlan: S.dayPlan || {}, customEx: S.customEx || [] });
+    if (scope === 'workout:read') state.workouts = S.workouts || [];
+    if (scope === 'bodyweight:read') Object.assign(state, { bodyweight: S.bodyweight || [], targetW: S.targetW || null });
+    if (scope === 'progress:read') Object.assign(state, { workouts: S.workouts || [], routines: S.routines || [], customEx: S.customEx || [] });
+    json(res, 200, { state, revision: record.etag });
+  },
+
+  // The signed-in app reviews proposals without needing to expose a bearer grant to the browser.
+  'GET /api/mcp/proposals': async (req, res) => {
+    if (!MCP_ENABLED || !PROPOSALS_ENABLED) return json(res, 404, { error: 'feature disabled' });
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    let record;
+    try { record = readStateRecord(user.id); } catch (e) { return storageFailure(res, e); }
+    json(res, 200, { proposals: record.state?.proposals || [], revision: record.etag }, { ETag: record.etag });
   },
 
   'POST /api/register/options': async (req, res) => {
@@ -723,22 +1026,122 @@ const routes = {
   },
 
   'GET /api/data': async (req, res) => {
+    if (dbError) return storageFailure(res, dbError);
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
     try {
-      const state = JSON.parse(fs.readFileSync(stateFile(user.id), 'utf8'));
-      json(res, 200, { state });
-    } catch { json(res, 200, { state: null }); }
+      const record = readStateRecord(user.id);
+      json(res, 200, { state: record.state, revision: record.etag }, { ETag: record.etag });
+    } catch (e) { storageFailure(res, e); }
   },
 
   'PUT /api/data': async (req, res) => {
+    if (!requireWritable(res) || receiptsError) return receiptsError ? storageFailure(res, receiptsError) : undefined;
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
-    const body = await readBody(req);
-    if (!body.state || typeof body.state !== 'object') return json(res, 400, { error: 'state required' });
-    delete body.state.active;              // in-progress workouts stay device-local
-    atomicWrite(stateFile(user.id), JSON.stringify(body.state));
-    json(res, 200, { ok: true, ts: body.state._ts || null });
+    const expected = normalizeIfMatch(req.headers['if-match']);
+    if (!expected) return json(res, 428, { error: 'If-Match precondition required' });
+    let body;
+    try { body = await readBody(req); } catch { return json(res, 400, { error: 'bad json' }); }
+    if (!body || typeof body !== 'object' || Array.isArray(body) || !body.state || typeof body.state !== 'object' || Array.isArray(body.state)) return json(res, 400, { error: 'state required' });
+    const key = String(req.headers['idempotency-key'] || '').trim();
+    if (key.length > 200) return json(res, 400, { error: 'Idempotency-Key is too long' });
+    const hash = requestHash(body.state);
+    return withStateLock(user.id, async () => {
+      let current;
+      try { current = readStateRecord(user.id); } catch (e) { return storageFailure(res, e); }
+      const prior = key && receipts.entries.find(e => e.uid === user.id && e.key === key);
+      if (prior) {
+        if (prior.hash !== hash) return json(res, 409, { error: 'idempotency key was already used for another request' });
+        return json(res, 200, { ok: true, ts: prior.tsValue || null, revision: prior.revision }, { ETag: prior.revision });
+      }
+      if (expected !== current.etag) return json(res, 412, { error: 'stale revision', revision: current.etag }, { ETag: current.etag });
+      const next = JSON.parse(JSON.stringify(body.state));
+      delete next.active;                       // in-progress workouts stay device-local
+      try {
+        const text = JSON.stringify(next);
+        const revision = etagFor(text);
+        // `hash` remains the caller's exact request hash for receipt compatibility. `active` is
+        // intentionally stripped from the durable profile, so the journal also records the hash
+        // of those persisted bytes for crash-recovery validation.
+        const receipt = key && { uid: user.id, key: key.slice(0, 200), hash, stateHash: requestHash(next), revision, tsValue: next._ts || null, ts: Date.now() };
+        if (receipt) durableAtomicWrite(stateTxnFile(user.id), JSON.stringify({ state: next, receipt }), 0o600);
+        durableAtomicWrite(stateFile(user.id), text, 0o600);
+        if (receipt) {
+          receipts.entries.push(receipt);
+          saveReceipts();
+          durableUnlink(stateTxnFile(user.id));
+        }
+        json(res, 200, { ok: true, ts: next._ts || null, revision }, { ETag: revision });
+      } catch (e) { storageFailure(res, e); }
+    });
+  },
+
+  'POST /api/assets': async (req, res) => {
+    if (!ASSETS_ENABLED) return json(res, 404, { error: 'feature disabled' });
+    if (!requireWritable(res)) return;
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    let body;
+    try { body = await readBody(req, 16 * 1024 * 1024); } catch (e) { return json(res, 400, { error: 'invalid image upload' }); }
+    let image;
+    try { image = imageBytes(body); } catch (e) { return json(res, 400, { error: e.message, code: e.code }); }
+    const id = crypto.randomBytes(18).toString('base64url');
+    const hash = crypto.createHash('sha256').update(image.bytes).digest('hex');
+    try {
+      durableAtomicWrite(assetFile(user.id, id), image.bytes, 0o600);
+      json(res, 201, { asset: { id, mime: image.mime, size: image.bytes.length, sha256: hash } });
+    } catch (e) { storageFailure(res, e); }
+  },
+
+  'POST /api/mcp/proposals': async (req, res) => {
+    if (!MCP_ENABLED || !PROPOSALS_ENABLED) return json(res, 404, { error: 'feature disabled' });
+    if (!requireWritable(res)) return;
+    const grant = requireGrant(req, res, 'routine:propose');
+    if (!grant) return;
+    let body;
+    try { body = await readBody(req, 256 * 1024); } catch { return json(res, 400, { error: 'bad json or proposal too large' }); }
+    if (!body || typeof body !== 'object' || Array.isArray(body)) return json(res, 400, { error: 'routine draft is invalid' });
+    const key = String(req.headers['idempotency-key'] || body.request_id || '').trim();
+    if (!key || key.length > 200) return json(res, 400, { error: 'Idempotency-Key required' });
+    return withStateLock(grant.uid, async () => {
+      let record;
+      try { record = readStateRecord(grant.uid); } catch (e) { return storageFailure(res, e); }
+      const S = record.state || { routines: [], week: {}, dayPlan: {}, customEx: [], workouts: [], bodyweight: [] };
+      const proposals = Array.isArray(S.proposals) ? S.proposals : [];
+      const prior = proposals.find(p => p.requestId === key);
+      if (prior) return json(res, 200, { proposal: prior, revision: record.etag }, { ETag: record.etag });
+      if (proposals.length >= MAX_PROPOSALS) return json(res, 409, { error: 'proposal history is full; review existing proposals first' });
+      const expected = normalizeIfMatch(req.headers['if-match']);
+      if (!expected) return json(res, 428, { error: 'If-Match precondition required' });
+      if (expected !== record.etag) return json(res, 412, { error: 'stale revision', revision: record.etag }, { ETag: record.etag });
+      const draft = body.routine || body;
+      if (!draft || typeof draft !== 'object' || !String(draft.name || '').trim() || !Array.isArray(draft.ex) || !draft.ex.length || draft.ex.length > 100) return json(res, 400, { error: 'routine draft is invalid' });
+      const customIds = new Set((S.customEx || []).map(e => e.id));
+      for (const ex of draft.ex) {
+        if (!ex || !isSafeId(ex.id) || (!EXDB.some(e => e.id === ex.id) && !customIds.has(ex.id))) return json(res, 400, { error: 'routine contains an unknown exercise' });
+        if (!Number.isFinite(Number(ex.sets)) || Number(ex.sets) < 1 || Number(ex.sets) > 100) return json(res, 400, { error: 'routine set count is invalid' });
+      }
+      const exerciseFields = ['reps', 'repsMin', 'sec', 'min', 'speed', 'weight', 'inc', 'bw', 'sg', 'policy', 'note'];
+      const cleanExercises = draft.ex.map(ex => {
+        const clean = { id: String(ex.id), sets: Number(ex.sets) };
+        for (const field of exerciseFields) {
+          if (ex[field] == null) continue;
+          if (['sg', 'policy', 'note'].includes(field)) clean[field] = String(ex[field]).slice(0, 120);
+          else if (Number.isFinite(Number(ex[field]))) clean[field] = Number(ex[field]);
+        }
+        return clean;
+      });
+      const proposal = {
+        id: crypto.randomBytes(12).toString('base64url'), requestId: key, status: 'pending',
+        created: new Date().toISOString(), routine: JSON.parse(JSON.stringify({ name: String(draft.name).trim().slice(0, 100), emoji: typeof draft.emoji === 'string' ? draft.emoji.slice(0, 16) : null, ex: cleanExercises }))
+      };
+      S.proposals = [...proposals, proposal];
+      try {
+        const revision = writeState(grant.uid, S);
+        json(res, 201, { proposal, revision }, { ETag: revision });
+      } catch (e) { storageFailure(res, e); }
+    });
   },
 
   'GET /api/push/public-key': async (req, res) => json(res, 200, { key: vapid.publicKey }),
@@ -943,6 +1346,70 @@ const routes = {
   }
 };
 
+async function serveAsset(req, res, id) {
+  if (!isSafeId(id)) return json(res, 404, { error: 'not found' });
+  const user = readSession(req);
+  if (!user) return json(res, 401, { error: 'not signed in' });
+  let record;
+  try { record = readStateRecord(user.id); } catch (e) { return storageFailure(res, e); }
+  const ref = assetRef(record.state, id);
+  if (!ref) return json(res, 404, { error: 'not found' });
+  const file = assetFile(user.id, id);
+  let bytes;
+  try { bytes = fs.readFileSync(file); } catch { return json(res, 404, { error: 'not found' }); }
+  const digest = crypto.createHash('sha256').update(bytes).digest('hex');
+  if (ref.sha256 && ref.sha256 !== digest) return storageFailure(res, new Error('asset checksum mismatch'));
+  res.writeHead(200, {
+    'Content-Type': ref.mime || 'application/octet-stream', 'Content-Length': bytes.length,
+    'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff'
+  });
+  res.end(bytes);
+}
+
+async function getProposal(req, res, id) {
+  if (!MCP_ENABLED) return json(res, 404, { error: 'feature disabled' });
+  const grant = requireGrant(req, res);
+  if (!grant) return;
+  if (!grant.scopes.includes('routine:read') && !grant.scopes.includes('routine:propose')) {
+    res.setHeader('WWW-Authenticate', 'Bearer error="insufficient_scope", scope="routine:read"');
+    return json(res, 403, { error: 'insufficient_scope', scope: 'routine:read' });
+  }
+  let record;
+  try { record = readStateRecord(grant.uid); } catch (e) { return storageFailure(res, e); }
+  const proposal = (record.state?.proposals || []).find(p => p.id === id);
+  if (!proposal) return json(res, 404, { error: 'no such proposal' });
+  json(res, 200, { proposal, revision: record.etag }, { ETag: record.etag });
+}
+
+async function approveProposal(req, res, id) {
+  if (!MCP_ENABLED || !PROPOSALS_ENABLED) return json(res, 404, { error: 'feature disabled' });
+  if (!requireWritable(res)) return;
+  const user = readSession(req);
+  if (!user) return json(res, 401, { error: 'not signed in' });
+  return withStateLock(user.id, async () => {
+    let record;
+    try { record = readStateRecord(user.id); } catch (e) { return storageFailure(res, e); }
+    const S = record.state;
+    const proposal = (S?.proposals || []).find(p => p.id === id);
+    if (!proposal) return json(res, 404, { error: 'no such proposal' });
+    if (proposal.status === 'approved' && proposal.routineId) {
+      const routine = (S.routines || []).find(r => r.id === proposal.routineId) || null;
+      return json(res, 200, { proposal, routine, revision: record.etag }, { ETag: record.etag });
+    }
+    if (proposal.status !== 'pending') return json(res, 409, { error: 'proposal is not pending' });
+    const expected = normalizeIfMatch(req.headers['if-match']);
+    if (!expected) return json(res, 428, { error: 'If-Match precondition required' });
+    if (expected !== record.etag) return json(res, 412, { error: 'stale revision', revision: record.etag }, { ETag: record.etag });
+    const routine = { ...JSON.parse(JSON.stringify(proposal.routine)), id: crypto.randomBytes(12).toString('base64url') };
+    S.routines = [...(S.routines || []), routine];
+    proposal.status = 'approved'; proposal.routineId = routine.id; proposal.approved = new Date().toISOString();
+    try {
+      const revision = writeState(user.id, S);
+      json(res, 200, { proposal, routine, revision }, { ETag: revision });
+    } catch (e) { storageFailure(res, e); }
+  });
+}
+
 http.createServer(async (req, res) => {
   // Same-origin (the deployed nginx-proxied web app) never triggers CORS, so this only matters
   // for the paired mobile app calling in from its own WebView origin. It carries no cookie
@@ -953,13 +1420,21 @@ http.createServer(async (req, res) => {
   if (req.method === 'OPTIONS') {
     res.writeHead(204, {
       'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, If-Match, Idempotency-Key',
       'Access-Control-Max-Age': '86400'
     });
     return res.end();
   }
   const url = new URL(req.url, 'http://x');
   const key = req.method + ' ' + url.pathname;
+  if (dbError && key !== 'GET /api/health') return storageFailure(res, dbError);
+  if (url.pathname.startsWith('/api/assets/') && req.method === 'GET') return serveAsset(req, res, url.pathname.slice('/api/assets/'.length));
+  const proposalMatch = /^\/api\/mcp\/proposals\/([A-Za-z0-9_-]+)$/.exec(url.pathname);
+  if (proposalMatch && req.method === 'GET') return getProposal(req, res, proposalMatch[1]);
+  if (proposalMatch && req.method === 'POST') {
+    if (!csrfOk(req, key)) return json(res, 403, { error: 'cross-origin request refused' });
+    return approveProposal(req, res, proposalMatch[1]);
+  }
   const handler = routes[key];
   if (!handler) return json(res, 404, { error: 'not found' });
   if (!csrfOk(req, key)) {

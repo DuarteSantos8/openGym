@@ -22,6 +22,8 @@ server {
     location ^~ /api/ {
         proxy_pass http://${BACKEND}:${PORT};
         proxy_http_version 1.1;
+        # The API accepts private custom images up to 10 MiB plus JSON/base64 overhead.
+        client_max_body_size 16m;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         # $remote_addr, NOT $proxy_add_x_forwarded_for: the latter APPENDS to whatever the client
@@ -35,6 +37,38 @@ server {
         # CF_CONNECTING_IP=$http_cf_connecting_ip to let the real one through — correct only when
         # Cloudflare is genuinely in front, because that is what overwrites a client-supplied one.
         proxy_set_header CF-Connecting-IP "${CF_CONNECTING_IP}";
+    }
+
+    # MCP discovery is served by the gateway as well. Keep these exact routes ahead of the SPA
+    # fallback so clients do not receive index.html for a well-known metadata request.
+    location = /.well-known/oauth-protected-resource {
+        proxy_pass http://mcp:8787;
+        proxy_http_version 1.1;
+        proxy_buffering off;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    location = /.well-known/oauth-authorization-server {
+        proxy_pass http://mcp:8787;
+        proxy_http_version 1.1;
+        proxy_buffering off;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Remote MCP gateway. The gateway has no profile-data mount; it calls the API with a scoped
+    # grant. Keeping it on this origin preserves the existing Coolify/Traefik routing and passkey
+    # host while avoiding a second public hostname.
+    location ^~ /mcp {
+        proxy_pass http://mcp:8787;
+        proxy_http_version 1.1;
+        proxy_buffering off;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
     }
 
     # SPA fallback

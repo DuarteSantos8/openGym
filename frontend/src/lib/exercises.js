@@ -132,7 +132,9 @@ export function matchesExerciseSearch(exercise, query) {
 const ENV = import.meta.env || {}
 const IMG_BASE = ENV.VITE_IMG_BASE || 'img/'
 const GIF_BASE = ENV.VITE_GIF_BASE || 'gif/'
-export const imgSrc = ex => IMG_BASE + ex.img
+export const imgSrc = ex => ex?.media?.id
+  ? (globalThis.__opengymRemoteBase || '') + '/api/assets/' + encodeURIComponent(ex.media.id)
+  : IMG_BASE + ex.img
 export const gifSrc = ex => GIF_BASE + ex.gif
 
 // Cardio exercises log time + speed instead of weight × reps.

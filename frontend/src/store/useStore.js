@@ -6,6 +6,7 @@ import { DEMO, DEMO_SEEDED } from '../lib/demo.js'
 import { guestAllowed } from '../lib/guest.js'
 import { MOBILE, nativeLoad, nativeSave, syncReminder, writeAutoBackup } from '../lib/mobile.js'
 import { loadRemote, chooseLocal, forgetRemote, connect } from '../lib/remote.js'
+import { loadSyncMeta, saveSyncMeta, loadSyncBase, saveSyncBase, mergePendingState, generationChanged } from '../lib/sync.js'
 
 const KEY = 'gym_state_v1'
 export const DEF = {
@@ -41,6 +42,10 @@ const hasData = st => !!((st.workouts || []).length || (st.routines || []).lengt
 export const useStore = create((set, get) => {
   let pushTm = null
   let saveTm = null
+  let pushRun = null
+  let stateGeneration = 0
+  let syncMeta = loadSyncMeta()
+  let syncBase = loadSyncBase()
 
   // Mobile build: mirror the state into a file in the app's data directory (survives WebView
   // storage eviction) and keep the native reminder schedule in step with the weekly plan.
@@ -50,6 +55,7 @@ export const useStore = create((set, get) => {
   }
 
   const persist = (S, push = true) => {
+    stateGeneration++
     S._ts = Date.now()
     registerCustom(S.customEx)
     localStorage.setItem(KEY, JSON.stringify(S))
@@ -84,6 +90,8 @@ export const useStore = create((set, get) => {
     get().setUser(null)
     localStorage.removeItem('gym_guest')
     localStorage.removeItem('gym_dirty')
+    syncMeta = { revision: '"0"' }; syncBase = null
+    saveSyncMeta(syncMeta); saveSyncBase(null)
     localStorage.removeItem(KEY)
     persist(clone(DEF), false)
   }
@@ -130,27 +138,121 @@ export const useStore = create((set, get) => {
     },
 
     async pushState() {
-      if (!get().user) return
+      if (!get().user) return false
       clearTimeout(pushTm)
-      try { await api('/api/data', { method: 'PUT', body: JSON.stringify({ state: get().S }) }); localStorage.removeItem('gym_dirty') }
-      catch (e) { localStorage.setItem('gym_dirty', '1') }
+      if (pushRun) return pushRun
+      const run = (async () => {
+        const payload = clone(get().S)
+        const generation = stateGeneration
+        // Persist the mutation id before sending. If the response is lost, the next attempt
+        // replays the exact request and the API's durable receipt turns it into a no-op.
+        const mutation = syncMeta.mutation || globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`
+        syncMeta = { ...syncMeta, mutation }
+        saveSyncMeta(syncMeta)
+        try {
+          const result = await api('/api/data', {
+            method: 'PUT',
+            headers: { 'If-Match': syncMeta.revision || '"0"', 'Idempotency-Key': mutation },
+            body: JSON.stringify({ state: payload })
+          })
+          const newerLocalEdit = generationChanged(generation, stateGeneration)
+          syncMeta = { ...syncMeta, revision: result.revision || syncMeta.revision, mutation: undefined }
+          syncBase = clone(payload); delete syncBase.active
+          saveSyncMeta(syncMeta); saveSyncBase(syncBase)
+          if (newerLocalEdit) {
+            // A keystroke/workout landed while the request was in flight. Keep the newer local
+            // state dirty and schedule a second generation with a fresh idempotency receipt.
+            localStorage.setItem('gym_dirty', '1')
+            clearTimeout(pushTm); pushTm = setTimeout(() => get().pushState(), 0)
+            return false
+          }
+          localStorage.removeItem('gym_dirty')
+          return true
+        } catch (e) {
+          if (e.status === 412) {
+            // Pull the current revision, merge against the last acknowledged snapshot, then
+            // retry once. The local state remains untouched until the merge is complete, so an
+            // offline/conflicted device never loses its pending workout or routine edit.
+            try {
+              const current = await api('/api/data')
+              if (current.state) {
+                // The request snapshot may be stale by the time the 412 response arrives. Read
+                // the latest store copy so edits made while the conflict fetch was in flight are
+                // merged as pending work instead of being replaced by the old payload.
+                const latestLocal = clone(get().S)
+                const merged = mergePendingState(syncBase, latestLocal, current.state)
+                syncMeta = { ...syncMeta, revision: current.revision || syncMeta.revision }
+                syncBase = clone(current.state)
+                saveSyncMeta(syncMeta); saveSyncBase(syncBase)
+                persist(merged, false)
+                pushRun = null
+                return await get().pushState()
+              }
+            } catch { /* keep the pending local copy and dirty marker below */ }
+          }
+          if (e.status === 409) {
+            // A lost response can leave the durable receipt tied to the previous payload. Read
+            // the acknowledged server copy, merge it with the latest local edits, rotate the
+            // mutation id, and retry instead of overwriting another device's work.
+            try {
+              const current = await api('/api/data')
+              if (current.state) {
+                const latestLocal = clone(get().S)
+                const merged = mergePendingState(syncBase, latestLocal, current.state)
+                syncMeta = { ...syncMeta, revision: current.revision || syncMeta.revision, mutation: undefined }
+                syncBase = clone(current.state); saveSyncMeta(syncMeta); saveSyncBase(syncBase)
+                persist(merged, false)
+                localStorage.setItem('gym_dirty', '1')
+                clearTimeout(pushTm); pushTm = setTimeout(() => get().pushState(), 0)
+                return false
+              }
+            } catch { /* leave the pending local copy and dirty marker below */ }
+          }
+          localStorage.setItem('gym_dirty', '1')
+          return false
+        }
+      })()
+      pushRun = run
+      try { return await run } finally { if (pushRun === run) pushRun = null }
     },
     async pullState() {
       try {
-        const { state } = await api('/api/data')
+        const result = await api('/api/data')
+        const { state } = result
         const S = get().S
         const dirty = localStorage.getItem('gym_dirty') === '1'
-        if (state && (!hasData(S) || ((state._ts || 0) >= (S._ts || 0) && !dirty))) {
+        if (state && !hasData(S)) {
           const active = S.active
           const next = Object.assign(clone(DEF), state)
           if (active) next.active = active
+          syncMeta = { ...syncMeta, revision: result.revision || syncMeta.revision }
+          syncBase = clone(state)
+          saveSyncMeta(syncMeta); saveSyncBase(syncBase)
           persist(next, false)
-        } else if (hasData(S)) { await get().pushState() }
+        } else if (state && hasData(S)) {
+          const merged = dirty || syncBase ? mergePendingState(syncBase, S, state) : state
+          const active = S.active
+          if (active) merged.active = active
+          syncMeta = { ...syncMeta, revision: result.revision || syncMeta.revision }
+          syncBase = clone(state)
+          saveSyncMeta(syncMeta); saveSyncBase(syncBase)
+          persist(merged, false)
+          await get().pushState()
+        } else if (hasData(S)) {
+          syncMeta = { ...syncMeta, revision: result.revision || '"0"' }
+          syncBase = null; saveSyncMeta(syncMeta); saveSyncBase(null)
+          await get().pushState()
+        } else {
+          syncMeta = { ...syncMeta, revision: result.revision || '"0"' }
+          syncBase = state ? clone(state) : null; saveSyncMeta(syncMeta); saveSyncBase(syncBase)
+        }
       } catch (e) { /* offline — keep local */ }
     },
 
     async signOut() {
-      try { await get().pushState(); await api('/api/logout', { method: 'POST', body: '{}' }) } catch (e) { /* */ }
+      const pushed = await get().pushState()
+      if (!pushed || localStorage.getItem('gym_dirty') === '1') throw new Error('pending local changes could not be synced')
+      await api('/api/logout', { method: 'POST', body: '{}' })
       clearLocalSession()
     },
 
@@ -185,7 +287,8 @@ export const useStore = create((set, get) => {
     // the sessions elsewhere are all still valid, and wiping this device's copy of the data
     // would sign the user out of the one place the bump didn't reach. Caller reports the error.
     async signOutAll() {
-      await get().pushState()   // never throws — stores gym_dirty and moves on when offline
+      const pushed = await get().pushState()
+      if (!pushed || localStorage.getItem('gym_dirty') === '1') throw new Error('pending local changes could not be synced')
       await api('/api/logout/all', { method: 'POST', body: '{}' })
       clearLocalSession()
     },

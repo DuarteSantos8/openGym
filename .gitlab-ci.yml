@@ -135,7 +135,7 @@ build:images:
   parallel:
     matrix:
       - IMAGE: api
-        CONTEXT: "./api"
+        CONTEXT: "."
         DOCKERFILE: "./api/Dockerfile"
       - IMAGE: web
         CONTEXT: "."

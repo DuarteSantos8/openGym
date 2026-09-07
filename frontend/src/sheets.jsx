@@ -23,6 +23,7 @@ import { nextPrescription, applyPrescription, policyFor, defaultIncrement, POLIC
 import { MOBILE, shareExport } from './lib/mobile.js'
 import { buildCompletedWorkout } from './lib/finish-workout.js'
 import { isWarmupRow } from './lib/workout-model.js'
+import { assetObjectUrl, uploadAsset } from './lib/api.js'
 
 const S = () => useStore.getState().S
 const update = (...a) => useStore.getState().update(...a)
@@ -360,6 +361,22 @@ function CustomExForm({ existing, prefill, onDone, close }) {
   const [n, setN] = useState(existing ? existing.n : (prefill || ''))
   const [bp, setBp] = useState(existing ? existing.bp : '')
   const [desc, setDesc] = useState(existing ? (existing.desc || '') : '')
+  const [image, setImage] = useState(null)
+  const [removeImage, setRemoveImage] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [preview, setPreview] = useState(null)
+  const [existingPreview, setExistingPreview] = useState(null)
+  useEffect(() => {
+    if (!image) { setPreview(null); return }
+    const url = URL.createObjectURL(image); setPreview(url)
+    return () => URL.revokeObjectURL(url)
+  }, [image])
+  useEffect(() => {
+    let alive = true
+    if (!existing?.media?.id || removeImage || image) { setExistingPreview(null); return () => { alive = false } }
+    assetObjectUrl(existing.media.id).then(url => { if (alive) setExistingPreview(url) }).catch(() => { if (alive) setExistingPreview(null) })
+    return () => { alive = false }
+  }, [existing?.media?.id, existing?.media?.sha256, removeImage, image])
   const [primaries, setPrimaries] = useState(() => {
     if (existing && Array.isArray(existing.primaries) && existing.primaries.length) return [...existing.primaries]
     const norm = hasExplicitMuscleMetadata(existing || {}) ? normalizeMuscleGroups(existing || {}) : []
@@ -372,7 +389,8 @@ function CustomExForm({ existing, prefill, onDone, close }) {
   })
   const togglePrimary = value => setPrimaries(current => current.includes(value) ? current.filter(m => m !== value) : [...current, value])
   const toggleSecondary = value => setSecondaries(current => current.includes(value) ? current.filter(m => m !== value) : [...current, value])
-  const save = () => {
+  const save = async () => {
+    if (saving) return
     const name = n.trim()
     if (!name) { toast(t('Give it a name')); return }
     if (!bp) { toast(t('Pick a body part')); return }
@@ -383,13 +401,20 @@ function CustomExForm({ existing, prefill, onDone, close }) {
     const sm = secondaries.filter(m => !prim.includes(m))
     const groups = [...prim, ...sm]
     let id = existing && existing.id
+    let media = existing?.media || null
+    if (removeImage) media = null
+    if (image) {
+      setSaving(true)
+      try { media = (await uploadAsset(image)).asset } catch (e) { toast(t('Image upload failed: {0}', e.message)); setSaving(false); return }
+    }
     if (existing) update(s => { const c = (s.customEx || []).find(x => x.id === id); if (c) {
-      c.n = name; c.bp = bp; c.desc = d; c.tg = prim[0] || ''; c.sm = sm; c.muscleGroups = groups; c.primaries = prim; c.secondaries = sm
+      c.n = name; c.bp = bp; c.desc = d; c.tg = prim[0] || ''; c.sm = sm; c.muscleGroups = groups; c.primaries = prim; c.secondaries = sm; c.media = media
     } })
     else {
       id = 'c' + uid()
-      update(s => { (s.customEx = s.customEx || []).push({ id, n: name, bp, desc: d, tg: prim[0] || '', sm, muscleGroups: groups, primaries: prim, secondaries: sm, eq: 'custom', custom: true }) })
+      update(s => { (s.customEx = s.customEx || []).push({ id, n: name, bp, desc: d, tg: prim[0] || '', sm, muscleGroups: groups, primaries: prim, secondaries: sm, eq: 'custom', custom: true, ...(media ? { media } : {}) }) })
     }
+    setSaving(false)
     close()
     toast(existing ? t('Saved') : t('“{0}” created', name))
     onDone && onDone(EXIDX[id])
@@ -414,8 +439,17 @@ function CustomExForm({ existing, prefill, onDone, close }) {
     {bp === 'cardio' && <div className="small dim row" style={{ marginBottom: 10, gap: 5 }}><Icon name="figureRun" style={{ fontSize: 13 }} />{t('Cardio exercises log time + speed instead of weight × reps.')}</div>}
     <textarea className="input" rows={4} maxLength={1000} placeholder={t('Description (optional) — setup, cues, anything you want to remember')}
       value={desc} onChange={e => setDesc(e.target.value)} />
+    <div className="small dim" style={{ marginTop: 12 }}>{t('Private exercise image (JPEG, PNG or WebP; max 10 MiB)')}</div>
+    {(preview || existingPreview) && <img src={preview || existingPreview} alt={t('Exercise preview')} style={{ display: 'block', width: 160, maxHeight: 120, objectFit: 'cover', borderRadius: 10, margin: '8px 0' }} />}
+    <div className="row" style={{ gap: 8, marginTop: 8 }}>
+      <label className="btn tinted" style={{ flex: 1, textAlign: 'center', cursor: 'pointer' }}>
+        {image ? t('Replace image') : t('Choose image')}
+        <input type="file" accept="image/jpeg,image/png,image/webp" style={{ display: 'none' }} onChange={e => { setImage(e.target.files?.[0] || null); setRemoveImage(false); e.target.value = '' }} />
+      </label>
+      {(existing?.media?.id || image) && <Button variant="ghost" onClick={() => { setImage(null); setRemoveImage(true) }}>{t('Remove image')}</Button>}
+    </div>
     <div style={{ height: 14 }} />
-    <Button variant="primary" onClick={save}>{existing ? t('Save') : t('Create exercise')}</Button>
+    <Button variant="primary" disabled={saving} onClick={save}>{saving ? t('Saving…') : existing ? t('Save') : t('Create exercise')}</Button>
     {existing && <><div style={{ height: 8 }} /><Button variant="danger" icon="trash" onClick={() => { close(); deleteCustomEx(existing) }}>{t('Delete exercise')}</Button></>}
   </>
 }

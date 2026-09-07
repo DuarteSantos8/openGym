@@ -16,15 +16,20 @@ LABEL maintainer="Duarte Santos https://gitlab.com/DuarteSantos8" \
     org.opencontainers.image.created=$BUILD_DATE
 
 WORKDIR /app
-COPY package.json package-lock.json* ./
+COPY api/package.json api/package-lock.json* ./api/
+WORKDIR /app/api
 RUN npm install --omit=dev && npm cache clean --force
-COPY server.js push-messages.js verify-error.js ./
+WORKDIR /app
+COPY api/server.js api/push-messages.js api/verify-error.js api/storage.js ./api/
+# The API validates routine exercise ids and serves the same catalogue as the frontend. Keep the
+# generated data file in the image but never mount profile data into any other service.
+COPY frontend/src/lib/exercises-data.js ./frontend/src/lib/exercises-data.js
 
 ENV NODE_ENV=production
 ENV PORT=3000
 
 EXPOSE 3000
-CMD ["node", "server.js"]
+CMD ["node", "api/server.js"]
 
 HEALTHCHECK --interval=5m \
             --timeout=5s \

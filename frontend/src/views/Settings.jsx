@@ -4,6 +4,7 @@ import { useStore, DEF, hasData } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { ACCENTS, todayISO, localTZ } from '../lib/format.js'
 import { effortOf } from '../lib/history.js'
+import { exOr } from '../lib/exercises.js'
 import { api, webauthnOK, passkeyLogin, passkeyRegister, IS_ANDROID } from '../lib/api.js'
 import { pushSupported, enablePush, disablePush, sendTestPush } from '../lib/push.js'
 import { wakeLockSupported } from '../lib/wakelock.js'
@@ -99,7 +100,10 @@ export default function Settings() {
         {user.admin && <Row icon="wrench" iconTint="var(--indigo)" title={t('Admin dashboard')} accessory="chevron" onClick={() => nav('/admin')} />}
         <Row icon="link" iconTint="var(--blue)" title={t('Pair the mobile app')} subtitle={t('Connect the openGym app on your phone to this account.')} accessory="chevron"
           onClick={() => useUI.getState().openSheet(close => <PairSheet close={close} />)} />
-        <Row icon="signOut" iconTint="var(--red)" title={t('Sign out')} danger onClick={() => confirmSheet({ title: t('Sign out?'), message: t('Your data is synced to your profile first, then cleared from this device.'), confirmText: t('Sign out'), danger: true, onConfirm: () => { signOut(); nav('/home') } })} />
+        <Row icon="signOut" iconTint="var(--red)" title={t('Sign out')} danger onClick={() => confirmSheet({ title: t('Sign out?'), message: t('Your data is synced to your profile first, then cleared from this device.'), confirmText: t('Sign out'), danger: true, onConfirm: async () => {
+          try { await signOut(); nav('/home') }
+          catch (e) { toast(t('Could not sign out — pending changes are still on this device.')) }
+        } })} />
         <Row icon="shield" iconTint="var(--red)" title={t('Sign out everywhere')} subtitle={t('Ends this profile’s sessions on all your devices.')} danger onClick={signOutEverywhere} />
       </> : webauthnOK() ? <>
         <Row icon="sparkles" iconTint="var(--acc)" title={t('Create passkey profile')} subtitle={t('Keeps your data safe and separate per person.')} accessory="chevron" onClick={registerHere} />
@@ -159,6 +163,7 @@ export default function Settings() {
     </Section>
 
     {(user || MOBILE) && <NotificationsCard S={S} update={update} toast={toast} />}
+    {user && !MOBILE && !DEMO && <McpCard toast={toast} />}
 
     {/* ---------- equipment ---------- */}
     <EquipmentCard S={S} update={update} />
@@ -269,6 +274,60 @@ function effortHelpSheet() {
     </div>
     <div style={{ height: 8 }} />
   </>)
+}
+
+function McpCard({ toast }) {
+  const [grants, setGrants] = useState([])
+  const [proposals, setProposals] = useState([])
+  const [proposalRevision, setProposalRevision] = useState('"0"')
+  const [name, setName] = useState('')
+  const [token, setToken] = useState(null)
+  const [scopes, setScopes] = useState(['exercise:read', 'routine:read', 'workout:read', 'bodyweight:read', 'progress:read', 'routine:propose'])
+  const available = [
+    ['exercise:read', t('Exercise catalogue')], ['routine:read', t('Routines and week plan')],
+    ['workout:read', t('Workout history')], ['bodyweight:read', t('Body-weight log')],
+    ['progress:read', t('Progress and muscle stats')], ['routine:propose', t('Routine proposals')]
+  ]
+  const load = () => Promise.all([api('/api/mcp/grants'), api('/api/mcp/proposals')]).then(([g, p]) => {
+    setGrants(g.grants || []); setProposals(p.proposals || []); setProposalRevision(p.revision || '"0"')
+  }).catch(() => {})
+  useEffect(load, [])
+  const create = async () => {
+    if (!scopes.length) { toast(t('Choose at least one permission')); return }
+    try {
+      const r = await api('/api/mcp/grants', { method: 'POST', body: JSON.stringify({ name: name.trim() || t('MCP client'), scopes }) })
+      setToken(r.token); setName(''); load(); toast(t('Grant created — copy the token now'))
+    } catch (e) { toast(e.message || t('Could not create grant')) }
+  }
+  const revoke = async id => {
+    try { await api('/api/mcp/grants/revoke', { method: 'POST', body: JSON.stringify({ id }) }); load(); toast(t('Grant revoked')) }
+    catch (e) { toast(e.message || t('Could not revoke grant')) }
+  }
+  const approve = async proposal => {
+    try {
+      const latest = await api('/api/mcp/proposals')
+      await api('/api/mcp/proposals/' + encodeURIComponent(proposal.id), { method: 'POST', headers: { 'If-Match': latest.revision || proposalRevision }, body: '{}' })
+      load(); toast(t('Routine proposal approved'))
+    } catch (e) { toast(e.status === 412 ? t('Proposal changed — review it again') : e.message || t('Could not approve proposal')) }
+  }
+  return <Section title={t('Remote MCP access')} footer={t('Each client gets its own expiring, revocable permissions. Tokens are shown once; a hosted model receives only the scopes you select.') }>
+    <TextField placeholder={t('Client name')} value={name} onChange={e => setName(e.target.value)} maxLength={80} />
+    <div className="chips" style={{ margin: '10px 0' }}>
+      {available.map(([value, label]) => <button key={value} className={'chip nocap' + (scopes.includes(value) ? ' on' : '')} onClick={() => setScopes(s => s.includes(value) ? s.filter(x => x !== value) : [...s, value])}>{label}</button>)}
+    </div>
+    <Button icon="key" variant="primary" onClick={create}>{t('Create grant')}</Button>
+    {token && <div className="card small" style={{ marginTop: 10, wordBreak: 'break-all' }}><b>{t('Copy this token now')}</b><br /><code>{token}</code></div>}
+    {grants.map(g => <Row key={g.id} icon="link" iconTint="var(--blue)" title={g.name} subtitle={g.scopes.join(', ')}>
+      <Button size="sm" variant="danger" onClick={() => revoke(g.id)}>{t('Revoke')}</Button>
+    </Row>)}
+    {proposals.map(p => {
+      const exercises = (p.routine?.ex || []).slice(0, 8).map(ex => `${exOr(ex.id).n} × ${ex.sets}`).join(', ')
+      const status = p.status === 'approved' ? t('Approved') : t('Pending review')
+      return <Row key={p.id} icon="clipboard" iconTint="var(--indigo)" title={p.routine?.name || t('Routine proposal')} subtitle={`${status}${exercises ? ' · ' + exercises : ''}`}>
+      {p.status === 'pending' && <Button size="sm" variant="primary" onClick={() => approve(p)}>{t('Approve')}</Button>}
+      </Row>
+    })}
+  </Section>
 }
 
 function NotificationsCard({ S, update, toast }) {
