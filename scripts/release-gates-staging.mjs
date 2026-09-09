@@ -449,6 +449,121 @@ try {
   assertStatus(await request(apiBase, '/api/assets', { ...bodyOptions({ mime: 'image/png', data: 'not-an-image' }), headers: { Cookie: `gymsid=${session}` } }), 400, 'failed replacement')
   const newRef = (await request(apiBase, '/api/data', { headers: { Cookie: `gymsid=${session}` } })).data.state.customEx.find(e => e.id === 'c-photo').media
   assert.deepEqual(newRef, oldRef)
+
+  // Feature toggles are exercised against a second disposable data directory so this receipt
+  // cannot alter the Gate 2-4 fixture above. Turning MCP/proposals/custom images off must make
+  // their write/API routes unavailable without deleting an existing profile or private asset;
+  // reads of an already-referenced private asset stay available by policy. Re-enabling the flags
+  // on a fresh process must expose the same routes and bytes again.
+  {
+    const flagsDir = fs.mkdtempSync(path.join(os.tmpdir(), 'opengym-feature-flags-'))
+    let flagsChild = null
+    let flagsBase = ''
+    try {
+      fs.writeFileSync(path.join(flagsDir, 'db.json'), JSON.stringify({ users: [{ id: uid, name: 'Flags user' }], creds: [], subs: [], invites: [] }, null, 2))
+      fs.writeFileSync(path.join(flagsDir, 'state-user-a.json'), JSON.stringify(stateFixture('Flags roundtrip'), null, 2))
+      fs.writeFileSync(path.join(flagsDir, 'mcp-grants.json'), JSON.stringify({ grants: [{
+        id: 'flags-grant', uid, name: 'flags fixture', scopes: ['exercise:read'], tokenHash: hash(grantToken),
+        created: new Date().toISOString(), expires: Date.now() + 3600000
+      }] }, null, 2))
+      fs.writeFileSync(path.join(flagsDir, 'secret'), secret, { mode: 0o600 })
+
+      const flagsOnPort = await freePort()
+      flagsChild = await start('node', ['api/server.js'], {
+        PORT: flagsOnPort, DATA_DIR: flagsDir, RP_ID: 'localhost', ORIGIN: 'http://localhost',
+        MCP_ENABLED: '1', MCP_PROPOSALS_ENABLED: '1', CUSTOM_IMAGES_ENABLED: '1', AUDIT_LOG: '0'
+      })
+      flagsBase = `http://127.0.0.1:${flagsOnPort}`
+      const flagsPng = await solidImage('png', 32, 24, { r: 7, g: 77, b: 177 })
+      const flagsAsset = assertStatus(await request(flagsBase, '/api/assets', {
+        ...bodyOptions({ mime: 'image/png', data: flagsPng.toString('base64') }), headers: { Cookie: `gymsid=${session}` }
+      }), 201, 'feature-flag asset seed').data.asset
+      const flagsRead = assertStatus(await request(flagsBase, '/api/data', { headers: { Cookie: `gymsid=${session}` } }), 200, 'feature-flag profile seed').data
+      const flagsWithAsset = {
+        ...flagsRead.state,
+        customEx: flagsRead.state.customEx.map(e => e.id === 'c-photo' ? { ...e, media: flagsAsset } : e)
+      }
+      assertStatus(await request(flagsBase, '/api/data', {
+        method: 'PUT', headers: { Cookie: `gymsid=${session}`, 'If-Match': flagsRead.revision, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ state: flagsWithAsset })
+      }), 200, 'feature-flag asset reference')
+      const flagsProfileFile = path.join(flagsDir, 'state-user-a.json')
+      const profileCounts = state => ({
+        routines: Array.isArray(state?.routines) ? state.routines.length : 0,
+        workouts: Array.isArray(state?.workouts) ? state.workouts.length : 0,
+        custom_exercises: Array.isArray(state?.customEx) ? state.customEx.length : 0,
+        nested_sets: (state?.workouts || []).reduce((total, workout) => total + (workout.entries || []).reduce((entryTotal, entry) => entryTotal + (entry.sets || []).length, 0), 0),
+        asset_refs: (state?.customEx || []).filter(exercise => exercise.media?.id).length
+      })
+      const profileSnapshot = () => {
+        const raw = fs.readFileSync(flagsProfileFile)
+        const state = JSON.parse(raw.toString('utf8'))
+        return { sha256: hash(raw), counts: profileCounts(state) }
+      }
+      const flagsOnBefore = profileSnapshot()
+      assert.equal((await rawRequest(flagsBase, `/api/assets/${flagsAsset.id}`, { headers: { Cookie: `gymsid=${session}` } })).response.status, 200)
+
+      await stop(flagsChild); flagsChild = null
+      const flagsOffPort = await freePort()
+      flagsChild = await start('node', ['api/server.js'], {
+        PORT: flagsOffPort, DATA_DIR: flagsDir, RP_ID: 'localhost', ORIGIN: 'http://localhost',
+        MCP_ENABLED: '0', MCP_PROPOSALS_ENABLED: '0', CUSTOM_IMAGES_ENABLED: '0', AUDIT_LOG: '0'
+      })
+      flagsBase = `http://127.0.0.1:${flagsOffPort}`
+      const flagsOffMcp = await request(flagsBase, '/api/mcp/catalog?offset=0&limit=1', { headers: bearer(grantToken) })
+      const flagsOffProposals = await request(flagsBase, '/api/mcp/proposals', { headers: { Cookie: `gymsid=${session}` } })
+      const flagsOffUpload = await request(flagsBase, '/api/assets', {
+        ...bodyOptions({ mime: 'image/png', data: flagsPng.toString('base64') }), headers: { Cookie: `gymsid=${session}` }
+      })
+      const flagsOffAsset = await rawRequest(flagsBase, `/api/assets/${flagsAsset.id}`, { headers: { Cookie: `gymsid=${session}` } })
+      assert.equal(flagsOffMcp.response.status, 404)
+      assert.equal(flagsOffProposals.response.status, 404)
+      assert.equal(flagsOffUpload.response.status, 404)
+      assert.equal(flagsOffAsset.response.status, 200)
+      assert.equal(hash(flagsOffAsset.bytes), flagsAsset.sha256)
+      assert.equal(fs.existsSync(path.join(flagsDir, 'uploads', uid, flagsAsset.id)), true)
+      const flagsOffProfile = assertStatus(await request(flagsBase, '/api/data', { headers: { Cookie: `gymsid=${session}` } }), 200, 'feature flags off profile').data
+      const flagsOffSnapshot = profileSnapshot()
+      assert.deepEqual(flagsOffSnapshot.counts, flagsOnBefore.counts)
+      assert.equal(flagsOffSnapshot.sha256, flagsOnBefore.sha256)
+      assert.deepEqual(flagsOffProfile.state, JSON.parse(fs.readFileSync(flagsProfileFile, 'utf8')))
+
+      await stop(flagsChild); flagsChild = null
+      const flagsOnAgainPort = await freePort()
+      flagsChild = await start('node', ['api/server.js'], {
+        PORT: flagsOnAgainPort, DATA_DIR: flagsDir, RP_ID: 'localhost', ORIGIN: 'http://localhost',
+        MCP_ENABLED: '1', MCP_PROPOSALS_ENABLED: '1', CUSTOM_IMAGES_ENABLED: '1', AUDIT_LOG: '0'
+      })
+      flagsBase = `http://127.0.0.1:${flagsOnAgainPort}`
+      const flagsOnMcp = await request(flagsBase, '/api/mcp/catalog?offset=0&limit=1', { headers: bearer(grantToken) })
+      const flagsOnProfile = assertStatus(await request(flagsBase, '/api/data', { headers: { Cookie: `gymsid=${session}` } }), 200, 'feature flags on profile').data
+      const flagsOnAsset = await rawRequest(flagsBase, `/api/assets/${flagsAsset.id}`, { headers: { Cookie: `gymsid=${session}` } })
+      const flagsOnAfter = profileSnapshot()
+      assert.equal(flagsOnMcp.response.status, 200)
+      assert.equal(flagsOnAsset.response.status, 200)
+      assert.equal(hash(flagsOnAsset.bytes), flagsAsset.sha256)
+      assert.deepEqual(flagsOnAfter.counts, flagsOnBefore.counts)
+      assert.equal(flagsOnAfter.sha256, flagsOnBefore.sha256)
+      assert.deepEqual(flagsOnProfile.state, JSON.parse(fs.readFileSync(flagsProfileFile, 'utf8')))
+      print('flags_on_counts', flagsOnAfter.counts)
+      print('flags_off_counts', flagsOffSnapshot.counts)
+      print('flags_roundtrip_profile_sha256', { on_before: flagsOnBefore.sha256, off: flagsOffSnapshot.sha256, on_after: flagsOnAfter.sha256 })
+      print('flags_toggle_no_data_loss', true)
+      print('flags_off_mcp_route_status', flagsOffMcp.response.status)
+      print('flags_off_proposals_route_status', flagsOffProposals.response.status)
+      print('flags_off_asset_upload_route_status', flagsOffUpload.response.status)
+      print('flags_off_asset_existing_retrieval_status', flagsOffAsset.response.status)
+      print('flags_off_asset_existing_retrieval_policy', '200 (existing private asset retained; new uploads disabled at 404)')
+      print('flags_off_asset_file_preserved', true)
+      print('flags_on_mcp_route_status', flagsOnMcp.response.status)
+      print('flags_on_asset_existing_retrieval_status', flagsOnAsset.response.status)
+      print('LOCAL_FEATURE_TOGGLE_STAGING', 'PASS')
+    } finally {
+      await stop(flagsChild)
+      fs.rmSync(flagsDir, { recursive: true, force: true })
+    }
+  }
+
   print('gate4_proxy_body_limit', '16m_template'); print('gate4_upload_sha256', upload.sha256); print('gate4_private_asset_reference_ready', true); print('gate4_headless_react_real_surfaces', 'PASS (Library/Picker/Routine/Workout/Detail; separate Vitest receipt)'); print('gate4_production_browser_or_container', 'not_claimed'); print('gate4_failed_replacement_preserved', true); print('gate4_unauthorized_status', 401); print('gate4_cross_user_status', 404); print('gate4_clean_restore_checksum_match', true); print('gate4_image_hardening', 'PASS (sharp decode/rotate/resize/WebP/metadata/quota/semaphore)')
 
   // Leave a valid write-ahead journal behind as if the process crashed after its first durable
