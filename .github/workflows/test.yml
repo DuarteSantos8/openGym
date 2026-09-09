@@ -120,7 +120,9 @@ jobs:
       - name: the image published as :latest has no AI runtime either
         run: |
           docker run --rm opengym-api:published node -e \
-            'import("@anthropic-ai/claude-agent-sdk").then(()=>{console.error("AI runtime present in the published image -- the last Dockerfile stage is no longer the runtime-free one");process.exit(1)},()=>process.exit(0))'
+            'import("@anthropic-ai/claude-agent-sdk").then(()=>{console.error("AI runtime present in the published image -- the last Dockerfile stage is no longer AI-runtime-free");process.exit(1)},()=>process.exit(0))'
+          docker run --rm opengym-api:published node --input-type=module -e \
+            'await import("sharp"); console.log("sharp runtime available in published image")'
           ! docker run --rm opengym-api:published codex --version
           ! docker run --rm opengym-api:published bwrap --version
 
@@ -132,10 +134,12 @@ jobs:
             sleep 1
           done
           curl -fsS http://localhost:3000/api/config | tee /dev/stderr | grep -q '"invite_only"'
-          # Absent by construction, not by accident: --omit=optional is the only thing keeping
-          # the AI dependency out of the image an owner gets when they never asked for it.
+          # Absent by construction, not by accident: the default stage strips only the Agent SDK
+          # after production optional packages have been installed for sharp's Alpine binary.
           docker run --rm opengym-api:default node -e \
             'import("@anthropic-ai/claude-agent-sdk").then(()=>{console.error("AI runtime present in the default image");process.exit(1)},()=>process.exit(0))'
+          docker run --rm opengym-api:default node --input-type=module -e \
+            'await import("sharp"); console.log("sharp runtime available in default image")'
           docker rm -f api-default
 
       - name: the coach image carries a runnable Agent SDK

@@ -395,7 +395,9 @@ build:api-check:
     - |
       set -eu
       docker run --rm opengym-api:published node -e \
-        'import("@anthropic-ai/claude-agent-sdk").then(()=>{console.error("AI runtime present in the published image -- the last Dockerfile stage is no longer the runtime-free one");process.exit(1)},()=>process.exit(0))'
+        'import("@anthropic-ai/claude-agent-sdk").then(()=>{console.error("AI runtime present in the published image -- the last Dockerfile stage is no longer AI-runtime-free");process.exit(1)},()=>process.exit(0))'
+      docker run --rm opengym-api:published node --input-type=module -e \
+        'await import("sharp"); console.log("sharp runtime available in published image")'
       ! docker run --rm opengym-api:published codex --version 2>/dev/null
       ! docker run --rm opengym-api:published bwrap --version 2>/dev/null
       # npm is stripped from the published image (see api/Dockerfile) — its bundled tree was
@@ -424,6 +426,8 @@ build:api-check:
       docker run --rm --network api-net curlimages/curl:8.12.1 -fsS http://api-default:3000/api/config | tee /dev/stderr | grep -q '"invite_only"'
       docker run --rm opengym-api:default node -e \
         'import("@anthropic-ai/claude-agent-sdk").then(()=>{console.error("AI runtime present in the default image");process.exit(1)},()=>process.exit(0))'
+      docker run --rm opengym-api:default node --input-type=module -e \
+        'await import("sharp"); console.log("sharp runtime available in default image")'
       docker rm -f api-default
       docker network rm api-net
     # --- the coach image carries a runnable Agent SDK, Codex and its sandbox

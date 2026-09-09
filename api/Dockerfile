@@ -1,11 +1,12 @@
 # Two targets from one file.
 #
-#   default (built when no --target is given) — what every instance has always got. No AI
-#           runtime, no AI dependency: `npm ci --omit=optional` skips the Agent SDK and its
-#           platform runtime entirely, so an owner who never wanted the Coach carries none of it.
+#   default (built when no --target is given) — what every instance has always got. Production
+#           optional packages are installed because sharp's Alpine/musl binary is optional in npm
+#           metadata but required by server.js; this stage then removes only the Agent SDK and its
+#           platform runtimes, so an owner who never wanted the Coach carries no AI runtime.
 #   coach                                     — the same image plus the Claude Agent SDK.
 #
-# Build the opt-in one with:  docker build --target coach ./api
+# Build the opt-in one with:  docker build --target coach -f api/Dockerfile .
 # or through compose with:    API_TARGET=coach docker compose up --build
 #
 # The stage order matters: Docker builds the *last* stage when none is named, so `default` is
@@ -49,10 +50,10 @@ RUN adduser -D -H -s /sbin/nologin coach
 
 # The package manifests were copied from api/ above because this image is built from the
 # repository root (the API also imports the generated frontend exercise catalogue).
-# `npm ci` rather than `npm install`: the lockfile is the point of committing one, and the SDK's
-# per-platform runtime is resolved from it (musl on this base) rather than from whatever the
-# build host happened to be.
-RUN npm ci --omit=dev --omit=optional && npm cache clean --force
+# `npm ci` rather than `npm install`: the lockfile is the point of committing one, and production
+# optional packages are intentionally included. sharp's Linux/musl binary is marked optional by
+# npm but required when server.js imports sharp. The default layer below strips only the Agent SDK.
+RUN npm ci --omit=dev && npm cache clean --force
 
 WORKDIR /app
 COPY api/server.js api/push-messages.js api/verify-error.js api/storage.js ./api/
@@ -72,9 +73,8 @@ HEALTHCHECK --interval=5m \
             CMD wget --spider -q "http://127.0.0.1:${PORT}/api/health" || exit 1
 
 # ---------------------------------------------------------------------------------------------
-# The opt-in target. Dropping --omit=optional is the whole difference: it pulls in
-# @anthropic-ai/claude-agent-sdk together with the one platform runtime this base needs
-# (linux-*-musl), both pinned by the lockfile.
+# The opt-in target. Base already includes production optional packages for sharp; this repeat keeps
+# the SDK and its platform runtime (linux-*-musl) explicitly resolved from the lockfile.
 FROM base AS coach
 WORKDIR /app/api
 RUN npm ci --omit=dev && npm cache clean --force
@@ -94,11 +94,18 @@ RUN mkdir -p /coach-auth && chown coach:coach /coach-auth && chmod 700 /coach-au
 VOLUME ["/coach-auth"]
 
 # ---------------------------------------------------------------------------------------------
-# Last, so that a plain `docker build ./api` keeps producing the runtime-free image.
+# Last, so that a plain `docker build -f api/Dockerfile .` keeps producing the AI-runtime-free image.
 FROM base AS default
 WORKDIR /app/api
+# Keep sharp's platform binary, but remove only the opt-in Agent SDK and all of its platform
+# runtimes. The coach target starts from base before this layer and retains them.
 # npm itself is only a build-time tool here: the server is started with `node server.js` and
 # nothing in it spawns npm. Its bundled dependency tree (tar, brace-expansion, ...) is where
 # every vulnerability the image scan ever reported lived — none of them was in a package the
 # app uses. Gone from the published image; the coach target keeps npm for the Codex CLI.
-RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
+RUN rm -rf \
+      node_modules/@anthropic-ai/claude-agent-sdk \
+      node_modules/@anthropic-ai/claude-agent-sdk-* \
+      /usr/local/lib/node_modules/npm \
+      /usr/local/bin/npm \
+      /usr/local/bin/npx
