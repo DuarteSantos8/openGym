@@ -406,6 +406,28 @@ h4.sec{
 .chip:active{background:var(--surface-2)}
 .chip.on{background:var(--acc);color:var(--on-acc);font-weight:500}
 
+/* ---------------------------------------------------------- stretching --- */
+.stretch-hdr{align-items:center;margin-bottom:16px}
+.stretch-hdr .iconbtn{margin-right:2px}
+.stretch-filters{margin:0 0 14px}
+.stretch-intro{padding:14px 16px}
+.stretch-intro h2{font-size:17px;font-weight:600}
+.stretch-grid{display:grid;gap:12px}
+.stretch-card{padding:0;overflow:hidden;margin:0}
+.stretch-image-wrap{width:100%;aspect-ratio:16 / 9;background:var(--surface-2)}
+.stretch-image{display:block;width:100%;height:100%;object-fit:contain;background:var(--surface-2)}
+.stretch-image-fallback{height:100%;display:flex;align-items:center;justify-content:center;padding:16px;color:var(--label-2);font-size:14px}
+.stretch-card-body{padding:14px 16px 16px}
+.stretch-card-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:9px}
+.stretch-card-heading h2{font-size:19px;line-height:1.2;font-weight:600;letter-spacing:-.016em}
+.stretch-card-heading .tag{flex:none;white-space:nowrap}
+.stretch-steps{padding-left:21px;color:var(--label-2);font-size:15px;line-height:1.4}
+.stretch-steps li{padding-left:3px;margin:4px 0}
+
+@media (min-width:700px){
+  .stretch-grid{grid-template-columns:1fr 1fr}
+}
+
 /* =========================== CONTROLS ==================================== */
 
 /* --- text field --- */
