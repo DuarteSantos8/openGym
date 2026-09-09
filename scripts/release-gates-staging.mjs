@@ -366,10 +366,12 @@ try {
   const rendered = await rawRequest(apiBase, `/api/assets/${upload.id}`, { headers: { Cookie: `gymsid=${session}` } }); assert.equal(rendered.response.status, 200); assert.equal(hash(rendered.bytes), upload.sha256)
   assertStatus(await request(apiBase, `/api/assets/${upload.id}`), 401, 'unauthorized asset retrieval')
   const otherSession = tokenFor(otherUid); assertStatus(await request(apiBase, `/api/assets/${upload.id}`, { headers: { Cookie: `gymsid=${otherSession}` } }), 404, 'other user asset retrieval')
-  // Simulate a container replacement and clean restore using the data-directory backup. Coordinate
+  // Simulate an API process replacement and clean restore using the data-directory backup. Coordinate
   // the snapshot with the sole writer: stop API first, then walk/copy files and persist a versioned
   // checksum sidecar outside both source and backup roots (avoids self-referential checksums).
   await stop(apiChild); apiChild = null
+  assert.equal(apiChild, null)
+  print('gate4_backup_writer_stopped_before_manifest', true)
   const backupManifest = { version: 1, files: fileManifest(tmp) }
   const backupManifestJson = JSON.stringify(backupManifest, null, 2)
   const backupManifestDigest = hash(backupManifestJson)
@@ -377,6 +379,8 @@ try {
   fs.cpSync(tmp, backupDir, { recursive: true })
   backupManifestFile = `${backupDir}.manifest.json`
   fs.writeFileSync(backupManifestFile, backupManifestJson, { mode: 0o600 })
+  assert.equal(fs.existsSync(backupManifestFile), true)
+  print('gate4_backup_manifest_persisted', true)
   const sidecar = JSON.parse(fs.readFileSync(backupManifestFile, 'utf8'))
   assert.equal(hash(fs.readFileSync(backupManifestFile)), hash(backupManifestJson))
   assert.deepEqual(fileManifest(backupDir), sidecar.files)
@@ -398,7 +402,7 @@ try {
   const restored = await rawRequest(apiBase, `/api/assets/${upload.id}`, { headers: { Cookie: `gymsid=${session}` } })
   assert.equal(restored.response.status, 200); assert.equal(hash(restored.bytes), upload.sha256)
   const duplicateAfterRestart = await request(apiBase, '/api/data', { method: 'PUT', headers: { Cookie: `gymsid=${session}`, 'If-Match': rev0, 'Idempotency-Key': 'phone-write-1', 'Content-Type': 'application/json' }, body: JSON.stringify({ state: changed }) })
-  assertStatus(duplicateAfterRestart, 200, 'duplicate after container replacement'); assert.equal(duplicateAfterRestart.data.revision, rev1)
+  assertStatus(duplicateAfterRestart, 200, 'duplicate after data-directory restore'); assert.equal(duplicateAfterRestart.data.revision, rev1)
   print('gate2_idempotency_survives_restart', true)
   fs.rmSync(backupDir, { recursive: true, force: true }); backupDir = null
   fs.rmSync(backupManifestFile, { force: true }); backupManifestFile = null
@@ -406,7 +410,7 @@ try {
   assertStatus(await request(apiBase, '/api/assets', { ...bodyOptions({ mime: 'image/png', data: 'not-an-image' }), headers: { Cookie: `gymsid=${session}` } }), 400, 'failed replacement')
   const newRef = (await request(apiBase, '/api/data', { headers: { Cookie: `gymsid=${session}` } })).data.state.customEx.find(e => e.id === 'c-photo').media
   assert.deepEqual(newRef, oldRef)
-  print('gate4_proxy_body_limit', '16m_template'); print('gate4_upload_sha256', upload.sha256); print('gate4_private_asset_reference_ready', true); print('gate4_all_views_private_asset', 'not_claimed_staging_api_only'); print('gate4_failed_replacement_preserved', true); print('gate4_unauthorized_status', 401); print('gate4_cross_user_status', 404); print('gate4_clean_restore_checksum_match', true); print('gate4_image_hardening', 'PASS (sharp decode/rotate/resize/WebP/metadata/quota)')
+  print('gate4_proxy_body_limit', '16m_template'); print('gate4_upload_sha256', upload.sha256); print('gate4_private_asset_reference_ready', true); print('gate4_headless_react_real_surfaces', 'PASS (Library/Picker/Routine/Workout/Detail; separate Vitest receipt)'); print('gate4_production_browser_or_container', 'not_claimed'); print('gate4_failed_replacement_preserved', true); print('gate4_unauthorized_status', 401); print('gate4_cross_user_status', 404); print('gate4_clean_restore_checksum_match', true); print('gate4_image_hardening', 'PASS (sharp decode/rotate/resize/WebP/metadata/quota)')
 
   // Leave a valid write-ahead journal behind as if the process crashed after its first durable
   // rename. The next API read must replay both state and receipt before serving the profile.
@@ -484,7 +488,7 @@ try {
   print('gate2_corrupt_db_writes', 'stopped status=503 storage_corrupt'); print('gate2_corrupt_db_put_status', 503); print('gate2_corrupt_db_put_error', 'storage_corrupt')
   print('GATE_2', 'PASS')
   print('GATE_3_STAGING', 'PASS (protocol clients; hosted-fixture is local and not a production cloud receipt)')
-  print('GATE_4_STAGING', 'PASS (API asset decode/checksum/auth/rollback; browser all-views and production container evidence not claimed)')
+  print('GATE_4_STAGING', 'PASS (API asset decode/checksum/auth/rollback + headless React real surfaces; production browser/container evidence not claimed)')
 } finally {
   await stop(mcpChild); await stop(apiChild)
   if (backupDir) fs.rmSync(backupDir, { recursive: true, force: true })
