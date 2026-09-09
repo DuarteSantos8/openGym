@@ -9,6 +9,7 @@ import assert from 'node:assert/strict'
 import crypto from 'node:crypto'
 import { createRequire } from 'node:module'
 import fs from 'node:fs'
+import http from 'node:http'
 import net from 'node:net'
 import os from 'node:os'
 import path from 'node:path'
@@ -98,6 +99,41 @@ async function stop(child) {
   for (let i = 0; i < 50 && child.exitCode === null; i++) await wait(20)
   if (child.exitCode === null) child.kill('SIGKILL')
 }
+// The manual-bearer regression routes the MCP gateway through a disposable API proxy that
+// deliberately rejects every OAuth API path. If the gateway tried to discover/register/exchange
+// a token before serving a direct Bearer client, the fixture would fail instead of silently
+// falling back to a broader credential.
+async function startManualBearerApiProxy(targetBase) {
+  const target = new URL(targetBase)
+  const oauthAttempts = []
+  const server = http.createServer((req, res) => {
+    const parsed = new URL(req.url, targetBase)
+    if (parsed.pathname.startsWith('/api/oauth/') || parsed.pathname.startsWith('/oauth/') || parsed.pathname.startsWith('/.well-known/')) {
+      oauthAttempts.push(parsed.pathname)
+      res.writeHead(503, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' })
+      return res.end(JSON.stringify({ error: 'oauth disabled in manual-bearer fixture' }))
+    }
+    const upstream = http.request({
+      hostname: target.hostname, port: target.port, method: req.method,
+      path: parsed.pathname + parsed.search,
+      headers: { ...req.headers, host: `${target.hostname}:${target.port}` }
+    }, response => {
+      res.writeHead(response.statusCode || 502, response.headers)
+      response.pipe(res)
+    })
+    upstream.on('error', error => {
+      if (!res.headersSent) res.writeHead(502, { 'Content-Type': 'application/json' })
+      res.end(JSON.stringify({ error: error.message }))
+    })
+    req.pipe(upstream)
+  })
+  await new Promise((resolve, reject) => {
+    server.once('error', reject)
+    server.listen(0, '127.0.0.1', resolve)
+  })
+  const address = server.address()
+  return { base: `http://127.0.0.1:${address.port}`, oauthAttempts, server }
+}
 async function request(base, endpoint, options = {}) {
   const response = await fetch(base + endpoint, { ...options, headers: { ...(options.headers || {}) } })
   const data = await response.json().catch(() => ({}))
@@ -121,6 +157,7 @@ async function solidImage(format, width = 320, height = 240, background = { r: 8
 const apiPort = await freePort(); let apiBase = `http://127.0.0.1:${apiPort}`
 let apiChild = await start('node', ['api/server.js'], { PORT: apiPort, DATA_DIR: tmp, RP_ID: 'localhost', ORIGIN: 'http://localhost', MCP_ENABLED: '1', MCP_PROPOSALS_ENABLED: '1', CUSTOM_IMAGES_ENABLED: '1', AUDIT_LOG: '0', OPENGYM_TEST_IMAGE_DELAY_MS: '40', OPENGYM_TEST_IMAGE_STATS: '1' })
 let mcpChild = null
+let manualBearerApiProxy = null
 try {
   // Gate 2: conditional writes, durable conflict handling, idempotency, and fail-closed storage.
   const initial = await request(apiBase, '/api/data', { headers: { Cookie: `gymsid=${session}` } })
@@ -160,8 +197,11 @@ try {
   const cross = await request(apiBase, `/api/mcp/state?scope=routine:read&uid=${uid}`, { headers: bearer(otherUserGrant) })
   assertStatus(cross, 403, 'cross-user state')
   const mcpPort = await freePort()
-  mcpChild = await start('node', ['mcp/src/http.js'], { MCP_PORT: mcpPort, OPENGYM_API: apiBase, MCP_PUBLIC_URL: 'http://127.0.0.1:' + mcpPort + '/mcp', MCP_CORS_ORIGIN: 'http://127.0.0.1' })
+  manualBearerApiProxy = await startManualBearerApiProxy(apiBase)
+  mcpChild = await start('node', ['mcp/src/http.js'], { MCP_PORT: mcpPort, OPENGYM_API: manualBearerApiProxy.base, MCP_PUBLIC_URL: 'http://127.0.0.1:' + mcpPort + '/mcp', MCP_CORS_ORIGIN: 'http://127.0.0.1' })
   const mcpBase = `http://127.0.0.1:${mcpPort}`
+  const unauthenticatedMcp = await request(mcpBase, '/mcp', { method: 'POST', headers: { Accept: 'application/json, text/event-stream', 'Content-Type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 0, method: 'initialize', params: {} }) })
+  assertStatus(unauthenticatedMcp, 401, 'unauthenticated MCP')
   async function mcpClient(name, authToken = grantToken) {
     const initBody = { jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-11-25', capabilities: {}, clientInfo: { name, version: '1' } } }
     const init = await fetch(mcpBase + '/mcp', { method: 'POST', headers: { ...bearer(authToken), Accept: 'application/json, text/event-stream', 'Content-Type': 'application/json' }, body: JSON.stringify(initBody) })
@@ -234,7 +274,8 @@ try {
   const discovery = await request(mcpBase, '/.well-known/oauth-protected-resource')
   assertStatus(discovery, 200, 'MCP discovery')
   assert.deepEqual(discovery.data.authorization_servers, [`http://127.0.0.1:${mcpPort}`])
-  print('gate3_clients', ['local-fixture', 'hosted-fixture']); print('gate3_catalog_unique', catalog.length); print('gate3_mcp_catalog_unique', mcpCatalog.length); print('gate3_mcp_search_get', true); print('gate3_cross_user_denied', true); print('gate3_insufficient_scope_status', 403); print('gate3_proposal_insufficient_scope_status', 403); print('gate3_progress_fixture_matches_app', true); print('gate3_duplicate_proposal_same_id', true); print('gate3_approved_routine_id', approved.routine.id); print('gate3_exactly_one_approved_routine', true); print('gate3_phone_edit_preserved', true); print('gate3_revoked_grant_status', 401); print('gate3_discovery_authorization_server', `http://127.0.0.1:${mcpPort}`)
+  assert.deepEqual(manualBearerApiProxy.oauthAttempts, [])
+  print('gate3_clients', ['local-fixture', 'hosted-fixture']); print('gate3_catalog_unique', catalog.length); print('gate3_mcp_catalog_unique', mcpCatalog.length); print('gate3_mcp_search_get', true); print('gate3_cross_user_denied', true); print('gate3_insufficient_scope_status', 403); print('gate3_proposal_insufficient_scope_status', 403); print('gate3_progress_fixture_matches_app', true); print('gate3_duplicate_proposal_same_id', true); print('gate3_approved_routine_id', approved.routine.id); print('gate3_exactly_one_approved_routine', true); print('gate3_phone_edit_preserved', true); print('gate3_revoked_grant_status', 401); print('gate3_unauthenticated_mcp_status', unauthenticatedMcp.response.status); print('gate3_manual_bearer_oauth_api_attempts', manualBearerApiProxy.oauthAttempts); print('gate3_manual_bearer_without_oauth_api', true); print('gate3_oauth_compatibility_surface', 'retained for clients such as Claude.ai; not used by manual-bearer fixture'); print('gate3_discovery_authorization_server', `http://127.0.0.1:${mcpPort}`)
 
   // Gate 4: decode/re-encode, ownership checks, quota, failed replacement
   // preservation, and a versioned backup manifest. Every fixture is local and
@@ -660,7 +701,9 @@ try {
   print('GATE_3_STAGING', 'PASS (protocol clients; hosted-fixture is local and not a production cloud receipt)')
   print('GATE_4_STAGING', 'PASS (API asset decode/checksum/auth/rollback + headless React real surfaces; production browser/container evidence not claimed)')
 } finally {
-  await stop(mcpChild); await stop(apiChild)
+  await stop(mcpChild)
+  if (manualBearerApiProxy) await new Promise(resolve => manualBearerApiProxy.server.close(resolve))
+  await stop(apiChild)
   if (backupDir) fs.rmSync(backupDir, { recursive: true, force: true })
   if (backupManifestFile) fs.rmSync(backupManifestFile, { force: true })
   if (activeDataDir !== tmp) fs.rmSync(activeDataDir, { recursive: true, force: true })

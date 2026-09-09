@@ -5,6 +5,9 @@ application (Claude Desktop, Cursor, Cline, Continue, etc.) read your openGym pr
 routines, workouts, body-weight log, estimated 1RMs, and muscle balance — using either the
 legacy local stdio process or the opt-in Streamable HTTP gateway. The HTTP gateway has no
 profile-data mount: every request carries a scoped, expiring bearer grant minted in Settings.
+The direct bearer path is independent of OAuth, so a client that can send an
+`Authorization: Bearer …` header does not need discovery, dynamic registration, or an
+authorization server.
 The LLM never sees passkeys, VAPID keys, or session secrets.
 
 The numbers it answers with are computed by the **same pure functions the React UI uses**
@@ -13,6 +16,26 @@ The numbers it answers with are computed by the **same pure functions the React 
 
 The local stdio process remains read-only. The HTTP gateway can submit a validated routine
 proposal for an explicit in-app approval; it never writes a routine directly.
+
+### Remote HTTP authorization (manual bearer)
+
+Use this path for clients that accept a custom bearer header:
+
+1. In openGym **Settings → MCP access**, create a named grant for the client. Select only the
+   read scopes it needs (`exercise:read`, `routine:read`, `workout:read`, `bodyweight:read`,
+   `progress:read`). Add `routine:propose` only for a short, explicitly approved proposal
+   window.
+2. Copy the token once into the client's secret/header storage and send it only as
+   `Authorization: Bearer <one-time token>` to `https://gym.derrickserna.com/mcp`. Never put a
+   token in a URL, source file, prompt, or log. The token is stored server-side only as a hash.
+3. Set an expiry that matches the task. Revoke the named grant in Settings when the client is no
+   longer needed; subsequent calls fail with `401` (or `403` for an insufficient scope).
+
+The gateway validates the grant's user, audience, scopes, expiry, and revocation on every request.
+It has no anonymous mode and no master-token fallback. This direct bearer flow does not call any
+OAuth endpoint. The optional OAuth 2.1/PKCE bridge remains available for clients such as
+Claude.ai that cannot attach arbitrary bearer headers; it exchanges the same user-scoped grant and
+is not required by clients using the manual path.
 
 ## Quick start
 
