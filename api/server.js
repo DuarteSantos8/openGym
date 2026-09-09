@@ -109,8 +109,19 @@ function readStateRecord(uid) {
 }
 function writeState(uid, state) {
   const text = JSON.stringify(state);
-  durableAtomicWrite(stateFile(uid), text, 0o600);
+  durableStateWrite(stateFile(uid), text);
   return etagFor(text);
+}
+// Disposable acceptance-only ENOSPC injection. It is read once at process start and is never set
+// by Compose; the staging harness uses it to exercise the same fail-closed boundary as a genuinely
+// full filesystem without filling a developer or production volume.
+let testStateWriteFailures = Math.max(0, Math.floor(Number(process.env.OPENGYM_TEST_FAIL_STATE_WRITES) || 0));
+function durableStateWrite(file, content) {
+  if (testStateWriteFailures > 0) {
+    testStateWriteFailures--;
+    throw Object.assign(new Error('test-injected full-disk state write failure'), { code: 'ENOSPC' });
+  }
+  durableAtomicWrite(file, content, 0o600);
 }
 // A single API process is the intended deployment. This queue still makes the read/compare/write
 // section atomic when two HTTP requests arrive in the same event-loop turn; a second writer must
@@ -226,6 +237,9 @@ function grantView(g) {
 // entries; wildcards, fragments, credentials, and non-local plain HTTP are rejected below.
 const oauthClientFile = path.join(DATA, 'oauth-clients.json');
 const OAUTH_CLIENT_LIMIT = 1000;
+const OAUTH_REGISTER_WINDOW_MS = 15 * 60 * 1000;
+const OAUTH_REGISTER_MAX_PER_WINDOW = 20;
+const oauthRegistrationAttempts = new Map();
 let oauthClients = { clients: [] };
 let oauthClientsError = null;
 try {
@@ -238,6 +252,24 @@ try {
 function saveOAuthClients() {
   if (oauthClientsError) throw oauthClientsError;
   durableAtomicWrite(oauthClientFile, JSON.stringify(oauthClients, null, 2), 0o600);
+}
+function oauthRegistrationAllowed(req) {
+  const now = Date.now();
+  const key = String(req.socket?.remoteAddress || 'unknown').slice(0, 80);
+  const prior = oauthRegistrationAttempts.get(key) || [];
+  const recent = prior.filter(ts => ts > now - OAUTH_REGISTER_WINDOW_MS);
+  if (recent.length >= OAUTH_REGISTER_MAX_PER_WINDOW) {
+    oauthRegistrationAttempts.set(key, recent);
+    return false;
+  }
+  recent.push(now); oauthRegistrationAttempts.set(key, recent);
+  // Keep this in-memory limiter bounded even when a scanner rotates source addresses.
+  if (oauthRegistrationAttempts.size > 2000) {
+    for (const [candidate, timestamps] of oauthRegistrationAttempts) {
+      if (!timestamps.some(ts => ts > now - OAUTH_REGISTER_WINDOW_MS)) oauthRegistrationAttempts.delete(candidate);
+    }
+  }
+  return true;
 }
 function oauthClientView(c) {
   const createdAt = Date.parse(c.createdAt) || Date.now();
@@ -278,24 +310,28 @@ function registrationMetadata(body) {
     redirectUris, grantTypes, responseTypes, tokenEndpointAuthMethod, scope: scope.join(' '), createdAt: new Date().toISOString()
   };
 }
-function grantFor(req, scope) {
+function grantFor(req) {
   if (grantsError || dbError) return null;
   const auth = String(req.headers.authorization || '');
   if (!auth.startsWith('Bearer ')) return null;
   const hash = grantHash(auth.slice(7).trim());
   const g = grants.grants.find(x => x.tokenHash === hash && !x.revoked && (!x.expires || x.expires > Date.now()));
   if (!g || !db.users.some(u => u.id === g.uid && !u.disabled)) return null;
-  if (scope && !g.scopes.includes(scope)) return null;
   g.lastUsed = Date.now();
   // Last-use telemetry is intentionally best effort and is not needed for authorization.
   try { saveGrants(); } catch {}
   return g;
 }
 function requireGrant(req, res, scope) {
-  const grant = grantFor(req, scope);
+  const grant = grantFor(req);
   if (!grant) {
-    res.setHeader('WWW-Authenticate', 'Bearer');
-    json(res, 403, { error: scope ? 'insufficient_scope' : 'invalid_token', scope: scope || null });
+    res.setHeader('WWW-Authenticate', 'Bearer error="invalid_token"');
+    json(res, 401, { error: 'invalid_token' });
+    return null;
+  }
+  if (scope && !grant.scopes.includes(scope)) {
+    res.setHeader('WWW-Authenticate', `Bearer error="insufficient_scope", scope="${scope}"`);
+    json(res, 403, { error: 'insufficient_scope', scope });
     return null;
   }
   return grant;
@@ -852,6 +888,10 @@ const routes = {
   'POST /api/oauth/clients': async (req, res) => {
     if (!MCP_ENABLED) return json(res, 404, { error: 'feature disabled' });
     if (!requireWritable(res) || oauthClientsError) return oauthClientsError ? storageFailure(res, oauthClientsError) : undefined;
+    if (!oauthRegistrationAllowed(req)) {
+      res.setHeader('Retry-After', '900');
+      return json(res, 429, { error: 'registration rate limit exceeded' });
+    }
     if (oauthClients.clients.length >= OAUTH_CLIENT_LIMIT) return json(res, 429, { error: 'client registration limit reached' });
     let body;
     try { body = await readBody(req, 256 * 1024); } catch { return json(res, 400, { error: 'invalid_client_metadata' }); }
@@ -1149,7 +1189,7 @@ const routes = {
         // of those persisted bytes for crash-recovery validation.
         const receipt = key && { uid: user.id, key: key.slice(0, 200), hash, stateHash: requestHash(next), revision, tsValue: next._ts || null, ts: Date.now() };
         if (receipt) durableAtomicWrite(stateTxnFile(user.id), JSON.stringify({ state: next, receipt }), 0o600);
-        durableAtomicWrite(stateFile(user.id), text, 0o600);
+        durableStateWrite(stateFile(user.id), text);
         if (receipt) {
           receipts.entries.push(receipt);
           saveReceipts();

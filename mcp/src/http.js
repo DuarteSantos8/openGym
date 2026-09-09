@@ -114,9 +114,13 @@ async function authorizationRequest(url) {
   const redirectUri = p.get('redirect_uri')
   const challenge = p.get('code_challenge')
   const method = p.get('code_challenge_method')
+  const resource = p.get('resource') || PUBLIC_URL
   const state = p.get('state') || ''
   if (responseType !== 'code' || !clientId || !redirectUri || !challenge || method !== 'S256') {
     const error = new Error('invalid authorization request'); error.status = 400; throw error
+  }
+  if (resource !== PUBLIC_URL) {
+    const error = new Error('resource does not match this MCP service'); error.status = 400; throw error
   }
   if (!/^[A-Za-z0-9_-]{43,128}$/.test(challenge)) {
     const error = new Error('invalid code challenge'); error.status = 400; throw error
@@ -129,7 +133,7 @@ async function authorizationRequest(url) {
   if (!requested.length || requested.some(scope => !OAUTH_SCOPES.includes(scope))) {
     const error = new Error('invalid scope'); error.status = 400; throw error
   }
-  return { client, clientId, redirectUri, challenge, method, state, requested }
+  return { client, clientId, redirectUri, challenge, method, resource, state, requested }
 }
 
 async function readFormBody(req) {
@@ -172,7 +176,7 @@ function bearer(req) {
 function unauthorized(res) {
   res.writeHead(401, {
     'Content-Type': 'application/json', 'Cache-Control': 'no-store',
-    'WWW-Authenticate': `Bearer resource_metadata="${RESOURCE_METADATA}"`
+    'WWW-Authenticate': `Bearer error="invalid_token", resource_metadata="${RESOURCE_METADATA}"`
   })
   res.end(JSON.stringify({ error: 'invalid_token' }))
 }
@@ -276,6 +280,7 @@ function authorizeForm(data, csrf, user) {
       <input type="hidden" name="response_type" value="code">
       <input type="hidden" name="code_challenge" value="${htmlEscape(data.challenge)}">
       <input type="hidden" name="code_challenge_method" value="S256">
+      <input type="hidden" name="resource" value="${htmlEscape(data.resource)}">
       <input type="hidden" name="state" value="${htmlEscape(data.state)}">
       <fieldset><legend>Requested permissions</legend>${scopeInputs}</fieldset>
       <button type="submit">Allow</button>
@@ -299,7 +304,7 @@ async function handleOAuthAuthorizeGet(req, res, url) {
 
 function authFormUrl(form) {
   const out = new URL(`${ISSUER}/oauth/authorize`)
-  for (const key of ['response_type', 'client_id', 'redirect_uri', 'code_challenge', 'code_challenge_method', 'state']) {
+  for (const key of ['response_type', 'client_id', 'redirect_uri', 'code_challenge', 'code_challenge_method', 'resource', 'state']) {
     const value = form.get(key)
     if (value != null && value !== '') out.searchParams.set(key, value)
   }
@@ -318,7 +323,7 @@ async function handleOAuthAuthorizePost(req, res) {
   let data
   try { data = await authorizationRequest(authFormUrl(form)) }
   catch (error) { return jsonResponse(res, error.status || 400, { error: error.message || 'invalid_request' }) }
-  if (data.clientId !== pending.clientId || data.redirectUri !== pending.redirectUri || data.challenge !== pending.challenge || data.state !== pending.state) {
+  if (data.clientId !== pending.clientId || data.redirectUri !== pending.redirectUri || data.challenge !== pending.challenge || data.resource !== pending.resource || data.state !== pending.state) {
     return jsonResponse(res, 400, { error: 'authorization request changed' })
   }
   const selected = formScope(form.getAll('scope'))
@@ -344,7 +349,7 @@ async function handleOAuthAuthorizePost(req, res) {
   const code = crypto.randomBytes(32).toString('base64url')
   oauthCodes.set(code, {
     clientId: data.clientId, redirectUri: data.redirectUri, challenge: data.challenge,
-    method: data.method, scope: selected, token: grant.token, grantExpiresAt: grant.grant?.expires || null,
+    method: data.method, resource: data.resource, scope: selected, token: grant.token, grantExpiresAt: grant.grant?.expires || null,
     expiresAt: Date.now() + OAUTH_TTL_MS, used: false
   })
   oauthPending.delete(csrf)
@@ -363,18 +368,19 @@ async function handleOAuthToken(req, res) {
   const code = String(form.get('code') || '')
   const clientId = String(form.get('client_id') || '')
   const redirectUri = String(form.get('redirect_uri') || '')
+  const resource = String(form.get('resource') || PUBLIC_URL)
   const verifier = String(form.get('code_verifier') || '')
   const client = await oauthClient(clientId).catch(() => null)
   const record = oauthCodes.get(code)
   const invalid = () => jsonResponse(res, 400, { error: 'invalid_grant' })
-  if (!client || !record || record.used || record.expiresAt <= Date.now() || record.clientId !== clientId || record.redirectUri !== redirectUri) return invalid()
+  if (!client || !record || record.used || record.expiresAt <= Date.now() || record.clientId !== clientId || record.redirectUri !== redirectUri || resource !== record.resource) return invalid()
   if (!/^[A-Za-z0-9._~-]{43,128}$/.test(verifier) || base64urlDigest(verifier) !== record.challenge) return invalid()
   record.used = true
   oauthCodes.delete(code)
   const expiresIn = record.grantExpiresAt ? Math.max(0, Math.ceil((record.grantExpiresAt - Date.now()) / 1000)) : 0
   return jsonResponse(res, 200, {
     access_token: record.token, token_type: 'Bearer', expires_in: expiresIn,
-    scope: record.scope.join(' '), resource: PUBLIC_URL
+    scope: record.scope.join(' '), resource: record.resource
   })
 }
 
@@ -386,7 +392,7 @@ async function handle(req, res) {
   if (url.pathname === '/oauth/authorize' && req.method === 'GET') return handleOAuthAuthorizeGet(req, res, url)
   if (url.pathname === '/oauth/authorize' && req.method === 'POST') return handleOAuthAuthorizePost(req, res)
   if (url.pathname === '/oauth/token' && req.method === 'POST') return handleOAuthToken(req, res)
-  if (url.pathname === '/.well-known/oauth-protected-resource') {
+  if (url.pathname === '/.well-known/oauth-protected-resource' || url.pathname === '/.well-known/oauth-protected-resource/mcp') {
     return jsonResponse(res, 200, {
       resource: PUBLIC_URL, authorization_servers: [ISSUER],
       bearer_methods_supported: ['header'], scopes_supported: OAUTH_SCOPES
@@ -434,7 +440,9 @@ async function handle(req, res) {
     }
     return current.transport.handleRequest(req, res)
   } catch (error) {
-    if (!res.headersSent) { res.writeHead(error.status || 500, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: error.message })) }
+    if (res.headersSent) return
+    if (error.status === 401) return unauthorized(res)
+    jsonResponse(res, error.status || 500, { error: error.message })
   }
 }
 

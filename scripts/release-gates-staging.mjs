@@ -203,11 +203,11 @@ try {
   const revokedBefore = assertStatus(await request(apiBase, '/api/mcp/introspect', { headers: bearer(revokeGrant) }), 200, 'grant before revoke')
   assert.equal(revokedBefore.data.grant.id, 'grant-revoke')
   assertStatus(await request(apiBase, '/api/mcp/grants/revoke', { ...bodyOptions({ id: 'grant-revoke' }), headers: { Cookie: `gymsid=${session}` } }), 200, 'grant revoke')
-  assertStatus(await request(apiBase, '/api/mcp/introspect', { headers: bearer(revokeGrant) }), 403, 'revoked grant')
+  assertStatus(await request(apiBase, '/api/mcp/introspect', { headers: bearer(revokeGrant) }), 401, 'revoked grant')
   const discovery = await request(mcpBase, '/.well-known/oauth-protected-resource')
   assertStatus(discovery, 200, 'MCP discovery')
   assert.deepEqual(discovery.data.authorization_servers, [`http://127.0.0.1:${mcpPort}`])
-  print('gate3_clients', ['local-fixture', 'hosted-fixture']); print('gate3_catalog_unique', catalog.length); print('gate3_mcp_catalog_unique', mcpCatalog.length); print('gate3_mcp_search_get', true); print('gate3_cross_user_denied', true); print('gate3_insufficient_scope_status', 403); print('gate3_proposal_insufficient_scope_status', 403); print('gate3_progress_fixture_matches_app', true); print('gate3_duplicate_proposal_same_id', true); print('gate3_approved_routine_id', approved.routine.id); print('gate3_exactly_one_approved_routine', true); print('gate3_phone_edit_preserved', true); print('gate3_revoked_grant_status', 403); print('gate3_discovery_authorization_server', `http://127.0.0.1:${mcpPort}`)
+  print('gate3_clients', ['local-fixture', 'hosted-fixture']); print('gate3_catalog_unique', catalog.length); print('gate3_mcp_catalog_unique', mcpCatalog.length); print('gate3_mcp_search_get', true); print('gate3_cross_user_denied', true); print('gate3_insufficient_scope_status', 403); print('gate3_proposal_insufficient_scope_status', 403); print('gate3_progress_fixture_matches_app', true); print('gate3_duplicate_proposal_same_id', true); print('gate3_approved_routine_id', approved.routine.id); print('gate3_exactly_one_approved_routine', true); print('gate3_phone_edit_preserved', true); print('gate3_revoked_grant_status', 401); print('gate3_discovery_authorization_server', `http://127.0.0.1:${mcpPort}`)
 
   // Gate 4: private upload, ownership check, failed replacement preservation, and checksum.
   assert.match(fs.readFileSync(path.join(ROOT, 'web/nginx.conf.template'), 'utf8'), /client_max_body_size 16m/)
@@ -283,6 +283,31 @@ try {
   assert.equal(recoveredReceipts.entries.some(e => e.uid === uid && e.key === failureReceipt.key && e.revision === failureReceipt.revision), true)
   assert.equal(fs.existsSync(path.join(activeDataDir, '.state-txn-user-a.json')), false)
   print('gate2_receipt_failure_journal_retained', true); print('gate2_receipt_failure_recovery', true)
+
+  // Exercise the actual state-write ENOSPC boundary with a disposable, process-local injection.
+  // The fixture fails after the journal is durable, so the old profile bytes remain untouched and
+  // the next clean process replays the pending edit exactly once. No filesystem is filled.
+  const enospcRead = await request(apiBase, '/api/data', { headers: { Cookie: `gymsid=${session}` } })
+  const enospcState = { ...enospcRead.data.state, _enospc_probe: 'replayed-after-full-disk' }
+  const stateFilePath = path.join(activeDataDir, 'state-user-a.json')
+  const priorStateHash = hash(fs.readFileSync(stateFilePath))
+  await stop(apiChild); apiChild = null
+  const enospcPort = await freePort(); apiChild = await start('node', ['api/server.js'], { PORT: enospcPort, DATA_DIR: activeDataDir, RP_ID: 'localhost', ORIGIN: 'http://localhost', MCP_ENABLED: '1', MCP_PROPOSALS_ENABLED: '1', CUSTOM_IMAGES_ENABLED: '1', AUDIT_LOG: '0', OPENGYM_TEST_FAIL_STATE_WRITES: '1' })
+  apiBase = `http://127.0.0.1:${enospcPort}`
+  const enospcWrite = await request(apiBase, '/api/data', { method: 'PUT', headers: { Cookie: `gymsid=${session}`, 'If-Match': enospcRead.data.revision, 'Idempotency-Key': 'enospc-state-1', 'Content-Type': 'application/json' }, body: JSON.stringify({ state: enospcState }) })
+  assertStatus(enospcWrite, 503, 'injected ENOSPC state write')
+  assert.equal(enospcWrite.data.error, 'storage_unavailable')
+  assert.equal(hash(fs.readFileSync(stateFilePath)), priorStateHash)
+  assert.equal(fs.existsSync(path.join(activeDataDir, '.state-txn-user-a.json')), true)
+  await stop(apiChild); apiChild = null
+  const enospcRecoveryPort = await freePort(); apiChild = await start('node', ['api/server.js'], { PORT: enospcRecoveryPort, DATA_DIR: activeDataDir, RP_ID: 'localhost', ORIGIN: 'http://localhost', MCP_ENABLED: '1', MCP_PROPOSALS_ENABLED: '1', CUSTOM_IMAGES_ENABLED: '1', AUDIT_LOG: '0' })
+  apiBase = `http://127.0.0.1:${enospcRecoveryPort}`
+  const enospcRecovered = assertStatus(await request(apiBase, '/api/data', { headers: { Cookie: `gymsid=${session}` } }), 200, 'ENOSPC journal recovery').data
+  assert.equal(enospcRecovered.state._enospc_probe, 'replayed-after-full-disk')
+  const enospcReceipts = JSON.parse(fs.readFileSync(path.join(activeDataDir, 'idempotency.json'), 'utf8'))
+  assert.equal(enospcReceipts.entries.some(e => e.uid === uid && e.key === 'enospc-state-1' && e.revision === enospcRecovered.revision), true)
+  assert.equal(fs.existsSync(path.join(activeDataDir, '.state-txn-user-a.json')), false)
+  print('gate2_enospc_write_status', 503); print('gate2_enospc_old_state_hash_preserved', true); print('gate2_enospc_journal_retained', true); print('gate2_enospc_recovery_replayed', true); print('gate2_enospc_injection_scope', 'disposable state-write ENOSPC path; no disk filled')
 
   // Corrupt db.json is a hard stop, not an empty profile.
   await stop(apiChild); apiChild = null; fs.writeFileSync(path.join(activeDataDir, 'db.json'), '{broken')

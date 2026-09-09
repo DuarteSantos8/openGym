@@ -107,6 +107,8 @@ try {
   const protectedMetadata = status(await request(mcpBase, '/.well-known/oauth-protected-resource'), 200, 'protected-resource metadata').data
   assert.equal(protectedMetadata.resource, resource)
   assert.deepEqual(protectedMetadata.authorization_servers, ['https://gym.example.test'])
+  const protectedMetadataPath = status(await request(mcpBase, '/.well-known/oauth-protected-resource/mcp'), 200, 'path protected-resource metadata').data
+  assert.deepEqual(protectedMetadataPath, protectedMetadata)
   const authorizationMetadata = status(await request(mcpBase, '/.well-known/oauth-authorization-server'), 200, 'authorization-server metadata').data
   assert.equal(authorizationMetadata.authorization_endpoint, 'https://gym.example.test/oauth/authorize')
   assert.equal(authorizationMetadata.token_endpoint, 'https://gym.example.test/oauth/token')
@@ -135,7 +137,7 @@ try {
   const authorizeQuery = new URLSearchParams({
     response_type: 'code', client_id: registration.client_id, redirect_uri: registration.redirect_uris[0],
     scope: 'exercise:read routine:read progress:read', code_challenge: challenge,
-    code_challenge_method: 'S256', state: 'oauth-state-1'
+    code_challenge_method: 'S256', resource, state: 'oauth-state-1'
   })
   const consent = await request(mcpBase, `/oauth/authorize?${authorizeQuery}`, { headers: { Cookie: `gymsid=${session}` } })
   status(consent, 200, 'authorization consent')
@@ -158,9 +160,15 @@ try {
   assert.ok(code)
   print('oauth_pkce_authorization_consent', 'PASS')
 
+  const wrongResourceToken = await request(mcpBase, '/oauth/token', formBody({
+    grant_type: 'authorization_code', code, client_id: registration.client_id,
+    redirect_uri: registration.redirect_uris[0], resource: 'https://other.example.test/mcp', code_verifier: verifier
+  }))
+  assert.equal(wrongResourceToken.response.status, 400)
+  print('oauth_token_resource_mismatch_status', 400)
   const tokenResult = status(await request(mcpBase, '/oauth/token', formBody({
     grant_type: 'authorization_code', code, client_id: registration.client_id,
-    redirect_uri: registration.redirect_uris[0], code_verifier: verifier
+    redirect_uri: registration.redirect_uris[0], resource, code_verifier: verifier
   })), 200, 'authorization-code token').data
   assert.ok(tokenResult.access_token)
   assert.equal(tokenResult.token_type, 'Bearer')
@@ -209,17 +217,24 @@ try {
   print('oauth_mcp_catalog_tools', ['list_exercises', 'search_exercises', 'get_exercise'])
   print('oauth_mcp_catalog_traversal', { list: true, search: true, get: true, total: listPayload.total })
 
+  const wrongAudience = status(await request(apiBase, '/api/mcp/grants', { ...jsonBody({ name: 'wrong audience', scopes: ['exercise:read'], audience: 'https://other.example.test/mcp', expires_in: 60 }), headers: { Cookie: `gymsid=${session}`, 'Content-Type': 'application/json' } }), 201, 'wrong audience grant').data
+  const wrongAudienceMcp = await mcpCall(wrongAudience.token, null, 9, 'initialize', { protocolVersion: '2025-11-25', capabilities: {}, clientInfo: { name: 'wrong audience', version: '1' } })
+  assert.equal(wrongAudienceMcp.response.status, 401)
+  assert.match(wrongAudienceMcp.response.headers.get('www-authenticate') || '', /invalid_token/)
+  print('oauth_negative_audience_status', 401)
   const revoke = status(await request(apiBase, '/api/mcp/grants/revoke', { ...jsonBody({ id: grant.id }), headers: { Cookie: `gymsid=${session}`, 'Content-Type': 'application/json' } }), 200, 'grant revoke')
   assert.equal(revoke.data.revoked, true)
   const revoked = await mcpCall(tokenResult.access_token, null, 7, 'initialize', { protocolVersion: '2025-11-25', capabilities: {}, clientInfo: { name: 'revoked', version: '1' } })
-  assert.equal(revoked.response.status, 403)
-  print('oauth_revoked_grant_status', 403)
+  assert.equal(revoked.response.status, 401)
+  assert.match(revoked.response.headers.get('www-authenticate') || '', /resource_metadata/)
+  print('oauth_revoked_grant_status', 401)
 
   const shortGrant = status(await request(apiBase, '/api/mcp/grants', { ...jsonBody({ name: 'expiry fixture', scopes: ['exercise:read'], audience: resource, expires_in: 1 }), headers: { Cookie: `gymsid=${session}`, 'Content-Type': 'application/json' } }), 201, 'short-lived grant').data
   await wait(1250)
   const expired = await mcpCall(shortGrant.token, null, 8, 'initialize', { protocolVersion: '2025-11-25', capabilities: {}, clientInfo: { name: 'expired', version: '1' } })
-  assert.equal(expired.response.status, 403)
-  print('oauth_token_expiry_enforced', 403)
+  assert.equal(expired.response.status, 401)
+  assert.match(expired.response.headers.get('www-authenticate') || '', /invalid_token/)
+  print('oauth_token_expiry_enforced', 401)
   print('OAUTH_STAGING', 'PASS')
 } finally {
   await stop(mcpChild)

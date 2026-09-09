@@ -29,6 +29,10 @@ export const DEF = {
 }
 const clone = o => JSON.parse(JSON.stringify(o))
 
+const markDirty = () => {
+  try { localStorage.setItem('gym_dirty', '1') } catch { /* a broken store is reported below */ }
+}
+
 function loadState() {
   try {
     const raw = localStorage.getItem(KEY)
@@ -47,19 +51,39 @@ export const useStore = create((set, get) => {
   let syncMeta = loadSyncMeta()
   let syncBase = loadSyncBase()
 
+  const reportPersistenceError = kind => {
+    set({ persistenceError: kind })
+    try {
+      globalThis.dispatchEvent(new CustomEvent('opengym:persistence-error', { detail: { kind } }))
+    } catch { /* non-browser test/runtime */ }
+  }
+
   // Mobile build: mirror the state into a file in the app's data directory (survives WebView
   // storage eviction) and keep the native reminder schedule in step with the weekly plan.
   const nativePersist = () => {
     clearTimeout(saveTm)
-    saveTm = setTimeout(() => { saveTm = null; nativeSave(get().S); syncReminder(get().S) }, 800)
+    saveTm = setTimeout(async () => {
+      saveTm = null
+      try {
+        const saved = await nativeSave(get().S)
+        if (saved === false) { markDirty(); reportPersistenceError('native_persistence_failed') }
+      } catch {
+        markDirty(); reportPersistenceError('native_persistence_failed')
+      }
+      try { await syncReminder(get().S) } catch { /* reminder failure must not hide data failure */ }
+    }, 800)
   }
 
   const persist = (S, push = true) => {
     stateGeneration++
     S._ts = Date.now()
     registerCustom(S.customEx)
-    localStorage.setItem(KEY, JSON.stringify(S))
-    set({ S })
+    // Publish the new copy first. A quota error is a durability failure, not permission to throw
+    // away the user's edit: in-memory state remains visible and a dirty marker keeps sync/backup
+    // paths from treating the failed local write as acknowledged.
+    set({ S, persistenceError: null })
+    try { localStorage.setItem(KEY, JSON.stringify(S)) }
+    catch { markDirty(); reportPersistenceError('local_storage_write_failed') }
     if (MOBILE) nativePersist()
     if (push && get().user) {
       clearTimeout(pushTm)
@@ -76,7 +100,9 @@ export const useStore = create((set, get) => {
     if (MOBILE && saveTm) {
       clearTimeout(saveTm)
       saveTm = null
-      nativeSave(get().S)
+      Promise.resolve(nativeSave(get().S)).then(saved => {
+        if (saved === false) { markDirty(); reportPersistenceError('native_persistence_failed') }
+      }).catch(() => { markDirty(); reportPersistenceError('native_persistence_failed') })
     }
     if (pushTm) {
       clearTimeout(pushTm)
@@ -100,6 +126,7 @@ export const useStore = create((set, get) => {
     S: (() => { const s = loadState(); registerCustom(s.customEx); return s })(),
     user: (() => { try { return JSON.parse(localStorage.getItem('gym_user')) || null } catch { return null } })(),
     ready: false,
+    persistenceError: null,
     needsMobileOnboarding: false,   // mobile build only — set true by boot() on a genuine first launch
 
     // Mutate a draft of S via producer fn, then persist + schedule sync.
@@ -162,7 +189,7 @@ export const useStore = create((set, get) => {
           if (newerLocalEdit) {
             // A keystroke/workout landed while the request was in flight. Keep the newer local
             // state dirty and schedule a second generation with a fresh idempotency receipt.
-            localStorage.setItem('gym_dirty', '1')
+            markDirty()
             clearTimeout(pushTm); pushTm = setTimeout(() => get().pushState(), 0)
             return false
           }
@@ -202,13 +229,13 @@ export const useStore = create((set, get) => {
                 syncMeta = { ...syncMeta, revision: current.revision || syncMeta.revision, mutation: undefined }
                 syncBase = clone(current.state); saveSyncMeta(syncMeta); saveSyncBase(syncBase)
                 persist(merged, false)
-                localStorage.setItem('gym_dirty', '1')
+                markDirty()
                 clearTimeout(pushTm); pushTm = setTimeout(() => get().pushState(), 0)
                 return false
               }
             } catch { /* leave the pending local copy and dirty marker below */ }
           }
-          localStorage.setItem('gym_dirty', '1')
+          markDirty()
           return false
         }
       })()
@@ -328,7 +355,9 @@ export const useStore = create((set, get) => {
         if (saved && (!hasData(S) || (saved._ts || 0) >= (S._ts || 0))) {
           persist(Object.assign(clone(DEF), saved), false)
         } else if (hasData(S)) {
-          nativeSave(S)   // first run after an update from a file-less version: seed the mirror
+          Promise.resolve(nativeSave(S)).then(saved => {
+            if (saved === false) { markDirty(); reportPersistenceError('native_persistence_failed') }
+          }).catch(() => { markDirty(); reportPersistenceError('native_persistence_failed') })
         }
         get().setGuest(true)
         syncReminder(get().S)

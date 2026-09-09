@@ -28,7 +28,12 @@ export async function nativeSave(state) {
   try {
     const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
     await Filesystem.writeFile({ path: FILE, directory: Directory.Data, data: JSON.stringify(state), encoding: Encoding.UTF8 })
-  } catch (e) { /* keep the localStorage copy */ }
+    return true
+  } catch (e) {
+    // Callers keep the in-memory edit but must be able to surface that the durable native mirror
+    // failed; returning false preserves the old best-effort API without swallowing the signal.
+    return false
+  }
 }
 
 // "Connect to my server" mode (lib/remote.js): which of local-only / a paired remote account this
