@@ -7,6 +7,7 @@
  */
 import assert from 'node:assert/strict'
 import crypto from 'node:crypto'
+import { createRequire } from 'node:module'
 import fs from 'node:fs'
 import net from 'node:net'
 import os from 'node:os'
@@ -19,9 +20,12 @@ import { workoutVolume, setsDone } from '../frontend/src/lib/history.js'
 import { friendlyDuration } from '../mcp/src/labels.js'
 
 const ROOT = path.resolve(new URL('..', import.meta.url).pathname)
+const requireApi = createRequire(path.join(ROOT, 'api', 'package.json'))
+const sharp = requireApi('sharp')
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'opengym-gates-'))
 let activeDataDir = tmp
 let backupDir = null
+let backupManifestFile = null
 const secret = 'staging-only-secret'
 const uid = 'user-a'; const otherUid = 'user-b'
 const json = (file, value) => fs.writeFileSync(path.join(tmp, file), JSON.stringify(value, null, 2))
@@ -48,6 +52,22 @@ const proposeGrant = 'staging-propose-token'
 const otherUserGrant = 'staging-other-user-token'
 const hash = value => crypto.createHash('sha256').update(value).digest('hex')
 const etag = value => `"${hash(value)}"`
+function fileManifest(root) {
+  const rows = []
+  function walk(dir, prefix = '') {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+      const relative = prefix ? path.join(prefix, entry.name) : entry.name
+      const absolute = path.join(dir, entry.name)
+      if (entry.isDirectory()) walk(absolute, relative)
+      else if (entry.isFile()) {
+        const bytes = fs.readFileSync(absolute)
+        rows.push({ path: relative, size: bytes.length, sha256: hash(bytes) })
+      }
+    }
+  }
+  walk(root)
+  return rows
+}
 json('mcp-grants.json', { grants: [
   { id: 'grant-a', uid, name: 'staging client', scopes: ['exercise:read', 'routine:read', 'workout:read', 'bodyweight:read', 'progress:read', 'routine:propose'], tokenHash: hash(grantToken), created: new Date().toISOString(), expires: Date.now() + 3600000 },
   { id: 'grant-exercise', uid, name: 'narrow client', scopes: ['exercise:read'], tokenHash: hash(exerciseGrant), created: new Date().toISOString(), expires: Date.now() + 3600000 },
@@ -90,6 +110,13 @@ async function rawRequest(base, endpoint, options = {}) {
 const bodyOptions = (body, headers = {}) => ({ method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body: JSON.stringify(body) })
 function assertStatus(result, expected, label) { assert.equal(result.response.status, expected, `${label}: ${result.response.status}`); return result }
 function print(label, value) { console.log(`${label}=${typeof value === 'string' ? value : JSON.stringify(value)}`) }
+async function solidImage(format, width = 320, height = 240, background = { r: 80, g: 140, b: 220 }) {
+  const pipeline = sharp({ create: { width, height, channels: 3, background } })
+  if (format === 'png') return pipeline.png({ compressionLevel: 9 }).toBuffer()
+  if (format === 'jpeg') return pipeline.jpeg({ quality: 88 }).toBuffer()
+  if (format === 'webp') return pipeline.webp({ quality: 88, effort: 4 }).toBuffer()
+  throw new Error(`unsupported fixture format: ${format}`)
+}
 
 const apiPort = await freePort(); let apiBase = `http://127.0.0.1:${apiPort}`
 let apiChild = await start('node', ['api/server.js'], { PORT: apiPort, DATA_DIR: tmp, RP_ID: 'localhost', ORIGIN: 'http://localhost', MCP_ENABLED: '1', MCP_PROPOSALS_ENABLED: '1', CUSTOM_IMAGES_ENABLED: '1', AUDIT_LOG: '0' })
@@ -209,24 +236,161 @@ try {
   assert.deepEqual(discovery.data.authorization_servers, [`http://127.0.0.1:${mcpPort}`])
   print('gate3_clients', ['local-fixture', 'hosted-fixture']); print('gate3_catalog_unique', catalog.length); print('gate3_mcp_catalog_unique', mcpCatalog.length); print('gate3_mcp_search_get', true); print('gate3_cross_user_denied', true); print('gate3_insufficient_scope_status', 403); print('gate3_proposal_insufficient_scope_status', 403); print('gate3_progress_fixture_matches_app', true); print('gate3_duplicate_proposal_same_id', true); print('gate3_approved_routine_id', approved.routine.id); print('gate3_exactly_one_approved_routine', true); print('gate3_phone_edit_preserved', true); print('gate3_revoked_grant_status', 401); print('gate3_discovery_authorization_server', `http://127.0.0.1:${mcpPort}`)
 
-  // Gate 4: private upload, ownership check, failed replacement preservation, and checksum.
+  // Gate 4: decode/re-encode, ownership checks, quota, failed replacement
+  // preservation, and a versioned backup manifest. Every fixture is local and
+  // disposable; no public URL or production data is involved.
   assert.match(fs.readFileSync(path.join(ROOT, 'web/nginx.conf.template'), 'utf8'), /client_max_body_size 16m/)
-  const tinyPng = Buffer.from('89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000d49444154789c6360000000020001e221bc330000000049454e44ae426082', 'hex')
+  const tinyPng = await solidImage('png', 1, 1, { r: 1, g: 2, b: 3 })
   const upload = assertStatus(await request(apiBase, '/api/assets', { ...bodyOptions({ mime: 'image/png', data: tinyPng.toString('base64') }), headers: { Cookie: `gymsid=${session}` } }), 201, 'private asset upload').data.asset
+  assert.equal(upload.mime, 'image/webp')
+  const imageFixtures = [
+    ['png', 'image/png', await solidImage('png')],
+    ['jpeg', 'image/jpeg', await solidImage('jpeg')],
+    ['webp', 'image/webp', await solidImage('webp')]
+  ]
+  for (const [label, mime, bytes] of imageFixtures) {
+    const fixture = assertStatus(await request(apiBase, '/api/assets', {
+      ...bodyOptions({ mime, data: bytes.toString('base64') }), headers: { Cookie: `gymsid=${session}` }
+    }), 201, `${label} fixture upload`).data.asset
+    assert.equal(fixture.mime, 'image/webp')
+    assert.ok(fixture.size > 0 && fixture.size <= 2 * 1024 * 1024)
+    const fixtureStateRead = await request(apiBase, '/api/data', { headers: { Cookie: `gymsid=${session}` } })
+    const fixtureState = {
+      ...fixtureStateRead.data.state,
+      customEx: [...(fixtureStateRead.data.state.customEx || []), { id: `c-${label}`, n: `${label} fixture`, bp: 'full body', eq: 'custom', custom: true, media: fixture }]
+    }
+    assertStatus(await request(apiBase, '/api/data', {
+      method: 'PUT', headers: { Cookie: `gymsid=${session}`, 'If-Match': fixtureStateRead.data.revision, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ state: fixtureState })
+    }), 200, `${label} fixture reference attach`)
+    const servedFixture = await rawRequest(apiBase, `/api/assets/${fixture.id}`, { headers: { Cookie: `gymsid=${session}` } })
+    assert.equal(servedFixture.response.status, 200)
+    assert.equal(hash(servedFixture.bytes), fixture.sha256)
+    const fixtureMetadata = await sharp(servedFixture.bytes).metadata()
+    assert.ok(Math.max(fixtureMetadata.width, fixtureMetadata.height) <= 2048)
+    assert.equal(fixtureMetadata.exif, undefined)
+    print(`gate4_${label}_valid_reencoded_webp`, true)
+    print(`gate4_${label}_sha256`, fixture.sha256)
+  }
+
+  const jpegWithExif = await sharp({ create: { width: 320, height: 240, channels: 3, background: { r: 210, g: 120, b: 70 } } })
+    .withMetadata({ exif: { IFD0: { Artist: 'openGym staging fixture' } } }).jpeg({ quality: 88 }).toBuffer()
+  const inputExif = await sharp(jpegWithExif).metadata()
+  assert.ok(inputExif.exif?.length, 'fixture must contain EXIF before upload')
+  const exifAsset = assertStatus(await request(apiBase, '/api/assets', {
+    ...bodyOptions({ mime: 'image/jpeg', data: jpegWithExif.toString('base64') }), headers: { Cookie: `gymsid=${session}` }
+  }), 201, 'EXIF fixture upload').data.asset
+  const exifStateRead = await request(apiBase, '/api/data', { headers: { Cookie: `gymsid=${session}` } })
+  const exifState = {
+    ...exifStateRead.data.state,
+    customEx: [...(exifStateRead.data.state.customEx || []), { id: 'c-exif', n: 'EXIF fixture', bp: 'full body', eq: 'custom', custom: true, media: exifAsset }]
+  }
+  assertStatus(await request(apiBase, '/api/data', {
+    method: 'PUT', headers: { Cookie: `gymsid=${session}`, 'If-Match': exifStateRead.data.revision, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ state: exifState })
+  }), 200, 'EXIF fixture reference attach')
+  const exifServed = await rawRequest(apiBase, `/api/assets/${exifAsset.id}`, { headers: { Cookie: `gymsid=${session}` } })
+  const outputExif = await sharp(exifServed.bytes).metadata()
+  assert.equal(outputExif.exif, undefined)
+  print('gate4_exif_input_present', true)
+  print('gate4_exif_output_absent', true)
+
+  const corruptImage = Buffer.from('89504e470d0a1a0a00000000', 'hex')
+  const corruptImageResult = await request(apiBase, '/api/assets', {
+    ...bodyOptions({ mime: 'image/png', data: corruptImage.toString('base64') }), headers: { Cookie: `gymsid=${session}` }
+  })
+  assertStatus(corruptImageResult, 400, 'corrupt image fixture')
+  assert.equal(corruptImageResult.data.code, 'IMAGE_DECODE')
+  print('gate4_corrupt_image_status', 400)
+  print('gate4_corrupt_image_code', 'IMAGE_DECODE')
+
+  const animatedFrameA = await solidImage('webp', 32, 32, { r: 220, g: 20, b: 40 })
+  const animatedFrameB = await solidImage('webp', 32, 32, { r: 20, g: 80, b: 220 })
+  const animatedWebp = await sharp([animatedFrameA, animatedFrameB], { join: { animated: true } })
+    .webp({ loop: 0, delay: [100, 100] }).toBuffer()
+  const animatedMetadata = await sharp(animatedWebp, { animated: true }).metadata()
+  assert.ok(Number(animatedMetadata.pages) > 1, 'animated fixture must contain multiple pages')
+  const animatedResult = await request(apiBase, '/api/assets', {
+    ...bodyOptions({ mime: 'image/webp', data: animatedWebp.toString('base64') }), headers: { Cookie: `gymsid=${session}` }
+  })
+  assertStatus(animatedResult, 400, 'animated image fixture')
+  assert.equal(animatedResult.data.code, 'IMAGE_ANIMATED')
+  print('gate4_animated_image_pages', animatedMetadata.pages)
+  print('gate4_animated_image_status', 400)
+  print('gate4_animated_image_code', 'IMAGE_ANIMATED')
+
+  const oversizedDimensions = await sharp({ create: { width: 5001, height: 5001, channels: 3, background: { r: 0, g: 0, b: 0 } } })
+    .png({ compressionLevel: 9 }).toBuffer()
+  const oversizedResult = await request(apiBase, '/api/assets', {
+    ...bodyOptions({ mime: 'image/png', data: oversizedDimensions.toString('base64') }), headers: { Cookie: `gymsid=${session}` }
+  })
+  assertStatus(oversizedResult, 400, 'oversized dimensions fixture')
+  assert.equal(oversizedResult.data.code, 'IMAGE_DIMENSIONS')
+  print('gate4_dimensions_limit_pixels', 25000000)
+  print('gate4_oversized_dimensions_status', 400)
+  print('gate4_oversized_dimensions_code', 'IMAGE_DIMENSIONS')
+
+  const noisyRaw = crypto.randomBytes(1800 * 1800 * 3)
+  const noisyPng = await sharp(noisyRaw, { raw: { width: 1800, height: 1800, channels: 3 } }).png({ compressionLevel: 9 }).toBuffer()
+  assert.ok(noisyPng.length <= 10 * 1024 * 1024, `noise fixture too large for input boundary: ${noisyPng.length}`)
+  const outputLimitResult = await request(apiBase, '/api/assets', {
+    ...bodyOptions({ mime: 'image/png', data: noisyPng.toString('base64') }), headers: { Cookie: `gymsid=${session}` }
+  })
+  assertStatus(outputLimitResult, 413, 'normalized output limit fixture')
+  assert.equal(outputLimitResult.data.code, 'IMAGE_OUTPUT')
+  print('gate4_output_limit_bytes', 2097152)
+  print('gate4_output_limit_status', 413)
+  print('gate4_output_limit_code', 'IMAGE_OUTPUT')
+
+  // A sparse file fills the disposable quota accounting without allocating or
+  // writing 200 MiB. It is removed with the temporary staging directory only.
+  const quotaDir = path.join(activeDataDir, 'uploads', uid)
+  fs.mkdirSync(quotaDir, { recursive: true })
+  const quotaFixture = path.join(quotaDir, '.quota-fixture')
+  fs.writeFileSync(quotaFixture, '')
+  fs.truncateSync(quotaFixture, 200 * 1024 * 1024)
+  const quotaResult = await request(apiBase, '/api/assets', {
+    ...bodyOptions({ mime: 'image/png', data: tinyPng.toString('base64') }), headers: { Cookie: `gymsid=${session}` }
+  })
+  assertStatus(quotaResult, 413, 'per-user image quota fixture')
+  assert.equal(quotaResult.data.code, 'IMAGE_QUOTA')
+  assert.equal(fs.existsSync(quotaFixture), true)
+  fs.unlinkSync(quotaFixture)
+  print('gate4_quota_limit_bytes', 209715200)
+  print('gate4_quota_status', 413)
+  print('gate4_quota_existing_assets_preserved', true)
+
   let assetRead = await request(apiBase, '/api/data', { headers: { Cookie: `gymsid=${session}` } });
   const withAsset = { ...assetRead.data.state, customEx: assetRead.data.state.customEx.map(e => e.id === 'c-photo' ? { ...e, media: upload } : e) }
   assertStatus(await request(apiBase, '/api/data', { method: 'PUT', headers: { Cookie: `gymsid=${session}`, 'If-Match': assetRead.data.revision, 'Content-Type': 'application/json' }, body: JSON.stringify({ state: withAsset }) }), 200, 'asset reference attach')
   const rendered = await rawRequest(apiBase, `/api/assets/${upload.id}`, { headers: { Cookie: `gymsid=${session}` } }); assert.equal(rendered.response.status, 200); assert.equal(hash(rendered.bytes), upload.sha256)
   assertStatus(await request(apiBase, `/api/assets/${upload.id}`), 401, 'unauthorized asset retrieval')
   const otherSession = tokenFor(otherUid); assertStatus(await request(apiBase, `/api/assets/${upload.id}`, { headers: { Cookie: `gymsid=${otherSession}` } }), 404, 'other user asset retrieval')
-  // Simulate a container replacement and clean restore using the data-directory backup. The
-  // immutable asset is restored before the replacement API starts; no profile reference or image
-  // is deleted by the rollout.
+  // Simulate a container replacement and clean restore using the data-directory backup. Coordinate
+  // the snapshot with the sole writer: stop API first, then walk/copy files and persist a versioned
+  // checksum sidecar outside both source and backup roots (avoids self-referential checksums).
+  await stop(apiChild); apiChild = null
+  const backupManifest = { version: 1, files: fileManifest(tmp) }
+  const backupManifestJson = JSON.stringify(backupManifest, null, 2)
+  const backupManifestDigest = hash(backupManifestJson)
   backupDir = fs.mkdtempSync(path.join(os.tmpdir(), 'opengym-data-backup-'))
   fs.cpSync(tmp, backupDir, { recursive: true })
-  await stop(apiChild); apiChild = null
+  backupManifestFile = `${backupDir}.manifest.json`
+  fs.writeFileSync(backupManifestFile, backupManifestJson, { mode: 0o600 })
+  const sidecar = JSON.parse(fs.readFileSync(backupManifestFile, 'utf8'))
+  assert.equal(hash(fs.readFileSync(backupManifestFile)), hash(backupManifestJson))
+  assert.deepEqual(fileManifest(backupDir), sidecar.files)
+  // The immutable asset is restored before the replacement API starts; no profile reference or
+  // image is deleted by the rollout.
   const restoredDataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'opengym-restored-data-'))
   fs.cpSync(backupDir, restoredDataDir, { recursive: true })
+  assert.equal(sidecar.version, 1)
+  assert.deepEqual(fileManifest(restoredDataDir), sidecar.files)
+  print('gate4_backup_manifest_version', backupManifest.version)
+  print('gate4_backup_manifest_entries', backupManifest.files.length)
+  print('gate4_backup_manifest_sha256', backupManifestDigest)
+  print('gate4_backup_manifest_sidecar_verified', true)
+  print('gate4_backup_restore_manifest_match', true)
   activeDataDir = restoredDataDir
   const replacementPort = await freePort()
   apiChild = await start('node', ['api/server.js'], { PORT: replacementPort, DATA_DIR: activeDataDir, RP_ID: 'localhost', ORIGIN: 'http://localhost', MCP_ENABLED: '1', MCP_PROPOSALS_ENABLED: '1', CUSTOM_IMAGES_ENABLED: '1', AUDIT_LOG: '0' })
@@ -237,11 +401,12 @@ try {
   assertStatus(duplicateAfterRestart, 200, 'duplicate after container replacement'); assert.equal(duplicateAfterRestart.data.revision, rev1)
   print('gate2_idempotency_survives_restart', true)
   fs.rmSync(backupDir, { recursive: true, force: true }); backupDir = null
+  fs.rmSync(backupManifestFile, { force: true }); backupManifestFile = null
   const oldRef = (await request(apiBase, '/api/data', { headers: { Cookie: `gymsid=${session}` } })).data.state.customEx.find(e => e.id === 'c-photo').media
   assertStatus(await request(apiBase, '/api/assets', { ...bodyOptions({ mime: 'image/png', data: 'not-an-image' }), headers: { Cookie: `gymsid=${session}` } }), 400, 'failed replacement')
   const newRef = (await request(apiBase, '/api/data', { headers: { Cookie: `gymsid=${session}` } })).data.state.customEx.find(e => e.id === 'c-photo').media
   assert.deepEqual(newRef, oldRef)
-  print('gate4_proxy_body_limit', '16m_template'); print('gate4_upload_sha256', upload.sha256); print('gate4_private_asset_reference_ready', true); print('gate4_all_views_private_asset', 'not_claimed_staging_api_only'); print('gate4_failed_replacement_preserved', true); print('gate4_unauthorized_status', 401); print('gate4_cross_user_status', 404); print('gate4_clean_restore_checksum_match', true)
+  print('gate4_proxy_body_limit', '16m_template'); print('gate4_upload_sha256', upload.sha256); print('gate4_private_asset_reference_ready', true); print('gate4_all_views_private_asset', 'not_claimed_staging_api_only'); print('gate4_failed_replacement_preserved', true); print('gate4_unauthorized_status', 401); print('gate4_cross_user_status', 404); print('gate4_clean_restore_checksum_match', true); print('gate4_image_hardening', 'PASS (sharp decode/rotate/resize/WebP/metadata/quota)')
 
   // Leave a valid write-ahead journal behind as if the process crashed after its first durable
   // rename. The next API read must replay both state and receipt before serving the profile.
@@ -319,10 +484,11 @@ try {
   print('gate2_corrupt_db_writes', 'stopped status=503 storage_corrupt'); print('gate2_corrupt_db_put_status', 503); print('gate2_corrupt_db_put_error', 'storage_corrupt')
   print('GATE_2', 'PASS')
   print('GATE_3_STAGING', 'PASS (protocol clients; hosted-fixture is local and not a production cloud receipt)')
-  print('GATE_4_STAGING', 'PASS (API asset checksum/auth/rollback; browser all-views and production container evidence not claimed)')
+  print('GATE_4_STAGING', 'PASS (API asset decode/checksum/auth/rollback; browser all-views and production container evidence not claimed)')
 } finally {
   await stop(mcpChild); await stop(apiChild)
   if (backupDir) fs.rmSync(backupDir, { recursive: true, force: true })
+  if (backupManifestFile) fs.rmSync(backupManifestFile, { force: true })
   if (activeDataDir !== tmp) fs.rmSync(activeDataDir, { recursive: true, force: true })
   fs.rmSync(tmp, { recursive: true, force: true })
 }

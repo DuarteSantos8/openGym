@@ -96,6 +96,13 @@ const mcpBase = `http://127.0.0.1:${mcpPort}`
 const resource = 'https://gym.example.test/mcp'
 let apiChild; let mcpChild
 try {
+  const nginxTemplate = fs.readFileSync(path.join(ROOT, 'web/nginx.conf.template'), 'utf8')
+  const apiProxy = /location \^~ \/api\/ \{[\s\S]*?proxy_set_header X-OpenGym-Client-IP \$remote_addr;/.test(nginxTemplate)
+  const oauthProxy = /location \^~ \/oauth \{[\s\S]*?proxy_set_header X-OpenGym-Client-IP \$remote_addr;/.test(nginxTemplate)
+  assert.equal(apiProxy && oauthProxy, true, 'nginx overwrites gateway client IP on API and OAuth routes')
+  const compose = fs.readFileSync(path.join(ROOT, 'docker-compose.yml'), 'utf8')
+  const apiSection = /^  api:\n([\s\S]*?)\n  mcp:/m.exec(compose)?.[1] || ''
+  assert.ok(apiSection && !/^\s+ports:/m.test(apiSection), 'API is not directly published; web owns the overwrite boundary')
   apiChild = await start('node', ['api/server.js'], {
     PORT: apiPort, DATA_DIR: dataDir, RP_ID: 'localhost', ORIGIN: 'http://localhost',
     MCP_ENABLED: '1', MCP_PROPOSALS_ENABLED: '1', CUSTOM_IMAGES_ENABLED: '1', AUDIT_LOG: '0'
@@ -118,7 +125,11 @@ try {
   print('oauth_protected_resource_metadata', 'PASS')
   print('oauth_authorization_server_metadata', 'PASS')
 
-  const registration = status(await request(mcpBase, '/oauth/register', jsonBody({
+  // The public proxy supplies the caller address to MCP; MCP normalizes and forwards
+  // it in a gateway-owned header so API DCR limiting is per caller, not per container.
+  const dcrHeaders = { 'X-Forwarded-For': '198.51.100.10' }
+  const dcrBody = (body, headers = dcrHeaders) => ({ ...jsonBody(body), headers: { 'Content-Type': 'application/json', ...headers } })
+  const registration = status(await request(mcpBase, '/oauth/register', dcrBody({
     client_name: 'Claude staging client', redirect_uris: ['https://client.example.test/callback'],
     grant_types: ['authorization_code'], response_types: ['code'], token_endpoint_auth_method: 'none',
     scope: 'exercise:read routine:read progress:read'
@@ -133,19 +144,27 @@ try {
   // The API applies a bounded, normalized-IP registration limiter before the persistent cap.
   // Fill only the disposable window (not the client cap) and prove the next request is rejected.
   for (let i = 0; i < 19; i++) {
-    status(await request(mcpBase, '/oauth/register', jsonBody({
+    status(await request(mcpBase, '/oauth/register', dcrBody({
       client_name: `rate fixture ${i}`, redirect_uris: [`https://rate-${i}.example.test/callback`],
       grant_types: ['authorization_code'], response_types: ['code'], token_endpoint_auth_method: 'none', scope: 'exercise:read'
     })), 201, `rate fixture ${i}`)
   }
-  const rateLimited = await request(mcpBase, '/oauth/register', jsonBody({
+  const rateLimited = await request(mcpBase, '/oauth/register', dcrBody({
     client_name: 'rate limited', redirect_uris: ['https://rate-limit.example.test/callback'],
     grant_types: ['authorization_code'], response_types: ['code'], token_endpoint_auth_method: 'none', scope: 'exercise:read'
   }))
   assert.equal(rateLimited.response.status, 429)
+  const alternateAddress = await request(mcpBase, '/oauth/register', dcrBody({
+      client_name: 'alternate address', redirect_uris: ['https://alternate.example.test/callback'],
+      grant_types: ['authorization_code'], response_types: ['code'], token_endpoint_auth_method: 'none', scope: 'exercise:read'
+    }, { 'X-Forwarded-For': '198.51.100.11' }))
+  assert.equal(alternateAddress.response.status, 201)
   print('oauth_dynamic_registration', 'PASS')
   print('oauth_client_secret_issued', false)
   print('oauth_dcr_rate_limit_status', 429)
+  print('oauth_dcr_forwarded_ip_isolation', 'PASS')
+  print('oauth_dcr_gateway_header_overwrite', 'PASS')
+  print('oauth_api_direct_publish', false)
 
   const verifier = crypto.randomBytes(32).toString('base64url')
   const challenge = hashVerifier(verifier)
@@ -174,6 +193,27 @@ try {
   const code = redirect.searchParams.get('code')
   assert.ok(code)
   print('oauth_pkce_authorization_consent', 'PASS')
+
+  // A consent nonce is consumed before the first await. Two simultaneous submits
+  // therefore produce at most one grant/code (one redirect and one expiry error).
+  const raceVerifier = crypto.randomBytes(32).toString('base64url')
+  const raceChallenge = hashVerifier(raceVerifier)
+  const raceQuery = new URLSearchParams({
+    response_type: 'code', client_id: registration.client_id, redirect_uri: registration.redirect_uris[0],
+    scope: 'exercise:read', code_challenge: raceChallenge, code_challenge_method: 'S256', resource
+  })
+  const raceGet = await fetch(mcpBase + `/oauth/authorize?${raceQuery}`, { headers: { Cookie: `gymsid=${session}` } })
+  const raceHtml = await raceGet.text()
+  assert.equal(raceGet.status, 200)
+  const raceCsrf = /name="csrf" value="([^"]+)"/.exec(raceHtml)?.[1]
+  assert.ok(raceCsrf)
+  const raceForm = { csrf: raceCsrf, client_id: registration.client_id, redirect_uri: registration.redirect_uris[0], response_type: 'code', code_challenge: raceChallenge, code_challenge_method: 'S256', resource, scope: 'exercise:read' }
+  const racePosts = await Promise.all([1, 2].map(() => fetch(mcpBase + '/oauth/authorize', {
+    ...formBody(raceForm), headers: { Cookie: `gymsid=${session}`, 'Content-Type': 'application/x-www-form-urlencoded' }, redirect: 'manual'
+  })))
+  const raceStatuses = racePosts.map(response => response.status).sort((a, b) => a - b)
+  assert.deepEqual(raceStatuses, [302, 400])
+  print('oauth_consent_nonce_concurrent_statuses', raceStatuses)
 
   const wrongResourceToken = await request(mcpBase, '/oauth/token', formBody({
     grant_type: 'authorization_code', code, client_id: registration.client_id,

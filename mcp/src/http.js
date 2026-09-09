@@ -81,6 +81,28 @@ async function apiPublic(pathname, options = {}) {
   return data
 }
 
+// The web proxy overwrites forwarding headers with the peer it observed. Normalize
+// again at this boundary so the API limiter never receives an unbounded raw value.
+// Direct local MCP callers fall back to the socket peer; production is exposed via
+// nginx, which owns the trust boundary for these headers.
+function normalizedClientIp(raw) {
+  const value = String(raw || '').trim().replace(/^\[|\]$/g, '').replace(/^::ffff:/i, '')
+  if (/^\d{1,3}(?:\.\d{1,3}){3}$/.test(value)) {
+    const octets = value.split('.').map(Number)
+    return octets.every(n => n >= 0 && n <= 255) ? octets.join('.') : null
+  }
+  return /^[0-9a-f:]{2,45}$/i.test(value) ? value.toLowerCase() : null
+}
+
+function requestClientIp(req) {
+  const raw = String(req.headers['x-opengym-client-ip'] || '').trim()
+    || String(req.headers['cf-connecting-ip'] || '').trim()
+    || String(req.headers['x-forwarded-for'] || '').split(',')[0].trim()
+    || String(req.headers['x-real-ip'] || '').trim()
+    || String(req.socket?.remoteAddress || '').trim()
+  return normalizedClientIp(raw) || 'unknown'
+}
+
 async function apiCookie(pathname, cookie, options = {}) {
   const headers = { Accept: 'application/json', ...(options.headers || {}) }
   if (cookie) headers.Cookie = cookie
@@ -259,7 +281,12 @@ async function handleOAuthRegister(req, res) {
   if (!body || typeof body !== 'object' || Array.isArray(body)) return jsonResponse(res, 400, { error: 'invalid_client_metadata' })
   try {
     const result = await apiPublic('/api/oauth/clients', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-OpenGym-Client-IP': requestClientIp(req)
+      },
+      body: JSON.stringify(body)
     })
     return jsonResponse(res, 201, result)
   } catch (error) {
@@ -322,6 +349,10 @@ async function handleOAuthAuthorizePost(req, res) {
   const csrf = String(form.get('csrf') || '')
   const pending = oauthPending.get(csrf)
   if (!pending || pending.expiresAt <= Date.now()) return jsonResponse(res, 400, { error: 'authorization request expired' })
+  // Consume the browser nonce before any await. Two concurrent POSTs therefore
+  // cannot both pass the check and mint two grants. A failed grant creation is a
+  // terminal denial for this submission; retrying starts a fresh consent request.
+  oauthPending.delete(csrf)
   let data
   try { data = await authorizationRequest(authFormUrl(form)) }
   catch (error) { return jsonResponse(res, error.status || 400, { error: error.message || 'invalid_request' }) }
@@ -354,7 +385,6 @@ async function handleOAuthAuthorizePost(req, res) {
     method: data.method, resource: data.resource, scope: selected, token: grant.token, grantExpiresAt: grant.grant?.expires || null,
     expiresAt: Date.now() + OAUTH_TTL_MS, used: false
   })
-  oauthPending.delete(csrf)
   const redirect = new URL(data.redirectUri)
   redirect.searchParams.set('code', code)
   if (data.state) redirect.searchParams.set('state', data.state)

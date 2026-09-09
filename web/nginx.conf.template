@@ -26,6 +26,10 @@ server {
         client_max_body_size 16m;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
+        # DCR registrations are also reachable under /api. Overwrite the
+        # gateway-owned source header here so a direct browser cannot choose a
+        # fresh limiter bucket on every request.
+        proxy_set_header X-OpenGym-Client-IP $remote_addr;
         # $remote_addr, NOT $proxy_add_x_forwarded_for: the latter APPENDS to whatever the client
         # sent, and the API reads the first entry — so a client could put any address it liked in
         # front of its own and choose what the activity log recorded about it. Overwriting is what
@@ -74,6 +78,9 @@ server {
         proxy_http_version 1.1;
         proxy_buffering off;
         proxy_set_header Host $host;
+        # DCR source limiting uses this gateway-owned value. Never pass through
+        # caller-controlled forwarding headers to the MCP/API hop.
+        proxy_set_header X-OpenGym-Client-IP $remote_addr;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $remote_addr;
         proxy_set_header X-Forwarded-Proto $scheme;

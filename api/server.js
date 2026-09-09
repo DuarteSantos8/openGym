@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import https from 'node:https';
 import dns from 'node:dns';
+import sharp from 'sharp';
 import {
   generateRegistrationOptions, verifyRegistrationResponse,
   generateAuthenticationOptions, verifyAuthenticationResponse
@@ -39,6 +40,10 @@ const ALLOW_GUEST = !/^(0|false|no|off)$/i.test(process.env.ALLOW_GUEST || '');
 // baked into each cookie when it's issued, so lowering this never cuts an existing session short.
 const SESSION_DAYS = Math.max(1, +(process.env.SESSION_DAYS || 90) || 90);
 const MAX_BODY = 16 * 1024 * 1024;
+const IMAGE_MAX_PIXELS = 25_000_000;
+const IMAGE_MAX_EDGE = 2048;
+const IMAGE_MAX_OUTPUT_BYTES = 2 * 1024 * 1024;
+const IMAGE_QUOTA_BYTES = 200 * 1024 * 1024;
 // Personalization services are opt-in. A missing env var must preserve the existing deployment
 // surface; Compose enables them only when an operator explicitly sets the flags to 1/true.
 const enabled = name => /^(1|true|yes|on)$/i.test(process.env[name] || '');
@@ -263,7 +268,11 @@ function oauthClientIp(raw) {
   return /^[0-9a-f:]{2,45}$/i.test(value) ? value.toLowerCase() : null;
 }
 function oauthRegistrationKey(req) {
-  const forwarded = String(req.headers['cf-connecting-ip'] || '').trim()
+  // The trusted web/MCP gateway writes this normalized address before forwarding
+  // DCR requests. Check it first so every request does not collapse to the MCP
+  // container's socket address. The public proxy must overwrite this header.
+  const forwarded = String(req.headers['x-opengym-client-ip'] || '').trim()
+    || String(req.headers['cf-connecting-ip'] || '').trim()
     || String(req.headers['x-forwarded-for'] || '').split(',')[0].trim()
     || String(req.headers['x-real-ip'] || '').trim();
   return oauthClientIp(forwarded) || oauthClientIp(req.socket?.remoteAddress) || 'unknown';
@@ -366,6 +375,19 @@ function requireGrant(req, res, scope) {
 const uploadDir = uid => path.join(DATA, 'uploads', uid);
 const assetFile = (uid, id) => path.join(uploadDir(uid), id);
 const assetRef = (S, id) => (S?.customEx || []).find(e => e.media?.id === id)?.media || null;
+const assetLocks = new Map();
+async function withAssetLock(uid, fn) {
+  const previous = assetLocks.get(uid) || Promise.resolve();
+  let release;
+  const current = new Promise(resolve => { release = resolve; });
+  assetLocks.set(uid, current);
+  await previous;
+  try { return await fn(); }
+  finally { release(); if (assetLocks.get(uid) === current) assetLocks.delete(uid); }
+}
+
+function imageError(code, message) { return Object.assign(new Error(message), { code }); }
+
 const allowedImage = new Map([
   ['image/jpeg', b => b.length > 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff],
   ['image/png', b => b.length > 8 && b.subarray(0, 8).equals(Buffer.from('89504e470d0a1a0a', 'hex'))],
@@ -374,13 +396,74 @@ const allowedImage = new Map([
 function imageBytes(body) {
   const mime = String(body?.mime || '').toLowerCase();
   const check = allowedImage.get(mime);
-  if (!check) throw Object.assign(new Error('unsupported image type'), { code: 'IMAGE_TYPE' });
+  if (!check) throw imageError('IMAGE_TYPE', 'unsupported image type');
   const encoded = String(body?.data || '');
-  if (!encoded || encoded.length > 14 * 1024 * 1024) throw Object.assign(new Error('image exceeds 10 MiB'), { code: 'IMAGE_SIZE' });
+  if (!encoded || encoded.length > 14 * 1024 * 1024) throw imageError('IMAGE_SIZE', 'image exceeds 10 MiB');
   let bytes;
-  try { bytes = Buffer.from(encoded, 'base64'); } catch { throw Object.assign(new Error('invalid image data'), { code: 'IMAGE_DATA' }); }
-  if (!bytes.length || bytes.length > 10 * 1024 * 1024 || !check(bytes)) throw Object.assign(new Error('invalid image data'), { code: 'IMAGE_DATA' });
+  try { bytes = Buffer.from(encoded, 'base64'); } catch { throw imageError('IMAGE_DATA', 'invalid image data'); }
+  if (!bytes.length || bytes.length > 10 * 1024 * 1024 || !check(bytes)) throw imageError('IMAGE_DATA', 'invalid image data');
   return { mime, bytes };
+}
+
+// Decode every accepted format, auto-orient it, bound the long edge, and emit a
+// metadata-free WebP. Sharp's pixel limit is applied before decoding so a tiny
+// compressed bomb cannot allocate an unbounded raster. Animated inputs are
+// rejected rather than silently flattening a frame the user did not choose.
+async function normalizeImage(image) {
+  let metadata;
+  try {
+    metadata = await sharp(image.bytes, {
+      limitInputPixels: IMAGE_MAX_PIXELS, failOn: 'error', animated: true
+    }).metadata();
+  } catch (error) {
+    if (/pixel|dimension|limit/i.test(String(error?.message || ''))) {
+      throw imageError('IMAGE_DIMENSIONS', 'image dimensions exceed 25 megapixels');
+    }
+    throw imageError('IMAGE_DECODE', 'image could not be decoded');
+  }
+  const width = Number(metadata?.width || 0);
+  const height = Number(metadata?.height || 0);
+  if (!width || !height) throw imageError('IMAGE_DIMENSIONS', 'image dimensions are missing');
+  if (width * height > IMAGE_MAX_PIXELS) throw imageError('IMAGE_DIMENSIONS', 'image dimensions exceed 25 megapixels');
+  if (Number(metadata?.pages || 1) > 1) throw imageError('IMAGE_ANIMATED', 'animated images are not supported');
+
+  let bytes;
+  try {
+    bytes = await sharp(image.bytes, {
+      limitInputPixels: IMAGE_MAX_PIXELS, failOn: 'error', animated: false
+    }).rotate().resize({
+      width: IMAGE_MAX_EDGE, height: IMAGE_MAX_EDGE, fit: 'inside', withoutEnlargement: true
+    }).webp({ quality: 90, effort: 4 }).toBuffer();
+  } catch (error) {
+    if (/pixel|dimension|limit/i.test(String(error?.message || ''))) {
+      throw imageError('IMAGE_DIMENSIONS', 'image dimensions exceed 25 megapixels');
+    }
+    throw imageError('IMAGE_DECODE', 'image could not be decoded');
+  }
+  if (!bytes.length || bytes.length > IMAGE_MAX_OUTPUT_BYTES) {
+    throw imageError('IMAGE_OUTPUT', 'normalized image exceeds 2 MiB');
+  }
+  let outputMetadata;
+  try { outputMetadata = await sharp(bytes, { limitInputPixels: IMAGE_MAX_PIXELS }).metadata(); }
+  catch { throw imageError('IMAGE_OUTPUT', 'normalized image could not be verified'); }
+  const outputWidth = Number(outputMetadata?.width || 0);
+  const outputHeight = Number(outputMetadata?.height || 0);
+  if (!outputWidth || !outputHeight || Math.max(outputWidth, outputHeight) > IMAGE_MAX_EDGE) {
+    throw imageError('IMAGE_OUTPUT', 'normalized image dimensions are invalid');
+  }
+  return { mime: 'image/webp', bytes, width: outputWidth, height: outputHeight };
+}
+
+function assetUsage(uid) {
+  const dir = uploadDir(uid);
+  let entries;
+  try { entries = fs.readdirSync(dir, { withFileTypes: true }); }
+  catch (error) { if (error?.code === 'ENOENT') return 0; throw error; }
+  return entries.reduce((total, entry) => {
+    if (!entry.isFile()) return total; // ignore symlinks/directories in the quota walk
+    try { return total + fs.statSync(path.join(dir, entry.name)).size; }
+    catch { return total; }
+  }, 0);
 }
 
 /* ---------- push notifications (Web Push / VAPID) ---------- */
@@ -1236,13 +1319,29 @@ const routes = {
     let body;
     try { body = await readBody(req, 16 * 1024 * 1024); } catch (e) { return json(res, 400, { error: 'invalid image upload' }); }
     let image;
-    try { image = imageBytes(body); } catch (e) { return json(res, 400, { error: e.message, code: e.code }); }
-    const id = crypto.randomBytes(18).toString('base64url');
-    const hash = crypto.createHash('sha256').update(image.bytes).digest('hex');
     try {
-      durableAtomicWrite(assetFile(user.id, id), image.bytes, 0o600);
-      json(res, 201, { asset: { id, mime: image.mime, size: image.bytes.length, sha256: hash } });
-    } catch (e) { storageFailure(res, e); }
+      image = await normalizeImage(imageBytes(body));
+    } catch (e) {
+      const status = e.code === 'IMAGE_OUTPUT' || e.code === 'IMAGE_QUOTA' ? 413 : 400;
+      return json(res, status, { error: e.message, code: e.code });
+    }
+    return withAssetLock(user.id, async () => {
+      let usage;
+      try { usage = assetUsage(user.id); }
+      catch (e) { return storageFailure(res, e); }
+      if (usage + image.bytes.length > IMAGE_QUOTA_BYTES) {
+        return json(res, 413, {
+          error: 'image quota exceeded', code: 'IMAGE_QUOTA',
+          quota_bytes: IMAGE_QUOTA_BYTES, used_bytes: usage
+        });
+      }
+      const id = crypto.randomBytes(18).toString('base64url');
+      const hash = crypto.createHash('sha256').update(image.bytes).digest('hex');
+      try {
+        durableAtomicWrite(assetFile(user.id, id), image.bytes, 0o600);
+        json(res, 201, { asset: { id, mime: image.mime, size: image.bytes.length, sha256: hash } });
+      } catch (e) { storageFailure(res, e); }
+    });
   },
 
   'POST /api/mcp/proposals': async (req, res) => {
