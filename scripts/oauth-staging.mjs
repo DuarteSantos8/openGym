@@ -126,11 +126,26 @@ try {
   assert.ok(registration.client_id)
   assert.equal(registration.token_endpoint_auth_method, 'none')
   assert.equal(registration.client_secret_expires_at, 0)
+  assert.ok(registration.client_expires_at > Math.floor(Date.now() / 1000))
   assert.deepEqual(registration.redirect_uris, ['https://client.example.test/callback'])
   const stored = status(await request(apiBase, `/api/oauth/clients/${registration.client_id}`), 200, 'stored client metadata').data
   assert.equal(stored.client_id, registration.client_id)
+  // The API applies a bounded, normalized-IP registration limiter before the persistent cap.
+  // Fill only the disposable window (not the client cap) and prove the next request is rejected.
+  for (let i = 0; i < 19; i++) {
+    status(await request(mcpBase, '/oauth/register', jsonBody({
+      client_name: `rate fixture ${i}`, redirect_uris: [`https://rate-${i}.example.test/callback`],
+      grant_types: ['authorization_code'], response_types: ['code'], token_endpoint_auth_method: 'none', scope: 'exercise:read'
+    })), 201, `rate fixture ${i}`)
+  }
+  const rateLimited = await request(mcpBase, '/oauth/register', jsonBody({
+    client_name: 'rate limited', redirect_uris: ['https://rate-limit.example.test/callback'],
+    grant_types: ['authorization_code'], response_types: ['code'], token_endpoint_auth_method: 'none', scope: 'exercise:read'
+  }))
+  assert.equal(rateLimited.response.status, 429)
   print('oauth_dynamic_registration', 'PASS')
   print('oauth_client_secret_issued', false)
+  print('oauth_dcr_rate_limit_status', 429)
 
   const verifier = crypto.randomBytes(32).toString('base64url')
   const challenge = hashVerifier(verifier)
@@ -139,16 +154,16 @@ try {
     scope: 'exercise:read routine:read progress:read', code_challenge: challenge,
     code_challenge_method: 'S256', resource, state: 'oauth-state-1'
   })
-  const consent = await request(mcpBase, `/oauth/authorize?${authorizeQuery}`, { headers: { Cookie: `gymsid=${session}` } })
-  status(consent, 200, 'authorization consent')
-  const csrf = /name="csrf" value="([^"]+)"/.exec(await (async () => {
-    // request() intentionally parses JSON; fetch the HTML separately for the form nonce.
-    const response = await fetch(mcpBase + `/oauth/authorize?${authorizeQuery}`, { headers: { Cookie: `gymsid=${session}` } })
-    return response.text()
-  })())?.[1]
+  const consentResponse = await fetch(mcpBase + `/oauth/authorize?${authorizeQuery}`, { headers: { Cookie: `gymsid=${session}` } })
+  const consentHtml = await consentResponse.text()
+  assert.equal(consentResponse.status, 200)
+  assert.match(consentHtml, /Unverified client/)
+  assert.match(consentHtml, /https:\/\/client\.example\.test\/callback/)
+  const csrf = /name="csrf" value="([^"]+)"/.exec(consentHtml)?.[1]
   assert.ok(csrf)
+  print('oauth_consent_unverified_redirect_display', 'PASS')
   const authorization = await fetch(mcpBase + '/oauth/authorize', {
-    ...formBody({ csrf, client_id: registration.client_id, redirect_uri: registration.redirect_uris[0], response_type: 'code', code_challenge: challenge, code_challenge_method: 'S256', state: 'oauth-state-1', scope: ['exercise:read', 'routine:read', 'progress:read'] }),
+    ...formBody({ csrf, client_id: registration.client_id, redirect_uri: registration.redirect_uris[0], response_type: 'code', code_challenge: challenge, code_challenge_method: 'S256', resource, state: 'oauth-state-1', scope: ['exercise:read', 'routine:read', 'progress:read'] }),
     headers: { Cookie: `gymsid=${session}`, 'Content-Type': 'application/x-www-form-urlencoded' }, redirect: 'manual'
   })
   assert.equal(authorization.status, 302)

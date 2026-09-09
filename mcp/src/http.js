@@ -126,7 +126,7 @@ async function authorizationRequest(url) {
     const error = new Error('invalid code challenge'); error.status = 400; throw error
   }
   const client = await oauthClient(clientId)
-  if (!client || !Array.isArray(client.redirect_uris) || !client.redirect_uris.includes(redirectUri)) {
+  if (!client || (client.client_expires_at && client.client_expires_at <= Math.floor(Date.now() / 1000)) || !Array.isArray(client.redirect_uris) || !client.redirect_uris.includes(redirectUri)) {
     const error = new Error('unknown client or redirect_uri'); error.status = 400; throw error
   }
   const requested = formScope(p.get('scope') || client.scope)
@@ -272,6 +272,8 @@ function authorizeForm(data, csrf, user) {
       <label><input type="checkbox" name="scope" value="${htmlEscape(scope)}" checked> ${htmlEscape(scope)}</label>`).join('')
   return `<!doctype html><html><head><meta charset="utf-8"><title>openGym access</title></head><body>
     <main><h1>Allow ${htmlEscape(data.client.client_name || 'MCP client')} to access openGym?</h1>
+    <p><strong>Unverified client</strong> — this name was supplied by the client and is not endorsed by openGym.</p>
+    <p>It will receive an authorization code at <code>${htmlEscape(data.redirectUri)}</code>.</p>
     <p>Signed in as ${htmlEscape(user?.name || user?.id || 'openGym user')}.</p>
     <form method="post" action="/oauth/authorize">
       <input type="hidden" name="csrf" value="${htmlEscape(csrf)}">

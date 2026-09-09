@@ -239,6 +239,7 @@ const oauthClientFile = path.join(DATA, 'oauth-clients.json');
 const OAUTH_CLIENT_LIMIT = 1000;
 const OAUTH_REGISTER_WINDOW_MS = 15 * 60 * 1000;
 const OAUTH_REGISTER_MAX_PER_WINDOW = 20;
+const OAUTH_CLIENT_MAX_IDLE_MS = 180 * 86400000;
 const oauthRegistrationAttempts = new Map();
 let oauthClients = { clients: [] };
 let oauthClientsError = null;
@@ -253,9 +254,33 @@ function saveOAuthClients() {
   if (oauthClientsError) throw oauthClientsError;
   durableAtomicWrite(oauthClientFile, JSON.stringify(oauthClients, null, 2), 0o600);
 }
+function oauthClientIp(raw) {
+  const value = String(raw || '').trim().replace(/^\[|\]$/g, '').replace(/^::ffff:/i, '');
+  if (/^\d{1,3}(?:\.\d{1,3}){3}$/.test(value)) {
+    const octets = value.split('.').map(Number);
+    return octets.every(n => n >= 0 && n <= 255) ? octets.join('.') : null;
+  }
+  return /^[0-9a-f:]{2,45}$/i.test(value) ? value.toLowerCase() : null;
+}
+function oauthRegistrationKey(req) {
+  const forwarded = String(req.headers['cf-connecting-ip'] || '').trim()
+    || String(req.headers['x-forwarded-for'] || '').split(',')[0].trim()
+    || String(req.headers['x-real-ip'] || '').trim();
+  return oauthClientIp(forwarded) || oauthClientIp(req.socket?.remoteAddress) || 'unknown';
+}
+function pruneOAuthClients() {
+  const cutoff = Date.now() - OAUTH_CLIENT_MAX_IDLE_MS;
+  const retained = oauthClients.clients.filter(client => {
+    const last = Date.parse(client.lastUsedAt || client.createdAt || '') || 0;
+    return last > cutoff;
+  });
+  if (retained.length === oauthClients.clients.length) return;
+  oauthClients.clients = retained;
+  saveOAuthClients();
+}
 function oauthRegistrationAllowed(req) {
   const now = Date.now();
-  const key = String(req.socket?.remoteAddress || 'unknown').slice(0, 80);
+  const key = oauthRegistrationKey(req);
   const prior = oauthRegistrationAttempts.get(key) || [];
   const recent = prior.filter(ts => ts > now - OAUTH_REGISTER_WINDOW_MS);
   if (recent.length >= OAUTH_REGISTER_MAX_PER_WINDOW) {
@@ -273,11 +298,13 @@ function oauthRegistrationAllowed(req) {
 }
 function oauthClientView(c) {
   const createdAt = Date.parse(c.createdAt) || Date.now();
+  const lastUsedAt = Date.parse(c.lastUsedAt || c.createdAt) || createdAt;
   return {
     client_id: c.clientId, client_name: c.clientName, redirect_uris: c.redirectUris,
     grant_types: c.grantTypes, response_types: c.responseTypes,
     token_endpoint_auth_method: c.tokenEndpointAuthMethod, scope: c.scope, created_at: c.createdAt,
-    client_id_issued_at: Math.floor(createdAt / 1000), client_secret_expires_at: 0
+    client_id_issued_at: Math.floor(createdAt / 1000), client_secret_expires_at: 0,
+    client_expires_at: Math.floor((lastUsedAt + OAUTH_CLIENT_MAX_IDLE_MS) / 1000)
   };
 }
 function localRedirect(uri) {
@@ -892,6 +919,7 @@ const routes = {
       res.setHeader('Retry-After', '900');
       return json(res, 429, { error: 'registration rate limit exceeded' });
     }
+    try { pruneOAuthClients(); } catch (e) { return storageFailure(res, e); }
     if (oauthClients.clients.length >= OAUTH_CLIENT_LIMIT) return json(res, 429, { error: 'client registration limit reached' });
     let body;
     try { body = await readBody(req, 256 * 1024); } catch { return json(res, 400, { error: 'invalid_client_metadata' }); }
@@ -1557,6 +1585,10 @@ http.createServer(async (req, res) => {
     if (!MCP_ENABLED) return json(res, 404, { error: 'feature disabled' });
     if (oauthClientsError) return storageFailure(res, oauthClientsError);
     const client = oauthClients.clients.find(c => c.clientId === oauthClientMatch[1]);
+    if (client) {
+      client.lastUsedAt = new Date().toISOString();
+      try { saveOAuthClients(); } catch { /* metadata reads remain available if the journal is full */ }
+    }
     return client ? json(res, 200, oauthClientView(client)) : json(res, 404, { error: 'unknown client' });
   }
   const proposalMatch = /^\/api\/mcp\/proposals\/([A-Za-z0-9_-]+)$/.exec(url.pathname);
