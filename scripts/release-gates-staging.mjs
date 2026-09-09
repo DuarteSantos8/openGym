@@ -276,20 +276,42 @@ try {
   // Saturate the disposable decoder with a bounded burst. The API admits two
   // active normalizers, queues eight, and rejects the rest with a retryable 429;
   // response headers expose the observed peak only in this test process.
+  const corruptImage = Buffer.from('89504e470d0a1a0a00000000', 'hex')
   const concurrentUploads = await Promise.all(Array.from({ length: 14 }, (_, index) => request(apiBase, '/api/assets', {
     ...bodyOptions({ mime: 'image/png', data: tinyPng.toString('base64') }), headers: { Cookie: `gymsid=${session}`, 'X-Image-Concurrency-Fixture': String(index) }
   })))
   const concurrentStatuses = concurrentUploads.map(result => result.response.status)
   const concurrentPeaks = concurrentUploads.map(result => Number(result.response.headers.get('x-opengym-image-processing-peak') || 0)).filter(Number.isFinite)
   const observedPeak = Math.max(0, ...concurrentPeaks)
-  assert.ok(concurrentStatuses.includes(429), `decoder queue must reject at capacity: ${concurrentStatuses}`)
-  assert.ok(observedPeak <= 2, `decoder peak exceeded semaphore: ${observedPeak}`)
   const concurrentStatusCounts = concurrentStatuses.reduce((counts, status) => ({ ...counts, [status]: (counts[status] || 0) + 1 }), {})
+  assert.equal(concurrentStatusCounts[201], 10, `decoder queue successful count: ${concurrentStatuses}`)
+  assert.equal(concurrentStatusCounts[429], 4, `decoder queue rejection count: ${concurrentStatuses}`)
+  assert.equal(Object.keys(concurrentStatusCounts).length, 2)
+  assert.equal(observedPeak, 2, `decoder peak must equal semaphore limit: ${observedPeak}`)
+  const retryAfterValues = concurrentUploads.filter(result => result.response.status === 429)
+    .map(result => result.response.headers.get('retry-after'))
+  assert.deepEqual(retryAfterValues, ['1', '1', '1', '1'])
   print('gate4_image_processing_limit', 2)
   print('gate4_image_processing_queue_limit', 8)
   print('gate4_image_processing_peak_observed', observedPeak)
-  print('gate4_image_processing_status_counts', concurrentStatusCounts)
+  print('gate4_image_processing_status_counts', { 201: concurrentStatusCounts[201], 429: concurrentStatusCounts[429] })
   print('gate4_image_processing_queue_rejection_status', 429)
+  print('gate4_image_processing_queue_retry_after', '1')
+
+  // Error paths must release both decoder slots. Two simultaneous corrupt
+  // requests are followed by a valid upload under a bounded timeout; a response
+  // proves there is no leaked slot or deadlocked queue.
+  const corruptBurst = await Promise.all([1, 2].map(() => request(apiBase, '/api/assets', {
+    ...bodyOptions({ mime: 'image/png', data: corruptImage.toString('base64') }), headers: { Cookie: `gymsid=${session}` }
+  })))
+  assert.deepEqual(corruptBurst.map(result => result.response.status).sort((a, b) => a - b), [400, 400])
+  const releaseTimeout = wait(2000).then(() => { throw new Error('decoder slot release probe timed out') })
+  const releaseValid = await Promise.race([request(apiBase, '/api/assets', {
+    ...bodyOptions({ mime: 'image/png', data: tinyPng.toString('base64') }), headers: { Cookie: `gymsid=${session}` }
+  }), releaseTimeout])
+  assertStatus(releaseValid, 201, 'decoder slot release valid upload')
+  print('gate4_image_processing_release_after_errors', true)
+  print('gate4_image_processing_no_deadlock', true)
 
   const jpegWithExif = await sharp({ create: { width: 320, height: 240, channels: 3, background: { r: 210, g: 120, b: 70 } } })
     .withMetadata({ exif: { IFD0: { Artist: 'openGym staging fixture' } } }).jpeg({ quality: 88 }).toBuffer()
@@ -313,7 +335,6 @@ try {
   print('gate4_exif_input_present', true)
   print('gate4_exif_output_absent', true)
 
-  const corruptImage = Buffer.from('89504e470d0a1a0a00000000', 'hex')
   const corruptImageResult = await request(apiBase, '/api/assets', {
     ...bodyOptions({ mime: 'image/png', data: corruptImage.toString('base64') }), headers: { Cookie: `gymsid=${session}` }
   })
