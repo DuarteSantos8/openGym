@@ -5,56 +5,65 @@ import { useUI } from '../store/useUI.js'
 function Sheet({ sheet }) {
   const { closeSheet } = useUI()
   const ref = useRef(null)
-  const drag = useRef({ startY: null, delta: 0 })
+  // startY null = no gesture. axis stays null until the finger has travelled far enough to
+  // tell a vertical pull from a sideways scroll; 'x' hands the gesture to whatever scrolls
+  // horizontally under it (chip strips, heatmap) and the sheet stays put.
+  const idle = () => ({ startX: null, startY: null, axis: null, delta: 0, vy: 0, lastY: 0, lastT: 0 })
+  const drag = useRef(idle())
 
-  const onTouchStart = e => {
+  // a gesture that begins on a slider (or opted-out control) belongs to that control, not to
+  // the sheet's swipe-to-dismiss — so it keeps working while you drag. Horizontal strips are
+  // opted out too: a sideways scroll must never wobble or pull down the sheet.
+  const NODRAG = 'input[type=range], [data-nodrag], .chips, .hm-wrap'
+  const begin = (target, x, y) => {
     const el = ref.current
-    // a gesture that begins on a slider (or opted-out control) belongs to that control,
-    // not to the sheet's swipe-to-dismiss — so it keeps working while you drag
-    if (e.target.closest && e.target.closest('input[type=range], [data-nodrag]')) {
-      drag.current = { startY: null, delta: 0 }
-      return
-    }
-    drag.current = { startY: el.scrollTop <= 0 ? e.touches[0].clientY : null, delta: 0 }
+    if (target.closest && target.closest(NODRAG)) { drag.current = idle(); return }
+    if (el.scrollTop > 0) { drag.current = idle(); return }
+    drag.current = { ...idle(), startX: x, startY: y, lastY: y, lastT: performance.now() }
   }
-  const onTouchMove = e => {
+  const move = (e, x, y) => {
     const el = ref.current, d = drag.current
     if (d.startY === null) return
-    d.delta = e.touches[0].clientY - d.startY
-    if (d.delta > 0 && el.scrollTop <= 0) {
+    // synthetic events (tests) may carry no x at all: treat that as straight down
+    const dx = Number.isFinite(x) ? x - d.startX : 0, dy = y - d.startY
+    if (d.axis === null) {
+      // axis lock after ~8px: clearly-more-vertical wins the sheet, anything else is a scroll
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return
+      d.axis = Math.abs(dy) > Math.abs(dx) * 1.2 ? 'y' : 'x'
+      if (d.axis === 'x') return
+    }
+    if (d.axis === 'x') return
+    const now = performance.now()
+    // velocity from the last move, so a fast short flick can still be told from a slow drag
+    if (now > d.lastT) { d.vy = (y - d.lastY) / (now - d.lastT); d.lastY = y; d.lastT = now }
+    if (dy > 0 && el.scrollTop <= 0) {
       e.preventDefault()
+      d.delta = dy
       el.style.transition = 'none'
-      el.style.transform = `translateY(${d.delta}px)`
-    } else d.delta = 0
+      el.style.transform = `translateY(${dy}px)`
+    } else if (d.delta > 0) {
+      // the pull reversed above the start: snap back before the sheet is allowed to scroll,
+      // otherwise it scrolls while still hanging below its resting place
+      e.preventDefault()
+      d.delta = 0
+      el.style.transform = 'translateY(0px)'
+    }
   }
+  const onTouchStart = e => begin(e.target, e.touches[0].clientX, e.touches[0].clientY)
+  const onTouchMove = e => move(e, e.touches[0].clientX, e.touches[0].clientY)
   const onTouchEnd = () => {
     const el = ref.current, d = drag.current
     if (d.startY === null) return
     el.style.transition = 'transform .2s'
-    if (d.delta > 90 && !sheet.locked) { el.style.transform = 'translateY(110%)'; setTimeout(() => closeSheet(sheet.id), 180) }
+    // a long pull, or a short but fast flick, dismisses
+    const flick = d.delta > 30 && d.vy > 0.6
+    if ((d.delta > 90 || flick) && !sheet.locked) { el.style.transform = 'translateY(110%)'; setTimeout(() => closeSheet(sheet.id), 180) }
     else el.style.transform = ''
-    d.startY = null
+    drag.current = idle()
   }
   // Mouse drag (desktop testing / trackpads): same swipe-to-dismiss behaviour.
-  const onMouseDown = e => {
-    if (e.button !== 0) return
-    if (e.target.closest && e.target.closest('input[type=range], [data-nodrag]')) {
-      drag.current = { startY: null, delta: 0 }
-      return
-    }
-    const el = ref.current
-    drag.current = { startY: el.scrollTop <= 0 ? e.clientY : null, delta: 0 }
-  }
-  const onMouseMove = e => {
-    const el = ref.current, d = drag.current
-    if (d.startY === null) return
-    d.delta = e.clientY - d.startY
-    if (d.delta > 0 && el.scrollTop <= 0) {
-      e.preventDefault()
-      el.style.transition = 'none'
-      el.style.transform = `translateY(${d.delta}px)`
-    } else d.delta = 0
-  }
+  const onMouseDown = e => { if (e.button === 0) begin(e.target, e.clientX, e.clientY) }
+  const onMouseMove = e => move(e, e.clientX, e.clientY)
   const onMouseUp = () => onTouchEnd()
 
   // non-passive touchmove so preventDefault works (bottom sheets only; centered dialogs have no ref)
@@ -161,6 +170,11 @@ export default function Modals() {
     return () => {
       b.position = b.top = b.left = b.right = b.width = ''
       window.scrollTo(0, y)
+      // If the sheet closed with the keyboard still up (tap "+" in the picker, then finish),
+      // iOS scrolls the page again while the keyboard dismisses — after the line above ran.
+      // Ask once more when that animation is over. The window-level guard in
+      // lib/viewport-guard.js covers the keyboard closing while a sheet stays open.
+      window.setTimeout(() => { if (document.body.style.position !== 'fixed') window.scrollTo(0, y) }, 350)
     }
   }, [sheets.length > 0])
 

@@ -27,8 +27,13 @@ function useBodyPaths() {
 }
 
 function View({ view, levels, onMuscle, selected }) {
+  const activate = (event, slug) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return
+    if (event.key === ' ') event.preventDefault()
+    onMuscle(slug)
+  }
   return (
-    <svg className="bm-v" viewBox={view.vb} role="img">
+    <svg className="bm-v" viewBox={view.vb} role={onMuscle ? 'group' : 'img'}>
       {INERT.map(slug => (view.p[slug] || []).map((d, i) =>
         <path key={slug + i} className="bm-sil" d={d} />))}
       {MUSCLES.map(slug => (view.p[slug] || []).map((d, i) =>
@@ -37,6 +42,11 @@ function View({ view, levels, onMuscle, selected }) {
           className={'bm-m l' + (levels[slug] || 0) + (selected === slug ? ' sel' : '')}
           d={d}
           onClick={onMuscle ? () => onMuscle(slug) : undefined}
+          onKeyDown={onMuscle ? event => activate(event, slug) : undefined}
+          role={onMuscle ? 'button' : undefined}
+          tabIndex={onMuscle ? 0 : undefined}
+          aria-label={onMuscle ? t(MUSCLE_NAME[slug]) : undefined}
+          aria-pressed={onMuscle ? selected === slug : undefined}
         >
           <title>{t(MUSCLE_NAME[slug])}</title>
         </path>))}
@@ -66,7 +76,7 @@ export default function BodyMap({ load = {}, thresholds, body = 'male', onMuscle
 }
 
 export function BodyMapLegend() {
-  return <div className="hm-legend">
+  return <div className="hm-legend" aria-label={`${t('Less')} ${t('More')}`}>
     {t('Less')} <div className="hm-c l0" /><div className="hm-c l1" /><div className="hm-c l2" />
     <div className="hm-c l3" /><div className="hm-c l4" /> {t('More')}
   </div>

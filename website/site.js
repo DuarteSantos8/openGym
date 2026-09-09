@@ -1,44 +1,180 @@
-// Behaviour for the openGym site: the phone menu, the scroll reveals, the demo frame,
-// and the two things that come from the GitLab API (repo counts, release timeline).
+// Behaviour for the openGym site: the header's navigation sheet, the contents
+// drawer and its scrollspy, the scroll reveals, the demo frame, and the two things
+// that come from the GitLab API (repo counts, release timeline).
 // Every one of them fails soft — the page is complete without any of this running.
 
 const GL_PROJECT = 'https://gitlab.com/api/v4/projects/DuarteSantos8%2Fopengym'
 
-/* ------------------------------------------------------------------ phone menu */
-;(() => {
-  const btn = document.querySelector('.nav-toggle')
-  const menu = document.getElementById('menu')
-  if (!btn || !menu) return
+// Discord publishes an invite's guild counts to anyone who asks for the invite with
+// ?with_counts=1 — no bot token, no widget to enable, and the API reflects the caller's
+// Origin, so the browser is allowed to read it. The code is the permanent invite in the
+// nav; if that invite is ever revoked this returns 404 and the count simply stays blank.
+const DC_INVITE = 'https://discord.com/api/v10/invites/e62jY6fwVb?with_counts=1'
 
-  const close = () => {
-    menu.classList.remove('open')
-    btn.setAttribute('aria-expanded', 'false')
-    // menu-open drives the dimming scrim; overflow keeps the page still underneath.
-    document.body.classList.remove('menu-open')
-    document.body.style.overflow = ''
+/* ------------------------------------------------------- one panel controller
+   The navigation sheet and the contents drawer are the same object with different
+   contents: one opener, one close button, Escape, a tap outside, focus held inside
+   while open and handed back to the opener on close. Writing it once is the only
+   way the two of them can stay indistinguishable to a reader.
+
+   Both are CLOSED in CSS, so a panel is shut on first paint whatever this script
+   does — and nothing is read back from storage to reopen one. */
+const FOCUSABLE = 'a[href],button:not([disabled]),input,select,textarea,[tabindex]:not([tabindex="-1"])'
+
+function panel({ opener, panelEl, flag, closeBtn }) {
+  if (!opener || !panelEl) return null
+  const body = document.body
+  let lastFocus = null
+
+  const isOpen = () => body.classList.contains(flag)
+
+  const set = open => {
+    if (open === isOpen()) return
+    if (open) lastFocus = document.activeElement
+    body.classList.toggle(flag, open)
+    opener.setAttribute('aria-expanded', String(open))
+    panelEl.setAttribute('aria-hidden', String(!open))
+    // The panel scrolls on its own; letting the page scroll behind it is the classic
+    // menu bug where the reader loses their place on close.
+    body.style.overflow = open ? 'hidden' : ''
+    if (open) {
+      // The close button first: it is the answer to "how do I get out of this".
+      const first = panelEl.querySelector(closeBtn) || panelEl.querySelector(FOCUSABLE)
+      first && first.focus({ preventScroll: true })
+    } else if (lastFocus && document.contains(lastFocus)) {
+      lastFocus.focus({ preventScroll: true })
+    }
   }
-  btn.addEventListener('click', () => {
-    const open = menu.classList.toggle('open')
-    btn.setAttribute('aria-expanded', String(open))
-    document.body.classList.toggle('menu-open', open)
-    // The sheet scrolls on its own; letting the page scroll behind it is the classic
-    // mobile-menu bug where the reader loses their place on close.
-    document.body.style.overflow = open ? 'hidden' : ''
-  })
-  // The scrim is body::after, so it has no element of its own to listen on — a tap
-  // that lands outside both the sheet and the button is a tap on the scrim.
-  document.addEventListener('click', e => {
-    if (!document.body.classList.contains('menu-open')) return
-    if (e.target.closest('#menu') || e.target.closest('.nav-toggle')) return
-    close()
-  })
-  // Tapping a link inside the sheet navigates, so the sheet has to get out of the way —
+
+  opener.addEventListener('click', e => { e.stopPropagation(); set(!isOpen()) })
+  panelEl.querySelector(closeBtn)?.addEventListener('click', () => set(false))
+  // Tapping a link inside navigates, so the panel has to get out of the way —
   // in-page anchors especially, which do not reload anything.
-  menu.addEventListener('click', e => { if (e.target.closest('a')) close() })
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') close() })
-  // Rotating to landscape can widen past the breakpoint while the sheet is open, which
-  // would leave the body scroll-locked with no visible sheet to close.
-  addEventListener('resize', () => { if (innerWidth > 780) close() })
+  panelEl.addEventListener('click', e => { if (e.target.closest('a')) set(false) })
+  // The scrim is body::after, so it has no element of its own to listen on — a click
+  // that lands outside both the panel and its opener is a click on the scrim.
+  document.addEventListener('click', e => {
+    if (!isOpen()) return
+    if (e.target.closest('#' + panelEl.id) || e.target.closest('#' + opener.id)) return
+    set(false)
+  })
+  document.addEventListener('keydown', e => {
+    if (!isOpen()) return
+    if (e.key === 'Escape') { e.preventDefault(); set(false); return }
+    if (e.key !== 'Tab') return
+    // Focus trap: Tab cycles inside the open panel instead of wandering the page
+    // behind the scrim, where nothing is clickable anyway.
+    const items = [...panelEl.querySelectorAll(FOCUSABLE)].filter(el => el.offsetParent !== null)
+    if (!items.length) return
+    const first = items[0]
+    const last = items[items.length - 1]
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
+  })
+  return { set, isOpen }
+}
+
+;(() => {
+  const nav = panel({
+    opener: document.querySelector('.nav-toggle'),
+    panelEl: document.getElementById('sitemenu'),
+    flag: 'menu-open',
+    closeBtn: '.nl'          // the hamburger itself is the ✕; focus the first link
+  })
+  const toc = panel({
+    opener: document.querySelector('.toc-btn'),
+    panelEl: document.getElementById('menu'),
+    flag: 'contents-open',
+    closeBtn: '.rail-close'
+  })
+  // Only one at a time: opening either closes the other, so there is never a
+  // question of which panel a tap outside belongs to.
+  document.querySelector('.nav-toggle')?.addEventListener('click', () => toc?.set(false))
+  document.querySelector('.toc-btn')?.addEventListener('click', () => nav?.set(false))
+  // Growing past the header breakpoint puts the links back in the bar, which would
+  // leave the page scroll-locked behind a sheet nobody can see.
+  addEventListener('resize', () => { if (innerWidth >= 1000) nav?.set(false) })
+
+  // An earlier build remembered an open rail across visits. It no longer does, and
+  // the stale key would otherwise sit in the browser forever.
+  try { localStorage.removeItem('og_rail') } catch (e) {}
+})()
+
+/* --------------------------------------------------------------- you are here
+   Marked at runtime rather than baked into each page: that is what lets all four
+   pages ship the byte-identical header the whole site is built around. Only links
+   to a page (not to a section of one) can be "the page you are on". */
+;(() => {
+  const here = location.pathname.replace(/\/index\.html$/, '/')
+  document.querySelectorAll('.nav-quick .ql, .navsheet .nl').forEach(a => {
+    const href = a.getAttribute('href') || ''
+    if (href.includes('#') || /^https?:/.test(href)) return
+    if (new URL(a.href).pathname.replace(/\/index\.html$/, '/') === here) {
+      a.setAttribute('aria-current', 'page')
+    }
+  })
+})()
+
+/* ------------------------------------------------------------------- scrollspy
+   The topic rail marks the section under the reader. Position math on scroll, not
+   an IntersectionObserver: the sections differ wildly in height, and "the last
+   heading that scrolled past a third of the screen" is the answer people expect. */
+;(() => {
+  const links = [...document.querySelectorAll('.side-link[href^="#"]')]
+  if (!links.length) return
+  const pairs = links
+    .map(a => [document.getElementById(a.getAttribute('href').slice(1)), a])
+    .filter(([t]) => t)
+  if (!pairs.length) return
+  let lit = null
+  let raf = 0
+  const spy = () => {
+    raf = 0
+    const y = scrollY + innerHeight * .33
+    let cur = null
+    for (const [t, a] of pairs) {
+      if (t.getBoundingClientRect().top + scrollY <= y) cur = a
+    }
+    if (cur === lit) return
+    lit?.classList.remove('on')
+    ;(lit = cur)?.classList.add('on')
+  }
+  addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(spy) }, { passive: true })
+  addEventListener('resize', spy)
+  spy()
+})()
+
+/* ------------------------------------------------------------ chapter groups
+   Where a rail has chapters with subchapters (.side-group / .side-subs), the group
+   being read unfolds and the others stay closed, so a long contents list is never
+   a wall. A no-op on the pages whose rail is a flat list. */
+;(() => {
+  const groups = [...document.querySelectorAll('.side-group')]
+  if (!groups.length) return
+  const openGroup = g => groups.forEach(x => x.classList.toggle('open', x === g))
+  groups.forEach(g => {
+    g.querySelector('.side-link')?.addEventListener('click', () => openGroup(g))
+  })
+  const target = a => a && document.getElementById(a.getAttribute('href').slice(1))
+  const chapPairs = groups
+    .map(g => [target(g.querySelector('.side-link[href^="#"]')), g])
+    .filter(([t]) => t)
+  const subPairs = [...document.querySelectorAll('.side-sub[href^="#"]')]
+    .map(a => [target(a), a])
+    .filter(([t]) => t)
+  let raf = 0
+  const spy = () => {
+    raf = 0
+    const y = scrollY + innerHeight * .33
+    let curG = null
+    for (const [t, g] of chapPairs) if (t.getBoundingClientRect().top + scrollY <= y) curG = g
+    if (curG && !curG.classList.contains('open')) openGroup(curG)
+    let curS = null
+    for (const [t, a] of subPairs) if (t.getBoundingClientRect().top + scrollY <= y) curS = a
+    subPairs.forEach(([, a]) => a.classList.toggle('on', a === curS && !!curS && curS.closest('.side-group') === curG))
+  }
+  addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(spy) }, { passive: true })
+  spy()
 })()
 
 /* --------------------------------------------------------------- scroll reveal */
@@ -124,6 +260,31 @@ const GL_PROJECT = 'https://gitlab.com/api/v4/projects/DuarteSantos8%2Fopengym'
     // Leave the placeholder standing rather than writing an empty box.
     if (d.open_issues_count !== '' && d.open_issues_count != null) set('issues-n', d.open_issues_count)
   } catch (e) { /* offline / rate-limited — leave placeholders */ }
+})()
+
+/* --------------------------------------------------- Discord members (nav + specs)
+   Same shape as the repo counts above, and just as optional: the placeholder next to
+   the Discord link is empty, so a blocked or rate-limited request leaves the link
+   reading exactly as it did before anyone counted anything. */
+;(async () => {
+  const set = (id, v) => document.querySelectorAll('[data-dc="' + id + '"]').forEach(el => { el.textContent = v })
+  try {
+    let n = null
+    const cached = sessionStorage.getItem('discord_members')
+    if (cached) n = JSON.parse(cached)
+    else {
+      const r = await fetch(DC_INVITE)
+      if (!r.ok) return
+      const j = await r.json()
+      n = j.approximate_member_count
+      if (typeof n !== 'number') return
+      sessionStorage.setItem('discord_members', JSON.stringify(n))
+    }
+    // Grouped like the other four-figure numbers on the page (1,324 exercises).
+    const fmt = n.toLocaleString('en-US')
+    set('members', fmt)
+    set('members-n', fmt)
+  } catch (e) { /* offline / blocked — the link keeps its plain label */ }
 })()
 
 /* -------------------------------------------------------------- about timeline

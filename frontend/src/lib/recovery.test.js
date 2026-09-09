@@ -17,7 +17,7 @@ import {
   strengthOf,
 } from './recovery.js'
 import { EXDB, registerCustom } from './exercises.js'
-import { MUSCLES, musclesOf } from './muscles.js'
+import { MUSCLES, exerciseMuscleSnapshot, musclesOf } from './muscles.js'
 import { fatigueStateOf } from './recovery-view.js'
 
 const HOUR = 60 * 60 * 1000
@@ -126,6 +126,42 @@ describe('fatigueOf and strengthOf', () => {
       10,
     )
     expect(fatigueOf(highRep, NOW)[SINGLE_SLUG]).toBeGreaterThan(0.5)
+  })
+
+  it('uses a deleted exercise snapshot for the same bounded primary and secondary fatigue', () => {
+    const resolved = doneWorkoutAt(WEIGHTED.id, NOW)
+    const deleted = {
+      ...resolved,
+      entries: [{
+        ...resolved.entries[0],
+        id: 'deleted-weighted-exercise',
+        muscleSnapshot: exerciseMuscleSnapshot(WEIGHTED),
+      }],
+    }
+
+    expect(fatigueOf([deleted], NOW)).toEqual(fatigueOf([resolved], NOW))
+    expect(fatigueOf([deleted], NOW)[WEIGHTED_PRIMARY_SLUG]).toBeGreaterThan(0)
+    expect(fatigueOf([deleted], NOW)[SECONDARY_SLUG]).toBeGreaterThan(0)
+  })
+
+  it('uses a deleted exercise snapshot for strength without changing decay or floor semantics', () => {
+    const start = NOW - 15 * DAY
+    const resolved = doneWorkoutAt(WEIGHTED.id, start)
+    const deleted = {
+      ...resolved,
+      entries: [{
+        ...resolved.entries[0],
+        id: 'deleted-weighted-exercise',
+        muscleSnapshot: exerciseMuscleSnapshot(WEIGHTED),
+      }],
+    }
+    const untouchedSlug = MUSCLES.find(slug => !WEIGHTED_WEIGHTS[slug])
+    const strength = strengthOf([deleted], NOW)
+
+    expect(strength).toEqual(strengthOf([resolved], NOW))
+    expect(strength[WEIGHTED_PRIMARY_SLUG]).toBeCloseTo(0.5 ** (1 / 28), 10)
+    expect(strength[SECONDARY_SLUG]).toBeCloseTo(0.5 ** (1 / 28), 10)
+    expect(strength[untouchedSlug]).toBe(STRENGTH_FLOOR)
   })
 
   it('raises starting fatigue with volume, never pins, and fades without a cliff', () => {

@@ -12,6 +12,11 @@ import {
   generateAuthenticationOptions, verifyAuthenticationResponse
 } from '@simplewebauthn/server';
 import webpush from 'web-push';
+import * as coachConfig from './coach/config.js';
+import * as coachJobs from './coach/jobs.js';
+import { coachRoutes } from './coach/routes.js';
+import { startCadence } from './coach/cadence.js';
+import { startWarmup } from './coach/warmup.js';
 import { dayReminderPush, restTimerPush, testPush } from './push-messages.js';
 import { verifyError } from './verify-error.js';
 import {
@@ -58,6 +63,19 @@ const ASSETS_ENABLED = enabled('CUSTOM_IMAGES_ENABLED');
 const SECURE = /^https:/i.test(ORIGIN) ? ' Secure;' : '';
 
 fs.mkdirSync(DATA, { recursive: true });
+/* The secrets are locked down file by file rather than by sealing the whole directory.
+ *
+ * A blanket `chmod 0700` on DATA looks stronger and is worse: ./data is a host bind mount and
+ * this container runs as root, so it lands on the host as root-owned 0700 and anything else
+ * the owner runs against their own data directory — a backup script, the MCP server in #19,
+ * their own `jq` — gets EACCES on files that are theirs. Locking the four files that actually
+ * hold secrets keeps the Coach runtime out of them without taking the directory hostage.
+ *
+ * Best-effort throughout: a bind-mounted host filesystem may refuse chmod, and that is not a
+ * reason to refuse to boot. The privilege drop in adapters/spawn.js is the control that does
+ * fail closed. */
+const lock = f => { try { fs.chmodSync(path.join(DATA, f), 0o600); } catch { /* not present yet, or host says no */ } };
+['secret', 'db.json', 'coach.json'].forEach(lock);
 
 /* ---------- secret + db ---------- */
 const secretFile = path.join(DATA, 'secret');
@@ -94,10 +112,12 @@ function requireWritable(res) {
 }
 function saveDb() {
   if (dbError) throw dbError;
-  durableAtomicWrite(dbFile, JSON.stringify(db, null, 2), 0o600);
+  atomicWrite(dbFile, JSON.stringify(db, null, 2), 0o600);
 }
-function atomicWrite(file, content) {
-  durableAtomicWrite(file, content, 0o600);
+// 0600: db.json holds passkey credential material. It used to be covered by a blanket 0700 on
+// the whole directory; now that the directory stays traversable, the file carries its own mode.
+function atomicWrite(file, content, mode) {
+  durableAtomicWrite(file, content, mode || 0o600);
 }
 const stateFile = uid => path.join(DATA, 'state-' + uid.replace(/[^a-zA-Z0-9_-]/g, '') + '.json');
 const stateTxnFile = uid => path.join(DATA, '.state-txn-' + uid.replace(/[^a-zA-Z0-9_-]/g, '') + '.json');
@@ -628,12 +648,13 @@ function cancelRestTimer(userId) {
 
 // "Workout planned today" reminder — one per user per day, at their chosen time.
 // Duplicated (not imported) from frontend/src/lib/history.js effectiveRoutineId — tiny pure helper, not worth sharing across the two runtimes.
+// A weekday can hold a routine-id list (combine routines); the reminder only needs the first.
 function effectiveRoutineId(S, iso) {
   const ov = S.dayPlan?.[iso];
   if (ov === 'rest') return null;
   if (ov && S.routines?.some(r => r.id === ov)) return ov;
   const wd = new Date(iso + 'T12:00:00').getDay();
-  return S.week?.[wd] || null;
+  return [].concat(S.week?.[wd] || []).find(id => S.routines?.some(r => r.id === id)) || null;
 }
 // Computes "now" in an arbitrary IANA zone (e.g. "Europe/Lisbon") instead of the server's own —
 // each user's reminder fires by their own clock, wherever they and their phone actually are.
@@ -644,7 +665,10 @@ function userNow(tz) {
       year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
     }).formatToParts(new Date());
     const g = t => parts.find(p => p.type === t)?.value;
-    return { date: `${g('year')}-${g('month')}-${g('day')}`, hhmm: `${g('hour')}:${g('minute')}` };
+    const date = `${g('year')}-${g('month')}-${g('day')}`;
+    // Weekday is derived from the zone's own date, not the server's — a Sunday-evening review
+    // has to be Sunday where the user is, which is what the reminder already assumes for time.
+    return { date, hhmm: `${g('hour')}:${g('minute')}`, weekday: new Date(date + 'T12:00:00Z').getUTCDay() };
   } catch { return null; } // unknown/invalid tz string — skip this user rather than guess
 }
 setInterval(() => {
@@ -972,8 +996,14 @@ const routes = {
     ? storageFailure(res, persistentError())
     : json(res, 200, { ok: true, users: db.users.length }),
 
-  // Public config the login screen needs before anyone is signed in.
-  'GET /api/config': async (req, res) => json(res, 200, { invite_only: INVITE_ONLY, allow_guest: ALLOW_GUEST }),
+  // Public config the login screen needs before anyone is signed in. `coach` is absent unless
+  // the instance has both switched the Coach on and successfully connected a provider — the
+  // single flag every piece of Coach UI hangs off, so an unconfigured instance is byte-for-byte
+  // the app it was before the feature existed.
+  'GET /api/config': async (req, res) => {
+    const coach = coachConfig.publicConfig();
+    json(res, 200, { invite_only: INVITE_ONLY, allow_guest: ALLOW_GUEST, ...(coach ? { coach } : {}) });
+  },
 
   'GET /api/me': async (req, res) => {
     const user = readSession(req);
@@ -1642,7 +1672,13 @@ const routes = {
     auditCount = 0;
     audit(req, 'admin.audit.clear', { user: admin });
     json(res, 200, { ok: true });
-  }
+  },
+
+  /* ---------- AI Coach ---------- */
+  // Routes live in coach/routes.js and are handed the helpers above rather than importing
+  // them: they are closures over db and SECRET, and passing them in keeps that module free of
+  // a cycle. Every one of them is inert while the feature is unconfigured.
+  ...coachRoutes({ json, readBody, readSession, requireAdmin })
 };
 
 async function serveAsset(req, res, id) {
@@ -1708,7 +1744,23 @@ async function approveProposal(req, res, id) {
     } catch (e) { storageFailure(res, e); }
   });
 }
-
+/* ---------- Coach: boot recovery, notifications, scheduled reviews ---------- */
+// A job that was running when the process died is not coming back; say so rather than leaving
+// a spinner that never resolves.
+coachJobs.recoverOnBoot();
+// A ready proposal is the one Coach event worth a notification. Failures and "nothing to
+// change" stay silent on purpose (FR-38/E4).
+coachJobs.setProposalHook((uid, pending) => {
+  const n = (pending?.changes || []).length;
+  if (!n) return;
+  sendPush(uid, {
+    title: 'Your Coach has been reading',
+    body: n === 1 ? '1 suggestion after this week' : `${n} suggestions after this week`,
+    tag: 'coach-proposal', url: '#/coach'
+  });
+});
+startCadence({ users: () => db.users, userNow });
+startWarmup();
 http.createServer(async (req, res) => {
   // Same-origin (the deployed nginx-proxied web app) never triggers CORS, so this only matters
   // for the paired mobile app calling in from its own WebView origin. It carries no cookie

@@ -39,6 +39,12 @@ services:
     build:
       context: .
       dockerfile: api/Dockerfile
+    # Default target: no AI runtime, no AI dependency — the image every instance has always had.
+    # To opt into the AI Coach, build the other target instead:
+    #     API_TARGET=coach docker compose up --build api
+    # `--build` matters: with an `image:` also set, compose would otherwise pull the prebuilt
+    # default rather than build the coach one.
+      target: ${API_TARGET:-default}
     restart: unless-stopped
     env_file: .env
     environment:
@@ -51,6 +57,10 @@ services:
       - CUSTOM_IMAGES_ENABLED=${CUSTOM_IMAGES_ENABLED:-0}
     volumes:
       - ./data:/data         # users, passkeys, per-user state, session secret — BACK THIS UP
+      # Provider credential cache (Codex). A sibling of ./data on purpose: the documented backup
+      # is `tar czf … data/`, and a live refresh token must not end up inside it. Nothing here
+      # needs backing up — if you lose it, sign the provider in again.
+      - ./coach-auth:/coach-auth
     networks:
       default: {}
       opengym: {}

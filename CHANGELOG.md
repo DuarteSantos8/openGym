@@ -1,5 +1,480 @@
 # Changelog
 
+## Unreleased
+
+What the Discord and GitLab reports after v1.3.5 had in common: the Coach failed and nobody could
+see why. Web bundle and APK; the API image only for the payload change.
+
+- 🔍 **A failed Coach run on the phone says what the provider said.** With your own API key there
+  is no admin card and no instance owner, so "the instance owner needs to check its setup" was the
+  wrong sentence and hid the one thing that mattered — OpenAI's "you exceeded your current quota",
+  Gemini's "model not found", the validator's "unknown exercise id". The chat line and the toast
+  now carry that reason, and the phone wording no longer points at an owner who does not exist.
+  (issue #58; Discord reports of "the OpenAI API is bugging")
+- 🔁 **You can no longer get stuck after a plan fails.** A message typed with no plan on the board
+  used to become a review, which answered "there is no workout to look at" forever. It now asks
+  for a fresh plan with your message as the brief, and the Coach menu has **Start a new plan**
+  — a new plan from your intake answers; workouts, history and body weight stay.
+  (Discord "Coach reset" thread; install-help reports)
+- 💬 **The Coach remembers the last few lines of the chat.** "Shorter, like you said" and "the same
+  thing as before" had nothing to point at: every message was a fresh request. The last six lines
+  — what you wrote and what the Coach concluded, never proposals or errors — now travel with the
+  request as context (`conversation`, documented in the prompt as data, not instruction).
+- ⬇️ **Updates are the last thing in Settings.** On Android a permanent row checks gitlab.com on
+  demand and installs a newer release with one tap (the download is verified against its checksum
+  first); on the web the same spot links to the APK. The row no longer hides inside "Data" and no
+  longer disappears when there is nothing new.
+- 🧩 **Combine routines** (HenryByte, !102, #59): a weekday can hold several routines, and a running
+  session can pull another routine in from the header ⋮ — a rehab routine on top of push day. The
+  layout switch moved into that menu. Older data with one routine per day reads unchanged.
+- 📐 **Compact layout** (HenryByte, !100, #57): a third workout view with only the sets you are
+  logging, and a per-session ⋮ switcher between cards, list and compact.
+- 🦵 **One-sided exercises log each side** (ErrorUsernameAlreadyTaken, !107, #60): weight, reps,
+  effort and the done tick per side, drop-sets and rest-pause per side too; history reads
+  "L 15×8 · R 15×7". Totals, volume, PRs and progression keep reading the combined row.
+- ✅ **Rating a set completes it** (ErrorUsernameAlreadyTaken, !106, #64): picking RIR/RPE ticks the
+  set and starts the rest timer.
+- 🎫 **Check-in cards** (ErrorUsernameAlreadyTaken, !105): edit a card's photo and label, the last
+  card used opens first, manual code entry removed.
+- 📉 **Deloads aim at an estimated 1RM** (mflova, !103): linear and double progression deload to
+  90 % of the Epley estimate of the target, on the exercise's weight grid, never above the load
+  that stalled — a 5 kg lift keeps 5 kg and drops reps instead of falling to 2.5 kg. The factor is
+  per exercise.
+- 📈 **A climb through the rep range is progress, not a stall** (arhx91, !101): under double
+  progression a session that beat its best at the current weight no longer counts toward a deload.
+- 👈 **Swipe to remove** (surohsusej, !73): swipe a routine exercise or warm-up set left to remove it.
+- 🧹 **The OpenAI model list only shows models this request shape can use.** The account's full
+  list — speech, embeddings, image models, realtime and Responses-only variants — made it easy to
+  pick one Chat Completions refuses with a 400 or a 404. Compatible endpoints (Ollama, LM Studio,
+  OpenRouter) stay unfiltered. The Gemini key field also names the new `AQ.` key prefix.
+
+## v1.3.5 — 2026-09-06
+
+One bug, and the one everybody with the Android app and their own API key ran into. Web bundle and
+APK; the API only carries the version number.
+
+- 🔑 **"Bring my own API key" works on the phone.** Since v1.3.0 every key-store call on Android
+  hung before it started: the secure-storage plugin was handed to the app as the value of a promise,
+  and a Capacitor plugin object answers *any* property name with a native method — `then`
+  included — so the promise took it for a thenable, called a native `SecureStorage.then()` that does
+  not exist, and never settled. That one stuck `await` was all three reports at once: "Save and use
+  the Coach" greyed out forever, the key "not saved" when you came back, and a Coach that sat on
+  "thinking…" without end because the job read the key first. The plugin now travels inside a plain
+  object, a test drives the store through a Capacitor-style proxy so it cannot come back, and the
+  whole flow — save, intake, plan, restart with the key still there — was run on an emulator before
+  tagging. The web app and the "use my self-hosted openGym" mode were never affected.
+  (issues #42, #58; reported by many on Discord)
+
+## v1.3.4 — 2026-09-05
+
+Two things noticed on the phone right after v1.3.3. Web bundle and APK; the API only carries the
+version number.
+
+- 🎨 **The effort picker looks like the rest of the app.** The v1.3.3 sheet was a grid of colour-edged
+  tiles that matched nothing else on screen. It is now the same list the ⋯ menus use: a tinted
+  square with the value where the icon sits, the sentence as the row, a tick on the current one, and
+  an "Exact RIR" row carrying the app's own stepper, tinted like the logged cell. Same six levels, same
+  colours, same free value.
+- 🖼️ **Animations that fail to load fall back instead of breaking.** If the animation cannot be
+  fetched (dropped connection, CDN hiccup, an instance that gates media behind a session) the still
+  picture takes its place; if that fails too, a neutral tile does, and a tap tries again. No more
+  broken-image glyph on a white block.
+
+## v1.3.3 — 2026-09-05
+
+The workout screen gets out of the way, and the bug round from the board. Same day as v1.3.2 on
+purpose: that one is the contributors' batch, this one is the redesign and the fixes on top of it.
+Self-hosters need the new web bundle and images; the API is unchanged. This is the release to
+install on Android — it is the first APK that can update itself.
+
+### The workout screen
+
+- ⋯ **One menu per exercise.** Note, details, progression settings, bar weight, add a warm-up set,
+  make a superset with the previous or next exercise, swap, move up, move down, remove — all behind
+  one button next to the exercise name, acting on exactly that exercise, also inside a superset. The
+  rows of buttons that used to sit in the header, under the sets and under the card are gone; a
+  pencil still appears once an exercise has a note. (issue #20)
+- 🔢 **The set number is the set's menu**: drop set, rest-pause burst, remove this set. No more
+  "+ Drop / + Burst" chips on every row and no per-row X on warm-ups.
+- 📌 **List view keeps the header pinned** — name, clock, set counter, discard and finish stay at the
+  top while the session scrolls.
+- 🎛️ **Settings → During a workout → Workout controls.** Four switches bring any of the old groups
+  back: weight and reps +/− buttons (off: tap the number and type it), drop/burst shortcuts on every
+  set, superset buttons in the header, move/swap/remove buttons below the exercise. Existing profiles
+  read as the lean default.
+- 🌈 **Colour-coded RIR / RPE.** An unrated set shows one "RIR" (or "RPE") button; tapping it opens
+  a picker with six levels, each with a sentence — "Nothing left, went to failure" through "Easy,
+  warm-up territory" — and a field for an exact value. A logged rating tints its cell by how close
+  to failure it was, the same colour whether you think in RIR or RPE; the +/− on it follow the
+  Workout-controls switch. (ErrorUsernameAlreadyTaken, !91 — issue #32)
+- 📖 **History without leaving the workout.** ⋯ → History: a line of your best set (or estimated
+  1RM, longest hold, minutes) over time and the last ten sessions with every set, the volume and a
+  PR marker. Also reachable from an exercise's details in the library. (issue #43)
+- ▶️ On the workout screen the centre tab button reads "Workout" and stays lit instead of an idle
+  "Resume"; Resume from anywhere else returns to the exercise you marked, which no longer moves on
+  its own. (issues #29, #21)
+
+### Planning and library
+
+- ⭐ **Favourite exercises.** Star an exercise in its details; favourites sort first in the picker,
+  the library and the muscle explorer, and the picker gets a Favourites chip. (issue #6)
+- ⚖️ **Switching kg ↔ lb converts your numbers** — or keeps them and only changes the label, your
+  choice in a sheet: logged sets and drops, working weights, routine targets and increments, warm-up
+  configs, body weight, goal and bar weights; lb rounded to 0.5, kg to 0.25. (issue #22)
+- 🪢 **Resistance bands count as bodyweight equipment**: one reps stepper and the reps-then-sets
+  progression, unless you switch Bodyweight off for that exercise. (issue #39)
+- 🔥 Warm-up ramps snap to the exercise's own increment (1.25 kg plates) instead of the unit default.
+- 📄 Copying a copy of a routine gives "Name (Copy 2)"; the swap picker's "+" quick-adds like every
+  other picker; a weekday whose routine no longer exists no longer triggers the starter-plan prompt.
+
+### Android
+
+- 🔄 **In-app update.** Settings → Data shows "openGym vX available" when a newer release exists; one
+  tap downloads the signed APK, verifies its SHA-256 against the published checksum and opens the
+  installer. No checksum, no install. Needs the "install unknown apps" permission the first time.
+  (ErrorUsernameAlreadyTaken, !40 — issues #38, #9)
+- 🧠 **Saving the Coach with your own API key** no longer hangs on a greyed-out button: the mode is
+  written before the key, the secure store gets a timeout, and every failure says what went wrong
+  in a toast. (issue #42)
+- 🔢 The APK carries version code 17 (v1.3.2: 16). Two releases had reused 15; the update check
+  compares the version name, so nothing changes for you, but Android's own "newer" check is honest again.
+
+## v1.3.2 — 2026-09-05
+
+Seventeen community merge requests from twelve contributors, each read, rebased onto a staging
+instance and put through a tester round before landing, plus the fixes that round turned up. The
+web bundle and the images change; the API only gains the Coach schema tightening. The Android APK
+ships with a real version code again (16 — the last two releases had reused 15).
+
+### Active workout
+
+- 📋 **List view.** Settings → During a workout → Workout view: Cards (as before) or List, the
+  whole session stacked and scrollable, the current exercise outlined, "Set current" to move the
+  marker, supersets grouped with their own Unpair. (dpatrongomez, !96 — issues #28, #44, #50)
+- ⚖️ **The working weight is captured, not asked.** Finishing an exercise no longer opens the
+  "confirm your working weight" sheet: the heaviest completed work set becomes the working weight,
+  for both members of a superset, and the current marker stays where you are until you press Next.
+  Working weights are stored when the workout is finished, so a typo corrected before that, or a
+  discarded session, never becomes your "Best". (mflova, !92 — issue #18)
+- 🔢 **One tap, one step — in supersets too.** The +/− on weight, reps and RIR moved two steps
+  per tap on the second member of a superset. (ErrorUsernameAlreadyTaken, !97 — issue #41)
+- ➕ **The weight stepper uses the exercise's own increment** (1.25 kg plates, 5 lb, whatever you
+  set), with progression's rounding, on set rows and drop-set rows; timed sets keep their seconds.
+  A value off the increment grid steps by exactly one increment rather than snapping. (mflova, !84)
+- 🎯 **Routines with progression off keep their targets.** The same exercise as 2×15 in one routine
+  and 4×8 in another no longer opens the second with the first's reps — also when adding or swapping
+  an exercise mid-session and when saving the progression sheet. (mflova, !71)
+- 📉 **No deload spiral.** A weight change starts a new stall streak, so one bad day at the lighter
+  weight after a deload cannot trigger the next one. (arhx91, !93)
+- 🛡️ **The progression sheet cannot save into the wrong exercise** after the list shifted under it
+  or the workout was replaced. (Space-Hermes, !77)
+- ⏱️ **Timer flash blinks the theme** instead of a black/white overlay and settles back on your
+  theme. A timer that ended while the app was in the background no longer replays the beep and
+  flash when you come back; a quiet toast still says the rest is over. (mzspicoli, !89)
+
+### Planning and library
+
+- ✨ **Four starter plans.** Home, Plan and Settings → Load starter plan open a chooser: Push/Pull/Legs,
+  Upper/Lower, Full Body, 5×5. Free weekdays load at once, occupied ones ask first; existing
+  routines are never touched. (lordlukem, !94)
+- 💪 **Muscle explorer.** Library → "By muscle" (and "By muscle" inside Add exercise): tap a muscle
+  on the body map or its chip, filter by search, body part and equipment, open details or plan it.
+  Follows your equipment profile like the library does. (prasad_gade05, !87)
+- 📄 **Copy routine** at the bottom of the routine editor. (ErrorUsernameAlreadyTaken, !85)
+- ➕ **The "+" in the exercise picker adds immediately** with the default config (freestyle: last
+  session's) and says so in a toast; tapping the row still opens the config sheet. (surohsusej, !72)
+- 📐 Stats → Exercise progress: long exercise names use the full width. (mflova, !80)
+
+### MCP and Coach
+
+- 🔍 **`preview_session`** — a ninth MCP tool: what a routine will actually open with after the
+  progression policy, the confirmed weight and history have had their say, with the source of every
+  number and a list of exercises where plan and screen disagree. Built on the app's own session
+  builder, so progression-off and deload routines preview exactly what the screen shows.
+  (koyosan, !90)
+- ⏲️ `get_routine` reports each exercise's own rest as `rest_sec`. (TheophileDiot, !81 — issue #36)
+- 🧠 The Coach's create schema requires a routine id and a week and caps the arrays, so a small
+  local model cannot answer with a plan the validator can only reject. (subdee, !99)
+- 🧪 BodyMap tests import the geometry before the first render — no more one-off failures on a
+  slow runner. (TheophileDiot, !82 — issue #35)
+
+### Self-hosting and infrastructure
+
+- 🔁 **nginx re-resolves the api container per request.** Recreating only `api` (new IP) no longer
+  leaves `web` answering 502 until it is restarted too. (issue #16)
+- 🔒 The published `api` image drops npm and both images take alpine's package fixes at build time;
+  the image scan reports nothing.
+- 🏗️ CI: JUnit and coverage in every merge request, a bundle-size diff against main, a compose smoke
+  test of the pushed images, a Trivy scan with SBOMs attached to the release, a tag preflight
+  (versions and changelog checked before anything builds), and pipelines for contributors' fork MRs
+  started automatically for returning contributors.
+- 🤖 Renovate runs again: its configuration had two unknown keys and had stopped opening MRs. (issue #37)
+
+## v1.3.1 — 2026-09-04
+
+- 📱 **"Use my self-hosted openGym" works on a paired phone.** The phone app never fetched the
+  server's `/api/config` after boot or after pairing, so the Coach setup screen told everyone
+  "your server has no Coach enabled" — while the admin was looking at a passed test. The screen
+  now asks the server afresh every time it opens, and the boot and pairing paths load the config
+  like the web app always did. Reported on Discord.
+
+## v1.3.0 — 2026-09-03
+
+The AI Coach gets the version number it deserves. v1.2.16, earlier today, was the release that
+got it out of the door; v1.3.0 is the same app with one more fix, and the number that says
+"something new is in here" to everyone who reads a changelog. If you are on v1.2.16, this is
+a small update. If you are on anything older, read the v1.2.15/v1.2.16 notes below — the Coach,
+bar weights, the rest-day line and the rewritten admin dashboard are all new to you.
+
+- 🗺️ **The Strength map's list makes sense again.** Below the map, every detrained muscle
+  showed its set count of the last 90 days — which, for a muscle that is on that list precisely
+  because it has not been trained lately, was a column of "0 sets", and where it was not zero it
+  printed as `1.2000000000000002`. Each row now says how many weeks ago the muscle was last
+  trained (or "not trained"), with the rounded 90-day sets on top only when there are any.
+
+## v1.2.16 — 2026-09-03
+
+- 🐳 **The web image builds again.** v1.2.15's tag pipeline published the API image and the APK
+  but the web image failed to build: the frontend imports the Coach's core from `api/coach/core`,
+  and `web/Dockerfile` copied only `frontend/`. The image now carries that directory at the same
+  relative position it has in the repository, and a new `build:web-check` job builds the web
+  image on every merge request that touches the frontend, the Dockerfile or the core — the API
+  image had that check, the web image did not. Nothing else changed; v1.2.15's notes below are
+  this release's notes.
+
+## v1.2.15 — 2026-09-03
+
+The AI Coach. An optional coach that designs a training plan from a few answers and reviews
+what you actually log — off by default, switched on by the admin, consented to by each user,
+and driven by whatever AI you bring: an Anthropic, OpenAI or Gemini API key, any
+OpenAI-compatible endpoint (Ollama, LM Studio, vLLM, OpenRouter), or a Claude Code / Codex
+runtime inside the container. Nothing it proposes is applied on its own; every change carries
+its reason and can be undone. Details in [docs/AI_COACH.md](docs/AI_COACH.md). Also in this
+release: per-exercise bar weight, a rest-day line on the home screen, and the admin dashboard
+rewritten in plain language — those three shipped to main earlier and are here for everyone.
+
+### AI Coach
+
+- 🔑 **One API key serves the whole instance.** A pasted Anthropic, OpenAI, Gemini or
+  OpenAI-compatible key is shared by every profile, bounded by the daily limits in the admin
+  card — it is metered and issued for exactly this use. Only a *personal* credential (a Claude
+  Code setup token) still binds to the first profile that spends it, and that binding now
+  actually happens when a job runs rather than only existing in the tests.
+- 🔁 **A rate limit or an overloaded provider is not a failed job.** 429, 529 and 5xx get two
+  more tries a few seconds apart before the status becomes the job's failure; a 4xx that means
+  the request is wrong is never retried.
+- 🔥 **Warm-up sets no longer read as work.** They were counted into stalls (a light ramp set
+  below the rep target looked like a miss), into done/planned sets and into the top set of a
+  session. They are now filtered the way the app's own progression engine filters them, and
+  the few that still travel in full sessions are flagged `warmup: true` so the model reads
+  them as prep.
+- ✍️ **Admin card fields are visible again.** The base-URL and model fields shared the card's
+  background and the two daily-limit numbers were the browser's white default box; both are
+  real fields now, sized so a phone does not zoom into them.
+- 🧪 **An API key is proven end to end in CI**: a local stand-in for each provider's API
+  receives the pasted key on the right header, the cached rules block, the schema, and answers
+  a review that lands as a proposal — the test that says "paste a key and it works".
+
+- ⚡ **A local model answers in a fraction of the time.** The prompt is split so the rules —
+  identical for every job of a task — ride as the system message and only the payload changes:
+  a llama.cpp/Ollama endpoint reuses its KV prefix cache instead of re-reading ~2.7k tokens of
+  rules per job, and Anthropic caches the same block server-side at a tenth of the input price.
+  The payload itself shrank by more than half: compact JSON, full set-by-set detail only for
+  the five most recent sessions (older ones become one line per exercise — `aggregates`
+  already counts stalls over the whole window), and a library slice of `{id, name, bodypart}`.
+  ~14,600 tokens processed per review before; ~5,900 now, plus a cached prefix.
+- 🎯 **The answer cannot leave its shape.** Providers that support schema-constrained decoding
+  (Ollama, LM Studio, vLLM, OpenAI) get a JSON schema with the request; the repair round is
+  for content now, not syntax. Endpoints that reject it fall back to JSON mode, then to plain
+  text, exactly as before — and the validator stays the only judge either way. The
+  OpenAI-compatible endpoint also runs at temperature 0: a plan diff wants determinism.
+
+- 🏁 **A debrief of one workout.** "Review my last workout" hands the Coach a single session —
+  with the last three of the same routine, the stall picture and four weeks of weigh-ins — and
+  gets back a score out of ten, what went well, what to watch and what to do next time, each
+  item citing the session's own numbers. It cannot carry a plan change: the validator refuses
+  one rather than trimming it. Kept in the Coach history like everything else.
+- 👥 **Compare with others on your instance — if the admin allows it.** A new switch under
+  Advanced turns on anonymous medians across profiles that opt in (each person flips *Include
+  me* in the chat; a profile that does not share sees nothing). Sessions per week and the best
+  estimated 1RM per exercise, you against the median, plus a rank — only where three or more
+  people train it, and nothing at all until three people share. The same medians (in kg) go to
+  the model on a review or a debrief, for perspective only. The opt-in lives server-side, not in
+  synced state, so a stale device cannot flip it back on.
+- 💬 **The Coach is a conversation now.** The first visit is an intake in the style of a phone
+  setup — one question per screen, 1–7 days a week, session length as hours:minutes, the consent
+  text with room to read it. After that it is a chat: your answers are the first message, a
+  typing bubble counts the seconds while the job runs, the plan lands as a card with a tab per
+  routine and the reason under every change, free text asks for a refinement, one button
+  applies it. Coming back, asking for a review, changing an answer — same chat. The per-user
+  off switch is gone; only the admin turns the Coach off.
+- 🧭 **Admin card in numbered steps** — provider → endpoint → access → model → test — with a
+  status pill and plain-language state; limits, account and isolation under *Advanced*, the job
+  log under *Activity*.
+- ⏱️ **A local model gets the time it needs.** `COACH_JOB_TIMEOUT_MS` raises the five-minute job
+  budget for a CPU-bound Ollama or LM Studio; the api's HTTP client now waits as long as the job
+  does instead of hanging up after undici's 300 s while the model was still typing; the phone's
+  own-key mode gives a local endpoint 25 minutes and never lets the native transport cut first;
+  and the chat stops promising "a minute or two" when the endpoint is local.
+- 📚 **The exercise catalogue in the payload is capped at 160** — round-robin across body
+  parts, deterministic, with everything in your plan and your history always included so a
+  review can name what it is talking about. All 1,324 used to go along: 10k+ tokens a job
+  against a metered API, and more than a small local model's context holds.
+- 🧪 **A single session is not a trend.** The review prompt now refuses structural changes on
+  fewer than three sessions or less than a week of data — a small model used to remove a leg
+  exercise because "the one session had no leg work".
+- 🔑 **Four providers that only need an API key.** Anthropic, OpenAI, Google Gemini, and any
+  OpenAI-compatible endpoint — Ollama, LM Studio, vLLM, OpenRouter, a gateway of your own — can
+  now drive the Coach. They speak plain HTTPS from the api process, so they need no AI runtime
+  in the image and no unprivileged user: **they work on the default `api` image.** The `coach`
+  image is now only for the Claude Agent SDK and the Codex CLI. Setup is a chip and a pasted key
+  in Settings → Admin → AI Coach; **List models** fills the model picker from what the endpoint
+  actually serves. A model on your LAN is the compatible endpoint with no key.
+- 🗝️ **Keys, models and account bindings are kept per provider.** Switching chips used to clear
+  the stored credential; now each provider keeps its own, and the chip shows when one is held.
+  `./data/coach.json` changed shape for this: an existing file's one flat credential, model and
+  binding are lifted onto the provider they belonged to on first load. **One-way** — downgrading
+  to an earlier build will not read them back, which costs one paste of the key.
+- 🔓 **The Anthropic API-key path was unreachable.** The admin card hid "Use an API key" for
+  any provider that also took a setup token, which was exactly the Claude one. Both buttons
+  render now.
+- 📱 **The Coach on the App-Store build**, chosen in Settings → AI Coach: pair the phone with
+  your self-hosted instance and the Coach runs there, or bring your own API key and the phone
+  calls the provider directly with the same allowlist, validator and repair round as the server.
+  Nothing AI-related is loaded until one of the two is chosen; a BYOK key lives in the
+  platform's secure storage, never in the app's state; a local daily cap bounds what you spend.
+- 🧱 The Coach's core — payload builder, validator, parser, prompts, plan fingerprint and the
+  invoke → parse → validate → repair loop — moved to `api/coach/core/`, runtime-neutral, so the
+  phone imports the same code the server runs. The exercise catalogue and the prompts are
+  generated ES modules (`scripts/build-coach-assets.mjs --check` in CI), and
+  `api/scripts/check-core-loadable.mjs` proves the core still loads under bare node.
+- 🛡️ Validator hardening: the lifter's own custom exercises are now accepted when the model
+  names them (they were offered to it and then refused, burning the one repair round); ids that
+  are object keys downstream (`__proto__`, `constructor`) are refused; weight and speed have
+  ceilings; an exercise cannot be added twice to a routine; two changes cannot share an id; a
+  weight for an exercise never lifted is dropped rather than guessed.
+
+## v1.2.14 — 2026-08-30
+
+The largest community release so far: twenty merge requests from ten contributors, read and
+tried one by one on a staging instance, plus two features of our own and a pass over how the
+app feels under a thumb. Nothing changes on the server — a self-hosted instance only needs the
+new web bundle; the APK carries the new reminder scheduling.
+
+### New
+
+- 📝 **Log a past workout.** History → "Log a past workout": pick date, start time, duration
+  and a routine (or freestyle), then log it on the normal workout screen — weights, reps,
+  RIR/RPE, timed sets, everything. A day that already has a workout asks: replace it, add a
+  second one, or cancel. Backfilled sessions are filed in chronological order, claim no PRs
+  against later history, and don't touch the weights your next session starts from.
+- 📥 **Import straight from Hevy.** Settings → Import from Hevy with a Hevy Pro API key pulls
+  workouts, routines and weigh-ins directly — no CSV export needed. The key is used for the
+  one import and never stored; importing again updates the routines it created instead of
+  duplicating them. (JuliusHaring, !30)
+- ⏲️ **Rest per exercise.** Any exercise can carry its own rest time; a superset rests once,
+  with the longest of the group. The global timer stays the default, and "Off" is overridden
+  only by an explicit per-exercise rest. Shared plans carry it. (trapy, !34 — issue #10)
+- 🧘 **Planned deloads.** A routine can be excluded from automatic progression: its sessions
+  open on the routine's own targets, stay in history and statistics, and are skipped when the
+  next regular session computes its prescription — reps and durations included.
+  (tokyo_underworld, !28)
+- 📳 **Timer flash.** Opt-in screen flash when a rest or work timer ends — for loud gyms and
+  headphones. (mzspicoli, !29)
+- 🌍 **Thai and Hungarian.** Full UI translation in both; Hungarian also localizes all 1,326
+  exercise names and instructions. That makes 14 languages. (tomzt, !64 · kecskemethy, !68)
+
+### Active workout
+
+- ➕ Adding an exercise mid-session now also **moves and swaps** cleanly: move the current
+  exercise or superset up/down (the rest countdown follows it), or swap it for another —
+  logged sets stay with the original, the replacement arrives with your usual weights, and a
+  grouped exercise asks whether the replacement stays in the group. (Space-Hermes, !41, !43)
+- 👉 **Swipe between exercises** on the workout card — left/right moves through the session,
+  buttons and inputs stay untouched. (Space-Hermes, !48)
+- 🎯 **Supersets keep the next set centered** on screen, not just in view. (Space-Hermes, !52)
+- 📖 **The progression line is now a button**: tap "Linear · +2.5 kg…" mid-workout to open the
+  exercise's settings; changed rules rebuild the open rows and keep everything you already
+  logged. (Space-Hermes, !54)
+
+### Routines and progression
+
+- ✋ **Reorder by long-press.** Hold a routine row and drag it; superset groups move as one
+  block. The arrow buttons stay, now group-aware and disabled at the ends.
+  (Space-Hermes, !45, !47)
+- 🔢 **The double-progression rep range is visible**: "Reps from" and "Reps up to" side by
+  side, per-side exercises stepping in twos — and a progression step of zero can no longer be
+  saved by accident. (mflova, !69 and !60 follow-up)
+
+### Stats and the rest
+
+- 🔍 **The Stats exercise picker is searchable**, and the results stay above the mobile
+  keyboard. (mflova, !27)
+- 🗺️ **The muscle map works from the keyboard** and ranks ties in body order. (Space-Hermes, !46)
+- 🔕 **Android reminders follow the calendar**: scheduled per date instead of per weekday, so
+  a rescheduled day reminds you and a day you already trained stays quiet. (mflova, !66)
+- 🤖 **The MCP coach reads what the app shows**: custom exercises resolve in every tool,
+  warm-ups no longer count as PRs, and progression policies report the value the UI uses.
+  (TheophileDiot, !38)
+- 📚 **A self-hosting HTTPS guide** for valid certificates on a LAN-only address — wildcard
+  cert via DNS challenge, Caddy in front, no ports opened. (andi242, !67)
+
+### Feel
+
+A pass over touch, scroll and tap across the whole app: chip rows keep a slightly diagonal
+swipe instead of handing it to the page; sheets decide an axis before following the finger,
+snap back cleanly and close on a quick flick; the body-weight slider drags relative to the
+knob instead of jumping to it; steppers repeat while held; going back restores your scroll
+position; a just-dropped routine row is tappable immediately; the exercise picker's search
+stays above the keyboard; set-row inputs, checkboxes and small icon buttons all got bigger
+touch targets; and rows everywhere can be driven from a keyboard.
+
+With thanks to Space-Hermes, mflova, JuliusHaring, trapy, tokyo_underworld, mzspicoli,
+TheophileDiot, tomzt, kecskemethy and andi242 — ten contributors in one release.
+
+## v1.2.13 — 2026-08-30
+
+One follow-up that arrived on !60 minutes after v1.2.12 was tagged, and belongs with it.
+
+- 🔢 **An empty or zero progression step can no longer be saved.** With a progression rule on,
+  leaving the step field empty or at `0` marks it red, explains why, and holds the save — a step
+  that cannot progress anything is no longer stored by accident. Nothing else changed; a
+  self-hosted instance only needs the new web bundle. (mflova, !60)
+
+## v1.2.12 — 2026-08-30
+
+Six small fixes from the community, each read and tried on staging before it went in. All of
+them are in the active workout or the exercise settings; nothing changes on the server, so a
+self-hosted instance only needs the new web bundle.
+
+### Active workout
+
+- ➕ **Adding an exercise mid-session puts it right after the one you are on**, not at the end
+  of the list, and the flow carries on from there: "next" takes you to the next *unfinished*
+  exercise and the finish prompt only appears once nothing is left open. Before, a set added
+  late could leave you looking at a completion prompt with work still pending.
+  (Space-Hermes, !42)
+- ⏱️ **Removing an exercise no longer leaves a timer behind.** A rest countdown that belonged to
+  the removed exercise stops with it — but a rest you are in the middle of for a *different*
+  exercise keeps running and simply follows that exercise. (Space-Hermes, !51, narrowed here)
+- ⏹️ **Discarding a workout stops a running timed set.** The countdown used to keep going, and
+  beep, on a session that no longer existed. Cancelling the confirmation leaves it running.
+  (Space-Hermes, !59)
+- 🗺️ **A custom exercise you delete still counts in recovery.** The muscle map and the recovery
+  view read the snapshot saved with each finished workout, so deleting the exercise afterwards
+  no longer blanks the muscles it trained. (Space-Hermes, !58)
+
+### Exercise settings
+
+- 🔢 **Progression steps below one can be typed.** Entering `0.5` used to snap back to the
+  default halfway through, because the field rejected the intermediate `0`. A cleared field
+  still means "use the default". (mflova, !60)
+- 📐 **Long values in routine rows no longer squash the title.** The value column is capped
+  instead of reserving space, so a "3 × 12 @ 102.5 kg" row keeps its exercise name readable on a
+  narrow phone. (MokshManral, !37)
+
+With thanks to Space-Hermes, mflova and MokshManral.
+
 ## v1.2.11 — 2026-08-25
 
 A correction release. v1.2.10 landed planned warm-ups and notes, and reviewing that release

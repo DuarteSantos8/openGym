@@ -43,6 +43,20 @@ cd frontend && npm test
   rules are easy to get subtly wrong and nearly impossible to verify by clicking — the
   progression engine grew two real bugs that only a test pinned down.
 
+## What CI does with your merge request
+
+Every MR runs the three test suites (frontend, MCP, api), with the results and the coverage
+of your diff shown in the MR itself, plus a build of the web image and the api image when you
+touched their inputs. The frontend job also prints how much your change adds to the gzipped
+bundle compared with main. The APK and the published images are manual jobs there.
+
+One gitlab.com quirk: an MR from a fork runs its pipeline in *your* fork, which usually has
+no runners enabled — so it would show "no pipeline" forever. For that reason the project
+starts the pipeline on its own runners for you: automatically if you have had an MR merged
+here before, otherwise a maintainer presses "Run pipeline" after a first look at the diff
+(the MR gets the `ci-approval-needed` label until then). Changes to `.gitlab-ci.yml` or
+`scripts/ci/` always go through that manual step.
+
 ## Good first issues
 
 - Additional starter plans (upper/lower, full-body, 5×5…)

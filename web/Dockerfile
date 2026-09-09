@@ -8,13 +8,23 @@
 # specific native binaries, which is what breaks `vite build` with unrelated-looking
 # module-resolution errors.
 FROM --platform=$BUILDPLATFORM node:22-alpine AS build
-WORKDIR /app
+# The frontend sits at /app/frontend, not /app: the Coach's runtime-neutral core lives in
+# api/coach/core and is imported from frontend/src as ../../../api/coach/core/*, so the two
+# have to keep the same relative position they have in the repository. Copying frontend/ alone
+# is exactly what made the v1.2.15 web image fail to build.
+WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json* ./
-RUN npm ci 2>/dev/null || npm install
+# --ignore-scripts: the web image only needs `vite build`; the one heavy postinstall in this tree
+# (@capacitor/assets -> sharp, a libvips download from GitHub) is for drawing app icons and has
+# timed out on the shared runners — a lockfile-ignoring `npm install` fallback is no answer to that.
+RUN npm ci --ignore-scripts
+COPY api/coach/core/ /app/api/coach/core/
 COPY frontend/ ./
 RUN npm run build
 
 FROM nginx:alpine
+# Same reason as in api/Dockerfile: alpine fixes land faster than the nginx image is rebuilt.
+RUN apk upgrade --no-cache
 ARG VERSION=dev
 ARG VCS_REF=dev
 ARG BUILD_DATE=unknown
@@ -31,7 +41,7 @@ LABEL maintainer="Duarte Santos https://gitlab.com/DuarteSantos8" \
     org.opencontainers.image.created=$BUILD_DATE
 
 COPY web/nginx.conf.template /etc/nginx/templates/default.conf.template
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /app/frontend/dist /usr/share/nginx/html
 # exercise media (img/gif) is mounted at runtime from the media volume
 
 # Set Default ENVs for nginx

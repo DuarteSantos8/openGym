@@ -4,24 +4,35 @@
 import { z } from 'zod'
 import { getState, getUser } from './state.js'
 import {
-  setLabel, exLine, muscleName, policyName, friendlyDuration, ratio, muscleOrder
+  fmt, setLabel, exLine, muscleName, policyName, friendlyDuration, ratio, muscleOrder
 } from './labels.js'
 import {
-  modeOf, workoutVolume, setsDone, effectiveRoutine, effectiveRoutineId
+  modeOf, workoutVolume, setsDone, effectiveRoutine, effectiveRoutineId, lastEntryFor
 } from '../../frontend/src/lib/history.js'
 import { isWarmupRow } from '../../frontend/src/lib/workout-model.js'
-import { EXIDX, exOr, allExercises, searchScore } from '../../frontend/src/lib/exercises.js'
+import { exOr, allExercises, searchScore } from '../../frontend/src/lib/exercises.js'
 import {
   estimate1RM, best1RM, e1rmSeries, DEFAULT_FORMULA, REP_CAP
 } from '../../frontend/src/lib/onerm.js'
 import { loadOfWorkouts, rankOf, levelsOf } from '../../frontend/src/lib/muscles.js'
+import { policyFor } from '../../frontend/src/lib/progression.js'
+import { buildSessionEntries } from '../../frontend/src/lib/session-start.js'
 
 /* ---------- helpers ---------- */
 const stateOf = context => context?.state ?? getState()
 const exFor = (id, S) => (S?.customEx || []).find(e => e.id === id) || exOr(id)
 
+// A custom exercise lives in S.customEx and is merged into EXIDX by registerCustom() at
+// store load (useStore.js:54). The MCP server deliberately never calls it: http.js serves
+// several profiles from one process behind withRemoteState, so mutating the module-global
+// index would leak one profile's customs into another's reads.
+const customOf = (id, S) => (S.customEx || []).find(ex => ex.id === id)
+// exOr's miss is a placeholder object, not null — callers that only need a name are fine
+// with it, callers feeding muscle resolution are NOT. Use customOf directly there.
+const exerciseOf = (id, S) => customOf(id, S) || exOr(id)
+
 function entryView(e, S) {
-  const ex = exFor(e.id, S)
+  const ex = exerciseOf(e.id, S)
   // Spread id into the cfg the way every call site in the app does (Workout.jsx, Stats.jsx,
   // progression.js) — the sheet saves a cardio target as {sets, min, speed} with no id and no
   // mode, so modeOf needs the id to fall through to isCardio(id).
@@ -46,15 +57,17 @@ function entryView(e, S) {
 }
 
 // Best estimate per exercise, mirroring the UI's PR table: every eligible set across history, biggest wins.
+// Warm-ups are skipped for the same reason bestSetOf() skips them (onerm.js): a heavy ramp row is not a
+// record. Without this the coach's PR and the athlete's PR silently disagree for the same exercise.
 function prTable(S, formula) {
   const byId = new Map()
   for (const w of (S.workouts || [])) {
     for (const e of (w.entries || [])) {
+      const ex = exerciseOf(e.id, S)
       for (const s of (e.sets || [])) {
         if (!s.done || isWarmupRow(s)) continue
         const est = estimate1RM(s.w, s.r, formula)
         if (est == null) continue
-        const ex = exFor(e.id, S)
         const prev = byId.get(e.id)
         if (!prev || est > prev.est) {
           // exId as well as exName: the consumer needs an id, not a name — exOr() treats any
@@ -131,7 +144,8 @@ export const listRoutines = {
         emoji: r.emoji || null,
         exercise_count: (r.ex || []).length,
         superset_groups: [...new Set((r.ex || []).map(e => e.sg).filter(Boolean))].length || 0,
-        policy: r.policy || 'off'
+        policy: policyFor(null, r, 'reps'),
+        exclude_from_progression: r.excludeFromProgression === true
       }))
     }
   }
@@ -140,7 +154,7 @@ export const listRoutines = {
 /** get_routine — the full exercise list for one routine, including set/rep targets. */
 export const getRoutine = {
   name: 'get_routine',
-  description: 'Get the full exercise list for a single routine (the same view the routine editor shows). Returns mode (reps/time/cardio), set/rep/weight targets, superset links, and any per-exercise custom increment you can override. Use routine_id from list_routines.',
+  description: 'Get the full exercise list for a single routine (the same view the routine editor shows). Returns mode (reps/time/cardio), set/rep/weight targets, superset links, any per-exercise custom increment or Epley deload factor, and each exercise\'s own rest in seconds (absent means it inherits the global rest timer). Use routine_id from list_routines.',
   schema: { routine_id: z.string().min(1) },
   handler: ({ routine_id }, context) => {
     const S = stateOf(context)
@@ -151,11 +165,12 @@ export const getRoutine = {
       id: r.id,
       name: r.name,
       emoji: r.emoji || null,
-      policy: r.policy || 'off',
-      policy_name: policyName(r.policy || 'off'),
+      policy: policyFor(null, r, 'reps'),
+      policy_name: policyName(policyFor(null, r, 'reps')),
+      exclude_from_progression: r.excludeFromProgression === true,
       unit: S.unit || 'kg',
       exercises: (r.ex || []).map((cfg, i) => {
-        const ex = exFor(cfg.id, S)
+        const ex = exerciseOf(cfg.id, S)
         const mode = modeOf(cfg)
         return {
           position: i + 1,
@@ -166,12 +181,18 @@ export const getRoutine = {
           sets: cfg.sets || 1,
           reps: mode === 'reps' ? (cfg.reps || 0) : undefined,
           reps_min: mode === 'reps' && cfg.repsMin != null ? cfg.repsMin : undefined,
+          reps_max: mode === 'reps' && cfg.repsMax != null ? cfg.repsMax : undefined,
           sec: mode === 'time' ? (cfg.sec || 0) : undefined,
           min: mode === 'cardio' ? (cfg.min || 0) : undefined,
           speed: mode === 'cardio' ? (cfg.speed || 0) : undefined,
           weight: cfg.weight != null ? cfg.weight : undefined,
           increment: cfg.inc != null ? cfg.inc : undefined,
-          policy_override: cfg.policy || null,
+          deload_factor: cfg.deloadFactor != null ? cfg.deloadFactor : undefined,
+          // The exercise's own rest (issue #10). Absent means it inherits the global rest
+          // timer; a superset rests once, taking the longest its members ask for.
+          rest_sec: cfg.restSec > 0 ? cfg.restSec : undefined,
+          policy: policyFor(cfg, r, mode),
+          policy_override: cfg.prog || null,
           superset_group: cfg.sg || null,
           summary: exLine(cfg, S.unit || 'kg')
         }
@@ -315,7 +336,10 @@ export const getWorkout = {
       sets_done: setsDone(w),
       sets_planned: plannedSets(w),
       duration: w.end && w.start ? friendlyDuration(w.end - w.start) : null,
-      prs: (w.prs || []).map(id => EXIDX[id]?.n || id),
+      prs: (w.prs || []).map(id => {
+        const ex = exerciseOf(id, S)
+        return ex.missing ? id : ex.n
+      }),
       entries: (w.entries || []).map(e => entryView(e, S))
     }
   }
@@ -366,7 +390,7 @@ export const estimate1rm = {
     if (!S) return noState()
     const f = formula || DEFAULT_FORMULA
     if (exercise_id) {
-      const ex = exFor(exercise_id, S)
+      const ex = exerciseOf(exercise_id, S)
       const best = best1RM(S, exercise_id, f)
       const series = e1rmSeries(S, exercise_id, f)
       // A null best has two very different causes: never trained, or trained only above the
@@ -410,7 +434,19 @@ export const muscleBalance = {
       : period === 'month' ? now - 30 * 86400000
         : Number.NEGATIVE_INFINITY
     const workouts = (S.workouts || []).filter(w => (w.start || new Date(w.d + 'T12:00:00').getTime()) >= cutoff)
-    const load = loadOfWorkouts(workouts)
+    // loadOf() resolves each entry through EXIDX, which holds the catalogue only, so a
+    // custom exercise's sets score zero here. Attaching the custom itself lets loadOf's own
+    // `historical` branch resolve it. Only a *found* custom: exOr's miss placeholder carries
+    // no muscle metadata and no muscleSnapshot, so attaching that would displace the entry
+    // and silently zero a *deleted* custom, whose snapshot loadOf reads off the entry
+    // (muscles.js:245 → metadataOf, snapshot written at sheets.jsx:421-426).
+    const load = loadOfWorkouts(workouts.map(w => ({
+      ...w,
+      entries: (w.entries || []).map(e => {
+        const c = e.exercise ? null : customOf(e.id, S)
+        return c ? { ...e, exercise: c } : e
+      })
+    })))
     const { worked, missed } = rankOf(load)
     const levels = levelsOf(load)
     return {
@@ -424,10 +460,161 @@ export const muscleBalance = {
   }
 }
 
+/* ---------- preview_session ---------- */
+
+// Where a number on the session screen actually came from. A routine's own sets/reps/weight
+// are the LAST fallback, not the first: buildSets() prefers the confirmed working weight and
+// the previous session's reps, and applyPrescription() then overwrites the weight with
+// whatever the progression policy decided. Reporting the winner is the whole point of this
+// tool — "the plan says 60" is not an answer to "what will the app show me".
+function sourceOf(S, cfg, plan, field) {
+  // Progression off (or a deload routine): the session is built from the routine's own target,
+  // exactly as session-start.js does with useTarget — history and the confirmed weight are ignored.
+  if (!plan || plan.kind === 'off') return 'routine_plan'
+  const decided = plan.kind !== 'first' && plan[field] != null
+  if (decided) return 'progression'
+  if (field === 'weight') {
+    const conf = (S.exWeights || {})[cfg.id]
+    if (conf && conf.w > 0) return 'confirmed_weight'
+  }
+  return lastEntryFor(S, cfg.id) ? 'last_session' : 'routine_plan'
+}
+
+const SOURCE_TEXT = {
+  progression: 'the progression policy overrode the routine',
+  confirmed_weight: 'your confirmed working weight for this exercise',
+  last_session: 'carried over from the last time you did this exercise',
+  routine_plan: "the routine's own target"
+}
+
+/** preview_session — what starting this routine will actually put on screen. */
+export const previewSession = {
+  name: 'preview_session',
+  description:
+    'Preview the session a routine will actually open with — the numbers the user will see after the progression policy and their training history have overridden the routine\'s own targets. This is NOT the same as get_routine: a routine storing "squat 3x8 @ 60kg" can open at 75kg because the policy deloaded from the last logged session, and reps carry from history rather than from the plan. Always call this (not get_routine) before telling someone what weight they are about to lift, or before judging whether an edit to a routine had any effect. Returns, per exercise, the planned target, the policy\'s decision and its stated reason, the opening set rows, and where each number came from. Defaults to today\'s scheduled routine.',
+  schema: {
+    routine_id: z.string().min(1).optional().describe('Routine to preview. Defaults to the routine scheduled for `date`.'),
+    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().describe('Date the session would be started on, YYYY-MM-DD. Affects which routine is scheduled and any one-off day override. Defaults to today.')
+  },
+  handler: ({ routine_id, date }) => {
+    const S = getState()
+    if (!S) return noState()
+    const now = new Date()
+    const iso = date || (now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0'))
+
+    let r
+    if (routine_id) {
+      r = (S.routines || []).find(x => x.id === routine_id)
+      if (!r) { const e = new Error(`no routine with id ${JSON.stringify(routine_id)}`); e.code = 'ENOENT'; throw e }
+    } else {
+      r = effectiveRoutine(S, iso)
+      if (!r) return { date: iso, routine_id: null, routine_name: null, rest_day: true, note: 'no routine is scheduled for this date (rest day)', exercises: [] }
+    }
+
+    const unit = S.unit || 'kg'
+    // The same builder the app starts a session with (sheets.jsx beginWorkout → session-start.js):
+    // prescription, step, progression-off targets, deload routines and warm-up ramps all come from
+    // there, so the preview cannot drift from what the screen shows.
+    const built = buildSessionEntries(S, r)
+    const exercises = (r.ex || []).map((cfg, i) => {
+      const ex = exerciseOf(cfg.id, S)
+      const mode = modeOf({ ...cfg, id: cfg.id })
+      const plan = built[i].plan
+      const rows = built[i].sets
+      const work = rows.filter(s => !isWarmupRow(s))
+      const openW = work.length ? (work[0].w || 0) : 0
+      const openR = work.length ? (work[0].r || 0) : 0
+      const openSec = work.length ? (work[0].sec || 0) : 0
+      const openMin = work.length ? (work[0].min || 0) : 0
+      const wSrc = sourceOf(S, cfg, plan, 'weight')
+      const rSrc = sourceOf(S, cfg, plan, 'reps')
+      return {
+        position: i + 1,
+        id: cfg.id,
+        name: ex.n,
+        mode,
+        policy: plan.policy,
+        policy_name: policyName(plan.policy),
+        planned: {
+          sets: cfg.sets || 1,
+          reps: mode === 'reps' ? (cfg.reps || 0) : undefined,
+          sec: mode === 'time' ? (cfg.sec || 0) : undefined,
+          min: mode === 'cardio' ? (cfg.min || 0) : undefined,
+          weight: cfg.weight != null ? cfg.weight : undefined,
+          summary: exLine(cfg, unit)
+        },
+        prescription: {
+          kind: plan.kind,
+          weight: plan.weight != null ? plan.weight : undefined,
+          reps: plan.reps != null ? plan.reps : undefined,
+          sets: plan.sets != null ? plan.sets : undefined,
+          sec: plan.sec != null ? plan.sec : undefined,
+          why: plan.why ? fmt(plan.why[0], plan.why.slice(1)) : null
+        },
+        opening_sets: rows.map(s => ({
+          phase: isWarmupRow(s) ? 'warmup' : 'work',
+          type: s.type || 'straight',
+          label: setLabel(cfg.id, { ...s, done: undefined }, { ...cfg, id: cfg.id }),
+          w: Number(s.w) || 0,
+          r: Number(s.r) || 0,
+          sec: Number(s.sec) || 0,
+          min: Number(s.min) || 0,
+          speed: Number(s.speed) || 0
+        })),
+        weight_source: wSrc,
+        weight_source_text: SOURCE_TEXT[wSrc],
+        reps_source: mode === 'reps' ? rSrc : undefined,
+        reps_source_text: mode === 'reps' ? SOURCE_TEXT[rSrc] : undefined,
+        // The headline: did editing the routine change anything the user will see? Tracked per
+        // dimension — a bodyweight exercise whose weight is 0 either way still counts when the
+        // rep target moved, and saying which one moved saves the caller diffing it themselves.
+        changed: [
+          ...(mode === 'reps' && cfg.weight != null && openW !== cfg.weight ? ['weight'] : []),
+          ...(mode === 'reps' && (cfg.reps || 0) > 0 && openR !== cfg.reps ? ['reps'] : []),
+          ...(mode === 'time' && (cfg.sec || 0) > 0 && openSec !== cfg.sec ? ['sec'] : []),
+          ...(mode === 'cardio' && (cfg.min || 0) > 0 && openMin !== cfg.min ? ['min'] : [])
+        ],
+        differs_from_plan:
+          (mode === 'reps' && cfg.weight != null && openW !== cfg.weight) ||
+          (mode === 'reps' && (cfg.reps || 0) > 0 && openR !== cfg.reps) ||
+          (mode === 'time' && (cfg.sec || 0) > 0 && openSec !== cfg.sec) ||
+          (mode === 'cardio' && (cfg.min || 0) > 0 && openMin !== cfg.min)
+      }
+    })
+
+    const differing = exercises.filter(e => e.differs_from_plan)
+    return {
+      date: iso,
+      routine_id: r.id,
+      routine_name: r.name,
+      unit,
+      policy: policyFor(null, r, 'reps'),
+      policy_name: policyName(policyFor(null, r, 'reps')),
+      exercises,
+      // Surfaced separately so a coach reading this cannot miss it: these are the exercises
+      // where what the routine stores and what the athlete will see are two different numbers.
+      overridden_count: differing.length,
+      overridden: differing.map(e => ({
+        name: e.name,
+        planned_weight: e.planned.weight,
+        opening_weight: e.opening_sets.filter(s => s.phase === 'work')[0]?.w ?? null,
+        planned_reps: e.planned.reps,
+        opening_reps: e.opening_sets.filter(s => s.phase === 'work')[0]?.r ?? null,
+        planned_sec: e.planned.sec,
+        opening_sec: e.opening_sets.filter(s => s.phase === 'work')[0]?.sec ?? null,
+        planned_min: e.planned.min,
+        opening_min: e.opening_sets.filter(s => s.phase === 'work')[0]?.min ?? null,
+        changed: e.changed,
+        reason: e.prescription.why || e.weight_source_text
+      }))
+    }
+  }
+}
+
 /* ---------- registration list ---------- */
 
 export const TOOLS = [
-  listExercises, searchExercises, getExercise, listRoutines, getRoutine, getWeekPlan, listWorkouts, getWorkout, getBodyweight, estimate1rm, muscleBalance
+  listExercises, searchExercises, getExercise, listRoutines, getRoutine, previewSession, getWeekPlan, listWorkouts, getWorkout, getBodyweight, estimate1rm, muscleBalance
 ]
 
 function noState() {

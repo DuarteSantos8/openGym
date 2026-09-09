@@ -36,7 +36,24 @@ These apps have been tested to work without adjustments to the column names:
 | **FitNotes 2 (iOS)** | Export workouts as CSV; also manual/auto iCloud backups |
 | **Strong** | Settings → Export Data | 
 | **Gravl** | Profile → Export Data | 
-| **Hevy** | Profile → Settings → Export & Import Data (Workouts or Measurements) | 
+| **Hevy** | Profile → Settings → Export & Import Data (Workouts or Measurements), **or** Settings → Import from Hevy with a Pro API key |
+
+### Hevy API (direct)
+
+If you have **Hevy Pro**, you can skip the CSV and import straight from Hevy:
+
+1. Open [Hevy → Settings → Developer](https://hevy.com/settings?developer) and create an API key
+2. In openGym: **Settings → Import from Hevy**
+3. Paste the key (used only for that import — it is not saved)
+4. Choose whether to bring **workouts**, **routines**, **weigh-ins**, or any mix, then confirm
+
+Both the API import and a detected **Hevy CSV** resolve exercises through the same generated
+lookup (`frontend/src/lib/hevy-id-map.js`): template id for the API, English title for the CSV.
+To regenerate (developers): set `HEVY_API_KEY` in the environment or `.env`, then run
+`node scripts/build-hevy-id-map.mjs`. Unmapped lifts become your own exercises. Workout days
+that already have data here are left alone; routines are always added as **new** plans
+(nothing you already have is overwritten). Localized CSV titles (non-English) still fall back
+to name matching.
 
 You can also create your own `CSV` file:
 

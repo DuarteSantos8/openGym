@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { modeOf, isTimed, fmtSec, setLabel, defaultConfig, buildSets, freestyleConfig, exLine, workoutVolume, bestWeightFor, bestWeightForEntry, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, removeRowAt, workSetsDone, pairAdjacent, unpairSuperset, supersetUnits, applyIntensifierPlan, pinnedNoteFor, exNoteFor } from './history.js'
+import { nextTrainingDay, modeOf, isTimed, fmtSec, setLabel, defaultConfig, buildSets, freestyleConfig, exLine, workoutVolume, bestWeightFor, bestWeightForEntry, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, removeRowAt, workSetsDone, setsDone, setsDoneActive, setUnits, doneUnits, setUnitsTotal, pairAdjacent, unpairSuperset, supersetUnits, applyIntensifierPlan, pinnedNoteFor, exNoteFor, effectiveRoutineIds, effectiveRoutines, effectiveRoutineId, effectiveRoutine, lastEntryFor, entryExcluded } from './history.js'
+import { makeSideSet, setSideField, toggleSide } from './workout-model.js'
 import { EXDB } from './exercises.js'
 
 // Real ids out of the shipped catalogue, so the body-part fallback is exercised for real.
@@ -493,6 +494,80 @@ describe('buildSets', () => {
       .toEqual([{ w: 60, r: 10, done: false }, { w: 62.5, r: 8, done: false }])
   })
 
+  it('can use a deload target without carrying regular-session values into it', () => {
+    const S = { exWeights: { [LIFT]: { w: 75 } }, workouts: [{ d: '2026-01-01', entries: [{ id: LIFT, sets: [
+      { w: 75, r: 10, done: true }, { w: 75, r: 9, done: true }
+    ] }] }] }
+    expect(buildSets(S, { id: LIFT, sets: 2, reps: 12, weight: 40 }, { useTarget: true }))
+      .toEqual([{ w: 40, r: 12, done: false }, { w: 40, r: 12, done: false }])
+  })
+
+  it('uses the current routine target instead of another routine\'s bodyweight history', () => {
+    const S = {
+      exWeights: {},
+      workouts: [{
+        d: '2026-01-01',
+        routineId: 'routine-a',
+        entries: [{
+          id: BW,
+          target: { sets: 2, reps: 15, weight: 0, bodyweight: true },
+          sets: [{ w: 0, r: 15, done: true }, { w: 0, r: 15, done: true }]
+        }]
+      }]
+    }
+    const cfg = { id: BW, sets: 4, reps: 8, weight: 0, bodyweight: true, prog: 'off' }
+
+    expect(buildSets(S, cfg, { useTarget: true })).toEqual([
+      { w: 0, r: 8, done: false },
+      { w: 0, r: 8, done: false },
+      { w: 0, r: 8, done: false },
+      { w: 0, r: 8, done: false }
+    ])
+
+    const reverseS = {
+      exWeights: {},
+      workouts: [{
+        d: '2026-01-02',
+        routineId: 'routine-b',
+        entries: [{
+          id: BW,
+          target: { sets: 4, reps: 8, weight: 0, bodyweight: true },
+          sets: [
+            { w: 0, r: 8, done: true }, { w: 0, r: 8, done: true },
+            { w: 0, r: 8, done: true }, { w: 0, r: 8, done: true }
+          ]
+        }]
+      }]
+    }
+    expect(buildSets(reverseS, { ...cfg, sets: 2, reps: 15 }, { useTarget: true })).toEqual([
+      { w: 0, r: 15, done: false },
+      { w: 0, r: 15, done: false }
+    ])
+  })
+
+  it('preserves configured load, reps, duration and cardio targets when history is present', () => {
+    const repsS = {
+      exWeights: { [LIFT]: { w: 75 } },
+      workouts: [{ d: '2026-01-01', entries: [{ id: LIFT, sets: [{ w: 75, r: 15, done: true }] }] }]
+    }
+    expect(buildSets(repsS, { id: LIFT, sets: 2, reps: 8, weight: 40 }, { useTarget: true }))
+      .toEqual([{ w: 40, r: 8, done: false }, { w: 40, r: 8, done: false }])
+
+    const timedS = {
+      exWeights: {},
+      workouts: [{ d: '2026-01-02', entries: [{ id: LIFT, target: { mode: 'time' }, sets: [{ sec: 90, w: 20, done: true }] }] }]
+    }
+    expect(buildSets(timedS, { id: LIFT, mode: 'time', sets: 2, sec: 30, weight: 5 }, { useTarget: true }))
+      .toEqual([{ sec: 30, w: 5, done: false }, { sec: 30, w: 5, done: false }])
+
+    const cardioS = {
+      exWeights: {},
+      workouts: [{ d: '2026-01-03', entries: [{ id: CARDIO, sets: [{ min: 45, speed: 10, done: true }] }] }]
+    }
+    expect(buildSets(cardioS, { id: CARDIO, sets: 2, min: 20, speed: 8 }, { useTarget: true }))
+      .toEqual([{ min: 20, speed: 8, done: false }, { min: 20, speed: 8, done: false }])
+  })
+
 })
 
 describe('applyIntensifierPlan', () => {
@@ -814,6 +889,56 @@ describe('warm-up rows identified by phase alone', () => {
   })
 })
 
+describe('nextTrainingDay', () => {
+  // 2026-08-18 is a Tuesday; the week map is keyed by getDay(), so 0 is Sunday.
+  const TUE = '2026-08-18'
+  const base = (over = {}) => ({
+    dayPlan: {},
+    routines: [{ id: 'r1', name: 'A', ex: [{ id: '0001' }] }, { id: 'r2', name: 'B', ex: [{ id: '0002' }] }],
+    week: {},
+    ...over
+  })
+
+  it('finds the next scheduled day and names its routine', () => {
+    const S = base({ week: { 4: 'r2' } })                 // Thursday
+    expect(nextTrainingDay(S, TUE)).toMatchObject({ iso: '2026-08-20', weekday: 4 })
+    expect(nextTrainingDay(S, TUE).routine.name).toBe('B')
+  })
+
+  it('looks forward only — today itself is never the answer', () => {
+    // Only Tuesday is scheduled and today is Tuesday, so the next one is a week out. (The UI
+    // cannot reach this: a day with a session takes the other branch and never asks.)
+    const S = base({ week: { 2: 'r1' } })
+    expect(nextTrainingDay(S, TUE)).toMatchObject({ iso: '2026-08-25', weekday: 2 })
+  })
+
+  it('wraps around the end of the week', () => {
+    const S = base({ week: { 1: 'r1' } })                 // Monday, six days on
+    expect(nextTrainingDay(S, TUE)).toMatchObject({ iso: '2026-08-24', weekday: 1 })
+  })
+
+  it('is null when every day is rest', () => {
+    expect(nextTrainingDay(base(), TUE)).toBeNull()
+  })
+
+  it('skips a day whose routine no longer exists', () => {
+    const S = base({ week: { 3: 'gone', 5: 'r1' } })
+    expect(nextTrainingDay(S, TUE)).toMatchObject({ iso: '2026-08-21', weekday: 5 })
+  })
+
+  it('skips a routine with no exercises — starting it would open an empty session', () => {
+    const S = base({ routines: [{ id: 'r1', name: 'A', ex: [] }, { id: 'r2', name: 'B', ex: [{ id: '1' }] }], week: { 3: 'r1', 5: 'r2' } })
+    expect(nextTrainingDay(S, TUE)).toMatchObject({ weekday: 5 })
+  })
+
+  it('respects a per-date override in both directions', () => {
+    const moved = base({ week: {}, dayPlan: { '2026-08-19': 'r1' } })
+    expect(nextTrainingDay(moved, TUE)).toMatchObject({ iso: '2026-08-19' })
+    const off = base({ week: { 3: 'r1', 5: 'r2' }, dayPlan: { '2026-08-19': 'rest' } })
+    expect(nextTrainingDay(off, TUE)).toMatchObject({ weekday: 5 })
+  })
+})
+
 describe('pinnedNoteFor', () => {
   const S = {
     workouts: [
@@ -843,5 +968,196 @@ describe('exNoteFor', () => {
     expect(exNoteFor({ exNotes: { '0025': ' seat 4, pin 7 ' } }, '0025')).toBe('seat 4, pin 7')
     expect(exNoteFor({ exNotes: { '0025': '   ' } }, '0025')).toBeNull()
     expect(exNoteFor({}, '0025')).toBeNull()
+  })
+})
+
+describe('nextTrainingDay', () => {
+  // 2026-08-18 is a Tuesday; the week map is keyed by getDay(), so 0 is Sunday.
+  const TUE = '2026-08-18'
+  const base = (over = {}) => ({
+    dayPlan: {},
+    routines: [{ id: 'r1', name: 'A', ex: [{ id: '0001' }] }, { id: 'r2', name: 'B', ex: [{ id: '0002' }] }],
+    week: {},
+    ...over
+  })
+
+  it('finds the next scheduled day and names its routine', () => {
+    const S = base({ week: { 4: 'r2' } })                 // Thursday
+    expect(nextTrainingDay(S, TUE)).toMatchObject({ iso: '2026-08-20', weekday: 4 })
+    expect(nextTrainingDay(S, TUE).routine.name).toBe('B')
+  })
+
+  it('looks forward only — today itself is never the answer', () => {
+    // Only Tuesday is scheduled and today is Tuesday, so the next one is a week out. (The UI
+    // cannot reach this: a day with a session takes the other branch and never asks.)
+    const S = base({ week: { 2: 'r1' } })
+    expect(nextTrainingDay(S, TUE)).toMatchObject({ iso: '2026-08-25', weekday: 2 })
+  })
+
+  it('wraps around the end of the week', () => {
+    const S = base({ week: { 1: 'r1' } })                 // Monday, six days on
+    expect(nextTrainingDay(S, TUE)).toMatchObject({ iso: '2026-08-24', weekday: 1 })
+  })
+
+  it('is null when every day is rest', () => {
+    expect(nextTrainingDay(base(), TUE)).toBeNull()
+  })
+
+  it('skips a day whose routine no longer exists', () => {
+    const S = base({ week: { 3: 'gone', 5: 'r1' } })
+    expect(nextTrainingDay(S, TUE)).toMatchObject({ iso: '2026-08-21', weekday: 5 })
+  })
+
+  it('skips a routine with no exercises — starting it would open an empty session', () => {
+    const S = base({ routines: [{ id: 'r1', name: 'A', ex: [] }, { id: 'r2', name: 'B', ex: [{ id: '1' }] }], week: { 3: 'r1', 5: 'r2' } })
+    expect(nextTrainingDay(S, TUE)).toMatchObject({ weekday: 5 })
+  })
+
+  it('respects a per-date override in both directions', () => {
+    const moved = base({ week: {}, dayPlan: { '2026-08-19': 'r1' } })
+    expect(nextTrainingDay(moved, TUE)).toMatchObject({ iso: '2026-08-19' })
+    const off = base({ week: { 3: 'r1', 5: 'r2' }, dayPlan: { '2026-08-19': 'rest' } })
+    expect(nextTrainingDay(off, TUE)).toMatchObject({ weekday: 5 })
+  })
+})
+
+/* ---------- one-sided (unilateral) sets, logged per side (issue #60) ---------- */
+
+// A per-side row carries its two sides and a scalar aggregate. These pin that the display shows
+// both sides, and — crucially — that every aggregate-reading consumer (volume, best weight, the
+// x/y-sets counters) treats the row correctly without knowing sides exist.
+describe('setLabel — per side', () => {
+  it('shows both sides so an asymmetry is visible, not a single combined total', () => {
+    const s = setSideField(setSideField(makeSideSet({ w: 15, r: 16 }), 'R', 'r', 7), 'L', 'r', 8)
+    expect(setLabel(LIFT, s, { id: LIFT, side: true })).toBe('L 15×8 · R 15×7')
+  })
+
+  it('keeps each side effort tail and reads bodyweight sides as reps alone', () => {
+    let s = makeSideSet({ w: 0, r: 16 })
+    s = setSideField(s, 'L', 'rir', 1)
+    expect(setLabel(BW, s, { id: BW, side: true })).toBe('L 8 (RIR 1) · R 8')
+  })
+})
+
+describe('per-side aggregate stays readable by existing consumers', () => {
+  it('workoutVolume counts both sides via the row total, unchanged from a straight set', () => {
+    // 15×8 per side = 15×16 total = 240, exactly what a straight {w:15,r:16} would score.
+    const side = { ...makeSideSet({ w: 15, r: 16 }), done: true }
+    const synced = toggleSide(toggleSide(makeSideSet({ w: 15, r: 16 }), 'L'), 'R') // both done
+    const w = { entries: [{ id: LIFT, sets: [synced] }] }
+    expect(synced.done).toBe(true)
+    expect(workoutVolume(w)).toBe(240)
+    // and a straight equivalent scores the same
+    expect(workoutVolume({ entries: [{ id: LIFT, sets: [{ w: 15, r: 16, done: true }] }] })).toBe(240)
+  })
+
+  it('bestWeightForEntry reads the aggregate weight of a completed per-side set', () => {
+    const s = toggleSide(toggleSide(setSideField(makeSideSet({ w: 15, r: 16 }), 'R', 'w', 17.5), 'L'), 'R')
+    expect(bestWeightForEntry({ id: LIFT, target: { id: LIFT, side: true }, sets: [s] })).toBe(17.5)
+  })
+})
+
+describe('per-side set counters', () => {
+  it('setUnits counts a per-side row as two, a straight row as one', () => {
+    expect(setUnits(makeSideSet({ w: 15, r: 16 }))).toBe(2)
+    expect(setUnits({ w: 15, r: 16 })).toBe(1)
+  })
+
+  it('doneUnits counts each finished side independently', () => {
+    const none = makeSideSet({ w: 15, r: 16 })
+    expect(doneUnits(none)).toBe(0)
+    expect(doneUnits(toggleSide(none, 'L'))).toBe(1)
+    expect(doneUnits(toggleSide(toggleSide(none, 'L'), 'R'))).toBe(2)
+    expect(doneUnits({ w: 15, r: 16, done: true })).toBe(1)
+  })
+
+  it('setUnitsTotal / setsDoneActive account for both sides across the session', () => {
+    const A = { entries: [
+      { id: LIFT, sets: [toggleSide(makeSideSet({ w: 15, r: 16 }), 'L'), makeSideSet({ w: 15, r: 16 })] }, // 2 rows × 2 sides = 4 units, 1 side done
+      { id: LIFT, sets: [{ w: 60, r: 8, done: true }] },                                                    // 1 straight, done
+    ] }
+    expect(setUnitsTotal(A.entries)).toBe(5)
+    expect(setsDoneActive(A)).toBe(2)
+    expect(setsDone({ entries: A.entries })).toBe(2)
+  })
+})
+
+// ---- combine routines: plural planner resolver + per-entry noProg (ENG-9) ----
+describe('effectiveRoutineIds / effectiveRoutines', () => {
+  const routines = [{ id: 'r1', name: 'A', ex: [{ id: '1' }] }, { id: 'r2', name: 'B', ex: [{ id: '2' }] }]
+  const S = (week, dayPlan = {}) => ({ routines, week, dayPlan })
+  const ISO = '2026-08-19'                       // a Wednesday → getDay() 3
+
+  it('reads a bare-string weekday value as a one-element list (tolerant reader)', () => {
+    expect(effectiveRoutineIds(S({ 3: 'r1' }), ISO)).toEqual(['r1'])
+  })
+  it('resolves a multi-id array and filters out routines that no longer exist', () => {
+    expect(effectiveRoutineIds(S({ 3: ['r1', 'gone', 'r2'] }), ISO)).toEqual(['r1', 'r2'])
+    expect(effectiveRoutines(S({ 3: ['r1', 'r2'] }), ISO).map(r => r.name)).toEqual(['A', 'B'])
+  })
+  it('treats [], a stray empty array and an absent key all as rest', () => {
+    expect(effectiveRoutineIds(S({ 3: [] }), ISO)).toEqual([])
+    expect(effectiveRoutineIds(S({}), ISO)).toEqual([])
+  })
+  it('a scalar dayPlan override wins and stays scalar; "rest" is empty', () => {
+    expect(effectiveRoutineIds(S({ 3: ['r1', 'r2'] }, { [ISO]: 'r2' }), ISO)).toEqual(['r2'])
+    expect(effectiveRoutineIds(S({ 3: ['r1', 'r2'] }, { [ISO]: 'rest' }), ISO)).toEqual([])
+  })
+  it('the singular wrappers return [0] ?? null', () => {
+    expect(effectiveRoutineId(S({ 3: ['r1', 'r2'] }), ISO)).toBe('r1')
+    expect(effectiveRoutine(S({ 3: ['r1', 'r2'] }), ISO).name).toBe('A')
+    expect(effectiveRoutineId(S({}), ISO)).toBe(null)
+    expect(effectiveRoutine(S({}), ISO)).toBe(null)
+  })
+})
+
+describe('nextTrainingDay on a combined day', () => {
+  const TUE = '2026-08-18'
+  it('is trainable when any one routine of the day has exercises; return shape carries routines', () => {
+    const S = {
+      routines: [{ id: 'r1', name: 'A', ex: [] }, { id: 'r2', name: 'B', ex: [{ id: '1' }] }],
+      week: { 3: ['r1', 'r2'] }, dayPlan: {},
+    }
+    const nd = nextTrainingDay(S, TUE)
+    expect(nd).toMatchObject({ weekday: 3 })
+    expect(nd.routines.map(r => r.name)).toEqual(['A', 'B'])
+    expect(nd.routine.name).toBe('A')
+  })
+  it('skips a day whose every routine is empty', () => {
+    const S = {
+      routines: [{ id: 'r1', name: 'A', ex: [] }, { id: 'r2', name: 'B', ex: [] }, { id: 'r3', name: 'C', ex: [{ id: '1' }] }],
+      week: { 3: ['r1', 'r2'], 5: ['r3'] }, dayPlan: {},
+    }
+    expect(nextTrainingDay(S, TUE)).toMatchObject({ weekday: 5 })
+  })
+})
+
+describe('lastEntryFor / buildSets skip a noProg entry', () => {
+  const LIFT2 = EXDB.find(e => e.bp !== 'cardio' && e.eq !== 'body weight').id
+  const wk = (d, w, r, extra) => ({ d, entries: [{ id: LIFT2, target: { sets: 1, reps: r, weight: w }, sets: [{ w, r, done: true }], ...extra }] })
+
+  it('lastEntryFor returns the prior counting session, not a later noProg one', () => {
+    const S = { workouts: [wk('2026-01-01', 60, 8), wk('2026-01-05', 30, 12, { noProg: true })] }
+    expect(lastEntryFor(S, LIFT2).d).toBe('2026-01-01')
+  })
+  it('lastEntryFor skips a legacy whole-workout excludeFromProgression session', () => {
+    const S = { workouts: [wk('2026-01-01', 60, 8), { d: '2026-01-05', excludeFromProgression: true, entries: [{ id: LIFT2, target: { sets: 1, reps: 12, weight: 30 }, sets: [{ w: 30, r: 12, done: true }] }] }] }
+    expect(lastEntryFor(S, LIFT2).d).toBe('2026-01-01')
+  })
+  it('buildSets seeds opening rows from the last counting session', () => {
+    const S = { exWeights: {}, workouts: [wk('2026-01-01', 60, 8), wk('2026-01-05', 30, 12, { noProg: true })] }
+    expect(buildSets(S, { id: LIFT2, sets: 1, reps: 5, weight: 50 })).toEqual([{ w: 60, r: 8, done: false }])
+  })
+  it('buildSets with only noProg history falls back to the routine target', () => {
+    const S = { exWeights: {}, workouts: [wk('2026-01-05', 30, 12, { noProg: true })] }
+    expect(buildSets(S, { id: LIFT2, sets: 1, reps: 5, weight: 50 })).toEqual([{ w: 50, r: 5, done: false }])
+  })
+  it('freestyleConfig ignores a noProg entry', () => {
+    const S = { exWeights: {}, workouts: [wk('2026-01-05', 30, 12, { noProg: true })] }
+    expect(freestyleConfig(S, { id: LIFT2, mode: 'reps', sets: 3, reps: 10, weight: 0 })).toEqual({ id: LIFT2, mode: 'reps', sets: 3, reps: 10, weight: 0 })
+  })
+  it('bestWeightFor is unchanged — a heavy noProg set still counts toward Best', () => {
+    const S = { workouts: [wk('2026-01-01', 60, 8), wk('2026-01-05', 140, 3, { noProg: true })] }
+    expect(bestWeightFor(S, LIFT2)).toBe(140)
   })
 })

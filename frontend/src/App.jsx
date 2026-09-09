@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
-import { HashRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
+import { useEffect, useLayoutEffect, useRef } from 'react'
+import { HashRouter, Routes, Route, Navigate, useNavigate, useLocation, useNavigationType } from 'react-router-dom'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { bindUI } from './components/ui.jsx'
@@ -8,6 +8,7 @@ import { setLang, useLang } from './lib/i18n.js'
 import { setNav } from './lib/nav.js'
 import { initBackButton } from './lib/back.js'
 import { useWakeLock } from './lib/wakelock.js'
+import { installViewportGuard } from './lib/viewport-guard.js'
 import { startFlow } from './sheets.jsx'
 import Icon from './components/Icon.jsx'
 import TabBar from './components/TabBar.jsx'
@@ -15,9 +16,11 @@ import ErrorBoundary from './components/ErrorBoundary.jsx'
 import Modals from './components/Modals.jsx'
 import Toast from './components/Toast.jsx'
 import RestTimer from './components/RestTimer.jsx'
+import TimerFlash from './components/TimerFlash.jsx'
 import Login from './views/Login.jsx'
 import MobileOnboarding from './views/MobileOnboarding.jsx'
 import Home from './views/Home.jsx'
+import CheckIn from './views/CheckIn.jsx'
 import Plan from './views/Plan.jsx'
 import RoutineEdit from './views/RoutineEdit.jsx'
 import Workout from './views/Workout.jsx'
@@ -25,8 +28,15 @@ import Stats from './views/Stats.jsx'
 import History from './views/History.jsx'
 import Library from './views/Library.jsx'
 import Stretching from './views/Stretching.jsx'
+import Muscles from './views/Muscles.jsx'
 import Settings from './views/Settings.jsx'
 import Admin from './views/Admin.jsx'
+import CoachChat from './views/CoachChat.jsx'
+import CoachIntake from './views/CoachIntake.jsx'
+import CoachSetup from './views/CoachSetup.jsx'
+
+// last known scrollY per route, so back-navigation can put the page where it was
+const scrollPositions = new Map()
 
 bindUI(useUI)   // lets the shared controls open sheets without importing the store at module scope
 
@@ -46,6 +56,7 @@ function applyPrefs(theme, accent) {
 function Shell() {
   const navigate = useNavigate()
   const loc = useLocation()
+  const navType = useNavigationType()
   const { S, user, ready } = useStore()
   const isGuest = useStore(s => s.isGuest())
   const needsMobileOnboarding = useStore(s => s.needsMobileOnboarding)
@@ -64,8 +75,29 @@ function Shell() {
   }, [S.theme, S.accent])
   useEffect(() => { setLang(S.lang || 'en') }, [S.lang])
   useEffect(() => { document.documentElement.lang = S.lang || 'en' }, [langV, S.lang])
-  // every tab/route change starts at the top of the page
-  useEffect(() => { window.scrollTo(0, 0) }, [loc.pathname])
+  // Forward navigation starts at the top; going back lands where you left off.
+  // The position is recorded from scroll events rather than read at route
+  // change, because by then a shorter page may already have clamped it.
+  const pathRef = useRef(loc.pathname)
+  // iOS leaves the page displaced after the keyboard goes away (see lib/viewport-guard.js).
+  useEffect(() => installViewportGuard(), [])
+  useEffect(() => {
+    const onScroll = () => {
+      // Modals pins the body while a sheet is open; scrollY is 0 then, not a position.
+      if (document.body.style.position === 'fixed') return
+      scrollPositions.set(pathRef.current, window.scrollY)
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+  useLayoutEffect(() => {
+    pathRef.current = loc.pathname
+    if (navType !== 'POP') { window.scrollTo(0, 0); return }
+    const y = scrollPositions.get(loc.pathname) || 0
+    // the restored view needs a layout pass before it is tall enough to scroll to y
+    const frame = window.requestAnimationFrame(() => window.scrollTo(0, y))
+    return () => window.cancelAnimationFrame(frame)
+  }, [loc.pathname, navType])
   // bound to the workout, not to the route — checking Stats mid-session keeps the screen on
   useWakeLock(!!S.active && S.keepAwake !== false)
 
@@ -87,6 +119,9 @@ function Shell() {
           {!authed ? <Login /> : needsMobileOnboarding ? <MobileOnboarding /> : (
             <Routes>
               <Route path="/home" element={<Home />} />
+              {/* Gym check-in — switched off in Settings, the route falls through to the
+                  catch-all redirect below. */}
+              {S.checkIn !== false && <Route path="/checkin" element={<CheckIn />} />}
               <Route path="/plan" element={<Plan />} />
               <Route path="/plan/r/:id" element={<RoutineEdit />} />
               <Route path="/workout" element={<Workout />} />
@@ -94,17 +129,27 @@ function Shell() {
               <Route path="/history" element={<History />} />
               <Route path="/library" element={<Library />} />
               <Route path="/stretching" element={<Stretching />} />
+              <Route path="/muscles" element={<Muscles />} />
               <Route path="/settings" element={<Settings />} />
+              {/* The Coach screens gate themselves on the instance config; the routes exist
+                  unconditionally so a deep link from a notification lands somewhere sane
+                  rather than on the catch-all. */}
+              <Route path="/coach" element={<CoachChat />} />
+              <Route path="/coach/intake" element={<CoachIntake />} />
+              <Route path="/coach/proposal" element={<Navigate to="/coach" replace />} />
+              <Route path="/coach/setup" element={<CoachSetup />} />
               <Route path="/admin" element={user?.admin ? <Admin /> : <Navigate to="/home" replace />} />
               <Route path="*" element={<Navigate to="/home" replace />} />
             </Routes>
           )}
         </ErrorBoundary>
       </div>
-      <TabBar onStart={startFlow} />
+      {/* The chat owns the bottom of the screen: its composer sits where the tabs would be. */}
+      {loc.pathname !== '/coach' && <TabBar onStart={startFlow} />}
       <RestTimer />
       <Modals />
       <Toast />
+      <TimerFlash />
     </>
   )
 }

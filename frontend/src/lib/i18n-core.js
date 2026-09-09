@@ -7,13 +7,13 @@ export const LANGS = {
   en: 'English', de: 'Deutsch', es: 'Español', fr: 'Français', it: 'Italiano',
   pt: 'Português (Portugal)', 'pt-BR': 'Português (Brasil)', pl: 'Polski',
   tr: 'Türkçe', ru: 'Русский', zh: '中文',
-  ko: '한국어', hi: 'हिन्दी'
+  ko: '한국어', hi: 'हिन्दी', th: 'ไทย', hu: 'Magyar'
 }
-export const INSTR_LANGS = ['en', 'es', 'fr', 'it', 'tr', 'ru', 'zh', 'hi', 'pl', 'ko', 'pt-BR']
-export const EXERCISE_NAME_LANGS = ['pt-BR']
+export const INSTR_LANGS = ['en', 'es', 'fr', 'it', 'tr', 'ru', 'zh', 'hi', 'pl', 'ko', 'pt-BR', 'hu']
+export const EXERCISE_NAME_LANGS = ['pt-BR', 'hu']
 export const DATE_LOCALES = {
   en: 'en-GB', de: 'de-DE', es: 'es-ES', fr: 'fr-FR', it: 'it-IT', pt: 'pt-PT', 'pt-BR': 'pt-BR',
-  pl: 'pl-PL', tr: 'tr-TR', ru: 'ru-RU', zh: 'zh-CN', ko: 'ko-KR', hi: 'hi-IN'
+  pl: 'pl-PL', tr: 'tr-TR', ru: 'ru-RU', zh: 'zh-CN', ko: 'ko-KR', hi: 'hi-IN', th: 'th-TH', hu: 'hu-HU'
 }
 
 let lang = 'en'                 // set only by _setLangState, called from i18n.js setLang
@@ -41,9 +41,12 @@ export const instrFor = ex => (instr && instr[ex.id]) || ex.st || []
 export const exerciseNameFor = ex => {
   const translated = exerciseNames && ex && exerciseNames[ex.id]
   if (!translated) return ex?.n || ''
-  // Some names (Burpee, Pilates, brand/model terms) are the established pt-BR term too.
-  // Repeating an identical loanword in parentheses adds noise rather than context.
-  return translated.toLocaleLowerCase('pt-BR') === ex.n.toLocaleLowerCase('en')
+  // Some names (Burpee, Pilates, brand/model terms) are the established term in the target
+  // language too. Repeating an identical loanword in parentheses adds noise rather than
+  // context. Compared in the active language's own casing rules, not hardcoded to one —
+  // this only ever differs from ordinary casing for languages with locale-specific rules
+  // (e.g. Turkish dotless i), which does not include any language shipped here today.
+  return translated.toLocaleLowerCase(lang) === ex.n.toLocaleLowerCase('en')
     ? translated
     : `${translated} (${ex.n})`
 }

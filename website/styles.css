@@ -12,13 +12,11 @@
 
   --fg: #f5f5f7;
   --fg-2: #a1a1a6;
-  --fg-3: #6e6e73;
+  --fg-3: #7d7d85;  /* >=4.5:1 on every panel — WCAG AA for small text */
 
   --acc: #32d74b;
   --acc-ink: #04150a;
   --acc-soft: rgba(50, 215, 75, .13);
-  --blurple: #5865f2;
-  --amber: #ff9f0a;
 
   --r-s: 12px;
   --r-m: 20px;
@@ -130,8 +128,12 @@ h3 { font-size: clamp(19px, 2.3vw, 21px); letter-spacing: -.02em; line-height: 1
 
 /* ----------------------------------------------------------------- nav bar */
 
+/* The bar is the one fixed point of the site: the same links in the same order on
+   every page, and nothing ever slides out of it. It therefore outranks the
+   navigation sheet, the contents drawer and their scrim — none of them may cover
+   it, so a reader always knows where they are and how to get out. */
 nav {
-  position: sticky; top: 0; z-index: 60;
+  position: sticky; top: 0; z-index: 90;
   background: rgba(0, 0, 0, .68);
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
@@ -147,26 +149,52 @@ nav {
 .brand:hover { text-decoration: none; }
 .brand img { width: 24px; height: 24px; border-radius: 6px; }
 
-.nav-links { display: flex; align-items: center; gap: 26px; }
-.nav-links a {
+/* One header, everywhere. Every page carries this identical set of links in this
+   identical order; which page you are on is marked at runtime with aria-current,
+   never by adding or dropping links. Below 1000px they fold into the navigation
+   sheet — the same links again, nothing lost. */
+.nav-quick { display: flex; align-items: center; gap: 20px; }
+.nav-quick .ql {
   color: var(--fg-2); font-size: 14px; font-weight: 400; letter-spacing: 0;
   transition: color .2s var(--ease);
 }
-.nav-links a:hover { color: var(--fg); text-decoration: none; }
-.nav-links a [data-gh] { font-variant-numeric: tabular-nums; color: var(--fg-3); }
-.nav-links a:hover [data-gh] { color: var(--fg-2); }
-.nav-links a.cta {
-  color: var(--acc-ink); background: var(--acc); font-weight: 600;
+.nav-quick .ql:hover { color: var(--fg); text-decoration: none; }
+.nav-quick .ql [data-gh], .nav-quick .ql [data-dc] { font-variant-numeric: tabular-nums; color: var(--fg-3); }
+.nav-quick .ql:hover [data-gh], .nav-quick .ql:hover [data-dc] { color: var(--fg-2); }
+.nav-quick .cta {
+  color: var(--acc-ink); background: var(--acc); font-weight: 600; font-size: 14px;
   padding: 7px 15px; border-radius: 999px;
 }
-.nav-links a.cta:hover { background: #4ade63; }
+.nav-quick .cta:hover { background: #4ade63; text-decoration: none; }
+.nav-quick .ql[aria-current="page"] { color: var(--fg); }
+
+/* The one link up here that asks for something instead of offering it — but it
+   looks like every other link in the bar: same grey, no pill, just the cup in
+   front of the words. The only button up here is and stays the download. */
+.nav-quick .coffee { display: inline-flex; align-items: center; gap: 7px; }
+.nav-quick .coffee svg { width: 15px; height: 15px; fill: currentColor; flex: none; }
 
 .nav-toggle {
   display: none;
   position: relative;
-  width: 42px; height: 42px; margin-right: -9px;
+  width: 44px; height: 44px; margin-right: -11px;
   align-items: center; justify-content: center;
   border-radius: 10px; cursor: pointer;
+}
+
+/* One breakpoint for the whole header: above it the links are in the bar, below it
+   they are in the sheet. No page has a second answer. Placed after .nav-toggle's
+   own rule — same specificity, so the later one has to be the one that wins. */
+@media (max-width: 999.98px) {
+  .nav-quick .ql { display: none; }
+  .nav-toggle { display: flex; }
+
+  /* …except the coffee, which stays in the bar as its cup alone, on the right
+     beside the download — same grey as everything else up here. It is in the
+     sheet as well, spelled out; two ways to the same page is fine for this one. */
+  .nav-quick .coffee { display: inline-flex; padding: 9px; margin: -9px -5px; }
+  .nav-quick .coffee span { display: none; }
+  .nav-quick .coffee svg { width: 21px; height: 21px; }
 }
 .nav-toggle span {
   position: absolute; width: 18px; height: 1.5px; border-radius: 2px; background: var(--fg);
@@ -177,101 +205,165 @@ nav {
 .nav-toggle[aria-expanded="true"] span:first-child { transform: rotate(45deg); }
 .nav-toggle[aria-expanded="true"] span:last-child { transform: rotate(-45deg); }
 
-@media (max-width: 780px) {
-  .nav-toggle { display: flex; }
-  .nav-links {
-    position: fixed; left: 0; right: 0; top: 54px;
-    flex-direction: column; align-items: stretch; gap: 0;
-    padding: 6px var(--pad) calc(22px + env(safe-area-inset-bottom));
-    background: #000;
-    border-bottom: 1px solid var(--hair-soft);
-    box-shadow: 0 30px 60px rgba(0, 0, 0, .8);
-    max-height: calc(100dvh - 54px); overflow-y: auto;
-    transform: translateY(-8px); opacity: 0; pointer-events: none;
-    transition: opacity .28s var(--ease), transform .28s var(--ease);
-  }
-  .nav-links.open { transform: none; opacity: 1; pointer-events: auto; }
-  .nav-links a {
-    font-size: 19px; letter-spacing: -.02em; color: var(--fg);
-    padding: 15px 2px; border-bottom: 1px solid var(--hair-soft);
-    /* Each row drops in just behind the one above it, so the sheet unfolds instead
-       of appearing. Closing runs with no delay at all, so it leaves in one piece —
-       a staggered exit reads as sluggish. */
-    opacity: 0; transform: translateY(-10px);
-    transition: opacity .3s var(--ease), transform .3s var(--ease);
-  }
-  .nav-links.open a { opacity: 1; transform: none; }
-  .nav-links.open a:nth-child(1) { transition-delay: .03s; }
-  .nav-links.open a:nth-child(2) { transition-delay: .06s; }
-  .nav-links.open a:nth-child(3) { transition-delay: .09s; }
-  .nav-links.open a:nth-child(4) { transition-delay: .12s; }
-  .nav-links.open a:nth-child(5) { transition-delay: .15s; }
-  .nav-links.open a:nth-child(6) { transition-delay: .18s; }
-  .nav-links.open a:nth-child(7) { transition-delay: .21s; }
-  .nav-links.open a:nth-child(8) { transition-delay: .24s; }
-  .nav-links a.cta {
-    margin-top: 18px; border-bottom: 0; text-align: center;
-    padding: 14px 20px; font-size: 17px;
-  }
+/* ------------------------------------------------------- navigation sheet
+   The header's links, for the widths where the bar shows only the brand and the
+   download. Same links, same order — the sheet is the bar, folded. It drops from
+   under the bar, and the hamburger it came from turns into the ✕ that closes it. */
 
-  /* Whatever the sheet does not cover is dimmed, so the page behind it stops
-     competing for attention and a tap out there reads as "close". */
-  body::after {
-    content: ""; position: fixed; inset: 0; z-index: 50;
-    background: rgba(0, 0, 0, .55);
-    backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
-    opacity: 0; pointer-events: none;
-    transition: opacity .3s var(--ease);
-  }
-  body.menu-open::after { opacity: 1; pointer-events: auto; }
+.navsheet {
+  position: fixed; left: 0; right: 0; top: 54px; z-index: 80;
+  padding: 12px var(--pad) calc(20px + env(safe-area-inset-bottom));
+  background: #000;
+  border-bottom: 1px solid var(--hair-soft);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, .8);
+  max-height: calc(100dvh - 54px); overflow-y: auto; overscroll-behavior: contain;
+  transform: translateY(-8px); opacity: 0; visibility: hidden; pointer-events: none;
+  /* visibility is switched at one instant, never interpolated: transitioning it
+     leaves the panel hidden through its own opening animation — it would pop in
+     at the end, and nothing inside it could take focus until then. Zero delay on
+     the way in, the full duration on the way out. */
+  transition: opacity .28s var(--ease), transform .28s var(--ease), visibility 0s linear .28s;
+}
+body.menu-open .navsheet {
+  transform: none; opacity: 1; visibility: visible; pointer-events: auto;
+  transition: opacity .28s var(--ease), transform .28s var(--ease), visibility 0s;
+}
+@media (min-width: 1000px) { .navsheet { display: none; } }
+
+/* A row per link, comfortably past the 44px touch target. */
+.navsheet .nl {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  min-height: 52px; padding: 0 12px; margin: 0 -12px; border-radius: 12px;
+  color: var(--fg); font-size: 17px; font-weight: 500; letter-spacing: -.02em;
+  border-bottom: 1px solid var(--hair-soft);
+  transition: background-color .2s var(--ease);
+}
+.navsheet .nl:last-of-type { border-bottom: 0; }
+.navsheet .nl:hover { text-decoration: none; background: rgba(255, 255, 255, .05); }
+.navsheet .nl[aria-current="page"] { color: var(--acc); }
+.navsheet .nl [data-gh], .navsheet .nl [data-dc] { color: var(--fg-3); font-size: 14px; font-variant-numeric: tabular-nums; }
+/* The cup sits where the star count and the member count sit: hard right, in the
+   same quiet grey — the row reads "Buy me a coffee ……… ☕". */
+.navsheet .coffee svg { width: 19px; height: 19px; fill: var(--fg-3); flex: none; }
+/* No second Download button in here: the bar keeps its own at every width, a
+   finger-width above, and two identical green calls to action is one too many. */
+
+/* -------------------------------------------------------- contents drawer
+   Every page that has one gets the same one: closed on load, at every width,
+   with no remembered state. The Contents pill opens it; the ✕ inside it, Escape,
+   or a tap on the dimmed page closes it. Nothing else opens or closes it. */
+
+.toc-btn {
+  position: fixed; z-index: 62;
+  left: max(16px, env(safe-area-inset-left));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  display: inline-flex; align-items: center; gap: 9px;
+  min-height: 44px; padding: 0 19px 0 16px; border-radius: 999px; cursor: pointer;
+  /* Opaque enough to read against running text on its own, so the pill still works
+     where backdrop-filter does not. */
+  background: rgba(20, 21, 24, .94);
+  backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border: 1px solid var(--hair);
+  color: var(--fg-2); font-size: 14px; font-weight: 500; letter-spacing: -.01em;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .45);
+  transition: color .2s var(--ease), background-color .2s var(--ease),
+              border-color .2s var(--ease), opacity .2s var(--ease);
+}
+.toc-btn:hover { color: var(--fg); border-color: rgba(255, 255, 255, .25); background: rgba(32, 33, 37, .92); }
+.toc-btn svg { width: 16px; height: 16px; }
+/* The pill steps aside whenever a panel is up: with the drawer open the ✕ inside it
+   is the control, and under the navigation sheet it is just a shape behind glass. */
+body.contents-open .toc-btn, body.menu-open .toc-btn { opacity: 0; pointer-events: none; }
+
+.side {
+  position: fixed; left: 0; top: 54px; bottom: 0; z-index: 80;
+  width: min(340px, 88vw);
+  padding: 0 24px calc(30px + env(safe-area-inset-bottom)) calc(24px + env(safe-area-inset-left));
+  background: #0a0b0c;
+  border-right: 1px solid var(--hair-soft);
+  box-shadow: 40px 0 80px rgba(0, 0, 0, .5);
+  overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin;
+  transform: translateX(-102%); visibility: hidden;
+  /* Same one-instant switch as the sheet above, for the same two reasons. */
+  transition: transform .32s var(--ease), visibility 0s linear .32s;
+}
+body.contents-open .side {
+  transform: none; visibility: visible;
+  transition: transform .32s var(--ease), visibility 0s;
 }
 
+/* The close button rides along at the top of a long chapter list, so it is never
+   more than a glance away. */
+.side-top {
+  position: sticky; top: 0; z-index: 1;
+  display: flex; align-items: center; justify-content: space-between;
+  margin: 0 -24px 8px calc(-24px - env(safe-area-inset-left));
+  padding: 12px 14px 12px calc(24px + env(safe-area-inset-left));
+  background: #0a0b0c;
+  border-bottom: 1px solid var(--hair-soft);
+}
+.side-title { font-size: 15px; font-weight: 600; letter-spacing: -.02em; color: var(--fg); }
+.rail-close {
+  flex: none;
+  display: flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; margin: -6px -8px -6px 0;
+  border-radius: 11px; color: var(--fg-2); cursor: pointer;
+  transition: color .2s var(--ease), background-color .2s var(--ease);
+}
+.rail-close:hover { color: var(--fg); background: rgba(255, 255, 255, .07); }
+.rail-close svg { width: 17px; height: 17px; }
+
+/* Whatever the sheet or the drawer does not cover is dimmed, so the page behind
+   stops competing for attention and a tap out there reads as "close". It starts
+   below the bar: the header stays legible whatever is open. */
+body::after {
+  content: ""; position: fixed; inset: 54px 0 0; z-index: 70;
+  background: rgba(0, 0, 0, .55);
+  backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+  opacity: 0; pointer-events: none;
+  transition: opacity .3s var(--ease);
+}
+body.menu-open::after, body.contents-open::after { opacity: 1; pointer-events: auto; }
+
+/* The panels still open and close, they just stop travelling. The delay has to go
+   with the duration: it is what holds visibility back until a slide has finished,
+   and there is no slide left to wait for. */
 @media (prefers-reduced-motion: reduce) {
-  .nav-links, .nav-links a, body::after { transition-duration: .01ms !important; }
-  .nav-links.open a { transition-delay: 0s !important; }
+  .side, .navsheet, .toc-btn, body::after {
+    transition-duration: .01ms !important;
+    transition-delay: 0s !important;
+  }
 }
 
-/* ------------------------------------------------------------------- notice
-   The GitHub account suspension. Deliberately a contained card, not a full-bleed
-   banner: it has to be impossible to miss and still not be the first thing the
-   page shouts. Remove the whole block once the account is restored. */
+/* --------------------------------------------------------------- rail contents
+   One list per page — a title with a one-line subtitle per topic. */
 
-.notice-wrap { padding: 22px 0 0; }
-.notice {
-  position: relative;
-  background: linear-gradient(180deg, rgba(255, 159, 10, .07), rgba(255, 159, 10, .02));
-  border: 1px solid rgba(255, 159, 10, .26);
-  border-radius: var(--r-m);
-  padding: clamp(20px, 3.4vw, 28px);
+.side-label {
+  font-size: 11.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--fg-3);
+  margin: 28px 0 8px;
 }
-.notice-tag {
-  display: inline-flex; align-items: center; gap: 8px;
-  color: #ffb340; font-size: 13px; font-weight: 600;
-  text-transform: uppercase; letter-spacing: .07em;
-  margin-bottom: 12px;
+.side-label:first-child { margin-top: 0; }
+.side-link {
+  display: flex; flex-direction: column; justify-content: center;
+  min-height: 44px;                    /* a chapter without a subtitle is still tappable */
+  padding: 8px 12px; margin: 0 -12px; border-radius: 10px;
+  color: var(--fg);
+  transition: background-color .2s var(--ease);
 }
-.notice-tag::before {
-  content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--amber);
-  box-shadow: 0 0 0 4px rgba(255, 159, 10, .16);
+.side-link:hover { text-decoration: none; background: rgba(255, 255, 255, .05); }
+.side-link b { display: block; font-size: 14.5px; font-weight: 600; letter-spacing: -.015em; }
+.side-link span {
+  display: block; color: var(--fg-3); font-size: 12.5px; line-height: 1.4; margin-top: 2px;
 }
-.notice h2 {
-  font-size: clamp(20px, 3vw, 26px); letter-spacing: -.025em; color: #ffdcae;
-  margin-bottom: 12px;
-}
-.notice p { color: #cbbba6; font-size: 15.5px; max-width: 68ch; margin-bottom: 10px; }
-.notice p b { color: #fff8ee; font-weight: 600; }
-.notice .actions { margin-top: 18px; }
-.notice .btn { background: var(--amber); color: #1a1206; }
-.notice .btn:hover { background: #ffb340; }
-/* Named dc-btn, not dc: the `.dc` Discord card below owns that class, and a button
-   carrying both picked up the card's 30px padding and 44px top margin. */
-.notice .btn.dc-btn { background: var(--blurple); color: #fff; }
-.notice .btn.dc-btn:hover { background: #6b76f5; }
-/* Two half-width buttons stacked with a ragged right edge look accidental; on a phone
-   they read as one decision with two answers. */
-@media (max-width: 560px) {
-  .notice .actions { display: grid; gap: 10px; }
-  .notice .btn { width: 100%; }
+/* Scrollspy: the section under the reader, and on the other pages the page itself. */
+.side-link.on, .side-link[aria-current="page"] { background: rgba(255, 255, 255, .045); }
+.side-link.on b, .side-link[aria-current="page"] b { color: var(--acc); }
+
+/* A wide sheet with one narrow column of links looks abandoned; two columns fill it. */
+@media (min-width: 640px) and (max-width: 999.98px) {
+  .navsheet .nl { border-bottom: 0; }
+  .navsheet .nl-rows { display: grid; grid-template-columns: 1fr 1fr; column-gap: 28px; }
 }
 
 /* --------------------------------------------------------------------- hero */
@@ -510,7 +602,7 @@ section { padding: var(--sec) 0 0; }
 /* The 1px gap is the divider: the panel background shows through between cells, so
    the rules land correctly however many columns the grid resolves to. */
 .spec-cells {
-  display: grid; grid-template-columns: repeat(5, 1fr);
+  display: grid; grid-template-columns: repeat(6, 1fr);
   gap: 1px; background: var(--hair-soft);
 }
 .spec-cells > div {
@@ -522,11 +614,9 @@ section { padding: var(--sec) 0 0; }
   letter-spacing: -.035em; font-variant-numeric: tabular-nums; line-height: 1.1;
 }
 .spec-cells span { color: var(--fg-3); font-size: 13.5px; }
-@media (max-width: 760px) {
-  .spec-cells { grid-template-columns: repeat(2, 1fr); }
-  /* Five cells over two columns leaves a hole; the last one takes the whole row. */
-  .spec-cells > div:last-child { grid-column: 1 / -1; }
-}
+/* Six across is too thin to read before the layout is wide; three, then two. */
+@media (max-width: 1000px) { .spec-cells { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 620px) { .spec-cells { grid-template-columns: repeat(2, 1fr); } }
 
 /* ------------------------------------------------------------- the link quad
    Four places openGym lives, as one block of four. Each pad is the whole link, so
@@ -660,6 +750,10 @@ code { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, mo
 p code, li code, td code {
   background: var(--surface-2); border-radius: 6px; padding: 2px 6px;
   font-size: .88em; color: #e4e4e8;
+  /* An env var or a URL in running text is one unbreakable word wider than a
+     320px phone; without this it pushes the whole page sideways. A <pre> block is
+     left alone — it scrolls inside its own box. */
+  overflow-wrap: anywhere;
 }
 
 .toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 24px 0 4px; }
@@ -669,6 +763,8 @@ p code, li code, td code {
   transition: border-color .25s var(--ease), color .25s var(--ease);
 }
 .toc a:hover { color: var(--fg); border-color: var(--hair); text-decoration: none; }
+/* The topic rail lists the same sections on a wide screen; twice is clutter. */
+@media (min-width: 1300px) { .toc { display: none; } }
 
 /* config table on the docs page */
 table.cfg { width: 100%; border-collapse: collapse; margin: 18px 0 24px; font-size: 15.5px; }
@@ -800,4 +896,35 @@ table.cfg td:first-child { white-space: nowrap; width: 1%; padding-right: 26px; 
   .js.intro .hero .lead,
   .js.intro .hero .actions,
   .js.intro .hero-stage { opacity: 1; animation: none; }
+}
+
+/* ------------------------------------------------------- rail: subchapters
+   Chapters are .side-link rows inside a .side-group; the group's subchapters sit
+   in .side-subs and unfold for the chapter being read (scrollspy) or on tap. */
+.side-group .side-subs {
+  display: none;
+  margin: 2px 0 6px;
+}
+.side-group.open .side-subs { display: block; }
+.side-sub {
+  display: block; padding: 5px 12px 5px 24px; margin: 0 -12px; border-radius: 8px;
+  color: var(--fg-2); font-size: 13px; line-height: 1.4;
+  transition: color .2s var(--ease), background-color .2s var(--ease);
+}
+.side-sub:hover { text-decoration: none; color: var(--fg); background: rgba(255, 255, 255, .04); }
+.side-sub.on { color: var(--acc); }
+/* A subchapter is a tap target too, not just a line of text. */
+@media (pointer: coarse) { .side-sub { padding-top: 9px; padding-bottom: 9px; } }
+
+/* --------------------------------------------------------- a11y: link affordance
+   Links inside running text can't rely on color alone (WCAG 1.4.1 / Lighthouse
+   link-in-text-block): give them a quiet underline. Nav, cards and the rail keep
+   their color-only look — they are recognisable as controls by placement. */
+.prose p a, .prose li a, .prose td a, .foot .c a, .note a {
+  text-decoration: underline;
+  text-decoration-color: rgba(50, 215, 75, .45);
+  text-underline-offset: 2.5px;
+}
+.prose p a:hover, .prose li a:hover, .prose td a:hover, .foot .c a:hover, .note a:hover {
+  text-decoration-color: currentColor;
 }

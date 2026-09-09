@@ -74,10 +74,11 @@ async function popstate() {
   await act(async () => { window.dispatchEvent(new dom.Event('popstate')) })
 }
 
-function mouse(target, type, clientY) {
+function mouse(target, type, clientY, clientX = 0) {
   const event = new dom.Event(type, { bubbles: true })
   Object.defineProperties(event, {
     button: { value: 0 },
+    clientX: { value: clientX },
     clientY: { value: clientY },
   })
   target.dispatchEvent(event)
@@ -181,13 +182,16 @@ describe('Modals mouse dragging', () => {
   })
 
   it('releases a drag when mouseup occurs outside the sheet', async () => {
+    // a slow pull: synthetic events fire in the same tick, which would read as a flick
+    let now = 0
+    vi.spyOn(performance, 'now').mockImplementation(() => now)
     await setSheets([sheet('drag')])
     const sheetEl = container.querySelector('.sheet')
     sheetEl.scrollTop = 0
 
     await act(async () => {
       mouse(sheetEl, 'mousedown', 10)
-      mouse(sheetEl, 'mousemove', 60)
+      now = 300; mouse(sheetEl, 'mousemove', 60)
     })
     expect(sheetEl.style.transform).toBe('translateY(50px)')
 
@@ -195,6 +199,95 @@ describe('Modals mouse dragging', () => {
     expect(sheetEl.style.transform).toBe('')
 
     await act(async () => { mouse(sheetEl, 'mousemove', 120) })
+    expect(sheetEl.style.transform).toBe('')
+    expect(mocks.state.sheets).toHaveLength(1)
+  })
+})
+
+describe('Modals drag axis lock and dismiss', () => {
+  it('ignores a sideways gesture instead of wobbling the sheet', async () => {
+    await setSheets([sheet('x')])
+    const sheetEl = container.querySelector('.sheet')
+    sheetEl.scrollTop = 0
+
+    await act(async () => {
+      mouse(sheetEl, 'mousedown', 10, 10)
+      mouse(sheetEl, 'mousemove', 20, 60)
+      // once locked to x, even a clearly downward move stays with the horizontal gesture
+      mouse(sheetEl, 'mousemove', 120, 70)
+      window.dispatchEvent(new dom.Event('mouseup'))
+    })
+    expect(sheetEl.style.transform).toBe('')
+    expect(mocks.state.sheets).toHaveLength(1)
+  })
+
+  it('leaves horizontal chip strips to their own scrolling', async () => {
+    await setSheets([sheet('chips', {
+      render: () => React.createElement('div', { className: 'chips' }, React.createElement('button', { className: 'chip' }, 'a')),
+    })])
+    const sheetEl = container.querySelector('.sheet')
+    sheetEl.scrollTop = 0
+
+    await act(async () => {
+      mouse(container.querySelector('.chip'), 'mousedown', 10)
+      mouse(sheetEl, 'mousemove', 150)
+      window.dispatchEvent(new dom.Event('mouseup'))
+    })
+    expect(sheetEl.style.transform).toBe('')
+    expect(mocks.state.sheets).toHaveLength(1)
+  })
+
+  it('snaps back to zero when the pull reverses instead of scrolling while offset', async () => {
+    await setSheets([sheet('rev')])
+    const sheetEl = container.querySelector('.sheet')
+    sheetEl.scrollTop = 0
+
+    await act(async () => {
+      mouse(sheetEl, 'mousedown', 10)
+      mouse(sheetEl, 'mousemove', 110)
+    })
+    expect(sheetEl.style.transform).toBe('translateY(100px)')
+
+    await act(async () => { mouse(sheetEl, 'mousemove', 5) })
+    expect(sheetEl.style.transform).toBe('translateY(0px)')
+
+    await act(async () => { window.dispatchEvent(new dom.Event('mouseup')) })
+    expect(sheetEl.style.transform).toBe('')
+    expect(mocks.state.sheets).toHaveLength(1)
+  })
+
+  it('dismisses on a short but fast flick', async () => {
+    vi.useFakeTimers()
+    let now = 0
+    vi.spyOn(performance, 'now').mockImplementation(() => now)
+    await setSheets([sheet('flick')])
+    const sheetEl = container.querySelector('.sheet')
+    sheetEl.scrollTop = 0
+
+    await act(async () => {
+      mouse(sheetEl, 'mousedown', 10)
+      now = 20; mouse(sheetEl, 'mousemove', 40)
+      now = 60; mouse(sheetEl, 'mousemove', 80)   // 70px in 60ms: ~1 px/ms
+      window.dispatchEvent(new dom.Event('mouseup'))
+    })
+    expect(sheetEl.style.transform).toBe('translateY(110%)')
+    await act(async () => { vi.advanceTimersByTime(200) })
+    expect(mocks.state.sheets).toHaveLength(0)
+    vi.useRealTimers()
+  })
+
+  it('keeps a short slow pull open', async () => {
+    let now = 0
+    vi.spyOn(performance, 'now').mockImplementation(() => now)
+    await setSheets([sheet('slow')])
+    const sheetEl = container.querySelector('.sheet')
+    sheetEl.scrollTop = 0
+
+    await act(async () => {
+      mouse(sheetEl, 'mousedown', 10)
+      now = 400; mouse(sheetEl, 'mousemove', 80)
+      window.dispatchEvent(new dom.Event('mouseup'))
+    })
     expect(sheetEl.style.transform).toBe('')
     expect(mocks.state.sheets).toHaveLength(1)
   })

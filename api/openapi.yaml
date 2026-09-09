@@ -1,0 +1,1398 @@
+# openGym HTTP API — hand-written OpenAPI 3.1 spec.
+# Source of truth: api/server.js (a single framework-free Node file). Every route the
+# server registers is documented here; if you add a route there, add it here too.
+# Browsable version: https://opengym.duarte-santos.ch/api.html
+openapi: 3.1.0
+
+info:
+  title: openGym API
+  version: 1.3.5
+  summary: Passkey (WebAuthn) auth + per-user state storage for openGym
+  description: |
+    The backend of [openGym](https://opengym.duarte-santos.ch) — a free, open-source
+    gym & body-weight tracker. One Node file, no framework, JSON-file storage,
+    HMAC-signed session cookies.
+
+    ### Authentication
+    Sign-in is **passkey only** (WebAuthn, via `@simplewebauthn/server`). A successful
+    `register/verify` or `login/verify` sets the session cookie; every authenticated
+    route then works with that cookie. The paired mobile app has no shared cookie jar,
+    so it redeems a short pairing code (`/api/pair/redeem`) for the *same* signed token
+    and sends it as `Authorization: Bearer <token>` instead.
+
+    ### Sessions
+    The cookie/bearer value is `<payload>.<hmac>` where the payload is
+    `<uid>:<expiry-ms>:<session-version>`, signed with a per-instance secret
+    (HMAC-SHA256). Sessions last `SESSION_DAYS` (default 90). `POST /api/logout/all`
+    bumps the user's session version, which invalidates every token ever issued for
+    the account.
+
+    ### CSRF
+    State-changing browser requests must come from the app's own origin. The server
+    checks `Sec-Fetch-Site` (falling back to `Origin` vs the configured `ORIGIN`);
+    a mismatch is refused with `403 {"error":"cross-origin request refused"}` on any
+    non-GET route. Exempt: the WebAuthn and `pair/redeem` routes (each carries its own
+    one-shot credential in the body) and any request authenticated with a Bearer token.
+
+    ### Environment-dependent behavior
+    - `INVITE_ONLY=1` — registration requires a valid invite code (minted by an admin).
+    - `ALLOW_GUEST=0` — hides the client-side "continue without account" mode; the
+      server merely reports the flag via `GET /api/config` (guest mode never talks to
+      this API at all).
+    - `ADMIN_UIDS=<uid>,<uid>` — user ids treated as admins (a `"admin": true` flag on
+      the user record in `db.json` works too). Admins get the `/api/admin/*` routes.
+    - `AUDIT_LOG` (default on), `AUDIT_MAX` (default 5000 events), `AUDIT_DAYS`
+      (default 90), `AUDIT_IP` (`off` | `net` | `full`, default off) — shape the audit
+      log served by `GET /api/admin/audit`.
+
+    ### Conventions
+    - Every response body is JSON with `Cache-Control: no-store`.
+    - Errors are always `{"error": "<human-readable message>"}`.
+    - Unknown method+path pairs return `404 {"error":"not found"}`; an unhandled
+      exception returns `500 {"error":"server error"}`.
+    - Request bodies are parsed as JSON regardless of Content-Type; max 5 MiB.
+    - CORS: the request's `Origin` is reflected in `Access-Control-Allow-Origin`
+      **without** `Allow-Credentials` — cross-origin callers can only ever
+      authenticate with a Bearer token, never with the cookie.
+  license:
+    name: AGPL-3.0-or-later
+    identifier: AGPL-3.0-or-later
+  contact:
+    name: openGym
+    url: https://gitlab.com/DuarteSantos8/opengym
+
+servers:
+  - url: /
+    description: Same origin as the openGym web app (the normal deployment)
+  - url: https://opengym.example.com
+    description: Your self-hosted instance
+
+tags:
+  - name: meta
+    description: Health and public configuration
+  - name: auth
+    description: Passkey (WebAuthn) registration and login, sessions
+  - name: pairing
+    description: Mobile-app pairing (code from a signed-in browser tab)
+  - name: data
+    description: Per-user state sync (the whole app state as one JSON blob)
+  - name: push
+    description: Web Push (VAPID) subscriptions, rest-timer and test pushes
+  - name: activity
+    description: Live-workout presence heartbeat
+  - name: admin
+    description: Admin dashboard — requires an admin session (`ADMIN_UIDS` or `admin:true`)
+
+security:
+  - cookieAuth: []
+  - bearerAuth: []
+
+paths:
+  /api/health:
+    get:
+      tags: [meta]
+      operationId: getHealth
+      summary: Health check
+      description: Always public. Also reports how many user accounts exist.
+      security: []
+      responses:
+        '200':
+          description: The server is up.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+                  users:
+                    type: integer
+                    description: Number of registered user accounts.
+              example: { ok: true, users: 7 }
+
+  /api/config:
+    get:
+      tags: [meta]
+      operationId: getConfig
+      summary: Public instance configuration
+      description: |
+        The flags the login screen needs before anyone is signed in. Both reflect
+        environment variables on the server (`INVITE_ONLY`, `ALLOW_GUEST`).
+      security: []
+      responses:
+        '200':
+          description: Instance flags.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  invite_only:
+                    type: boolean
+                    description: When true, registration requires a valid invite code.
+                  allow_guest:
+                    type: boolean
+                    description: >-
+                      When false, the client hides "continue without account".
+                      Guest mode is purely client-side and never calls this API.
+              example: { invite_only: true, allow_guest: false }
+
+  /api/me:
+    get:
+      tags: [auth]
+      operationId: getMe
+      summary: Who am I?
+      description: Resolves the current session to a user.
+      responses:
+        '200':
+          description: A valid session.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { $ref: '#/components/schemas/SessionUser' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/register/options:
+    post:
+      tags: [auth]
+      operationId: registerOptions
+      summary: 'Start passkey registration (WebAuthn ceremony, step 1)'
+      description: |
+        Returns `PublicKeyCredentialCreationOptions` (from
+        `@simplewebauthn/server`'s `generateRegistrationOptions`) plus a challenge id
+        `cid`. The client passes `options` to
+        `navigator.credentials.create()` (or `@simplewebauthn/browser`'s
+        `startRegistration`) and sends the result to `/api/register/verify` together
+        with the `cid`. Challenges are one-shot and expire after 5 minutes.
+
+        CSRF-exempt (the challenge is the credential). No session required.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  maxLength: 40
+                  description: Display name for the new profile (trimmed, max 40 chars).
+                code:
+                  type: string
+                  description: >-
+                    Invite code — required (and validated) only when the instance
+                    runs with INVITE_ONLY. Compared case-insensitively.
+            example: { name: "Ada", code: "3F9C21A07B54D688" }
+      responses:
+        '200':
+          description: Ceremony options.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cid:
+                    type: string
+                    description: One-shot challenge id, echo it back to /api/register/verify.
+                  options:
+                    $ref: '#/components/schemas/WebAuthnRegistrationOptions'
+        '400':
+          description: '`name` missing/empty.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "name required" }
+        '403':
+          description: Instance is invite-only and the code is missing, used, or revoked.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "a valid invite code is required" }
+
+  /api/register/verify:
+    post:
+      tags: [auth]
+      operationId: registerVerify
+      summary: 'Finish passkey registration (WebAuthn ceremony, step 2)'
+      description: |
+        Verifies the authenticator's attestation response against the stored
+        challenge (`verifyRegistrationResponse`), creates the user + credential, and
+        signs the caller in (sets the session cookie). On an invite-only instance the
+        invite is re-checked and burned here. CSRF-exempt.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [cid, credential]
+              properties:
+                cid:
+                  type: string
+                  description: The challenge id from /api/register/options.
+                credential:
+                  $ref: '#/components/schemas/WebAuthnRegistrationCredential'
+      responses:
+        '200':
+          description: Registered and signed in. The session cookie is set.
+          headers:
+            Set-Cookie:
+              description: >-
+                Session cookie (`__Host-gymsid` on HTTPS deployments, `gymsid` over
+                plain http). HttpOnly, SameSite=Lax, Max-Age = SESSION_DAYS.
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { $ref: '#/components/schemas/SessionUser' }
+        '400':
+          description: >-
+            Challenge expired/replayed, or the attestation did not verify (wrong
+            origin/RP ID, malformed response…). The message is human-readable.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "challenge expired — try again" }
+        '403':
+          description: Invite-only and the code became invalid since step 1.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "invite code is no longer valid — ask for a new one" }
+        '409':
+          description: This credential id is already registered.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "credential already registered" }
+
+  /api/login/options:
+    post:
+      tags: [auth]
+      operationId: loginOptions
+      summary: 'Start passkey login (WebAuthn ceremony, step 1)'
+      description: |
+        Returns `PublicKeyCredentialRequestOptions`
+        (`generateAuthenticationOptions` with an empty `allowCredentials` — discoverable
+        credentials / resident keys are required at registration, so the browser offers
+        the user their passkeys itself) plus a one-shot challenge id `cid`.
+        CSRF-exempt. Takes no request body.
+      security: []
+      responses:
+        '200':
+          description: Ceremony options.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cid: { type: string }
+                  options:
+                    $ref: '#/components/schemas/WebAuthnAuthenticationOptions'
+
+  /api/login/verify:
+    post:
+      tags: [auth]
+      operationId: loginVerify
+      summary: 'Finish passkey login (WebAuthn ceremony, step 2)'
+      description: |
+        Verifies the assertion (`verifyAuthenticationResponse`), updates the signature
+        counter, and signs the caller in (sets the session cookie). CSRF-exempt.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [cid, credential]
+              properties:
+                cid:
+                  type: string
+                  description: The challenge id from /api/login/options.
+                credential:
+                  $ref: '#/components/schemas/WebAuthnAuthenticationCredential'
+      responses:
+        '200':
+          description: Signed in. The session cookie is set.
+          headers:
+            Set-Cookie:
+              description: Session cookie (see /api/register/verify).
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { $ref: '#/components/schemas/SessionUser' }
+        '400':
+          description: Challenge expired/replayed, or the assertion did not verify.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "not verified" }
+        '403':
+          description: The account has been disabled by an admin.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "this account has been disabled" }
+        '404':
+          description: The passkey's credential id is unknown to this instance.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "unknown passkey — create a profile first" }
+        '500':
+          description: Credential exists but its user record is missing (corrupt db).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "user missing" }
+
+  /api/logout:
+    post:
+      tags: [auth]
+      operationId: logout
+      summary: Sign out (this device)
+      description: >-
+        Clears the session cookie. Always succeeds — an invalid or missing session is
+        a no-op. The token itself stays cryptographically valid until it expires; use
+        /api/logout/all to revoke tokens.
+      security: []
+      responses:
+        '200':
+          description: Cookie cleared.
+          headers:
+            Set-Cookie:
+              description: Expires the session cookie(s).
+              schema: { type: string }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Ok' }
+
+  /api/logout/all:
+    post:
+      tags: [auth]
+      operationId: logoutAll
+      summary: Sign out everywhere
+      description: |
+        Bumps the account's session version, which invalidates **every** cookie and
+        Bearer token ever issued for it — on every device, including a copy someone
+        walked off with. Passkeys are untouched; signing back in works immediately.
+        Also clears the caller's own cookie.
+      responses:
+        '200':
+          description: All sessions revoked.
+          headers:
+            Set-Cookie:
+              description: Expires the caller's session cookie(s).
+              schema: { type: string }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Ok' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/pair/create:
+    post:
+      tags: [pairing]
+      operationId: pairCreate
+      summary: Mint a pairing code for the mobile app
+      description: |
+        Called from an already signed-in browser tab (Settings → "Pair the mobile
+        app"). Returns an 8-character code (alphabet without 0/O/1/I) the phone
+        redeems within 5 minutes via /api/pair/redeem. One-shot.
+      responses:
+        '200':
+          description: A fresh pairing code.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    description: 8 chars from ABCDEFGHJKLMNPQRSTUVWXYZ23456789.
+              example: { code: "K7WQ2MZP" }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/pair/redeem:
+    post:
+      tags: [pairing]
+      operationId: pairRedeem
+      summary: Redeem a pairing code for a Bearer token
+      description: |
+        Called from the mobile app with the code shown in the browser. No session
+        required — the code *is* the credential (one-shot, 5-minute TTL). Returns the
+        same HMAC-signed session token the cookie would carry; the app sends it as
+        `Authorization: Bearer <token>` from then on. CSRF-exempt.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code:
+                  type: string
+                  description: The pairing code (case-insensitive).
+            example: { code: "K7WQ2MZP" }
+      responses:
+        '200':
+          description: Paired.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: Signed session token, valid for SESSION_DAYS.
+                  user: { $ref: '#/components/schemas/SessionUser' }
+        '400':
+          description: >-
+            Code unknown, already used, expired — or the account behind it is gone or
+            disabled (deliberately the same message for all of these).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "invalid or expired code" }
+
+  /api/data:
+    get:
+      tags: [data]
+      operationId: getData
+      summary: Pull the account's app state
+      description: >-
+        Returns the caller's entire app state as one JSON blob, or `{"state": null}`
+        if nothing has been synced yet. Sync conflict resolution happens client-side
+        (last-writer-wins by the client-set `_ts` timestamp).
+      responses:
+        '200':
+          description: The stored state, or null.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  state:
+                    oneOf:
+                      - $ref: '#/components/schemas/State'
+                      - type: 'null'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    put:
+      tags: [data]
+      operationId: putData
+      summary: Push the account's app state
+      description: |
+        Replaces the stored state wholesale (atomic write; there is no merge on the
+        server). The `active` field — an in-progress workout — is stripped before
+        saving: a running session belongs to the device running it. Body limit 5 MiB.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [state]
+              properties:
+                state: { $ref: '#/components/schemas/State' }
+      responses:
+        '200':
+          description: Saved.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+                  ts:
+                    oneOf: [{ type: number }, { type: 'null' }]
+                    description: Echo of the pushed state's `_ts`, if present.
+        '400':
+          description: '`state` missing or not an object.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "state required" }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/push/public-key:
+    get:
+      tags: [push]
+      operationId: pushPublicKey
+      summary: VAPID public key
+      description: >-
+        The instance's Web-Push application server key (generated once at first boot),
+        for `PushManager.subscribe({applicationServerKey})`. Public.
+      security: []
+      responses:
+        '200':
+          description: The key.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  key:
+                    type: string
+                    description: base64url-encoded P-256 public key.
+
+  /api/push/subscribe:
+    post:
+      tags: [push]
+      operationId: pushSubscribe
+      summary: Register a Web-Push subscription
+      description: |
+        Stores the browser's `PushSubscription` for this account. Only `endpoint` and
+        the two protocol keys are kept. The endpoint must be a public `https://` URL —
+        private/loopback/link-local addresses are refused (here and again at send
+        time, against DNS rebinding). At most 20 subscriptions per user; the oldest
+        are dropped first. Re-subscribing an existing endpoint replaces it.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [subscription]
+              properties:
+                subscription: { $ref: '#/components/schemas/PushSubscription' }
+      responses:
+        '200':
+          description: Stored.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Ok' }
+        '400':
+          description: Malformed subscription, or an endpoint that isn't acceptable.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              examples:
+                malformed: { value: { error: "invalid subscription" } }
+                private: { value: { error: "endpoint must not point at a private address" } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/push/unsubscribe:
+    post:
+      tags: [push]
+      operationId: pushUnsubscribe
+      summary: Remove a Web-Push subscription
+      description: Removes the caller's subscription with the given endpoint. Idempotent.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [endpoint]
+              properties:
+                endpoint: { type: string, format: uri }
+      responses:
+        '200':
+          description: Removed (or was never there).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Ok' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/push/test:
+    post:
+      tags: [push]
+      operationId: pushTest
+      summary: Send a test notification
+      description: >-
+        Sends a test push to all of the caller's subscriptions (localized with the
+        `lang` in their synced state). Returns 200 even if delivery to individual
+        endpoints fails — dead endpoints (404/410) are pruned as a side effect.
+      responses:
+        '200':
+          description: Sends attempted.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Ok' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/push/rest-timer:
+    post:
+      tags: [push]
+      operationId: pushRestTimer
+      summary: Schedule a server-side rest-timer push
+      description: |
+        Schedules one push after `seconds` (clamped to 1–3600; one pending timer per
+        user, a new call replaces it). The client schedules this on rest start/extend
+        and cancels on skip or on-screen completion — the push only actually fires
+        when the tab was backgrounded/suspended and never got to cancel it.
+
+        Note: the documented `400 seconds required` exists in the code but is
+        unreachable — the clamp turns any missing/invalid value into 1.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [seconds]
+              properties:
+                seconds:
+                  type: number
+                  minimum: 1
+                  maximum: 3600
+            example: { seconds: 90 }
+      responses:
+        '200':
+          description: Timer scheduled.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Ok' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/push/rest-timer/cancel:
+    post:
+      tags: [push]
+      operationId: pushRestTimerCancel
+      summary: Cancel the pending rest-timer push
+      description: Cancels the caller's scheduled rest-timer push, if any. Idempotent.
+      responses:
+        '200':
+          description: Cancelled (or nothing was pending).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Ok' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/activity:
+    post:
+      tags: [activity]
+      operationId: postActivity
+      summary: Live-workout presence heartbeat
+      description: |
+        The client pings this every ~20 s while a workout is on screen; the admin
+        dashboard reads who is training right now. Purely ephemeral, in-memory, never
+        persisted; entries expire ~70 s after the last ping. `{"active": false}`
+        drops the caller's entry immediately.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                active:
+                  type: boolean
+                  description: false ends the presence; true (with the fields below) updates it.
+                name:
+                  type: string
+                  maxLength: 60
+                  description: Routine/workout name being trained.
+                exIdx: { type: integer, description: Current exercise index (0-based). }
+                exTotal: { type: integer, description: Exercises in the workout. }
+                setsDone: { type: integer }
+                setsTotal: { type: integer }
+                startedAt:
+                  type: number
+                  description: Workout start, ms since epoch (defaults to now).
+            example:
+              active: true
+              name: "Push Day"
+              exIdx: 2
+              exTotal: 5
+              setsDone: 7
+              setsTotal: 16
+              startedAt: 1756500000000
+      responses:
+        '200':
+          description: Presence updated.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Ok' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/admin/users:
+    get:
+      tags: [admin]
+      operationId: adminUsers
+      summary: 'Admin: list all users'
+      description: >-
+        One row per user with workout counts, last sync, push status and live
+        presence. Admin only.
+      responses:
+        '200':
+          description: All users.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items: { $ref: '#/components/schemas/AdminUserRow' }
+                  invite_only: { type: boolean }
+                  now:
+                    type: number
+                    description: Server time (ms) — for rendering relative times.
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/admin/user:
+    get:
+      tags: [admin]
+      operationId: adminUser
+      summary: 'Admin: one user in detail'
+      description: >-
+        Drill-down — full workout history (newest first) and body-weight log for one
+        user. Admin only.
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema: { type: string }
+          description: The user id.
+      responses:
+        '200':
+          description: The user's detail.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminUserDetail' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404':
+          description: No user with that id.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "no such user" }
+
+  /api/admin/user/disable:
+    post:
+      tags: [admin]
+      operationId: adminUserDisable
+      summary: 'Admin: disable or re-enable a user'
+      description: |
+        Sets the `disabled` flag. A disabled account is locked out everywhere at once
+        (every existing session stops resolving) and dropped from live presence.
+        Admins cannot be disabled. Audited.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, disabled]
+              properties:
+                id: { type: string, description: The user id. }
+                disabled: { type: boolean }
+      responses:
+        '200':
+          description: Flag updated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+                  id: { type: string }
+                  disabled: { type: boolean }
+        '400':
+          description: Target is an admin.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "cannot disable an admin" }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404':
+          description: No user with that id.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "no such user" }
+
+  /api/admin/invites:
+    get:
+      tags: [admin]
+      operationId: adminInvites
+      summary: 'Admin: list invite codes'
+      description: All invite codes, with the redeeming user's name resolved for display.
+      responses:
+        '200':
+          description: All invites.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  invites:
+                    type: array
+                    items: { $ref: '#/components/schemas/Invite' }
+                  invite_only: { type: boolean }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/admin/invites/new:
+    post:
+      tags: [admin]
+      operationId: adminInviteNew
+      summary: 'Admin: mint an invite code'
+      description: >-
+        Creates a fresh single-use invite code (16 hex chars = 64 bits — the code
+        itself is the thing that isn't worth guessing; rate limiting is the reverse
+        proxy's job). Audited.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                note:
+                  type: string
+                  maxLength: 60
+                  description: Free-form label ("for Alex").
+      responses:
+        '200':
+          description: The new invite.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  invite: { $ref: '#/components/schemas/Invite' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/admin/invites/revoke:
+    post:
+      tags: [admin]
+      operationId: adminInviteRevoke
+      summary: 'Admin: revoke an unused invite code'
+      description: Deletes an unused code. A code that was already redeemed cannot be revoked.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code: { type: string }
+      responses:
+        '200':
+          description: Revoked.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Ok' }
+        '400':
+          description: The code was already used.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "already used — cannot revoke" }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404':
+          description: No such code.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "no such code" }
+
+  /api/admin/audit:
+    get:
+      tags: [admin]
+      operationId: adminAudit
+      summary: 'Admin: read the activity log'
+      description: |
+        The audit log (sign-ins, failed attempts, admin actions), newest first, paged
+        by event id (`before` cursor — offset paging would repeat rows as new events
+        land). Retention (`AUDIT_MAX` events / `AUDIT_DAYS` days) is applied on read
+        as well as on the hourly compaction. When `AUDIT_LOG` is off the route still
+        answers, with `enabled: false` and whatever was logged before.
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 100 }
+          description: Page size.
+        - name: before
+          in: query
+          schema: { type: integer }
+          description: Only events with id < before (cursor from `nextBefore`).
+        - name: cat
+          in: query
+          schema:
+            type: string
+            enum: [auth, admin, fail]
+          description: >-
+            Filter — `fail` keeps only failed events; any other value keeps events
+            whose name starts with `<cat>.` (in practice `auth` or `admin`).
+      responses:
+        '200':
+          description: One page of the log.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events:
+                    type: array
+                    items: { $ref: '#/components/schemas/AuditEvent' }
+                  total:
+                    type: integer
+                    description: Rows matching the filter (after retention).
+                  nextBefore:
+                    oneOf: [{ type: integer }, { type: 'null' }]
+                    description: Cursor for the next page; null on the last page.
+                  enabled:
+                    type: boolean
+                    description: Whether audit logging is currently on (AUDIT_LOG).
+                  ip_mode:
+                    type: string
+                    enum: [off, net, full]
+                    description: How much of the caller IP is recorded (AUDIT_IP).
+                  retention:
+                    type: object
+                    properties:
+                      max: { type: integer, description: 'Event cap (0 = none).' }
+                      days: { type: integer, description: 'Age cap in days (0 = none).' }
+                  now: { type: number, description: Server time (ms). }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/admin/audit/clear:
+    post:
+      tags: [admin]
+      operationId: adminAuditClear
+      summary: 'Admin: clear the activity log'
+      description: >-
+        Deletes the log file. The clear is itself the first event of the fresh log,
+        and event ids are never reset — a wipe always leaves a visible id gap.
+      responses:
+        '200':
+          description: Cleared.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Ok' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: gymsid
+      description: |
+        HMAC-signed session cookie, set by `register/verify` / `login/verify`.
+        On HTTPS deployments it is issued as **`__Host-gymsid`** (host-locked,
+        Secure); the unprefixed `gymsid` is what a plain-http `localhost` instance
+        uses, and is still accepted for pre-upgrade sessions. HttpOnly + SameSite=Lax;
+        browser clients never handle the value directly.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: >-
+        The same signed session token, carried as `Authorization: Bearer <token>` by
+        the paired mobile app (obtained from `POST /api/pair/redeem`). Bearer requests
+        skip the CSRF origin check — a browser never attaches this header on its own.
+
+  responses:
+    Unauthorized:
+      description: No session, expired/revoked session, or a disabled account.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: "not signed in" }
+    Forbidden:
+      description: Signed in, but not an admin. The attempt is recorded in the audit log.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: "forbidden" }
+
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+          description: Human-readable message. This is the only error shape the API has.
+
+    Ok:
+      type: object
+      properties:
+        ok: { type: boolean, const: true }
+
+    SessionUser:
+      type: object
+      description: The caller's identity, as returned by /api/me and the sign-in routes.
+      properties:
+        id: { type: string, description: Stable user id (16 base64url chars). }
+        name: { type: string }
+        admin: { type: boolean }
+      example: { id: "Zk3q9XyPbA2LmN0v", name: "Ada", admin: false }
+
+    # ------------------------------------------------------------------ WebAuthn
+    # These mirror @simplewebauthn/server v13's JSON shapes (themselves the W3C
+    # WebAuthn Level 3 JSON serialization). Clients normally never build them by
+    # hand — @simplewebauthn/browser converts them to/from the navigator.credentials
+    # calls. Documented loosely on purpose; the library owns the details.
+    WebAuthnRegistrationOptions:
+      type: object
+      description: >-
+        PublicKeyCredentialCreationOptionsJSON — pass to
+        `startRegistration()` (@simplewebauthn/browser) or decode for
+        `navigator.credentials.create()`. Resident keys are required; attestation
+        is `none`.
+      properties:
+        challenge: { type: string, description: base64url }
+        rp:
+          type: object
+          properties:
+            name: { type: string }
+            id: { type: string, description: The RP_ID the instance is configured with. }
+        user:
+          type: object
+          properties:
+            id: { type: string, description: base64url user handle }
+            name: { type: string }
+            displayName: { type: string }
+        pubKeyCredParams: { type: array, items: { type: object } }
+        authenticatorSelection:
+          type: object
+          properties:
+            residentKey: { type: string, const: required }
+            userVerification: { type: string, const: preferred }
+        attestation: { type: string, const: none }
+      additionalProperties: true
+
+    WebAuthnRegistrationCredential:
+      type: object
+      description: >-
+        RegistrationResponseJSON — the value `startRegistration()` resolves with
+        (the created credential plus the authenticator's attestation response),
+        sent back verbatim.
+      properties:
+        id: { type: string, description: base64url credential id }
+        rawId: { type: string }
+        type: { type: string, const: public-key }
+        response:
+          type: object
+          properties:
+            clientDataJSON: { type: string, description: base64url }
+            attestationObject: { type: string, description: base64url }
+            transports:
+              type: array
+              items: { type: string }
+              description: e.g. ["internal", "hybrid"] — stored for later logins.
+          additionalProperties: true
+      additionalProperties: true
+
+    WebAuthnAuthenticationOptions:
+      type: object
+      description: >-
+        PublicKeyCredentialRequestOptionsJSON — pass to `startAuthentication()`.
+        `allowCredentials` is empty: the browser offers the user's discoverable
+        passkeys itself.
+      properties:
+        challenge: { type: string, description: base64url }
+        rpId: { type: string }
+        userVerification: { type: string, const: preferred }
+        allowCredentials: { type: array, items: { type: object }, description: Always empty. }
+      additionalProperties: true
+
+    WebAuthnAuthenticationCredential:
+      type: object
+      description: >-
+        AuthenticationResponseJSON — the value `startAuthentication()` resolves
+        with, sent back verbatim.
+      properties:
+        id: { type: string, description: base64url credential id }
+        rawId: { type: string }
+        type: { type: string, const: public-key }
+        response:
+          type: object
+          properties:
+            clientDataJSON: { type: string }
+            authenticatorData: { type: string }
+            signature: { type: string }
+            userHandle: { type: string }
+          additionalProperties: true
+      additionalProperties: true
+
+    # ------------------------------------------------------------------ state sync
+    State:
+      type: object
+      description: |
+        The whole app state as one blob. The server treats it as opaque (it only
+        strips `active` on save and reads a few fields for reminders and the admin
+        dashboard) — the schema below is **representative, not enforced**, and grows
+        with the app. Conflict resolution is client-side via `_ts`.
+      properties:
+        _ts:
+          type: number
+          description: Client-set last-write timestamp (ms since epoch); drives sync.
+        unit: { type: string, enum: [kg, lb] }
+        lang:
+          type: string
+          description: UI language code ("en", "de", "pt", …) — also localizes pushes.
+        theme: { type: string }
+        accent: { type: string }
+        workouts:
+          type: array
+          description: Completed workouts, chronological.
+          items: { $ref: '#/components/schemas/Workout' }
+        routines:
+          type: array
+          items: { $ref: '#/components/schemas/Routine' }
+        week:
+          type: object
+          description: 'Weekly plan: weekday (0=Sunday … 6) → routine id.'
+          additionalProperties: { type: string }
+        dayPlan:
+          type: object
+          description: >-
+            Per-date overrides: ISO date → routine id, or "rest". Wins over `week`.
+          additionalProperties: { type: string }
+        bodyweight:
+          type: array
+          items: { $ref: '#/components/schemas/BodyweightEntry' }
+        customEx:
+          type: array
+          description: User-created exercises (id, name, muscles…).
+          items: { type: object, additionalProperties: true }
+        exWeights:
+          type: object
+          description: 'Per-exercise last/best weight memory: exercise id → {w, d}.'
+          additionalProperties: { type: object, additionalProperties: true }
+        reminder:
+          type: object
+          description: >-
+            Daily "workout planned today" push. The server reads this: at `time`
+            (HH:MM, in `tz`) it sends one push if a routine is planned and nothing
+            was logged yet.
+          properties:
+            'on': { type: boolean }
+            time: { type: string, example: "08:00" }
+            tz:
+              oneOf: [{ type: string }, { type: 'null' }]
+              description: IANA zone ("Europe/Zurich"); the user's own clock.
+        restSec: { type: number, description: Default rest-timer seconds. }
+        effort:
+          oneOf: [{ type: string, enum: [none, rir, rpe] }, { type: 'null' }]
+        equipProfiles: { type: array, items: { type: object, additionalProperties: true } }
+        settings:
+          type: object
+          description: >-
+            Catch-all note: the remaining top-level keys (sound, keepAwake, gifSize,
+            targetW, autoBackup, …) are flat settings values like the ones above.
+          additionalProperties: true
+      additionalProperties: true
+
+    Workout:
+      type: object
+      description: One completed workout (representative shape).
+      properties:
+        id: { type: string }
+        d: { type: string, format: date, description: 'ISO day, e.g. "2026-08-30".' }
+        start: { type: number, description: ms since epoch }
+        end: { type: number }
+        routineId: { type: string }
+        name: { type: string }
+        bw: { type: number, description: 'Body weight that day, in `unit`.' }
+        vol: { type: number, description: Total volume (Σ weight × reps). }
+        prs:
+          type: array
+          items: { type: string }
+          description: Exercise ids that hit a personal record.
+        entries:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string, description: Exercise id. }
+              topW: { oneOf: [{ type: number }, { type: 'null' }] }
+              sets:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    w: { type: number, description: Weight. }
+                    r: { type: number, description: Reps. }
+                    done: { type: boolean }
+                    rir: { type: number }
+                    rpe: { type: number }
+                  additionalProperties: true
+            additionalProperties: true
+      additionalProperties: true
+
+    Routine:
+      type: object
+      description: A workout template (representative shape).
+      properties:
+        id: { type: string }
+        name: { type: string }
+        emoji: { type: string }
+        ex:
+          type: array
+          description: Exercises with set/rep targets.
+          items: { type: object, additionalProperties: true }
+      additionalProperties: true
+
+    BodyweightEntry:
+      type: object
+      properties:
+        d: { type: string, format: date }
+        w: { type: number, description: Weight in `unit`. }
+        t: { type: number, description: Timestamp (ms). }
+      additionalProperties: true
+
+    # ------------------------------------------------------------------ push
+    PushSubscription:
+      type: object
+      description: The browser's PushSubscription.toJSON() — only these fields are stored.
+      required: [endpoint, keys]
+      properties:
+        endpoint:
+          type: string
+          format: uri
+          description: Public https:// push-service URL.
+        keys:
+          type: object
+          required: [p256dh, auth]
+          properties:
+            p256dh: { type: string }
+            auth: { type: string }
+
+    # ------------------------------------------------------------------ admin
+    AdminUserRow:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        created: { oneOf: [{ type: string }, { type: 'null' }], description: ISO timestamp. }
+        disabled: { type: boolean }
+        admin: { type: boolean }
+        invitedBy:
+          oneOf: [{ type: string }, { type: 'null' }]
+          description: The invite code this account was created with.
+        workouts: { type: integer, description: Total logged workouts. }
+        lastWorkout:
+          oneOf: [{ type: string }, { type: 'null' }]
+          description: ISO day of the newest workout.
+        lastSync:
+          oneOf: [{ type: number }, { type: 'null' }]
+          description: The state's `_ts` (ms).
+        hasPush: { type: boolean, description: Has at least one push subscription. }
+        live:
+          oneOf: [{ $ref: '#/components/schemas/Presence' }, { type: 'null' }]
+          description: Currently training, or null.
+
+    Presence:
+      type: object
+      description: Live-workout snapshot (from /api/activity heartbeats).
+      properties:
+        name: { type: string }
+        exIdx: { type: integer }
+        exTotal: { type: integer }
+        setsDone: { type: integer }
+        setsTotal: { type: integer }
+        startedAt: { type: number }
+        updatedAt: { type: number }
+
+    AdminUserDetail:
+      type: object
+      properties:
+        user:
+          type: object
+          properties:
+            id: { type: string }
+            name: { type: string }
+            created: { oneOf: [{ type: string }, { type: 'null' }] }
+            disabled: { type: boolean }
+            admin: { type: boolean }
+            invitedBy: { oneOf: [{ type: string }, { type: 'null' }] }
+        unit: { type: string, enum: [kg, lb] }
+        lastSync: { oneOf: [{ type: number }, { type: 'null' }] }
+        routines:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              name: { type: string }
+              emoji: { type: string }
+              count: { type: integer, description: Number of exercises. }
+        bodyweight:
+          type: array
+          items: { $ref: '#/components/schemas/BodyweightEntry' }
+        workouts:
+          type: array
+          description: Full history, newest first.
+          items: { $ref: '#/components/schemas/Workout' }
+
+    Invite:
+      type: object
+      properties:
+        code: { type: string, description: 16 hex chars. }
+        note: { type: string }
+        createdBy: { type: string, description: Admin user id. }
+        created: { type: string, description: ISO timestamp. }
+        usedBy:
+          oneOf: [{ type: string }, { type: 'null' }]
+          description: User id that redeemed the code (absent/null while unused).
+        usedAt: { type: string }
+        usedByName:
+          oneOf: [{ type: string }, { type: 'null' }]
+          description: Resolved display name (only in GET /api/admin/invites).
+      additionalProperties: true
+
+    AuditEvent:
+      type: object
+      description: One line of the audit log.
+      required: [id, ts, ev, ok]
+      properties:
+        id:
+          type: integer
+          description: Monotonic, never reset — a cleared log leaves a visible id gap.
+        ts: { type: number, description: ms since epoch. }
+        ev:
+          type: string
+          description: |
+            Event name. Currently one of:
+            `auth.register.ok|fail|denied`, `auth.login.ok|fail`, `auth.logout`,
+            `auth.logout.all`, `auth.pair.create|ok|fail`,
+            `admin.denied`, `admin.user.disable|enable`,
+            `admin.invite.create|revoke`, `admin.audit.clear`.
+        ok: { type: boolean, description: false for failed/denied attempts. }
+        uid: { type: string, description: Acting (or affected) user id. }
+        name: { type: string, description: Acting user's name (max 40 chars). }
+        tgt: { type: string, description: Target user id (admin actions). }
+        tname: { type: string, description: Target user's name. }
+        msg:
+          type: string
+          description: >-
+            Short detail — a failure reason code, or the invite code involved.
+            Rejected invite guesses and unknown credential ids are deliberately
+            never recorded.
+        ip:
+          type: string
+          description: >-
+            Only when AUDIT_IP is on — the full address (`full`) or just the
+            network, /24 or /48 (`net`).
+      example:
+        id: 421
+        ts: 1756500000000
+        ev: auth.login.ok
+        ok: true
+        uid: Zk3q9XyPbA2LmN0v
+        name: Ada

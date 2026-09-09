@@ -4,15 +4,32 @@
 // mode in a browser, this is the user's only copy of their training log, so it can't depend
 // on WebView localStorage alone (iOS evicts that under storage pressure). Every persist()
 // therefore also lands in a JSON file in the app's private data directory, and boot()
-// restores from it. The workout reminder uses native local notifications scheduled per
-// planned weekday — no server involved, unlike Web Push in the self-hosted version.
+// restores from it. The workout reminder uses native local notifications scheduled per future
+// calendar date — no server involved, unlike Web Push in the self-hosted version.
 //
 // Like the demo build, MOBILE is replaced at build time, so all of this folds away in
 // web bundles; the Capacitor plugins are only ever imported behind it.
 import { t } from './i18n-core.js'
-import { todayISO } from './format.js'
+import { isoOf, todayISO } from './format.js'
+import { effectiveRoutineIds } from './history.js'
 
 export const MOBILE = import.meta.env.VITE_MOBILE === '1'
+
+// Some features only make sense on Android. The in-app updater downloads an .apk and hands it
+// to the system package installer — there is no equivalent on iOS (App Store only) or on the
+// web build. On anything but a native Android shell this must stay off.
+//
+// @capacitor/core is imported dynamically (like every other Capacitor dependency here) so it
+// never lands in the web bundle. Capacitor.getPlatform() returns 'android' | 'ios' | 'web'.
+export async function isAndroid() {
+  if (!MOBILE) return false
+  try {
+    const { Capacitor } = await import('@capacitor/core')
+    return Capacitor.getPlatform() === 'android'
+  } catch (e) {
+    return false
+  }
+}
 
 const FILE = 'opengym-state.json'
 
@@ -42,6 +59,22 @@ export async function nativeSave(state) {
 // travel as if it were training data.
 const REMOTE_FILE = 'opengym-remote.json'
 
+// Small JSON files in the app's private data directory, for device facts that must not ride
+// in S (which syncs and exports): the pairing, and how the Coach runs on this phone.
+export async function readJsonFile(name) {
+  try {
+    const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
+    const r = await Filesystem.readFile({ path: name, directory: Directory.Data, encoding: Encoding.UTF8 })
+    return JSON.parse(r.data)
+  } catch (e) { return null }
+}
+export async function writeJsonFile(name, data) {
+  try {
+    const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
+    await Filesystem.writeFile({ path: name, directory: Directory.Data, data: JSON.stringify(data), encoding: Encoding.UTF8 })
+  } catch (e) { /* not a Capacitor build, or the write failed — the caller's in-memory copy stands */ }
+}
+
 export async function loadRemoteFile() {
   try {
     const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
@@ -57,32 +90,82 @@ export async function saveRemoteFile(data) {
   } catch (e) { /* worst case: onboarding asks again next launch */ }
 }
 
-// (Re)schedule the workout-day reminder: one repeating notification per weekday that has a
-// routine in the weekly plan. Cheap enough to run after any state change — the plan or the
-// reminder time may just have been edited. `interactive` gates the OS permission prompt to
-// the Settings toggle; a background resync never pops a dialog.
+// Keep enough dates queued to cover normal app use between foregrounds without creating an
+// unbounded notification list. The next sync cancels and replaces this whole window.
+export const REMINDER_WINDOW_DAYS = 60
+const REMINDER_ID_BASE = 1000
+const LEGACY_REMINDER_IDS = Array.from({ length: 7 }, (_, d) => ({ id: 100 + d }))
+
+// Pure date expansion for the native reminder. `now` is injectable so the calendar boundary,
+// completed-day suppression, and today's past-time rule stay deterministic in tests.
+export function buildReminderNotifications(S, now = new Date()) {
+  const r = S?.reminder
+  if (!r?.on) return []
+  const routines = Array.isArray(S.routines) ? S.routines : []
+  const completed = new Set((S.workouts || []).map(w => w.d))
+  const state = { ...S, routines, week: S.week || {}, dayPlan: S.dayPlan || {} }
+  const [hour, minute] = (r.time || '08:00').split(':').map(Number)
+  if (!Number.isInteger(hour) || !Number.isInteger(minute)) return []
+  const date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12)
+  const notifications = []
+  for (let offset = 0; offset < REMINDER_WINDOW_DAYS; offset++) {
+    const day = new Date(date)
+    day.setDate(date.getDate() + offset)
+    const iso = isoOf(day)
+    if (completed.has(iso)) continue
+    // A weekday can hold several routines; name them all, or fall back to a count.
+    const dayRoutines = effectiveRoutineIds(state, iso).map(id => routines.find(x => x.id === id)).filter(Boolean)
+    if (!dayRoutines.length) continue
+    const label = dayRoutines.length <= 2 ? dayRoutines.map(r => r.name).join(' + ') : t('{0} routines', dayRoutines.length)
+    const at = new Date(day)
+    at.setHours(hour, minute, 0, 0)
+    if (at <= now) continue
+    notifications.push({
+      id: REMINDER_ID_BASE + offset,
+      title: t('Workout day'),
+      body: t('{0} is on the plan today — let’s go!', label),
+      schedule: { at, allowWhileIdle: true },
+    })
+  }
+  return notifications
+}
+
+// (Re)schedule the workout-day reminder: one one-off notification per future calendar date in
+// the bounded window. Cheap enough to run after any state change — the plan or the reminder time
+// may just have been edited. `interactive` gates the OS permission prompt to the Settings toggle;
+// a background resync never pops a dialog.
 export async function syncReminder(S, interactive = false) {
   try {
     const { LocalNotifications } = await import('@capacitor/local-notifications')
-    await LocalNotifications.cancel({ notifications: [0, 1, 2, 3, 4, 5, 6].map(d => ({ id: 100 + d })) }).catch(() => {})
+    await LocalNotifications.cancel({ notifications: [
+      ...LEGACY_REMINDER_IDS,
+      ...Array.from({ length: REMINDER_WINDOW_DAYS }, (_, d) => ({ id: REMINDER_ID_BASE + d })),
+    ] }).catch(() => {})
     const r = S.reminder
     if (!r?.on) return true
     let perm = await LocalNotifications.checkPermissions()
     if (perm.display !== 'granted' && interactive) perm = await LocalNotifications.requestPermissions()
     if (perm.display !== 'granted') return false
-    const [hour, minute] = (r.time || '08:00').split(':').map(Number)
-    const notifications = Object.entries(S.week || {})
-      .filter(([, rid]) => rid && (S.routines || []).some(x => x.id === rid))
-      .map(([day, rid]) => ({
-        id: 100 + Number(day),
-        title: t('Workout day'),
-        body: t('{0} is on the plan today — let’s go!', S.routines.find(x => x.id === rid).name),
-        // Capacitor weekdays are 1 (Sunday) … 7 (Saturday); S.week uses getDay() 0…6.
-        schedule: { on: { weekday: Number(day) + 1, hour, minute }, allowWhileIdle: true },
-      }))
+    const notifications = buildReminderNotifications(S)
     if (notifications.length) await LocalNotifications.schedule({ notifications })
     return true
   } catch (e) { return false }
+}
+
+// Capacitor emits appStateChange when the native shell returns to the foreground. The visibility
+// listener also covers WebView/browser transitions, and both are harmless on a non-mobile build.
+let reminderSyncStarted = false
+export function initReminderSync(getState) {
+  if (!MOBILE || reminderSyncStarted) return
+  reminderSyncStarted = true
+  const resync = () => {
+    if (document.visibilityState === 'hidden') return
+    syncReminder(getState()).catch(() => {})
+  }
+  document.addEventListener('visibilitychange', resync)
+  import('@capacitor/app').then(({ App }) => {
+    App.addListener('appStateChange', ({ isActive }) => { if (isActive) resync() })
+  }).catch(() => {})
 }
 
 // WKWebView can't do blob-URL downloads, so the backup goes out through the OS share sheet

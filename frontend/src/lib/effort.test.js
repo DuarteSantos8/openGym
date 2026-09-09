@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import {
   rirOf, toScale, displayScale, avgRir, effortSummary, hasEffort, effortWeeks,
-  effortHistogram, isHardSet, HARD_RIR, MIN_RATED
+  effortHistogram, isHardSet, HARD_RIR, MIN_RATED,
+  effortColor, EFFORT_BANDS, EFFORT_PRESETS
 } from './effort.js'
 import { isoOf } from './format.js'
 
@@ -182,5 +183,80 @@ describe('isHardSet', () => {
     expect(isHardSet({ rir: HARD_RIR + 0.5 })).toBe(false)
     expect(isHardSet({ rpe: 10 })).toBe(true)
     expect(isHardSet({})).toBe(false)          // unrated is not hard, and not easy either
+  })
+})
+
+describe('EFFORT_BANDS / EFFORT_PRESETS', () => {
+  it('runs hardest-first and covers the whole scale with no gap', () => {
+    // presets are the quick-pick buttons, top of the scale (0 RIR = failure) first
+    expect(EFFORT_PRESETS.map(p => p.rir)).toEqual([0, 0.5, 1, 2, 3, 4])
+    // only the last bucket is the collapsed "4+" tail
+    expect(EFFORT_PRESETS.map(p => p.tail)).toEqual([false, false, false, false, false, true])
+    // the bands are contiguous: each band's ceiling is below the next band's floor, and the
+    // last reaches infinity so no rating is ever left without a colour
+    expect(EFFORT_BANDS[EFFORT_BANDS.length - 1].max).toBe(Infinity)
+    for (let i = 1; i < EFFORT_BANDS.length; i++) {
+      expect(EFFORT_BANDS[i].rir).toBeGreaterThan(EFFORT_BANDS[i - 1].max)
+    }
+  })
+
+  it('every preset carries a colour and a human description', () => {
+    for (const p of EFFORT_PRESETS) {
+      expect(p.color).toMatch(/^var\(--/)
+      expect(typeof p.feel).toBe('string')
+      expect(p.feel.length).toBeGreaterThan(0)
+    }
+  })
+})
+
+describe('effortColor', () => {
+  it('gives each preset value its own band colour', () => {
+    // hardest to easiest — the colours the picker shows on its buttons
+    expect(effortColor(0)).toBe('var(--purple)')
+    expect(effortColor(0.5)).toBe('var(--red)')
+    expect(effortColor(1)).toBe('var(--orange)')
+    expect(effortColor(2)).toBe('var(--yellow)')
+    expect(effortColor(3)).toBe('var(--green)')
+    expect(effortColor(4)).toBe('var(--acc-2)')
+  })
+
+  it('colours a typed in-between value by the band it falls in, never leaving it blank', () => {
+    // a half-step belongs to the harder band below it — the band ceilings are inclusive, so
+    // 1.5 (between "one left" and "two left") reads as the tougher of the two, its band 1 colour
+    expect(effortColor(1.5)).toBe(effortColor(1))   // orange, not yellow
+    expect(effortColor(2.5)).toBe(effortColor(2))   // yellow, not green
+    // 0.25 sits between failure (0) and the half-rep band (0.5); by the same inclusive-ceiling
+    // rule it reads as the harder one — the failure colour, never uncoloured
+    expect(effortColor(0.25)).toBe(effortColor(0))
+  })
+
+  it('collapses everything past the top bucket into one colour', () => {
+    // nobody reliably tells 5 from 7 reps in reserve — they are all "easy"
+    expect(effortColor(4)).toBe(effortColor(7))
+    expect(effortColor(4)).toBe(effortColor(10))
+  })
+
+  it('is null for an unrated set — colour means a rating, empty has none', () => {
+    expect(effortColor(null)).toBe(null)
+    expect(effortColor(undefined)).toBe(null)
+  })
+
+  it('reads the same colour whether the set was logged as RIR or RPE', () => {
+    // the picker colours by internal RIR (via rirOf), so 0 RIR and 10 RPE match, 2 and 8 match
+    expect(effortColor(rirOf({ rir: 0 }))).toBe(effortColor(rirOf({ rpe: 10 })))
+    expect(effortColor(rirOf({ rir: 2 }))).toBe(effortColor(rirOf({ rpe: 8 })))
+    expect(effortColor(rirOf({ rir: 0.5 }))).toBe(effortColor(rirOf({ rpe: 9.5 })))
+  })
+})
+
+describe('picker preset labels', () => {
+  // The picker labels each preset with its value on the active scale — the RIR presets shown
+  // to an RPE profile read as 10, 9.5, 9, 8, 7, 6. This is what toScale computes per button.
+  it('labels presets on the RIR scale unchanged', () => {
+    expect(EFFORT_PRESETS.map(p => toScale('rir', p.rir))).toEqual([0, 0.5, 1, 2, 3, 4])
+  })
+
+  it('labels the same presets as their RPE mirror for an RPE profile', () => {
+    expect(EFFORT_PRESETS.map(p => toScale('rpe', p.rir))).toEqual([10, 9.5, 9, 8, 7, 6])
   })
 })

@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { EXIDX, EXDB, smOf } from './exercises.js'
-import { MUSCLE_NAME, exerciseMuscleSnapshot, hasExplicitMuscleMetadata, loadOf, loadOfWorkouts, matchesMuscleGroups, muscleGroupsOf, musclesOf } from './muscles.js'
+import {
+  MUSCLE_NAME, exerciseMuscleSnapshot, hasExplicitMuscleMetadata, levelsOf, loadOf,
+  loadOfWorkouts, matchesMuscleGroups, muscleBalanceWindow, muscleGroupsOf, musclesOf, rankOf
+} from './muscles.js'
 
 describe('multi-muscle exercise metadata', () => {
   it('normalizes legacy primary/secondary fields and removes duplicate groups', () => {
@@ -18,6 +21,12 @@ describe('multi-muscle exercise metadata', () => {
   it('falls back to the legacy body-part map when an optional multi-group field is empty', () => {
     expect(muscleGroupsOf({ bp: 'back', muscleGroups: [] })).toEqual(['upper-back', 'lower-back'])
     expect(matchesMuscleGroups({ bp: 'back', muscleGroups: [] }, ['lower-back'])).toBe(true)
+  })
+
+  it('falls back consistently when explicit groups contain only unknown names', () => {
+    const ex = { bp: 'back', muscleGroups: ['not-a-drawable-name'] }
+    expect(muscleGroupsOf(ex)).toEqual(['upper-back', 'lower-back'])
+    expect(musclesOf(ex)).toEqual({ 'upper-back': 0.75, 'lower-back': 0.25 })
   })
 
   it('matches an exercise when any requested muscle group matches', () => {
@@ -170,5 +179,34 @@ describe('warm-up boundary', () => {
     for (const spelling of ['warmup', 'warm-up', 'warm_up', 'Warmup', ' warmup ']) {
       expect(loadOfWorkouts([{ d: '2026-08-01', entries: entries(spelling) }]), spelling).toEqual({})
     }
+  })
+})
+
+describe('muscle balance windows and ranking', () => {
+  const now = new Date('2026-08-27T12:00:00').getTime()
+  const workouts = [
+    { id: 'monday', d: '2026-08-24', start: new Date('2026-08-24T12:00:00').getTime() },
+    { id: 'sunday', d: '2026-08-23', start: new Date('2026-08-23T12:00:00').getTime() },
+    { id: 'boundary', d: '2026-07-28', start: now - 30 * 86400000 },
+    { id: 'inside', d: '2026-07-29', start: now - 29 * 86400000 },
+  ]
+
+  it('preserves calendar-week, strict trailing-day, and all-history semantics', () => {
+    expect(muscleBalanceWindow(workouts, 7, now, '2026-08-27').map(w => w.id)).toEqual(['monday'])
+    expect(muscleBalanceWindow(workouts, 30, now, '2026-08-27').map(w => w.id)).toEqual(['monday', 'sunday', 'inside'])
+    expect(muscleBalanceWindow(workouts, 0, now, '2026-08-27')).toEqual(workouts)
+  })
+
+  it('uses relative levels and canonical order to break load ties', () => {
+    const load = { chest: 2, deltoids: 2, biceps: 1 }
+    expect(rankOf(load).worked).toEqual(['deltoids', 'chest', 'biceps'])
+    expect(levelsOf(load)).toMatchObject({ deltoids: 4, chest: 4, biceps: 2, abs: 0 })
+  })
+
+  it('keeps catalogue precedence and deleted-custom snapshot weights', () => {
+    const known = { id: '0025', muscleGroups: ['quadriceps'], sets: [{ done: true }] }
+    const deleted = { id: 'deleted', muscleSnapshot: { muscleWeights: { chest: 1 } }, sets: [{ done: true }] }
+    expect(loadOfWorkouts([{ entries: [known] }])).toEqual({ chest: 1, triceps: 0.4, deltoids: 0.4, biceps: 0.4 })
+    expect(loadOfWorkouts([{ entries: [deleted] }])).toEqual({ chest: 1 })
   })
 })

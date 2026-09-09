@@ -144,8 +144,12 @@ export const isCardio = idOrEx => (typeof idOrEx === 'string' ? EXIDX[idOrEx] : 
 // catalogue. This seeds the `bw` flag on a fresh config so a push-up never asks for a weight
 // nobody was going to enter. It is only the default: the flag lives on the config, so a dip
 // done with a belt can turn it off and a custom exercise can turn it on.
+// Equipment with no meaningful load in kg: your own body, or a band whose "weight" is a colour.
+// Both default to the bodyweight model (one reps stepper, progression in reps then sets); the
+// per-exercise Bodyweight switch still overrides it either way (issue #39).
+const BODYWEIGHT_EQ = new Set(['body weight', 'band', 'resistance band'])
 export const isBodyweightEq = idOrEx =>
-  (typeof idOrEx === 'string' ? EXIDX[idOrEx] : idOrEx)?.eq === 'body weight'
+  BODYWEIGHT_EQ.has((typeof idOrEx === 'string' ? EXIDX[idOrEx] : idOrEx)?.eq)
 
 // An id that resolves to nothing — a plan file built against a different exercise dataset,
 // a custom exercise deleted on another device before the sync arrived — still has to

@@ -6,52 +6,87 @@
 <title>About — openGym</title>
 <meta name="description" content="The story behind openGym: a gym tracker that started as a tiny personal app on a homelab server and grew into an open-source project.">
 <meta name="theme-color" content="#000000">
+<meta property="og:title" content="About openGym">
+<meta property="og:description" content="How openGym came to be: a tracker built for one user, open-sourced under the AGPL, with every release documented.">
+<meta property="og:image" content="https://opengym.duarte-santos.ch/img/banner.png">
+<meta property="og:url" content="https://opengym.duarte-santos.ch/about.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="openGym">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="About openGym">
+<meta name="twitter:image" content="https://opengym.duarte-santos.ch/img/banner.png">
+<link rel="canonical" href="https://opengym.duarte-santos.ch/about.html">
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 <link rel="icon" type="image/png" sizes="180x180" href="icon-180.png">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="styles.css?v=9">
+<link rel="stylesheet" href="styles.css?v=16">
 <script>document.documentElement.className += ' js'</script>
 <!-- Umami web analytics for opengym.duarte-santos.ch (self-hosted, cookieless). -->
 <script defer src="https://stats.duarte-santos.ch/script.js" data-website-id="db36019e-50f4-453c-9c56-d0588aefe233"></script>
 </head>
-<body>
+<body class="topnav">
 
 <nav><div class="wrap nav-in">
   <a class="brand" href="/">
     <img src="icon-180.png" alt="" width="24" height="24">
     openGym
   </a>
-  <button class="nav-toggle" aria-expanded="false" aria-controls="menu" aria-label="Menu">
-    <span></span><span></span>
-  </button>
-  <div class="nav-links" id="menu">
-    <a href="/#features">Features</a>
-    <a href="/#screens">Screenshots</a>
-    <a href="/#demo">Demo</a>
-    <a href="docs.html">Docs</a>
-    <a href="about.html">About</a>
-    <a href="https://gitlab.com/DuarteSantos8/opengym" rel="noopener">GitLab <span data-gh="stars"></span></a>
-    <a href="https://discord.gg/e62jY6fwVb" rel="noopener">Discord</a>
+  <div class="nav-quick">
+    <a class="ql site" href="/#features">Features</a>
+    <a class="ql site" href="/#screens">Screenshots</a>
+    <a class="ql site" href="/#demo">Demo</a>
+    <a class="ql site" href="/docs.html">Docs</a>
+    <a class="ql site" href="/api.html">API</a>
+    <a class="ql site" href="/about.html">About</a>
+    <a class="ql" href="https://gitlab.com/DuarteSantos8/opengym" rel="noopener">GitLab <span data-gh="stars"></span></a>
+    <a class="ql" href="https://discord.gg/e62jY6fwVb" rel="noopener">Discord <span data-dc="members"></span></a>
+    <a class="ql coffee" href="https://buymeacoffee.com/duartesantos" rel="noopener" aria-label="Buy me a coffee"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.216 6.415l-.132-.666c-.119-.598-.388-1.163-1.001-1.379-.197-.069-.42-.098-.57-.241-.152-.143-.196-.366-.231-.572-.065-.378-.125-.756-.192-1.133-.057-.325-.102-.69-.25-.987-.195-.4-.597-.634-.996-.788a5.723 5.723 0 00-.626-.194c-1-.263-2.05-.36-3.077-.416a25.834 25.834 0 00-3.7.062c-.915.083-1.88.184-2.75.5-.318.116-.646.256-.888.501-.297.302-.393.77-.177 1.146.154.267.415.456.692.58.36.162.737.284 1.123.366 1.075.238 2.189.331 3.287.37 1.218.05 2.437.01 3.65-.118.299-.033.598-.073.896-.119.352-.054.578-.513.474-.834-.124-.383-.457-.531-.834-.473-.466.074-.96.108-1.382.146-1.177.08-2.358.082-3.536.006a22.228 22.228 0 01-1.157-.107c-.086-.01-.18-.025-.258-.036-.243-.036-.484-.08-.724-.13-.111-.027-.111-.185 0-.212h.005c.277-.06.557-.108.838-.147h.002c.131-.009.263-.032.394-.048a25.076 25.076 0 013.426-.12c.674.019 1.347.067 2.017.144l.228.031c.267.04.533.088.798.145.392.085.895.113 1.07.542.055.137.08.288.111.431l.319 1.484a.237.237 0 01-.199.284h-.003c-.037.006-.075.01-.112.015a36.704 36.704 0 01-4.743.295 37.059 37.059 0 01-4.699-.304c-.14-.017-.293-.042-.417-.06-.326-.048-.649-.108-.973-.161-.393-.065-.768-.032-1.123.161-.29.16-.527.404-.675.701-.154.316-.199.66-.267 1-.069.34-.176.707-.135 1.056.087.753.613 1.365 1.37 1.502a39.69 39.69 0 0011.343.376.483.483 0 01.535.53l-.071.697-1.018 9.907c-.041.41-.047.832-.125 1.237-.122.637-.553 1.028-1.182 1.171-.577.131-1.165.2-1.756.205-.656.004-1.31-.025-1.966-.022-.699.004-1.556-.06-2.095-.58-.475-.458-.54-1.174-.605-1.793l-.731-7.013-.322-3.094c-.037-.351-.286-.695-.678-.678-.336.015-.718.3-.678.679l.228 2.185.949 9.112c.147 1.344 1.174 2.068 2.446 2.272.742.12 1.503.144 2.257.156.966.016 1.942.053 2.892-.122 1.408-.258 2.465-1.198 2.616-2.657.34-3.332.683-6.663 1.024-9.995l.215-2.087a.484.484 0 01.39-.426c.402-.078.787-.212 1.074-.518.455-.488.546-1.124.385-1.766zm-1.478.772c-.145.137-.363.201-.578.233-2.416.359-4.866.54-7.308.46-1.748-.06-3.477-.254-5.207-.498-.17-.024-.353-.055-.47-.18-.22-.236-.111-.71-.054-.995.052-.26.152-.609.463-.646.484-.057 1.046.148 1.526.22.577.088 1.156.159 1.737.212 2.48.226 5.002.19 7.472-.14.45-.06.899-.13 1.345-.21.399-.072.84-.206 1.08.206.166.281.188.657.162.974a.544.544 0 01-.169.364zm-6.159 3.9c-.862.37-1.84.788-3.109.788a5.884 5.884 0 01-1.569-.217l.877 9.004c.065.78.717 1.38 1.5 1.38 0 0 1.243.065 1.658.065.447 0 1.786-.065 1.786-.065.783 0 1.434-.6 1.499-1.38l.94-9.95a3.996 3.996 0 00-1.322-.238c-.826 0-1.491.284-2.26.613z"/></svg><span>Buy me a coffee!</span></a>
     <a class="cta" href="/#download">Download</a>
   </div>
+  <button class="nav-toggle" id="navtoggle" aria-expanded="false" aria-controls="sitemenu" aria-label="Menu">
+    <span></span><span></span>
+  </button>
 </div></nav>
 
-<!-- TEMPORARY: GitHub account suspended -> repo lives on gitlab.com. Remove this block and
-     revert the links (+ site.js) to github.com once the account is restored. -->
-<div class="notice-wrap"><div class="wrap">
-  <aside class="notice" role="note">
-    <div class="notice-tag">Repository moved</div>
-    <h2>My GitHub account was suspended, and the openGym repo went with it.</h2>
-    <p><b>github.com/DuarteSantos8/openGym is offline</b> — not by choice. The app is
-       untouched: the APK, the demo and every self-hosted install work exactly as before. The
-       code, the releases, the container images and the APK builds now live on GitLab under
-       the same AGPL-3.0 license, and every repository link here points there.</p>
-    <div class="actions">
-      <a class="btn" href="https://gitlab.com/DuarteSantos8/opengym" rel="noopener">Open on GitLab</a>
-      <a class="btn dc-btn" href="https://discord.gg/e62jY6fwVb" rel="noopener">Join the Discord</a>
-    </div>
-  </aside>
-</div></div>
+<!-- The navigation sheet: the header's links again, for the widths where the bar has
+     room only for the brand and the download. Byte-identical on every page, like the
+     bar above it — nothing is ever dropped because of which page you are on. -->
+<div class="navsheet" id="sitemenu" role="navigation" aria-label="Site" aria-hidden="true">
+  <div class="nl-rows">
+    <a class="nl" href="/#features">Features</a>
+    <a class="nl" href="/#screens">Screenshots</a>
+    <a class="nl" href="/#demo">Demo</a>
+    <a class="nl" href="/docs.html">Docs</a>
+    <a class="nl" href="/api.html">API</a>
+    <a class="nl" href="/about.html">About</a>
+    <a class="nl" href="https://gitlab.com/DuarteSantos8/opengym" rel="noopener">GitLab <span data-gh="stars"></span></a>
+    <a class="nl" href="https://discord.gg/e62jY6fwVb" rel="noopener">Discord <span data-dc="members"></span></a>
+    <a class="nl coffee" href="https://buymeacoffee.com/duartesantos" rel="noopener">Buy me a coffee! <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.216 6.415l-.132-.666c-.119-.598-.388-1.163-1.001-1.379-.197-.069-.42-.098-.57-.241-.152-.143-.196-.366-.231-.572-.065-.378-.125-.756-.192-1.133-.057-.325-.102-.69-.25-.987-.195-.4-.597-.634-.996-.788a5.723 5.723 0 00-.626-.194c-1-.263-2.05-.36-3.077-.416a25.834 25.834 0 00-3.7.062c-.915.083-1.88.184-2.75.5-.318.116-.646.256-.888.501-.297.302-.393.77-.177 1.146.154.267.415.456.692.58.36.162.737.284 1.123.366 1.075.238 2.189.331 3.287.37 1.218.05 2.437.01 3.65-.118.299-.033.598-.073.896-.119.352-.054.578-.513.474-.834-.124-.383-.457-.531-.834-.473-.466.074-.96.108-1.382.146-1.177.08-2.358.082-3.536.006a22.228 22.228 0 01-1.157-.107c-.086-.01-.18-.025-.258-.036-.243-.036-.484-.08-.724-.13-.111-.027-.111-.185 0-.212h.005c.277-.06.557-.108.838-.147h.002c.131-.009.263-.032.394-.048a25.076 25.076 0 013.426-.12c.674.019 1.347.067 2.017.144l.228.031c.267.04.533.088.798.145.392.085.895.113 1.07.542.055.137.08.288.111.431l.319 1.484a.237.237 0 01-.199.284h-.003c-.037.006-.075.01-.112.015a36.704 36.704 0 01-4.743.295 37.059 37.059 0 01-4.699-.304c-.14-.017-.293-.042-.417-.06-.326-.048-.649-.108-.973-.161-.393-.065-.768-.032-1.123.161-.29.16-.527.404-.675.701-.154.316-.199.66-.267 1-.069.34-.176.707-.135 1.056.087.753.613 1.365 1.37 1.502a39.69 39.69 0 0011.343.376.483.483 0 01.535.53l-.071.697-1.018 9.907c-.041.41-.047.832-.125 1.237-.122.637-.553 1.028-1.182 1.171-.577.131-1.165.2-1.756.205-.656.004-1.31-.025-1.966-.022-.699.004-1.556-.06-2.095-.58-.475-.458-.54-1.174-.605-1.793l-.731-7.013-.322-3.094c-.037-.351-.286-.695-.678-.678-.336.015-.718.3-.678.679l.228 2.185.949 9.112c.147 1.344 1.174 2.068 2.446 2.272.742.12 1.503.144 2.257.156.966.016 1.942.053 2.892-.122 1.408-.258 2.465-1.198 2.616-2.657.34-3.332.683-6.663 1.024-9.995l.215-2.087a.484.484 0 01.39-.426c.402-.078.787-.212 1.074-.518.455-.488.546-1.124.385-1.766zm-1.478.772c-.145.137-.363.201-.578.233-2.416.359-4.866.54-7.308.46-1.748-.06-3.477-.254-5.207-.498-.17-.024-.353-.055-.47-.18-.22-.236-.111-.71-.054-.995.052-.26.152-.609.463-.646.484-.057 1.046.148 1.526.22.577.088 1.156.159 1.737.212 2.48.226 5.002.19 7.472-.14.45-.06.899-.13 1.345-.21.399-.072.84-.206 1.08.206.166.281.188.657.162.974a.544.544 0 01-.169.364zm-6.159 3.9c-.862.37-1.84.788-3.109.788a5.884 5.884 0 01-1.569-.217l.877 9.004c.065.78.717 1.38 1.5 1.38 0 0 1.243.065 1.658.065.447 0 1.786-.065 1.786-.065.783 0 1.434-.6 1.499-1.38l.94-9.95a3.996 3.996 0 00-1.322-.238c-.826 0-1.491.284-2.26.613z"/></svg></a>
+  </div>
+</div>
+
+<!-- The one control that opens the contents, at every width. The drawer it opens is
+     closed in CSS, so it is shut on first paint whether or not the script runs. -->
+<button class="toc-btn" id="tocbtn" aria-expanded="false" aria-controls="menu">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M4 6.5h16M4 12h16M4 17.5h10"/></svg>
+  Contents
+</button>
+
+<!-- The contents drawer: one list, one way in, one way out. Closed by default at
+     every width, and no preference is remembered — see .side in styles.css. -->
+<aside class="side" id="menu" aria-label="Contents" aria-hidden="true">
+  <div class="side-top">
+    <p class="side-title">Contents</p>
+    <button class="rail-close" aria-label="Close contents"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
+  </div>
+  <p class="side-label">On this page</p>
+  <a class="side-link" href="#milestones-h"><b>Milestones</b><span>Every release, straight from GitLab</span></a>
+  <a class="side-link" href="#principles"><b>Principles</b><span>The rules that don't move</span></a>
+  <p class="side-label">More</p>
+  <a class="side-link" href="/"><b>Home</b><span>The tour, the demo, the download</span></a>
+  <a class="side-link" href="docs.html"><b>Docs</b><span>Install, self-host, import</span></a>
+  <a class="side-link" href="api.html"><b>API</b><span>Every route, as an OpenAPI spec</span></a>
+</aside>
 
 <main class="wrap prose">
   <h1>About openGym</h1>
@@ -71,7 +106,7 @@
 
   <p>Then friends wanted in. That brought passkey profiles, so everyone signs in with a
      fingerprint and keeps their own data, and sync, so the log survives any phone. Somewhere
-     along the way the little page was rewritten into a proper React app, learned 13 languages,
+     along the way the little page was rewritten into a proper React app, learned 14 languages,
      grew a muscle map that reads three ways (where the volume went, what is still recovering,
      and what each muscle is actually strong at), picked up importers for FitNotes, Strong,
      Hevy and Apple Health, and finally became a native Android app you can install from
@@ -101,7 +136,7 @@
       <p>See the full list on <a href="https://gitlab.com/DuarteSantos8/opengym/-/releases" rel="noopener">GitLab → Releases</a>.</p></li>
   </ul>
 
-  <h2>Principles</h2>
+  <h2 id="principles">Principles</h2>
   <ul>
     <li><b>Your data is yours.</b> Local-first, one-file backups, no lock-in. Leaving openGym
         must always be one export away.</li>
@@ -130,6 +165,6 @@
   </div>
 </div></footer>
 
-<script src="site.js?v=9" defer></script>
+<script src="site.js?v=16" defer></script>
 </body>
 </html>

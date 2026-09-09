@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { matchExercise, parseWorkoutCSV } from './import-csv.js'
+import { matchExercise, matchHevyTitle, parseWorkoutCSV, detectSource } from './import-csv.js'
 import { EXIDX } from './exercises.js'
 
 // The names other apps actually export, and the catalogue entry each has to land on.
@@ -107,5 +107,38 @@ describe('invented exercises get a body part from their name', () => {
     const head = 'Date,Exercise,Category,Weight,Reps'
     const r = parseWorkoutCSV([head, '2025-10-09,Some Invented Lift,Shoulders,40,10'].join('\n'), { unit: 'kg' })
     expect(r.customEx[0].bp).toBe('shoulders')
+  })
+})
+
+describe('Hevy CSV uses the generated title map', () => {
+  const HEVY_CSV = [
+    'title,start_time,end_time,description,exercise_title,superset_id,exercise_notes,set_index,set_type,weight_kg,reps,distance_km,duration_seconds,rpe',
+    'Push,2026-08-01 10:00:00,2026-08-01 11:00:00,,Bulgarian Split Squat (Dumbbell),,,0,normal,40,10,0,,',
+    'Push,2026-08-01 10:00:00,2026-08-01 11:00:00,,Lat Pulldown - Close Grip (Cable),,,0,warmup,25,15,0,,',
+    'Push,2026-08-01 10:00:00,2026-08-01 11:00:00,,Lat Pulldown - Close Grip (Cable),,,1,normal,52,12,0,,8',
+    'Push,2026-08-01 10:00:00,2026-08-01 11:00:00,,Reverse Lunge (Dumbbell),,,0,normal,20,10,0,,',
+  ].join('\n')
+
+  it('detects the Hevy export dialect', () => {
+    expect(detectSource(HEVY_CSV.split('\n')[0].split(','))).toBe('Hevy')
+  })
+
+  it('resolves English Hevy titles through HEVY_TITLE_MAP before the word-bag', () => {
+    expect(matchHevyTitle('Bulgarian Split Squat (Dumbbell)')).toBe('0410')
+    expect(matchHevyTitle('Lat Pulldown - Close Grip (Cable)')).toBe('2616')
+    expect(matchHevyTitle('Reverse Lunge (Dumbbell)')).toBe('0381')
+    // Word-bag alone still misses these — the title map is what makes CSV work.
+    expect(matchExercise('Bulgarian Split Squat (Dumbbell)')).toBeNull()
+  })
+
+  it('imports a Hevy CSV onto catalogue ids, not customs', () => {
+    const parsed = parseWorkoutCSV(HEVY_CSV, { unit: 'kg' })
+    expect(parsed.source).toBe('Hevy')
+    expect(parsed.created).toBe(0)
+    const ids = parsed.workouts[0].entries.map(e => e.id).sort()
+    expect(ids).toEqual(['0410', '0381', '2616'].sort())
+    const pull = parsed.workouts[0].entries.find(e => e.id === '2616')
+    expect(pull.sets[0]).toMatchObject({ w: 25, r: 15, phase: 'warmup' })
+    expect(pull.sets[1]).toMatchObject({ w: 52, r: 12, rpe: 8 })
   })
 })

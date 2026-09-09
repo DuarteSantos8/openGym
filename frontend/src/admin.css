@@ -1,0 +1,155 @@
+/* Admin dashboard — operator-facing, English-only. Sits on top of the app's tokens; nothing
+   here is used outside views/Admin.jsx and views/AdminCoach.jsx. The page is looked at maybe
+   twice a year, so every card says what it is for in a sentence and every state is a word, not
+   a colour to decode. */
+
+.adm-intro{color:var(--label-2);font-size:14px;line-height:1.45;margin:-6px 0 16px}
+
+/* one sentence under a card heading that says what the card is for */
+.adm-lead{color:var(--label-2);font-size:13px;line-height:1.45;margin:2px 0 12px}
+
+/* status pill: a word and a colour, never a paragraph */
+.adm-pill{
+  display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;
+  font-size:12.5px;font-weight:600;letter-spacing:-.004em;line-height:1.5;white-space:nowrap;
+  background:var(--surface-2);color:var(--label-2)
+}
+.adm-pill::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}
+.adm-pill.ok{background:color-mix(in srgb,var(--green) 16%,transparent);color:var(--green)}
+.adm-pill.warn{background:color-mix(in srgb,var(--yellow) 18%,transparent);color:var(--yellow)}
+.adm-pill.bad{background:color-mix(in srgb,var(--red) 16%,transparent);color:var(--red)}
+.adm-pill.acc{background:var(--acc-soft);color:var(--acc)}
+
+/* the one-line "what state is this in" under the card title */
+.adm-status{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px;color:var(--label-2);margin:4px 0 14px;line-height:1.4}
+
+/* numbered setup steps: a <details> per step, so a finished step folds away */
+.adm-step{border-top:var(--hair) solid var(--sep);padding:2px 0}
+.adm-step:first-of-type{border-top:0}
+.adm-step>summary{
+  list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;min-height:50px;padding:6px 0;
+  -webkit-tap-highlight-color:transparent
+}
+.adm-step>summary::-webkit-details-marker{display:none}
+.adm-step>summary:active{opacity:.7}
+.adm-num{
+  width:26px;height:26px;border-radius:50%;flex:none;display:grid;place-items:center;
+  font-size:13px;font-weight:700;background:var(--surface-3);color:var(--label)
+}
+.adm-step.done .adm-num{background:var(--acc);color:var(--on-acc)}
+.adm-step.todo .adm-num{background:var(--surface-3);color:var(--label-2)}
+.adm-step-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.adm-step-t b{font-size:16px;font-weight:600;letter-spacing:-.012em;line-height:1.25}
+.adm-step-t span{font-size:13px;color:var(--label-2);line-height:1.3}
+.adm-step>summary .chev{color:var(--label-3);font-size:14px;transition:transform .18s ease;flex:none}
+.adm-step[open]>summary .chev{transform:rotate(90deg)}
+.adm-step-b{padding:2px 0 14px 38px}
+@media (max-width:380px){.adm-step-b{padding-left:0}}
+
+/* a dim explainer that reads like a sentence, not a footnote */
+.adm-hint{font-size:13px;color:var(--label-2);line-height:1.45;margin:6px 0 10px}
+.adm-hint code{font-size:12px;background:var(--surface-2);padding:1px 5px;border-radius:5px}
+
+/* provider chips grouped under a small heading */
+.adm-group{margin:0 0 12px}
+.adm-group-t{font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--label-3);margin:0 0 7px}
+.adm-chips{display:flex;flex-wrap:wrap;gap:8px}
+.adm-chips .chip{min-height:38px;display:inline-flex;align-items:center;gap:7px}
+.adm-chip-key{
+  font-size:10.5px;font-weight:700;letter-spacing:.02em;padding:1px 6px;border-radius:999px;
+  background:var(--acc-soft);color:var(--acc)
+}
+.chip.on .adm-chip-key{background:rgba(0,0,0,.18);color:inherit}
+
+/* label + control pairs inside a step */
+.adm-field{display:flex;flex-direction:column;gap:6px;margin:0 0 10px}
+.adm-field>label{font-size:13px;font-weight:600;color:var(--label-2)}
+/* Inside a card the app's default field colour is the card's own colour, so the box was
+   invisible and the placeholder floated in space. One shade up, and a size that is readable
+   without iOS zooming into it. */
+.adm-field .field{width:100%;background:var(--surface-2);font-size:16px;min-height:44px}
+.adm-select{
+  width:100%;min-height:44px;padding:10px 38px 10px 12px;border-radius:var(--r);border:0;
+  background:var(--surface-2);color:var(--label);font-size:15px;appearance:none;-webkit-appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,var(--label-2) 50%),linear-gradient(135deg,var(--label-2) 50%,transparent 50%);
+  background-position:calc(100% - 20px) 50%,calc(100% - 14px) 50%;background-size:6px 6px;background-repeat:no-repeat
+}
+.adm-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.adm-actions .btn{min-height:44px}
+
+/* inline result box under the Test button */
+.adm-result{
+  margin-top:10px;padding:10px 12px;border-radius:var(--r);font-size:13.5px;line-height:1.45;
+  background:var(--surface-2);color:var(--label)
+}
+.adm-result.ok{background:color-mix(in srgb,var(--green) 14%,transparent)}
+.adm-result.bad{background:color-mix(in srgb,var(--red) 14%,transparent)}
+.adm-result b{display:block;margin-bottom:2px}
+
+/* advanced / activity folds */
+.adm-fold{border-top:var(--hair) solid var(--sep);margin-top:4px}
+.adm-fold>summary{
+  list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;
+  min-height:48px;padding:6px 0;font-size:15px;font-weight:600;letter-spacing:-.012em
+}
+.adm-fold>summary::-webkit-details-marker{display:none}
+.adm-fold>summary .chev{color:var(--label-3);font-size:14px;transition:transform .18s ease}
+.adm-fold[open]>summary .chev{transform:rotate(90deg)}
+.adm-fold-b{padding:0 0 12px}
+
+.adm-kv{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:var(--hair) solid var(--sep);font-size:14px}
+.adm-kv:last-child{border-bottom:0}
+.adm-kv .k{color:var(--label-2);flex:none}
+.adm-kv .v{text-align:right;min-width:0;overflow-wrap:anywhere}
+/* the two daily-limit numbers: a real field, not the browser's white default box */
+.adm-kv .v input{
+  width:84px;min-height:40px;padding:6px 10px;text-align:right;font-size:16px;font-weight:600;
+  border:0;border-radius:10px;background:var(--surface-2);color:var(--label);outline:none;
+  -moz-appearance:textfield;appearance:textfield
+}
+.adm-kv .v input::-webkit-outer-spin-button,.adm-kv .v input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.adm-kv .v input:focus{box-shadow:inset 0 0 0 2px var(--acc)}
+
+.adm-log{display:flex;flex-direction:column}
+.adm-log-row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:var(--hair) solid var(--sep);font-size:13.5px}
+.adm-log-row:last-child{border-bottom:0}
+.adm-log-row .when{color:var(--label-3);font-size:12px;flex:none}
+
+/* users list rows with a copy affordance for invite codes */
+.adm-code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:600;letter-spacing:.08em;
+  background:var(--surface-2);padding:4px 9px;border-radius:8px;font-size:14px
+}
+.adm-iconbtn{width:44px;height:44px;border-radius:12px;font-size:17px}
+.adm-empty{color:var(--label-3);font-size:13.5px;padding:10px 2px}
+
+/* ---------- the Coach before setup: a pitch, not a form ---------- */
+.adm-hero{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:6px 2px 2px}
+.adm-hero-av{
+  width:52px;height:52px;border-radius:16px;display:grid;place-items:center;font-size:26px;
+  background:linear-gradient(135deg,var(--acc),color-mix(in srgb,var(--acc) 55%,var(--teal)));
+  color:var(--on-acc);margin-bottom:8px;box-shadow:0 8px 24px -8px color-mix(in srgb,var(--acc) 55%,transparent)
+}
+.adm-hero h2{margin:0 0 4px;font-size:22px;letter-spacing:-.022em}
+.adm-hero p{margin:0 0 14px;font-size:14px;line-height:1.5;color:var(--label-2)}
+.adm-hero-feats{display:grid;gap:10px;margin-bottom:18px}
+.adm-hero-feats>div{display:flex;gap:11px;align-items:flex-start}
+.adm-hero-feats .icn{color:var(--acc);font-size:18px;flex:none;margin-top:2px}
+.adm-hero-feats span{font-size:13.5px;line-height:1.45;color:var(--label-2)}
+.adm-hero-feats b{color:var(--label);font-weight:600}
+.adm-hero .btn{width:100%}
+
+/* ---------- setup progress ---------- */
+.adm-progress{height:5px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin:0 0 10px}
+.adm-progress i{display:block;height:100%;border-radius:99px;background:var(--acc);transition:width var(--med) var(--ease)}
+
+/* ---------- provider chips: clearly idle vs. clearly chosen ---------- */
+.adm-chips .chip{
+  background:var(--surface-2);border:1.5px solid transparent;color:var(--label);
+  font-weight:500;text-transform:none
+}
+.adm-chips .chip.on{background:var(--acc-soft);border-color:var(--acc);color:var(--acc);font-weight:600}
+.adm-chips .chip:active{transform:scale(.97)}
+
+/* a finished step's summary reads as a receipt, not a control */
+.adm-step.done>summary .adm-step-t span{color:var(--acc)}

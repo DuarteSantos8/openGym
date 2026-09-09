@@ -61,6 +61,12 @@ function emptyMuscleMap(value) {
   return Object.fromEntries(MUSCLES.map(slug => [slug, value]))
 }
 
+// Current catalogue metadata stays authoritative. Finished entries retain a nested muscle
+// snapshot specifically so deleted custom exercises can still contribute to recovery maps.
+function exerciseFor(entry) {
+  return EXIDX[entry?.id] || entry
+}
+
 // Epley one-rep-max estimate, matching onerm.js (REP_CAP included so high-rep sets do not
 // inflate the estimate). Used only to express a set's intensity relative to the lifter's own
 // capacity - the same formula the app already shows for estimated 1RM.
@@ -161,7 +167,7 @@ function loadKgFor(ex, entry, set, workout, opts = {}) {
 function session1RMs(workout, opts = {}) {
   const best = new Map()
   for (const entry of workout?.entries || []) {
-    const ex = EXIDX[entry.id]
+    const ex = exerciseFor(entry)
     for (const set of entry.sets || []) {
       const load = loadKgFor(ex, entry, set, workout, opts)
       if (set?.done !== true || !(load > 0) || !(set.r > 0)) continue
@@ -221,10 +227,11 @@ function sessionTonnages(workout, opts = {}) {
   const sums = emptyMuscleMap(0)
   const oneRms = session1RMs(workout, opts)
   for (const entry of workout?.entries || []) {
-    const weights = musclesOf(EXIDX[entry.id])
+    const ex = exerciseFor(entry)
+    const weights = musclesOf(ex)
     for (const set of entry.sets || []) {
       if (set?.done !== true) continue
-      const measured = setTonnage(EXIDX[entry.id], entry, set, workout, oneRms.get(entry.id), opts)
+      const measured = setTonnage(ex, entry, set, workout, oneRms.get(entry.id), opts)
       const tonnage = Number.isFinite(measured) && measured > 0 ? measured : ZERO_LOAD_SET_STIMULUS
       for (const [slug, weight] of Object.entries(weights)) {
         if (Object.prototype.hasOwnProperty.call(MUSCLES_BY_SLUG, slug)) sums[slug] += tonnage * weight
@@ -326,7 +333,7 @@ export function strengthOf(workouts, now, opts = {}) {
     if (!Number.isFinite(timestamp)) continue
     for (const entry of workout.entries || []) {
       if (!(entry.sets || []).some(set => set?.done === true && !isWarmupRow(set))) continue
-      for (const slug of Object.keys(musclesOf(EXIDX[entry.id]))) {
+      for (const slug of Object.keys(musclesOf(exerciseFor(entry)))) {
         if (Object.prototype.hasOwnProperty.call(MUSCLES_BY_SLUG, slug) && timestamp > latest[slug]) {
           latest[slug] = timestamp
         }

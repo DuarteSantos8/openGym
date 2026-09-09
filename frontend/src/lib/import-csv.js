@@ -21,6 +21,7 @@
 import { EXDB, EXIDX } from './exercises.js'
 import { uid } from './format.js'
 import { isWarmupRow } from './workout-model.js'
+import { HEVY_TITLE_MAP } from './hevy-id-map.js'
 
 /* ----------------------------------------------------------------- CSV ---- */
 
@@ -251,6 +252,16 @@ export function matchExercise(name) {
   return ties === 1 ? best : null
 }
 
+/**
+ * Exact Hevy English title → catalogue id (from the generated title map).
+ * Used when a CSV is detected as Hevy: same deterministic table as the API import,
+ * keyed by title because Hevy's CSV has no template id column.
+ */
+export function matchHevyTitle(name) {
+  const id = HEVY_TITLE_MAP[String(name || '').trim().toLowerCase()]
+  return id && EXIDX[id] ? id : null
+}
+
 // Hevy exports no category column, so every invented exercise fell through to the
 // 'upper legs' default and a third of an imported history was attributed to the legs in
 // the muscle map. When there is no category, read the body part off the name instead.
@@ -389,7 +400,12 @@ export function parseWorkoutCSV(text, { unit = 'kg' } = {}) {
 
     const key = keyOf(name)
     let id = resolved.get(key)
-    if (id === undefined) { id = matchExercise(name); resolved.set(key, id) }
+    if (id === undefined) {
+      // Hevy CSV: prefer the generated English-title map (same table as the API import).
+      // Localized titles still fall through to the word-bag matcher.
+      id = (source === 'Hevy' ? matchHevyTitle(name) : null) || matchExercise(name)
+      resolved.set(key, id)
+    }
     if (id) matched++
     else {
       let c = created.get(key)

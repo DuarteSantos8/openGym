@@ -4,71 +4,205 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Docs — openGym</title>
-<meta name="description" content="How to install openGym on Android, use it on iPhone, self-host it with Docker, import your training history, and keep backups.">
+<meta name="description" content="The complete openGym reference: every feature, installing on Android and iPhone, self-hosting with Docker, every .env setting, the AI Coach, importing from FitNotes/Strong/Hevy, backups, the MCP server, and how it's built.">
 <meta name="theme-color" content="#000000">
+<meta property="og:title" content="openGym Docs — the complete reference">
+<meta property="og:description" content="The complete openGym reference: every feature, self-hosting with Docker, every setting, the AI Coach, imports, backups, MCP, troubleshooting.">
+<meta property="og:image" content="https://opengym.duarte-santos.ch/img/banner.png">
+<meta property="og:url" content="https://opengym.duarte-santos.ch/docs.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="openGym">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="openGym Docs — the complete reference">
+<meta name="twitter:image" content="https://opengym.duarte-santos.ch/img/banner.png">
+<link rel="canonical" href="https://opengym.duarte-santos.ch/docs.html">
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 <link rel="icon" type="image/png" sizes="180x180" href="icon-180.png">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="styles.css?v=9">
+<link rel="stylesheet" href="styles.css?v=16">
 <script>document.documentElement.className += ' js'</script>
 <!-- Umami web analytics for opengym.duarte-santos.ch (self-hosted, cookieless). -->
 <script defer src="https://stats.duarte-santos.ch/script.js" data-website-id="db36019e-50f4-453c-9c56-d0588aefe233"></script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is openGym really free?", "acceptedAnswer": {"@type": "Answer", "text": "Yes — free as in cost and as in freedom (AGPL-3.0). No pro tier, no locked features, no ads, and the license keeps every fork open source too."}}, {"@type": "Question", "name": "Why isn't openGym on the Play Store or App Store?", "acceptedAnswer": {"@type": "Answer", "text": "By choice (and on iOS, by Apple's rules for sideloading). Store accounts cost money, impose terms that sit badly with the AGPL, and put a gatekeeper between you and an app whose whole point is that your data is yours. The signed Android APK is a direct download."}}, {"@type": "Question", "name": "Should I pick the mobile app or self-host?", "acceptedAnswer": {"@type": "Answer", "text": "To simply track your training: the mobile app. For data on your own hardware, synced across devices, with profiles for the people you train with: self-host with Docker. The backup file migrates everything between the two, or pair the app to your server."}}, {"@type": "Question", "name": "What's on the openGym roadmap?", "acceptedAnswer": {"@type": "Answer", "text": "Percentage/training-max programming (5/3/1-style), more starter plans, body measurements alongside weight, per-exercise notes and a plate calculator, more instruction languages. Community-driven — ideas and merge requests welcome."}}, {"@type": "Question", "name": "Where does the exercise database come from?", "acceptedAnswer": {"@type": "Answer", "text": "From hasaneyldrm/exercises-dataset: 1,324 exercises with animations and instructions. The metadata and instruction text are MIT; the images and animations are third-party media that openGym never redistributes — your instance downloads them from upstream on first run."}}, {"@type": "Question", "name": "What does the AGPL license mean for me?", "acceptedAnswer": {"@type": "Answer", "text": "You can self-host, use, modify and share openGym freely. Only if you run a modified version as a network service must you offer that version's source under the same license. Using or self-hosting it unmodified obliges you to nothing."}}]}
+</script>
 </head>
-<body>
+<body class="topnav">
 
 <nav><div class="wrap nav-in">
   <a class="brand" href="/">
     <img src="icon-180.png" alt="" width="24" height="24">
     openGym
   </a>
-  <button class="nav-toggle" aria-expanded="false" aria-controls="menu" aria-label="Menu">
-    <span></span><span></span>
-  </button>
-  <div class="nav-links" id="menu">
-    <a href="/#features">Features</a>
-    <a href="/#screens">Screenshots</a>
-    <a href="/#demo">Demo</a>
-    <a href="docs.html">Docs</a>
-    <a href="about.html">About</a>
-    <a href="https://gitlab.com/DuarteSantos8/opengym" rel="noopener">GitLab <span data-gh="stars"></span></a>
-    <a href="https://discord.gg/e62jY6fwVb" rel="noopener">Discord</a>
+  <div class="nav-quick">
+    <a class="ql site" href="/#features">Features</a>
+    <a class="ql site" href="/#screens">Screenshots</a>
+    <a class="ql site" href="/#demo">Demo</a>
+    <a class="ql site" href="/docs.html">Docs</a>
+    <a class="ql site" href="/api.html">API</a>
+    <a class="ql site" href="/about.html">About</a>
+    <a class="ql" href="https://gitlab.com/DuarteSantos8/opengym" rel="noopener">GitLab <span data-gh="stars"></span></a>
+    <a class="ql" href="https://discord.gg/e62jY6fwVb" rel="noopener">Discord <span data-dc="members"></span></a>
+    <a class="ql coffee" href="https://buymeacoffee.com/duartesantos" rel="noopener" aria-label="Buy me a coffee"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.216 6.415l-.132-.666c-.119-.598-.388-1.163-1.001-1.379-.197-.069-.42-.098-.57-.241-.152-.143-.196-.366-.231-.572-.065-.378-.125-.756-.192-1.133-.057-.325-.102-.69-.25-.987-.195-.4-.597-.634-.996-.788a5.723 5.723 0 00-.626-.194c-1-.263-2.05-.36-3.077-.416a25.834 25.834 0 00-3.7.062c-.915.083-1.88.184-2.75.5-.318.116-.646.256-.888.501-.297.302-.393.77-.177 1.146.154.267.415.456.692.58.36.162.737.284 1.123.366 1.075.238 2.189.331 3.287.37 1.218.05 2.437.01 3.65-.118.299-.033.598-.073.896-.119.352-.054.578-.513.474-.834-.124-.383-.457-.531-.834-.473-.466.074-.96.108-1.382.146-1.177.08-2.358.082-3.536.006a22.228 22.228 0 01-1.157-.107c-.086-.01-.18-.025-.258-.036-.243-.036-.484-.08-.724-.13-.111-.027-.111-.185 0-.212h.005c.277-.06.557-.108.838-.147h.002c.131-.009.263-.032.394-.048a25.076 25.076 0 013.426-.12c.674.019 1.347.067 2.017.144l.228.031c.267.04.533.088.798.145.392.085.895.113 1.07.542.055.137.08.288.111.431l.319 1.484a.237.237 0 01-.199.284h-.003c-.037.006-.075.01-.112.015a36.704 36.704 0 01-4.743.295 37.059 37.059 0 01-4.699-.304c-.14-.017-.293-.042-.417-.06-.326-.048-.649-.108-.973-.161-.393-.065-.768-.032-1.123.161-.29.16-.527.404-.675.701-.154.316-.199.66-.267 1-.069.34-.176.707-.135 1.056.087.753.613 1.365 1.37 1.502a39.69 39.69 0 0011.343.376.483.483 0 01.535.53l-.071.697-1.018 9.907c-.041.41-.047.832-.125 1.237-.122.637-.553 1.028-1.182 1.171-.577.131-1.165.2-1.756.205-.656.004-1.31-.025-1.966-.022-.699.004-1.556-.06-2.095-.58-.475-.458-.54-1.174-.605-1.793l-.731-7.013-.322-3.094c-.037-.351-.286-.695-.678-.678-.336.015-.718.3-.678.679l.228 2.185.949 9.112c.147 1.344 1.174 2.068 2.446 2.272.742.12 1.503.144 2.257.156.966.016 1.942.053 2.892-.122 1.408-.258 2.465-1.198 2.616-2.657.34-3.332.683-6.663 1.024-9.995l.215-2.087a.484.484 0 01.39-.426c.402-.078.787-.212 1.074-.518.455-.488.546-1.124.385-1.766zm-1.478.772c-.145.137-.363.201-.578.233-2.416.359-4.866.54-7.308.46-1.748-.06-3.477-.254-5.207-.498-.17-.024-.353-.055-.47-.18-.22-.236-.111-.71-.054-.995.052-.26.152-.609.463-.646.484-.057 1.046.148 1.526.22.577.088 1.156.159 1.737.212 2.48.226 5.002.19 7.472-.14.45-.06.899-.13 1.345-.21.399-.072.84-.206 1.08.206.166.281.188.657.162.974a.544.544 0 01-.169.364zm-6.159 3.9c-.862.37-1.84.788-3.109.788a5.884 5.884 0 01-1.569-.217l.877 9.004c.065.78.717 1.38 1.5 1.38 0 0 1.243.065 1.658.065.447 0 1.786-.065 1.786-.065.783 0 1.434-.6 1.499-1.38l.94-9.95a3.996 3.996 0 00-1.322-.238c-.826 0-1.491.284-2.26.613z"/></svg><span>Buy me a coffee!</span></a>
     <a class="cta" href="/#download">Download</a>
   </div>
+  <button class="nav-toggle" id="navtoggle" aria-expanded="false" aria-controls="sitemenu" aria-label="Menu">
+    <span></span><span></span>
+  </button>
 </div></nav>
 
-<!-- TEMPORARY: GitHub account suspended -> repo lives on gitlab.com. Remove this block and
-     revert the links (+ site.js) to github.com once the account is restored. -->
-<div class="notice-wrap"><div class="wrap">
-  <aside class="notice" role="note">
-    <div class="notice-tag">Repository moved</div>
-    <h2>My GitHub account was suspended, and the openGym repo went with it.</h2>
-    <p><b>github.com/DuarteSantos8/openGym is offline</b> — not by choice. The app is
-       untouched: the APK, the demo and every self-hosted install work exactly as before. The
-       code, the releases, the container images and the APK builds now live on GitLab under
-       the same AGPL-3.0 license, and every repository link here points there.</p>
-    <div class="actions">
-      <a class="btn" href="https://gitlab.com/DuarteSantos8/opengym" rel="noopener">Open on GitLab</a>
-      <a class="btn dc-btn" href="https://discord.gg/e62jY6fwVb" rel="noopener">Join the Discord</a>
+<!-- The navigation sheet: the header's links again, for the widths where the bar has
+     room only for the brand and the download. Byte-identical on every page, like the
+     bar above it — nothing is ever dropped because of which page you are on. -->
+<div class="navsheet" id="sitemenu" role="navigation" aria-label="Site" aria-hidden="true">
+  <div class="nl-rows">
+    <a class="nl" href="/#features">Features</a>
+    <a class="nl" href="/#screens">Screenshots</a>
+    <a class="nl" href="/#demo">Demo</a>
+    <a class="nl" href="/docs.html">Docs</a>
+    <a class="nl" href="/api.html">API</a>
+    <a class="nl" href="/about.html">About</a>
+    <a class="nl" href="https://gitlab.com/DuarteSantos8/opengym" rel="noopener">GitLab <span data-gh="stars"></span></a>
+    <a class="nl" href="https://discord.gg/e62jY6fwVb" rel="noopener">Discord <span data-dc="members"></span></a>
+    <a class="nl coffee" href="https://buymeacoffee.com/duartesantos" rel="noopener">Buy me a coffee! <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.216 6.415l-.132-.666c-.119-.598-.388-1.163-1.001-1.379-.197-.069-.42-.098-.57-.241-.152-.143-.196-.366-.231-.572-.065-.378-.125-.756-.192-1.133-.057-.325-.102-.69-.25-.987-.195-.4-.597-.634-.996-.788a5.723 5.723 0 00-.626-.194c-1-.263-2.05-.36-3.077-.416a25.834 25.834 0 00-3.7.062c-.915.083-1.88.184-2.75.5-.318.116-.646.256-.888.501-.297.302-.393.77-.177 1.146.154.267.415.456.692.58.36.162.737.284 1.123.366 1.075.238 2.189.331 3.287.37 1.218.05 2.437.01 3.65-.118.299-.033.598-.073.896-.119.352-.054.578-.513.474-.834-.124-.383-.457-.531-.834-.473-.466.074-.96.108-1.382.146-1.177.08-2.358.082-3.536.006a22.228 22.228 0 01-1.157-.107c-.086-.01-.18-.025-.258-.036-.243-.036-.484-.08-.724-.13-.111-.027-.111-.185 0-.212h.005c.277-.06.557-.108.838-.147h.002c.131-.009.263-.032.394-.048a25.076 25.076 0 013.426-.12c.674.019 1.347.067 2.017.144l.228.031c.267.04.533.088.798.145.392.085.895.113 1.07.542.055.137.08.288.111.431l.319 1.484a.237.237 0 01-.199.284h-.003c-.037.006-.075.01-.112.015a36.704 36.704 0 01-4.743.295 37.059 37.059 0 01-4.699-.304c-.14-.017-.293-.042-.417-.06-.326-.048-.649-.108-.973-.161-.393-.065-.768-.032-1.123.161-.29.16-.527.404-.675.701-.154.316-.199.66-.267 1-.069.34-.176.707-.135 1.056.087.753.613 1.365 1.37 1.502a39.69 39.69 0 0011.343.376.483.483 0 01.535.53l-.071.697-1.018 9.907c-.041.41-.047.832-.125 1.237-.122.637-.553 1.028-1.182 1.171-.577.131-1.165.2-1.756.205-.656.004-1.31-.025-1.966-.022-.699.004-1.556-.06-2.095-.58-.475-.458-.54-1.174-.605-1.793l-.731-7.013-.322-3.094c-.037-.351-.286-.695-.678-.678-.336.015-.718.3-.678.679l.228 2.185.949 9.112c.147 1.344 1.174 2.068 2.446 2.272.742.12 1.503.144 2.257.156.966.016 1.942.053 2.892-.122 1.408-.258 2.465-1.198 2.616-2.657.34-3.332.683-6.663 1.024-9.995l.215-2.087a.484.484 0 01.39-.426c.402-.078.787-.212 1.074-.518.455-.488.546-1.124.385-1.766zm-1.478.772c-.145.137-.363.201-.578.233-2.416.359-4.866.54-7.308.46-1.748-.06-3.477-.254-5.207-.498-.17-.024-.353-.055-.47-.18-.22-.236-.111-.71-.054-.995.052-.26.152-.609.463-.646.484-.057 1.046.148 1.526.22.577.088 1.156.159 1.737.212 2.48.226 5.002.19 7.472-.14.45-.06.899-.13 1.345-.21.399-.072.84-.206 1.08.206.166.281.188.657.162.974a.544.544 0 01-.169.364zm-6.159 3.9c-.862.37-1.84.788-3.109.788a5.884 5.884 0 01-1.569-.217l.877 9.004c.065.78.717 1.38 1.5 1.38 0 0 1.243.065 1.658.065.447 0 1.786-.065 1.786-.065.783 0 1.434-.6 1.499-1.38l.94-9.95a3.996 3.996 0 00-1.322-.238c-.826 0-1.491.284-2.26.613z"/></svg></a>
+  </div>
+</div>
+
+<!-- The one control that opens the contents, at every width. The drawer it opens is
+     closed in CSS, so it is shut on first paint whether or not the script runs. -->
+<button class="toc-btn" id="tocbtn" aria-expanded="false" aria-controls="menu">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M4 6.5h16M4 12h16M4 17.5h10"/></svg>
+  Contents
+</button>
+
+<!-- The contents drawer: one list, one way in, one way out. Closed by default at
+     every width, and no preference is remembered — see .side in styles.css. -->
+<aside class="side" id="menu" aria-label="Contents" aria-hidden="true">
+  <div class="side-top">
+    <p class="side-title">Contents</p>
+    <button class="rail-close" aria-label="Close contents"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
+  </div>
+  <p class="side-label">Documentation</p>
+  <div class="side-group">
+    <a class="side-link" href="#flavors"><b>Which openGym?</b></a>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#android"><b>Install on Android</b></a>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#iphone"><b>Use on iPhone</b></a>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#features"><b>Feature guide</b></a>
+    <div class="side-subs">
+      <a class="side-sub" href="#f-home">Home &amp; the weekly plan</a>
+      <a class="side-sub" href="#f-plan">Routines &amp; plan builder</a>
+      <a class="side-sub" href="#f-prog">Progression</a>
+      <a class="side-sub" href="#f-workout">Running a workout</a>
+      <a class="side-sub" href="#f-stats">Statistics</a>
+      <a class="side-sub" href="#f-looks">Looks &amp; languages</a>
     </div>
-  </aside>
-</div></div>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#selfhost"><b>Self-hosting</b></a>
+    <div class="side-subs">
+      <a class="side-sub" href="#sh-passkey">The passkey rule</a>
+      <a class="side-sub" href="#sh-https">HTTPS on your domain</a>
+      <a class="side-sub" href="#sh-notify">Notifications</a>
+      <a class="side-sub" href="#sh-stack">In an existing stack</a>
+      <a class="side-sub" href="#sh-update">Updating</a>
+    </div>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#env"><b>Every setting</b></a>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#admin"><b>Admin &amp; multi-user</b></a>
+    <div class="side-subs">
+      <a class="side-sub" href="#admin-log">The activity log</a>
+    </div>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#mobile-server"><b>Phone ↔ server</b></a>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#coach"><b>AI Coach</b></a>
+    <div class="side-subs">
+      <a class="side-sub" href="#coach-how">How it works</a>
+      <a class="side-sub" href="#coach-providers">Providers</a>
+      <a class="side-sub" href="#coach-local">Fully local</a>
+      <a class="side-sub" href="#coach-phone">On the phone</a>
+      <a class="side-sub" href="#coach-privacy">Privacy and limits</a>
+    </div>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#mcp"><b>Ask an AI (MCP)</b></a>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#import"><b>Import your history</b></a>
+    <div class="side-subs">
+      <a class="side-sub" href="#imp-hevy">Hevy, over the API</a>
+      <a class="side-sub" href="#imp-csv">Your own CSV</a>
+      <a class="side-sub" href="#imp-plans">Importing plans</a>
+    </div>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#backup"><b>Backups &amp; your data</b></a>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#arch"><b>How it's built</b></a>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#build"><b>Build it yourself</b></a>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#troubleshoot"><b>Troubleshooting</b></a>
+    <div class="side-subs">
+      <a class="side-sub" href="#tr-passkey">Passkeys fail</a>
+      <a class="side-sub" href="#tr-rest">Everything else</a>
+    </div>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#privacy"><b>Privacy</b></a>
+  </div>
+  <div class="side-group">
+    <a class="side-link" href="#faq"><b>FAQ</b></a>
+  </div>
+  <p class="side-label">More</p>
+  <a class="side-link" href="/"><b>Home</b><span>The tour, the demo, the download</span></a>
+  <a class="side-link" href="api.html"><b>API</b><span>Every route, as an OpenAPI spec</span></a>
+  <a class="side-link" href="about.html"><b>About</b><span>The story and the milestones</span></a>
+</aside>
 
 <main class="wrap prose">
   <h1>Docs</h1>
-  <p class="lead">Everything you need to get openGym running — on a phone, or on your own
-     server. The deeper, maintainer-level docs live
-     <a href="https://gitlab.com/DuarteSantos8/opengym/-/blob/main/docs" rel="noopener">in the repository</a>.</p>
+  <p class="lead">The complete reference — every feature, every setting, every way to run
+     openGym. The same documents live
+     <a href="https://gitlab.com/DuarteSantos8/opengym/-/blob/main/docs" rel="noopener">in the repository</a>,
+     next to the code they describe.</p>
 
   <div class="toc">
     <a href="#android">Android</a>
     <a href="#iphone">iPhone</a>
     <a href="#selfhost">Self-hosting</a>
     <a href="#mcp">Ask an AI</a>
+    <a href="#coach">AI Coach</a>
     <a href="#import">Import your history</a>
     <a href="#backup">Backups</a>
     <a href="#build">Build it yourself</a>
     <a href="#faq">FAQ</a>
   </div>
+  <h2 id="flavors">Which openGym? The three flavors</h2>
+  <p>One codebase, three ways to run it. Everything below applies to all of them unless a
+     section says otherwise.</p>
+  <table class="cfg">
+    <tr><td><b>Mobile app</b></td><td>A sideloadable Android APK (and a buildable iOS app). No account, no server, no sync — the phone <i>is</i> the account, data lives in the app's private storage, workout-day reminders are native notifications. Install-and-done.</td></tr>
+    <tr><td><b>Self-hosted</b></td><td>Two Docker containers on your own machine. Adds passkey profiles, sync across devices, installable as a home-screen PWA, optional admin dashboard, web push notifications. The flavor for households and training groups.</td></tr>
+    <tr><td><b>Demo</b></td><td><a href="/demo/">The in-browser demo</a> — the real app seeded with example data, storing everything in your browser only. Useful to try before installing, and as a free plan editor (see <a href="#import">Import</a>).</td></tr>
+  </table>
+  <p>You can start with the mobile app and move to a server later (or the other way round) —
+     the <a href="#backup">backup file</a> migrates everything, and the mobile app can also
+     <a href="#mobile-server">connect directly to your server</a>.</p>
 
   <h2 id="android">Install on Android</h2>
   <ol>
@@ -81,8 +215,25 @@
   <div class="note">openGym is deliberately <b>not</b> on the Play Store — no store account
     between you and an open-source app. The APK is signed; updates install over the old
     version and keep your data.</div>
-  <p>Everything is stored on the phone itself. The only things fetched from the internet are
-     the exercise images and animations (from a CDN, on demand).</p>
+  <p>The same signed APK exists in three places, all the same file:</p>
+  <ul>
+    <li>This site's <a href="/#download">download button</a>.</li>
+    <li><a href="https://gitlab.com/DuarteSantos8/opengym/-/packages" rel="noopener">GitLab's package registry</a> —
+        every version under <code>opengym-android/&lt;version&gt;/</code>, with a
+        <code>.sha256</code> checksum beside it.</li>
+    <li>The <a href="https://gitlab.com/DuarteSantos8/opengym/-/releases" rel="noopener">GitLab release</a> for that version, which links to both.</li>
+  </ul>
+  <p>Got the file from anywhere else? Verify it against the registry's <code>.sha256</code>
+     before installing. <b>Updates come to you:</b> when a newer release exists, Settings &rarr; Data
+     shows "openGym vX available" &mdash; one tap downloads the signed APK, checks its SHA-256
+     against the published checksum and opens the installer (no checksum, no install; the first
+     time Android asks for the "install unknown apps" permission). Installing over the old
+     version by hand works too &mdash; same signing key, data stays. Everything is stored on the phone itself; the only network
+     traffic is fetching exercise images and animations from a CDN, on demand.</p>
+  <p>The app requests notification permission only when you switch the workout-day reminder
+     on, and declares <code>SCHEDULE_EXACT_ALARM</code> so reminders fire to the minute.
+     Reminders are scheduled per calendar date — a day you already trained, or rescheduled
+     away, stays quiet.</p>
 
   <h2 id="iphone">Use on iPhone</h2>
   <p>Apple does not allow installing apps outside the App Store, so there is no iOS download —
@@ -91,111 +242,682 @@
     <li><b>Self-host + home screen (recommended):</b> open your own openGym instance in
         Safari → <b>Share</b> → <b>Add to Home Screen</b>. You get a full-screen app with its
         own icon, passkey sign-in and sync — no expiry, no fees.</li>
-    <li><b>Build it onto your own iPhone:</b> with a Mac and Xcode, the native app runs on
-        your device with a free Apple ID (Apple expires the signature after 7 days; re-run
-        from Xcode to renew). See
-        <a href="https://gitlab.com/DuarteSantos8/opengym/-/blob/main/docs/MOBILE.md" rel="noopener">docs/MOBILE.md</a>.</li>
+    <li><b>Build it onto your own iPhone:</b> with a Mac and Xcode 15+, the native Capacitor
+        app runs on your device with a free Apple ID (Apple expires the signature after
+        7 days; re-run from Xcode to renew — <b>AltStore</b> can automate that re-signing over
+        Wi-Fi). See <a href="https://gitlab.com/DuarteSantos8/opengym/-/blob/main/docs/MOBILE.md" rel="noopener">docs/MOBILE.md</a>.</li>
     <li><b>Just looking?</b> Try the <a href="/demo/">in-browser demo</a> — the real app with
-        example data, no account and nothing to install. The Android app above needs no account either.</li>
+        example data, no account and nothing to install.</li>
+  </ul>
+
+  <h2 id="features">The app, feature by feature</h2>
+  <p>What's actually inside, grouped the way you'll meet it. All of it ships in every flavor.</p>
+
+  <h3 id="f-home">Home &amp; the weekly plan</h3>
+  <ul>
+    <li><b>A routine per weekday.</b> The home screen knows what day it is, shows this week
+        with what's done and what's planned, and starts today's session with one tap.</li>
+    <li><b>Reschedule any day.</b> Sick, missed a session, fewer gym days this week? Move a
+        workout to another date without touching the weekly plan itself — the override applies
+        to that date only.</li>
+    <li><b>Weeks start where you say.</b> Monday or Sunday, in Settings &rarr; General. The
+        weekly plan, the day strip on Home, the calendar grid and every &ldquo;this week&rdquo;
+        total &mdash; the workout count, the week streak, the seven-day muscle balance &mdash;
+        all follow it. Existing profiles keep the Monday week they have been looking at.</li>
+    <li><b>On a rest day it says what&rsquo;s next.</b> Rather than a full stop, the Home row
+        names the next day that actually has something to train, and which routine it is.
+        Rescheduled days count; a routine with no exercises in it does not.</li>
+    <li><b>Body weight on the home screen:</b> your latest weigh-in, the trend, and how far
+        you are from the goal you set.</li>
+    <li><b>Streaks:</b> consecutive training weeks, workouts this week, and totals.</li>
+  </ul>
+
+  <h3 id="f-plan">Routines &amp; the plan builder</h3>
+  <ul>
+    <li><b>1,324 exercises</b> — searchable, with animated demonstrations and step-by-step
+        instructions, plus a <b>filter for the equipment you actually own</b> (the filter
+        options adapt to what you've picked, so every combination on screen has results).</li>
+    <li><b>Your own exercises:</b> a name and a body part is enough; they behave like built-in
+        ones everywhere, with an optional description instead of an animation.</li>
+    <li><b>Supersets:</b> plan them into a routine, or pair two exercises <i>mid-session</i>
+        with "make superset with previous/next" — then work through the group back-to-back
+        with a single rest at the end of each round. Unpair any time; a group of one
+        dissolves itself.</li>
+    <li><b>Warm-up sets:</b> mark the ramp-up rows as warm-ups and they stay out of every
+        number that shouldn't see them — no effect on estimated 1RM, progression, or the
+        fatigue map, while still being right there in the session. A weight change cascades
+        down the rows that share its phase, not across the divide.</li>
+    <li><b>Timed exercises:</b> planks, hangs, wall sits and loaded carries are logged by
+        time, not reps — with a work timer that counts the set itself (separate from the rest
+        timer) and logs the time you actually held. They can carry weight too.</li>
+    <li><b>Cardio:</b> logged as time + speed, not weight × reps.</li>
+    <li><b>Bodyweight exercises, logged as bodyweight:</b> push-ups, pull-ups, dips and
+        300-odd others arrive knowing they carry no load — no weight column, no working-weight
+        prompt, one stepper for the reps. Add a dip belt and it reads as an addition.</li>
+    <li><b>Reps per side:</b> for lunges, single-arm rows and the rest. You log the total,
+        the app shows the split ("8 per side"), and targets step in twos so they never land
+        on a number one side can't have.</li>
+    <li><b>Rest per exercise:</b> heavy triples and curls don't want the same break — give any
+        exercise its own rest time and it overrides the global timer for that exercise. A
+        superset rests once, taking the longest. Travels with shared plans.</li>
+    <li><b>Share a plan:</b> send someone your routines and week schedule as a small file
+        (no workouts, no weigh-ins), or print it as a clean PDF. Importing merges — their own
+        plan is never overwritten.</li>
+    <li><b>Muscle preview:</b> while you build a routine, the body diagram shows what it
+        hits.</li>
+    <li><b>Favourites:</b> star an exercise in its details and it sorts first in the picker, the
+        library and the muscle explorer; the picker gets a Favourites chip.</li>
+    <li><b>kg &harr; lb, your numbers included:</b> switching the unit asks whether to convert
+        everything you've logged and planned &mdash; sets, working weights, targets and
+        increments, warm-up configs, body weight, goal, bar weights &mdash; or keep the values
+        and only change the label.</li>
+  </ul>
+
+  <h3 id="f-prog">Progression — weights that follow a rule</h3>
+  <ul>
+    <li>Pick a progression program <b>per routine, overridable per exercise</b>:
+      <ul>
+        <li><b>Linear</b> — add a fixed increment when you hit your reps.</li>
+        <li><b>Greyskull LP</b> — AMRAP top set, double jumps for beating the target big,
+            10&nbsp;% resets on a stall.</li>
+        <li><b>Double progression</b> — through a visible rep range (both bounds editable);
+            reps climb first, then the weight steps and reps reset. Per-side exercises step
+            in twos.</li>
+        <li><b>Timed progression</b> — adding seconds instead of weight.</li>
+      </ul></li>
+    <li>Your weights are already right when the session opens, and <b>every target says
+        why</b> it's that number. Missed reps never advance the load; stalls trigger a deload;
+        bodyweight exercises progress in reps instead — and past a rep ceiling you set, a set
+        is added instead of a rep, up to the point where the honest advice is load or a harder
+        variation.</li>
+    <li><b>Planned deloads:</b> flag a routine as excluded from automatic progression — its
+        sessions open with the routine's own target weights, stay in your history and
+        statistics, and never become the baseline your next regular session progresses
+        from.</li>
+  </ul>
+
+  <h3 id="f-workout">Running a workout</h3>
+  <ul>
+    <li><b>Guided sessions:</b> today's routine opens with weights pre-filled from last time,
+        animated demos, a rest timer, and PR detection as you log.</li>
+    <li><b>A screen that gets out of the way.</b> Each exercise has one &#8943; menu next to its
+        name &mdash; note, details, progression, bar weight, warm-up set, superset with the
+        previous or next exercise, swap, move, remove &mdash; and the set number is the set's own
+        menu (drop set, rest-pause burst, remove). Nothing else sits between you and the numbers.
+        Miss a button? Settings &rarr; During a workout &rarr; <b>Workout controls</b> brings any
+        group back: +/&minus; steppers, drop/burst shortcuts on every row, superset buttons in
+        the header, move/swap/remove below the card.</li>
+    <li><b>List view keeps the header pinned</b> &mdash; name, clock, set counter, discard and
+        finish stay at the top while the session scrolls.</li>
+    <li><b>History without leaving the workout:</b> &#8943; &rarr; History shows your best set
+        (or estimated 1RM, longest hold, minutes) over time and the last ten sessions with every
+        set, the volume and a PR marker. Also in an exercise's details in the library.</li>
+    <li><b>It asks your body weight first</b> — one habit, one chart.</li>
+    <li><b>Plate math for barbell work.</b> Barbell, olympic, EZ, trap bar and Smith machine
+        exercises carry a bar weight &mdash; 20&nbsp;kg / 45&nbsp;lb and the rest of the usual
+        markings, or your own number per exercise &mdash; and the set in front of you shows
+        the split: <i>Bar 20&nbsp;kg &middot; 30&nbsp;kg per side</i>. Tap it to change the bar
+        mid-session. You still log the <b>total</b>, so history, progression and estimated 1RM
+        keep meaning exactly what they always did.</li>
+    <li><b>Animations are your call:</b> the demo for each exercise can be full size, small, or
+        hidden entirely during a workout (Settings &rarr; During a workout). Hidden collapses
+        the media instead of leaving a gap.</li>
+    <li><b>The screen stays awake while you train</b> — on for as long as a workout runs,
+        released the moment you finish, switchable off in Settings. (Needs HTTPS or
+        localhost; iOS refuses the wake lock in Low Power Mode.)</li>
+    <li><b>Change your mind mid-session:</b> add an exercise you decided to do, or remove one
+        you didn't, without ending the workout. Removing a member of a superset asks which
+        one.</li>
+    <li><b>Freestyle sessions:</b> train without a plan and pick exercises as you go — each
+        arrives prefilled from the last time you did it, same sets, same reps and weights by
+        position.</li>
+    <li><b>Log a past workout:</b> forgot your phone, trained on paper, switched apps? Add a
+        session after the fact from History — date, start time, duration, routine or
+        freestyle, then the normal workout screen. If that day already has a workout you
+        choose: replace, keep both, or cancel. Backfilled sessions never claim PRs against
+        workouts that came later.</li>
+    <li><b>Effort per set, in your scale:</b> an optional third column rating how hard a set
+        was, as <b>RIR</b> (reps left in the tank) or <b>RPE</b> (the same judgement on a
+        10-point scale). Tap the button to pick one of six levels, each with a sentence &mdash;
+        "Nothing left, went to failure" through "Easy, warm-up territory" &mdash; or type an
+        exact value; a logged rating tints its cell by how close to failure it was. Off by
+        default; each set keeps the scale it was logged with, and nothing else reads the value
+        — progression and 1RM are unaffected.</li>
+    <li><b>See the timer end, not just hear it:</b> an opt-in screen flash when a rest or
+        work timer finishes — for loud gyms and headphones.</li>
+    <li><b>Rest-timer push notifications</b> even with the app closed (self-hosted; the
+        mobile app uses native notifications).</li>
+  </ul>
+
+  <h3 id="f-stats">Statistics</h3>
+  <ul>
+    <li><b>Activity heatmap:</b> a GitHub-style year view, shaded by time spent training.</li>
+    <li><b>Estimated 1RM</b> per exercise, from your best eligible set (it names which one),
+        with its own progress curve and a calculator for sets you haven't done. It won't
+        guess above 12 reps, and warm-up sets don't count.</li>
+    <li><b>Muscle map, three ways</b> — a front-and-back body diagram (male or female figure,
+        your pick) readable as:
+      <ul>
+        <li><b>Balance</b> — where the volume went, over a week, a month or all time,
+            naming the muscles you <i>haven't</i> trained;</li>
+        <li><b>Fatigue</b> — what is still recovering, weighted by how close each set was to
+            your maximum, decaying smoothly rather than expiring at a window edge;</li>
+        <li><b>Strength</b> — how long since you trained each muscle, and behind every one
+            the exercises that built it with their estimated 1RM.</li>
+      </ul>
+        It also previews what a routine hits while you build it, and shows what you just
+        trained when you finish.</li>
+    <li><b>Body-weight chart</b> with a goal line you set — gains and losses colored by
+        whether they move toward it.</li>
+    <li><b>PRs</b> detected as you train, listed per exercise.</li>
+  </ul>
+
+  <h3 id="f-looks">Looks, languages &amp; little things</h3>
+  <ul>
+    <li><b>Light/dark themes and 8 accent colors</b>, saved to your profile, over a
+        hand-drawn icon set instead of emoji — it looks the same on every phone.</li>
+    <li><b>14 languages</b> — EN, DE, ES, FR, IT, PT (Portugal), PT (Brazil), PL, TR, RU,
+        ZH, KO, HI, TH, HU. Exercise instructions are localized in 12 of them, and built-in
+        exercise names show bilingually in PT-BR and HU. Translations load on demand, so the
+        app stays fast.</li>
+    <li><b>kg or lb</b> — pick your unit; imports convert.</li>
+    <li><b>Workout-day reminder:</b> an optional notification on days you have a workout
+        planned but haven't logged one. It fires at <i>your</i> local time — each device
+        reports its own timezone — and follows you if you travel.</li>
+    <li><b>Installable PWA</b> (self-hosted): add it to your home screen from any browser and
+        it opens full-screen with its own icon.</li>
   </ul>
 
   <h2 id="selfhost">Self-host with Docker</h2>
-  <p>The self-hosted flavor adds passkey profiles, sync across devices, and (optionally) an
-     admin dashboard. You need <a href="https://docs.docker.com/get-docker/" rel="noopener">Docker</a>
-     with Compose:</p>
+  <p>The self-hosted flavor is two small containers (web + API) and a folder of your data.
+     You need <a href="https://docs.docker.com/get-docker/" rel="noopener">Docker</a> with
+     Compose:</p>
   <pre><code>git clone https://gitlab.com/DuarteSantos8/opengym
 cd openGym
 cp .env.example .env
 docker compose pull    # prebuilt images (amd64 + arm64) — skip to build from source
 docker compose up -d</code></pre>
   <p>Open <code>http://localhost:8080</code>, tap <b>Create profile</b>, and you're in. The
-     first launch downloads the exercise media (~140&nbsp;MB) once.</p>
-  <div class="note">Want it reachable from your phone with passkeys? You'll need an HTTPS
-    domain — a two-line change in <code>.env</code>. The full guide, including reverse-proxy
-    examples and the invite-only/admin options, is in
-    <a href="https://gitlab.com/DuarteSantos8/opengym/-/blob/main/docs/SELF_HOSTING.md" rel="noopener">docs/SELF_HOSTING.md</a>.</div>
+     first launch downloads the exercise media (~140&nbsp;MB) once into <code>media/img</code>
+     and <code>media/gif</code>. Check it's healthy:</p>
+  <pre><code>docker compose ps
+curl http://localhost:8080/api/health      # {"ok":true,...}</code></pre>
+  <p>Logs: <code>docker compose logs -f</code> · stop: <code>docker compose down</code> ·
+     build from source instead of pulling: skip the <code>pull</code> and run
+     <code>docker compose up -d --build</code> — no Node needed locally either way.</p>
 
-  <h3>Settings worth knowing about</h3>
-  <p>All of these live in <code>.env</code>; the defaults are what you get if you touch nothing.</p>
+  <h3 id="sh-passkey">The passkey rule (read this before opening a port)</h3>
+  <p>openGym signs you in with <b>passkeys</b> (WebAuthn — Face ID, fingerprint, or your
+     password manager). Browsers enforce two rules: a passkey is bound to an exact
+     <b>hostname</b>, and it only works over <b>HTTPS</b> — with one exception,
+     <code>http://localhost</code>.</p>
+  <p>So <code>http://localhost:8080</code> works on the Docker machine, but your phone
+     <b>cannot</b> use <code>http://192.168.x.x:8080</code> — that's neither localhost nor
+     HTTPS, and the passkey prompt won't appear. To use openGym from your phone you need a
+     real HTTPS hostname (below). Until then, LAN devices can still use <b>guest mode</b>
+     (data stays in that browser) or the <a href="#mobile-server">mobile app's pairing
+     mode</a>.</p>
+
+  <h3 id="sh-https">HTTPS on your own domain</h3>
+  <p>Put anything that terminates TLS in front of the <code>web</code> container. Pick
+     whichever you already run:</p>
+  <ul>
+    <li><b>Cloudflare Tunnel</b> (no open ports): route <code>gym.example.com</code> →
+        <code>http://&lt;docker-host&gt;:8080</code>. HTTPS comes with it.</li>
+    <li><b>Caddy</b> (automatic Let's Encrypt): <code>gym.example.com { reverse_proxy localhost:8080 }</code></li>
+    <li><b>Traefik / nginx / Nginx Proxy Manager:</b> route the HTTPS hostname to
+        <code>web:80</code> or <code>&lt;docker-host&gt;:8080</code>. Any proxy works.</li>
+  </ul>
+  <p>Then set the domain in <code>.env</code> and apply it:</p>
+  <pre><code># .env
+RP_ID=gym.example.com
+ORIGIN=https://gym.example.com
+
+docker compose up -d   # restart alone does NOT re-read .env</code></pre>
+  <p>Visit your domain, create your profile, add it to the home screen (iOS: Share → Add to
+     Home Screen · Android: ⋮ → Add to Home screen).</p>
+  <div class="note">Changing <code>RP_ID</code> later invalidates existing passkeys — they
+    were bound to the old hostname, and everyone registers again. Settle the domain before
+    people join.</div>
+  <p>Want a valid certificate <b>without</b> exposing anything to the internet — HTTPS on a
+     LAN-only address? That works too (wildcard cert via a DNS challenge, Caddy in front):
+     <a href="https://gitlab.com/DuarteSantos8/opengym/-/blob/main/docs/SELF_HOSTING_HTTPS.md" rel="noopener">docs/SELF_HOSTING_HTTPS.md</a>.
+     A VPN or an auth proxy (Authelia, Cloudflare Access…) in front composes with all of
+     this.</p>
+
+  <h3 id="sh-notify">Notifications</h3>
+  <p>A self-hosted instance can push two kinds of alert to your phone or desktop, even with
+     the app closed: <b>rest timer over</b>, and the <b>workout-day reminder</b>. Turn them on
+     per profile in <b>Settings → Notifications</b> (needs a signed-in profile and HTTPS).
+     Nothing to configure server-side: VAPID keys are generated on first run and saved to
+     <code>./data/vapid.json</code>, and each browser reports its own timezone. Set
+     <code>VAPID_SUBJECT=mailto:you@example.com</code> if you'd rather push services could
+     reach an inbox than your origin URL.</p>
+
+  <h3 id="sh-stack">Fitting it into an existing stack</h3>
+  <p>The defaults assume openGym is alone: a service called <code>api</code> on port 3000,
+     nginx on 80 inside the web container. Merging into a compose file that already has an
+     <code>api</code>, or fronting it with your own proxy on another port, is four
+     <code>.env</code> settings — <code>WEB_PORT</code>, <code>NGINX_PORT</code>,
+     <code>BACKEND</code>, <code>PORT</code>. The web image renders its nginx config from
+     these <i>at container start</i>, so they work on a prebuilt image, no rebuild.</p>
+
+  <h3 id="sh-update">Updating</h3>
+  <pre><code>git pull                  # picks up compose/config changes
+docker compose pull       # (or: docker compose up -d --build, if building from source)
+docker compose up -d</code></pre>
+  <p>Your <code>./data</code> and the downloaded media are untouched; the app shell is
+     versioned so clients pick up changes on next load. Releases are announced on
+     <a href="https://gitlab.com/DuarteSantos8/opengym/-/releases" rel="noopener">GitLab</a>
+     and <a href="https://discord.gg/e62jY6fwVb" rel="noopener">Discord</a>; container images
+     (amd64 + arm64) are published to
+     <a href="https://gitlab.com/DuarteSantos8/opengym/container_registry" rel="noopener">GitLab's registry</a>
+     on every release.</p>
+
+  <h2 id="env">Every setting</h2>
+  <p>All configuration is one <code>.env</code> file (see <code>.env.example</code>); the
+     defaults are what you get if you touch nothing.</p>
   <table class="cfg">
-    <tr><td><code>RP_ID</code> / <code>ORIGIN</code></td><td>The domain passkeys are bound to, and the full URL you serve from. The two must agree, or sign-in fails.</td></tr>
+    <tr><td><code>RP_ID</code></td><td>Hostname passkeys are bound to. A <b>bare hostname</b>: no scheme, no port, no slash. Default <code>localhost</code>.</td></tr>
+    <tr><td><code>ORIGIN</code></td><td>Full URL the app is served from — <i>with</i> scheme, <i>without</i> trailing slash. Must match the address bar exactly. Default <code>http://localhost:8080</code>.</td></tr>
+    <tr><td><code>RP_NAME</code></td><td>Name shown in the passkey prompt. Default <code>openGym</code>.</td></tr>
     <tr><td><code>WEB_PORT</code></td><td>Host port for the web UI. Default <code>8080</code>.</td></tr>
-    <tr><td><code>INVITE_ONLY</code></td><td>Set <code>1</code> and new profiles need an invite code you generate.</td></tr>
-    <tr><td><code>ALLOW_GUEST</code></td><td>Set <code>0</code> to remove <b>Continue without account</b>, so everyone using the instance has a profile.</td></tr>
-    <tr><td><code>ADMIN_UIDS</code></td><td>Which user ids get the admin dashboard.</td></tr>
-    <tr><td><code>SESSION_DAYS</code></td><td>How long a sign-in lasts. Default <code>90</code>.</td></tr>
-    <tr><td><code>BACKEND</code> / <code>PORT</code> / <code>NGINX_PORT</code></td><td>For fitting openGym into a stack that already has an <code>api</code> service, or putting it behind your own proxy on another port. The web container renders its nginx config at start-up, so these work on a prebuilt image.</td></tr>
+    <tr><td><code>NGINX_PORT</code></td><td>Port the web container listens on, inside the container. Default <code>80</code>.</td></tr>
+    <tr><td><code>BACKEND</code></td><td>Name of the API service <code>/api</code> is proxied to — change it if yours isn't called <code>api</code>.</td></tr>
+    <tr><td><code>PORT</code></td><td>Port the API listens on; the web container proxies to the same value. Default <code>3000</code>.</td></tr>
+    <tr><td><code>SESSION_DAYS</code></td><td>How long a sign-in lasts, in days. Default <code>90</code>.</td></tr>
+    <tr><td><code>ADMIN_UIDS</code></td><td>Comma-separated user ids that get the <a href="#admin">admin dashboard</a>. Default: none — a fresh instance has no admin.</td></tr>
+    <tr><td><code>INVITE_ONLY</code></td><td>Set <code>1</code> and new profiles need an invite code you generate from the dashboard. Existing accounts keep working. Default: off.</td></tr>
+    <tr><td><code>ALLOW_GUEST</code></td><td>Set <code>0</code> to remove <b>Continue without account</b>. Guest data isn't deleted — it stays in that browser and returns if you re-enable guests, or moves into a profile created on the same device. Default: on.</td></tr>
+    <tr><td><code>AUDIT_LOG</code></td><td>Record sign-ins and admin actions to the <a href="#admin-log">activity log</a> — set <code>0</code> to record nothing. Default: on.</td></tr>
+    <tr><td><code>AUDIT_MAX</code></td><td>Events kept in the activity log; <code>0</code> for no limit. Default <code>5000</code>.</td></tr>
+    <tr><td><code>AUDIT_DAYS</code></td><td>Days kept in the activity log; <code>0</code> to keep until <code>AUDIT_MAX</code>. Default <code>90</code>.</td></tr>
+    <tr><td><code>AUDIT_IP</code></td><td>Record the caller's address: <code>off</code>, <code>net</code> (network only, e.g. <code>203.0.113.0/24</code>) or <code>full</code>. Default <code>off</code>.</td></tr>
+    <tr><td><code>VAPID_SUBJECT</code></td><td>Contact URL sent with push notifications. Default: your <code>ORIGIN</code>.</td></tr>
+    <tr><td><code>COACH_DISABLED</code></td><td>Set <code>1</code> to switch the <a href="#coach">AI Coach</a> off harder than any toggle. <code>COACH_JOB_TIMEOUT_MS</code> raises the job budget for slow local models.</td></tr>
+  </table>
+  <p>Two things that look like settings but aren't: <code>DATA_DIR</code> is pinned to
+     <code>/data</code> by <code>docker-compose.yml</code> and mapped to <code>./data</code> —
+     change the host side of that volume, not the variable. And
+     <code>VITE_IMG_BASE</code>/<code>VITE_GIF_BASE</code> are <b>build-time</b> values baked
+     into the frontend bundle — setting them next to <code>docker compose</code> does nothing
+     to a prebuilt image (see <a href="#troubleshoot">Troubleshooting</a>).</p>
+
+  <h2 id="admin">Multiple users, admin &amp; the activity log</h2>
+  <p>Anyone who can reach the URL can create their own profile — each gets isolated data.
+     That's the default: open signup, no admin. To control who gets in:</p>
+  <pre><code>ADMIN_UIDS=youruserid      # your id is in ./data/db.json under users[].id
+INVITE_ONLY=1              # new profiles need an invite code
+ALLOW_GUEST=0              # remove "Continue without account"</code></pre>
+  <p>Register your own passkey profile <i>first</i>, then put your id in
+     <code>ADMIN_UIDS</code>. You'll get an <b>Admin dashboard</b> link in Settings: who's
+     training right now, each user's workout history and body weight, disabling an account
+     (signed out and locked out everywhere until re-enabled), and — with invite-only on —
+     generating and revoking invite codes. Admin access rides on your passkey and is enforced
+     server-side; there is no separate admin login.</p>
+  <p><code>INVITE_ONLY</code> and <code>ALLOW_GUEST</code> answer different questions and are
+     usually set together: invite-only controls who may <i>create a profile</i>; the guest
+     button never creates one — guest mode keeps everything in that browser and never talks
+     to the server at all.</p>
+  <h3 id="admin-log">The activity log</h3>
+  <p>The dashboard keeps an activity log: sign-ins, sign-outs, failed attempts, refused
+     signups, and every admin action. It lives in <code>./data/audit.log</code> as one JSON
+     object per line — <code>tail -f</code> and <code>jq</code> work on it directly, and the
+     dashboard reads the same file. On by default, keeping the last 5,000 events or 90 days,
+     whichever comes first.</p>
+  <p>What it deliberately does <b>not</b> record: IP addresses (unless you opt in via
+     <code>AUDIT_IP</code>), browser user-agents (a fingerprint), and the passkey id of a
+     failed sign-in (it would let you follow an unknown device between attempts). Guests
+     never appear — nothing they do touches the server. Clearing the log records the clear
+     itself, and event ids keep counting, so a gap is always visible.</p>
+
+  <h2 id="mobile-server">Connecting the mobile app to your server</h2>
+  <p>The mobile app normally keeps everything on the phone. It can instead <b>connect to
+     your self-hosted instance</b> — your data then lives there, synced like the browser PWA.
+     Same app, not a different download; offered on first launch and under Settings →
+     <b>Connect to my server</b>.</p>
+  <p>Passkeys can't work inside the app's WebView (it never runs at your real hostname), so
+     the device is <b>paired</b> instead:</p>
+  <ol>
+    <li>In a browser that's already signed in: Settings → <b>Pair the mobile app</b> — shows
+        a one-time code, valid 5 minutes.</li>
+    <li>In the app: enter your server's address and that code. Done.</li>
+  </ol>
+  <p>Worth knowing: the pairing exchanges the code for a bearer token that is the same signed
+     value a session cookie carries — so <b>"sign out everywhere"</b> in the browser revokes
+     paired apps too. Use an HTTPS address if at all possible (the token would otherwise
+     cross the network in plain text). A connected app needs network access while in use —
+     no offline mirror, same as the browser PWA. Settings → <b>Disconnect</b> syncs one last
+     time, then drops the device cleanly back to local mode. (For the curious: it's
+     <code>POST /api/pair/create</code> + <code>/api/pair/redeem</code> in
+     <code>api/server.js</code>.)</p>
+
+  <h2 id="coach">Let an AI coach write your plan</h2>
+  <p>Separate from the read-only bridge above, openGym has an optional <b>AI Coach</b>. Answer a
+     few questions — goal, days a week, session length, equipment, anything to work around — and
+     it designs a week of routines. Later it reviews what you actually logged and proposes
+     changes; you can also ask it to look at <b>one workout</b> (a debrief: a score, what went
+     well, what to watch, what to do next time) or to <b>improve a single routine</b> and leave
+     the rest alone. If the admin allows it and at least three people opt in, it can show
+     anonymous medians so you can see how you sit against the others on your instance.</p>
+
+  <h3 id="coach-how">How it works</h3>
+  <p>The Coach is a chat. The first visit is a short intake, one question per screen; after
+     that, every request works the same way:</p>
+  <ol>
+    <li>The server builds a JSON payload from a <b>by-name allowlist</b>: your plan, the sets
+        you logged in the review window, weigh-ins, your intake answers, and a few preferences —
+        under a pseudonym. Your name, e-mail, passkeys and everyone else's data are not in it,
+        by construction: fields are copied in one by one, nothing is passed through.</li>
+    <li>That payload goes to the provider <b>you</b> configured — there is no openGym service in
+        the middle.</li>
+    <li>The answer is parsed and <b>validated against a closed list of change types</b> (add,
+        remove or swap an exercise, sets, reps, schedule, progression policy…). An answer that
+        names an exercise that doesn't exist, invents a change type, or breaks a rule is
+        refused — it gets exactly one repair round, then the job fails rather than guessing.</li>
+    <li>What survives is shown to you as a card, <b>one checkbox per change</b>, each with the
+        evidence behind it. Nothing touches your plan until you accept it, every proposal stays
+        in the chat history whether you said yes or no, and the last accepted change-set can be
+        undone in one tap.</li>
+  </ol>
+
+  <h3 id="coach-providers">Providers</h3>
+  <p>It is <b>off by default</b>. An admin turns it on in <b>Settings → Admin → AI Coach</b> and
+     picks who answers:</p>
+  <table class="cfg">
+    <tr><td><b>Anthropic, OpenAI, Google&nbsp;Gemini</b></td><td>Paste an API key from the provider's console. Plain HTTPS from the api process — runs on the default image.</td></tr>
+    <tr><td><b>OpenAI-compatible endpoint</b></td><td>Any server that speaks the Chat Completions API: <b>Ollama</b>, <b>LM Studio</b>, <b>vLLM</b>, <b>OpenRouter</b>, a gateway of your own. A key only if the endpoint wants one. Also the default image.</td></tr>
+    <tr><td><b>Claude Agent SDK / Codex CLI</b></td><td>Run a real AI runtime inside the container — the one case that needs the bigger build: <code>API_TARGET=coach docker compose up -d --build api</code></td></tr>
   </table>
 
-  <h2 id="mcp">Ask an AI about your training</h2>
+  <h3 id="coach-local">Run it fully local — no cloud, no cost</h3>
+  <p>A model on your own hardware is just the compatible endpoint with no key. The usual way is
+     an Ollama container next to openGym:</p>
+  <pre><code># docker-compose.yml — add next to the openGym services (same file = same network)
+  ollama:
+    image: ollama/ollama
+    restart: unless-stopped
+    volumes:
+      - ./data/ollama:/root/.ollama
+    environment:
+      - OLLAMA_KEEP_ALIVE=-1     # keep the model (and its prompt cache) loaded
+      - OLLAMA_NUM_PARALLEL=1
+    mem_limit: 4g</code></pre>
+  <pre><code>docker exec -it &lt;ollama container&gt; ollama pull qwen2.5:3b</code></pre>
+  <p>Then in <b>Settings → Admin → AI Coach</b>: provider <b>OpenAI-compatible endpoint</b> →
+     Base URL <code>http://ollama:11434</code> → <b>List models</b> → pick the model →
+     <b>Test the Coach</b>. That's the whole setup.</p>
+  <p><b>Any model you can pull, you can use.</b> <code>ollama pull</code> whatever you like and
+     it appears under <i>List models</i> — the admin is free to run anything the box can hold,
+     and each provider remembers its own model choice, so switching around never loses one.
+     Honest sizing, from measuring exactly this on a small box:</p>
+  <ul>
+    <li>A <b>~3B model at Q4</b> (like <code>qwen2.5:3b</code>) fits a 4–6&nbsp;GB container and
+        answers a review in <b>one to a few minutes</b> once its cache is warm — a modern 4-core
+        CPU sits at the fast end, an old low-power box at the slow one.</li>
+    <li>A <b>4B model needs ~6&nbsp;GB+</b> for its container. Squeezed into less, it doesn't
+        fail — it thrashes, generating at ~1 token/second. Smaller and comfortable beats bigger
+        and swapping.</li>
+    <li>The <b>first request after a restart is slow once</b>: the model loads and reads the
+        Coach's rules. The api pre-warms that cache at boot and every half hour, so in practice
+        people hit the warm path.</li>
+    <li>On a genuinely slow box, raise the job budget with <code>COACH_JOB_TIMEOUT_MS</code>
+        in <code>.env</code>.</li>
+  </ul>
+  <p>A GPU machine elsewhere on your LAN works the same way: run Ollama or LM Studio there and
+     point the Base URL at it, e.g. <code>http://192.168.1.50:11434</code>.</p>
+
+  <h3 id="coach-phone">On the phone</h3>
+  <p><b>Settings → AI Coach</b> offers two ways in: pair the phone with your self-hosted
+     instance and the Coach runs there under the rules above, or bring your own API key and the
+     phone calls the provider directly — same allowlist, same validator, key in the platform's
+     secure storage, ten runs a day.</p>
+
+  <h3 id="coach-privacy">Privacy and limits</h3>
+  <p>Before anyone uses it, a consent screen lists exactly which categories of data leave the
+     server — generated from the same module that builds the payloads, so it cannot drift from
+     what actually happens. The admin can cap runs per person and per instance per day, and
+     <code>COACH_DISABLED=1</code> in the environment switches the feature off harder than any
+     toggle. The Coach is not a doctor or a physiotherapist — if something hurts, ask a
+     professional. Full details, including exactly what is sent and how credentials are stored:
+     <a href="https://gitlab.com/DuarteSantos8/opengym/-/blob/main/docs/AI_COACH.md" rel="noopener">docs/AI_COACH.md</a>.</p>
+
+  <h2 id="mcp">Ask an AI about your training (MCP)</h2>
   <p>openGym ships an optional <b>MCP server</b>: a small read-only bridge that lets a client
-     like Claude Desktop or Cursor answer questions from your actual log — <i>"what did I bench
-     last week?"</i>, <i>"which muscle have I not trained this month?"</i>, <i>"what's my
-     estimated 1RM on squats?"</i></p>
-  <p>It runs on your machine, is spawned by the client, and reads your exported data directly.
-     Nothing is sent anywhere, and it is <b>not part of the Docker build</b> — if you don't use
-     an AI assistant, it simply isn't there. Setup is a few lines of client config:
+     like Claude Desktop, Cursor or Cline answer questions from your actual log — <i>"what
+     did I bench last week?"</i>, <i>"which muscle have I not trained this month?"</i>. It
+     runs on your machine, is spawned by the client over stdio, reads the same
+     <code>./data</code> files the API writes, and its numbers come from the <b>same pure
+     functions the Stats screen uses</b> — so the answers match the app exactly.</p>
+  <p>Eight tools in v1:</p>
+  <table class="cfg">
+    <tr><td><code>list_routines</code></td><td>What routines are saved? (names + exercise counts)</td></tr>
+    <tr><td><code>get_routine</code></td><td>What does one routine prescribe, set by set?</td></tr>
+    <tr><td><code>get_week_plan</code></td><td>This week's plan, including any date override.</td></tr>
+    <tr><td><code>list_workouts</code></td><td>Recent sessions — dates, sets done/planned, volume, duration, PRs.</td></tr>
+    <tr><td><code>get_workout</code></td><td>Full set-by-set breakdown of one session, by id or date.</td></tr>
+    <tr><td><code>get_bodyweight</code></td><td>Weigh-ins, the goal line, deltas vs goal.</td></tr>
+    <tr><td><code>estimate_1rm</code></td><td>Best 1RM for an exercise + trend, or a PR table across all.</td></tr>
+    <tr><td><code>muscle_balance</code></td><td>Muscles trained this week/month/all-time, ranked — and the neglected ones.</td></tr>
+  </table>
+  <p>It is <b>not part of the Docker build</b> — if you don't use an AI assistant, it simply
+     isn't there. No new auth (the filesystem is the boundary), no telemetry, no network; the
+     LLM never sees passkeys or session secrets. Setup is <code>cd mcp &amp;&amp; npm
+     install</code> plus a few lines of client config:
      <a href="https://gitlab.com/DuarteSantos8/opengym/-/blob/main/mcp/README.md" rel="noopener">mcp/README.md</a>.</p>
 
   <h2 id="import">Import your training history</h2>
-  <p>Coming from another tracker? <b>Settings → Data → Import from another app</b> reads:</p>
-  <ul>
-    <li><b>FitNotes</b> (both the Android and the FitNotes 2 iOS export)</li>
-    <li><b>Strong</b> and <b>Hevy</b> (CSV exports — session lengths carry over, so the
-        activity heatmap fills in properly)</li>
-    <li><b>Apple Health</b> (body-weight history from the XML export)</li>
-    <li>…and anything else with date, exercise-name and weight/reps columns</li>
-  </ul>
-  <p>Exercise names are matched against the 1,324-exercise library; anything genuinely
-     ambiguous becomes one of your own custom exercises instead of being guessed at. A summary
-     shows exactly what will happen before anything is written, and importing is idempotent —
+  <p>Coming from another tracker? <b>Settings → Data → Import from another app</b> reads a
+     CSV export; these apps work without touching the file:</p>
+  <table class="cfg">
+    <tr><td><b>FitNotes</b> (Android)</td><td>Settings → Backup/Export → Spreadsheet Export</td></tr>
+    <tr><td><b>FitNotes 2</b> (iOS)</td><td>Export workouts as CSV</td></tr>
+    <tr><td><b>Strong</b></td><td>Settings → Export Data</td></tr>
+    <tr><td><b>Hevy</b></td><td>Settings → Export &amp; Import Data (workouts or measurements) — or skip the CSV entirely, below</td></tr>
+    <tr><td><b>Gravl</b></td><td>Profile → Export Data</td></tr>
+    <tr><td><b>Apple Health</b></td><td>Body-weight history straight out of the XML export</td></tr>
+  </table>
+  <p>Exercise names are matched against the library; anything genuinely ambiguous becomes one
+     of your own custom exercises instead of being guessed at — nothing in the file is
+     dropped. Session lengths and the RPE they record carry over. A summary shows exactly
+     what will happen before anything is written, and importing is <b>idempotent</b> —
      running it twice never duplicates a workout.</p>
+  <h3 id="imp-hevy">Hevy, directly over the API</h3>
+  <p>With <b>Hevy Pro</b>, skip the CSV: create an API key under
+     <a href="https://hevy.com/settings?developer" rel="noopener">Hevy → Settings → Developer</a>,
+     then in openGym use <b>Settings → Import from Hevy</b>, paste the key (used only for that
+     import — never saved), and choose any mix of <b>workouts</b>, <b>routines</b> and
+     <b>weigh-ins</b>. Workout days that already have data here are left alone; imported
+     routines are always added as new plans.</p>
+  <h3 id="imp-csv">Rolling your own CSV</h3>
+  <p>Anything with date, exercise-name and weight/reps columns imports. Minimal example:</p>
+  <pre><code>workout name,exercise,date,weight kg,reps
+Leg Day,Squat,2026-08-21,120,5
+Leg Day,Squat,2026-08-21,125,4
+Leg Day,Leg Press,2026-08-21,200,1</code></pre>
+  <p>Recognised headers (first match wins) for each field: <i>exercise</i> (also
+     <code>exercise name/title</code>), <i>date</i> (<code>workout date</code>),
+     <i>start/end time</i>, <i>workout name</i> (<code>title</code>, <code>workout</code>),
+     <i>category</i> (<code>body part</code>, <code>muscle group</code>), <i>weight</i>
+     (<code>weight kg</code>, <code>weight lbs</code>, plus a <code>weight unit</code>
+     column), <i>reps</i> (<code>repetitions</code>), <i>rpe</i>, <i>rir</i>
+     (<code>reps in reserve</code>), <i>distance</i> (<code>distance km</code> + unit),
+     <i>seconds</i> (<code>duration seconds</code>, <code>set duration sec</code>),
+     <i>time</i> (<code>duration</code>), <i>set type</i>, <i>note</i>
+     (<code>comment(s)</code>, <code>notes</code>, <code>workout notes</code>). The full
+     table lives in
+     <a href="https://gitlab.com/DuarteSantos8/opengym/-/blob/main/docs/DATA_IMPORTS.md" rel="noopener">docs/DATA_IMPORTS.md</a>.</p>
+  <h3 id="imp-plans">Importing plans</h3>
+  <p>Routines travel as their own small JSON file (<b>Share a plan</b> exports every current
+     routine; importing merges). Don't want to share everything? Edit the JSON, or use the
+     <a href="/demo/">demo</a> as a free plan editor: import there, prune, export a fresh
+     file. The demo stores everything in your browser — nothing is public or shared.</p>
 
-  <h2 id="backup">Backups</h2>
+  <h2 id="backup">Backups &amp; your data</h2>
+  <h3>Per user</h3>
   <p><b>Settings → Data → Export backup (JSON)</b> writes your entire log — plan, workouts,
      weights, settings — into one file. On the mobile app it goes out through the share sheet
      (Files, AirDrop, mail…); in the browser it downloads. <b>Import backup</b> restores it
      anywhere: another phone, your self-hosted instance, or a fresh install. That file is the
      whole point of openGym — your training log as a file <i>you</i> own.</p>
+  <h3>Per instance (self-hosted)</h3>
+  <p>Everything lives in <code>./data</code> on your host:</p>
+  <table class="cfg">
+    <tr><td><code>db.json</code></td><td>Profiles and <b>public</b> passkeys. Private keys never touch the server — they stay in your phone's secure hardware or password manager.</td></tr>
+    <tr><td><code>state-&lt;user&gt;.json</code></td><td>One file per user: plan, workouts, body weight, settings.</td></tr>
+    <tr><td><code>audit.log</code></td><td>The activity log (if on) — one JSON object per line.</td></tr>
+    <tr><td><code>secret</code></td><td>The session-cookie signing key.</td></tr>
+    <tr><td><code>vapid.json</code></td><td>Push-notification keys, generated on first run.</td></tr>
+  </table>
+  <pre><code>tar czf opengym-backup-$(date +%F).tar.gz data/</code></pre>
+  <p>That archive is everything — profiles, passkeys, history. It also contains
+     <code>audit.log</code> with everyone's sign-in times; worth knowing before shipping it
+     to a backup service you don't run. Restore by unpacking into the project folder.</p>
+
+  <h2 id="arch">How it's built</h2>
+  <p>Two containers, one folder, no database server:</p>
+  <ul>
+    <li><b>frontend/</b> — React 19 + Vite (React Router, Zustand), built to static files
+        <i>inside Docker</i>. The app ships no runtime dependencies beyond React, the router
+        and Zustand.</li>
+    <li><b>api/</b> — Node with <b>no framework</b> and two dependencies
+        (<code>@simplewebauthn/server</code> for passkeys, <code>web-push</code> for
+        notifications), storing everything as plain JSON files under <code>./data</code>.</li>
+    <li><b>web/</b> — a multi-stage image that builds the frontend and serves it with nginx,
+        proxying <code>/api</code> to the backend so it's all on <b>one origin</b> (passkeys
+        require this).</li>
+  </ul>
+  <p>The training logic — progression rules, 1RM estimation, how a logged session is read
+     back — lives in pure functions under <code>frontend/src/lib/</code> with tests next to
+     them; the MCP server and the mobile app import the very same functions. CI on GitLab
+     runs the full suites (frontend, api, mcp) on every commit, builds the amd64+arm64
+     images, signs the APK, and publishes releases — tagging <code>vX.Y.Z</code> is what
+     ships everything.</p>
+  <p>The exercise database comes from
+     <a href="https://github.com/hasaneyldrm/exercises-dataset" rel="noopener">hasaneyldrm/exercises-dataset</a>:
+     1,324 exercises with animations and instructions. The metadata and instruction text are
+     MIT; the images and animations are third-party media that openGym never redistributes —
+     your instance downloads them from upstream on first run (see the
+     <a href="#faq">FAQ</a> for the licensing details).</p>
 
   <h2 id="build">Build it yourself</h2>
   <p>Everything on this page is built from the public repo:</p>
   <ul>
     <li><b>Web / self-host:</b> <code>docker compose up -d --build</code> builds the frontend
         inside the container — no local Node needed.</li>
-    <li><b>Android APK / iOS app:</b> the Capacitor projects live in <code>frontend/android</code>
-        and <code>frontend/ios</code> — build, signing and distribution notes are in
+    <li><b>Android APK:</b> <code>npm run build:mobile</code> in <code>frontend/</code>, then
+        Gradle + <code>zipalign</code> + <code>apksigner</code> with your own keystore
+        (keep it — updates must carry the same signature). Step-by-step:
         <a href="https://gitlab.com/DuarteSantos8/opengym/-/blob/main/docs/MOBILE.md" rel="noopener">docs/MOBILE.md</a>.</li>
+    <li><b>iOS app:</b> the Capacitor project in <code>frontend/ios</code> — open in Xcode,
+        set your (free) team, run on your device. Same doc.</li>
+    <li><b>Development:</b> Node 20+; <code>npm test</code> in <code>frontend/</code>,
+        <code>api/</code> and <code>mcp/</code> runs the suites. Contributions welcome —
+        <a href="https://gitlab.com/DuarteSantos8/opengym/-/blob/main/CONTRIBUTING.md" rel="noopener">CONTRIBUTING.md</a>.</li>
+  </ul>
+
+  <h2 id="troubleshoot">Troubleshooting</h2>
+  <h3 id="tr-passkey">Passkeys fail even though the config looks right</h3>
+  <p>The most common support question — work through these in order:</p>
+  <ol>
+    <li><b>Ask the server what it actually loaded:</b>
+        <code>docker compose logs api | grep 'gym-api on'</code> prints the
+        <code>rpID</code>/<code>origin</code> it runs with. If that disagrees with your
+        <code>.env</code>: <code>docker compose restart</code> does <b>not</b> re-read
+        <code>.env</code> — use <code>docker compose up -d</code>.</li>
+    <li><b>Check the exact shape:</b> <code>RP_ID</code> is a bare hostname
+        (<code>gym.example.com</code> — no <code>https://</code>, no port, no slash);
+        <code>ORIGIN</code> is the full origin with scheme and without trailing slash. Both
+        must match the address bar exactly.</li>
+    <li><b>Behind a tunnel/proxy, use the public hostname</b> — never the container name,
+        LAN IP or internal port. The tunnel's own route may point wherever it likes.</li>
+    <li><b><code>www.</code> is a different host.</b> A passkey registered on
+        <code>gym.example.com</code> won't work on <code>www.gym.example.com</code> — pick
+        one, redirect the other.</li>
+    <li><b>Changing the hostname invalidates existing passkeys.</b> Everyone registers
+        again.</li>
+  </ol>
+  <h3 id="tr-rest">Everything else</h3>
+  <table class="cfg">
+    <tr><td>No passkey prompt on my phone</td><td>You're on <code>http://</code> or a bare IP. Passkeys need HTTPS or localhost — set up a domain, or use guest mode / the mobile app.</td></tr>
+    <tr><td>"verification failed" on login</td><td><code>RP_ID</code>/<code>ORIGIN</code> don't match the address bar — see the checklist above, starting with what the server logged.</td></tr>
+    <tr><td>Media didn't download</td><td><code>docker compose logs media</code>, re-run <code>docker compose up -d</code>, or run <code>./scripts/fetch-media.sh</code>.</td></tr>
+    <tr><td>Port 8080 already used</td><td><code>WEB_PORT=9090</code> in <code>.env</code> (and update <code>ORIGIN</code> for local testing).</td></tr>
+    <tr><td>No "Notifications" option in Settings</td><td>Needs a signed-in profile and HTTPS (or localhost) — guest mode and plain HTTP over LAN can't subscribe.</td></tr>
+    <tr><td>Day reminder fires at the wrong time</td><td>Toggle it off and on so it re-detects your browser's timezone (also happens on every app load).</td></tr>
+    <tr><td>"Keep screen awake" shows as unsupported</td><td>The Wake Lock API needs HTTPS or localhost; iOS also refuses it in Low Power Mode.</td></tr>
+    <tr><td>Want to reset a stuck login</td><td>Delete the cookie — sessions are just signed cookies. "Sign out everywhere" in Settings ends every session (and paired apps) at once.</td></tr>
+    <tr><td><code>docker compose pull</code> says "denied"</td><td>Build from source instead: <code>docker compose up -d --build</code>.</td></tr>
+    <tr><td>Exercise images blank in an old build</td><td>Fixed in current images. <code>VITE_IMG_BASE</code>/<code>VITE_GIF_BASE</code> are <b>build-time</b>: they're baked into the bundle when the frontend compiles, so setting them at runtime does nothing to a prebuilt image — redirect media in your reverse proxy instead, or rebuild.</td></tr>
+  </table>
+  <p>Still stuck? The <a href="https://discord.gg/e62jY6fwVb" rel="noopener">Discord</a> is
+     the quickest way to get an answer;
+     <a href="https://gitlab.com/DuarteSantos8/opengym/-/issues" rel="noopener">issues</a> are
+     better for anything the next person should find by searching.</p>
+
+  <h2 id="privacy">Privacy — the complete list</h2>
+  <ul>
+    <li><b>The app collects nothing.</b> No telemetry, no analytics, no crash reporting, no
+        accounts on anyone else's server. The mobile app's only network traffic is fetching
+        exercise media from a CDN; a self-hosted instance talks only to your own server.</li>
+    <li><b>Passkey private keys never leave your device</b> — the server stores only public
+        keys.</li>
+    <li><b>The optional activity log</b> (self-hosted, admin feature) records sign-in events
+        but no IP addresses, user-agents or failed-attempt passkey ids unless the operator
+        opts in — <a href="#admin-log">details above</a>.</li>
+    <li><b>The AI Coach is opt-in twice over</b> — an admin has to enable it, and a consent
+        screen lists exactly which data categories leave the server before anyone uses it.
+        Off, nothing is ever sent anywhere — <a href="#coach-privacy">details above</a>.</li>
+    <li><b>The MCP server</b> is read-only, local, and never puts your data on the
+        network.</li>
+    <li><b>This website</b> uses self-hosted, cookieless <a href="https://umami.is" rel="noopener">Umami</a>
+        page-view counting — no cookies, no cross-site tracking, and it never sees anything
+        from inside the app or the demo.</li>
   </ul>
 
   <h2 id="faq">FAQ</h2>
   <h3>Is it really free?</h3>
   <p>Yes — free as in cost <i>and</i> as in freedom (AGPL-3.0). No pro tier, no locked
-     features, no ads, and the license keeps every fork open source too.</p>
-  <h3>What data does openGym collect?</h3>
-  <p>None. There is no telemetry, no analytics, no crash reporting. The mobile app's only
-     network traffic is fetching exercise media from a CDN; a self-hosted instance talks only
-     to your own server.</p>
+     features, no ads, and the license keeps every fork open source too. If it replaced a
+     paid tracker for you, there's a <a href="https://buymeacoffee.com/duartesantos" rel="noopener">coffee button</a> —
+     a star, a bug report or a merge request is worth just as much.</p>
   <h3>Why isn't it on the Play Store / App Store?</h3>
   <p>By choice (and on iOS, by Apple's rules for sideloading). Store accounts cost money,
      impose terms that sit badly with the AGPL, and put a gatekeeper between you and an app
      whose whole point is that your data is yours.</p>
   <h3>Mobile app or self-hosted — which one should I pick?</h3>
   <p>If you just want to track your training: the mobile app. If you want your data on your
-     own hardware, synced across devices, with profiles for the people you train with: self-host.
-     You can start with the app and move to a server later — the backup file migrates everything.</p>
+     own hardware, synced across devices, with profiles for the people you train with:
+     self-host. You can start with the app and move to a server later — the backup file
+     migrates everything, or <a href="#mobile-server">pair the app to your server</a> and
+     keep using it.</p>
+  <h3>What's on the roadmap?</h3>
+  <p>Rough and community-driven: percentage/training-max programming (5/3/1-style) on top of
+     the progression engine, more starter plans, body measurements alongside weight,
+     per-exercise notes and a plate calculator, more instruction languages. Ideas and merge
+     requests welcome — the up-to-date list is in the
+     <a href="https://gitlab.com/DuarteSantos8/opengym#roadmap" rel="noopener">README</a>.</p>
   <h3>Where does the exercise database come from?</h3>
   <p>From <a href="https://github.com/hasaneyldrm/exercises-dataset" rel="noopener">hasaneyldrm/exercises-dataset</a>:
-     1,324 exercises with animations and instructions in 11 languages, including openGym's
-     separately curated Brazilian Portuguese translation. In pt-BR, built-in exercise names
-     show Portuguese first and the canonical English title in parentheses. That dataset licenses the two
-     halves differently, and so does openGym: the exercise metadata and instruction text are
-     <b>MIT</b>, while the images and animations are
-     <b>© <a href="https://gymvisual.com/" rel="noopener">Gym visual</a></b>, used under the
-     dataset's terms rather than openGym's AGPL.</p>
-  <p>openGym does not redistribute that media — your instance downloads it from the upstream source on
-     first run. If you want to reuse it yourself, commercially or otherwise, get your own licence from
-     Gym visual first (<a href="https://gymvisual.com/content/3-terms-and-conditions-of-use" rel="noopener">terms&nbsp;&amp;&nbsp;conditions</a>).</p>
+     1,324 exercises with animations and instructions, localized in 12 of openGym's 14 UI
+     languages — including openGym's separately curated Brazilian Portuguese translation.
+     That dataset licenses the two halves differently, and so does openGym: the exercise
+     metadata and instruction text are <b>MIT</b>, while the images and animations are
+     third-party media used under the dataset's terms rather than openGym's AGPL — their
+     ownership is currently disputed between
+     <a href="https://gymvisual.com/" rel="noopener">Gym visual</a> and ExerciseDB, and a
+     clarification has been requested.</p>
+  <p>openGym does not redistribute that media — your instance downloads it from the upstream
+     source on first run. If you want to reuse it yourself, commercially or otherwise, clear
+     it with the rights holder first. Full third-party notices, including the body-diagram
+     geometry, are in
+     <a href="https://gitlab.com/DuarteSantos8/opengym/-/blob/main/NOTICE.md" rel="noopener">NOTICE.md</a>.</p>
+  <h3>What does the AGPL mean for me?</h3>
+  <p>You can self-host, use, modify and share openGym freely. If you run a <i>modified</i>
+     version as a network service, you must offer that version's source under the same
+     license — that's the clause that keeps openGym from ever becoming someone's closed,
+     proprietary product. Just using or self-hosting it unmodified obliges you to
+     nothing.</p>
 </main>
 
 <footer><div class="wrap foot">
@@ -209,6 +931,6 @@ docker compose up -d</code></pre>
   </div>
 </div></footer>
 
-<script src="site.js?v=9" defer></script>
+<script src="site.js?v=16" defer></script>
 </body>
 </html>

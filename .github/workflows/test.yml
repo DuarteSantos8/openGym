@@ -6,13 +6,21 @@ on:
   pull_request:
     paths:
       - 'frontend/**'
+      - 'api/**'
       - 'mcp/**'
+      - 'scripts/build-coach-assets.mjs'
+      - 'scripts/build-coach-library.mjs'
+      - 'api/coach/prompts/**'
       - '.github/workflows/test.yml'
   push:
-    branches: [main]
+    branches: [main, coach]
     paths:
       - 'frontend/**'
+      - 'api/**'
       - 'mcp/**'
+      - 'scripts/build-coach-assets.mjs'
+      - 'scripts/build-coach-library.mjs'
+      - 'api/coach/prompts/**'
       - '.github/workflows/test.yml'
   workflow_dispatch:
 
@@ -53,6 +61,7 @@ jobs:
       - run: npm run test:fatigue-probe
         working-directory: frontend
 
+
   mcp:
     runs-on: ubuntu-latest
     steps:
@@ -72,3 +81,89 @@ jobs:
       # module with 33 green tests standing over a server that died on startup.
       - run: npm run check:node-loadable
         working-directory: mcp
+
+  api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      # Nothing to install: the Coach tests run on node:test and drive the in-repo fixture
+      # provider, so the whole job works without an AI account, a network, or a dependency.
+      - run: npm test
+        working-directory: api
+      # The api's copy of the exercise catalogue is generated and committed. A dataset change
+      # that forgets to regenerate it would otherwise only surface as "the Coach can't find
+      # that exercise" on somebody's instance.
+      - run: node scripts/build-coach-assets.mjs --check
+      - run: node api/scripts/check-core-loadable.mjs
+
+  # Builds *and runs* both image targets. Building alone would not have caught the api image
+  # shipping without coach/ — that image built perfectly and exited on boot. So each target has
+  # to answer for itself: the default one starts and serves, and the coach one additionally
+  # resolves the Agent SDK's per-platform runtime (musl on this base), which is the one thing
+  # that cannot be checked from the source tree.
+  api-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - run: docker build --target default -f api/Dockerfile -t opengym-api:default .
+      - run: docker build --target coach   -f api/Dockerfile -t opengym-api:coach   .
+      # No --target, exactly like docker-publish.yml. That workflow names no stage, so what it
+      # ships is whatever Dockerfile stage happens to be last -- and that untargeted artifact,
+      # not opengym-api:default above, is the image every self-hoster pulls as :latest. Build it
+      # the same way here so the assertion below is about the thing we actually publish.
+      - run: docker build -f api/Dockerfile -t opengym-api:published .
+
+      - name: the image published as :latest has no AI runtime either
+        run: |
+          docker run --rm opengym-api:published node -e \
+            'import("@anthropic-ai/claude-agent-sdk").then(()=>{console.error("AI runtime present in the published image -- the last Dockerfile stage is no longer the runtime-free one");process.exit(1)},()=>process.exit(0))'
+          ! docker run --rm opengym-api:published codex --version
+          ! docker run --rm opengym-api:published bwrap --version
+
+      - name: the default image boots and serves, with no AI runtime in it
+        run: |
+          docker run -d --name api-default -e DATA_DIR=/data -p 3000:3000 opengym-api:default
+          for i in $(seq 1 30); do
+            curl -fsS http://localhost:3000/api/config >/dev/null 2>&1 && break
+            sleep 1
+          done
+          curl -fsS http://localhost:3000/api/config | tee /dev/stderr | grep -q '"invite_only"'
+          # Absent by construction, not by accident: --omit=optional is the only thing keeping
+          # the AI dependency out of the image an owner gets when they never asked for it.
+          docker run --rm opengym-api:default node -e \
+            'import("@anthropic-ai/claude-agent-sdk").then(()=>{console.error("AI runtime present in the default image");process.exit(1)},()=>process.exit(0))'
+          docker rm -f api-default
+
+      - name: the coach image carries a runnable Agent SDK
+        run: |
+          docker run --rm opengym-api:coach node --input-type=module -e '
+            const { adapterFor } = await import("./coach/adapters/index.js");
+            const r = await adapterFor("claude").check();
+            if (!r.ok) { console.error(r.error); process.exit(1); }
+            console.log(r.version);
+          '
+
+      - name: the coach image carries the Codex runtime and its sandbox
+        run: |
+          docker run --rm opengym-api:coach codex --version
+          docker run --rm opengym-api:coach bwrap --version
+          # Owned by the user jobs drop to, and 0700 — a credential cache readable by anything
+          # else in the container would undo the point of dropping privileges at all.
+          test "$(docker run --rm opengym-api:coach stat -c '%U %a' /coach-auth)" = "coach 700"
+
+      - name: neither Codex nor its sandbox is in the default image
+        run: |
+          # bubblewrap is a Codex requirement, so an owner who never opted in should not be
+          # carrying it. Both commands must fail.
+          ! docker run --rm opengym-api:default codex --version 2>/dev/null
+          ! docker run --rm opengym-api:default bwrap --version 2>/dev/null
+
+      - name: the privilege drop can actually be performed in the image
+        run: |
+          # canDropPrivileges() fails closed, so a missing `coach` user disables every job —
+          # including the fixture provider. Cheaper to assert here than to discover on an instance.
+          docker run --rm opengym-api:default id coach

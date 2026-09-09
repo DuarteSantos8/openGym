@@ -183,7 +183,15 @@ body.resting #app{padding-bottom:calc(250px + var(--sab))}
   transition:background var(--fast),transform var(--fast);
 }
 .iconbtn:active{background:var(--surface-2);transform:scale(.92)}
+/* invisible hit-area extension: these look right at their size but fall short of a
+   finger-sized target, so the pseudo element widens what the tap lands on without
+   changing the painted box. Segmented buttons sit flush against each other, so they
+   only grow vertically or the neighbour would steal the edge of the tap. */
+.iconbtn,.chip,.seg button,.helpbtn{position:relative}
+.iconbtn::before,.chip::before,.seg button::before,.helpbtn::before{content:'';position:absolute;inset:-6px}
+.seg button::before{inset:-6px 0}
 .iconbtn.on-ss{background:var(--acc-soft);color:var(--acc)}
+.iconbtn:disabled{opacity:.32}
 
 h4.sec{
   font-size:13px;font-weight:400;letter-spacing:-.004em;color:var(--label-2);
@@ -235,8 +243,12 @@ h4.sec{
 .lrow-s{font-size:13px;color:var(--label-2);line-height:1.3}
 /* flex:none would let a long value ("Follow the routine (Linear progression)") run straight
    through the title next to it, since the title's column is already free to shrink to nothing.
-   Letting the value shrink and ellipsise instead keeps the two out of each other's way. */
-.lrow-v{color:var(--label-2);font-size:17px;letter-spacing:-.012em;flex:0 1 auto;min-width:0;
+   Letting the value shrink and ellipsise instead keeps the two out of each other's way.
+   The cap is max-width, not flex-basis: .lrow-m is flex:1, so its basis is 0 and it absorbs
+   none of the shrink — a long value would otherwise take the whole row and squeeze the title
+   to 21px. A basis of 45% fixes that but reserves the space even for "3", costing the title
+   141px on the rows that need it most. A cap does neither. */
+.lrow-v{color:var(--label-2);font-size:17px;letter-spacing:-.012em;flex:0 1 auto;max-width:45%;min-width:0;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right}
 .lrow-c{color:var(--label);font-size:15px;flex:none;--icon-stroke:2.4}
 .lrow-k{color:var(--acc);font-size:17px;flex:none;--icon-stroke:2.4}
@@ -250,7 +262,7 @@ h4.sec{
   display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;
 }
 .lrow.lrow-stack-value .lrow-m{grid-column:1;grid-row:1}
-.lrow.lrow-stack-value .lrow-v{grid-column:1;grid-row:2;text-align:left}
+.lrow.lrow-stack-value .lrow-v{grid-column:1;grid-row:2;width:100%;max-width:none;text-align:left}
 .lrow.lrow-stack-value .lrow-c{grid-column:2;grid-row:1 / span 2;align-self:center}
 /* an (i) before a row's control: painted small and dim so the control stays the loud thing,
    but with a finger-sized target like everything else — the padding is the hit area and the
@@ -376,7 +388,20 @@ h4.sec{
   transition:background var(--fast);text-align:left;width:100%;
 }
 .item:active{background:var(--surface-2)}
+.routine-list{position:relative}
+.routine-drag-row{touch-action:pan-y;-webkit-touch-callout:none;position:relative;transition:transform var(--fast) var(--ease)}
+.routine-list.is-reordering{user-select:none;-webkit-user-select:none}
+.routine-list.is-reordering .routine-drag-row{transition:none}
+.routine-drag-row.is-dragging{z-index:2;pointer-events:none}
+.routine-drag-row.is-dragging .item{box-shadow:0 10px 28px rgba(0,0,0,.22);background:var(--surface-2)}
+.routine-drop-indicator{
+  position:absolute;left:6px;right:6px;height:3px;border-radius:99px;
+  background:var(--acc);transform:translateY(-50%);pointer-events:none;z-index:3;
+}
 .thumb{width:50px;height:50px;border-radius:9px;object-fit:cover;background:#fff;flex:none}
+/* exercise pictures are decoration inside tappable rows/cards: no save-image callout on
+   a long press and no drag ghost when a scroll starts on the picture */
+.thumb,.exmedia img{-webkit-touch-callout:none;-webkit-user-drag:none;user-select:none;-webkit-user-select:none}
 .thumb-x{
   display:flex;align-items:center;justify-content:center;font-size:21px;
   background:var(--surface-2);color:var(--label-2);
@@ -391,6 +416,11 @@ h4.sec{
   font-weight:500;text-transform:capitalize;
 }
 .tag.acc{background:var(--acc-soft);color:var(--acc)}
+/* favourite marker (issue #6): a small yellow star glued to the exercise name — distinct from
+   the accent "chosen" tag at the row's end, which means "already in a routine or the log" */
+.fav-star{color:var(--yellow);font-size:12px;display:inline-block;margin-right:5px;vertical-align:-1px}
+.fav-btn{margin-top:-4px}
+.fav-btn.on{color:var(--yellow)}
 
 /* ---------------------------------------------------------------- chips -- */
 .chips{
@@ -398,6 +428,14 @@ h4.sec{
   scrollbar-width:none;-webkit-overflow-scrolling:touch;
 }
 .chips::-webkit-scrollbar{display:none}
+/* horizontal strips: keep a sideways overscroll from chaining to the page and leave a
+   margin when a chip is scrolled into view. The chip row also claims the horizontal axis
+   (touch-action:pan-x): on a phone a slightly diagonal swipe along the chips used to hand
+   the gesture to the page, which scrolled down instead. The row is 32px tall, so losing a
+   vertical scroll that happens to start on it costs nothing; the ~130px heatmap wrap keeps
+   both axes, there the trade-off goes the other way. */
+.chips,.hm-wrap{overscroll-behavior-x:contain;scroll-padding-inline:16px}
+.chips{touch-action:pan-x}
 .chip{
   flex:none;padding:6px 13px;border-radius:99px;background:var(--surface);
   font-size:14px;font-weight:400;color:var(--label);text-transform:capitalize;
@@ -405,6 +443,7 @@ h4.sec{
 }
 .chip:active{background:var(--surface-2)}
 .chip.on{background:var(--acc);color:var(--on-acc);font-weight:500}
+.chip.on .dim{color:color-mix(in srgb,var(--on-acc) 62%,transparent)}
 
 /* ---------------------------------------------------------- stretching --- */
 .stretch-hdr{align-items:center;margin-bottom:16px}
@@ -540,14 +579,19 @@ h4.sec{
 .stp button:active{background:var(--surface-3)}
 .stp .val{
   flex:1;min-width:0;display:flex;align-items:baseline;justify-content:center;gap:3px;padding:0 2px;
+  align-self:stretch;
 }
 .stp .val i{font-style:normal;font-size:12px;color:var(--label-2);flex:none}
 .stp .num{
   width:100%;min-width:0;text-align:center;background:none;border:none;outline:none;
   font-size:17px;font-weight:500;letter-spacing:-.012em;padding:0;
   -moz-appearance:textfield;appearance:textfield;
+  /* the field is the whole height of the stepper, not just its 18px text line, so a tap
+     anywhere between the two buttons focuses it */
+  height:100%;min-height:40px;cursor:text;
 }
 .stp .num::-webkit-inner-spin-button{display:none}
+.stp.invalid{box-shadow:inset 0 0 0 1px var(--red)}
 
 /* --- slider --- */
 .sld{position:relative;height:32px;display:flex;align-items:center;cursor:pointer;touch-action:none}
@@ -566,12 +610,15 @@ h4.sec{
 
 /* --- checkbox --- */
 .chk,.ck{
-  width:30px;height:30px;border-radius:50%;flex:none;
+  width:30px;height:30px;border-radius:50%;flex:none;position:relative;
   display:flex;align-items:center;justify-content:center;
   background:none;box-shadow:inset 0 0 0 1.8px var(--label-4);color:transparent;
   transition:background var(--fast),box-shadow var(--fast),color var(--fast),transform var(--fast);
 }
 .chk .icn{font-size:16px;--icon-stroke:2.6}
+/* 30px is the right look next to a stepper but a poor target: extend the tap area to 44px
+   without painting it; the left side stays shorter so the stepper's + button keeps its edge */
+.chk::before,.ck::before{content:'';position:absolute;inset:-7px -7px -7px -4px}
 .chk.on{background:var(--acc);box-shadow:none;color:var(--on-acc)}
 .chk:active,.ck:active{transform:scale(.9)}
 .ck svg{
@@ -582,6 +629,21 @@ h4.sec{
 .ck.on svg{stroke:var(--on-acc)}
 
 /* ------------------------------------------------------------- workout --- */
+/* Workout header. In list mode it is pinned: pulled up over #app's top padding so it sits flush
+   with the screen edge from the first pixel, and given the page's own ground plus a light blur so
+   the rows scrolling underneath read as underneath. */
+.whdr.stick{
+  position:sticky;top:0;z-index:20;
+  margin:calc(-1 * (var(--sat) + 8px)) calc(-1 * var(--pad)) 6px;
+  padding:calc(var(--sat) + 8px) var(--pad) 0;
+  background:color-mix(in srgb,var(--bg) 94%,transparent);
+  -webkit-backdrop-filter:saturate(180%) blur(10px);backdrop-filter:saturate(180%) blur(10px);
+}
+.whdr.stick .hdr{margin-bottom:12px}
+.whdr.stick .wprog{margin-bottom:10px}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .whdr.stick{background:var(--bg)}
+}
 .wprog{height:4px;background:var(--surface-2);border-radius:99px;overflow:hidden;margin-bottom:16px}
 .wprog i{display:block;height:100%;background:var(--acc);border-radius:99px;transition:width var(--med) var(--ease)}
 .exmedia{position:relative;border-radius:var(--r-lg);overflow:hidden;background:#fff;margin-bottom:12px}
@@ -599,6 +661,12 @@ h4.sec{
    at 180px you had to scroll a full screen between two exercises done back-to-back */
 .exmedia.compact img{height:120px}
 .exmedia.mini img{height:84px}
+/* both the animation and the still failed to load: a neutral tile instead of the browser's
+   broken-image glyph; same heights as the picture so the card does not jump. tap retries. */
+.exmedia.broken{background:var(--surface-2)}
+.exmedia-x{width:100%;height:320px;display:flex;align-items:center;justify-content:center;color:var(--label-3);font-size:34px}
+.exmedia.compact .exmedia-x{height:120px}
+.exmedia.mini .exmedia-x{height:84px}
 
 .sethead{
   display:flex;align-items:center;gap:8px;padding:0 0 6px;
@@ -619,42 +687,125 @@ h4.sec{
 .setrow .n{
   width:24px;height:24px;border-radius:50%;background:var(--surface-2);color:var(--label-2);
   display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;flex:none;
+  position:relative;padding:0;border:0;font-family:inherit;cursor:pointer;
   transition:background var(--fast),color var(--fast);
 }
 .setrow .stp.w{flex:1.4;min-width:0}
 .setrow .stp.r{flex:1;min-width:0}
-.setrow .stp.eff{flex:1.1;min-width:0}
 .setrow .stp button{width:32px;height:40px}
-/* a 3rd stepper (RIR) needs narrower buttons and a tighter row gap to fit next to weight+reps
-   on narrow phones, same technique as the exercise-config sheet's three-steppers-in-a-row
-   (.cfgrow below) — RIR's own value is short ("1.5") so its buttons shrink the most, weight/reps
-   just enough to make room since their values ("82.5", "12") need more of what's left.
-   The header shares the numbers so its labels stay centred over the steppers they name. */
+/* The effort column is a single tap-to-pick button, not a stepper. It is a direct flex child
+   of the row (like the .stp cells), carrying its own column width via flex. `align-self` and
+   a fixed height stop the row from stretching it taller than the weight/reps cells; it is NOT
+   inside `.stp`, so the stepper's 32px fixed button width (which wrapped "RIR") never applies. */
+/* flex-basis:0 so the button's width comes from its flex share, not its text, and the column
+   never jumps between an empty "RIR" and a logged "2". The unrated state uses `.is-empty`, not
+   the generic `.empty` (which is a full-page empty-state with 44px padding — sharing that name
+   inflated the cell to ~90px). */
+.setrow .effcell,.sethead .eff-sp{flex:.8 1 0;min-width:0}
+.effcell{
+  box-sizing:border-box;height:44px;border-radius:10px;
+  background:var(--surface-2);border:1.5px solid transparent;
+  color:var(--label);font-size:15px;font-weight:600;letter-spacing:-.01em;
+  font-variant-numeric:tabular-nums;white-space:nowrap;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  transition:background var(--fast),transform var(--fast),border-color var(--fast);
+}
+.effcell:active{transform:scale(.94)}
+.effcell.is-empty{color:var(--label-2);font-weight:500;font-size:12px;letter-spacing:.02em}
+/* a logged rating becomes a −/value/+ stepper, tinted by its effort band: the band colour
+   fills the cell at low opacity (set inline via color-mix), borders it, and colours the value.
+   the +/− buttons step 0.5 on the profile's scale; the value opens the picker. it carries the
+   same column flex as the plain .effcell so the row does not jump when a rating is added. */
+.setrow .effcell-stp,.setrow.eff3 .effcell-stp{
+  height:44px;border-radius:10px;border:1.5px solid transparent;
+  transition:background var(--fast),border-color var(--fast);
+}
+.effcell-stp button{color:inherit}
+.effcell-stp>button[aria-label="Decrease"],
+.effcell-stp>button[aria-label="Increase"]{width:26px;height:44px;font-size:15px;opacity:.85}
+.effcell-stp .val{
+  flex:1;min-width:0;display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:600;letter-spacing:-.01em;
+  font-variant-numeric:tabular-nums;line-height:1;align-self:stretch;color:inherit;
+}
+.effcell-stp .val:active{background:var(--surface-3)}
+/* the effort cell needs less room now (one short value, no +/- buttons), so weight/reps keep
+   more of the row on narrow phones than they did when three steppers had to share it */
+.setrow .effcell-stp,.setrow.eff3 .effcell-stp{flex:.8 1 0;min-width:0}
+.setrow.eff3 .effcell-stp{flex:.7 1 0}
 .setrow.eff3,.sethead.eff3{gap:6px}
-.setrow.eff3 .stp.w,.sethead.eff3 .w-sp{flex:1.2}
-.setrow.eff3 .stp.r,.sethead.eff3 .r-sp{flex:1}
-.setrow.eff3 .stp.eff,.sethead.eff3 .eff-sp{flex:.85}
-.setrow.eff3 .stp button{width:23px}
-.setrow.eff3 .stp.eff button{width:20px}
+.setrow.eff3 .stp.w,.sethead.eff3 .w-sp{flex:1.4}
+.setrow.eff3 .stp.r,.sethead.eff3 .r-sp{flex:1.1}
+.setrow.eff3 .effcell,.sethead.eff3 .eff-sp{flex:.7 1 0}
+.setrow.eff3 .stp.w button,.setrow.eff3 .stp.r button{width:26px}
 .setrow.eff3 .stp .num{font-size:14px}
+.setrow.eff3 .effcell-stp>button[aria-label="Decrease"],
+.setrow.eff3 .effcell-stp>button[aria-label="Increase"]{width:22px}
+.setrow.eff3 .effcell-stp .val{font-size:14px}
+/* effort quick picker sheet: colour-coded preset buttons, hardest (purple) first */
+/* effort picker: the ⋯-menu list with the value in the icon square, tinted per band; the
+   exact-value row carries the same stepper as the logged cell in the set row. */
+.effpick.menu-list .menu-item .effpick-n{
+  background:var(--bc);color:#fff;font-size:13px;font-weight:700;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums;
+}
+.effpick .menu-item.on{background:color-mix(in srgb,var(--bc) 14%,var(--surface))}
+.effpick .menu-on.is-on{color:var(--bc)}
+.effpick .effpick-free{padding-right:8px}
+.effpick .effpick-free .stp{flex:none;width:148px}
+.effpick .effpick-free .stp .num{font-size:17px;font-weight:600}
+.effpick .effpick-free .stp .num::placeholder{color:var(--label-3);font-weight:500}
 .setrow.done .n{background:var(--acc);color:var(--on-acc)}
 .setrow.done{opacity:.45}
+
+/* one-sided (unilateral) sets (issue #60): the set number sits beside a two-row L/R stack, each
+   side its own weight/reps/effort + done tick. The two inner rows reuse .setrow so their columns
+   line up with the header exactly like a straight set — only the leading .n circle is replaced by
+   a small L/R badge of the same width. */
+.setrow-side{display:flex;align-items:center;gap:8px;padding:4px 0;position:relative}
+.setrow-side+.setrow-side::before{content:'';position:absolute;left:32px;right:0;top:0;height:var(--hair);background:var(--sep)}
+.setrow-side>.n{align-self:center}
+.setrow-side .side-rows{flex:1;min-width:0;display:flex;flex-direction:column}
+/* inner side rows: no leading number circle (the badge takes its place), no top hairline between
+   the two sides of the same set — they read as one unit. */
+.setrow-side .setrow.side{padding:4px 0}
+.setrow-side .setrow.side+.setrow.side::before{display:none}
+.sidetag{
+  width:24px;height:24px;border-radius:8px;background:var(--surface-2);color:var(--label-3);
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex:none;
+}
+.setrow.side.done .sidetag{background:var(--acc);color:var(--on-acc)}
+.setrow.side.done{opacity:.45}
+
 /* drop-set drops / rest-pause bursts riding on a work row, editable like the row itself
    (issue: drop-sets & rest-pause) */
 .subrow{display:flex;align-items:center;gap:6px;padding:3px 0 3px 32px}
 .subrow .subn{font-size:11px;color:var(--label-3);flex:none;width:46px}
 .subrow .stp.mini{flex:1;min-width:0}
 .subrow .stp.mini button{width:26px;height:30px}
-.subrow .stp.mini .num{font-size:13px}
+.subrow .stp.mini .num{font-size:13px;min-height:30px}
 .subrow .iconbtn{width:26px;height:26px;font-size:11px;flex:none}
+/* The number is the set's menu (drop / burst / remove); a 24px circle needs a finger-sized hit area. */
+.setrow .n::before{content:'';position:absolute;inset:-10px}
+/* No +/- buttons: the number field takes the whole cell and is the tap target. */
+.stp.plain{grid-template-columns:1fr}
+.stp.plain .val{width:100%}
+.stp.plain .num{width:100%;text-align:center}
+/* --- menu sheet (the workout's "more" menus) --- */
+.menu-list .menu-item{min-height:52px;padding:8px 12px}
+.menu-list .menu-item .lrow-i{width:32px;height:32px;font-size:16px;background:var(--surface-2);color:var(--label)}
+.menu-list .menu-item.danger .tt,.menu-list .menu-item.danger .lrow-i{color:var(--red)}
+.menu-list .menu-item.disabled{opacity:.4;pointer-events:none}
+.menu-on{color:transparent;font-size:16px;flex:none}
+.menu-on.is-on{color:var(--acc)}
 .setextra{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 8px 32px}
 .setextra .chip.add{display:inline-flex;align-items:center;gap:4px;color:var(--acc)}
 .setextra .chip.add svg{width:13px;height:13px}
 .setextra .chip.add:disabled{opacity:.35}
 /* why the next target is what it is (issue #17) */
 .progline{
-  display:flex;align-items:flex-start;gap:7px;margin:6px 0 2px;
-  font-size:13px;line-height:1.38;color:var(--acc);
+  width:100%;display:flex;align-items:flex-start;gap:7px;margin:6px 0 2px;padding:0;
+  text-align:left;font-size:13px;line-height:1.38;color:var(--acc);
 }
 .progline.warn{color:var(--yellow)}
 .progline svg{flex:none;margin-top:2px}
@@ -720,14 +871,24 @@ h4.sec{
   position:absolute;left:0;right:0;bottom:0;background:var(--bg-el);
   border-radius:var(--r-xl) var(--r-xl) 0 0;
   padding:8px 18px calc(20px + var(--sab));
-  max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  max-height:90vh;max-height:min(90vh,calc(100dvh - 8px));
+  overflow-y:auto;-webkit-overflow-scrolling:touch;scroll-padding-bottom:calc(20px + var(--sab));
   animation:sheetup .34s var(--ease);
   overscroll-behavior:contain;touch-action:pan-y;will-change:transform;
+}
+.sheet:has(.picker-search){
+  bottom:var(--picker-keyboard-bottom,0px);
+  max-height:min(90vh,calc(100dvh - 8px),calc(var(--picker-visual-height,100vh) - 8px));
 }
 :root[data-theme="light"] .sheet{background:var(--bg)}
 @keyframes sheetup{from{transform:translateY(100%)}to{transform:none}}
 .sheet .grab{width:36px;height:5px;border-radius:99px;background:var(--label-4);margin:6px auto 14px}
 .sheet h3{font-size:20px;font-weight:600;letter-spacing:-.021em;margin-bottom:14px}
+.picker-search{
+  position:sticky;top:0;z-index:2;margin-bottom:0;padding-bottom:10px;
+  background:var(--bg-el);
+}
+:root[data-theme="light"] .picker-search{background:var(--bg)}
 .center{
   position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
   width:min(84vw,300px);background:var(--bg-el);border-radius:var(--r-lg);padding:20px;
@@ -860,6 +1021,7 @@ h4.sec{
 
 .bm-m.sel{stroke:var(--label);stroke-width:7}
 .bodymap.tappable .bm-m{cursor:pointer}
+.bodymap.tappable .bm-m:focus-visible{outline:none;stroke:var(--label);stroke-width:7;filter:drop-shadow(0 0 2px var(--surface))}
 /* A hairline in the surface colour separates neighbouring muscles; the artwork has no
    outline path of its own, so without this the body reads as one flat blob. */
 .bm-v path{stroke:var(--surface);stroke-width:2.5;stroke-linejoin:round}
@@ -952,6 +1114,7 @@ h4.sec{
   border-radius:var(--r-lg);padding:14px;
   background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--acc-line);
 }
+.workout-swipe-surface{touch-action:pan-y}
 /* A superset nests a card inside the page's own gutter, so its inset is paid twice. On a
    narrow phone that left the weight and reps steppers too tight to show a three-digit
    number — reported as "the reps textbox becomes too small when superset on mobile". The
@@ -965,6 +1128,18 @@ h4.sec{
 }
 .ss-ex{position:relative}
 .ss-amp{text-align:center;font-size:15px;font-weight:600;color:var(--acc);margin:14px 0 8px}
+
+/* --- workout list view: every unit stacked, the current one outlined --- */
+.workout-list{display:grid;gap:14px}
+.wl-unit{
+  border-radius:var(--r-lg);padding:14px 14px 4px;
+  background:var(--surface-2);
+}
+.wl-unit.cur{box-shadow:inset 0 0 0 1.5px var(--acc-line)}
+.wl-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+@media (max-width:400px){
+  .wl-unit{padding:10px 8px 2px}
+}
 
 /* --- home: today's session row --- */
 .today-row{
@@ -1012,3 +1187,72 @@ h4.sec{
   .exmedia img{height:380px}
   .hm-wrap{display:flex;flex-direction:column;align-items:center}
 }
+
+/* ------------------------------------------------------- gym check-in -- */
+/* Mobile-only feature (views/CheckIn.jsx): saved membership codes shown as QR, swiped
+   through horizontally. The rail is a scroll-snap track — one card per viewport, no JS
+   carousel — with a trailing "+" card to add another. */
+.ci-rail{
+  display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;
+  padding:4px 0 8px;margin:0 -16px;padding-left:16px;padding-right:16px;
+}
+.ci-rail::-webkit-scrollbar{display:none}
+.ci-card{
+  scroll-snap-align:center;flex:0 0 100%;box-sizing:border-box;
+  background:var(--surface);border-radius:var(--r-xl);padding:22px 18px;
+  display:flex;flex-direction:column;align-items:center;gap:14px;
+  transition:transform var(--fast),box-shadow var(--fast),opacity var(--fast);
+}
+/* header row: edit — title — trash. The two icon buttons are equal fixed widths so the title,
+   flexed between them, stays optically centered on the card no matter how long it is. */
+.ci-card-hd{display:flex;align-items:center;gap:8px;width:100%}
+.ci-card-btn{width:30px;height:30px;font-size:14px;flex:none}
+.ci-card .ci-label{flex:1;min-width:0;font-size:19px;font-weight:600;letter-spacing:-.014em;text-align:center;overflow-wrap:anywhere}
+.ci-card .ci-value{font-size:14px;color:var(--label-2);word-break:break-all;text-align:center;font-variant-numeric:tabular-nums}
+/* reorder row under a card (only shown with >1 card): ◀ position ▶ to nudge the card one slot
+   along the rail. A plain, reliable control — no drag gesture to fight the horizontal scroll. */
+.ci-reorder{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:2px}
+.ci-reorder .ci-pos{font-size:13px;color:var(--label-2);font-variant-numeric:tabular-nums;min-width:44px;text-align:center}
+.ci-reorder .iconbtn:disabled{opacity:.3;pointer-events:none}
+/* The QR itself: lean-qr paints 1 module per pixel, so scale it up with the browser's
+   nearest-neighbour so every module stays a crisp square instead of a blurred blob. White
+   quiet-zone padding is baked in by the renderer; the plate underneath just frames it. */
+.ci-qr-plate{background:#fff;border-radius:var(--r-lg);padding:16px}
+.qr-canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;transition:opacity var(--fast)}
+/* the trailing add card — a big + on a dashed outline, same footprint as a real card */
+.ci-add{
+  scroll-snap-align:center;flex:0 0 100%;box-sizing:border-box;
+  min-height:280px;border-radius:var(--r-xl);
+  border:2px dashed var(--surface-3);background:none;color:var(--label-2);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+}
+.ci-add:active{background:var(--surface);transform:scale(.99)}
+.ci-add .icn{font-size:40px;--icon-stroke:1.8}
+.ci-add .ci-add-t{font-size:16px;font-weight:500}
+/* dots under the rail — which card you're on. Purely a hint; the rail itself is the control. */
+.ci-dots{display:flex;justify-content:center;gap:7px;margin-top:4px}
+.ci-dot{width:7px;height:7px;border-radius:50%;background:var(--surface-3);transition:background var(--fast),transform var(--fast)}
+.ci-dot.on{background:var(--acc);transform:scale(1.15)}
+/* browser camera sheet (components/CameraScan.jsx): the video fills a portrait plate, a dashed
+   square in the middle says "put the code here" — decoding reads the whole frame regardless. */
+.cam-wrap{position:relative;width:100%;aspect-ratio:3/4;max-height:58vh;border-radius:var(--r-lg);overflow:hidden;background:#000}
+.cam-wrap video{width:100%;height:100%;object-fit:cover;display:block}
+.cam-frame{position:absolute;inset:0;margin:auto;width:62%;aspect-ratio:1;border:2px dashed rgba(255,255,255,.75);border-radius:14px;pointer-events:none}
+/* ------------------------------------------------- the Coach entry on Plan -- */
+.coach-cta{
+  display:flex;align-items:center;gap:13px;width:100%;text-align:left;
+  margin-bottom:12px;padding:14px 16px;border-radius:var(--r-card);
+  background:linear-gradient(135deg,var(--acc-soft),color-mix(in srgb,var(--acc) 6%,var(--surface)));
+  border:1px solid color-mix(in srgb,var(--acc) 35%,transparent);
+  transition:transform var(--fast),filter var(--fast)
+}
+.coach-cta:active{transform:scale(.985);filter:brightness(1.06)}
+.coach-cta-av{
+  width:42px;height:42px;border-radius:13px;flex:none;display:grid;place-items:center;font-size:21px;
+  background:var(--acc);color:var(--on-acc);box-shadow:0 6px 18px -6px color-mix(in srgb,var(--acc) 60%,transparent)
+}
+.coach-cta-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.coach-cta-t b{font-size:17px;font-weight:600;letter-spacing:-.015em;color:var(--label)}
+.coach-cta-t span{font-size:13px;color:var(--label-2);line-height:1.35}
+.coach-cta-chev{color:var(--acc);font-size:15px;flex:none}

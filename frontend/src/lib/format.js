@@ -34,14 +34,40 @@ export const fmtVol = (v, unit) => fmtNum(v) + ' ' + unit
 // Plural forms are not automatic when the English string is the key.
 export const exCount = n => t(n === 1 ? '{0} exercise' : '{0} exercises', n)
 
-export function weekKey(d) {
-  const dt = new Date(d + 'T12:00:00')
-  const day = (dt.getDay() + 6) % 7
-  dt.setDate(dt.getDate() - day + 3)
-  const jan4 = new Date(dt.getFullYear(), 0, 4)
-  const week = 1 + Math.round(((dt - jan4) / 86400000 - 3 + ((jan4.getDay() + 6) % 7)) / 7)
-  return dt.getFullYear() + '-' + week
+/* ---------------------------------------------------------------- week start --
+   Where a week begins is a local convention, not a fact: most of Europe starts on
+   Monday, most of the Americas and much of Asia on Sunday. The app used to assume
+   Monday everywhere — the Plan list, the Home strip, the calendar grid and every
+   "this week" total. It is now S.weekStart, a getDay() index, and every one of those
+   places asks these helpers instead of writing the assumption down again.
+
+   Only 1 and 0 are offered in the UI, but the helpers work for any weekday, so a
+   Saturday start (parts of the Middle East) would need a locale string and nothing
+   else. */
+export const MONDAY = 1
+export const SUNDAY = 0
+/** The profile's first weekday, defaulting to Monday for every state written before this. */
+export const weekStartOf = S => (S?.weekStart === SUNDAY ? SUNDAY : MONDAY)
+/** getDay() indices in display order — [1..6,0] for a Monday start, [0..6] for a Sunday one. */
+export const weekOrder = (ws = MONDAY) => Array.from({ length: 7 }, (_, i) => (ws + i) % 7)
+/** How many days a weekday sits past the start of its week. 0..6, so it doubles as a column. */
+export const weekDayOffset = (day, ws = MONDAY) => (day - ws + 7) % 7
+
+/** The Date (noon local, so DST cannot shift the day) that starts the week `iso` falls in. */
+export function startOfWeek(iso, ws = MONDAY) {
+  const d = new Date(iso + 'T12:00:00')
+  d.setDate(d.getDate() - weekDayOffset(d.getDay(), ws))
+  return d
 }
+
+/**
+ * A key that is equal for two dates in the same week: the ISO date of the week's first day.
+ *
+ * Only ever compared or used as a map key — never shown, never stored — so it does not need
+ * to be an ISO week number, and being one would be a liability here: "2026-35" is defined
+ * Monday-first, and there is no Sunday-first equivalent to fall back to.
+ */
+export const weekKey = (iso, ws = MONDAY) => isoOf(startOfWeek(iso, ws))
 
 export const localTZ = () => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC' } catch { return 'UTC' } }
 

@@ -13,6 +13,16 @@ const cancelPushRestTimer = () => { if (useStore.getState().user) api('/api/push
 const notificationsSupported = () => typeof window !== 'undefined' && 'Notification' in window
 let requestRestNotificationPermissionP = null
 
+// Set the moment the tab goes hidden, never cleared here — timerTick/workTick read and
+// clear it themselves once they're running visible again. Lets a completion tick tell
+// "the countdown hit zero while the app was actually open" from "it hit zero while
+// backgrounded/closed and we're only just catching up now that it's open again" — the
+// latter must skip beep/vibrate/flash/toast and rely solely on the push notification.
+let pageHiddenAt = null
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => { if (document.hidden) pageHiddenAt = Date.now() })
+}
+
 const requestRestNotificationPermission = async () => {
   if (!notificationsSupported()) return false
   if (Notification.permission === 'granted') return true
@@ -56,8 +66,15 @@ let workDone = null
 export const useUI = create((set, get) => ({
   sheets: [],          // { id, render:(close)=>JSX, kind:'sheet'|'center', locked }
   toastMsg: '',
-  timer: null,         // rest countdown between sets — { left, total, endsAt }
+  timer: null,         // rest countdown between sets — { left, total, endsAt, forIdx }
+                       // forIdx: index of the active entry whose set started the rest (undefined when unknown)
   work: null,          // work countdown DURING a timed set (issue #16) — { left, total, endsAt, label }
+  timerFlashId: 0,     // changing the id retriggers the theme-blink visual alert
+
+  flashTimer() {
+    if (!useStore.getState().S.timerFlash) return
+    set(s => ({ timerFlashId: s.timerFlashId + 1 }))
+  },
 
   openSheet(render, { kind = 'sheet', locked = false } = {}) {
     const id = uid()
@@ -74,24 +91,33 @@ export const useUI = create((set, get) => ({
     toastTm = setTimeout(() => set({ toastMsg: '' }), 2200)
   },
 
-  startRest(sec) {
+  startRest(sec, forIdx) {
     get().stopRest()
     // Rest timer set to Off. Stopping and returning rather than starting a zero-length timer
     // keeps every caller honest: the four places that start a rest do not each need to know.
     if (!(sec > 0)) return
     const endsAt = Date.now() + sec * 1000
-    set({ timer: { left: sec, total: sec, endsAt } })
+    set({ timer: { left: sec, total: sec, endsAt, forIdx } })
     requestRestNotificationPermission()
     pushRestTimer(sec)
     timerTick = () => {
       const tm = get().timer
       if (!tm) return
       const left = Math.max(0, Math.round((tm.endsAt - Date.now()) / 1000))
+      const seenLive = !document.hidden && pageHiddenAt === null
+      if (!document.hidden) pageHiddenAt = null
       if (left === tm.left) return
       const snd = useStore.getState().S.sound
       if (left <= 0) {
-        beep(snd, 880, 0.15); beep(snd, 880, 0.15, 0.25); beep(snd, 1320, 0.4, 0.5)
-        vibrate([200, 100, 200]); maybeRestNotification(); get().toast(t('Rest over — next set!')); get().stopRest(); return
+        if (seenLive) {
+          beep(snd, 880, 0.15); beep(snd, 880, 0.15, 0.25); beep(snd, 1320, 0.4, 0.5)
+          vibrate([200, 100, 200]); get().flashTimer()
+        }
+        // The toast stays even when the rest ran out while the app was hidden: a guest, or anyone
+        // without push permission, gets no notification, and a countdown that silently vanishes
+        // on reopen reads like a bug. Only the loud parts (beep, vibration, flash) are gated.
+        get().toast(t('Rest over — next set!'))
+        maybeRestNotification(); get().stopRest(); return
       }
       if (left <= 3) beep(snd, 660, 0.1)
       set({ timer: { ...tm, left } })
@@ -108,6 +134,13 @@ export const useUI = create((set, get) => ({
     if (left <= 0) { get().stopRest(); return }
     set({ timer: { ...tm, left, total: tm.total + sec, endsAt: tm.endsAt + sec * 1000 } })
     pushRestTimer(left)
+  },
+  // The active list changed shape (an exercise removed or inserted at `at`): keep the rest
+  // pointing at the same exercise. Returns nothing; the caller decides whether to stop instead.
+  shiftRestOwner(at, delta) {
+    const tm = get().timer
+    if (!tm || !(tm.forIdx >= at)) return
+    set({ timer: { ...tm, forIdx: tm.forIdx + delta } })
   },
   stopRest() {
     if (timerInt) clearInterval(timerInt); timerInt = null
@@ -135,11 +168,15 @@ export const useUI = create((set, get) => ({
       const wk = get().work
       if (!wk) return
       const left = Math.max(0, Math.round((wk.endsAt - Date.now()) / 1000))
+      const seenLive = !document.hidden && pageHiddenAt === null
+      if (!document.hidden) pageHiddenAt = null
       if (left === wk.left) return
       const snd = useStore.getState().S.sound
       if (left <= 0) {
-        beep(snd, 880, 0.15); beep(snd, 880, 0.15, 0.25); beep(snd, 1320, 0.4, 0.5)
-        vibrate([200, 100, 200])
+        if (seenLive) {
+          beep(snd, 880, 0.15); beep(snd, 880, 0.15, 0.25); beep(snd, 1320, 0.4, 0.5)
+          vibrate([200, 100, 200]); get().flashTimer()
+        }
         const done = workDone
         get().stopWork()
         if (done) done(wk.total)

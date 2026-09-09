@@ -87,12 +87,13 @@ the server's stderr.
 
 ## Tools
 
-Eleven read-only tools plus two proposal/readback tools are available:
+Twelve read-only tools plus two proposal/readback tools are available:
 
 | Tool | What it answers |
 |---|---|
 | `list_routines` | What routines are saved in my profile? (names + exercise counts) |
-| `get_routine` | What does the Push Day routine prescribe? (sets/reps/weight per exercise) |
+| `get_routine` | What does the Push Day routine prescribe? (sets/reps/weight and rest per exercise) |
+| `preview_session` | What will the app actually put on screen when I start this routine — after the progression policy and my history have overridden the plan? |
 | `get_week_plan` | What's on my plan this week, including today with any date-specific override? |
 | `list_workouts` | Recent sessions — newest first, with dates, sets done/planned, volume, duration, PRs. |
 | `get_workout` | Full set-by-set breakdown of one session, by `workout_id` or by date. On a day with two sessions the date alone returns both ids to pick from rather than guessing at one. |
@@ -102,6 +103,13 @@ Eleven read-only tools plus two proposal/readback tools are available:
 | `list_exercises`, `search_exercises`, `get_exercise` | Traverse the built-in and profile custom exercise catalogue. |
 | `propose_routine` | Submit a validated draft for in-app approval (HTTP gateway only). |
 | `get_routine_proposal` | Inspect a pending or approved proposal (HTTP gateway only). |
+
+`get_routine` and `preview_session` answer two different questions, and confusing them is the
+easiest way for a coach to give wrong advice. `get_routine` reports what the routine *stores*.
+`preview_session` reports what the athlete will actually *see*: a routine holding "squat 3×8 @
+60 kg" opens at 75 kg if the policy deloaded from the last logged session, and the rep counts
+come from history, not the plan. The routine's own numbers are the last fallback the session
+builder consults, not the first. Ask `preview_session` before naming a weight.
 
 Each tool returns JSON the LLM can format as it likes; structured fields (sets, dates, levels)
 are pre-formatted into human-readable labels in `src/labels.js` so the LLM doesn't need to
@@ -134,7 +142,7 @@ dependencies landed in `frontend/`, no public exports changed.
 cd mcp && npm test
 ```
 
-36 cases seeding state from `frontend/src/lib/demoSeed.js` (the same deterministic fixture
+The suite seeds state from `frontend/src/lib/demoSeed.js` (the same deterministic fixture
 the public demo runs on). Pins JSON shape and the user-facing edge cases: rest-day override,
 missing routine, zero-workout history, no synced state, superset links, three 1RM formulas.
 "Today" is pinned via `vi.useFakeTimers({ now: ..., toFake: ['Date'] })` so date-dependent
@@ -144,10 +152,12 @@ their own 92 tests in `frontend/src/lib/*.test.js`.
 ## Roadmap
 
 - **Done (Phase 1):** read-only stdio, catalogue + progress tools, direct `./data` access.
-- **Phase 1.5:** a `progression_next` tool (what does the policy prescribe next?). No new
-  deps; small surface area.
+- **Done (Phase 1.5):** `preview_session` — the policy's next prescription, the opening set
+  rows it produces, and which of plan / confirmed weight / history each number came from.
 - **Done (Phase 2/3):** scoped Streamable HTTP transport in the optional `mcp` Compose service;
   proposals are validated, idempotent, and require an app-side approval with `If-Match`.
+- **Future:** additional write tools remain intentionally out of scope; proposal approval is the
+  only write path and stays behind the app UI and a short-lived scoped grant.
 
 ## License
 

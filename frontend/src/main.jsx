@@ -4,6 +4,9 @@ import App from './App.jsx'
 import { MOBILE } from './lib/mobile.js'
 import './index.css'
 
+// App.jsx restores per-route scroll itself; the browser's own attempt races it.
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
+
 createRoot(document.getElementById('root')).render(
   <StrictMode><App /></StrictMode>
 )

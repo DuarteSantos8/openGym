@@ -5,11 +5,20 @@
 # gitea.com ones (.gitea/, kept only so the mirror stays buildable).
 #
 # What it does, in order:
-#   test     — frontend + MCP suites, on every branch, MR and tag
-#   build    — the two container images → registry.gitlab.com/duartesantos8/opengym/{api,web}
-#   package  — the signed Android APK → job artifact + generic package registry
-#   deploy   — the browser-only demo → GitLab Pages
-#   release  — a GitLab Release with the changelog section and links to APK + images
+#   test        — frontend, MCP and api (Coach) suites on every branch, MR and tag, each with a
+#                 JUnit report (failures show up in the MR widget) and coverage; the frontend
+#                 job also measures the bundle and compares it with main's.
+#                 On a v* tag: release:preflight checks tag, package versions and CHANGELOG
+#                 before anything expensive starts.
+#   build       — the two container images → registry.gitlab.com/duartesantos8/opengym/{api,web},
+#                 and a run of both api targets that proves what each one does and does not carry
+#   package     — the signed Android APK → job artifact + generic package registry
+#   verify      — the images that were just pushed, started together through docker-compose.yml
+#                 and asked to serve; plus a Trivy scan and an SBOM per image
+#   deploy      — the browser-only demo → GitLab Pages
+#   release     — a GitLab Release: changelog section, install commands, image digests,
+#                 links to APK, checksum and SBOMs
+#   maintenance — Renovate (scheduled) and the fork-MR pipeline starter (scheduled + main)
 #
 # One deliberate difference from the GitHub copy: GitHub could distinguish a bare tag
 # push from a *published* release, and only shipped images from the latter (issue #87 —
@@ -18,11 +27,18 @@
 # rule is enforced by hand — **only push a tag when you actually mean to release it.**
 # Everything version-tagged (latest images, signed APK, Release) hangs off `v*` tags,
 # which are protected, so nobody else can trigger a release either.
+#
+# Contributor merge requests come from forks, and on gitlab.com a fork's pipeline runs in the
+# fork — where almost nobody has runners enabled. So those MRs would sit at "no pipeline"
+# forever. `mr:fork-pipelines` (bottom of this file) starts them here instead, for returning
+# contributors; first-timers get the `ci-approval-needed` label and a maintainer presses
+# "Run pipeline" on the MR after reading the diff.
 
 stages:
   - test
   - build
   - package
+  - verify
   - deploy
   - release
   - maintenance
@@ -30,11 +46,35 @@ stages:
 variables:
   # node:22-alpine in web/Dockerfile and api/Dockerfile — CI must match production.
   NODE_IMAGE: "node:22-alpine"
+  DOCKER_IMAGE: "docker:28-cli"
+  DOCKER_DIND_IMAGE: "docker:28-dind"
+  TRIVY_IMAGE: "aquasec/trivy:0.74.0"
   # The demo build has no backend and no local media: the exercise images/GIFs (~140 MB)
   # are never committed, so it points at the upstream dataset on jsDelivr, pinned to a
   # commit so the CDN can cache it forever.
   DATASET: "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@7455efae41b330c265e7cd4b78dfa848e7ce5ebd"
   GIT_DEPTH: "50"
+  # npm's own progress bars and funding notices are noise in a job log.
+  npm_config_fund: "false"
+  npm_config_audit: "false"
+  npm_config_progress: "false"
+
+default:
+  # A newer push to the same branch cancels the pipeline that is still running for the old
+  # one — every job, not just the ones that had not started yet. Tag pipelines are never
+  # superseded, and `release` opts out below anyway.
+  interruptible: true
+  # Infrastructure hiccups (runner lost, docker daemon not answering) get one automatic
+  # second try. A failing script does not — that one is the job's actual verdict.
+  retry:
+    max: 1
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+      - api_failure
+      - scheduler_failure
+      - data_integrity_failure
+      - unknown_failure
 
 # Branch pipeline *or* MR pipeline, never both for the same commit.
 workflow:
@@ -45,11 +85,65 @@ workflow:
     - if: $CI_COMMIT_TAG
     - if: $CI_COMMIT_BRANCH
 
-# ---------------------------------------------------------------------------- test
+# ------------------------------------------------------------------------- templates
+
+# Every scheduled pipeline is a maintenance run (Renovate, the fork-MR starter) and says
+# which one through its SCHEDULE_JOB variable. Nothing else may run on a schedule — the
+# monthly Renovate run must not re-test the tree and republish the edge images for nothing.
+.rules:
+  not_on_schedule:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
 
 .node:
   image: $NODE_IMAGE
-  interruptible: true
+  timeout: 20 minutes
+
+# docker-in-docker with TLS, the way gitlab.com's shared runners expect it.
+.docker:
+  image: $DOCKER_IMAGE
+  services:
+    - $DOCKER_DIND_IMAGE
+  variables:
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_CERTDIR: "/certs"
+    DOCKER_TLS_VERIFY: "1"
+    DOCKER_CERT_PATH: "/certs/client"
+  timeout: 40 minutes
+
+# The only way to tell a v* tag pipeline apart from everything else. Release-only jobs and
+# the "build it like a release" paths key off this.
+.release_tag: &release_tag
+  if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+
+# ---------------------------------------------------------------------------- test
+
+# A release is `git tag`, nothing else — so the tag has to be checked before the pipeline
+# spends forty minutes building it. Everything in the build stage `needs` this job when it
+# exists, so a bad tag stops here with a one-line reason rather than a half-published release.
+release:preflight:
+  extends: .node
+  stage: test
+  timeout: 5 minutes
+  script:
+    - apk add --no-cache git >/dev/null
+    - |
+      set -eu
+      SEMVER="${CI_COMMIT_TAG#v}"
+      fail() { echo "FATAL: $*" >&2; exit 1; }
+      for pkg in frontend/package.json api/package.json; do
+        v="$(node -p "require('./$pkg').version")"
+        [ "$v" = "$SEMVER" ] || fail "$CI_COMMIT_TAG but $pkg says $v — bump it (or tag the bump commit) and re-tag"
+      done
+      grep -Eq "^## $CI_COMMIT_TAG([^0-9.]|$)" CHANGELOG.md \
+        || fail "CHANGELOG.md has no '## $CI_COMMIT_TAG' section — the release notes come from there"
+      # A release of a commit that is not on main would ship code main does not have.
+      git fetch --depth=1000 origin "$CI_DEFAULT_BRANCH"
+      git merge-base --is-ancestor "$CI_COMMIT_SHA" FETCH_HEAD \
+        || fail "$CI_COMMIT_TAG points at $CI_COMMIT_SHORT_SHA, which is not on $CI_DEFAULT_BRANCH"
+      echo "OK: $CI_COMMIT_TAG = frontend $SEMVER = api $SEMVER, changelog section present, on $CI_DEFAULT_BRANCH"
+  rules:
+    - *release_tag
 
 test:frontend:
   extends: .node
@@ -62,10 +156,25 @@ test:frontend:
       - frontend/.npm
   script:
     - cd frontend
-    - npm ci --cache .npm --prefer-offline
-    - npm test
+    # --ignore-scripts: nothing here needs a postinstall, and the one package that has a
+    # heavy one (@capacitor/assets → sharp, a 10 MB libvips download from GitHub) is only
+    # used to draw app icons. That download timing out is what turned a release red.
+    - npm ci --cache .npm --prefer-offline --ignore-scripts
+    # JUnit → the MR widget lists exactly which tests failed; cobertura → coverage on the
+    # diff; text-summary → the number the coverage badge shows.
+    - npx vitest run
+        --reporter=default --reporter=junit --outputFile.junit=junit.xml
+        --coverage --coverage.reporter=text-summary --coverage.reporter=cobertura
     # A broken import or bad JSX fails the build long before any test covers it.
     - npm run build
+    # What this commit costs on the wire, and — in an MR — what it adds compared with main.
+    # main's numbers are the artifact of its last green test:frontend; report-only.
+    - node scripts/bundle-size.mjs --out bundle-size.json
+    - |
+      if [ "$CI_COMMIT_BRANCH" != "$CI_DEFAULT_BRANCH" ]; then
+        wget -qO baseline.json "$CI_API_V4_URL/projects/$CI_PROJECT_ID/jobs/artifacts/$CI_DEFAULT_BRANCH/raw/frontend/bundle-size.json?job=test:frontend" || true
+        node scripts/bundle-size.mjs --compare baseline.json bundle-size.json
+      fi
     - node scripts/check-locales.mjs
     # check-locales compares the packs to each other, so a key missing from ALL of them is
     # invisible to it. This walks src/ instead. Report-only for now: there is a known
@@ -74,11 +183,19 @@ test:frontend:
     # The fatigue model must never read higher after a rest day than before it.
     # Property probe over ~108k comparisons; too slow for the unit suite, cheap here.
     - npm run test:fatigue-probe
+  coverage: '/Lines\s*:\s*(\d+\.?\d*)%/'
+  artifacts:
+    when: always
+    paths:
+      - frontend/bundle-size.json
+    reports:
+      junit: frontend/junit.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: frontend/coverage/cobertura-coverage.xml
+    expire_in: 2 weeks
   rules:
-    # A scheduled pipeline exists only to run `renovate` (bottom of this file) — it must not
-    # re-run the suite or republish the edge images once a month for nothing.
-    - if: $CI_PIPELINE_SOURCE == "schedule"
-      when: never
+    - !reference [.rules, not_on_schedule]
     - when: on_success
 
 test:mcp:
@@ -92,18 +209,61 @@ test:mcp:
       - mcp/.npm
   script:
     - cd mcp
-    - npm ci --cache .npm --prefer-offline
-    - npm test
+    - npm ci --cache .npm --prefer-offline --ignore-scripts
+    - npx vitest run
+        --reporter=default --reporter=junit --outputFile.junit=junit.xml
+        --coverage --coverage.reporter=text-summary --coverage.reporter=cobertura
     # The one check the vitest suite structurally cannot make. The MCP server is a bare node
     # process, but vitest runs its tests through Vite — import.meta.glob, .jsx imports and
     # ?raw all resolve happily there. That is how a Vite-only import reached a shared lib
     # module with 33 green tests standing over a server that died on startup.
     - npm run check:node-loadable
+  coverage: '/Lines\s*:\s*(\d+\.?\d*)%/'
+  artifacts:
+    when: always
+    reports:
+      junit: mcp/junit.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: mcp/coverage/cobertura-coverage.xml
   rules:
-    # A scheduled pipeline exists only to run `renovate` (bottom of this file) — it must not
-    # re-run the suite or republish the edge images once a month for nothing.
-    - if: $CI_PIPELINE_SOURCE == "schedule"
-      when: never
+    - !reference [.rules, not_on_schedule]
+    - when: on_success
+
+test:api:
+  extends: .node
+  stage: test
+  cache:
+    key:
+      files:
+        - api/package-lock.json
+    paths:
+      - api/.npm
+  script:
+    - cd api
+    - npm ci --cache .npm --prefer-offline --omit=optional
+    # The Coach tests run on node:test and drive the in-repo fixture provider plus a local mock
+    # of the Chat Completions shape, so the whole job works without an AI account or the network.
+    # Same suite `npm test` runs, plus the JUnit file and node's own coverage table.
+    - node --experimental-test-coverage --test
+        --test-reporter=spec --test-reporter-destination=stdout
+        --test-reporter=junit --test-reporter-destination=junit.xml
+        test/*.test.js
+    - cd ..
+    # The api's copy of the exercise catalogue and the prompt module are generated and committed.
+    # A dataset or prompt change that forgets to regenerate them would otherwise only surface as
+    # "the Coach can't find that exercise" — or a prompt edit that never reached the model.
+    - node scripts/build-coach-assets.mjs --check
+    # api/coach/core is imported by the server under bare node AND by the phone under Vite.
+    # vitest forgives what node does not (?raw, import.meta.glob); this runs outside vitest.
+    - node api/scripts/check-core-loadable.mjs
+  coverage: '/all files\s*\|\s*(\d+\.?\d*)/'
+  artifacts:
+    when: always
+    reports:
+      junit: api/junit.xml
+  rules:
+    - !reference [.rules, not_on_schedule]
     - when: on_success
 
 # --------------------------------------------------------------------------- images
@@ -121,17 +281,18 @@ test:mcp:
 # `latest` and the version out of frontend/package.json — without cutting a release. It is
 # there for the rebuild-without-a-code-change case: a base image picking up a CVE fix, where
 # the published `latest` needs to move but the app did not change.
+#
+# Each matrix job hands the tag and digest of what it pushed to the later stages (images-*.env):
+# verify:stack starts exactly these images, and the Release lists them.
 build:images:
+  extends: .docker
   stage: build
-  image: docker:28-cli
-  services:
-    - docker:28-dind
-  variables:
-    DOCKER_HOST: tcp://docker:2376
-    DOCKER_TLS_CERTDIR: "/certs"
-    DOCKER_TLS_VERIFY: "1"
-    DOCKER_CERT_PATH: "/certs/client"
-  needs: ["test:frontend", "test:mcp"]
+  needs:
+    - test:frontend
+    - test:mcp
+    - test:api
+    - job: release:preflight
+      optional: true
   parallel:
     matrix:
       - IMAGE: api
@@ -163,6 +324,7 @@ build:images:
           echo "PUBLISH_LATEST: building $SEMVER off $CI_COMMIT_REF_NAME, no release involved"
         fi
         VERSION="v$SEMVER"
+        IMAGE_TAG="$SEMVER"
         PLATFORMS="linux/amd64,linux/arm64"
         TAGS="-t $REPO:$SEMVER -t $REPO:${SEMVER%.*} -t $REPO:latest"
         # Only the arm64 leg needs emulation, and only for the api image (web's build
@@ -170,6 +332,7 @@ build:images:
         docker run --privileged --rm tonistiigi/binfmt --install arm64
       else
         VERSION="main-$CI_COMMIT_SHORT_SHA"
+        IMAGE_TAG="$VERSION"
         PLATFORMS="linux/amd64"
         TAGS="-t $REPO:edge -t $REPO:$VERSION"
       fi
@@ -187,14 +350,146 @@ build:images:
         $TAGS \
         --push \
         "$CONTEXT"
+      # Older buildx builds ignore --format and print the whole Name/MediaType/Digest block, so
+      # pick the digest out of whatever comes back — a multi-line value breaks the dotenv upload.
+      # sed, not head: the runner's shell has pipefail on, and `head -1` closing the pipe early
+      # kills the producer with SIGPIPE (exit 141) as soon as the output is more than one write —
+      # which a multi-arch manifest list is. That failed both image jobs of the v1.3.2 tag.
+      DIGEST="$(docker buildx imagetools inspect "$REPO:$IMAGE_TAG" --format '{{.Manifest.Digest}}' | grep -oE 'sha256:[0-9a-f]{64}' | sed -n 1p)"
+      [ -n "$DIGEST" ] || { echo "could not read the digest of $REPO:$IMAGE_TAG" >&2; exit 1; }
+      echo "pushed $REPO:$IMAGE_TAG @ $DIGEST"
+      UPPER="$(echo "$IMAGE" | tr a-z A-Z)"
+      {
+        echo "IMAGE_TAG=$IMAGE_TAG"
+        echo "IMAGE_DIGEST_$UPPER=$DIGEST"
+      } > "images-$IMAGE.env"
+  artifacts:
+    reports:
+      dotenv: images-$IMAGE.env
   rules:
-    # A scheduled pipeline exists only to run `renovate` (bottom of this file) — it must not
-    # re-run the suite or republish the edge images once a month for nothing.
-    - if: $CI_PIPELINE_SOURCE == "schedule"
-      when: never
-    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+    - !reference [.rules, not_on_schedule]
+    - *release_tag
     - if: ($CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "api") && $PUBLISH_LATEST
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: manual
+      allow_failure: true
+
+# Builds *and runs* both api targets. Building alone would not have caught the api image
+# shipping without coach/ — that image built perfectly and exited on boot. So each target has to
+# answer for itself: the untargeted build (which is what build:images publishes, since it names
+# no --target) boots, serves, carries no AI runtime and still constructs the HTTPS providers;
+# the coach one additionally resolves the Agent SDK's per-platform runtime (musl on this base),
+# which is the one thing that cannot be checked from the source tree. amd64 only, never pushed.
+build:api-check:
+  extends: .docker
+  stage: build
+  needs: ["test:api"]
+  script:
+    - docker build --target default -f api/Dockerfile -t opengym-api:default .
+    - docker build --target coach   -f api/Dockerfile -t opengym-api:coach   .
+    # No --target, exactly like build:images. What it ships is whatever Dockerfile stage happens
+    # to be last, and that untargeted artifact is the image every self-hoster pulls as :latest.
+    - docker build -f api/Dockerfile -t opengym-api:published .
+    # --- the published image has no AI runtime, and does not need one for the HTTPS providers
+    - |
+      set -eu
+      docker run --rm opengym-api:published node -e \
+        'import("@anthropic-ai/claude-agent-sdk").then(()=>{console.error("AI runtime present in the published image -- the last Dockerfile stage is no longer the runtime-free one");process.exit(1)},()=>process.exit(0))'
+      ! docker run --rm opengym-api:published codex --version 2>/dev/null
+      ! docker run --rm opengym-api:published bwrap --version 2>/dev/null
+      # npm is stripped from the published image (see api/Dockerfile) — its bundled tree was
+      # the only source of scanner findings, and nothing at runtime needs it.
+      ! docker run --rm opengym-api:published npm --version 2>/dev/null
+      ! docker run --rm opengym-api:published test -d /usr/local/lib/node_modules/npm
+      docker run --rm opengym-api:published node --input-type=module -e '
+        const { adapterFor } = await import("./coach/adapters/index.js");
+        for (const id of ["anthropic", "openai", "gemini", "compatible"]) {
+          const a = adapterFor(id);
+          if (!a || a.spawns !== false || typeof a.invoke !== "function") { console.error(id + " is not a usable HTTPS adapter in the published image"); process.exit(1); }
+        }
+        const r = await adapterFor("anthropic").check({}, {});
+        if (!r.ok || !r.needsKey) { console.error("anthropic.check() without a key should report a ready runtime that needs a key: " + JSON.stringify(r)); process.exit(1); }
+        console.log("HTTPS providers constructible on the published image");
+      '
+    # --- the default image boots and serves
+    - |
+      set -eu
+      docker network create api-net
+      docker run -d --name api-default --network api-net -e DATA_DIR=/data opengym-api:default
+      for i in $(seq 1 30); do
+        docker run --rm --network api-net curlimages/curl:8.12.1 -fsS http://api-default:3000/api/config >/dev/null 2>&1 && break
+        sleep 1
+      done
+      docker run --rm --network api-net curlimages/curl:8.12.1 -fsS http://api-default:3000/api/config | tee /dev/stderr | grep -q '"invite_only"'
+      docker run --rm opengym-api:default node -e \
+        'import("@anthropic-ai/claude-agent-sdk").then(()=>{console.error("AI runtime present in the default image");process.exit(1)},()=>process.exit(0))'
+      docker rm -f api-default
+      docker network rm api-net
+    # --- the coach image carries a runnable Agent SDK, Codex and its sandbox
+    - |
+      set -eu
+      docker run --rm opengym-api:coach node --input-type=module -e '
+        const { adapterFor } = await import("./coach/adapters/index.js");
+        const r = await adapterFor("claude").check();
+        if (!r.ok) { console.error(r.error); process.exit(1); }
+        console.log(r.version);
+      '
+      docker run --rm opengym-api:coach codex --version
+      docker run --rm opengym-api:coach bwrap --version
+      # Owned by the user jobs drop to, and 0700 — a credential cache readable by anything else
+      # in the container would undo the point of dropping privileges at all.
+      test "$(docker run --rm opengym-api:coach stat -c '%U %a' /coach-auth)" = "coach 700"
+    # --- neither Codex nor its sandbox is in the default image; the privilege drop can be performed
+    - |
+      set -eu
+      ! docker run --rm opengym-api:default codex --version 2>/dev/null
+      ! docker run --rm opengym-api:default bwrap --version 2>/dev/null
+      # canDropPrivileges() fails closed for the runtime-backed providers, so a missing `coach`
+      # user disables every one of their jobs — including the fixture. Cheaper to assert here.
+      docker run --rm opengym-api:default id coach
+  rules:
+    - !reference [.rules, not_on_schedule]
+    - *release_tag
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        paths:
+          - "api/**/*"
+          - ".gitlab-ci.yml"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: manual
+      allow_failure: true
+
+# The web image is built from the repository root, and the frontend imports the Coach core from
+# api/coach/core — a path the Dockerfile has to copy by hand. Nothing in test:frontend or the
+# Pages build goes through that Dockerfile, so an MR could pass everything and still ship an
+# image that does not build (v1.2.15 did). Built here, never pushed.
+build:web-check:
+  extends: .docker
+  stage: build
+  needs: ["test:frontend"]
+  script:
+    - docker build -f web/Dockerfile -t opengym-web:check .
+    # It serves the app shell, and the shell is this build (the Coach setup is in the bundle).
+    - |
+      set -eu
+      docker run -d --name web-check -e BACKEND=127.0.0.1 -e PORT=3000 opengym-web:check
+      sleep 2
+      docker exec web-check wget -qO- http://127.0.0.1/ | grep -q '<div id="root">'
+      docker exec web-check sh -c 'grep -l "coach" /usr/share/nginx/html/assets/index-*.js >/dev/null'
+      docker rm -f web-check
+  rules:
+    - !reference [.rules, not_on_schedule]
+    - *release_tag
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        paths:
+          - "frontend/**/*"
+          - "web/**/*"
+          - "api/coach/core/**/*"
+          - ".gitlab-ci.yml"
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: manual
       allow_failure: true
@@ -214,7 +509,11 @@ build:images:
 build:apk:
   stage: package
   image: cimg/android:2026.08-node
-  needs: ["test:frontend"]
+  timeout: 40 minutes
+  needs:
+    - test:frontend
+    - job: release:preflight
+      optional: true
   variables:
     GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
     GRADLE_OPTS: "-Dorg.gradle.daemon=false"
@@ -264,11 +563,12 @@ build:apk:
       set -eu
       cd "$CI_PROJECT_DIR"
       . ./apk.env
+      # Sideloading means nobody's app store checked this file for you, so publish the
+      # digest next to it rather than leaving people to trust the download. Written for
+      # every build (branch artifacts too), uploaded only from a release tag.
+      for apk in openGym-*.apk; do sha256sum "$apk" > "$apk.sha256"; cat "$apk.sha256"; done
       if [ -n "${CI_COMMIT_TAG:-}" ] && [ -f "openGym-$APK_VERSION.apk" ]; then
-        # Sideloading means nobody's app store checked this file for you, so publish the
-        # digest next to it rather than leaving people to trust the download.
-        sha256sum "openGym-$APK_VERSION.apk" > "openGym-$APK_VERSION.apk.sha256"
-        cat "openGym-$APK_VERSION.apk.sha256"
+        echo "APK_SHA256=$(cut -d' ' -f1 "openGym-$APK_VERSION.apk.sha256")" >> apk.env
         for f in "openGym-$APK_VERSION.apk" "openGym-$APK_VERSION.apk.sha256"; do
           curl --fail --silent --show-error \
             --header "JOB-TOKEN: $CI_JOB_TOKEN" \
@@ -286,11 +586,8 @@ build:apk:
       dotenv: apk.env
     expire_in: 30 days
   rules:
-    # A scheduled pipeline exists only to run `renovate` (bottom of this file) — it must not
-    # re-run the suite or republish the edge images once a month for nothing.
-    - if: $CI_PIPELINE_SOURCE == "schedule"
-      when: never
-    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+    - !reference [.rules, not_on_schedule]
+    - *release_tag
     # An APK build is ~8 minutes of shared-runner time; on main and MRs it is one click
     # away rather than automatic. Flip `when: manual` off to have every push build one.
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -299,6 +596,116 @@ build:apk:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: manual
       allow_failure: true
+
+# --------------------------------------------------------------------------- verify
+
+# The two images that were just pushed, started the way a self-hoster starts them — through
+# the repository's own docker-compose.yml — and asked to serve through nginx. build:api-check
+# and build:web-check each prove one container on its own; this is the only place the
+# proxy between them, the compose file and the *pushed* artifacts are exercised together.
+# On a tag the Release waits for it.
+verify:stack:
+  extends: .docker
+  stage: verify
+  timeout: 15 minutes
+  needs:
+    - job: build:images
+      artifacts: true
+  script:
+    - docker compose version
+    - |
+      set -eu
+      # The compose file reads .env (RP_ID/ORIGIN for passkeys); none of it matters for GET.
+      cp .env.example .env
+      cat > ci-images.override.yml <<EOF
+      services:
+        api:
+          image: "$CI_REGISTRY_IMAGE/api:$IMAGE_TAG"
+          pull_policy: always
+        web:
+          image: "$CI_REGISTRY_IMAGE/web:$IMAGE_TAG"
+          pull_policy: always
+      EOF
+      docker compose -f docker-compose.yml -f ci-images.override.yml config --quiet
+      # --no-deps skips the `media` service (a 140 MB clone the smoke test does not need).
+      docker compose -f docker-compose.yml -f ci-images.override.yml up -d --no-deps --no-build api web
+      NET="$(docker network ls --filter name=opengym --format '{{.Name}}' | head -1)"
+      curl() { docker run --rm --network "$NET" curlimages/curl:8.12.1 "$@"; }
+      for i in $(seq 1 30); do
+        curl -fsS http://web/api/health >/dev/null 2>&1 && break
+        sleep 1
+      done
+      echo "--- /api/health through nginx";  curl -fsS http://web/api/health | grep -q '"ok":true'
+      echo "--- /api/config through nginx";  curl -fsS http://web/api/config | tee /dev/stderr | grep -q '"invite_only"'
+      echo "--- the app shell";              curl -fsS http://web/ | grep -q '<div id="root">'
+      echo "--- revision labels"
+      for i in api web; do
+        docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$CI_REGISTRY_IMAGE/$i:$IMAGE_TAG" \
+          | grep -q "$CI_COMMIT_SHA" || { echo "$i image does not carry this commit's revision label" >&2; exit 1; }
+      done
+      docker compose -f docker-compose.yml -f ci-images.override.yml logs --no-color api | tail -20
+      docker compose -f docker-compose.yml -f ci-images.override.yml down -v
+      echo "OK: api:$IMAGE_TAG + web:$IMAGE_TAG serve together"
+  rules:
+    - !reference [.rules, not_on_schedule]
+    - *release_tag
+    - if: ($CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "api") && $PUBLISH_LATEST
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+# What the pushed images carry: a Trivy scan of OS packages and the npm trees (fixable
+# HIGH/CRITICAL only — an unfixed CVE in alpine is not something a release can wait for), and
+# a CycloneDX SBOM per image. On a tag the SBOMs go to the package registry and the Release
+# links them. Findings turn the job yellow, never the pipeline red: the point is that the
+# maintainer *sees* them next to the release, and Renovate opens the fix.
+verify:scan:
+  stage: verify
+  image:
+    name: $TRIVY_IMAGE
+    entrypoint: [""]
+  timeout: 15 minutes
+  needs:
+    - job: build:images
+      artifacts: true
+  variables:
+    TRIVY_CACHE_DIR: "$CI_PROJECT_DIR/.trivycache"
+    TRIVY_NO_PROGRESS: "true"
+    TRIVY_USERNAME: "$CI_REGISTRY_USER"
+    TRIVY_PASSWORD: "$CI_REGISTRY_PASSWORD"
+  cache:
+    key: trivy-db
+    paths:
+      - .trivycache/
+  script:
+    - apk add --no-cache curl >/dev/null
+    - |
+      set -u
+      rc=0
+      for i in api web; do
+        REF="$CI_REGISTRY_IMAGE/$i:$IMAGE_TAG"
+        echo "=================== $REF"
+        trivy image --format cyclonedx --output "opengym-$i-$IMAGE_TAG.cdx.json" "$REF"
+        trivy image --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 "$REF" || rc=1
+      done
+      if [ -n "${CI_COMMIT_TAG:-}" ]; then
+        for f in opengym-*.cdx.json; do
+          curl --fail --silent --show-error --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file "$f" \
+            "$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/opengym-sbom/$IMAGE_TAG/$f"
+          echo "uploaded $f to the generic package registry"
+        done
+      fi
+      [ "$rc" = 0 ] || echo "fixable HIGH/CRITICAL findings above — see the tables; the release is not blocked"
+      exit $rc
+  artifacts:
+    when: always
+    paths:
+      - "opengym-*.cdx.json"
+    expire_in: 90 days
+  allow_failure: true
+  rules:
+    - !reference [.rules, not_on_schedule]
+    - *release_tag
+    - if: ($CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "api") && $PUBLISH_LATEST
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 # ---------------------------------------------------------------------------- pages
 
@@ -314,9 +721,15 @@ pages:
   needs: ["test:frontend"]
   variables:
     VITE_DEMO: "1"
+  cache:
+    key:
+      files:
+        - frontend/package-lock.json
+    paths:
+      - frontend/.npm
   script:
     - cd frontend
-    - npm ci
+    - npm ci --cache .npm --prefer-offline --ignore-scripts
     - VITE_IMG_BASE="$DATASET/images/" VITE_GIF_BASE="$DATASET/videos/" npm run build
     - cd ..
     - rm -rf public && mv frontend/dist public
@@ -324,14 +737,12 @@ pages:
     paths:
       - public
   rules:
-    # A scheduled pipeline exists only to run `renovate` (bottom of this file) — it must not
-    # re-run the suite or republish the edge images once a month for nothing.
-    - if: $CI_PIPELINE_SOURCE == "schedule"
-      when: never
+    - !reference [.rules, not_on_schedule]
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       changes:
         paths:
           - "frontend/**/*"
+          - "api/coach/core/**/*"
           - ".gitlab-ci.yml"
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: manual
@@ -341,16 +752,25 @@ pages:
 
 release:
   stage: release
-  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  image: registry.gitlab.com/gitlab-org/release-cli:v0.24.0
+  interruptible: false
+  timeout: 10 minutes
   needs:
     - job: build:images
+      artifacts: true
     - job: build:apk
       artifacts: true
+    - job: verify:stack
+      artifacts: false
+    - job: verify:scan
+      artifacts: false
   rules:
-    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+    - *release_tag
   script:
     # The release notes are the matching section of CHANGELOG.md, verbatim — headings
     # there are "## v1.2.9 — 2026-08-23", so take everything up to the next "## ".
+    # release:preflight already made sure the section exists. Below it: how to install
+    # this exact build, with the digests the images were pushed under.
     - |
       set -eu
       awk -v tag="$CI_COMMIT_TAG" '
@@ -358,10 +778,26 @@ release:
         inside && /^## / { exit }
         inside { print }
       ' CHANGELOG.md > release-notes.md
-      if [ ! -s release-notes.md ]; then
-        echo "openGym $CI_COMMIT_TAG" > release-notes.md
-      fi
-      head -40 release-notes.md
+      SEMVER="${CI_COMMIT_TAG#v}"
+      MINOR="${SEMVER%.*}"
+      cat >> release-notes.md <<EOF
+
+      ---
+
+      ### Install or upgrade
+
+      \`\`\`sh
+      docker compose pull && docker compose up -d
+      \`\`\`
+
+      | Image | Tags | Digest |
+      |---|---|---|
+      | \`$CI_REGISTRY_IMAGE/api\` | \`$SEMVER\` \`$MINOR\` \`latest\` | \`$IMAGE_DIGEST_API\` |
+      | \`$CI_REGISTRY_IMAGE/web\` | \`$SEMVER\` \`$MINOR\` \`latest\` | \`$IMAGE_DIGEST_WEB\` |
+
+      Both images are linux/amd64 + linux/arm64. Android: \`openGym-$APK_VERSION.apk\`, SHA-256 \`$APK_SHA256\` — check it with \`sha256sum -c openGym-$APK_VERSION.apk.sha256\`. Built from $CI_COMMIT_SHA.
+      EOF
+      cat release-notes.md
   release:
     tag_name: $CI_COMMIT_TAG
     name: "openGym $CI_COMMIT_TAG"
@@ -377,14 +813,21 @@ release:
         - name: "Container images (api + web)"
           url: "$CI_PROJECT_URL/container_registry"
           link_type: image
+        - name: "SBOM api image (CycloneDX)"
+          url: "$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/opengym-sbom/$IMAGE_TAG/opengym-api-$IMAGE_TAG.cdx.json"
+          link_type: other
+        - name: "SBOM web image (CycloneDX)"
+          url: "$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/opengym-sbom/$IMAGE_TAG/opengym-web-$IMAGE_TAG.cdx.json"
+          link_type: other
 
-# ---------------------------------------------------------------------- dependencies
+# ---------------------------------------------------------------------- maintenance
 
 # Dependency updates. GitLab has no Dependabot, so Renovate runs as a job — but only on a
-# *scheduled* pipeline (Build → Pipeline schedules), so it never fires on a push and never
-# competes with a real pipeline for runner minutes. Its policy lives in `renovate.json`
-# next to this file, and it is the same policy the GitHub Dependabot config had: monthly,
-# grouped per ecosystem, majors on their own, and the native mobile projects left alone.
+# *scheduled* pipeline (Build → Pipeline schedules, SCHEDULE_JOB=renovate), so it never
+# fires on a push and never competes with a real pipeline for runner minutes. Its policy
+# lives in `renovate.json` next to this file, and it is the same policy the GitHub Dependabot
+# config had: monthly, grouped per ecosystem, majors on their own, and the native mobile
+# projects left alone.
 #
 # Needs one CI/CD variable: RENOVATE_TOKEN — a GitLab token with `api` scope, which is what
 # lets it read the project and open merge requests.
@@ -393,6 +836,9 @@ renovate:
   image:
     name: renovate/renovate:41
     entrypoint: [""]
+  interruptible: false
+  timeout: 30 minutes
+  needs: []
   variables:
     RENOVATE_PLATFORM: gitlab
     RENOVATE_ENDPOINT: "$CI_API_V4_URL"
@@ -404,8 +850,33 @@ renovate:
   script:
     - renovate
   rules:
-    - if: $CI_PIPELINE_SOURCE == "schedule" && $RENOVATE_TOKEN
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_JOB == "renovate" && $RENOVATE_TOKEN
     # Also runnable by hand from the pipeline page when you want to see what it would do.
     - if: $CI_PIPELINE_SOURCE == "web" && $RENOVATE_TOKEN
       when: manual
       allow_failure: true
+
+# Starts the pipelines contributor MRs cannot start for themselves (see the header and
+# scripts/ci/fork-mr-pipelines.py for the rules: returning contributors only, never for an
+# MR that edits the pipeline, never twice per commit). Runs on the SCHEDULE_JOB=fork-mrs
+# schedule and after every push to main, where it costs a few seconds and needs nothing
+# else in the pipeline.
+#
+# Needs one CI/CD variable, protected + masked: PIPELINE_API_TOKEN — a token with `api`
+# scope and at least Developer on the project (a project access token does).
+mr:fork-pipelines:
+  stage: maintenance
+  image: python:3.13-alpine
+  interruptible: false
+  timeout: 10 minutes
+  needs: []
+  allow_failure: true
+  script:
+    - python3 scripts/ci/fork-mr-pipelines.py
+  rules:
+    - if: $PIPELINE_API_TOKEN == null
+      when: never
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULE_JOB == "fork-mrs"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "web"
+      when: manual

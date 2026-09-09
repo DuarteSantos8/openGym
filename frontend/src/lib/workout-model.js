@@ -56,7 +56,14 @@ export function clustersOf(set) {
  * `clustersOf(set)` here as well would double-count the same reps twice.
  */
 export function extraVolumeOf(set) {
-  const drops = dropsOf(set)
+  const source = objectOf(set)
+  // A per-side set carries its drops on each side (issue #60), so the extra volume is the sum of
+  // both sides' drops — the row itself has no `drops`. dropsOf reads a side's own {type,drops}.
+  if (isSideSet(source)) {
+    return [source.sides.L, source.sides.R].reduce(
+      (v, side) => v + dropsOf(side).reduce((n, d) => n + (Number(d?.w) || 0) * (Number(d?.r) || 0), 0), 0)
+  }
+  const drops = dropsOf(source)
   return drops.reduce((v, d) => v + (Number(d?.w) || 0) * (Number(d?.r) || 0), 0)
 }
 
@@ -126,6 +133,155 @@ export function splitBurstReps(total) {
     remaining -= burst
   }
   return bursts
+}
+
+// --- one-sided (unilateral) sets (issue #60) -------------------------------------------------
+//
+// A unilateral exercise (cfg.side, see history.js isPerSide) is trained one limb at a time, and
+// asymmetries are the whole point of tracking it — a stronger right that carries a weaker left is
+// exactly what a single combined row hides. So a per-side row logs each side on its own: weight,
+// reps, effort and its own done tick, held in `sides: { L, R }`.
+//
+// Like `drops`/`clusters`, this rides on the row while the row's own `w`/`r`/`done`/effort stay a
+// correct aggregate of the two sides — so volume, 1RM, PRs, progression, recovery, history and the
+// coach keep reading a row's scalar fields and need not know sides exist:
+//   r     = L.r + R.r   (the both-sides total, exactly what those readers expect of a per-side set)
+//   w     = max(L.w, R.w)  (the heavier side; the two are usually equal)
+//   done  = L.done && R.done  (a set counts done only once both sides are)
+//   effort= the harder side's rating (lower RIR / higher RPE), for the history tail only
+// `syncSideAggregate` recomputes those scalars from `sides` after any per-side edit.
+export function isSideSet(set) {
+  const s = objectOf(set)
+  return !!(s.sides && typeof s.sides === 'object' && s.sides.L && s.sides.R)
+}
+
+const sideOf = value => {
+  const v = objectOf(value)
+  const out = { w: Number(v.w) || 0, r: Number(v.r) || 0, done: v.done === true }
+  if (v.rir != null) out.rir = v.rir
+  if (v.rpe != null) out.rpe = v.rpe
+  // A side can carry its own intensifier (issue #60): drop-sets and rest-pause bursts are logged
+  // per limb, exactly like the main set, so the same {type, drops, clusters} shape rides on the
+  // side. Reuses the row-level helpers below (addDrop/dropsOf/…), which read this very shape.
+  if (v.type === 'dropset' || v.type === 'restpause') out.type = v.type
+  if (Array.isArray(v.drops)) out.drops = v.drops
+  if (Array.isArray(v.clusters)) out.clusters = v.clusters
+  return out
+}
+
+// Build a per-side row from a plain row: each side starts as half the row's total reps (a unilateral
+// target is always even, so the split is whole) at the same weight, carrying nothing done yet.
+export function makeSideSet(row = {}) {
+  const base = objectOf(row)
+  const half = Math.round((Number(base.r) || 0) / 2)
+  const w = Number(base.w) || 0
+  const side = () => ({ w, r: half, done: false })
+  const next = { ...base, sides: { L: side(), R: side() } }
+  // effort/done/reps on the parent become derived — drop any straight-set leftovers so the row
+  // carries one source of truth, then recompute the aggregate.
+  delete next.rir; delete next.rpe
+  return syncSideAggregate(next)
+}
+
+// Recompute the row's scalar mirror from its two sides. No-op (returns a shallow copy) for a row
+// that is not per-side, so callers can pipe every edit through it unconditionally.
+export function syncSideAggregate(row) {
+  const base = objectOf(row)
+  if (!isSideSet(base)) return { ...base }
+  const L = sideOf(base.sides.L)
+  const R = sideOf(base.sides.R)
+  const out = { ...base, sides: { L, R }, r: L.r + R.r, w: Math.max(L.w, R.w), done: L.done && R.done }
+  // The row's effort tail shows the harder side: fewer reps in reserve (lower RIR) or a higher RPE.
+  // Only one scale is ever in play, matching how a straight row carries rir XOR rpe.
+  delete out.rir; delete out.rpe
+  const rirs = [L.rir, R.rir].filter(v => v != null)
+  const rpes = [L.rpe, R.rpe].filter(v => v != null)
+  if (rirs.length) out.rir = Math.min(...rirs)
+  else if (rpes.length) out.rpe = Math.max(...rpes)
+  // Drops/clusters live on the sides now, so the row itself never carries them — only the shared
+  // `type` so isDropSet/isRestPauseSet still classify the set. extraVolumeOf reads the sides.
+  delete out.drops; delete out.clusters; delete out.type
+  const sideType = setType(L) !== 'straight' ? setType(L) : setType(R)
+  if (sideType !== 'straight') out.type = sideType
+  return out
+}
+
+// Patch one field on one side ('L'|'R'), returning a new row with the aggregate resynced. A null
+// value clears an optional field (effort), mirroring how a straight row drops the key.
+export function setSideField(row, side, field, value) {
+  const base = objectOf(row)
+  if (!isSideSet(base) || (side !== 'L' && side !== 'R')) return { ...base }
+  const cur = { ...sideOf(base.sides[side]) }
+  if (value == null && (field === 'rir' || field === 'rpe')) delete cur[field]
+  else cur[field] = value
+  return syncSideAggregate({ ...base, sides: { ...base.sides, [side]: cur } })
+}
+
+// Flip one side's done tick, resyncing the row's own done (true only when both sides are).
+export function toggleSide(row, side) {
+  const base = objectOf(row)
+  if (!isSideSet(base) || (side !== 'L' && side !== 'R')) return { ...base }
+  const cur = { ...sideOf(base.sides[side]), done: !sideOf(base.sides[side]).done }
+  return syncSideAggregate({ ...base, sides: { ...base.sides, [side]: cur } })
+}
+
+// --- per-side intensifiers (drop-sets / rest-pause) --------------------------------------------
+//
+// On a unilateral set the intensifier is logged per limb too. The structure stays symmetric —
+// both sides always carry the same number of drops/bursts — while each side's weights and reps
+// are edited independently, mirroring how the main set works. These reuse the side-agnostic
+// helpers above (addDrop/dropsOf/setDropAt/…) on each side object, then resync the aggregate.
+
+// Apply an editing fn to a single side and resync (used to edit one side's drop/burst).
+function patchSide(row, side, fn) {
+  const base = objectOf(row)
+  if (!isSideSet(base) || (side !== 'L' && side !== 'R')) return { ...base }
+  return syncSideAggregate({ ...base, sides: { ...base.sides, [side]: fn(sideOf(base.sides[side])) } })
+}
+// Apply an editing fn to both sides and resync (used to add/remove a drop/burst symmetrically).
+function patchBothSides(row, fn) {
+  const base = objectOf(row)
+  if (!isSideSet(base)) return { ...base }
+  return syncSideAggregate({ ...base, sides: { L: fn(sideOf(base.sides.L), 'L'), R: fn(sideOf(base.sides.R), 'R') } })
+}
+
+// Append a drop to both sides, each seeded from its own side's weight (pct lighter) and reps.
+export function addSideDrop(row, pct) {
+  return patchBothSides(row, side => {
+    const drops = dropsOf(side)
+    const base = drops.length ? drops[drops.length - 1].w : (side.w || 0)
+    return addDrop(side, { w: nextDropWeight(base, pct), r: side.r })
+  })
+}
+export function removeSideDropAt(row, i) {
+  return patchBothSides(row, side => removeDropAt(side, i))
+}
+export function setSideDropAt(row, side, i, patch) {
+  return patchSide(row, side, sd => setDropAt(sd, i, patch))
+}
+
+// Append a rest-pause burst to both sides, each seeded from its own side's rep count. The side's
+// own `r` grows by the added burst, mirroring the non-per-side rule that a rest-pause row's `r`
+// is the running total across its bursts.
+export function addSideCluster(row, restSec) {
+  return patchBothSides(row, side => {
+    const clusters = clustersOf(side)
+    const base = clusters.length ? clusters[clusters.length - 1].r : (side.r || 0)
+    const added = nextBurstReps(base)
+    return { ...addCluster(side, { r: added, restSec }), r: (side.r || 0) + added }
+  })
+}
+export function removeSideClusterAt(row, i) {
+  return patchBothSides(row, side => {
+    const removed = clustersOf(side)[i]?.r || 0
+    return { ...removeClusterAt(side, i), r: Math.max(0, (side.r || 0) - removed) }
+  })
+}
+export function setSideClusterAt(row, side, i, r) {
+  return patchSide(row, side, sd => {
+    const delta = (Number(r) || 0) - (clustersOf(sd)[i]?.r || 0)
+    return { ...setClusterAt(sd, i, { r }), r: Math.max(0, (sd.r || 0) + delta) }
+  })
 }
 
 export function normalizeMode(value, fallback = 'reps') {

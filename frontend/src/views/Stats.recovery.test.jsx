@@ -1,15 +1,21 @@
+// @vitest-environment happy-dom
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Window } from 'happy-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { EXIDX } from '../lib/exercises.js'
 import { MUSCLES, levelsOf } from '../lib/muscles.js'
 import { FATIGUE_STATES, STRENGTH_FLOOR } from '../lib/recovery.js'
 import { fatigueStateOf } from '../lib/recovery-view.js'
 import Stats from './Stats.jsx'
+import Modals from '../components/Modals.jsx'
+import { bindUI } from '../components/ui.jsx'
+import { useUI } from '../store/useUI.js'
 
 const DAY = 86400000
 const HOUR = 3600000
 const BASE_NOW = Date.UTC(2026, 0, 22, 12)
+const LEGACY_SNAPSHOT_ID = 'legacy-snapshot-only'
 
 const mocks = vi.hoisted(() => ({
   maps: [],
@@ -49,6 +55,8 @@ vi.mock('../components/BodyMap.jsx', () => ({
   },
   BodyMapLegend: () => React.createElement('div', { 'data-balance-legend': true }),
 }))
+
+bindUI(useUI)
 
 let dom
 let root
@@ -105,19 +113,43 @@ function allSubfullWorkout(now = BASE_NOW) {
   return workout('all-subfull', now - 15 * DAY, [entry('1254', [set(true)])])
 }
 
+function exercisePickerWorkouts(now = BASE_NOW) {
+  return [
+    workout('bench', now, [entry('0025', [set(true, { w: 80 })])]),
+    workout('squat', now - DAY, [entry('0043', [set(true, { w: 60 })])]),
+    workout('legacy', now - 2 * DAY, [
+      {
+        id: LEGACY_SNAPSHOT_ID,
+        muscleSnapshot: {
+          n: 'Legacy shoulder press',
+          bp: 'shoulders',
+          primaries: ['deltoids'],
+          secondaries: ['triceps'],
+          muscleGroups: ['deltoids', 'triceps'],
+        },
+        sets: [set(true, { w: 50 })],
+      },
+    ]),
+  ]
+}
+
 function resetFixture(workouts = lifecycleWorkouts()) {
   mocks.S.unit = 'kg'
   mocks.S.bodyweight = []
   mocks.S.workouts = workouts
   mocks.maps.length = 0
   mocks.mapMounts = 0
+  useUI.setState({ sheets: [] })
 }
 
 function installDom() {
   dom = new Window({ url: 'http://localhost/' })
+  dom.scrollTo = vi.fn()
   globalThis.window = dom
   globalThis.document = dom.document
   Object.defineProperty(globalThis, 'navigator', { configurable: true, value: dom.navigator })
+  Object.defineProperty(globalThis, 'location', { configurable: true, value: dom.location })
+  Object.defineProperty(globalThis, 'history', { configurable: true, value: dom.history })
   for (const key of ['HTMLElement', 'HTMLIFrameElement', 'Node', 'Element', 'Event', 'MouseEvent']) {
     globalThis[key] = dom[key]
   }
@@ -129,7 +161,7 @@ function installDom() {
 
 async function mountStats() {
   installDom()
-  await act(async () => { root.render(React.createElement(Stats)) })
+  await act(async () => { root.render(React.createElement(React.Fragment, null, React.createElement(Stats), React.createElement(Modals))) })
 }
 
 async function unmountStats() {
@@ -179,6 +211,7 @@ beforeEach(() => {
 
 afterEach(async () => {
   await unmountStats()
+  useUI.setState({ sheets: [] })
   vi.useRealTimers()
   vi.restoreAllMocks()
 })
@@ -270,5 +303,79 @@ describe('Stats muscle recovery view runtime', () => {
     expect(Object.values(strengthMap.load).every(value => value < 1)).toBe(true)
     expect(Math.min(...Object.values(strengthMap.load))).toBe(STRENGTH_FLOOR)
     expect(strengthMap.thresholds.at(-1)).toEqual({ at: 1, level: 4 })
+  })
+})
+
+describe('Stats exercise progress picker', () => {
+  it('filters with the shared exercise matcher and still selects from the mounted sheet', async () => {
+    resetFixture(exercisePickerWorkouts())
+    await mountStats()
+    expect(EXIDX[LEGACY_SNAPSHOT_ID]).toBeUndefined()
+
+    const card = [...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')
+    const selector = [...card.querySelectorAll('button')].find(button => button.querySelector('.lrow-t')?.textContent.trim() === 'Exercise')
+    await click(selector)
+
+    const modal = document.querySelector('#modal-root')
+    const input = modal.querySelector('input')
+    expect(input).toBeTruthy()
+    expect(input.getAttribute('aria-label')).toBe('Search…')
+    expect(input.getAttribute('placeholder')).toBe('Search…')
+    expect(modal.querySelector('.picker-search')).toBeTruthy()
+    const optionButtons = () => [...modal.querySelectorAll('.sect-b button')]
+    const initialOptionCount = optionButtons().length
+    expect(initialOptionCount).toBe(3)
+    expect(modal.textContent).toContain('Legacy shoulder press')
+    expect(input.compareDocumentPosition(optionButtons()[0]) & globalThis.Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+
+    const setter = Object.getOwnPropertyDescriptor(input.constructor.prototype, 'value').set
+    const setSearch = async value => act(async () => {
+      setter.call(input, value)
+      input.dispatchEvent(new Event('input', { bubbles: true }))
+      input.dispatchEvent(new Event('change', { bubbles: true }))
+    })
+
+    // A focused search can leave a newly narrowed result below the visual viewport. The
+    // correction must advance the sheet's own scroll position, not the page behind it.
+    const sheet = modal.querySelector('.sheet')
+    const firstOption = optionButtons()[0]
+    Object.defineProperties(sheet, {
+      clientHeight: { configurable: true, value: 400 },
+      scrollHeight: { configurable: true, value: 1000 },
+    })
+    vi.spyOn(sheet, 'getBoundingClientRect').mockReturnValue({ bottom: 600 })
+    vi.spyOn(firstOption, 'getBoundingClientRect').mockReturnValue({ bottom: 500 })
+    Object.defineProperty(window, 'visualViewport', { configurable: true, value: { height: 300 } })
+    input.focus()
+    expect(sheet.style.getPropertyValue('--picker-visual-height')).toBe('300px')
+    expect(sheet.style.getPropertyValue('--picker-keyboard-bottom')).toBe(`${Math.max(0, window.innerHeight - 300)}px`)
+    await setSearch('bench')
+    await tick(100)
+    expect(sheet.scrollTop).toBeGreaterThan(0)
+
+    await setSearch('no such historical exercise')
+    expect(modal.textContent).toContain('No match')
+    expect(optionButtons()).toHaveLength(0)
+
+    await click(modal.querySelector('button[aria-label="Clear"]'))
+    expect(input.value).toBe('')
+    expect(optionButtons()).toHaveLength(initialOptionCount)
+    expect(modal.textContent).toContain('Legacy shoulder press')
+
+    await setSearch('legacy shoulder press shoulders deltoids triceps')
+    expect(optionButtons()).toHaveLength(1)
+    expect(optionButtons()[0].textContent).toContain('Legacy shoulder press')
+
+    await click(modal.querySelector('button[aria-label="Clear"]'))
+    await setSearch('squat full bárbell')
+
+    expect(modal.textContent).toContain('barbell full squat')
+    expect(modal.textContent).not.toContain('barbell bench press')
+
+    const matching = [...modal.querySelectorAll('button')].find(button => button.textContent.includes('barbell full squat'))
+    await click(matching)
+
+    expect(useUI.getState().sheets).toHaveLength(0)
+    expect(card.querySelector('.lrow-v').textContent).toContain('barbell full squat')
   })
 })

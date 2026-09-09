@@ -9,6 +9,7 @@
 
 import { isWarmupRow } from './workout-model.js'
 import { EXIDX, smOf } from './exercises.js'
+import { todayISO, weekKey, MONDAY } from './format.js'
 
 // The muscles a map can shade, in head-to-toe order — also the order of any list
 // built from them, so "what am I neglecting" reads top-down like a body.
@@ -160,7 +161,7 @@ export function muscleGroupsOf(entry) {
     ? [...parts.primary, ...parts.secondary]
     : explicit || [ex?.tg, ex?.mg, ...arrayOf(smOf(ex))]
   const out = canonicalUnique(source)
-  if (!out.length && !useParts && explicit == null) {
+  if (!out.length && !useParts) {
     canonicalUnique(Object.keys(BY_BODYPART[ex?.bp] || {})).forEach(slug => out.push(slug))
   }
   return out
@@ -259,6 +260,20 @@ export const loadOfWorkouts = (workouts, pick) =>
   loadOf((workouts || []).flatMap(w =>
     (w.entries || []).map(e => ({ id: e.id, ex: e.exercise || e, sets: (e.sets || []).filter(s => s.done && !isWarmupRow(s) && (!pick || pick(s))).length }))))
 
+/**
+ * Workouts in one existing Muscle balance range, with time injected for deterministic tests.
+ *
+ * The 7-day range is "this week", not "the last seven days", so it moves with the profile's
+ * first weekday — the caller passes it since this takes workouts rather than the whole state.
+ */
+export function muscleBalanceWindow(workouts, win, now = Date.now(), today = todayISO(), ws = MONDAY) {
+  return (workouts || []).filter(workout => win === 0
+    ? true
+    : win === 7
+      ? weekKey(workout.d, ws) === weekKey(today, ws)
+      : (workout.start || new Date(workout.d).getTime()) > now - win * 86400000)
+}
+
 /** Load a routine *would* produce, from its planned set counts. */
 export const loadOfRoutine = routine =>
   loadOf((routine?.ex || []).map(c => ({ id: c.id, ex: c, sets: c.sets || 1 })))
@@ -304,7 +319,8 @@ export function levelsOf(load, thresholds) {
 
 /** Muscles sorted hardest-worked first; untrained ones last, in body order. */
 export function rankOf(load) {
-  const worked = MUSCLES.filter(m => (load[m] || 0) > 0).sort((a, b) => load[b] - load[a])
+  const worked = MUSCLES.filter(m => (load[m] || 0) > 0)
+    .sort((a, b) => load[b] - load[a] || MUSCLES.indexOf(a) - MUSCLES.indexOf(b))
   const missed = MUSCLES.filter(m => !(load[m] > 0))
   return { worked, missed }
 }

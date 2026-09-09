@@ -20,7 +20,13 @@ server {
     # as /api/anything.json would be matched by the \.(js|css|json|html)$ block instead and be
     # looked for on disk rather than proxied.
     location ^~ /api/ {
-        proxy_pass http://${BACKEND}:${PORT};
+        # Resolved per request through Docker's DNS, not once at start-up: nginx otherwise pins
+        # the api container's IP when it boots, and a recreated api (new IP) means 502 on every
+        # /api call until web is restarted too (issue #16). The variable is what makes nginx
+        # re-resolve; lowercase so the entrypoint's envsubst leaves it alone.
+        resolver 127.0.0.11 valid=10s ipv6=off;
+        set $api_upstream http://${BACKEND}:${PORT};
+        proxy_pass $api_upstream;
         proxy_http_version 1.1;
         # The API accepts private custom images up to 10 MiB plus JSON/base64 overhead.
         client_max_body_size 16m;
