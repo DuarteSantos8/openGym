@@ -208,7 +208,7 @@ try {
   }
 } catch (error) { grantsError = error; }
 function persistentError() {
-  return dbError || receiptsError || (MCP_ENABLED && grantsError) || null;
+  return dbError || receiptsError || (MCP_ENABLED && (grantsError || oauthClientsError)) || null;
 }
 const grantHash = token => crypto.createHash('sha256').update(String(token)).digest('hex');
 function saveGrants() {
@@ -217,7 +217,66 @@ function saveGrants() {
 }
 function grantToken() { return crypto.randomBytes(32).toString('base64url'); }
 function grantView(g) {
-  return { id: g.id, name: g.name, uid: g.uid, scopes: g.scopes, created: g.created, expires: g.expires, revoked: !!g.revoked, lastUsed: g.lastUsed || null };
+  return { id: g.id, name: g.name, uid: g.uid, scopes: g.scopes, created: g.created, expires: g.expires, audience: g.audience || null, revoked: !!g.revoked, lastUsed: g.lastUsed || null };
+}
+
+// OAuth clients are public metadata (no secret is issued for the PKCE-only flow), but keeping
+// the registration in the API data root makes a restart deterministic and lets the MCP gateway
+// remain stateless with respect to profile files.  Redirect URIs are exact-match allow-list
+// entries; wildcards, fragments, credentials, and non-local plain HTTP are rejected below.
+const oauthClientFile = path.join(DATA, 'oauth-clients.json');
+const OAUTH_CLIENT_LIMIT = 1000;
+let oauthClients = { clients: [] };
+let oauthClientsError = null;
+try {
+  const parsed = readJson(oauthClientFile, { missing: undefined });
+  if (parsed !== undefined) {
+    if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.clients)) throw new Error('oauth-clients.json has an invalid shape');
+    oauthClients = parsed;
+  }
+} catch (error) { oauthClientsError = error; }
+function saveOAuthClients() {
+  if (oauthClientsError) throw oauthClientsError;
+  durableAtomicWrite(oauthClientFile, JSON.stringify(oauthClients, null, 2), 0o600);
+}
+function oauthClientView(c) {
+  const createdAt = Date.parse(c.createdAt) || Date.now();
+  return {
+    client_id: c.clientId, client_name: c.clientName, redirect_uris: c.redirectUris,
+    grant_types: c.grantTypes, response_types: c.responseTypes,
+    token_endpoint_auth_method: c.tokenEndpointAuthMethod, scope: c.scope, created_at: c.createdAt,
+    client_id_issued_at: Math.floor(createdAt / 1000), client_secret_expires_at: 0
+  };
+}
+function localRedirect(uri) {
+  try {
+    const u = new URL(uri);
+    return u.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(u.hostname);
+  } catch { return false; }
+}
+function validRedirect(uri) {
+  try {
+    const u = new URL(uri);
+    if (!['https:', 'http:'].includes(u.protocol) || u.username || u.password || u.hash) return false;
+    return u.protocol === 'https:' || localRedirect(uri);
+  } catch { return false; }
+}
+function registrationMetadata(body) {
+  const redirectUris = Array.isArray(body?.redirect_uris) ? [...new Set(body.redirect_uris.map(String))] : [];
+  if (!redirectUris.length || redirectUris.length > 10 || redirectUris.some(uri => uri.length > 2000 || !validRedirect(uri))) return { error: 'invalid_redirect_uris' };
+  const grantTypes = Array.isArray(body?.grant_types) && body.grant_types.length ? [...new Set(body.grant_types.map(String))] : ['authorization_code'];
+  const responseTypes = Array.isArray(body?.response_types) && body.response_types.length ? [...new Set(body.response_types.map(String))] : ['code'];
+  if (grantTypes.length !== 1 || grantTypes[0] !== 'authorization_code' || responseTypes.length !== 1 || responseTypes[0] !== 'code') return { error: 'unsupported_grant_or_response_type' };
+  const tokenEndpointAuthMethod = String(body?.token_endpoint_auth_method || 'none');
+  if (tokenEndpointAuthMethod !== 'none') return { error: 'public_pkce_client_required' };
+  const requested = String(body?.scope || '').trim().split(/\s+/).filter(Boolean);
+  const scope = [...new Set(requested.length ? requested : ['exercise:read', 'routine:read', 'workout:read', 'progress:read'])];
+  if (!scope.length || scope.some(s => !GRANT_SCOPES.has(s))) return { error: 'invalid_scope' };
+  return {
+    clientId: crypto.randomBytes(18).toString('base64url'),
+    clientName: String(body?.client_name || 'MCP client').trim().slice(0, 120) || 'MCP client',
+    redirectUris, grantTypes, responseTypes, tokenEndpointAuthMethod, scope: scope.join(' '), createdAt: new Date().toISOString()
+  };
 }
 function grantFor(req, scope) {
   if (grantsError || dbError) return null;
@@ -755,12 +814,20 @@ const routes = {
     const body = await readBody(req);
     const scopes = [...new Set(Array.isArray(body.scopes) ? body.scopes.map(String) : [])];
     if (!scopes.length || scopes.some(s => !GRANT_SCOPES.has(s))) return json(res, 400, { error: 'invalid scopes', allowed: [...GRANT_SCOPES] });
-    const days = Math.max(1, Math.min(365, Number(body.days) || 30));
+    const ttlSeconds = Number(body.expires_in);
+    const expires = Number.isFinite(ttlSeconds) && ttlSeconds >= 1
+      ? Date.now() + Math.min(365 * 86400, Math.floor(ttlSeconds)) * 1000
+      : Date.now() + Math.max(1, Math.min(365, Number(body.days) || 30)) * 86400000;
+    const audience = body.audience == null ? null : String(body.audience).trim().slice(0, 500);
+    if (audience) {
+      try { const u = new URL(audience); if (u.protocol !== 'https:' || u.username || u.password || u.hash) return json(res, 400, { error: 'invalid audience' }); }
+      catch { return json(res, 400, { error: 'invalid audience' }); }
+    }
     const token = grantToken();
     const grant = {
       id: crypto.randomBytes(12).toString('base64url'), uid: user.id,
       name: String(body.name || 'MCP client').trim().slice(0, 80) || 'MCP client',
-      scopes, tokenHash: grantHash(token), created: new Date().toISOString(), expires: Date.now() + days * 86400000
+      scopes, tokenHash: grantHash(token), created: new Date().toISOString(), expires, ...(audience ? { audience } : {})
     };
     grants.grants.push(grant);
     try { saveGrants(); } catch (e) { grants.grants.pop(); return storageFailure(res, e); }
@@ -778,6 +845,22 @@ const routes = {
     grant.revoked = Date.now();
     try { saveGrants(); } catch (e) { return storageFailure(res, e); }
     json(res, 200, { ok: true, id: grant.id, revoked: true });
+  },
+
+  // Public OAuth 2.1 dynamic-client registration.  Clients are PKCE-only public clients: no
+  // client secret is generated or accepted, and the redirect URI list is the complete allow-list.
+  'POST /api/oauth/clients': async (req, res) => {
+    if (!MCP_ENABLED) return json(res, 404, { error: 'feature disabled' });
+    if (!requireWritable(res) || oauthClientsError) return oauthClientsError ? storageFailure(res, oauthClientsError) : undefined;
+    if (oauthClients.clients.length >= OAUTH_CLIENT_LIMIT) return json(res, 429, { error: 'client registration limit reached' });
+    let body;
+    try { body = await readBody(req, 256 * 1024); } catch { return json(res, 400, { error: 'invalid_client_metadata' }); }
+    const metadata = registrationMetadata(body);
+    if (metadata.error) return json(res, 400, { error: metadata.error });
+    oauthClients.clients.push(metadata);
+    try { saveOAuthClients(); }
+    catch (e) { oauthClients.clients.pop(); return storageFailure(res, e); }
+    json(res, 201, oauthClientView(metadata));
   },
 
   // Used by the remote MCP transport to validate a token on every request. This makes revocation
@@ -1429,6 +1512,13 @@ http.createServer(async (req, res) => {
   const key = req.method + ' ' + url.pathname;
   if (dbError && key !== 'GET /api/health') return storageFailure(res, dbError);
   if (url.pathname.startsWith('/api/assets/') && req.method === 'GET') return serveAsset(req, res, url.pathname.slice('/api/assets/'.length));
+  const oauthClientMatch = /^\/api\/oauth\/clients\/([A-Za-z0-9_-]+)$/.exec(url.pathname);
+  if (oauthClientMatch && req.method === 'GET') {
+    if (!MCP_ENABLED) return json(res, 404, { error: 'feature disabled' });
+    if (oauthClientsError) return storageFailure(res, oauthClientsError);
+    const client = oauthClients.clients.find(c => c.clientId === oauthClientMatch[1]);
+    return client ? json(res, 200, oauthClientView(client)) : json(res, 404, { error: 'unknown client' });
+  }
   const proposalMatch = /^\/api\/mcp\/proposals\/([A-Za-z0-9_-]+)$/.exec(url.pathname);
   if (proposalMatch && req.method === 'GET') return getProposal(req, res, proposalMatch[1]);
   if (proposalMatch && req.method === 'POST') {

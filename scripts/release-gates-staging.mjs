@@ -150,6 +150,25 @@ try {
   }
   const localClient = await mcpClient('local-fixture'); const hostedClient = await mcpClient('hosted-fixture')
   const proposalOnlyClient = await mcpClient('proposal-only-fixture', proposeGrant)
+  // Traverse the same catalogue through the MCP tools (not only the API convenience endpoint).
+  const mcpCatalog = []; let mcpOffset = 0
+  while (true) {
+    const pageCall = await localClient.call(20 + mcpOffset, 'tools/call', { name: 'list_exercises', arguments: { offset: mcpOffset, limit: 200 } })
+    assert.equal(pageCall.response.status, 200, 'MCP list_exercises page')
+    const page = JSON.parse(pageCall.data.result?.content?.[0]?.text || '{}')
+    mcpCatalog.push(...(page.exercises || []))
+    if (page.next_offset == null) break
+    mcpOffset = page.next_offset
+  }
+  assert.equal(new Set(mcpCatalog.map(e => e.id)).size, EXDB.length + 1)
+  const mcpSearchCall = await localClient.call(100, 'tools/call', { name: 'search_exercises', arguments: { query: 'Private photo exercise' } })
+  assert.equal(mcpSearchCall.response.status, 200, 'MCP search_exercises')
+  const mcpSearch = JSON.parse(mcpSearchCall.data.result?.content?.[0]?.text || '{}')
+  assert.ok(mcpSearch.exercises?.some(e => e.id === 'c-photo'))
+  const mcpGetCall = await localClient.call(101, 'tools/call', { name: 'get_exercise', arguments: { exercise_id: 'c-photo' } })
+  assert.equal(mcpGetCall.response.status, 200, 'MCP get_exercise')
+  const mcpGet = JSON.parse(mcpGetCall.data.result?.content?.[0]?.text || '{}')
+  assert.equal(mcpGet.id, 'c-photo')
   const proposalOnlyState = assertStatus(await request(apiBase, '/api/mcp/state?scope=routine:propose', { headers: bearer(proposeGrant) }), 200, 'proposal-only scope').data
   assert.equal(proposalOnlyState.revision, (await request(apiBase, '/api/data', { headers: { Cookie: `gymsid=${session}` } })).data.revision)
   const progressCall = await localClient.call(6, 'tools/call', { name: 'list_workouts', arguments: {} })
@@ -187,8 +206,8 @@ try {
   assertStatus(await request(apiBase, '/api/mcp/introspect', { headers: bearer(revokeGrant) }), 403, 'revoked grant')
   const discovery = await request(mcpBase, '/.well-known/oauth-protected-resource')
   assertStatus(discovery, 200, 'MCP discovery')
-  assert.equal(discovery.data.authorization_servers, undefined)
-  print('gate3_clients', ['local-fixture', 'hosted-fixture']); print('gate3_catalog_unique', catalog.length); print('gate3_cross_user_denied', true); print('gate3_insufficient_scope_status', 403); print('gate3_proposal_insufficient_scope_status', 403); print('gate3_progress_fixture_matches_app', true); print('gate3_duplicate_proposal_same_id', true); print('gate3_approved_routine_id', approved.routine.id); print('gate3_exactly_one_approved_routine', true); print('gate3_phone_edit_preserved', true); print('gate3_revoked_grant_status', 403); print('gate3_discovery_scoped_bearer_only', true)
+  assert.deepEqual(discovery.data.authorization_servers, [`http://127.0.0.1:${mcpPort}`])
+  print('gate3_clients', ['local-fixture', 'hosted-fixture']); print('gate3_catalog_unique', catalog.length); print('gate3_mcp_catalog_unique', mcpCatalog.length); print('gate3_mcp_search_get', true); print('gate3_cross_user_denied', true); print('gate3_insufficient_scope_status', 403); print('gate3_proposal_insufficient_scope_status', 403); print('gate3_progress_fixture_matches_app', true); print('gate3_duplicate_proposal_same_id', true); print('gate3_approved_routine_id', approved.routine.id); print('gate3_exactly_one_approved_routine', true); print('gate3_phone_edit_preserved', true); print('gate3_revoked_grant_status', 403); print('gate3_discovery_authorization_server', `http://127.0.0.1:${mcpPort}`)
 
   // Gate 4: private upload, ownership check, failed replacement preservation, and checksum.
   assert.match(fs.readFileSync(path.join(ROOT, 'web/nginx.conf.template'), 'utf8'), /client_max_body_size 16m/)
