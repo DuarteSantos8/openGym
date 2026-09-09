@@ -44,6 +44,10 @@ const IMAGE_MAX_PIXELS = 25_000_000;
 const IMAGE_MAX_EDGE = 2048;
 const IMAGE_MAX_OUTPUT_BYTES = 2 * 1024 * 1024;
 const IMAGE_QUOTA_BYTES = 200 * 1024 * 1024;
+const IMAGE_PROCESSING_LIMIT = 2;
+const IMAGE_PROCESSING_QUEUE_LIMIT = 8;
+const TEST_IMAGE_DELAY_MS = Math.max(0, Math.min(1000, Math.floor(Number(process.env.OPENGYM_TEST_IMAGE_DELAY_MS) || 0)));
+const TEST_IMAGE_STATS = /^(1|true|yes|on)$/i.test(process.env.OPENGYM_TEST_IMAGE_STATS || '');
 // Personalization services are opt-in. A missing env var must preserve the existing deployment
 // surface; Compose enables them only when an operator explicitly sets the flags to 1/true.
 const enabled = name => /^(1|true|yes|on)$/i.test(process.env[name] || '');
@@ -388,6 +392,40 @@ async function withAssetLock(uid, fn) {
 
 function imageError(code, message) { return Object.assign(new Error(message), { code }); }
 
+// Decoding is the expensive part of an upload and happens before the per-user
+// quota/write lock. Keep a small global semaphore so one caller cannot fan out
+// unbounded 25MP decodes. A bounded queue returns a retryable 429 instead of
+// accumulating memory. The test-only delay/header make the bound observable in
+// the disposable acceptance harness and are inert in normal deployments.
+let imageProcessingActive = 0;
+let imageProcessingPeak = 0;
+const imageProcessingQueue = [];
+function takeImageSlot() {
+  if (imageProcessingActive < IMAGE_PROCESSING_LIMIT) {
+    imageProcessingActive++;
+    imageProcessingPeak = Math.max(imageProcessingPeak, imageProcessingActive);
+    return Promise.resolve(() => releaseImageSlot());
+  }
+  if (imageProcessingQueue.length >= IMAGE_PROCESSING_QUEUE_LIMIT) {
+    throw imageError('IMAGE_BUSY', 'image processing is busy; retry shortly');
+  }
+  return new Promise(resolve => imageProcessingQueue.push(resolve)).then(() => {
+    imageProcessingActive++;
+    imageProcessingPeak = Math.max(imageProcessingPeak, imageProcessingActive);
+    return () => releaseImageSlot();
+  });
+}
+function releaseImageSlot() {
+  const next = imageProcessingQueue.shift();
+  imageProcessingActive = Math.max(0, imageProcessingActive - 1);
+  if (next) next();
+}
+async function withImageProcessing(fn) {
+  const release = await takeImageSlot();
+  try { return await fn(); }
+  finally { release(); }
+}
+
 const allowedImage = new Map([
   ['image/jpeg', b => b.length > 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff],
   ['image/png', b => b.length > 8 && b.subarray(0, 8).equals(Buffer.from('89504e470d0a1a0a', 'hex'))],
@@ -410,6 +448,7 @@ function imageBytes(body) {
 // compressed bomb cannot allocate an unbounded raster. Animated inputs are
 // rejected rather than silently flattening a frame the user did not choose.
 async function normalizeImage(image) {
+  if (TEST_IMAGE_DELAY_MS) await new Promise(resolve => setTimeout(resolve, TEST_IMAGE_DELAY_MS));
   let metadata;
   try {
     metadata = await sharp(image.bytes, {
@@ -1319,10 +1358,18 @@ const routes = {
     let body;
     try { body = await readBody(req, 16 * 1024 * 1024); } catch (e) { return json(res, 400, { error: 'invalid image upload' }); }
     let image;
+    const reportImageStats = () => {
+      if (TEST_IMAGE_STATS) res.setHeader('X-OpenGym-Image-Processing-Peak', String(imageProcessingPeak));
+    };
     try {
-      image = await normalizeImage(imageBytes(body));
+      image = await withImageProcessing(() => normalizeImage(imageBytes(body)));
     } catch (e) {
+      reportImageStats();
       const status = e.code === 'IMAGE_OUTPUT' || e.code === 'IMAGE_QUOTA' ? 413 : 400;
+      if (e.code === 'IMAGE_BUSY') {
+        res.setHeader('Retry-After', '1');
+        return json(res, 429, { error: e.message, code: e.code });
+      }
       return json(res, status, { error: e.message, code: e.code });
     }
     return withAssetLock(user.id, async () => {
@@ -1330,6 +1377,7 @@ const routes = {
       try { usage = assetUsage(user.id); }
       catch (e) { return storageFailure(res, e); }
       if (usage + image.bytes.length > IMAGE_QUOTA_BYTES) {
+        reportImageStats();
         return json(res, 413, {
           error: 'image quota exceeded', code: 'IMAGE_QUOTA',
           quota_bytes: IMAGE_QUOTA_BYTES, used_bytes: usage
@@ -1339,6 +1387,7 @@ const routes = {
       const hash = crypto.createHash('sha256').update(image.bytes).digest('hex');
       try {
         durableAtomicWrite(assetFile(user.id, id), image.bytes, 0o600);
+        reportImageStats();
         json(res, 201, { asset: { id, mime: image.mime, size: image.bytes.length, sha256: hash } });
       } catch (e) { storageFailure(res, e); }
     });

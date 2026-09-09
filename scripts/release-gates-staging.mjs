@@ -119,7 +119,7 @@ async function solidImage(format, width = 320, height = 240, background = { r: 8
 }
 
 const apiPort = await freePort(); let apiBase = `http://127.0.0.1:${apiPort}`
-let apiChild = await start('node', ['api/server.js'], { PORT: apiPort, DATA_DIR: tmp, RP_ID: 'localhost', ORIGIN: 'http://localhost', MCP_ENABLED: '1', MCP_PROPOSALS_ENABLED: '1', CUSTOM_IMAGES_ENABLED: '1', AUDIT_LOG: '0' })
+let apiChild = await start('node', ['api/server.js'], { PORT: apiPort, DATA_DIR: tmp, RP_ID: 'localhost', ORIGIN: 'http://localhost', MCP_ENABLED: '1', MCP_PROPOSALS_ENABLED: '1', CUSTOM_IMAGES_ENABLED: '1', AUDIT_LOG: '0', OPENGYM_TEST_IMAGE_DELAY_MS: '40', OPENGYM_TEST_IMAGE_STATS: '1' })
 let mcpChild = null
 try {
   // Gate 2: conditional writes, durable conflict handling, idempotency, and fail-closed storage.
@@ -273,6 +273,24 @@ try {
     print(`gate4_${label}_sha256`, fixture.sha256)
   }
 
+  // Saturate the disposable decoder with a bounded burst. The API admits two
+  // active normalizers, queues eight, and rejects the rest with a retryable 429;
+  // response headers expose the observed peak only in this test process.
+  const concurrentUploads = await Promise.all(Array.from({ length: 14 }, (_, index) => request(apiBase, '/api/assets', {
+    ...bodyOptions({ mime: 'image/png', data: tinyPng.toString('base64') }), headers: { Cookie: `gymsid=${session}`, 'X-Image-Concurrency-Fixture': String(index) }
+  })))
+  const concurrentStatuses = concurrentUploads.map(result => result.response.status)
+  const concurrentPeaks = concurrentUploads.map(result => Number(result.response.headers.get('x-opengym-image-processing-peak') || 0)).filter(Number.isFinite)
+  const observedPeak = Math.max(0, ...concurrentPeaks)
+  assert.ok(concurrentStatuses.includes(429), `decoder queue must reject at capacity: ${concurrentStatuses}`)
+  assert.ok(observedPeak <= 2, `decoder peak exceeded semaphore: ${observedPeak}`)
+  const concurrentStatusCounts = concurrentStatuses.reduce((counts, status) => ({ ...counts, [status]: (counts[status] || 0) + 1 }), {})
+  print('gate4_image_processing_limit', 2)
+  print('gate4_image_processing_queue_limit', 8)
+  print('gate4_image_processing_peak_observed', observedPeak)
+  print('gate4_image_processing_status_counts', concurrentStatusCounts)
+  print('gate4_image_processing_queue_rejection_status', 429)
+
   const jpegWithExif = await sharp({ create: { width: 320, height: 240, channels: 3, background: { r: 210, g: 120, b: 70 } } })
     .withMetadata({ exif: { IFD0: { Artist: 'openGym staging fixture' } } }).jpeg({ quality: 88 }).toBuffer()
   const inputExif = await sharp(jpegWithExif).metadata()
@@ -410,7 +428,7 @@ try {
   assertStatus(await request(apiBase, '/api/assets', { ...bodyOptions({ mime: 'image/png', data: 'not-an-image' }), headers: { Cookie: `gymsid=${session}` } }), 400, 'failed replacement')
   const newRef = (await request(apiBase, '/api/data', { headers: { Cookie: `gymsid=${session}` } })).data.state.customEx.find(e => e.id === 'c-photo').media
   assert.deepEqual(newRef, oldRef)
-  print('gate4_proxy_body_limit', '16m_template'); print('gate4_upload_sha256', upload.sha256); print('gate4_private_asset_reference_ready', true); print('gate4_headless_react_real_surfaces', 'PASS (Library/Picker/Routine/Workout/Detail; separate Vitest receipt)'); print('gate4_production_browser_or_container', 'not_claimed'); print('gate4_failed_replacement_preserved', true); print('gate4_unauthorized_status', 401); print('gate4_cross_user_status', 404); print('gate4_clean_restore_checksum_match', true); print('gate4_image_hardening', 'PASS (sharp decode/rotate/resize/WebP/metadata/quota)')
+  print('gate4_proxy_body_limit', '16m_template'); print('gate4_upload_sha256', upload.sha256); print('gate4_private_asset_reference_ready', true); print('gate4_headless_react_real_surfaces', 'PASS (Library/Picker/Routine/Workout/Detail; separate Vitest receipt)'); print('gate4_production_browser_or_container', 'not_claimed'); print('gate4_failed_replacement_preserved', true); print('gate4_unauthorized_status', 401); print('gate4_cross_user_status', 404); print('gate4_clean_restore_checksum_match', true); print('gate4_image_hardening', 'PASS (sharp decode/rotate/resize/WebP/metadata/quota/semaphore)')
 
   // Leave a valid write-ahead journal behind as if the process crashed after its first durable
   // rename. The next API read must replay both state and receipt before serving the profile.
