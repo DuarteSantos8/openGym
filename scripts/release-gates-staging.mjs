@@ -536,10 +536,23 @@ try {
       })
       flagsBase = `http://127.0.0.1:${flagsOnAgainPort}`
       const flagsOnMcp = await request(flagsBase, '/api/mcp/catalog?offset=0&limit=1', { headers: bearer(grantToken) })
+      const flagsOnProposals = await request(flagsBase, '/api/mcp/proposals', { headers: { Cookie: `gymsid=${session}` } })
+      const flagsOnUpload = await request(flagsBase, '/api/assets', {
+        ...bodyOptions({ mime: 'image/png', data: flagsPng.toString('base64') }), headers: { Cookie: `gymsid=${session}` }
+      })
       const flagsOnProfile = assertStatus(await request(flagsBase, '/api/data', { headers: { Cookie: `gymsid=${session}` } }), 200, 'feature flags on profile').data
       const flagsOnAsset = await rawRequest(flagsBase, `/api/assets/${flagsAsset.id}`, { headers: { Cookie: `gymsid=${session}` } })
+      const flagsOnUploadedAsset = flagsOnUpload.data.asset
+      const flagsOnUploadedAssetFile = flagsOnUploadedAsset
+        ? path.join(flagsDir, 'uploads', uid, flagsOnUploadedAsset.id)
+        : null
       const flagsOnAfter = profileSnapshot()
       assert.equal(flagsOnMcp.response.status, 200)
+      assert.equal(flagsOnProposals.response.status, 200)
+      assert.equal(flagsOnUpload.response.status, 201)
+      assert.ok(flagsOnUploadedAsset?.sha256)
+      assert.equal(fs.existsSync(flagsOnUploadedAssetFile), true)
+      assert.equal(hash(fs.readFileSync(flagsOnUploadedAssetFile)), flagsOnUploadedAsset.sha256)
       assert.equal(flagsOnAsset.response.status, 200)
       assert.equal(hash(flagsOnAsset.bytes), flagsAsset.sha256)
       assert.deepEqual(flagsOnAfter.counts, flagsOnBefore.counts)
@@ -556,6 +569,9 @@ try {
       print('flags_off_asset_existing_retrieval_policy', '200 (existing private asset retained; new uploads disabled at 404)')
       print('flags_off_asset_file_preserved', true)
       print('flags_on_mcp_route_status', flagsOnMcp.response.status)
+      print('flags_on_proposals_route_status', flagsOnProposals.response.status)
+      print('flags_on_asset_upload_route_status', flagsOnUpload.response.status)
+      print('flags_on_asset_upload_checksum_ownership', true)
       print('flags_on_asset_existing_retrieval_status', flagsOnAsset.response.status)
       print('LOCAL_FEATURE_TOGGLE_STAGING', 'PASS')
     } finally {
