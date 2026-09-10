@@ -80,6 +80,21 @@ export function restFocusIdx(entries, units, forIdx, kind) {
 }
 
 /**
+ * Which kind of set the rest after set `setIdx` leads into, for the timer bar's wording:
+ * 'warmup' when the next unfinished set after it is a warm-up (ramp) row, 'work' otherwise, null
+ * when the exercise has no warm-up rows at all — then "next set" says everything and "working"
+ * would be noise. Looks at the first unfinished set AFTER the one just checked, not anywhere in
+ * the exercise, so a ramp row you skipped and left unticked cannot make the bar call a working
+ * rest a warm-up rest. Decided where the rest starts and carried on the timer, like the length.
+ */
+export function restSetPhase(entry, setIdx) {
+  const sets = Array.isArray(entry?.sets) ? entry.sets : []
+  if (!sets.some(isWarmupRow)) return null
+  const next = sets.slice(setIdx + 1).find(set => !set.done)
+  return next && isWarmupRow(next) ? 'warmup' : 'work'
+}
+
+/**
  * Whether re-checking an already-completed set should start a rest.
  *
  * The high-water rule deliberately swallows a re-check so that unchecking and re-checking

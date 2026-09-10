@@ -322,6 +322,8 @@ export default {
   'Sounds': 'Sons',
   'Flash screen when timer ends': 'Faire clignoter l’écran à la fin du minuteur',
   'Next set': 'Série suivante',
+  'Next warm-up set': 'Série d’échauffement suivante',
+  'Next working set': 'Série de travail suivante',
   'Next round': 'Tour suivant',
   'Next exercise': 'Exercice suivant',
   'Hold': 'Maintien',

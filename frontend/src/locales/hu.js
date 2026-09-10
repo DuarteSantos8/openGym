@@ -746,6 +746,8 @@ export default {
   'Rest after each set of this exercise. Leave at 0 to use your default rest timer.': 'Pihenő a gyakorlat minden sorozata után. Hagyd 0-n az alapértelmezett pihenőidőzítőhöz.',
   'Flash screen when timer ends': 'Képernyő villogása, ha lejár az időzítő',
   'Next set': 'Következő sorozat',
+  'Next warm-up set': 'Következő bemelegítő sorozat',
+  'Next working set': 'Következő munkasorozat',
   'Next round': 'Következő kör',
   'Next exercise': 'Következő gyakorlat',
   'Hold': 'Tartás',

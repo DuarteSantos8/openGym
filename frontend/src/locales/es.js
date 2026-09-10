@@ -322,6 +322,8 @@ export default {
   'Sounds': 'Sonidos',
   'Flash screen when timer ends': 'Hacer parpadear la pantalla al finalizar el temporizador',
   'Next set': 'Siguiente serie',
+  'Next warm-up set': 'Siguiente serie de calentamiento',
+  'Next working set': 'Siguiente serie efectiva',
   'Next round': 'Siguiente ronda',
   'Next exercise': 'Siguiente ejercicio',
   'Hold': 'Mantener',

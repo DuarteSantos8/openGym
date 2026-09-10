@@ -116,6 +116,8 @@ export const PT_BR_OVERRIDES = {
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': 'A tela permanece ligada durante o treino, para você não precisar desbloquear o celular entre as séries.',
   'Flash screen when timer ends': 'Piscar a tela quando o temporizador terminar',
   'Next set': 'Próxima série',
+  'Next warm-up set': 'Próxima série de aquecimento',
+  'Next working set': 'Próxima série de trabalho',
   'Next round': 'Próxima rodada',
   'Next exercise': 'Próximo exercício',
   'Hold': 'Sustentação',

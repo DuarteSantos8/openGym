@@ -72,6 +72,7 @@ export const useUI = create((set, get) => ({
   timer: null,         // rest countdown between sets — { left, total, endsAt, forIdx, kind }
                        // forIdx: index of the active entry whose set started the rest (undefined when unknown)
                        // kind: which rest-over sound plays — 'set' | 'round' | 'block' (supersetFlow.restKind)
+                       // phase: the set a 'set' rest leads into — 'warmup' | 'work' | null (supersetFlow.restSetPhase)
   work: null,          // work countdown DURING a timed set (issue #16) — { left, total, endsAt, label }
   timerFlashId: 0,     // changing the id retriggers the theme-blink visual alert
 
@@ -95,13 +96,13 @@ export const useUI = create((set, get) => ({
     toastTm = setTimeout(() => set({ toastMsg: '' }), 2200)
   },
 
-  startRest(sec, forIdx, kind) {
+  startRest(sec, forIdx, kind, phase) {
     get().stopRest()
     // Rest timer set to Off. Stopping and returning rather than starting a zero-length timer
     // keeps every caller honest: the four places that start a rest do not each need to know.
     if (!(sec > 0)) return
     const endsAt = Date.now() + sec * 1000
-    set({ timer: { left: sec, total: sec, endsAt, forIdx, kind } })
+    set({ timer: { left: sec, total: sec, endsAt, forIdx, kind, phase } })
     requestRestNotificationPermission()
     pushRestTimer(sec)
     timerTick = () => {

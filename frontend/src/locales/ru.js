@@ -322,6 +322,8 @@ export default {
   'Sounds': 'Звуки',
   'Flash screen when timer ends': 'Мигать экраном по окончании таймера',
   'Next set': 'Следующий подход',
+  'Next warm-up set': 'Следующий разминочный подход',
+  'Next working set': 'Следующий рабочий подход',
   'Next round': 'Следующий круг',
   'Next exercise': 'Следующее упражнение',
   'Hold': 'Удержание',
