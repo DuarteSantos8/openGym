@@ -537,6 +537,23 @@ describe('Workout set completion flow', () => {
     expect(mocks.startRest).toHaveBeenLastCalledWith(90, 0, 'block', null)
   })
 
+  it('a chain armed before leaving the workout tab runs on the instance that is on screen after coming back', async () => {
+    await mount([hold('plank', [false, false]), exercise('next', [false])])
+    await pressStart(0)
+    await act(async () => { mocks.startWork.mock.calls[0][2](30, 0) })
+    const restOver = mocks.startRest.mock.calls[0][4]
+    // Tab away (the route wrapper unmounts the view), shorten the rest in Settings, come back.
+    await act(async () => { root.unmount() })
+    mocks.S.restSec = 30
+    installDom()
+    await act(async () => { root.render(React.createElement(Workout)) })
+    await act(async () => { restOver(0) })
+    expect(mocks.startWork).toHaveBeenCalledTimes(2)
+    await act(async () => { mocks.startWork.mock.calls[1][2](30, 0) })
+    expect(mocks.S.active.entries[0].sets[1]).toMatchObject({ sec: 30, done: true })
+    expect(mocks.startRest).toHaveBeenLastCalledWith(30, 0, 'block', null)   // the new instance's rest length, exercise finished
+  })
+
   it('in a superset a finished hold hands over nothing', async () => {
     await mount([hold('plank', [false, false], { sg: 'g' }), hold('side-plank', [false, false], { sg: 'g' })], 0)
     await pressStart(0)
