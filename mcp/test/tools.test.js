@@ -108,6 +108,15 @@ describe('get_routine', () => {
     })
   })
 
+  test('summarises a wave-configured exercise by its training max, not leftover sets/reps', () => {
+    const push = call('list_routines').routines.find(x => x.name === 'Push Day')
+    const routine = S.routines.find(x => x.id === push.id)
+    routine.ex[0] = { ...routine.ex[0], prog: 'wave', trainingMax: 100 }
+    _seedStateForTests(S)
+    const e = call('get_routine', { routine_id: push.id }).exercises[0]
+    expect(e.summary).toBe('4-stage wave · 100 kg training max')
+  })
+
   test('resolves custom exercises from the current profile state', () => {
     const custom = { id: 'cx-sled-drag', n: 'Sled drag', bp: 'upper legs' }
     S.customEx = [custom]
