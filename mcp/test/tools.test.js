@@ -856,4 +856,15 @@ describe('preview_session', () => {
     only({ id: '0025', sets: 3, reps: 8, weight: 50 })
     expect(() => call('preview_session', { routine_id: 'nope' })).toThrow(/no routine with id/)
   })
+
+  test('a wave never reports differs_from_plan — its leftover sets/reps are not the plan', () => {
+    // cfg.sets/reps/weight on a wave exercise are whatever was left over from before that
+    // policy was chosen; the wave's real prescription is in opening_sets. Comparing the
+    // leftovers against the computed opening set would flag every wave exercise, every time.
+    only({ id: '0025', sets: 3, reps: 10, weight: 60, prog: 'wave', trainingMax: 100 })
+    const e = call('preview_session').exercises[0]
+    expect(e.opening_sets.map(s => s.w)).toEqual([65, 75, 85])
+    expect(e.changed).toEqual([])
+    expect(e.differs_from_plan).toBe(false)
+  })
 })
