@@ -6,13 +6,14 @@ What the Discord and GitLab reports after v1.3.5 had in common: the Coach failed
 see why. Web bundle and APK; the API image only for the payload change.
 
 - 🌊 **Percentage programming (5/3/1 and anything shaped like it).** A new progression rule runs
-  a cycle of weeks whose every set is a percentage of a training max you set yourself — the
-  classic 5×5/3×3/5-3-1 plus a deload week is the template, and the cycle is editable week by
-  week (`n × r @ %`), so DUP, hold weeks and block peaking are the same rule with different
-  data. Finish the last week and the training max goes up by the exercise's step; miss one and
-  you run it again (or move on, if you'd rather). Where you are in the cycle is read back out
-  of your history, so a corrected set or an edited cycle takes effect immediately, and nothing
-  is stored that can drift.
+  a cycle of stages whose every set is a percentage of a training max you set yourself — the
+  classic 5×5/3×3/5-3-1 plus a deload stage is the template, and the cycle is editable stage by
+  stage (`n × r @ %`), so DUP, hold stages and block peaking are the same rule with different
+  data. A stage advances one per logged session, not per calendar week — run the whole cycle in
+  a day if you log that many sessions. Finish the last stage and the training max goes up by the
+  exercise's step; miss one and you run it again (or move on, if you'd rather). Where you are in
+  the cycle is read back out of your history, so a corrected set or an edited cycle takes effect
+  immediately, and nothing is stored that can drift.
 - 🔍 **A failed Coach run on the phone says what the provider said.** With your own API key there
   is no admin card and no instance owner, so "the instance owner needs to check its setup" was the
   wrong sentence and hid the one thing that mattered — OpenAI's "you exceeded your current quota",

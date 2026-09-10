@@ -1069,8 +1069,8 @@ function WaveEditor({ c, setC, ex, unit }) {
   const wave = waveOf(c)
   const tmPct = Math.round(deloadFactorOf(c) * 100)
   const setWave = next => setC(x => ({ ...x, wave: next }))
-  const patchWeek = (wi, patch) => setWave(wave.map((w, i) => (i === wi ? { ...w, ...patch } : w)))
-  const patchSet = (wi, si, patch) => patchWeek(wi, { sets: wave[wi].sets.map((s, i) => (i === si ? { ...s, ...patch } : s)) })
+  const patchStage = (wi, patch) => setWave(wave.map((w, i) => (i === wi ? { ...w, ...patch } : w)))
+  const patchSet = (wi, si, patch) => patchStage(wi, { sets: wave[wi].sets.map((s, i) => (i === si ? { ...s, ...patch } : s)) })
   return <>
     <div className="row cfgrow" style={{ marginBottom: 8 }}>
       <Stepper label={t('Training max ({0})', unit)} value={c.trainingMax || 0} step={weightIncrement(c, unit)}
@@ -1084,7 +1084,7 @@ function WaveEditor({ c, setC, ex, unit }) {
     <div className="small dim" style={{ margin: '10px 0 6px' }}>{t('Percentages of')}</div>
     <Segmented value={c.pctBase === '1rm' ? '1rm' : 'tm'} onChange={v => setC(x => ({ ...x, pctBase: v }))}
       options={[{ value: 'tm', label: t('Training max') }, { value: '1rm', label: t('Estimated 1RM') }]} />
-    <div className="small dim" style={{ margin: '10px 0 6px' }}>{t('After a missed week')}</div>
+    <div className="small dim" style={{ margin: '10px 0 6px' }}>{t('After a missed stage')}</div>
     <Segmented value={c.onMiss === 'advance' ? 'advance' : 'repeat'} onChange={v => setC(x => ({ ...x, onMiss: v }))}
       options={[{ value: 'repeat', label: t('Run it again') }, { value: 'advance', label: t('Move on') }]} />
     <div className="small dim" style={{ margin: '10px 0 6px' }}>{t('When the cycle ends')}</div>
@@ -1094,17 +1094,17 @@ function WaveEditor({ c, setC, ex, unit }) {
     <h4 className="sec">{t('Cycle')}</h4>
     {wave.map((w, wi) => <div className="card" key={wi} style={{ marginBottom: 8 }}>
       <div className="row" style={{ alignItems: 'center', gap: 8 }}>
-        <strong className="grow">{t('Week {0}', wi + 1)}</strong>
+        <strong className="grow">{t('Stage {0}', wi + 1)}</strong>
         <label className="row" style={{ alignItems: 'center', gap: 6, cursor: 'pointer' }}>
           <span className="small dim">{t('Deload')}</span>
-          <Switch checked={!!w.deload} onChange={v => patchWeek(wi, { deload: v || undefined })} />
+          <Switch checked={!!w.deload} onChange={v => patchStage(wi, { deload: v || undefined })} />
         </label>
-        {wave.length > 1 && <button type="button" className="iconbtn" aria-label={t('Remove week {0}', wi + 1)}
+        {wave.length > 1 && <button type="button" className="iconbtn" aria-label={t('Remove stage {0}', wi + 1)}
           onClick={() => setWave(wave.filter((_, i) => i !== wi))}><Icon name="xmark" /></button>}
       </div>
       <div className="row cfgrow">
         <Stepper label={t('Run it')} unit={t('times')} value={w.repeat} step={1} decimal={false}
-          onChange={v => patchWeek(wi, { repeat: Math.max(1, Math.round(v) || 1) })} />
+          onChange={v => patchStage(wi, { repeat: Math.max(1, Math.round(v) || 1) })} />
       </div>
       {w.sets.map((s, si) => <div className="row cfgrow" key={si} style={{ alignItems: 'flex-end' }}>
         <Stepper label={t('Sets')} value={s.n} step={1} decimal={false}
@@ -1114,13 +1114,13 @@ function WaveEditor({ c, setC, ex, unit }) {
         <Stepper label={t('%')} value={s.pct} step={2.5}
           onChange={v => patchSet(wi, si, { pct: Math.min(100, Math.max(1, v)) })} />
         {w.sets.length > 1 && <button type="button" className="iconbtn" aria-label={t('Remove set {0}', si + 1)}
-          onClick={() => patchWeek(wi, { sets: w.sets.filter((_, i) => i !== si) })}><Icon name="xmark" /></button>}
+          onClick={() => patchStage(wi, { sets: w.sets.filter((_, i) => i !== si) })}><Icon name="xmark" /></button>}
       </div>)}
       <Button variant="ghost" className="small"
-        onClick={() => patchWeek(wi, { sets: [...w.sets, { ...w.sets[w.sets.length - 1] }] })}>{t('Add a set')}</Button>
+        onClick={() => patchStage(wi, { sets: [...w.sets, { ...w.sets[w.sets.length - 1] }] })}>{t('Add a set')}</Button>
     </div>)}
     <Button variant="ghost" className="small"
-      onClick={() => setWave([...wave, { repeat: 1, sets: [{ pct: 75, r: 5, n: 3 }] }])}>{t('Add a week')}</Button>
+      onClick={() => setWave([...wave, { repeat: 1, sets: [{ pct: 75, r: 5, n: 3 }] }])}>{t('Add a stage')}</Button>
     {/* Dropping the stored wave is the reset: waveOf falls back to the template. */}
     <Button variant="ghost" className="small"
       onClick={() => setC(x => ({ ...x, wave: undefined }))}>{t('Back to the 5/3/1 template')}</Button>
@@ -1167,7 +1167,6 @@ function ProgressionFields({ ex, mode, c, setC, routine, unit, perSide }) {
       {epleyEligible && <Stepper label={t('Deload 1RM (%)')} value={deloadPercent} step={5} decimal={false}
         onChange={v => setC(x => ({ ...x, deloadFactor: Math.max(0.5, Math.min(0.95, Number(v) / 100)) }))} />}
     </div>}
-    {active === 'wave' && <WaveEditor c={c} setC={setC} ex={ex} unit={unit} />}
     {invalid && <div className="small" role="alert" style={{ color: 'var(--red)', marginTop: -10, marginBottom: 18 }}>
       {t('Enter a positive step to use this progression rule.')}
     </div>}
@@ -1287,8 +1286,9 @@ function ExConfig({ ex, existing, onSave, onDelete, close, routine, initial }) {
       <Segmented className="seg-range" value={mode} onChange={setMode}
         options={[{ value: 'reps', label: t('Reps') }, { value: 'time', label: t('Time') }]} />
     </div>}
-    {/* A wave prescribes its own sets, reps and weight per week (WaveEditor, below) — this row
-        would just be dead config nobody reads once that policy is active. */}
+    {/* A wave prescribes its own sets, reps and weight per stage (WaveEditor, right below) — this
+        row would just be dead config nobody reads once that policy is active. */}
+    {activePolicy === 'wave' && <WaveEditor c={c} setC={setC} ex={ex} unit={st.unit} />}
     {activePolicy !== 'wave' && <div className="row cfgrow" style={{ marginBottom: mode === 'time' ? 8 : 18 }}>
       {cardio ? <>
         <Stepper label={t('Intervals')} value={c.sets} step={1} decimal={false} onChange={v => setC(x => ({ ...x, sets: v }))} />

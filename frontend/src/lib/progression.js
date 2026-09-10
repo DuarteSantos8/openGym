@@ -45,7 +45,7 @@ export const POLICY_DESC = {
   greyskull: 'Two straight sets plus a final set taken to failure. Beat the target on that set and the weight goes up — double if you double the reps. One failure resets 10 %.',
   double: 'Work up through a rep range at the same weight. Reach the top of the range in every set and the weight goes up, reps back to the bottom.',
   time: 'Hold every set for the full duration and the target goes up.',
-  wave: 'Every set is a percentage of a training max you set yourself, run as a cycle of weeks. Finish the last week and the training max goes up; miss one and you run it again.'
+  wave: 'Every set is a percentage of a training max you set yourself, run as a cycle of stages. Finish the last stage and the training max goes up; miss one and you run it again.'
 }
 
 // The Epley target is a soft objective mapped onto the exercise's real load grid. Keep the
@@ -133,11 +133,11 @@ export function deloadTo(cur, step, factor = DELOAD_FACTOR) {
 }
 
 /* -------------------------------- percentage waves -------------------------------- */
-// A "wave" is a stored list of weeks; each week is a list of prescriptive working sets given
+// A "wave" is a stored list of stages; each stage is a list of prescriptive working sets given
 // as `n × r @ pct` of a base (a training max, or the estimated 1RM). 5/3/1 is the template
 // this ships with, but nothing below knows about Wendler: any scheme that is "a sequence of
-// weeks, a fixed base bump when the cycle closes, repeat the week on a miss" is expressible
-// as data — DUP, hold weeks, block peaking — which is why this is one policy and not five.
+// stages, a fixed base bump when the cycle closes, repeat the stage on a miss" is expressible
+// as data — DUP, hold stages, block peaking — which is why this is one policy and not five.
 export const DEFAULT_WAVE = [
   { sets: [{ r: 5, pct: 65 }, { r: 5, pct: 75 }, { r: 5, pct: 85 }] },
   { sets: [{ r: 3, pct: 70 }, { r: 3, pct: 80 }, { r: 3, pct: 90 }] },
@@ -154,7 +154,7 @@ const clampPct = v => Math.min(100, Math.max(0, Number(v) || 0))
  * so the policy selector never has to write the template out to make the engine work.
  */
 export function waveOf(cfg) {
-  const weeks = (Array.isArray(cfg?.wave) ? cfg.wave : [])
+  const stages = (Array.isArray(cfg?.wave) ? cfg.wave : [])
     .map(w => ({
       ...(w?.deload ? { deload: true } : {}),
       repeat: Math.max(1, Math.round(Number(w?.repeat)) || 1),
@@ -167,7 +167,7 @@ export function waveOf(cfg) {
         .filter(s => s.pct > 0)
     }))
     .filter(w => w.sets.length)
-  if (weeks.length) return weeks
+  if (stages.length) return stages
   return DEFAULT_WAVE.map(w => ({
     ...(w.deload ? { deload: true } : {}),
     repeat: 1,
@@ -175,24 +175,24 @@ export function waveOf(cfg) {
   }))
 }
 
-/** One week resolved against a base: every set expanded by `n`, every load on the exercise's grid. */
-export function weekRows(week, base, step) {
+/** One stage resolved against a base: every set expanded by `n`, every load on the exercise's grid. */
+export function stageRows(stage, base, step) {
   const rows = []
-  ;(week?.sets || []).forEach(s => {
+  ;(stage?.sets || []).forEach(s => {
     const w = snapWeight(base * s.pct / 100, step)
     for (let i = 0; i < (s.n || 1); i++) rows.push({ w, r: s.r })
   })
   return rows
 }
 
-/** The heaviest percentage in a week — the signal a logged session is matched back against. */
-export const topPctOf = week => Math.max(0, ...(week?.sets || []).map(s => s.pct))
+/** The heaviest percentage in a stage — the signal a logged session is matched back against. */
+export const topPctOf = stage => Math.max(0, ...(stage?.sets || []).map(s => s.pct))
 
 /**
  * Percentage / training-max programming.
  *
  * Where in the cycle you are is *derived*, exactly like every other number in this file: the
- * week of the last session is the one whose top set lands closest to what was actually lifted.
+ * stage of the last session is the one whose top set lands closest to what was actually lifted.
  * No counter is stored, so fixing a mistyped set — or rewriting the wave itself — takes effect
  * on the next prescription instead of leaving a saved position behind to drift.
  *
@@ -203,7 +203,7 @@ export const topPctOf = week => Math.max(0, ...(week?.sets || []).map(s => s.pct
  */
 function prescribeWave(S, cfg, inc, unit) {
   const wave = waveOf(cfg)
-  const weeks = wave.length
+  const stages = wave.length
   const pctBase = cfg.pctBase === '1rm' ? '1rm' : 'tm'
   const onMiss = cfg.onMiss === 'advance' ? 'advance' : 'repeat'
   const bump = cfg.bump === 'off' ? 'off' : 'step'
@@ -214,68 +214,68 @@ function prescribeWave(S, cfg, inc, unit) {
   const base = pctBase === '1rm' ? (est ? est.est : 0) : Number(cfg.trainingMax) || 0
   if (!(base > 0)) {
     return {
-      policy: 'wave', kind: 'need-tm', weeks,
+      policy: 'wave', kind: 'need-tm', stages,
       why: pctBase === '1rm'
         ? ['No estimated 1RM for this exercise yet — log a set of it, or base the percentages on a training max.']
         : ['Set a training max for this exercise to start the cycle.']
     }
   }
 
-  const rowsAt = k => weekRows(wave[k], base, inc)
+  const rowsAt = k => stageRows(wave[k], base, inc)
   const topAt = k => snapWeight(base * topPctOf(wave[k]) / 100, inc)
   const pctsAt = k => wave[k].sets.map(s => s.pct).join('/')
 
   // Only a session that actually carries the prescribed rows is a wave session: an unrelated
   // logged set for the same exercise (a 1RM test rep, or history from before this policy) must
-  // not be mistaken for a completed cycle week.
+  // not be mistaken for a completed cycle stage.
   const sessions = sessionsFor(S, cfg.id, cfg).filter(s => s.mode === 'reps' && Array.isArray(s.target?.rows) && s.target.rows.length)
   const last = sessions[sessions.length - 1]
-  // Unlike every other policy, the baseline session is itself a prescription: week 1 of the
+  // Unlike every other policy, the baseline session is itself a prescription: stage 1 of the
   // cycle is knowable before anything has been logged.
   if (!last) {
     return {
-      policy: 'wave', kind: 'first', week: 1, weeks, rows: rowsAt(0),
-      why: ['Cycle week 1 of {0} — {1} % of a {2} {3} training max.', weeks, pctsAt(0), base, unit]
+      policy: 'wave', kind: 'first', stage: 1, stages, rows: rowsAt(0),
+      why: ['Cycle stage 1 of {0} — {1} % of a {2} {3} training max.', stages, pctsAt(0), base, unit]
     }
   }
 
-  // Which week was that? The nearest top set. A tie goes to the earlier week (`<`, not `<=`),
+  // Which stage was that? The nearest top set. A tie goes to the earlier stage (`<`, not `<=`),
   // which is the conservative read: repeat lighter work rather than skip ahead.
   let k = 0
-  for (let i = 1; i < weeks; i++) if (Math.abs(topAt(i) - last.weight) < Math.abs(topAt(k) - last.weight)) k = i
-  // A week with `repeat: 3` is three identical sessions. Consecutive sessions at the same top
-  // weight are the same week run again — the same nearest-match, counted.
+  for (let i = 1; i < stages; i++) if (Math.abs(topAt(i) - last.weight) < Math.abs(topAt(k) - last.weight)) k = i
+  // A stage with `repeat: 3` is three identical sessions. Consecutive sessions at the same top
+  // weight are the same stage run again — the same nearest-match, counted.
   let ran = 0
   for (let i = sessions.length - 1; i >= 0 && sessions[i].weight === last.weight; i--) ran++
 
   let nextK
   let bumped = false
   if (last.ok) {
-    if (ran < (wave[k].repeat || 1)) nextK = k                    // the week asked to be run again
-    else if (k === weeks - 1) {
+    if (ran < (wave[k].repeat || 1)) nextK = k                    // the stage asked to be run again
+    else if (k === stages - 1) {
       // The cycle closed. Only a training-max base with the step bump on actually moves — a
       // live-1RM base has nothing of its own to bump.
       nextK = 0
       bumped = pctBase === 'tm' && bump === 'step'
     } else nextK = k + 1
   } else {
-    // `advance` past the last week wraps to week 1 without a bump: the cycle was not finished,
+    // `advance` past the last stage wraps to stage 1 without a bump: the cycle was not finished,
     // it was abandoned, and abandoning it must not earn a heavier training max.
-    nextK = onMiss === 'advance' ? (k + 1) % weeks : k
+    nextK = onMiss === 'advance' ? (k + 1) % stages : k
   }
 
   const nextBase = bumped ? round1(base + inc) : base
-  const rows = weekRows(wave[nextK], nextBase, inc)
-  // 'deload' announces arriving at a lighter week on a hit; a miss is always a 'hold' — even
-  // re-running a deload week, since nothing moved forward.
+  const rows = stageRows(wave[nextK], nextBase, inc)
+  // 'deload' announces arriving at a lighter stage on a hit; a miss is always a 'hold' — even
+  // re-running a deload stage, since nothing moved forward.
   const kind = !last.ok ? 'hold' : wave[nextK].deload ? 'deload' : 'up'
   const why = bumped
-    ? ['Cycle done — training max up to {0} {1}. Back to week 1 of {2}: {3} %.', nextBase, unit, weeks, pctsAt(nextK)]
+    ? ['Cycle done — training max up to {0} {1}. Back to stage 1 of {2}: {3} %.', nextBase, unit, stages, pctsAt(nextK)]
     : !last.ok && nextK === k
-      ? ['Missed a set last time — week {0} of {1} again: {2} %.', nextK + 1, weeks, pctsAt(nextK)]
-      : ['Week {0} of {1} — {2} % of a {3} {4} training max.', nextK + 1, weeks, pctsAt(nextK), nextBase, unit]
+      ? ['Missed a set last time — stage {0} of {1} again: {2} %.', nextK + 1, stages, pctsAt(nextK)]
+      : ['Stage {0} of {1} — {2} % of a {3} {4} training max.', nextK + 1, stages, pctsAt(nextK), nextBase, unit]
 
-  return { policy: 'wave', kind, week: nextK + 1, weeks, rows, ...(bumped ? { trainingMax: nextBase } : {}), why }
+  return { policy: 'wave', kind, stage: nextK + 1, stages, rows, ...(bumped ? { trainingMax: nextBase } : {}), why }
 }
 
 const positiveGridAround = (ideal, step, maxWeight, strictLower) => {
@@ -596,7 +596,7 @@ export function nextPrescription(S, cfg, routine) {
  */
 export function applyPrescription(sets, p, step = 2.5) {
   if (!p || p.kind === 'off' || p.kind === 'need-tm') return sets
-  // A baseline session usually has nothing to say. A wave's does: week 1 of a cycle is a full
+  // A baseline session usually has nothing to say. A wave's does: stage 1 of a cycle is a full
   // prescription before anything has been logged, so the rule is "no-op iff `first` and rowless".
   if (p.kind === 'first' && !(Array.isArray(p.rows) && p.rows.length)) return sets
   const rows = Array.isArray(p.rows) && p.rows.length ? p.rows : null
@@ -604,7 +604,7 @@ export function applyPrescription(sets, p, step = 2.5) {
   const want = rows ? Math.max(p.sets || 0, rows.length) : p.sets
 
   // A policy that decided on a set count gets to grow the list — bodyweight progression adds
-  // a set where a barbell would have added a plate, and a wave's week may prescribe more rows
+  // a set where a barbell would have added a plate, and a wave's stage may prescribe more rows
   // than the plan holds. Only ever upwards, and only by copying a row that is already there:
   // a session in progress must not lose a set it has logged. Growth happens before the
   // assignment below so a freshly appended row gets its own weight rather than the seed's.
@@ -625,7 +625,7 @@ export function applyPrescription(sets, p, step = 2.5) {
   }
 
   // Rows are handed out by work-row ordinal, so a logged row consumes its own row and the
-  // pending ones stay lined up with the week they belong to.
+  // pending ones stay lined up with the stage they belong to.
   let ordinal = -1
   out = out.map(s => {
     if (isWarmupRow(s)) return s

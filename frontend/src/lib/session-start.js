@@ -41,7 +41,7 @@ export function buildSessionEntries(st, r) {
  * A wave's training max is a number the lifter owns rather than one the log implies, and a
  * completed cycle bumps it — so the routine has to learn the new value or the next cycle runs
  * at the old one. Written when the session *finishes*, not when it starts: a session you
- * discard never happened, and a bump it never lifted would put the derived cycle week out of
+ * discard never happened, and a bump it never lifted would put the derived cycle stage out of
  * step with the history it is derived from.
  *
  * Matched by `rid` + exercise id rather than by position: a routine edited between start and

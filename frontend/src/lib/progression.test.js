@@ -3,7 +3,7 @@ import {
   readSession, sessionsFor, stallCount, nextPrescription, applyPrescription,
   policyFor, defaultIncrement, weightIncrement, epley1RM, deloadTarget1RM,
   deloadFactorOf, DELOAD_FACTOR, POLICIES_FOR, DELOAD_AFTER, MAX_BW_SETS,
-  DEFAULT_WAVE, waveOf, weekRows, topPctOf
+  DEFAULT_WAVE, waveOf, stageRows, topPctOf
 } from './progression.js'
 import { entryExcluded } from './history.js'
 import { EXDB } from './exercises.js'
@@ -835,7 +835,7 @@ describe('drop-sets and rest-pause sets in progression', () => {
 })
 
 describe('wave template and resolution', () => {
-  it('ships a four-week 5/3/1 template', () => {
+  it('ships a four-stage 5/3/1 template', () => {
     expect(DEFAULT_WAVE).toHaveLength(4)
     expect(DEFAULT_WAVE[0].sets.map(s => s.pct)).toEqual([65, 75, 85])
     expect(DEFAULT_WAVE[2].sets.map(s => s.r)).toEqual([5, 3, 1])
@@ -849,19 +849,19 @@ describe('wave template and resolution', () => {
     expect(waveOf({ wave: [{ sets: [] }] })).toEqual(waveOf({}))
   })
 
-  it('normalises every week and set it is given', () => {
+  it('normalises every stage and set it is given', () => {
     const w = waveOf({ wave: [{ deload: true, repeat: '3', sets: [{ pct: 250, r: 0, n: '2' }, { pct: 0 }] }] })
     expect(w).toHaveLength(1)
     expect(w[0]).toEqual({ deload: true, repeat: 3, sets: [{ pct: 100, r: 1, n: 2 }] })
   })
 
   it('expands n and snaps each row to the load grid', () => {
-    const week = { repeat: 1, sets: [{ pct: 65, r: 5, n: 2 }, { pct: 85, r: 5, n: 1 }] }
-    expect(weekRows(week, 100, 2.5)).toEqual([{ w: 65, r: 5 }, { w: 65, r: 5 }, { w: 85, r: 5 }])
-    expect(weekRows(week, 97, 2.5)).toEqual([{ w: 62.5, r: 5 }, { w: 62.5, r: 5 }, { w: 82.5, r: 5 }])
+    const stage = { repeat: 1, sets: [{ pct: 65, r: 5, n: 2 }, { pct: 85, r: 5, n: 1 }] }
+    expect(stageRows(stage, 100, 2.5)).toEqual([{ w: 65, r: 5 }, { w: 65, r: 5 }, { w: 85, r: 5 }])
+    expect(stageRows(stage, 97, 2.5)).toEqual([{ w: 62.5, r: 5 }, { w: 62.5, r: 5 }, { w: 82.5, r: 5 }])
   })
 
-  it('reports the heaviest percentage of a week', () => {
+  it('reports the heaviest percentage of a stage', () => {
     expect(topPctOf(waveOf({})[0])).toBe(85)
     expect(topPctOf(waveOf({})[3])).toBe(60)
     expect(topPctOf(null)).toBe(0)
@@ -884,7 +884,7 @@ describe('readSession with a per-row target', () => {
       { w: 65, r: 5, done: true }, { w: 75, r: 3, done: true }, { w: 85, r: 1, done: true },
     ] })
     expect(s.ok).toBe(true)
-    expect(s.weight).toBe(85)          // the top set stays the week signal
+    expect(s.weight).toBe(85)          // the top set stays the stage signal
   })
 
   it('does not fail a light row for missing the heavy row\'s reps', () => {
@@ -935,7 +935,7 @@ describe('readSession with a per-row target', () => {
 describe('wave progression', () => {
   // History for a wave: each session is [ [w, r], [w, r], ... ] — one pair per work row.
   // `target`, when given, is either one target shared by every session or one per session
-  // (matched by index) — a fixture needs the latter to say what a week's rows actually were
+  // (matched by index) — a fixture needs the latter to say what a stage's rows actually were
   // prescribed as, since that can differ from what got logged (a missed rep is still logged).
   const waveHist = (id, sessions, target) => ({
     unit: 'kg',
@@ -962,77 +962,77 @@ describe('wave progression', () => {
     expect(nextPrescription({ unit: 'kg', workouts: [] }, { ...CFG, trainingMax: -5 }, null).kind).toBe('need-tm')
   })
 
-  it('prescribes week 1 as the very first session', () => {
+  it('prescribes stage 1 as the very first session', () => {
     const p = nextPrescription({ unit: 'kg', workouts: [] }, CFG, null)
-    expect(p).toMatchObject({ policy: 'wave', kind: 'first', week: 1, weeks: 4 })
+    expect(p).toMatchObject({ policy: 'wave', kind: 'first', stage: 1, stages: 4 })
     expect(p.rows).toEqual([{ w: 65, r: 5 }, { w: 75, r: 5 }, { w: 85, r: 5 }])
   })
 
-  it('moves to week 2 after a clean week 1', () => {
+  it('moves to stage 2 after a clean stage 1', () => {
     const p = nextPrescription(waveHist(LIFT, [W1]), CFG, null)
-    expect(p).toMatchObject({ kind: 'up', week: 2, weeks: 4 })
+    expect(p).toMatchObject({ kind: 'up', stage: 2, stages: 4 })
     expect(p.rows).toEqual([{ w: 70, r: 3 }, { w: 80, r: 3 }, { w: 90, r: 3 }])
     expect(p.trainingMax).toBeUndefined()
   })
 
-  // Week 1's prescribed rows: 5 reps on every row, regardless of what actually got logged.
-  const WEEK1_TARGET = { sets: 3, reps: 5, rows: [{ w: 65, r: 5 }, { w: 75, r: 5 }, { w: 85, r: 5 }] }
+  // Stage 1's prescribed rows: 5 reps on every row, regardless of what actually got logged.
+  const STAGE1_TARGET = { sets: 3, reps: 5, rows: [{ w: 65, r: 5 }, { w: 75, r: 5 }, { w: 85, r: 5 }] }
 
-  it('runs the same week again after a miss', () => {
+  it('runs the same stage again after a miss', () => {
     const missed = [[65, 5], [75, 5], [85, 3]]
-    const p = nextPrescription(waveHist(LIFT, [missed], WEEK1_TARGET), CFG, null)
-    expect(p).toMatchObject({ kind: 'hold', week: 1 })
+    const p = nextPrescription(waveHist(LIFT, [missed], STAGE1_TARGET), CFG, null)
+    expect(p).toMatchObject({ kind: 'hold', stage: 1 })
     expect(p.rows).toEqual([{ w: 65, r: 5 }, { w: 75, r: 5 }, { w: 85, r: 5 }])
   })
 
-  it('advances past a missed week when told to', () => {
+  it('advances past a missed stage when told to', () => {
     const missed = [[65, 5], [75, 5], [85, 3]]
-    const p = nextPrescription(waveHist(LIFT, [missed], WEEK1_TARGET), { ...CFG, onMiss: 'advance' }, null)
-    expect(p).toMatchObject({ kind: 'hold', week: 2 })
+    const p = nextPrescription(waveHist(LIFT, [missed], STAGE1_TARGET), { ...CFG, onMiss: 'advance' }, null)
+    expect(p).toMatchObject({ kind: 'hold', stage: 2 })
     expect(p.rows).toEqual([{ w: 70, r: 3 }, { w: 80, r: 3 }, { w: 90, r: 3 }])
   })
 
-  it('calls a deload week a deload', () => {
+  it('calls a deload stage a deload', () => {
     const p = nextPrescription(waveHist(LIFT, [W1, W2, W3]), CFG, null)
-    expect(p).toMatchObject({ kind: 'deload', week: 4 })
+    expect(p).toMatchObject({ kind: 'deload', stage: 4 })
     expect(p.rows).toEqual([{ w: 40, r: 5 }, { w: 50, r: 5 }, { w: 60, r: 5 }])
   })
 
-  it('closes the cycle by bumping the training max and going back to week 1', () => {
+  it('closes the cycle by bumping the training max and going back to stage 1', () => {
     const p = nextPrescription(waveHist(LIFT, [W1, W2, W3, W4]), CFG, null)
-    expect(p).toMatchObject({ kind: 'up', week: 1, weeks: 4, trainingMax: 102.5 })
+    expect(p).toMatchObject({ kind: 'up', stage: 1, stages: 4, trainingMax: 102.5 })
     // 65 % of 102.5 kg is 66.625, which snaps to 67.5 on a 2.5 kg grid — not 65's own multiple.
     expect(p.rows).toEqual([{ w: 67.5, r: 5 }, { w: 77.5, r: 5 }, { w: 87.5, r: 5 }])
   })
 
-  it('does not bump when the last week was missed', () => {
+  it('does not bump when the last stage was missed', () => {
     const missed = [[40, 5], [50, 5], [60, 3]]
-    const targets = [W1, W2, W3, [[40, 5], [50, 5], [60, 5]]].map(week => ({
-      sets: 3, reps: 5, rows: week.map(([w, r]) => ({ w, r }))
+    const targets = [W1, W2, W3, [[40, 5], [50, 5], [60, 5]]].map(stage => ({
+      sets: 3, reps: 5, rows: stage.map(([w, r]) => ({ w, r }))
     }))
     const p = nextPrescription(waveHist(LIFT, [W1, W2, W3, missed], targets), CFG, null)
-    expect(p).toMatchObject({ kind: 'hold', week: 4 })
+    expect(p).toMatchObject({ kind: 'hold', stage: 4 })
     expect(p.trainingMax).toBeUndefined()
   })
 
   it('wraps without touching the training max when the bump is off', () => {
     const p = nextPrescription(waveHist(LIFT, [W1, W2, W3, W4]), { ...CFG, bump: 'off' }, null)
-    expect(p).toMatchObject({ kind: 'up', week: 1 })
+    expect(p).toMatchObject({ kind: 'up', stage: 1 })
     expect(p.trainingMax).toBeUndefined()
     expect(p.rows).toEqual([{ w: 65, r: 5 }, { w: 75, r: 5 }, { w: 85, r: 5 }])
   })
 
-  it('holds a repeat week for as many sessions as it asks for', () => {
+  it('holds a repeat stage for as many sessions as it asks for', () => {
     const wave = [{ repeat: 2, sets: [{ pct: 80, r: 5 }] }, { sets: [{ pct: 90, r: 3 }] }]
     const cfg = { ...CFG, wave, sets: 1 }
     const one = [[80, 5]]
-    expect(nextPrescription(waveHist(LIFT, [one]), cfg, null)).toMatchObject({ kind: 'up', week: 1 })
-    expect(nextPrescription(waveHist(LIFT, [one, one]), cfg, null)).toMatchObject({ kind: 'up', week: 2 })
+    expect(nextPrescription(waveHist(LIFT, [one]), cfg, null)).toMatchObject({ kind: 'up', stage: 1 })
+    expect(nextPrescription(waveHist(LIFT, [one, one]), cfg, null)).toMatchObject({ kind: 'up', stage: 2 })
   })
 
   it('resolves against a live estimated 1RM when asked to', () => {
     const cfg = { ...CFG, pctBase: '1rm', trainingMax: 0 }
-    // 100 x 5 -> Epley 116.7; week 1 top set is 85 % of that, snapped to 2.5 kg.
+    // 100 x 5 -> Epley 116.7; stage 1 top set is 85 % of that, snapped to 2.5 kg.
     const st = waveHist(LIFT, [[[100, 5]]], { sets: 1, reps: 5 })
     const p = nextPrescription(st, { ...cfg, sets: 1 }, null)
     expect(p.policy).toBe('wave')
@@ -1053,7 +1053,7 @@ describe('wave progression', () => {
     expect(p.rows.map(r => r.r)).toEqual([5, 5, 5])
   })
 
-  it('always names the week it actually used', () => {
+  it('always names the stage it actually used', () => {
     const p = nextPrescription(waveHist(LIFT, [W1]), CFG, null)
     expect(p.why.join(' ')).toContain('2')
   })

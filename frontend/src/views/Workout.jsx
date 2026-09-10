@@ -400,8 +400,8 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
     {/* Where in the cycle this session sits. The percentages and the training max are already
         in the guidance line below, and the loads are on the rows — this is the one thing
         neither of them says at a glance. */}
-    {plan?.weeks > 1 && plan.week > 0 && <div className="small dim" style={{ marginBottom: 4 }}>
-      {t('Week {0} of {1}', plan.week, plan.weeks)}{plan.kind === 'deload' ? ' · ' + t('deload') : ''}
+    {plan?.stages > 1 && plan.stage > 0 && <div className="small dim" style={{ marginBottom: 4 }}>
+      {t('Stage {0} of {1}', plan.stage, plan.stages)}{plan.kind === 'deload' ? ' · ' + t('deload') : ''}
     </div>}
     {guidance && <button type="button" className={'progline' + (plan.kind === 'deload' ? ' warn' : '')}
       aria-label={t('Open progression settings')} onClick={onProgressionSettings}>
