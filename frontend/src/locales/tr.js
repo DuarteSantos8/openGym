@@ -328,6 +328,8 @@ export default {
   'Sounds': 'Sesler',
   'Flash screen when timer ends': 'Zamanlayıcı bitince ekranı yanıp söndür',
   'Next set': 'Sonraki set',
+  'Next warm-up set': 'Sonraki ısınma seti',
+  'Next working set': 'Sonraki çalışma seti',
   'Next round': 'Sonraki tur',
   'Next exercise': 'Sonraki egzersiz',
   'Hold': 'Tutuş',

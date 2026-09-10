@@ -10,8 +10,16 @@ import { Button } from './ui.jsx'
 const clock = sec => Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0')
 
 // What the rest is for, in the words of the sound that will end it (lib/sound.js REST_OVER,
-// decided by supersetFlow.restKind). A rest with no kind — none today — just says "Rest".
+// decided by supersetFlow.restKind). A rest between sets also says whether the coming set is a
+// warm-up (ramp) set or a working set, on exercises that have both — timer.phase, decided where
+// the rest started (supersetFlow.restSetPhase). Rounds deliberately do not: a superset's members
+// can be at different phases. A rest with no kind — none today — just says "Rest".
 const KIND_LABEL = { set: 'Next set', round: 'Next round', block: 'Next exercise' }
+const SET_LABEL = { warmup: 'Next warm-up set', work: 'Next working set' }
+const restLabel = timer => {
+  if (timer.kind === 'set') return SET_LABEL[timer.phase] || KIND_LABEL.set
+  return KIND_LABEL[timer.kind] || 'Rest'
+}
 
 // One bar, two meanings: the rest countdown between sets, and the work countdown during a
 // timed set (issue #16). They are mutually exclusive by construction — startWork() stops any
@@ -59,7 +67,7 @@ export default function RestTimer() {
   // tap to buy more time.
   return (
     <div id="timer" className="rest">
-      <div className="lbl"><b>{t(KIND_LABEL[timer.kind] || 'Rest')}</b>{name && <span className="who"> · {name}</span>}</div>
+      <div className="lbl"><b>{t(restLabel(timer))}</b>{name && <span className="who"> · {name}</span>}</div>
       <div className="head">
         <div className="t">{clock(timer.left)}</div>
         <div className="bar"><i style={{ width: pct + '%' }} /></div>

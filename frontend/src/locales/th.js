@@ -765,6 +765,8 @@ export default {
   'Rest after each set of this exercise. Leave at 0 to use your default rest timer.': 'พักหลังแต่ละเซ็ตของท่านี้ ปล่อยไว้ที่ 0 เพื่อใช้ตัวจับเวลาพักค่าเริ่มต้น',
   'Flash screen when timer ends': 'กะพริบหน้าจอเมื่อหมดเวลา',
   'Next set': 'เซ็ตถัดไป',
+  'Next warm-up set': 'เซ็ตวอร์มอัพถัดไป',
+  'Next working set': 'เซ็ตหลักถัดไป',
   'Next round': 'รอบถัดไป',
   'Next exercise': 'ท่าถัดไป',
   'Hold': 'ค้างไว้',

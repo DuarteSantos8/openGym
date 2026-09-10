@@ -114,9 +114,11 @@ describe('rest-over sound per kind of rest', () => {
   })
   afterEach(() => { useUI.getState().stopRest(); useStore.setState({ S: originalSettings }); vi.useRealTimers() })
 
-  it('keeps the kind on the running timer', () => {
+  it('keeps the kind and the set phase on the running timer', () => {
     useUI.getState().startRest(90, 2, 'round')
     expect(useUI.getState().timer).toMatchObject({ forIdx: 2, kind: 'round' })
+    useUI.getState().startRest(45, 1, 'set', 'warmup')
+    expect(useUI.getState().timer).toMatchObject({ forIdx: 1, kind: 'set', phase: 'warmup' })
   })
 
   it('plays the sound for that kind when the rest ends', () => {

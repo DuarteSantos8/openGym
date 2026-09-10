@@ -343,6 +343,8 @@ export default {
   'Sounds': 'Töne',
   'Flash screen when timer ends': 'Bildschirm bei Timer-Ende blinken lassen',
   'Next set': 'Nächster Satz',
+  'Next warm-up set': 'Nächster Aufwärmsatz',
+  'Next working set': 'Nächster Arbeitssatz',
   'Next round': 'Nächste Runde',
   'Next exercise': 'Nächste Übung',
   'Hold': 'Halten',
