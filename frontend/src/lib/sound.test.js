@@ -75,7 +75,9 @@ describe('iOS: silent switch and interruptions (#152)', () => {
     expect(ctx().tones).toHaveLength(2)
   })
 
-  it('does not call resume on a context that is already running', () => {
+  // A real context reports 'suspended' until its resume() settles, so a burst can issue one
+  // resume() per tone in a browser — harmless. What this pins is the guard itself.
+  it('skips resume when the context already reports running', () => {
     sound.beep(true, 880, 0.15)
     sound.beep(true, 880, 0.15, 0.25)
     expect(ctx().resumes).toBe(1)
