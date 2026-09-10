@@ -38,6 +38,22 @@ test('payload never carries identity, credentials or device data', () => {
   }
 });
 
+test('a wave exercise carries its training max and cycle to the Coach, not just prog: wave', () => {
+  const S = sampleState({
+    routines: [{
+      id: 'r1', name: 'Full body A', emoji: '💪', prog: 'linear',
+      ex: [{ id: '0001', sets: 3, reps: 10, mode: 'reps', prog: 'wave', trainingMax: 100, pctBase: '1rm', onMiss: 'advance', bump: 'off', wave: [{ sets: [{ pct: 80, r: 5, n: 1 }] }] }]
+    }]
+  });
+  const p = payload.build(S, { handle: handleFor('u1'), kind: 'review' });
+  const ex = p.plan.routines[0].ex[0];
+  assert.equal(ex.trainingMax, 100);
+  assert.equal(ex.pctBase, '1rm');
+  assert.equal(ex.onMiss, 'advance');
+  assert.equal(ex.bump, 'off');
+  assert.deepEqual(ex.wave, [{ sets: [{ pct: 80, r: 5, n: 1 }] }]);
+});
+
 test('the same profile always gets the same handle, and two profiles never share one', () => {
   const S = sampleState();
   const a1 = payload.build(S, { handle: handleFor('uid-a'), kind: 'review' }).meta.profile;

@@ -101,6 +101,18 @@ function cleanEx(e) {
   if (e.bodyweight != null) o.bodyweight = !!e.bodyweight;
   if (e.side) o.side = true;
   if (e.sg) o.sg = e.sg;
+  // A wave has none of the fields above of its own — its sets/reps/weight vary stage to
+  // stage — so the Coach needs its actual settings instead, or it reviews a plan that does
+  // not exist. Passed through raw rather than normalised via progression.js's waveOf: api/
+  // cannot depend on frontend/src (dependency-light backend boundary), and the Coach should
+  // see the plan exactly as it is, defects included.
+  if (e.prog === 'wave') {
+    if (e.trainingMax > 0) o.trainingMax = e.trainingMax;
+    if (e.pctBase === '1rm') o.pctBase = '1rm';
+    if (e.onMiss === 'advance') o.onMiss = 'advance';
+    if (e.bump === 'off') o.bump = 'off';
+    if (Array.isArray(e.wave) && e.wave.length) o.wave = e.wave;
+  }
   return o;
 }
 /**
@@ -132,7 +144,16 @@ export function canonicalPlan(S) {
           // disagreeing with the catalogue, and `bodyweight: undefined` and an exercise the
           // dataset already calls bodyweight are the same plan and must hash the same.
           bodyweight: isBw(e, exOf(e.id)), side: isPerSide(e),
-          sg: e.sg || ''
+          sg: e.sg || '',
+          // Zeroed/emptied for every other policy, so this changes nothing for a plan that
+          // was never a wave. A wave's own settings live nowhere else in this object — its
+          // sets/reps/weight above are already zeroed by mode — so without these, editing a
+          // training max or a cycle would hash identically to leaving it alone.
+          trainingMax: e.prog === 'wave' ? (e.trainingMax || 0) : 0,
+          pctBase: e.prog === 'wave' ? (e.pctBase === '1rm' ? '1rm' : 'tm') : '',
+          onMiss: e.prog === 'wave' ? (e.onMiss === 'advance' ? 'advance' : 'repeat') : '',
+          bump: e.prog === 'wave' ? (e.bump === 'off' ? 'off' : 'step') : '',
+          wave: e.prog === 'wave' && Array.isArray(e.wave) ? e.wave : []
         };
       })
     })),
