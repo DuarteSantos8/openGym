@@ -65,6 +65,21 @@ export function restKind({ unitDone, superset }) {
 }
 
 /**
+ * The exercise a running rest points you at — what the timer bar names and what the List
+ * layout scrolls to. Not always the exercise whose set started the rest (forIdx):
+ *
+ *   'set'   — that exercise: its next set is yours.
+ *   'round' — the first member of its superset: the round starts over there.
+ *   'block' — the first member of the next unfinished unit (wrapping, like nextUnfinishedUnit);
+ *             the finished exercise itself when nothing is left.
+ */
+export function restFocusIdx(entries, units, forIdx, kind) {
+  if (kind === 'block') return nextUnfinishedUnit(entries, units, forIdx)?.[0] ?? forIdx
+  if (kind === 'round') return units.find(u => u.includes(forIdx))?.[0] ?? forIdx
+  return forIdx
+}
+
+/**
  * Whether re-checking an already-completed set should start a rest.
  *
  * The high-water rule deliberately swallows a re-check so that unchecking and re-checking

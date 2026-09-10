@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, restKind } from './supersetFlow.js'
+import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, restKind, restFocusIdx } from './supersetFlow.js'
 
 const entry = done => ({ sets: done.map(value => ({ done: value })) })
 
@@ -107,6 +107,36 @@ describe('restKind', () => {
   it('after the closing set of an exercise or superset when more follows: block', () => {
     expect(restKind({ unitDone: true, superset: false })).toBe('block')
     expect(restKind({ unitDone: true, superset: true })).toBe('block')
+  })
+})
+
+// What the bar names and the list scrolls to while a rest runs (see RestTimer.jsx, Workout.jsx).
+describe('restFocusIdx', () => {
+  const entries = [entry([true, true]), entry([true, false]), entry([false, false]), entry([false])]
+  const units = [[0], [1, 2], [3]]   // 1+2 are a superset
+
+  it('set: the exercise itself', () => {
+    expect(restFocusIdx(entries, units, 3, 'set')).toBe(3)
+    expect(restFocusIdx(entries, units, 2, 'set')).toBe(2)
+  })
+
+  it('round: the first member of the superset, wherever the round ended', () => {
+    expect(restFocusIdx(entries, units, 2, 'round')).toBe(1)
+    expect(restFocusIdx(entries, units, 1, 'round')).toBe(1)
+  })
+
+  it('block: the first member of the next unfinished unit, wrapping', () => {
+    expect(restFocusIdx(entries, units, 0, 'block')).toBe(1)
+    expect(restFocusIdx(entries, units, 3, 'block')).toBe(1)   // wraps past the finished first exercise
+  })
+
+  it('block with nothing left: the finished exercise itself', () => {
+    const done = [entry([true]), entry([true])]
+    expect(restFocusIdx(done, [[0], [1]], 1, 'block')).toBe(1)
+  })
+
+  it('no kind: the exercise itself', () => {
+    expect(restFocusIdx(entries, units, 2, undefined)).toBe(2)
   })
 })
 
