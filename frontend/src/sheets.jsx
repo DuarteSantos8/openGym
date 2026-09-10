@@ -1095,9 +1095,9 @@ function WaveEditor({ c, setC, ex, unit }) {
     {wave.map((w, wi) => <div className="card" key={wi} style={{ marginBottom: 8 }}>
       <div className="row" style={{ alignItems: 'center', gap: 8 }}>
         <strong className="grow">{t('Week {0}', wi + 1)}</strong>
-        <label className="small dim">
-          <input type="checkbox" checked={!!w.deload} onChange={e => patchWeek(wi, { deload: e.target.checked || undefined })} />
-          {' '}{t('Deload')}
+        <label className="row" style={{ alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+          <span className="small dim">{t('Deload')}</span>
+          <Switch checked={!!w.deload} onChange={v => patchWeek(wi, { deload: v || undefined })} />
         </label>
         {wave.length > 1 && <button type="button" className="iconbtn" aria-label={t('Remove week {0}', wi + 1)}
           onClick={() => setWave(wave.filter((_, i) => i !== wi))}><Icon name="xmark" /></button>}
@@ -1287,7 +1287,9 @@ function ExConfig({ ex, existing, onSave, onDelete, close, routine, initial }) {
       <Segmented className="seg-range" value={mode} onChange={setMode}
         options={[{ value: 'reps', label: t('Reps') }, { value: 'time', label: t('Time') }]} />
     </div>}
-    <div className="row cfgrow" style={{ marginBottom: mode === 'time' ? 8 : 18 }}>
+    {/* A wave prescribes its own sets, reps and weight per week (WaveEditor, below) — this row
+        would just be dead config nobody reads once that policy is active. */}
+    {activePolicy !== 'wave' && <div className="row cfgrow" style={{ marginBottom: mode === 'time' ? 8 : 18 }}>
       {cardio ? <>
         <Stepper label={t('Intervals')} value={c.sets} step={1} decimal={false} onChange={v => setC(x => ({ ...x, sets: v }))} />
         <Stepper label={t('Minutes')} value={c.min} step={1} decimal={false} onChange={v => setC(x => ({ ...x, min: v }))} />
@@ -1306,8 +1308,8 @@ function ExConfig({ ex, existing, onSave, onDelete, close, routine, initial }) {
             until there is a belt to describe — see the added-weight row below. */}
         {!bw && <Stepper label={t('Weight ({0})', st.unit)} value={c.weight} step={2.5} onChange={v => setC(x => ({ ...x, weight: v }))} />}
       </>}
-    </div>
-    {c.intensifier?.type === 'restpause' && <div className="small dim" style={{ marginTop: -10, marginBottom: 18 }}>
+    </div>}
+    {activePolicy !== 'wave' && c.intensifier?.type === 'restpause' && <div className="small dim" style={{ marginTop: -10, marginBottom: 18 }}>
       {t('Rest-pause always trains as one warm-up set at this rep count, then one rest-pause work set — "Sets" is not used.')}
     </div>}
     {/* Planned warm-ups: the session used to start at the work weight and you added every
@@ -1377,7 +1379,9 @@ function ExConfig({ ex, existing, onSave, onDelete, close, routine, initial }) {
         ? t('Reps climb to {0}, then a set is added and the reps start over. At {1} sets it asks you to add weight instead.', c.repsMax, MAX_BW_SETS)
         : t('Reps climb by one whenever every set was clean. Set a ceiling to add sets instead of reps forever.')}
     </div>}
-    {mode === 'reps' && <>
+    {/* A wave's rows are already a fixed prescription per week — a drop-set or rest-pause
+        scheme has nothing left to modify. */}
+    {mode === 'reps' && activePolicy !== 'wave' && <>
       <h4 className="sec">{t('Drop-set / rest-pause')}</h4>
       <div className="sect-b" style={{ marginBottom: 8 }}>
         <SelectRow title={t('Intensifier')} sheetTitle={t('Intensifier')} value={c.intensifier?.type || ''}
