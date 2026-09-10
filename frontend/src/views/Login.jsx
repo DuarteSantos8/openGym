@@ -5,6 +5,7 @@ import { hasData } from '../store/useStore.js'
 import { t } from '../lib/i18n.js'
 import { DEMO, REPO } from '../lib/demo.js'
 import { guestAllowed } from '../lib/guest.js'
+import { readOAuthReturn } from '../lib/oauth-login.js'
 import { useState, useRef, useEffect } from 'react'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
@@ -50,8 +51,20 @@ export default function Login() {
   const { setUser, pullState, setGuest } = useStore()
   const config = useStore(s => s.config)
   const canGuest = guestAllowed(config)
+  const [oauthReturn] = useState(() => readOAuthReturn())
+  const continueToOAuth = () => {
+    if (!oauthReturn) return false
+    window.location.assign(oauthReturn)
+    return true
+  }
   const signIn = async () => {
-    try { const u = await passkeyLogin(); setUser(u); await pullState(); useUI.getState().toast(t('Welcome back, {0}', u.name)) }
+    try {
+      const u = await passkeyLogin()
+      // OAuth only needs the fresh server cookie. Do not merge or push a local guest/profile
+      // snapshot while this browser is acting as the connector's authorization user agent.
+      if (continueToOAuth()) return
+      setUser(u); await pullState(); useUI.getState().toast(t('Welcome back, {0}', u.name))
+    }
     catch (e) { if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') useUI.getState().toast(e.message || t('Sign-in failed')) }
   }
   const head = <>
@@ -79,17 +92,20 @@ export default function Login() {
     <div className="narrow" style={wrap}>
       {head}
       <div className="muted" style={{ marginBottom: 34 }}>{t('Your workouts. Your weights. Your profile.')}</div>
+      {oauthReturn && <div className="card small muted" role="status" style={{ textAlign: 'left', marginBottom: 14 }}>{t('Sign in with passkey')} — {t('then your requested openGym connection will continue.')}</div>}
       {webauthnOK() ? <>
         <Button variant="primary" icon="person" onClick={signIn}>{t('Sign in with passkey')}</Button>
-        <div style={{ height: 10 }} />
-        <Button icon="sparkles" onClick={() => useUI.getState().openSheet(close => <RegisterSheet close={close} />)}>{t('Create new profile')}</Button>
-        {canGuest && <div style={{ height: 10 }} />}
-      </> : <div className="card small muted" style={{ textAlign: 'left' }}>{canGuest
-        ? t("This browser doesn't support passkeys — you can still use openGym locally on this device.")
+        {!oauthReturn && <>
+          <div style={{ height: 10 }} />
+          <Button icon="sparkles" onClick={() => useUI.getState().openSheet(close => <RegisterSheet close={close} />)}>{t('Create new profile')}</Button>
+          {canGuest && <div style={{ height: 10 }} />}
+        </>}
+      </> : <div className="card small muted" style={{ textAlign: 'left' }}>{oauthReturn || !canGuest
         // Without passkeys and without the guest entrance there is no way in from this browser,
         // so say that plainly instead of offering a local profile that cannot be created.
-        : t("This browser doesn't support passkeys, and this instance requires an account. Try a browser or device with passkey support.")}</div>}
-      {canGuest && <Button variant="ghost" className="dim" onClick={() => setGuest(true)}>{t('Continue without account')}</Button>}
+        ? t("This browser doesn't support passkeys, and this instance requires an account. Try a browser or device with passkey support.")
+        : t("This browser doesn't support passkeys — you can still use openGym locally on this device.")}</div>}
+      {canGuest && !oauthReturn && <Button variant="ghost" className="dim" onClick={() => setGuest(true)}>{t('Continue without account')}</Button>}
       <div className="dim small" style={{ marginTop: 26, lineHeight: 1.5 }}>{t('Passkeys use {0} — no passwords.', BIO)}<br />{t('Each profile keeps its own plan, workouts & body weight.')}</div>
     </div>
   )

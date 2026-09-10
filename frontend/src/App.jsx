@@ -10,6 +10,7 @@ import { initBackButton } from './lib/back.js'
 import { useWakeLock } from './lib/wakelock.js'
 import { installViewportGuard } from './lib/viewport-guard.js'
 import { startFlow } from './sheets.jsx'
+import { readOAuthReturn, shellAuthed } from './lib/oauth-login.js'
 import Icon from './components/Icon.jsx'
 import TabBar from './components/TabBar.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
@@ -59,6 +60,10 @@ function Shell() {
   const navType = useNavigationType()
   const { S, user, ready } = useStore()
   const isGuest = useStore(s => s.isGuest())
+  // An OAuth continuation must take precedence over a stale local/guest profile: the browser
+  // still needs the passkey screen so it can establish the server session before retrying the
+  // exact authorize request.
+  const oauthLogin = !!readOAuthReturn()
   const needsMobileOnboarding = useStore(s => s.needsMobileOnboarding)
   const langV = useLang()   // re-renders the whole shell when the language (pack) changes
   useEffect(() => { setNav(navigate) }, [navigate])
@@ -101,8 +106,8 @@ function Shell() {
   // bound to the workout, not to the route — checking Stats mid-session keeps the screen on
   useWakeLock(!!S.active && S.keepAwake !== false)
 
-  const authed = user || isGuest
-  if (!ready && !authed) return (
+  const authed = shellAuthed(user, isGuest, oauthLogin)
+  if (!ready && !authed && !oauthLogin) return (
     <div id="app">
       <div style={{ paddingTop: '44vh', display: 'flex', justifyContent: 'center', fontSize: 34, color: 'var(--label-3)' }}>
         <Icon name="dumbbell" />
@@ -145,7 +150,7 @@ function Shell() {
         </ErrorBoundary>
       </div>
       {/* The chat owns the bottom of the screen: its composer sits where the tabs would be. */}
-      {loc.pathname !== '/coach' && <TabBar onStart={startFlow} />}
+      {!oauthLogin && loc.pathname !== '/coach' && <TabBar onStart={startFlow} />}
       <RestTimer />
       <Modals />
       <Toast />

@@ -205,6 +205,14 @@ try {
     scope: 'exercise:read routine:read progress:read', code_challenge: challenge,
     code_challenge_method: 'S256', resource, state: 'oauth-state-1'
   })
+  const unauthenticatedAuthorize = await fetch(mcpBase + `/oauth/authorize?${authorizeQuery}`, { redirect: 'manual' })
+  assert.equal(unauthenticatedAuthorize.status, 302)
+  const loginLocation = unauthenticatedAuthorize.headers.get('location')
+  assert.ok(loginLocation?.startsWith('/?oauth_return='))
+  const loginUrl = new URL(loginLocation, mcpBase)
+  assert.equal(loginUrl.pathname, '/')
+  assert.equal(loginUrl.searchParams.get('oauth_return'), `/oauth/authorize?${authorizeQuery}`)
+  print('oauth_unauthenticated_login_return', 'PASS')
   const consentResponse = await fetch(mcpBase + `/oauth/authorize?${authorizeQuery}`, { headers: { Cookie: `gymsid=${session}` } })
   const consentHtml = await consentResponse.text()
   assert.equal(consentResponse.status, 200)

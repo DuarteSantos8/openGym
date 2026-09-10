@@ -47,6 +47,16 @@ function htmlResponse(res, status, body) {
   res.end(body)
 }
 
+function oauthLoginRedirect(res, url) {
+  // Keep the exact authorize path/query on this origin while the browser establishes its
+  // openGym session. Login must validate the continuation again before navigating, and this
+  // fixed root target means a caller cannot turn the gateway response into an open redirect.
+  const target = url.pathname + url.search
+  const location = '/?oauth_return=' + encodeURIComponent(target)
+  res.writeHead(302, { Location: location, 'Cache-Control': 'no-store' })
+  return res.end()
+}
+
 function htmlEscape(value) {
   return String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch])
 }
@@ -322,10 +332,10 @@ async function handleOAuthAuthorizeGet(req, res, url) {
   try { data = await authorizationRequest(url) }
   catch (error) { return jsonResponse(res, error.status || 400, { error: error.message || 'invalid_request' }) }
   const cookie = String(req.headers.cookie || '')
-  if (!cookie) return htmlResponse(res, 401, '<!doctype html><p>Sign in to openGym, then retry this authorization request.</p>')
+  if (!cookie) return oauthLoginRedirect(res, url)
   let me
   try { me = await apiCookie('/api/me', cookie) }
-  catch { return htmlResponse(res, 401, '<!doctype html><p>Sign in to openGym, then retry this authorization request.</p>') }
+  catch { return oauthLoginRedirect(res, url) }
   pruneOAuth()
   const csrf = crypto.randomBytes(24).toString('base64url')
   oauthPending.set(csrf, { ...data, uid: me.user?.id || null, expiresAt: Date.now() + OAUTH_TTL_MS })
