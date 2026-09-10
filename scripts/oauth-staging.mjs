@@ -131,16 +131,37 @@ try {
   const dcrBody = (body, headers = dcrHeaders) => ({ ...jsonBody(body), headers: { 'Content-Type': 'application/json', ...headers } })
   const registration = status(await request(mcpBase, '/oauth/register', dcrBody({
     client_name: 'Claude staging client', redirect_uris: ['https://client.example.test/callback'],
-    grant_types: ['authorization_code'], response_types: ['code'], token_endpoint_auth_method: 'none',
+    // Codex's native client includes refresh_token in its registration request. The server
+    // accepts that optional request but returns only the authorization_code capability it serves.
+    grant_types: ['authorization_code', 'refresh_token'], response_types: ['code'], token_endpoint_auth_method: 'none',
     scope: 'exercise:read routine:read progress:read'
   })), 201, 'dynamic client registration').data
   assert.ok(registration.client_id)
   assert.equal(registration.token_endpoint_auth_method, 'none')
   assert.equal(registration.client_secret_expires_at, 0)
+  assert.deepEqual(registration.grant_types, ['authorization_code'])
+  print('oauth_codex_refresh_grant_compatibility', 'PASS')
   assert.ok(registration.client_expires_at > Math.floor(Date.now() / 1000))
   assert.deepEqual(registration.redirect_uris, ['https://client.example.test/callback'])
   const stored = status(await request(apiBase, `/api/oauth/clients/${registration.client_id}`), 200, 'stored client metadata').data
   assert.equal(stored.client_id, registration.client_id)
+
+  // Codex sends this exact native-client shape, including a localhost callback and the optional
+  // refresh_token grant. It must be accepted without overstating the server's capabilities.
+  const codexRegistration = status(await request(mcpBase, '/oauth/register', dcrBody({
+    client_name: 'Codex', redirect_uris: ['http://127.0.0.1:49152/callback/openGym'],
+    grant_types: ['authorization_code', 'refresh_token'], response_types: ['code'],
+    token_endpoint_auth_method: 'none', scope: 'exercise:read', application_type: 'native'
+  }, { 'X-Forwarded-For': '198.51.100.12' })), 201, 'Codex native dynamic client registration').data
+  assert.deepEqual(codexRegistration.grant_types, ['authorization_code'])
+  assert.equal(codexRegistration.token_endpoint_auth_method, 'none')
+  print('oauth_codex_native_dcr', 'PASS')
+  const unsupportedGrant = await request(mcpBase, '/oauth/register', dcrBody({
+    client_name: 'unsupported grant fixture', redirect_uris: ['http://127.0.0.1:49153/callback'],
+    grant_types: ['refresh_token'], response_types: ['code'], token_endpoint_auth_method: 'none', scope: 'exercise:read'
+  }, { 'X-Forwarded-For': '198.51.100.13' }))
+  assert.equal(unsupportedGrant.response.status, 400)
+  print('oauth_unsupported_grant_rejected', 400)
   // The API applies a bounded, normalized-IP registration limiter before the persistent cap.
   // Fill only the disposable window (not the client cap) and prove the next request is rejected.
   for (let i = 0; i < 19; i++) {

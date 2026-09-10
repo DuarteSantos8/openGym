@@ -356,9 +356,17 @@ function validRedirect(uri) {
 function registrationMetadata(body) {
   const redirectUris = Array.isArray(body?.redirect_uris) ? [...new Set(body.redirect_uris.map(String))] : [];
   if (!redirectUris.length || redirectUris.length > 10 || redirectUris.some(uri => uri.length > 2000 || !validRedirect(uri))) return { error: 'invalid_redirect_uris' };
-  const grantTypes = Array.isArray(body?.grant_types) && body.grant_types.length ? [...new Set(body.grant_types.map(String))] : ['authorization_code'];
+  const requestedGrantTypes = Array.isArray(body?.grant_types) && body.grant_types.length
+    ? [...new Set(body.grant_types.map(String))] : ['authorization_code'];
   const responseTypes = Array.isArray(body?.response_types) && body.response_types.length ? [...new Set(body.response_types.map(String))] : ['code'];
-  if (grantTypes.length !== 1 || grantTypes[0] !== 'authorization_code' || responseTypes.length !== 1 || responseTypes[0] !== 'code') return { error: 'unsupported_grant_or_response_type' };
+  const codexNativeRefreshRequest = requestedGrantTypes.length === 2
+    && requestedGrantTypes.includes('authorization_code') && requestedGrantTypes.includes('refresh_token');
+  // Codex's native OAuth client asks for refresh_token even when it can operate with a
+  // non-refreshable access token. Keep the server's actual capability explicit in the response:
+  // accepting that optional request must never imply an unimplemented refresh endpoint.
+  if ((!codexNativeRefreshRequest && (requestedGrantTypes.length !== 1 || requestedGrantTypes[0] !== 'authorization_code'))
+    || responseTypes.length !== 1 || responseTypes[0] !== 'code') return { error: 'unsupported_grant_or_response_type' };
+  const grantTypes = ['authorization_code'];
   const tokenEndpointAuthMethod = String(body?.token_endpoint_auth_method || 'none');
   if (tokenEndpointAuthMethod !== 'none') return { error: 'public_pkce_client_required' };
   const requested = String(body?.scope || '').trim().split(/\s+/).filter(Boolean);
