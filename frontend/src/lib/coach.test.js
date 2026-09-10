@@ -96,6 +96,20 @@ describe('plan fingerprint', () => {
     }
   })
 
+  it('moves for a wave training max, its switches and its cycle', () => {
+    // Same bug as the v1.2.4 flags above, for the wave fields: in canonicalPlan but not yet
+    // in the hash means editing a training max reads as "plan unchanged".
+    const base = state()
+    base.routines[0].ex[0] = { ...base.routines[0].ex[0], prog: 'wave', trainingMax: 100 }
+    for (const [field, value] of Object.entries({
+      trainingMax: 102.5, pctBase: '1rm', onMiss: 'advance', bump: 'off',
+      wave: [{ repeat: 1, sets: [{ pct: 80, r: 5, n: 3 }] }]
+    })) {
+      const edited = state(); edited.routines[0].ex[0] = { ...base.routines[0].ex[0], [field]: value }
+      expect(planHash(edited), field).not.toBe(planHash(base))
+    }
+  })
+
   it('agrees with the server, field for field', () => {
     const withFlags = state()
     withFlags.routines[0].ex[0] = { ...withFlags.routines[0].ex[0], repsMin: 8, repsMax: 20, bodyweight: true }
