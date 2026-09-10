@@ -7,7 +7,7 @@ import Login from './Login.jsx'
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const mocks = vi.hoisted(() => ({
-  setUser: vi.fn(), pullState: vi.fn(() => Promise.resolve()), setGuest: vi.fn(), passkeyLogin: vi.fn(), assign: vi.fn(), webauthn: true
+  setUser: vi.fn(), pullState: vi.fn(() => Promise.resolve()), setGuest: vi.fn(), passkeyLogin: vi.fn(), replace: vi.fn(), webauthn: true
 }))
 vi.mock('../store/useStore.js', () => {
   const snapshot = { config: { allow_guest: true }, setUser: mocks.setUser, pullState: mocks.pullState, setGuest: mocks.setGuest }
@@ -30,9 +30,9 @@ const browserLocation = globalThis.location
 beforeEach(() => {
   Object.defineProperty(globalThis, 'location', {
     configurable: true,
-    value: { origin: 'https://gym.example.test', pathname: '/', search: '?oauth_return=' + encodeURIComponent('/oauth/authorize?client_id=client&state=abc'), assign: mocks.assign }
+    value: { origin: 'https://gym.example.test', pathname: '/', search: '?oauth_return=' + encodeURIComponent('/oauth/authorize?client_id=client&state=abc'), replace: mocks.replace }
   })
-  mocks.setUser.mockClear(); mocks.pullState.mockClear(); mocks.setGuest.mockClear(); mocks.passkeyLogin.mockReset()
+  mocks.setUser.mockClear(); mocks.pullState.mockClear(); mocks.setGuest.mockClear(); mocks.passkeyLogin.mockReset(); mocks.replace.mockClear()
   mocks.webauthn = true
   mocks.passkeyLogin.mockResolvedValue({ id: 'server-user', name: 'Server user' })
   host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host)
@@ -54,14 +54,19 @@ describe('OAuth login handoff', () => {
     expect(mocks.setUser).not.toHaveBeenCalled()
     expect(mocks.pullState).not.toHaveBeenCalled()
     expect(mocks.setGuest).not.toHaveBeenCalled()
-    expect(mocks.assign).toHaveBeenCalledWith('/oauth/authorize?client_id=client&state=abc')
+    expect(mocks.replace).toHaveBeenCalledWith('/oauth/authorize?client_id=client&state=abc')
   })
 
   it('does not offer guest mode when OAuth needs a passkey this browser lacks', () => {
     mocks.webauthn = false
     act(() => root.render(<Login />))
-    expect(host.textContent).toContain('this instance requires an account')
+    expect(host.textContent).toContain("this connection can't be authorized here")
     expect(host.textContent).not.toContain('you can still use openGym locally')
-    expect(host.querySelector('button')).toBeNull()
+    const cancel = [...host.querySelectorAll('button')].find(button => button.textContent === 'Cancel')
+    expect(cancel).toBeTruthy()
+    act(() => cancel.click())
+    expect(mocks.replace).toHaveBeenCalledWith('/')
+    expect(mocks.setUser).not.toHaveBeenCalled()
+    expect(mocks.pullState).not.toHaveBeenCalled()
   })
 })

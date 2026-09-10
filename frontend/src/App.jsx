@@ -161,7 +161,8 @@ function Shell() {
 
 export default function App() {
   const boot = useStore(s => s.boot)
-  useEffect(() => { boot() }, [boot])
+  const oauthLogin = !!readOAuthReturn()
+  useEffect(() => { if (!oauthLogin) boot() }, [boot, oauthLogin])
   // Android system back — sheet, then page, then press-again-to-exit (see lib/back.js)
   useEffect(() => {
     let stop = null, gone = false

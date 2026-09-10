@@ -54,9 +54,10 @@ export default function Login() {
   const [oauthReturn] = useState(() => readOAuthReturn())
   const continueToOAuth = () => {
     if (!oauthReturn) return false
-    window.location.assign(oauthReturn)
+    window.location.replace(oauthReturn)
     return true
   }
+  const cancelOAuth = () => { if (oauthReturn) window.location.replace('/') }
   const signIn = async () => {
     try {
       const u = await passkeyLogin()
@@ -95,6 +96,7 @@ export default function Login() {
       {oauthReturn && <div className="card small muted" role="status" style={{ textAlign: 'left', marginBottom: 14 }}>{t('Sign in with passkey')} — {t('then your requested openGym connection will continue.')}</div>}
       {webauthnOK() ? <>
         <Button variant="primary" icon="person" onClick={signIn}>{t('Sign in with passkey')}</Button>
+        {oauthReturn && <Button variant="ghost" className="dim" onClick={cancelOAuth}>{t('Cancel')}</Button>}
         {!oauthReturn && <>
           <div style={{ height: 10 }} />
           <Button icon="sparkles" onClick={() => useUI.getState().openSheet(close => <RegisterSheet close={close} />)}>{t('Create new profile')}</Button>
@@ -103,8 +105,9 @@ export default function Login() {
       </> : <div className="card small muted" style={{ textAlign: 'left' }}>{oauthReturn || !canGuest
         // Without passkeys and without the guest entrance there is no way in from this browser,
         // so say that plainly instead of offering a local profile that cannot be created.
-        ? t("This browser doesn't support passkeys, and this instance requires an account. Try a browser or device with passkey support.")
+        ? t("This browser doesn't support passkeys, so this connection can't be authorized here. Try a browser or device with passkey support.")
         : t("This browser doesn't support passkeys — you can still use openGym locally on this device.")}</div>}
+      {!webauthnOK() && oauthReturn && <Button variant="ghost" className="dim" onClick={cancelOAuth}>{t('Cancel')}</Button>}
       {canGuest && !oauthReturn && <Button variant="ghost" className="dim" onClick={() => setGuest(true)}>{t('Continue without account')}</Button>}
       <div className="dim small" style={{ marginTop: 26, lineHeight: 1.5 }}>{t('Passkeys use {0} — no passwords.', BIO)}<br />{t('Each profile keeps its own plan, workouts & body weight.')}</div>
     </div>
