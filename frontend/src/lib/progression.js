@@ -595,23 +595,22 @@ export function nextPrescription(S, cfg, routine) {
  * are touched, and only on sets that have not been logged yet.
  */
 export function applyPrescription(sets, p, step = 2.5) {
-  if (!p || p.kind === 'off' || p.kind === 'first') return sets
-  const out = sets.map(s => {
-    // Never rewrite a logged set, and never rewrite a warm-up: the prescription speaks to
-    // the work rows only (a ticked warm-up falling through here would be the data-loss the
-    // cascade fix removed, two files over).
-    if (s.done || isWarmupRow(s)) return s
-    const o = { ...s }
-    if (p.weight != null) o.w = p.weight
-    if (p.reps != null) o.r = p.reps
-    if (p.sec != null) o.sec = p.sec
-    return o
-  })
+  if (!p || p.kind === 'off' || p.kind === 'need-tm') return sets
+  // A baseline session usually has nothing to say. A wave's does: week 1 of a cycle is a full
+  // prescription before anything has been logged, so the rule is "no-op iff `first` and rowless".
+  if (p.kind === 'first' && !(Array.isArray(p.rows) && p.rows.length)) return sets
+  const rows = Array.isArray(p.rows) && p.rows.length ? p.rows : null
+  // A wave decides its own set count; `p.sets` still wins where it asks for more.
+  const want = rows ? Math.max(p.sets || 0, rows.length) : p.sets
+
   // A policy that decided on a set count gets to grow the list — bodyweight progression adds
-  // a set where a barbell would have added a plate. Only ever upwards, and only by copying a
-  // row that is already there: a session in progress must not lose a set it has logged.
+  // a set where a barbell would have added a plate, and a wave's week may prescribe more rows
+  // than the plan holds. Only ever upwards, and only by copying a row that is already there:
+  // a session in progress must not lose a set it has logged. Growth happens before the
+  // assignment below so a freshly appended row gets its own weight rather than the seed's.
+  let out = sets
   const workRows = out.filter(s => !isWarmupRow(s))
-  if (p.sets > workRows.length) {
+  if (want > workRows.length) {
     // An all-warm-up entry has no work row to seed growth from - growing warm-up copies
     // would both invent work and never terminate the loop. Leave the entry untouched.
     if (!workRows.length) return rerampWarmups(out, step)
@@ -621,8 +620,34 @@ export function applyPrescription(sets, p, step = 2.5) {
     // `type` is kept: that's the exercise's plan (every set is a drop-set/rest-pause), not
     // something this particular row logged.
     const { drops, clusters, ...plainSeed } = seed
-    while (out.filter(s => !isWarmupRow(s)).length < p.sets) out.push({ ...plainSeed, done: false })
+    out = [...out]
+    while (out.filter(s => !isWarmupRow(s)).length < want) out.push({ ...plainSeed, done: false })
   }
+
+  // Rows are handed out by work-row ordinal, so a logged row consumes its own row and the
+  // pending ones stay lined up with the week they belong to.
+  let ordinal = -1
+  out = out.map(s => {
+    if (isWarmupRow(s)) return s
+    ordinal++
+    // Never rewrite a logged set, and never rewrite a warm-up: the prescription speaks to
+    // the work rows only (a ticked warm-up falling through here would be the data-loss the
+    // cascade fix removed, two files over).
+    if (s.done) return s
+    const o = { ...s }
+    if (rows) {
+      const row = rows[ordinal]
+      // Past the end of the wave's rows sits whatever the plan added of its own — an
+      // intensifier's extra sets keep their own load.
+      if (row) { o.w = row.w; o.r = row.r }
+      return o
+    }
+    if (p.weight != null) o.w = p.weight
+    if (p.reps != null) o.r = p.reps
+    if (p.sec != null) o.sec = p.sec
+    return o
+  })
+
   // Last, because the work rows now carry their final weight: the warm-up block ramps toward
   // what you are actually about to lift, not toward what you lifted last time.
   return rerampWarmups(out, step)

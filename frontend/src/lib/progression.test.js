@@ -1058,3 +1058,62 @@ describe('wave progression', () => {
     expect(p.why.join(' ')).toContain('2')
   })
 })
+
+describe('applyPrescription with rows', () => {
+  const P = { policy: 'wave', kind: 'up', rows: [{ w: 65, r: 5 }, { w: 75, r: 3 }, { w: 85, r: 1 }] }
+
+  it('gives each pending work row its own weight and reps', () => {
+    const out = applyPrescription([
+      { w: 60, r: 5, done: false }, { w: 60, r: 5, done: false }, { w: 60, r: 5, done: false },
+    ], P)
+    expect(out).toEqual([
+      { w: 65, r: 5, done: false }, { w: 75, r: 3, done: false }, { w: 85, r: 1, done: false },
+    ])
+  })
+
+  it('leaves warm-ups and logged rows alone and keeps the row ordinals aligned', () => {
+    const out = applyPrescription([
+      { w: 40, r: 8, done: true, warmup: true },
+      { w: 65, r: 5, done: true },
+      { w: 60, r: 5, done: false },
+      { w: 60, r: 5, done: false },
+    ], P)
+    expect(out[0]).toEqual({ w: 40, r: 8, done: true, warmup: true })
+    expect(out[1]).toEqual({ w: 65, r: 5, done: true })
+    expect(out[2]).toEqual({ w: 75, r: 3, done: false })   // work row 1 -> rows[1]
+    expect(out[3]).toEqual({ w: 85, r: 1, done: false })
+  })
+
+  it('never runs past the end of the rows', () => {
+    const out = applyPrescription([
+      { w: 60, r: 5, done: false }, { w: 60, r: 5, done: false },
+      { w: 60, r: 5, done: false }, { w: 55, r: 8, done: false },
+    ], P)
+    expect(out[3]).toEqual({ w: 55, r: 8, done: false })    // an intensifier's extra row keeps itself
+  })
+
+  it('grows the work rows to the number the wave prescribes', () => {
+    const out = applyPrescription([{ w: 60, r: 5, done: false }], P)
+    expect(out).toHaveLength(3)
+    expect(out.map(s => s.w)).toEqual([65, 75, 85])
+    expect(out.map(s => s.r)).toEqual([5, 3, 1])
+  })
+
+  it('applies a first session that carries rows, and skips one that does not', () => {
+    const sets = [{ w: 60, r: 5, done: false }]
+    expect(applyPrescription(sets, { policy: 'wave', kind: 'first', rows: [{ w: 65, r: 5 }] })[0].w).toBe(65)
+    expect(applyPrescription(sets, { policy: 'linear', kind: 'first', weight: 80 })).toBe(sets)
+  })
+
+  it('does nothing at all without a training max', () => {
+    const sets = [{ w: 60, r: 5, done: false }]
+    expect(applyPrescription(sets, { policy: 'wave', kind: 'need-tm' })).toBe(sets)
+  })
+
+  it('leaves every rowless prescription on its existing path', () => {
+    const out = applyPrescription([
+      { w: 60, r: 5, done: false }, { w: 60, r: 5, done: false },
+    ], { policy: 'linear', kind: 'up', weight: 62.5 })
+    expect(out.map(s => s.w)).toEqual([62.5, 62.5])
+  })
+})
