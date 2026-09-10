@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor } from './supersetFlow.js'
+import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, restKind } from './supersetFlow.js'
 
 const entry = done => ({ sets: done.map(value => ({ done: value })) })
 
@@ -90,6 +90,23 @@ describe('rest on a re-check', () => {
 
   it('rests after closing an exercise that is not the last one', () => {
     expect(restOnRecheck({ timerRunning: false, unitDone: true, lastUnit: false })).toBe(true)
+  })
+})
+
+// The rest-over sound says what comes next without a look at the screen. The kind is decided
+// here, beside restAfterSet, so the four places that start a rest cannot drift apart.
+describe('restKind', () => {
+  it('between the sets of an ordinary exercise: set', () => {
+    expect(restKind({ unitDone: false, superset: false })).toBe('set')
+  })
+
+  it('after a superset round, and on a re-check inside an unfinished superset: round', () => {
+    expect(restKind({ unitDone: false, superset: true })).toBe('round')
+  })
+
+  it('after the closing set of an exercise or superset when more follows: block', () => {
+    expect(restKind({ unitDone: true, superset: false })).toBe('block')
+    expect(restKind({ unitDone: true, superset: true })).toBe('block')
   })
 })
 

@@ -3,6 +3,9 @@
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 import { useUI } from './useUI.js'
 import { useStore } from './useStore.js'
+import { restOver } from '../lib/sound.js'
+
+vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), vibrate: vi.fn(), unlock: vi.fn(), restOver: vi.fn() }))
 
 // "Off" has to hold at the timer itself, not at the four places that start one — the same
 // reason the rest-after-a-set rule is a shared condition rather than four copies.
@@ -94,5 +97,51 @@ describe('opt-in timer screen flash', () => {
     useUI.getState().startRest(1)
     vi.advanceTimersByTime(1000)
     expect(useUI.getState().timerFlashId).toBe(1)
+  })
+})
+
+// One rest-over sound per kind of rest (set / round / block). The kind travels with the
+// timer so the sound at zero is the one the set that started the rest earned, not whatever
+// the screen happens to show by then.
+describe('rest-over sound per kind of rest', () => {
+  let originalSettings
+  beforeEach(() => {
+    vi.useFakeTimers()
+    restOver.mockClear()
+    originalSettings = useStore.getState().S
+    useStore.setState({ S: { ...originalSettings, sound: true, timerFlash: false } })
+    useUI.setState({ timer: null })
+  })
+  afterEach(() => { useUI.getState().stopRest(); useStore.setState({ S: originalSettings }); vi.useRealTimers() })
+
+  it('keeps the kind on the running timer', () => {
+    useUI.getState().startRest(90, 2, 'round')
+    expect(useUI.getState().timer).toMatchObject({ forIdx: 2, kind: 'round' })
+  })
+
+  it('plays the sound for that kind when the rest ends', () => {
+    useUI.getState().startRest(1, 0, 'block')
+    vi.advanceTimersByTime(1000)
+    expect(restOver).toHaveBeenCalledTimes(1)
+    expect(restOver).toHaveBeenCalledWith(true, 'block')
+  })
+
+  it('passes the Sounds setting through, so off stays off', () => {
+    useStore.setState({ S: { ...useStore.getState().S, sound: false } })
+    useUI.getState().startRest(1, 0, 'set')
+    vi.advanceTimersByTime(1000)
+    expect(restOver).toHaveBeenCalledWith(false, 'set')
+  })
+
+  it('a rest started without a kind still ends with a sound', () => {
+    useUI.getState().startRest(1)
+    vi.advanceTimersByTime(1000)
+    expect(restOver).toHaveBeenCalledWith(true, undefined)
+  })
+
+  it('keeps the kind when the rest is extended', () => {
+    useUI.getState().startRest(60, 1, 'round')
+    useUI.getState().addRest(30)
+    expect(useUI.getState().timer.kind).toBe('round')
   })
 })

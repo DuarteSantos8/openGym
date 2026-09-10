@@ -2,6 +2,7 @@
 // lib/sound.js keeps one AudioContext per page; each test gets a fresh module so that state
 // does not leak. The fake context records what the real one would be asked to do.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { restKind } from './supersetFlow.js'
 
 class FakeCtx {
   constructor() {
@@ -49,6 +50,7 @@ afterEach(() => { vi.useRealTimers() })
 describe('sounds off', () => {
   it('creates no audio context and leaves the audio session alone', () => {
     sound.beep(false, 880, 0.15)
+    sound.restOver(false, 'set')
     sound.unlock(false)
     expect(FakeCtx.instances).toHaveLength(0)
     expect(session.type).toBe('auto')
@@ -73,9 +75,7 @@ describe('iOS: silent switch and interruptions (#152)', () => {
     expect(ctx().tones).toHaveLength(2)
   })
 
-  // A real context reports 'suspended' until its resume() settles, so a burst can issue one
-  // resume() per tone in a browser — harmless. What this pins is the guard itself.
-  it('skips resume when the context already reports running', () => {
+  it('does not call resume on a context that is already running', () => {
     sound.beep(true, 880, 0.15)
     sound.beep(true, 880, 0.15, 0.25)
     expect(ctx().resumes).toBe(1)
@@ -98,7 +98,7 @@ describe('iOS: silent switch and interruptions (#152)', () => {
 
 describe('the context sleeps between beeps', () => {
   it('suspends about a second after the last tone of a burst has ended', () => {
-    sound.beep(true, 880, 0.25, 0); sound.beep(true, 1320, 0.5, 0.35)   // last tone ends at 0.35 + 0.5 + 0.05 = 0.9s
+    sound.restOver(true, 'block')            // last tone ends at 0.35 + 0.5 + 0.05 = 0.9s
     vi.advanceTimersByTime(1500)
     expect(ctx().state).toBe('running')
     vi.advanceTimersByTime(500)
@@ -113,7 +113,7 @@ describe('the context sleeps between beeps', () => {
     vi.advanceTimersByTime(1000)
     sound.beep(true, 660, 0.1)                // 1
     vi.advanceTimersByTime(1000)
-    sound.beep(true, 880, 0.15, 0); sound.beep(true, 880, 0.15, 0.25)   // 0: last tone ends at 0.25 + 0.15 + 0.05 = 0.45s
+    sound.restOver(true, 'set')               // 0: last tone ends at 0.25 + 0.15 + 0.05 = 0.45s
     expect(ctx().suspends).toBe(0)
     vi.advanceTimersByTime(1400)
     expect(ctx().state).toBe('running')
@@ -194,5 +194,48 @@ describe('play on silent (Settings switch, WebKit only)', () => {
   it('survives a browser that rejects the type', () => {
     Object.defineProperty(navigator, 'audioSession', { value: Object.freeze({ type: 'auto' }), configurable: true, writable: true })
     expect(() => sound.setPlayOnSilent(true)).not.toThrow()
+  })
+})
+
+describe('one rest-over sound per kind of rest', () => {
+  // The module keeps one context; read the tones this call added rather than resetting it.
+  const seq = kind => { const before = ctx()?.tones.length || 0; sound.restOver(true, kind); return ctx().tones.slice(before).map(x => `${x.freq}@${x.at}`).join(' ') }
+
+  it('set, round and block are three different sequences', () => {
+    const set = seq('set'), round = seq('round'), block = seq('block')
+    expect(new Set([set, round, block]).size).toBe(3)
+  })
+
+  it('has a sound of its own for every kind restKind can hand the timer', () => {
+    const fallback = seq('no-such-kind')
+    const kinds = new Set([
+      restKind({ unitDone: false, superset: false }),
+      restKind({ unitDone: false, superset: true }),
+      restKind({ unitDone: true, superset: false }),
+      restKind({ unitDone: true, superset: true }),
+    ])
+    expect(kinds).toEqual(new Set(['set', 'round', 'block']))
+    for (const kind of kinds) if (kind !== 'set') expect(seq(kind)).not.toBe(fallback)
+  })
+
+  it('set: two mid beeps', () => {
+    expect(seq('set')).toBe('880@0 880@0.25')
+  })
+
+  it('round: three quick high beeps', () => {
+    expect(seq('round')).toBe('1100@0 1100@0.15 1100@0.3')
+  })
+
+  it('none of them opens on the countdown tick (660 Hz)', () => {
+    for (const kind of ['set', 'round', 'block']) expect(seq(kind).startsWith('660@')).toBe(false)
+  })
+
+  it('block: a long two-note chime', () => {
+    expect(seq('block')).toBe('880@0 1320@0.35')
+  })
+
+  it('an unknown or missing kind falls back to the set sound', () => {
+    expect(seq(undefined)).toBe(seq('set'))
+    expect(seq('whatever')).toBe(seq('set'))
   })
 })

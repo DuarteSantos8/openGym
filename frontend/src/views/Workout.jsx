@@ -10,7 +10,7 @@ import { fmtNum, capWords, fmtDate, todayISO, exCount, DAYN } from '../lib/forma
 import { beep, vibrate, unlock } from '../lib/sound.js'
 import { t, exerciseNameFor } from '../lib/i18n.js'
 import { api, appBase } from '../lib/api.js'
-import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor } from '../lib/supersetFlow.js'
+import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, restKind } from '../lib/supersetFlow.js'
 import Media from '../components/Media.jsx'
 import { startFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, finishWorkout, workoutCompleteSheet, confirmSheet, exerciseNoteSheet, sessionNoteSheet, renameWorkoutSheet, swapActiveWorkoutExercise, barWeightSheet, menuSheet, effortPickerSheet, exerciseHistorySheet, addRoutineToSessionSheet } from '../sheets.jsx'
 import { effortColor } from '../lib/effort.js'
@@ -921,8 +921,9 @@ function ActiveWorkout() {
 
       // A re-check of finished work must not navigate or reopen a sheet, but it may still owe
       // you a rest — see restOnRecheck, and the other half of issue #3.
+      const kind = restKind({ unitDone: freshUnitDone, superset: (freshUnit?.length || 0) > 1 })
       if (!progress.isNew) {
-        if (!restBeforeWarmup && restOnRecheck({ timerRunning: !!useUI.getState().timer, unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) startRest(restAfter, idx)
+        if (!restBeforeWarmup && restOnRecheck({ timerRunning: !!useUI.getState().timer, unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) startRest(restAfter, idx, kind)
         return
       }
 
@@ -931,17 +932,17 @@ function ActiveWorkout() {
       // stopRest() first so a rest that belongs after this set replaces the one that was running.
       if (freshUnitDone) stopRest()
       if (!freshUnit || freshUnit.length <= 1) {
-        if (!restBeforeWarmup && restAfterSet({ unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) startRest(restAfter, idx)
+        if (!restBeforeWarmup && restAfterSet({ unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) startRest(restAfter, idx, kind)
         return
       }
 
       const step = supersetFlowStep(fresh.entries, freshUnit, idx)
       if (!step) return
       if (step.unitDone) {
-        if (nextUnit?.length && !restBeforeWarmup) startRest(restAfter, idx)
+        if (nextUnit?.length && !restBeforeWarmup) startRest(restAfter, idx, kind)
       } else {
         if (step.nextIdx != null) update(s => { if (s.active) s.active.cur = step.nextIdx })
-        if (step.roundDone) startRest(restAfter, idx)
+        if (step.roundDone) startRest(restAfter, idx, kind)
       }
     }
   }
