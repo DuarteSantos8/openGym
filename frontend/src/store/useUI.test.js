@@ -244,7 +244,7 @@ describe('rest readiness and optional timed-set overtime', () => {
     expect(useUI.getState().work).toMatchObject({ left: -5, overtime: true, alerted: true })
     expect(useUI.getState().timerFlashId).toBe(flash)
     useUI.getState().finishWorkEarly()
-    expect(done).toHaveBeenCalledExactlyOnceWith(7)
+    expect(done).toHaveBeenCalledExactlyOnceWith(7, { forIdx: undefined })
   })
 
   it('caps unattended overtime at 15 minutes and logs it once at the deadline', () => {
@@ -433,5 +433,43 @@ describe('what a rest hands over to', () => {
     expect(useUI.getState().timer).toBe(null)
     expect(done).not.toHaveBeenCalled()
     useUI.getState().stopWork()
+  })
+})
+
+// A hold has an owner too, moved with the rest's when an exercise is added above it, and handed
+// to onDone so the write lands on the moved row.
+describe('the hold\'s owner', () => {
+  beforeEach(() => { vi.useFakeTimers(); useUI.setState({ timer: null, work: null }) })
+  afterEach(() => { useUI.getState().stopWork(); vi.useRealTimers() })
+
+  it('is handed to onDone when the countdown ends, as it is then', () => {
+    const done = vi.fn()
+    useUI.getState().startWork(1, 'Plank', done, { phase: 'work', n: 1, of: 2 }, 2)
+    useUI.getState().shiftRestOwner(0, 1)
+    vi.advanceTimersByTime(1000)
+    expect(done).toHaveBeenCalledWith(1, { chimed: true, forIdx: 3 })
+  })
+
+  it('is handed to onDone on an early finish too', () => {
+    const done = vi.fn()
+    useUI.getState().startWork(45, 'Plank', done, null, 0)
+    vi.advanceTimersByTime(7000)
+    useUI.getState().finishWorkEarly()
+    expect(done).toHaveBeenCalledWith(7, { forIdx: 0 })
+  })
+
+  it('is handed to onDone when a rest displaces the hold, beside the abandoned flag', () => {
+    const done = vi.fn()
+    useUI.getState().startWork(45, 'Plank', done, null, 1)
+    vi.advanceTimersByTime(5000)
+    useUI.getState().startRest(60, 0)
+    expect(done).toHaveBeenCalledWith(5, { abandoned: true, forIdx: 1 })
+    useUI.getState().stopRest()
+  })
+
+  it('is left alone by a shift that starts below it', () => {
+    useUI.getState().startWork(45, 'Plank', vi.fn(), null, 0)
+    useUI.getState().shiftRestOwner(1, 1)
+    expect(useUI.getState().work.forIdx).toBe(0)
   })
 })

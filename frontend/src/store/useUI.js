@@ -140,8 +140,9 @@ export const useUI = create((set, get) => ({
                        // kind: which rest-over sound plays — 'set' | 'round' | 'block' (supersetFlow.restKind)
                        // phase: the set a 'set' rest leads into — 'warmup' | 'work' | null (supersetFlow.restSetPhase)
                        // paused: held at `left`; `endsAt` means nothing until resumeRest sets it again
-  work: null,          // work countdown DURING a timed set (issue #16) — { left, total, endsAt, label, overtime?, set }
+  work: null,          // work countdown DURING a timed set (issue #16) — { left, total, endsAt, label, overtime?, set, forIdx }
                        // set: { phase: 'warmup' | 'work', n, of } — which hold of the exercise (workout-model.holdPosition)
+                       // forIdx: index of the active entry being held (undefined when unknown); kept current like the rest's
   timerFlashId: 0,     // changing the id retriggers the theme-blink visual alert
 
   flashTimer() {
@@ -238,8 +239,9 @@ export const useUI = create((set, get) => ({
   // pointing at the same exercise. Returns nothing; the caller decides whether to stop instead.
   shiftRestOwner(at, delta) {
     const tm = get().timer
-    if (!tm || !(tm.forIdx >= at)) return
-    set({ timer: { ...tm, forIdx: tm.forIdx + delta } })
+    if (tm && tm.forIdx >= at) set({ timer: { ...tm, forIdx: tm.forIdx + delta } })
+    const wk = get().work
+    if (wk && wk.forIdx >= at) set({ work: { ...wk, forIdx: wk.forIdx + delta } })
   },
   // Android: the rest notification's own Pause, −15 s and +15 s (#296) change the countdown there
   // first, and this brings the bar in the app to the same place — a pause stops the ticking here
@@ -287,19 +289,20 @@ export const useUI = create((set, get) => ({
      purpose: the two mean opposite things, they must never run together, and a work set is
      something you are watching — so it gets no server push (that endpoint says "rest over",
      and a plank does not need a notification you are staring at anyway).
-     `onDone(elapsedSec, { chimed, abandoned })` is called both when the countdown reaches zero and
-     on an early finish; the elapsed time is what actually gets logged, so stopping at 0:38 of a
-     0:45 hold records 0:38 rather than crediting the full target. `chimed` is true when the
-     countdown ran out in front of you and the end chime and buzz have just played; `abandoned`
-     when a rest displaced the hold (abandonWork). */
-  startWork(sec, label, onDone, setInfo) {
+     `onDone(elapsedSec, { chimed, abandoned, forIdx })` is called both when the countdown reaches
+     zero and on an early finish; the elapsed time is what actually gets logged, so stopping at
+     0:38 of a 0:45 hold records 0:38 rather than crediting the full target. `chimed` is true when
+     the countdown ran out in front of you and the end chime and buzz have just played; `abandoned`
+     when a rest displaced the hold (abandonWork). `forIdx` is the held entry's index as it is
+     then — an exercise added above it during the hold moved it (shiftRestOwner). */
+  startWork(sec, label, onDone, setInfo, forIdx) {
     get().abandonWork()   // a hold this one replaces keeps what it held, same as a rest replacing one
     get().stopRest()
     const total = Math.max(1, Math.round(sec) || 1)
     const endsAt = Date.now() + total * 1000
     workDone = onDone
     pageHiddenAt = document.hidden ? Date.now() : null   // see startRest: a stale hide is not a catch-up
-    set({ work: { left: total, total, endsAt, label, overtime: useStore.getState().S.timedSetOvertime === true, set: setInfo || null } })
+    set({ work: { left: total, total, endsAt, label, overtime: useStore.getState().S.timedSetOvertime === true, set: setInfo || null, forIdx } })
     workTick = () => {
       const wk = get().work
       if (!wk) return
@@ -318,7 +321,7 @@ export const useUI = create((set, get) => ({
         get().stopWork()
         // `chimed` tells the set's own tick that this end has already sounded and buzzed — not
         // so when overtime ran out, whose end chime played when the target was reached.
-        if (done) done(wk.total - left, { chimed: seenLive && !wk.alerted })
+        if (done) done(wk.total - left, { chimed: seenLive && !wk.alerted, forIdx: wk.forIdx })
         return
       }
       if (left <= 3) beep(snd, 660, 0.1)
@@ -336,7 +339,7 @@ export const useUI = create((set, get) => ({
     const done = workDone
     vibrate(30)
     get().stopWork()
-    if (done) done(elapsed)
+    if (done) done(elapsed, { forIdx: wk.forIdx })
   },
   // A rest is starting while a hold runs that is not the one being ticked — a set finished on
   // another row, or on another exercise, which the List layout puts one tap away. The hold cannot
@@ -354,7 +357,7 @@ export const useUI = create((set, get) => ({
     // tapped and thought better of, and rounding it up to one second the way an early finish does
     // would write a one-second plank over a real plan. (finishWorkEarly's Math.max(1, …) is right
     // for what it is: you pressed Done, so you held it, however briefly.)
-    if (done && elapsed >= 2) done(elapsed, { abandoned: true })
+    if (done && elapsed >= 2) done(elapsed, { abandoned: true, forIdx: wk.forIdx })
   },
   // Abandon without logging anything.
   stopWork() {

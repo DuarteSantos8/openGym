@@ -627,6 +627,11 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
 }
 
 /* ---------- active workout ---------- */
+// The newest render's handlers, for callbacks that fire long after the render that made them: a
+// hold's end and a rest's hand-over must judge the workout as it is then, not as it was — and if
+// the view was left and re-entered in between, the instance that is on screen now must answer.
+let latest = {}
+
 export function removeActiveExercise(idx) {
   // Clear the work callback before indexes can shift. This also protects a confirmation sheet
   // that was opened first and confirmed after a timed hold started.
@@ -682,9 +687,6 @@ function ActiveWorkout() {
   // distinct, while each rendered set index identifies the existing row within that entry.
   const exRefs = useRef(new Map())
   const setRefs = useRef(new Map())
-  // The newest render's handlers, for callbacks that fire long after the render that made them:
-  // a hold's end and a rest's hand-over must judge the workout as it is then, not as it was.
-  const latest = useRef({})
   const bindExRef = (entry, el) => {
     if (el) exRefs.current.set(entry, el)
     else {
@@ -1067,11 +1069,11 @@ function ActiveWorkout() {
     // the row is held to the end, ticked, or given a duration you typed yourself, and it never
     // reaches S.workouts (lib/finish-workout.js).
     const plan = (!e.sets[i].done && e.sets[i].planSec) || e.sets[i].sec || 45
-    useUI.getState().startWork(plan, exerciseNameText(exOr(e.id)), (elapsed, { abandoned = false, chimed = false } = {}) => {
-      // Found again by index, checked by id: the list may have been edited while the hold ran,
-      // and a hold must never be written onto a different exercise.
-      const en = useStore.getState().S.active?.entries[idx]
-      if (!en || en.id !== entryId || !en.sets[i]) return
+    useUI.getState().startWork(plan, exerciseNameText(exOr(e.id)), (elapsed, { abandoned = false, chimed = false, forIdx: at } = {}) => {
+      // The hold's owner as it is now (an exercise added above it moved it), checked by id: a
+      // hold must never be written onto a different exercise.
+      const en = useStore.getState().S.active?.entries[at]
+      if (at == null || !en || en.id !== entryId || !en.sets[i]) return
       // A hold a rest displaced (useUI.abandonWork: a set ticked on another row, or another
       // exercise) keeps its seconds and nothing else. It is not a finish: the row stays unticked
       // and starts no rest, because the rest that displaced the hold is already counting down —
@@ -1081,12 +1083,12 @@ function ActiveWorkout() {
         // that displaces the hold, so the hand-back lands on a row that is already ticked. It
         // still wants the seconds (that is what was held, not the target), but a finished row has
         // no use for a plan set aside.
-        mutEntry(idx, x => { if (x.sets[i].planSec == null && !x.sets[i].done) x.sets[i].planSec = plan; x.sets[i].sec = elapsed })
+        mutEntry(at, x => { if (x.sets[i].planSec == null && !x.sets[i].done) x.sets[i].planSec = plan; x.sets[i].sec = elapsed })
         return
       }
-      mutEntry(idx, x => { x.sets[i].sec = elapsed; delete x.sets[i].planSec })
-      if (!useStore.getState().S.active.entries[idx].sets[i].done) latest.current.toggle(idx, i, undefined, { quiet: chimed, fromHold: true })
-    }, holdPosition(e.sets, i))
+      mutEntry(at, x => { x.sets[i].sec = elapsed; delete x.sets[i].planSec })
+      if (!useStore.getState().S.active.entries[at].sets[i].done) latest.toggle(at, i, undefined, { quiet: chimed, fromHold: true })
+    }, holdPosition(e.sets, i), idx)
   }
   // A timed exercise runs itself once started: hold → rest → next hold, until its sets are done.
   // Built when the rest starts, checked again when it fires: the workout may have moved on. The
@@ -1099,7 +1101,7 @@ function ActiveWorkout() {
     if (!e || e.id !== entryId || modeOf({ ...(e.target || {}), id: e.id }) !== 'time') return
     if (e.sets.length !== setsLen || !e.sets[nextI] || e.sets[nextI].done || useUI.getState().work) return
     if (unitOf(supersetUnits(S2.active.entries), forIdx).length !== 1) return
-    latest.current.startTimed(forIdx, nextI)
+    latest.startTimed(forIdx, nextI)
   }
 
   // `quiet`: the hold that ticks this set has just ended with the chime and its buzz pattern
@@ -1212,7 +1214,7 @@ function ActiveWorkout() {
     }
   }
 
-  latest.current = { toggle, startTimed }
+  latest = { toggle, startTimed }
 
   // Hardware keys (issue #133, lib/workout-keys.js): Space or Enter ticks the next set, ← and →
   // switch exercise. The listener is added once and calls the handler of the latest render, so
