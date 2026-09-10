@@ -270,7 +270,11 @@ export function readSession(entry, fallback) {
   // Warm-up rows are prep, not the session: one filtered read beats guarding every consumer
   // below (an undone warm-up otherwise poisons `ok` forever and its reps drag `low`/`count`).
   const sets = ((entry && entry.sets) || []).filter(s => !isWarmupRow(s))
-  const planned = target.sets || sets.length
+  // A wave prescribes each row separately (5 @ 65 %, 3 @ 75 %, 1 @ 85 %), so its sessions are
+  // graded row against row rather than everything against one rep target. An entry without
+  // `target.rows` — every entry written before this policy existed — keeps the uniform path.
+  const rows = Array.isArray(target.rows) && target.rows.length ? target.rows : null
+  const planned = rows ? rows.length : (target.sets || sets.length)
   const enough = sets.length >= planned
 
   if (mode === 'time') {
@@ -291,7 +295,9 @@ export function readSession(entry, fallback) {
     count: reps.length,                                   // the dimension bodyweight work grows (#33)
     low: reps.length ? Math.min(...reps) : 0,
     amrap: reps.length ? reps[reps.length - 1] : 0,       // Greyskull's final set
-    ok: goal > 0 && enough && reps.length > 0 && reps.every(r => r >= goal)
+    ok: rows
+      ? enough && reps.length > 0 && rows.every((row, i) => reps[i] >= (row.r || 0))
+      : goal > 0 && enough && reps.length > 0 && reps.every(r => r >= goal)
   }
 }
 

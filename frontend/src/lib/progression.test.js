@@ -874,3 +874,59 @@ describe('wave template and resolution', () => {
     expect(policyFor({ id: LIFT, prog: 'wave', mode: 'time' }, null, 'time')).toBe('off')
   })
 })
+
+describe('readSession with a per-row target', () => {
+  const ROWS = { sets: 3, reps: 5, rows: [{ w: 65, r: 5 }, { w: 75, r: 3 }, { w: 85, r: 1 }] }
+
+  it('grades each row against its own rep target', () => {
+    const s = readSession({ id: LIFT, target: ROWS, sets: [
+      { w: 65, r: 5, done: true }, { w: 75, r: 3, done: true }, { w: 85, r: 1, done: true },
+    ] })
+    expect(s.ok).toBe(true)
+    expect(s.weight).toBe(85)          // the top set stays the week signal
+  })
+
+  it('does not fail a light row for missing the heavy row\'s reps', () => {
+    // uniform grading would need 5 reps everywhere and call this a miss
+    const s = readSession({ id: LIFT, target: ROWS, sets: [
+      { w: 65, r: 5, done: true }, { w: 75, r: 3, done: true }, { w: 85, r: 2, done: true },
+    ] })
+    expect(s.ok).toBe(true)
+  })
+
+  it('fails the session when one row came up short', () => {
+    expect(readSession({ id: LIFT, target: ROWS, sets: [
+      { w: 65, r: 5, done: true }, { w: 75, r: 2, done: true }, { w: 85, r: 1, done: true },
+    ] }).ok).toBe(false)
+  })
+
+  it('fails the session when a row was never checked off', () => {
+    expect(readSession({ id: LIFT, target: ROWS, sets: [
+      { w: 65, r: 5, done: true }, { w: 75, r: 3, done: true }, { w: 85, r: 1, done: false },
+    ] }).ok).toBe(false)
+  })
+
+  it('fails the session when fewer rows were logged than prescribed', () => {
+    expect(readSession({ id: LIFT, target: ROWS, sets: [
+      { w: 65, r: 5, done: true }, { w: 75, r: 3, done: true },
+    ] }).ok).toBe(false)
+  })
+
+  it('ignores warm-up rows when lining rows up with sets', () => {
+    const s = readSession({ id: LIFT, target: ROWS, sets: [
+      { w: 40, r: 8, done: true, warmup: true },
+      { w: 65, r: 5, done: true }, { w: 75, r: 3, done: true }, { w: 85, r: 1, done: true },
+    ] })
+    expect(s.ok).toBe(true)
+  })
+
+  it('leaves an entry with no rows on the uniform path', () => {
+    const uniform = { sets: 3, reps: 5 }
+    expect(readSession({ id: LIFT, target: uniform, sets: [
+      { w: 60, r: 5, done: true }, { w: 60, r: 5, done: true }, { w: 60, r: 4, done: true },
+    ] }).ok).toBe(false)
+    expect(readSession({ id: LIFT, target: { ...uniform, rows: [] }, sets: [
+      { w: 60, r: 5, done: true }, { w: 60, r: 5, done: true }, { w: 60, r: 5, done: true },
+    ] }).ok).toBe(true)
+  })
+})
