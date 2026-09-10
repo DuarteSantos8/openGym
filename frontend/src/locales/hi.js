@@ -327,6 +327,8 @@ export default {
   'Next round': 'अगला राउंड',
   'Next exercise': 'अगला व्यायाम',
   'Hold': 'होल्ड',
+  'Hold {0} of {1}': 'होल्ड {0}/{1}',
+  'Warm-up hold {0} of {1}': 'वार्म-अप होल्ड {0}/{1}',
   'Weigh in before workouts': 'वर्कआउट से पहले वज़न दर्ज करना',
   'Asks for your body weight when a workout starts. Off starts the session straight away.': 'वर्कआउट शुरू होते समय आपका वज़न पूछता है। बंद होने पर सेशन सीधे शुरू होता है।',
   'No entries yet — log your weight to start the curve.': 'अभी कोई एंट्री नहीं — ग्राफ़ शुरू करने के लिए वज़न दर्ज करें।',

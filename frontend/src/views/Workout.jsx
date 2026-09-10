@@ -8,6 +8,7 @@ import { usesBar, barWeightFor, plateSplit } from '../lib/bar.js'
 import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, freestyleConfig, defaultConfig, setsDoneActive, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, stepEffort, capEffort, cascadeWeight, insertWarmupRow, removeRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor } from '../lib/history.js'
 import { fmtNum, capWords, fmtDate, todayISO, exCount, DAYN } from '../lib/format.js'
 import { beep, vibrate, unlock } from '../lib/sound.js'
+import { holdPosition, nextUndoneAfter } from '../lib/workout-model.js'
 import { t, exerciseNameFor } from '../lib/i18n.js'
 import { api } from '../lib/api.js'
 import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, restKind, restFocusIdx, restSetPhase } from '../lib/supersetFlow.js'
@@ -536,6 +537,9 @@ function ActiveWorkout() {
   // distinct, while each rendered set index identifies the existing row within that entry.
   const exRefs = useRef(new Map())
   const setRefs = useRef(new Map())
+  // The newest render's handlers, for callbacks that fire long after the render that made them:
+  // a hold's end and a rest's hand-over must judge the workout as it is then, not as it was.
+  const latest = useRef({})
   const bindExRef = (entry, el) => {
     if (el) exRefs.current.set(entry, el)
     else {
@@ -822,18 +826,39 @@ function ActiveWorkout() {
   // finish logs 0:38 of a 0:45 target rather than crediting the full prescription — and then
   // checks the set off through the normal path, so rest, supersets and the finish prompt all
   // behave exactly as they do for a reps set.
+  // Reads the store, not the render, because a chained hold starts from a timer callback made
+  // a rest ago (see the chain in toggle).
   const startTimed = (idx, i) => {
-    const e = A.entries[idx]
+    const e = useStore.getState().S.active?.entries[idx]
+    if (!e?.sets[i]) return
+    const entryId = e.id
     // This tap may be the only one before the hold's countdown beeps (a timed first exercise):
     // get the audio context running while it still counts as a gesture (iOS, #152).
-    unlock(S.sound)
+    unlock(useStore.getState().S.sound)
     useUI.getState().startWork(e.sets[i].sec || 45, exerciseNameFor(exOr(e.id)), elapsed => {
-      mutEntry(idx, en => { en.sets[i].sec = elapsed })
-      if (!useStore.getState().S.active.entries[idx].sets[i].done) toggle(idx, i)
-    })
+      // Found again by index, checked by id: the list may have been edited while the hold ran,
+      // and a hold must never be written onto a different exercise.
+      const en = useStore.getState().S.active?.entries[idx]
+      if (!en || en.id !== entryId || !en.sets[i]) return
+      mutEntry(idx, x => { x.sets[i].sec = elapsed })
+      if (!useStore.getState().S.active.entries[idx].sets[i].done) latest.current.toggle(idx, i, undefined, { fromHold: true })
+    }, holdPosition(e.sets, i))
+  }
+  // A timed exercise runs itself once started: hold → rest → next hold, until its sets are done.
+  // Built when the rest starts, checked again when it fires: the workout may have moved on. The
+  // rest hands over its own owner index (kept current when exercises are added, removed or
+  // moved), and the exercise must still be the same one, still timed, still alone in its unit,
+  // with the same rows.
+  const chainedHold = (entryId, nextI, setsLen) => forIdx => {
+    const S2 = useStore.getState().S
+    const e = forIdx != null ? S2.active?.entries[forIdx] : null
+    if (!e || e.id !== entryId || modeOf({ ...(e.target || {}), id: e.id }) !== 'time') return
+    if (e.sets.length !== setsLen || !e.sets[nextI] || e.sets[nextI].done || useUI.getState().work) return
+    if (unitOf(supersetUnits(S2.active.entries), forIdx).length !== 1) return
+    latest.current.startTimed(forIdx, nextI)
   }
 
-  const toggle = (idx, i, side) => {
+  const toggle = (idx, i, side, opts) => {
     // Ticking a set ends the typing in that row: drop the keyboard before the rest timer, the
     // effort sheet or the next exercise moves in. WebKit keeps the input focused across the
     // button tap, and a focused input with its keyboard gone is what leaves the tab bar
@@ -853,10 +878,12 @@ function ActiveWorkout() {
         beep(S.sound, 1040, 0.12); vibrate(30)
         // The unit that owns the ticked set — not the marked one. Since !92 the marker no longer
         // follows a finished exercise, and in list mode any exercise can be worked on, so judging
-        // the marker's unit here declared the workout complete after one set elsewhere.
-        const ownUnit = unitOf(units, idx)
-        const unitDone = ownUnit.every(ui => (ui === idx ? e : A.entries[ui]).sets.every(x => x.done))
-        if (unitDone) workoutDone = !nextUnfinishedUnit(A.entries, supersetUnits(A.entries), idx)
+        // the marker's unit here declared the workout complete after one set elsewhere. Judged on
+        // the draft, not the render: a hold's end arrives long after the render that armed it.
+        const draft = s.active.entries
+        const draftUnits = supersetUnits(draft)
+        const unitDone = unitOf(draftUnits, idx).every(ui => draft[ui].sets.every(x => x.done))
+        if (unitDone) workoutDone = !nextUnfinishedUnit(draft, draftUnits, idx)
         if (e.sets.every(x => x.done)) {
           exJustDone = true
           // topW is captured now; exWeights only at the finish (doFinishWorkout), so a typo you
@@ -894,11 +921,20 @@ function ActiveWorkout() {
       // What the bar calls the rest — warm-up or working set — read off the set it leads into.
       const phase = restSetPhase(fresh.entries[idx], i)
 
+      const kind = restKind({ unitDone: freshUnitDone, superset: (freshUnit?.length || 0) > 1 })
+      // A hold that finished on its own hands its rest the next hold — same exercise only: a
+      // superset's round order is not second-guessed, and the tap that ticks a set is not a hold.
+      // Also on a re-check, so an unticked-and-redone hold keeps the exercise running itself.
+      const alone = !freshUnit || freshUnit.length <= 1
+      const nextI = opts?.fromHold && alone && !freshUnitDone ? nextUndoneAfter(fresh.entries[idx].sets, i) : -1
+      const rest = () => nextI >= 0
+        ? startRest(restAfter, idx, kind, phase, chainedHold(fresh.entries[idx].id, nextI, fresh.entries[idx].sets.length))
+        : startRest(restAfter, idx, kind, phase)
+
       // A re-check of finished work must not navigate or reopen a sheet, but it may still owe
       // you a rest — see restOnRecheck, and the other half of issue #3.
-      const kind = restKind({ unitDone: freshUnitDone, superset: (freshUnit?.length || 0) > 1 })
       if (!progress.isNew) {
-        if (!restBeforeWarmup && restOnRecheck({ timerRunning: !!useUI.getState().timer, unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) startRest(restAfter, idx, kind, phase)
+        if (!restBeforeWarmup && restOnRecheck({ timerRunning: !!useUI.getState().timer, unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) rest()
         return
       }
 
@@ -906,8 +942,8 @@ function ActiveWorkout() {
       // one unless the next unit has an unfinished warm-up, and never enter superset navigation.
       // stopRest() first so a rest that belongs after this set replaces the one that was running.
       if (freshUnitDone) stopRest()
-      if (!freshUnit || freshUnit.length <= 1) {
-        if (!restBeforeWarmup && restAfterSet({ unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) startRest(restAfter, idx, kind, phase)
+      if (alone) {
+        if (!restBeforeWarmup && restAfterSet({ unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) rest()
         return
       }
 
@@ -921,6 +957,8 @@ function ActiveWorkout() {
       }
     }
   }
+
+  latest.current = { toggle, startTimed }
 
   // Live-presence heartbeat so the admin dashboard can show who's training now. Signed-in only —
   // guests have no server session. Reads fresh state each tick so progress stays current.

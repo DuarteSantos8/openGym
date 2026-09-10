@@ -759,6 +759,8 @@ export default {
   'Next round': 'รอบถัดไป',
   'Next exercise': 'ท่าถัดไป',
   'Hold': 'ค้างไว้',
+  'Hold {0} of {1}': 'ค้างไว้ {0}/{1}',
+  'Warm-up hold {0} of {1}': 'ค้างไว้วอร์มอัพ {0}/{1}',
   'Weigh in before workouts': 'ชั่งน้ำหนักก่อนออกกำลังกาย',
   'Asks for your body weight when a workout starts. Off starts the session straight away.': 'ถามน้ำหนักตัวเมื่อเริ่มออกกำลังกาย ถ้าปิด เซสชันจะเริ่มทันที',
   'No entries yet — log your weight to start the curve.': 'ยังไม่มีข้อมูล — บันทึกน้ำหนักเพื่อเริ่มกราฟ',

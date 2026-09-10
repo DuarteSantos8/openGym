@@ -345,3 +345,22 @@ export function modeForEntry(entry, fallback = null) {
   if (targetMode) return targetMode
   return fallback == null ? modeForSet(source, target) : normalizeMode(fallback)
 }
+
+// Where a timed set sits among its exercise's sets of the same phase — "Hold 2 of 3", or
+// "Warm-up hold 1 of 2" — the same numbering the set rows show (warm-up rows count separately).
+export function holdPosition(sets, setIdx) {
+  const rows = Array.isArray(sets) ? sets : []
+  const set = rows[setIdx]
+  if (!set) return null
+  const warm = isWarmupRow(set)
+  const same = rows.filter(x => isWarmupRow(x) === warm)
+  return { phase: warm ? 'warmup' : 'work', n: rows.slice(0, setIdx + 1).filter(x => isWarmupRow(x) === warm).length, of: same.length }
+}
+
+// The set a finished timed set hands over to: the first unfinished one after it, or -1. Earlier
+// rows left unticked are the user's own decision and are not jumped back to.
+export function nextUndoneAfter(sets, setIdx) {
+  const rows = Array.isArray(sets) ? sets : []
+  const i = rows.findIndex((x, k) => k > setIdx && !x.done)
+  return i
+}

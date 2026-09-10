@@ -327,6 +327,8 @@ export default {
   'Next round': 'Следующий круг',
   'Next exercise': 'Следующее упражнение',
   'Hold': 'Удержание',
+  'Hold {0} of {1}': 'Удержание {0} из {1}',
+  'Warm-up hold {0} of {1}': 'Разминочное удержание {0} из {1}',
   'Weigh in before workouts': 'Взвешивание перед тренировкой',
   'Asks for your body weight when a workout starts. Off starts the session straight away.': 'Спрашивает ваш вес при начале тренировки. Выключено — сессия начинается сразу.',
   'No entries yet — log your weight to start the curve.': 'Записей пока нет — внеси вес, чтобы начать кривую.',
