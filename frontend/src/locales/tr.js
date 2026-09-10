@@ -333,6 +333,8 @@ export default {
   'Next round': 'Sonraki tur',
   'Next exercise': 'Sonraki egzersiz',
   'Hold': 'Tutuş',
+  'Hold {0} of {1}': 'Tutuş {0}/{1}',
+  'Warm-up hold {0} of {1}': 'Isınma tutuşu {0}/{1}',
   'Weigh in before workouts': 'Antrenman öncesi tartılma',
   'Asks for your body weight when a workout starts. Off starts the session straight away.': 'Antrenman başlarken kilonu sorar. Kapalıyken seans hemen başlar.',
   'No entries yet — log your weight to start the curve.': 'Henüz kayıt yok — eğriyi başlatmak için kilonu gir.',

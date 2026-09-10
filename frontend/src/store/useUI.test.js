@@ -147,3 +147,100 @@ describe('rest-over sound per kind of rest', () => {
     expect(useUI.getState().timer.kind).toBe('round')
   })
 })
+
+// A rest can hand over to something (a timed exercise's next hold): when it runs out on screen
+// or is skipped — never when it ran out while the app was hidden, never on a plain stop.
+describe('what a rest hands over to', () => {
+  let originalSettings
+  const goHidden = () => { Object.defineProperty(document, 'hidden', { value: true, configurable: true }); document.dispatchEvent(new Event('visibilitychange')) }
+  const goVisible = () => { Object.defineProperty(document, 'hidden', { value: false, configurable: true }); document.dispatchEvent(new Event('visibilitychange')) }
+  beforeEach(() => {
+    vi.useFakeTimers()
+    originalSettings = useStore.getState().S
+    useStore.setState({ S: { ...originalSettings, sound: false, timerFlash: false } })
+    useUI.setState({ timer: null, work: null })
+  })
+  afterEach(() => { goVisible(); useUI.getState().stopRest(); useStore.setState({ S: originalSettings }); vi.useRealTimers() })
+
+  it('fires once when the rest runs out on screen, after the timer is gone', () => {
+    const done = vi.fn(() => expect(useUI.getState().timer).toBe(null))
+    useUI.getState().startRest(1, 0, 'set', null, done)
+    vi.advanceTimersByTime(1000)
+    expect(done).toHaveBeenCalledTimes(1)
+    expect(done).toHaveBeenCalledWith(0)            // the rest's owner index
+    vi.advanceTimersByTime(3000)
+    expect(done).toHaveBeenCalledTimes(1)
+  })
+
+  it('hands over the owner as it is now, not as it was when the rest started', () => {
+    const done = vi.fn()
+    useUI.getState().startRest(1, 2, 'set', null, done)
+    useUI.getState().shiftRestOwner(0, 1)             // an exercise inserted above
+    vi.advanceTimersByTime(1000)
+    expect(done).toHaveBeenCalledWith(3)
+  })
+
+  it('rest set to Off: no rest, no hand-over — the next hold waits for a tap', () => {
+    const done = vi.fn()
+    useUI.getState().startRest(0, 0, 'set', null, done)
+    vi.advanceTimersByTime(5000)
+    useUI.getState().skipRest()
+    expect(done).not.toHaveBeenCalled()
+  })
+
+  it('fires on Skip', () => {
+    const done = vi.fn()
+    useUI.getState().startRest(90, 0, 'set', null, done)
+    useUI.getState().skipRest()
+    expect(done).toHaveBeenCalledTimes(1)
+    expect(done).toHaveBeenCalledWith(0)
+    expect(useUI.getState().timer).toBe(null)
+  })
+
+  it('fires when −15 s takes the rest past zero', () => {
+    const done = vi.fn()
+    useUI.getState().startRest(10, 0, 'set', null, done)
+    useUI.getState().addRest(-15)
+    expect(done).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not fire on a plain stop, and a stopped rest cannot fire later', () => {
+    const done = vi.fn()
+    useUI.getState().startRest(1, 0, 'set', null, done)
+    useUI.getState().stopRest()
+    vi.advanceTimersByTime(2000)
+    expect(done).not.toHaveBeenCalled()
+  })
+
+  it('does not fire when the rest ran out while the app was hidden', () => {
+    const done = vi.fn()
+    useUI.getState().startRest(90, 0, 'set', null, done)
+    goHidden()
+    vi.setSystemTime(Date.now() + 91_000)
+    goVisible()
+    expect(useUI.getState().timer).toBe(null)
+    expect(done).not.toHaveBeenCalled()
+  })
+
+  it('a new rest replaces the hand-over, a rest without one clears it', () => {
+    const first = vi.fn(), second = vi.fn()
+    useUI.getState().startRest(90, 0, 'set', null, first)
+    useUI.getState().startRest(90, 0, 'set', null, second)
+    useUI.getState().skipRest()
+    expect(first).not.toHaveBeenCalled()
+    expect(second).toHaveBeenCalledTimes(1)
+    useUI.getState().startRest(90, 0, 'set', null, first)
+    useUI.getState().startRest(90, 0, 'block', null)
+    useUI.getState().skipRest()
+    expect(first).not.toHaveBeenCalled()
+  })
+
+  it('a hold starting ends the rest without firing it', () => {
+    const done = vi.fn()
+    useUI.getState().startRest(90, 0, 'set', null, done)
+    useUI.getState().startWork(30, 'Plank', vi.fn())
+    expect(useUI.getState().timer).toBe(null)
+    expect(done).not.toHaveBeenCalled()
+    useUI.getState().stopWork()
+  })
+})

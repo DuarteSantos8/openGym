@@ -100,6 +100,33 @@ describe('rest timer bar: what it is timing', () => {
     expect(label()).toBe('Hold · Plank')
   })
 
+  it('a hold started from its row says which hold of the exercise it is, warm-up holds apart', () => {
+    act(() => { useUI.getState().startWork(45, 'Plank', vi.fn(), { phase: 'work', n: 2, of: 3 }) })
+    mount()
+    expect(label()).toBe('Hold 2 of 3 · Plank')
+    act(() => { useUI.getState().startWork(20, 'Plank', vi.fn(), { phase: 'warmup', n: 1, of: 2 }) })
+    mount()
+    expect(label()).toBe('Warm-up hold 1 of 2 · Plank')
+  })
+
+  it('the work timer has the same three rows as the rest timer', () => {
+    act(() => { useUI.getState().startWork(45, 'Plank', vi.fn()) })
+    mount()
+    const bar = host.querySelector('#timer')
+    expect([...bar.children].map(c => c.className)).toEqual(['lbl', 'head', 'acts'])
+    expect(bar.querySelector('.acts .go')).toBeTruthy()
+  })
+
+  it('Skip ends the rest early and hands over, like the rest running out', () => {
+    const done = vi.fn()
+    act(() => { useUI.getState().startRest(90, 0, 'set', null, done) })
+    mount()
+    const skip = [...host.querySelectorAll('#timer .acts button')].find(b => b.textContent.trim() === 'Skip')
+    act(() => { skip.click() })
+    expect(useUI.getState().timer).toBe(null)
+    expect(done).toHaveBeenCalledTimes(1)
+  })
+
   it('renders nothing and drops the resting class when no timer runs', () => {
     act(() => { useUI.getState().startRest(60, 0, 'set') })
     mount()

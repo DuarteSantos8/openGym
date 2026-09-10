@@ -1026,7 +1026,7 @@ body.chips-dragging *{cursor:inherit}
   background:color-mix(in srgb,var(--surface) 97%,transparent);
   -webkit-backdrop-filter:saturate(180%) blur(10px);backdrop-filter:saturate(180%) blur(10px);
   border-radius:var(--r-lg);padding:14px 16px;
-  display:flex;align-items:center;gap:12px;
+  display:flex;flex-direction:column;align-items:stretch;gap:8px;
   box-shadow:0 12px 34px -8px rgba(0,0,0,.55);
   animation:slideup var(--med) var(--ease);
 }
@@ -1040,20 +1040,18 @@ body.chips-dragging *{cursor:inherit}
 #timer .lbl b{font-weight:600;color:var(--label)}
 #timer .lbl .who{text-transform:capitalize}   /* library names arrive lowercase, like the chips */
 #timer .bar i{display:block;height:100%;background:var(--acc);transition:width 1s linear}
-/* rest variant: −15/+15/Skip and the clock won't share one line on a phone, so the clock and
-   bar take the top row and the controls take their own. The work timer keeps a single row —
-   it only ever has two buttons. */
-#timer.rest{flex-direction:column;align-items:stretch;gap:8px}
-#timer.rest .head{display:flex;align-items:center;gap:12px}
-#timer.rest .acts{display:flex;align-items:center;gap:8px}
-#timer.rest .acts .btn{padding-top:11px;padding-bottom:11px}   /* sweaty hands, mid-set */
-#timer.rest .acts .skip{margin-left:auto;min-width:84px}
+/* Both variants stack the same way: the controls and the clock won't share one line on a
+   phone (−15/+15/Skip at 360px left the bar ~30px), so what is running takes the top row, clock
+   and bar the second, controls the third. The confirming button sits at the far edge, away
+   from the one you tap to buy more time. */
+#timer .head{display:flex;align-items:center;gap:12px}
+#timer .acts{display:flex;align-items:center;gap:8px}
+#timer .acts .btn{padding-top:11px;padding-bottom:11px}   /* sweaty hands, mid-set */
+#timer .acts .skip,#timer .acts .go{margin-left:auto;min-width:84px}
 /* work timer (issue #16): the same bar doing the opposite job — outlined and tinted so a
    glance tells "you are holding this" apart from "you are recovering". */
 #timer.working{border:var(--hair) solid var(--acc)}
 #timer.working .t{color:var(--acc)}
-#timer.working .grow{flex:1;min-width:0}
-#timer.working .lbl{margin-bottom:5px}
 
 /* ---------------------------------------------------------------- modal -- */
 #modal-root{position:fixed;inset:0;z-index:100;display:none}
@@ -1418,9 +1416,9 @@ body.chips-dragging *{cursor:inherit}
   #timer{left:50%;right:auto;margin-left:-260px;width:520px;bottom:112px}
   /* 520px fits the clock, the bar and all three controls on one line again */
   /* the label keeps its own line; clock+bar and the controls share the second */
-  #timer.rest{flex-direction:row;flex-wrap:wrap;align-items:center;gap:6px 14px}
-  #timer.rest .lbl{flex:0 0 100%}
-  #timer.rest .head{flex:1;min-width:0}
+  #timer{flex-direction:row;flex-wrap:wrap;align-items:center;gap:6px 14px}
+  #timer .lbl{flex:0 0 100%}
+  #timer .head{flex:1;min-width:0}
   .exmedia img{height:380px}
   .hm-wrap{display:flex;flex-direction:column;align-items:center}
 }

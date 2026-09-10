@@ -762,6 +762,8 @@ export default {
   'Next round': 'Következő kör',
   'Next exercise': 'Következő gyakorlat',
   'Hold': 'Tartás',
+  'Hold {0} of {1}': 'Tartás {0}/{1}',
+  'Warm-up hold {0} of {1}': 'Bemelegítő tartás {0}/{1}',
   'Weigh in before workouts': 'Súlymérés edzés előtt',
   'Asks for your body weight when a workout starts. Off starts the session straight away.': 'Edzés indításakor rákérdez a testsúlyodra. Kikapcsolva az edzés azonnal indul.',
   'No entries yet — log your weight to start the curve.': 'Még nincs bejegyzés — rögzítsd a súlyodat a görbe elindításához.',

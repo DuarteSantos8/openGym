@@ -333,6 +333,8 @@ export default {
   'Next round': 'Tour suivant',
   'Next exercise': 'Exercice suivant',
   'Hold': 'Maintien',
+  'Hold {0} of {1}': 'Maintien {0} sur {1}',
+  'Warm-up hold {0} of {1}': 'Maintien d’échauffement {0} sur {1}',
   'Weigh in before workouts': 'Se peser avant la séance',
   'Asks for your body weight when a workout starts. Off starts the session straight away.': 'Demande ton poids au début d’une séance. Désactivé, la séance démarre directement.',
   'No entries yet — log your weight to start the curve.': 'Aucune entrée — note ton poids pour démarrer la courbe.',

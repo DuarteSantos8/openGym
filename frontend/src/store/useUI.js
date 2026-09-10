@@ -55,6 +55,10 @@ const maybeRestNotification = async () => {
 let toastTm = null
 let timerInt = null
 let timerTick = null
+// What a rest hands over to when it is over (a timed exercise's next hold, Workout.startTimed).
+// Fires when the rest runs out on screen or is skipped — never when it ran out while the app
+// was hidden (a hold nobody watched start would still be logged), never on a plain stopRest().
+let restDone = null
 let workInt = null
 let workTick = null
 let workDone = null
@@ -66,7 +70,8 @@ export const useUI = create((set, get) => ({
                        // forIdx: index of the active entry whose set started the rest (undefined when unknown)
                        // kind: which rest-over sound plays — 'set' | 'round' | 'block' (supersetFlow.restKind)
                        // phase: the set a 'set' rest leads into — 'warmup' | 'work' | null (supersetFlow.restSetPhase)
-  work: null,          // work countdown DURING a timed set (issue #16) — { left, total, endsAt, label }
+  work: null,          // work countdown DURING a timed set (issue #16) — { left, total, endsAt, label, set }
+                       // set: { phase: 'warmup' | 'work', n, of } — which hold of the exercise (workout-model.holdPosition)
   timerFlashId: 0,     // changing the id retriggers the theme-blink visual alert
 
   flashTimer() {
@@ -89,11 +94,14 @@ export const useUI = create((set, get) => ({
     toastTm = setTimeout(() => set({ toastMsg: '' }), 2200)
   },
 
-  startRest(sec, forIdx, kind, phase) {
+  startRest(sec, forIdx, kind, phase, onDone) {
     get().stopRest()
     // Rest timer set to Off. Stopping and returning rather than starting a zero-length timer
     // keeps every caller honest: the four places that start a rest do not each need to know.
+    // Off also drops onDone: a hand-over rides on the rest, so with no rest the next hold waits
+    // for a tap like any other.
     if (!(sec > 0)) return
+    restDone = typeof onDone === 'function' ? onDone : null
     const endsAt = Date.now() + sec * 1000
     set({ timer: { left: sec, total: sec, endsAt, forIdx, kind, phase } })
     pushRestTimer(sec)
@@ -114,7 +122,14 @@ export const useUI = create((set, get) => ({
         // without push permission, gets no notification, and a countdown that silently vanishes
         // on reopen reads like a bug. Only the loud parts (beep, vibration, flash) are gated.
         get().toast(t('Rest over — next set!'))
-        maybeRestNotification(); get().stopRest(); return
+        maybeRestNotification()
+        // The hand-over gets the rest's owner as it is now, not as it was when the rest started:
+        // an exercise added, removed or moved above it re-pointed forIdx along the way.
+        const done = seenLive ? restDone : null
+        const at = tm.forIdx
+        get().stopRest()
+        if (done) done(at)
+        return
       }
       if (left <= 3) beep(snd, 660, 0.1)
       set({ timer: { ...tm, left } })
@@ -128,7 +143,7 @@ export const useUI = create((set, get) => ({
     const left = tm.left + sec
     // taking off more than is left means "I'm ready now" — same as skipping, and it keeps a
     // negative duration out of both the progress bar and the server-side push schedule
-    if (left <= 0) { get().stopRest(); return }
+    if (left <= 0) { get().skipRest(); return }
     set({ timer: { ...tm, left, total: tm.total + sec, endsAt: tm.endsAt + sec * 1000 } })
     pushRestTimer(left)
   },
@@ -139,7 +154,17 @@ export const useUI = create((set, get) => ({
     if (!tm || !(tm.forIdx >= at)) return
     set({ timer: { ...tm, forIdx: tm.forIdx + delta } })
   },
+  // "I'm ready now": the rest is over early, and whatever it was going to hand over to happens
+  // now. The Skip button and −15 s past zero come here; everything else that ends a rest
+  // (a new rest, a hold starting, an exercise removed, the workout discarded) uses stopRest.
+  skipRest() {
+    const done = restDone
+    const at = get().timer?.forIdx
+    get().stopRest()
+    if (done) done(at)
+  },
   stopRest() {
+    restDone = null
     if (timerInt) clearInterval(timerInt); timerInt = null
     if (timerTick) document.removeEventListener('visibilitychange', timerTick); timerTick = null
     if (get().timer) cancelPushRestTimer()
@@ -154,13 +179,13 @@ export const useUI = create((set, get) => ({
      `onDone(elapsedSec)` is called both when the countdown reaches zero and on an early
      finish; the elapsed time is what actually gets logged, so stopping at 0:38 of a 0:45
      hold records 0:38 rather than crediting the full target. */
-  startWork(sec, label, onDone) {
+  startWork(sec, label, onDone, setInfo) {
     get().stopWork()
     get().stopRest()
     const total = Math.max(1, Math.round(sec) || 1)
     const endsAt = Date.now() + total * 1000
     workDone = onDone
-    set({ work: { left: total, total, endsAt, label } })
+    set({ work: { left: total, total, endsAt, label, set: setInfo || null } })
     workTick = () => {
       const wk = get().work
       if (!wk) return

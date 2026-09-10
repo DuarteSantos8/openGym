@@ -121,6 +121,8 @@ export const PT_BR_OVERRIDES = {
   'Next round': 'Próxima rodada',
   'Next exercise': 'Próximo exercício',
   'Hold': 'Sustentação',
+  'Hold {0} of {1}': 'Sustentação {0} de {1}',
+  'Warm-up hold {0} of {1}': 'Sustentação de aquecimento {0} de {1}',
   'Weigh in before workouts': 'Pesar antes do treino',
   'Asks for your body weight when a workout starts. Off starts the session straight away.': 'Pede seu peso ao iniciar um treino. Desligado, a sessão começa na hora.',
   'No entries yet — log your weight to start the curve.': 'Ainda não há registros — informe seu peso para começar a curva.',

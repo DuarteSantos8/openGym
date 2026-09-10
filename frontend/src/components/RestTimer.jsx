@@ -28,7 +28,7 @@ const restLabel = timer => {
 export default function RestTimer() {
   const timer = useUI(s => s.timer)
   const work = useUI(s => s.work)
-  const { addRest, stopRest, finishWorkEarly, stopWork } = useUI()
+  const { addRest, skipRest, finishWorkEarly, stopWork } = useUI()
   // The exercise the rest points you at (supersetFlow.restFocusIdx): the one whose set started
   // it for a plain set, the top of the superset for a round, the next exercise after a finished
   // one — so the name always agrees with the word before it.
@@ -48,17 +48,26 @@ export default function RestTimer() {
   if (!on) return null
   const pct = (on.left / on.total) * 100
 
-  if (work) return (
-    <div id="timer" className="working">
-      <div className="t">{clock(work.left)}</div>
-      <div className="grow">
-        <div className="lbl"><b>{t('Hold')}</b>{work.label && <span className="who"> · {work.label}</span>}</div>
-        <div className="bar"><i style={{ width: pct + '%' }} /></div>
+  // Same three rows as the rest variant: what is running (which hold of the exercise, warm-up
+  // holds counted apart like the set rows), clock and bar, controls. Cancel abandons the hold
+  // without logging it; Done logs what was actually held.
+  if (work) {
+    const hs = work.set
+    const what = !hs ? t('Hold') : hs.phase === 'warmup' ? t('Warm-up hold {0} of {1}', hs.n, hs.of) : t('Hold {0} of {1}', hs.n, hs.of)
+    return (
+      <div id="timer" className="working">
+        <div className="lbl"><b>{what}</b>{work.label && <span className="who"> · {work.label}</span>}</div>
+        <div className="head">
+          <div className="t">{clock(work.left)}</div>
+          <div className="bar"><i style={{ width: pct + '%' }} /></div>
+        </div>
+        <div className="acts">
+          <Button size="sm" onClick={stopWork}>{t('Cancel')}</Button>
+          <Button size="sm" variant="primary" icon="check" className="go" onClick={finishWorkEarly}>{t('Done')}</Button>
+        </div>
       </div>
-      <Button size="sm" onClick={stopWork}>{t('Cancel')}</Button>
-      <Button size="sm" variant="primary" icon="check" onClick={finishWorkEarly}>{t('Done')}</Button>
-    </div>
-  )
+    )
+  }
   const name = forId ? exerciseNameFor(exOr(forId)) : ''
   // Three controls plus the clock don't fit one line on a phone — at 360px the bar is left
   // with about 30px and stops saying anything. So the rest variant stacks: what is being timed
@@ -75,7 +84,7 @@ export default function RestTimer() {
       <div className="acts">
         <Button size="sm" icon="minus" onClick={() => addRest(-15)}>15s</Button>
         <Button size="sm" icon="plus" onClick={() => addRest(15)}>15s</Button>
-        <Button size="sm" variant="primary" className="skip" onClick={stopRest}>{t('Skip')}</Button>
+        <Button size="sm" variant="primary" className="skip" onClick={skipRest}>{t('Skip')}</Button>
       </div>
     </div>
   )

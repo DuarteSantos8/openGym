@@ -6,6 +6,7 @@ import {
   nextDropWeight, nextBurstReps, splitBurstReps,
   isSideSet, makeSideSet, syncSideAggregate, setSideField, toggleSide,
   addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt,
+  holdPosition, nextUndoneAfter,
 } from './workout-model.js'
 
 describe('phaseForSet / isWarmupRow', () => {
@@ -343,5 +344,37 @@ describe('addSideCluster / removeSideClusterAt / setSideClusterAt', () => {
     expect(s.sides.L.clusters).toEqual([])
     expect(s.sides.L.r).toBe(8)                        // back to the base
     expect(s.type).toBeUndefined()
+  })
+})
+
+// The hold bar says which set is running, and a finished hold knows which set comes next.
+describe('holdPosition', () => {
+  const sets = [
+    { sec: 20, done: true, phase: 'warmup' },
+    { sec: 30, done: true, phase: 'warmup' },
+    { sec: 45, done: true },
+    { sec: 45, done: false },
+    { sec: 45, done: false },
+  ]
+  it('numbers warm-up and working holds separately, like the set rows', () => {
+    expect(holdPosition(sets, 1)).toEqual({ phase: 'warmup', n: 2, of: 2 })
+    expect(holdPosition(sets, 2)).toEqual({ phase: 'work', n: 1, of: 3 })
+    expect(holdPosition(sets, 4)).toEqual({ phase: 'work', n: 3, of: 3 })
+  })
+  it('is null for a row that does not exist', () => {
+    expect(holdPosition(sets, 9)).toBe(null)
+    expect(holdPosition(undefined, 0)).toBe(null)
+  })
+})
+
+describe('nextUndoneAfter', () => {
+  it('hands over to the first unfinished set after this one', () => {
+    expect(nextUndoneAfter([{ done: true }, { done: false }, { done: false }], 0)).toBe(1)
+    expect(nextUndoneAfter([{ done: true }, { done: true }, { done: false }], 0)).toBe(2)
+  })
+  it('does not go back to an earlier set left unticked, and stops at the end', () => {
+    expect(nextUndoneAfter([{ done: false }, { done: true }, { done: true }], 1)).toBe(-1)
+    expect(nextUndoneAfter([{ done: true }], 0)).toBe(-1)
+    expect(nextUndoneAfter(undefined, 0)).toBe(-1)
   })
 })

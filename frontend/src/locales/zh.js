@@ -333,6 +333,8 @@ export default {
   'Next round': '下一轮',
   'Next exercise': '下一个动作',
   'Hold': '保持',
+  'Hold {0} of {1}': '保持 {0}/{1}',
+  'Warm-up hold {0} of {1}': '热身保持 {0}/{1}',
   'Weigh in before workouts': '训练前称重',
   'Asks for your body weight when a workout starts. Off starts the session straight away.': '开始训练时询问体重。关闭后直接进入训练。',
   'No entries yet — log your weight to start the curve.': '还没有记录——记录体重以开始曲线。',

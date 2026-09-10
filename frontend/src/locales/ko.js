@@ -333,6 +333,8 @@ export default {
   'Next round': '다음 라운드',
   'Next exercise': '다음 운동',
   'Hold': '유지',
+  'Hold {0} of {1}': '유지 {0}/{1}',
+  'Warm-up hold {0} of {1}': '워밍업 유지 {0}/{1}',
   'Weigh in before workouts': '운동 전 체중 기록',
   'Asks for your body weight when a workout starts. Off starts the session straight away.': '운동을 시작할 때 체중을 물어봅니다. 끄면 세션이 바로 시작됩니다.',
   'No entries yet — log your weight to start the curve.': '아직 기록이 없어요 — 체중을 기록해 그래프를 시작하세요.',
