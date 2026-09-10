@@ -85,7 +85,7 @@ export function beep(enabled, freq, dur, when) {
   try { tone(freq || 880, dur || 0.18, when || 0) } catch (e) { /* */ }
 }
 
-// The end of a rest or a hold (store/useUI.js). It used to be three of the beeps above and went
+// The end of a hold (store/useUI.js). It used to be three of the beeps above and went
 // unheard under music (Discord: "Rest Timer Sound Notification too Quiet"): an exponential fade
 // from 0.35 is down to a tenth of that before the tone is half over. So this one
 //  - peaks at CHIME_PEAK instead of 0.35. The output clips above 1, and the notes are spaced so
@@ -124,6 +124,25 @@ export const playOnSilentSupported = () => {
 export function setPlayOnSilent(on) {
   if (!playOnSilentSupported()) return
   try { navigator.audioSession.type = on ? 'playback' : 'auto' } catch (e) { /* */ }
+}
+
+// One rest-over sound per kind of rest, so you can tell without looking whether to stay at the
+// station, go back to the top of the superset, or move on:
+//   set   — same exercise, next set:          two mid beeps
+//   round — a superset round is over:         three quick high beeps
+//   block — this exercise (or superset) is finished and another follows: a long two-note chime
+// None of them opens on the 660 Hz countdown tick, none is a rising triple like the
+// finish-workout fanfare (sheets.jsx), and none is the high-low-high chime above, which still
+// ends a hold (useUI.js).
+// The kind is decided in supersetFlow.restKind, next to the rule that decides whether a set
+// earns a rest at all. Unknown kinds get the plain set sound.
+const REST_OVER = {
+  set: [[880, 0.15, 0], [880, 0.15, 0.25]],
+  round: [[1100, 0.1, 0], [1100, 0.1, 0.15], [1100, 0.1, 0.3]],
+  block: [[880, 0.25, 0], [1320, 0.5, 0.35]],
+}
+export function restOver(enabled, kind) {
+  for (const [freq, dur, when] of REST_OVER[kind] || REST_OVER.set) beep(enabled, freq, dur, when)
 }
 
 // Settings → "Vibrate" (Discord, asierlama): the buzz at the end of a rest or a hold and on a set
