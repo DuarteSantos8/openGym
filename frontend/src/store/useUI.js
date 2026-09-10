@@ -77,8 +77,9 @@ export const useUI = create((set, get) => ({
                        // forIdx: index of the active entry whose set started the rest (undefined when unknown)
                        // kind: which rest-over sound plays — 'set' | 'round' | 'block' (supersetFlow.restKind)
                        // phase: the set a 'set' rest leads into — 'warmup' | 'work' | null (supersetFlow.restSetPhase)
-  work: null,          // work countdown DURING a timed set (issue #16) — { left, total, endsAt, label, set }
+  work: null,          // work countdown DURING a timed set (issue #16) — { left, total, endsAt, label, set, forIdx }
                        // set: { phase: 'warmup' | 'work', n, of } — which hold of the exercise (workout-model.holdPosition)
+                       // forIdx: index of the active entry being held (undefined when unknown); kept current like the rest's
   timerFlashId: 0,     // changing the id retriggers the theme-blink visual alert
 
   flashTimer() {
@@ -159,8 +160,9 @@ export const useUI = create((set, get) => ({
   // pointing at the same exercise. Returns nothing; the caller decides whether to stop instead.
   shiftRestOwner(at, delta) {
     const tm = get().timer
-    if (!tm || !(tm.forIdx >= at)) return
-    set({ timer: { ...tm, forIdx: tm.forIdx + delta } })
+    if (tm && tm.forIdx >= at) set({ timer: { ...tm, forIdx: tm.forIdx + delta } })
+    const wk = get().work
+    if (wk && wk.forIdx >= at) set({ work: { ...wk, forIdx: wk.forIdx + delta } })
   },
   // "I'm ready now": the rest is over early, and whatever it was going to hand over to happens
   // now. The Skip button and −15 s past zero come here; everything else that ends a rest
@@ -184,16 +186,17 @@ export const useUI = create((set, get) => ({
      purpose: the two mean opposite things, they must never run together, and a work set is
      something you are watching — so it gets no server push (that endpoint says "rest over",
      and a plank does not need a notification you are staring at anyway).
-     `onDone(elapsedSec)` is called both when the countdown reaches zero and on an early
-     finish; the elapsed time is what actually gets logged, so stopping at 0:38 of a 0:45
-     hold records 0:38 rather than crediting the full target. */
-  startWork(sec, label, onDone, setInfo) {
+     `onDone(elapsedSec, forIdx)` is called both when the countdown reaches zero and on an
+     early finish; the elapsed time is what actually gets logged, so stopping at 0:38 of a 0:45
+     hold records 0:38 rather than crediting the full target. forIdx is the held entry's index
+     as it is then — an exercise added above it during the hold moved it (shiftRestOwner). */
+  startWork(sec, label, onDone, setInfo, forIdx) {
     get().stopWork()
     get().stopRest()
     const total = Math.max(1, Math.round(sec) || 1)
     const endsAt = Date.now() + total * 1000
     workDone = onDone
-    set({ work: { left: total, total, endsAt, label, set: setInfo || null } })
+    set({ work: { left: total, total, endsAt, label, set: setInfo || null, forIdx } })
     workTick = () => {
       const wk = get().work
       if (!wk) return
@@ -209,7 +212,7 @@ export const useUI = create((set, get) => ({
         }
         const done = workDone
         get().stopWork()
-        if (done) done(wk.total)
+        if (done) done(wk.total, wk.forIdx)
         return
       }
       if (left <= 3) beep(snd, 660, 0.1)
@@ -226,7 +229,7 @@ export const useUI = create((set, get) => ({
     const done = workDone
     vibrate(30)
     get().stopWork()
-    if (done) done(elapsed)
+    if (done) done(elapsed, wk.forIdx)
   },
   // Abandon without logging anything.
   stopWork() {

@@ -483,6 +483,11 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
 }
 
 /* ---------- active workout ---------- */
+// The newest render's handlers, for callbacks that fire long after the render that made them: a
+// hold's end and a rest's hand-over must judge the workout as it is then, not as it was — and if
+// the view was left and re-entered in between, the instance that is on screen now must answer.
+let latest = {}
+
 export function removeActiveExercise(idx) {
   // Clear the work callback before indexes can shift. This also protects a confirmation sheet
   // that was opened first and confirmed after a timed hold started.
@@ -537,9 +542,6 @@ function ActiveWorkout() {
   // distinct, while each rendered set index identifies the existing row within that entry.
   const exRefs = useRef(new Map())
   const setRefs = useRef(new Map())
-  // The newest render's handlers, for callbacks that fire long after the render that made them:
-  // a hold's end and a rest's hand-over must judge the workout as it is then, not as it was.
-  const latest = useRef({})
   const bindExRef = (entry, el) => {
     if (el) exRefs.current.set(entry, el)
     else {
@@ -835,14 +837,14 @@ function ActiveWorkout() {
     // This tap may be the only one before the hold's countdown beeps (a timed first exercise):
     // get the audio context running while it still counts as a gesture (iOS, #152).
     unlock(useStore.getState().S.sound)
-    useUI.getState().startWork(e.sets[i].sec || 45, exerciseNameFor(exOr(e.id)), elapsed => {
-      // Found again by index, checked by id: the list may have been edited while the hold ran,
-      // and a hold must never be written onto a different exercise.
-      const en = useStore.getState().S.active?.entries[idx]
-      if (!en || en.id !== entryId || !en.sets[i]) return
-      mutEntry(idx, x => { x.sets[i].sec = elapsed })
-      if (!useStore.getState().S.active.entries[idx].sets[i].done) latest.current.toggle(idx, i, undefined, { fromHold: true })
-    }, holdPosition(e.sets, i))
+    useUI.getState().startWork(e.sets[i].sec || 45, exerciseNameFor(exOr(e.id)), (elapsed, at) => {
+      // The hold's owner as it is now (an exercise added above it moved it), checked by id: a
+      // hold must never be written onto a different exercise.
+      const en = useStore.getState().S.active?.entries[at]
+      if (at == null || !en || en.id !== entryId || !en.sets[i]) return
+      mutEntry(at, x => { x.sets[i].sec = elapsed })
+      if (!useStore.getState().S.active.entries[at].sets[i].done) latest.toggle(at, i, undefined, { fromHold: true })
+    }, holdPosition(e.sets, i), idx)
   }
   // A timed exercise runs itself once started: hold → rest → next hold, until its sets are done.
   // Built when the rest starts, checked again when it fires: the workout may have moved on. The
@@ -855,7 +857,7 @@ function ActiveWorkout() {
     if (!e || e.id !== entryId || modeOf({ ...(e.target || {}), id: e.id }) !== 'time') return
     if (e.sets.length !== setsLen || !e.sets[nextI] || e.sets[nextI].done || useUI.getState().work) return
     if (unitOf(supersetUnits(S2.active.entries), forIdx).length !== 1) return
-    latest.current.startTimed(forIdx, nextI)
+    latest.startTimed(forIdx, nextI)
   }
 
   const toggle = (idx, i, side, opts) => {
@@ -958,7 +960,7 @@ function ActiveWorkout() {
     }
   }
 
-  latest.current = { toggle, startTimed }
+  latest = { toggle, startTimed }
 
   // Live-presence heartbeat so the admin dashboard can show who's training now. Signed-in only —
   // guests have no server session. Reads fresh state each tick so progress stays current.
