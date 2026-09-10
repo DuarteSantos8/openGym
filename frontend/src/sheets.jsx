@@ -25,7 +25,7 @@ import { importHevyData, HevyApiError, HEVY_DEV_SETTINGS, mergeHevyRoutines } fr
 import { buildPlanBundle, parsePlan, mergePlan, printPlan } from './lib/plan-share.js'
 import { estimate1RM, best1RM, is1RMRecord, REP_CAP } from './lib/onerm.js'
 import { exerciseHistory } from './lib/exercise-history.js'
-import { nextPrescription, applyPrescription, policyFor, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC, MAX_BW_SETS, weightIncrement } from './lib/progression.js'
+import { nextPrescription, applyPrescription, policyFor, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC, MAX_BW_SETS, weightIncrement, waveOf, deloadFactorOf } from './lib/progression.js'
 import { normalizeRepRange } from './lib/rep-range.js'
 import { MOBILE, shareExport } from './lib/mobile.js'
 import { buildCompletedWorkout } from './lib/finish-workout.js'
@@ -1060,6 +1060,73 @@ const progressionStepOf = (c, mode, ex, unit) =>
 const progressionStepIsValid = (step, policy) =>
   policy === 'off' || (Number.isFinite(step) && step > 0)
 
+// The wave, edited as the data it is: weeks of `n × r @ pct`. Its own component so the
+// estimated-1RM lookup is a hook in a component that always renders it, rather than one that
+// appears and disappears with the selected rule.
+function WaveEditor({ c, setC, ex, unit }) {
+  const st = useStore(s => s.S)
+  const best = best1RM(st, ex.id)
+  const wave = waveOf(c)
+  const tmPct = Math.round(deloadFactorOf(c) * 100)
+  const setWave = next => setC(x => ({ ...x, wave: next }))
+  const patchWeek = (wi, patch) => setWave(wave.map((w, i) => (i === wi ? { ...w, ...patch } : w)))
+  const patchSet = (wi, si, patch) => patchWeek(wi, { sets: wave[wi].sets.map((s, i) => (i === si ? { ...s, ...patch } : s)) })
+  return <>
+    <div className="row cfgrow" style={{ marginBottom: 8 }}>
+      <Stepper label={t('Training max ({0})', unit)} value={c.trainingMax || 0} step={weightIncrement(c, unit)}
+        onChange={v => setC(x => ({ ...x, trainingMax: v }))} />
+    </div>
+    {/* Wendler's own advice, one tap: a training max you can actually hit every rep of. */}
+    {best && <Button variant="ghost" className="small"
+      onClick={() => setC(x => ({ ...x, trainingMax: Math.round(deloadFactorOf(x) * best.est * 10) / 10 }))}>
+      {t('Use {0} % of your best estimate ({1} {2})', tmPct, best.est, unit)}
+    </Button>}
+    <div className="small dim" style={{ margin: '10px 0 6px' }}>{t('Percentages of')}</div>
+    <Segmented value={c.pctBase === '1rm' ? '1rm' : 'tm'} onChange={v => setC(x => ({ ...x, pctBase: v }))}
+      options={[{ value: 'tm', label: t('Training max') }, { value: '1rm', label: t('Estimated 1RM') }]} />
+    <div className="small dim" style={{ margin: '10px 0 6px' }}>{t('After a missed week')}</div>
+    <Segmented value={c.onMiss === 'advance' ? 'advance' : 'repeat'} onChange={v => setC(x => ({ ...x, onMiss: v }))}
+      options={[{ value: 'repeat', label: t('Run it again') }, { value: 'advance', label: t('Move on') }]} />
+    <div className="small dim" style={{ margin: '10px 0 6px' }}>{t('When the cycle ends')}</div>
+    <Segmented value={c.bump === 'off' ? 'off' : 'step'} onChange={v => setC(x => ({ ...x, bump: v }))}
+      options={[{ value: 'step', label: t('Add the step') }, { value: 'off', label: t('Leave it') }]} />
+
+    <h4 className="sec">{t('Cycle')}</h4>
+    {wave.map((w, wi) => <div className="card" key={wi} style={{ marginBottom: 8 }}>
+      <div className="row" style={{ alignItems: 'center', gap: 8 }}>
+        <strong className="grow">{t('Week {0}', wi + 1)}</strong>
+        <label className="small dim">
+          <input type="checkbox" checked={!!w.deload} onChange={e => patchWeek(wi, { deload: e.target.checked || undefined })} />
+          {' '}{t('Deload')}
+        </label>
+        {wave.length > 1 && <button type="button" className="iconbtn" aria-label={t('Remove week {0}', wi + 1)}
+          onClick={() => setWave(wave.filter((_, i) => i !== wi))}><Icon name="xmark" /></button>}
+      </div>
+      <div className="row cfgrow">
+        <Stepper label={t('Run it')} unit={t('times')} value={w.repeat} step={1} decimal={false}
+          onChange={v => patchWeek(wi, { repeat: Math.max(1, Math.round(v) || 1) })} />
+      </div>
+      {w.sets.map((s, si) => <div className="row cfgrow" key={si} style={{ alignItems: 'flex-end' }}>
+        <Stepper label={t('Sets')} value={s.n} step={1} decimal={false}
+          onChange={v => patchSet(wi, si, { n: Math.max(1, Math.round(v) || 1) })} />
+        <Stepper label={t('Reps')} value={s.r} step={1} decimal={false}
+          onChange={v => patchSet(wi, si, { r: Math.max(1, Math.round(v) || 1) })} />
+        <Stepper label={t('%')} value={s.pct} step={2.5}
+          onChange={v => patchSet(wi, si, { pct: Math.min(100, Math.max(1, v)) })} />
+        {w.sets.length > 1 && <button type="button" className="iconbtn" aria-label={t('Remove set {0}', si + 1)}
+          onClick={() => patchWeek(wi, { sets: w.sets.filter((_, i) => i !== si) })}><Icon name="xmark" /></button>}
+      </div>)}
+      <Button variant="ghost" className="small"
+        onClick={() => patchWeek(wi, { sets: [...w.sets, { ...w.sets[w.sets.length - 1] }] })}>{t('Add a set')}</Button>
+    </div>)}
+    <Button variant="ghost" className="small"
+      onClick={() => setWave([...wave, { repeat: 1, sets: [{ pct: 75, r: 5, n: 3 }] }])}>{t('Add a week')}</Button>
+    {/* Dropping the stored wave is the reset: waveOf falls back to the template. */}
+    <Button variant="ghost" className="small"
+      onClick={() => setC(x => ({ ...x, wave: undefined }))}>{t('Back to the 5/3/1 template')}</Button>
+  </>
+}
+
 function ProgressionFields({ ex, mode, c, setC, routine, unit, perSide }) {
   const options = POLICIES_FOR[mode] || ['off']
   if (options.length < 2) return null
@@ -1100,6 +1167,7 @@ function ProgressionFields({ ex, mode, c, setC, routine, unit, perSide }) {
       {epleyEligible && <Stepper label={t('Deload 1RM (%)')} value={deloadPercent} step={5} decimal={false}
         onChange={v => setC(x => ({ ...x, deloadFactor: Math.max(0.5, Math.min(0.95, Number(v) / 100)) }))} />}
     </div>}
+    {active === 'wave' && <WaveEditor c={c} setC={setC} ex={ex} unit={unit} />}
     {invalid && <div className="small" role="alert" style={{ color: 'var(--red)', marginTop: -10, marginBottom: 18 }}>
       {t('Enter a positive step to use this progression rule.')}
     </div>}
@@ -1147,6 +1215,16 @@ function ExConfig({ ex, existing, onSave, onDelete, close, routine, initial }) {
     if (mode === 'reps' && !bw && (activePolicy === 'linear' || activePolicy === 'double')) {
       const deloadFactor = Math.max(0.5, Math.min(0.95, Number(c.deloadFactor) || 0.9))
       if (deloadFactor !== 0.9) prog.deloadFactor = deloadFactor
+    }
+    // A wave's own settings. Defaults stay out, the way deloadFactor does, so a plain 5/3/1
+    // config is `prog` + `trainingMax` and nothing more.
+    if (activePolicy === 'wave') {
+      const tm = Math.max(0, Math.round((Number(c.trainingMax) || 0) * 10) / 10)
+      if (tm > 0) prog.trainingMax = tm
+      if (c.pctBase === '1rm') prog.pctBase = '1rm'
+      if (c.onMiss === 'advance') prog.onMiss = 'advance'
+      if (c.bump === 'off') prog.bump = 'off'
+      if (Array.isArray(c.wave) && c.wave.length) prog.wave = c.wave
     }
     // Written only when it differs from what the dataset already says, so a barbell config
     // stays exactly the shape it was before these flags existed.
