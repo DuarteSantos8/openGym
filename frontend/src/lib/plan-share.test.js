@@ -136,3 +136,26 @@ describe('week schedule as a routine-id list', () => {
     expect(parsePlan({ opengym_plan: 1, routines: [], customEx: [], week: { 1: ['a'], 2: [], 4: 'b' } }).scheduledDays).toBe(2)
   })
 })
+
+describe('wave settings travel with a shared plan', () => {
+  it('carries the training max, the wave and the non-default switches', () => {
+    const wave = [{ sets: [{ pct: 80, r: 5, n: 2 }] }, { deload: true, repeat: 2, sets: [{ pct: 50, r: 5, n: 1 }] }]
+    const ex = roundTrip({
+      prog: 'wave', trainingMax: 100, pctBase: '1rm', onMiss: 'advance', bump: 'off', wave
+    })
+    expect(ex).toMatchObject({ prog: 'wave', trainingMax: 100, pctBase: '1rm', onMiss: 'advance', bump: 'off' })
+    expect(ex.wave).toEqual([
+      { repeat: 1, sets: [{ pct: 80, r: 5, n: 2 }] },
+      { deload: true, repeat: 2, sets: [{ pct: 50, r: 5, n: 1 }] },
+    ])
+  })
+
+  it('omits the defaults, the way deloadFactor already does', () => {
+    const ex = roundTrip({ prog: 'wave', trainingMax: 100, pctBase: 'tm', onMiss: 'repeat', bump: 'step' })
+    expect(ex.pctBase).toBeUndefined()
+    expect(ex.onMiss).toBeUndefined()
+    expect(ex.bump).toBeUndefined()
+    expect(ex.wave).toBeUndefined()
+    expect(ex.trainingMax).toBe(100)
+  })
+})

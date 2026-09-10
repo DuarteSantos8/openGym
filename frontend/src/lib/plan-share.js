@@ -9,6 +9,7 @@
 //     a page break — each exercise, and each routine that fits, stays in one place.
 
 import { EXIDX, isBodyweightEq } from './exercises.js'
+import { waveOf } from './progression.js'
 import { modeOf, fmtSec, isBw, isPerSide, sideReps, MAX_PLANNED_WARMUPS } from './history.js'
 import { deriveSessionName } from './session-merge.js'
 import { uid, todayISO, DAYN, weekOrder, weekStartOf, fmtNum, exCount } from './format.js'
@@ -47,6 +48,16 @@ function cleanEx(e) {
   // Epley deload factor is a per-occurrence progression setting. Omit the default so older
   // exports remain compact and importing them preserves the default 90% behaviour.
   if (e.deloadFactor != null && Number(e.deloadFactor) !== 0.9) o.deloadFactor = e.deloadFactor
+  // A shared wave without its training max is a list of percentages of nothing. The three
+  // switches follow the deloadFactor rule: only written when they differ from the default,
+  // so a plain 5/3/1 export stays compact.
+  if (e.trainingMax > 0) o.trainingMax = e.trainingMax
+  if (e.pctBase === '1rm') o.pctBase = '1rm'
+  if (e.onMiss === 'advance') o.onMiss = 'advance'
+  if (e.bump === 'off') o.bump = 'off'
+  // Someone else's file, so it goes through the same normaliser the engine uses; an unusable
+  // wave arrives as the template rather than as an empty cycle.
+  if (Array.isArray(e.wave) && e.wave.length) o.wave = waveOf(e)
   if (e.repsMin != null) o.repsMin = e.repsMin
   if (e.repsMax != null) o.repsMax = e.repsMax
   // The exercise's own rest (issue #10) is part of how it is prescribed, so it travels too —

@@ -50,3 +50,22 @@ describe('convertStateUnit', () => {
     expect(convertStateUnit(S, 'kg')).toBe(S)
   })
 })
+
+describe('wave fields convert with everything else', () => {
+  it('converts a training max and every prescribed row, and leaves the percentages alone', () => {
+    const S = {
+      unit: 'kg',
+      bodyweight: [], workouts: [{
+        d: '2026-01-01',
+        entries: [{ id: 'a', target: { weight: 100, rows: [{ w: 65, r: 5 }, { w: 85, r: 1 }] }, sets: [] }]
+      }],
+      routines: [{ id: 'r', ex: [{ id: 'a', prog: 'wave', trainingMax: 100, wave: [{ sets: [{ pct: 85, r: 5 }] }] }] }],
+      exWeights: {}, barWeights: {}
+    }
+    const out = convertStateUnit(S, 'lb')
+    expect(out.routines[0].ex[0].trainingMax).toBe(220.5)
+    expect(out.routines[0].ex[0].wave[0].sets[0].pct).toBe(85)      // a percentage is not a weight
+    expect(out.workouts[0].entries[0].target.rows.map(r => r.w)).toEqual([143.5, 187.5])
+    expect(out.workouts[0].entries[0].target.rows.map(r => r.r)).toEqual([5, 1])
+  })
+})
