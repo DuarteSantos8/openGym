@@ -1465,6 +1465,8 @@ export default {
   'Hold': 'تثبيت',
   'Next warm-up set': 'مجموعة الإحماء التالية',
   'Next working set': 'مجموعة العمل التالية',
+  'Hold {0} of {1}': 'التثبيت {0} من {1}',
+  'Warm-up hold {0} of {1}': 'تثبيت الإحماء {0} من {1}',
   'Don’t count for progression': 'لا تحتسبه في التقدم',
   'This exercise, this session only': 'هذا التمرين، في هذه الجلسة فقط',
   'Not counted for progression': 'غير محتسب في التقدم',

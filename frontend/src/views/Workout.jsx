@@ -26,7 +26,7 @@ import { sessionNoProg, setSessionNoProg, setEntryNoProg, joinSessionNoProg } fr
 import { glyphOf } from '../lib/glyphs.js'
 import { markAllSetsDone, sessionHistory } from '../lib/backfill.js'
 import { bestSetFor } from '../lib/exercise-history.js'
-import { isWarmupRow, isDropSet, isRestPauseSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL } from '../lib/workout-model.js'
+import { isWarmupRow, isDropSet, isRestPauseSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL, holdPosition, nextUndoneAfter } from '../lib/workout-model.js'
 import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit } from '../lib/active-workout-order.js'
 import { nextOpenSet, workoutKeyAction } from '../lib/workout-keys.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
@@ -682,6 +682,9 @@ function ActiveWorkout() {
   // distinct, while each rendered set index identifies the existing row within that entry.
   const exRefs = useRef(new Map())
   const setRefs = useRef(new Map())
+  // The newest render's handlers, for callbacks that fire long after the render that made them:
+  // a hold's end and a rest's hand-over must judge the workout as it is then, not as it was.
+  const latest = useRef({})
   const bindExRef = (entry, el) => {
     if (el) exRefs.current.set(entry, el)
     else {
@@ -1047,12 +1050,16 @@ function ActiveWorkout() {
   // finish logs 0:38 of a 0:45 target rather than crediting the full prescription — and then
   // checks the set off through the normal path, so rest, supersets and the finish prompt all
   // behave exactly as they do for a reps set.
+  // Reads the store, not the render, because a chained hold starts from a timer callback made
+  // a rest ago (see the chain in toggle).
   const startTimed = (idx, i) => {
     if (editing) return
-    const e = A.entries[idx]
+    const e = useStore.getState().S.active?.entries[idx]
+    if (!e?.sets[i]) return
+    const entryId = e.id
     // This tap may be the only one before the hold's countdown beeps (a timed first exercise):
     // get the audio context running while it still counts as a gesture (iOS, #152).
-    unlock(S.sound)
+    unlock(useStore.getState().S.sound)
     // How long to hold: the row's own seconds, unless it is carrying a plan from a hold that was
     // displaced before it finished. `sec` on a timed row is both the plan and the log, so writing
     // what a part-held set managed would otherwise become the next hold's target — 3 seconds of a
@@ -1061,6 +1068,10 @@ function ActiveWorkout() {
     // reaches S.workouts (lib/finish-workout.js).
     const plan = (!e.sets[i].done && e.sets[i].planSec) || e.sets[i].sec || 45
     useUI.getState().startWork(plan, exerciseNameText(exOr(e.id)), (elapsed, { abandoned = false, chimed = false } = {}) => {
+      // Found again by index, checked by id: the list may have been edited while the hold ran,
+      // and a hold must never be written onto a different exercise.
+      const en = useStore.getState().S.active?.entries[idx]
+      if (!en || en.id !== entryId || !en.sets[i]) return
       // A hold a rest displaced (useUI.abandonWork: a set ticked on another row, or another
       // exercise) keeps its seconds and nothing else. It is not a finish: the row stays unticked
       // and starts no rest, because the rest that displaced the hold is already counting down —
@@ -1070,18 +1081,32 @@ function ActiveWorkout() {
         // that displaces the hold, so the hand-back lands on a row that is already ticked. It
         // still wants the seconds (that is what was held, not the target), but a finished row has
         // no use for a plan set aside.
-        mutEntry(idx, en => { if (en.sets[i].planSec == null && !en.sets[i].done) en.sets[i].planSec = plan; en.sets[i].sec = elapsed })
+        mutEntry(idx, x => { if (x.sets[i].planSec == null && !x.sets[i].done) x.sets[i].planSec = plan; x.sets[i].sec = elapsed })
         return
       }
-      mutEntry(idx, en => { en.sets[i].sec = elapsed; delete en.sets[i].planSec })
-      if (!useStore.getState().S.active.entries[idx].sets[i].done) toggle(idx, i, undefined, { quiet: chimed })
-    })
+      mutEntry(idx, x => { x.sets[i].sec = elapsed; delete x.sets[i].planSec })
+      if (!useStore.getState().S.active.entries[idx].sets[i].done) latest.current.toggle(idx, i, undefined, { quiet: chimed, fromHold: true })
+    }, holdPosition(e.sets, i))
+  }
+  // A timed exercise runs itself once started: hold → rest → next hold, until its sets are done.
+  // Built when the rest starts, checked again when it fires: the workout may have moved on. The
+  // rest hands over its own owner index (kept current when exercises are added, removed or
+  // moved), and the exercise must still be the same one, still timed, still alone in its unit,
+  // with the same rows.
+  const chainedHold = (entryId, nextI, setsLen) => forIdx => {
+    const S2 = useStore.getState().S
+    const e = forIdx != null ? S2.active?.entries[forIdx] : null
+    if (!e || e.id !== entryId || modeOf({ ...(e.target || {}), id: e.id }) !== 'time') return
+    if (e.sets.length !== setsLen || !e.sets[nextI] || e.sets[nextI].done || useUI.getState().work) return
+    if (unitOf(supersetUnits(S2.active.entries), forIdx).length !== 1) return
+    latest.current.startTimed(forIdx, nextI)
   }
 
   // `quiet`: the hold that ticks this set has just ended with the chime and its buzz pattern
   // (store/useUI.js). The tick's own beep would sound over the chime's first note and clip it,
   // and its short buzz would cut the pattern off: a new vibrate call replaces the running one.
-  const toggle = (idx, i, side, { quiet = false } = {}) => {
+  // `fromHold`: the hold ended by itself or by its Done, which is what lets it chain the next one.
+  const toggle = (idx, i, side, { quiet = false, fromHold = false } = {}) => {
     // Ticking a set ends the typing in that row: drop the keyboard before the rest timer, the
     // effort sheet or the next exercise moves in. WebKit keeps the input focused across the
     // button tap, and a focused input with its keyboard gone is what leaves the tab bar
@@ -1103,10 +1128,12 @@ function ActiveWorkout() {
         if (!quiet) { beep(S.sound, 1040, 0.12); vibrate(30) }
         // The unit that owns the ticked set — not the marked one. Since !92 the marker no longer
         // follows a finished exercise, and in list mode any exercise can be worked on, so judging
-        // the marker's unit here declared the workout complete after one set elsewhere.
-        const ownUnit = unitOf(units, idx)
-        const unitDone = ownUnit.every(ui => (ui === idx ? e : A.entries[ui]).sets.every(x => x.done))
-        if (unitDone) workoutDone = !nextUnfinishedUnit(A.entries, supersetUnits(A.entries), idx)
+        // the marker's unit here declared the workout complete after one set elsewhere. Judged on
+        // the draft, not the render: a hold's end arrives long after the render that armed it.
+        const draft = s.active.entries
+        const draftUnits = supersetUnits(draft)
+        const unitDone = unitOf(draftUnits, idx).every(ui => draft[ui].sets.every(x => x.done))
+        if (unitDone) workoutDone = !nextUnfinishedUnit(draft, draftUnits, idx)
         if (e.sets.every(x => x.done)) {
           exJustDone = true
           // topW is captured now; exWeights only at the finish (doFinishWorkout), so a typo you
@@ -1145,14 +1172,23 @@ function ActiveWorkout() {
       // What the bar calls the rest — warm-up or working set — read off the set it leads into.
       const phase = restSetPhase(fresh.entries[idx], i)
 
+      const kind = restKind({ unitDone: freshUnitDone, superset: (freshUnit?.length || 0) > 1 })
+      // A hold that finished on its own hands its rest the next hold — same exercise only: a
+      // superset's round order is not second-guessed, and the tap that ticks a set is not a hold.
+      // Also on a re-check, so an unticked-and-redone hold keeps the exercise running itself.
+      const alone = !freshUnit || freshUnit.length <= 1
+      const nextI = fromHold && alone && !freshUnitDone ? nextUndoneAfter(fresh.entries[idx].sets, i) : -1
+      const rest = () => nextI >= 0
+        ? startRest(restAfter, idx, kind, phase, chainedHold(fresh.entries[idx].id, nextI, fresh.entries[idx].sets.length))
+        : startRest(restAfter, idx, kind, phase)
+
       // A re-check of finished work must not navigate or reopen a sheet, but it may still owe
       // you a rest — see restOnRecheck, and the other half of issue #3. A rest that already ran
       // out and only shows Ready is not running: it has nothing left to time. A paused one is
       // still the rest you are in, held on purpose, and a re-check leaves it as it is.
-      const kind = restKind({ unitDone: freshUnitDone, superset: (freshUnit?.length || 0) > 1 })
       if (!progress.isNew) {
-        const rest = useUI.getState().timer
-        if (!restBeforeWarmup && restOnRecheck({ timerRunning: !!(rest && !rest.ready), unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) startRest(restAfter, idx, kind, phase)
+        const tm = useUI.getState().timer
+        if (!restBeforeWarmup && restOnRecheck({ timerRunning: !!(tm && !tm.ready), unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) rest()
         return
       }
 
@@ -1160,8 +1196,8 @@ function ActiveWorkout() {
       // one unless the next unit has an unfinished warm-up, and never enter superset navigation.
       // stopRest() first so a rest that belongs after this set replaces the one that was running.
       if (freshUnitDone) stopRest()
-      if (!freshUnit || freshUnit.length <= 1) {
-        if (!restBeforeWarmup && restAfterSet({ unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) startRest(restAfter, idx, kind, phase)
+      if (alone) {
+        if (!restBeforeWarmup && restAfterSet({ unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) rest()
         return
       }
 
@@ -1175,6 +1211,8 @@ function ActiveWorkout() {
       }
     }
   }
+
+  latest.current = { toggle, startTimed }
 
   // Hardware keys (issue #133, lib/workout-keys.js): Space or Enter ticks the next set, ← and →
   // switch exercise. The listener is added once and calls the handler of the latest render, so

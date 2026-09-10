@@ -73,6 +73,10 @@ const maybeRestNotification = async () => {
 let toastTm = null
 let timerInt = null
 let timerTick = null
+// What a rest hands over to when it is over (a timed exercise's next hold, Workout.startTimed).
+// Fires when the rest runs out on screen or is skipped — never when it ran out while the app
+// was hidden (a hold nobody watched start would still be logged), never on a plain stopRest().
+let restDone = null
 let workInt = null
 let workTick = null
 let workDone = null
@@ -108,9 +112,17 @@ const runRest = (set, get) => {
       // locked it never runs at all.
       get().toast(t('Rest over — next set!'))
       if (!MOBILE) maybeRestNotification()
+      // The hand-over only for a rest that ran out on screen, and only once: the rest stays on
+      // Ready below, and Dismiss has nothing left to hand over.
+      const done = seenLive ? restDone : null
+      restDone = null
       cancelPushRestTimer()
       stopRestTicking()
       set({ timer: { ...tm, left: 0, ready: true } })
+      // After Ready is set, so a hold the hand-over starts replaces it (startWork stops the rest).
+      // It gets the rest's owner as it is now, not as it was when the rest started: an exercise
+      // added, removed or moved above it re-pointed forIdx along the way.
+      if (done) done(tm.forIdx)
       return
     }
     if (left <= 3) beep(snd, 660, 0.1)
@@ -128,7 +140,8 @@ export const useUI = create((set, get) => ({
                        // kind: which rest-over sound plays — 'set' | 'round' | 'block' (supersetFlow.restKind)
                        // phase: the set a 'set' rest leads into — 'warmup' | 'work' | null (supersetFlow.restSetPhase)
                        // paused: held at `left`; `endsAt` means nothing until resumeRest sets it again
-  work: null,          // work countdown DURING a timed set (issue #16) — { left, total, endsAt, label, overtime? }
+  work: null,          // work countdown DURING a timed set (issue #16) — { left, total, endsAt, label, overtime?, set }
+                       // set: { phase: 'warmup' | 'work', n, of } — which hold of the exercise (workout-model.holdPosition)
   timerFlashId: 0,     // changing the id retriggers the theme-blink visual alert
 
   flashTimer() {
@@ -151,10 +164,12 @@ export const useUI = create((set, get) => ({
     toastTm = setTimeout(() => set({ toastMsg: '' }), 2200)
   },
 
-  startRest(sec, forIdx, kind, phase) {
+  startRest(sec, forIdx, kind, phase, onDone) {
     get().stopRest()
     // Rest timer set to Off. Stopping and returning rather than starting a zero-length timer
     // keeps every caller honest: the four places that start a rest do not each need to know.
+    // Off also drops onDone: a hand-over rides on the rest, so with no rest the next hold waits
+    // for a tap like any other.
     if (!(sec > 0)) return
     // And the hold, the other way round from startWork: the two must never run together (see the
     // work timer below). A set ticked by hand while its hold ran used to leave both going — the
@@ -170,6 +185,7 @@ export const useUI = create((set, get) => ({
     // was away" and finished in silence — a one-second rest, started on screen, over on screen,
     // with no beep, no vibration and no flash. Each timer starts from where the page is now.
     pageHiddenAt = document.hidden ? Date.now() : null
+    restDone = typeof onDone === 'function' ? onDone : null
     const endsAt = Date.now() + sec * 1000
     set({ timer: { left: sec, total: sec, endsAt, forIdx, kind, phase } })
     bookRestEnd(endsAt, sec)
@@ -210,7 +226,7 @@ export const useUI = create((set, get) => ({
     const left = tm.left + sec
     // taking off more than is left means "I'm ready now" — same as skipping, and it keeps a
     // negative duration out of both the progress bar and the server-side push schedule
-    if (left <= 0) { get().stopRest(); return }
+    if (left <= 0) { get().skipRest(); return }
     // Paused, there is no end to move and nothing booked on the server: the time is simply held,
     // and the notification holds the new figure.
     if (tm.paused) { set({ timer: { ...tm, left, total: tm.total + sec } }); holdRestAlert(left, tm.total + sec); return }
@@ -246,7 +262,18 @@ export const useUI = create((set, get) => ({
     pageHiddenAt = document.hidden ? Date.now() : null
     runRest(set, get)
   },
+  // "I'm ready now": the rest is over early, and whatever it was going to hand over to happens
+  // now. The Skip button and −15 s past zero come here; everything else that ends a rest (a new
+  // rest, a hold starting, an exercise removed, the workout discarded) uses stopRest. Dismiss on
+  // Ready comes here too, with nothing left to hand over: the end already did that.
+  skipRest() {
+    const done = restDone
+    const at = get().timer?.forIdx
+    get().stopRest()
+    if (done) done(at)
+  },
   stopRest() {
+    restDone = null
     stopRestTicking()
     // Skip, Dismiss, a rest replacing this one and "rest off" all take the native alarm and
     // its notifications down with it, or the alert fires after the user already moved on.
@@ -265,14 +292,14 @@ export const useUI = create((set, get) => ({
      0:45 hold records 0:38 rather than crediting the full target. `chimed` is true when the
      countdown ran out in front of you and the end chime and buzz have just played; `abandoned`
      when a rest displaced the hold (abandonWork). */
-  startWork(sec, label, onDone) {
+  startWork(sec, label, onDone, setInfo) {
     get().abandonWork()   // a hold this one replaces keeps what it held, same as a rest replacing one
     get().stopRest()
     const total = Math.max(1, Math.round(sec) || 1)
     const endsAt = Date.now() + total * 1000
     workDone = onDone
     pageHiddenAt = document.hidden ? Date.now() : null   // see startRest: a stale hide is not a catch-up
-    set({ work: { left: total, total, endsAt, label, overtime: useStore.getState().S.timedSetOvertime === true } })
+    set({ work: { left: total, total, endsAt, label, overtime: useStore.getState().S.timedSetOvertime === true, set: setInfo || null } })
     workTick = () => {
       const wk = get().work
       if (!wk) return

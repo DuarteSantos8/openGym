@@ -1409,6 +1409,8 @@ export default {
   'Hold': 'Утримання',
   'Next warm-up set': 'Наступний розминковий підхід',
   'Next working set': 'Наступний робочий підхід',
+  'Hold {0} of {1}': 'Утримання {0} з {1}',
+  'Warm-up hold {0} of {1}': 'Розминкове утримання {0} з {1}',
   'Don’t count for progression': 'Не враховувати в прогресії',
   'This exercise, this session only': 'Лише ця вправа, лише це тренування',
   'Not counted for progression': 'Не враховується в прогресії',
