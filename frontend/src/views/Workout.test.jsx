@@ -573,6 +573,17 @@ describe('progression guidance', () => {
       .toContain('Linear progression · Every rep last time — 2.5 kg more.')
   })
 
+  it('shows where in the cycle a wave session is', async () => {
+    await mount([exercise('plain-bench', [false], {
+      target: { sets: 3, reps: 5, rows: [{ w: 65, r: 5 }] },
+      plan: { policy: 'wave', kind: 'up', week: 2, weeks: 4, why: ['Week {0} of {1} — {2} %.', 2, 4, '70/80/90'] },
+    })])
+    // The guidance line below also says "Week 2 of 4" as part of its longer sentence — this
+    // chip is a standalone element carrying only the cycle position, so match it exactly.
+    const chip = Array.from(container.querySelectorAll('div')).find(d => d.textContent.trim() === 'Week 2 of 4')
+    expect(chip).toBeTruthy()
+  })
+
   it('is a keyboard-accessible button that opens settings for the pressed grouped entry', async () => {
     const plan = {
       policy: 'linear', kind: 'up', weight: 62.5,

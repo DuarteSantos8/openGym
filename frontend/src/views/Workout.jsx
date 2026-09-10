@@ -397,6 +397,12 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
     {barInfo && <div className="small dim" style={{ marginBottom: 6, display: 'flex', alignItems: 'center', gap: 5 }}>
       <Icon name="dumbbell" style={{ fontSize: 12 }} />{barInfo.text}
     </div>}
+    {/* Where in the cycle this session sits. The percentages and the training max are already
+        in the guidance line below, and the loads are on the rows — this is the one thing
+        neither of them says at a glance. */}
+    {plan?.weeks > 1 && plan.week > 0 && <div className="small dim" style={{ marginBottom: 4 }}>
+      {t('Week {0} of {1}', plan.week, plan.weeks)}{plan.kind === 'deload' ? ' · ' + t('deload') : ''}
+    </div>}
     {guidance && <button type="button" className={'progline' + (plan.kind === 'deload' ? ' warn' : '')}
       aria-label={t('Open progression settings')} onClick={onProgressionSettings}>
       <Icon name={plan.kind === 'up' ? 'arrowUp' : plan.kind === 'deload' ? 'arrowDown' : 'lightbulb'} />
