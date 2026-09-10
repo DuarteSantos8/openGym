@@ -317,6 +317,64 @@ describe('Workout set completion flow', () => {
     expect(mocks.startRest).toHaveBeenLastCalledWith(90, expect.any(Number), 'set')
   })
 
+  // The bar at the bottom and the exercise it times should be on screen together: in the List
+  // layout a rest starting scrolls the exercise it points you at into view. Cards only ever
+  // shows that unit. The harness records scrollIntoView calls in mocks.scrollCalls.
+  const scrolledTo = call => ({ exidx: call.node.closest('[data-exidx]')?.getAttribute('data-exidx'), row: call.node.className, inSuperset: !!call.node.closest('.ss-ex') })
+
+  it('list layout: a rest starting scrolls to the next set of the exercise it belongs to, once per rest', async () => {
+    await mount([exercise('a', [false]), exercise('b', [false]), exercise('c', [true, false])], 0, { workoutView: 'list' })
+    mocks.scrollCalls.length = 0
+    mocks.timer = { left: 90, total: 90, endsAt: Date.now() + 90_000, forIdx: 2, kind: 'set' }
+    await rerender()
+    expect(mocks.scrollCalls).toHaveLength(1)
+    expect(scrolledTo(mocks.scrollCalls[0])).toMatchObject({ exidx: '2', inSuperset: false })
+    expect(mocks.scrollCalls[0].node.className).toMatch(/\bsetrow\b/)         // the first unfinished set row
+    expect(mocks.scrollCalls[0].node.className).not.toMatch(/\bdone\b/)
+    expect(mocks.scrollCalls[0].options).toEqual({ behavior: 'smooth', block: 'center' })
+
+    // Ticks, ±15 s and a re-pointed owner (an exercise removed above it) change the timer
+    // object but not the rest: no second scroll.
+    mocks.timer = { ...mocks.timer, left: 89 }
+    await rerender()
+    mocks.timer = { ...mocks.timer, left: 104, total: 105, endsAt: mocks.timer.endsAt + 15_000 }
+    await rerender()
+    mocks.timer = { ...mocks.timer, forIdx: 1 }
+    await rerender()
+    expect(mocks.scrollCalls).toHaveLength(1)
+
+    // A new rest for the same exercise is a new rest: it scrolls again.
+    mocks.timer = { left: 90, total: 90, endsAt: Date.now() + 200_000, forIdx: 2, kind: 'set' }
+    await rerender()
+    expect(mocks.scrollCalls).toHaveLength(2)
+  })
+
+  it('list layout: a superset rest scrolls to the first member of the group', async () => {
+    await mount([exercise('solo', [false]), exercise('ss-a', [false], { sg: 'g' }), exercise('ss-b', [false], { sg: 'g' })], 0, { workoutView: 'list' })
+    mocks.scrollCalls.length = 0
+    mocks.timer = { left: 90, total: 90, endsAt: Date.now() + 90_000, forIdx: 2, kind: 'round' }
+    await rerender()
+    expect(mocks.scrollCalls).toHaveLength(1)
+    expect(scrolledTo(mocks.scrollCalls[0])).toMatchObject({ exidx: '1', inSuperset: true })
+  })
+
+  it('list layout: after a finished exercise the rest scrolls to the exercise you go to next', async () => {
+    await mount([exercise('done-first', [true]), exercise('b', [false]), exercise('c', [false])], 0, { workoutView: 'list' })
+    mocks.scrollCalls.length = 0
+    mocks.timer = { left: 90, total: 90, endsAt: Date.now() + 90_000, forIdx: 0, kind: 'block' }
+    await rerender()
+    expect(mocks.scrollCalls).toHaveLength(1)
+    expect(scrolledTo(mocks.scrollCalls[0]).exidx).toBe('1')
+  })
+
+  it('cards layout: a rest starting does not scroll, even when the exercise has a scroll anchor', async () => {
+    await mount([exercise('ss-a', [false], { sg: 'g' }), exercise('ss-b', [false], { sg: 'g' })], 0)
+    mocks.scrollCalls.length = 0                 // the superset flow scrolls once on mount
+    mocks.timer = { left: 90, total: 90, endsAt: Date.now() + 90_000, forIdx: 0, kind: 'round' }
+    await rerender()
+    expect(mocks.scrollCalls).toHaveLength(0)
+  })
+
   it.each(['warmup', 'warm-up', 'warm_up'])(
     'does not navigate or start transition rest before an incomplete %s row in the next ordinary exercise',
     async phase => {

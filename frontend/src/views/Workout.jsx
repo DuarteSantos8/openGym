@@ -10,7 +10,7 @@ import { fmtNum, capWords, fmtDate, todayISO, exCount, DAYN } from '../lib/forma
 import { beep, vibrate, unlock } from '../lib/sound.js'
 import { t, exerciseNameFor } from '../lib/i18n.js'
 import { api } from '../lib/api.js'
-import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, restKind } from '../lib/supersetFlow.js'
+import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, restKind, restFocusIdx } from '../lib/supersetFlow.js'
 import Media from '../components/Media.jsx'
 import { startFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, finishWorkout, workoutCompleteSheet, confirmSheet, exerciseNoteSheet, sessionNoteSheet, swapActiveWorkoutExercise, barWeightSheet, menuSheet, effortPickerSheet, exerciseHistorySheet, addRoutineToSessionSheet } from '../sheets.jsx'
 import { effortColor } from '../lib/effort.js'
@@ -579,6 +579,24 @@ function ActiveWorkout() {
     if (el && typeof el.scrollIntoView === 'function') el.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }, [cur, isSuperset, listMode, A.entries.length])
 
+  // When a rest starts in the List and Compact layouts, bring the exercise it points you at
+  // (supersetFlow.restFocusIdx: the same one the bar names) into view — its first unfinished set
+  // row when there is one, the exercise otherwise — so the bar at the bottom and the thing it is
+  // timing are on screen together. The Cards layout only ever shows the current unit. Keyed on
+  // the rest's start time alone: the timer object changes every tick and on ±15 s, and forIdx
+  // moves when an exercise is added or removed mid-rest — none of those is a new rest.
+  const restStart = useUI(s => s.timer && s.timer.forIdx != null ? s.timer.endsAt - s.timer.total * 1000 : null)
+  useEffect(() => {
+    if (!restStart || !listMode) return
+    const tm = useUI.getState().timer
+    if (!tm || tm.forIdx == null) return
+    const entry = A.entries[restFocusIdx(A.entries, units, tm.forIdx, tm.kind)]
+    if (!entry) return
+    const setIdx = entry.sets.findIndex(s => !s.done)
+    const el = (setIdx >= 0 && setRefs.current.get(entry)?.get(setIdx)) || exRefs.current.get(entry)
+    if (el && typeof el.scrollIntoView === 'function') el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, [restStart, listMode])
+
   const total = setUnitsTotal(A.entries)
   const done = setsDoneActive(A)
 
@@ -951,7 +969,8 @@ function ActiveWorkout() {
         {units.map((u, ui) => {
           const multi = u.length > 1
           const isCur = u.includes(cur)
-          return <section key={u.join('-')} className={'wl-unit' + (isCur ? ' cur' : '')} data-exidx={u[0]}>
+          // Superset members bind their own refs below; a lone exercise is anchored by its section.
+          return <section key={u.join('-')} ref={multi ? undefined : el => bindExRef(A.entries[u[0]], el)} className={'wl-unit' + (isCur ? ' cur' : '')} data-exidx={u[0]}>
             <div className="wl-hd">
               <span className="muted small">{multi ? t('Superset {0} / {1}', ui + 1, units.length) : t('Exercise {0} / {1}', ui + 1, units.length)}</span>
               {isCur
@@ -974,7 +993,7 @@ function ActiveWorkout() {
                 })}
               </div>
             ) : (
-              <ExerciseBlock entryIdx={u[0]} dense={dense}
+              <ExerciseBlock entryIdx={u[0]} dense={dense} onSetRowRef={(setIdx, el) => bindSetRef(A.entries[u[0]], setIdx, el)}
                 onPairPrev={u[0] > 0 ? () => pairAt(u[0] - 1, u[0]) : null}
                 onPairNext={u[0] < A.entries.length - 1 ? () => pairAt(u[0], u[0] + 1) : null}
                 {...blockProps(u[0])} />
