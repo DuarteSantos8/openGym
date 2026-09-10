@@ -131,16 +131,13 @@ try {
   const dcrBody = (body, headers = dcrHeaders) => ({ ...jsonBody(body), headers: { 'Content-Type': 'application/json', ...headers } })
   const registration = status(await request(mcpBase, '/oauth/register', dcrBody({
     client_name: 'Claude staging client', redirect_uris: ['https://client.example.test/callback'],
-    // Codex's native client includes refresh_token in its registration request. The server
-    // accepts that optional request but returns only the authorization_code capability it serves.
-    grant_types: ['authorization_code', 'refresh_token'], response_types: ['code'], token_endpoint_auth_method: 'none',
+    grant_types: ['authorization_code'], response_types: ['code'], token_endpoint_auth_method: 'none',
     scope: 'exercise:read routine:read progress:read'
   })), 201, 'dynamic client registration').data
   assert.ok(registration.client_id)
   assert.equal(registration.token_endpoint_auth_method, 'none')
   assert.equal(registration.client_secret_expires_at, 0)
   assert.deepEqual(registration.grant_types, ['authorization_code'])
-  print('oauth_codex_refresh_grant_compatibility', 'PASS')
   assert.ok(registration.client_expires_at > Math.floor(Date.now() / 1000))
   assert.deepEqual(registration.redirect_uris, ['https://client.example.test/callback'])
   const stored = status(await request(apiBase, `/api/oauth/clients/${registration.client_id}`), 200, 'stored client metadata').data
@@ -155,6 +152,7 @@ try {
   }, { 'X-Forwarded-For': '198.51.100.12' })), 201, 'Codex native dynamic client registration').data
   assert.deepEqual(codexRegistration.grant_types, ['authorization_code'])
   assert.equal(codexRegistration.token_endpoint_auth_method, 'none')
+  print('oauth_codex_refresh_grant_compatibility', 'PASS')
   print('oauth_codex_native_dcr', 'PASS')
   const unsupportedGrant = await request(mcpBase, '/oauth/register', dcrBody({
     client_name: 'unsupported grant fixture', redirect_uris: ['http://127.0.0.1:49153/callback'],
@@ -162,6 +160,19 @@ try {
   }, { 'X-Forwarded-For': '198.51.100.13' }))
   assert.equal(unsupportedGrant.response.status, 400)
   print('oauth_unsupported_grant_rejected', 400)
+  const malformedGrantTypes = await request(mcpBase, '/oauth/register', dcrBody({
+    client_name: 'malformed grant fixture', redirect_uris: ['https://malformed-grant.example.test/callback'],
+    grant_types: 'authorization_code', response_types: ['code'], token_endpoint_auth_method: 'none', scope: 'exercise:read'
+  }, { 'X-Forwarded-For': '198.51.100.14' }))
+  assert.equal(malformedGrantTypes.response.status, 400)
+  assert.equal(malformedGrantTypes.data.error, 'invalid_client_metadata')
+  const malformedResponseTypes = await request(mcpBase, '/oauth/register', dcrBody({
+    client_name: 'malformed response fixture', redirect_uris: ['https://malformed-response.example.test/callback'],
+    grant_types: ['authorization_code'], response_types: 'code', token_endpoint_auth_method: 'none', scope: 'exercise:read'
+  }, { 'X-Forwarded-For': '198.51.100.15' }))
+  assert.equal(malformedResponseTypes.response.status, 400)
+  assert.equal(malformedResponseTypes.data.error, 'invalid_client_metadata')
+  print('oauth_malformed_registration_fields_rejected', 400)
   // The API applies a bounded, normalized-IP registration limiter before the persistent cap.
   // Fill only the disposable window (not the client cap) and prove the next request is rejected.
   for (let i = 0; i < 19; i++) {
@@ -292,6 +303,49 @@ try {
   print('oauth_mcp_initialize', 'PASS')
   print('oauth_mcp_catalog_tools', ['list_exercises', 'search_exercises', 'get_exercise'])
   print('oauth_mcp_catalog_traversal', { list: true, search: true, get: true, total: listPayload.total })
+
+  const codexVerifier = crypto.randomBytes(32).toString('base64url')
+  const codexChallenge = hashVerifier(codexVerifier)
+  const codexRedirectUri = codexRegistration.redirect_uris[0]
+  const codexAuthorizeBase = {
+    response_type: 'code', client_id: codexRegistration.client_id, redirect_uri: codexRedirectUri,
+    code_challenge: codexChallenge, code_challenge_method: 'S256', resource
+  }
+  const codexOverScopeQuery = new URLSearchParams({ ...codexAuthorizeBase, scope: 'exercise:read routine:read' })
+  const codexOverScope = await fetch(mcpBase + `/oauth/authorize?${codexOverScopeQuery}`, { headers: { Cookie: `gymsid=${session}` } })
+  const codexOverScopeData = await responseData(codexOverScope)
+  assert.equal(codexOverScope.status, 400)
+  assert.equal(codexOverScopeData.error, 'invalid scope')
+  print('oauth_authorize_scope_subset_enforced', 400)
+  const codexConsentResponse = await fetch(mcpBase + `/oauth/authorize?${new URLSearchParams({ ...codexAuthorizeBase, scope: 'exercise:read' })}`, { headers: { Cookie: `gymsid=${session}` } })
+  const codexConsentHtml = await codexConsentResponse.text()
+  assert.equal(codexConsentResponse.status, 200)
+  const codexCsrf = /name="csrf" value="([^"]+)"/.exec(codexConsentHtml)?.[1]
+  assert.ok(codexCsrf)
+  const codexAuthorization = await fetch(mcpBase + '/oauth/authorize', {
+    ...formBody({ csrf: codexCsrf, ...codexAuthorizeBase, scope: 'exercise:read' }),
+    headers: { Cookie: `gymsid=${session}`, 'Content-Type': 'application/x-www-form-urlencoded' }, redirect: 'manual'
+  })
+  assert.equal(codexAuthorization.status, 302)
+  const codexLocation = codexAuthorization.headers.get('location')
+  assert.ok(codexLocation)
+  const codexCode = new URL(codexLocation).searchParams.get('code')
+  assert.ok(codexCode)
+  const codexToken = status(await request(mcpBase, '/oauth/token', formBody({
+    grant_type: 'authorization_code', code: codexCode, client_id: codexRegistration.client_id,
+    redirect_uri: codexRedirectUri, resource, code_verifier: codexVerifier
+  })), 200, 'Codex native authorization-code token').data
+  assert.equal(codexToken.scope, 'exercise:read')
+  assert.equal(codexToken.resource, resource)
+  print('oauth_codex_pkce_token_exchange', 'PASS')
+  const codexInitialized = await mcpCall(codexToken.access_token, null, 10, 'initialize', { protocolVersion: '2025-11-25', capabilities: {}, clientInfo: { name: 'Codex', version: '1' } })
+  status(codexInitialized, 200, 'Codex MCP initialize')
+  const codexSession = codexInitialized.response.headers.get('mcp-session-id')
+  assert.ok(codexSession)
+  const codexList = status(await mcpCall(codexToken.access_token, codexSession, 11, 'tools/call', { name: 'list_exercises', arguments: { offset: 0, limit: 1 } }), 200, 'Codex MCP list_exercises').data
+  const codexListPayload = JSON.parse(codexList.result?.content?.[0]?.text || '{}')
+  assert.ok(codexListPayload.total >= 1325)
+  print('oauth_codex_authenticated_mcp_call', 'PASS')
 
   const wrongAudience = status(await request(apiBase, '/api/mcp/grants', { ...jsonBody({ name: 'wrong audience', scopes: ['exercise:read'], audience: 'https://other.example.test/mcp', expires_in: 60 }), headers: { Cookie: `gymsid=${session}`, 'Content-Type': 'application/json' } }), 201, 'wrong audience grant').data
   const wrongAudienceMcp = await mcpCall(wrongAudience.token, null, 9, 'initialize', { protocolVersion: '2025-11-25', capabilities: {}, clientInfo: { name: 'wrong audience', version: '1' } })

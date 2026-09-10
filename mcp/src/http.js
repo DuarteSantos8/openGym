@@ -152,7 +152,8 @@ async function authorizationRequest(url) {
     const error = new Error('unknown client or redirect_uri'); error.status = 400; throw error
   }
   const requested = formScope(p.get('scope') || client.scope)
-  if (!requested.length || requested.some(scope => !OAUTH_SCOPES.includes(scope))) {
+  const registered = formScope(client.scope)
+  if (!registered.length || !requested.length || requested.some(scope => !OAUTH_SCOPES.includes(scope) || !registered.includes(scope))) {
     const error = new Error('invalid scope'); error.status = 400; throw error
   }
   return { client, clientId, redirectUri, challenge, method, resource, state, requested }

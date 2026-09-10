@@ -356,6 +356,8 @@ function validRedirect(uri) {
 function registrationMetadata(body) {
   const redirectUris = Array.isArray(body?.redirect_uris) ? [...new Set(body.redirect_uris.map(String))] : [];
   if (!redirectUris.length || redirectUris.length > 10 || redirectUris.some(uri => uri.length > 2000 || !validRedirect(uri))) return { error: 'invalid_redirect_uris' };
+  if (Object.prototype.hasOwnProperty.call(body || {}, 'grant_types') && !Array.isArray(body.grant_types)) return { error: 'invalid_client_metadata' };
+  if (Object.prototype.hasOwnProperty.call(body || {}, 'response_types') && !Array.isArray(body.response_types)) return { error: 'invalid_client_metadata' };
   const requestedGrantTypes = Array.isArray(body?.grant_types) && body.grant_types.length
     ? [...new Set(body.grant_types.map(String))] : ['authorization_code'];
   const responseTypes = Array.isArray(body?.response_types) && body.response_types.length ? [...new Set(body.response_types.map(String))] : ['code'];
