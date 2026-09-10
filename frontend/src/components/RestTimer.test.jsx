@@ -26,6 +26,12 @@ beforeEach(() => {
   S.active = { id: 'a', name: 'Test', start: Date.now(), cur: 0, entries: [
     { id: BENCH, target: { sets: 3, reps: 5 }, sets: [] },
     { id: 'no-such-exercise', target: { sets: 3, reps: 5 }, sets: [{ w: 0, r: 5, done: false }] },
+    { id: BENCH, target: { sets: 4, reps: 6 }, sets: [
+      { w: 60, r: 8, done: true, phase: 'warmup' },
+      { w: 95, r: 5, done: false, phase: 'warmup' },
+      { w: 125, r: 6, done: false },
+      { w: 125, r: 6, done: false },
+    ] },
   ] }
   useStore.setState({ S })
   useUI.setState({ timer: null, work: null })
@@ -49,6 +55,18 @@ describe('rest timer bar: what it is timing', () => {
     mount()
     expect(label()).toBe('Next set · ' + benchName())
     expect(host.querySelector('#timer .t').textContent).toBe('1:30')
+  })
+
+  it('says whether a warm-up or a working set comes next, as decided where the rest started', () => {
+    act(() => { useUI.getState().startRest(45, 2, 'set', 'warmup') })   // after ramp set 1
+    mount()
+    expect(label()).toBe('Next warm-up set · ' + benchName())
+    act(() => { useUI.getState().startRest(150, 2, 'set', 'work') })    // after the last ramp set
+    mount()
+    expect(label()).toBe('Next working set · ' + benchName())
+    act(() => { useUI.getState().startRest(90, 0, 'set', null) })       // an exercise without ramp rows
+    mount()
+    expect(label()).toBe('Next set · ' + benchName())
   })
 
   it('a superset round names the top of the superset', () => {

@@ -447,6 +447,8 @@ export default {
   'Flash screen when timer ends': '타이머 종료 시 화면 깜박임',
   'Vibrate': '진동',
   'Next set': '다음 세트',
+  'Next warm-up set': '다음 워밍업 세트',
+  'Next working set': '다음 본 세트',
   'Next round': '다음 라운드',
   'Next exercise': '다음 운동',
   'Hold': '유지',

@@ -447,6 +447,8 @@ export default {
   'Flash screen when timer ends': 'Fai lampeggiare lo schermo alla fine del timer',
   'Vibrate': 'Vibrazione',
   'Next set': 'Prossima serie',
+  'Next warm-up set': 'Prossima serie di riscaldamento',
+  'Next working set': 'Prossima serie di lavoro',
   'Next round': 'Prossimo giro',
   'Next exercise': 'Prossimo esercizio',
   'Hold': 'Tenuta',

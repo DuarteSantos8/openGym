@@ -447,6 +447,8 @@ export default {
   'Flash screen when timer ends': 'Zamanlayıcı bitince ekranı yanıp söndür',
   'Vibrate': 'Titreşim',
   'Next set': 'Sonraki set',
+  'Next warm-up set': 'Sonraki ısınma seti',
+  'Next working set': 'Sonraki çalışma seti',
   'Next round': 'Sonraki tur',
   'Next exercise': 'Sonraki egzersiz',
   'Hold': 'Tutuş',

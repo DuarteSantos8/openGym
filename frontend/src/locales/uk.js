@@ -1407,6 +1407,8 @@ export default {
   'Next round': 'Наступне коло',
   'Next exercise': 'Наступна вправа',
   'Hold': 'Утримання',
+  'Next warm-up set': 'Наступний розминковий підхід',
+  'Next working set': 'Наступний робочий підхід',
   'Don’t count for progression': 'Не враховувати в прогресії',
   'This exercise, this session only': 'Лише ця вправа, лише це тренування',
   'Not counted for progression': 'Не враховується в прогресії',

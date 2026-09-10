@@ -877,6 +877,8 @@ export default {
   'Flash screen when timer ends': 'Képernyő villogása, ha lejár az időzítő',
   'Vibrate': 'Rezgés',
   'Next set': 'Következő sorozat',
+  'Next warm-up set': 'Következő bemelegítő sorozat',
+  'Next working set': 'Következő munkasorozat',
   'Next round': 'Következő kör',
   'Next exercise': 'Következő gyakorlat',
   'Hold': 'Tartás',

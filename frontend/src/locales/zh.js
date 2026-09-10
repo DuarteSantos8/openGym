@@ -447,6 +447,8 @@ export default {
   'Flash screen when timer ends': '计时结束时闪烁屏幕',
   'Vibrate': '振动',
   'Next set': '下一组',
+  'Next warm-up set': '下一个热身组',
+  'Next working set': '下一个正式组',
   'Next round': '下一轮',
   'Next exercise': '下一个动作',
   'Hold': '保持',

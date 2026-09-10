@@ -447,6 +447,8 @@ export default {
   'Flash screen when timer ends': 'Migaj ekranem po zakończeniu minutnika',
   'Vibrate': 'Wibracje',
   'Next set': 'Następna seria',
+  'Next warm-up set': 'Następna seria rozgrzewkowa',
+  'Next working set': 'Następna seria robocza',
   'Next round': 'Następna runda',
   'Next exercise': 'Następne ćwiczenie',
   'Hold': 'Utrzymanie',

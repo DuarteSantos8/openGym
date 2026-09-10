@@ -885,6 +885,8 @@ export default {
   'Flash screen when timer ends': 'กะพริบหน้าจอเมื่อหมดเวลา',
   'Vibrate': 'การสั่น',
   'Next set': 'เซ็ตถัดไป',
+  'Next warm-up set': 'เซ็ตวอร์มอัพถัดไป',
+  'Next working set': 'เซ็ตหลักถัดไป',
   'Next round': 'รอบถัดไป',
   'Next exercise': 'ท่าถัดไป',
   'Hold': 'ค้างไว้',

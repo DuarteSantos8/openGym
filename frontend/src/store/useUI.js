@@ -126,6 +126,7 @@ export const useUI = create((set, get) => ({
   timer: null,         // rest countdown between sets — { left, total, endsAt, forIdx, kind, ready?, paused? }
                        // forIdx: index of the active entry whose set started the rest (undefined when unknown)
                        // kind: which rest-over sound plays — 'set' | 'round' | 'block' (supersetFlow.restKind)
+                       // phase: the set a 'set' rest leads into — 'warmup' | 'work' | null (supersetFlow.restSetPhase)
                        // paused: held at `left`; `endsAt` means nothing until resumeRest sets it again
   work: null,          // work countdown DURING a timed set (issue #16) — { left, total, endsAt, label, overtime? }
   timerFlashId: 0,     // changing the id retriggers the theme-blink visual alert
@@ -150,7 +151,7 @@ export const useUI = create((set, get) => ({
     toastTm = setTimeout(() => set({ toastMsg: '' }), 2200)
   },
 
-  startRest(sec, forIdx, kind) {
+  startRest(sec, forIdx, kind, phase) {
     get().stopRest()
     // Rest timer set to Off. Stopping and returning rather than starting a zero-length timer
     // keeps every caller honest: the four places that start a rest do not each need to know.
@@ -170,7 +171,7 @@ export const useUI = create((set, get) => ({
     // with no beep, no vibration and no flash. Each timer starts from where the page is now.
     pageHiddenAt = document.hidden ? Date.now() : null
     const endsAt = Date.now() + sec * 1000
-    set({ timer: { left: sec, total: sec, endsAt, forIdx, kind } })
+    set({ timer: { left: sec, total: sec, endsAt, forIdx, kind, phase } })
     bookRestEnd(endsAt, sec)
     runRest(set, get)
   },
@@ -205,7 +206,7 @@ export const useUI = create((set, get) => ({
   addRest(sec) {
     const tm = get().timer
     if (!tm) return
-    if (tm.ready) { if (sec > 0) get().startRest(sec, tm.forIdx, tm.kind); else get().stopRest(); return }
+    if (tm.ready) { if (sec > 0) get().startRest(sec, tm.forIdx, tm.kind, tm.phase); else get().stopRest(); return }
     const left = tm.left + sec
     // taking off more than is left means "I'm ready now" — same as skipping, and it keeps a
     // negative duration out of both the progress bar and the server-side push schedule
@@ -232,13 +233,14 @@ export const useUI = create((set, get) => ({
     const tm = get().timer
     const forIdx = tm?.forIdx
     const kind = tm?.kind
+    const phase = tm?.phase
     if (paused) {
       stopRestTicking()
-      set({ timer: { left, total, endsAt, forIdx, kind, paused: true } })
+      set({ timer: { left, total, endsAt, forIdx, kind, phase, paused: true } })
       return
     }
     const ticking = !!timerInt && !!tm && !tm.paused && !tm.ready
-    set({ timer: { left, total, endsAt, forIdx, kind } })
+    set({ timer: { left, total, endsAt, forIdx, kind, phase } })
     if (ticking) return
     // As in resumeRest: a hide from while it was held or over is no catch-up of this countdown.
     pageHiddenAt = document.hidden ? Date.now() : null

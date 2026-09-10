@@ -447,6 +447,8 @@ export default {
   'Flash screen when timer ends': 'Piscar o ecrã quando o temporizador terminar',
   'Vibrate': 'Vibração',
   'Next set': 'Próxima série',
+  'Next warm-up set': 'Próxima série de aquecimento',
+  'Next working set': 'Próxima série de trabalho',
   'Next round': 'Próxima ronda',
   'Next exercise': 'Próximo exercício',
   'Hold': 'Sustentação',

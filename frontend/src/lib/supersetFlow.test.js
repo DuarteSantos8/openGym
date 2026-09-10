@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, restKind, restFocusIdx } from './supersetFlow.js'
+import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, restKind, restFocusIdx, restSetPhase } from './supersetFlow.js'
 
 const entry = done => ({ sets: done.map(value => ({ done: value })) })
 
@@ -137,6 +137,45 @@ describe('restFocusIdx', () => {
 
   it('no kind: the exercise itself', () => {
     expect(restFocusIdx(entries, units, 2, undefined)).toBe(2)
+  })
+})
+
+// The bar tells a warm-up rest from a working rest (a routine with ramp rows rests 45 s after a
+// warm-up set, then the working rest) by the set the rest leads into: the first unfinished one
+// after the set just checked.
+describe('restSetPhase', () => {
+  const ramped = done => ({ sets: [
+    { w: 60, r: 8, done: done[0], phase: 'warmup' },
+    { w: 95, r: 5, done: done[1], phase: 'warmup' },
+    { w: 125, r: 6, done: done[2] },
+    { w: 125, r: 6, done: done[3] },
+  ] })
+
+  it('warm-up while the next set is a ramp set', () => {
+    expect(restSetPhase(ramped([true, false, false, false]), 0)).toBe('warmup')
+  })
+
+  it('work once the ramp is done and working sets follow', () => {
+    expect(restSetPhase(ramped([true, true, false, false]), 1)).toBe('work')
+    expect(restSetPhase(ramped([true, true, true, false]), 2)).toBe('work')
+  })
+
+  it('a skipped ramp row does not turn a working rest into a warm-up one', () => {
+    // ramp 2 left unticked, working set 1 just checked: the rest leads into working set 2.
+    expect(restSetPhase(ramped([true, false, true, false]), 2)).toBe('work')
+  })
+
+  it('never null on an exercise that has ramp rows, even after its last set', () => {
+    expect(restSetPhase(ramped([true, true, true, true]), 3)).toBe('work')
+  })
+
+  it('nothing to say for an exercise without warm-up rows, or no entry', () => {
+    expect(restSetPhase({ sets: [{ done: true }, { done: false }] }, 0)).toBe(null)
+    expect(restSetPhase(undefined, 0)).toBe(null)
+  })
+
+  it('reads the legacy warmup flag too', () => {
+    expect(restSetPhase({ sets: [{ done: true, warmup: true }, { done: false, warmup: true }, { done: false }] }, 0)).toBe('warmup')
   })
 })
 

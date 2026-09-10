@@ -447,6 +447,8 @@ export default {
   'Flash screen when timer ends': 'टाइमर खत्म होने पर स्क्रीन फ्लैश करें',
   'Vibrate': 'कंपन',
   'Next set': 'अगला सेट',
+  'Next warm-up set': 'अगला वार्म-अप सेट',
+  'Next working set': 'अगला वर्किंग सेट',
   'Next round': 'अगला राउंड',
   'Next exercise': 'अगला व्यायाम',
   'Hold': 'होल्ड',

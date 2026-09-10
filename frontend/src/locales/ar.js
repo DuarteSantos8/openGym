@@ -1463,6 +1463,8 @@ export default {
   'Next round': 'الجولة التالية',
   'Next exercise': 'التمرين التالي',
   'Hold': 'تثبيت',
+  'Next warm-up set': 'مجموعة الإحماء التالية',
+  'Next working set': 'مجموعة العمل التالية',
   'Don’t count for progression': 'لا تحتسبه في التقدم',
   'This exercise, this session only': 'هذا التمرين، في هذه الجلسة فقط',
   'Not counted for progression': 'غير محتسب في التقدم',
