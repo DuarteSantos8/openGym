@@ -108,4 +108,13 @@ describe('WorkoutDetail — per-routine grouping', () => {
     // no "Strength" subheader row
     expect(host.querySelectorAll('.row.between').length).toBe(0)
   })
+
+  it('renders Edit workout and Delete workout buttons in workoutDetailSheet', () => {
+    const host = (workoutDetailSheet(legacy), renderTop())
+    const buttons = [...host.querySelectorAll('button')]
+    const editBtn = buttons.find(b => b.textContent.includes('Edit workout'))
+    const deleteBtn = buttons.find(b => b.textContent.includes('Delete workout'))
+    expect(editBtn).not.toBeNull()
+    expect(deleteBtn).not.toBeNull()
+  })
 })
