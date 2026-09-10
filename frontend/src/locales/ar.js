@@ -1459,6 +1459,10 @@ export default {
   'Your heaviest set of the exercise, from any workout.': 'أثقل مجموعة لك في هذا التمرين، من أي جلسة.',
   // --- v1.3.9: vibration switch, an exercise kept out of progression, the deload routine (#294) ---
   'Vibrate': 'الاهتزاز',
+  'Next set': 'المجموعة التالية',
+  'Next round': 'الجولة التالية',
+  'Next exercise': 'التمرين التالي',
+  'Hold': 'تثبيت',
   'Don’t count for progression': 'لا تحتسبه في التقدم',
   'This exercise, this session only': 'هذا التمرين، في هذه الجلسة فقط',
   'Not counted for progression': 'غير محتسب في التقدم',

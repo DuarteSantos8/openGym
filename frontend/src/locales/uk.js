@@ -1403,6 +1403,10 @@ export default {
   'Your heaviest set of the exercise, from any workout.': 'Твій найважчий підхід у цій вправі — з будь-якого тренування.',
   // --- v1.3.9: vibration switch, an exercise kept out of progression, the deload routine (#294) ---
   'Vibrate': 'Вібрація',
+  'Next set': 'Наступний підхід',
+  'Next round': 'Наступне коло',
+  'Next exercise': 'Наступна вправа',
+  'Hold': 'Утримання',
   'Don’t count for progression': 'Не враховувати в прогресії',
   'This exercise, this session only': 'Лише ця вправа, лише це тренування',
   'Not counted for progression': 'Не враховується в прогресії',
