@@ -34,7 +34,7 @@ import { nextUnfinishedUnit } from './lib/supersetFlow.js'
 import { swapActiveExercise } from './lib/active-exercise-swap.js'
 import { useSheetKeyboard, useRevealActiveChip, tappable } from './lib/use-sheet-keyboard.js'
 import { isFav, toggleFav, sortFavouritesFirst } from './lib/favourites.js'
-import { buildSessionEntries } from './lib/session-start.js'
+import { buildSessionEntries, commitTrainingMax } from './lib/session-start.js'
 import { buildCombinedEntries, deriveSessionName } from './lib/session-merge.js'
 import { workoutsOn, backfillStart, backfillEnd, completeBackfill } from './lib/backfill.js'
 
@@ -2102,6 +2102,10 @@ function doFinishWorkout() {
       })
       s.workouts.push(w)
     }
+    // A completed wave cycle bumps the exercise's training max (lib/session-start.js). Only
+    // entries with something logged count, and a backfilled session never moves it: it is
+    // filed into the past, and the cycle has already moved on without it.
+    if (!past) commitTrainingMax(s, A.entries.filter(e => (e.sets || []).some(x => x.done)))
     s.active = null
   })
   useStore.getState().autoBackupNow()
