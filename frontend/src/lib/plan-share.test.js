@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildPlanBundle, mergePlan, parsePlan } from './plan-share.js'
+import { buildPlanBundle, mergePlan, parsePlan, planPrintHTML } from './plan-share.js'
 
 // There was no test file for plan sharing at all, which is how a whole prescription field
 // went missing without anyone noticing.
@@ -157,5 +157,12 @@ describe('wave settings travel with a shared plan', () => {
     expect(ex.bump).toBeUndefined()
     expect(ex.wave).toBeUndefined()
     expect(ex.trainingMax).toBe(100)
+  })
+
+  it('prints the training max and stage count instead of a uniform sets/reps line', () => {
+    const html = planPrintHTML(stateWith({ prog: 'wave', trainingMax: 100 }), '')
+    expect(html).toContain('4-stage wave')
+    expect(html).toContain('100 kg training max')
+    expect(html).not.toContain('3 × 5')   // the sets/reps left over from the fixture's non-wave fields
   })
 })

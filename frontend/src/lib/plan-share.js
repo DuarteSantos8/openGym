@@ -220,6 +220,9 @@ const esc = str => String(str == null ? '' : str)
 function scheme(e, unit) {
   const sets = e.sets || 1
   const mode = modeOf(e)
+  // A wave has no fixed sets/reps/weight of its own — sets/reps/weight vary stage to stage —
+  // so it prints its training max and stage count instead of the uniform line below.
+  if (e.prog === 'wave') return t('{0}-stage wave · {1} {2} training max', waveOf(e).length, fmtNum(e.trainingMax || 0), unit)
   if (mode === 'cardio') {
     const body = `${e.min || 20} min @ ${fmtNum(e.speed || 8)} km/h`
     return sets > 1 ? `${sets} × ${body}` : body
