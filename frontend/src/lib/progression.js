@@ -20,6 +20,7 @@ import { modeOf, repStep, rerampWarmups, isBw, isPerSide, entryExcluded } from '
 import { EXIDX } from './exercises.js'
 import { isWarmupRow } from './workout-model.js'
 import { normalizeRepRange } from './rep-range.js'
+import { best1RM } from './onerm.js'
 
 export const POLICIES = ['off', 'linear', 'greyskull', 'double', 'time', 'wave']
 
@@ -186,6 +187,96 @@ export function weekRows(week, base, step) {
 
 /** The heaviest percentage in a week — the signal a logged session is matched back against. */
 export const topPctOf = week => Math.max(0, ...(week?.sets || []).map(s => s.pct))
+
+/**
+ * Percentage / training-max programming.
+ *
+ * Where in the cycle you are is *derived*, exactly like every other number in this file: the
+ * week of the last session is the one whose top set lands closest to what was actually lifted.
+ * No counter is stored, so fixing a mistyped set — or rewriting the wave itself — takes effect
+ * on the next prescription instead of leaving a saved position behind to drift.
+ *
+ * The one thing that is stored is the training max, because it is a number the lifter owns
+ * rather than one the log implies (pure Wendler: it is never re-anchored to a new PR). A
+ * finished cycle returns the bumped value in `trainingMax`; lib/session-start.js writes it back
+ * when the session that ran at it is *finished*, so a session you discard moves nothing.
+ */
+function prescribeWave(S, cfg, inc, unit) {
+  const wave = waveOf(cfg)
+  const weeks = wave.length
+  const pctBase = cfg.pctBase === '1rm' ? '1rm' : 'tm'
+  const onMiss = cfg.onMiss === 'advance' ? 'advance' : 'repeat'
+  const bump = cfg.bump === 'off' ? 'off' : 'step'
+
+  // With `pctBase: '1rm'` the base is live — it moves with every new estimate. That is opt-in
+  // for a reason: a cycle whose weights change under you is not what 5/3/1 asks for.
+  const est = pctBase === '1rm' ? best1RM(S, cfg.id) : null
+  const base = pctBase === '1rm' ? (est ? est.est : 0) : Number(cfg.trainingMax) || 0
+  if (!(base > 0)) {
+    return {
+      policy: 'wave', kind: 'need-tm', weeks,
+      why: pctBase === '1rm'
+        ? ['No estimated 1RM for this exercise yet — log a set of it, or base the percentages on a training max.']
+        : ['Set a training max for this exercise to start the cycle.']
+    }
+  }
+
+  const rowsAt = k => weekRows(wave[k], base, inc)
+  const topAt = k => snapWeight(base * topPctOf(wave[k]) / 100, inc)
+  const pctsAt = k => wave[k].sets.map(s => s.pct).join('/')
+
+  // Only a session that actually carries the prescribed rows is a wave session: an unrelated
+  // logged set for the same exercise (a 1RM test rep, or history from before this policy) must
+  // not be mistaken for a completed cycle week.
+  const sessions = sessionsFor(S, cfg.id, cfg).filter(s => s.mode === 'reps' && Array.isArray(s.target?.rows) && s.target.rows.length)
+  const last = sessions[sessions.length - 1]
+  // Unlike every other policy, the baseline session is itself a prescription: week 1 of the
+  // cycle is knowable before anything has been logged.
+  if (!last) {
+    return {
+      policy: 'wave', kind: 'first', week: 1, weeks, rows: rowsAt(0),
+      why: ['Cycle week 1 of {0} — {1} % of a {2} {3} training max.', weeks, pctsAt(0), base, unit]
+    }
+  }
+
+  // Which week was that? The nearest top set. A tie goes to the earlier week (`<`, not `<=`),
+  // which is the conservative read: repeat lighter work rather than skip ahead.
+  let k = 0
+  for (let i = 1; i < weeks; i++) if (Math.abs(topAt(i) - last.weight) < Math.abs(topAt(k) - last.weight)) k = i
+  // A week with `repeat: 3` is three identical sessions. Consecutive sessions at the same top
+  // weight are the same week run again — the same nearest-match, counted.
+  let ran = 0
+  for (let i = sessions.length - 1; i >= 0 && sessions[i].weight === last.weight; i--) ran++
+
+  let nextK
+  let bumped = false
+  if (last.ok) {
+    if (ran < (wave[k].repeat || 1)) nextK = k                    // the week asked to be run again
+    else if (k === weeks - 1) {
+      // The cycle closed. Only a training-max base with the step bump on actually moves — a
+      // live-1RM base has nothing of its own to bump.
+      nextK = 0
+      bumped = pctBase === 'tm' && bump === 'step'
+    } else nextK = k + 1
+  } else {
+    // `advance` past the last week wraps to week 1 without a bump: the cycle was not finished,
+    // it was abandoned, and abandoning it must not earn a heavier training max.
+    nextK = onMiss === 'advance' ? (k + 1) % weeks : k
+  }
+
+  const nextBase = bumped ? round1(base + inc) : base
+  const rows = weekRows(wave[nextK], nextBase, inc)
+  // 'deload' announces arriving at a lighter week on a hit; a miss is always a 'hold' — even
+  // re-running a deload week, since nothing moved forward.
+  const kind = !last.ok ? 'hold' : wave[nextK].deload ? 'deload' : 'up'
+  const why = bumped
+    ? ['Cycle done — training max up to {0} {1}. Back to week 1 of {2}: {3} %.', nextBase, unit, weeks, pctsAt(nextK)]
+    : !last.ok && nextK === k
+      ? ['Missed a set last time — week {0} of {1} again: {2} %.', nextK + 1, weeks, pctsAt(nextK)]
+      : ['Week {0} of {1} — {2} % of a {3} {4} training max.', nextK + 1, weeks, pctsAt(nextK), nextBase, unit]
+
+  return { policy: 'wave', kind, week: nextK + 1, weeks, rows, ...(bumped ? { trainingMax: nextBase } : {}), why }
+}
 
 const positiveGridAround = (ideal, step, maxWeight, strictLower) => {
   if (!(ideal > 0) || !(step > 0) || !(maxWeight > 0)) return []
@@ -362,6 +453,8 @@ export function nextPrescription(S, cfg, routine) {
     ? (cfg.inc > 0 ? cfg.inc : DEFAULT_SEC_INCREMENT)
     : weightIncrement(cfg, unit)
   if (policy === 'off') return { policy, kind: 'off' }
+  // Self-contained: a wave derives its own history read and never consults stalls or deloads.
+  if (policy === 'wave') return prescribeWave(S, cfg, inc, unit)
 
   const sessions = sessionsFor(S, cfg.id, cfg).filter(s => s.mode === mode)
   const last = sessions[sessions.length - 1]

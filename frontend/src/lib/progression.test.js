@@ -11,6 +11,7 @@ import { EXDB } from './exercises.js'
 const LIFT = EXDB.find(e => e.bp !== 'cardio' && !['upper legs', 'lower legs', 'back', 'hips', 'glutes'].includes(e.bp) && !['body weight', 'band', 'resistance band'].includes(e.eq)).id
 const HEAVY = EXDB.find(e => e.bp === 'upper legs').id
 const CARDIO = EXDB.find(e => e.bp === 'cardio').id
+const snapWeightForTest = v => Math.round(Math.round(v / 2.5) * 2.5 * 10) / 10
 
 // Build a state whose history is a list of sessions given as [weight, ...repsPerSet].
 // A rep count of null means "the set was never checked off".
@@ -928,5 +929,132 @@ describe('readSession with a per-row target', () => {
     expect(readSession({ id: LIFT, target: { ...uniform, rows: [] }, sets: [
       { w: 60, r: 5, done: true }, { w: 60, r: 5, done: true }, { w: 60, r: 5, done: true },
     ] }).ok).toBe(true)
+  })
+})
+
+describe('wave progression', () => {
+  // History for a wave: each session is [ [w, r], [w, r], ... ] — one pair per work row.
+  // `target`, when given, is either one target shared by every session or one per session
+  // (matched by index) — a fixture needs the latter to say what a week's rows actually were
+  // prescribed as, since that can differ from what got logged (a missed rep is still logged).
+  const waveHist = (id, sessions, target) => ({
+    unit: 'kg',
+    workouts: sessions.map((rows, i) => ({
+      d: '2026-01-0' + (i + 1),
+      entries: [{
+        id,
+        target: (Array.isArray(target) ? target[i] : target) || { sets: rows.length, reps: 5, rows: rows.map(([w, r]) => ({ w, r })) },
+        sets: rows.map(([w, r, done]) => ({ w, r: r == null ? 0 : r, done: done !== false && r != null }))
+      }]
+    }))
+  })
+  // 100 kg training max, LIFT's default step is 2.5 kg (upper body, kg).
+  const CFG = { id: LIFT, sets: 3, reps: 5, prog: 'wave', trainingMax: 100 }
+  const W1 = [[65, 5], [75, 5], [85, 5]]
+  const W2 = [[70, 3], [80, 3], [90, 3]]
+  const W3 = [[75, 5], [85, 3], [95, 1]]
+  const W4 = [[40, 5], [50, 5], [60, 5]]
+
+  it('refuses to start without a training max', () => {
+    const p = nextPrescription({ unit: 'kg', workouts: [] }, { ...CFG, trainingMax: 0 }, null)
+    expect(p).toMatchObject({ policy: 'wave', kind: 'need-tm' })
+    expect(p.rows).toBeUndefined()
+    expect(nextPrescription({ unit: 'kg', workouts: [] }, { ...CFG, trainingMax: -5 }, null).kind).toBe('need-tm')
+  })
+
+  it('prescribes week 1 as the very first session', () => {
+    const p = nextPrescription({ unit: 'kg', workouts: [] }, CFG, null)
+    expect(p).toMatchObject({ policy: 'wave', kind: 'first', week: 1, weeks: 4 })
+    expect(p.rows).toEqual([{ w: 65, r: 5 }, { w: 75, r: 5 }, { w: 85, r: 5 }])
+  })
+
+  it('moves to week 2 after a clean week 1', () => {
+    const p = nextPrescription(waveHist(LIFT, [W1]), CFG, null)
+    expect(p).toMatchObject({ kind: 'up', week: 2, weeks: 4 })
+    expect(p.rows).toEqual([{ w: 70, r: 3 }, { w: 80, r: 3 }, { w: 90, r: 3 }])
+    expect(p.trainingMax).toBeUndefined()
+  })
+
+  // Week 1's prescribed rows: 5 reps on every row, regardless of what actually got logged.
+  const WEEK1_TARGET = { sets: 3, reps: 5, rows: [{ w: 65, r: 5 }, { w: 75, r: 5 }, { w: 85, r: 5 }] }
+
+  it('runs the same week again after a miss', () => {
+    const missed = [[65, 5], [75, 5], [85, 3]]
+    const p = nextPrescription(waveHist(LIFT, [missed], WEEK1_TARGET), CFG, null)
+    expect(p).toMatchObject({ kind: 'hold', week: 1 })
+    expect(p.rows).toEqual([{ w: 65, r: 5 }, { w: 75, r: 5 }, { w: 85, r: 5 }])
+  })
+
+  it('advances past a missed week when told to', () => {
+    const missed = [[65, 5], [75, 5], [85, 3]]
+    const p = nextPrescription(waveHist(LIFT, [missed], WEEK1_TARGET), { ...CFG, onMiss: 'advance' }, null)
+    expect(p).toMatchObject({ kind: 'hold', week: 2 })
+    expect(p.rows).toEqual([{ w: 70, r: 3 }, { w: 80, r: 3 }, { w: 90, r: 3 }])
+  })
+
+  it('calls a deload week a deload', () => {
+    const p = nextPrescription(waveHist(LIFT, [W1, W2, W3]), CFG, null)
+    expect(p).toMatchObject({ kind: 'deload', week: 4 })
+    expect(p.rows).toEqual([{ w: 40, r: 5 }, { w: 50, r: 5 }, { w: 60, r: 5 }])
+  })
+
+  it('closes the cycle by bumping the training max and going back to week 1', () => {
+    const p = nextPrescription(waveHist(LIFT, [W1, W2, W3, W4]), CFG, null)
+    expect(p).toMatchObject({ kind: 'up', week: 1, weeks: 4, trainingMax: 102.5 })
+    // 65 % of 102.5 kg is 66.625, which snaps to 67.5 on a 2.5 kg grid — not 65's own multiple.
+    expect(p.rows).toEqual([{ w: 67.5, r: 5 }, { w: 77.5, r: 5 }, { w: 87.5, r: 5 }])
+  })
+
+  it('does not bump when the last week was missed', () => {
+    const missed = [[40, 5], [50, 5], [60, 3]]
+    const targets = [W1, W2, W3, [[40, 5], [50, 5], [60, 5]]].map(week => ({
+      sets: 3, reps: 5, rows: week.map(([w, r]) => ({ w, r }))
+    }))
+    const p = nextPrescription(waveHist(LIFT, [W1, W2, W3, missed], targets), CFG, null)
+    expect(p).toMatchObject({ kind: 'hold', week: 4 })
+    expect(p.trainingMax).toBeUndefined()
+  })
+
+  it('wraps without touching the training max when the bump is off', () => {
+    const p = nextPrescription(waveHist(LIFT, [W1, W2, W3, W4]), { ...CFG, bump: 'off' }, null)
+    expect(p).toMatchObject({ kind: 'up', week: 1 })
+    expect(p.trainingMax).toBeUndefined()
+    expect(p.rows).toEqual([{ w: 65, r: 5 }, { w: 75, r: 5 }, { w: 85, r: 5 }])
+  })
+
+  it('holds a repeat week for as many sessions as it asks for', () => {
+    const wave = [{ repeat: 2, sets: [{ pct: 80, r: 5 }] }, { sets: [{ pct: 90, r: 3 }] }]
+    const cfg = { ...CFG, wave, sets: 1 }
+    const one = [[80, 5]]
+    expect(nextPrescription(waveHist(LIFT, [one]), cfg, null)).toMatchObject({ kind: 'up', week: 1 })
+    expect(nextPrescription(waveHist(LIFT, [one, one]), cfg, null)).toMatchObject({ kind: 'up', week: 2 })
+  })
+
+  it('resolves against a live estimated 1RM when asked to', () => {
+    const cfg = { ...CFG, pctBase: '1rm', trainingMax: 0 }
+    // 100 x 5 -> Epley 116.7; week 1 top set is 85 % of that, snapped to 2.5 kg.
+    const st = waveHist(LIFT, [[[100, 5]]], { sets: 1, reps: 5 })
+    const p = nextPrescription(st, { ...cfg, sets: 1 }, null)
+    expect(p.policy).toBe('wave')
+    expect(p.kind).not.toBe('need-tm')
+    expect(p.rows[p.rows.length - 1].w).toBe(snapWeightForTest(116.7 * 0.85))
+  })
+
+  it('needs an estimate before it can use one', () => {
+    const p = nextPrescription({ unit: 'kg', workouts: [] }, { ...CFG, pctBase: '1rm', trainingMax: 0 }, null)
+    expect(p.kind).toBe('need-tm')
+  })
+
+  it('keeps per-side rep targets even and on the grid', () => {
+    const cfg = { ...CFG, side: true }
+    const p = nextPrescription({ unit: 'kg', workouts: [] }, cfg, null)
+    // A wave is strictly prescriptive: the stored rep number is the stored rep number, per side
+    // handling lives in the display layer, so the rows come through unchanged.
+    expect(p.rows.map(r => r.r)).toEqual([5, 5, 5])
+  })
+
+  it('always names the week it actually used', () => {
+    const p = nextPrescription(waveHist(LIFT, [W1]), CFG, null)
+    expect(p.why.join(' ')).toContain('2')
   })
 })
