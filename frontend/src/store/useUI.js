@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { uid } from '../lib/format.js'
-import { beep, vibrate } from '../lib/sound.js'
+import { beep, restOver, vibrate } from '../lib/sound.js'
 import { api } from '../lib/api.js'
 import { t } from '../lib/i18n.js'
 import { deviceId } from '../lib/push.js'
@@ -69,8 +69,9 @@ let workDone = null
 export const useUI = create((set, get) => ({
   sheets: [],          // { id, render:(close)=>JSX, kind:'sheet'|'center', locked }
   toastMsg: '',
-  timer: null,         // rest countdown between sets — { left, total, endsAt, forIdx }
+  timer: null,         // rest countdown between sets — { left, total, endsAt, forIdx, kind }
                        // forIdx: index of the active entry whose set started the rest (undefined when unknown)
+                       // kind: which rest-over sound plays — 'set' | 'round' | 'block' (supersetFlow.restKind)
   work: null,          // work countdown DURING a timed set (issue #16) — { left, total, endsAt, label }
   timerFlashId: 0,     // changing the id retriggers the theme-blink visual alert
 
@@ -94,13 +95,13 @@ export const useUI = create((set, get) => ({
     toastTm = setTimeout(() => set({ toastMsg: '' }), 2200)
   },
 
-  startRest(sec, forIdx) {
+  startRest(sec, forIdx, kind) {
     get().stopRest()
     // Rest timer set to Off. Stopping and returning rather than starting a zero-length timer
     // keeps every caller honest: the four places that start a rest do not each need to know.
     if (!(sec > 0)) return
     const endsAt = Date.now() + sec * 1000
-    set({ timer: { left: sec, total: sec, endsAt, forIdx } })
+    set({ timer: { left: sec, total: sec, endsAt, forIdx, kind } })
     requestRestNotificationPermission()
     pushRestTimer(sec)
     timerTick = () => {
@@ -113,7 +114,7 @@ export const useUI = create((set, get) => ({
       const snd = useStore.getState().S.sound
       if (left <= 0) {
         if (seenLive) {
-          beep(snd, 880, 0.15); beep(snd, 880, 0.15, 0.25); beep(snd, 1320, 0.4, 0.5)
+          restOver(snd, tm.kind)
           vibrate([200, 100, 200]); get().flashTimer()
         }
         // The toast stays even when the rest ran out while the app was hidden: a guest, or anyone
