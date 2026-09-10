@@ -48,7 +48,8 @@ cd frontend && npm test
 Every MR runs the three test suites (frontend, MCP, api), with the results and the coverage
 of your diff shown in the MR itself, plus a build of the web image and the api image when you
 touched their inputs. The frontend job also prints how much your change adds to the gzipped
-bundle compared with main. The APK and the published images are manual jobs there.
+bundle compared with main. The APK and the published images are manual jobs there (on
+`main` both build on every push).
 
 One gitlab.com quirk: an MR from a fork runs its pipeline in *your* fork, which usually has
 no runners enabled — so it would show "no pipeline" forever. For that reason the project

@@ -12,7 +12,9 @@
 #                 before anything expensive starts.
 #   build       — the two container images → registry.gitlab.com/duartesantos8/opengym/{api,web},
 #                 and a run of both api targets that proves what each one does and does not carry
-#   package     — the signed Android APK → job artifact + generic package registry
+#   package     — the signed Android APK → job artifact + generic package registry, on every
+#                 main push and every tag; the unsigned iOS archive the same way, once a Mac
+#                 runner is registered (build:ios, see there)
 #   verify      — the images that were just pushed, started together through docker-compose.yml
 #                 and asked to serve; plus a Trivy scan and an SBOM per image
 #   deploy      — the browser-only demo → GitLab Pages
@@ -592,11 +594,84 @@ build:apk:
   rules:
     - !reference [.rules, not_on_schedule]
     - *release_tag
-    # An APK build is ~8 minutes of shared-runner time; on main and MRs it is one click
-    # away rather than automatic. Flip `when: manual` off to have every push build one.
+    # Every main push builds a signed APK (~9 minutes on the project runner; while the shared
+    # runners paid for it, this was a manual job). The newest one is always at
+    #   $CI_PROJECT_URL/-/jobs/artifacts/main/browse?job=build:apk
+    # which is the "try what is on main" build — and a red job here means the release tag
+    # would have failed the same way, so it is caught before the tag.
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    # Merge requests: one click away, so a fork MR does not cost nine runner minutes for an
+    # APK nobody asked for.
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: manual
       allow_failure: true
+
+# The iOS build — the same VITE_MOBILE bundle, `cap sync` into ios/, `xcodebuild archive`.
+# It cannot run on the Linux runner: Xcode only exists on macOS, and gitlab.com's hosted
+# macOS runners are Premium/Ultimate only. So this job stays invisible until a Mac is
+# registered as a project runner (shell executor, Xcode + CocoaPods + Node installed) and
+# the CI variable IOS_RUNNER_TAG carries that runner's tag — set it, and the job appears
+# in the next main/tag pipeline on that machine. Until then nothing here runs, so treat the
+# script as the plan it is: it has not been through a pipeline yet.
+#
+# What comes out is an *unsigned* .ipa (CODE_SIGNING_ALLOWED=NO): the thing AltStore /
+# Sideloadly users install with their own Apple ID, and the honest maximum without an Apple
+# Developer Program membership. TestFlight or a signed build would add: an exportOptions
+# plist, the distribution certificate + provisioning profile as protected file variables,
+# and `xcodebuild -exportArchive` — none of which exists yet.
+build:ios:
+  stage: package
+  tags:
+    - $IOS_RUNNER_TAG
+  timeout: 40 minutes
+  needs:
+    - test:frontend
+    - job: release:preflight
+      optional: true
+  variables:
+    # A shell runner keeps its node_modules and DerivedData between jobs; nothing to cache.
+    GIT_STRATEGY: fetch
+  script:
+    - |
+      set -eu
+      cd frontend
+      npm ci
+      # `cap sync` also runs `pod install` for ios/ on macOS.
+      npm run build:mobile
+      VER="$(node -p "require('./package.json').version")"
+      # Build number = the Android versionCode, so both apps count the same way.
+      BUILD="$(sed -n 's/^ *versionCode \([0-9]*\).*/\1/p' android/app/build.gradle | sed -n 1p)"
+      [ -n "$BUILD" ] || { echo "could not read versionCode from android/app/build.gradle" >&2; exit 1; }
+      cd ios/App
+      xcodebuild -workspace App.xcworkspace -scheme App -configuration Release         -destination 'generic/platform=iOS'         -archivePath "$PWD/build/App.xcarchive"         MARKETING_VERSION="$VER" CURRENT_PROJECT_VERSION="$BUILD"         CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""         archive | tail -40
+      # An .ipa is a zip with the .app under Payload/.
+      rm -rf Payload && mkdir Payload
+      cp -R build/App.xcarchive/Products/Applications/App.app Payload/
+      zip -qr "$CI_PROJECT_DIR/openGym-$VER-unsigned.ipa" Payload
+      cd "$CI_PROJECT_DIR"
+      sha256sum "openGym-$VER-unsigned.ipa" > "openGym-$VER-unsigned.ipa.sha256"
+      cat "openGym-$VER-unsigned.ipa.sha256"
+      echo "IPA_VERSION=$VER" > ipa.env
+      if [ -n "${CI_COMMIT_TAG:-}" ]; then
+        for f in "openGym-$VER-unsigned.ipa" "openGym-$VER-unsigned.ipa.sha256"; do
+          curl --fail --silent --show-error             --header "JOB-TOKEN: $CI_JOB_TOKEN"             --upload-file "$f"             "$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/opengym-ios/$VER/$f"
+          echo "uploaded $f to the generic package registry"
+        done
+      fi
+  artifacts:
+    name: "openGym-ipa-$CI_COMMIT_REF_SLUG"
+    paths:
+      - "openGym-*.ipa"
+      - "openGym-*.ipa.sha256"
+    reports:
+      dotenv: ipa.env
+    expire_in: 30 days
+  rules:
+    - !reference [.rules, not_on_schedule]
+    - if: $IOS_RUNNER_TAG == null || $IOS_RUNNER_TAG == ""
+      when: never
+    - *release_tag
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: manual
       allow_failure: true

@@ -20,6 +20,11 @@ see why. Web bundle and APK; the API image only for the payload change.
   thing as before" had nothing to point at: every message was a fresh request. The last six lines
   — what you wrote and what the Coach concluded, never proposals or errors — now travel with the
   request as context (`conversation`, documented in the prompt as data, not instruction).
+- 🏗️ CI: every push to `main` now builds the signed APK as well, not only tags (the project
+  runner pays for it, not shared minutes), so a broken Android build shows up before the release
+  tag and the newest build is always downloadable from the `build:apk` job. A `build:ios` job
+  (unsigned `.ipa` for AltStore/Sideloadly) is in the pipeline too, waiting for a Mac runner
+  — `docs/MOBILE.md` says what to register.
 - ⬇️ **Updates are the last thing in Settings.** On Android a permanent row checks gitlab.com on
   demand and installs a newer release with one tap (the download is verified against its checksum
   first); on the web the same spot links to the APK. The row no longer hides inside "Data" and no

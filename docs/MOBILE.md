@@ -99,7 +99,10 @@ app outside the Play Store. Check the `.sha256` if you got the file from anywher
 
 Both come out of CI: the `build:apk` job in [`.gitlab-ci.yml`](../.gitlab-ci.yml) runs
 `npm run build:mobile` and `./gradlew assembleRelease`, then `zipalign`s and signs the result
-with the release key. The key lives in *protected* CI variables (`ANDROID_KEYSTORE_B64`,
+with the release key. The job runs on every push to `main` too, so the newest unreleased
+build is always one click away (signed with the same key, installs over a release):
+`https://gitlab.com/DuarteSantos8/opengym/-/jobs/artifacts/main/browse?job=build:apk`
+— a 30-day job artifact, not a package, and not what the in-app updater offers. The key lives in *protected* CI variables (`ANDROID_KEYSTORE_B64`,
 `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`), so it only exists on `main` and on `v*`
 tags — a merge request from a fork can build an APK, but gets an unsigned one and never sees
 the key. On a `v*` tag the signed APK is also pushed to the generic package registry, which is
@@ -130,6 +133,19 @@ that would simply install. Your free options:
 - **Xcode free signing:** open `ios/` in Xcode with a free Apple ID as the team and run it
   onto your own iPhone. Apple expires the signature after 7 days; re-run from Xcode to renew.
 - **AltStore:** automates that 7-day re-signing over Wi-Fi via a Mac companion app.
+
+There is a `build:ios` job in [`.gitlab-ci.yml`](../.gitlab-ci.yml) for exactly that path: the
+same mobile bundle, `xcodebuild archive` without a signing identity, and an *unsigned* `.ipa`
+(plus `.sha256`) as job artifact — on a tag also under `opengym-ios/<version>/` in the package
+registry — for AltStore/Sideloadly users to sign with their own Apple ID. It needs a Mac: Xcode
+does not run on the Linux project runner, and gitlab.com's hosted macOS runners are not on the
+free tier. To switch it on, register a Mac as a project runner (shell executor; Xcode, CocoaPods
+and Node installed; give it a tag such as `macos`) and set the CI/CD variable `IOS_RUNNER_TAG`
+to that tag — the job then appears in every `main` and tag pipeline. Until that variable exists
+the job is not part of any pipeline, and it has not run yet, so expect a first round of fixes.
+A signed build (TestFlight, App Store) would additionally need an Apple Developer Program
+membership, the distribution certificate and profile as protected file variables, and an
+`-exportArchive` step — none of that is set up.
 
 ### Release notes for maintainers
 
