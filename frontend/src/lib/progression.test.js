@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest'
 import {
   readSession, sessionsFor, stallCount, nextPrescription, applyPrescription,
   policyFor, defaultIncrement, weightIncrement, epley1RM, deloadTarget1RM,
-  deloadFactorOf, DELOAD_FACTOR, POLICIES_FOR, DELOAD_AFTER, MAX_BW_SETS
+  deloadFactorOf, DELOAD_FACTOR, POLICIES_FOR, DELOAD_AFTER, MAX_BW_SETS,
+  DEFAULT_WAVE, waveOf, weekRows, topPctOf
 } from './progression.js'
 import { entryExcluded } from './history.js'
 import { EXDB } from './exercises.js'
@@ -829,5 +830,47 @@ describe('drop-sets and rest-pause sets in progression', () => {
     const out = applyPrescription(sets, { kind: 'up', weight: 0, reps: 10, sets: 2 })
     expect(out).toHaveLength(2)
     expect(out[1]).toEqual({ type: 'dropset', w: 0, r: 10, done: false })
+  })
+})
+
+describe('wave template and resolution', () => {
+  it('ships a four-week 5/3/1 template', () => {
+    expect(DEFAULT_WAVE).toHaveLength(4)
+    expect(DEFAULT_WAVE[0].sets.map(s => s.pct)).toEqual([65, 75, 85])
+    expect(DEFAULT_WAVE[2].sets.map(s => s.r)).toEqual([5, 3, 1])
+    expect(DEFAULT_WAVE[3].deload).toBe(true)
+  })
+
+  it('falls back to the template when the config has no usable wave', () => {
+    expect(waveOf({}).map(w => w.sets.length)).toEqual([3, 3, 3, 3])
+    expect(waveOf({ wave: [] })).toEqual(waveOf({}))
+    expect(waveOf({ wave: 'nonsense' })).toEqual(waveOf({}))
+    expect(waveOf({ wave: [{ sets: [] }] })).toEqual(waveOf({}))
+  })
+
+  it('normalises every week and set it is given', () => {
+    const w = waveOf({ wave: [{ deload: true, repeat: '3', sets: [{ pct: 250, r: 0, n: '2' }, { pct: 0 }] }] })
+    expect(w).toHaveLength(1)
+    expect(w[0]).toEqual({ deload: true, repeat: 3, sets: [{ pct: 100, r: 1, n: 2 }] })
+  })
+
+  it('expands n and snaps each row to the load grid', () => {
+    const week = { repeat: 1, sets: [{ pct: 65, r: 5, n: 2 }, { pct: 85, r: 5, n: 1 }] }
+    expect(weekRows(week, 100, 2.5)).toEqual([{ w: 65, r: 5 }, { w: 65, r: 5 }, { w: 85, r: 5 }])
+    expect(weekRows(week, 97, 2.5)).toEqual([{ w: 62.5, r: 5 }, { w: 62.5, r: 5 }, { w: 82.5, r: 5 }])
+  })
+
+  it('reports the heaviest percentage of a week', () => {
+    expect(topPctOf(waveOf({})[0])).toBe(85)
+    expect(topPctOf(waveOf({})[3])).toBe(60)
+    expect(topPctOf(null)).toBe(0)
+  })
+
+  it('offers wave only on reps work', () => {
+    expect(POLICIES_FOR.reps).toContain('wave')
+    expect(POLICIES_FOR.time).not.toContain('wave')
+    expect(POLICIES_FOR.cardio).not.toContain('wave')
+    expect(policyFor({ id: LIFT, prog: 'wave' }, null, 'reps')).toBe('wave')
+    expect(policyFor({ id: LIFT, prog: 'wave', mode: 'time' }, null, 'time')).toBe('off')
   })
 })

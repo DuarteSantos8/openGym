@@ -21,11 +21,11 @@ import { EXIDX } from './exercises.js'
 import { isWarmupRow } from './workout-model.js'
 import { normalizeRepRange } from './rep-range.js'
 
-export const POLICIES = ['off', 'linear', 'greyskull', 'double', 'time']
+export const POLICIES = ['off', 'linear', 'greyskull', 'double', 'time', 'wave']
 
 // Which policies can sensibly drive which logging mode.
 export const POLICIES_FOR = {
-  reps: ['off', 'linear', 'greyskull', 'double'],
+  reps: ['off', 'linear', 'greyskull', 'double', 'wave'],
   time: ['off', 'time'],
   cardio: ['off']
 }
@@ -35,14 +35,16 @@ export const POLICY_NAME = {
   linear: 'Linear progression',
   greyskull: 'Greyskull LP',
   double: 'Double progression',
-  time: 'Add time'
+  time: 'Add time',
+  wave: 'Percentage wave'
 }
 export const POLICY_DESC = {
   off: 'Targets stay where you set them.',
   linear: 'Hit every rep in every set and the weight goes up. Repeated misses trigger a deload.',
   greyskull: 'Two straight sets plus a final set taken to failure. Beat the target on that set and the weight goes up — double if you double the reps. One failure resets 10 %.',
   double: 'Work up through a rep range at the same weight. Reach the top of the range in every set and the weight goes up, reps back to the bottom.',
-  time: 'Hold every set for the full duration and the target goes up.'
+  time: 'Hold every set for the full duration and the target goes up.',
+  wave: 'Every set is a percentage of a training max you set yourself, run as a cycle of weeks. Finish the last week and the training max goes up; miss one and you run it again.'
 }
 
 // The Epley target is a soft objective mapped onto the exercise's real load grid. Keep the
@@ -128,6 +130,62 @@ export function deloadTo(cur, step, factor = DELOAD_FACTOR) {
   if (next >= cur) next = snapWeight(cur - step, step)
   return Math.max(step, next)
 }
+
+/* -------------------------------- percentage waves -------------------------------- */
+// A "wave" is a stored list of weeks; each week is a list of prescriptive working sets given
+// as `n × r @ pct` of a base (a training max, or the estimated 1RM). 5/3/1 is the template
+// this ships with, but nothing below knows about Wendler: any scheme that is "a sequence of
+// weeks, a fixed base bump when the cycle closes, repeat the week on a miss" is expressible
+// as data — DUP, hold weeks, block peaking — which is why this is one policy and not five.
+export const DEFAULT_WAVE = [
+  { sets: [{ r: 5, pct: 65 }, { r: 5, pct: 75 }, { r: 5, pct: 85 }] },
+  { sets: [{ r: 3, pct: 70 }, { r: 3, pct: 80 }, { r: 3, pct: 90 }] },
+  { sets: [{ r: 5, pct: 75 }, { r: 3, pct: 85 }, { r: 1, pct: 95 }] },
+  { deload: true, sets: [{ r: 5, pct: 40 }, { r: 5, pct: 50 }, { r: 5, pct: 60 }] }
+]
+
+// A percentage above the base is a typo, not a program; below zero is not a set at all.
+const clampPct = v => Math.min(100, Math.max(0, Number(v) || 0))
+
+/**
+ * The wave in force for one exercise, normalised. A config with no wave — or one a hand-edited
+ * plan file left unusable — falls back to the template rather than prescribing an empty cycle,
+ * so the policy selector never has to write the template out to make the engine work.
+ */
+export function waveOf(cfg) {
+  const weeks = (Array.isArray(cfg?.wave) ? cfg.wave : [])
+    .map(w => ({
+      ...(w?.deload ? { deload: true } : {}),
+      repeat: Math.max(1, Math.round(Number(w?.repeat)) || 1),
+      sets: (Array.isArray(w?.sets) ? w.sets : [])
+        .map(s => ({
+          pct: clampPct(s?.pct),
+          r: Math.max(1, Math.round(Number(s?.r)) || 1),
+          n: Math.max(1, Math.round(Number(s?.n)) || 1)
+        }))
+        .filter(s => s.pct > 0)
+    }))
+    .filter(w => w.sets.length)
+  if (weeks.length) return weeks
+  return DEFAULT_WAVE.map(w => ({
+    ...(w.deload ? { deload: true } : {}),
+    repeat: 1,
+    sets: w.sets.map(s => ({ pct: s.pct, r: s.r, n: 1 }))
+  }))
+}
+
+/** One week resolved against a base: every set expanded by `n`, every load on the exercise's grid. */
+export function weekRows(week, base, step) {
+  const rows = []
+  ;(week?.sets || []).forEach(s => {
+    const w = snapWeight(base * s.pct / 100, step)
+    for (let i = 0; i < (s.n || 1); i++) rows.push({ w, r: s.r })
+  })
+  return rows
+}
+
+/** The heaviest percentage in a week — the signal a logged session is matched back against. */
+export const topPctOf = week => Math.max(0, ...(week?.sets || []).map(s => s.pct))
 
 const positiveGridAround = (ideal, step, maxWeight, strictLower) => {
   if (!(ideal > 0) || !(step > 0) || !(maxWeight > 0)) return []
