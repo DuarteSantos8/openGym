@@ -1070,7 +1070,7 @@ function WaveEditor({ c, setC, ex, unit }) {
   const tmPct = Math.round(deloadFactorOf(c) * 100)
   const setWave = next => setC(x => ({ ...x, wave: next }))
   const patchStage = (wi, patch) => setWave(wave.map((w, i) => (i === wi ? { ...w, ...patch } : w)))
-  const patchSet = (wi, si, patch) => patchStage(wi, { sets: wave[wi].sets.map((s, i) => (i === si ? { ...s, ...patch } : s)) })
+  const patchBlock = (wi, bi, patch) => patchStage(wi, { blocks: wave[wi].blocks.map((b, i) => (i === bi ? { ...b, ...patch } : b)) })
   return <>
     <div className="row cfgrow" style={{ marginBottom: 8 }}>
       <Stepper label={t('Training max ({0})', unit)} value={c.trainingMax || 0} step={weightIncrement(c, unit)}
@@ -1092,7 +1092,7 @@ function WaveEditor({ c, setC, ex, unit }) {
       options={[{ value: 'step', label: t('Add the step') }, { value: 'off', label: t('Leave it') }]} />
 
     <h4 className="sec">{t('Cycle')}</h4>
-    {wave.map((w, wi) => <div className="card" key={wi} style={{ marginBottom: 8 }}>
+    {wave.map((w, wi) => <div className="card" key={w.id} style={{ marginBottom: 8 }}>
       <div className="row" style={{ alignItems: 'center', gap: 8 }}>
         <strong className="grow">{t('Stage {0}', wi + 1)}</strong>
         <label className="row" style={{ alignItems: 'center', gap: 6, cursor: 'pointer' }}>
@@ -1106,21 +1106,21 @@ function WaveEditor({ c, setC, ex, unit }) {
         <Stepper label={t('Run it')} unit={t('times')} value={w.repeat} step={1} decimal={false}
           onChange={v => patchStage(wi, { repeat: Math.max(1, Math.round(v) || 1) })} />
       </div>
-      {w.sets.map((s, si) => <div className="row cfgrow" key={si} style={{ alignItems: 'flex-end' }}>
-        <Stepper label={t('Sets')} value={s.n} step={1} decimal={false}
-          onChange={v => patchSet(wi, si, { n: Math.max(1, Math.round(v) || 1) })} />
-        <Stepper label={t('Reps')} value={s.r} step={1} decimal={false}
-          onChange={v => patchSet(wi, si, { r: Math.max(1, Math.round(v) || 1) })} />
-        <Stepper label={t('%')} value={s.pct} step={2.5}
-          onChange={v => patchSet(wi, si, { pct: Math.min(100, Math.max(1, v)) })} />
-        {w.sets.length > 1 && <button type="button" className="iconbtn" aria-label={t('Remove set {0}', si + 1)}
-          onClick={() => patchStage(wi, { sets: w.sets.filter((_, i) => i !== si) })}><Icon name="xmark" /></button>}
+      {w.blocks.map((b, bi) => <div className="row cfgrow" key={b.id} style={{ alignItems: 'flex-end' }}>
+        <Stepper label={t('Sets')} value={b.sets} step={1} decimal={false}
+          onChange={v => patchBlock(wi, bi, { sets: Math.max(1, Math.round(v) || 1) })} />
+        <Stepper label={t('Reps')} value={b.reps} step={1} decimal={false}
+          onChange={v => patchBlock(wi, bi, { reps: Math.max(1, Math.round(v) || 1) })} />
+        <Stepper label={t('%')} value={b.pct} step={2.5}
+          onChange={v => patchBlock(wi, bi, { pct: Math.min(100, Math.max(1, v)) })} />
+        {w.blocks.length > 1 && <button type="button" className="iconbtn" aria-label={t('Remove set {0}', bi + 1)}
+          onClick={() => patchStage(wi, { blocks: w.blocks.filter((_, i) => i !== bi) })}><Icon name="xmark" /></button>}
       </div>)}
       <Button variant="ghost" className="small"
-        onClick={() => patchStage(wi, { sets: [...w.sets, { ...w.sets[w.sets.length - 1] }] })}>{t('Add a set')}</Button>
+        onClick={() => patchStage(wi, { blocks: [...w.blocks, { ...w.blocks[w.blocks.length - 1], id: uid() }] })}>{t('Add a set')}</Button>
     </div>)}
     <Button variant="ghost" className="small"
-      onClick={() => setWave([...wave, { repeat: 1, sets: [{ pct: 75, r: 5, n: 3 }] }])}>{t('Add a stage')}</Button>
+      onClick={() => setWave([...wave, { id: uid(), repeat: 1, blocks: [{ id: uid(), sets: 3, reps: 5, pct: 75, type: 'work' }] }])}>{t('Add a stage')}</Button>
     {/* Dropping the stored wave is the reset: waveOf falls back to the template. */}
     <Button variant="ghost" className="small"
       onClick={() => setC(x => ({ ...x, wave: undefined }))}>{t('Back to the 5/3/1 template')}</Button>
