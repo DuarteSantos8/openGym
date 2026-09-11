@@ -1,5 +1,38 @@
 import { describe, expect, it } from 'vitest'
 import { buildPlanBundle, mergePlan, parsePlan } from './plan-share.js'
+import { sharedPlan } from '../../../api/social/plan.js'
+
+describe('plans shared with friends', () => {
+  it('preserves the full plan contract, removes private fields, and converts imported loads', () => {
+    const state = { ...stateWith({ weight: 100, inc: 2.5, warmupSets: 2, mode: 'reps',
+      intensifier: { type: 'dropset', count: 2, pct: 20 }, restSec: 90 }), unit: 'kg', week: { 1: ['r1'] } }
+    const bundle = buildPlanBundle(state, 'My plan')
+    const sent = sharedPlan({ ...bundle, bodyweight: [{ w: 80 }], workouts: [{ note: 'private' }], token: 'secret' })
+    expect(sent).toEqual(bundle)
+    const received = parsePlan(sent)
+    const target = { ...stateWith({ weight: 50 }), unit: 'lb' }
+    mergePlan(target, received)
+    expect(target.routines).toHaveLength(2)
+    expect(target.routines[0].ex[0].weight).toBe(50)
+    expect(target.routines[1].ex[0]).toMatchObject({ weight: 220.5, inc: 5.5, warmupSets: 2, restSec: 90, intensifier: { type: 'dropset', count: 2, pct: 20 } })
+    expect(target.week).toEqual({})
+    expect(bundle.routines[0].ex[0].weight).toBe(100)
+  })
+
+  it('does not guess units for older plan files and only applies the schedule on request', () => {
+    const bundle = buildPlanBundle(stateWith({ weight: 100 }), 'Old plan')
+    delete bundle.unit
+    bundle.week = { 1: ['r1'] }
+    const target = { routines: [], customEx: [], week: { 2: ['existing'] }, unit: 'lb' }
+    mergePlan(target, parsePlan(bundle), { schedule: true })
+    expect(target.routines[0].ex[0].weight).toBe(100)
+    expect(target.week).toEqual({ 1: [target.routines[0].id] })
+    expect(() => sharedPlan({ opengym_plan: 1, routines: [] })).toThrow()
+    for (const id of ['__proto__', 'constructor', 'prototype']) {
+      expect(() => sharedPlan(buildPlanBundle(stateWith({ id }), 'Invalid'))).toThrow()
+    }
+  })
+})
 
 // There was no test file for plan sharing at all, which is how a whole prescription field
 // went missing without anyone noticing.

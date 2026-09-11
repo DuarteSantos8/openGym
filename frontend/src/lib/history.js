@@ -1,16 +1,9 @@
 // Pure helpers over the state object S (ported 1:1 from the vanilla app).
-import { todayISO, isoOf, weekKey, weekStartOf, fmtNum } from './format.js'
+import { todayISO, isoOf, weekStartOf, fmtNum } from './format.js'
 import { isCardio, isBodyweightEq } from './exercises.js'
-import { phaseForSet, modeForSet, modeForEntry, isWarmupRow, normalizeMode, extraVolumeOf, nextDropWeight, splitBurstReps, makeSideSet, isSideSet, syncSideAggregate } from './workout-model.js'
-const objectOf = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {}
-// Completed-state-independent work rows whose authoritative mode matches the requested mode.
-const workRowsForMode = (entry = {}, mode = 'reps') => {
-  const source = objectOf(entry)
-  const target = objectOf(source.target || source)
-  const expectedMode = normalizeMode(mode, 'reps')
-  return (Array.isArray(source.sets) ? source.sets : [])
-    .filter(set => phaseForSet(set) === 'work' && modeForSet(set, target) === expectedMode)
-}
+import { isWarmupRow, extraVolumeOf, nextDropWeight, splitBurstReps, makeSideSet, isSideSet, syncSideAggregate } from './workout-model.js'
+import { metricRowsForEntry, metricModeForEntry, bestWeightForEntry, weekStreak } from '../../../api/training/history-metrics.js'
+export { metricRowsForEntry, metricModeForEntry, bestWeightForEntry }
 // i18n-core, not i18n: this file is imported by mcp/, which is plain Node with no Vite and no
 // React. i18n.js is the Vite half — import.meta.glob over the locale packs, useSyncExternalStore
 // for the hook — and it re-exports this very `t` from core, so nothing changes here except what
@@ -546,18 +539,7 @@ export function moveSupersetUnit(items, index, direction) {
 export function unitOf(units, idx) { return units.find(u => u.includes(idx)) || [idx] }
 
 export function streakWeeks(S) {
-  if (!S.workouts.length) return 0
-  const ws = weekStartOf(S)
-  const weeks = new Set(S.workouts.map(w => weekKey(w.d, ws)))
-  let streak = 0
-  const cur = new Date()
-  for (let i = 0; i < 520; i++) {
-    const wk = weekKey(isoOf(cur), ws)
-    if (weeks.has(wk)) streak++
-    else if (i > 0) break
-    cur.setDate(cur.getDate() - 7)
-  }
-  return streak
+  return weekStreak(S.workouts.map(w => w.d), todayISO(), weekStartOf(S))
 }
 
 /**
@@ -672,59 +654,4 @@ export function workSetsDone(w) {
   return (w?.entries || []).reduce(
     (n, e) => n + (e.sets || []).filter(s => s.done && !isWarmupRow(s)).length, 0,
   )
-}
-
-const METRIC_MODES = ['reps', 'time', 'cardio']
-const completedRowsForMode = (entry, mode) => workRowsForMode(entry, mode).filter(s => s.done === true && !isWarmupRow(s))
-
-export function metricRowsForEntry(entry, mode) {
-  const requested = typeof mode === 'string' ? mode.trim().toLowerCase() : ''
-  const resolved = METRIC_MODES.includes(requested) ? requested : metricModeForEntry(entry)
-  return resolved ? completedRowsForMode(entry, resolved) : []
-}
-
-/** The authoritative metric for an entry; reps rows take precedence over timed/cardio rows. */
-
-export function metricModeForEntry(entry, fallback = null) {
-  for (const mode of METRIC_MODES) {
-    if (completedRowsForMode(entry, mode).length) return mode
-  }
-  return modeForEntry(entry, fallback)
-}
-
-/** Best load from completed work rows, with a guarded reps-only legacy topW fallback. */
-
-export function bestWeightForEntry(entry = {}) {
-  const target = entry.target || entry
-  const workRows = Array.isArray(entry.sets)
-    ? entry.sets.filter(s => phaseForSet(s) === 'work')
-    : []
-  const repsRows = metricRowsForEntry(entry, 'reps')
-  // Reps rows are the authoritative load metric for a mixed entry. Otherwise use every
-  // completed work row (timed holds can carry an added load too).
-  const completedRows = repsRows.length
-    ? repsRows
-    : workRows.filter(set => set?.done === true && !isWarmupRow(set))
-  let best = 0
-  let hasUsableWeight = false
-  completedRows.forEach(set => {
-    const weight = Number(set?.w)
-    if (!Number.isFinite(weight)) return
-    hasUsableWeight = true
-    if (weight > best) best = weight
-  })
-
-  // A real completed row, including an explicit zero for an unloaded bodyweight set, always
-  // wins. A manual topW is only useful for old records whose rows did not carry a usable load.
-  if (hasUsableWeight) return best
-
-  const parentMode = modeForSet({}, target)
-  const hasNonRepsWorkRow = workRows.some(set => modeForSet(set, target) !== 'reps')
-  const hasWarmupRow = Array.isArray(entry.sets) && entry.sets.some(isWarmupRow)
-  const topWeight = Number(entry.topW)
-  // topW predates phase-tagged warm-ups. It remains a fallback for legacy all-work records,
-  // but cannot override resolved work rows once any warm-up marker exists.
-  if (parentMode === 'reps' && !hasNonRepsWorkRow && !hasWarmupRow
-    && Number.isFinite(topWeight) && topWeight > best) best = topWeight
-  return best
 }

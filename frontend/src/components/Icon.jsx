@@ -13,6 +13,7 @@
 //   · geometry snapped to .5 so it lands on pixel edges at 24px
 
 const P = {
+  people: <><circle cx="9" cy="7.8" r="3.1" /><path d="M3.5 20v-1a5.5 5.5 0 0 1 11 0v1M15.6 4.9a3.1 3.1 0 0 1 0 5.8M17 13.7a5.5 5.5 0 0 1 3.5 5.1V20" /></>,
   /* ---- navigation ---- */
   house: <path d="M3.5 10.7 12 3.8l8.5 6.9M5.9 9.4V19a1.4 1.4 0 0 0 1.4 1.4h9.4A1.4 1.4 0 0 0 18.1 19V9.4" />,
   calendar: <><rect x="3.4" y="5.2" width="17.2" height="15.4" rx="3.2" /><path d="M8.2 3.4v3.4M15.8 3.4v3.4M3.4 10.2h17.2" /></>,

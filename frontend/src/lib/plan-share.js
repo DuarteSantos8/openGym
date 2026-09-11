@@ -12,6 +12,7 @@ import { EXIDX, isBodyweightEq } from './exercises.js'
 import { modeOf, fmtSec, isBw, isPerSide, sideReps, MAX_PLANNED_WARMUPS } from './history.js'
 import { deriveSessionName } from './session-merge.js'
 import { uid, todayISO, DAYN, weekOrder, weekStartOf, fmtNum, exCount } from './format.js'
+import { convertStateUnit } from './units.js'
 import { t, exerciseNameFor } from './i18n-core.js'
 
 const PLAN_FMT = 1
@@ -109,7 +110,7 @@ export function buildPlanBundle(S, name) {
   // written after are read the same way at the other end.
   const week = {}
   WEEK_DAYS.forEach(d => { if (S.week?.[d]?.length) week[d] = [].concat(S.week[d]) })
-  return { opengym_plan: PLAN_FMT, exported: todayISO(), name: name || '', week, routines, customEx }
+  return { opengym_plan: PLAN_FMT, exported: todayISO(), name: name || '', unit: S.unit === 'lb' ? 'lb' : 'kg', week, routines, customEx }
 }
 
 /**
@@ -147,6 +148,7 @@ export function parsePlan(raw) {
   }))
   return {
     name: (data.name || '').trim(),
+    unit: data.unit === 'kg' || data.unit === 'lb' ? data.unit : null,
     routines,
     week: data.week || {},
     customEx,
@@ -165,6 +167,7 @@ export function parsePlan(raw) {
  *    leaves empty become rest days — a half-overwritten week would silently mix two plans)
  */
 export function mergePlan(s, bundle, { schedule } = {}) {
+  if (bundle.unit && bundle.unit !== (s.unit || 'kg')) bundle = convertStateUnit(bundle, s.unit || 'kg')
   s.customEx = s.customEx || []
   const exIdMap = {}
   ;(bundle.customEx || []).forEach(c => {

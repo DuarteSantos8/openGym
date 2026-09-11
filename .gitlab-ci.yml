@@ -491,6 +491,7 @@ build:web-check:
           - "frontend/**/*"
           - "web/**/*"
           - "api/coach/core/**/*"
+          - "api/training/**/*"
           - ".gitlab-ci.yml"
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: manual
@@ -818,6 +819,7 @@ pages:
         paths:
           - "frontend/**/*"
           - "api/coach/core/**/*"
+          - "api/training/**/*"
           - ".gitlab-ci.yml"
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: manual

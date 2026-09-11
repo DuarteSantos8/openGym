@@ -80,6 +80,8 @@ tags:
     description: Web Push (VAPID) subscriptions, rest-timer and test pushes
   - name: activity
     description: Live-workout presence heartbeat
+  - name: social
+    description: Friend requests, progress summaries and shared plan snapshots
   - name: admin
     description: Admin dashboard — requires an admin session (`ADMIN_UIDS` or `admin:true`)
 
@@ -815,6 +817,243 @@ paths:
               schema: { $ref: '#/components/schemas/Ok' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
+  /api/social:
+    get:
+      tags:
+        - social
+      operationId: socialOverview
+      summary: List friends, requests and shared plans
+      description: >-
+        Only accepted, enabled friends have progress summaries. Pending requests include identity
+        only. Streaks use the friend’s week-start setting and saved time zone (UTC if absent);
+        personal records follow exercise history. No full workout state or body-weight log is
+        returned.
+      responses:
+        '200':
+          description: Caller’s friend code, requests, friend summaries and plan inbox.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SocialOverview'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/social/request:
+    post:
+      tags:
+        - social
+      operationId: socialRequest
+      summary: Send a friend request
+      description: >-
+        Friend codes identify registered users on this server only. Spaces and hyphens are ignored.
+        Codes are not login credentials; accepting the request is required for progress access.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - code
+              properties:
+                code:
+                  type: string
+                  example: ABCD-EF12-3456-7890
+      responses:
+        '200':
+          description: Action completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ok'
+        '400':
+          description: The code belongs to the caller.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: No enabled account matches the code.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Already connected, a request is pending, or either account has 100 connections.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/social/accept:
+    post:
+      tags:
+        - social
+      operationId: socialAccept
+      summary: Accept an incoming friend request
+      description: Only the recipient can accept a pending request. Progress becomes visible in both directions.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+              properties:
+                userId:
+                  type: string
+      responses:
+        '200':
+          description: Action completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ok'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: No incoming request from an enabled account matches userId.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/social/remove:
+    post:
+      tags:
+        - social
+      operationId: socialRemove
+      summary: Decline, cancel or remove a connection
+      description: >-
+        Either participant may remove a connection. Pending plan snapshots between the two accounts
+        are deleted. Previously imported routines remain. Repeating this action succeeds.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+              properties:
+                userId:
+                  type: string
+      responses:
+        '200':
+          description: Action completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ok'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/social/plan:
+    post:
+      tags:
+        - social
+      operationId: socialSharePlan
+      summary: Send a plan snapshot to a friend
+      description: >-
+        Only accepted, enabled friends can receive a plan. Replaces the caller’s previous pending
+        snapshot for this recipient. Stores only plan fields; maximum 256 KB, 100 routines, 100
+        exercises per routine.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+                - plan
+              properties:
+                userId:
+                  type: string
+                plan:
+                  $ref: '#/components/schemas/SocialPlan'
+      responses:
+        '200':
+          description: Action completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ok'
+        '400':
+          description: Invalid, empty or oversized plan.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: The target is not an accepted, enabled friend.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - social
+      operationId: socialReadPlan
+      summary: Read a received plan for review
+      description: >-
+        Only the intended recipient can read a snapshot, while the sender remains an enabled friend.
+        Loading a plan does not import or dismiss it.
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The plan snapshot.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  plan:
+                    $ref: '#/components/schemas/SocialPlan'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Snapshot missing, dismissed, replaced, or inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/social/plan/dismiss:
+    post:
+      tags:
+        - social
+      operationId: socialDismissPlan
+      summary: Dismiss a received plan
+      description: >-
+        Only removes snapshots belonging to the caller’s inbox; does not change routines or the friend
+        connection. The client also calls this after a successful import.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id
+              properties:
+                id:
+                  type: string
+      responses:
+        '200':
+          description: Action completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ok'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
   /api/admin/users:
     get:
       tags: [admin]
@@ -1129,6 +1368,183 @@ components:
       type: object
       properties:
         ok: { type: boolean, const: true }
+
+    SocialUser:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    SocialRecord:
+      type: object
+      required:
+        - exerciseId
+        - name
+        - metric
+        - value
+        - date
+      properties:
+        exerciseId:
+          type: string
+        name:
+          type:
+            - string
+            - 'null'
+          description: Custom exercise name, or null for a built-in catalogue exercise.
+        metric:
+          type: string
+          enum:
+            - weight
+            - reps
+            - sec
+            - min
+        value:
+          type: number
+        date:
+          type: string
+          format: date
+          description: First date the current record was reached.
+    SocialFriend:
+      allOf:
+        - $ref: '#/components/schemas/SocialUser'
+        - type: object
+          properties:
+            unit:
+              type: string
+              enum:
+                - kg
+                - lb
+            weekStreak:
+              type: integer
+            workouts:
+              type: integer
+            thisWeek:
+              type: integer
+            lastWorkout:
+              type:
+                - string
+                - 'null'
+              format: date
+            recordCount:
+              type: integer
+            records:
+              type: array
+              items:
+                $ref: '#/components/schemas/SocialRecord'
+              maxItems: 12
+              description: Most recently set personal records, newest first.
+    SocialPlan:
+      type: object
+      required:
+        - opengym_plan
+        - routines
+      description: >-
+        The existing plan-file format. Contains routines, schedule and referenced custom exercises. No
+        workout history, weigh-ins or account settings.
+      properties:
+        opengym_plan:
+          type: integer
+          const: 1
+        name:
+          type: string
+        exported:
+          type: string
+          format: date
+        unit:
+          type: string
+          enum:
+            - kg
+            - lb
+          description: Source weight unit; the client converts loads when importing into a different unit.
+        routines:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            type: object
+            required:
+              - id
+              - name
+              - ex
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              emoji:
+                type: string
+              prog:
+                type: string
+              excludeFromProgression:
+                type: boolean
+              ex:
+                type: array
+                maxItems: 100
+                items:
+                  type: object
+                  description: >-
+                    Exercise prescription from the plan-file format, including progression, warm-up,
+                    rest and intensifier settings.
+        week:
+          type: object
+          description: Weekday index 0–6 mapped to routine-ID arrays.
+        customEx:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              'n':
+                type: string
+              bp:
+                type: string
+              desc:
+                type: string
+    SocialOverview:
+      type: object
+      required:
+        - code
+        - friends
+        - incoming
+        - outgoing
+        - plans
+      properties:
+        code:
+          type: string
+          description: Caller’s instance-local friend code.
+        friends:
+          type: array
+          items:
+            $ref: '#/components/schemas/SocialFriend'
+        incoming:
+          type: array
+          items:
+            $ref: '#/components/schemas/SocialUser'
+        outgoing:
+          type: array
+          items:
+            $ref: '#/components/schemas/SocialUser'
+        plans:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              from:
+                $ref: '#/components/schemas/SocialUser'
+              name:
+                type: string
+              created:
+                type: string
+                format: date-time
+              routines:
+                type: integer
 
     SessionUser:
       type: object

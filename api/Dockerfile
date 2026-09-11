@@ -53,6 +53,8 @@ RUN npm ci --omit=dev --omit=optional && npm cache clean --force
 
 COPY server.js push-messages.js verify-error.js ./
 COPY coach ./coach
+COPY social ./social
+COPY training ./training
 ENV NODE_ENV=production
 ENV PORT=3000
 EXPOSE 3000

@@ -19,6 +19,7 @@ import { startCadence } from './coach/cadence.js';
 import { startWarmup } from './coach/warmup.js';
 import { dayReminderPush, restTimerPush, testPush } from './push-messages.js';
 import { verifyError } from './verify-error.js';
+import { socialRoutes } from './social/routes.js';
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
@@ -80,6 +81,15 @@ function atomicWrite(file, content, mode) {
 const stateFile = uid => path.join(DATA, 'state-' + uid.replace(/[^a-zA-Z0-9_-]/g, '') + '.json');
 function readState(uid) {
   try { return JSON.parse(fs.readFileSync(stateFile(uid), 'utf8')); } catch { return null; }
+}
+
+const socialFile = path.join(DATA, 'social.json');
+function loadSocial() {
+  try { return JSON.parse(fs.readFileSync(socialFile, 'utf8')); }
+  catch (e) {
+    if (e.code === 'ENOENT') return { connections: [], plans: [] };
+    throw e;
+  }
 }
 
 /* ---------- push notifications (Web Push / VAPID) ---------- */
@@ -1100,6 +1110,9 @@ const routes = {
     audit(req, 'admin.audit.clear', { user: admin });
     json(res, 200, { ok: true });
   },
+
+  ...socialRoutes({ json, readBody, readSession, users: () => db.users, readState,
+    load: loadSocial, save: data => atomicWrite(socialFile, JSON.stringify(data), 0o600), secret: SECRET, userNow }),
 
   /* ---------- AI Coach ---------- */
   // Routes live in coach/routes.js and are handed the helpers above rather than importing

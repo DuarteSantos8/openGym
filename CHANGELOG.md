@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **Social tab:** friend codes and accepted requests for accounts on the same server; friends see weekly streaks, workout counts, last workout dates and exercise records. Either person can remove the connection.
+- **Plans from friends:** share a snapshot of your routines and weekly schedule directly, preview the exercises, then import as new routines. Applying the schedule is optional; new exports carry kg/lb so weights convert on import. Workout notes and weigh-ins are excluded.
+
 What the Discord and GitLab reports after v1.3.5 had in common: the Coach failed and nobody could
 see why. Web bundle and APK; the API image only for the payload change.
 
