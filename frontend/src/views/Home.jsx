@@ -2,13 +2,13 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { effectiveRoutines, effectiveRoutineIds, nextTrainingDay, streakWeeks, lastBW, setsDoneActive } from '../lib/history.js'
-import { fmtNum, fmtDate, todayISO, isoOf, weekKey, weekStartOf, weekDayOffset, DAYS, DAYN } from '../lib/format.js'
+import { fmtNum, fmtDate, todayISO, isoOf, weekStartOf, weekDayOffset, DAYS, DAYN } from '../lib/format.js'
 import { t, dateLocale } from '../lib/i18n.js'
 import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, startFlow, starterPlanSheet, bwDeltaColor } from '../sheets.jsx'
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
 import QueueRow from '../components/QueueRow.jsx'
-import { queueView } from '../lib/queue.js'
+import { queueView, weekTally } from '../lib/queue.js'
 import { Button } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { glyphOf } from '../lib/glyphs.js'
@@ -54,16 +54,12 @@ export default function Home() {
   const wkEnd = new Date(wkStart); wkEnd.setDate(wkStart.getDate() + 6)
   const wkLabel = weekOffset === 0 ? t('This week') : `${wkStart.getDate()} ${wkStart.toLocaleDateString(dateLocale(), { month: 'short' })} – ${wkEnd.getDate()} ${wkEnd.toLocaleDateString(dateLocale(), { month: 'short' })}`
 
-  const wThisWeek = S.workouts.filter(w => weekKey(w.d, ws) === weekKey(todayISO(), ws)).length
   // A coach week (S.queue) read through the same tolerant reader QueueRow uses, so a malformed
   // queue from another client shows the weekday dots, never an empty card.
   const queue = queueView(S, todayISO())
-  // Days scheduled, not routines — a combined day counts as 1, matching wThisWeek (one w). A
-  // coach week has no weekdays: its sessions are the plan.
-  const plannedPerWeek = queue ? queue.items.length : Object.values(S.week).filter(ids => ids?.length).length
-  // …and the numerator counts the same thing: the queue's done sessions, not the calendar week's
-  // workouts (a coach week may straddle a weekend, and both fractions sit on one card).
-  const doneThisWeek = queue ? queue.items.length - queue.remaining.length : wThisWeek
+  // The streak card's fraction: this calendar week's workouts over the weekdays with a plan, or,
+  // in a coach week, the queue's sessions and your own days together (lib/queue.js weekTally).
+  const { done: doneThisWeek, planned: plannedPerWeek } = weekTally(S, todayISO())
   const bwPoints = S.bodyweight.slice(-30).map(b => ({ t: b.t || new Date(b.d).getTime(), y: b.w, d: b.d }))
 
   // today's session shown right under the week strip
