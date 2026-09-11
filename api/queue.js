@@ -34,13 +34,25 @@ function queueDone(S, id, startsOn) {
   return (S.workouts || []).some(w => routineIdsOf(w).includes(id)
     && ((w.start ?? 0) >= S.queue.since || (String(w.d || '') >= startsOn && nameParts(w).includes(currentName))));
 }
+// The calendar date of an instant where the USER is. The frontend's fallback for a missing
+// startsOn is the device's local date of the apply; the closest thing here is the zone the
+// reminder already fires by (S.reminder.tz), so the two copies name the same day. UTC when the
+// zone is unset or invalid (Intl throws on an unknown zone).
+function dayIn(ms, tz) {
+  try {
+    const parts = new Intl.DateTimeFormat('en-CA', { timeZone: tz || 'UTC', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date(ms));
+    const g = t => parts.find(x => x.type === t)?.value;
+    return `${g('year')}-${g('month')}-${g('day')}`;
+  } catch { return new Date(ms).toISOString().slice(0, 10); }
+}
 // Tolerant reader, as in the frontend: a missing or malformed queue reads as none. A missing
-// startsOn means active now; a session whose routine was deleted is dropped from the week (the
-// frontend's queue.js does the same — it could never be started or logged).
+// startsOn means active since the day of the apply (dayIn above); a session whose routine was
+// deleted is dropped from the week (the frontend's queue.js does the same — it could never be
+// started or logged).
 function queueOf(S) {
   const q = S.queue;
   if (!q || typeof q !== 'object' || !Array.isArray(q.ids)) return null;
-  const startsOn = typeof q.startsOn === 'string' ? q.startsOn : new Date(q.since || 0).toISOString().slice(0, 10);
+  const startsOn = typeof q.startsOn === 'string' ? q.startsOn : dayIn(q.since || 0, S.reminder?.tz);
   const ids = q.ids.filter(id => (S.routines || []).some(r => r?.id === id));
   return { ids, startsOn };
 }

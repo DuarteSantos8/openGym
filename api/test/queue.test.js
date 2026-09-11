@@ -207,3 +207,21 @@ test('pins: with every remaining session pinned to other days, a coach pointer o
   const complete = P({ workouts: [done('r1'), done('r2'), done('r3')], week: { 3: ['r2', 'own'] } });
   assert.equal(effectiveRoutineId(complete, TODAY), 'r2');
 });
+
+test('a queue without startsOn starts on the day of the apply where the USER is (reminder.tz), UTC when unset or invalid', () => {
+  // 02:00Z on the 9th is still the evening of the 8th in New York: the app on that phone shows
+  // the session on the 8th, so the reminder must too.
+  const since = Date.UTC(2026, 8, 9, 2, 0, 0);
+  const q = { ids: ['r1'], since, label: 'W1' };
+  assert.equal(effectiveRoutineId({ ...base, queue: q, reminder: { tz: 'America/New_York' } }, '2026-09-08'), 'r1');
+  assert.equal(effectiveRoutineId({ ...base, queue: q, reminder: { tz: 'UTC' } }, '2026-09-08'), null);
+  assert.equal(effectiveRoutineId({ ...base, queue: q, reminder: { tz: 'UTC' } }, '2026-09-09'), 'r1');
+  assert.equal(effectiveRoutineId({ ...base, queue: q }, '2026-09-08'), null);                                  // no reminder settings: UTC
+  assert.equal(effectiveRoutineId({ ...base, queue: q, reminder: { tz: 'Mars/Olympus' } }, '2026-09-08'), null); // unknown zone: UTC, no throw
+  // East of Greenwich the other way round: 23:00Z on the 8th is already the 9th in Tokyo.
+  const late = { ids: ['r1'], since: Date.UTC(2026, 8, 8, 23, 0, 0), label: 'W1' };
+  assert.equal(effectiveRoutineId({ ...base, queue: late, reminder: { tz: 'Asia/Tokyo' } }, '2026-09-08'), null);
+  assert.equal(effectiveRoutineId({ ...base, queue: late, reminder: { tz: 'Asia/Tokyo' } }, '2026-09-09'), 'r1');
+  // An explicit startsOn is never second-guessed.
+  assert.equal(effectiveRoutineId({ ...base, queue: { ...q, startsOn: '2026-09-10' }, reminder: { tz: 'America/New_York' } }, '2026-09-09'), null);
+});
