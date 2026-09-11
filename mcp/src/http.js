@@ -19,6 +19,10 @@ const SESSION_TTL_MS = 30 * 60 * 1000
 const MAX_SESSIONS = 100
 const oauthPending = new Map()
 const oauthCodes = new Map()
+// A browser or connector may retry a successful form POST when the redirect response is lost.
+// Keep only the exact, same-session result for the short OAuth lifetime; the pending nonce is
+// still consumed synchronously so concurrent requests cannot mint two grants.
+const oauthReplay = new Map()
 const OAUTH_TTL_MS = 5 * 60 * 1000
 const OAUTH_MAX_ENTRIES = 1000
 function pruneSessions() {
@@ -28,9 +32,9 @@ function pruneSessions() {
 setInterval(pruneSessions, 5 * 60 * 1000).unref()
 const scopes = {
   list_exercises: 'exercise:read', search_exercises: 'exercise:read', get_exercise: 'exercise:read',
-  list_routines: 'routine:read', get_routine: 'routine:read', get_week_plan: 'routine:read',
+  list_routines: 'routine:read', get_routine: 'routine:read', preview_session: 'routine:read', get_week_plan: 'routine:read',
   list_workouts: 'workout:read', get_workout: 'workout:read', get_bodyweight: 'bodyweight:read',
-  estimate_1rm: 'progress:read', muscle_balance: 'progress:read'
+  estimate_1rm: 'progress:read', muscle_balance: 'progress:read', create_workout: 'workout:write'
 }
 const OAUTH_SCOPES = [...new Set([...Object.values(scopes), 'routine:propose'])]
 
@@ -74,8 +78,10 @@ function pruneOAuth() {
   const cutoff = Date.now()
   for (const [key, item] of oauthPending) if (item.expiresAt <= cutoff) oauthPending.delete(key)
   for (const [key, item] of oauthCodes) if (item.expiresAt <= cutoff || item.used) oauthCodes.delete(key)
+  for (const [key, item] of oauthReplay) if (item.expiresAt <= cutoff) oauthReplay.delete(key)
   while (oauthPending.size > OAUTH_MAX_ENTRIES) oauthPending.delete(oauthPending.keys().next().value)
   while (oauthCodes.size > OAUTH_MAX_ENTRIES) oauthCodes.delete(oauthCodes.keys().next().value)
+  while (oauthReplay.size > OAUTH_MAX_ENTRIES) oauthReplay.delete(oauthReplay.keys().next().value)
 }
 setInterval(pruneOAuth, 60 * 1000).unref()
 
@@ -214,19 +220,119 @@ function unauthorized(res) {
   res.end(JSON.stringify({ error: 'invalid_token' }))
 }
 
-function makeServer(token) {
+function makeServer(token, grantedScopes = []) {
   const server = new McpServer({ name: 'opengym-remote', version: '1.0.0' })
   for (const tool of TOOLS) {
     const scope = scopes[tool.name]
     server.tool(tool.name, tool.description, tool.schema, async params => {
       try {
-        const snapshot = await apiJson(`/api/mcp/state?scope=${encodeURIComponent(scope)}`, token)
-        const result = tool.handler(params || {}, { state: snapshot.state, user: snapshot.user })
+        let snapshot
+        let remoteState
+        if (tool.name === 'preview_session') {
+          // Preview uses the same inputs as the app's session builder, but each remains
+          // independently scoped: routine plan, progression history/confirmed weights, and
+          // bodyweight. A routine-only grant must not receive a plausible but incomplete preview.
+          const [routine, progress, bodyweight] = await Promise.all([
+            apiJson('/api/mcp/state?scope=routine:read', token),
+            apiJson('/api/mcp/state?scope=progress:read', token),
+            apiJson('/api/mcp/state?scope=bodyweight:read', token)
+          ])
+          snapshot = routine
+          remoteState = routine.state
+            ? { ...routine.state, ...(progress.state || {}), ...(bodyweight.state || {}) }
+            : null
+        } else {
+          snapshot = await apiJson(`/api/mcp/state?scope=${encodeURIComponent(scope)}`, token)
+          remoteState = snapshot.state
+        }
+        const result = tool.handler(params || {}, { state: remoteState, user: snapshot.user })
         return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] }
       } catch (error) {
         return { isError: true, content: [{ type: 'text', text: `${error.code || 'ERROR'}: ${error.message}` }] }
       }
     })
+  }
+  if (grantedScopes.includes('workout:write')) {
+    const workoutSetSchema = z.object({
+      done: z.literal(true).describe('Completed set; create_workout records finished sets only.'),
+      w: z.number().finite().min(0).max(100000).optional().describe('Load in the profile unit.'),
+      r: z.number().int().min(0).max(10000).optional().describe('Completed repetitions.'),
+      sec: z.number().finite().min(0).max(86400).optional().describe('Completed hold seconds for time mode.'),
+      min: z.number().finite().min(0).max(100000).optional().describe('Completed minutes for cardio mode.'),
+      speed: z.number().finite().min(0).max(10000).optional().describe('Cardio speed.'),
+      rir: z.number().finite().min(0).max(10).optional(),
+      rpe: z.number().finite().min(0).max(10).optional(),
+      phase: z.enum(['work', 'warmup', 'warm-up', 'warm_up']).optional().describe('Work or warmup; legacy warmup spellings normalize to warmup.'),
+      warmup: z.boolean().optional().describe('Legacy warmup marker; normalized server-side.'),
+      type: z.literal('straight').optional().describe('Only standard straight sets are accepted; drops/clusters/sides are rejected.')
+    }).strict()
+    const workoutTargetSchema = z.object({
+      mode: z.enum(['reps', 'time', 'cardio']).optional(),
+      sets: z.number().int().min(0).max(100000).optional(),
+      reps: z.number().int().min(0).max(100000).optional(),
+      repsMin: z.number().int().min(0).max(100000).optional(),
+      repsMax: z.number().int().min(0).max(100000).optional(),
+      sec: z.number().finite().min(0).max(100000).optional(),
+      min: z.number().finite().min(0).max(100000).optional(),
+      speed: z.number().finite().min(0).max(100000).optional(),
+      weight: z.number().finite().min(0).max(100000).optional(),
+      inc: z.number().finite().min(0).max(100000).optional(),
+      bw: z.number().finite().min(0).max(100000).optional(),
+      restSec: z.number().finite().min(0).max(100000).optional(),
+      deloadFactor: z.number().finite().min(0).max(100000).optional(),
+      sg: z.string().max(120).optional(),
+      policy: z.string().max(120).optional(),
+      prog: z.string().max(120).optional(),
+      note: z.string().max(120).optional()
+    }).strict()
+    const workoutEntrySchema = z.object({
+      id: z.string().min(1).max(120).describe('Known built-in or custom exercise ID.'),
+      sets: z.array(workoutSetSchema).min(1).max(200),
+      target: workoutTargetSchema.optional(),
+      rid: z.string().min(1).max(120).optional().describe('Routine ID; must be present in workout.routineIds and the profile.'),
+      noProg: z.boolean().optional().describe('Exclude this entry from PR/progression calculations.'),
+      note: z.string().max(2000).optional(),
+      notePin: z.boolean().optional(),
+      topW: z.number().finite().min(0).max(100000).optional().describe('Legacy hint ignored; server derives topW from completed work sets.')
+    }).strict()
+    const completedWorkoutSchema = z.object({
+      id: z.string().min(1).max(120).optional().describe('Stable workout ID; omitted IDs are generated.'),
+      d: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).describe('Workout date (YYYY-MM-DD).'),
+      start: z.number().int().min(0).max(Number.MAX_SAFE_INTEGER).optional(),
+      end: z.number().int().min(0).max(Number.MAX_SAFE_INTEGER).optional(),
+      routineIds: z.array(z.string().min(1).max(120)).max(50).optional().describe('Profile routine IDs represented by entries.'),
+      routineId: z.string().min(1).max(120).nullable().optional().describe('Optional primary routine ID; must be in routineIds.'),
+      name: z.string().max(120).nullable().optional(),
+      bw: z.number().finite().min(0).max(1000).nullable().optional().describe('Bodyweight at the session.'),
+      note: z.string().max(2000).nullable().optional(),
+      entries: z.array(workoutEntrySchema).min(1).max(200),
+      backfill: z.boolean().optional().describe('Historical control only; not persisted, no PR/exWeights side effects, chronological insertion.'),
+      prs: z.array(z.string()).optional().describe('Legacy hint ignored; PRs are derived by the API.'),
+      vol: z.number().finite().min(0).optional().describe('Legacy hint ignored; volume is derived by the API.'),
+      excludeFromProgression: z.boolean().optional().describe('Legacy hint ignored unless all entries carry noProg.')
+    }).strict()
+    server.tool(
+      'create_workout',
+      'Record exactly one completed workout in the signed-in openGym profile. Use only known built-in/custom exercise IDs, standard reps/time/cardio targets, straight completed sets, and routine IDs that match each entry rid. The API derives topW, volume, PRs and progression, requires If-Match, and fetches a fresh revision before writing. Reuse the same request_id/Idempotency-Key only for an exact retry; a changed payload is rejected. backfill is a control-only historical insert: it is not persisted, claims no PR, and leaves exWeights unchanged.',
+      {
+        workout: completedWorkoutSchema,
+        request_id: z.string().min(1).max(200).describe('Stable retry key; reuse only with byte-identical workout payload.')
+      },
+      async ({ workout, request_id }) => {
+        try {
+          const snapshot = await apiJson('/api/mcp/state?scope=workout:write', token)
+          const result = await apiJson('/api/mcp/workouts', token, {
+            method: 'POST', headers: {
+              'Content-Type': 'application/json', 'If-Match': snapshot.revision,
+              'Idempotency-Key': request_id
+            }, body: JSON.stringify({ workout, request_id })
+          })
+          return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] }
+        } catch (error) {
+          return { isError: true, content: [{ type: 'text', text: `${error.code || 'ERROR'}: ${error.message}` }] }
+        }
+      }
+    )
   }
   server.tool(
     'propose_routine',
@@ -353,31 +459,98 @@ function authFormUrl(form) {
   return out
 }
 
+function sessionCookieValue(cookie) {
+  const values = name => String(cookie || '').split(';').flatMap(part => {
+    const index = part.indexOf('=')
+    return index >= 0 && part.slice(0, index).trim() === name ? [part.slice(index + 1).trim()] : []
+  })
+  const host = values('__Host-gymsid')
+  const selected = host.length ? host : values('gymsid')
+  if (!selected.length || selected.some(value => value !== selected[0])) return ''
+  return selected[0]
+}
+
+function oauthFormHash(form) {
+  const url = authFormUrl(form)
+  const scope = formScope(form.getAll('scope')).sort()
+  if (scope.length) url.searchParams.set('scope', scope.join(' '))
+  return base64urlDigest(JSON.stringify({ csrf: String(form.get('csrf') || ''), query: url.searchParams.toString() }))
+}
+
+function oauthResultResponse(res, result) {
+  if (result?.status === 302) {
+    res.writeHead(302, { Location: result.location, 'Cache-Control': 'no-store' })
+    return res.end()
+  }
+  return jsonResponse(res, result?.status || 500, result?.body || { error: 'authorization failed' })
+}
+
 async function handleOAuthAuthorizePost(req, res) {
   let form
   try { form = await readFormBody(req) }
   catch (error) { return jsonResponse(res, error.status || 400, { error: 'invalid_request' }) }
   const csrf = String(form.get('csrf') || '')
+  pruneOAuth()
+  const formHash = oauthFormHash(form)
+  const existingReplay = oauthReplay.get(csrf)
+  if (!oauthPending.has(csrf)) {
+    if (!existingReplay || existingReplay.expiresAt <= Date.now()) return jsonResponse(res, 400, { error: 'authorization request expired' })
+    if (existingReplay.formHash !== formHash) return jsonResponse(res, 400, { error: 'authorization request changed' })
+    const cookie = String(req.headers.cookie || '')
+    const sessionValue = sessionCookieValue(cookie)
+    if (!sessionValue) return jsonResponse(res, 401, { error: 'not signed in' })
+    let me
+    try { me = await apiCookie('/api/me', cookie) }
+    catch { return jsonResponse(res, 401, { error: 'not signed in' }) }
+    const sessionHash = base64urlDigest(sessionValue)
+    if ((existingReplay.uid && existingReplay.uid !== me.user?.id) || (existingReplay.sessionHash && existingReplay.sessionHash !== sessionHash)) {
+      return jsonResponse(res, 403, { error: 'session changed' })
+    }
+    const result = existingReplay.status === 'processing' ? await existingReplay.promise : existingReplay.result
+    if (existingReplay.sessionHash && existingReplay.sessionHash !== sessionHash) return jsonResponse(res, 403, { error: 'session changed' })
+    return oauthResultResponse(res, result)
+  }
   const pending = oauthPending.get(csrf)
-  if (!pending || pending.expiresAt <= Date.now()) return jsonResponse(res, 400, { error: 'authorization request expired' })
-  // Consume the browser nonce before any await. Two concurrent POSTs therefore
-  // cannot both pass the check and mint two grants. A failed grant creation is a
-  // terminal denial for this submission; retrying starts a fresh consent request.
+  if (!pending || pending.expiresAt <= Date.now()) {
+    oauthPending.delete(csrf)
+    return jsonResponse(res, 400, { error: 'authorization request expired' })
+  }
+  // Consume the browser nonce before any await. Two concurrent POSTs therefore cannot both pass
+  // the check and mint two grants. The bounded replay record lets a lost redirect be retried
+  // without weakening that one-time nonce or minting a second bearer grant.
   oauthPending.delete(csrf)
+  let resolveReplay
+  const replay = {
+    formHash, uid: pending.uid, sessionHash: null, status: 'processing', result: null,
+    expiresAt: Date.now() + OAUTH_TTL_MS,
+    promise: new Promise(resolve => { resolveReplay = resolve })
+  }
+  oauthReplay.set(csrf, replay)
+  const finish = result => {
+    if (replay.status === 'processing') {
+      replay.status = 'complete'
+      replay.result = result
+      resolveReplay(result)
+      if (result?.status !== 302) oauthReplay.delete(csrf)
+    }
+    return oauthResultResponse(res, result)
+  }
   let data
   try { data = await authorizationRequest(authFormUrl(form)) }
-  catch (error) { return jsonResponse(res, error.status || 400, { error: error.message || 'invalid_request' }) }
+  catch (error) { return finish({ status: error.status || 400, body: { error: error.message || 'invalid_request' } }) }
   if (data.clientId !== pending.clientId || data.redirectUri !== pending.redirectUri || data.challenge !== pending.challenge || data.resource !== pending.resource || data.state !== pending.state) {
-    return jsonResponse(res, 400, { error: 'authorization request changed' })
+    return finish({ status: 400, body: { error: 'authorization request changed' } })
   }
   const selected = formScope(form.getAll('scope'))
-  if (!selected.length || selected.some(scope => !pending.requested.includes(scope))) return jsonResponse(res, 400, { error: 'invalid_scope' })
+  if (!selected.length || selected.some(scope => !pending.requested.includes(scope))) return finish({ status: 400, body: { error: 'invalid_scope' } })
   const cookie = String(req.headers.cookie || '')
-  if (!cookie) return jsonResponse(res, 401, { error: 'not signed in' })
+  const sessionValue = sessionCookieValue(cookie)
+  if (!sessionValue) return finish({ status: 401, body: { error: 'not signed in' } })
   let me
   try { me = await apiCookie('/api/me', cookie) }
-  catch { return jsonResponse(res, 401, { error: 'not signed in' }) }
-  if (pending.uid && pending.uid !== me.user?.id) return jsonResponse(res, 403, { error: 'session changed' })
+  catch { return finish({ status: 401, body: { error: 'not signed in' } }) }
+  replay.sessionHash = base64urlDigest(sessionValue)
+  if (pending.uid && pending.uid !== me.user?.id) return finish({ status: 403, body: { error: 'session changed' } })
   let grant
   try {
     const requestedTtl = Number(process.env.OAUTH_GRANT_TTL_SECONDS || 2592000)
@@ -387,7 +560,7 @@ async function handleOAuthAuthorizePost(req, res) {
       body: JSON.stringify({ name: `OAuth: ${data.client.client_name}`, scopes: selected, audience: PUBLIC_URL, expires_in: expiresIn })
     })
   } catch (error) {
-    return jsonResponse(res, error.status || 502, { error: error.message || 'grant_failed' })
+    return finish({ status: error.status || 502, body: { error: error.message || 'grant_failed' } })
   }
   pruneOAuth()
   const code = crypto.randomBytes(32).toString('base64url')
@@ -399,8 +572,7 @@ async function handleOAuthAuthorizePost(req, res) {
   const redirect = new URL(data.redirectUri)
   redirect.searchParams.set('code', code)
   if (data.state) redirect.searchParams.set('state', data.state)
-  res.writeHead(302, { Location: redirect.toString(), 'Cache-Control': 'no-store' })
-  return res.end()
+  return finish({ status: 302, location: redirect.toString() })
 }
 
 async function handleOAuthToken(req, res) {
@@ -468,7 +640,7 @@ async function handle(req, res) {
       const body = await readJsonBody(req)
       if (body.method !== 'initialize') { res.writeHead(400); return res.end('initialize required') }
       let transport
-      const server = makeServer(token)
+      const server = makeServer(token, auth.grant?.scopes || [])
       transport = new StreamableHTTPServerTransport({
         sessionIdGenerator: () => crypto.randomUUID(),
         onsessioninitialized: id => sessions.set(id, { token, transport, uid: auth.user.id, lastSeen: Date.now() })

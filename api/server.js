@@ -189,6 +189,327 @@ function saveReceipts() {
 }
 saveReceipts.failures = Math.max(0, Math.floor(Number(process.env.OPENGYM_TEST_FAIL_RECEIPT_WRITES) || 0));
 const requestHash = body => crypto.createHash('sha256').update(JSON.stringify(body)).digest('hex');
+const canonicalValue = value => Array.isArray(value)
+  ? value.map(canonicalValue)
+  : value && typeof value === 'object'
+    ? Object.keys(value).sort().reduce((out, key) => { out[key] = canonicalValue(value[key]); return out; }, Object.create(null))
+    : value;
+const workoutRequestHash = workout => requestHash(canonicalValue(workout));
+
+/* A completed workout is the only MCP write surface. Keep the accepted shape deliberately
+ * smaller than the full profile PUT: callers can record a finished session, but cannot replace
+ * routines, custom-exercise metadata, receipts, or any derived history fields. Unknown fields are
+ * dropped rather than copied into the durable profile. */
+const WORKOUT_MAX_ENTRIES = 200;
+const WORKOUT_MAX_SETS = 200;
+const WORKOUT_MAX_NAME = 120;
+const WORKOUT_MAX_NOTE = 2000;
+const WORKOUT_MAX_ID = 120;
+const WORKOUT_MAX_TIMESTAMP = 9_007_199_254_740_991;
+const WORKOUT_MODES = new Set(['reps', 'time', 'cardio']);
+const WORKOUT_PHASES = new Set(['work', 'warmup']);
+const WORKOUT_SET_FIELDS = new Set(['done', 'w', 'r', 'sec', 'min', 'speed', 'rir', 'rpe', 'phase', 'warmup', 'type']);
+const WORKOUT_TARGET_NUMERIC = new Set(['sets', 'reps', 'repsMin', 'repsMax', 'sec', 'min', 'speed', 'weight', 'inc', 'bw', 'restSec', 'deloadFactor']);
+const WORKOUT_TARGET_TEXT = new Set(['mode', 'sg', 'policy', 'prog', 'note']);
+const WORKOUT_ENTRY_FIELDS = new Set(['id', 'sets', 'target', 'rid', 'noProg', 'note', 'notePin', 'topW']);
+const WORKOUT_FIELDS = new Set(['id', 'd', 'start', 'end', 'routineIds', 'routineId', 'name', 'bw', 'note', 'entries', 'prs', 'vol', 'backfill', 'excludeFromProgression']);
+
+function workoutDate(value) {
+  const text = String(value || '');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) return null;
+  const [year, month, day] = text.split('-').map(Number);
+  if (year < 1970 || year > 9999) return null;
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day ? text : null;
+}
+
+function workoutNumber(value, { min = Number.NEGATIVE_INFINITY, max = Number.POSITIVE_INFINITY, integer = false } = {}) {
+  if (typeof value === 'boolean' || value === '' || value == null) return null;
+  const number = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(number) || (integer && !Number.isSafeInteger(number)) || number < min || number > max) return null;
+  return number;
+}
+
+function workoutText(value, max) {
+  if (typeof value !== 'string') return null;
+  const text = value.trim();
+  return text && text.length <= max ? text : null;
+}
+
+function cleanWorkoutTarget(target) {
+  if (target == null) return null;
+  if (!target || typeof target !== 'object' || Array.isArray(target)) return undefined;
+  const clean = {};
+  for (const field of Object.keys(target)) {
+    if (!WORKOUT_TARGET_NUMERIC.has(field) && !WORKOUT_TARGET_TEXT.has(field)) return undefined;
+  }
+  for (const field of WORKOUT_TARGET_NUMERIC) {
+    if (target[field] == null) continue;
+    const value = workoutNumber(target[field], { min: 0, max: 100000, integer: ['sets', 'reps', 'repsMin', 'repsMax'].includes(field) });
+    if (value == null) return undefined;
+    clean[field] = value;
+  }
+  for (const field of WORKOUT_TARGET_TEXT) {
+    if (target[field] == null) continue;
+    const value = workoutText(target[field], 120);
+    if (value == null) return undefined;
+    if (field === 'mode') {
+      const mode = value.toLowerCase() === 'amrap' ? 'reps' : value.toLowerCase();
+      if (!WORKOUT_MODES.has(mode)) return undefined;
+      clean.mode = mode;
+    } else clean[field] = value;
+  }
+  return clean;
+}
+
+function cleanWorkoutSet(set) {
+  if (!set || typeof set !== 'object' || Array.isArray(set) || set.done !== true) return undefined;
+  if (Object.keys(set).some(field => !WORKOUT_SET_FIELDS.has(field))) return undefined;
+  if (set.type != null && String(set.type).trim().toLowerCase() !== 'straight') return undefined;
+  const clean = { done: true };
+  const numeric = new Map([
+    ['w', [0, 100000]], ['r', [0, 10000]], ['sec', [0, 86400]], ['min', [0, 100000]],
+    ['speed', [0, 10000]], ['rir', [0, 10]], ['rpe', [0, 10]]
+  ]);
+  for (const [field, [min, max]] of numeric) {
+    if (set[field] == null) continue;
+    const value = workoutNumber(set[field], { min, max, integer: field === 'r' });
+    if (value == null) return undefined;
+    clean[field] = value;
+  }
+  if (set.phase != null && set.phase !== '') {
+    const value = workoutText(set.phase, 40);
+    if (value == null) return undefined;
+    const phase = value.toLowerCase().replace(/[-_]/g, '');
+    if (!WORKOUT_PHASES.has(phase)) return undefined;
+    clean.phase = phase;
+  } else if (set.warmup === true) clean.phase = 'warmup';
+  if (set.warmup != null && typeof set.warmup !== 'boolean') return undefined;
+  if (set.type != null) clean.type = 'straight';
+  return clean;
+}
+
+function workoutMode(entry, sets) {
+  const targetMode = entry?.mode || entry?.target?.mode;
+  const explicit = targetMode == null ? null : String(targetMode).trim().toLowerCase();
+  const normalized = explicit === 'amrap' ? 'reps' : explicit;
+  if (normalized && !WORKOUT_MODES.has(normalized)) return null;
+  const observed = sets.map(set => {
+    if (set.min != null || set.speed != null) return 'cardio';
+    if (set.sec != null) return 'time';
+    return 'reps';
+  });
+  const mode = normalized || observed[0] || 'reps';
+  return observed.some(value => value !== mode) ? null : mode;
+}
+
+function isWorkoutWarmup(set) {
+  const phase = typeof set?.phase === 'string' ? set.phase.trim().toLowerCase().replace(/[-_]/g, '') : '';
+  return phase === 'warmup' || set?.warmup === true;
+}
+
+function completedWorkoutMetrics(entry, mode) {
+  const completed = (entry.sets || []).filter(set => set.done === true && !isWorkoutWarmup(set));
+  const weights = completed.map(set => Number(set.w)).filter(Number.isFinite);
+  const topW = weights.length ? Math.max(...weights) : null;
+  const vol = mode === 'reps'
+    ? completed.reduce((total, set) => total + (Number(set.w) || 0) * (Number(set.r) || 0), 0)
+    : 0;
+  return { topW: topW && topW > 0 ? topW : null, vol };
+}
+
+// Keep the history Best metric in lock-step with frontend bestWeightForEntry: a completed reps
+// row is authoritative for a mixed entry, while timed/cardio rows are used only when no reps
+// row exists.  Legacy topW is a guarded fallback for old all-reps records with no usable rows.
+function storedModeForSet(set, target = {}) {
+  const value = set && typeof set.mode === 'string' ? set.mode.trim().toLowerCase() : '';
+  if (value === 'amrap' || value === 'reps' || value === 'time' || value === 'cardio') return value === 'amrap' ? 'reps' : value;
+  const targetMode = target && typeof target.mode === 'string' ? target.mode.trim().toLowerCase() : '';
+  if (targetMode === 'amrap' || targetMode === 'reps' || targetMode === 'time' || targetMode === 'cardio') return targetMode === 'amrap' ? 'reps' : targetMode;
+  if (set && (set.min != null || set.speed != null)) return 'cardio';
+  if (set && (set.sec != null || set.seconds != null || set.durationSec != null)) return 'time';
+  if (set && (set.r != null || set.reps != null || set.actualReps != null)) return 'reps';
+  return 'reps';
+}
+
+function storedEntryTopWeight(entry) {
+  if (!entry || typeof entry !== 'object' || !Array.isArray(entry.sets)) return 0;
+  const target = entry.target && typeof entry.target === 'object' ? entry.target : entry;
+  const work = entry.sets.filter(set => set && set.done === true && !isWorkoutWarmup(set));
+  const repsRows = work.filter(set => storedModeForSet(set, target) === 'reps');
+  const completed = repsRows.length ? repsRows : work;
+  const weights = completed.map(set => Number(set.w)).filter(Number.isFinite);
+  if (weights.length) return Math.max(0, ...weights);
+  const hasNonRepsWorkRow = work.some(set => storedModeForSet(set, target) !== 'reps');
+  const parentMode = storedModeForSet({}, target);
+  if (!entry.sets.some(isWorkoutWarmup) && parentMode === 'reps' && !hasNonRepsWorkRow) {
+    const legacy = Number(entry.topW);
+    if (Number.isFinite(legacy) && legacy > 0) return legacy;
+  }
+  return 0;
+}
+
+function bestStoredWeight(state, exerciseId) {
+  let best = 0;
+  for (const workout of Array.isArray(state?.workouts) ? state.workouts : []) {
+    if (!workout || !Array.isArray(workout.entries)) continue;
+    for (const entry of workout.entries) {
+      if (entry?.id === exerciseId) best = Math.max(best, storedEntryTopWeight(entry));
+    }
+  }
+  return best;
+}
+
+// Completed custom-exercise history must remain renderable after the catalogue row is deleted.
+// This mirrors frontend muscles.js locally because the API image is intentionally copied only
+// with the exercise dataset; no frontend dependency is added to the Docker graph.
+const SNAPSHOT_ALIAS = {
+  abs: 'abs', pectorals: 'chest', biceps: 'biceps', glutes: 'gluteal', delts: 'deltoids', triceps: 'triceps',
+  'upper back': 'upper-back', lats: 'upper-back', calves: 'calves', quads: 'quadriceps', forearms: 'forearm',
+  hamstrings: 'hamstring', spine: 'lower-back', traps: 'trapezius', adductors: 'adductors',
+  'serratus anterior': 'serratus', shoulders: 'deltoids', deltoids: 'deltoids', 'rear deltoids': 'deltoids',
+  'rotator cuff': 'deltoids', quadriceps: 'quadriceps', core: 'abs', abdominals: 'abs', 'lower abs': 'abs', chest: 'chest',
+  'upper chest': 'chest', 'hip flexors': 'hip-flexors', obliques: 'obliques', 'lower back': 'lower-back',
+  rhomboids: 'upper-back', trapezius: 'trapezius', back: 'upper-back', 'latissimus dorsi': 'upper-back',
+  brachialis: 'biceps', soleus: 'calves', shins: 'tibialis', wrists: 'forearm', 'wrist flexors': 'forearm',
+  'wrist extensors': 'forearm', 'grip muscles': 'forearm', groin: 'adductors', 'inner thighs': 'adductors'
+};
+const SNAPSHOT_MUSCLES = new Set(['trapezius', 'deltoids', 'chest', 'upper-back', 'serratus', 'biceps', 'triceps', 'forearm', 'abs', 'obliques', 'lower-back', 'gluteal', 'quadriceps', 'hamstring', 'adductors', 'hip-flexors', 'calves', 'tibialis']);
+const SNAPSHOT_BODYPART = {
+  chest: { chest: 1 }, back: { 'upper-back': 0.75, 'lower-back': 0.25 }, shoulders: { deltoids: 1 },
+  'upper arms': { biceps: 0.5, triceps: 0.5 }, 'lower arms': { forearm: 1 }, waist: { abs: 0.7, obliques: 0.3 },
+  'upper legs': { quadriceps: 0.4, hamstring: 0.35, gluteal: 0.25 }, 'lower legs': { calves: 0.8, tibialis: 0.2 },
+  neck: { trapezius: 1 }, 'full body': { chest: 0.2, 'upper-back': 0.2, gluteal: 0.2, quadriceps: 0.2, hamstring: 0.1, abs: 0.1 }, cardio: {}
+};
+const SNAPSHOT_LIST = value => Array.isArray(value) ? value : value == null || value === '' ? [] : [value];
+const snapshotMuscle = value => {
+  const name = String(value || '').toLowerCase().trim();
+  return SNAPSHOT_MUSCLES.has(name) ? name : (SNAPSHOT_ALIAS[name] || null);
+};
+const snapshotUnique = values => [...new Set(SNAPSHOT_LIST(values).map(snapshotMuscle).filter(Boolean))];
+function customExerciseSnapshot(exercise) {
+  if (!exercise || typeof exercise !== 'object') return null;
+  const out = {};
+  if (typeof exercise.n === 'string' && exercise.n.trim()) out.n = exercise.n.trim().slice(0, 200);
+  if (typeof exercise.bp === 'string' && exercise.bp.trim()) out.bp = exercise.bp.trim().slice(0, 80);
+  const primaries = snapshotUnique(exercise.primaries ?? exercise.primaryMuscles ?? exercise.primary);
+  const secondaries = snapshotUnique(exercise.secondaries ?? exercise.secondaryMuscles ?? exercise.secondary).filter(m => !primaries.includes(m));
+  const explicitGroups = snapshotUnique(exercise.muscleGroups ?? exercise.muscles ?? exercise.targetMuscles);
+  const groups = primaries.length || secondaries.length ? [...new Set([...primaries, ...secondaries])] : explicitGroups;
+  const weights = {};
+  if (exercise.muscleWeights && typeof exercise.muscleWeights === 'object' && !Array.isArray(exercise.muscleWeights)) {
+    for (const [key, value] of Object.entries(exercise.muscleWeights)) {
+      const slug = snapshotMuscle(key);
+      const number = Number(value);
+      if (slug && Number.isFinite(number) && number > 0 && number <= 1 && weights[slug] == null) weights[slug] = number;
+    }
+  }
+  if (!Object.keys(weights).length) {
+    primaries.forEach(m => { weights[m] = 1; });
+    secondaries.forEach(m => { if (weights[m] == null) weights[m] = 0.4; });
+  }
+  if (!Object.keys(weights).length && groups.length) groups.forEach(m => { weights[m] = 1; });
+  if (!Object.keys(weights).length && out.bp) Object.assign(weights, SNAPSHOT_BODYPART[out.bp] || {});
+  if (primaries.length) out.primaries = primaries;
+  if (secondaries.length) out.secondaries = secondaries;
+  if (groups.length) out.muscleGroups = groups;
+  if (Object.keys(weights).length) out.muscleWeights = weights;
+  return out;
+}
+
+function insertWorkoutChronological(workouts, workout) {
+  const start = Number(workout.start) || 0;
+  let index = workouts.length;
+  while (index > 0) {
+    const prior = workouts[index - 1] || {};
+    const priorStart = Number(prior.start) || 0;
+    if (String(prior.d || '') < workout.d || (String(prior.d || '') === workout.d && priorStart <= start)) break;
+    index--;
+  }
+  return [...workouts.slice(0, index), workout, ...workouts.slice(index)];
+}
+
+function cleanCompletedWorkout(input, state) {
+  if (!input || typeof input !== 'object' || Array.isArray(input)) return { error: 'workout is invalid' };
+  if (Object.keys(input).some(field => !WORKOUT_FIELDS.has(field))) return { error: 'workout contains unsupported fields' };
+  if (input.backfill != null && typeof input.backfill !== 'boolean') return { error: 'workout backfill flag is invalid' };
+  const id = input.id == null ? crypto.randomBytes(12).toString('base64url') : String(input.id);
+  if (!isSafeId(id) || id.length > WORKOUT_MAX_ID) return { error: 'workout id is invalid' };
+  const date = workoutDate(input.d);
+  if (!date) return { error: 'workout date is invalid' };
+  if (!Array.isArray(input.entries) || !input.entries.length || input.entries.length > WORKOUT_MAX_ENTRIES) return { error: 'workout entries are invalid' };
+  const customExercises = new Map(Array.isArray(state?.customEx) ? state.customEx.map(ex => [String(ex?.id || ''), ex]) : []);
+  const customIds = new Set(customExercises.keys());
+  const entries = [];
+  for (const entry of input.entries) {
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry) || Object.keys(entry).some(field => !WORKOUT_ENTRY_FIELDS.has(field)) || !isSafeId(entry.id) || (!EXDB.some(ex => ex.id === String(entry.id)) && !customIds.has(String(entry.id)))) {
+      return { error: 'workout contains an unknown exercise' };
+    }
+    const entryId = String(entry.id);
+    if (!Array.isArray(entry.sets) || !entry.sets.length || entry.sets.length > WORKOUT_MAX_SETS) return { error: 'workout entries are invalid' };
+    const sets = [];
+    for (const set of entry.sets) {
+      const clean = cleanWorkoutSet(set);
+      if (!clean) return { error: 'workout contains an invalid completed set' };
+      sets.push(clean);
+    }
+    const target = cleanWorkoutTarget(entry.target);
+    if (target === undefined) return { error: 'workout target is invalid' };
+    const mode = workoutMode({ ...entry, target }, sets);
+    if (!mode) return { error: 'workout entry mode is invalid' };
+    const metrics = completedWorkoutMetrics({ sets }, mode);
+    const cleanEntry = { id: entryId, sets, topW: metrics.topW };
+    const snapshot = customExerciseSnapshot(customExercises.get(entryId));
+    if (snapshot && Object.keys(snapshot).length) cleanEntry.muscleSnapshot = snapshot;
+    if (target) cleanEntry.target = target;
+    if (entry.rid != null) {
+      if (!isSafeId(entry.rid)) return { error: 'workout routine id is invalid' };
+      cleanEntry.rid = String(entry.rid);
+    }
+    if (entry.noProg === true) cleanEntry.noProg = true;
+    if (entry.note != null) {
+      const note = workoutText(entry.note, WORKOUT_MAX_NOTE);
+      if (note == null) return { error: 'workout note is invalid' };
+      cleanEntry.note = note;
+      if (entry.notePin === true) cleanEntry.notePin = true;
+    }
+    entries.push(cleanEntry);
+  }
+  const dateStart = Date.parse(`${date}T12:00:00.000Z`);
+  const start = input.start == null ? dateStart : workoutNumber(input.start, { min: 0, max: WORKOUT_MAX_TIMESTAMP, integer: true });
+  const end = input.end == null ? start : workoutNumber(input.end, { min: 0, max: WORKOUT_MAX_TIMESTAMP, integer: true });
+  if (start == null || end == null || end < start) return { error: 'workout timestamps are invalid' };
+  const routineIds = input.routineIds == null ? [] : input.routineIds;
+  if (!Array.isArray(routineIds) || routineIds.length > 50 || routineIds.some(value => !isSafeId(value))) return { error: 'workout routine ids are invalid' };
+  const routineSet = new Set(Array.isArray(state?.routines) ? state.routines.map(routine => String(routine?.id || '')) : []);
+  if (routineIds.some(value => !routineSet.has(String(value)))) return { error: 'workout routine ids are invalid' };
+  const name = input.name == null ? null : workoutText(input.name, WORKOUT_MAX_NAME);
+  if (input.name != null && name == null) return { error: 'workout name is invalid' };
+  const bw = input.bw == null ? null : workoutNumber(input.bw, { min: 0, max: 1000 });
+  if (input.bw != null && bw == null) return { error: 'workout bodyweight is invalid' };
+  const note = input.note == null ? null : workoutText(input.note, WORKOUT_MAX_NOTE);
+  if (input.note != null && note == null) return { error: 'workout note is invalid' };
+  const routineId = input.routineId == null ? (routineIds[0] || null) : input.routineId;
+  if (routineId != null && (!isSafeId(routineId) || !routineSet.has(String(routineId)) || !routineIds.some(value => String(value) === String(routineId)))) return { error: 'workout routine id is invalid' };
+  for (const entry of entries) {
+    if (entry.rid != null && (!routineSet.has(entry.rid) || !routineIds.some(value => String(value) === entry.rid))) return { error: 'workout routine id is invalid' };
+  }
+  const metrics = entries.reduce((out, entry) => {
+    const mode = workoutMode(entry, entry.sets);
+    const current = completedWorkoutMetrics(entry, mode || 'reps');
+    out.vol += current.vol;
+    return out;
+  }, { vol: 0 });
+  const allNoProg = entries.length > 0 && entries.every(entry => entry.noProg === true);
+  return {
+    workout: {
+      id, d: date, ...(start != null ? { start } : {}), ...(end != null ? { end } : {}),
+      routineIds: routineIds.map(String), routineId: routineId == null ? null : String(routineId),
+      name, bw, entries, prs: [], vol: metrics.vol,
+      ...(allNoProg ? { excludeFromProgression: true } : {}), ...(note ? { note } : {})
+    }, backfill: input.backfill === true
+  };
+}
 
 // PUT /api/data updates two durable files (the profile and the idempotency receipt). A process
 // crash between those renames must not turn a retried request into a false 412 or a duplicate
@@ -236,7 +557,7 @@ function recoverStateTxn(uid) {
 
 /* ---------- scoped MCP grants + private assets ---------- */
 const grantFile = path.join(DATA, 'mcp-grants.json');
-const GRANT_SCOPES = new Set(['exercise:read', 'routine:read', 'workout:read', 'bodyweight:read', 'progress:read', 'routine:propose']);
+const GRANT_SCOPES = new Set(['exercise:read', 'routine:read', 'workout:read', 'bodyweight:read', 'progress:read', 'workout:write', 'routine:propose']);
 const MAX_PROPOSALS = 500;
 let grants = { grants: [] };
 let grantsError = null;
@@ -372,7 +693,7 @@ function registrationMetadata(body) {
   const tokenEndpointAuthMethod = String(body?.token_endpoint_auth_method || 'none');
   if (tokenEndpointAuthMethod !== 'none') return { error: 'public_pkce_client_required' };
   const requested = String(body?.scope || '').trim().split(/\s+/).filter(Boolean);
-  const scope = [...new Set(requested.length ? requested : ['exercise:read', 'routine:read', 'workout:read', 'progress:read'])];
+  const scope = [...new Set(requested.length ? requested : ['exercise:read', 'routine:read', 'workout:read', 'bodyweight:read', 'progress:read', 'workout:write'])];
   if (!scope.length || scope.some(s => !GRANT_SCOPES.has(s))) return { error: 'invalid_scope' };
   return {
     clientId: crypto.randomBytes(18).toString('base64url'),
@@ -1136,7 +1457,7 @@ const routes = {
     if (scope === 'routine:read') Object.assign(state, { routines: S.routines || [], week: S.week || {}, dayPlan: S.dayPlan || {}, customEx: S.customEx || [] });
     if (scope === 'workout:read') state.workouts = S.workouts || [];
     if (scope === 'bodyweight:read') Object.assign(state, { bodyweight: S.bodyweight || [], targetW: S.targetW || null });
-    if (scope === 'progress:read') Object.assign(state, { workouts: S.workouts || [], routines: S.routines || [], customEx: S.customEx || [] });
+    if (scope === 'progress:read') Object.assign(state, { workouts: S.workouts || [], routines: S.routines || [], customEx: S.customEx || [], exWeights: S.exWeights || {} });
     json(res, 200, { state, revision: record.etag });
   },
 
@@ -1430,6 +1751,90 @@ const routes = {
         reportImageStats();
         json(res, 201, { asset: { id, mime: image.mime, size: image.bytes.length, sha256: hash } });
       } catch (e) { storageFailure(res, e); }
+    });
+  },
+
+  // The remote MCP writer can append one completed workout, but it cannot replace the profile.
+  // The API remains the sole writer: the bearer grant selects the user, the revision precondition
+  // protects a phone edit, and the journal/receipt pair makes retries safe across a crash.
+  'POST /api/mcp/workouts': async (req, res) => {
+    if (!MCP_ENABLED) return json(res, 404, { error: 'feature disabled' });
+    if (!requireWritable(res) || receiptsError) return receiptsError ? storageFailure(res, receiptsError) : undefined;
+    const grant = requireGrant(req, res, 'workout:write');
+    if (!grant) return;
+    const expected = normalizeIfMatch(req.headers['if-match']);
+    if (!expected) return json(res, 428, { error: 'If-Match precondition required' });
+    const key = String(req.headers['idempotency-key'] || '').trim();
+    if (!key || key.length > 200) return json(res, 400, { error: 'Idempotency-Key required' });
+    let body;
+    try { body = await readBody(req, 256 * 1024); }
+    catch { return json(res, 400, { error: 'bad json or workout too large' }); }
+    if (!body || typeof body !== 'object' || Array.isArray(body) || !body.workout || typeof body.workout !== 'object' || Array.isArray(body.workout)) {
+      return json(res, 400, { error: 'workout is required' });
+    }
+    const hash = workoutRequestHash(body.workout);
+    return withStateLock(grant.uid, async () => {
+      let current;
+      try { current = readStateRecord(grant.uid); } catch (e) { return storageFailure(res, e); }
+      const receiptKey = `mcp-workout:${key}`;
+      const prior = receipts.entries.find(e => e.uid === grant.uid && e.key === receiptKey);
+      if (prior) {
+        if (prior.hash !== hash) return json(res, 409, { error: 'idempotency key was already used for another request' });
+        const priorWorkout = (current.state?.workouts || []).find(workout => workout.id === prior.resultId);
+        if (!priorWorkout) return storageFailure(res, new StorageCorruptError(receiptFile, new Error('workout receipt target is missing')));
+        return json(res, 200, { workout: priorWorkout, revision: current.etag }, { ETag: current.etag });
+      }
+      if (expected !== current.etag) return json(res, 412, { error: 'stale revision', revision: current.etag }, { ETag: current.etag });
+      const source = current.state || { unit: 'kg', routines: [], week: {}, dayPlan: {}, customEx: [], workouts: [], bodyweight: [] };
+      if (source.workouts != null && !Array.isArray(source.workouts)) return storageFailure(res, new StorageCorruptError(stateFile(grant.uid), new Error('workouts is not an array')));
+      if (source.exWeights != null && (!source.exWeights || typeof source.exWeights !== 'object' || Array.isArray(source.exWeights))) return storageFailure(res, new StorageCorruptError(stateFile(grant.uid), new Error('exWeights is not an object')));
+      const priorTs = source._ts == null ? 0 : source._ts;
+      if (typeof priorTs !== 'number' || !Number.isSafeInteger(priorTs) || priorTs < 0 || priorTs >= Number.MAX_SAFE_INTEGER) {
+        return storageFailure(res, new StorageCorruptError(stateFile(grant.uid), new Error('state timestamp is invalid')));
+      }
+      const cleaned = cleanCompletedWorkout(body.workout, source);
+      if (cleaned.error) return json(res, 400, { error: cleaned.error });
+      if ((source.workouts || []).some(workout => workout && workout.id === cleaned.workout.id)) return json(res, 409, { error: 'workout id already exists' });
+      const next = JSON.parse(JSON.stringify(source));
+      const persistedWorkout = cleaned.workout;
+      const priorWorkouts = Array.isArray(next.workouts) ? next.workouts : [];
+      if (cleaned.backfill) {
+        // Historical entries are filed by the same date/start ordering the app uses. The control
+        // flag is intentionally not copied onto the persisted workout.
+        persistedWorkout.prs = [];
+        next.workouts = insertWorkoutChronological(priorWorkouts, persistedWorkout);
+      } else {
+        const prs = [];
+        for (const entry of persistedWorkout.entries) {
+          const weight = Number(entry.topW);
+          if (weight > 0 && weight > bestStoredWeight(source, entry.id)) prs.push(entry.id);
+          if (weight > 0) {
+            const currentWeight = Number(next.exWeights?.[entry.id]?.w);
+            if (!Number.isFinite(currentWeight) || weight > currentWeight) {
+              next.exWeights = { ...(next.exWeights || {}), [entry.id]: { w: weight, d: persistedWorkout.d } };
+            }
+          }
+        }
+        persistedWorkout.prs = prs;
+        next.workouts = [...priorWorkouts, persistedWorkout];
+      }
+      const nextTs = Math.max(Date.now(), priorTs + 1);
+      if (!Number.isSafeInteger(nextTs) || nextTs < 0) return storageFailure(res, new StorageCorruptError(stateFile(grant.uid), new Error('state timestamp cannot advance')));
+      next._ts = nextTs;
+      try {
+        const text = JSON.stringify(next);
+        const revision = etagFor(text);
+        const receipt = {
+          uid: grant.uid, key: receiptKey, hash, stateHash: requestHash(next), revision,
+          tsValue: next._ts || null, ts: Date.now(), resultId: cleaned.workout.id
+        };
+        durableAtomicWrite(stateTxnFile(grant.uid), JSON.stringify({ state: next, receipt }), 0o600);
+        durableStateWrite(stateFile(grant.uid), text);
+        receipts.entries.push(receipt);
+        saveReceipts();
+        durableUnlink(stateTxnFile(grant.uid));
+        return json(res, 201, { workout: cleaned.workout, revision }, { ETag: revision });
+      } catch (e) { return storageFailure(res, e); }
     });
   },
 

@@ -19,7 +19,7 @@ import { policyFor } from '../../frontend/src/lib/progression.js'
 import { buildSessionEntries } from '../../frontend/src/lib/session-start.js'
 
 /* ---------- helpers ---------- */
-const stateOf = context => context?.state ?? getState()
+const stateOf = context => context && Object.prototype.hasOwnProperty.call(context, 'state') ? context.state : getState()
 const exFor = (id, S) => (S?.customEx || []).find(e => e.id === id) || exOr(id)
 
 // A custom exercise lives in S.customEx and is merged into EXIDX by registerCustom() at
@@ -496,8 +496,8 @@ export const previewSession = {
     routine_id: z.string().min(1).optional().describe('Routine to preview. Defaults to the routine scheduled for `date`.'),
     date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().describe('Date the session would be started on, YYYY-MM-DD. Affects which routine is scheduled and any one-off day override. Defaults to today.')
   },
-  handler: ({ routine_id, date }) => {
-    const S = getState()
+  handler: ({ routine_id, date }, context) => {
+    const S = stateOf(context)
     if (!S) return noState()
     const now = new Date()
     const iso = date || (now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0'))

@@ -104,4 +104,25 @@ describe('saved workout state sync and restore', () => {
     expect(useStore.getState().S.routines.map(r => r.id)).toEqual(['local'])
     expect(api).toHaveBeenCalledTimes(1)
   })
+
+  it('keeps an MCP-created workout when pulling with no acknowledged sync base', async () => {
+    const local = { ...clone(DEF), _ts: 50, routines: [routine('local')], workouts: [] }
+    const remote = {
+      ...clone(DEF), _ts: 60, routines: [routine('local')],
+      workouts: [{ id: 'mcp-workout', d: '2026-09-10', entries: [] }]
+    }
+    localStorage.removeItem('gym_sync_base_v1')
+    localStorage.setItem('gym_sync_meta_v1', JSON.stringify({ revision: '"remote"' }))
+    useStore.setState({ S: local, user: { id: 'user-1' }, ready: true })
+    api.mockImplementation(async (path, options = {}) => {
+      if (path === '/api/data' && options.method === 'PUT') return { revision: '"overwritten"' }
+      if (path === '/api/data') return { state: remote, revision: '"remote"' }
+      throw new Error(`unexpected request ${path}`)
+    })
+
+    await useStore.getState().pullState()
+
+    expect(useStore.getState().S.workouts.some(workout => workout.id === 'mcp-workout')).toBe(true)
+    expect(api.mock.calls.some(([, options]) => options?.method === 'PUT')).toBe(false)
+  })
 })
