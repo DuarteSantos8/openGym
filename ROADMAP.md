@@ -76,7 +76,7 @@ it goes in one MR at a time, each rebased and tested on gym-test before the next
 - Resistance bands treated like bodyweight in config and progression (#39)
 - Exercise history and a progress chart from inside the workout (#43) — reachable from the ⋯ menu
 - Pictures for custom exercises: pick from the catalogue, later upload (#30)
-- Percentage / training-max programming (5/3/1 style) on top of the policy interface
+- Percentage / training-max programming (5/3/1 style) on top of the policy interface (!136)
 - Rest-pause and drop sets configurable in the routine editor, with adjustable rest (#17)
 - Catalogue cleanup: exercises that should not carry weight, incline and interval fields for
   cardio (#46); timers for planks and outdoor cardio are already there, document them (#45)

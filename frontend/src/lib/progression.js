@@ -20,12 +20,13 @@ import { modeOf, repStep, rerampWarmups, isBw, isPerSide, entryExcluded } from '
 import { EXIDX } from './exercises.js'
 import { isWarmupRow } from './workout-model.js'
 import { normalizeRepRange } from './rep-range.js'
+import { best1RM } from './onerm.js'
 
-export const POLICIES = ['off', 'linear', 'greyskull', 'double', 'time']
+export const POLICIES = ['off', 'linear', 'greyskull', 'double', 'time', 'wave']
 
 // Which policies can sensibly drive which logging mode.
 export const POLICIES_FOR = {
-  reps: ['off', 'linear', 'greyskull', 'double'],
+  reps: ['off', 'linear', 'greyskull', 'double', 'wave'],
   time: ['off', 'time'],
   cardio: ['off']
 }
@@ -35,14 +36,16 @@ export const POLICY_NAME = {
   linear: 'Linear progression',
   greyskull: 'Greyskull LP',
   double: 'Double progression',
-  time: 'Add time'
+  time: 'Add time',
+  wave: 'Percentage wave'
 }
 export const POLICY_DESC = {
   off: 'Targets stay where you set them.',
   linear: 'Hit every rep in every set and the weight goes up. Repeated misses trigger a deload.',
   greyskull: 'Two straight sets plus a final set taken to failure. Beat the target on that set and the weight goes up — double if you double the reps. One failure resets 10 %.',
   double: 'Work up through a rep range at the same weight. Reach the top of the range in every set and the weight goes up, reps back to the bottom.',
-  time: 'Hold every set for the full duration and the target goes up.'
+  time: 'Hold every set for the full duration and the target goes up.',
+  wave: 'Every set is a percentage of a training max you set yourself, run as a cycle of stages. Finish the last stage and the training max goes up; miss one and you run it again.'
 }
 
 // The Epley target is a soft objective mapped onto the exercise's real load grid. Keep the
@@ -129,6 +132,182 @@ export function deloadTo(cur, step, factor = DELOAD_FACTOR) {
   return Math.max(step, next)
 }
 
+/* -------------------------------- percentage waves -------------------------------- */
+// A "wave" is a stored list of stages; each stage is an ordered list of SetBlocks — a block is
+// a prescriptive group of identical working sets given as `sets × reps @ pct` of a base (a
+// training max, or the estimated 1RM). 5/3/1 is the template this ships with, but nothing below
+// knows about Wendler: any scheme that is "a sequence of stages, a fixed base bump when the
+// cycle closes, repeat the stage on a miss" is expressible as data — DUP, hold stages, block
+// peaking — which is why this is one policy and not five.
+//
+// A block's `role` is never stored: it is derived every time a stage is normalised (the last
+// non-warmup block is the stage's `anchor`, everything else is `required`). That keeps the
+// stage-matching signal below explicit — an anchor, not an inferred "heaviest percentage" —
+// without needing an editor UI for it yet; nothing currently writes any other role.
+export const DEFAULT_WAVE = [
+  { blocks: [{ pct: 65, reps: 5 }, { pct: 75, reps: 5 }, { pct: 85, reps: 5 }] },
+  { blocks: [{ pct: 70, reps: 3 }, { pct: 80, reps: 3 }, { pct: 90, reps: 3 }] },
+  { blocks: [{ pct: 75, reps: 5 }, { pct: 85, reps: 3 }, { pct: 95, reps: 1 }] },
+  { deload: true, blocks: [{ pct: 40, reps: 5 }, { pct: 50, reps: 5 }, { pct: 60, reps: 5 }] }
+]
+
+// A percentage above the base is a typo, not a program; below zero is not a set at all.
+const clampPct = v => Math.min(100, Math.max(0, Number(v) || 0))
+
+// One stage, normalised: every block gets a stable id (kept if the source already had one — a
+// block's id is written once, by whatever creates it, and never regenerated; this positional
+// fallback only fires for a stage that predates ids, i.e. the built-in template), a set count, a
+// rep count, a clamped percentage, a type, and exactly one `role: 'anchor'`.
+function normalizeStage(w, si) {
+  const blocks = (Array.isArray(w?.blocks) ? w.blocks : [])
+    .map((b, bi) => ({
+      id: b?.id || `s${si}b${bi}`,
+      sets: Math.max(1, Math.round(Number(b?.sets)) || 1),
+      reps: Math.max(1, Math.round(Number(b?.reps)) || 1),
+      pct: clampPct(b?.pct),
+      type: b?.type === 'warmup' || b?.type === 'backoff' ? b.type : 'work'
+    }))
+    .filter(b => b.pct > 0)
+  if (!blocks.length) return null
+  const workBlocks = blocks.filter(b => b.type !== 'warmup')
+  const anchor = workBlocks.length ? workBlocks[workBlocks.length - 1] : blocks[blocks.length - 1]
+  blocks.forEach(b => { b.role = b === anchor ? 'anchor' : 'required' })
+  return {
+    id: w?.id || `s${si}`,
+    ...(w?.deload ? { deload: true } : {}),
+    repeat: Math.max(1, Math.round(Number(w?.repeat)) || 1),
+    blocks
+  }
+}
+
+/**
+ * The wave in force for one exercise, normalised. A config with no wave — or one a hand-edited
+ * plan file left unusable — falls back to the template rather than prescribing an empty cycle,
+ * so the policy selector never has to write the template out to make the engine work.
+ */
+export function waveOf(cfg) {
+  const stages = (Array.isArray(cfg?.wave) ? cfg.wave : []).map(normalizeStage).filter(Boolean)
+  if (stages.length) return stages
+  return DEFAULT_WAVE.map(normalizeStage)
+}
+
+/**
+ * One stage resolved against a base: every block expanded by its `sets` count, every load on
+ * the exercise's grid, every row stamped with the block/stage it came from. applyPrescription
+ * carries these four fields straight onto the session's own rows; readSession reads them back to
+ * grade required/anchor rows without an (eventual) warm-up block dragging the whole stage down.
+ */
+export function stageRows(stage, base, step) {
+  const rows = []
+  ;(stage?.blocks || []).forEach(b => {
+    const w = snapWeight(base * b.pct / 100, step)
+    for (let i = 0; i < (b.sets || 1); i++) {
+      rows.push({ w, r: b.reps, blockId: b.id, stageId: stage.id, role: b.role, blockType: b.type })
+    }
+  })
+  return rows
+}
+
+/** The stage's anchor block — the one that decides which stage a logged session belongs to, and
+ * whether the cycle moves on (see prescribeWave). Falls back to the stage's last block if none is
+ * marked; normalizeStage always marks one, so this only guards a stage built by hand outside it. */
+export const anchorBlockOf = stage => (stage?.blocks || []).find(b => b.role === 'anchor') || (stage?.blocks || [])[(stage?.blocks || []).length - 1]
+export const anchorPctOf = stage => anchorBlockOf(stage)?.pct || 0
+
+/**
+ * Percentage / training-max programming.
+ *
+ * Where in the cycle you are is *derived*, exactly like every other number in this file: the
+ * stage of the last session is the one whose top set lands closest to what was actually lifted.
+ * No counter is stored, so fixing a mistyped set — or rewriting the wave itself — takes effect
+ * on the next prescription instead of leaving a saved position behind to drift.
+ *
+ * The one thing that is stored is the training max, because it is a number the lifter owns
+ * rather than one the log implies (pure Wendler: it is never re-anchored to a new PR). A
+ * finished cycle returns the bumped value in `trainingMax`; lib/session-start.js writes it back
+ * when the session that ran at it is *finished*, so a session you discard moves nothing.
+ */
+function prescribeWave(S, cfg, inc, unit) {
+  const wave = waveOf(cfg)
+  const stages = wave.length
+  const pctBase = cfg.pctBase === '1rm' ? '1rm' : 'tm'
+  const onMiss = cfg.onMiss === 'advance' ? 'advance' : 'repeat'
+  const bump = cfg.bump === 'off' ? 'off' : 'step'
+
+  // With `pctBase: '1rm'` the base is live — it moves with every new estimate. That is opt-in
+  // for a reason: a cycle whose weights change under you is not what 5/3/1 asks for.
+  const est = pctBase === '1rm' ? best1RM(S, cfg.id) : null
+  const base = pctBase === '1rm' ? (est ? est.est : 0) : Number(cfg.trainingMax) || 0
+  if (!(base > 0)) {
+    return {
+      policy: 'wave', kind: 'need-tm', stages,
+      why: pctBase === '1rm'
+        ? ['No estimated 1RM for this exercise yet — log a set of it, or base the percentages on a training max.']
+        : ['Set a training max for this exercise to start the cycle.']
+    }
+  }
+
+  const rowsAt = k => stageRows(wave[k], base, inc)
+  const topAt = k => snapWeight(base * anchorPctOf(wave[k]) / 100, inc)
+  const pctsAt = k => wave[k].blocks.map(b => b.pct).join('/')
+  // The anchor row is the cycle's own signal (spec: "Il blocco anchor sostituisce l'euristica
+  // del solo top set con una semantica esplicita") — falls back to the session's overall top
+  // weight only for a session logged before this policy carried an anchor row at all.
+  const aw = s => s.anchorWeight ?? s.weight
+
+  // Only a session that actually carries the prescribed rows is a wave session: an unrelated
+  // logged set for the same exercise (a 1RM test rep, or history from before this policy) must
+  // not be mistaken for a completed cycle stage.
+  const sessions = sessionsFor(S, cfg.id, cfg).filter(s => s.mode === 'reps' && Array.isArray(s.target?.rows) && s.target.rows.length)
+  const last = sessions[sessions.length - 1]
+  // Unlike every other policy, the baseline session is itself a prescription: stage 1 of the
+  // cycle is knowable before anything has been logged.
+  if (!last) {
+    return {
+      policy: 'wave', kind: 'first', stage: 1, stages, rows: rowsAt(0),
+      why: ['Cycle stage 1 of {0} — {1} % of a {2} {3} training max.', stages, pctsAt(0), base, unit]
+    }
+  }
+
+  // Which stage was that? The nearest top set. A tie goes to the earlier stage (`<`, not `<=`),
+  // which is the conservative read: repeat lighter work rather than skip ahead.
+  let k = 0
+  for (let i = 1; i < stages; i++) if (Math.abs(topAt(i) - aw(last)) < Math.abs(topAt(k) - aw(last))) k = i
+  // A stage with `repeat: 3` is three identical sessions. Consecutive sessions at the same
+  // anchor weight are the same stage run again — the same nearest-match, counted.
+  let ran = 0
+  for (let i = sessions.length - 1; i >= 0 && aw(sessions[i]) === aw(last); i--) ran++
+
+  let nextK
+  let bumped = false
+  if (last.ok) {
+    if (ran < (wave[k].repeat || 1)) nextK = k                    // the stage asked to be run again
+    else if (k === stages - 1) {
+      // The cycle closed. Only a training-max base with the step bump on actually moves — a
+      // live-1RM base has nothing of its own to bump.
+      nextK = 0
+      bumped = pctBase === 'tm' && bump === 'step'
+    } else nextK = k + 1
+  } else {
+    // `advance` past the last stage wraps to stage 1 without a bump: the cycle was not finished,
+    // it was abandoned, and abandoning it must not earn a heavier training max.
+    nextK = onMiss === 'advance' ? (k + 1) % stages : k
+  }
+
+  const nextBase = bumped ? round1(base + inc) : base
+  const rows = stageRows(wave[nextK], nextBase, inc)
+  // 'deload' announces arriving at a lighter stage on a hit; a miss is always a 'hold' — even
+  // re-running a deload stage, since nothing moved forward.
+  const kind = !last.ok ? 'hold' : wave[nextK].deload ? 'deload' : 'up'
+  const why = bumped
+    ? ['Cycle done — training max up to {0} {1}. Back to stage 1 of {2}: {3} %.', nextBase, unit, stages, pctsAt(nextK)]
+    : !last.ok && nextK === k
+      ? ['Missed a set last time — stage {0} of {1} again: {2} %.', nextK + 1, stages, pctsAt(nextK)]
+      : ['Stage {0} of {1} — {2} % of a {3} {4} training max.', nextK + 1, stages, pctsAt(nextK), nextBase, unit]
+
+  return { policy: 'wave', kind, stage: nextK + 1, stages, rows, ...(bumped ? { trainingMax: nextBase } : {}), why }
+}
+
 const positiveGridAround = (ideal, step, maxWeight, strictLower) => {
   if (!(ideal > 0) || !(step > 0) || !(maxWeight > 0)) return []
   const low = Math.floor(ideal / step) * step
@@ -212,7 +391,11 @@ export function readSession(entry, fallback) {
   // Warm-up rows are prep, not the session: one filtered read beats guarding every consumer
   // below (an undone warm-up otherwise poisons `ok` forever and its reps drag `low`/`count`).
   const sets = ((entry && entry.sets) || []).filter(s => !isWarmupRow(s))
-  const planned = target.sets || sets.length
+  // A wave prescribes each row separately (5 @ 65 %, 3 @ 75 %, 1 @ 85 %), so its sessions are
+  // graded row against row rather than everything against one rep target. An entry without
+  // `target.rows` — every entry written before this policy existed — keeps the uniform path.
+  const rows = Array.isArray(target.rows) && target.rows.length ? target.rows : null
+  const planned = rows ? rows.length : (target.sets || sets.length)
   const enough = sets.length >= planned
 
   if (mode === 'time') {
@@ -227,13 +410,29 @@ export function readSession(entry, fallback) {
   }
   const goal = target.reps || 0
   const reps = sets.map(s => (s.done ? (s.r || 0) : 0))
+  // Required and anchor rows must be completed for the session to count; an (eventual)
+  // warm-up-type row is recorded but never gates it — a `role: 'accessory'` row will join it
+  // here once something actually writes that role.
+  const graded = rows ? rows.map((row, i) => [row, i]).filter(([row]) => row.blockType !== 'warmup') : null
+  // The anchor row's own logged weight — what a wave stage is actually identified by
+  // (prescribeWave), instead of the session's overall heaviest set. `applyPrescription` stamps
+  // `role` straight onto each set, so the anchor is found by that id, not by array position; the
+  // positional lookup into `rows` is only a fallback for a session logged before that started
+  // (no `sets` entry carries a `role` at all). Its weight counts even when the set was never
+  // ticked done — an unticked top set still carries the load it was prescribed, which is what
+  // identifies the stage; whether the session as a whole passes is `ok`'s job, not this one's.
+  const anchorRowIdx = rows ? rows.findIndex(row => row.role === 'anchor') : -1
+  const anchorSet = sets.find(s => s.role === 'anchor') || (anchorRowIdx >= 0 ? sets[anchorRowIdx] : null)
   return {
     mode, target, goal, reps,
     weight: Math.max(0, ...sets.filter(s => s.done).map(s => s.w || 0)),
+    ...(anchorSet ? { anchorWeight: anchorSet.w || 0 } : {}),
     count: reps.length,                                   // the dimension bodyweight work grows (#33)
     low: reps.length ? Math.min(...reps) : 0,
     amrap: reps.length ? reps[reps.length - 1] : 0,       // Greyskull's final set
-    ok: goal > 0 && enough && reps.length > 0 && reps.every(r => r >= goal)
+    ok: rows
+      ? enough && reps.length > 0 && graded.every(([row, i]) => reps[i] >= (row.r || 0))
+      : goal > 0 && enough && reps.length > 0 && reps.every(r => r >= goal)
   }
 }
 
@@ -298,6 +497,8 @@ export function nextPrescription(S, cfg, routine) {
     ? (cfg.inc > 0 ? cfg.inc : DEFAULT_SEC_INCREMENT)
     : weightIncrement(cfg, unit)
   if (policy === 'off') return { policy, kind: 'off' }
+  // Self-contained: a wave derives its own history read and never consults stalls or deloads.
+  if (policy === 'wave') return prescribeWave(S, cfg, inc, unit)
 
   const sessions = sessionsFor(S, cfg.id, cfg).filter(s => s.mode === mode)
   const last = sessions[sessions.length - 1]
@@ -438,23 +639,22 @@ export function nextPrescription(S, cfg, routine) {
  * are touched, and only on sets that have not been logged yet.
  */
 export function applyPrescription(sets, p, step = 2.5) {
-  if (!p || p.kind === 'off' || p.kind === 'first') return sets
-  const out = sets.map(s => {
-    // Never rewrite a logged set, and never rewrite a warm-up: the prescription speaks to
-    // the work rows only (a ticked warm-up falling through here would be the data-loss the
-    // cascade fix removed, two files over).
-    if (s.done || isWarmupRow(s)) return s
-    const o = { ...s }
-    if (p.weight != null) o.w = p.weight
-    if (p.reps != null) o.r = p.reps
-    if (p.sec != null) o.sec = p.sec
-    return o
-  })
+  if (!p || p.kind === 'off' || p.kind === 'need-tm') return sets
+  // A baseline session usually has nothing to say. A wave's does: stage 1 of a cycle is a full
+  // prescription before anything has been logged, so the rule is "no-op iff `first` and rowless".
+  if (p.kind === 'first' && !(Array.isArray(p.rows) && p.rows.length)) return sets
+  const rows = Array.isArray(p.rows) && p.rows.length ? p.rows : null
+  // A wave decides its own set count; `p.sets` still wins where it asks for more.
+  const want = rows ? Math.max(p.sets || 0, rows.length) : p.sets
+
   // A policy that decided on a set count gets to grow the list — bodyweight progression adds
-  // a set where a barbell would have added a plate. Only ever upwards, and only by copying a
-  // row that is already there: a session in progress must not lose a set it has logged.
+  // a set where a barbell would have added a plate, and a wave's stage may prescribe more rows
+  // than the plan holds. Only ever upwards, and only by copying a row that is already there:
+  // a session in progress must not lose a set it has logged. Growth happens before the
+  // assignment below so a freshly appended row gets its own weight rather than the seed's.
+  let out = sets
   const workRows = out.filter(s => !isWarmupRow(s))
-  if (p.sets > workRows.length) {
+  if (want > workRows.length) {
     // An all-warm-up entry has no work row to seed growth from - growing warm-up copies
     // would both invent work and never terminate the loop. Leave the entry untouched.
     if (!workRows.length) return rerampWarmups(out, step)
@@ -464,8 +664,36 @@ export function applyPrescription(sets, p, step = 2.5) {
     // `type` is kept: that's the exercise's plan (every set is a drop-set/rest-pause), not
     // something this particular row logged.
     const { drops, clusters, ...plainSeed } = seed
-    while (out.filter(s => !isWarmupRow(s)).length < p.sets) out.push({ ...plainSeed, done: false })
+    out = [...out]
+    while (out.filter(s => !isWarmupRow(s)).length < want) out.push({ ...plainSeed, done: false })
   }
+
+  // Rows are handed out by work-row ordinal, so a logged row consumes its own row and the
+  // pending ones stay lined up with the stage they belong to.
+  let ordinal = -1
+  out = out.map(s => {
+    if (isWarmupRow(s)) return s
+    ordinal++
+    // Never rewrite a logged set, and never rewrite a warm-up: the prescription speaks to
+    // the work rows only (a ticked warm-up falling through here would be the data-loss the
+    // cascade fix removed, two files over).
+    if (s.done) return s
+    const o = { ...s }
+    if (rows) {
+      const row = rows[ordinal]
+      // Past the end of the wave's rows sits whatever the plan added of its own — an
+      // intensifier's extra sets keep their own load. A row with no block metadata (every
+      // non-wave policy that still uses `p.rows`, none exist today) simply stamps `undefined`,
+      // which JSON.stringify and vitest's toEqual both already treat as absent.
+      if (row) { o.w = row.w; o.r = row.r; o.blockId = row.blockId; o.stageId = row.stageId; o.role = row.role; o.blockType = row.blockType }
+      return o
+    }
+    if (p.weight != null) o.w = p.weight
+    if (p.reps != null) o.r = p.reps
+    if (p.sec != null) o.sec = p.sec
+    return o
+  })
+
   // Last, because the work rows now carry their final weight: the warm-up block ramps toward
   // what you are actually about to lift, not toward what you lifted last time.
   return rerampWarmups(out, step)

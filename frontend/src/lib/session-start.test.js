@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildSessionEntries } from './session-start.js'
+import { buildSessionEntries, commitTrainingMax } from './session-start.js'
 import { readSession } from './progression.js'
 import { isWarmupRow } from './workout-model.js'
 
@@ -66,5 +66,67 @@ describe('buildSessionEntries', () => {
   it('does not stamp rid — that is the merge helper’s job', () => {
     const r = { id: 'r', prog: 'off', ex: [{ id: '0025', sets: 3, reps: 5, weight: 60 }] }
     expect(buildSessionEntries(st, r)[0].rid).toBeUndefined()
+  })
+
+  it('materialises the wave\'s block metadata onto every row it prescribes', () => {
+    const cfg = { id: '0025', sets: 3, reps: 5, prog: 'wave', trainingMax: 100 }
+    const r = { id: 'r', prog: 'wave', ex: [cfg] }
+    const st = { unit: 'kg', workouts: [], exWeights: {}, routines: [] }
+    const entries = buildSessionEntries(st, r)
+    const rows = entries[0].sets
+    expect(rows).toHaveLength(3)
+    for (const row of rows) {
+      expect(typeof row.blockId).toBe('string')
+      expect(typeof row.stageId).toBe('string')
+      expect(['required', 'anchor']).toContain(row.role)
+    }
+    expect(rows.filter(row => row.role === 'anchor')).toHaveLength(1)
+    // target.rows is what readSession grades the *next* session against — same metadata.
+    expect(entries[0].target.rows.map(row => row.blockId)).toEqual(rows.map(row => row.blockId))
+  })
+})
+
+describe('wave sessions', () => {
+  const LIFT = '0025'
+  const waveCfg = { id: LIFT, sets: 3, reps: 5, prog: 'wave', trainingMax: 100 }
+
+  it('records the prescribed rows on the entry target so the session can be graded back', () => {
+    const st = { unit: 'kg', exWeights: {}, workouts: [] }
+    const [entry] = buildSessionEntries(st, { id: 'r', ex: [waveCfg] })
+    expect(entry.target.rows).toMatchObject([{ w: 65, r: 5 }, { w: 75, r: 5 }, { w: 85, r: 5 }])
+    expect(entry.sets.map(s => s.w)).toEqual([65, 75, 85])
+  })
+
+  it('leaves the target rowless for every other policy', () => {
+    const st = { unit: 'kg', exWeights: {}, workouts: [] }
+    const [entry] = buildSessionEntries(st, { id: 'r', ex: [{ id: LIFT, sets: 3, reps: 5, weight: 60 }] })
+    expect(entry.target.rows).toBeUndefined()
+  })
+})
+
+describe('commitTrainingMax', () => {
+  it('writes a bumped training max back onto the routine config', () => {
+    const s = { routines: [{ id: 'r', ex: [{ id: 'a', prog: 'wave', trainingMax: 100 }] }] }
+    commitTrainingMax(s, [{ id: 'a', rid: 'r', plan: { policy: 'wave', kind: 'up', trainingMax: 102.5 } }])
+    expect(s.routines[0].ex[0].trainingMax).toBe(102.5)
+  })
+
+  it('ignores entries whose plan did not move the training max', () => {
+    const s = { routines: [{ id: 'r', ex: [{ id: 'a', prog: 'wave', trainingMax: 100 }] }] }
+    commitTrainingMax(s, [
+      { id: 'a', rid: 'r', plan: { policy: 'wave', kind: 'hold' } },
+      { id: 'a', rid: 'r', plan: { policy: 'linear', kind: 'up', weight: 62.5 } },
+    ])
+    expect(s.routines[0].ex[0].trainingMax).toBe(100)
+  })
+
+  it('ignores an entry whose routine or exercise is gone', () => {
+    const s = { routines: [{ id: 'r', ex: [{ id: 'a', trainingMax: 100 }] }] }
+    expect(() => commitTrainingMax(s, [
+      { id: 'a', rid: 'deleted', plan: { trainingMax: 105 } },
+      { id: 'gone', rid: 'r', plan: { trainingMax: 105 } },
+      { id: 'a', plan: { trainingMax: 105 } },
+    ])).not.toThrow()
+    expect(s.routines[0].ex[0].trainingMax).toBe(100)
   })
 })

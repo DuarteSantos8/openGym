@@ -397,6 +397,12 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
     {barInfo && <div className="small dim" style={{ marginBottom: 6, display: 'flex', alignItems: 'center', gap: 5 }}>
       <Icon name="dumbbell" style={{ fontSize: 12 }} />{barInfo.text}
     </div>}
+    {/* Where in the cycle this session sits. The percentages and the training max are already
+        in the guidance line below, and the loads are on the rows — this is the one thing
+        neither of them says at a glance. */}
+    {plan?.stages > 1 && plan.stage > 0 && <div className="small dim" style={{ marginBottom: 4 }}>
+      {t('Stage {0} of {1}', plan.stage, plan.stages)}{plan.kind === 'deload' ? ' · ' + t('deload') : ''}
+    </div>}
     {guidance && <button type="button" className={'progline' + (plan.kind === 'deload' ? ' warn' : '')}
       aria-label={t('Open progression settings')} onClick={onProgressionSettings}>
       <Icon name={plan.kind === 'up' ? 'arrowUp' : plan.kind === 'deload' ? 'arrowDown' : 'lightbulb'} />
@@ -412,9 +418,18 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
         const isFirstWarmup = warm && !warmBefore
         // Numbering restarts per phase: with two warm-ups the first work set reads 1, not 3.
         const phaseNum = entry.sets.slice(0, i + 1).filter(x => isWarmupRow(x) === warm).length
+        // A wave stage groups its rows into blocks (5/3/1: three, one per percentage) — a new
+        // block gets its own small header, same as a warm-up does, but only when the block is
+        // worth calling out: an ordinary `required` row stays silent, matching how the warm-up
+        // header only appears once rather than on every row.
+        const blockChanged = !warm && s.blockId && s.blockId !== entry.sets[i - 1]?.blockId
+        const blockLabel = blockChanged && s.role === 'anchor' ? t('Anchor set')
+          : blockChanged && s.role === 'accessory' ? t('Accessory')
+            : null
         return <div key={i}>
           {isFirstWarmup && <div className="setph">{t('Warm-up')}</div>}
           {!warm && warmBefore && <div className="setsep" />}
+          {blockLabel && <div className="setph">{blockLabel}</div>}
           {perSide && !warm && isSideSet(s) ? (
             // Unilateral work set: the number sits beside a two-row L/R stack, each side logged
             // and ticked on its own (issue #60).

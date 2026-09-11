@@ -13,7 +13,8 @@
  */
 import { describe, it, expect } from 'vitest'
 import { modeOf as uiModeOf, isBw as uiIsBw, isPerSide as uiIsPerSide } from './history.js'
-import { modeOf as srvModeOf, isBw as srvIsBw, isPerSide as srvIsPerSide } from '../../../api/coach/core/payload.js'
+import { waveOf as uiWaveOf } from './progression.js'
+import { modeOf as srvModeOf, isBw as srvIsBw, isPerSide as srvIsPerSide, waveOf as srvWaveOf } from '../../../api/coach/core/payload.js'
 import { exOr } from './exercises.js'
 
 // Real ids from the catalogue, so `eq`/`bp` are whatever the dataset actually says rather than
@@ -67,4 +68,22 @@ describe('server/client reading rules agree', () => {
     expect(uiIsBw({ id: '0001', bodyweight: false })).toBe(false)
     expect(srvIsBw({ id: '0001', bodyweight: false }, bodyweightEx)).toBe(false)
   })
+})
+
+describe('waveOf agrees with the server, over a table of wave configs', () => {
+  const WAVE_CONFIGS = [
+    {},
+    { wave: [] },
+    { wave: 'nonsense' },
+    { wave: [{ blocks: [{ pct: 80, reps: 5, sets: 3 }] }] },
+    { wave: [{ deload: true, repeat: 2, blocks: [{ pct: 60, reps: 8, sets: 1 }, { pct: 70, reps: 5, sets: 2 }] }] },
+    { wave: [{ blocks: [{ pct: 500, reps: 0, sets: '2' }] }] },
+    { wave: [{ blocks: [] }] },
+    { wave: [{ id: 'my-stage', blocks: [{ id: 'my-block', pct: 80, reps: 5, sets: 1 }] }] }
+  ]
+  for (const cfg of WAVE_CONFIGS) {
+    it(JSON.stringify(cfg), () => {
+      expect(srvWaveOf(cfg)).toEqual(uiWaveOf(cfg))
+    })
+  }
 })

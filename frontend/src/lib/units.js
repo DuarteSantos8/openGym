@@ -24,6 +24,10 @@ const convTarget = (cfg, from, to) => {
   if (out.weight != null) out.weight = convertWeight(out.weight, from, to)
   // A per-exercise increment is a load too — 2.5 kg is 5 lb, not 2.5 lb.
   if (out.inc > 0 && (out.mode == null || out.mode === 'reps')) out.inc = convertWeight(out.inc, from, to)
+  // A wave's training max and its resolved rows are loads. `wave` itself is percentages and
+  // rep counts — converting those would turn 85 % into 187 %.
+  if (out.trainingMax != null) out.trainingMax = convertWeight(out.trainingMax, from, to)
+  if (Array.isArray(out.rows)) out.rows = out.rows.map(r => (r && r.w != null ? { ...r, w: convertWeight(r.w, from, to) } : r))
   if (Array.isArray(out.warmup)) out.warmup = out.warmup.map(w => (w && w.weight != null ? { ...w, weight: convertWeight(w.weight, from, to) } : w))
   return out
 }

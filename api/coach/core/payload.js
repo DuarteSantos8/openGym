@@ -82,6 +82,47 @@ export function stallCount(sessions) {
   return n;
 }
 
+/* ---------- wave (percentage-cycle) normalisation ----------
+   Duplicated from frontend/src/lib/progression.js's waveOf/DEFAULT_WAVE for the same reason as
+   modeOf/isBw/isPerSide above: api/ has no build step in common with the frontend. Needed only
+   so the plan fingerprint below (canonicalPlan/hashPlan) reads a stable projection of a wave
+   instead of its raw, unnormalised field — coach-parity.test.js pins this copy against the
+   frontend's original the same way it pins the other three. cleanEx, just below, stays raw: the
+   Coach's own payload is meant to see the plan exactly as it is, defects included. */
+const WAVE_DEFAULT = [
+  { blocks: [{ pct: 65, reps: 5 }, { pct: 75, reps: 5 }, { pct: 85, reps: 5 }] },
+  { blocks: [{ pct: 70, reps: 3 }, { pct: 80, reps: 3 }, { pct: 90, reps: 3 }] },
+  { blocks: [{ pct: 75, reps: 5 }, { pct: 85, reps: 3 }, { pct: 95, reps: 1 }] },
+  { deload: true, blocks: [{ pct: 40, reps: 5 }, { pct: 50, reps: 5 }, { pct: 60, reps: 5 }] }
+];
+const clampWavePct = v => Math.min(100, Math.max(0, Number(v) || 0));
+function normalizeWaveStage(w, si) {
+  const blocks = (Array.isArray(w?.blocks) ? w.blocks : [])
+    .map((b, bi) => ({
+      id: b?.id || `s${si}b${bi}`,
+      sets: Math.max(1, Math.round(Number(b?.sets)) || 1),
+      reps: Math.max(1, Math.round(Number(b?.reps)) || 1),
+      pct: clampWavePct(b?.pct),
+      type: b?.type === 'warmup' || b?.type === 'backoff' ? b.type : 'work'
+    }))
+    .filter(b => b.pct > 0);
+  if (!blocks.length) return null;
+  const workBlocks = blocks.filter(b => b.type !== 'warmup');
+  const anchor = workBlocks.length ? workBlocks[workBlocks.length - 1] : blocks[blocks.length - 1];
+  blocks.forEach(b => { b.role = b === anchor ? 'anchor' : 'required'; });
+  return {
+    id: w?.id || `s${si}`,
+    ...(w?.deload ? { deload: true } : {}),
+    repeat: Math.max(1, Math.round(Number(w?.repeat)) || 1),
+    blocks
+  };
+}
+export function waveOf(cfg) {
+  const stages = (Array.isArray(cfg?.wave) ? cfg.wave : []).map(normalizeWaveStage).filter(Boolean);
+  if (stages.length) return stages;
+  return WAVE_DEFAULT.map(normalizeWaveStage);
+}
+
 /* ---------- plan cleaning (mirrors plan-share.js cleanEx) ---------- */
 function cleanEx(e) {
   const o = { id: e.id, name: LIB_BY_ID.get(e.id)?.n || null, sets: e.sets };
@@ -101,6 +142,18 @@ function cleanEx(e) {
   if (e.bodyweight != null) o.bodyweight = !!e.bodyweight;
   if (e.side) o.side = true;
   if (e.sg) o.sg = e.sg;
+  // A wave has none of the fields above of its own — its sets/reps/weight vary stage to
+  // stage — so the Coach needs its actual settings instead, or it reviews a plan that does
+  // not exist. Passed through raw rather than normalised via progression.js's waveOf: api/
+  // cannot depend on frontend/src (dependency-light backend boundary), and the Coach should
+  // see the plan exactly as it is, defects included.
+  if (e.prog === 'wave') {
+    if (e.trainingMax > 0) o.trainingMax = e.trainingMax;
+    if (e.pctBase === '1rm') o.pctBase = '1rm';
+    if (e.onMiss === 'advance') o.onMiss = 'advance';
+    if (e.bump === 'off') o.bump = 'off';
+    if (Array.isArray(e.wave) && e.wave.length) o.wave = e.wave;
+  }
   return o;
 }
 /**
@@ -132,7 +185,16 @@ export function canonicalPlan(S) {
           // disagreeing with the catalogue, and `bodyweight: undefined` and an exercise the
           // dataset already calls bodyweight are the same plan and must hash the same.
           bodyweight: isBw(e, exOf(e.id)), side: isPerSide(e),
-          sg: e.sg || ''
+          sg: e.sg || '',
+          // Zeroed/emptied for every other policy, so this changes nothing for a plan that
+          // was never a wave. A wave's own settings live nowhere else in this object — its
+          // sets/reps/weight above are already zeroed by mode — so without these, editing a
+          // training max or a cycle would hash identically to leaving it alone.
+          trainingMax: e.prog === 'wave' ? (e.trainingMax || 0) : 0,
+          pctBase: e.prog === 'wave' ? (e.pctBase === '1rm' ? '1rm' : 'tm') : '',
+          onMiss: e.prog === 'wave' ? (e.onMiss === 'advance' ? 'advance' : 'repeat') : '',
+          bump: e.prog === 'wave' ? (e.bump === 'off' ? 'off' : 'step') : '',
+          wave: e.prog === 'wave' ? waveOf(e) : []
         };
       })
     })),

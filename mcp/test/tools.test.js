@@ -108,6 +108,15 @@ describe('get_routine', () => {
     })
   })
 
+  test('summarises a wave-configured exercise by its training max, not leftover sets/reps', () => {
+    const push = call('list_routines').routines.find(x => x.name === 'Push Day')
+    const routine = S.routines.find(x => x.id === push.id)
+    routine.ex[0] = { ...routine.ex[0], prog: 'wave', trainingMax: 100 }
+    _seedStateForTests(S)
+    const e = call('get_routine', { routine_id: push.id }).exercises[0]
+    expect(e.summary).toBe('4-stage wave · 100 kg training max')
+  })
+
   test('resolves custom exercises from the current profile state', () => {
     const custom = { id: 'cx-sled-drag', n: 'Sled drag', bp: 'upper legs' }
     S.customEx = [custom]
@@ -846,5 +855,16 @@ describe('preview_session', () => {
   test('an unknown routine_id is an error, not an empty session', () => {
     only({ id: '0025', sets: 3, reps: 8, weight: 50 })
     expect(() => call('preview_session', { routine_id: 'nope' })).toThrow(/no routine with id/)
+  })
+
+  test('a wave never reports differs_from_plan — its leftover sets/reps are not the plan', () => {
+    // cfg.sets/reps/weight on a wave exercise are whatever was left over from before that
+    // policy was chosen; the wave's real prescription is in opening_sets. Comparing the
+    // leftovers against the computed opening set would flag every wave exercise, every time.
+    only({ id: '0025', sets: 3, reps: 10, weight: 60, prog: 'wave', trainingMax: 100 })
+    const e = call('preview_session').exercises[0]
+    expect(e.opening_sets.map(s => s.w)).toEqual([65, 75, 85])
+    expect(e.changed).toEqual([])
+    expect(e.differs_from_plan).toBe(false)
   })
 })

@@ -16,7 +16,7 @@ import { EXIDX } from './exercises.js'
 import { modeOf, isBw, isPerSide, cleanupSg } from './history.js'
 import { uid, todayISO, DAYN } from './format.js'
 import { mergePlan } from './plan-share.js'
-import { POLICIES } from './progression.js'
+import { POLICIES, waveOf } from './progression.js'
 import { t } from './i18n.js'
 
 // Bumping this re-prompts everyone: it means what we share, or who we share it with, changed.
@@ -94,7 +94,14 @@ export function canonicalPlan(S) {
           weight: mode === 'cardio' ? 0 : (e.weight || 0),
           prog: e.prog || '', inc: e.inc || 0, repsMin: e.repsMin || 0, repsMax: e.repsMax || 0,
           bodyweight: isBw(e), side: isPerSide(e),
-          sg: e.sg || ''
+          sg: e.sg || '',
+          // Mirrors api/coach/core/payload.js's canonicalPlan field for field — see that
+          // file's comment on why a wave's own settings need their own fields here.
+          trainingMax: e.prog === 'wave' ? (e.trainingMax || 0) : 0,
+          pctBase: e.prog === 'wave' ? (e.pctBase === '1rm' ? '1rm' : 'tm') : '',
+          onMiss: e.prog === 'wave' ? (e.onMiss === 'advance' ? 'advance' : 'repeat') : '',
+          bump: e.prog === 'wave' ? (e.bump === 'off' ? 'off' : 'step') : '',
+          wave: e.prog === 'wave' ? waveOf(e) : []
         }
       })
     })),
@@ -111,7 +118,8 @@ export function hashPlan(plan) {
   const canon = JSON.stringify({
     routines: (plan?.routines || []).map(r => [r.id, r.name, r.prog, (r.ex || []).map(e =>
       [e.id, e.mode, e.sets, e.reps, e.sec, e.min, e.speed, e.weight, e.prog, e.inc,
-        e.repsMin, e.repsMax, e.bodyweight, e.side, e.sg].join(':')
+        e.repsMin, e.repsMax, e.bodyweight, e.side, e.sg,
+        e.trainingMax, e.pctBase, e.onMiss, e.bump, JSON.stringify(e.wave || [])].join(':')
     )]),
     // `plan` is a canonicalPlan output, so each day is already an array. `{1:['r1']}` → "1=r1",
     // byte-identical to the pre-upgrade fingerprint; `{3:['r2','r3']}` → "3=r2+r3". Weekday

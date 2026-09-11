@@ -149,6 +149,22 @@ test('the fingerprint covers every field canonicalPlan reports, including the v1
   }
 });
 
+test('a wave\'s own settings move the fingerprint too', () => {
+  // A wave's sets/reps/weight are already zeroed by mode and hash identically either way — its
+  // actual settings (training max, the cycle) live only in these fields, so without them a
+  // bumped training max or an edited cycle would read as "plan untouched".
+  const of = ex => payload.canonicalPlan({ routines: [{ id: 'r1', name: 'A', ex: [ex] }], week: { 1: 'r1' } });
+  const base = { id: '0001', sets: 3, reps: 10, prog: 'wave', trainingMax: 100 };
+  const h = ex => jobs.hashPlan(of(ex));
+
+  assert.equal(h(base), h({ ...base }), 'the same wave hashes the same');
+  assert.notEqual(h(base), h({ ...base, trainingMax: 102.5 }), 'a bumped training max must move the fingerprint');
+  assert.notEqual(h(base), h({ ...base, wave: [{ blocks: [{ pct: 80, reps: 5, sets: 1 }] }] }), 'an edited cycle must move the fingerprint');
+  // The wave fields must not leak a fingerprint move onto a plan that was never a wave.
+  const plain = { id: '0001', sets: 3, reps: 10 };
+  assert.equal(h(plain), h({ ...plain, trainingMax: 999 }), 'trainingMax is ignored outside prog: wave');
+});
+
 
 test('a review job produces a checked change-set, and nothing is left unvalidated', async () => {
   const uid = 'u-review';

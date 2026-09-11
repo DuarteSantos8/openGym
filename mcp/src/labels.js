@@ -2,7 +2,7 @@
 // to the LLM.
 import { MUSCLE_NAME, MUSCLES } from '../../frontend/src/lib/muscles.js'
 import { modeOf, fmtSec, setLabel } from '../../frontend/src/lib/history.js'
-import { POLICY_NAME } from '../../frontend/src/lib/progression.js'
+import { POLICY_NAME, waveOf } from '../../frontend/src/lib/progression.js'
 import { fmtDate, fmtNum, fmtDur } from '../../frontend/src/lib/format.js'
 
 // Apply {0},{1},… substitutions to the template strings the lib returns.
@@ -15,6 +15,10 @@ export function fmt(template, args) {
 export { setLabel }
 
 export function exLine(cfg, unit) {
+  // A wave has no fixed sets/reps/weight of its own — those vary stage to stage — so it
+  // reports its training max and stage count instead, same as the printed PDF plan does
+  // (frontend/src/lib/plan-share.js's scheme()).
+  if (cfg.prog === 'wave') return `${waveOf(cfg).length}-stage wave · ${fmtNum(cfg.trainingMax || 0)} ${unit} training max`
   const mode = modeOf(cfg)
   const n = cfg.sets || 1
   const load = cfg.weight ? ' · ' + fmtNum(cfg.weight) + ' ' + unit : ''

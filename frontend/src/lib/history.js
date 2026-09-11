@@ -139,6 +139,10 @@ export function defaultConfig(id, mode) {
 // One-line summary of a planned exercise ("3 × 10 · 60 kg"), shared by the routine editor
 // and the plan export so a mode is described the same way everywhere.
 export function exLine(cfg, unit) {
+  // A wave has no fixed sets/reps/weight of its own — they vary stage to stage — so the row
+  // shows its training max instead. (Not importing waveOf for an exact stage count here:
+  // progression.js already imports this file, and a cycle back would be fragile.)
+  if (cfg.prog === 'wave') return t('Wave · {0} {1} training max', fmtNum(cfg.trainingMax || 0), unit)
   const mode = modeOf(cfg)
   const n = cfg.sets || 1
   // Added weight reads as added: "+10 kg" on a dip belt, "60 kg" on a barbell.

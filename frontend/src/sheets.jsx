@@ -25,7 +25,7 @@ import { importHevyData, HevyApiError, HEVY_DEV_SETTINGS, mergeHevyRoutines } fr
 import { buildPlanBundle, parsePlan, mergePlan, printPlan } from './lib/plan-share.js'
 import { estimate1RM, best1RM, is1RMRecord, REP_CAP } from './lib/onerm.js'
 import { exerciseHistory } from './lib/exercise-history.js'
-import { nextPrescription, applyPrescription, policyFor, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC, MAX_BW_SETS, weightIncrement } from './lib/progression.js'
+import { nextPrescription, applyPrescription, policyFor, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC, MAX_BW_SETS, weightIncrement, waveOf, deloadFactorOf } from './lib/progression.js'
 import { normalizeRepRange } from './lib/rep-range.js'
 import { MOBILE, shareExport } from './lib/mobile.js'
 import { buildCompletedWorkout } from './lib/finish-workout.js'
@@ -34,7 +34,7 @@ import { nextUnfinishedUnit } from './lib/supersetFlow.js'
 import { swapActiveExercise } from './lib/active-exercise-swap.js'
 import { useSheetKeyboard, useRevealActiveChip, tappable } from './lib/use-sheet-keyboard.js'
 import { isFav, toggleFav, sortFavouritesFirst } from './lib/favourites.js'
-import { buildSessionEntries } from './lib/session-start.js'
+import { buildSessionEntries, commitTrainingMax } from './lib/session-start.js'
 import { buildCombinedEntries, deriveSessionName } from './lib/session-merge.js'
 import { workoutsOn, backfillStart, backfillEnd, completeBackfill } from './lib/backfill.js'
 
@@ -1060,6 +1060,73 @@ const progressionStepOf = (c, mode, ex, unit) =>
 const progressionStepIsValid = (step, policy) =>
   policy === 'off' || (Number.isFinite(step) && step > 0)
 
+// The wave, edited as the data it is: weeks of `n × r @ pct`. Its own component so the
+// estimated-1RM lookup is a hook in a component that always renders it, rather than one that
+// appears and disappears with the selected rule.
+function WaveEditor({ c, setC, ex, unit }) {
+  const st = useStore(s => s.S)
+  const best = best1RM(st, ex.id)
+  const wave = waveOf(c)
+  const tmPct = Math.round(deloadFactorOf(c) * 100)
+  const setWave = next => setC(x => ({ ...x, wave: next.map(w => ({ ...w, blocks: w.blocks.map(({ role, ...b }) => b) })) }))
+  const patchStage = (wi, patch) => setWave(wave.map((w, i) => (i === wi ? { ...w, ...patch } : w)))
+  const patchBlock = (wi, bi, patch) => patchStage(wi, { blocks: wave[wi].blocks.map((b, i) => (i === bi ? { ...b, ...patch } : b)) })
+  return <>
+    <div className="row cfgrow" style={{ marginBottom: 8 }}>
+      <Stepper label={t('Training max ({0})', unit)} value={c.trainingMax || 0} step={weightIncrement(c, unit)}
+        onChange={v => setC(x => ({ ...x, trainingMax: v }))} />
+    </div>
+    {/* Wendler's own advice, one tap: a training max you can actually hit every rep of. */}
+    {best && <Button variant="ghost" className="small"
+      onClick={() => setC(x => ({ ...x, trainingMax: Math.round(deloadFactorOf(x) * best.est * 10) / 10 }))}>
+      {t('Use {0} % of your best estimate ({1} {2})', tmPct, best.est, unit)}
+    </Button>}
+    <div className="small dim" style={{ margin: '10px 0 6px' }}>{t('Percentages of')}</div>
+    <Segmented value={c.pctBase === '1rm' ? '1rm' : 'tm'} onChange={v => setC(x => ({ ...x, pctBase: v }))}
+      options={[{ value: 'tm', label: t('Training max') }, { value: '1rm', label: t('Estimated 1RM') }]} />
+    <div className="small dim" style={{ margin: '10px 0 6px' }}>{t('After a missed stage')}</div>
+    <Segmented value={c.onMiss === 'advance' ? 'advance' : 'repeat'} onChange={v => setC(x => ({ ...x, onMiss: v }))}
+      options={[{ value: 'repeat', label: t('Run it again') }, { value: 'advance', label: t('Move on') }]} />
+    <div className="small dim" style={{ margin: '10px 0 6px' }}>{t('When the cycle ends')}</div>
+    <Segmented value={c.bump === 'off' ? 'off' : 'step'} onChange={v => setC(x => ({ ...x, bump: v }))}
+      options={[{ value: 'step', label: t('Add the step') }, { value: 'off', label: t('Leave it') }]} />
+
+    <h4 className="sec">{t('Cycle')}</h4>
+    {wave.map((w, wi) => <div className="card" key={w.id} style={{ marginBottom: 8 }}>
+      <div className="row" style={{ alignItems: 'center', gap: 8 }}>
+        <strong className="grow">{t('Stage {0}', wi + 1)}</strong>
+        <label className="row" style={{ alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+          <span className="small dim">{t('Deload')}</span>
+          <Switch checked={!!w.deload} onChange={v => patchStage(wi, { deload: v || undefined })} />
+        </label>
+        {wave.length > 1 && <button type="button" className="iconbtn" aria-label={t('Remove stage {0}', wi + 1)}
+          onClick={() => setWave(wave.filter((_, i) => i !== wi))}><Icon name="xmark" /></button>}
+      </div>
+      <div className="row cfgrow">
+        <Stepper label={t('Run it')} unit={t('times')} value={w.repeat} step={1} decimal={false}
+          onChange={v => patchStage(wi, { repeat: Math.max(1, Math.round(v) || 1) })} />
+      </div>
+      {w.blocks.map((b, bi) => <div className="row cfgrow" key={b.id} style={{ alignItems: 'flex-end' }}>
+        <Stepper label={t('Sets')} value={b.sets} step={1} decimal={false}
+          onChange={v => patchBlock(wi, bi, { sets: Math.max(1, Math.round(v) || 1) })} />
+        <Stepper label={t('Reps')} value={b.reps} step={1} decimal={false}
+          onChange={v => patchBlock(wi, bi, { reps: Math.max(1, Math.round(v) || 1) })} />
+        <Stepper label={t('%')} value={b.pct} step={2.5}
+          onChange={v => patchBlock(wi, bi, { pct: Math.min(100, Math.max(1, v)) })} />
+        {w.blocks.length > 1 && <button type="button" className="iconbtn" aria-label={t('Remove set {0}', bi + 1)}
+          onClick={() => patchStage(wi, { blocks: w.blocks.filter((_, i) => i !== bi) })}><Icon name="xmark" /></button>}
+      </div>)}
+      <Button variant="ghost" className="small"
+        onClick={() => patchStage(wi, { blocks: [...w.blocks, { ...w.blocks[w.blocks.length - 1], id: uid() }] })}>{t('Add a set')}</Button>
+    </div>)}
+    <Button variant="ghost" className="small"
+      onClick={() => setWave([...wave, { id: uid(), repeat: 1, blocks: [{ id: uid(), sets: 3, reps: 5, pct: 75, type: 'work' }] }])}>{t('Add a stage')}</Button>
+    {/* Dropping the stored wave is the reset: waveOf falls back to the template. */}
+    <Button variant="ghost" className="small"
+      onClick={() => setC(x => ({ ...x, wave: undefined }))}>{t('Back to the 5/3/1 template')}</Button>
+  </>
+}
+
 function ProgressionFields({ ex, mode, c, setC, routine, unit, perSide }) {
   const options = POLICIES_FOR[mode] || ['off']
   if (options.length < 2) return null
@@ -1148,6 +1215,16 @@ function ExConfig({ ex, existing, onSave, onDelete, close, routine, initial }) {
       const deloadFactor = Math.max(0.5, Math.min(0.95, Number(c.deloadFactor) || 0.9))
       if (deloadFactor !== 0.9) prog.deloadFactor = deloadFactor
     }
+    // A wave's own settings. Defaults stay out, the way deloadFactor does, so a plain 5/3/1
+    // config is `prog` + `trainingMax` and nothing more.
+    if (activePolicy === 'wave') {
+      const tm = Math.max(0, Math.round((Number(c.trainingMax) || 0) * 10) / 10)
+      if (tm > 0) prog.trainingMax = tm
+      if (c.pctBase === '1rm') prog.pctBase = '1rm'
+      if (c.onMiss === 'advance') prog.onMiss = 'advance'
+      if (c.bump === 'off') prog.bump = 'off'
+      if (Array.isArray(c.wave) && c.wave.length) prog.wave = c.wave
+    }
     // Written only when it differs from what the dataset already says, so a barbell config
     // stays exactly the shape it was before these flags existed.
     // `bodyweight` is true of a hold as much as of a set of reps; `side` is not — it counts
@@ -1209,7 +1286,10 @@ function ExConfig({ ex, existing, onSave, onDelete, close, routine, initial }) {
       <Segmented className="seg-range" value={mode} onChange={setMode}
         options={[{ value: 'reps', label: t('Reps') }, { value: 'time', label: t('Time') }]} />
     </div>}
-    <div className="row cfgrow" style={{ marginBottom: mode === 'time' ? 8 : 18 }}>
+    {/* A wave prescribes its own sets, reps and weight per stage (WaveEditor, right below) — this
+        row would just be dead config nobody reads once that policy is active. */}
+    {activePolicy === 'wave' && <WaveEditor c={c} setC={setC} ex={ex} unit={st.unit} />}
+    {activePolicy !== 'wave' && <div className="row cfgrow" style={{ marginBottom: mode === 'time' ? 8 : 18 }}>
       {cardio ? <>
         <Stepper label={t('Intervals')} value={c.sets} step={1} decimal={false} onChange={v => setC(x => ({ ...x, sets: v }))} />
         <Stepper label={t('Minutes')} value={c.min} step={1} decimal={false} onChange={v => setC(x => ({ ...x, min: v }))} />
@@ -1228,8 +1308,8 @@ function ExConfig({ ex, existing, onSave, onDelete, close, routine, initial }) {
             until there is a belt to describe — see the added-weight row below. */}
         {!bw && <Stepper label={t('Weight ({0})', st.unit)} value={c.weight} step={2.5} onChange={v => setC(x => ({ ...x, weight: v }))} />}
       </>}
-    </div>
-    {c.intensifier?.type === 'restpause' && <div className="small dim" style={{ marginTop: -10, marginBottom: 18 }}>
+    </div>}
+    {activePolicy !== 'wave' && c.intensifier?.type === 'restpause' && <div className="small dim" style={{ marginTop: -10, marginBottom: 18 }}>
       {t('Rest-pause always trains as one warm-up set at this rep count, then one rest-pause work set — "Sets" is not used.')}
     </div>}
     {/* Planned warm-ups: the session used to start at the work weight and you added every
@@ -1299,7 +1379,9 @@ function ExConfig({ ex, existing, onSave, onDelete, close, routine, initial }) {
         ? t('Reps climb to {0}, then a set is added and the reps start over. At {1} sets it asks you to add weight instead.', c.repsMax, MAX_BW_SETS)
         : t('Reps climb by one whenever every set was clean. Set a ceiling to add sets instead of reps forever.')}
     </div>}
-    {mode === 'reps' && <>
+    {/* A wave's rows are already a fixed prescription per week — a drop-set or rest-pause
+        scheme has nothing left to modify. */}
+    {mode === 'reps' && activePolicy !== 'wave' && <>
       <h4 className="sec">{t('Drop-set / rest-pause')}</h4>
       <div className="sect-b" style={{ marginBottom: 8 }}>
         <SelectRow title={t('Intensifier')} sheetTitle={t('Intensifier')} value={c.intensifier?.type || ''}
@@ -2102,6 +2184,10 @@ function doFinishWorkout() {
       })
       s.workouts.push(w)
     }
+    // A completed wave cycle bumps the exercise's training max (lib/session-start.js). Only
+    // entries with something logged count, and a backfilled session never moves it: it is
+    // filed into the past, and the cycle has already moved on without it.
+    if (!past) commitTrainingMax(s, A.entries.filter(e => (e.sets || []).some(x => x.done)))
     s.active = null
   })
   useStore.getState().autoBackupNow()

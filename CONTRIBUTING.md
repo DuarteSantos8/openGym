@@ -67,8 +67,6 @@ here before, otherwise a maintainer presses "Run pipeline" after a first look at
 
 - Additional starter plans (upper/lower, full-body, 5×5…)
 - More languages for the exercise instructions (the dataset ships several)
-- Percentage / training-max programming (5/3/1-style) on top of the progression engine in
-  `src/lib/progression.js` — the policy interface is already there
 - Accessibility passes on the workout and chart screens
 
 ## Where to ask what

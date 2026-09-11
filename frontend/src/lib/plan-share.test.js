@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildPlanBundle, mergePlan, parsePlan } from './plan-share.js'
+import { buildPlanBundle, mergePlan, parsePlan, planPrintHTML } from './plan-share.js'
 
 // There was no test file for plan sharing at all, which is how a whole prescription field
 // went missing without anyone noticing.
@@ -134,5 +134,35 @@ describe('week schedule as a routine-id list', () => {
 
   it('scheduledDays counts a populated array day as 1 and a [] / absent day as 0', () => {
     expect(parsePlan({ opengym_plan: 1, routines: [], customEx: [], week: { 1: ['a'], 2: [], 4: 'b' } }).scheduledDays).toBe(2)
+  })
+})
+
+describe('wave settings travel with a shared plan', () => {
+  it('carries the training max, the wave and the non-default switches', () => {
+    const wave = [{ blocks: [{ pct: 80, reps: 5, sets: 2 }] }, { deload: true, repeat: 2, blocks: [{ pct: 50, reps: 5, sets: 1 }] }]
+    const ex = roundTrip({
+      prog: 'wave', trainingMax: 100, pctBase: '1rm', onMiss: 'advance', bump: 'off', wave
+    })
+    expect(ex).toMatchObject({ prog: 'wave', trainingMax: 100, pctBase: '1rm', onMiss: 'advance', bump: 'off' })
+    expect(ex.wave).toEqual([
+      { id: 's0', repeat: 1, blocks: [{ id: 's0b0', pct: 80, reps: 5, sets: 2, type: 'work', role: 'anchor' }] },
+      { id: 's1', deload: true, repeat: 2, blocks: [{ id: 's1b0', pct: 50, reps: 5, sets: 1, type: 'work', role: 'anchor' }] },
+    ])
+  })
+
+  it('omits the defaults, the way deloadFactor already does', () => {
+    const ex = roundTrip({ prog: 'wave', trainingMax: 100, pctBase: 'tm', onMiss: 'repeat', bump: 'step' })
+    expect(ex.pctBase).toBeUndefined()
+    expect(ex.onMiss).toBeUndefined()
+    expect(ex.bump).toBeUndefined()
+    expect(ex.wave).toBeUndefined()
+    expect(ex.trainingMax).toBe(100)
+  })
+
+  it('prints the training max and stage count instead of a uniform sets/reps line', () => {
+    const html = planPrintHTML(stateWith({ prog: 'wave', trainingMax: 100 }), '')
+    expect(html).toContain('4-stage wave')
+    expect(html).toContain('100 kg training max')
+    expect(html).not.toContain('3 × 5')   // the sets/reps left over from the fixture's non-wave fields
   })
 })

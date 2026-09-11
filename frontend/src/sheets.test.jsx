@@ -6,6 +6,7 @@ import { EXDB } from './lib/exercises.js'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { exConfigSheet } from './sheets.jsx'
+import { POLICIES_FOR, POLICY_NAME } from './lib/progression.js'
 
 const ex = EXDB.find(e => e.id === '0009')
 const mounted = []
@@ -15,8 +16,8 @@ function type(el, value) {
   el.dispatchEvent(new Event('input', { bubbles: true }))
 }
 
-function renderConfig(onSave = vi.fn()) {
-  exConfigSheet(ex, { sets: 3, reps: 10, weight: 0, mode: 'reps', prog: 'double' }, onSave)
+function renderConfig(onSave = vi.fn(), existing = { sets: 3, reps: 10, weight: 0, mode: 'reps', prog: 'double' }) {
+  exConfigSheet(ex, existing, onSave)
   const sheet = useUI.getState().sheets.at(-1)
   const host = document.createElement('div')
   document.body.appendChild(host)
@@ -77,5 +78,57 @@ describe('exercise configuration progression step', () => {
     act(() => { save.click() })
     expect(config.onSave).toHaveBeenCalledWith(expect.objectContaining({ inc: 0.5 }))
     expect(useUI.getState().sheets).toHaveLength(0)
+  })
+})
+
+describe('wave configuration', () => {
+  beforeEach(() => {
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true
+    useUI.setState({ sheets: [] })
+    useStore.setState(s => ({ S: { ...s.S, unit: 'kg' } }))
+    document.body.innerHTML = ''
+  })
+
+  afterEach(() => {
+    act(() => { mounted.splice(0).forEach(root => root.unmount()) })
+  })
+
+  it('offers the wave rule on reps work', () => {
+    expect(POLICIES_FOR.reps).toContain('wave')
+    expect(POLICY_NAME.wave).toBeTruthy()
+  })
+
+  it('saves the training max and only the non-default switches', () => {
+    const config = renderConfig(vi.fn(), {
+      sets: 3, reps: 5, weight: 0, mode: 'reps', prog: 'wave',
+      trainingMax: 100, pctBase: 'tm', onMiss: 'advance', bump: 'step',
+    })
+    const save = [...config.host.querySelectorAll('button')]
+      .find(b => /^(save|add to routine)$/i.test(b.textContent.trim()))
+    act(() => { save.click() })
+    const saved = config.onSave.mock.calls[0][0]
+    expect(saved.trainingMax).toBe(100)
+    expect(saved.onMiss).toBe('advance')
+    expect(saved.pctBase).toBeUndefined()
+    expect(saved.bump).toBeUndefined()
+  })
+
+  it('"Add a set" appends a fresh-id block and never persists a role into the saved wave', () => {
+    const config = renderConfig(vi.fn(), {
+      sets: 3, reps: 5, weight: 0, mode: 'reps', prog: 'wave', trainingMax: 100,
+    })
+    const addSet = [...config.host.querySelectorAll('button')]
+      .find(b => /add a set/i.test(b.textContent.trim()))
+    act(() => { addSet.click() })
+    const save = [...config.host.querySelectorAll('button')]
+      .find(b => /^(save|add to routine)$/i.test(b.textContent.trim()))
+    act(() => { save.click() })
+    const saved = config.onSave.mock.calls[0][0]
+    // The default first stage has 3 blocks; "Add a set" duplicates its last one.
+    expect(saved.wave[0].blocks.length).toBe(4)
+    const ids = saved.wave[0].blocks.map(b => b.id)
+    expect(new Set(ids).size).toBe(ids.length) // the copy got its own id, not a duplicate
+    // Fix 3: setWave strips the derived `role` before persisting, everywhere.
+    expect(saved.wave.flatMap(w => w.blocks).every(b => !('role' in b))).toBe(true)
   })
 })

@@ -520,15 +520,18 @@ export const previewSession = {
         // The headline: did editing the routine change anything the user will see? Tracked per
         // dimension — a bodyweight exercise whose weight is 0 either way still counts when the
         // rep target moved, and saying which one moved saves the caller diffing it themselves.
+        // A wave's own cfg.weight/cfg.reps are leftovers from before that policy was chosen —
+        // it prescribes its own numbers per stage (see opening_sets) — so they never mean
+        // "the plan changed" and would otherwise flag every wave exercise, every time.
         changed: [
-          ...(mode === 'reps' && cfg.weight != null && openW !== cfg.weight ? ['weight'] : []),
-          ...(mode === 'reps' && (cfg.reps || 0) > 0 && openR !== cfg.reps ? ['reps'] : []),
+          ...(mode === 'reps' && cfg.prog !== 'wave' && cfg.weight != null && openW !== cfg.weight ? ['weight'] : []),
+          ...(mode === 'reps' && cfg.prog !== 'wave' && (cfg.reps || 0) > 0 && openR !== cfg.reps ? ['reps'] : []),
           ...(mode === 'time' && (cfg.sec || 0) > 0 && openSec !== cfg.sec ? ['sec'] : []),
           ...(mode === 'cardio' && (cfg.min || 0) > 0 && openMin !== cfg.min ? ['min'] : [])
         ],
         differs_from_plan:
-          (mode === 'reps' && cfg.weight != null && openW !== cfg.weight) ||
-          (mode === 'reps' && (cfg.reps || 0) > 0 && openR !== cfg.reps) ||
+          (mode === 'reps' && cfg.prog !== 'wave' && cfg.weight != null && openW !== cfg.weight) ||
+          (mode === 'reps' && cfg.prog !== 'wave' && (cfg.reps || 0) > 0 && openR !== cfg.reps) ||
           (mode === 'time' && (cfg.sec || 0) > 0 && openSec !== cfg.sec) ||
           (mode === 'cardio' && (cfg.min || 0) > 0 && openMin !== cfg.min)
       }

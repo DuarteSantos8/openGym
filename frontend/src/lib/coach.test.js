@@ -96,12 +96,28 @@ describe('plan fingerprint', () => {
     }
   })
 
+  it('moves for a wave training max, its switches and its cycle', () => {
+    // Same bug as the v1.2.4 flags above, for the wave fields: in canonicalPlan but not yet
+    // in the hash means editing a training max reads as "plan unchanged".
+    const base = state()
+    base.routines[0].ex[0] = { ...base.routines[0].ex[0], prog: 'wave', trainingMax: 100 }
+    for (const [field, value] of Object.entries({
+      trainingMax: 102.5, pctBase: '1rm', onMiss: 'advance', bump: 'off',
+      wave: [{ repeat: 1, blocks: [{ pct: 80, reps: 5, sets: 3 }] }]
+    })) {
+      const edited = state(); edited.routines[0].ex[0] = { ...base.routines[0].ex[0], [field]: value }
+      expect(planHash(edited), field).not.toBe(planHash(base))
+    }
+  })
+
   it('agrees with the server, field for field', () => {
     const withFlags = state()
     withFlags.routines[0].ex[0] = { ...withFlags.routines[0].ex[0], repsMin: 8, repsMax: 20, bodyweight: true }
     withFlags.routines[1].ex[0] = { ...withFlags.routines[1].ex[0], side: true, reps: 16 }
     const combined = state({ week: { 1: ['r1', 'r2'], 3: 'r2', 5: [] } })
-    for (const S of [state(), state({ week: {} }), state({ routines: [] }), withFlags, combined]) {
+    const withWave = state()
+    withWave.routines[0].ex[0] = { ...withWave.routines[0].ex[0], prog: 'wave', trainingMax: 100, wave: [{ blocks: [{ pct: 80, reps: 5, sets: 3 }] }] }
+    for (const S of [state(), state({ week: {} }), state({ routines: [] }), withFlags, combined, withWave]) {
       expect(canonicalPlan(S)).toEqual(serverPayload.canonicalPlan(S))
       expect(planHash(S)).toBe(serverHashPlan(serverPayload.canonicalPlan(S)))
       expect(hashPlan(canonicalPlan(S))).toBe(serverHashPlan(serverPayload.canonicalPlan(S)))
