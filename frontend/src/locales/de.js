@@ -1248,6 +1248,13 @@ export default {
   '{0} %': '{0} %',
   '{0} MB': '{0} MB',
   'Checksum not available — not installing': 'Prüfsumme nicht verfügbar — Installation abgebrochen',
+  // --- coach week (Home progress row, components/QueueRow.jsx) ---
+  'Next: {0}, today': 'Als Nächstes: {0}, heute',
+  'Next: {0}': 'Als Nächstes: {0}',
+  'Next week starts {0}': 'Nächste Woche beginnt am {0}',
+  'Week complete, ask the coach': 'Woche abgeschlossen, frag den Coach',
+  'Up next': 'Als Nächstes',
+  'Later': 'Später',
   // --- combine routines / layout / deload (v1.3.6) ---
   'Add routine': 'Routine hinzufügen',
   'Bring another routine into this session': 'Eine weitere Routine in diese Einheit holen',

@@ -19,6 +19,7 @@ import { startCadence } from './coach/cadence.js';
 import { startWarmup } from './coach/warmup.js';
 import { dayReminderPush, restTimerPush, testPush } from './push-messages.js';
 import { verifyError } from './verify-error.js';
+import { effectiveRoutineId } from './queue.js';
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
@@ -268,16 +269,7 @@ function cancelRestTimer(userId, deviceId) {
 const deviceIdOf = v => (typeof v === 'string' && /^[A-Za-z0-9_-]{8,64}$/.test(v) ? v : undefined);
 
 // "Workout planned today" reminder — one per user per day, at their chosen time.
-// Duplicated (not imported) from frontend/src/lib/history.js effectiveRoutineId — tiny pure helper, not worth sharing across the two runtimes.
-// The `?.` on each entry is this copy's own: it reads whatever is on disk, including a file written before PUT /api/data dropped null entries.
-// A weekday can hold a routine-id list (combine routines); the reminder only needs the first.
-function effectiveRoutineId(S, iso) {
-  const ov = S.dayPlan?.[iso];
-  if (ov === 'rest') return null;
-  if (ov && S.routines?.some(r => r?.id === ov)) return ov;
-  const wd = new Date(iso + 'T12:00:00').getDay();
-  return [].concat(S.week?.[wd] || []).find(id => S.routines?.some(r => r?.id === id)) || null;
-}
+// effectiveRoutineId (queue-aware) lives in ./queue.js — see there for the DONE RULE.
 // Computes "now" in an arbitrary IANA zone (e.g. "Europe/Lisbon") instead of the server's own —
 // each user's reminder fires by their own clock, wherever they and their phone actually are.
 function userNow(tz) {

@@ -7,6 +7,8 @@ import { t, dateLocale } from '../lib/i18n.js'
 import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, startFlow, starterPlanSheet, bwDeltaColor } from '../sheets.jsx'
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
+import QueueRow from '../components/QueueRow.jsx'
+import { queueView } from '../lib/queue.js'
 import { Button } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { glyphOf } from '../lib/glyphs.js'
@@ -53,12 +55,22 @@ export default function Home() {
   const wkLabel = weekOffset === 0 ? t('This week') : `${wkStart.getDate()} ${wkStart.toLocaleDateString(dateLocale(), { month: 'short' })} – ${wkEnd.getDate()} ${wkEnd.toLocaleDateString(dateLocale(), { month: 'short' })}`
 
   const wThisWeek = S.workouts.filter(w => weekKey(w.d, ws) === weekKey(todayISO(), ws)).length
-  // Days scheduled, not routines — a combined day counts as 1, matching wThisWeek (one w).
-  const plannedPerWeek = Object.values(S.week).filter(ids => ids?.length).length
+  // A coach week (S.queue) read through the same tolerant reader QueueRow uses, so a malformed
+  // queue from another client shows the weekday dots, never an empty card.
+  const queue = queueView(S, todayISO())
+  // Days scheduled, not routines — a combined day counts as 1, matching wThisWeek (one w). A
+  // coach week has no weekdays: its sessions are the plan.
+  const plannedPerWeek = queue ? queue.items.length : Object.values(S.week).filter(ids => ids?.length).length
+  // …and the numerator counts the same thing: the queue's done sessions, not the calendar week's
+  // workouts (a coach week may straddle a weekend, and both fractions sit on one card).
+  const doneThisWeek = queue ? queue.items.length - queue.remaining.length : wThisWeek
   const bwPoints = S.bodyweight.slice(-30).map(b => ({ t: b.t || new Date(b.d).getTime(), y: b.w, d: b.d }))
 
   // today's session shown right under the week strip
   const onToday = () => { if (S.active) nav('/workout'); else if (todayRoutines.length) startFlow(effectiveRoutineIds(S, todayISO())); else dayOverrideSheet(todayISO()) }
+  // A chip on the coach week's progress row starts that one routine, in any order. A session
+  // already in progress wins, as on the today row — starting another would overwrite it.
+  const onQueueStart = id => { if (S.active) nav('/workout'); else startFlow([id]) }
 
   return <div className="narrow">
     <div className="hdr">
@@ -67,12 +79,17 @@ export default function Home() {
     </div>
 
     <div className="card">
-      <div className="row between" style={{ marginBottom: 8 }}>
-        <button className="iconbtn" style={{ width: 30, height: 30, fontSize: 15 }} onClick={() => setWeekOffset(w => w - 1)} aria-label="Previous week"><Icon name="chevronLeft" /></button>
-        <div className="small muted" style={{ fontWeight: 500 }}>{wkLabel}</div>
-        <button className="iconbtn" style={{ width: 30, height: 30, fontSize: 15 }} onClick={() => setWeekOffset(w => w + 1)} aria-label="Next week"><Icon name="chevronRight" /></button>
-      </div>
-      <div className="week">{strip}</div>
+      {/* A coach week runs by order, not by weekday, so its progress row stands in for the
+          seven dots (components/QueueRow.jsx). The today row below stays as it is: the queue's
+          next session reaches it through effectiveRoutineIds like any planned routine. */}
+      {queue ? <QueueRow S={S} today={todayISO()} onStart={onQueueStart} /> : <>
+        <div className="row between" style={{ marginBottom: 8 }}>
+          <button className="iconbtn" style={{ width: 30, height: 30, fontSize: 15 }} onClick={() => setWeekOffset(w => w - 1)} aria-label="Previous week"><Icon name="chevronLeft" /></button>
+          <div className="small muted" style={{ fontWeight: 500 }}>{wkLabel}</div>
+          <button className="iconbtn" style={{ width: 30, height: 30, fontSize: 15 }} onClick={() => setWeekOffset(w => w + 1)} aria-label="Next week"><Icon name="chevronRight" /></button>
+        </div>
+        <div className="week">{strip}</div>
+      </>}
       {/* Once today's session is logged the row stops asking for it. The week strip already
           knew (its dot goes 'done'); this row did not, so a finished day kept showing the
           routine name behind a green Start tag and read as still outstanding (issue #4).
@@ -178,7 +195,7 @@ export default function Home() {
             <Icon name="flame" style={{ color: 'var(--orange)' }} />
             {t('{0} week streak', streakWeeks(S))}
           </div>
-          <div className="muted small" style={{ marginTop: 2 }}>{wThisWeek}{plannedPerWeek ? ' / ' + plannedPerWeek : ''} {t('this week')} · {t(S.workouts.length === 1 ? '{0} workout total' : '{0} workouts total', S.workouts.length)}</div>
+          <div className="muted small" style={{ marginTop: 2 }}>{doneThisWeek}{plannedPerWeek ? ' / ' + plannedPerWeek : ''} {t('this week')} · {t(S.workouts.length === 1 ? '{0} workout total' : '{0} workouts total', S.workouts.length)}</div>
         </div>
         <Icon name="calendar" className="chev" style={{ fontSize: 20 }} />
       </div>

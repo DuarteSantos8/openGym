@@ -1228,6 +1228,13 @@ export default {
   '{0} %': '%{0}',
   '{0} MB': '{0} MB',
   'Checksum not available — not installing': 'Sağlama toplamı yok — yüklenmedi',
+  // --- coach week (Home progress row, components/QueueRow.jsx) ---
+  'Next: {0}, today': 'Sıradaki: {0}, bugün',
+  'Next: {0}': 'Sıradaki: {0}',
+  'Next week starts {0}': 'Gelecek hafta {0} başlıyor',
+  'Week complete, ask the coach': 'Hafta tamamlandı, koça sor',
+  'Up next': 'Sıradaki',
+  'Later': 'Daha sonra',
   // --- combine routines / layout / deload (v1.3.6) ---
   'Add routine': 'Rutin ekle',
   'Bring another routine into this session': 'Bu seansa başka bir rutin getir',

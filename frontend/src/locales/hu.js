@@ -1231,6 +1231,13 @@ export default {
   '{0} %': '{0} %',
   '{0} MB': '{0} MB',
   'Checksum not available — not installing': 'Ellenőrző összeg nem érhető el — nincs telepítés',
+  // --- coach week (Home progress row, components/QueueRow.jsx) ---
+  'Next: {0}, today': 'Következő: {0}, ma',
+  'Next: {0}': 'Következő: {0}',
+  'Next week starts {0}': 'A következő hét kezdete: {0}',
+  'Week complete, ask the coach': 'A hét kész, kérdezd az edzőt',
+  'Up next': 'Következő',
+  'Later': 'Később',
   // --- combine routines / layout / deload (v1.3.6) ---
   'Add routine': 'Rutin hozzáadása',
   'Bring another routine into this session': 'Másik rutin behozása ebbe az edzésbe',
