@@ -248,8 +248,12 @@ function prescribeWave(S, cfg, inc, unit) {
   }
 
   const rowsAt = k => stageRows(wave[k], base, inc)
-  const topAt = k => snapWeight(base * topPctOf(wave[k]) / 100, inc)
-  const pctsAt = k => wave[k].sets.map(s => s.pct).join('/')
+  const topAt = k => snapWeight(base * anchorPctOf(wave[k]) / 100, inc)
+  const pctsAt = k => wave[k].blocks.map(b => b.pct).join('/')
+  // The anchor row is the cycle's own signal (spec: "Il blocco anchor sostituisce l'euristica
+  // del solo top set con una semantica esplicita") — falls back to the session's overall top
+  // weight only for a session logged before this policy carried an anchor row at all.
+  const aw = s => s.anchorWeight ?? s.weight
 
   // Only a session that actually carries the prescribed rows is a wave session: an unrelated
   // logged set for the same exercise (a 1RM test rep, or history from before this policy) must
@@ -268,11 +272,11 @@ function prescribeWave(S, cfg, inc, unit) {
   // Which stage was that? The nearest top set. A tie goes to the earlier stage (`<`, not `<=`),
   // which is the conservative read: repeat lighter work rather than skip ahead.
   let k = 0
-  for (let i = 1; i < stages; i++) if (Math.abs(topAt(i) - last.weight) < Math.abs(topAt(k) - last.weight)) k = i
-  // A stage with `repeat: 3` is three identical sessions. Consecutive sessions at the same top
-  // weight are the same stage run again — the same nearest-match, counted.
+  for (let i = 1; i < stages; i++) if (Math.abs(topAt(i) - aw(last)) < Math.abs(topAt(k) - aw(last))) k = i
+  // A stage with `repeat: 3` is three identical sessions. Consecutive sessions at the same
+  // anchor weight are the same stage run again — the same nearest-match, counted.
   let ran = 0
-  for (let i = sessions.length - 1; i >= 0 && sessions[i].weight === last.weight; i--) ran++
+  for (let i = sessions.length - 1; i >= 0 && aw(sessions[i]) === aw(last); i--) ran++
 
   let nextK
   let bumped = false
@@ -406,14 +410,22 @@ export function readSession(entry, fallback) {
   }
   const goal = target.reps || 0
   const reps = sets.map(s => (s.done ? (s.r || 0) : 0))
+  // Required and anchor rows must be completed for the session to count; an (eventual)
+  // warm-up-type row is recorded but never gates it — a `role: 'accessory'` row will join it
+  // here once something actually writes that role.
+  const graded = rows ? rows.map((row, i) => [row, i]).filter(([row]) => row.blockType !== 'warmup') : null
+  // The anchor row's own logged weight — what a wave stage is actually identified by
+  // (prescribeWave), instead of the session's overall heaviest set.
+  const anchorIdx = rows ? rows.findIndex(row => row.role === 'anchor') : -1
   return {
     mode, target, goal, reps,
     weight: Math.max(0, ...sets.filter(s => s.done).map(s => s.w || 0)),
+    ...(anchorIdx >= 0 ? { anchorWeight: sets[anchorIdx] && sets[anchorIdx].done ? (sets[anchorIdx].w || 0) : 0 } : {}),
     count: reps.length,                                   // the dimension bodyweight work grows (#33)
     low: reps.length ? Math.min(...reps) : 0,
     amrap: reps.length ? reps[reps.length - 1] : 0,       // Greyskull's final set
     ok: rows
-      ? enough && reps.length > 0 && rows.every((row, i) => reps[i] >= (row.r || 0))
+      ? enough && reps.length > 0 && graded.every(([row, i]) => reps[i] >= (row.r || 0))
       : goal > 0 && enough && reps.length > 0 && reps.every(r => r >= goal)
   }
 }

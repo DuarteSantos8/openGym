@@ -960,6 +960,43 @@ describe('readSession with a per-row target', () => {
       { w: 60, r: 5, done: true }, { w: 60, r: 5, done: true }, { w: 60, r: 5, done: true },
     ] }).ok).toBe(true)
   })
+
+  it('grades required and anchor rows, but never a warm-up-type row', () => {
+    const rows = [
+      { w: 40, r: 8, role: 'required', blockType: 'warmup' },
+      { w: 65, r: 5, role: 'anchor', blockType: 'work' }
+    ]
+    const s = readSession({ id: LIFT, target: { sets: 2, reps: 5, rows }, sets: [
+      { w: 40, r: 3, done: true },   // short — would fail a uniform grading
+      { w: 65, r: 5, done: true }
+    ] })
+    expect(s.ok).toBe(true)
+  })
+})
+
+describe('readSession exposes the anchor row\'s own weight', () => {
+  it('reads the weight from whichever row is marked anchor, not the heaviest one', () => {
+    const rows = [
+      { w: 100, r: 1, role: 'required', blockType: 'work' },
+      { w: 80, r: 5, role: 'anchor', blockType: 'work' }
+    ]
+    const s = readSession({ id: LIFT, target: { sets: 2, reps: 1, rows }, sets: [
+      { w: 100, r: 1, done: true }, { w: 80, r: 5, done: true }
+    ] })
+    expect(s.weight).toBe(100)        // still the session's own heaviest logged set
+    expect(s.anchorWeight).toBe(80)   // but the stage-matching signal is the anchor row alone
+  })
+
+  it('omits anchorWeight when nothing in the target is marked anchor', () => {
+    const s = readSession({ id: LIFT, target: { sets: 1, reps: 5, rows: [{ w: 60, r: 5 }] }, sets: [{ w: 60, r: 5, done: true }] })
+    expect(s.anchorWeight).toBeUndefined()
+  })
+
+  it('reads 0 when the anchor row itself was never checked off', () => {
+    const rows = [{ w: 65, r: 5, role: 'anchor', blockType: 'work' }]
+    const s = readSession({ id: LIFT, target: { sets: 1, reps: 5, rows }, sets: [{ w: 65, r: 3, done: false }] })
+    expect(s.anchorWeight).toBe(0)
+  })
 })
 
 describe('wave progression', () => {
@@ -995,13 +1032,13 @@ describe('wave progression', () => {
   it('prescribes stage 1 as the very first session', () => {
     const p = nextPrescription({ unit: 'kg', workouts: [] }, CFG, null)
     expect(p).toMatchObject({ policy: 'wave', kind: 'first', stage: 1, stages: 4 })
-    expect(p.rows).toEqual([{ w: 65, r: 5 }, { w: 75, r: 5 }, { w: 85, r: 5 }])
+    expect(p.rows).toMatchObject([{ w: 65, r: 5 }, { w: 75, r: 5 }, { w: 85, r: 5 }])
   })
 
   it('moves to stage 2 after a clean stage 1', () => {
     const p = nextPrescription(waveHist(LIFT, [W1]), CFG, null)
     expect(p).toMatchObject({ kind: 'up', stage: 2, stages: 4 })
-    expect(p.rows).toEqual([{ w: 70, r: 3 }, { w: 80, r: 3 }, { w: 90, r: 3 }])
+    expect(p.rows).toMatchObject([{ w: 70, r: 3 }, { w: 80, r: 3 }, { w: 90, r: 3 }])
     expect(p.trainingMax).toBeUndefined()
   })
 
@@ -1012,27 +1049,27 @@ describe('wave progression', () => {
     const missed = [[65, 5], [75, 5], [85, 3]]
     const p = nextPrescription(waveHist(LIFT, [missed], STAGE1_TARGET), CFG, null)
     expect(p).toMatchObject({ kind: 'hold', stage: 1 })
-    expect(p.rows).toEqual([{ w: 65, r: 5 }, { w: 75, r: 5 }, { w: 85, r: 5 }])
+    expect(p.rows).toMatchObject([{ w: 65, r: 5 }, { w: 75, r: 5 }, { w: 85, r: 5 }])
   })
 
   it('advances past a missed stage when told to', () => {
     const missed = [[65, 5], [75, 5], [85, 3]]
     const p = nextPrescription(waveHist(LIFT, [missed], STAGE1_TARGET), { ...CFG, onMiss: 'advance' }, null)
     expect(p).toMatchObject({ kind: 'hold', stage: 2 })
-    expect(p.rows).toEqual([{ w: 70, r: 3 }, { w: 80, r: 3 }, { w: 90, r: 3 }])
+    expect(p.rows).toMatchObject([{ w: 70, r: 3 }, { w: 80, r: 3 }, { w: 90, r: 3 }])
   })
 
   it('calls a deload stage a deload', () => {
     const p = nextPrescription(waveHist(LIFT, [W1, W2, W3]), CFG, null)
     expect(p).toMatchObject({ kind: 'deload', stage: 4 })
-    expect(p.rows).toEqual([{ w: 40, r: 5 }, { w: 50, r: 5 }, { w: 60, r: 5 }])
+    expect(p.rows).toMatchObject([{ w: 40, r: 5 }, { w: 50, r: 5 }, { w: 60, r: 5 }])
   })
 
   it('closes the cycle by bumping the training max and going back to stage 1', () => {
     const p = nextPrescription(waveHist(LIFT, [W1, W2, W3, W4]), CFG, null)
     expect(p).toMatchObject({ kind: 'up', stage: 1, stages: 4, trainingMax: 102.5 })
     // 65 % of 102.5 kg is 66.625, which snaps to 67.5 on a 2.5 kg grid — not 65's own multiple.
-    expect(p.rows).toEqual([{ w: 67.5, r: 5 }, { w: 77.5, r: 5 }, { w: 87.5, r: 5 }])
+    expect(p.rows).toMatchObject([{ w: 67.5, r: 5 }, { w: 77.5, r: 5 }, { w: 87.5, r: 5 }])
   })
 
   it('does not bump when the last stage was missed', () => {
@@ -1049,11 +1086,11 @@ describe('wave progression', () => {
     const p = nextPrescription(waveHist(LIFT, [W1, W2, W3, W4]), { ...CFG, bump: 'off' }, null)
     expect(p).toMatchObject({ kind: 'up', stage: 1 })
     expect(p.trainingMax).toBeUndefined()
-    expect(p.rows).toEqual([{ w: 65, r: 5 }, { w: 75, r: 5 }, { w: 85, r: 5 }])
+    expect(p.rows).toMatchObject([{ w: 65, r: 5 }, { w: 75, r: 5 }, { w: 85, r: 5 }])
   })
 
   it('holds a repeat stage for as many sessions as it asks for', () => {
-    const wave = [{ repeat: 2, sets: [{ pct: 80, r: 5 }] }, { sets: [{ pct: 90, r: 3 }] }]
+    const wave = [{ repeat: 2, blocks: [{ pct: 80, reps: 5 }] }, { blocks: [{ pct: 90, reps: 3 }] }]
     const cfg = { ...CFG, wave, sets: 1 }
     const one = [[80, 5]]
     expect(nextPrescription(waveHist(LIFT, [one]), cfg, null)).toMatchObject({ kind: 'up', stage: 1 })
