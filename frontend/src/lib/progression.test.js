@@ -1184,3 +1184,27 @@ describe('applyPrescription with rows', () => {
     expect(out.map(s => s.w)).toEqual([62.5, 62.5])
   })
 })
+
+describe('applyPrescription carries block metadata onto the row', () => {
+  const P = {
+    policy: 'wave', kind: 'up',
+    rows: [
+      { w: 65, r: 5, blockId: 'b1', stageId: 's1', role: 'required', blockType: 'work' },
+      { w: 85, r: 3, blockId: 'b2', stageId: 's1', role: 'anchor', blockType: 'work' }
+    ]
+  }
+
+  it('stamps each pending row with the block it came from', () => {
+    const out = applyPrescription([
+      { w: 60, r: 5, done: false }, { w: 60, r: 5, done: false }
+    ], P)
+    expect(out[0]).toEqual({ w: 65, r: 5, done: false, blockId: 'b1', stageId: 's1', role: 'required', blockType: 'work' })
+    expect(out[1]).toEqual({ w: 85, r: 3, done: false, blockId: 'b2', stageId: 's1', role: 'anchor', blockType: 'work' })
+  })
+
+  it('leaves an already-logged row untouched, block metadata included', () => {
+    const logged = { w: 65, r: 5, done: true, blockId: 'old', stageId: 'old-stage', role: 'required', blockType: 'work' }
+    const out = applyPrescription([logged, { w: 60, r: 5, done: false }], P)
+    expect(out[0]).toBe(logged)
+  })
+})

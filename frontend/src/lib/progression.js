@@ -676,8 +676,10 @@ export function applyPrescription(sets, p, step = 2.5) {
     if (rows) {
       const row = rows[ordinal]
       // Past the end of the wave's rows sits whatever the plan added of its own — an
-      // intensifier's extra sets keep their own load.
-      if (row) { o.w = row.w; o.r = row.r }
+      // intensifier's extra sets keep their own load. A row with no block metadata (every
+      // non-wave policy that still uses `p.rows`, none exist today) simply stamps `undefined`,
+      // which JSON.stringify and vitest's toEqual both already treat as absent.
+      if (row) { o.w = row.w; o.r = row.r; o.blockId = row.blockId; o.stageId = row.stageId; o.role = row.role; o.blockType = row.blockType }
       return o
     }
     if (p.weight != null) o.w = p.weight
