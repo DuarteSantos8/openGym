@@ -224,6 +224,22 @@ describe('weekTally — the streak card fraction', () => {
     expect(weekTally(S({ queue: null }), TODAY)).toEqual({ done: 0, planned: 0 })
   })
 
+  it('the own half of a merged session stays done after its routine is deleted; only the plan forgets it', () => {
+    const noOwn = routines.filter(r => r.id !== 'own')
+    const merged = w({ routineIds: ['d1', 'own'], name: 'US W1 D1 + Core' })
+    expect(weekTally(S({ routines: noOwn, workouts: [merged] }), TODAY)).toEqual({ done: 2, planned: 3 })
+    expect(weekTally(S({ routines: noOwn, week: { 3: ['own'] }, workouts: [merged] }), TODAY)).toEqual({ done: 2, planned: 3 })
+    // the same training as two workouts counts 2 — merged must not count less
+    const split = [w({ id: 'a', routineIds: ['d1'], name: 'US W1 D1' }), w({ id: 'b', start: SINCE + 7200000, routineIds: ['own'], name: 'Core' })]
+    expect(weekTally(S({ routines: noOwn, workouts: split }), TODAY)).toEqual({ done: 2, planned: 3 })
+  })
+
+  it('a weekday pointing only at a deleted routine is not a planned day — the strip shows it as rest', () => {
+    expect(weekTally(S({ queue: null, week: { 3: ['gone'] } }), TODAY)).toEqual({ done: 0, planned: 0 })
+    expect(weekTally(S({ queue: null, week: { 3: ['gone', 'own'], 5: 'gone' } }), TODAY)).toEqual({ done: 0, planned: 1 })
+    expect(weekTally(S({ week: { 3: ['gone'] } }), TODAY)).toEqual({ done: 0, planned: 3 })
+  })
+
   it('a coach week alone: the queue\'s sessions, done by the DONE RULE, whatever calendar week they fell in', () => {
     expect(weekTally(S(), TODAY)).toEqual({ done: 0, planned: 3 })
     expect(weekTally(S({ workouts: [w({ routineIds: ['d1'] })] }), TODAY)).toEqual({ done: 1, planned: 3 })
