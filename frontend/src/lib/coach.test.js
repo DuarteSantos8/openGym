@@ -103,7 +103,7 @@ describe('plan fingerprint', () => {
     base.routines[0].ex[0] = { ...base.routines[0].ex[0], prog: 'wave', trainingMax: 100 }
     for (const [field, value] of Object.entries({
       trainingMax: 102.5, pctBase: '1rm', onMiss: 'advance', bump: 'off',
-      wave: [{ repeat: 1, sets: [{ pct: 80, r: 5, n: 3 }] }]
+      wave: [{ repeat: 1, blocks: [{ pct: 80, reps: 5, sets: 3 }] }]
     })) {
       const edited = state(); edited.routines[0].ex[0] = { ...base.routines[0].ex[0], [field]: value }
       expect(planHash(edited), field).not.toBe(planHash(base))

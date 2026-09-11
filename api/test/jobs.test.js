@@ -159,7 +159,7 @@ test('a wave\'s own settings move the fingerprint too', () => {
 
   assert.equal(h(base), h({ ...base }), 'the same wave hashes the same');
   assert.notEqual(h(base), h({ ...base, trainingMax: 102.5 }), 'a bumped training max must move the fingerprint');
-  assert.notEqual(h(base), h({ ...base, wave: [{ sets: [{ pct: 80, r: 5, n: 1 }] }] }), 'an edited cycle must move the fingerprint');
+  assert.notEqual(h(base), h({ ...base, wave: [{ blocks: [{ pct: 80, reps: 5, sets: 1 }] }] }), 'an edited cycle must move the fingerprint');
   // The wave fields must not leak a fingerprint move onto a plan that was never a wave.
   const plain = { id: '0001', sets: 3, reps: 10 };
   assert.equal(h(plain), h({ ...plain, trainingMax: 999 }), 'trainingMax is ignored outside prog: wave');

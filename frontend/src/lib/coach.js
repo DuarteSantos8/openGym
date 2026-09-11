@@ -16,7 +16,7 @@ import { EXIDX } from './exercises.js'
 import { modeOf, isBw, isPerSide, cleanupSg } from './history.js'
 import { uid, todayISO, DAYN } from './format.js'
 import { mergePlan } from './plan-share.js'
-import { POLICIES } from './progression.js'
+import { POLICIES, waveOf } from './progression.js'
 import { t } from './i18n.js'
 
 // Bumping this re-prompts everyone: it means what we share, or who we share it with, changed.
@@ -101,7 +101,7 @@ export function canonicalPlan(S) {
           pctBase: e.prog === 'wave' ? (e.pctBase === '1rm' ? '1rm' : 'tm') : '',
           onMiss: e.prog === 'wave' ? (e.onMiss === 'advance' ? 'advance' : 'repeat') : '',
           bump: e.prog === 'wave' ? (e.bump === 'off' ? 'off' : 'step') : '',
-          wave: e.prog === 'wave' && Array.isArray(e.wave) ? e.wave : []
+          wave: e.prog === 'wave' ? waveOf(e) : []
         }
       })
     })),

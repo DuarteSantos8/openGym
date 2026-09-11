@@ -42,7 +42,7 @@ test('a wave exercise carries its training max and cycle to the Coach, not just 
   const S = sampleState({
     routines: [{
       id: 'r1', name: 'Full body A', emoji: '💪', prog: 'linear',
-      ex: [{ id: '0001', sets: 3, reps: 10, mode: 'reps', prog: 'wave', trainingMax: 100, pctBase: '1rm', onMiss: 'advance', bump: 'off', wave: [{ sets: [{ pct: 80, r: 5, n: 1 }] }] }]
+      ex: [{ id: '0001', sets: 3, reps: 10, mode: 'reps', prog: 'wave', trainingMax: 100, pctBase: '1rm', onMiss: 'advance', bump: 'off', wave: [{ blocks: [{ pct: 80, reps: 5, sets: 1 }] }] }]
     }]
   });
   const p = payload.build(S, { handle: handleFor('u1'), kind: 'review' });
@@ -51,7 +51,7 @@ test('a wave exercise carries its training max and cycle to the Coach, not just 
   assert.equal(ex.pctBase, '1rm');
   assert.equal(ex.onMiss, 'advance');
   assert.equal(ex.bump, 'off');
-  assert.deepEqual(ex.wave, [{ sets: [{ pct: 80, r: 5, n: 1 }] }]);
+  assert.deepEqual(ex.wave, [{ blocks: [{ pct: 80, reps: 5, sets: 1 }] }]);
 });
 
 test('the same profile always gets the same handle, and two profiles never share one', () => {
