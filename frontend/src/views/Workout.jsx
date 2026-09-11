@@ -418,9 +418,18 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
         const isFirstWarmup = warm && !warmBefore
         // Numbering restarts per phase: with two warm-ups the first work set reads 1, not 3.
         const phaseNum = entry.sets.slice(0, i + 1).filter(x => isWarmupRow(x) === warm).length
+        // A wave stage groups its rows into blocks (5/3/1: three, one per percentage) — a new
+        // block gets its own small header, same as a warm-up does, but only when the block is
+        // worth calling out: an ordinary `required` row stays silent, matching how the warm-up
+        // header only appears once rather than on every row.
+        const blockChanged = !warm && s.blockId && s.blockId !== entry.sets[i - 1]?.blockId
+        const blockLabel = blockChanged && s.role === 'anchor' ? t('Anchor set')
+          : blockChanged && s.role === 'accessory' ? t('Accessory')
+            : null
         return <div key={i}>
           {isFirstWarmup && <div className="setph">{t('Warm-up')}</div>}
           {!warm && warmBefore && <div className="setsep" />}
+          {blockLabel && <div className="setph">{blockLabel}</div>}
           {perSide && !warm && isSideSet(s) ? (
             // Unilateral work set: the number sits beside a two-row L/R stack, each side logged
             // and ticked on its own (issue #60).
