@@ -112,4 +112,23 @@ describe('wave configuration', () => {
     expect(saved.pctBase).toBeUndefined()
     expect(saved.bump).toBeUndefined()
   })
+
+  it('"Add a set" appends a fresh-id block and never persists a role into the saved wave', () => {
+    const config = renderConfig(vi.fn(), {
+      sets: 3, reps: 5, weight: 0, mode: 'reps', prog: 'wave', trainingMax: 100,
+    })
+    const addSet = [...config.host.querySelectorAll('button')]
+      .find(b => /add a set/i.test(b.textContent.trim()))
+    act(() => { addSet.click() })
+    const save = [...config.host.querySelectorAll('button')]
+      .find(b => /^(save|add to routine)$/i.test(b.textContent.trim()))
+    act(() => { save.click() })
+    const saved = config.onSave.mock.calls[0][0]
+    // The default first stage has 3 blocks; "Add a set" duplicates its last one.
+    expect(saved.wave[0].blocks.length).toBe(4)
+    const ids = saved.wave[0].blocks.map(b => b.id)
+    expect(new Set(ids).size).toBe(ids.length) // the copy got its own id, not a duplicate
+    // Fix 3: setWave strips the derived `role` before persisting, everywhere.
+    expect(saved.wave.flatMap(w => w.blocks).every(b => !('role' in b))).toBe(true)
+  })
 })

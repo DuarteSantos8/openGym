@@ -115,7 +115,9 @@ describe('plan fingerprint', () => {
     withFlags.routines[0].ex[0] = { ...withFlags.routines[0].ex[0], repsMin: 8, repsMax: 20, bodyweight: true }
     withFlags.routines[1].ex[0] = { ...withFlags.routines[1].ex[0], side: true, reps: 16 }
     const combined = state({ week: { 1: ['r1', 'r2'], 3: 'r2', 5: [] } })
-    for (const S of [state(), state({ week: {} }), state({ routines: [] }), withFlags, combined]) {
+    const withWave = state()
+    withWave.routines[0].ex[0] = { ...withWave.routines[0].ex[0], prog: 'wave', trainingMax: 100, wave: [{ blocks: [{ pct: 80, reps: 5, sets: 3 }] }] }
+    for (const S of [state(), state({ week: {} }), state({ routines: [] }), withFlags, combined, withWave]) {
       expect(canonicalPlan(S)).toEqual(serverPayload.canonicalPlan(S))
       expect(planHash(S)).toBe(serverHashPlan(serverPayload.canonicalPlan(S)))
       expect(hashPlan(canonicalPlan(S))).toBe(serverHashPlan(serverPayload.canonicalPlan(S)))

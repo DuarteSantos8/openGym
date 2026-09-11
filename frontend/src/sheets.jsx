@@ -1068,7 +1068,7 @@ function WaveEditor({ c, setC, ex, unit }) {
   const best = best1RM(st, ex.id)
   const wave = waveOf(c)
   const tmPct = Math.round(deloadFactorOf(c) * 100)
-  const setWave = next => setC(x => ({ ...x, wave: next }))
+  const setWave = next => setC(x => ({ ...x, wave: next.map(w => ({ ...w, blocks: w.blocks.map(({ role, ...b }) => b) })) }))
   const patchStage = (wi, patch) => setWave(wave.map((w, i) => (i === wi ? { ...w, ...patch } : w)))
   const patchBlock = (wi, bi, patch) => patchStage(wi, { blocks: wave[wi].blocks.map((b, i) => (i === bi ? { ...b, ...patch } : b)) })
   return <>
