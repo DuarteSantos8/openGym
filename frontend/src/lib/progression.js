@@ -133,20 +133,52 @@ export function deloadTo(cur, step, factor = DELOAD_FACTOR) {
 }
 
 /* -------------------------------- percentage waves -------------------------------- */
-// A "wave" is a stored list of stages; each stage is a list of prescriptive working sets given
-// as `n × r @ pct` of a base (a training max, or the estimated 1RM). 5/3/1 is the template
-// this ships with, but nothing below knows about Wendler: any scheme that is "a sequence of
-// stages, a fixed base bump when the cycle closes, repeat the stage on a miss" is expressible
-// as data — DUP, hold stages, block peaking — which is why this is one policy and not five.
+// A "wave" is a stored list of stages; each stage is an ordered list of SetBlocks — a block is
+// a prescriptive group of identical working sets given as `sets × reps @ pct` of a base (a
+// training max, or the estimated 1RM). 5/3/1 is the template this ships with, but nothing below
+// knows about Wendler: any scheme that is "a sequence of stages, a fixed base bump when the
+// cycle closes, repeat the stage on a miss" is expressible as data — DUP, hold stages, block
+// peaking — which is why this is one policy and not five.
+//
+// A block's `role` is never stored: it is derived every time a stage is normalised (the last
+// non-warmup block is the stage's `anchor`, everything else is `required`). That keeps the
+// stage-matching signal below explicit — an anchor, not an inferred "heaviest percentage" —
+// without needing an editor UI for it yet; nothing currently writes any other role.
 export const DEFAULT_WAVE = [
-  { sets: [{ r: 5, pct: 65 }, { r: 5, pct: 75 }, { r: 5, pct: 85 }] },
-  { sets: [{ r: 3, pct: 70 }, { r: 3, pct: 80 }, { r: 3, pct: 90 }] },
-  { sets: [{ r: 5, pct: 75 }, { r: 3, pct: 85 }, { r: 1, pct: 95 }] },
-  { deload: true, sets: [{ r: 5, pct: 40 }, { r: 5, pct: 50 }, { r: 5, pct: 60 }] }
+  { blocks: [{ pct: 65, reps: 5 }, { pct: 75, reps: 5 }, { pct: 85, reps: 5 }] },
+  { blocks: [{ pct: 70, reps: 3 }, { pct: 80, reps: 3 }, { pct: 90, reps: 3 }] },
+  { blocks: [{ pct: 75, reps: 5 }, { pct: 85, reps: 3 }, { pct: 95, reps: 1 }] },
+  { deload: true, blocks: [{ pct: 40, reps: 5 }, { pct: 50, reps: 5 }, { pct: 60, reps: 5 }] }
 ]
 
 // A percentage above the base is a typo, not a program; below zero is not a set at all.
 const clampPct = v => Math.min(100, Math.max(0, Number(v) || 0))
+
+// One stage, normalised: every block gets a stable id (kept if the source already had one — a
+// block's id is written once, by whatever creates it, and never regenerated; this positional
+// fallback only fires for a stage that predates ids, i.e. the built-in template), a set count, a
+// rep count, a clamped percentage, a type, and exactly one `role: 'anchor'`.
+function normalizeStage(w, si) {
+  const blocks = (Array.isArray(w?.blocks) ? w.blocks : [])
+    .map((b, bi) => ({
+      id: b?.id || `s${si}b${bi}`,
+      sets: Math.max(1, Math.round(Number(b?.sets)) || 1),
+      reps: Math.max(1, Math.round(Number(b?.reps)) || 1),
+      pct: clampPct(b?.pct),
+      type: b?.type === 'warmup' || b?.type === 'backoff' ? b.type : 'work'
+    }))
+    .filter(b => b.pct > 0)
+  if (!blocks.length) return null
+  const workBlocks = blocks.filter(b => b.type !== 'warmup')
+  const anchor = workBlocks.length ? workBlocks[workBlocks.length - 1] : blocks[blocks.length - 1]
+  blocks.forEach(b => { b.role = b === anchor ? 'anchor' : 'required' })
+  return {
+    id: w?.id || `s${si}`,
+    ...(w?.deload ? { deload: true } : {}),
+    repeat: Math.max(1, Math.round(Number(w?.repeat)) || 1),
+    blocks
+  }
+}
 
 /**
  * The wave in force for one exercise, normalised. A config with no wave — or one a hand-edited
@@ -154,39 +186,33 @@ const clampPct = v => Math.min(100, Math.max(0, Number(v) || 0))
  * so the policy selector never has to write the template out to make the engine work.
  */
 export function waveOf(cfg) {
-  const stages = (Array.isArray(cfg?.wave) ? cfg.wave : [])
-    .map(w => ({
-      ...(w?.deload ? { deload: true } : {}),
-      repeat: Math.max(1, Math.round(Number(w?.repeat)) || 1),
-      sets: (Array.isArray(w?.sets) ? w.sets : [])
-        .map(s => ({
-          pct: clampPct(s?.pct),
-          r: Math.max(1, Math.round(Number(s?.r)) || 1),
-          n: Math.max(1, Math.round(Number(s?.n)) || 1)
-        }))
-        .filter(s => s.pct > 0)
-    }))
-    .filter(w => w.sets.length)
+  const stages = (Array.isArray(cfg?.wave) ? cfg.wave : []).map(normalizeStage).filter(Boolean)
   if (stages.length) return stages
-  return DEFAULT_WAVE.map(w => ({
-    ...(w.deload ? { deload: true } : {}),
-    repeat: 1,
-    sets: w.sets.map(s => ({ pct: s.pct, r: s.r, n: 1 }))
-  }))
+  return DEFAULT_WAVE.map(normalizeStage)
 }
 
-/** One stage resolved against a base: every set expanded by `n`, every load on the exercise's grid. */
+/**
+ * One stage resolved against a base: every block expanded by its `sets` count, every load on
+ * the exercise's grid, every row stamped with the block/stage it came from. applyPrescription
+ * carries these four fields straight onto the session's own rows; readSession reads them back to
+ * grade required/anchor rows without an (eventual) warm-up block dragging the whole stage down.
+ */
 export function stageRows(stage, base, step) {
   const rows = []
-  ;(stage?.sets || []).forEach(s => {
-    const w = snapWeight(base * s.pct / 100, step)
-    for (let i = 0; i < (s.n || 1); i++) rows.push({ w, r: s.r })
+  ;(stage?.blocks || []).forEach(b => {
+    const w = snapWeight(base * b.pct / 100, step)
+    for (let i = 0; i < (b.sets || 1); i++) {
+      rows.push({ w, r: b.reps, blockId: b.id, stageId: stage.id, role: b.role, blockType: b.type })
+    }
   })
   return rows
 }
 
-/** The heaviest percentage in a stage — the signal a logged session is matched back against. */
-export const topPctOf = stage => Math.max(0, ...(stage?.sets || []).map(s => s.pct))
+/** The stage's anchor block — the one that decides which stage a logged session belongs to, and
+ * whether the cycle moves on (see prescribeWave). Falls back to the stage's last block if none is
+ * marked; normalizeStage always marks one, so this only guards a stage built by hand outside it. */
+export const anchorBlockOf = stage => (stage?.blocks || []).find(b => b.role === 'anchor') || (stage?.blocks || [])[(stage?.blocks || []).length - 1]
+export const anchorPctOf = stage => anchorBlockOf(stage)?.pct || 0
 
 /**
  * Percentage / training-max programming.

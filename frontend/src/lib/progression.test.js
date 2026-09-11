@@ -3,7 +3,7 @@ import {
   readSession, sessionsFor, stallCount, nextPrescription, applyPrescription,
   policyFor, defaultIncrement, weightIncrement, epley1RM, deloadTarget1RM,
   deloadFactorOf, DELOAD_FACTOR, POLICIES_FOR, DELOAD_AFTER, MAX_BW_SETS,
-  DEFAULT_WAVE, waveOf, stageRows, topPctOf
+  DEFAULT_WAVE, waveOf, stageRows, anchorBlockOf, anchorPctOf
 } from './progression.js'
 import { entryExcluded } from './history.js'
 import { EXDB } from './exercises.js'
@@ -837,34 +837,64 @@ describe('drop-sets and rest-pause sets in progression', () => {
 describe('wave template and resolution', () => {
   it('ships a four-stage 5/3/1 template', () => {
     expect(DEFAULT_WAVE).toHaveLength(4)
-    expect(DEFAULT_WAVE[0].sets.map(s => s.pct)).toEqual([65, 75, 85])
-    expect(DEFAULT_WAVE[2].sets.map(s => s.r)).toEqual([5, 3, 1])
+    expect(DEFAULT_WAVE[0].blocks.map(b => b.pct)).toEqual([65, 75, 85])
+    expect(DEFAULT_WAVE[2].blocks.map(b => b.reps)).toEqual([5, 3, 1])
     expect(DEFAULT_WAVE[3].deload).toBe(true)
   })
 
   it('falls back to the template when the config has no usable wave', () => {
-    expect(waveOf({}).map(w => w.sets.length)).toEqual([3, 3, 3, 3])
+    expect(waveOf({}).map(w => w.blocks.length)).toEqual([3, 3, 3, 3])
     expect(waveOf({ wave: [] })).toEqual(waveOf({}))
     expect(waveOf({ wave: 'nonsense' })).toEqual(waveOf({}))
-    expect(waveOf({ wave: [{ sets: [] }] })).toEqual(waveOf({}))
+    expect(waveOf({ wave: [{ blocks: [] }] })).toEqual(waveOf({}))
   })
 
-  it('normalises every stage and set it is given', () => {
-    const w = waveOf({ wave: [{ deload: true, repeat: '3', sets: [{ pct: 250, r: 0, n: '2' }, { pct: 0 }] }] })
+  it('normalises every stage and block it is given, and assigns stable ids', () => {
+    const w = waveOf({ wave: [{ deload: true, repeat: '3', blocks: [{ pct: 250, reps: 0, sets: '2' }, { pct: 0 }] }] })
     expect(w).toHaveLength(1)
-    expect(w[0]).toEqual({ deload: true, repeat: 3, sets: [{ pct: 100, r: 1, n: 2 }] })
+    // The second block (pct: 0) is dropped, same as an unusable set always was — the survivor
+    // is then the only block in its stage, so it is automatically the anchor.
+    expect(w[0]).toEqual({
+      id: 's0', deload: true, repeat: 3,
+      blocks: [{ id: 's0b0', sets: 2, reps: 1, pct: 100, type: 'work', role: 'anchor' }]
+    })
   })
 
-  it('expands n and snaps each row to the load grid', () => {
-    const stage = { repeat: 1, sets: [{ pct: 65, r: 5, n: 2 }, { pct: 85, r: 5, n: 1 }] }
-    expect(stageRows(stage, 100, 2.5)).toEqual([{ w: 65, r: 5 }, { w: 65, r: 5 }, { w: 85, r: 5 }])
-    expect(stageRows(stage, 97, 2.5)).toEqual([{ w: 62.5, r: 5 }, { w: 62.5, r: 5 }, { w: 82.5, r: 5 }])
+  it('keeps an id a block already had, rather than reassigning one', () => {
+    const w = waveOf({ wave: [{ id: 'my-stage', blocks: [{ id: 'my-block', pct: 80, reps: 5, sets: 1 }] }] })
+    expect(w[0].id).toBe('my-stage')
+    expect(w[0].blocks[0].id).toBe('my-block')
   })
 
-  it('reports the heaviest percentage of a stage', () => {
-    expect(topPctOf(waveOf({})[0])).toBe(85)
-    expect(topPctOf(waveOf({})[3])).toBe(60)
-    expect(topPctOf(null)).toBe(0)
+  it('expands each block by its set count and snaps every row to the load grid, stamped with its block', () => {
+    const stage = {
+      id: 'sX', repeat: 1,
+      blocks: [
+        { id: 'a', sets: 2, reps: 5, pct: 65, type: 'work', role: 'required' },
+        { id: 'b', sets: 1, reps: 5, pct: 85, type: 'work', role: 'anchor' }
+      ]
+    }
+    expect(stageRows(stage, 100, 2.5)).toEqual([
+      { w: 65, r: 5, blockId: 'a', stageId: 'sX', role: 'required', blockType: 'work' },
+      { w: 65, r: 5, blockId: 'a', stageId: 'sX', role: 'required', blockType: 'work' },
+      { w: 85, r: 5, blockId: 'b', stageId: 'sX', role: 'anchor', blockType: 'work' }
+    ])
+    expect(stageRows(stage, 97, 2.5)).toEqual([
+      { w: 62.5, r: 5, blockId: 'a', stageId: 'sX', role: 'required', blockType: 'work' },
+      { w: 62.5, r: 5, blockId: 'a', stageId: 'sX', role: 'required', blockType: 'work' },
+      { w: 82.5, r: 5, blockId: 'b', stageId: 'sX', role: 'anchor', blockType: 'work' }
+    ])
+  })
+
+  it('marks the last non-warmup block anchor, and reports its percentage', () => {
+    expect(anchorPctOf(waveOf({})[0])).toBe(85)
+    expect(anchorPctOf(waveOf({})[3])).toBe(60)
+    expect(anchorPctOf(null)).toBe(0)
+    const warmupLast = waveOf({ wave: [{ blocks: [
+      { pct: 80, reps: 5 }, { pct: 40, reps: 8, type: 'warmup' }
+    ] }] })[0]
+    // A warm-up block never becomes the anchor even when it is last in the array.
+    expect(anchorBlockOf(warmupLast).pct).toBe(80)
   })
 
   it('offers wave only on reps work', () => {
