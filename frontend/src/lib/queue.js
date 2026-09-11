@@ -23,7 +23,7 @@
 // planner may reuse its routine ids and names every week (W1 again after a restart), so a
 // workout from a past week that happens to carry this week's name must never count.
 
-import { isoOf } from './format.js'
+import { isoOf, weekKey, weekStartOf } from './format.js'
 
 const routineIdsOf = w => (Array.isArray(w.routineIds) ? w.routineIds : (w.routineId ? [w.routineId] : []))
 const nameParts = w => String(w.name || '').split(' + ')
@@ -43,11 +43,11 @@ const queueOf = S => {
   return { ...q, ids, startsOn: typeof q.startsOn === 'string' ? q.startsOn : isoOf(new Date(q.since || 0)) }
 }
 
-const isDone = (S, q, id) => {
-  const name = S.routines.find(r => r.id === id)?.name
-  return S.workouts.some(w => routineIdsOf(w).includes(id)
-    && ((w.start ?? 0) >= q.since || (String(w.d || '') >= q.startsOn && nameParts(w).includes(name))))
-}
+// The DONE RULE for one workout and one session — `isDone` asks it across the log.
+const countsFor = (S, q, w, id) => routineIdsOf(w).includes(id)
+  && ((w.start ?? 0) >= q.since
+    || (String(w.d || '') >= q.startsOn && nameParts(w).includes(S.routines.find(r => r.id === id)?.name)))
+const isDone = (S, q, id) => S.workouts.some(w => countsFor(S, q, w, id))
 
 /** The week's sessions already done, in slot order. `[]` without a queue. */
 export function queueDone(S) {
@@ -100,4 +100,36 @@ export function queueView(S, today) {
     startsOn: q.startsOn,
     waiting: today < q.startsOn,
   }
+}
+
+/**
+ * The streak card's fraction, `done / planned`, for the week `today` is in. Without a queue it
+ * is what it always was: the calendar week's finished workouts over the weekdays that hold a
+ * plan (a combined day is one day, one workout). With an active queue the coach week is the
+ * unit, and your own training counts beside it: `planned` is the queue's sessions plus the
+ * weekdays you plan yourself (a weekday whose routines the queue already covers adds nothing),
+ * and `done` is the queue's finished sessions plus this calendar week's workouts on top of them
+ * — your own days, freestyle sessions, a redo of a session already done, a queue-routine workout
+ * from before the apply. A merged 'US W1 D2 + Core' session counts for both sides: the queue's
+ * session through the queue, your Core day as training on top, the two units `planned` added.
+ * A queue still ahead of its `startsOn` (queueView's `waiting`) is next week's plan, so until
+ * then the card is the calendar-week count alone and the progress row speaks for the coming week.
+ */
+export function weekTally(S, today) {
+  const ws = weekStartOf(S)
+  const thisWeek = S.workouts.filter(w => weekKey(w.d, ws) === weekKey(today, ws))
+  const q0 = queueOf(S)
+  const q = q0 && today >= q0.startsOn ? q0 : null
+  // "Covered by the queue" is tested against the raw ids: a queue routine deleted mid-week is
+  // gone from `q.ids`, but a weekday pointer to it is still not a day you planned yourself.
+  const ownIds = ids => [].concat(ids || []).filter(id => !(q && S.queue.ids.includes(id)))
+  const ownDays = Object.values(S.week || {}).filter(ids => ownIds(ids).length).length
+  if (!q) return { done: thisWeek.length, planned: ownDays }
+  // The workout that earns each session its credit is the earliest one the DONE RULE accepts
+  // (by date, not array position — a backfilled log is not always in order); every other
+  // workout this week is training on top, and so is a crediting workout's own half.
+  const chrono = (a, b) => ((a.d || '') < (b.d || '') ? -1 : (a.d || '') > (b.d || '') ? 1 : (a.start || 0) - (b.start || 0))
+  const credited = new Set(q.ids.map(id => S.workouts.filter(w => countsFor(S, q, w, id)).sort(chrono)[0]).filter(Boolean))
+  const other = thisWeek.filter(w => !credited.has(w) || ownIds(routineIdsOf(w)).length).length
+  return { done: queueDone(S).length + other, planned: q.ids.length + ownDays }
 }

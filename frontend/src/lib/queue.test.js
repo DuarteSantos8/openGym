@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { queueDone, queueRemaining, queueNext, queueView } from './queue.js'
+import { queueDone, queueRemaining, queueNext, queueView, weekTally } from './queue.js'
 
 // The DONE RULE is shared with the api's reminder copy (and any planner writing S.queue); these
 // cases are the ones every copy must agree on. Dates are plain strings so nothing here reads the clock.
-const routines = [{ id: 'd1', name: 'US W1 D1' }, { id: 'd2', name: 'US W1 D2' }, { id: 'd3', name: 'US W1 D3' }]
+const routines = [{ id: 'd1', name: 'US W1 D1' }, { id: 'd2', name: 'US W1 D2' }, { id: 'd3', name: 'US W1 D3' }, { id: 'own', name: 'Core' }]
 const SINCE = Date.parse('2026-09-07T08:00:00')
 const TODAY = '2026-09-09'
 const S = (over = {}) => ({
@@ -151,5 +151,91 @@ describe('queueView', () => {
     expect(queueView(noStart, TODAY)).toMatchObject({ waiting: false, startsOn: '2026-09-07' })
     const nullStart = S({ queue: { ids: ['d1'], since: SINCE, startsOn: null, label: 'US W1' } })
     expect(queueNext(nullStart, TODAY, TODAY)).toBe('d1')
+  })
+})
+
+describe('weekTally — the streak card fraction', () => {
+  // Monday-start weeks (no S.weekStart); TODAY is Wednesday 2026-09-09, the queue applied Monday.
+  const own = (d, over = {}) => w({ id: 'own-' + d, d, start: Date.parse(d + 'T18:00:00'), routineIds: ['own'], name: 'Core', ...over })
+
+  it('without a queue: this calendar week\'s workouts over the weekdays with a plan, as before', () => {
+    const s = S({ queue: null, week: { 1: ['own'], 3: ['own', 'd1'], 5: [] }, workouts: [own('2026-09-07'), own('2026-09-05')] })
+    expect(weekTally(s, TODAY)).toEqual({ done: 1, planned: 2 })
+    expect(weekTally(S({ queue: null }), TODAY)).toEqual({ done: 0, planned: 0 })
+  })
+
+  it('a coach week alone: the queue\'s sessions, done by the DONE RULE, whatever calendar week they fell in', () => {
+    expect(weekTally(S(), TODAY)).toEqual({ done: 0, planned: 3 })
+    expect(weekTally(S({ workouts: [w({ routineIds: ['d1'] })] }), TODAY)).toEqual({ done: 1, planned: 3 })
+    // Ran long: a session logged last week still counts — the coach week is the unit.
+    const s = S({ queue: { ...S().queue, since: SINCE - 7 * 86400000, startsOn: '2026-08-31' }, workouts: [w({ routineIds: ['d1'], d: '2026-09-04', start: SINCE - 5 * 86400000 })] })
+    expect(weekTally(s, TODAY)).toEqual({ done: 1, planned: 3 })
+  })
+
+  it('your own weekday rides along: one more planned, and its workout this week one more done', () => {
+    const s = S({ week: { 3: ['own'] }, workouts: [w({ routineIds: ['d1'] }), own('2026-09-09')] })
+    expect(weekTally(s, TODAY)).toEqual({ done: 2, planned: 4 })
+    // …but last week's Core is last week's.
+    expect(weekTally(S({ week: { 3: ['own'] }, workouts: [own('2026-09-02')] }), TODAY)).toEqual({ done: 0, planned: 4 })
+  })
+
+  it('a weekday that holds only queue routines (the planner\'s old pointers) adds no day', () => {
+    expect(weekTally(S({ week: { 1: ['d1'], 3: ['d2'], 5: ['d3'] } }), TODAY)).toEqual({ done: 0, planned: 3 })
+    expect(weekTally(S({ week: { 1: ['d1', 'own'] } }), TODAY)).toEqual({ done: 0, planned: 4 })
+    // …even when the planner has since deleted that routine: the pointer is still not your day.
+    expect(weekTally(S({ queue: { ...S().queue, ids: ['d1', 'd2', 'gone'] }, week: { 5: ['gone'] } }), TODAY)).toEqual({ done: 0, planned: 2 })
+  })
+
+  it('a merged session counts for both sides — following the app\'s own daily proposal all week ends at 4 / 4', () => {
+    // Wednesday's today row is 'US W1 D2 + Core' (the queue session with the weekday's own
+    // routine riding along) and Start logs it as ONE workout: the coach session is credited
+    // through the queue, the Core day as training on top — the two units `planned` counted.
+    const merged = w({ routineIds: ['d1', 'own'], name: 'US W1 D1 + Core' })
+    expect(weekTally(S({ week: { 3: ['own'] }, workouts: [merged] }), TODAY)).toEqual({ done: 2, planned: 4 })
+    const week = [
+      w({ id: 'mon', d: '2026-09-07', start: SINCE + 3600000, routineIds: ['d1'], name: 'US W1 D1' }),
+      w({ id: 'wed', d: '2026-09-09', start: SINCE + 2 * 86400000, routineIds: ['d2', 'own'], name: 'US W1 D2 + Core' }),
+      w({ id: 'fri', d: '2026-09-11', start: SINCE + 4 * 86400000, routineIds: ['d3'], name: 'US W1 D3' }),
+    ]
+    expect(weekTally(S({ week: { 3: ['own'] }, workouts: week }), '2026-09-13')).toEqual({ done: 4, planned: 4 })
+    expect(queueDone(S({ workouts: week }))).toEqual(['d1', 'd2', 'd3'])
+  })
+
+  it('every other workout is training on top: freestyle, a redo of a done session, a pre-apply coach-routine one', () => {
+    // A second D1 this week is not a second credit, but it is a workout done — never invisible.
+    const redo = w({ id: 'w2', d: '2026-09-09', start: SINCE + 2 * 86400000, routineIds: ['d1'], name: 'US W1 D1' })
+    expect(weekTally(S({ workouts: [w({ routineIds: ['d1'] }), redo] }), TODAY)).toEqual({ done: 2, planned: 3 })
+    expect(queueDone(S({ workouts: [w({ routineIds: ['d1'] }), redo] }))).toEqual(['d1'])
+    // The credit goes to the EARLIEST qualifying workout whatever the array order: D1 done last
+    // week (the week ran long) and again this week is one credit plus one workout on top.
+    const long = { ...S().queue, since: SINCE - 7 * 86400000, startsOn: '2026-08-31' }
+    const sat = w({ id: 'sat', d: '2026-09-05', start: SINCE - 2 * 86400000, routineIds: ['d1'], name: 'US W1 D1' })
+    expect(weekTally(S({ queue: long, workouts: [sat, redo] }), TODAY)).toEqual({ done: 2, planned: 3 })
+    expect(weekTally(S({ queue: long, workouts: [redo, sat] }), TODAY)).toEqual({ done: 2, planned: 3 })
+    const freestyle = w({ routineIds: [], name: 'Freestyle', d: '2026-09-08' })
+    expect(weekTally(S({ workouts: [freestyle] }), TODAY)).toEqual({ done: 1, planned: 3 })
+    // Monday morning's session on a coach routine, before Monday noon's apply: not this week's
+    // D1 (the row stays at 0 / 3), but training done this week all the same.
+    const before = w({ routineIds: ['d1'], name: 'US W3 D1', d: '2026-09-07', start: SINCE - 3600000 })
+    expect(weekTally(S({ workouts: [before] }), TODAY)).toEqual({ done: 1, planned: 3 })
+    expect(queueDone(S({ workouts: [before] }))).toEqual([])
+  })
+
+  it('a queue waiting on a future startsOn is next week\'s plan: the card counts this calendar week alone', () => {
+    // W1 finished Thursday; the planner applied W2 (four sessions) Thursday night for Monday.
+    // Friday's card says what this week did — 3 of the 0 own days planned — not 3 / 4 or 3 / 7.
+    const w1 = ['2026-09-07', '2026-09-08', '2026-09-10'].map((d, i) => w({ id: 'w' + i, d, start: Date.parse(d + 'T18:00:00'), routineIds: ['d' + (i + 1)], name: 'US W1 D' + (i + 1) }))
+    const w2 = { ids: ['d1', 'd2', 'd3', 'own'], since: Date.parse('2026-09-10T21:00:00'), startsOn: '2026-09-14', label: 'US W2' }
+    expect(weekTally(S({ queue: w2, workouts: w1 }), '2026-09-11')).toEqual({ done: 3, planned: 0 })
+    // Your own weekday is still this week's, and the waiting queue does not hide it.
+    expect(weekTally(S({ queue: w2, week: { 5: ['own'] }, workouts: w1 }), '2026-09-11')).toEqual({ done: 3, planned: 1 })
+    // Monday it is active: four sessions, and 'own' is now the queue's, so the weekday adds nothing.
+    expect(weekTally(S({ queue: w2, week: { 5: ['own'] }, workouts: w1 }), '2026-09-14')).toEqual({ done: 0, planned: 4 })
+  })
+
+  it('follows the week-start setting: a Sunday workout is this week\'s for a Sunday start, last week\'s for Monday', () => {
+    const s = S({ queue: null, week: { 0: ['own'] }, workouts: [own('2026-09-06')] })
+    expect(weekTally({ ...s, weekStart: 0 }, TODAY)).toEqual({ done: 1, planned: 1 })
+    expect(weekTally({ ...s, weekStart: 1 }, TODAY)).toEqual({ done: 0, planned: 1 })
   })
 })

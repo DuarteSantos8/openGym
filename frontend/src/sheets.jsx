@@ -1592,9 +1592,11 @@ function PlanImport({ bundle, close }) {
 /* ============================ day override / assign ============================ */
 function DayOverride({ iso, close }) {
   const st = useStore(s => s.S)
-  const wd = new Date(iso + 'T12:00:00').getDay()
-  const weeklyNames = [].concat(st.week[wd] || []).map(id => st.routines.find(r => r.id === id)?.name).filter(Boolean)
   const hasOvr = st.dayPlan[iso] !== undefined
+  // The plan the day would have without its override — the weekday's routines, and in a coach
+  // week the queue's session for the day in front of them, same as the Home row shows.
+  const { [iso]: _ovr, ...noOvr } = st.dayPlan
+  const weeklyNames = effectiveRoutineIds({ ...st, dayPlan: noOvr }, iso).map(id => st.routines.find(r => r.id === id)?.name).filter(Boolean)
   // A weekday can hold several routines; the per-date override stays single-pick, so picking
   // one here collapses a combined day to it (docs/COMBINE_ROUTINES.md §8). The check marks
   // show everything currently planned for the day.
