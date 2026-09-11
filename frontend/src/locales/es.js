@@ -1228,7 +1228,7 @@ export default {
   '{0} %': '{0} %',
   '{0} MB': '{0} MB',
   'Checksum not available — not installing': 'Suma de verificación no disponible — no se instala',
-  // --- coach week (Home progress row, components/QueueRow.jsx) ---
+  // --- coach week (Home progress row, components/QueueRow.jsx; day sheet, sheets.jsx) ---
   'Next: {0}, today': 'Siguiente: {0}, hoy',
   'Next: {0}': 'Siguiente: {0}',
   'Next week starts {0}': 'La próxima semana empieza el {0}',
@@ -1257,4 +1257,5 @@ export default {
   'already added': 'ya añadido',
   'no exercises': 'sin ejercicios',
   'Pick equipment': 'Elegir equipamiento',
+  'Coach week': 'Semana del entrenador',
 }

@@ -1173,6 +1173,34 @@ describe('effectiveRoutineIds — coach queue', () => {
   it('without a queue the weekday plan answers as before', () => {
     expect(effectiveRoutineIds(S({ queue: null, week: { 3: ['own'] } }), TODAY, TODAY)).toEqual(['own'])
   })
+
+  // ---- pins: an override naming a queue session re-dates it (lib/queue.js pinState) ----
+  it('a session pinned to a later day is that day\'s, with the weekday\'s own routine riding along; today floats past it', () => {
+    const s = S({ dayPlan: { '2026-09-11': 'd1' }, week: { 5: ['own'] } })
+    expect(effectiveRoutineIds(s, '2026-09-11', TODAY)).toEqual(['d1', 'own'])
+    expect(effectiveRoutineIds(s, TODAY, TODAY)).toEqual(['d2'])
+    // Pinned to today: it is today's session, ahead of the floating order.
+    expect(effectiveRoutineIds(S({ dayPlan: { [TODAY]: 'd2' } }), TODAY, TODAY)).toEqual(['d2'])
+  })
+
+  it('a fulfilled pin reads as no override: the day goes back to the floating rule or the weekday', () => {
+    const s = S({ dayPlan: { '2026-09-11': 'd1' }, workouts: [done('d1')], week: { 5: ['own'] } })
+    expect(effectiveRoutineIds(s, '2026-09-11', TODAY)).toEqual(['own'])
+    expect(effectiveRoutineIds(s, TODAY, TODAY)).toEqual(['d2'])
+    // Done early on the pinned day itself: today's answer is the next floating session.
+    expect(effectiveRoutineIds(S({ dayPlan: { [TODAY]: 'd1' }, workouts: [done('d1')] }), TODAY, TODAY)).toEqual(['d2'])
+  })
+
+  it('with every remaining session pinned to other days, today shows only your own routines — a coach pointer on the weekday stays hidden', () => {
+    const s = S({ dayPlan: { '2026-09-11': 'd1', '2026-09-12': 'd2' }, week: { 3: ['d2', 'own'] } })
+    expect(effectiveRoutineIds(s, TODAY, TODAY)).toEqual(['own'])
+    expect(effectiveRoutineIds(S({ dayPlan: { '2026-09-11': 'd1', '2026-09-12': 'd2' }, week: { 3: 'd1' } }), TODAY, TODAY)).toEqual([])
+  })
+
+  it('a plain routine override is still single-pick, and \'rest\' still wins over a pin', () => {
+    expect(effectiveRoutineIds(S({ dayPlan: { [TODAY]: 'own' }, week: { 3: ['own'] } }), TODAY, TODAY)).toEqual(['own'])
+    expect(effectiveRoutineIds(S({ dayPlan: { [TODAY]: 'rest', '2026-09-11': 'd1' } }), TODAY, TODAY)).toEqual([])
+  })
 })
 
 describe('nextTrainingDay on a combined day', () => {
