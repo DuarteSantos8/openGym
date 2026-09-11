@@ -1214,6 +1214,13 @@ export default {
   '{0} %': '{0}%',
   '{0} MB': '{0} MB',
   'Checksum not available — not installing': '校验和不可用，已取消安装',
+  // --- coach week (Home progress row, components/QueueRow.jsx) ---
+  'Next: {0}, today': '下一个：{0}，今天',
+  'Next: {0}': '下一个：{0}',
+  'Next week starts {0}': '下周于 {0} 开始',
+  'Week complete, ask the coach': '本周已完成，请咨询教练',
+  'Up next': '下一个',
+  'Later': '稍后',
   // --- combine routines / layout / deload (v1.3.6) ---
   'Add routine': '添加训练日',
   'Bring another routine into this session': '把另一个训练日并入本次训练',

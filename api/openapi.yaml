@@ -1278,6 +1278,10 @@ components:
         routines:
           type: array
           items: { $ref: '#/components/schemas/Routine' }
+        queue:
+          type: object
+          nullable: true
+          description: A planner's floating week {ids, since, startsOn, label} — the week's sessions as an ordered queue, the first undone one is today's. Written only by an API client (never by the app), read by the reminder tick.
         week:
           type: object
           description: 'Weekly plan: weekday (0=Sunday … 6) → routine id.'
