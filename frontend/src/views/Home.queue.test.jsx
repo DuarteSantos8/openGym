@@ -1,8 +1,9 @@
 // @vitest-environment happy-dom
 // A coach week (S.queue) runs by order, not by weekday, so Home swaps the seven dots for a
-// progress row. Pinned here: one chip per session in slot order with its state word, a tap on
+// progress row. Covered here: one chip per session in slot order with its state word, a tap on
 // an undone chip starting that routine alone, a done chip staying inert, the status line's
-// three states, and the today row still answering through the same helper.
+// states, the today row still answering through the same helper, and a session pinned to a day
+// (S.dayPlan[iso] = queue routine id) wearing its day on the chip and yielding the light.
 import React, { act } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createRoot } from 'react-dom/client'
@@ -162,5 +163,59 @@ describe('Home — coach week progress row', () => {
     mount()
     expect(host.querySelector('.queue')).toBeNull()
     expect(host.querySelectorAll('.wday').length).toBe(7)
+  })
+})
+
+describe('Home — a session pinned to a day', () => {
+  it('a fulfilled pin — pinned to today, done on an earlier day — reads as no override on the today row', () => {
+    setS({ dayPlan: { [todayISO()]: 'd1' }, workouts: [logged('d1')] })
+    mount()
+    expect(chipTexts()).toEqual(['US W1 D1Done', 'US W1 D2Up next', 'US W1 D3Later'])
+    expect(status()).toBe('Next: US W1 D2, today')
+    expect(todayTitle()).toBe('US W1 D2')
+  })
+
+  it('a session pinned ahead wears its day, is not lit, and the light moves to the next floating one', () => {
+    const on = daysFromToday(2)
+    setS({ dayPlan: { [on]: 'd1' } })
+    mount()
+    expect(chipTexts()).toEqual(['US W1 D1' + fmtDate(on, true), 'US W1 D2Up next', 'US W1 D3Later'])
+    expect(chips()[0].className).toBe('chip')
+    expect(chips()[0].disabled).toBe(false)
+    expect(chips()[1].className).toBe('chip on')
+    expect(status()).toBe('Next: US W1 D2, today')
+    expect(todayTitle()).toBe('US W1 D2')
+  })
+
+  it('a session pinned to today is the day\'s session, ahead of the floating order', () => {
+    setS({ dayPlan: { [todayISO()]: 'd3' } })
+    mount()
+    expect(chipTexts()).toEqual(['US W1 D1Later', 'US W1 D2Later', 'US W1 D3Up next'])
+    expect(chips()[2].className).toBe('chip on')
+    expect(status()).toBe('Next: US W1 D3, today')
+    // Home reads any per-date override on today as a reschedule — a pin is one.
+    expect(todayTitle()).toBe('US W1 D3 · rescheduled')
+  })
+
+  it('every session pinned ahead: no chip is lit, the line names the soonest with its day, today rests', () => {
+    const d1 = daysFromToday(1), d2 = daysFromToday(3), d3 = daysFromToday(2)
+    setS({ dayPlan: { [d1]: 'd1', [d2]: 'd2', [d3]: 'd3' } })
+    mount()
+    expect(chipTexts()).toEqual(['US W1 D1' + fmtDate(d1, true), 'US W1 D2' + fmtDate(d2, true), 'US W1 D3' + fmtDate(d3, true)])
+    expect(chips().some(c => c.className.includes('on'))).toBe(false)
+    expect(chips().every(c => !c.disabled)).toBe(true)
+    expect(status()).toBe('Next: US W1 D1 · ' + fmtDate(d1, true))
+    expect(todayTitle()).toBe('Rest day')
+    // Soonest by date, not first in slot order.
+    act(() => setS({ dayPlan: { [daysFromToday(3)]: 'd1', [daysFromToday(1)]: 'd2', [daysFromToday(2)]: 'd3' } }))
+    expect(status()).toBe('Next: US W1 D2 · ' + fmtDate(daysFromToday(1), true))
+  })
+
+  it('tapping a pinned chip starts that routine alone, today', () => {
+    setS({ dayPlan: { [daysFromToday(2)]: 'd1' } })
+    mount()
+    act(() => { chips()[0].click() })
+    expect(startFlow).toHaveBeenCalledTimes(1)
+    expect(startFlow).toHaveBeenCalledWith(['d1'])
   })
 })

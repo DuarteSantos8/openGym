@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { queueDone, queueRemaining, queueNext, queueView, weekTally } from './queue.js'
+import { queueDone, queueRemaining, queueNext, queueView, weekTally, pinState } from './queue.js'
 
 // The DONE RULE is shared with the api's reminder copy (and any planner writing S.queue); these
 // cases are the ones every copy must agree on. Dates are plain strings so nothing here reads the clock.
@@ -104,6 +104,66 @@ describe('queueNext', () => {
   it('is null once the week is complete', () => {
     const s = S({ workouts: [w({ routineIds: ['d1', 'd2', 'd3'] })] })
     expect(queueNext(s, TODAY, TODAY)).toBeNull()
+  })
+})
+
+describe('pins — a session given a day (S.dayPlan[iso] = queue routine id)', () => {
+  const FRI = '2026-09-11'
+  it('a session pinned to another day is skipped by the floating rule until that day', () => {
+    expect(queueNext(S({ dayPlan: { [FRI]: 'd1' } }), TODAY, TODAY)).toBe('d2')
+    // …and on its day it is the day's session, ahead of the floating order.
+    expect(queueNext(S({ dayPlan: { [TODAY]: 'd3' } }), TODAY, TODAY)).toBe('d3')
+    // Every remaining session pinned elsewhere: nothing floats today.
+    expect(queueNext(S({ dayPlan: { [FRI]: 'd1', '2026-09-12': 'd2', '2026-09-13': 'd3' } }), TODAY, TODAY)).toBeNull()
+  })
+
+  it('a pin on a past day is stale, and a pin on a done session is fulfilled: both let the session float', () => {
+    expect(queueNext(S({ dayPlan: { '2026-09-08': 'd1' } }), TODAY, TODAY)).toBe('d1')
+    const done = S({ dayPlan: { [FRI]: 'd1' }, workouts: [w({ routineIds: ['d1'] })] })
+    expect(queueNext(done, TODAY, TODAY)).toBe('d2')
+    expect(pinState(done, 'd1')).toBe('done')
+  })
+
+  it('pinState: open for a session still to do, done once logged, null for anything else', () => {
+    expect(pinState(S(), 'd2')).toBe('open')
+    expect(pinState(S({ workouts: [w({ routineIds: ['d2'] })] }), 'd2')).toBe('done')
+    expect(pinState(S(), 'own')).toBeNull()
+    expect(pinState(S(), 'rest')).toBeNull()
+    expect(pinState(S(), undefined)).toBeNull()
+    expect(pinState(S({ queue: null }), 'd1')).toBeNull()
+    // A pinned session whose routine the planner deleted is not a pin any more.
+    expect(pinState(S({ routines: routines.filter(r => r.id !== 'd1') }), 'd1')).toBeNull()
+  })
+
+  it('a pin dated between today and a future startsOn is honoured on its day, and skipped on the start day', () => {
+    const s = S({ queue: { ...S().queue, startsOn: '2026-09-14' }, dayPlan: { '2026-09-12': 'd1' } })
+    expect(queueNext(s, '2026-09-14', TODAY)).toBe('d2')
+    expect(queueNext(s, TODAY, TODAY)).toBeNull()
+    expect(pinState(s, 'd1')).toBe('open')
+  })
+
+  it('queueView lights the floating session and shows a pinned one with its day', () => {
+    const v = queueView(S({ dayPlan: { [FRI]: 'd1', '2026-09-13': 'd1' } }), TODAY)
+    expect(v.items).toEqual([
+      { id: 'd1', name: 'US W1 D1', state: 'pinned', on: FRI },
+      { id: 'd2', name: 'US W1 D2', state: 'next' },
+      { id: 'd3', name: 'US W1 D3', state: 'later' },
+    ])
+    // Pinned to today: it is 'next', and the would-be first session is 'later'.
+    const today = queueView(S({ dayPlan: { [TODAY]: 'd3' } }), TODAY)
+    expect(today.items.map(i => i.state)).toEqual(['later', 'later', 'next'])
+    // All pinned elsewhere: no 'next' at all today.
+    const all = queueView(S({ dayPlan: { [FRI]: 'd1', '2026-09-12': 'd2', '2026-09-13': 'd3' } }), TODAY)
+    expect(all.items.map(i => i.state)).toEqual(['pinned', 'pinned', 'pinned'])
+    expect(all.items.map(i => i.on)).toEqual([FRI, '2026-09-12', '2026-09-13'])
+    // A fulfilled pin is just done.
+    const done = queueView(S({ dayPlan: { [FRI]: 'd1' }, workouts: [w({ routineIds: ['d1'] })] }), TODAY)
+    expect(done.items[0]).toEqual({ id: 'd1', name: 'US W1 D1', state: 'done' })
+  })
+
+  it('pins never change the tally', () => {
+    expect(weekTally(S({ dayPlan: { [FRI]: 'd1' } }), TODAY)).toEqual({ done: 0, planned: 3 })
+    expect(queueRemaining(S({ dayPlan: { [FRI]: 'd1' } }))).toEqual(['d1', 'd2', 'd3'])
   })
 })
 

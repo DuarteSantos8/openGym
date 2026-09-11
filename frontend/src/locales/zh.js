@@ -1214,7 +1214,7 @@ export default {
   '{0} %': '{0}%',
   '{0} MB': '{0} MB',
   'Checksum not available — not installing': '校验和不可用，已取消安装',
-  // --- coach week (Home progress row, components/QueueRow.jsx) ---
+  // --- coach week (Home progress row, components/QueueRow.jsx; day sheet, sheets.jsx) ---
   'Next: {0}, today': '下一个：{0}，今天',
   'Next: {0}': '下一个：{0}',
   'Next week starts {0}': '下周于 {0} 开始',
@@ -1243,4 +1243,5 @@ export default {
   'already added': '已添加',
   'no exercises': '没有动作',
   'Pick equipment': '选择器械',
+  'Coach week': '教练周',
 }

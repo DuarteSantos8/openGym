@@ -1214,7 +1214,7 @@ export default {
   '{0} %': '{0}%',
   '{0} MB': '{0} MB',
   'Checksum not available — not installing': '체크섬을 확인할 수 없어 설치하지 않습니다',
-  // --- coach week (Home progress row, components/QueueRow.jsx) ---
+  // --- coach week (Home progress row, components/QueueRow.jsx; day sheet, sheets.jsx) ---
   'Next: {0}, today': '다음: {0}, 오늘',
   'Next: {0}': '다음: {0}',
   'Next week starts {0}': '다음 주는 {0}에 시작됩니다',
@@ -1243,4 +1243,5 @@ export default {
   'already added': '이미 추가됨',
   'no exercises': '운동 없음',
   'Pick equipment': '기구 선택',
+  'Coach week': '코치 주간',
 }

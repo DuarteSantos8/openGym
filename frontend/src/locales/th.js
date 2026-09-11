@@ -1225,7 +1225,7 @@ export default {
   '{0} %': '{0}%',
   '{0} MB': '{0} MB',
   'Checksum not available — not installing': 'ไม่มีค่าตรวจสอบ — ยกเลิกการติดตั้ง',
-  // --- coach week (Home progress row, components/QueueRow.jsx) ---
+  // --- coach week (Home progress row, components/QueueRow.jsx; day sheet, sheets.jsx) ---
   'Next: {0}, today': 'ถัดไป: {0}, วันนี้',
   'Next: {0}': 'ถัดไป: {0}',
   'Next week starts {0}': 'สัปดาห์หน้าเริ่ม {0}',
@@ -1254,4 +1254,5 @@ export default {
   'already added': 'เพิ่มแล้ว',
   'no exercises': 'ไม่มีท่าออกกำลังกาย',
   'Pick equipment': 'เลือกอุปกรณ์',
+  'Coach week': 'สัปดาห์ของโค้ช',
 }

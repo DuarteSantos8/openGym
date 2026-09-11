@@ -13,6 +13,15 @@
 // The app never writes `S.queue`; a planner does — any API client that PUTs state with a queue
 // (a coaching agent, a script). null = the weekday model alone.
 //
+// PINS — a session can be given a day. The day sheet writes the per-date override that already
+// exists (`S.dayPlan[iso] = <queue routine id>`); nothing new is stored. A pin re-dates the
+// session: on its day it is the day's session (the weekday's own routines ride along, as on any
+// queue day — effectiveRoutineIds in history.js), on every other day from today on the floating
+// rule skips it, and once it is done — on its day or early — the pin is fulfilled and reads as no
+// override. A pin on a past date is stale: the session floats again. Pins change which session
+// is NEXT, never what counts as DONE, so weekTally, the reminders' tally and whatever a planner
+// reads back are untouched.
+//
 // DONE RULE — kept word for word with the api's reminder copy (api/queue.js), and the rule a
 // planner has to mirror, so nobody disagrees about which session is next: a session is done
 // when any FINISHED workout on that routine exists after the week was applied. Missed sets are
@@ -74,27 +83,69 @@ export function queueNext(S, iso, today) {
   // asks for thirty dates in a row, so the done-scan runs only for the one that can match.
   const on = today > q.startsOn ? today : q.startsOn
   if (iso !== on) return null
-  const remaining = queueRemaining(S)
-  return remaining.length ? remaining[0] : null
+  return nextOn(S, queueRemaining(S), on, today)
+}
+
+/** Active pins, `[{ iso, id }]`: dayPlan entries naming a session still to do, dated today or later. */
+const activePins = (S, remaining, today) => Object.entries(S.dayPlan || {})
+  .filter(([iso, id]) => iso >= today && remaining.includes(id))
+  .map(([iso, id]) => ({ iso, id }))
+
+/** The queue's session for the date `on`: the one pinned there, else the first undone one not pinned to another day. */
+const nextOn = (S, remaining, on, today) => {
+  const pins = activePins(S, remaining, today)
+  const here = pins.find(p => p.iso === on)
+  if (here) return here.id
+  return remaining.find(id => !pins.some(p => p.id === id)) ?? null
+}
+
+/**
+ * Is `iso` the day the queue speaks for, with sessions still to do? True even when queueNext is
+ * null there because every remaining session is pinned to another day: the planner's weekday
+ * pointers stay hidden behind the queue on that day (history.js) whatever it answers.
+ */
+export function queueLiveOn(S, iso, today) {
+  const q = queueOf(S)
+  return !!q && iso === (today > q.startsOn ? today : q.startsOn) && queueRemaining(S).length > 0
+}
+
+/**
+ * What a per-date override pointing at `id` means for the queue: 'open' — a pin on a session
+ * still to do (its day's session, skipped elsewhere); 'done' — a fulfilled pin, to be read as no
+ * override; null — not a queue session (or no queue), the plain override rules apply.
+ */
+export function pinState(S, id) {
+  const q = queueOf(S)
+  if (!q || !id || !q.ids.includes(id)) return null
+  return isDone(S, q, id) ? 'done' : 'open'
 }
 
 /**
  * Everything Home's progress row shows, derived once. `items` keep slot order; `state` is
- * 'done', 'next' (the first undone one, whether or not the queue is active yet) or 'later'.
- * `waiting` = the queue is sitting on a future `startsOn`. null without a queue.
+ * 'done', 'next' (the session for the day the queue answers on — pinned there, or the first
+ * undone one not pinned to another day — whether or not the queue is active yet), 'pinned'
+ * (given another day, carried as `on`; the earliest such day when there are several) or
+ * 'later'. `waiting` = the queue is sitting on a future `startsOn`. null without a queue.
  */
 export function queueView(S, today) {
   const q = queueOf(S)
   if (!q) return null
   const remaining = queueRemaining(S)
+  const on = today > q.startsOn ? today : q.startsOn
+  const next = nextOn(S, remaining, on, today)
+  const pins = activePins(S, remaining, today).sort((a, b) => (a.iso < b.iso ? -1 : a.iso > b.iso ? 1 : 0))
   // A routine the planner has since retired keeps its id as the name — better than a blank chip.
   const nameOf = id => S.routines.find(r => r.id === id)?.name ?? id
   return {
     label: q.label || '',
-    items: q.ids.map(id => ({
-      id, name: nameOf(id),
-      state: !remaining.includes(id) ? 'done' : id === remaining[0] ? 'next' : 'later',
-    })),
+    items: q.ids.map(id => {
+      const pin = id !== next && pins.find(p => p.id === id && p.iso !== on)
+      return {
+        id, name: nameOf(id),
+        state: !remaining.includes(id) ? 'done' : id === next ? 'next' : pin ? 'pinned' : 'later',
+        ...(pin ? { on: pin.iso } : {}),
+      }
+    }),
     remaining,
     complete: remaining.length === 0,
     startsOn: q.startsOn,
