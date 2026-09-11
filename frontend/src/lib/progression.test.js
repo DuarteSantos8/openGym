@@ -7,6 +7,8 @@ import {
 } from './progression.js'
 import { entryExcluded } from './history.js'
 import { EXDB } from './exercises.js'
+import { buildSessionEntries } from './session-start.js'
+import { buildCompletedWorkout } from './finish-workout.js'
 
 const LIFT = EXDB.find(e => e.bp !== 'cardio' && !['upper legs', 'lower legs', 'back', 'hips', 'glutes'].includes(e.bp) && !['body weight', 'band', 'resistance band'].includes(e.eq)).id
 const HEAVY = EXDB.find(e => e.bp === 'upper legs').id
@@ -992,10 +994,10 @@ describe('readSession exposes the anchor row\'s own weight', () => {
     expect(s.anchorWeight).toBeUndefined()
   })
 
-  it('reads 0 when the anchor row itself was never checked off', () => {
+  it('reads the anchor row\'s own weight even when it was never checked off', () => {
     const rows = [{ w: 65, r: 5, role: 'anchor', blockType: 'work' }]
     const s = readSession({ id: LIFT, target: { sets: 1, reps: 5, rows }, sets: [{ w: 65, r: 3, done: false }] })
-    expect(s.anchorWeight).toBe(0)
+    expect(s.anchorWeight).toBe(65)
   })
 })
 
@@ -1123,6 +1125,44 @@ describe('wave progression', () => {
   it('always names the stage it actually used', () => {
     const p = nextPrescription(waveHist(LIFT, [W1]), CFG, null)
     expect(p.why.join(' ')).toContain('2')
+  })
+})
+
+describe('wave progression — real prescribe → log → finish → prescribe loop', () => {
+  // Unlike `waveHist` above (hand-built session fixtures), this drives the actual functions the
+  // app calls: buildSessionEntries prescribes a session, buildCompletedWorkout reduces it back
+  // into history, and nextPrescription judges that history — the exact seam Finding 1 lived in.
+  const cfg = { id: LIFT, sets: 3, reps: 5, prog: 'wave', trainingMax: 100 }
+  const routine = { id: 'r', prog: 'wave', ex: [cfg] }
+
+  function runSession(st, mark) {
+    const entries = buildSessionEntries(st, routine)
+    const entry = entries[0]
+    const sets = entry.sets.map((s, i) => ({ ...s, done: mark(i, entry.sets.length) }))
+    const workout = buildCompletedWorkout({
+      id: `w${st.workouts.length + 1}`, d: `2026-01-0${st.workouts.length + 1}`, start: 1,
+      entries: [{ ...entry, sets }]
+    })
+    st.workouts.push(workout)
+  }
+
+  it('does not deload a session merely because the top set went unticked', () => {
+    const st = { unit: 'kg', workouts: [], exWeights: {}, routines: [routine] }
+
+    // Session 1: every set logged and ticked — a clean pass on stage 1.
+    runSession(st, () => true)
+    const plan2 = nextPrescription(st, cfg, routine)
+    expect(plan2.kind).not.toBe('deload')
+    expect(plan2.stage).toBe(2)
+
+    // Session 2: everything ticked EXCEPT the anchor (last) set of the stage — the lifter bailed
+    // on the top set but logged everything before it. Before the fix, an unticked anchor read as
+    // anchorWeight: 0, which the nearest-stage search always matches to the deload stage — so a
+    // perfectly ordinary partial session silently sent the lifter into a deload week.
+    runSession(st, (i, n) => i < n - 1)
+    const plan3 = nextPrescription(st, cfg, routine)
+    expect(plan3.stage).toBe(2)     // repeats stage 2 (a miss) — NOT the deload stage
+    expect(plan3.kind).not.toBe('deload')
   })
 })
 

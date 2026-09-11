@@ -415,12 +415,18 @@ export function readSession(entry, fallback) {
   // here once something actually writes that role.
   const graded = rows ? rows.map((row, i) => [row, i]).filter(([row]) => row.blockType !== 'warmup') : null
   // The anchor row's own logged weight — what a wave stage is actually identified by
-  // (prescribeWave), instead of the session's overall heaviest set.
-  const anchorIdx = rows ? rows.findIndex(row => row.role === 'anchor') : -1
+  // (prescribeWave), instead of the session's overall heaviest set. `applyPrescription` stamps
+  // `role` straight onto each set, so the anchor is found by that id, not by array position; the
+  // positional lookup into `rows` is only a fallback for a session logged before that started
+  // (no `sets` entry carries a `role` at all). Its weight counts even when the set was never
+  // ticked done — an unticked top set still carries the load it was prescribed, which is what
+  // identifies the stage; whether the session as a whole passes is `ok`'s job, not this one's.
+  const anchorRowIdx = rows ? rows.findIndex(row => row.role === 'anchor') : -1
+  const anchorSet = sets.find(s => s.role === 'anchor') || (anchorRowIdx >= 0 ? sets[anchorRowIdx] : null)
   return {
     mode, target, goal, reps,
     weight: Math.max(0, ...sets.filter(s => s.done).map(s => s.w || 0)),
-    ...(anchorIdx >= 0 ? { anchorWeight: sets[anchorIdx] && sets[anchorIdx].done ? (sets[anchorIdx].w || 0) : 0 } : {}),
+    ...(anchorSet ? { anchorWeight: anchorSet.w || 0 } : {}),
     count: reps.length,                                   // the dimension bodyweight work grows (#33)
     low: reps.length ? Math.min(...reps) : 0,
     amrap: reps.length ? reps[reps.length - 1] : 0,       // Greyskull's final set
