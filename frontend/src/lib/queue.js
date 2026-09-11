@@ -155,8 +155,8 @@ export function queueView(S, today) {
 
 /**
  * The streak card's fraction, `done / planned`, for the week `today` is in. Without a queue it
- * is what it always was: the calendar week's finished workouts over the weekdays that hold a
- * plan (a combined day is one day, one workout). With an active queue the coach week is the
+ * is the calendar week's finished workouts over the weekdays that hold a plan of routines that
+ * still exist (a combined day is one day, one workout). With an active queue the coach week is the
  * unit, and your own training counts beside it: `planned` is the queue's sessions plus the
  * weekdays you plan yourself (a weekday whose routines the queue already covers adds nothing),
  * and `done` is the queue's finished sessions plus this calendar week's workouts on top of them
@@ -171,9 +171,12 @@ export function weekTally(S, today) {
   const thisWeek = S.workouts.filter(w => weekKey(w.d, ws) === weekKey(today, ws))
   const q0 = queueOf(S)
   const q = q0 && today >= q0.startsOn ? q0 : null
-  // "Covered by the queue" is tested against the raw ids: a queue routine deleted mid-week is
-  // gone from `q.ids`, but a weekday pointer to it is still not a day you planned yourself.
-  const ownIds = ids => [].concat(ids || []).filter(id => !(q && S.queue.ids.includes(id)))
+  // A weekday counts as planned only for routines that still exist (a pointer left behind by a
+  // deleted routine shows as rest on the strip, and effectiveRoutineIds drops it). "Covered by
+  // the queue" is tested against the raw ids: a queue routine deleted mid-week is gone from
+  // `q.ids`, but a weekday pointer to it is still not a day you planned yourself.
+  const unqueued = id => !(q && S.queue.ids.includes(id))
+  const ownIds = ids => [].concat(ids || []).filter(id => S.routines.some(r => r.id === id) && unqueued(id))
   const ownDays = Object.values(S.week || {}).filter(ids => ownIds(ids).length).length
   if (!q) return { done: thisWeek.length, planned: ownDays }
   // The workout that earns each session its credit is the earliest one the DONE RULE accepts
@@ -181,6 +184,8 @@ export function weekTally(S, today) {
   // workout this week is training on top, and so is a crediting workout's own half.
   const chrono = (a, b) => ((a.d || '') < (b.d || '') ? -1 : (a.d || '') > (b.d || '') ? 1 : (a.start || 0) - (b.start || 0))
   const credited = new Set(q.ids.map(id => S.workouts.filter(w => countsFor(S, q, w, id)).sort(chrono)[0]).filter(Boolean))
-  const other = thisWeek.filter(w => !credited.has(w) || ownIds(routineIdsOf(w)).length).length
+  // (a logged workout keeps its credit even if its routine was deleted since — existence only
+  // decides what is PLANNED)
+  const other = thisWeek.filter(w => !credited.has(w) || routineIdsOf(w).some(unqueued)).length
   return { done: queueDone(S).length + other, planned: q.ids.length + ownDays }
 }
