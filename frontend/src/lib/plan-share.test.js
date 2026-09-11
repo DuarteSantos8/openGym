@@ -139,14 +139,14 @@ describe('week schedule as a routine-id list', () => {
 
 describe('wave settings travel with a shared plan', () => {
   it('carries the training max, the wave and the non-default switches', () => {
-    const wave = [{ sets: [{ pct: 80, r: 5, n: 2 }] }, { deload: true, repeat: 2, sets: [{ pct: 50, r: 5, n: 1 }] }]
+    const wave = [{ blocks: [{ pct: 80, reps: 5, sets: 2 }] }, { deload: true, repeat: 2, blocks: [{ pct: 50, reps: 5, sets: 1 }] }]
     const ex = roundTrip({
       prog: 'wave', trainingMax: 100, pctBase: '1rm', onMiss: 'advance', bump: 'off', wave
     })
     expect(ex).toMatchObject({ prog: 'wave', trainingMax: 100, pctBase: '1rm', onMiss: 'advance', bump: 'off' })
     expect(ex.wave).toEqual([
-      { repeat: 1, sets: [{ pct: 80, r: 5, n: 2 }] },
-      { deload: true, repeat: 2, sets: [{ pct: 50, r: 5, n: 1 }] },
+      { id: 's0', repeat: 1, blocks: [{ id: 's0b0', pct: 80, reps: 5, sets: 2, type: 'work', role: 'anchor' }] },
+      { id: 's1', deload: true, repeat: 2, blocks: [{ id: 's1b0', pct: 50, reps: 5, sets: 1, type: 'work', role: 'anchor' }] },
     ])
   })
 

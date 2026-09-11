@@ -67,6 +67,23 @@ describe('buildSessionEntries', () => {
     const r = { id: 'r', prog: 'off', ex: [{ id: '0025', sets: 3, reps: 5, weight: 60 }] }
     expect(buildSessionEntries(st, r)[0].rid).toBeUndefined()
   })
+
+  it('materialises the wave\'s block metadata onto every row it prescribes', () => {
+    const cfg = { id: '0025', sets: 3, reps: 5, prog: 'wave', trainingMax: 100 }
+    const r = { id: 'r', prog: 'wave', ex: [cfg] }
+    const st = { unit: 'kg', workouts: [], exWeights: {}, routines: [] }
+    const entries = buildSessionEntries(st, r)
+    const rows = entries[0].sets
+    expect(rows).toHaveLength(3)
+    for (const row of rows) {
+      expect(typeof row.blockId).toBe('string')
+      expect(typeof row.stageId).toBe('string')
+      expect(['required', 'anchor']).toContain(row.role)
+    }
+    expect(rows.filter(row => row.role === 'anchor')).toHaveLength(1)
+    // target.rows is what readSession grades the *next* session against — same metadata.
+    expect(entries[0].target.rows.map(row => row.blockId)).toEqual(rows.map(row => row.blockId))
+  })
 })
 
 describe('wave sessions', () => {
@@ -76,7 +93,7 @@ describe('wave sessions', () => {
   it('records the prescribed rows on the entry target so the session can be graded back', () => {
     const st = { unit: 'kg', exWeights: {}, workouts: [] }
     const [entry] = buildSessionEntries(st, { id: 'r', ex: [waveCfg] })
-    expect(entry.target.rows).toEqual([{ w: 65, r: 5 }, { w: 75, r: 5 }, { w: 85, r: 5 }])
+    expect(entry.target.rows).toMatchObject([{ w: 65, r: 5 }, { w: 75, r: 5 }, { w: 85, r: 5 }])
     expect(entry.sets.map(s => s.w)).toEqual([65, 75, 85])
   })
 

@@ -114,6 +114,22 @@ describe('completed workout boundary', () => {
       n: 'Custom lift', muscleWeights: { chest: 1 },
     })
   })
+
+  it('carries a wave row\'s block metadata into the saved entry untouched', () => {
+    const active = {
+      id: 'w', d: '2026-08-08', start: 1,
+      entries: [{
+        id: '0025',
+        sets: [{ done: true, w: 65, r: 5, blockId: 'b1', stageId: 's1', role: 'required', blockType: 'work' },
+          { done: true, w: 85, r: 5, blockId: 'b2', stageId: 's1', role: 'anchor', blockType: 'work' }],
+        target: { sets: 2, reps: 5, rows: [{ w: 65, r: 5, blockId: 'b1' }, { w: 85, r: 5, blockId: 'b2' }] }
+      }]
+    }
+    const completed = buildCompletedWorkout(active)
+    expect(completed.entries[0].sets[0]).toMatchObject({ blockId: 'b1', stageId: 's1', role: 'required', blockType: 'work' })
+    expect(completed.entries[0].sets[1]).toMatchObject({ blockId: 'b2', stageId: 's1', role: 'anchor', blockType: 'work' })
+    expect(completed.entries[0].target.rows).toEqual(active.entries[0].target.rows)
+  })
 })
 
 // Notes written during a session have to survive it, or "write a note during your workout"
