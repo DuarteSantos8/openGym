@@ -88,6 +88,23 @@ describe('stallCount', () => {
     const improvedLast = [miss(40, 9), miss(40, 9), miss(40, 9), miss(40, 10)]
     expect(stallCount(improvedLast, 'double')).toBe(0)
   })
+
+  const tripleMiss = (weight, rows, performedLast) => ({
+    ok: false,
+    weight,
+    reps: rows.map((r, i) => (i === rows.length - 1 ? performedLast : r)),
+    target: { setsMin: 3, rows: rows.map(r => ({ r })) }
+  })
+
+  it('treats a rep gain in the active added set as progress under triple progression', () => {
+    const lows = [9, 9, 9, 10]
+    expect(stallCount(lows.map(v => tripleMiss(40, [12, 12, 12, 12], v)), 'triple')).toBe(0)
+  })
+
+  it('keeps counting when the active value never beats the session right before it', () => {
+    const lows = [9, 9, 9, 9]
+    expect(stallCount(lows.map(v => tripleMiss(40, [12, 12, 12, 12], v)), 'triple')).toBe(4)
+  })
 })
 
 describe('policyFor', () => {
@@ -318,7 +335,7 @@ describe('bodyweight exercises', () => {
   })
 
   it('applies to every policy, not just linear', () => {
-    for (const prog of ['linear', 'greyskull', 'double']) {
+    for (const prog of ['linear', 'greyskull', 'double', 'triple']) {
       const p = nextPrescription(bw([[0, 10, 10, 4], [0, 10, 10, 4], [0, 10, 10, 4]]), { ...cfg, prog })
       expect(p.weight, prog).toBe(0)
       expect(p.kind, prog).toBe('hold')
@@ -478,6 +495,79 @@ describe('double progression', () => {
     expect(p.target1RM).toBe(deloadTarget1RM(60, 8, 0.9, true))
   })
 
+})
+
+describe('triple progression', () => {
+  const cfg = { id: LIFT, sets: 3, reps: 12, repsMin: 8, setsMin: 3, setsMax: 5, weight: 40, prog: 'triple' }
+
+  function priorSession(rows, opts = {}) {
+    const weight = opts.weight ?? 40
+    const performed = opts.performed || rows
+    return {
+      d: '2026-02-01',
+      entries: [{
+        id: LIFT,
+        target: { sets: rows.length, reps: 12, repsMin: 8, setsMin: 3, setsMax: 5, weight, rows: rows.map(r => ({ r })) },
+        sets: rows.map((_, i) => ({ w: weight, r: performed[i], done: true }))
+      }]
+    }
+  }
+
+  it('climbs the base group together, capped at the top of the range', () => {
+    const S = { unit: 'kg', workouts: [priorSession([11, 11, 11])] }
+    const p = nextPrescription(S, cfg)
+    expect(p.kind).toBe('hold')
+    expect(p.rows).toEqual([{ r: 12 }, { r: 12 }, { r: 12 }])
+    expect(p.weight).toBe(40)
+  })
+
+  it('adds a set at the bottom once the base group reaches the top of the range', () => {
+    const S = { unit: 'kg', workouts: [priorSession([12, 12, 12])] }
+    const p = nextPrescription(S, cfg)
+    expect(p.kind).toBe('hold')
+    expect(p.rows).toEqual([{ r: 12 }, { r: 12 }, { r: 12 }, { r: 8 }])
+    expect(p.sets).toBe(4)
+  })
+
+  it('advances only the added set while the base group holds at the top', () => {
+    let p = nextPrescription({ unit: 'kg', workouts: [priorSession([12, 12, 12, 9])] }, cfg)
+    expect(p.rows).toEqual([{ r: 12 }, { r: 12 }, { r: 12 }, { r: 10 }])
+    p = nextPrescription({ unit: 'kg', workouts: [priorSession([12, 12, 12, 11])] }, cfg)
+    expect(p.rows).toEqual([{ r: 12 }, { r: 12 }, { r: 12 }, { r: 12 }])
+  })
+
+  it('adds load and restarts at the bottom once every set reaches setsMax × repsMax', () => {
+    const S = { unit: 'kg', workouts: [priorSession([12, 12, 12, 12, 12])] }
+    const p = nextPrescription(S, cfg)
+    expect(p.kind).toBe('up')
+    expect(p.weight).toBe(42.5)
+    expect(p.rows).toEqual([{ r: 8 }, { r: 8 }, { r: 8 }])
+    expect(p.sets).toBe(3)
+  })
+
+  it('holds the exact same rows and weight after a session that fell short', () => {
+    const S = { unit: 'kg', workouts: [priorSession([12, 12, 12], { performed: [12, 12, 9] })] }
+    const p = nextPrescription(S, cfg)
+    expect(p.kind).toBe('hold')
+    expect(p.rows).toEqual([{ r: 12 }, { r: 12 }, { r: 12 }])
+    expect(p.weight).toBe(40)
+  })
+
+  it('deloads after three real stalls and resets to setsMin × repsMin', () => {
+    const missSession = day => ({
+      d: day,
+      entries: [{
+        id: LIFT,
+        target: { sets: 4, reps: 12, repsMin: 8, setsMin: 3, setsMax: 5, weight: 40, rows: [{ r: 12 }, { r: 12 }, { r: 12 }, { r: 9 }] },
+        sets: [{ w: 40, r: 12, done: true }, { w: 40, r: 12, done: true }, { w: 40, r: 12, done: true }, { w: 40, r: 6, done: true }]
+      }]
+    })
+    const S = { unit: 'kg', workouts: [missSession('2026-03-01'), missSession('2026-03-02'), missSession('2026-03-03')] }
+    const p = nextPrescription(S, cfg)
+    expect(p.kind).toBe('deload')
+    expect(p.weight).toBe(40)
+    expect(p.rows).toEqual([{ r: 8 }, { r: 8 }, { r: 8 }])
+  })
 })
 
 describe('timed progression', () => {
@@ -725,6 +815,28 @@ describe('applyPrescription', () => {
 
   it('never shrinks a session that has already logged sets', () => {
     expect(applyPrescription(sets, { kind: 'up', weight: 60, sets: 1 })).toHaveLength(sets.length)
+  })
+
+  it('writes each row target onto its own unlogged work set', () => {
+    const sets = [{ w: 40, r: 12, done: false }, { w: 40, r: 12, done: false }, { w: 40, r: 12, done: false }]
+    const p = { policy: 'triple', kind: 'hold', rows: [{ r: 12 }, { r: 12 }, { r: 12 }, { r: 8 }], sets: 4 }
+    const out = applyPrescription(sets, p, 2.5)
+    expect(out.map(s => s.r)).toEqual([12, 12, 12, 8])
+  })
+
+  it('shrinks to a fresh session\'s row count but never drops a logged set', () => {
+    const fresh = applyPrescription(
+      [{ w: 40, r: 12, done: false }, { w: 40, r: 12, done: false }, { w: 40, r: 12, done: false }, { w: 40, r: 12, done: false }, { w: 40, r: 12, done: false }],
+      { policy: 'triple', kind: 'up', weight: 42.5, rows: [{ r: 8 }, { r: 8 }, { r: 8 }], sets: 3 }, 2.5
+    )
+    expect(fresh.map(s => s.r)).toEqual([8, 8, 8])
+    expect(fresh.every(s => s.w === 42.5)).toBe(true)
+
+    const inProgress = applyPrescription(
+      [{ w: 40, r: 12, done: true }, { w: 40, r: 12, done: true }, { w: 40, r: 12, done: false }, { w: 40, r: 12, done: false }, { w: 40, r: 12, done: false }],
+      { policy: 'triple', kind: 'up', weight: 42.5, rows: [{ r: 8 }, { r: 8 }, { r: 8 }], sets: 3 }, 2.5
+    )
+    expect(inProgress.length).toBe(5)
   })
 })
 

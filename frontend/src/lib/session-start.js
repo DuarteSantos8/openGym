@@ -28,6 +28,7 @@ export function buildSessionEntries(st, r) {
     if (plan.reps != null) target.reps = plan.reps
     if (plan.sec != null) target.sec = plan.sec
     if (plan.sets != null) target.sets = plan.sets
+    if (plan.rows != null) target.rows = plan.rows
     return { id: cfg.id, sg: cfg.sg, target, plan, sets, ...(noProg ? { noProg: true } : {}) }
   })
 }
