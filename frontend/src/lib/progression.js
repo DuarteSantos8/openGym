@@ -362,12 +362,16 @@ export function nextPrescription(S, cfg, routine) {
 
   const w = last.weight
   // Bodyweight work carries no external load, so there is nothing to add or take away —
-  // "deload your push-ups to 2.5 kg" is not advice. Progress in reps instead. This runs ahead
+  // "deload your push-ups to 2.5 kg" is not advice. Progress in reps instead; triple holds. This runs ahead
   // of the individual policies because it is true for all of them. Note the trigger is the
   // *logged* weight, not the `bw` flag: a dip done with a belt has a load to progress and
   // belongs on the normal policies, and a barbell lift logged at 0 has nothing to add to.
   if (w <= 0) {
     const goal = last.goal || cfg.reps || 0
+    if (policy === 'triple') {
+      const rows = last.target && last.target.rows
+      return { policy, kind: 'hold', weight: 0, ...(rows ? { rows, sets: rows.length } : { reps: goal || undefined }), why: ['Targets stay where you set them.'] }
+    }
     if (!last.ok || goal <= 0) return { policy, kind: 'hold', weight: 0, reps: goal || undefined, why: ['Bodyweight — same target again until every set is clean.'] }
     // A ceiling turns "+1 rep forever" into a plan (issue #33). Past the top of the range the
     // reps go back to the bottom and a set is added instead, which is how bodyweight work
@@ -450,6 +454,7 @@ export function nextPrescription(S, cfg, routine) {
 
   if (policy === 'triple') {
     const tcfg = normalizeTriple(cfg)
+    if (!tcfg.valid) return { policy, kind: 'hold', weight: w }
     if (stalls >= deloadAt) {
       const selected = epleyDeload()
       const dw = selected ? selected.weight : deloadTo(w, inc)
@@ -513,15 +518,14 @@ export function applyPrescription(sets, p, step = 2.5) {
     return o
   })
   // A policy that decided on a set count gets to grow the list — bodyweight progression adds
-  // a set where a barbell would have added a plate. Only ever upwards, and only by copying a
-  // row that is already there: a session in progress must not lose a set it has logged.
+  // a set where a barbell would have added a plate. Triple can also drop trailing fresh work
+  // rows; a session in progress must not lose a set it has logged.
   let workRows = out.filter(s => !isWarmupRow(s))
   if (p.rows && p.sets < workRows.length && !workRows.some(s => s.done)) {
-    let kept = 0
+    let remaining = workRows.length
     for (let i = out.length - 1; i >= 0; i--) {
       if (isWarmupRow(out[i])) continue
-      kept++
-      if (kept > p.sets) out.splice(i, 1)
+      if (remaining-- > p.sets) out.splice(i, 1)
     }
     workRows = out.filter(s => !isWarmupRow(s))
   }

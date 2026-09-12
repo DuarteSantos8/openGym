@@ -513,6 +513,39 @@ describe('triple progression', () => {
     }
   }
 
+  it('holds successful zero-load sessions and preserves their per-row targets', () => {
+    for (const rows of [[8, 8, 8], [12, 12, 12, 9], [12, 12, 12, 12, 12]]) {
+      const S = { unit: 'kg', workouts: [priorSession(rows, { weight: 0 })] }
+      const p = nextPrescription(S, cfg)
+      expect(p.kind).toBe('hold')
+      expect(p.weight).toBe(0)
+      expect(p.rows).toEqual(rows.map(r => ({ r })))
+      expect(p.sets).toBe(rows.length)
+    }
+  })
+
+  it('holds zero-load scalar targets while other rep policies still advance', () => {
+    const S = hist(LIFT, [[0, 8, 8, 8]], { sets: 3, reps: 8 })
+    expect(nextPrescription(S, cfg)).toMatchObject({ kind: 'hold', weight: 0, reps: 8 })
+    for (const prog of ['linear', 'greyskull', 'double']) {
+      expect(nextPrescription(S, { ...cfg, prog })).toMatchObject({ kind: 'up', weight: 0, reps: 9 })
+    }
+  })
+
+  it('holds load without fabricating targets when any triple limit is missing or invalid', () => {
+    for (const field of ['setsMin', 'setsMax', 'repsMin', 'reps']) {
+      for (const value of [undefined, null, 0, -1, NaN, Infinity, 'invalid']) {
+        const invalid = { ...cfg, [field]: value }
+        const hit = priorSession([12, 12, 12, 12, 12])
+        const miss = priorSession([12, 12, 12, 12, 12], { performed: [12, 12, 12, 12, 6] })
+        for (const workouts of [[hit], [miss], [miss, miss, miss]]) {
+          const p = nextPrescription({ unit: 'kg', workouts }, invalid)
+          expect(p).toEqual({ policy: 'triple', kind: 'hold', weight: 40 })
+        }
+      }
+    }
+  })
+
   it('climbs the base group together, capped at the top of the range', () => {
     const S = { unit: 'kg', workouts: [priorSession([11, 11, 11])] }
     const p = nextPrescription(S, cfg)
@@ -825,12 +858,16 @@ describe('applyPrescription', () => {
   })
 
   it('shrinks to a fresh session\'s row count but never drops a logged set', () => {
+    const warmup = { id: 'warmup', phase: 'warmup', w: 20, r: 5, done: true }
+    const work = Array.from({ length: 5 }, (_, i) => ({ id: i + 1, w: 40, r: 12, done: false }))
     const fresh = applyPrescription(
-      [{ w: 40, r: 12, done: false }, { w: 40, r: 12, done: false }, { w: 40, r: 12, done: false }, { w: 40, r: 12, done: false }, { w: 40, r: 12, done: false }],
+      [work[0], warmup, ...work.slice(1)],
       { policy: 'triple', kind: 'up', weight: 42.5, rows: [{ r: 8 }, { r: 8 }, { r: 8 }], sets: 3 }, 2.5
     )
-    expect(fresh.map(s => s.r)).toEqual([8, 8, 8])
-    expect(fresh.every(s => s.w === 42.5)).toBe(true)
+    expect(fresh.map(s => s.id)).toEqual([1, 'warmup', 2, 3])
+    expect(fresh[1]).toEqual(warmup)
+    expect(fresh.filter(s => s.phase !== 'warmup').map(s => s.r)).toEqual([8, 8, 8])
+    expect(fresh.filter(s => s.phase !== 'warmup').every(s => s.w === 42.5)).toBe(true)
 
     const inProgress = applyPrescription(
       [{ w: 40, r: 12, done: true }, { w: 40, r: 12, done: true }, { w: 40, r: 12, done: false }, { w: 40, r: 12, done: false }, { w: 40, r: 12, done: false }],

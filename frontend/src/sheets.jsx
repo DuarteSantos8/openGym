@@ -1075,6 +1075,7 @@ function ProgressionFields({ ex, mode, c, setC, routine, unit, perSide, bw }) {
   const setRule = v => setC(x => {
     const next = { ...x, prog: v || undefined }
     const p = policyFor({ ...next, id: ex.id }, routine, mode)
+    if (p === 'triple' && bw) return { ...next, prog: 'off' }
     if (p === 'double') return { ...next, ...normalizeRepRange(next.reps, next.repsMin, stride) }
     if (p === 'triple') return { ...next, ...normalizeTriple(next) }
     return next
