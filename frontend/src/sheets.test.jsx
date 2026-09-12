@@ -25,7 +25,7 @@ function renderConfig(onSave = vi.fn(), existing = { sets: 3, reps: 10, weight: 
   act(() => root.render(sheet.render(() => useUI.getState().closeSheet(sheet.id))))
   const stepper = [...host.querySelectorAll('.stp-w')]
     .find(el => el.querySelector('.stp-l')?.textContent.startsWith('Step'))
-  return { host, step: stepper.querySelector('input'), onSave }
+  return { host, step: stepper?.querySelector('input'), onSave }
 }
 
 describe('exercise configuration progression step', () => {
