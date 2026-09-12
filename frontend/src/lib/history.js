@@ -73,6 +73,23 @@ export function fmtDistance(m, unit) {
     ? fmtNum(Math.round(n * M_TO_FT * 10) / 10) + ' ft'
     : fmtNum(n) + ' m'
 }
+// Entry surfaces call these at the edit boundary so the stored `.m` stays metres whatever the
+// user sees or types — the same labels-only rule weight follows (the unit changes what is
+// shown/entered, never what is written). `metresToDisplay` converts metres to the value a
+// stepper shows (feet rounded to one decimal for a lb profile, whole metres otherwise);
+// `displayToMetres` is its inverse and is applied on save; `distanceUnitLabel` is the label
+// suffix ('ft' vs 'm').
+export function metresToDisplay(m, unit) {
+  const n = Math.max(0, Number(m) || 0)
+  return unit === 'lb' ? Math.round(n * M_TO_FT * 10) / 10 : Math.round(n)
+}
+export function displayToMetres(d, unit) {
+  const n = Math.max(0, Number(d) || 0)
+  return unit === 'lb' ? n / M_TO_FT : n
+}
+export function distanceUnitLabel(unit) {
+  return unit === 'lb' ? 'ft' : 'm'
+}
 
 // How hard a set felt, if the profile logs it at all. Two scales for the same thing, kept in
 // their own fields: RIR counts the reps still in the tank, RPE reads the same effort off a
