@@ -1123,7 +1123,8 @@ function ExConfig({ ex, existing, onSave, onDelete, close, routine, initial }) {
   const cardio = isCardio(ex.id)
   const seed = existing || initial || defaultConfig(ex.id)
   const [c, setC] = useState(() => {
-    const cfg = { ...seed }
+    let cfg = { ...seed }
+    if (isBw({ ...cfg, id: ex.id }) && policyFor({ ...cfg, id: ex.id }, routine, 'reps') === 'triple') cfg = { ...cfg, prog: 'off' }
     const p = policyFor({ ...cfg, id: ex.id }, routine, modeOf({ ...cfg, id: ex.id }))
     if (p === 'double') return { ...cfg, ...normalizeRepRange(cfg.reps, cfg.repsMin, isPerSide(cfg) ? 2 : 1) }
     if (p === 'triple') return { ...cfg, ...normalizeTriple(cfg) }
@@ -1160,7 +1161,7 @@ function ExConfig({ ex, existing, onSave, onDelete, close, routine, initial }) {
     if (c.inc > 0) prog.inc = c.inc
     // Epley deloading is configurable per occurrence, but the default stays omitted so older
     // plans retain their compact shape and keep the existing 90% behaviour.
-    if (mode === 'reps' && !bw && (activePolicy === 'linear' || activePolicy === 'double')) {
+    if (mode === 'reps' && !bw && (activePolicy === 'linear' || activePolicy === 'double' || activePolicy === 'triple')) {
       const deloadFactor = Math.max(0.5, Math.min(0.95, Number(c.deloadFactor) || 0.9))
       if (deloadFactor !== 0.9) prog.deloadFactor = deloadFactor
     }
@@ -1285,7 +1286,10 @@ function ExConfig({ ex, existing, onSave, onDelete, close, routine, initial }) {
     {!cardio && <div className="sect-b" style={{ marginBottom: 8 }}>
       <Row icon="figureStrength" iconTint="var(--acc)" title={t('Bodyweight')}
         subtitle={bw ? t('No weight to enter — just log the reps.') : t('Ask for a weight on every set.')}>
-        <Switch checked={bw} onChange={v => setC(x => ({ ...x, bodyweight: v, weight: v ? 0 : x.weight }))} />
+        <Switch checked={bw} onChange={v => setC(x => {
+          const next = { ...x, bodyweight: v, weight: v ? 0 : x.weight }
+          return v && policyFor({ ...next, id: ex.id }, routine, 'reps') === 'triple' ? { ...next, prog: 'off' } : next
+        })} />
       </Row>
       {mode === 'reps' && <Row icon="shuffle" iconTint="var(--blue)" title={t('Reps per side')}
         subtitle={perSide ? t('You still log the total: {0} is {1} per side.', c.reps || 0, fmtNum(sideReps(c.reps))) : t('For lunges, single-arm rows and the like.')}>

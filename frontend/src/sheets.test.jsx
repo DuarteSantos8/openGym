@@ -15,8 +15,8 @@ function type(el, value) {
   el.dispatchEvent(new Event('input', { bubbles: true }))
 }
 
-function renderConfig(onSave = vi.fn()) {
-  exConfigSheet(ex, { sets: 3, reps: 10, weight: 0, mode: 'reps', prog: 'double' }, onSave)
+function renderConfig(onSave = vi.fn(), existing = { sets: 3, reps: 10, weight: 0, mode: 'reps', prog: 'double' }, routine) {
+  exConfigSheet(ex, existing, onSave, undefined, routine)
   const sheet = useUI.getState().sheets.at(-1)
   const host = document.createElement('div')
   document.body.appendChild(host)
@@ -77,5 +77,30 @@ describe('exercise configuration progression step', () => {
     act(() => { save.click() })
     expect(config.onSave).toHaveBeenCalledWith(expect.objectContaining({ inc: 0.5 }))
     expect(useUI.getState().sheets).toHaveLength(0)
+  })
+
+  it('saves triple deload factors and clears triple when bodyweight is selected', () => {
+    const triple = { sets: 3, setsMin: 3, setsMax: 5, reps: 12, repsMin: 8, weight: 100, mode: 'reps', prog: 'triple', deloadFactor: 0.8 }
+    const config = renderConfig(vi.fn(), triple)
+    const save = [...config.host.querySelectorAll('button')].find(b => /^(save|add to routine)$/i.test(b.textContent.trim()))
+
+    act(() => { save.click() })
+    expect(config.onSave).toHaveBeenCalledWith(expect.objectContaining({ prog: 'triple', deloadFactor: 0.8 }))
+
+    const bodyweight = renderConfig(vi.fn(), triple)
+    act(() => { bodyweight.host.querySelector('[role="switch"]').click() })
+    const bodyweightSave = [...bodyweight.host.querySelectorAll('button')].find(b => /^(save|add to routine)$/i.test(b.textContent.trim()))
+    act(() => { bodyweightSave.click() })
+    expect(bodyweight.onSave).toHaveBeenCalledWith(expect.objectContaining({ bodyweight: true, prog: 'off' }))
+
+    const inherited = renderConfig(vi.fn(), { ...triple, bodyweight: true, prog: undefined }, { prog: 'triple' })
+    const inheritedSave = [...inherited.host.querySelectorAll('button')].find(b => /^(save|add to routine)$/i.test(b.textContent.trim()))
+    act(() => { inheritedSave.click() })
+    expect(inherited.onSave).toHaveBeenCalledWith(expect.objectContaining({ bodyweight: true, prog: 'off' }))
+
+    const inheritedTime = renderConfig(vi.fn(), { ...triple, bodyweight: true, mode: 'time', sec: 45, prog: undefined }, { prog: 'triple' })
+    const inheritedTimeSave = [...inheritedTime.host.querySelectorAll('button')].find(b => /^(save|add to routine)$/i.test(b.textContent.trim()))
+    act(() => { inheritedTimeSave.click() })
+    expect(inheritedTime.onSave).toHaveBeenCalledWith(expect.objectContaining({ bodyweight: true, mode: 'time', prog: 'off' }))
   })
 })
