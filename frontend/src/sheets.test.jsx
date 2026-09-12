@@ -6,6 +6,9 @@ import { EXDB } from './lib/exercises.js'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { exConfigSheet } from './sheets.jsx'
+import { bindUI } from './components/ui.jsx'
+
+bindUI(useUI)
 
 const ex = EXDB.find(e => e.id === '0009')
 const mounted = []
