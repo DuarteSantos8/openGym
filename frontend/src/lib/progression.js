@@ -19,13 +19,13 @@
 import { modeOf, repStep, rerampWarmups, isBw, isPerSide, entryExcluded } from './history.js'
 import { EXIDX } from './exercises.js'
 import { isWarmupRow } from './workout-model.js'
-import { normalizeRepRange } from './rep-range.js'
+import { normalizeRepRange, normalizeTriple } from './rep-range.js'
 
-export const POLICIES = ['off', 'linear', 'greyskull', 'double', 'time']
+export const POLICIES = ['off', 'linear', 'greyskull', 'double', 'triple', 'time']
 
 // Which policies can sensibly drive which logging mode.
 export const POLICIES_FOR = {
-  reps: ['off', 'linear', 'greyskull', 'double'],
+  reps: ['off', 'linear', 'greyskull', 'double', 'triple'],
   time: ['off', 'time'],
   cardio: ['off']
 }
@@ -35,6 +35,7 @@ export const POLICY_NAME = {
   linear: 'Linear progression',
   greyskull: 'Greyskull LP',
   double: 'Double progression',
+  triple: 'Triple progression',
   time: 'Add time'
 }
 export const POLICY_DESC = {
@@ -42,13 +43,14 @@ export const POLICY_DESC = {
   linear: 'Hit every rep in every set and the weight goes up. Repeated misses trigger a deload.',
   greyskull: 'Two straight sets plus a final set taken to failure. Beat the target on that set and the weight goes up — double if you double the reps. One failure resets 10 %.',
   double: 'Work up through a rep range at the same weight. Reach the top of the range in every set and the weight goes up, reps back to the bottom.',
+  triple: 'Work up through a rep range, then add a set, then load. Reach the top of the range on every set at the highest set count and the weight goes up, sets and reps back to the bottom.',
   time: 'Hold every set for the full duration and the target goes up.'
 }
 
 // The Epley target is a soft objective mapped onto the exercise's real load grid. Keep the
 // default out of saved configs so plans written before this policy stays byte-for-byte compatible.
 export const DELOAD_FACTOR = 0.9
-export const DELOAD_AFTER = { linear: 3, greyskull: 1, double: 3, time: 3 }
+export const DELOAD_AFTER = { linear: 3, greyskull: 1, double: 3, triple: 3, time: 3 }
 export const DELOAD_FACTOR_MIN = 0.5
 export const DELOAD_FACTOR_MAX = 0.95
 
@@ -212,7 +214,8 @@ export function readSession(entry, fallback) {
   // Warm-up rows are prep, not the session: one filtered read beats guarding every consumer
   // below (an undone warm-up otherwise poisons `ok` forever and its reps drag `low`/`count`).
   const sets = ((entry && entry.sets) || []).filter(s => !isWarmupRow(s))
-  const planned = target.sets || sets.length
+  const rows = target.rows
+  const planned = rows ? rows.length : (target.sets || sets.length)
   const enough = sets.length >= planned
 
   if (mode === 'time') {
@@ -225,15 +228,17 @@ export function readSession(entry, fallback) {
       ok: goal > 0 && enough && held.length > 0 && held.every(h => h >= goal)
     }
   }
-  const goal = target.reps || 0
+  const goal = rows ? Math.max(...rows.map(r => r.r)) : (target.reps || 0)
   const reps = sets.map(s => (s.done ? (s.r || 0) : 0))
+  const rowsOk = rows && enough && sets.length > 0 &&
+    sets.every((s, i) => s.done && (s.r || 0) >= (rows[i] ? rows[i].r : goal))
   return {
     mode, target, goal, reps,
     weight: Math.max(0, ...sets.filter(s => s.done).map(s => s.w || 0)),
     count: reps.length,                                   // the dimension bodyweight work grows (#33)
     low: reps.length ? Math.min(...reps) : 0,
     amrap: reps.length ? reps[reps.length - 1] : 0,       // Greyskull's final set
-    ok: goal > 0 && enough && reps.length > 0 && reps.every(r => r >= goal)
+    ok: rows ? rowsOk : (goal > 0 && enough && reps.length > 0 && reps.every(r => r >= goal))
   }
 }
 
@@ -252,6 +257,18 @@ export function sessionsFor(S, exId, fallback) {
     if (entry.sets.some(s => s.done && !isWarmupRow(s))) out.push({ d: w.d, ...readSession(entry, fallback) })
   })
   return out
+}
+
+export function tripleActiveValue(session, target) {
+  const rows = target && target.rows
+  if (!rows || !rows.length) return 0
+  const setsMin = target.setsMin || rows.length
+  const reps = (session && session.reps) || []
+  if (rows.length <= setsMin) {
+    const base = reps.slice(0, rows.length)
+    return base.length ? Math.min(...base) : 0
+  }
+  return reps[rows.length - 1] || 0
 }
 
 // Checks how many sessions in a row ended in a miss, counting back from the most recent. 
@@ -277,9 +294,34 @@ export function stallCount(sessions, policy) {
       for (let j = i - 1; j >= 0 && sessions[j].weight === sessions[i].weight; j--) run.push(sessions[j].low) // Checks the lowest rep count of each session in the run
       if (run.length && sessions[i].low > Math.max(...run)) break // Beating the best of the current run is progress
     }
+    if (policy === 'triple' && i > 0 && sessions[i - 1].weight === sessions[i].weight) {
+      const activeNow = tripleActiveValue(sessions[i], sessions[i].target)
+      const activePrev = tripleActiveValue(sessions[i - 1], sessions[i - 1].target)
+      if (activeNow > activePrev) break
+    }
     n++ // increment stall count when no escape conditions were met
   }
   return n
+}
+
+export function tripleNextRows(prev, cfg) {
+  const { setsMin, setsMax, repsMin, reps: repsMax, step } = cfg
+  const base = () => Array.from({ length: setsMin }, () => ({ r: repsMin }))
+  if (!prev || !prev.rows || !prev.rows.length) return { rows: base(), kind: 'hold' }
+  if (!prev.ok) return { rows: prev.rows, kind: 'hold' }
+
+  const rows = prev.rows.map(r => ({ r: r.r }))
+  const n = rows.length
+  const baseAtMax = rows.slice(0, setsMin).every(r => r.r >= repsMax)
+  if (n <= setsMin && !baseAtMax) {
+    return { rows: rows.map(r => ({ r: Math.min(repsMax, r.r + step) })), kind: 'hold' }
+  }
+  const activeIdx = n - 1
+  if (rows[activeIdx].r < repsMax) {
+    return { rows: rows.map((r, i) => (i === activeIdx ? { r: Math.min(repsMax, r.r + step) } : r)), kind: 'hold' }
+  }
+  if (n < setsMax) return { rows: [...rows, { r: repsMin }], kind: 'hold' }
+  return { rows: base(), kind: 'up' }
 }
 
 /**
@@ -320,12 +362,16 @@ export function nextPrescription(S, cfg, routine) {
 
   const w = last.weight
   // Bodyweight work carries no external load, so there is nothing to add or take away —
-  // "deload your push-ups to 2.5 kg" is not advice. Progress in reps instead. This runs ahead
+  // "deload your push-ups to 2.5 kg" is not advice. Progress in reps instead; triple holds. This runs ahead
   // of the individual policies because it is true for all of them. Note the trigger is the
   // *logged* weight, not the `bw` flag: a dip done with a belt has a load to progress and
   // belongs on the normal policies, and a barbell lift logged at 0 has nothing to add to.
   if (w <= 0) {
     const goal = last.goal || cfg.reps || 0
+    if (policy === 'triple') {
+      const rows = last.target && last.target.rows
+      return { policy, kind: 'hold', weight: 0, ...(rows ? { rows, sets: rows.length } : { reps: goal || undefined }), why: ['Targets stay where you set them.'] }
+    }
     if (!last.ok || goal <= 0) return { policy, kind: 'hold', weight: 0, reps: goal || undefined, why: ['Bodyweight — same target again until every set is clean.'] }
     // A ceiling turns "+1 rep forever" into a plan (issue #33). Past the top of the range the
     // reps go back to the bottom and a set is added instead, which is how bodyweight work
@@ -348,7 +394,7 @@ export function nextPrescription(S, cfg, routine) {
   // session that stalled (falling back field-by-field to the current config), while the logged
   // weight remains the hard upper bound for the selected candidate.
   const epleyDeload = () => {
-    if (mode !== 'reps' || (policy !== 'linear' && policy !== 'double')) return null
+    if (mode !== 'reps' || !['linear', 'double', 'triple'].includes(policy)) return null
     const previous = last.target || {}
     const target = {
       ...cfg,
@@ -372,7 +418,7 @@ export function nextPrescription(S, cfg, routine) {
       step: inc,
       factor: deloadFactorOf(cfg),
       reps: target.reps,
-      repsMin: policy === 'double' ? target.repsMin : undefined,
+      repsMin: (policy === 'double' || policy === 'triple') ? target.repsMin : undefined,
       perSide: isPerSide(target)
     })
     if (!candidate) return null
@@ -404,6 +450,27 @@ export function nextPrescription(S, cfg, routine) {
     }
     const aim = Math.min(top, Math.max(bottom, last.low + repStep(cfg)))
     return { policy, kind: 'hold', weight: w, reps: aim, why: ['Same weight — aim for {0} reps this time.', aim] }
+  }
+
+  if (policy === 'triple') {
+    const tcfg = normalizeTriple(cfg)
+    if (!tcfg.valid) return { policy, kind: 'hold', weight: w }
+    if (stalls >= deloadAt) {
+      const selected = epleyDeload()
+      const dw = selected ? selected.weight : deloadTo(w, inc)
+      const rows = Array.from({ length: tcfg.setsMin }, () => ({ r: tcfg.repsMin }))
+      return { policy, kind: 'deload', weight: dw, rows, sets: rows.length, why: ['Stalled {0} sessions — deload to {1} {2} and restart at {3} sets of {4}.', stalls, dw, unit, tcfg.setsMin, tcfg.repsMin] }
+    }
+    const next = tripleNextRows({ rows: last.target && last.target.rows, ok: last.ok }, { ...tcfg, step: repStep(cfg) })
+    if (next.kind === 'up') {
+      return { policy, kind: 'up', weight: snapWeight(w + inc, inc), rows: next.rows, sets: next.rows.length, why: ['{0} sets of {1} reps in every set — {2} {3} more, back to {4} sets of {5}.', tcfg.setsMax, tcfg.reps, inc, unit, tcfg.setsMin, tcfg.repsMin] }
+    }
+    return {
+      policy, kind: 'hold', weight: w, rows: next.rows, sets: next.rows.length,
+      why: last.ok
+        ? ['On target — next up {0}.', next.rows.map(r => r.r).join('/')]
+        : ['Short of target — same rows again.']
+    }
   }
 
   // linear + greyskull
@@ -446,14 +513,22 @@ export function applyPrescription(sets, p, step = 2.5) {
     if (s.done || isWarmupRow(s)) return s
     const o = { ...s }
     if (p.weight != null) o.w = p.weight
-    if (p.reps != null) o.r = p.reps
+    if (!p.rows && p.reps != null) o.r = p.reps
     if (p.sec != null) o.sec = p.sec
     return o
   })
   // A policy that decided on a set count gets to grow the list — bodyweight progression adds
-  // a set where a barbell would have added a plate. Only ever upwards, and only by copying a
-  // row that is already there: a session in progress must not lose a set it has logged.
-  const workRows = out.filter(s => !isWarmupRow(s))
+  // a set where a barbell would have added a plate. Triple can also drop trailing fresh work
+  // rows; a session in progress must not lose a set it has logged.
+  let workRows = out.filter(s => !isWarmupRow(s))
+  if (p.rows && p.sets < workRows.length && !workRows.some(s => s.done)) {
+    let remaining = workRows.length
+    for (let i = out.length - 1; i >= 0; i--) {
+      if (isWarmupRow(out[i])) continue
+      if (remaining-- > p.sets) out.splice(i, 1)
+    }
+    workRows = out.filter(s => !isWarmupRow(s))
+  }
   if (p.sets > workRows.length) {
     // An all-warm-up entry has no work row to seed growth from - growing warm-up copies
     // would both invent work and never terminate the loop. Leave the entry untouched.
@@ -465,6 +540,16 @@ export function applyPrescription(sets, p, step = 2.5) {
     // something this particular row logged.
     const { drops, clusters, ...plainSeed } = seed
     while (out.filter(s => !isWarmupRow(s)).length < p.sets) out.push({ ...plainSeed, done: false })
+  }
+  if (p.rows) {
+    let i = -1
+    for (let k = 0; k < out.length; k++) {
+      if (isWarmupRow(out[k])) continue
+      i++
+      if (out[k].done) continue
+      const row = p.rows[i]
+      if (row && row.r != null) out[k] = { ...out[k], r: row.r }
+    }
   }
   // Last, because the work rows now carry their final weight: the warm-up block ramps toward
   // what you are actually about to lift, not toward what you lifted last time.
