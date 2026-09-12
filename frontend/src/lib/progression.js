@@ -516,7 +516,7 @@ export function applyPrescription(sets, p, step = 2.5) {
   // a set where a barbell would have added a plate. Only ever upwards, and only by copying a
   // row that is already there: a session in progress must not lose a set it has logged.
   let workRows = out.filter(s => !isWarmupRow(s))
-  if (p.sets < workRows.length && !workRows.some(s => s.done)) {
+  if (p.rows && p.sets < workRows.length && !workRows.some(s => s.done)) {
     let kept = 0
     for (let i = out.length - 1; i >= 0; i--) {
       if (isWarmupRow(out[i])) continue

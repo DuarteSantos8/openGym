@@ -838,6 +838,15 @@ describe('applyPrescription', () => {
     )
     expect(inProgress.length).toBe(5)
   })
+
+  it('keeps fresh double-deload rows when the historical target had fewer sets', () => {
+    const out = applyPrescription(
+      Array.from({ length: 5 }, () => ({ w: 40, r: 12, done: false })),
+      { policy: 'double', kind: 'deload', weight: 40, reps: 8, sets: 3 }, 2.5
+    )
+    expect(out).toHaveLength(5)
+    expect(out.map(s => s.r)).toEqual([8, 8, 8, 8, 8])
+  })
 })
 
 
