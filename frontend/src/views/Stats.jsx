@@ -282,7 +282,7 @@ function EffortCard({ S }) {
 }
 
 // Stats = the analytics hub: all charts, progress and history live here.
-export default function Stats() {
+export default function Stats({ embedded = false }) {
   const nav = useNavigate()
   const S = useStore(s => s.S)
   const [range, setRange] = useState(90)
@@ -429,8 +429,12 @@ export default function Stats() {
   if (showEff) exOpts.push({ value: 'effort', label: t('Effort') })
 
   return <>
-    <div className="hdr"><div><h1>{t('Stats')}</h1><div className="sub">{t('Progress & history')}</div></div>
+    {!embedded && <div className="hdr"><div><h1>{t('Stats')}</h1><div className="sub">{t('Progress & history')}</div></div>
       <button className="iconbtn" onClick={() => nav('/history')} aria-label={t('History')}><Icon name="history" /></button></div>
+    }
+
+    {embedded && <div className="profile-section-heading"><div><h2>{t('Your progress')}</h2><p>{t('Activity, strength and recovery')}</p></div>
+      <button className="iconbtn" onClick={() => nav('/history')} aria-label={t('History')}><Icon name="history" /></button></div>}
 
     <div className="tiles">
       <div className="tile"><div className="l"><Icon name="dumbbell" />{t('Workouts')}</div><div className="v">{workouts.length}</div></div>

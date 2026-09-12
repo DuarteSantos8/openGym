@@ -51,7 +51,7 @@ COPY package.json package-lock.json* ./
 # build host happened to be.
 RUN npm ci --omit=dev --omit=optional && npm cache clean --force
 
-COPY server.js push-messages.js verify-error.js ./
+COPY server.js push-messages.js verify-error.js profile.js ./
 COPY coach ./coach
 COPY social ./social
 COPY training ./training

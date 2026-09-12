@@ -1,78 +1,90 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { api } from '../lib/api.js'
-import { EXIDX } from '../lib/exercises.js'
-import { fmtDate, fmtNum } from '../lib/format.js'
-import { fmtSec } from '../lib/history.js'
+import { fmtDate } from '../lib/format.js'
 import { buildPlanBundle, parsePlan } from '../lib/plan-share.js'
-import { t, exerciseNameFor } from '../lib/i18n.js'
-import { confirmSheet, planImportSheet } from '../sheets.jsx'
+import { t } from '../lib/i18n.js'
+import { confirmSheet, menuSheet, planImportSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
-import { Button } from '../components/ui.jsx'
+import ProfileAvatar from '../components/ProfileAvatar.jsx'
+import { Button, SearchField } from '../components/ui.jsx'
 import '../social.css'
 
-function recordValue(record, unit) {
-  if (record.metric === 'weight') return `${fmtNum(record.value)} ${unit}`
-  if (record.metric === 'sec') return fmtSec(record.value)
-  if (record.metric === 'min') return `${fmtNum(record.value)} min`
-  return t('{0} reps', fmtNum(record.value))
-}
-
-function FriendCard({ friend, busy, hasPlan, share, remove }) {
+function FriendCard({ friend, busy, hasPlan, open, share, remove }) {
+  const actions = () => menuSheet({
+    title: friend.name,
+    items: [
+      { icon: 'upload', label: t('Share my plan'), disabled: busy || !hasPlan, onClick: () => share(friend) },
+      { icon: 'trash', label: t('Remove friend'), danger: true, disabled: busy, onClick: () => remove(friend) }
+    ]
+  })
   return <article className="card social-friend">
-    <div className="row social-person">
-      <span className="social-avatar"><Icon name="person" /></span>
-      <div className="grow"><h2>{friend.name}</h2><div className="small muted">{friend.lastWorkout
-        ? t('Last workout: {0}', fmtDate(friend.lastWorkout, false, true)) : t('No workouts logged yet')}</div></div>
-    </div>
-    <div className="social-metrics">
-      <div><span><Icon name="flame" /> {t('Week streak')}</span><b>{friend.weekStreak}</b></div>
-      <div><span>{t('Workouts this week')}</span><b>{friend.thisWeek}</b></div>
-      <div><span>{t('Total workouts')}</span><b>{friend.workouts}</b></div>
-    </div>
-    <details className="social-records">
-      <summary><Icon name="trophy" /> {t('Personal records')} <span className="dim">{friend.recordCount}</span></summary>
-      {friend.records.length ? <ul>{friend.records.map(record => <li key={record.exerciseId}>
-        <div className="grow"><b>{record.name || exerciseNameFor(EXIDX[record.exerciseId]) || t('Exercise')}</b>
-          <span className="small muted">{fmtDate(record.date, false, true)}</span></div>
-        <strong>{recordValue(record, friend.unit)}</strong>
-      </li>)}</ul> : <p className="small muted">{t('No personal records yet')}</p>}
-      {friend.recordCount > friend.records.length && <p className="small muted">{t('Showing the 12 most recently set personal records.')}</p>}
-    </details>
-    <div className="social-actions">
-      <Button size="sm" variant="tinted" icon="upload" disabled={busy || !hasPlan} onClick={() => share(friend)}>{t('Share my plan')}</Button>
-      <Button size="sm" disabled={busy} onClick={() => remove(friend)}>{t('Remove friend')}</Button>
+    <div className="social-friend-head">
+      <button className="row social-person social-person-button" onClick={() => open(friend)}>
+        <ProfileAvatar name={friend.name} avatar={friend.avatar} size="sm" />
+        <div className="grow"><h2>{friend.name}</h2><div className="small muted">{friend.lastWorkout
+          ? t('Last workout: {0}', fmtDate(friend.lastWorkout, false, true)) : t('No workouts logged yet')}</div>
+          <div className="small social-friend-summary"><Icon name="flame" /> {t('{0} week streak', friend.weekStreak)}
+            <span>·</span>{t('{0} this week', friend.thisWeek)}<span>·</span>{t('{0} records', friend.recordCount)}</div></div>
+        <Icon name="chevronRight" className="chev" />
+      </button>
+      <button className="iconbtn social-friend-more" onClick={actions} aria-label={t('Actions for {0}', friend.name)}><Icon name="more" /></button>
     </div>
   </article>
 }
 
-export default function Social() {
+function PeopleSheet({ people, request, close }) {
+  const [query, setQuery] = useState('')
+  const [busy, setBusy] = useState(false)
+  const shown = people.filter(person => person.name.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()))
+  const choose = async person => {
+    if (busy) return
+    setBusy(true)
+    const sent = await request(person)
+    if (sent) close()
+    else setBusy(false)
+  }
+  return <>
+    <h3>{t('Add friend')}</h3>
+    <p className="small muted social-sheet-copy">{t('Choose a registered profile on this server. They decide whether to accept your request.')}</p>
+    {(people.length > 4 || query) && <SearchField value={query} onChange={event => setQuery(event.target.value)}
+      onClear={() => setQuery('')} placeholder={t('Search people…')} aria-label={t('Search people…')} />}
+    {shown.length ? <div className="social-people">{shown.map(person => <div className="social-request" key={person.id}>
+      <ProfileAvatar name={person.name} size="sm" /><b className="grow">{person.name}</b>
+      <Button size="sm" variant="tinted" icon="plus" disabled={busy} onClick={() => choose(person)}>{t('Add')}</Button>
+    </div>)}</div> : <div className="social-empty-people"><Icon name="people" />
+      <p className="small muted">{query ? t('No registered profile matches your search.')
+        : t('Everyone registered on this server is already connected or has a pending request.')}</p></div>}
+  </>
+}
+
+export default function Social({ embedded = false }) {
   const user = useStore(s => s.user)
   const S = useStore(s => s.S)
   const toast = useUI(s => s.toast)
+  const openSheet = useUI(s => s.openSheet)
+  const setSocialCount = useUI(s => s.setSocialCount)
   const nav = useNavigate()
   const [data, setData] = useState(null)
-  const [code, setCode] = useState('')
   const [revision, setRevision] = useState(0)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [loading, setLoading] = useState(false)
-  const ownCode = useRef(null)
   const hasPlan = S.routines.some(r => r.ex?.length)
 
   useEffect(() => {
-    if (!user) { setData(null); return }
+    if (!user) { setData(null); setSocialCount(0); return }
     const abort = new AbortController()
     setLoading(true)
     api('/api/social', { signal: abort.signal }).then(value => {
-      setData(value); setError('')
+      setData(value); setError(''); setSocialCount(value.incoming.length + value.plans.length)
     }).catch(e => {
       if (e.name !== 'AbortError') { setData(null); setError(e.message) }
     }).finally(() => { if (!abort.signal.aborted) setLoading(false) })
     return () => abort.abort()
-  }, [user?.id, revision])
+  }, [user?.id, revision, setSocialCount])
 
   useEffect(() => {
     if (!user) return
@@ -93,10 +105,7 @@ export default function Social() {
     } catch (e) { setError(e.message); return false }
     finally { setBusy(false) }
   }
-  const request = async event => {
-    event.preventDefault()
-    if (await send('request', { code }, t('Friend request sent'))) setCode('')
-  }
+  const request = person => send('request', { userId: person.id }, t('Friend request sent'))
   const share = friend => confirmSheet({
     title: t('Share your plan with {0}?', friend.name),
     message: t('Send a copy of your routines and weekly schedule. Your friend chooses what to import. This replaces any plan you already have waiting in their inbox.'),
@@ -116,20 +125,16 @@ export default function Social() {
       const { plan } = await api('/api/social/plan?id=' + encodeURIComponent(item.id))
       planImportSheet(parsePlan(plan), () => {
         api('/api/social/plan/dismiss', { method: 'POST', body: JSON.stringify({ id: item.id }) })
+          .then(() => setRevision(n => n + 1))
           .catch(() => toast(t('Plan imported. Dismiss the shared copy from Social when you are back online.')))
       })
     } catch (e) { setError(e.message) }
     finally { setBusy(false) }
   }
-  const copyCode = async () => {
-    try { await navigator.clipboard.writeText(data.code); toast(t('Friend code copied')) }
-    catch { ownCode.current?.select(); toast(t('Select and copy your friend code')) }
-  }
+  const openPeople = () => openSheet(close => <PeopleSheet people={data?.suggestions || []} request={request} close={close} />)
 
   return <div className="social">
-    <div className="hdr"><div><h1>{t('Social')}</h1><div className="sub">{t('Keep up with your training friends')}</div></div>
-      {user && <Button size="sm" disabled={loading || busy} onClick={() => setRevision(n => n + 1)}>{t('Refresh')}</Button>}
-    </div>
+    {!embedded && <div className="hdr"><div><h1>{t('Social')}</h1><div className="sub">{t('Keep up with your training friends')}</div></div></div>}
     {!user ? <div className="card social-empty">
       <Icon name="people" /><h2>{t('Train together, wherever you are')}</h2>
       <p className="muted">{t('Sign in or connect to your server in Settings to add friends, see their progress and share plans.')}</p>
@@ -138,34 +143,24 @@ export default function Social() {
       {error && <div className="card social-error" role="alert">{error}</div>}
       {!data && loading && <p role="status" className="muted">{t('Loading friends…')}</p>}
       {data && <>
-        <div className="card">
-          <h2>{t('Add a friend')}</h2>
-          <p className="small muted">{t('Use a friend code from this openGym server. Accepting a request shares your streak, workout counts, last workout date and personal records with each other.')}</p>
-          <label className="social-label" htmlFor="own-friend-code">{t('Your friend code')}</label>
-          <div className="social-code"><input ref={ownCode} id="own-friend-code" className="field" readOnly value={data.code} onClick={event => event.target.select()} />
-            <Button size="sm" onClick={copyCode}>{t('Copy')}</Button></div>
-          <form onSubmit={request}>
-            <label className="social-label" htmlFor="friend-code">{t('Your friend’s code')}</label>
-            <div className="social-code"><input id="friend-code" className="field" value={code} onChange={event => setCode(event.target.value)}
-              autoComplete="off" autoCapitalize="characters" spellCheck={false} maxLength={32} placeholder="ABCD-EF12-3456-7890" required />
-              <Button type="submit" variant="tinted" disabled={busy || !code.trim()}>{t('Send request')}</Button></div>
-          </form>
-        </div>
         {!!(data.incoming.length || data.outgoing.length) && <div className="card">
           <h2>{t('Friend requests')}</h2>
+          {!!data.incoming.length && <p className="small muted">{t('Accepting shares your training stats, plans and personal records. Body weight follows each person’s privacy choice.')}</p>}
           {data.incoming.map(person => <div className="social-request" key={person.id}>
-            <b className="grow">{person.name}</b><div className="social-actions">
+            <ProfileAvatar name={person.name} size="sm" /><b className="grow">{person.name}</b><div className="social-actions">
               <Button size="sm" variant="tinted" disabled={busy} onClick={() => send('accept', { userId: person.id }, t('Friend request accepted'))}>{t('Accept')}</Button>
               <Button size="sm" disabled={busy} onClick={() => send('remove', { userId: person.id })}>{t('Decline')}</Button>
             </div></div>)}
           {data.outgoing.map(person => <div className="social-request" key={person.id}>
-            <div className="grow"><b>{person.name}</b><div className="small muted">{t('Request pending')}</div></div>
+            <ProfileAvatar name={person.name} size="sm" /><div className="grow"><b>{person.name}</b><div className="small muted">{t('Request pending')}</div></div>
             <Button size="sm" disabled={busy} onClick={() => send('remove', { userId: person.id })}>{t('Cancel request')}</Button>
           </div>)}
         </div>}
+
         {!!data.plans.length && <div className="card">
           <h2>{t('Plans from friends')}</h2>
           {data.plans.map(item => <div className="social-request" key={item.id}>
+            <ProfileAvatar name={item.from.name} avatar={item.from.avatar} size="sm" />
             <div className="grow"><b>{item.name || t('Shared plan')}</b>
               <div className="small muted">{t('From {0}', item.from.name)} · {fmtDate(item.created.slice(0, 10))}</div></div>
             <div className="social-actions">
@@ -174,12 +169,22 @@ export default function Social() {
             </div>
           </div>)}
         </div>}
-        <h4 className="sec">{t('Friends')} · {data.friends.length}</h4>
-        <p className="small muted social-hint">{t('A streak counts consecutive weeks with a workout, allowing the current week to be unfinished. Records use completed work sets.')}</p>
+
+        <div className="social-section-heading">
+          <div><h2>{t('Friends')}</h2><p>{t('{0} connected', data.friends.length)}</p></div>
+          <div className="row social-heading-actions">
+            <button className="iconbtn" disabled={loading || busy} onClick={() => setRevision(n => n + 1)} aria-label={t('Refresh')}><Icon name="reset" /></button>
+            <Button size="sm" variant="tinted" icon="plus" disabled={busy} onClick={openPeople}>{t('Add friend')}</Button>
+          </div>
+        </div>
         {data.friends.length ? <div className="social-grid">{data.friends.map(friend =>
-          <FriendCard key={friend.id} friend={friend} busy={busy} hasPlan={hasPlan} share={share} remove={remove} />)}</div>
-          : <div className="card social-empty"><Icon name="people" /><h2>{t('Your training circle starts here')}</h2>
-            <p className="muted">{t('Exchange codes with a friend. Once your request is accepted, their streak and records will appear here.')}</p></div>}
+          <FriendCard key={friend.id} friend={friend} busy={busy} hasPlan={hasPlan}
+            open={friend => nav('/profile/friends/' + friend.id)} share={share} remove={remove} />)}</div>
+          : <div className="card social-empty social-friends-empty"><Icon name="people" />
+            <h2>{t('Your friends will appear here')}</h2>
+            <p className="small muted">{t('Add someone from this server, then wait for them to accept your request.')}</p>
+            <Button size="sm" variant="tinted" icon="plus" onClick={openPeople}>{t('Add friend')}</Button>
+          </div>}
       </>}
     </>}
   </div>

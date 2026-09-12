@@ -155,6 +155,48 @@ paths:
                   user: { $ref: '#/components/schemas/SessionUser' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
+  /api/profile:
+    post:
+      tags: [auth]
+      operationId: updateProfile
+      summary: Update the signed-in profile
+      description: >-
+        Updates the display name, optional avatar and body-weight sharing preference. Avatars must
+        be client-cropped JPEG or WebP data URLs no larger than 128 KiB. At least one field is
+        required; omitted fields remain unchanged.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  maxLength: 40
+                avatar:
+                  type: [string, 'null']
+                  format: data-url
+                  description: A JPEG or WebP data URL, or null to remove the current avatar.
+                shareBodyWeight:
+                  type: boolean
+                  description: Whether accepted friends may see the latest weight and 30-day change.
+      responses:
+        '200':
+          description: Updated profile identity.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { $ref: '#/components/schemas/SessionUser' }
+        '400':
+          description: No changes, an empty name, or an invalid/oversized avatar.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
   /api/register/options:
     post:
       tags: [auth]
@@ -825,16 +867,37 @@ paths:
       summary: List friends, requests and shared plans
       description: >-
         Only accepted, enabled friends have progress summaries. Pending requests include identity
-        only. Streaks use the friend’s week-start setting and saved time zone (UTC if absent);
-        personal records follow exercise history. No full workout state or body-weight log is
-        returned.
+        only. Other enabled accounts are returned as suggestions. Streaks use the friend’s
+        week-start setting and saved time zone (UTC if absent); personal records follow exercise
+        history. No full workout state or body-weight log is returned.
       responses:
         '200':
-          description: Caller’s friend code, requests, friend summaries and plan inbox.
+          description: Suggested profiles, requests, friend summaries and plan inbox.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/SocialOverview'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/social/counts:
+    get:
+      tags:
+        - social
+      operationId: socialCounts
+      summary: Count actionable Social items
+      description: Returns incoming friend requests and valid shared plans for navigation badges.
+      responses:
+        '200':
+          description: Current badge counts.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [incoming, plans, total]
+                properties:
+                  incoming: { type: integer }
+                  plans: { type: integer }
+                  total: { type: integer }
         '401':
           $ref: '#/components/responses/Unauthorized'
   /api/social/request:
@@ -844,8 +907,8 @@ paths:
       operationId: socialRequest
       summary: Send a friend request
       description: >-
-        Friend codes identify registered users on this server only. Spaces and hyphens are ignored.
-        Codes are not login credentials; accepting the request is required for progress access.
+        The target must be an enabled profile registered on this server. Accepting the request is
+        required before either user can access the other's training profile.
       requestBody:
         required: true
         content:
@@ -853,11 +916,10 @@ paths:
             schema:
               type: object
               required:
-                - code
+                - userId
               properties:
-                code:
+                userId:
                   type: string
-                  example: ABCD-EF12-3456-7890
       responses:
         '200':
           description: Action completed.
@@ -866,7 +928,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Ok'
         '400':
-          description: The code belongs to the caller.
+          description: The target is the caller's own profile.
           content:
             application/json:
               schema:
@@ -874,13 +936,44 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
-          description: No enabled account matches the code.
+          description: No enabled account matches userId.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
         '409':
           description: Already connected, a request is pending, or either account has 100 connections.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/social/profile:
+    get:
+      tags:
+        - social
+      operationId: socialProfile
+      summary: Read an accepted friend's training profile
+      description: >-
+        Returns derived workout stats, the latest body weight when that profile allows it, a
+        sanitized read-only plan and every personal record. Full workout and weigh-in history,
+        workout and routine notes, gym cards and account settings are not returned.
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The accepted friend's training profile.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SocialProfile'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: The profile is missing, disabled or not an accepted friend.
           content:
             application/json:
               schema:
@@ -1379,6 +1472,10 @@ components:
           type: string
         name:
           type: string
+        avatar:
+          type: string
+          format: data-url
+          description: Present only for the caller or an accepted friend, never server discovery.
     SocialRecord:
       type: object
       required:
@@ -1435,8 +1532,62 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/SocialRecord'
-              maxItems: 12
               description: Most recently set personal records, newest first.
+    SocialProfile:
+      allOf:
+        - $ref: '#/components/schemas/SocialFriend'
+        - type: object
+          required:
+            - thisMonth
+            - weekStart
+            - bodyWeightShared
+            - bodyWeight
+            - plan
+          properties:
+            thisMonth:
+              type: integer
+            weekStart:
+              type: integer
+              enum: [0, 1]
+            bodyWeightShared:
+              type: boolean
+            bodyWeight:
+              oneOf:
+                - type: 'null'
+                - type: object
+                  required: [date, value, change30d]
+                  properties:
+                    date: { type: string, format: date }
+                    value: { type: number }
+                    change30d:
+                      type: [number, 'null']
+            plan:
+              type: object
+              required: [routines, week, customExercises]
+              properties:
+                routines:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id: { type: string }
+                      name: { type: string }
+                      emoji: { type: string }
+                      ex:
+                        type: array
+                        items:
+                          type: object
+                          description: Sanitized exercise targets; routine notes are omitted.
+                week:
+                  type: object
+                  description: Weekday index 0–6 mapped to routine-ID arrays.
+                customExercises:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id: { type: string }
+                      'n': { type: string }
     SocialPlan:
       type: object
       required:
@@ -1508,15 +1659,12 @@ components:
     SocialOverview:
       type: object
       required:
-        - code
         - friends
         - incoming
         - outgoing
+        - suggestions
         - plans
       properties:
-        code:
-          type: string
-          description: Caller’s instance-local friend code.
         friends:
           type: array
           items:
@@ -1527,6 +1675,11 @@ components:
             $ref: '#/components/schemas/SocialUser'
         outgoing:
           type: array
+          items:
+            $ref: '#/components/schemas/SocialUser'
+        suggestions:
+          type: array
+          description: Enabled profiles not already connected to the caller.
           items:
             $ref: '#/components/schemas/SocialUser'
         plans:
@@ -1553,7 +1706,9 @@ components:
         id: { type: string, description: Stable user id (16 base64url chars). }
         name: { type: string }
         admin: { type: boolean }
-      example: { id: "Zk3q9XyPbA2LmN0v", name: "Ada", admin: false }
+        avatar: { type: [string, 'null'], format: data-url }
+        shareBodyWeight: { type: boolean }
+      example: { id: "Zk3q9XyPbA2LmN0v", name: "Ada", admin: false, avatar: null, shareBodyWeight: false }
 
     # ------------------------------------------------------------------ WebAuthn
     # These mirror @simplewebauthn/server v13's JSON shapes (themselves the W3C

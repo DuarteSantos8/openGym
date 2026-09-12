@@ -3,6 +3,10 @@ import { readFileSync } from 'node:fs'
 import { bestWeightForEntry, metricModeForEntry, metricRowsForEntry } from '../lib/history.js'
 
 const source = readFileSync(new URL('./Stats.jsx', import.meta.url), 'utf8')
+const profileSource = readFileSync(new URL('./Profile.jsx', import.meta.url), 'utf8')
+const socialSource = readFileSync(new URL('./Social.jsx', import.meta.url), 'utf8')
+const appSource = readFileSync(new URL('../App.jsx', import.meta.url), 'utf8')
+const tabBarSource = readFileSync(new URL('../components/TabBar.jsx', import.meta.url), 'utf8')
 const uiSource = readFileSync(new URL('../components/ui.jsx', import.meta.url), 'utf8')
 const cssSource = readFileSync(new URL('../index.css', import.meta.url), 'utf8')
 
@@ -38,5 +42,30 @@ describe('Stats mixed-entry metric contract', () => {
     expect(cssSource).toContain('.lrow.lrow-stack-value .lrow-v{grid-column:1;grid-row:2;width:100%;max-width:none;text-align:left}')
     expect(cssSource).toContain('flex:0 1 auto;max-width:55%;min-width:0;')
     expect(cssSource).toContain('overflow:hidden;text-overflow:ellipsis;white-space:nowrap')
+  })
+})
+
+describe('Profile navigation contract', () => {
+  it('merges Stats and Social into one persistent Profile destination', () => {
+    expect(tabBarSource).toContain('k="profile"')
+    expect(tabBarSource).not.toContain('k="stats"')
+    expect(tabBarSource).not.toContain('k="social"')
+    expect(appSource).toContain('<Route path="/profile" element={<Profile />} />')
+    expect(appSource).not.toContain('<Route path="/stats"')
+    expect(appSource).not.toContain('<Route path="/social"')
+  })
+
+  it('keeps the identity header mounted while switching embedded content', () => {
+    expect(profileSource).toContain("new URLSearchParams(loc.search).get('view')")
+    expect(profileSource).toContain("view === 'stats' ? <Stats embedded /> : <Social embedded />")
+    expect(source).toContain('export default function Stats({ embedded = false })')
+    expect(socialSource).toContain('export default function Social({ embedded = false })')
+  })
+
+  it('gives the segmented profile sections tab semantics', () => {
+    expect(profileSource).toContain('tablist ariaLabel={t(\'Profile sections\')}')
+    expect(uiSource).toContain("role={tablist ? 'tablist' : undefined}")
+    expect(uiSource).toContain("role={tablist ? 'tab' : undefined}")
+    expect(uiSource).toContain('aria-selected={tablist ? o.value === value : undefined}')
   })
 })

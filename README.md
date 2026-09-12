@@ -91,7 +91,7 @@ as a home-screen app, passkey sign-in, offline support, sync across your phone a
 - 🎲 **Freestyle sessions** — train without a plan and pick exercises as you go. Each one arrives prefilled from the last time you did it — same sets, same reps and weight by position — so an unplanned session doesn't start by asking you to retype last week
 - 🏃 **Cardio** — log time + speed, not just weight × reps
 - 📤 **Share a plan** — send someone your routines and week schedule as a small file (no workouts, no weigh-ins), or print it as a clean PDF. Importing merges, so their plan is never overwritten
-- 👥 **Social** — connect with friends on your server through accepted friend-code requests. See weekly streaks, workout counts and personal records, and send plans directly to a friend's inbox for review and import. [How it works](docs/SOCIAL.md)
+- 👤 **Profile, Stats & Social** — one profile for your photo, name and training identity, with Stats and Social one tap apart. Find people on your server and, once connected, browse each other’s training profile, share selected progress and send plans directly for review and import. [How it works](docs/SOCIAL.md)
 - 🔧 **Filter by equipment** — narrow the library to what you actually own; the options adapt to what you've picked, so every combination on screen has results behind it
 - ✨ **Your own exercises** — a name and a body part is enough; they behave like built-in ones everywhere, with an optional description instead of an animation
 - 🟩 **Activity heatmap** — a GitHub-style year view, shaded by time spent training

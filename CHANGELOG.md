@@ -2,8 +2,9 @@
 
 ## Unreleased
 
-- **Social tab:** friend codes and accepted requests for accounts on the same server; friends see weekly streaks, workout counts, last workout dates and exercise records. Either person can remove the connection.
-- **Plans from friends:** share a snapshot of your routines and weekly schedule directly, preview the exercises, then import as new routines. Applying the schedule is optional; new exports carry kg/lb so weights convert on import. Workout notes and weigh-ins are excluded.
+- **Profile, Stats and Social:** a Profile destination keeps identity, Stats and Social together with a persistent profile header and a Stats/Social switch. Edit your display name and a metadata-free profile photo stored on your openGym server; Settings, History and friend profiles stay under Profile.
+- **Social starts with what needs attention:** friend requests and shared plans come first, friends are compact profile links, server discovery opens from Add friend, and destructive actions moved behind the ellipsis. Profile photos stay between accepted friends, and body-weight sharing is now explicit and starts off for new accounts.
+- **Plans from friends:** share a snapshot of your routines and weekly schedule directly, preview the exercises, then import as new routines. Applying the schedule is optional; new exports carry kg/lb so weights convert on import. Workout notes and weigh-in history are excluded.
 
 What the Discord and GitLab reports after v1.3.5 had in common: the Coach failed and nobody could
 see why. Web bundle and APK; the API image only for the payload change.

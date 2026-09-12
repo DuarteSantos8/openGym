@@ -1,11 +1,12 @@
 import crypto from 'node:crypto';
-import { socialSummary } from './summary.js';
+import { socialProfile, socialSummary } from './summary.js';
 import { sharedPlan } from './plan.js';
 
-export function socialRoutes({ json, readBody, readSession, users, readState, load, save, secret, userNow }) {
-  const codeFor = id => crypto.createHmac('sha256', secret).update('friend:' + id).digest('hex').slice(0, 16).toUpperCase();
+export function socialRoutes({ json, readBody, readSession, users, readState, load, save, userNow }) {
   const person = id => users().find(u => u.id === id && !u.disabled);
-  const publicUser = u => ({ id: u.id, name: u.name });
+  const publicUser = (u, includeAvatar = false) => ({
+    id: u.id, name: u.name, ...(includeAvatar && u.avatar ? { avatar: u.avatar } : {})
+  });
   const between = (link, a, b) => (link.from === a && link.to === b) || (link.from === b && link.to === a);
   const friends = (data, a, b) => !!person(b) && data.connections.some(c => c.status === 'accepted' && between(c, a, b));
   const auth = (req, res) => {
@@ -25,23 +26,43 @@ export function socialRoutes({ json, readBody, readSession, users, readState, lo
         if (link.status === 'accepted') {
           const state = readState(other.id);
           const date = userNow(state?.reminder?.tz || 'UTC')?.date || new Date().toISOString().slice(0, 10);
-          connected.push({ ...publicUser(other), ...socialSummary(state, date) });
+          connected.push({ ...publicUser(other, true), ...socialSummary(state, date) });
         } else (link.to === user.id ? incoming : outgoing).push(publicUser(other));
       }
       connected.sort((a, b) => a.name.localeCompare(b.name));
+      const suggestions = users().filter(u => u.id !== user.id && !u.disabled
+        && !data.connections.some(c => between(c, user.id, u.id)))
+        .map(u => publicUser(u)).sort((a, b) => a.name.localeCompare(b.name));
       const plans = data.plans.filter(p => p.to === user.id && friends(data, user.id, p.from)).map(p => ({
-        id: p.id, from: publicUser(person(p.from)), name: p.plan.name || '', created: p.created,
+        id: p.id, from: publicUser(person(p.from), true), name: p.plan.name || '', created: p.created,
         routines: p.plan.routines.length
       }));
-      json(res, 200, { code: codeFor(user.id).match(/.{4}/g).join('-'), friends: connected, incoming, outgoing, plans });
+      json(res, 200, { friends: connected, incoming, outgoing, suggestions, plans });
+    },
+    'GET /api/social/counts': async (req, res) => {
+      const user = auth(req, res); if (!user) return;
+      const data = load();
+      const incoming = data.connections.filter(c => c.to === user.id && c.status === 'pending' && person(c.from)).length;
+      const plans = data.plans.filter(p => p.to === user.id && friends(data, user.id, p.from)).length;
+      json(res, 200, { incoming, plans, total: incoming + plans });
+    },
+    'GET /api/social/profile': async (req, res) => {
+      const user = auth(req, res); if (!user) return;
+      const id = new URL(req.url, 'http://localhost').searchParams.get('id');
+      const data = load();
+      const other = person(id);
+      if (!other || !friends(data, user.id, id)) return json(res, 404, { error: 'Friend profile not found' });
+      const state = readState(other.id);
+      const date = userNow(state?.reminder?.tz || 'UTC')?.date || new Date().toISOString().slice(0, 10);
+      json(res, 200, { ...publicUser(other, true),
+        ...socialProfile(state, date, { shareBodyWeight: other.shareBodyWeight !== false }) });
     },
     'POST /api/social/request': async (req, res) => {
       const user = auth(req, res); if (!user) return;
       const body = await readBody(req);
-      const code = typeof body?.code === 'string' ? body.code.replace(/[\s-]/g, '').toUpperCase() : '';
-      const other = /^[A-F0-9]{16}$/.test(code) && users().find(u => !u.disabled && codeFor(u.id) === code);
-      if (!other) return json(res, 404, { error: 'No user found with that friend code on this server' });
-      if (other.id === user.id) return json(res, 400, { error: 'That is your own friend code' });
+      const other = person(body?.userId);
+      if (!other) return json(res, 404, { error: 'User not found on this server' });
+      if (other.id === user.id) return json(res, 400, { error: 'You cannot add your own profile' });
       const data = load();
       const existing = data.connections.find(c => between(c, user.id, other.id));
       if (existing) return json(res, 409, { error: existing.status === 'accepted' ? 'You are already friends'

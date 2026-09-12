@@ -1,8 +1,11 @@
+import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
+import { useUI } from '../store/useUI.js'
 import { effectiveRoutineIds, effectiveRoutines } from '../lib/history.js'
 import { todayISO } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
+import { api } from '../lib/api.js'
 import Icon from './Icon.jsx'
 
 export default function TabBar({ onStart }) {
@@ -11,9 +14,23 @@ export default function TabBar({ onStart }) {
   const S = useStore(s => s.S)
   const user = useStore(s => s.user)
   const isGuest = useStore(s => s.isGuest())
+  const socialCount = useUI(s => s.socialCount)
+  const setSocialCount = useUI(s => s.setSocialCount)
+  useEffect(() => {
+    if (!user) { setSocialCount(0); return }
+    let gone = false
+    const refresh = () => api('/api/social/counts').then(value => {
+      if (!gone) setSocialCount(value.total)
+    }).catch(() => {})
+    refresh()
+    const timer = setInterval(refresh, 60000)
+    window.addEventListener('focus', refresh)
+    return () => { gone = true; clearInterval(timer); window.removeEventListener('focus', refresh) }
+  }, [user?.id, setSocialCount])
   if (!user && !isGuest) return null
   const cur = loc.pathname.split('/')[1] || 'home'
-  const on = k => cur === k || (cur === 'history' && k === 'stats') || (cur === 'settings' && k === 'home') || (cur === 'muscles' && k === 'library')
+  const on = k => cur === k || (k === 'profile' && ['history', 'settings'].includes(cur))
+    || (cur === 'muscles' && k === 'library')
 
   const startWorkout = () => {
     if (!S.active) {
@@ -23,9 +40,9 @@ export default function TabBar({ onStart }) {
     }
     nav('/workout')
   }
-  const Tab = ({ k, icon, to, label }) => (
+  const Tab = ({ k, icon, to, label, badge = 0 }) => (
     <button className={on(k) ? 'on' : ''} onClick={() => nav(to)}>
-      <Icon name={icon} /><span>{label}</span>
+      <span className="tab-icon"><Icon name={icon} />{badge > 0 && <b>{badge > 99 ? '99+' : badge}</b>}</span><span>{label}</span>
     </button>
   )
 
@@ -40,8 +57,7 @@ export default function TabBar({ onStart }) {
         <span className="cir"><Icon name={S.active ? (cur === 'workout' ? 'dumbbell' : 'play') : 'dumbbell'} /></span>
         <span>{S.active ? (cur === 'workout' ? t('Workout') : t('Resume')) : t('Start')}</span>
       </button>
-      <Tab k="stats" icon="chart" to="/stats" label={t('Stats')} />
-      <Tab k="social" icon="people" to="/social" label={t('Social')} />
+      <Tab k="profile" icon="personCircle" to="/profile" label={t('Profile')} badge={socialCount} />
       <Tab k="library" icon="list" to="/library" label={t('Exercises')} />
     </nav>
   )

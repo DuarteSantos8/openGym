@@ -6,18 +6,25 @@ import assert from 'node:assert/strict';
 import http from 'node:http';
 import { tempData } from './helpers.mjs';
 import { socialRoutes } from '../social/routes.js';
+import { accountView, profileRoutes } from '../profile.js';
 
 function socialHarness() {
-  const users = [{ id: 'alice', name: 'Alice' }, { id: 'bob', name: 'Bob' }, { id: 'eve', name: 'Eve' }];
+  const users = [{ id: 'alice', name: 'Alice' },
+    { id: 'bob', name: 'Bob', avatar: 'data:image/jpeg;base64,/9j/2Q==' },
+    { id: 'eve', name: 'Eve', avatar: 'data:image/jpeg;base64,/9j/2Q==' }];
   let data = { connections: [], plans: [] };
   const routes = socialRoutes({
     json: (res, status, body) => Object.assign(res, { status, body }),
     readBody: async req => req.body,
     readSession: req => users.find(u => u.id === req.user && !u.disabled),
     users: () => users,
-    readState: () => ({ workouts: [{ id: 'w1', d: '2026-09-07', bw: 80, note: 'private',
-      entries: [{ id: 'bench', sets: [{ w: 60, r: 5, done: true }] }] }], bodyweight: [{ w: 80 }] }),
-    load: () => structuredClone(data), save: next => { data = next; }, secret: 'test-secret',
+    readState: () => ({ unit: 'kg', week: { 1: ['push'] }, routines: [{ id: 'push', name: 'Push',
+      ex: [{ id: 'bench', sets: 3, reps: 5, weight: 60, note: 'private routine note' }] }],
+    workouts: [{ id: 'w1', d: '2026-09-07', bw: 80, note: 'private workout note',
+      entries: [{ id: 'bench', sets: [{ w: 60, r: 5, done: true }] },
+        ...Array.from({ length: 13 }, (_, i) => ({ id: `exercise-${i}`, sets: [{ w: 10 + i, r: 5, done: true }] }))] }],
+    bodyweight: [{ d: '2026-09-06', w: 80 }] }),
+    load: () => structuredClone(data), save: next => { data = next; },
     userNow: () => ({ date: '2026-09-11' })
   });
   return { users, call: async (key, user = 'alice', body = {}, query = '') => {
@@ -31,25 +38,88 @@ test('social requests require acceptance, reveal only summaries, and are revoked
   const { call } = socialHarness();
   assert.equal((await call('GET /api/social', null)).status, 401);
   const bob = await call('GET /api/social', 'bob');
-  assert.equal((await call('POST /api/social/request', 'alice', { code: bob.body.code })).status, 200);
-  assert.equal((await call('POST /api/social/request', 'alice', { code: bob.body.code })).status, 409);
-  assert.equal((await call('POST /api/social/request', 'bob', { code: bob.body.code })).status, 400);
-  assert.equal((await call('POST /api/social/request', 'alice', { code: 'invalid' })).status, 404);
+  assert.deepEqual(bob.body.suggestions, [{ id: 'alice', name: 'Alice' }, { id: 'eve', name: 'Eve' }]);
+  assert.deepEqual((await call('GET /api/social/counts', 'bob')).body, { incoming: 0, plans: 0, total: 0 });
+  assert.equal((await call('POST /api/social/request', 'alice', { userId: 'bob' })).status, 200);
+  assert.equal((await call('POST /api/social/request', 'alice', { userId: 'bob' })).status, 409);
+  assert.equal((await call('POST /api/social/request', 'bob', { userId: 'bob' })).status, 400);
+  assert.equal((await call('POST /api/social/request', 'alice', { userId: 'invalid' })).status, 404);
   const pending = (await call('GET /api/social', 'bob')).body;
   assert.deepEqual(pending.incoming, [{ id: 'alice', name: 'Alice' }]);
   assert.deepEqual(pending.friends, []);
+  assert.deepEqual(pending.suggestions, [{ id: 'eve', name: 'Eve' }]);
+  assert.deepEqual((await call('GET /api/social/counts', 'bob')).body, { incoming: 1, plans: 0, total: 1 });
+  assert.equal((await call('GET /api/social/profile', 'alice', {}, '?id=bob')).status, 404);
   assert.equal((await call('POST /api/social/accept', 'alice', { userId: 'bob' })).status, 404);
   assert.equal((await call('POST /api/social/accept', 'eve', { userId: 'alice' })).status, 404);
   assert.equal((await call('POST /api/social/accept', 'bob', { userId: 'alice' })).status, 200);
   const friends = (await call('GET /api/social', 'alice')).body.friends;
   assert.equal(friends[0].id, 'bob');
+  assert.equal(friends[0].avatar, 'data:image/jpeg;base64,/9j/2Q==');
   assert.equal(friends[0].weekStreak, 1);
   assert.equal(friends[0].records[0].value, 60);
+  assert.equal(friends[0].records.length, 12);
   assert.ok(!JSON.stringify(friends).includes('private'));
+  const profile = (await call('GET /api/social/profile', 'alice', {}, '?id=bob')).body;
+  assert.equal(profile.bodyWeight.value, 80);
+  assert.equal(profile.bodyWeightShared, true);
+  assert.equal(profile.avatar, 'data:image/jpeg;base64,/9j/2Q==');
+  assert.equal(profile.thisMonth, 1);
+  assert.equal(profile.records[0].exerciseId, 'bench');
+  assert.equal(profile.records.length, 14);
+  assert.equal(profile.plan.routines[0].name, 'Push');
+  assert.ok(!JSON.stringify(profile).includes('private'));
+  assert.equal((await call('GET /api/social/profile', 'eve', {}, '?id=bob')).status, 404);
   assert.equal((await call('GET /api/social', 'eve')).body.friends.length, 0);
   await call('POST /api/social/remove', 'bob', { userId: 'alice' });
   assert.deepEqual((await call('GET /api/social', 'alice')).body.friends, []);
   assert.deepEqual((await call('GET /api/social', 'bob')).body.friends, []);
+});
+
+test('friend body weight follows the profile privacy choice', async () => {
+  const { call, users } = socialHarness();
+  await call('POST /api/social/request', 'alice', { userId: 'bob' });
+  await call('POST /api/social/accept', 'bob', { userId: 'alice' });
+  users.find(user => user.id === 'bob').shareBodyWeight = false;
+  const profile = (await call('GET /api/social/profile', 'alice', {}, '?id=bob')).body;
+  assert.equal(profile.bodyWeightShared, false);
+  assert.equal(profile.bodyWeight, null);
+});
+
+test('profile updates validate the name and raster avatar before saving', async () => {
+  const users = [{ id: 'alice', name: 'Alice' }];
+  let saves = 0;
+  const routes = profileRoutes({
+    json: (res, status, body) => Object.assign(res, { status, body }),
+    readBody: async req => req.body,
+    readSession: req => users.find(user => user.id === req.user),
+    save: () => { saves++; },
+    isAdmin: () => false
+  });
+  const call = async (user, body) => {
+    const res = {};
+    await routes['POST /api/profile']({ user, body }, res);
+    return res;
+  };
+  assert.equal((await call(null, {})).status, 401);
+  assert.equal((await call('alice', {})).status, 400);
+  assert.equal((await call('alice', { name: '   ' })).status, 400);
+  assert.equal((await call('alice', { avatar: 'data:image/svg+xml;base64,PHN2Zz4=' })).status, 400);
+  const changed = await call('alice', {
+    name: '  Alice Strong  ', avatar: 'data:image/jpeg;base64,/9j/2Q==', shareBodyWeight: false
+  });
+  assert.equal(changed.status, 200);
+  assert.deepEqual(changed.body.user, {
+    id: 'alice', name: 'Alice Strong', admin: false,
+    avatar: 'data:image/jpeg;base64,/9j/2Q==', shareBodyWeight: false
+  });
+  assert.equal(saves, 1);
+  const cleared = await call('alice', { avatar: null });
+  assert.equal(cleared.body.user.avatar, null);
+  assert.equal(saves, 2);
+  assert.deepEqual(accountView({ id: 'legacy', name: 'Legacy' }, () => false), {
+    id: 'legacy', name: 'Legacy', admin: false, avatar: null, shareBodyWeight: true
+  });
 });
 
 test('plan snapshots are available only to the intended friend and disappear after dismissal or removal', async () => {
@@ -57,7 +127,7 @@ test('plan snapshots are available only to the intended friend and disappear aft
   const plan = { opengym_plan: 1, name: 'Push', unit: 'kg', week: { 1: ['r1'] }, customEx: [],
     routines: [{ id: 'r1', name: 'Push', ex: [{ id: 'bench', sets: 3, reps: 5, weight: 60 }] }] };
   assert.equal((await call('POST /api/social/plan', 'alice', { userId: 'bob', plan })).status, 403);
-  await call('POST /api/social/request', 'alice', { code: (await call('GET /api/social', 'bob')).body.code });
+  await call('POST /api/social/request', 'alice', { userId: 'bob' });
   await call('POST /api/social/accept', 'bob', { userId: 'alice' });
   assert.equal((await call('POST /api/social/plan', 'alice', { userId: 'bob', plan: {} })).status, 400);
   assert.equal((await call('POST /api/social/plan', 'alice', { userId: 'bob', plan })).status, 200);

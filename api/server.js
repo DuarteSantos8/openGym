@@ -20,6 +20,7 @@ import { startWarmup } from './coach/warmup.js';
 import { dayReminderPush, restTimerPush, testPush } from './push-messages.js';
 import { verifyError } from './verify-error.js';
 import { socialRoutes } from './social/routes.js';
+import { accountView, profileRoutes } from './profile.js';
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
@@ -70,6 +71,7 @@ try { db = JSON.parse(fs.readFileSync(dbFile, 'utf8')); } catch {}
 db.subs = db.subs || [];
 db.invites = db.invites || [];
 const isAdmin = user => !!user && (user.admin === true || ADMIN_UIDS.includes(user.id));
+const sessionUser = user => accountView(user, isAdmin);
 // 0600: db.json holds passkey credential material. It used to be covered by a blanket 0700 on
 // the whole directory; now that the directory stays traversable, the file carries its own mode.
 function saveDb() { atomicWrite(dbFile, JSON.stringify(db, null, 2), 0o600); }
@@ -663,7 +665,7 @@ const routes = {
   'GET /api/me': async (req, res) => {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
-    json(res, 200, { user: { id: user.id, name: user.name, admin: isAdmin(user) } });
+    json(res, 200, { user: sessionUser(user) });
   },
 
   'POST /api/register/options': async (req, res) => {
@@ -727,7 +729,7 @@ const routes = {
         return json(res, 403, { error: 'invite code is no longer valid — ask for a new one' });
       }
     }
-    const user = { id: c.uid, name: c.name, created: new Date().toISOString() };
+    const user = { id: c.uid, name: c.name, created: new Date().toISOString(), shareBodyWeight: false };
     if (invite) { user.invitedBy = invite.code; invite.usedBy = user.id; invite.usedAt = user.created; }
     db.users.push(user);
     db.creds.push({
@@ -738,7 +740,7 @@ const routes = {
     });
     saveDb();
     audit(req, 'auth.register.ok', { user, msg: invite ? invite.code : null });
-    json(res, 200, { user: { id: user.id, name: user.name, admin: isAdmin(user) } }, { 'Set-Cookie': sessionCookie(user) });
+    json(res, 200, { user: sessionUser(user) }, { 'Set-Cookie': sessionCookie(user) });
   },
 
   'POST /api/login/options': async (req, res) => {
@@ -799,7 +801,7 @@ const routes = {
       return json(res, 403, { error: 'this account has been disabled' });
     }
     audit(req, 'auth.login.ok', { user });
-    json(res, 200, { user: { id: user.id, name: user.name, admin: isAdmin(user) } }, { 'Set-Cookie': sessionCookie(user) });
+    json(res, 200, { user: sessionUser(user) }, { 'Set-Cookie': sessionCookie(user) });
   },
 
   // Reads the session purely so the sign-out can be recorded; the cookie is cleared either way.
@@ -853,7 +855,7 @@ const routes = {
       return json(res, 400, { error: 'invalid or expired code' });
     }
     audit(req, 'auth.pair.ok', { user });
-    json(res, 200, { token: makeSession(user), user: { id: user.id, name: user.name, admin: isAdmin(user) } });
+    json(res, 200, { token: makeSession(user), user: sessionUser(user) });
   },
 
   // `rev` is the server's own count of writes to this profile (also stored inside the document as
@@ -1111,8 +1113,10 @@ const routes = {
     json(res, 200, { ok: true });
   },
 
+  ...profileRoutes({ json, readBody, readSession, save: saveDb, isAdmin }),
+
   ...socialRoutes({ json, readBody, readSession, users: () => db.users, readState,
-    load: loadSocial, save: data => atomicWrite(socialFile, JSON.stringify(data), 0o600), secret: SECRET, userNow }),
+    load: loadSocial, save: data => atomicWrite(socialFile, JSON.stringify(data), 0o600), userNow }),
 
   /* ---------- AI Coach ---------- */
   // Routes live in coach/routes.js and are handed the helpers above rather than importing

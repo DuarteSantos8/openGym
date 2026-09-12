@@ -233,7 +233,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.3.5</span>
-    <span>35 endpoints</span>
+    <span>39 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -347,6 +347,52 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s2">200</span>
     <span class="p-desc">A valid session.<span class="r-sig">{ user: <a href="#schema-SessionUser">SessionUser</a> }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-updateProfile">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/profile</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Update the signed-in profile</span>
+  </summary>
+  <div class="ep-body">
+<p>Updates the display name, optional avatar and body-weight sharing preference. Avatars must be client-cropped JPEG or WebP data URLs no larger than 128 KiB. At least one field is required; omitted fields remain unchanged.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">name</span>
+    <span class="p-type">string <span class="p-hint">(&le; 40 chars)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">avatar</span>
+    <span class="p-type">string | null <span class="p-hint">(data-url)</span></span>
+    <span class="p-desc">A JPEG or WebP data URL, or null to remove the current avatar.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">shareBodyWeight</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc">Whether accepted friends may see the latest weight and 30-day change.</span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Updated profile identity.<span class="r-sig">{ user: <a href="#schema-SessionUser">SessionUser</a> }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">No changes, an empty name, or an invalid/oversized avatar.</span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>
@@ -548,7 +594,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Sign out everywhere</span>
   </summary>
   <div class="ep-body">
-<p>Bumps the account's session version, which invalidates <b>every</b> cookie and Bearer token ever issued for it — on every device, including a copy someone walked off with. Passkeys are untouched; signing back in works immediately. Also clears the caller's own cookie.</p>
+<p>Bumps the account's session version, which invalidates <b>every</b> cookie and Bearer token ever issued for it — on every device, including a copy someone walked off with. Passkeys are untouched; signing back in works immediately. Also clears the caller's own cookie. Unredeemed pairing codes for the account are voided too.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
 
 
@@ -649,7 +695,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Pull the account's app state</span>
   </summary>
   <div class="ep-body">
-<p>Returns the caller's entire app state as one JSON blob, or <code>{&quot;state&quot;: null}</code> if nothing has been synced yet. Sync conflict resolution happens client-side (last-writer-wins by the client-set <code>_ts</code> timestamp).</p>
+<p>Returns the caller's entire app state as one JSON blob, or <code>{&quot;state&quot;: null}</code> if nothing has been synced yet, together with <code>rev</code>, the server's revision of that document (0 when there is none). A client keeps the <code>rev</code> it last read or wrote and sends it back as <code>baseRev</code> on the next push, which lets the server refuse a write over a document the client never saw (see the 409 on PUT).</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
 
 
@@ -657,7 +703,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <div class="ptab">
   <div class="prow rrow">
     <span class="r-code s2">200</span>
-    <span class="p-desc">The stored state, or null.<span class="r-sig">{ state: <a href="#schema-State">State</a> | null }</span></span>
+    <span class="p-desc">The stored state, or null, and its revision.<span class="r-sig">{ state: <a href="#schema-State">State</a> | null, rev: integer }</span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>
@@ -676,6 +722,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </summary>
   <div class="ep-body">
 <p>Replaces the stored state wholesale (atomic write; there is no merge on the server). The <code>active</code> field — an in-progress workout — is stripped before saving: a running session belongs to the device running it. Body limit 5 MiB.</p>
+<p>With <code>baseRev</code> the write is conditional: it goes through only when <code>baseRev</code> equals the document's current revision, and answers 409 with the current document otherwise — the client merges the two and pushes again with the revision it was given. Without <code>baseRev</code> the write is unconditional (clients from before revisions, and deliberate replaces such as a backup import). The server stamps the new revision into the document as <code>_rev</code>; a <code>_rev</code> sent by the client is ignored.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
 
 <p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
@@ -684,20 +731,29 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-type"><a href="#schema-State">State</a></span>
     <span class="p-desc"></span>
   </div>
+  <div class="prow">
+    <span class="p-name">baseRev</span>
+    <span class="p-type">integer | null</span>
+    <span class="p-desc">The revision this client last read or wrote. Omit or null for an unconditional overwrite.</span>
+  </div>
 </div>
     <p class="ep-h">Responses</p>
     <div class="ptab">
   <div class="prow rrow">
     <span class="r-code s2">200</span>
-    <span class="p-desc">Saved.<span class="r-sig">{ ok: always true, ts: number | null }</span></span>
+    <span class="p-desc">Saved.<span class="r-sig">{ ok: always true, ts: number | null, rev: integer }</span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">400</span>
-    <span class="p-desc"><code>state</code> missing or not an object.<span class="r-sig"><code>{&quot;error&quot;:&quot;state required&quot;}</code></span></span>
+    <span class="p-desc"><code>state</code> missing or not an object, or <code>workouts</code>/<code>routines</code> set to anything other than an array or null.<span class="r-sig"><code>{&quot;error&quot;:&quot;state required&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;invalid state&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>
     <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc"><code>baseRev</code> is not the current revision — another client wrote since this one last read. Carries the current document so the client can merge and retry.</span>
   </div>
     </div>
   </div>
@@ -740,7 +796,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Register a Web-Push subscription</span>
   </summary>
   <div class="ep-body">
-<p>Stores the browser's <code>PushSubscription</code> for this account. Only <code>endpoint</code> and the two protocol keys are kept. The endpoint must be a public <code>https://</code> URL — private/loopback/link-local addresses are refused (here and again at send time, against DNS rebinding). At most 20 subscriptions per user; the oldest are dropped first. Re-subscribing an existing endpoint replaces it.</p>
+<p>Stores the browser's <code>PushSubscription</code> for this account. Only <code>endpoint</code> and the two protocol keys are kept. The endpoint must be a public <code>https://</code> URL — private/loopback/link-local addresses are refused (here and again at send time, against DNS rebinding). At most 20 subscriptions per user; the oldest are dropped first. Re-subscribing an existing endpoint replaces it and keeps its original <code>created</code> — the client re-sends its subscription on every signed-in boot, so a row the instance lost comes back on its own.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
 
 <p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
@@ -748,6 +804,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-name">subscription<em class="p-req" title="required">required</em></span>
     <span class="p-type"><a href="#schema-PushSubscription">PushSubscription</a></span>
     <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">deviceId</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">A token the browser made up for itself (stored in its localStorage), so rest-timer pushes can be aimed at the device that started the rest. Optional; anything that is not a short token is ignored.</span>
   </div>
 </div>
     <p class="ep-h">Responses</p>
@@ -759,6 +820,38 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s4">400</span>
     <span class="p-desc">Malformed subscription, or an endpoint that isn't acceptable.<span class="r-sig"><code>{&quot;error&quot;:&quot;invalid subscription&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;endpoint must not point at a private address&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-pushStatus">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/push/status</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Does the server hold this subscription?</span>
+  </summary>
+  <div class="ep-body">
+<p>Whether the caller's account has a stored subscription with exactly this <code>endpoint</code>. The browser's <code>PushManager.getSubscription()</code> says nothing about the server's side — a row pruned after a dead send (404/410/403) leaves the browser subscribed to nowhere — so the client asks here before showing the notifications switch as on, and re-registers when the answer is no.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+<p class="ep-h">Query parameters</p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">endpoint<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string <span class="p-hint">(uri)</span></span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The answer.<span class="r-sig">{ subscribed: boolean }</span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>
@@ -808,7 +901,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Send a test notification</span>
   </summary>
   <div class="ep-body">
-<p>Sends a test push to all of the caller's subscriptions (localized with the <code>lang</code> in their synced state). Returns 200 even if delivery to individual endpoints fails — dead endpoints (404/410) are pruned as a side effect.</p>
+<p>Sends a test push to all of the caller's subscriptions (localized with the <code>lang</code> in their synced state). Returns 200 even if delivery to individual endpoints fails — dead endpoints (404/410, and 403 for a subscription made against a VAPID key the instance no longer has) are pruned as a side effect.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
 
 
@@ -834,7 +927,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Schedule a server-side rest-timer push</span>
   </summary>
   <div class="ep-body">
-<p>Schedules one push after <code>seconds</code> (clamped to 1–3600; one pending timer per user, a new call replaces it). The client schedules this on rest start/extend and cancels on skip or on-screen completion — the push only actually fires when the tab was backgrounded/suspended and never got to cancel it.</p>
+<p>Schedules one push after <code>seconds</code> (clamped to 1–3600). One pending timer per device — <code>deviceId</code>, the same token the subscription was registered with; a new call from the same device replaces it, and the push goes only to that device's subscriptions. Without a <code>deviceId</code> there is one timer per account and the push goes to every subscription, as before. The client schedules this on rest start/extend and cancels on skip or on-screen completion — the push only actually fires when the tab was backgrounded/suspended and never got to cancel it. Timers live in memory: an API restart drops them.</p>
 <p>Note: the documented <code>400 seconds required</code> exists in the code but is unreachable — the clamp turns any missing/invalid value into 1.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
 
@@ -844,9 +937,15 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-type">number <span class="p-hint">(1&ndash;3600)</span></span>
     <span class="p-desc"></span>
   </div>
+  <div class="prow">
+    <span class="p-name">deviceId</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The browser's own token, see <code>POST /api/push/subscribe</code>. Optional.</span>
+  </div>
 </div>
 <pre><code>{
-  &quot;seconds&quot;: 90
+  &quot;seconds&quot;: 90,
+  &quot;deviceId&quot;: &quot;3f9c1d2e7b0a4c6d9e8f1a2b3c4d5e6f&quot;
 }</code></pre>
     <p class="ep-h">Responses</p>
     <div class="ptab">
@@ -870,10 +969,16 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Cancel the pending rest-timer push</span>
   </summary>
   <div class="ep-body">
-<p>Cancels the caller's scheduled rest-timer push, if any. Idempotent.</p>
+<p>Cancels the caller's scheduled rest-timer push, if any. With a <code>deviceId</code> only that device's timer; without one, every pending timer of the account. Idempotent.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
 
-
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span> <span class="p-hint">(optional)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">deviceId</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
     <p class="ep-h">Responses</p>
     <div class="ptab">
   <div class="prow rrow">
@@ -1342,6 +1447,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-type">string</span>
     <span class="p-desc"></span>
   </div>
+  <div class="prow">
+    <span class="p-name">avatar</span>
+    <span class="p-type">string <span class="p-hint">(data-url)</span></span>
+    <span class="p-desc">Present only for the caller or an accepted friend, never server discovery.</span>
+  </div>
 </div>
   </div>
 </details>
@@ -1387,6 +1497,18 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
 <details class="ep sch" id="schema-SocialFriend">
   <summary>
     <span class="sch-name"><code>SocialFriend</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum"></span>
+  </summary>
+  <div class="ep-body">
+
+<p class="p-desc">Free-form object.</p>
+  </div>
+</details>
+
+<details class="ep sch" id="schema-SocialProfile">
+  <summary>
+    <span class="sch-name"><code>SocialProfile</code></span>
     <span class="ep-chev" aria-hidden="true"></span>
     <span class="ep-sum"></span>
   </summary>
@@ -1504,11 +1626,6 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
 
 <div class="ptab">
   <div class="prow">
-    <span class="p-name">code<em class="p-req" title="required">required</em></span>
-    <span class="p-type">string</span>
-    <span class="p-desc">Caller’s instance-local friend code.</span>
-  </div>
-  <div class="prow">
     <span class="p-name">friends<em class="p-req" title="required">required</em></span>
     <span class="p-type"><a href="#schema-SocialFriend">SocialFriend</a>[]</span>
     <span class="p-desc"></span>
@@ -1522,6 +1639,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-name">outgoing<em class="p-req" title="required">required</em></span>
     <span class="p-type"><a href="#schema-SocialUser">SocialUser</a>[]</span>
     <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">suggestions<em class="p-req" title="required">required</em></span>
+    <span class="p-type"><a href="#schema-SocialUser">SocialUser</a>[]</span>
+    <span class="p-desc">Enabled profiles not already connected to the caller.</span>
   </div>
   <div class="prow">
     <span class="p-name">plans<em class="p-req" title="required">required</em></span>
@@ -1578,6 +1700,16 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow">
     <span class="p-name">admin</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">avatar</span>
+    <span class="p-type">string | null <span class="p-hint">(data-url)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">shareBodyWeight</span>
     <span class="p-type">boolean</span>
     <span class="p-desc"></span>
   </div>
@@ -1804,12 +1936,17 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">The whole app state as one blob.</span>
   </summary>
   <div class="ep-body">
-<p>The server treats it as opaque (it only strips <code>active</code> on save and reads a few fields for reminders and the admin dashboard) — the schema below is <b>representative, not enforced</b>, and grows with the app. Conflict resolution is client-side via <code>_ts</code>.</p>
+<p>The server treats it as opaque (it only strips <code>active</code> on save and reads a few fields for reminders and the admin dashboard) — the schema below is <b>representative, not enforced</b> (except <code>workouts</code> and <code>routines</code>, which must be arrays (or null) when present), and grows with the app. Concurrent writes are caught by the server's revision (<code>_rev</code>, see PUT /api/data); the client merges the two documents and decides by <code>_ts</code> which side's settings win.</p>
 <div class="ptab">
   <div class="prow">
     <span class="p-name">_ts</span>
     <span class="p-type">number</span>
     <span class="p-desc">Client-set last-write timestamp (ms since epoch); drives sync.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">_rev</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc">Server-set revision, incremented on every accepted PUT. Ignored when sent by a client.</span>
   </div>
   <div class="prow">
     <span class="p-name">unit</span>
