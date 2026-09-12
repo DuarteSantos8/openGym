@@ -5,7 +5,7 @@ import { workoutControls } from '../lib/workout-controls.js'
 import { useUI } from '../store/useUI.js'
 import { exOr } from '../lib/exercises.js'
 import { usesBar, barWeightFor, plateSplit } from '../lib/bar.js'
-import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, freestyleConfig, defaultConfig, setsDoneActive, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, stepEffort, capEffort, cascadeWeight, insertWarmupRow, removeRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor } from '../lib/history.js'
+import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, freestyleConfig, defaultConfig, setsDoneActive, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, stepEffort, capEffort, cascadeWeight, insertWarmupRow, removeRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor, metresToDisplay, displayToMetres } from '../lib/history.js'
 import { fmtNum, fmtDate, todayISO, exCount, DAYN } from '../lib/format.js'
 import { beep, vibrate } from '../lib/sound.js'
 import { t, exerciseNameFor } from '../lib/i18n.js'
@@ -158,7 +158,7 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
       : distMode ? { f: 'sec', step: 5, dec: false, hd: t('Time cap') }
       : (bw && !added) ? repCol : loadCol
   const col2 = cardio ? { f: 'speed', step: 0.5, dec: true, hd: t('Speed (km/h)') }
-    : distMode ? { f: 'm', step: 5, dec: false, hd: t('Distance (m)') }
+    : distMode ? { f: 'm', dist: true, step: S.unit === 'lb' ? 10 : 5, dec: S.unit === 'lb', hd: S.unit === 'lb' ? 'Distance (ft)' : t('Distance (m)') }
     : timed ? ((bw && !added) ? null : loadCol)
       : (bw && !added) ? null : repCol
   // Effort (RIR or RPE, whichever the profile logs) only makes sense for weighted rep sets,
@@ -180,6 +180,12 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
     const fresh = useStore.getState().S.active?.entries[entryIdx]?.sets[i]
     const cur = fresh ? fresh[col.f] : s[col.f]
     if (mode === 'reps' && col.f === 'w') return onField(i, col.f, stepWeight(cur, col.step, dir))
+    // Distance is stored in metres but displayed/stepped in feet for a lb profile: convert to
+    // the display unit around the step so the stored `.m` stays metres (same rule as fmtDistance).
+    if (col.dist && S.unit === 'lb') {
+      const shown = metresToDisplay(cur, S.unit)
+      return onField(i, col.f, displayToMetres(Math.max(0, shown + dir * col.step), S.unit))
+    }
     onField(i, col.f, Math.max(0, Math.round(((cur || 0) + dir * col.step) * 100) / 100))
   }
   // Uses the shared stepper markup so a set row picks up the same control styling
@@ -191,8 +197,8 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
   const cell = (s, i, col, cls) => (
     <div className={'stp ' + cls + (wc.steppers ? '' : ' plain')}>
       {wc.steppers && <button aria-label="Decrease" onClick={() => bump(s, i, col, -1)}><Icon name="minus" /></button>}
-      <span className="val"><NumberField decimal={col.dec} nullable={col.opt} value={s[col.f] ?? ''}
-        onChange={v => onField(i, col.f, v)} /></span>
+      <span className="val"><NumberField decimal={col.dec} nullable={col.opt} value={col.dist && S.unit === 'lb' ? metresToDisplay(s[col.f], S.unit) : (s[col.f] ?? '')}
+        onChange={v => onField(i, col.f, col.dist && S.unit === 'lb' ? displayToMetres(v, S.unit) : v)} /></span>
       {wc.steppers && <button aria-label="Increase" onClick={() => bump(s, i, col, 1)}><Icon name="plus" /></button>}
     </div>
   )

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { nextTrainingDay, modeOf, isTimed, fmtSec, setLabel, defaultConfig, buildSets, freestyleConfig, exLine, workoutVolume, bestWeightFor, bestWeightForEntry, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, removeRowAt, workSetsDone, setsDone, setsDoneActive, setUnits, doneUnits, setUnitsTotal, pairAdjacent, unpairSuperset, supersetUnits, applyIntensifierPlan, pinnedNoteFor, exNoteFor, effectiveRoutineIds, effectiveRoutines, effectiveRoutineId, effectiveRoutine, lastEntryFor, entryExcluded, fmtDistance } from './history.js'
+import { nextTrainingDay, modeOf, isTimed, fmtSec, setLabel, defaultConfig, buildSets, freestyleConfig, exLine, workoutVolume, bestWeightFor, bestWeightForEntry, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, removeRowAt, workSetsDone, setsDone, setsDoneActive, setUnits, doneUnits, setUnitsTotal, pairAdjacent, unpairSuperset, supersetUnits, applyIntensifierPlan, pinnedNoteFor, exNoteFor, effectiveRoutineIds, effectiveRoutines, effectiveRoutineId, effectiveRoutine, lastEntryFor, entryExcluded, fmtDistance, metresToDisplay, displayToMetres, distanceUnitLabel } from './history.js'
 import { makeSideSet, setSideField, toggleSide } from './workout-model.js'
 import { EXDB } from './exercises.js'
 
@@ -267,6 +267,39 @@ describe('logging effort across a session', () => {
     // if an import or an old file put one there
     expect(setLabel(CARDIO, { min: 20, speed: 9, rpe: 8 })).toBe('20 min @ 9 km/h')
     expect(setLabel(LIFT, { sec: 45, rir: 2 }, { id: LIFT, mode: 'time' })).toBe('0:45')
+  })
+})
+
+describe('metresToDisplay / displayToMetres / distanceUnitLabel', () => {
+  it('shows feet for a lb profile, rounded to one decimal', () => {
+    expect(metresToDisplay(400, 'lb')).toBe(1312.3)
+    expect(metresToDisplay(12.192, 'lb')).toBe(40)
+    expect(metresToDisplay(0, 'lb')).toBe(0)
+  })
+  it('shows whole metres for a kg profile, unchanged', () => {
+    expect(metresToDisplay(400, 'kg')).toBe(400)
+    expect(metresToDisplay(400.6, 'kg')).toBe(401)
+  })
+  it('round-trips: feet typed becomes the metres that display as those feet', () => {
+    // 400 ft entered on a lb profile must store ~121.92 m, which displays back as 400.0 ft
+    const enteredFeet = 400
+    const storedMetres = displayToMetres(enteredFeet, 'lb')
+    expect(Math.round(metresToDisplay(storedMetres, 'lb') * 10) / 10).toBe(400)
+  })
+  it('keeps kg values literally through both directions', () => {
+    expect(displayToMetres(400, 'kg')).toBe(400)
+    expect(metresToDisplay(displayToMetres(400, 'kg'), 'kg')).toBe(400)
+  })
+  it('is defensive about junk input', () => {
+    expect(metresToDisplay(undefined, 'lb')).toBe(0)
+    expect(metresToDisplay(null, 'kg')).toBe(0)
+    expect(displayToMetres(NaN, 'lb')).toBe(0)
+    expect(displayToMetres('', 'kg')).toBe(0)
+  })
+  it('labels the unit with the profile suffix', () => {
+    expect(distanceUnitLabel('lb')).toBe('ft')
+    expect(distanceUnitLabel('kg')).toBe('m')
+    expect(distanceUnitLabel(undefined)).toBe('m')
   })
 })
 

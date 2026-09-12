@@ -4,7 +4,7 @@ import { useUI } from './store/useUI.js'
 import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, smOf, matchExercise, exOr } from './lib/exercises.js'
 import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile } from './lib/equipment.js'
 import { fmtDate, fmtNum, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, DAYN, DAYS, weekOrder, weekStartOf, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
-import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutVolume, setsDone, setsDoneActive, setUnitsTotal, lastBW, supersetUnits, unitOf, setLabel, defaultConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX } from './lib/history.js'
+import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutVolume, setsDone, setsDoneActive, setUnitsTotal, lastBW, supersetUnits, unitOf, setLabel, defaultConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX, metresToDisplay, displayToMetres } from './lib/history.js'
 import { usesBar, barWeightFor, defaultBarWeight, hasBarOverride } from './lib/bar.js'
 import { toScale, rirOf, EFFORT_PRESETS, effortColor } from './lib/effort.js'
 import { beep, vibrate } from './lib/sound.js'
@@ -1086,9 +1086,9 @@ function ProgressionFields({ ex, mode, c, setC, routine, unit, perSide }) {
     </div>
     <div className="small dim" style={{ marginBottom: active === 'off' ? 18 : 10 }}>{t(POLICY_DESC[active])}</div>
     {active !== 'off' && <div className="row cfgrow" style={{ marginBottom: 18 }}>
-      <Stepper label={mode === 'time' ? t('Step (seconds)') : mode === 'distance' ? t('Step (m)') : t('Step ({0})', unit)} value={inc}
+      <Stepper label={mode === 'time' ? t('Step (seconds)') : mode === 'distance' ? (unit === 'lb' ? 'Step (ft)' : t('Step (m)')) : t('Step ({0})', unit)} value={mode === 'distance' ? metresToDisplay(inc, unit) : inc}
         step={mode === 'time' ? 5 : mode === 'distance' ? 10 : 1.25} decimal={mode === 'time' || mode === 'distance'} invalid={invalid} className={invalid ? 'invalid' : ''}
-        onChange={v => setC(x => ({ ...x, inc: v }))} />
+        onChange={v => setC(x => ({ ...x, inc: mode === 'distance' ? displayToMetres(v, unit) : v }))} />
       {active === 'double' && <>
         {/* The draft stays as typed: normalising on every keystroke turned "12" into 92 (the
             "1" was pulled above the lower bound first). Save and the engine normalise anyway. */}
@@ -1170,7 +1170,7 @@ function ExConfig({ ex, existing, onSave, onDelete, close, routine, initial }) {
     const restSec = Math.max(0, Math.round(c.restSec) || 0)
     const withRest = restSec ? { restSec } : {}
     if (cardio) onSave({ sets, min: Math.max(1, Math.round(c.min) || 20), speed: Math.max(0, c.speed || 8), ...withNote, ...withRest })
-    else if (mode === 'distance') onSave({ sets, mode: 'distance', sec: Math.max(1, Math.round(c.sec) || 600), m: Math.max(1, Math.round(c.m) || 400), ...flags, ...prog, ...withNote, ...withRest })
+    else if (mode === 'distance') onSave({ sets, mode: 'distance', sec: Math.max(1, Math.round(c.sec) || 600), m: Math.max(1, Math.round(displayToMetres(c.m, st.unit)) || 400), ...flags, ...prog, ...withNote, ...withRest })
     else if (mode === 'time') onSave({ sets, mode: 'time', sec: Math.max(1, Math.round(c.sec) || 45), weight: Math.max(0, c.weight || 0), ...flags, ...prog, ...withNote, ...withWarmups, ...withRest })
     else {
       // A unilateral target is stored even: the split has to divide, and a typed 15 would
@@ -1220,7 +1220,7 @@ function ExConfig({ ex, existing, onSave, onDelete, close, routine, initial }) {
       </> : mode === 'distance' ? <>
         <Stepper label={t('Sets')} value={c.sets} step={1} decimal={false} onChange={v => setC(x => ({ ...x, sets: v }))} />
         <Stepper label={t('Time cap')} value={c.sec} step={5} decimal={false} onChange={v => setC(x => ({ ...x, sec: v }))} />
-        <Stepper label={t('Distance (m)')} value={c.m} step={5} decimal={false} onChange={v => setC(x => ({ ...x, m: v }))} />
+        <Stepper label={st.unit === 'lb' ? 'Distance (ft)' : t('Distance (m)')} value={metresToDisplay(c.m, st.unit)} step={st.unit === 'lb' ? 10 : 5} decimal={st.unit === 'lb'} onChange={v => setC(x => ({ ...x, m: displayToMetres(v, st.unit) }))} />
       </> : mode === 'time' ? <>
         <Stepper label={t('Sets')} value={c.sets} step={1} decimal={false} onChange={v => setC(x => ({ ...x, sets: v }))} />
         <Stepper label={t('Seconds')} value={c.sec} step={5} decimal={false} onChange={v => setC(x => ({ ...x, sec: v }))} />
