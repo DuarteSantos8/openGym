@@ -9,6 +9,9 @@
 //    Women: neck + waist + hip + height
 //    Classic inch formulas (Hodgdon & Beckett, NHRC 1984). Inputs may be cm; we convert.
 //
+// 3) Lean-mass hold: given an anchor weight + BF%, estimate BF% at other scale weights
+//    assuming fat-free mass stays constant (rough trend tool, not a lab method).
+//
 // Profile `body` ('male' | 'female') picks the sex-specific sites / equations — same field
 // as the muscle diagram. `age` is years (JP3 only). `height` is stored in centimetres.
 
@@ -136,7 +139,27 @@ export function clampBodyFatPct(n) {
   return v
 }
 
-/** Short label for a saved method key. */
+/** Fat-free mass from scale weight + body-fat %. Same unit as weight. */
+export function leanMassFromWeight(weight, bodyFatPct) {
+  const w = Number(weight)
+  const pct = Number(bodyFatPct)
+  if (!Number.isFinite(w) || w <= 0) return null
+  if (!Number.isFinite(pct) || pct <= 0 || pct >= 100) return null
+  return w * (1 - pct / 100)
+}
+
+/**
+ * Estimate BF% at another scale weight, holding fat-free mass fixed.
+ * @returns {number|null} body-fat %, one decimal
+ */
+export function estimateBodyFatAtWeight(weight, leanMass) {
+  const w = Number(weight)
+  const lean = Number(leanMass)
+  if (!Number.isFinite(w) || w <= 0) return null
+  if (!Number.isFinite(lean) || lean <= 0) return null
+  if (lean >= w) return null
+  return clampBodyFatPct(((w - lean) / w) * 100)
+}
 
 /** Whole inches → 5'9" display. */
 export function formatFtIn(totalInches) {

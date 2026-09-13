@@ -2,7 +2,13 @@
 
 ## Unreleased
 
-- 📊 **Body fat tracker**: log body-fat % on Home and Stats with the same curve/goal pattern as body weight. Pick a method when logging: **manual %**, **Jackson–Pollock 3-site calipers** (sex-specific sites + age), or **U.S. Navy tape** (neck/waist/height; hip too for women). Profile body diagram sex picks the equations; age and height live in Settings and are reused on the log sheet.
+- 📊 **Body fat tracker** (Home + Stats): log body-fat % with the same curve/goal pattern as body weight.
+  - **Caliper** — Jackson–Pollock 3-site (sex-specific sites + age from Settings / body diagram).
+  - **Tape Measure** — U.S. Navy / Hodgdon–Beckett (neck/waist[/hip] + height from Settings; hip for women).
+  - **Manual %** — type a value from DEXA, scale, etc.
+  - Settings: **Age** and **Height** (feet+inches when unit is lb); tape gate prompts **Add now** → Height with scroll + soft flash.
+  - Pinned **Estimated body fat** row across methods; styles live in `index.css` beside `.bw*` (no separate CSS file).
+  - Pure helpers + Vitest coverage in `lib/bodyfat.js` (JP3, Navy, labels, lean-mass hold estimates).
 
 ## v1.3.7 — 2026-09-12
 
