@@ -785,6 +785,16 @@ export const PT_BR_OVERRIDES = {
   'already added': 'já adicionada',
   'no exercises': 'sem exercícios',
   '{0} added — {1}': 'Adicionada: {0} — {1}',
+  "Already imported": "Já importado",
+  "Block": "Bloquear",
+  "Block {0}?": "Bloquear {0}?",
+  "Blocked profiles": "Perfis bloqueados",
+  "Blocking removes your connection and pending plans, and prevents new requests in both directions. Unblocking does not restore the friendship.": "O bloqueio remove a conexão e os planos pendentes e impede novos pedidos nos dois sentidos. Desbloquear não restabelece a amizade.",
+  "Include exercise notes": "Incluir anotações dos exercícios",
+  "Include weekly schedule": "Incluir programação semanal",
+  "Preview": "Prévia",
+  "Try again": "Tentar novamente",
+  "Unblock": "Desbloquear",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

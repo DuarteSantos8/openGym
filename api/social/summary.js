@@ -23,7 +23,11 @@ export function socialSummary(state, today, { recordLimit = 12 } = {}) {
       const rows = metricRowsForEntry(clean, mode)
       if (!mode || !rows.length) continue
       const logged = groups.get(entry.id) || []
-      logged.push({ date: w.d, mode, weight: bestWeightForEntry(clean),
+      const weight = bestWeightForEntry(clean)
+      // Repetitions must come from the set that lifted this load, not a lighter set
+      const weightReps = mode === 'reps' ? rows.filter(s => Number(s.w) === weight && number(s.r) > 0)
+        .reduce((n, s) => Math.max(n, number(s.r)), 0) : 0
+      logged.push({ date: w.d, mode, weight, weightReps,
         reps: rows.reduce((n, s) => Math.max(n, number(s.r)), 0),
         sec: rows.reduce((n, s) => Math.max(n, number(s.sec)), 0),
         min: rows.reduce((n, s) => n + number(s.min), 0) })
@@ -40,7 +44,8 @@ export function socialSummary(state, today, { recordLimit = 12 } = {}) {
     for (const row of logged) {
       if (row.mode === mode && row[metric] > (best?.[metric] || 0)) best = row
     }
-    if (best) records.push({ exerciseId, name: names.get(exerciseId) || null, metric, value: best[metric], date: best.date })
+    if (best) records.push({ exerciseId, name: names.get(exerciseId) || null, metric, value: best[metric], date: best.date,
+      ...(metric === 'weight' && best.weightReps > 0 ? { reps: best.weightReps } : {}) })
   }
   records.sort((a, b) => b.date.localeCompare(a.date) || a.exerciseId.localeCompare(b.exerciseId))
   return {

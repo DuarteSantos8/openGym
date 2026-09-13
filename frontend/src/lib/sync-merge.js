@@ -81,6 +81,9 @@ export function mergeStates(a, b, { prefer } = {}) {
   }
   out.bodyweight = mergeBodyweight(n.bodyweight, o.bodyweight).map(clone)
   if (list(n.favEx).length || list(o.favEx).length) out.favEx = [...new Set([...list(n.favEx), ...list(o.favEx)])]
+  if (list(n.importedSocialPlans).length || list(o.importedSocialPlans).length) {
+    out.importedSocialPlans = [...new Set([...list(n.importedSocialPlans), ...list(o.importedSocialPlans)])]
+  }
   out.exWeights = clone(mergeExWeights(n.exWeights, o.exWeights))
   for (const f of ['exNotes', 'barWeights']) {
     if (n[f] || o[f]) out[f] = clone({ ...(o[f] || {}), ...(n[f] || {}) })

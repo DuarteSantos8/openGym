@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- **Social sharing and recovery:** choose routines, schedule and optional notes before previewing a shared plan; remember imported snapshots to prevent duplicates; block and unblock profiles; show privacy before requests, preserve loaded data on refresh failures, refresh open friend profiles, and pair load records with repetitions from the actual record set. New interface strings are translated in all 14 locale packs.
 - **Profile, Stats and Social:** a Profile destination keeps identity, Stats and Social together with a persistent profile header and a Stats/Social switch. Edit your display name and a metadata-free profile photo stored on your openGym server; Settings, History and friend profiles stay under Profile.
 - **Social starts with what needs attention:** friend requests and shared plans come first, friends are compact profile links, server discovery opens from Add friend, and destructive actions moved behind the ellipsis. Profile photos stay between accepted friends, and body-weight sharing is now explicit and starts off for new accounts.
 - **Plans from friends:** share a snapshot of your routines and weekly schedule directly, preview the exercises, then import as new routines. Applying the schedule is optional; new exports carry kg/lb so weights convert on import. Workout notes and weigh-in history are excluded.

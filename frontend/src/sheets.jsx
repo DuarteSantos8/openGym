@@ -1508,20 +1508,29 @@ function PlanTools({ close }) {
   </>
 }
 
-export const planImportSheet = (bundle, onImported) => ui().openSheet(close => <PlanImport bundle={bundle} close={close} onImported={onImported} />)
+export const planImportSheet = (bundle, onImported, socialPlanId) => ui().openSheet(close => <PlanImport bundle={bundle} close={close} onImported={onImported} socialPlanId={socialPlanId} />)
 
-function PlanImport({ bundle, close, onImported }) {
+function PlanImport({ bundle, close, onImported, socialPlanId }) {
   const [schedule, setSchedule] = useState(false)
+  const [error, setError] = useState('')
+  const applying = useRef(false)
   const unit = useStore(s => s.S.unit)
+  const alreadyImported = useStore(s => !!socialPlanId && !!s.S.importedSocialPlans?.includes(socialPlanId))
   const apply = () => {
-    update(s => mergePlan(s, bundle, { schedule }))
+    if (applying.current) return
+    applying.current = true
+    let result
+    try { update(s => { result = mergePlan(s, bundle, { schedule, socialPlanId }) }) }
+    catch (e) { setError(e.message); applying.current = false; return }
     onImported?.()
     close()
-    toast(t('Added {0} routines to your plan', bundle.routineCount))
+    toast(result.alreadyImported ? t('Already imported') : t('Added {0} routines to your plan', result.routines))
     nav('/plan')
   }
   return <>
     <h3>{bundle.name ? t('Import “{0}”', bundle.name) : t('Import this plan')}</h3>
+    {error && <p role="alert" className="social-error">{error}</p>}
+    {alreadyImported && <p role="status">{t('Already imported')}</p>}
     <div className="muted small" style={{ marginBottom: 14 }}>
       {t(bundle.routineCount === 1 ? '{0} routine' : '{0} routines', bundle.routineCount)}
       {' · ' + exCount(bundle.exerciseCount)}
@@ -1553,7 +1562,7 @@ function PlanImport({ bundle, close, onImported }) {
       <div><div className="tt" style={{ fontSize: 15 }}>{t('Use this weekly schedule')}</div><div className="small dim">{t('Replaces your current Mon–Sun assignments.')}</div></div>
       <Switch checked={schedule} onChange={setSchedule} />
     </div>}
-    <Button variant="primary" onClick={apply}>{t('Add to my plan')}</Button>
+    <Button variant="primary" disabled={alreadyImported || !bundle.exerciseCount} onClick={apply}>{t('Add to my plan')}</Button>
     <div style={{ height: 8 }} />
     <Button variant="ghost" className="dim" onClick={close}>{t('Cancel')}</Button>
   </>

@@ -39,6 +39,15 @@ describe('friend progress summaries', () => {
     expect(socialSummary({ workouts: [null, { d: 'bad' }, session(0, [null, 'bad', work(60, 5)])] }, '2026-01-11').records[0].value).toBe(60)
   })
 
+  it('pairs a load record with reps from that exact completed work set', () => {
+    const state = { workouts: [session(0, [warm(120, 12), work(100, 5), work(60, 20), work(140, 8, false)])] }
+    expect(socialSummary(state, '2026-01-11').records[0]).toMatchObject({ value: 100, reps: 5 })
+    state.workouts.push(session(1, [work(100, 8)]))
+    expect(socialSummary(state, '2026-01-11').records[0]).toMatchObject({ value: 100, reps: 5, date: iso(0) })
+    const legacy = { workouts: [session(0, [{ r: 8, done: true }], { topW: 90 })] }
+    expect(socialSummary(legacy, '2026-01-11').records[0].reps).toBeUndefined()
+  })
+
   it('counts weekly streaks with the same unfinished-week grace as Home', () => {
     vi.useFakeTimers()
     try {

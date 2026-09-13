@@ -5,7 +5,7 @@ const validId = id => typeof id === 'string' && id.length > 0 && id.length <= 16
   && !['__proto__', 'prototype', 'constructor'].includes(id)
 
 // Keep the plan-file contract, without accepting account state in a shared snapshot
-export function sharedPlan(value) {
+export function sharedPlan(value, { includeNotes = true } = {}) {
   if (value?.opengym_plan !== 1 || !Array.isArray(value.routines) || !value.routines.length
     || value.routines.length > 100 || new TextEncoder().encode(JSON.stringify(value)).length > 256 * 1024) {
     throw new Error('Choose a non-empty plan smaller than 256 KB')
@@ -18,6 +18,7 @@ export function sharedPlan(value) {
       if (!validId(e?.id)) throw new Error('Invalid exercise in the shared plan')
       const out = scalars(e, ['id', 'sets', 'min', 'speed', 'mode', 'sec', 'weight', 'reps', 'bodyweight',
         'side', 'prog', 'inc', 'deloadFactor', 'repsMin', 'repsMax', 'restSec', 'warmupRestSec', 'sg', 'note', 'warmupSets'])
+      if (!includeNotes) delete out.note
       if (['dropset', 'restpause'].includes(e.intensifier?.type)) {
         out.intensifier = scalars(e.intensifier, ['type', 'count', 'pct', 'totalReps', 'restSec'])
       }

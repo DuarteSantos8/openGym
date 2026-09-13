@@ -7,10 +7,12 @@ import { exLine, fmtSec } from '../lib/history.js'
 import { exerciseNameFor, t } from '../lib/i18n.js'
 import Icon from '../components/Icon.jsx'
 import ProfileAvatar from '../components/ProfileAvatar.jsx'
+import { Button } from '../components/ui.jsx'
+import { useStore } from '../store/useStore.js'
 import '../social.css'
 
 function recordValue(record, unit) {
-  if (record.metric === 'weight') return `${fmtNum(record.value)} ${unit}`
+  if (record.metric === 'weight') return `${fmtNum(record.value)} ${unit}${record.reps > 0 ? ' × ' + t('{0} reps', fmtNum(record.reps)) : ''}`
   if (record.metric === 'sec') return fmtSec(record.value)
   if (record.metric === 'min') return `${fmtNum(record.value)} min`
   return t('{0} reps', fmtNum(record.value))
@@ -21,19 +23,39 @@ export default function SocialProfile() {
   const nav = useNavigate()
   const [profile, setProfile] = useState(null)
   const [error, setError] = useState('')
+  const [revision, setRevision] = useState(0)
+  const [loading, setLoading] = useState(false)
+  const userId = useStore(s => s.user?.id)
+
+  useEffect(() => { setProfile(null); setError('') }, [id, userId])
+  useEffect(() => {
+    const refresh = () => { if (!document.hidden) setRevision(n => n + 1) }
+    const timer = setInterval(refresh, 60000)
+    window.addEventListener('focus', refresh)
+    document.addEventListener('visibilitychange', refresh)
+    return () => { clearInterval(timer); window.removeEventListener('focus', refresh); document.removeEventListener('visibilitychange', refresh) }
+  }, [id, userId])
 
   useEffect(() => {
     const abort = new AbortController()
+    setLoading(true)
     api('/api/social/profile?id=' + encodeURIComponent(id), { signal: abort.signal })
-      .then(value => { setProfile(value); setError('') })
-      .catch(e => { if (e.name !== 'AbortError') setError(e.message) })
+      .then(value => { if (!abort.signal.aborted) { setProfile(value); setError('') } })
+      .catch(e => {
+        if (abort.signal.aborted || e.name === 'AbortError') return
+        setError(e.message)
+        if ([401, 403, 404].includes(e.status)) setProfile(null)
+      })
+      .finally(() => { if (!abort.signal.aborted) setLoading(false) })
     return () => abort.abort()
-  }, [id])
+  }, [id, userId, revision])
 
-  if (error) return <div className="social social-profile">
+  const retry = <Button size="sm" disabled={loading} onClick={() => setRevision(n => n + 1)}>{t('Try again')}</Button>
+
+  if (error && !profile) return <div className="social social-profile">
     <div className="friend-profile-nav"><button className="iconbtn" onClick={() => nav('/profile?view=social')} aria-label={t('Social')}><Icon name="chevronLeft" /></button>
       <span>{t('Friend profile')}</span></div>
-    <div className="card social-error" role="alert">{error}</div>
+    <div className="card social-error" role="alert">{error}{retry}</div>
   </div>
   if (!profile) return <p role="status" className="muted">{t('Loading profile…')}</p>
 
@@ -45,7 +67,9 @@ export default function SocialProfile() {
 
   return <div className="social social-profile">
     <div className="friend-profile-nav"><button className="iconbtn" onClick={() => nav('/profile?view=social')} aria-label={t('Social')}><Icon name="chevronLeft" /></button>
-      <span>{t('Friend profile')}</span></div>
+      <span>{t('Friend profile')}</span>
+      <button className="iconbtn" disabled={loading} onClick={() => setRevision(n => n + 1)} aria-label={t('Refresh')}><Icon name="reset" /></button></div>
+    {error && <div className="card social-error" role="alert">{error}{retry}</div>}
 
     <section className="card profile-identity friend-profile-identity">
       <ProfileAvatar name={profile.name} avatar={profile.avatar} size="xl" />

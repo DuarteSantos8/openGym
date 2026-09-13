@@ -8,7 +8,9 @@ export function socialRoutes({ json, readBody, readSession, users, readState, lo
     id: u.id, name: u.name, ...(includeAvatar && u.avatar ? { avatar: u.avatar } : {})
   });
   const between = (link, a, b) => (link.from === a && link.to === b) || (link.from === b && link.to === a);
-  const friends = (data, a, b) => !!person(b) && data.connections.some(c => c.status === 'accepted' && between(c, a, b));
+  const blocked = (data, a, b) => (data.blocks || []).some(c => between(c, a, b));
+  const friends = (data, a, b) => !!person(b) && !blocked(data, a, b)
+    && data.connections.some(c => c.status === 'accepted' && between(c, a, b));
   const auth = (req, res) => {
     const user = readSession(req);
     if (!user) json(res, 401, { error: 'not signed in' });
@@ -22,7 +24,7 @@ export function socialRoutes({ json, readBody, readSession, users, readState, lo
       for (const link of data.connections) {
         if (link.from !== user.id && link.to !== user.id) continue;
         const other = person(link.from === user.id ? link.to : link.from);
-        if (!other) continue;
+        if (!other || blocked(data, user.id, other.id)) continue;
         if (link.status === 'accepted') {
           const state = readState(other.id);
           const date = userNow(state?.reminder?.tz || 'UTC')?.date || new Date().toISOString().slice(0, 10);
@@ -31,18 +33,22 @@ export function socialRoutes({ json, readBody, readSession, users, readState, lo
       }
       connected.sort((a, b) => a.name.localeCompare(b.name));
       const suggestions = users().filter(u => u.id !== user.id && !u.disabled
+        && !blocked(data, user.id, u.id)
         && !data.connections.some(c => between(c, user.id, u.id)))
         .map(u => publicUser(u)).sort((a, b) => a.name.localeCompare(b.name));
       const plans = data.plans.filter(p => p.to === user.id && friends(data, user.id, p.from)).map(p => ({
         id: p.id, from: publicUser(person(p.from), true), name: p.plan.name || '', created: p.created,
         routines: p.plan.routines.length
       }));
-      json(res, 200, { friends: connected, incoming, outgoing, suggestions, plans });
+      const blocks = (data.blocks || []).filter(c => c.from === user.id && person(c.to))
+        .map(c => publicUser(person(c.to)));
+      json(res, 200, { friends: connected, incoming, outgoing, suggestions, plans, blocks });
     },
     'GET /api/social/counts': async (req, res) => {
       const user = auth(req, res); if (!user) return;
       const data = load();
-      const incoming = data.connections.filter(c => c.to === user.id && c.status === 'pending' && person(c.from)).length;
+      const incoming = data.connections.filter(c => c.to === user.id && c.status === 'pending'
+        && person(c.from) && !blocked(data, user.id, c.from)).length;
       const plans = data.plans.filter(p => p.to === user.id && friends(data, user.id, p.from)).length;
       json(res, 200, { incoming, plans, total: incoming + plans });
     },
@@ -64,6 +70,7 @@ export function socialRoutes({ json, readBody, readSession, users, readState, lo
       if (!other) return json(res, 404, { error: 'User not found on this server' });
       if (other.id === user.id) return json(res, 400, { error: 'You cannot add your own profile' });
       const data = load();
+      if (blocked(data, user.id, other.id)) return json(res, 403, { error: 'This connection is unavailable' });
       const existing = data.connections.find(c => between(c, user.id, other.id));
       if (existing) return json(res, 409, { error: existing.status === 'accepted' ? 'You are already friends'
         : existing.to === user.id ? 'This person already sent you a request. Accept it below.' : 'A friend request is already pending' });
@@ -79,7 +86,7 @@ export function socialRoutes({ json, readBody, readSession, users, readState, lo
       const body = await readBody(req);
       const data = load();
       const link = data.connections.find(c => c.to === user.id && c.from === body?.userId && c.status === 'pending');
-      if (!link || !person(link.from)) return json(res, 404, { error: 'Friend request not found' });
+      if (!link || !person(link.from) || blocked(data, user.id, link.from)) return json(res, 404, { error: 'Friend request not found' });
       link.status = 'accepted';
       save(data);
       json(res, 200, { ok: true });
@@ -93,13 +100,36 @@ export function socialRoutes({ json, readBody, readSession, users, readState, lo
       save(data);
       json(res, 200, { ok: true });
     },
+    'POST /api/social/block': async (req, res) => {
+      const user = auth(req, res); if (!user) return;
+      const body = await readBody(req);
+      const other = person(body?.userId);
+      if (!other || other.id === user.id) return json(res, 400, { error: 'Invalid profile' });
+      const data = load();
+      data.blocks ||= [];
+      if (!data.blocks.some(c => c.from === user.id && c.to === other.id)) {
+        data.blocks.push({ from: user.id, to: other.id });
+      }
+      data.connections = data.connections.filter(c => !between(c, user.id, other.id));
+      data.plans = data.plans.filter(p => !between(p, user.id, other.id));
+      save(data);
+      json(res, 200, { ok: true });
+    },
+    'POST /api/social/unblock': async (req, res) => {
+      const user = auth(req, res); if (!user) return;
+      const body = await readBody(req);
+      const data = load();
+      data.blocks = (data.blocks || []).filter(c => !(c.from === user.id && c.to === body?.userId));
+      save(data);
+      json(res, 200, { ok: true });
+    },
     'POST /api/social/plan': async (req, res) => {
       const user = auth(req, res); if (!user) return;
       const body = await readBody(req);
       const data = load();
       if (!friends(data, user.id, body?.userId)) return json(res, 403, { error: 'Accept a friend request before sharing plans' });
       let plan;
-      try { plan = sharedPlan(body?.plan); }
+      try { plan = sharedPlan(body?.plan, { includeNotes: body?.includeNotes === true }); }
       catch (e) { return json(res, 400, { error: e.message }); }
       // One pending snapshot per direction keeps the inbox bounded and lets a sender update it
       data.plans = data.plans.filter(p => p.from !== user.id || p.to !== body.userId);

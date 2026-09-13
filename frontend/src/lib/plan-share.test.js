@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { buildPlanBundle, mergePlan, parsePlan } from './plan-share.js'
+import { buildPlanBundle, buildSocialPlanBundle, mergePlan, parsePlan } from './plan-share.js'
+import { mergeStates } from './sync-merge.js'
 import { sharedPlan } from '../../../api/social/plan.js'
 
 describe('plans shared with friends', () => {
@@ -17,6 +18,50 @@ describe('plans shared with friends', () => {
     expect(target.routines[1].ex[0]).toMatchObject({ weight: 220.5, inc: 5.5, warmupSets: 2, restSec: 90, intensifier: { type: 'dropset', count: 2, pct: 20 } })
     expect(target.week).toEqual({})
     expect(bundle.routines[0].ex[0].weight).toBe(100)
+  })
+
+  it('shares only selected routines and their schedule, with notes off by default', () => {
+    const source = stateWith({ note: 'Personal note' })
+    source.routines.push({ id: 'r2', name: 'Private routine', ex: [{ id: 'custom', sets: 3 }] })
+    source.week = { 1: ['r1', 'r2'], 2: ['r2'] }
+    source.customEx = [{ id: 'custom', n: 'Private exercise' }]
+    const bundle = buildSocialPlanBundle(source, 'Selected', { routineIds: ['r1'] })
+    expect(bundle.routines.map(r => r.id)).toEqual(['r1'])
+    expect(bundle.week).toEqual({ 1: ['r1'] })
+    expect(bundle.customEx).toEqual([])
+    expect(bundle.routines[0].ex[0].note).toBeUndefined()
+    const withNotes = buildSocialPlanBundle(source, 'Selected', { routineIds: ['r1'], includeNotes: true, includeSchedule: false })
+    expect(withNotes.routines[0].ex[0].note).toBe('Personal note')
+    expect(withNotes.week).toEqual({})
+    expect(source.routines[0].ex[0].note).toBe('Personal note')
+  })
+
+  it('remembers imported Social snapshots even after routines are deleted and state is merged', () => {
+    const bundle = parsePlan(buildPlanBundle(stateWith({}), 'Plan'))
+    const target = { routines: [], customEx: [], week: {} }
+    expect(mergePlan(target, bundle, { socialPlanId: 'snapshot-1' }).routines).toBe(1)
+    const saved = JSON.parse(JSON.stringify(target))
+    target.routines = []
+    expect(mergePlan(target, bundle, { socialPlanId: 'snapshot-1', schedule: true })).toEqual({ routines: 0, alreadyImported: true })
+    expect(target.routines).toEqual([])
+    expect(target.week).toEqual({})
+    const merged = mergeStates({ ...saved, _ts: 1 }, { _ts: 2, routines: [] })
+    expect(merged.importedSocialPlans).toEqual(['snapshot-1'])
+    expect(mergePlan(merged, bundle, { socialPlanId: 'snapshot-1' }).alreadyImported).toBe(true)
+    expect(mergePlan(target, bundle, { socialPlanId: 'snapshot-2' }).routines).toBe(1)
+  })
+
+  it('coalesces simultaneous imports of one Social snapshot across devices', () => {
+    const source = stateWith({ id: 'custom' })
+    source.customEx = [{ id: 'custom', n: 'Custom press', bp: 'chest' }]
+    const bundle = parsePlan(buildPlanBundle(source, 'Plan'))
+    const a = { routines: [], customEx: [], week: {} }, b = structuredClone(a)
+    mergePlan(a, bundle, { socialPlanId: 'same', schedule: true })
+    mergePlan(b, bundle, { socialPlanId: 'same', schedule: true })
+    const merged = mergeStates(a, b)
+    expect(merged.routines).toHaveLength(1)
+    expect(merged.customEx).toHaveLength(1)
+    expect(merged.importedSocialPlans).toEqual(['same'])
   })
 
   it('does not guess units for older plan files and only applies the schedule on request', () => {

@@ -952,6 +952,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '403':
+          description: Connection unavailable because either participant has blocked it.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -1059,6 +1065,60 @@ paths:
                 $ref: '#/components/schemas/Ok'
         '401':
           $ref: '#/components/responses/Unauthorized'
+  /api/social/block:
+    post:
+      tags: [social]
+      operationId: socialBlock
+      summary: Block a profile and revoke the connection
+      description: Removes the connection and pending plans and prevents discovery, requests and friend access in both directions. Repeating the action succeeds.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId]
+              properties:
+                userId: { type: string }
+      responses:
+        '200':
+          description: Profile blocked.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ok'
+        '400':
+          description: Missing, disabled or own profile.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/social/unblock:
+    post:
+      tags: [social]
+      operationId: socialUnblock
+      summary: Remove a block created by the caller
+      description: Does not remove the other participant's block or restore a friendship or shared plans. Repeating the action succeeds.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId]
+              properties:
+                userId: { type: string }
+      responses:
+        '200':
+          description: Caller's block removed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ok'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
   /api/social/plan:
     post:
       tags:
@@ -1068,7 +1128,7 @@ paths:
       description: >-
         Only accepted, enabled friends can receive a plan. Replaces the caller’s previous pending
         snapshot for this recipient. Stores only plan fields; maximum 256 KB, 100 routines, 100
-        exercises per routine.
+        exercises per routine. Exercise notes are stripped unless includeNotes is explicitly true.
       requestBody:
         required: true
         content:
@@ -1081,6 +1141,10 @@ paths:
               properties:
                 userId:
                   type: string
+                includeNotes:
+                  type: boolean
+                  default: false
+                  description: Explicit permission to include exercise notes in this snapshot.
                 plan:
                   $ref: '#/components/schemas/SocialPlan'
       responses:
@@ -1520,6 +1584,9 @@ components:
             - min
         value:
           type: number
+        reps:
+          type: number
+          description: Repetitions from the completed set that first achieved the load record. Omitted when unavailable or the metric is not weight.
         date:
           type: string
           format: date
@@ -1683,7 +1750,13 @@ components:
         - outgoing
         - suggestions
         - plans
+        - blocks
       properties:
+        blocks:
+          type: array
+          description: Enabled profiles blocked by the caller. Blocks created by other accounts are never listed.
+          items:
+            $ref: '#/components/schemas/SocialUser'
         friends:
           type: array
           items:
@@ -1698,7 +1771,7 @@ components:
             $ref: '#/components/schemas/SocialUser'
         suggestions:
           type: array
-          description: Enabled profiles not already connected to the caller.
+          description: Enabled profiles not already connected to the caller or blocked in either direction.
           items:
             $ref: '#/components/schemas/SocialUser'
         plans:

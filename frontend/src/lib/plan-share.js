@@ -114,6 +114,18 @@ export function buildPlanBundle(S, name) {
   return { opengym_plan: PLAN_FMT, exported: todayISO(), name: name || '', unit: S.unit === 'lb' ? 'lb' : 'kg', week, routines, customEx }
 }
 
+export function buildSocialPlanBundle(S, name, { routineIds, includeSchedule = true, includeNotes = false }) {
+  const selected = new Set(routineIds)
+  const week = {}
+  if (includeSchedule) WEEK_DAYS.forEach(day => {
+    const ids = [].concat(S.week?.[day] || []).filter(id => selected.has(id))
+    if (ids.length) week[day] = ids
+  })
+  const bundle = buildPlanBundle({ ...S, week, routines: S.routines.filter(r => selected.has(r.id)) }, name)
+  if (!includeNotes) bundle.routines.forEach(r => r.ex.forEach(e => { delete e.note }))
+  return bundle
+}
+
 /**
  * Validate + normalise an imported file. Throws with a friendly message if it isn't one.
  *
@@ -168,20 +180,22 @@ export function parsePlan(raw) {
  *  - schedule: optional; when on, the shared week REPLACES yours (days the shared plan
  *    leaves empty become rest days — a half-overwritten week would silently mix two plans)
  */
-export function mergePlan(s, bundle, { schedule } = {}) {
+export function mergePlan(s, bundle, { schedule, socialPlanId } = {}) {
+  if (socialPlanId && s.importedSocialPlans?.includes(socialPlanId)) return { routines: 0, alreadyImported: true }
   if (bundle.unit && bundle.unit !== (s.unit || 'kg')) bundle = convertStateUnit(bundle, s.unit || 'kg')
   s.customEx = s.customEx || []
   const exIdMap = {}
-  ;(bundle.customEx || []).forEach(c => {
+  ;(bundle.customEx || []).forEach((c, index) => {
     const same = s.customEx.find(x => (x.n || '').toLowerCase() === (c.n || '').toLowerCase() && x.bp === c.bp)
     if (same) { exIdMap[c.id] = same.id; return }
-    const nid = uid()
+    const nid = socialPlanId ? `social-${socialPlanId}-ex-${index}` : uid()
     exIdMap[c.id] = nid
     s.customEx.push({ id: nid, n: c.n, bp: c.bp, ...(c.desc ? { desc: c.desc } : {}) })
   })
   const ridMap = {}
-  bundle.routines.forEach(r => {
-    const nid = uid()
+  bundle.routines.forEach((r, index) => {
+    // Two devices importing the same snapshot must merge into the same routines
+    const nid = socialPlanId ? `social-${socialPlanId}-routine-${index}` : uid()
     ridMap[r.id] = nid
     s.routines.push({
       id: nid,
@@ -202,6 +216,7 @@ export function mergePlan(s, bundle, { schedule } = {}) {
       if (ids.length) s.week[d] = ids
     })
   }
+  if (socialPlanId) s.importedSocialPlans = [...(s.importedSocialPlans || []), socialPlanId]
   return { routines: bundle.routines.length }
 }
 
