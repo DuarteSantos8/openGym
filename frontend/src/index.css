@@ -860,21 +860,6 @@ h4.sec{
   touch-action:none;overscroll-behavior:none;
 }
 
-/* Body-fat tape gate: blur the fields in place (same radius as .mback). No covering
-   scrim div — a full-bleed rgba layer is what painted the hard rectangle. */
-.bf-tape-gated{
-  filter:blur(2px) brightness(0.6);
-  pointer-events:none;
-  user-select:none;
-}
-.bf-tape-cta{
-  position:absolute;inset:0;z-index:1;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:16px;text-align:center;pointer-events:none;
-  background:none;
-}
-.bf-tape-cta > *{pointer-events:auto;max-width:300px}
-
 .sheet{
   position:absolute;left:0;right:0;bottom:0;background:var(--bg-el);
   border-radius:var(--r-xl) var(--r-xl) 0 0;
@@ -961,6 +946,58 @@ h4.sec{
   font-size:52px;font-weight:600;letter-spacing:-.035em;color:var(--label);
 }
 .bwin span{color:var(--label-2);font-size:19px}
+.bw-pm.sm{width:34px;height:34px;font-size:15px}
+.chips.center{justify-content:center;margin:8px 0}
+
+/* --- body-fat sheet (same home as .bw*: measurement sheets in index.css) --- */
+.bf-wrap{position:relative}
+.bf-stack{display:grid}
+.bf-panel{grid-area:1/1;visibility:hidden;pointer-events:none}
+.bf-panel.is-on{visibility:visible;pointer-events:auto}
+.bf-measure{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:8px 0;border-bottom:1px solid var(--sep);
+}
+.bf-measure-label{font-size:13px;line-height:1.38;font-weight:500}
+.bf-measure-ctrls{display:flex;align-items:center;gap:8px}
+.bf-measure-val{min-width:64px;text-align:center;font-variant-numeric:tabular-nums}
+.bf-estimate{display:flex;align-items:center;justify-content:space-between;margin-top:12px}
+.bf-estimate-pct{font-size:22px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.bf-warn{color:var(--yellow);margin-bottom:8px}
+.bf-tape-gated{
+  filter:blur(2px) brightness(0.6);
+  pointer-events:none;user-select:none;
+}
+.bf-tape-cta{
+  position:absolute;inset:0;z-index:1;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:16px;text-align:center;pointer-events:none;background:none;
+}
+.bf-tape-cta > *{pointer-events:auto;max-width:300px}
+.bf-cta-copy{line-height:1.45;margin-bottom:16px;font-size:15px;font-weight:500}
+
+/* Recent weigh-in / body-fat rows inside sheets (shared by BW + BF) */
+.sheet-log-list{display:flex;flex-direction:column;gap:0}
+.sheet-log-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 2px;border-bottom:1px solid var(--sep);
+}
+.iconbtn.sm-danger{
+  width:32px;height:30px;border-radius:8px;font-size:15px;color:var(--red);
+}
+
+/* Body weight / body fat Home+Stats cards share this chrome */
+.card-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.card-hd h2{margin:0}
+.card-hd-actions{display:flex;align-items:center;gap:8px}
+.metric-row{display:flex;align-items:baseline;gap:8px}
+.metric-row .delta{font-size:13px;line-height:1.38;font-weight:500;display:inline-flex;align-items:center;gap:2px}
+.metric-row .when{margin-left:auto}
+.goal-hint{display:flex;align-items:center;gap:5px;margin-top:4px;color:var(--yellow);font-size:13px;line-height:1.38}
+.goal-hint .icn{width:13px;height:13px}
+.chart.tight{margin-top:8px}
+.btn.goal-on{color:var(--yellow)}
+
 
 /* --------------------------------------------------------------- charts -- */
 .chart{width:100%;overflow:hidden}

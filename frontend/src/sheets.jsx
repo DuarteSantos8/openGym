@@ -233,11 +233,11 @@ function BwSheet({ required, onDone, close }) {
     </>}
     {!required && recent.length > 0 && <>
       <h4 className="sec">{t('Recent weigh-ins')}</h4>
-      <div className="list" style={{ gap: 0 }}>
-        {recent.map(b => <div key={b.d} className="row between" style={{ padding: '9px 2px', borderBottom: '1px solid var(--sep)' }}>
+      <div className="sheet-log-list">
+        {recent.map(b => <div key={b.d} className="sheet-log-row">
           <span className="small muted">{fmtDate(b.d, true)}</span>
           <span className="row" style={{ gap: 12 }}><b>{fmtNum(b.w)} {unit}</b>
-            <button className="iconbtn" style={{ width: 32, height: 30, borderRadius: 8, fontSize: 15, color: 'var(--red)' }} onClick={() => delEntry(b.d)} aria-label="delete"><Icon name="trash" /></button></span>
+            <button className="iconbtn sm-danger" onClick={() => delEntry(b.d)} aria-label="delete"><Icon name="trash" /></button></span>
         </div>)}
       </div>
     </>}
@@ -570,10 +570,7 @@ export const goalSheet = () => ui().openSheet(close => <GoalSheet close={close} 
 
 /* ============================ body fat ============================ */
 // Parallel to body weight: dated log + optional goal on Home/Stats.
-// Three entry paths share one list:
-//   manual — type a %
-//   jp3    — Jackson–Pollock 3-site calipers (sex-specific skinfolds + age)
-//   navy   — U.S. Navy tape (neck/waist[/hip] + height; sex-specific)
+// Methods: manual %, JP3 calipers, U.S. Navy tape. Sex from S.body; age/height from Settings.
 // Stored: { d, pct, t, method, sites?|circ?, age?, heightCm? }
 
 const JP3_SITE_LABEL = {
@@ -598,7 +595,7 @@ function BfPctInput({ value, setValue }) {
       <div className="bw-read">{fmtNum(value)}<span className="u"> %</span></div>
       <button className="bw-pm" onClick={() => onSlide(value + 0.1)} aria-label="plus 0.1"><Icon name="plus" /></button>
     </div>
-    <div className="chips" style={{ justifyContent: 'center', margin: '8px 0' }}>
+    <div className="chips center">
       <button className="chip" onClick={() => onSlide(value - 1)}>−1</button>
       <button className="chip" onClick={() => onSlide(value - 0.5)}>−0.5</button>
       <button className="chip" onClick={() => onSlide(value + 0.5)}>+0.5</button>
@@ -611,17 +608,16 @@ function BfPctInput({ value, setValue }) {
 function MeasureRow({ label, value, setValue, unit, step = 0.5, min = 0, max = 200 }) {
   const clamp = x => Math.max(min, Math.min(max, Math.round((x || 0) * 10) / 10))
   return (
-    <div className="row between" style={{ padding: '8px 0', borderBottom: '1px solid var(--sep)', gap: 12 }}>
-      <span className="small" style={{ fontWeight: 500 }}>{label}</span>
-      <div className="row" style={{ gap: 8, alignItems: 'center' }}>
-        <button className="bw-pm" style={{ width: 34, height: 34 }} onClick={() => setValue(clamp(value - step))} aria-label="minus"><Icon name="minus" /></button>
-        <b style={{ minWidth: 64, textAlign: 'center' }}>{fmtNum(value)} <span className="dim small">{unit}</span></b>
-        <button className="bw-pm" style={{ width: 34, height: 34 }} onClick={() => setValue(clamp(value + step))} aria-label="plus"><Icon name="plus" /></button>
+    <div className="bf-measure">
+      <span className="bf-measure-label">{label}</span>
+      <div className="bf-measure-ctrls">
+        <button className="bw-pm sm" onClick={() => setValue(clamp(value - step))} aria-label="minus"><Icon name="minus" /></button>
+        <b className="bf-measure-val">{fmtNum(value)} <span className="dim small">{unit}</span></b>
+        <button className="bw-pm sm" onClick={() => setValue(clamp(value + step))} aria-label="plus"><Icon name="plus" /></button>
       </div>
     </div>
   )
 }
-
 
 function BfSheet({ close }) {
   const st = useStore(s => s.S)
@@ -651,8 +647,6 @@ function BfSheet({ close }) {
   }, [st.body, st.unit])
 
   const jp3Pct = ageOk ? jp3BodyFatPct(sites, age, st.body) : null
-  // When height is missing, still keep the tape fields mounted (blurred under the gate)
-  // so the sheet height stays locked with the other methods.
   const navyPct = heightOk ? navyBodyFatPct(circ, heightUi, st.body, lenUnit) : null
   const preview = mode === 'jp3'
     ? jp3Pct
@@ -712,36 +706,13 @@ function BfSheet({ close }) {
     return label ? ' · ' + label : ''
   }
 
-  // Keep all three method panels mounted in one grid cell so the sheet height stays
-  // locked to the tallest option while toggling (visibility:hidden still contributes size).
-  const panelStyle = on => ({
-    gridArea: '1 / 1',
-    visibility: on ? 'visible' : 'hidden',
-    pointerEvents: on ? 'auto' : 'none',
-  })
-
-  const navyFields = <>
-    {circKeys.map(k => (
-      <MeasureRow
-        key={k}
-        label={t(NAVY_CIRC_LABEL[k])}
-        value={circ[k] || 0}
-        setValue={v => setCirc(s => ({ ...s, [k]: v }))}
-        unit={lenUnit}
-        step={0.5}
-        min={lenUnit === 'in' ? 8 : 20}
-        max={lenUnit === 'in' ? 70 : 180}
-      />
-    ))}
-  </>
-
   const tapeNeedsHeight = mode === 'navy' && !heightOk
 
   const methodBody = <>
-    <div style={{ display: 'grid' }}>
-      <div style={panelStyle(mode === 'jp3')}>
+    <div className="bf-stack">
+      <div className={'bf-panel' + (mode === 'jp3' ? ' is-on' : '')}>
         {!ageOk && (
-          <div className="small" style={{ color: 'var(--yellow)', marginBottom: 8 }}>
+          <div className="small bf-warn">
             {t('Set your age in Settings to calculate body fat from calipers.')}
           </div>
         )}
@@ -759,18 +730,28 @@ function BfSheet({ close }) {
         ))}
       </div>
 
-      <div style={panelStyle(mode === 'navy')}>
-        {navyFields}
+      <div className={'bf-panel' + (mode === 'navy' ? ' is-on' : '')}>
+        {circKeys.map(k => (
+          <MeasureRow
+            key={k}
+            label={t(NAVY_CIRC_LABEL[k])}
+            value={circ[k] || 0}
+            setValue={v => setCirc(s => ({ ...s, [k]: v }))}
+            unit={lenUnit}
+            step={0.5}
+            min={lenUnit === 'in' ? 8 : 20}
+            max={lenUnit === 'in' ? 70 : 180}
+          />
+        ))}
       </div>
 
-      <div style={panelStyle(mode === 'manual')}>
+      <div className={'bf-panel' + (mode === 'manual' ? ' is-on' : '')}>
         <BfPctInput value={pct} setValue={setPct} />
       </div>
     </div>
-    {/* One estimate row for every method — pinned under the field stack so it does not jump. */}
-    <div className="row between" style={{ marginTop: 12 }}>
+    <div className="bf-estimate">
       <span className="muted small">{t('Estimated body fat')}</span>
-      <b style={{ fontSize: 22 }}>{preview == null ? '—' : fmtNum(preview) + '%'}</b>
+      <b className="bf-estimate-pct">{preview == null ? '—' : fmtNum(preview) + '%'}</b>
     </div>
     <div style={{ height: 14 }} />
     <Button variant="primary" onClick={save} disabled={preview == null || tapeNeedsHeight}>{t('Save')}</Button>
@@ -790,7 +771,7 @@ function BfSheet({ close }) {
       onChange={setMode}
     />
     <div style={{ height: 8 }} />
-    <div style={{ position: 'relative' }}>
+    <div className="bf-wrap">
       <div
         aria-hidden={tapeNeedsHeight}
         className={tapeNeedsHeight ? 'bf-tape-gated' : undefined}
@@ -798,11 +779,9 @@ function BfSheet({ close }) {
         {methodBody}
       </div>
       {tapeNeedsHeight && (
-        // CTA only — no scrim. Fields are blurred in place via .bf-tape-gated (blur(2px),
-        // same radius as .mback). Flex + inset centers on any phone width/height.
         <div className="bf-tape-cta">
           <div>
-            <div style={{ lineHeight: 1.45, marginBottom: 16, fontSize: 15, fontWeight: 500 }}>
+            <div className="bf-cta-copy">
               {t('To use the tape measure calculator, add your height to openGym.')}
             </div>
             <Button variant="primary" onClick={goAddHeight}>{t('Add now')}</Button>
@@ -812,11 +791,11 @@ function BfSheet({ close }) {
     </div>
     {recent.length > 0 && <>
       <h4 className="sec">{t('Recent body-fat logs')}</h4>
-      <div className="list" style={{ gap: 0 }}>
-        {recent.map(b => <div key={b.d} className="row between" style={{ padding: '9px 2px', borderBottom: '1px solid var(--sep)' }}>
+      <div className="sheet-log-list">
+        {recent.map(b => <div key={b.d} className="sheet-log-row">
           <span className="small muted">{fmtDate(b.d, true)}{methodTag(b.method)}</span>
           <span className="row" style={{ gap: 12 }}><b>{fmtNum(b.pct)}%</b>
-            <button className="iconbtn" style={{ width: 32, height: 30, borderRadius: 8, fontSize: 15, color: 'var(--red)' }} onClick={() => delEntry(b.d)} aria-label="delete"><Icon name="trash" /></button></span>
+            <button className="iconbtn sm-danger" onClick={() => delEntry(b.d)} aria-label="delete"><Icon name="trash" /></button></span>
         </div>)}
       </div>
     </>}
@@ -853,7 +832,6 @@ function BfGoalSheet({ close }) {
   </>
 }
 export const bfGoalSheet = () => ui().openSheet(close => <BfGoalSheet close={close} />)
-
 
 
 /* ============================ bar weight ============================ */

@@ -133,63 +133,63 @@ export default function Home() {
     )}
 
     <div className="card">
-      <div className="row between" style={{ marginBottom: 6 }}>
-        <h2 style={{ margin: 0 }}>{t('Body weight')}</h2>
-        <div className="row" style={{ gap: 8 }}>
-          <Button size="sm" icon="target" style={S.targetW ? { color: 'var(--yellow)' } : undefined} onClick={goalSheet}>{S.targetW ? fmtNum(S.targetW) : t('Goal')}</Button>
+      <div className="card-hd">
+        <h2>{t('Body weight')}</h2>
+        <div className="card-hd-actions">
+          <Button size="sm" icon="target" className={S.targetW ? 'goal-on' : undefined} onClick={goalSheet}>{S.targetW ? fmtNum(S.targetW) : t('Goal')}</Button>
           <Button size="sm" icon="plus" onClick={() => bwSheet()}>{t('Log')}</Button>
         </div>
       </div>
       {bw ? <>
-        <div className="row" style={{ gap: 8, alignItems: 'baseline' }}>
+        <div className="metric-row">
           <div className="big">{fmtNum(bw.w)} <span className="muted" style={{ fontSize: '1rem' }}>{S.unit}</span></div>
           {/* only when it actually moved — an unchanged weight used to read as "− 0" */}
           {!!delta && (
-            <span className="small row" style={{ gap: 2, fontWeight: 500, color: bwDeltaColor(delta, bw.w) }}>
+            <span className="delta" style={{ color: bwDeltaColor(delta, bw.w) }}>
               <Icon name={delta > 0 ? 'arrowUp' : 'arrowDown'} style={{ fontSize: 12 }} />
               {fmtNum(Math.abs(delta))}
             </span>
           )}
-          <span className="dim small" style={{ marginLeft: 'auto' }}>{fmtDate(bw.d, true)}</span>
+          <span className="dim small when">{fmtDate(bw.d, true)}</span>
         </div>
         {S.targetW && (
-          <div className="small row" style={{ color: 'var(--yellow)', marginTop: 4, gap: 5 }}>
-            <Icon name="target" style={{ fontSize: 13 }} />
+          <div className="goal-hint">
+            <Icon name="target" />
             <span>{t('Goal')} {fmtNum(S.targetW)} {S.unit} · {Math.abs(S.targetW - bw.w) < 0.05 ? t('reached!') : t(S.targetW > bw.w ? '{0} to gain' : '{0} to lose', fmtNum(Math.abs(S.targetW - bw.w)) + ' ' + S.unit)}</span>
           </div>
         )}
-        <div className="chart" style={{ marginTop: 8 }}><LineChart points={bwPoints} h={130} unit={S.unit} goal={S.targetW} /></div>
+        <div className="chart tight"><LineChart points={bwPoints} h={130} unit={S.unit} goal={S.targetW} /></div>
       </> : <div className="muted small">{S.weighIn === false
         ? t('No entries yet — log your weight to start the curve.')
         : t("No entries yet — log your weight to start the curve. It's also asked before every workout.")}</div>}
     </div>
 
     <div className="card">
-      <div className="row between" style={{ marginBottom: 6 }}>
-        <h2 style={{ margin: 0 }}>{t('Body fat')}</h2>
-        <div className="row" style={{ gap: 8 }}>
-          <Button size="sm" icon="target" style={S.targetBf ? { color: 'var(--yellow)' } : undefined} onClick={bfGoalSheet}>{S.targetBf != null ? fmtNum(S.targetBf) + '%' : t('Goal')}</Button>
+      <div className="card-hd">
+        <h2>{t('Body fat')}</h2>
+        <div className="card-hd-actions">
+          <Button size="sm" icon="target" className={S.targetBf ? 'goal-on' : undefined} onClick={bfGoalSheet}>{S.targetBf != null ? fmtNum(S.targetBf) + '%' : t('Goal')}</Button>
           <Button size="sm" icon="plus" onClick={() => bfSheet()}>{t('Log')}</Button>
         </div>
       </div>
       {bf ? <>
-        <div className="row" style={{ gap: 8, alignItems: 'baseline' }}>
+        <div className="metric-row">
           <div className="big">{fmtNum(bf.pct)} <span className="muted" style={{ fontSize: '1rem' }}>%</span></div>
           {!!bfDelta && (
-            <span className="small row" style={{ gap: 2, fontWeight: 500, color: bfDeltaColor(bfDelta, bf.pct) }}>
+            <span className="delta" style={{ color: bfDeltaColor(bfDelta, bf.pct) }}>
               <Icon name={bfDelta > 0 ? 'arrowUp' : 'arrowDown'} style={{ fontSize: 12 }} />
               {fmtNum(Math.abs(bfDelta))}
             </span>
           )}
-          <span className="dim small" style={{ marginLeft: 'auto' }}>{fmtDate(bf.d, true)}</span>
+          <span className="dim small when">{fmtDate(bf.d, true)}</span>
         </div>
         {S.targetBf != null && (
-          <div className="small row" style={{ color: 'var(--yellow)', marginTop: 4, gap: 5 }}>
-            <Icon name="target" style={{ fontSize: 13 }} />
+          <div className="goal-hint">
+            <Icon name="target" />
             <span>{t('Goal')} {fmtNum(S.targetBf)}% · {Math.abs(S.targetBf - bf.pct) < 0.05 ? t('reached!') : t(S.targetBf > bf.pct ? '{0} to gain' : '{0} to lose', fmtNum(Math.abs(S.targetBf - bf.pct)) + '%')}</span>
           </div>
         )}
-        <div className="chart" style={{ marginTop: 8 }}><LineChart points={bfPoints} h={130} unit="%" goal={S.targetBf} /></div>
+        <div className="chart tight"><LineChart points={bfPoints} h={130} unit="%" goal={S.targetBf} /></div>
       </> : <div className="muted small">{t('No entries yet')}</div>}
     </div>
 

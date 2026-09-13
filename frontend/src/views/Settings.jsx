@@ -384,14 +384,14 @@ export default function Settings() {
       {/* Purely how the muscle map is drawn — nothing else in the app reads this. */}
       <Row icon="timer" iconTint="var(--purple)" title={t('Age')}>
         <div className="row" style={{ gap: 8, alignItems: 'center' }}>
-          <button className="bw-pm" style={{ width: 34, height: 34 }} onClick={() => update(s => { s.age = Math.max(10, (s.age || 30) - 1) })} aria-label={t('Decrease age')}><Icon name="minus" /></button>
+          <button className="bw-pm sm" onClick={() => update(s => { s.age = Math.max(10, (s.age || 30) - 1) })} aria-label={t('Decrease age')}><Icon name="minus" /></button>
           <b style={{ minWidth: 36, textAlign: 'center' }}>{S.age || '—'}</b>
-          <button className="bw-pm" style={{ width: 34, height: 34 }} onClick={() => update(s => { s.age = Math.min(100, (s.age || 30) + 1) })} aria-label={t('Increase age')}><Icon name="plus" /></button>
+          <button className="bw-pm sm" onClick={() => update(s => { s.age = Math.min(100, (s.age || 30) + 1) })} aria-label={t('Increase age')}><Icon name="plus" /></button>
         </div>
       </Row>
       <Row id="settings-height" icon="figureRun" iconTint="var(--blue)" title={t('Height')}>
         <div className="row" style={{ gap: 8, alignItems: 'center' }}>
-          <button className="bw-pm" style={{ width: 34, height: 34 }} onClick={() => update(s => {
+          <button className="bw-pm sm" onClick={() => update(s => {
             if (s.unit === 'lb') {
               const inches = clampHeightInches((s.height || 170) / 2.54 - 1)
               s.height = Math.round(inToCm(inches) * 10) / 10
@@ -404,7 +404,7 @@ export default function Settings() {
               ? formatFtIn(S.height / 2.54)
               : fmtNum(S.height) + ' cm')
             : '—'}</b>
-          <button className="bw-pm" style={{ width: 34, height: 34 }} onClick={() => update(s => {
+          <button className="bw-pm sm" onClick={() => update(s => {
             if (s.unit === 'lb') {
               const inches = clampHeightInches((s.height || 170) / 2.54 + 1)
               s.height = Math.round(inToCm(inches) * 10) / 10

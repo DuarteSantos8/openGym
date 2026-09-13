@@ -456,10 +456,10 @@ export default function Stats() {
 
     <div className="cols">
       <div className="card">
-        <div className="row between" style={{ marginBottom: 8 }}>
-          <h2 style={{ margin: 0 }}>{t('Body weight')}</h2>
-          <div className="row" style={{ gap: 8 }}>
-            <Button size="sm" icon="target" style={S.targetW ? { color: 'var(--yellow)' } : undefined} onClick={goalSheet}>{S.targetW ? fmtNum(S.targetW) : t('Goal')}</Button>
+        <div className="card-hd" style={{ marginBottom: 8 }}>
+          <h2>{t('Body weight')}</h2>
+          <div className="card-hd-actions">
+            <Button size="sm" icon="target" className={S.targetW ? 'goal-on' : undefined} onClick={goalSheet}>{S.targetW ? fmtNum(S.targetW) : t('Goal')}</Button>
             <Button size="sm" icon="plus" onClick={() => bwSheet()}>{t('Log')}</Button>
           </div>
         </div>
@@ -469,10 +469,10 @@ export default function Stats() {
       </div>
 
       <div className="card">
-        <div className="row between" style={{ marginBottom: 8 }}>
-          <h2 style={{ margin: 0 }}>{t('Body fat')}</h2>
-          <div className="row" style={{ gap: 8 }}>
-            <Button size="sm" icon="target" style={S.targetBf ? { color: 'var(--yellow)' } : undefined} onClick={bfGoalSheet}>{S.targetBf != null ? fmtNum(S.targetBf) + '%' : t('Goal')}</Button>
+        <div className="card-hd" style={{ marginBottom: 8 }}>
+          <h2>{t('Body fat')}</h2>
+          <div className="card-hd-actions">
+            <Button size="sm" icon="target" className={S.targetBf ? 'goal-on' : undefined} onClick={bfGoalSheet}>{S.targetBf != null ? fmtNum(S.targetBf) + '%' : t('Goal')}</Button>
             <Button size="sm" icon="plus" onClick={() => bfSheet()}>{t('Log')}</Button>
           </div>
         </div>
