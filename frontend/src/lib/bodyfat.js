@@ -1,19 +1,6 @@
-// Body-fat estimators used by the log sheet.
-//
-// 1) Jackson–Pollock 3-site skinfolds (calipers, mm) → body density → Siri %BF
-//    Men (Jackson & Pollock, Br J Nutr 1978): chest + abdomen + thigh
-//    Women (Jackson, Pollock & Ward, Med Sci Sports Exerc 1980): triceps + suprailiac + thigh
-//
-// 2) U.S. Navy / Hodgdon–Beckett circumference method (tape, inches in the published eqs)
-//    Men: neck + waist + height
-//    Women: neck + waist + hip + height
-//    Classic inch formulas (Hodgdon & Beckett, NHRC 1984). Inputs may be cm; we convert.
-//
-// 3) Lean-mass hold: given an anchor weight + BF%, estimate BF% at other scale weights
-//    assuming fat-free mass stays constant (rough trend tool, not a lab method).
-//
-// Profile `body` ('male' | 'female') picks the sex-specific sites / equations — same field
-// as the muscle diagram. `age` is years (JP3 only). `height` is stored in centimetres.
+// Body-fat estimators for the log sheet.
+// Sex-specific JP3 / Navy equations; profile `body` picks the variant.
+// Height is centimetres on the profile; age is whole years (JP3 only).
 
 export const JP3_SITES_MALE = ['chest', 'abdomen', 'thigh']
 export const JP3_SITES_FEMALE = ['triceps', 'suprailiac', 'thigh']
@@ -33,7 +20,7 @@ export function navyCircKeysFor(body) {
   return isFemaleBody(body) ? NAVY_CIRC_FEMALE : NAVY_CIRC_MALE
 }
 
-/** Sum three skinfolds (mm). Returns null if any site is missing or non-positive. */
+/** Sum three skinfolds (mm). Null if any site is missing or non-positive. */
 export function sumSkinfolds(sites, body) {
   const keys = jp3SitesFor(body)
   if (!sites || typeof sites !== 'object') return null
@@ -46,10 +33,7 @@ export function sumSkinfolds(sites, body) {
   return sum
 }
 
-/**
- * Body density (g/cm³) from Jackson–Pollock 3-site equations.
- * @returns {number|null}
- */
+/** Jackson–Pollock 3-site body density (g/cm³). */
 export function jp3BodyDensity(sites, age, body) {
   const S = sumSkinfolds(sites, body)
   const A = Number(age)
@@ -60,7 +44,7 @@ export function jp3BodyDensity(sites, age, body) {
   return 1.10938 - 0.0008267 * S + 0.0000016 * S * S - 0.0002574 * A
 }
 
-/** Siri conversion: density → body-fat percentage. */
+/** Siri: density → body-fat %. */
 export function siriBodyFatPct(density) {
   const d = Number(density)
   if (!Number.isFinite(d) || d <= 0) return null
@@ -68,10 +52,7 @@ export function siriBodyFatPct(density) {
   return Number.isFinite(pct) ? pct : null
 }
 
-/**
- * Full Jackson–Pollock 3-site estimate, rounded to one decimal.
- * @returns {number|null} body-fat %
- */
+/** JP3 estimate, one decimal. */
 export function jp3BodyFatPct(sites, age, body) {
   const dens = jp3BodyDensity(sites, age, body)
   if (dens == null) return null
@@ -92,26 +73,18 @@ export function inToCm(inches) {
   return n * 2.54
 }
 
-/** Length unit paired with the profile weight unit: lb → in, kg → cm. */
+/** lb → in, kg → cm. */
 export function lengthUnitFor(weightUnit) {
   return weightUnit === 'lb' ? 'in' : 'cm'
 }
 
-/** Convert a UI length (cm or in) to inches for the Navy formulas. */
 export function toInches(value, lengthUnit) {
   const n = Number(value)
   if (!Number.isFinite(n) || n <= 0) return null
   return lengthUnit === 'in' ? n : cmToIn(n)
 }
 
-/**
- * U.S. Navy circumference body-fat % (Hodgdon & Beckett).
- * @param {object} circ — { neck, waist, hip? } in the given lengthUnit
- * @param {number} height — height in the given lengthUnit
- * @param {'male'|'female'|string} body
- * @param {'cm'|'in'} lengthUnit
- * @returns {number|null}
- */
+/** U.S. Navy / Hodgdon–Beckett %BF. Circ + height in `lengthUnit`. */
 export function navyBodyFatPct(circ, height, body, lengthUnit = 'cm') {
   if (!circ || typeof circ !== 'object') return null
   const neck = toInches(circ.neck, lengthUnit)
@@ -139,7 +112,6 @@ export function clampBodyFatPct(n) {
   return v
 }
 
-/** Fat-free mass from scale weight + body-fat %. Same unit as weight. */
 export function leanMassFromWeight(weight, bodyFatPct) {
   const w = Number(weight)
   const pct = Number(bodyFatPct)
@@ -148,10 +120,7 @@ export function leanMassFromWeight(weight, bodyFatPct) {
   return w * (1 - pct / 100)
 }
 
-/**
- * Estimate BF% at another scale weight, holding fat-free mass fixed.
- * @returns {number|null} body-fat %, one decimal
- */
+/** BF% at another scale weight holding fat-free mass fixed. */
 export function estimateBodyFatAtWeight(weight, leanMass) {
   const w = Number(weight)
   const lean = Number(leanMass)
@@ -161,7 +130,6 @@ export function estimateBodyFatAtWeight(weight, leanMass) {
   return clampBodyFatPct(((w - lean) / w) * 100)
 }
 
-/** Whole inches → 5'9" display. */
 export function formatFtIn(totalInches) {
   const n = Math.round(Number(totalInches))
   if (!Number.isFinite(n) || n <= 0) return '—'
@@ -170,7 +138,6 @@ export function formatFtIn(totalInches) {
   return ft + "'" + inch + '"'
 }
 
-/** Clamp height in whole inches (typical adult range). */
 export function clampHeightInches(n, min = 48, max = 90) {
   const v = Math.round(Number(n))
   if (!Number.isFinite(v)) return min

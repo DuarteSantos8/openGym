@@ -28,8 +28,7 @@ export default function Settings() {
     if (location.hash !== '#height') return
     let cancelled = false
     const timers = []
-    // Modals restores scroll at 0ms and again at 350ms after a sheet closes — wait that out
-    // before smooth-scrolling, then flash the Height row twice once motion has settled.
+    // Wait past Modals' post-close scroll restore (0ms + 350ms) before scrolling/flashing.
     timers.push(window.setTimeout(() => {
       if (cancelled) return
       const el = document.getElementById('settings-height')

@@ -569,9 +569,6 @@ export const goalSheet = () => ui().openSheet(close => <GoalSheet close={close} 
 
 
 /* ============================ body fat ============================ */
-// Parallel to body weight: dated log + optional goal on Home/Stats.
-// Methods: manual %, JP3 calipers, U.S. Navy tape. Sex from S.body; age/height from Settings.
-// Stored: { d, pct, t, method, sites?|circ?, age?, heightCm? }
 
 const JP3_SITE_LABEL = {
   chest: 'Chest',
@@ -713,7 +710,7 @@ function BfSheet({ close }) {
       <div className={'bf-panel' + (mode === 'jp3' ? ' is-on' : '')}>
         {!ageOk && (
           <div className="small bf-warn">
-            {t('Set your age in Settings to calculate body fat from calipers.')}
+            {t('Set your age in Settings.')}
           </div>
         )}
         {siteKeys.map(k => (

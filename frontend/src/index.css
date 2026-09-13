@@ -233,8 +233,7 @@ h4.sec{
 }
 .lrow:has(.lrow-i)+.lrow:has(.lrow-i)::before{left:55px}
 .lrow.tap:active{background:var(--surface-2)}
-/* Two background blinks with fade in/out (not hard cuts). Slightly shorter than
-   TimerFlash's 2.4s discrete theme flip — that rhythm felt long on a single row. */
+/* Height-row flash after Add now scroll (two soft pulses). */
 @keyframes settings-row-flash{
   0%{background:transparent}
   12%{background:var(--surface-2)}
@@ -949,7 +948,7 @@ h4.sec{
 .bw-pm.sm{width:34px;height:34px;font-size:15px}
 .chips.center{justify-content:center;margin:8px 0}
 
-/* --- body-fat sheet (same home as .bw*: measurement sheets in index.css) --- */
+/* --- body-fat sheet --- */
 .bf-wrap{position:relative}
 .bf-stack{display:grid}
 .bf-panel{grid-area:1/1;visibility:hidden;pointer-events:none}
@@ -976,7 +975,7 @@ h4.sec{
 .bf-tape-cta > *{pointer-events:auto;max-width:300px}
 .bf-cta-copy{line-height:1.45;margin-bottom:16px;font-size:15px;font-weight:500}
 
-/* Recent weigh-in / body-fat rows inside sheets (shared by BW + BF) */
+/* Recent log rows in weigh-in / body-fat sheets */
 .sheet-log-list{display:flex;flex-direction:column;gap:0}
 .sheet-log-row{
   display:flex;align-items:center;justify-content:space-between;
@@ -986,7 +985,7 @@ h4.sec{
   width:32px;height:30px;border-radius:8px;font-size:15px;color:var(--red);
 }
 
-/* Body weight / body fat Home+Stats cards share this chrome */
+/* Shared Home/Stats card chrome for weight + body fat */
 .card-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
 .card-hd h2{margin:0}
 .card-hd-actions{display:flex;align-items:center;gap:8px}
