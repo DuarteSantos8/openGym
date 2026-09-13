@@ -180,8 +180,7 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
     const fresh = useStore.getState().S.active?.entries[entryIdx]?.sets[i]
     const cur = fresh ? fresh[col.f] : s[col.f]
     if (mode === 'reps' && col.f === 'w') return onField(i, col.f, stepWeight(cur, col.step, dir))
-    // Distance is stored in metres but displayed/stepped in feet for a lb profile: convert to
-    // the display unit around the step so the stored `.m` stays metres (same rule as fmtDistance).
+    // lb profile: step in feet, write metres.
     if (col.dist && S.unit === 'lb') {
       const shown = metresToDisplay(cur, S.unit)
       return onField(i, col.f, displayToMetres(Math.max(0, shown + dir * col.step), S.unit))

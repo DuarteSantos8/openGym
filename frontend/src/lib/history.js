@@ -423,8 +423,7 @@ function buildWorkSets(S, cfg, options = {}) {
   }
   if (mode === 'distance') {
     for (let i = 0; i < n; i++) {
-      // Only carry a previous value over when it came from a distance set — switching an
-      // exercise from reps or time must not seed metres from a rep count or a hold.
+      // Only reuse prior metres from a distance set (not from reps/time).
       const prev = prevAt(i)
       const carried = prev && prev.m > 0 ? prev : null
       sets.push({ sec: carried ? carried.sec : (cfg.sec || 600), m: carried ? carried.m : (cfg.m || 400), done: false })
