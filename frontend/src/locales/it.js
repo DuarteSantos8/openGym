@@ -1245,8 +1245,8 @@ export default {
   // --- distance logging mode ---
   'Distance ({0})': 'Distanza ({0})',
   'Add distance': 'Aumenta distanza',
-  'Cover the target distance inside the cap in every set and the distance goes up. The cap stays where it is.': 'Copri la distanza obiettivo entro il limite in ogni serie e la distanza sale. il limite resta.',
-  'Covered the distance in every set. Go for {0} this time.': 'Distanza coperta in ogni serie. questa volta {0}.',
-  'Fell short {0} sessions in a row. Back off to {1} and build up again.': 'Mancata {0} sessioni di fila. torna a {1} e risali.',
-  'Last time came up short. Same distance again inside the cap.': 'La volta scorsa non basta. stessa distanza nel limite.',
+  'Cover the target distance inside the cap in every set and the distance goes up. The cap stays where it is.': 'Copri la distanza obiettivo entro il limite in ogni serie e la distanza sale. Il limite resta.',
+  'Covered the distance in every set. Go for {0} this time.': 'Distanza coperta in ogni serie. Questa volta {0}.',
+  'Fell short {0} sessions in a row. Back off to {1} and build up again.': 'Mancata {0} sessioni di fila. Torna a {1} e risali.',
+  'Last time came up short. Same distance again inside the cap.': 'La volta scorsa non basta. Stessa distanza nel limite.',
 }
