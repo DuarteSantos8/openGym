@@ -276,9 +276,114 @@ try {
   assert.equal(consentResponse.status, 200)
   assert.match(consentHtml, /Unverified client/)
   assert.match(consentHtml, /https:\/\/client\.example\.test\/callback/)
+  const consentCsp = consentResponse.headers.get('content-security-policy') || ''
+  assert.match(consentCsp, /form-action 'self' https:\/\/client\.example\.test/)
+  assert.doesNotMatch(consentCsp, /\*/)
+  assert.match(consentHtml, /name="viewport"/)
+  assert.match(consentHtml, /class="oauth-card"/)
+  assert.match(consentHtml, /class="opengym-mark"[^>]*>openGym<\/span>/i)
+  assert.match(consentHtml, /View exercises/)
+  assert.match(consentHtml, /View routines/)
+  assert.match(consentHtml, /View progress/)
+  assert.match(consentHtml, /View bodyweight/)
+  assert.match(consentHtml, /class="oauth-actions"/)
+  assert.match(consentHtml, /name="decision" value="allow"/)
+  assert.match(consentHtml, /name="decision" value="deny"/)
+  assert.match(consentHtml, /min-height:\s*44px/)
+  assert.doesNotMatch(consentHtml, /workout:write/)
   const csrf = /name="csrf" value="([^"]+)"/.exec(consentHtml)?.[1]
   assert.ok(csrf)
-  print('oauth_consent_unverified_redirect_display', 'PASS')
+  print('oauth_consent_polished_accessible_markup', 'PASS')
+  print('oauth_consent_narrow_callback_csp', consentCsp)
+
+  // The state is untrusted client input and must remain data in every rendered context.
+  const xssState = '<script>alert(1)</script>'
+  const xssQuery = new URLSearchParams(authorizeQuery)
+  xssQuery.set('state', xssState)
+  const xssConsent = await fetch(mcpBase + `/oauth/authorize?${xssQuery}`, { headers: { Cookie: `gymsid=${session}` } })
+  const xssHtml = await xssConsent.text()
+  assert.equal(xssConsent.status, 200)
+  assert.match(xssHtml, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/)
+  assert.doesNotMatch(xssHtml, /<script>alert\(1\)<\/script>/)
+  print('oauth_consent_untrusted_fields_escaped', 'PASS')
+
+  // All seven supported scopes are rendered only when requested, with a human explanation and
+  // the exact technical scope kept as secondary detail for an advanced user.
+  const allScopesRegistration = status(await request(mcpBase, '/oauth/register', dcrBody({
+    client_name: 'Scope description fixture', redirect_uris: ['https://scope-description.example.test/callback'],
+    grant_types: ['authorization_code'], response_types: ['code'], token_endpoint_auth_method: 'none',
+    scope: 'exercise:read routine:read workout:read bodyweight:read progress:read workout:write routine:propose'
+  }, { 'X-Forwarded-For': '198.51.100.19' })), 201, 'all-scope consent fixture').data
+  const allScopesQuery = new URLSearchParams({
+    response_type: 'code', client_id: allScopesRegistration.client_id, redirect_uri: allScopesRegistration.redirect_uris[0],
+    scope: allScopesRegistration.scope, code_challenge: challenge, code_challenge_method: 'S256', resource,
+    state: 'oauth-all-scopes'
+  })
+  const allScopesConsent = await fetch(mcpBase + `/oauth/authorize?${allScopesQuery}`, { headers: { Cookie: `gymsid=${session}` } })
+  const allScopesHtml = await allScopesConsent.text()
+  assert.equal(allScopesConsent.status, 200)
+  for (const copy of ['View exercises', 'View routines', 'View workout history', 'View bodyweight', 'View progress', 'Create workouts', 'Propose routines for your review']) assert.match(allScopesHtml, new RegExp(copy))
+  for (const scope of allScopesRegistration.scope.split(/\s+/)) assert.match(allScopesHtml, new RegExp(`value="${scope}"`))
+  print('oauth_consent_scope_descriptions', 'PASS')
+
+  const cancelVerifier = crypto.randomBytes(32).toString('base64url')
+  const cancelChallenge = hashVerifier(cancelVerifier)
+  const cancelQuery = new URLSearchParams({
+    response_type: 'code', client_id: registration.client_id, redirect_uri: registration.redirect_uris[0],
+    scope: 'exercise:read', code_challenge: cancelChallenge, code_challenge_method: 'S256', resource,
+    state: 'oauth-cancel-state'
+  })
+  const cancelConsent = await fetch(mcpBase + `/oauth/authorize?${cancelQuery}`, { headers: { Cookie: `gymsid=${session}` } })
+  const cancelHtml = await cancelConsent.text()
+  assert.equal(cancelConsent.status, 200)
+  const cancelCsrf = /name="csrf" value="([^"]+)"/.exec(cancelHtml)?.[1]
+  assert.ok(cancelCsrf)
+  const cancelForm = {
+    csrf: cancelCsrf, client_id: registration.client_id, redirect_uri: registration.redirect_uris[0], response_type: 'code',
+    code_challenge: cancelChallenge, code_challenge_method: 'S256', resource, state: 'oauth-cancel-state',
+    scope: 'exercise:read', decision: 'deny'
+  }
+  const grantsBeforeCancel = status(await request(apiBase, '/api/mcp/grants', { headers: { Cookie: `gymsid=${session}` } }), 200, 'grants before consent denial').data.grants.length
+  const denial = await fetch(mcpBase + '/oauth/authorize', {
+    ...formBody(cancelForm), headers: { Cookie: `gymsid=${session}`, Accept: 'text/html', 'Content-Type': 'application/x-www-form-urlencoded' }, redirect: 'manual'
+  })
+  assert.equal(denial.status, 302)
+  const denialLocation = new URL(denial.headers.get('location'))
+  assert.equal(denialLocation.searchParams.get('error'), 'access_denied')
+  assert.equal(denialLocation.searchParams.get('state'), 'oauth-cancel-state')
+  assert.equal(denialLocation.searchParams.get('code'), null)
+  const grantsAfterCancel = status(await request(apiBase, '/api/mcp/grants', { headers: { Cookie: `gymsid=${session}` } }), 200, 'grants after consent denial').data.grants.length
+  assert.equal(grantsAfterCancel, grantsBeforeCancel)
+  const denialRetry = await fetch(mcpBase + '/oauth/authorize', {
+    ...formBody(cancelForm), headers: { Cookie: `gymsid=${session}`, Accept: 'text/html', 'Content-Type': 'application/x-www-form-urlencoded' }, redirect: 'manual'
+  })
+  assert.equal(denialRetry.status, 302)
+  assert.equal(denialRetry.headers.get('location'), denial.headers.get('location'))
+  const grantsAfterCancelRetry = status(await request(apiBase, '/api/mcp/grants', { headers: { Cookie: `gymsid=${session}` } }), 200, 'grants after repeated consent denial').data.grants.length
+  assert.equal(grantsAfterCancelRetry, grantsBeforeCancel)
+  print('oauth_consent_cancel_denies_without_grant', 'PASS')
+  print('oauth_consent_same_denial_is_idempotent', 'PASS')
+
+  const noSessionQuery = new URLSearchParams({
+    response_type: 'code', client_id: registration.client_id, redirect_uri: registration.redirect_uris[0],
+    scope: 'exercise:read', code_challenge: challenge, code_challenge_method: 'S256', resource,
+    state: 'oauth-no-session'
+  })
+  const noSessionConsent = await fetch(mcpBase + `/oauth/authorize?${noSessionQuery}`, { headers: { Cookie: `gymsid=${session}` } })
+  const noSessionHtml = await noSessionConsent.text()
+  const noSessionCsrf = /name="csrf" value="([^"]+)"/.exec(noSessionHtml)?.[1]
+  assert.equal(noSessionConsent.status, 200)
+  assert.ok(noSessionCsrf)
+  const noSessionPost = await fetch(mcpBase + '/oauth/authorize', {
+    ...formBody({ csrf: noSessionCsrf, client_id: registration.client_id, redirect_uri: registration.redirect_uris[0], response_type: 'code', code_challenge: challenge, code_challenge_method: 'S256', resource, state: 'oauth-no-session', scope: 'exercise:read', decision: 'allow' }),
+    headers: { Accept: 'text/html', 'Content-Type': 'application/x-www-form-urlencoded' }, redirect: 'manual'
+  })
+  const noSessionErrorHtml = await noSessionPost.text()
+  assert.equal(noSessionPost.status, 401)
+  assert.match(noSessionErrorHtml, /oauth-error/)
+  assert.match(noSessionErrorHtml, /sign-in is no longer valid/i)
+  print('oauth_consent_not_signed_in_browser_error', 'PASS')
+
   const authorization = await fetch(mcpBase + '/oauth/authorize', {
     ...formBody({ csrf, client_id: registration.client_id, redirect_uri: registration.redirect_uris[0], response_type: 'code', code_challenge: challenge, code_challenge_method: 'S256', resource, state: 'oauth-state-1', scope: ['exercise:read', 'routine:read', 'progress:read', 'bodyweight:read'] }),
     headers: { Cookie: `gymsid=${session}`, 'Content-Type': 'application/x-www-form-urlencoded' }, redirect: 'manual'
@@ -291,6 +396,28 @@ try {
   const code = redirect.searchParams.get('code')
   assert.ok(code)
   print('oauth_pkce_authorization_consent', 'PASS')
+
+  const conflictingDecision = await fetch(mcpBase + '/oauth/authorize', {
+    ...formBody({ csrf, client_id: registration.client_id, redirect_uri: registration.redirect_uris[0], response_type: 'code', code_challenge: challenge, code_challenge_method: 'S256', resource, state: 'oauth-state-1', scope: ['exercise:read', 'routine:read', 'progress:read', 'bodyweight:read'], decision: 'deny' }),
+    headers: { Cookie: `gymsid=${session}`, Accept: 'text/html', 'Content-Type': 'application/x-www-form-urlencoded' }, redirect: 'manual'
+  })
+  assert.equal(conflictingDecision.status, 400)
+  const conflictingHtml = await conflictingDecision.text()
+  assert.match(conflictingHtml, /oauth-error/)
+  assert.match(conflictingHtml, /authorization request changed/i)
+  print('oauth_consent_conflicting_decision_rejected', 'PASS')
+
+  const expiredConsent = await fetch(mcpBase + '/oauth/authorize', {
+    ...formBody({ csrf: 'expired-consent-fixture', decision: 'allow' }),
+    headers: { Cookie: `gymsid=${session}`, Accept: 'text/html', 'Content-Type': 'application/x-www-form-urlencoded' }, redirect: 'manual'
+  })
+  const expiredHtml = await expiredConsent.text()
+  assert.equal(expiredConsent.status, 400)
+  assert.match(expiredHtml, /class="[^"]*oauth-error/)
+  assert.match(expiredHtml, /authorization request has expired/i)
+  assert.match(expiredHtml, /return to the requesting client and try again/i)
+  assert.doesNotMatch(expiredHtml, /access_token|code_challenge|oauth-state-1/)
+  print('oauth_consent_expired_browser_error', 'PASS')
 
   // A consent nonce is consumed before the first await. Two simultaneous submits
   // therefore produce one grant/code and replay the exact redirect to the retry.

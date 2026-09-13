@@ -43,10 +43,11 @@ function jsonResponse(res, status, body, headers = {}) {
   res.end(JSON.stringify(body))
 }
 
-function htmlResponse(res, status, body) {
+function htmlResponse(res, status, body, { formActionOrigin = '' } = {}) {
+  const formAction = formActionOrigin ? `'self' ${formActionOrigin}` : "'self'"
   res.writeHead(status, {
     'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store',
-    'Content-Security-Policy': "default-src 'none'; form-action 'self'; style-src 'unsafe-inline'"
+    'Content-Security-Policy': `default-src 'none'; form-action ${formAction}; style-src 'unsafe-inline'`
   })
   res.end(body)
 }
@@ -411,14 +412,70 @@ async function handleOAuthRegister(req, res) {
   }
 }
 
+const scopeCopy = {
+  'exercise:read': ['View exercises', 'Browse the OpenGym exercise catalogue.'],
+  'routine:read': ['View routines', 'See your saved routines and training plans.'],
+  'workout:read': ['View workout history', 'Review completed workouts and session details.'],
+  'bodyweight:read': ['View bodyweight', 'Read your bodyweight measurements.'],
+  'progress:read': ['View progress', 'Read progress trends and training insights.'],
+  'workout:write': ['Create workouts', 'Record completed workouts in your OpenGym account.'],
+  'routine:propose': ['Propose routines for your review', 'Save routine drafts for you to review in OpenGym.']
+}
+
+function callbackOrigin(redirectUri) {
+  try {
+    const origin = new URL(redirectUri).origin
+    return origin === 'null' ? '' : origin
+  } catch { return '' }
+}
+
 function authorizeForm(data, csrf, user) {
-  const scopeInputs = data.requested.map(scope => `
-      <label><input type="checkbox" name="scope" value="${htmlEscape(scope)}" checked> ${htmlEscape(scope)}</label>`).join('')
-  return `<!doctype html><html><head><meta charset="utf-8"><title>openGym access</title></head><body>
-    <main><h1>Allow ${htmlEscape(data.client.client_name || 'MCP client')} to access openGym?</h1>
-    <p><strong>Unverified client</strong> — this name was supplied by the client and is not endorsed by openGym.</p>
-    <p>It will receive an authorization code at <code>${htmlEscape(data.redirectUri)}</code>.</p>
-    <p>Signed in as ${htmlEscape(user?.name || user?.id || 'openGym user')}.</p>
+  const scopeInputs = data.requested.map(scope => {
+    const [label, description] = scopeCopy[scope] || [scope, 'Access the requested OpenGym permission.']
+    return `
+        <label class="permission-row"><input type="checkbox" name="scope" value="${htmlEscape(scope)}" checked><span><strong>${htmlEscape(label)}</strong><small>${htmlEscape(description)}</small><code>${htmlEscape(scope)}</code></span></label>`
+  }).join('')
+  const clientName = data.client.client_name || 'MCP client'
+  const accountName = user?.name || user?.id || 'openGym user'
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Connect ${htmlEscape(clientName)} to openGym</title><style>
+    :root { color-scheme: light; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #202124; background: #f7f7f5; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; background: #f7f7f5; }
+    .oauth-card { width: min(100%, 520px); border: 1px solid #deded8; border-radius: 16px; background: #fff; box-shadow: 0 14px 40px rgba(32, 33, 36, .10); padding: clamp(24px, 6vw, 42px); }
+    .opengym-mark { display: inline-flex; align-items: center; gap: 8px; color: #164e63; font-weight: 800; letter-spacing: -.02em; font-size: 1.12rem; }
+    .opengym-mark::before { content: "OG"; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; color: #fff; background: #164e63; font-size: .72rem; letter-spacing: .04em; }
+    .eyebrow { margin: 28px 0 8px; color: #5f6368; font-size: .9rem; font-weight: 650; }
+    h1 { margin: 0; font-size: clamp(1.65rem, 5vw, 2.15rem); line-height: 1.12; letter-spacing: -.035em; }
+    .lead { margin: 18px 0 20px; color: #4b4f52; line-height: 1.5; }
+    .notice { border-left: 4px solid #d97706; border-radius: 8px; background: #fff8eb; color: #603a05; padding: 12px 14px; line-height: 1.45; }
+    .account { display: grid; gap: 4px; margin: 20px 0; padding: 14px 16px; border: 1px solid #e2e3e5; border-radius: 10px; background: #fafafa; }
+    .account span { color: #5f6368; font-size: .82rem; }
+    .account strong { overflow-wrap: anywhere; }
+    fieldset { margin: 0; padding: 0; border: 0; }
+    legend { margin-bottom: 10px; font-size: 1.05rem; font-weight: 750; }
+    .permission-list { display: grid; gap: 8px; }
+    .permission-row { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start; padding: 12px; border: 1px solid #e2e3e5; border-radius: 10px; cursor: pointer; }
+    .permission-row:has(input:checked) { border-color: #9ab8c2; background: #f4fafb; }
+    .permission-row input { width: 18px; height: 18px; margin: 3px 0; accent-color: #164e63; }
+    .permission-row span { display: grid; gap: 3px; min-width: 0; }
+    .permission-row small { color: #4b4f52; line-height: 1.35; }
+    .permission-row code { color: #687078; font-size: .78rem; overflow-wrap: anywhere; }
+    .destination { margin: 20px 0 0; color: #5f6368; font-size: .88rem; line-height: 1.45; }
+    .destination code { display: block; margin-top: 4px; color: #30353a; overflow-wrap: anywhere; }
+    .oauth-actions { display: grid; grid-template-columns: 1fr 1.4fr; gap: 12px; margin-top: 26px; }
+    button { min-height: 44px; border: 1px solid #ccd0d3; border-radius: 9px; padding: 10px 16px; font: inherit; font-weight: 750; cursor: pointer; }
+    button:focus-visible, input:focus-visible { outline: 3px solid #f59e0b; outline-offset: 2px; }
+    .deny { background: #fff; color: #30353a; }
+    .allow { border-color: #164e63; background: #164e63; color: #fff; }
+    .fine-print { margin: 18px 0 0; color: #687078; font-size: .82rem; line-height: 1.45; }
+    @media (max-width: 380px) { body { padding: 12px 8px; } .oauth-card { padding: 22px 16px; border-radius: 12px; } .oauth-actions { grid-template-columns: 1fr; } }
+  </style></head><body><main class="oauth-card" aria-labelledby="oauth-title">
+    <span class="opengym-mark" aria-label="openGym">openGym</span>
+    <p class="eyebrow">Account connection</p>
+    <h1 id="oauth-title">${htmlEscape(clientName)} wants to connect to your openGym account</h1>
+    <p class="lead">Choose what this client can access. You can revoke access at any time from your openGym account.</p>
+    <p class="notice"><strong>Unverified client.</strong> This name was supplied by the client and is not endorsed by openGym. Continue only if you trust it.</p>
+    <div class="account"><span>Signed in as</span><strong>${htmlEscape(accountName)}</strong></div>
     <form method="post" action="/oauth/authorize">
       <input type="hidden" name="csrf" value="${htmlEscape(csrf)}">
       <input type="hidden" name="client_id" value="${htmlEscape(data.clientId)}">
@@ -428,9 +485,34 @@ function authorizeForm(data, csrf, user) {
       <input type="hidden" name="code_challenge_method" value="S256">
       <input type="hidden" name="resource" value="${htmlEscape(data.resource)}">
       <input type="hidden" name="state" value="${htmlEscape(data.state)}">
-      <fieldset><legend>Requested permissions</legend>${scopeInputs}</fieldset>
-      <button type="submit">Allow</button>
-    </form></main></body></html>`
+      <fieldset><legend>Permissions requested</legend><div class="permission-list">${scopeInputs}</div></fieldset>
+      <p class="destination">After allowing access, you will return to:<code>${htmlEscape(data.redirectUri)}</code></p>
+      <div class="oauth-actions"><button class="deny" type="submit" name="decision" value="deny">Cancel</button><button class="allow" type="submit" name="decision" value="allow">Allow access</button></div>
+    </form>
+    <p class="fine-print">Access is limited to the permissions listed above. Authorization codes are short-lived and cannot be used without the requesting client’s PKCE verifier.</p>
+  </main></body></html>`
+}
+
+const browserErrorCopy = {
+  'authorization request expired': 'This authorization request has expired.',
+  'authorization request changed': 'The authorization request changed before it was submitted.',
+  'not signed in': 'Your OpenGym sign-in is no longer valid.',
+  'session changed': 'Your OpenGym session changed while this request was open.',
+  invalid_scope: 'The requested permissions are no longer valid.',
+  invalid_request: 'This authorization request is not valid.'
+}
+
+function browserRequest(req) {
+  return /\btext\/html\b/i.test(String(req.headers.accept || '')) || String(req.headers['sec-fetch-dest'] || '') === 'document'
+}
+
+function oauthPostError(req, res, status, error) {
+  if (!browserRequest(req)) return jsonResponse(res, status, { error })
+  const detail = browserErrorCopy[error] || 'This authorization request could not be completed.'
+  const body = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>OpenGym authorization</title><style>
+    :root { color: #202124; background: #f7f7f5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; } * { box-sizing: border-box; } body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 16px; background: #f7f7f5; } .oauth-card { width: min(100%, 520px); padding: clamp(24px, 6vw, 42px); border: 1px solid #deded8; border-radius: 16px; background: #fff; box-shadow: 0 14px 40px rgba(32, 33, 36, .10); } .oauth-error { border-top: 5px solid #b42318; } h1 { margin: 0 0 14px; font-size: 1.7rem; } p { line-height: 1.5; color: #4b4f52; } .back { margin-top: 20px; min-height: 44px; padding: 10px 16px; border: 0; border-radius: 9px; background: #164e63; color: #fff; font: inherit; font-weight: 750; }
+  </style></head><body><main class="oauth-card oauth-error" role="alert"><h1>Authorization could not continue</h1><p>${htmlEscape(detail)}</p><p>Return to the requesting client and try again. Do not reuse this page or any old authorization request.</p></main></body></html>`
+  return htmlResponse(res, status, body)
 }
 
 async function handleOAuthAuthorizeGet(req, res, url) {
@@ -445,7 +527,7 @@ async function handleOAuthAuthorizeGet(req, res, url) {
   pruneOAuth()
   const csrf = crypto.randomBytes(24).toString('base64url')
   oauthPending.set(csrf, { ...data, uid: me.user?.id || null, expiresAt: Date.now() + OAUTH_TTL_MS })
-  return htmlResponse(res, 200, authorizeForm(data, csrf, me.user))
+  return htmlResponse(res, 200, authorizeForm(data, csrf, me.user), { formActionOrigin: callbackOrigin(data.redirectUri) })
 }
 
 function authFormUrl(form) {
@@ -474,46 +556,50 @@ function oauthFormHash(form) {
   const url = authFormUrl(form)
   const scope = formScope(form.getAll('scope')).sort()
   if (scope.length) url.searchParams.set('scope', scope.join(' '))
-  return base64urlDigest(JSON.stringify({ csrf: String(form.get('csrf') || ''), query: url.searchParams.toString() }))
+  const decision = String(form.get('decision') || 'allow')
+  return base64urlDigest(JSON.stringify({ csrf: String(form.get('csrf') || ''), decision, query: url.searchParams.toString() }))
 }
 
-function oauthResultResponse(res, result) {
+function oauthResultResponse(req, res, result) {
   if (result?.status === 302) {
     res.writeHead(302, { Location: result.location, 'Cache-Control': 'no-store' })
     return res.end()
   }
-  return jsonResponse(res, result?.status || 500, result?.body || { error: 'authorization failed' })
+  const body = result?.body || { error: 'authorization failed' }
+  return oauthPostError(req, res, result?.status || 500, body.error || 'authorization failed')
 }
 
 async function handleOAuthAuthorizePost(req, res) {
   let form
   try { form = await readFormBody(req) }
-  catch (error) { return jsonResponse(res, error.status || 400, { error: 'invalid_request' }) }
+  catch (error) { return oauthPostError(req, res, error.status || 400, 'invalid_request') }
+  const decision = String(form.get('decision') || 'allow')
+  if (!['allow', 'deny'].includes(decision)) return oauthPostError(req, res, 400, 'invalid_request')
   const csrf = String(form.get('csrf') || '')
   pruneOAuth()
   const formHash = oauthFormHash(form)
   const existingReplay = oauthReplay.get(csrf)
   if (!oauthPending.has(csrf)) {
-    if (!existingReplay || existingReplay.expiresAt <= Date.now()) return jsonResponse(res, 400, { error: 'authorization request expired' })
-    if (existingReplay.formHash !== formHash) return jsonResponse(res, 400, { error: 'authorization request changed' })
+    if (!existingReplay || existingReplay.expiresAt <= Date.now()) return oauthPostError(req, res, 400, 'authorization request expired')
+    if (existingReplay.formHash !== formHash) return oauthPostError(req, res, 400, 'authorization request changed')
     const cookie = String(req.headers.cookie || '')
     const sessionValue = sessionCookieValue(cookie)
-    if (!sessionValue) return jsonResponse(res, 401, { error: 'not signed in' })
+    if (!sessionValue) return oauthPostError(req, res, 401, 'not signed in')
     let me
     try { me = await apiCookie('/api/me', cookie) }
-    catch { return jsonResponse(res, 401, { error: 'not signed in' }) }
+    catch { return oauthPostError(req, res, 401, 'not signed in') }
     const sessionHash = base64urlDigest(sessionValue)
     if ((existingReplay.uid && existingReplay.uid !== me.user?.id) || (existingReplay.sessionHash && existingReplay.sessionHash !== sessionHash)) {
-      return jsonResponse(res, 403, { error: 'session changed' })
+      return oauthPostError(req, res, 403, 'session changed')
     }
     const result = existingReplay.status === 'processing' ? await existingReplay.promise : existingReplay.result
-    if (existingReplay.sessionHash && existingReplay.sessionHash !== sessionHash) return jsonResponse(res, 403, { error: 'session changed' })
-    return oauthResultResponse(res, result)
+    if (existingReplay.sessionHash && existingReplay.sessionHash !== sessionHash) return oauthPostError(req, res, 403, 'session changed')
+    return oauthResultResponse(req, res, result)
   }
   const pending = oauthPending.get(csrf)
   if (!pending || pending.expiresAt <= Date.now()) {
     oauthPending.delete(csrf)
-    return jsonResponse(res, 400, { error: 'authorization request expired' })
+    return oauthPostError(req, res, 400, 'authorization request expired')
   }
   // Consume the browser nonce before any await. Two concurrent POSTs therefore cannot both pass
   // the check and mint two grants. The bounded replay record lets a lost redirect be retried
@@ -533,7 +619,7 @@ async function handleOAuthAuthorizePost(req, res) {
       resolveReplay(result)
       if (result?.status !== 302) oauthReplay.delete(csrf)
     }
-    return oauthResultResponse(res, result)
+    return oauthResultResponse(req, res, result)
   }
   let data
   try { data = await authorizationRequest(authFormUrl(form)) }
@@ -542,7 +628,7 @@ async function handleOAuthAuthorizePost(req, res) {
     return finish({ status: 400, body: { error: 'authorization request changed' } })
   }
   const selected = formScope(form.getAll('scope'))
-  if (!selected.length || selected.some(scope => !pending.requested.includes(scope))) return finish({ status: 400, body: { error: 'invalid_scope' } })
+  if (decision === 'allow' && (!selected.length || selected.some(scope => !pending.requested.includes(scope)))) return finish({ status: 400, body: { error: 'invalid_scope' } })
   const cookie = String(req.headers.cookie || '')
   const sessionValue = sessionCookieValue(cookie)
   if (!sessionValue) return finish({ status: 401, body: { error: 'not signed in' } })
@@ -551,6 +637,12 @@ async function handleOAuthAuthorizePost(req, res) {
   catch { return finish({ status: 401, body: { error: 'not signed in' } }) }
   replay.sessionHash = base64urlDigest(sessionValue)
   if (pending.uid && pending.uid !== me.user?.id) return finish({ status: 403, body: { error: 'session changed' } })
+  if (decision === 'deny') {
+    const redirect = new URL(data.redirectUri)
+    redirect.searchParams.set('error', 'access_denied')
+    if (data.state) redirect.searchParams.set('state', data.state)
+    return finish({ status: 302, location: redirect.toString() })
+  }
   let grant
   try {
     const requestedTtl = Number(process.env.OAUTH_GRANT_TTL_SECONDS || 2592000)
