@@ -14,15 +14,21 @@ import * as cfgStore from './config.js';
 
 const TICK_MS = 60000;
 
-/** Weekly cadence fires within the minute; everyWorkouts fires as soon as the count is met. */
-export function isDue(coach, S, now) {
+/** Weekly cadence fires within the minute; everyWorkouts fires as soon as the count is met.
+ *  `reviewedAt` is when the server last finished a review for this person: the client stamps
+ *  lastReview only once someone acts on a proposal, and a review nobody has opened yet — or
+ *  one that found nothing to change — still read those workouts. */
+export function isDue(coach, S, now, reviewedAt = 0) {
   const cadence = coach.cadence;
   if (!cadence || cadence === 'off') return false;
-  const lastAt = coach.lastReview?.at || 0;
+  const lastAt = Math.max(coach.lastReview?.at || 0, reviewedAt);
 
   // Nothing new to read is the most common reason not to run, and it applies to both modes.
   const workouts = S.workouts || [];
-  const since = workouts.filter(w => !lastAt || (w.end || 0) > lastAt || w.d > new Date(lastAt).toISOString().slice(0, 10));
+  // A workout's `end` is on the same clock as the review's timestamp; its `d` is the phone's
+  // local day, which can run ahead of the server's UTC day, so the date only stands in for a
+  // workout that has no end.
+  const since = workouts.filter(w => !lastAt || (w.end ? w.end > lastAt : w.d > new Date(lastAt).toISOString().slice(0, 10)));
   if (!since.length) return false;
 
   if (cadence.everyWorkouts) {
@@ -50,9 +56,21 @@ export function startCadence(deps) {
         const S = jobs.readState(user.id);
         const coach = S?.coach;
         if (!coach?.consent?.agreedAt) continue;         // consent revoked ⇒ cadence stops
+        // A job still running, or a proposal nobody has answered, is not a reason for another:
+        // a second review would only replace the first unread. status() also retires an
+        // expired proposal, which a phone that stays closed never polls for.
+        const st = jobs.status(user.id);
+        if (st.job || st.pending) continue;
+        // Reviewed means the model read those workouts and answered — with a proposal, with
+        // "nothing to change", or with an answer that failed validation and was paid for all the
+        // same. A call that never reached it (timeout, no runtime, consent, switched off) is retried.
+        const reviewedAt = Math.max(0, ...jobs.readUser(user.id).history
+          .filter(h => h.kind === 'review' && (h.outcome === 'ready' || h.outcome === 'nochange'
+            || (h.outcome === 'failed' && h.errorClass === 'unusable')))
+          .map(h => h.at || 0));
         const tz = coach.cadence?.weekly ? (S.reminder?.tz || 'UTC') : null;
         const now = tz ? deps.userNow(tz) : null;
-        if (!isDue(coach, S, now)) continue;
+        if (!isDue(coach, S, now, reviewedAt)) continue;
         jobs.enqueue(user.id, { kind: 'review', trigger: 'scheduled' });
         console.log('coach: scheduled review queued for', user.id);
       } catch (e) {

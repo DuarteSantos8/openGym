@@ -18,10 +18,12 @@ const { attemptOnce } = await import('../coach/core/pipeline.js');
 const { HTTP_PROVIDERS, validateBaseUrl } = await import('../coach/core/providers.js');
 const { SYSTEM_PROMPT } = await import('../coach/core/system-prompt.js');
 
-/** A fetch that records what it was asked and answers from a script. */
+/** A fetch that records what it was asked and answers from a script. Like the real one, it
+ *  refuses an already-aborted signal without putting anything on the wire. */
 function fakeFetch(answers) {
   const calls = [];
   const f = async (url, init) => {
+    if (init.signal?.aborted) throw Object.assign(new Error('aborted'), { name: 'AbortError' });
     calls.push({ url, method: init.method, headers: init.headers || {}, body: init.body ? JSON.parse(init.body) : null });
     const a = typeof answers === 'function' ? answers(calls.length, url, init) : answers[Math.min(calls.length, answers.length) - 1];
     if (a instanceof Error) throw a;
@@ -166,6 +168,19 @@ test('a transient status (429, 5xx, 529) is retried twice with the same request,
   r = await anthropic.invoke({ cfg: {}, prompt: 'P', env, fetch: f, retryDelayMs: 0 });
   assert.equal(r.code, 1);
   assert.equal(f.calls.length, 1);
+});
+
+test('an abort that lands during a retry pause sends nothing more and ends as a timeout', async () => {
+  // A forget mid-backoff: the payload must not go out a second time, and the job must drain
+  // now rather than wait for the next attempt to time out.
+  const ac = new AbortController();
+  const f = fakeFetch([{ status: 429, body: { error: { message: 'slow down' } } }]);
+  const p = openai.invoke({ cfg: {}, prompt: 'P', env, fetch: f, signal: ac.signal, retryDelayMs: 10000 });
+  await new Promise(r => setTimeout(r, 20));      // the first 429 is back and the pause has begun
+  ac.abort();
+  const r = await p;
+  assert.equal(f.calls.length, 1, 'the payload is not sent again');
+  assert.equal(r.timedOut, true);
 });
 
 test('a body that is not JSON on an error still yields a readable stderr', async () => {

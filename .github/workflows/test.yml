@@ -89,8 +89,14 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 22
-      # Nothing to install: the Coach tests run on node:test and drive the in-repo fixture
-      # provider, so the whole job works without an AI account, a network, or a dependency.
+          cache: npm
+          cache-dependency-path: api/package-lock.json
+      # The Coach tests run on node:test and drive the in-repo fixture provider plus a local mock
+      # of the Chat Completions shape, so the job needs no AI account and no network — but it does
+      # need the api's own dependencies since the server-side fetch moved onto undici (same
+      # install as test:api in .gitlab-ci.yml; the Agent SDK is optional and stays out).
+      - run: npm ci --omit=optional
+        working-directory: api
       - run: npm test
         working-directory: api
       # The api's copy of the exercise catalogue is generated and committed. A dataset change

@@ -392,7 +392,7 @@ body.menu-open::after, body.contents-open::after { opacity: 1; pointer-events: a
   position: relative;
   padding-bottom: 0; border-radius: 42px 42px 0 0;
 }
-.hero-stage .device > img {
+.hero-stage .device > img, .hero-stage .device > picture > img {
   height: clamp(300px, 44vh, 500px);
   object-fit: cover; object-position: top center;
   border-radius: 34px 34px 0 0;
@@ -412,7 +412,7 @@ body.menu-open::after, body.contents-open::after { opacity: 1; pointer-events: a
   box-shadow: 0 40px 90px -28px rgba(0, 0, 0, .95),
               inset 0 0 0 1px rgba(255, 255, 255, .07);
 }
-.device > img, .device > iframe, .device > .device-slot {
+.device > img, .device > picture > img, .device > iframe, .device > .device-slot {
   width: 100%; border: 0; border-radius: 34px; background: #000; display: block;
 }
 
@@ -500,7 +500,7 @@ section { padding: var(--sec) 0 0; }
 .rail::-webkit-scrollbar { display: none; }
 .rail figure { flex: 0 0 auto; width: clamp(200px, 56vw, 250px); scroll-snap-align: center; }
 .rail .device { padding: 7px; border-radius: 34px; }
-.rail .device > img { border-radius: 27px; }
+.rail .device > img, .rail .device > picture > img { border-radius: 27px; }
 .rail figcaption {
   color: var(--fg-3); font-size: 13.5px; text-align: center; margin-top: 12px;
   letter-spacing: 0;
@@ -669,15 +669,10 @@ section { padding: var(--sec) 0 0; }
 }
 .pad:hover .pad-go::after { transform: rotate(-45deg) translate(2px, 2px); }
 
+.pad.github  { --brand: var(--fg); }
 .pad.gitlab  { --brand: #fc6d26; }
 .pad.bmc     { --brand: #ffdd00; }
 .pad.discord { --brand: #5865f2; }
-
-/* The suspended repo. It stays linked because half the internet still points at it,
-   but nothing about this pad should promise that the link works. */
-.pad.dead { --brand: #8e8e93; }
-.pad.dead .pad-body b, .pad.dead .pad-ic svg { opacity: .8; }
-.pad.dead .pad-go { color: var(--fg-3); }
 .pad.dead .pad-go::after { display: none; }
 .pad-body .tag {
   display: inline-block; padding: 2px 7px; border-radius: 6px;
@@ -797,6 +792,17 @@ table.cfg td:first-child { white-space: nowrap; width: 1%; padding-right: 26px; 
 .tl .when { display: block; color: var(--fg-3); font-size: 13.5px; margin-top: 2px; }
 .tl p { margin-top: 6px; font-size: 15.5px; }
 
+/* ------------------------------------------------------------------ skip link
+   First tab stop on every page; invisible until focused. */
+.skip {
+  position: absolute; left: 16px; top: -100px; z-index: 100;
+  background: var(--acc); color: var(--acc-ink); padding: 10px 16px; border-radius: 999px;
+  font-weight: 700; text-decoration: none;
+}
+.skip:focus { top: 16px; outline: 2px solid var(--fg); outline-offset: 2px; }
+/* In-text links must not rely on colour alone (WCAG 1.4.1). */
+.demo-note a { text-decoration: underline; text-underline-offset: 3px; }
+
 /* ------------------------------------------------------------- scroll reveal
    Only armed when JS is running, so the page is fully visible without it. */
 
@@ -805,7 +811,7 @@ table.cfg td:first-child { white-space: nowrap; width: 1%; padding-right: 26px; 
   transition: opacity .8s var(--ease), transform .8s var(--ease);
 }
 .js .rv.in { opacity: 1; transform: none; }
-@media (prefers-reduced-motion: reduce) {
+@media (prefers-reduced-motion: reduce), print {
   .js .rv { opacity: 1; transform: none; transition: none; }
 }
 

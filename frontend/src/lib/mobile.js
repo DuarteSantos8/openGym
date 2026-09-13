@@ -168,6 +168,16 @@ export function initReminderSync(getState) {
   }).catch(() => {})
 }
 
+// Runs cb whenever the native shell returns to the foreground — the store pulls the account's
+// state then, so a phone that sat in a pocket all afternoon shows what the desktop did. No-op
+// off mobile; the store's own visibility/focus listeners cover the browser.
+export function onAppActive(cb) {
+  if (!MOBILE) return
+  import('@capacitor/app').then(({ App }) => {
+    App.addListener('appStateChange', ({ isActive }) => { if (isActive) cb() })
+  }).catch(() => {})
+}
+
 // WKWebView can't do blob-URL downloads, so the backup goes out through the OS share sheet
 // (Files, AirDrop, mail, …) from a temp file instead.
 export async function shareExport(json, filename) {
@@ -175,6 +185,18 @@ export async function shareExport(json, filename) {
   const { Share } = await import('@capacitor/share')
   const w = await Filesystem.writeFile({ path: filename, directory: Directory.Cache, data: json, encoding: Encoding.UTF8 })
   await Share.share({ title: filename, url: w.uri })
+}
+
+// Hand a self-contained HTML document (lib/plan-share.js planPrintHTML) to the OS print flow.
+// Android routes it through the system PrintManager — "Save as PDF", "Save to Drive", a real
+// printer; iOS through the print sheet — "Save to Files" (as PDF), share, print. Either way the
+// platform renders the PDF, so no PDF library rides in the bundle. The local `Print` plugin is
+// registered natively (android MainActivity, ios PrintPlugin.m); on the web build this file's
+// callers gate on MOBILE and never reach here.
+export async function printHtml(html, name) {
+  const { registerPlugin } = await import('@capacitor/core')
+  const Print = registerPlugin('Print')
+  await Print.printHtml({ html, name })
 }
 
 // "Auto-backup on changes" (Settings): a dated snapshot dropped into the Documents folder —

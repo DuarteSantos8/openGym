@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { LANGS } from './lib/i18n-core.js'
+import { LANGS, DERIVED_LOCALES } from './lib/i18n-core.js'
 import { act } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { swapActiveWorkoutExercise } from './sheets.jsx'
@@ -78,7 +78,10 @@ describe('active exercise swap locale coverage', () => {
   const packs = import.meta.glob('./locales/*.js', { eager: true, import: 'default' })
 
   it('defines every new prompt in all twelve locale packs', () => {
-    expect(Object.keys(packs)).toHaveLength(Object.keys(LANGS).length - 1)
+    // Minus English (the source language) and minus any derived locale, which transforms its
+    // base language's pack at load time instead of shipping one.
+    const packed = Object.keys(LANGS).filter(code => code !== 'en' && !DERIVED_LOCALES[code])
+    expect(Object.keys(packs)).toHaveLength(packed.length)
     Object.entries(packs).forEach(([path, pack]) => {
       required.forEach(key => expect(pack, `${path} is missing ${key}`).toHaveProperty(key))
     })

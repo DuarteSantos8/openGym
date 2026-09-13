@@ -7,6 +7,7 @@ import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
+import { askAddDeviceData } from '../sheets.jsx'
 
 export function ConnectSheet({ close }) {
   const { connectToServer } = useStore()
@@ -18,7 +19,7 @@ export function ConnectSheet({ close }) {
   const go = async () => {
     if (!url.trim() || !code.trim()) { useUI.getState().toast(t('Enter your server address and the code')); return }
     setBusy(true)
-    try { await connectToServer(url.trim(), code.trim()); close(); useUI.getState().toast(t('Connected')) }
+    try { await connectToServer(url.trim(), code.trim(), askAddDeviceData); close(); useUI.getState().toast(t('Connected')) }
     catch (e) { useUI.getState().toast(e.message || t('Could not connect')) }
     finally { setBusy(false) }
   }

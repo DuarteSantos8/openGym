@@ -42,6 +42,8 @@ async function call(fetchImpl, url, init, timeoutMs, signal) {
   const ctl = new AbortController();
   const onOuter = () => ctl.abort();
   if (signal) signal.addEventListener('abort', onOuter, { once: true });
+  // An abort that already landed (during a retry pause, say) must not let a fresh request leave.
+  if (signal && signal.aborted) ctl.abort();
   const timer = setTimeout(() => ctl.abort(), timeoutMs);
   try {
     return await fetchImpl(url, { ...init, signal: ctl.signal });

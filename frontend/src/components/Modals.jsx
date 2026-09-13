@@ -164,6 +164,12 @@ export default function Modals() {
   }, [sheets.length])
   useEffect(() => {
     if (!sheets.length) return
+    // A text field on the page behind (a set's weight, the Library search) keeps focus when a
+    // button opens a sheet — WebKit does not blur on button taps — and its keyboard then
+    // stays up under the sheet, or leaves the viewport displaced when it finally goes. The
+    // sheet owns the screen now; a field inside the sheet (the picker search) is left alone.
+    const a = document.activeElement
+    if (a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.isContentEditable) && !a.closest?.('#modal-root')) a.blur?.()
     const y = window.scrollY || 0
     const b = document.body.style
     b.position = 'fixed'; b.top = -y + 'px'; b.left = '0'; b.right = '0'; b.width = '100%'

@@ -47,14 +47,33 @@ export function useSheetKeyboard(inputRef, enabled = true) {
 }
 
 /* Chip strips scroll sideways, and a filter set from code ("★ Chosen", a reset) can land the
-   active chip off-screen. Pull it into view along the strip only — block:'nearest' never moves
-   the page when the strip is already visible, which is the case for every strip we have. */
+   active chip off-screen. Pull it into view along the strip only. This used to be
+   scrollIntoView({block:'nearest'}), which also walks every scrollable ancestor: with the
+   strip scrolled above the fold (Library, halfway down the list) a tap on a chip made the
+   whole page jump up to show the row — the "swiping the chips scrolls the page" bug. Setting
+   the strip's own scrollLeft cannot move anything but the strip.
+
+   `pad` mirrors scroll-padding-inline in index.css so a revealed chip is not glued to the edge. */
+export function revealChip(strip, chip, pad = 16) {
+  if (!strip || !chip || typeof strip.getBoundingClientRect !== 'function' || typeof chip.getBoundingClientRect !== 'function') return false
+  const s = strip.getBoundingClientRect(), c = chip.getBoundingClientRect()
+  const width = strip.clientWidth || s.width || 0
+  if (!width) return false
+  const left = c.left - s.left + (strip.scrollLeft || 0)   // chip's offset inside the strip's content
+  const right = left + c.width
+  let next = strip.scrollLeft || 0
+  if (left - pad < next) next = Math.max(0, left - pad)
+  else if (right + pad > next + width) next = right + pad - width
+  if (next === (strip.scrollLeft || 0)) return false
+  strip.scrollLeft = next
+  return true
+}
+
 export function useRevealActiveChip(stripRef, active) {
   useEffect(() => {
     const strip = stripRef.current
     const chip = strip?.querySelector?.('.chip.on')
-    if (!chip || typeof chip.scrollIntoView !== 'function') return
-    chip.scrollIntoView({ inline: 'nearest', block: 'nearest' })
+    if (chip) revealChip(strip, chip)
   }, [stripRef, active])
 }
 

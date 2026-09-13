@@ -26,6 +26,9 @@ export function fmtDur(ms) {
 export const durPart = ms => (ms >= 60000 ? [fmtDur(ms)] : [])
 // Numbers follow the UI language, like the dates above — a hardcoded locale put Swiss
 // apostrophes ("7'535 kg") in front of every user, in every language.
+// Exercise names are stored lower-case and shown through CSS `capitalize`; text that has no
+// element of its own (a toast) capitalises here instead.
+export const capWords = s => String(s || '').replace(/(^|[\s(\-\/])(\p{Ll})/gu, (m, pre, ch) => pre + ch.toUpperCase())
 export const fmtNum = n => (Math.round(n * 10) / 10).toLocaleString(dateLocale())
 // Volume stays in the profile's unit throughout: the old shorthand turned anything over
 // 10 000 into "t", which is wrong for a pound profile and made one list mix "18.8t" with

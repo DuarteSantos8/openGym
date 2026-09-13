@@ -115,6 +115,165 @@ test('forgetting a profile leaves no server-side residue', async () => {
   assert.deepEqual(jobs.readUser(uid).history, []);
 });
 
+/* ---------- forget while a job is live ----------
+   A provider on localhost that parks every request until the test lets it answer, so a job
+   can be caught mid-call or still waiting for a slot. */
+async function holdingProvider() {
+  const http = await import('node:http');
+  const held = [], seen = [];
+  const server = http.createServer((req, res) => {
+    let body = '';
+    req.on('data', c => { body += c; });
+    req.on('end', () => { seen.push(JSON.parse(body || '{}')); held.push(res); });
+    // A caller that hangs up mid-call takes its parked response with it.
+    res.on('close', () => { const i = held.indexOf(res); if (i >= 0) held.splice(i, 1); });
+  });
+  await new Promise(r => server.listen(0, '127.0.0.1', r));
+  /** Exactly n requests parked with the provider — 0 means every caller has gone. */
+  const until = async n => {
+    const t = Date.now() + 15000;
+    while (held.length !== n && Date.now() < t) await new Promise(r => setTimeout(r, 25));
+    assert.equal(held.length, n, `${n} request(s) with the provider`);
+  };
+  const answer = content => {
+    for (const res of held.splice(0)) {
+      res.setHeader('content-type', 'application/json');
+      res.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content } }] }));
+    }
+  };
+  const use = () => cfg.save({ enabled: true, provider: 'compatible', providerOptions: { compatible: { baseUrl: `http://127.0.0.1:${server.address().port}` } }, models: { compatible: 'local-model' } });
+  // Parked responses hold their sockets open; a failing test must not hold node --test with them.
+  const close = () => { cfg.save({ provider: 'fixture' }); server.close(); server.closeAllConnections(); };
+  return { seen, held, until, answer, use, close };
+}
+const NOCHANGE = '{"coach_contract":1,"nochange":true,"reading":"Steady."}';
+/** The job's own end, as opposed to status() going quiet: the instance log gains its line. */
+async function logged(n) {
+  const t = Date.now() + 15000;
+  while (cfg.load().log.length < n && Date.now() < t) await new Promise(r => setTimeout(r, 25));
+  assert.equal(cfg.load().log.length, n);
+}
+
+test('forgetting a profile mid-job cancels the call and frees its slot at once', async () => {
+  const p = await holdingProvider();
+  const notified = [];
+  jobs.setProposalHook(uid => notified.push(uid));
+  try {
+    p.use();
+    const uid = 'u-forget-live';
+    writeState(DIR, uid, sampleState());
+    jobs.enqueue(uid, { kind: 'review' });
+    await p.until(1);
+    assert.equal(jobs.status(uid).job.state, 'running');
+
+    const before = cfg.load().log.length;
+    const t0 = Date.now();
+    jobs.clearUser(uid);
+    assert.equal(jobs.status(uid).job, null);
+    // The provider is never answered: the call goes with the record, so the job drains now
+    // rather than when the provider gets round to it or the five-minute timeout does.
+    await logged(before + 1);
+    assert.ok(Date.now() - t0 < 5000, `drained in ${Date.now() - t0} ms`);
+    await p.until(0);
+    assert.equal(cfg.load().log.at(-1).outcome, 'failed', 'the job ran and is counted');
+    assert.equal(cfg.load().log.at(-1).errorClass, 'forgotten', 'the log names the cancellation, not a provider timeout');
+    assert.deepEqual(jobs.readUser(uid).pending, null, 'nothing is held for someone who asked to be forgotten');
+    assert.deepEqual(jobs.readUser(uid).history, [], 'the record is not recreated');
+    assert.deepEqual(notified, [], 'nobody is told about it');
+    assert.equal(jobs.capState(uid).used, 1);
+
+    // Single-flight went with the job: the profile can ask again straight away, not once the
+    // provider hold is over.
+    assert.doesNotThrow(() => jobs.enqueue(uid, { kind: 'review' }), 'the slot is free again');
+    await p.until(1);
+    p.answer(NOCHANGE);
+    await settle(uid);
+    assert.equal(lastOutcome(uid).outcome, 'nochange');
+  } finally {
+    jobs.setProposalHook(null);
+    p.close();
+  }
+});
+
+test('a runtime that cannot be cancelled still has its late answer discarded after a forget', async () => {
+  // The fixture CLI is a child process, and the abort signal means nothing to one: it runs to
+  // its answer, which then has nobody to belong to.
+  const uid = 'u-forget-spawned';
+  writeState(DIR, uid, sampleState());
+  const notified = [];
+  jobs.setProposalHook(u => notified.push(u));
+  try {
+    jobs.enqueue(uid, { kind: 'review' });
+    assert.equal(jobs.status(uid).job.state, 'running');
+    jobs.clearUser(uid);
+    // The line this job writes to the instance log, not the next line anyone writes there.
+    const mine = () => cfg.load().log.find(e => e.uid === uid);
+    for (const t = Date.now() + 15000; !mine() && Date.now() < t;) await new Promise(r => setTimeout(r, 25));
+    assert.equal(mine()?.outcome, 'ready', 'the job ran to its answer and is counted');
+    assert.deepEqual(jobs.readUser(uid).pending, null, 'the proposal is not held for someone who asked to be forgotten');
+    assert.deepEqual(jobs.readUser(uid).history, []);
+    assert.deepEqual(notified, [], 'nobody is told about it');
+  } finally {
+    jobs.setProposalHook(null);
+  }
+});
+
+test('forgetting a profile whose job is still queued drops it before anything leaves', async () => {
+  const p = await holdingProvider();
+  try {
+    p.use();
+    // Two other profiles hold both execution slots, so the third waits.
+    for (const u of ['u-slot-1', 'u-slot-2']) { writeState(DIR, u, sampleState()); jobs.enqueue(u, { kind: 'review' }); }
+    await p.until(2);
+    const uid = 'u-forget-queued';
+    writeState(DIR, uid, sampleState());
+    jobs.enqueue(uid, { kind: 'review' });
+    assert.equal(jobs.status(uid).job.state, 'queued');
+
+    jobs.clearUser(uid);
+    assert.equal(jobs.status(uid).job, null);
+    p.answer(NOCHANGE);
+    await settle('u-slot-1'); await settle('u-slot-2');
+    await new Promise(r => setTimeout(r, 200));       // a job still queued would have started by now
+    assert.equal(p.seen.length, 2, 'the forgotten profile\'s payload never reached the provider');
+    assert.equal(jobs.status(uid).job, null);
+    assert.deepEqual(jobs.readUser(uid).history, []);
+
+    // Single-flight was released with the job, so the profile can ask again.
+    jobs.enqueue(uid, { kind: 'review' });
+    await p.until(1);
+    p.answer(NOCHANGE);
+    await settle(uid);
+    assert.equal(lastOutcome(uid).outcome, 'nochange');
+  } finally { p.close(); }
+});
+
+test('consent withdrawn, or the Coach switched off, while a job waits: no payload leaves', async () => {
+  const p = await holdingProvider();
+  try {
+    p.use();
+    for (const u of ['u-slot-3', 'u-slot-4']) { writeState(DIR, u, sampleState()); jobs.enqueue(u, { kind: 'review' }); }
+    await p.until(2);
+    writeState(DIR, 'u-revoked', sampleState());
+    writeState(DIR, 'u-switched-off', sampleState());
+    jobs.enqueue('u-revoked', { kind: 'review' });
+    jobs.enqueue('u-switched-off', { kind: 'review' });
+    assert.equal(jobs.status('u-switched-off').job.state, 'queued');
+
+    // Consent gone from the synced state — no forget call, so the record itself stays and says
+    // what happened. Then the admin switches the Coach off before a slot frees.
+    writeState(DIR, 'u-revoked', sampleState({ coach: {} }));
+    cfg.save({ enabled: false });
+    p.answer(NOCHANGE);
+    await settle('u-revoked'); await settle('u-switched-off');
+    assert.equal(p.seen.length, 2, 'neither queued job reached the provider');
+    assert.equal(lastOutcome('u-revoked').outcome, 'failed');
+    assert.equal(lastOutcome('u-revoked').errorClass, 'consent');
+    assert.equal(lastOutcome('u-switched-off').outcome, 'failed');
+    assert.equal(lastOutcome('u-switched-off').errorClass, 'off');
+  } finally { cfg.save({ enabled: true }); p.close(); }
+});
+
 test('a job interrupted by a restart is reported as failed, not left spinning', () => {
   const uid = 'u-restart';
   fs.mkdirSync(`${DIR}/coach`, { recursive: true });

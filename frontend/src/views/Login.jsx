@@ -9,6 +9,7 @@ import { readOAuthReturn } from '../lib/oauth-login.js'
 import { useState, useRef, useEffect } from 'react'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
+import { askAddDeviceData } from '../sheets.jsx'
 
 function RegisterSheet({ close }) {
   const { setUser, pushState, pullState, loadConfig } = useStore()
@@ -48,7 +49,7 @@ function RegisterSheet({ close }) {
 }
 
 export default function Login() {
-  const { setUser, pullState, setGuest } = useStore()
+  const { setUser, adoptProfile, setGuest } = useStore()
   const config = useStore(s => s.config)
   const canGuest = guestAllowed(config)
   const [oauthReturn] = useState(() => readOAuthReturn())
@@ -64,7 +65,7 @@ export default function Login() {
       // OAuth only needs the fresh server cookie. Do not merge or push a local guest/profile
       // snapshot while this browser is acting as the connector's authorization user agent.
       if (continueToOAuth()) return
-      setUser(u); await pullState(); useUI.getState().toast(t('Welcome back, {0}', u.name))
+      setUser(u); await adoptProfile(askAddDeviceData); useUI.getState().toast(t('Welcome back, {0}', u.name))
     }
     catch (e) { if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') useUI.getState().toast(e.message || t('Sign-in failed')) }
   }

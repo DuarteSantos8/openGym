@@ -71,7 +71,7 @@ export default function SwipeToDelete({ children, onDelete, deleteLabel, classNa
   }, [])
 
   return (
-    <div ref={outerRef} style={{ position: 'relative', overflow: 'hidden', borderRadius: 12 }}
+    <div ref={outerRef} style={{ position: 'relative', overflow: 'hidden', borderRadius: 'var(--r-card)' }}
       onTouchStart={e => { if (e.target.closest('button,input')) return; start(e.touches[0].clientX, e.touches[0].clientY) }}
       onTouchEnd={end}
       onMouseDown={e => { if (e.button !== 0 || e.target.closest('button,input')) return; start(e.clientX, e.clientY) }}

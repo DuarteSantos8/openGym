@@ -4,6 +4,12 @@ name: Publish Docker images
 # A tag that is later deleted (the versioning rule consolidates unreleased tags)
 # would otherwise leave its image tags behind in GHCR forever, and dependency
 # bots read those as a newer version. See issue #87.
+#
+# Tags follow the GitLab registry so both say the same thing: a release publishes
+# `X.Y.Z`, `X.Y` and `latest`; a push to main publishes only `edge`. (`latest` used
+# to follow main here, and a release run overwrote it as well, so thirteen releases
+# published at once left it pointing at whichever finished last.) Re-running the
+# workflow by hand on a `vX.Y.Z` ref republishes exactly that version's tags.
 on:
   push:
     branches: [main]
@@ -61,7 +67,8 @@ jobs:
         with:
           images: ghcr.io/${{ steps.repo.outputs.owner }}/opengym-${{ matrix.image }}
           tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=edge,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/') }}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
 

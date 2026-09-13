@@ -43,9 +43,14 @@ cd frontend && npm test
   rules are easy to get subtly wrong and nearly impossible to verify by clicking — the
   progression engine grew two real bugs that only a test pinned down.
 
-## What CI does with your merge request
+## What CI does with your pull request
 
-Every MR runs the three test suites (frontend, MCP, api), with the results and the coverage
+A pull request runs the three test suites (frontend, MCP, api) through GitHub Actions and
+builds and boots both api image targets. The APK and the published images come from the CI
+on the GitLab mirror, which builds them from `main` after the merge; if your change needs an
+APK to be judged, say so in the PR and a maintainer runs that build.
+
+Merge requests that are still open on the GitLab mirror keep working as before. Every MR runs the three test suites (frontend, MCP, api), with the results and the coverage
 of your diff shown in the MR itself, plus a build of the web image and the api image when you
 touched their inputs. The frontend job also prints how much your change adds to the gzipped
 bundle compared with main. The APK and the published images are manual jobs there (on
@@ -71,12 +76,12 @@ here before, otherwise a maintainer presses "Run pipeline" after a first look at
 | You have | Goes to |
 | --- | --- |
 | A quick question, or you'd rather just chat | [The Discord](https://discord.gg/e62jY6fwVb) |
-| A question, or self-hosting that won't behave | [An issue labelled `question`](https://gitlab.com/DuarteSantos8/opengym/-/issues) |
-| An idea you're not sure about yet | [An issue labelled `idea`](https://gitlab.com/DuarteSantos8/opengym/-/issues) |
-| A reproducible bug | [Issues](https://gitlab.com/DuarteSantos8/opengym/-/issues) |
-| A change you've already built | A merge request |
+| A question, or self-hosting that won't behave | [An issue labelled `question`](https://github.com/DuarteSantos8/openGym/issues) |
+| An idea you're not sure about yet | [An issue labelled `idea`](https://github.com/DuarteSantos8/openGym/issues) |
+| A reproducible bug | [Issues](https://github.com/DuarteSantos8/openGym/issues) |
+| A change you've already built | [A pull request](https://github.com/DuarteSantos8/openGym/pulls) |
 
-GitLab has no Discussions, so questions and ideas are issues too — just labelled, so nobody
+Questions and ideas are issues too (one tracker is enough) — just labelled, so nobody
 mistakes a question for agreed-on work. An answered question is worth more than the same answer
 in a chat log: the next person searching "passkey login fails behind my reverse proxy" finds it.
 That is the one thing the Discord can't do, so if an answer there turns out to be worth keeping,

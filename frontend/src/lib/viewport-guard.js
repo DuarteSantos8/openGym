@@ -36,9 +36,32 @@ export function keyboardOpen(win = window) {
 /** Realign the viewports if iOS left them apart. Returns true when a correction was issued. */
 export function realign(win = window) {
   if (keyboardOpen(win)) return false
-  if (isText(win.document.activeElement)) return false
   if (viewportDisplacement(win) <= 1) return false
+  // The keyboard is gone but a text field may still hold focus: on WebKit tapping a <button>
+  // (the set's tick, the RIR cell) does not blur the input, and iOS only puts the viewports
+  // back once focus has left. Nothing is being typed with the keyboard down, so let it go.
+  const active = win.document.activeElement
+  if (isText(active)) active.blur?.()
+  if (bodyPinned(win)) return realignPinned(win)
   win.scrollTo(win.scrollX || 0, win.scrollY || 0)
+  return true
+}
+
+const bodyPinned = win => win.document.body?.style?.position === 'fixed'
+
+/** The same correction while Modals.jsx has the body pinned (`position:fixed; top:-y`): the
+ *  document has no scroll range then, so asking for the current position is a no-op and iOS
+ *  keeps the offset — the picker sheet left open after the keyboard closed. Let the page scroll
+ *  for one call, land it where the pin says it was, and pin it again. */
+export function realignPinned(win = window) {
+  const b = win.document.body?.style
+  if (!b || b.position !== 'fixed') return false
+  const top = b.top
+  const y = Math.max(0, -parseFloat(top || '0') || 0)
+  b.position = ''
+  win.scrollTo(win.scrollX || 0, y)
+  b.top = top
+  b.position = 'fixed'
   return true
 }
 

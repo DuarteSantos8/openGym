@@ -890,7 +890,10 @@ webpush.setVapidDetails(VAPID_SUBJECT, vapid.publicKey, vapid.privateKey);
    1. PUSH_AGENT rejects any connection to a private/loopback/link-local address at the moment
       the socket is opened. Validating the URL alone would leave a DNS-rebinding window — the
       name is resolved a second time inside web-push — so the check has to live in the lookup
-      the request itself uses, not in a prior pass.
+      the request itself uses, not in a prior pass. A literal IP address never goes through
+      that lookup at all — Node hands it straight to connect() — so literals are judged by
+      pushEndpointError instead: at subscribe, and again in sendPush for an endpoint that got
+      into db.json some other way.
    2. PUSH_TIMEOUT_MS: an endpoint that accepts TCP and then stalls used to hang the request
       handler that awaited it, indefinitely. web-push sets no timeout of its own.
    3. PUSH_CONCURRENCY: one small request must not turn into an unbounded burst of outbound
@@ -913,12 +916,35 @@ function isPrivateAddr(ip) {
     if (a >= 224) return true;                                    // multicast + reserved
     return false;
   }
-  const m6 = /^::ffff:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/.exec(v);
-  if (m6) return isPrivateAddr(m6[1]);                            // IPv4-mapped IPv6
-  if (v === '::' || v === '::1') return true;                     // unspecified, loopback
-  if (/^fe[89ab]/.test(v)) return true;                           // link-local
-  if (/^f[cd]/.test(v)) return true;                              // unique local
+  // IPv6 is judged on its eight groups, never on the text: the same address arrives as
+  // `::ffff:127.0.0.1` from dns.lookup, as `::ffff:7f00:1` from new URL, and in whatever
+  // spelling a caller chose, and a rule keyed to one spelling misses the others.
+  const g = ipv6Groups(v);
+  if (!g) return false;
+  if (g.slice(0, 5).every(x => x === 0) && g[5] === 0xffff) {     // IPv4-mapped IPv6
+    return isPrivateAddr(`${g[6] >> 8}.${g[6] & 255}.${g[7] >> 8}.${g[7] & 255}`);
+  }
+  if (g.slice(0, 7).every(x => x === 0) && g[7] <= 1) return true; // unspecified, loopback
+  if ((g[0] & 0xffc0) === 0xfe80) return true;                    // link-local fe80::/10
+  if ((g[0] & 0xfe00) === 0xfc00) return true;                    // unique local fc00::/7
   return false;
+}
+
+// The eight 16-bit groups of an IPv6 literal in any textual form — compressed, zero-padded,
+// upper-case, with a dotted IPv4 tail — or null when the string is not one.
+function ipv6Groups(v) {
+  if (!net.isIPv6(v)) return null;
+  let s = v.replace(/%.*$/, '');                                  // zone id
+  const m4 = /:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/.exec(s);
+  if (m4) {
+    const [a, b, c, d] = m4[1].split('.').map(Number);
+    s = s.slice(0, -m4[1].length) + ((a << 8) | b).toString(16) + ':' + ((c << 8) | d).toString(16);
+  }
+  const [head, tail = ''] = s.split('::');
+  const groups = head ? head.split(':') : [];
+  const rest = tail ? tail.split(':') : [];
+  if (s.includes('::')) while (groups.length + rest.length < 8) groups.push('0');
+  return groups.concat(rest).map(x => parseInt(x, 16));
 }
 
 // Same shape as dns.lookup, so https.Agent can use it directly.
@@ -935,15 +961,16 @@ function guardedLookup(hostname, options, cb) {
 const PUSH_AGENT = new https.Agent({ lookup: guardedLookup, keepAlive: false });
 
 // Cheap pre-check so a bad endpoint is refused at subscribe time with a useful message, rather
-// than silently never delivering. PUSH_AGENT is what actually enforces the address rule.
+// than silently never delivering. For a hostname PUSH_AGENT is what actually enforces the address
+// rule; for a literal address this is the check, which is why sendPush runs it again.
 function pushEndpointError(raw) {
   let u;
   try { u = new URL(String(raw || '')); } catch { return 'endpoint is not a valid URL'; }
   if (u.protocol !== 'https:') return 'endpoint must be an https:// URL';
   if (u.username || u.password) return 'endpoint must not carry credentials';
-  // A literal address can be judged right here, which turns the common case into a clear error
-  // at subscribe time instead of a delivery that quietly never happens. Hostnames are left to
-  // PUSH_AGENT, which is the check that actually has to hold.
+  // A literal address is judged right here — and only here: Node hands a literal straight to
+  // connect() without consulting the Agent's lookup. Hostnames are left to PUSH_AGENT, which is
+  // the check that has to hold against rebinding.
   const host = u.hostname.replace(/^\[|\]$/g, '');
   if (/^[0-9.]+$/.test(host) || host.includes(':')) {
     if (isPrivateAddr(host)) return 'endpoint must not point at a private address';
@@ -951,8 +978,12 @@ function pushEndpointError(raw) {
   return null;
 }
 
-async function sendPush(userId, payload) {
-  const subs = db.subs.filter(s => s.userId === userId);
+// `deviceId` narrows the send to the subscriptions one browser registered (the rest-timer alert
+// belongs to the device that started the rest); a subscription stored without one — an older
+// client — still gets everything, as before.
+async function sendPush(userId, payload, deviceId) {
+  let subs = db.subs.filter(s => s.userId === userId);
+  if (deviceId && subs.some(s => s.deviceId === deviceId)) subs = subs.filter(s => s.deviceId === deviceId);
   if (!subs.length) return;
   const body = JSON.stringify(payload);
   let dirty = false;
@@ -960,6 +991,14 @@ async function sendPush(userId, payload) {
   const worker = async () => {
     while (next < subs.length) {
       const sub = subs[next++];
+      // Re-judged before every send: PUSH_AGENT never sees a literal address, so an endpoint
+      // that is private (however it got into db.json) is dropped here rather than connected to.
+      const bad = pushEndpointError(sub.endpoint);
+      if (bad) {
+        console.error('push endpoint refused', userId, bad);
+        db.subs = db.subs.filter(s => s.endpoint !== sub.endpoint); dirty = true;
+        continue;
+      }
       // urgency 'high' is the one lever we have over delivery speed — iOS/Android throttle
       // low-urgency background push more aggressively under battery-saving modes. TTL is left
       // at the library default (long) so a briefly-offline device still gets it once reconnected,
@@ -970,7 +1009,11 @@ async function sendPush(userId, payload) {
           { urgency: 'high', timeout: PUSH_TIMEOUT_MS, agent: PUSH_AGENT });
       } catch (e) {
         console.error('push send failed', userId, e.statusCode, e.body || e.message);
-        if (e.statusCode === 404 || e.statusCode === 410) {
+        // 404/410: the push service says the subscription is gone. 403: it refuses our VAPID
+        // signature — a subscription made against a key this instance no longer has (data/vapid.json
+        // regenerated). Neither will ever deliver again; keeping them only hides the fact from the
+        // Settings toggle, which reads the browser's side. The client re-subscribes on its next boot.
+        if (e.statusCode === 404 || e.statusCode === 410 || e.statusCode === 403) {
           db.subs = db.subs.filter(s => s.endpoint !== sub.endpoint); dirty = true;
         }
       }
@@ -982,19 +1025,30 @@ async function sendPush(userId, payload) {
 
 // Rest-timer alerts: client schedules on start/extend, cancels on skip or on-screen completion —
 // this only fires when the tab was backgrounded/suspended and never got to cancel it itself.
-const restTimers = new Map(); // userId -> Timeout
-function scheduleRestTimer(userId, sec, lang) {
-  const t = restTimers.get(userId);
+// One timer per device, not per account: a phone resting in the gym and a desktop tab at home
+// each carry their own, so the tab's on-screen completion (which cancels) cannot silence the
+// phone's alert. A client that sends no device id gets the old account-wide behaviour.
+// In memory only — an API restart drops whatever is pending.
+const restTimers = new Map(); // `${userId}:${deviceId}` -> Timeout
+const restKey = (userId, deviceId) => `${userId}:${deviceId || ''}`;
+function scheduleRestTimer(userId, deviceId, sec, lang) {
+  const k = restKey(userId, deviceId);
+  const t = restTimers.get(k);
   if (t) clearTimeout(t);
-  restTimers.set(userId, setTimeout(() => {
-    restTimers.delete(userId);
-    sendPush(userId, restTimerPush(lang));
+  restTimers.set(k, setTimeout(() => {
+    restTimers.delete(k);
+    sendPush(userId, restTimerPush(lang), deviceId);
   }, sec * 1000));
 }
-function cancelRestTimer(userId) {
-  const t = restTimers.get(userId);
-  if (t) { clearTimeout(t); restTimers.delete(userId); }
+function cancelRestTimer(userId, deviceId) {
+  // no device id: an older client — clear everything the account has pending, as it always did
+  for (const [k, t] of restTimers) {
+    if (deviceId ? k === restKey(userId, deviceId) : k.startsWith(userId + ':')) { clearTimeout(t); restTimers.delete(k); }
+  }
 }
+// A device id is what the browser made up for itself (lib/push.js): one short token per browser
+// profile, nothing identifying. Anything else is treated as absent.
+const deviceIdOf = v => (typeof v === 'string' && /^[A-Za-z0-9_-]{8,64}$/.test(v) ? v : undefined);
 
 // "Workout planned today" reminder — one per user per day, at their chosen time.
 // Duplicated (not imported) from frontend/src/lib/history.js effectiveRoutineId — tiny pure helper, not worth sharing across the two runtimes.
@@ -1021,27 +1075,63 @@ function userNow(tz) {
     return { date, hhmm: `${g('hour')}:${g('minute')}`, weekday: new Date(date + 'T12:00:00Z').getUTCDay() };
   } catch { return null; } // unknown/invalid tz string — skip this user rather than guess
 }
+// The tick used to want the exact minute: `reminder.time === now.hhmm`, checked every 10 s. Any
+// restart, redeploy or stalled event loop across that one minute lost the whole day's reminder —
+// "sometimes it just doesn't come". A reminder that is due is now sent for up to this many
+// minutes after its time, once per local date (`user.lastReminder`); later than that it is
+// skipped rather than delivered at a time nobody asked for.
+const REMINDER_WINDOW_MIN = 15;
+// How often the tick looks. 10 s keeps a reminder within ~9 s of its minute; the tests shorten it.
+const REMINDER_TICK_MS = Math.max(50, +(process.env.REMINDER_TICK_MS || 10000));
+const hhmmToMin = v => {
+  const m = /^(\d{2}):(\d{2})$/.exec(v || '');
+  return m ? Number(m[1]) * 60 + Number(m[2]) : NaN;
+};
+// Minutes since the reminder's time on the user's clock; negative before it, NaN when either
+// side does not parse. Same-day only — a 23:55 reminder is not owed at 00:05 the next day.
+const minutesLate = (time, now) => hhmmToMin(now.hhmm) - hhmmToMin(time);
+// The tick reads every subscribed user's state file every 10 s. Most of those files do not
+// change between ticks; a stat is far cheaper than a read and a parse of a state that can be
+// megabytes, and it keeps the tick short — a slow tick was one more way to miss the minute.
+const stateCache = new Map(); // uid -> { mtimeMs, size, S }
+function readStateCached(uid) {
+  let st;
+  try { st = fs.statSync(stateFile(uid)); } catch { stateCache.delete(uid); return null; }
+  const hit = stateCache.get(uid);
+  if (hit && hit.mtimeMs === st.mtimeMs && hit.size === st.size) return hit.S;
+  const S = readState(uid);
+  stateCache.set(uid, { mtimeMs: st.mtimeMs, size: st.size, S });
+  return S;
+}
 setInterval(() => {
   for (const user of db.users) {
     if (!db.subs.some(s => s.userId === user.id)) continue;
-    let S;
-    try { S = readState(user.id); } catch (e) { console.error('reminder state unreadable', user.id, e.message); continue; }
-    if (!S?.reminder?.on) continue;
-    const now = userNow(S.reminder.tz || 'UTC');
-    if (!now || S.reminder.time !== now.hhmm) continue;
-    if (user.lastReminder === now.date) continue;
-    if ((S.workouts || []).some(w => w.d === now.date)) continue;
-    const rid = effectiveRoutineId(S, now.date);
-    if (!rid) continue; // rest day — nothing planned
-    const routine = (S.routines || []).find(r => r.id === rid);
-    console.log('reminder firing', user.id, rid);
-    user.lastReminder = now.date;
-    saveDb();
-    sendPush(user.id, dayReminderPush(S.lang, routine));
+    // One user's state file is one user's problem: a shape this tick cannot read is logged and
+    // skipped, not allowed to take the process — and everyone else's reminders — down with it.
+    // PUT /api/data refuses the obvious shapes, but a file already on disk answers to nobody.
+    try {
+      const S = readStateCached(user.id);
+      if (!S?.reminder?.on) continue;
+      const now = userNow(S.reminder.tz || 'UTC');
+      if (!now) continue;
+      const late = minutesLate(S.reminder.time, now);
+      if (!(late >= 0 && late <= REMINDER_WINDOW_MIN)) continue;
+      if (user.lastReminder === now.date) continue;
+      if ((S.workouts || []).some(w => w.d === now.date)) continue;
+      const rid = effectiveRoutineId(S, now.date);
+      if (!rid) continue; // rest day — nothing planned
+      const routine = (S.routines || []).find(r => r.id === rid);
+      console.log('reminder firing', user.id, rid);
+      user.lastReminder = now.date;
+      saveDb();
+      sendPush(user.id, dayReminderPush(S.lang, routine));
+    } catch (e) {
+      console.error('reminder tick', user.id, e);
+    }
   }
 // Checked every 10s (not 60s) — ticks aren't aligned to the top of the minute, so a 60s
 // interval could sit on your target minute for up to 59s before noticing. 10s caps that at ~9s.
-}, 10000).unref();
+}, REMINDER_TICK_MS).unref();
 
 /* ---------- sessions (signed cookie) ---------- */
 function sign(payload) {
@@ -1642,6 +1732,8 @@ const routes = {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
     user.sv = sessionVersion(user) + 1;
+    // An unredeemed pairing code is a session-in-waiting for this account; it goes too.
+    for (const [k, v] of pairings) if (v.uid === user.id) pairings.delete(k);
     saveDb();
     audit(req, 'auth.logout.all', { user });
     json(res, 200, { ok: true }, { 'Set-Cookie': clearCookie });
@@ -1678,13 +1770,32 @@ const routes = {
     json(res, 200, { token: makeSession(user), user: { id: user.id, name: user.name, admin: isAdmin(user) } });
   },
 
+  // `rev` is the server's own count of writes to this profile (also stored inside the document as
+  // `_rev`, so every other reader of the file — reminder tick, admin, Coach, MCP — is unaffected).
+  // A client pushes it back as `baseRev`, and a write over a document it never saw is refused.
   'GET /api/data': async (req, res) => {
     if (dbError) return storageFailure(res, dbError);
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
     try {
       const record = readStateRecord(user.id);
-      json(res, 200, { state: record.state, revision: record.etag }, { ETag: record.etag });
+      json(res, 200, {
+        state: record.state,
+        revision: record.etag,
+        rev: Number.isSafeInteger(record.state?._rev) ? record.state._rev : 0
+      }, { ETag: record.etag });
+    } catch (e) { storageFailure(res, e); }
+  },
+  // Just the revision: the client asks this every half minute while it is open and on every
+  // return to the foreground, and fetches the document only when the number moved — a signed-in
+  // device is meant to show what the server has, and this is what keeps that cheap.
+  'GET /api/data/rev': async (req, res) => {
+    if (dbError) return storageFailure(res, dbError);
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    try {
+      const record = readStateRecord(user.id);
+      json(res, 200, { rev: Number.isSafeInteger(record.state?._rev) ? record.state._rev : 0 });
     } catch (e) { storageFailure(res, e); }
   },
 
@@ -1697,6 +1808,10 @@ const routes = {
     let body;
     try { body = await readBody(req); } catch { return json(res, 400, { error: 'bad json' }); }
     if (!body || typeof body !== 'object' || Array.isArray(body) || !body.state || typeof body.state !== 'object' || Array.isArray(body.state)) return json(res, 400, { error: 'state required' });
+    // The reminder tick and admin routes iterate these two fields. Refuse malformed profiles at
+    // the write boundary so a client cannot persist a shape that makes those readers fail later.
+    const list = value => value == null || Array.isArray(value);
+    if (!list(body.state.workouts) || !list(body.state.routines)) return json(res, 400, { error: 'invalid state' });
     const key = String(req.headers['idempotency-key'] || '').trim();
     if (key.length > 200) return json(res, 400, { error: 'Idempotency-Key is too long' });
     const hash = requestHash(body.state);
@@ -1706,11 +1821,19 @@ const routes = {
       const prior = key && receipts.entries.find(e => e.uid === user.id && e.key === key);
       if (prior) {
         if (prior.hash !== hash) return json(res, 409, { error: 'idempotency key was already used for another request' });
-        return json(res, 200, { ok: true, ts: prior.tsValue || null, revision: prior.revision }, { ETag: prior.revision });
+        return json(res, 200, {
+          ok: true,
+          ts: prior.tsValue || null,
+          revision: prior.revision,
+          rev: Number.isSafeInteger(current.state?._rev) ? current.state._rev : 0
+        }, { ETag: prior.revision });
       }
       if (expected !== current.etag) return json(res, 412, { error: 'stale revision', revision: current.etag }, { ETag: current.etag });
       const next = JSON.parse(JSON.stringify(body.state));
       delete next.active;                       // in-progress workouts stay device-local
+      // Keep the upstream numeric revision for clients that poll /api/data/rev. It is server
+      // owned just like the ETag; callers cannot forge or roll it back in the submitted state.
+      next._rev = (Number.isSafeInteger(current.state?._rev) ? current.state._rev : 0) + 1;
       try {
         const text = JSON.stringify(next);
         const revision = etagFor(text);
@@ -1725,7 +1848,7 @@ const routes = {
           saveReceipts();
           durableUnlink(stateTxnFile(user.id));
         }
-        json(res, 200, { ok: true, ts: next._ts || null, revision }, { ETag: revision });
+        json(res, 200, { ok: true, ts: next._ts || null, revision, rev: next._rev }, { ETag: revision });
       } catch (e) { storageFailure(res, e); }
     });
   },
@@ -1920,6 +2043,11 @@ const routes = {
     // Only the two keys the push protocol needs are kept: `sub` is caller-supplied and would
     // otherwise put arbitrary fields into db.json, which every admin route reads back out.
     const keys = { p256dh: String(sub.keys.p256dh), auth: String(sub.keys.auth) };
+    const deviceId = deviceIdOf(body.deviceId);
+    // An upsert: the client re-sends its subscription on every boot (lib/push.js) so a row this
+    // instance lost — pruned after a dead send, a rebuilt db.json — comes back without anyone
+    // touching Settings. The same endpoint sent again keeps its original `created`.
+    const prev = db.subs.find(s => s.endpoint === sub.endpoint);
     db.subs = db.subs.filter(s => s.endpoint !== sub.endpoint);
     // A browser holds one subscription per device, so this cap is far above real use. Without
     // it a single account could pile up endpoints without limit — every one of them a target
@@ -1929,9 +2057,19 @@ const routes = {
       const drop = new Set(mine.slice(0, mine.length - MAX_SUBS_PER_USER + 1).map(s => s.endpoint));
       db.subs = db.subs.filter(s => !drop.has(s.endpoint));
     }
-    db.subs.push({ userId: user.id, endpoint: sub.endpoint, keys, created: new Date().toISOString() });
+    db.subs.push({ userId: user.id, endpoint: sub.endpoint, keys, ...(deviceId ? { deviceId } : {}), created: prev?.created || new Date().toISOString() });
     saveDb();
     json(res, 200, { ok: true });
+  },
+
+  // Whether this instance still holds the caller's subscription for `endpoint`. The browser's
+  // side (PushManager.getSubscription) says nothing about ours — a row pruned after a dead send
+  // leaves the browser subscribed to nowhere — so Settings asks here before it shows "on".
+  'GET /api/push/status': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const endpoint = new URL(req.url, 'http://x').searchParams.get('endpoint') || '';
+    json(res, 200, { subscribed: db.subs.some(s => s.userId === user.id && s.endpoint === endpoint) });
   },
 
   'POST /api/push/unsubscribe': async (req, res) => {
@@ -1956,14 +2094,15 @@ const routes = {
     const body = await readBody(req);
     const sec = Math.max(1, Math.min(3600, Math.round(+body.seconds || 0)));
     if (!sec) return json(res, 400, { error: 'seconds required' });
-    scheduleRestTimer(user.id, sec, readState(user.id)?.lang);
+    scheduleRestTimer(user.id, deviceIdOf(body.deviceId), sec, readState(user.id)?.lang);
     json(res, 200, { ok: true });
   },
 
   'POST /api/push/rest-timer/cancel': async (req, res) => {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
-    cancelRestTimer(user.id);
+    const body = await readBody(req);
+    cancelRestTimer(user.id, deviceIdOf(body.deviceId));
     json(res, 200, { ok: true });
   },
 
@@ -2210,7 +2349,11 @@ http.createServer(async (req, res) => {
     });
     return res.end();
   }
-  const url = new URL(req.url, 'http://x');
+  // A target that does not parse (`//`, `//api%2Fhealth`) is a bad request, not a server error —
+  // and the try below only covers the route handler, so it is refused here.
+  let url;
+  try { url = new URL(req.url, 'http://x'); }
+  catch { return json(res, 400, { error: 'bad request' }); }
   const key = req.method + ' ' + url.pathname;
   if (dbError && key !== 'GET /api/health') return storageFailure(res, dbError);
   if (url.pathname.startsWith('/api/assets/') && req.method === 'GET') return serveAsset(req, res, url.pathname.slice('/api/assets/'.length));

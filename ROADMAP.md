@@ -1,16 +1,19 @@
 # Roadmap
 
-Where openGym is going, in the order it is likely to land. Each block is a GitLab milestone; the
-issues and merge requests attached to it are the plan, this file is the readable summary. The
-dates are the order, not a promise: a one-maintainer self-hosted project ships a version when the
-branch has been used in a real gym for a while. Blocks are deliberately over-full — whatever is not
-done when a version ships rolls into the next one. Version numbers follow the release rule, not the
-size of the change: the next release is the last published one plus one patch (1.3.1 → 1.3.2), and a
-minor bump is reserved for something that breaks compatibility.
+Where openGym is going, in the order it is likely to land. Each block is a GitHub milestone; the
+issues and pull requests attached to it are the plan, this file is the readable summary.
 
-- Board: https://gitlab.com/DuarteSantos8/opengym/-/boards — planned → in progress → in review → closed
-- Milestones: https://gitlab.com/DuarteSantos8/opengym/-/milestones
-- "In review" means: on a branch and deployed to gym-test.duarte-santos.ch, waiting for a real session.
+**A release every two weeks, on a Sunday.** Each one is small on purpose: a handful of issues, one
+theme, so a version is out before the branch has drifted and every fix reaches phones within a
+fortnight. Whatever is not merged and tested on gym-test by the Friday before rolls into the next
+block, the date does not move. Version numbers follow the release rule, not the size of the change:
+the next release is the last published one plus one patch (1.3.7 → 1.3.8), and a minor bump is
+reserved for something that breaks compatibility — that is v1.4.0, the database.
+
+- Milestones: https://github.com/DuarteSantos8/openGym/milestones — every open issue sits in exactly one
+- Tracks, in order: promised items → history editing → queue and programmes → the progression
+  engine → cardio → **the foundation (database, then search)** → accounts → the iOS app → Android
+  and health → exercises → looks and social
 
 ---
 
@@ -57,71 +60,151 @@ Left over from this block:
 - A real pause for the workout timers (#29 asked for it)
 - Discord announcement (owner)
 
-## v1.3.5 — Programmes & progression  (October 2026)
+## v1.3.6 and v1.3.7 — Sync, push and the phone  (released 2026-09-12)
 
-**Theme: training structure beyond one weekly template.** Most of this is the Space-Hermes series.
-It changes the training model (per-set roles, explicit phases, normalisation on every persist), so
-it goes in one MR at a time, each rebased and tested on gym-test before the next.
+Signed in, the server's profile is the truth: sign-in adopts it, two devices merge on a server
+revision instead of overwriting each other, the app polls for changes and works offline with a
+banner. Reminders fire up to 15 minutes late rather than never, push subscriptions re-register
+themselves, rest-timer alerts are per device. iOS: chip rows scroll sideways only, sheets clear the
+Dynamic Island, the tab bar stays put after the keyboard, the home-screen app reloads offline. The
+twelve Astra findings, eleven community merges (weigh-in switch, Swiss German, iOS 26 build, PDF on
+the phone, nginx resolver, custom-exercise equipment, per-side data, warm-up rest) and a headless
+QA sweep of every screen. Left over: routine reordering (#142), the Smith-bar "no bar" option
+(#138), two decimals (#139), delete user in the admin (#107).
 
-- Explicit warm-up / work phases on every row, with legacy rows still readable (!76)
-- Per-phase settings during a workout: set count, targets, fixed or percentage loads (!56)
-- Choose which set drives AMRAP progression instead of "the last one" (!78)
-- Multi-week programmes: 1–52 weeks, normal/deload/rest weeks, several sessions per day,
-  start/complete lifecycle, off by default (!98, #15)
-- Home: several routines on one day with a session chooser; date overrides as ordered lists (!74)
-- Per-exercise strength with an adaptive estimated 1RM; one point per workout and exact exercise (!50)
-- Import: kg/lb normalised per row to the profile unit, malformed rows reported before confirming;
-  duration-only rows classified as timed strength or cardio (!53)
-- Plan sharing: versioned payload, custom exercises carried across, repeat imports idempotent (!49)
-- Resistance bands treated like bodyweight in config and progression (#39)
-- Exercise history and a progress chart from inside the workout (#43) — reachable from the ⋯ menu
-- Pictures for custom exercises: pick from the catalogue, later upload (#30)
-- Percentage / training-max programming (5/3/1 style) on top of the policy interface
-- Rest-pause and drop sets configurable in the routine editor, with adjustable rest (#17)
-- Catalogue cleanup: exercises that should not carry weight, incline and interval fields for
-  cardio (#46); timers for planks and outdoor cardio are already there, document them (#45)
+## v1.3.8 — Promised items  (2026-09-27)
 
-## v1.3.6 — Accounts & sync  (November 2026)
+- Reorder routines in Plan; the Start sheet follows that order (#142)
+- "No bar" per exercise, so Smith-machine lifts calculate plates and drop sets from 0 (#138)
+- Two decimals on per-side weights, as a display toggle (#139)
+- Delete a user from the admin dashboard: credentials, state file, subscriptions, Coach data (#107)
+- Custom-exercise muscle order is fixed, not click order; the import fallback classifies "wrist
+  curl", "row … neutral grip" and Romanian deadlifts correctly (Discord)
+- The small open pull requests: unknown-path redirect (#185), manifest behind an auth proxy (#184),
+  standard ß (#190), distance in feet and the distance mode (#177, #178)
 
-**Theme: who may sign in, and what else may read or write your data.**
+## v1.3.9 — Editing history  (2026-10-11)
 
-- Optional username + password login next to passkeys, for devices without a passkey (#1)
-- OIDC login for people with an existing SSO such as PocketID or Authelia (#40)
-- Personal-trainer role: invite students by code, open a student in a read-only context, write
-  their plan from a template library, assign in one tap (!79, #8)
-- Remote MCP over OAuth for hosted AI clients, with per-connection profile and read/write scopes,
-  and compare-and-swap writes to the profile state (!88)
-- MCP write tools: create/update routines, correct a logged set, delete a duplicate session,
-  manage equipment profiles (#24)
-- Switching kg ↔ lb converts stored values instead of relabelling them (#22)
-- Offline: saved routines and the active workout usable without the server, sync on return (#23)
-- Sync reports still waiting on details: routines created on the web not reaching the phone (#33),
-  logged sessions lost after editing a routine (#25)
+- **Edit a finished workout** — date, start time, duration, name, sets, weights, add or remove an
+  exercise; progression and 1RM history re-read the corrected session (#143; GitLab !127 and !139
+  as reference; Discord "edit finished workouts", "edit past workouts time", "change the date")
+- Save a logged workout as a routine, repeat a past workout from History, undo finish (#111, #58,
+  GitLab !130; Discord "Historic tab")
+- Relabel an "Unknown" exercise after an import without losing its sets; copy a workout as text
+  (Discord)
+- Auto-backup keeps the last N files (#161, first half); a "next step" hotkey independent of focus
+  (#133); body measurements (PR #82), extra passkeys and the device link (PR #95)
+
+## v1.3.10 — Session queue & rotation  (2026-10-25)
+
+- A free-running session queue beside the fixed week — the next session is the next undone one,
+  whatever the weekday — with an in-app editor and automatic refill (#158, #69; PR #167 and the
+  editor on top of it; Discord "not forced into a weekly plan")
+- Swipe between exercise cards during a workout (#113, GitLab !114)
+- Drag-and-drop exercise order that survives touch (#114 — the first version came out again on
+  2026-09-07); the Start/Resume button as "next" during a workout (Discord)
+
+## v1.3.11 — Programmes & phases  (2026-11-08)
+
+- Programmes: routines grouped into a named block over weeks, with deload and rest weeks, several
+  per profile (#159, GitLab !98; Discord "Programme mode", "folders", "major good ideas" 1)
+- Session phases — mobility / work / accessory / cooldown — with completion-only exercises for
+  stretching that stay out of volume and PRs (#57, #140; Discord "non-typed exercises")
+
+## v1.3.12 — Progression engine I  (2026-11-22)
+
+- A universal AMRAP / "to failure" flag and rep or set ranges per set (#154; Discord "Sets to
+  Failure", "More types of sets")
+- Triple progression, reps → sets → load (#179, #186; PR #181)
+- Multi-formula 1RM with Epley as the default shown (#155); assisted exercises as negative added
+  weight (#176)
+
+## v1.3.13 — Progression engine II  (2026-12-06)
+
+- Load as %1RM or auto with a stored training max, target RPE/RIR (#153)
+- Wave / percentage progression, 5/3/1 style (#70; PR #168)
+- A warm-up generator that picks the ramp from load and lift (#156)
+- Periodisation extras on top: mesocycle blocks, auto-regulation on RPE (#120)
+
+## v1.3.14 — Cardio, alternatives, groups  (2026-12-20)
+
+- Cardio: incline and intervals (rounds × work/rest), interval programmes such as C25k, rucking as
+  distance + pace + load (#132, #169; Discord "incline treadmill", "cardio programs", "rucking")
+- Exercise alternatives per routine slot, and Replace in the routine editor (#110; Discord)
+- Complexes and interval groups beside supersets (Discord)
+
+## v1.4.0 — Foundation: database  (2027-01-10)
+
+**The one compatibility break.** Storage moves from one JSON file per profile to a database (#191):
+tables for workouts, sets, routines, weigh-ins, custom exercises, favourites, credentials, push
+subscriptions and Coach data; an idempotent migration on first start; the old files kept until the
+admin removes them. The state file stays the import/export and backup format, and the revision/merge
+contract from v1.3.6 stays the client contract. Which database is decided in the issue — embedded by
+default so `docker compose up` stays one line, a server database as an option (Discord
+"Postgres/SQLite"). Nothing else rides on this release; it gets the three-week slot over the holidays.
+
+## v1.4.1 — Foundation: search  (2027-01-24)
+
+- Search rebuilt over catalogue names in every language, import aliases, custom exercises and
+  history: typo tolerance (GitLab !122), a live result count (!31), filters that compose, built once
+  per catalogue version (#192)
+- Shared custom exercises between accounts on one instance (#151)
+- "Different gyms": a location on a logged set, separate histories and PRs per location, bodyweight
+  shared (Discord "How to deal with different gyms")
 - Admin: per-user export, invite management, audit log filters
 
-## v1.3.7 — Mobile  (December 2026)
+## v1.4.2 — Accounts: password & OIDC  (2027-02-07)
 
-**Theme: the Android app catches up with the web app.**
+- Optional username + password login next to passkeys (#118; Discord "Basic login", the
+  password-manager thread)
+- OIDC login for PocketID / Authelia-style setups (#130, #72; GitLab !132 is the candidate)
 
-- In-app update check against the GitLab releases, APK download with SHA-256 check and install (!40, #38, #9)
-- Rest timer as an ongoing notification and on the lock screen, with "next set" from there (#19, #26)
-- Home-screen widget for today's session
-- Body weight from Withings or the phone's health store (#31)
-- External links open in the system browser; Android back gesture across every screen
-- Play Store / F-Droid feasibility check (the app stays sideload-first)
+## v1.4.3 — Trainer & MCP write  (2027-02-21)
 
-## Later — ideas, not scheduled
+- Personal-trainer role: invite students by code, open a student read-only, write their plan (#119,
+  GitLab !79; Discord "Trainer & Student Management")
+- MCP write tools — routines, log corrections, equipment — in pieces (#116); remote MCP over OAuth
+  for hosted AI clients (GitLab !88)
+- Switching kg ↔ lb converts stored values instead of relabelling them (#22)
 
-- Skins alongside the accent colour, default look untouched (#34); background wallpapers (#48)
-- Big-screen / kiosk layout for a wall display (#49) and a physical "next" button, keyboard first (#47)
-- Native NixOS module (!83) and Azure App Service deployment (!35) — only if someone maintains them
-- Arabic and right-to-left layout (!36) — needs a rebase, then a visual round
-- Periodisation extras: wave progression, auto-regulation on RPE, training-age based recommendations (#15)
-- Watch app / companion for the rest timer
+## v1.4.4 — iOS app  (2027-03-07)
+
+- App Store / TestFlight build of the existing Capacitor target, HealthKit weight and workout
+  export, the Home Screen icon and timer-sound issues gone for good (#90; Discord "Google Health")
+- Apple Watch rest timer later, once the app is in the store
+
+## v1.4.5 — Android & health  (2027-03-21)
+
+- Health Connect for weight and sessions (Discord "Use health connect"); Withings and other scales
+  (#127)
+- The rest timer as an ongoing notification on the lock screen (#122); a home-screen widget (#125)
+- APK back under 10 MB with ABI filters (#136); the auto-backup directory picker (#161, second half)
+- Media for the routine's exercises cached on the phone, so a session works with no signal (#123;
+  Discord "Download all videos")
+- Firefox-on-Windows QR and third-party passkey providers stay documented, not fixed — platform
+  behaviour (#103, #101)
+
+## v1.4.6 — Exercises & catalogue  (2027-04-04)
+
+- Pictures for custom exercises: pick from the catalogue, then upload; a video URL per exercise
+  (#126, #170; Discord "custom images/GIFs", "upload videos")
+- Catalogue: bench as equipment with flat / adjustable, TRX / suspension, lats and the three delts
+  as their own categories, exercises that should not carry weight, more routine icons (#132, #188;
+  Discord)
+- Choose what the "last time" line shows on the logger (#173); one progress line per set number
+  (#145); custom heatmap targets per muscle; a shareable image after a workout (Discord)
+
+## v1.4.7 — Looks, social, plugins  (2027-04-18)
+
+- Skins alongside the accent colour, backgrounds as part of a skin, a big-screen layout (#129,
+  #134, #135)
+- Social: friends, progress and plan sharing (PR #180); a plugin surface for integrations (Discord)
+- Native NixOS module (GitLab !83) and Azure deployment (!35) only if someone maintains them;
+  Arabic and right-to-left (GitLab !36) once rebased
 
 ## How things move
 
-An issue goes planned → in progress → in review → closed on the board. Contributor merge requests
-from returning contributors get their pipeline started here automatically; a first MR is started
-by hand after a look at the diff. Anything in review is on gym-test.duarte-santos.ch. Releases
+An issue sits in exactly one milestone; a milestone is a Sunday, and whatever is not merged and
+tested on gym-test by the Friday before rolls into the next one — the date stays. Contributor pull requests from returning contributors get their pipeline started here
+automatically; a first PR is started by hand after a look at the diff. Anything in review is on gym-test.duarte-santos.ch. Releases
 bundle whatever has passed that test, with a changelog section per contributor.

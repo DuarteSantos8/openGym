@@ -115,7 +115,7 @@ body{
   background:var(--bg);color:var(--label);
   font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','SF Pro Display','Segoe UI',Roboto,system-ui,sans-serif;
   font-size:17px;line-height:1.29;letter-spacing:-.01em;
-  min-height:100vh;overscroll-behavior-y:none;overflow-x:clip;
+  min-height:100vh;min-height:100dvh;overscroll-behavior-y:none;overflow-x:clip;
   -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
   touch-action:manipulation;
   font-variant-numeric:tabular-nums;
@@ -162,15 +162,24 @@ button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp butto
 
 /* ---------------------------------------------------------------- layout -- */
 #app{
-  padding:calc(var(--sat) + 8px) var(--pad) calc(128px + var(--sab));
+  padding:calc(var(--sat) + 8px) var(--pad) calc(88px + var(--sab));
   max-width:560px;margin:0 auto;
 }
-/* while the rest timer floats above the tab bar, keep its height scrollable-past
-   (the rest variant is two rows tall — ~44px more than the single-row work timer) */
-body.resting #app{padding-bottom:calc(250px + var(--sab))}
+/* Keep the last workout controls clear of the mobile overlays without adding a second
+   screenful of blank scroll space. The stacked rest timer needs the larger reserve. */
+body.resting #app{padding-bottom:calc(206px + var(--sab))}
+.workout-end-spacer{height:0}
 @keyframes viewfade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 #app.vfade{animation:viewfade var(--med) var(--ease)}
 
+/* sync banner: one line for a signed-in user whose changes are not on the server yet */
+.sync-banner{
+  display:flex;align-items:center;gap:9px;width:100%;text-align:left;
+  margin:0 0 12px;padding:9px 12px;border-radius:var(--r);
+  background:color-mix(in srgb,var(--yellow) 16%,var(--surface));color:var(--label);font-size:13px;line-height:1.35;
+}
+.sync-banner.off{background:color-mix(in srgb,var(--label-3) 18%,var(--surface))}
+.sync-banner .icn,.sync-banner svg{flex:none;font-size:16px;color:var(--label-2)}
 /* large title, the way a nav bar does it */
 .hdr{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:8px 0 18px}
 .hdr h1{font-size:34px;line-height:1.06;font-weight:700;letter-spacing:-.028em}
@@ -248,7 +257,7 @@ h4.sec{
    none of the shrink — a long value would otherwise take the whole row and squeeze the title
    to 21px. A basis of 45% fixes that but reserves the space even for "3", costing the title
    141px on the rows that need it most. A cap does neither. */
-.lrow-v{color:var(--label-2);font-size:17px;letter-spacing:-.012em;flex:0 1 auto;max-width:45%;min-width:0;
+.lrow-v{color:var(--label-2);font-size:17px;letter-spacing:-.012em;flex:0 1 auto;max-width:55%;min-width:0;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right}
 .lrow-c{color:var(--label);font-size:15px;flex:none;--icon-stroke:2.4}
 .lrow-k{color:var(--acc);font-size:17px;flex:none;--icon-stroke:2.4}
@@ -424,8 +433,8 @@ h4.sec{
 
 /* ---------------------------------------------------------------- chips -- */
 .chips{
-  display:flex;gap:7px;overflow-x:auto;padding-bottom:2px;
-  scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  display:flex;gap:7px;overflow-x:auto;padding:4px 4px 6px;   /* room for a chip's focus outline inside a sheet (#162) */
+  scrollbar-width:none;
 }
 .chips::-webkit-scrollbar{display:none}
 /* horizontal strips: keep a sideways overscroll from chaining to the page and leave a
@@ -433,9 +442,15 @@ h4.sec{
    (touch-action:pan-x): on a phone a slightly diagonal swipe along the chips used to hand
    the gesture to the page, which scrolled down instead. The row is 32px tall, so losing a
    vertical scroll that happens to start on it costs nothing; the ~130px heatmap wrap keeps
-   both axes, there the trade-off goes the other way. */
+   both axes, there the trade-off goes the other way. The chips contain both axes: once a
+   strip is at its end, a diagonal drag must not chain into the page either. */
 .chips,.hm-wrap{overscroll-behavior-x:contain;scroll-padding-inline:16px}
-.chips{touch-action:pan-x}
+.chips{touch-action:pan-x;overscroll-behavior:contain}
+/* The chip hit-area (.chip::before, inset:-6px) must not poke out of the strip vertically:
+   overflow-x:auto makes overflow-y auto as well, and that 6px of positioned overflow gave
+   the 32px row a 36px scroll height — a diagonal swipe, wheel or drag then scrolled the
+   whole row up by 4px and left it there. Vertical slop is clipped by the strip anyway. */
+.chips .chip::before{top:0;bottom:0}
 .chip{
   flex:none;padding:6px 13px;border-radius:99px;background:var(--surface);
   font-size:14px;font-weight:400;color:var(--label);text-transform:capitalize;
@@ -444,6 +459,16 @@ h4.sec{
 .chip:active{background:var(--surface-2)}
 .chip.on{background:var(--acc);color:var(--on-acc);font-weight:500}
 .chip.on .dim{color:color-mix(in srgb,var(--on-acc) 62%,transparent)}
+/* On a phone these rows scroll by swipe. On a pointer device lib/hchips.js lets you
+   click-drag anywhere on the row to pull it along; a grab cursor on rows that actually
+   overflow (data-xscroll, set by hchips.js on hover) is the hint. */
+@media (hover:hover) and (pointer:fine){
+  .chips[data-xscroll]{cursor:grab}
+}
+/* while a drag is in flight: no text selection, grabbing cursor everywhere (the `*` rule
+   outweighs button{cursor:pointer} so it holds even over a chip) */
+body.chips-dragging{cursor:grabbing;user-select:none;-webkit-user-select:none}
+body.chips-dragging *{cursor:inherit}
 
 /* ---------------------------------------------------------- stretching --- */
 .stretch-hdr{align-items:center;margin-bottom:16px}
@@ -550,8 +575,13 @@ h4.sec{
 .seg button .icn{font-size:16px}
 .seg button:not(.on){color:var(--label-2);font-weight:400}
 .seg button:active{opacity:.5}
-/* sitting in a list row: shrink to content instead of filling the row */
-.seg-inline{flex:none;min-width:132px}
+/* sitting in a list row: shrink to content instead of filling the row. The control never
+   shrinks below its labels, so a row whose title and control do not both fit — most translated
+   packs at 390px: "Übungs-Animationen" against "Voll · Klein · Aus" — wraps the control onto its
+   own line under the title instead of painting it over the title. */
+.seg-inline{flex:none;min-width:132px;max-width:100%;margin-left:auto}
+.lrow:has(.seg-inline){flex-wrap:wrap}
+.lrow:has(.seg-inline) .lrow-m{min-width:min(150px,100%)}
 .seg-range{margin-bottom:10px}
 .seg-inline button{padding:5px 10px;font-size:13px;min-height:28px}
 .seg-inline button .icn{font-size:14px}
@@ -684,7 +714,8 @@ h4.sec{
 .setph{margin:8px 0 2px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);display:flex;align-items:center;gap:10px}
 .setph::after{content:'';flex:1;height:1px;background:var(--sep)}
 .setsep{height:1px;background:var(--sep);margin:9px 0}
-.setrow .n{
+/* the per-side wrapper carries its own .n (the set number in front of the L/R rows) */
+.setrow .n,.setrow-side>.n{
   width:24px;height:24px;border-radius:50%;background:var(--surface-2);color:var(--label-2);
   display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;flex:none;
   position:relative;padding:0;border:0;font-family:inherit;cursor:pointer;
@@ -871,14 +902,18 @@ h4.sec{
   position:absolute;left:0;right:0;bottom:0;background:var(--bg-el);
   border-radius:var(--r-xl) var(--r-xl) 0 0;
   padding:8px 18px calc(20px + var(--sab));
-  max-height:90vh;max-height:min(90vh,calc(100dvh - 8px));
-  overflow-y:auto;-webkit-overflow-scrolling:touch;scroll-padding-bottom:calc(20px + var(--sab));
+  /* A tall sheet stops short of the status bar / Dynamic Island: every cap carries the top
+     safe-area inset, which the layout viewport does not (viewport-fit=cover). */
+  max-height:90vh;max-height:min(90vh,calc(100dvh - var(--sat) - 8px));
+  overflow-y:auto;scroll-padding-bottom:calc(20px + var(--sab));
   animation:sheetup .34s var(--ease);
   overscroll-behavior:contain;touch-action:pan-y;will-change:transform;
 }
 .sheet:has(.picker-search){
   bottom:var(--picker-keyboard-bottom,0px);
-  max-height:min(90vh,calc(100dvh - 8px),calc(var(--picker-visual-height,100vh) - 8px));
+  /* with the keyboard up the sheet is capped by the visual viewport — which still starts
+     under the notch, hence the inset here too */
+  max-height:min(90vh,calc(100dvh - var(--sat) - 8px),calc(var(--picker-visual-height,100vh) - var(--sat) - 8px));
 }
 :root[data-theme="light"] .sheet{background:var(--bg)}
 @keyframes sheetup{from{transform:translateY(100%)}to{transform:none}}
@@ -892,6 +927,7 @@ h4.sec{
 .center{
   position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
   width:min(84vw,300px);background:var(--bg-el);border-radius:var(--r-lg);padding:20px;
+  max-height:calc(100dvh - 2*var(--sat) - 24px);overflow-y:auto;
   box-shadow:0 20px 60px -12px rgba(0,0,0,.5);
   animation:pop .28s var(--ease);
 }
@@ -1151,7 +1187,9 @@ h4.sec{
 .today-row .lbl2{font-size:11px;font-weight:500;letter-spacing:.03em;text-transform:uppercase;color:var(--label-3)}
 .today-row .ttl{
   font-weight:500;font-size:17px;line-height:1.25;text-transform:capitalize;
-  letter-spacing:-.012em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;
+  letter-spacing:-.012em;margin-top:2px;
+  /* two lines before the ellipsis: "Leg Day — in progress" grows past one line in hu/tr/th/pt-BR */
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;
 }
 
 /* Only where a pointer really hovers — on a phone :hover sticks to the row after the tap.
@@ -1164,14 +1202,16 @@ h4.sec{
 /* --------------------------------------------------- desktop (≥1000px) --- */
 .cols{display:block}
 @media (min-width:1000px){
-  #app{max-width:1080px;padding-top:32px}
+  #app{max-width:1080px;padding-top:32px;padding-bottom:calc(128px + var(--sab))}
+  body.resting #app{padding-bottom:calc(250px + var(--sab))}
+  .workout-end-spacer{height:40px}
   .cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
   .cols>*{min-width:0}
   #app .list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   #modal-root .list,.narrow .list{display:flex;flex-direction:column}
   .narrow{max-width:640px;margin:0 auto}
   .tiles{grid-template-columns:repeat(4,1fr)}
-  .cols .tiles{grid-template-columns:1fr 1fr}
+  .cols .tiles,.center .tiles{grid-template-columns:1fr 1fr}   /* a 300px dialog has no room for four */
   #tabbar{
     left:50%;right:auto;bottom:16px;transform:translateX(-50%);width:520px;
     border:var(--hair) solid var(--sep-op);border-radius:var(--r-xl);

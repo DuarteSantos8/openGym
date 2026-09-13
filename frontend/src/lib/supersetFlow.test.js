@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor } from './supersetFlow.js'
+import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor } from './supersetFlow.js'
 
 const entry = done => ({ sets: done.map(value => ({ done: value })) })
 
@@ -135,5 +135,46 @@ describe('restSecFor', () => {
     expect(restSecFor(entries, [], 90)).toBe(90)
     expect(restSecFor(entries, [7], 90)).toBe(90)
     expect(restSecFor(undefined, [0], undefined)).toBe(0)
+  })
+})
+
+describe('warmupRestSecFor', () => {
+  const ramp = (warmupRestSec, done = [false, false, false, false]) => ({
+    target: { restSec: 150, ...(warmupRestSec ? { warmupRestSec } : {}) },
+    sets: [
+      { phase: 'warmup', w: 60, r: 8, done: done[0] },
+      { phase: 'warmup', w: 95, r: 5, done: done[1] },
+      { phase: 'work', w: 125, r: 6, done: done[2] },
+      { phase: 'work', w: 125, r: 6, done: done[3] },
+    ],
+  })
+
+  it('rests the warm-up rest between ramp sets', () => {
+    expect(warmupRestSecFor(ramp(45), 0, 150)).toBe(45)
+  })
+
+  it('rests the working rest after the last ramp set, into the first work set', () => {
+    expect(warmupRestSecFor(ramp(45), 1, 150)).toBe(150)
+  })
+
+  it('rests the working rest after a work set', () => {
+    expect(warmupRestSecFor(ramp(45), 2, 150)).toBe(150)
+    expect(warmupRestSecFor(ramp(45), 3, 150)).toBe(150)
+  })
+
+  it('without the field a ramp set rests like a work set (the pre-field behaviour)', () => {
+    expect(warmupRestSecFor(ramp(null), 0, 150)).toBe(150)
+    expect(warmupRestSecFor({ target: { warmupRestSec: 0 }, sets: ramp(null).sets }, 0, 90)).toBe(90)
+  })
+
+  it('looks at the next UNFINISHED set: a ramp set re-checked after the work began rests the working rest', () => {
+    expect(warmupRestSecFor(ramp(45, [true, true, false, false]), 0, 150)).toBe(150)
+  })
+
+  it('is safe on a legacy warmup boolean and on missing entries', () => {
+    const legacy = { target: { warmupRestSec: 45 }, sets: [{ warmup: true, done: false }, { warmup: true, done: false }, { done: false }] }
+    expect(warmupRestSecFor(legacy, 0, 120)).toBe(45)
+    expect(warmupRestSecFor(undefined, 0, 120)).toBe(120)
+    expect(warmupRestSecFor({ target: {}, sets: [] }, 0, 120)).toBe(120)
   })
 })

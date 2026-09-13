@@ -113,11 +113,13 @@ Read this before hosting openGym for anyone other than yourself.
   server connects out to and it comes from whoever is signed in, so `/api/push/*` would otherwise
   be a request-forgery lever from inside the Docker network. It must be `https:`, and the
   connection is refused at socket level if the host resolves to a loopback, private, link-local
-  (including cloud metadata) or CGNAT address — enforced in the agent's DNS lookup, not in a
-  prior pass, so there is no rebinding window (`api/server.js:86-119`). Sends have a 10 s timeout
+  (including cloud metadata) or CGNAT address — enforced in the agent's DNS lookup for hostnames,
+  so there is no rebinding window, and for literal IP addresses — which never go through that
+  lookup — by the same address check at subscribe time and again before every send, applied to
+  every textual form of the address (`api/server.js:93-223`). Sends have a 10 s timeout
   (a stalling endpoint used to hang the request handler indefinitely), run at most 6 at a time,
   and each account is capped at 20 subscriptions, so one small request cannot become an unbounded
-  burst of outbound connections (`api/server.js:84`).
+  burst of outbound connections (`api/server.js:108-110`).
 - **There is an activity log.** Sign-ins, sign-outs, failed and refused attempts, and every admin
   action are appended to `./data/audit.log`, one JSON object per line, and shown in the admin
   dashboard. It is on by default (`AUDIT_LOG=0` disables it) and capped at `AUDIT_MAX` events /

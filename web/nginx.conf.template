@@ -20,11 +20,21 @@ server {
     # as /api/anything.json would be matched by the \.(js|css|json|html)$ block instead and be
     # looked for on disk rather than proxied.
     location ^~ /api/ {
-        # Resolved per request through Docker's DNS, not once at start-up: nginx otherwise pins
-        # the api container's IP when it boots, and a recreated api (new IP) means 502 on every
-        # /api call until web is restarted too (issue #16). The variable is what makes nginx
-        # re-resolve; lowercase so the entrypoint's envsubst leaves it alone.
-        resolver 127.0.0.11 valid=10s ipv6=off;
+        # Match the API's own body limit (MAX_BODY in api/server.js): the whole workout history
+        # travels in one PUT /api/data, and nginx's 1 MiB default would answer 413 here before the
+        # API ever saw it — a sync that silently stops once the history grows past 1 MiB.
+        client_max_body_size 5m;
+        # Resolved per request through the container runtime's DNS, not once at start-up: nginx
+        # otherwise pins the api container's IP when it boots, and a recreated api (new IP) means
+        # 502 on every /api call until web is restarted too (issue #16). The variable is what makes
+        # nginx re-resolve; lowercase so the entrypoint's envsubst leaves it alone.
+        #
+        # RESOLVER defaults to Docker's embedded DNS, which is where this image usually runs.
+        # Nothing answers on that address outside Docker, and an unreachable resolver does not
+        # fail fast — every /api request hangs until it times out. Anywhere else, set RESOLVER to
+        # the DNS the platform actually provides: on Kubernetes that is the kube-dns/CoreDNS
+        # service address (`kubectl -n kube-system get svc kube-dns`, commonly 10.96.0.10).
+        resolver ${RESOLVER} valid=10s ipv6=off;
         set $api_upstream http://${BACKEND}:${PORT};
         proxy_pass $api_upstream;
         proxy_http_version 1.1;

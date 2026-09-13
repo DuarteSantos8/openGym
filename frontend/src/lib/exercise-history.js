@@ -1,5 +1,5 @@
 import { metricModeForEntry, metricRowsForEntry, bestWeightForEntry, modeOf } from './history.js'
-import { extraVolumeOf } from './workout-model.js'
+import { completedVolumeOf } from './workout-model.js'
 import { bestSetOf } from './onerm.js'
 
 // One exercise's past, read back for the history sheet (issue #43): a chart series and the
@@ -24,7 +24,7 @@ const startOf = w => (Number.isFinite(w.start) ? w.start : new Date(w.d + 'T12:0
 
 // Volume of the exercise in one session: main set plus its drops/bursts, reps mode only —
 // there is no honest tonnage for a hold or a run.
-const entryVolume = rows => rows.reduce((v, s) => v + (s.w || 0) * (s.r || 0) + extraVolumeOf(s), 0)
+const entryVolume = rows => rows.reduce((v, s) => v + completedVolumeOf(s), 0)
 
 export function exerciseHistory(S, exId, { limit = HISTORY_SESSIONS } = {}) {
   const workouts = S?.workouts || []

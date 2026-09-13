@@ -2,7 +2,7 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import React, { act } from 'react'
-import { LANGS } from '../lib/i18n-core.js'
+import { LANGS, DERIVED_LOCALES } from '../lib/i18n-core.js'
 import { createRoot } from 'react-dom/client'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -217,7 +217,7 @@ describe('routine move-control locale coverage', () => {
   const packs = import.meta.glob('../locales/*.js', { eager: true, import: 'default' })
 
   it('defines both accessible names in every non-English locale pack', () => {
-    expect(Object.keys(packs)).toHaveLength(Object.keys(LANGS).length - 1)
+    expect(Object.keys(packs)).toHaveLength(Object.keys(LANGS).filter(c => c !== 'en' && !DERIVED_LOCALES[c]).length)
     Object.entries(packs).forEach(([path, pack]) => {
       expect(pack, `${path} is missing Move up`).toHaveProperty('Move up')
       expect(pack, `${path} is missing Move down`).toHaveProperty('Move down')

@@ -85,14 +85,16 @@ accounts, no store rules, no yearly fees between you and an open-source app.
 
 ### Android — sideload the APK
 
-The official signed APK is in three places, all the same file:
+The official signed APK is in four places, all the same file:
 
 - **[opengym.duarte-santos.ch](https://opengym.duarte-santos.ch)** — the download page.
 - **[GitLab's package registry](https://gitlab.com/DuarteSantos8/opengym/-/packages)** — every
   build under `opengym-android/<version>/`, with a `.sha256` beside it. Direct link, no login:
   `https://gitlab.com/api/v4/projects/85678327/packages/generic/opengym-android/<version>/openGym-<version>.apk`
-- **[The GitLab release](https://gitlab.com/DuarteSantos8/opengym/-/releases)** for that version,
-  which links to the two above.
+- **[The GitHub release](https://github.com/DuarteSantos8/openGym/releases)** for that version,
+  with the APK and its `.sha256` attached as release assets.
+- **[The GitLab release](https://gitlab.com/DuarteSantos8/opengym/-/releases)** on the mirror,
+  where the file is built; it links to the package registry above.
 
 Android asks you to allow installs from the browser the first time — that's standard for any
 app outside the Play Store. Check the `.sha256` if you got the file from anywhere else.

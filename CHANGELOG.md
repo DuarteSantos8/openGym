@@ -1,9 +1,146 @@
 # Changelog
 
-## Unreleased
+## v1.3.7 — 2026-09-12
 
-What the Discord and GitLab reports after v1.3.5 had in common: the Coach failed and nobody could
-see why. Web bundle and APK; the API image only for the payload change.
+The v1.3.6 tag's Android build failed on a double dash inside an XML comment, so the APK for everything in v1.3.6 is this one — plus the iPhone timer-sound fix that landed an hour later. Web bundle, APK and API image; v1.3.6 and v1.3.7 are the same code apart from the two items below.
+
+- 📦 **The Android build builds again**: a comment in `styles.xml` (from the safe-area work in v1.3.6) contained `--`, which XML forbids inside comments.
+- 🔊 **Timer sounds on iOS** (kurktchiev, #183, #152): every tone resumes the audio context first
+  (a lock or app switch leaves it suspended and silent), the context is unlocked from the taps that
+  lead to a timer, and Settings → Sounds gains **Play sounds when the phone is on silent** (off by
+  default, iOS 17+), which switches the page's audio session to playback so the ring/silent switch
+  no longer mutes the beep — at the cost of pausing whatever else the phone was playing.
+
+## v1.3.6 — 2026-09-12
+
+Sync you can trust and a phone that behaves: signed in, the server's profile is always the truth, two devices merge instead of overwriting each other, the app polls for changes and works offline with a banner; reminders and push subscriptions heal themselves; chip rows, sheets under the notch and the tab bar are fixed on iOS; the twelve Astra findings, eleven community merges and a headless QA sweep of every screen. Web bundle, APK and API image.
+
+**The Coach reports after v1.3.5 had one thing in common: it failed and nobody could see why.**
+
+**Bug round (2026-09-12) — the reports from the owner's own phone:** push late or missing, desktop and
+phone out of step, the Exercises chip rows scrolling the page, sheets under the Dynamic Island, the
+tab bar mid-screen during a workout. Web bundle, APK and API image.
+
+- 🔄 **Two devices no longer overwrite each other.** Sync was "whichever copy was saved last wins,
+  whole document": a desktop tab left open for a day and then touched — one setting — pushed its
+  stale copy over the workouts the phone had logged meanwhile, and the phone adopted the loss at
+  its next start (issues #128, #124; GitLab #33, #25). The server now keeps a revision on every
+  profile (`_rev`, `GET /api/data` hands it out) and refuses a write that is not based on the
+  current one (`409`, with the current document attached). The app merges the two copies — every
+  workout, routine, weigh-in, custom exercise and favourite from both sides is kept; settings follow
+  the newer copy — and pushes once more. It also asks the server what changed whenever the tab,
+  window, app or network comes back (throttled to once per 15 s), one push and one pull at a time,
+  and nothing pushes before the first pull of a session has landed. Older clients that send no
+  revision keep overwriting as before, so a paired phone on an old build still syncs.
+  Import and "Reset everything" are deliberate replacements and skip the merge.
+- 👤 **Signed in, the server's profile is the truth — always.** Signing in used to keep whatever
+  copy had the newer timestamp, and anything tracked while signed out is always newer: the owner
+  signed out, logged a session as a guest, signed back in and kept seeing the guest copy while the
+  desktop showed the real profile. Sign-in (and pairing a phone) now adopts the server's profile —
+  settings, plan, history, everything — and asks one question when the device holds workouts or
+  weigh-ins the profile does not have: **Add them** (only those entries join the profile) or
+  **Keep profile as is**. A profile that has no state yet still takes the device's data, as
+  creating one always did.
+- 📡 **The newest copy is fetched every chance it gets.** While the app is open and signed in it
+  asks the server for its revision every 30 seconds (one tiny request, `GET /api/data/rev`) and on
+  every return to the tab, window, app or network, and fetches the document only when the number
+  moved. A desktop tab left open all day now shows the phone's session within half a minute.
+- 📴 **Offline mode says so.** A signed-in user who cannot reach the server sees one line under the
+  header — "Offline — your changes are saved on this device and sync when you are back online" —
+  or "Not synced yet — tap to retry" when the server refused a push. The changes stay on the device,
+  are retried by the poll and the moment the network is back, and a toast confirms "Back online —
+  synced with the server". The app also flushes a pending change on `pagehide`, since Safari can
+  kill the home-screen app without a visibility event. Guests and the standalone Android build have
+  no server and see none of this.
+- 🧱 **The home-screen app comes back without a network.** The service worker cloned each
+  response for its cache a moment too late — after the page had started reading it — so the
+  clone failed silently and nothing but exercise media was ever cached: a reload of the installed
+  app without a connection gave the browser's "you're offline" page. The worker now caches the
+  shell and every script, style and icon the built index.html references at install, keeps them
+  fresh network-first, and serves them when the network is gone. Its cache is named after the
+  build, so a deploy is a new worker with its own cache and the previous build's files are
+  dropped. Starting the app offline also raises the offline line at once, and the in-progress
+  workout, stored on the device, is exactly where it was.
+- 🔔 **Reminders that were due still arrive.** The workout-day reminder wanted its exact minute:
+  an API restart, a redeploy or a stalled tick across those 60 seconds lost the whole day's
+  reminder. A reminder is now sent for up to 15 minutes after its time, once per day, never later.
+  The tick also stops re-reading every account's state every 10 seconds (it re-reads only files
+  that changed).
+- 🔁 **A push subscription the server lost comes back on its own.** The browser keeps its
+  subscription through anything that happens on the server — a row pruned after a dead send, a
+  rebuilt `db.json`, a regenerated VAPID key — and Settings said "on" while nothing would ever
+  arrive. On every signed-in start the app hands the server its subscription again
+  (`POST /api/push/subscribe` is an upsert, `GET /api/push/status` is what the switch shows),
+  a subscription made for a key the instance no longer has is replaced, the service worker answers
+  the push service's own key rotation (`pushsubscriptionchange`), a payload that fails to parse
+  still shows a notification instead of counting as a silent push, and a send refused with 403 is
+  pruned like a dead endpoint. Off https the row says push is not supported instead of hanging.
+- ⏱️ **A rest-timer alert belongs to the device that started the rest.** The server held one timer
+  per account, so a desktop tab finishing its rest on screen cancelled the alert the phone in the
+  gym was waiting for. Each browser now carries its own token; older clients keep the old behaviour.
+  (The Android APK has no Web Push: its reminders are local notifications scheduled on the phone.)
+- 👉 **The Exercises chip rows scroll sideways only.** Revealing the active chip used
+  `scrollIntoView`, which also scrolls every ancestor: with the row above the fold a tap made the
+  whole page jump. The row now moves only its own scroll position, it contains overscroll on
+  both axes, and the chips' enlarged tap area no longer gives the row a 4 px vertical scroll range
+  of its own (a diagonal swipe or a wheel tick used to shift the whole row up and leave it there). On a desktop browser a chip row can be dragged with the mouse (HenryByte, !119, #147).
+- 📱 **Sheets stop short of the notch / Dynamic Island.** Every bottom sheet's height now subtracts
+  the top safe-area inset (and so does the exercise picker when the keyboard is up); centred
+  dialogs scroll inside themselves instead of growing past the screen. On Android the app declares
+  the cutout mode and `adjustResize`, so the same insets are real there.
+- 🧭 **The tab bar stays at the bottom after the keyboard.** On iOS a weight field kept its focus
+  when you tapped the tick (WebKit does not blur on button taps), the keyboard went away, and the
+  viewport stayed displaced — tab bar and rest timer mid-screen. Ticking a set and opening a sheet
+  now blur the field, and the correction also works while a sheet has the page pinned. The mobile
+  workout screen keeps less blank space under the last set (mflova, !121).
+- ⚖️ **Weigh in before workouts is a switch** (kurktchiev, #174, #137): off, Start goes straight into
+  the session; body weight can still be logged from Home and Stats.
+- 🇨🇭 **Swiss German** (mkoester, #171): `de-CH` derived from the German pack (ss for ß, Swiss
+  number formatting), no second pack to maintain.
+- 🍎 **iOS shell builds with Xcode 26 / iOS 26** (shailantani, #117; thedandano, !125): UIScene
+  lifecycle, deployment target 15.5.
+- 🔥 **Rest between warm-up ramp sets** (kurktchiev, #164): a per-exercise `warmupRestSec` for
+  plan files; the break into the first work set stays the working rest.
+- 🧰 **Custom exercises** (LuckaPow, #162): equipment is chosen (and required), muscle names read
+  like the built-in ones, cardio gets its target, a chip's focus outline is no longer clipped in
+  a sheet.
+- 🐳 **nginx resolver is configurable** (T13o, !110, #148): `RESOLVER` env (default Docker's
+  127.0.0.11) so /api resolves under Podman and Kubernetes.
+- 🖨️ **Plan as PDF on the phone** (HenryByte, !118, #149): "Print as PDF" opens the OS print
+  dialog, which saves to Files / Drive.
+- 🎛️ **The equipment filter survives a body-part change** in the exercise picker
+  (ErrorUsernameAlreadyTaken, !120, #150), and per-side (L/R) data is preserved through progression
+  and session flows (!133).
+- 🔐 **Coach job directory** (T13o, !135): permissions set with chmod instead of chown, so the
+  built-in Coach runs on a container without CAP_DAC_OVERRIDE.
+- 🛡️ **The twelve Astra findings** (kurktchiev, #166, #160): a request target that does not parse
+  answers 400 instead of an unhandled rejection; a stored state the reminder tick cannot read is
+  skipped instead of taking the API down, and `PUT /api/data` refuses non-array `workouts` /
+  `routines`; the push-endpoint address rule judges every IPv6 spelling; "sign out everywhere"
+  voids unredeemed pairing codes; the built-in Coach's daily and instance limits cannot be reset by
+  "forget", queued jobs hold budget and are dropped on forget, scheduled reviews do not bill the
+  same workout twice; the local copy remembers its owner and is wiped when another profile signs
+  in; a copy adopted from the server keeps the server's timestamp; "Reset everything" says what it
+  deletes and where; a 413 on sync is shown instead of swallowed; nginx allows 5 MiB on `/api/`.
+- 🌍 Seven strings that arrived with combine routines, the layout switch and the 1RM deload were in
+  no locale pack and showed in English in every language.
+- 🧪 **From a headless sweep of every screen after the above** (phone and desktop, all 14
+  languages): the set number in front of a per-side (L/R) set was an unstyled 11-px button; a
+  unilateral set's volume was max-weight × total reps (14×10 left and 12.5×6 right read 224 kg,
+  not 215); timed and cardio sets saved by older builds read "0" in history and on the workout
+  card; the finish summary's tiles cramped into four columns inside the dialog on desktop;
+  exercise names in menu titles and "added to" toasts were lower-case and the 1RM line said
+  "Kg"; in German, Russian, Spanish, French, Italian, Portuguese, Polish and Hungarian the
+  segmented controls in Settings painted over their row titles (the control now wraps under the
+  title when both do not fit); the Home "today" title can take two lines before the ellipsis
+  ("Leg Day — in progress" in Hungarian); the Language row shows the full pack name; the routine
+  editor's rows showed a red sliver of the swipe-to-delete button at their corners; FitNotes'
+  stock "Flat Barbell Bench Press" now matches on import.
+- ⚖️ **A weight off the increment grid keeps its offset when progression raises it** (#175): a sled
+  logged as its own 167 lb plus plates — 397 — with a 10 lb step now goes to 407, the way a stepper
+  tap does, instead of snapping to the grid's 410. Linear, Greyskull and double progression.
+- 🔕 **Rest-timer pushes no longer pile up in the tray on iOS** (#172): the service worker closes the
+  previous notification of the same kind before showing the next one.
 
 - 🔍 **A failed Coach run on the phone says what the provider said.** With your own API key there
   is no admin card and no instance owner, so "the instance owner needs to check its setup" was the
@@ -52,6 +189,13 @@ see why. Web bundle and APK; the API image only for the payload change.
   list — speech, embeddings, image models, realtime and Responses-only variants — made it easy to
   pick one Chat Completions refuses with a 400 or a 404. Compatible endpoints (Ollama, LM Studio,
   OpenRouter) stay unfiltered. The Gemini key field also names the new `AQ.` key prefix.
+- 🏠 **openGym is back on GitHub, and GitHub is home again.** The account suspension that took
+  `github.com/DuarteSantos8/openGym` offline on 2026-08-19 is lifted. Everything that happened on
+  GitLab in the meantime is there again: history, tags, the releases v1.2.9 to v1.3.5 with their
+  APKs, the GHCR images and the GitHub Pages demo. GitLab is now a mirror, pushed by a GitHub
+  Actions workflow on every push to `main` and every `v*` tag; it keeps running the CI that builds
+  the signed APK and the images. Issues and pull requests go to GitHub; the merge requests still
+  open on GitLab are reviewed and land on `main` from there. The site follows suit.
 
 ## v1.3.5 — 2026-09-06
 

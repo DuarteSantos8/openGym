@@ -142,9 +142,8 @@ export function splitBurstReps(total) {
 // exactly what a single combined row hides. So a per-side row logs each side on its own: weight,
 // reps, effort and its own done tick, held in `sides: { L, R }`.
 //
-// Like `drops`/`clusters`, this rides on the row while the row's own `w`/`r`/`done`/effort stay a
-// correct aggregate of the two sides — so volume, 1RM, PRs, progression, recovery, history and the
-// coach keep reading a row's scalar fields and need not know sides exist:
+// The row keeps a scalar summary for existing consumers. These fields cannot reconstruct
+// asymmetric loads: volume and edits must read the individual sides instead.
 //   r     = L.r + R.r   (the both-sides total, exactly what those readers expect of a per-side set)
 //   w     = max(L.w, R.w)  (the heavier side; the two are usually equal)
 //   done  = L.done && R.done  (a set counts done only once both sides are)
@@ -153,6 +152,18 @@ export function splitBurstReps(total) {
 export function isSideSet(set) {
   const s = objectOf(set)
   return !!(s.sides && typeof s.sides === 'object' && s.sides.L && s.sides.R)
+}
+
+/** Includes a completed limb even when its partner is still unchecked. */
+export const hasCompletedWork = set => isSideSet(set)
+  ? set.sides.L.done === true || set.sides.R.done === true
+  : set?.done === true
+
+/** Actual completed load x reps; the scalar maximum weight is only a summary. */
+export function completedVolumeOf(set) {
+  if (isSideSet(set)) return completedVolumeOf(set.sides.L) + completedVolumeOf(set.sides.R)
+  if (!set?.done) return 0
+  return (Number(set.w) || 0) * (Number(set.r) || 0) + extraVolumeOf(set)
 }
 
 const sideOf = value => {

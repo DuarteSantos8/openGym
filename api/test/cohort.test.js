@@ -101,3 +101,10 @@ test('the admin switch decides whether the prompt ever sees a cohort', () => {
   assert.equal(cohort.cohortForPayload('a'), null);
   cfg.save({ community: true });
 });
+
+test('forgetting a profile takes it out of the room at once, cache or no cache', () => {
+  assert.equal(cohort.computeCohort('a').people, 4);
+  jobs.clearUser('b');
+  assert.equal(jobs.isSharing('b'), false);
+  assert.equal(cohort.computeCohort('a').people, 3);
+});

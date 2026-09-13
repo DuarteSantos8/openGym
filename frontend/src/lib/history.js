@@ -1,7 +1,7 @@
 // Pure helpers over the state object S (ported 1:1 from the vanilla app).
 import { todayISO, isoOf, weekKey, weekStartOf, fmtNum } from './format.js'
 import { isCardio, isBodyweightEq } from './exercises.js'
-import { phaseForSet, modeForSet, modeForEntry, isWarmupRow, normalizeMode, extraVolumeOf, nextDropWeight, splitBurstReps, makeSideSet, isSideSet, syncSideAggregate } from './workout-model.js'
+import { phaseForSet, modeForSet, modeForEntry, isWarmupRow, normalizeMode, completedVolumeOf, nextDropWeight, splitBurstReps, makeSideSet, isSideSet, syncSideAggregate } from './workout-model.js'
 const objectOf = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {}
 // Completed-state-independent work rows whose authoritative mode matches the requested mode.
 const workRowsForMode = (entry = {}, mode = 'reps') => {
@@ -107,7 +107,10 @@ const effortTail = s => {
 // entry or a workout entry); passing an id alone keeps the old body-part behaviour.
 export function setLabel(id, s, cfg) {
   const c = cfg || { id }
-  const mode = modeOf(c)
+  let mode = modeOf(c)
+  // A set saved by an older build carries no target with it; the set's own fields still say what
+  // it was — seconds for a timed set, minutes for cardio — so those are not read back as "0 reps".
+  if (!cfg && !(s.r > 0)) { if (s.min > 0 || s.speed > 0) mode = 'cardio'; else if (s.sec > 0) mode = 'time' }
   if (mode === 'cardio') return `${s.min || 0} min @ ${fmtNum(s.speed || 0)} km/h`
   if (mode === 'time') return fmtSec(s.sec) + (s.w > 0 ? ` · ${fmtNum(s.w)}` : '')
   const bw = isBw({ ...c, id: c.id ?? id })
@@ -120,7 +123,11 @@ export function setLabel(id, s, cfg) {
   // A unilateral set logged per side (issue #60) reads "L 15×8 · R 15×7" — the asymmetry is the
   // whole point, so both sides are shown rather than a single combined total.
   if (isSideSet(s)) {
-    return `${t('L')} ${oneSide(s.sides.L)}${effortTail(s.sides.L)} · ${t('R')} ${oneSide(s.sides.R)}${effortTail(s.sides.R)}`
+    const partial = s.sides.L.done !== s.sides.R.done
+    return ['L', 'R'].map(key => {
+      const side = s.sides[key]
+      return `${t(key)} ${partial && !side.done ? '—' : oneSide(side) + effortTail(side)}`
+    }).join(' · ')
   }
   // Bodyweight reads as what you did — "12", or "+10 × 12" once there is a belt involved —
   // rather than "0×12", which says a set was performed with no weight and means nothing.
@@ -471,20 +478,33 @@ export function applyIntensifierPlan(sets, cfg) {
   const w = (sets.find(s => !isWarmupRow(s)) || sets[0] || {}).w || 0
   const warmup = { w, r: Math.max(1, Math.round(cfg.reps) || 1), done: false, phase: 'warmup' }
   const work = { w, r: totalReps, done: false, type: 'restpause', clusters: splitBurstReps(totalReps).map(r => ({ r, restSec })) }
+  if (isPerSide(cfg)) {
+    const source = sets.find(s => !isWarmupRow(s))
+    // The configured total covers both limbs; preserve it even for an odd total.
+    const side = (key, reps) => ({
+      w: source?.sides?.[key]?.w ?? w, r: reps, done: false, type: 'restpause',
+      clusters: splitBurstReps(reps).map(r => ({ r, restSec })),
+    })
+    return [warmup, syncSideAggregate({ ...work, sides: {
+      L: side('L', Math.ceil(totalReps / 2)), R: side('R', Math.floor(totalReps / 2)),
+    } })]
+  }
   return [warmup, work]
 }
 export function workoutVolume(w) {
   let v = 0
-  // No special case for unilateral work: a per-side set logs its total, so both sides are
-  // already in the rep count that arrives here. Drop-set drops and rest-pause bursts add their
-  // own weight x reps on top of the row's main/activation set (see extraVolumeOf).
+  // Count each completed limb at its own load, including drops. A rest-pause side's r already
+  // includes its bursts. Unchecked limbs and warm-ups contribute no volume.
   // Warm-ups are excluded here as everywhere else. The config sheet promises it in so many
   // words ("left out of volume, records and progression") and every other consumer already
   // does it; this line was the one that did not, which only stopped being harmless when a
   // routine started planning warm-ups by default. The number is written into the saved
   // workout, so an inflated one would stay wrong forever.
+  // A per-side row's mirror is `w = max(L, R), r = L + R` (workout-model syncSideAggregate) —
+  // right for a headline, wrong for a product: 14×10 left and 12.5×6 right is 215, not 14×16.
+  // Each side is its own weight × reps, with its own drops and bursts.
   w.entries.forEach(e => e.sets.forEach(s => {
-    if (s.done && !isWarmupRow(s)) v += (s.w || 0) * (s.r || 0) + extraVolumeOf(s)
+    if (!isWarmupRow(s)) v += completedVolumeOf(s)
   }))
   return v
 }

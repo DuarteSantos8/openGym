@@ -2,6 +2,8 @@
 // (60 kg became "60 lb", issue #22); this walks every stored weight once. Rounded to what a gym
 // can load: lb to the nearest 0.5, kg to the nearest 0.25 — enough that a value converted there
 // and back lands where it started for any plate-loadable number.
+import { isSideSet, syncSideAggregate } from './workout-model.js'
+
 const LB_PER_KG = 2.2046226218
 
 export function convertWeight(value, from, to) {
@@ -14,6 +16,9 @@ export function convertWeight(value, from, to) {
 const convSet = (set, from, to) => {
   if (!set || typeof set !== 'object') return set
   const out = { ...set }
+  if (isSideSet(set)) return syncSideAggregate({ ...set, sides: {
+    L: convSet(set.sides.L, from, to), R: convSet(set.sides.R, from, to),
+  } })
   if (out.w != null) out.w = convertWeight(out.w, from, to)
   if (Array.isArray(out.drops)) out.drops = out.drops.map(d => ({ ...d, w: convertWeight(d.w, from, to) }))
   return out

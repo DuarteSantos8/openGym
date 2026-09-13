@@ -7,15 +7,17 @@ import { useUI } from '../store/useUI.js'
 import { ACCENTS, todayISO, localTZ, weekStartOf, MONDAY, SUNDAY } from '../lib/format.js'
 import { effortOf } from '../lib/history.js'
 import { exOr } from '../lib/exercises.js'
+import { unlock, playOnSilentSupported } from '../lib/sound.js'
 import { api, webauthnOK, passkeyLogin, passkeyRegister, IS_ANDROID } from '../lib/api.js'
-import { pushSupported, enablePush, disablePush, sendTestPush } from '../lib/push.js'
+import { pushSupported, enablePush, disablePush, sendTestPush, syncPushSubscription } from '../lib/push.js'
 import { wakeLockSupported } from '../lib/wakelock.js'
 import { t, LANGS, INSTR_LANGS } from '../lib/i18n.js'
 import { DEMO, REPO } from '../lib/demo.js'
 import { MOBILE, isAndroid, shareExport, syncReminder } from '../lib/mobile.js'
 import { checkForUpdate, downloadAndInstall } from '../lib/update.js'
+import { forgetCoach } from '../lib/coach-api.js'
 import { ConnectSheet } from './MobileOnboarding.jsx'
-import { starterPlanSheet, confirmSheet, importFromApp, importFromHevy, equipmentProfileSheet, menuSheet } from '../sheets.jsx'
+import { starterPlanSheet, confirmSheet, importFromApp, importFromHevy, equipmentProfileSheet, menuSheet, askAddDeviceData } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField } from '../components/ui.jsx'
 
@@ -24,7 +26,7 @@ export default function Settings() {
   const S = useStore(s => s.S)
   const user = useStore(s => s.user)
   const coachLocal = useStore(s => s.coachLocal)
-  const { update, replaceState, setUser, pullState, pushState, signOut, signOutAll, resetDemo, disconnectServer } = useStore()
+  const { update, replaceState, setUser, pullState, pushState, adoptProfile, signOut, signOutAll, resetDemo, disconnectServer } = useStore()
   const toast = useUI(s => s.toast)
   const fileRef = useRef(null)
   const importRef = useRef(null)
@@ -143,7 +145,7 @@ export default function Settings() {
     rd.readAsText(f)
   }
   const signInHere = async () => {
-    try { const u = await passkeyLogin(); setUser(u); await pullState(); toast(t('Welcome back, {0}', u.name)) }
+    try { const u = await passkeyLogin(); setUser(u); await adoptProfile(askAddDeviceData); toast(t('Welcome back, {0}', u.name)) }
     catch (e) { if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') toast(e.message || t('Sign-in failed')) }
   }
   const registerHere = () => useUI.getState().openSheet(close => <RegisterInline close={close} setUser={setUser} pushState={pushState} pullState={pullState} toast={toast} />)
@@ -157,6 +159,25 @@ export default function Settings() {
     onConfirm: async () => {
       try { await signOutAll(); nav('/home'); toast(t('Signed out on all devices')) }
       catch (e) { toast(t('Could not sign out everywhere — you are still signed in.')) }
+    },
+  })
+  // Signed in, the empty state is pushed to the profile like any other change, so the wipe
+  // reaches the server and every device that syncs with it — the dialog has to say so. The Coach
+  // keeps its data outside S in two homes that can both be in use on one phone: a file per
+  // profile on the server, and — when it runs with the phone's own key — a file on the device.
+  // Each is cleared on its own; forgetCoach() alone would pick one by mode. A failed call must
+  // not stop the reset.
+  const resetEverything = () => confirmSheet({
+    title: t('Reset everything?'),
+    message: user
+      ? t('Deletes your plan, workouts and body weight from your profile on this server and on every signed-in device. This cannot be undone.')
+      : t('Deletes your plan, workouts and body weight on this device. This cannot be undone.'),
+    confirmText: t('Delete everything'), danger: true,
+    onConfirm: () => {
+      if (user) api('/api/coach/forget', { method: 'POST', body: '{}' }).catch(() => {})
+      if (coachLocal?.mode === 'byok') forgetCoach().catch(() => {})
+      replaceState(JSON.parse(JSON.stringify(DEF)), true)
+      nav('/home'); toast(t('All data reset'))
     },
   })
 
@@ -244,6 +265,12 @@ export default function Settings() {
 
     {/* ---------- during a workout ---------- */}
     <Section title={t('During a workout')} footer={wakeOK ? t('The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.') : null}>
+      {/* The quick weigh-in that opens on Start (sheets.jsx startFlow, issue #137); off skips straight
+          to the session. Home and Stats still log weight by hand. */}
+      <Row icon="scale" iconTint="var(--green)" title={t('Weigh in before workouts')}
+        subtitle={t('Asks for your body weight when a workout starts. Off starts the session straight away.')}>
+        <Switch checked={S.weighIn !== false} onChange={v => update(s => { s.weighIn = v })} />
+      </Row>
       {/* One exercise at a time (cards with Prev/Next), the whole session stacked as a
           scrollable list, or that list stripped to just names and set rows (compact).
           Legacy/unknown values read as cards. The running session can override this from
@@ -285,8 +312,19 @@ export default function Settings() {
           onChange={v => update(s => { s.gifSize = v })} />
       </Row>
       <Row icon="bell" iconTint="var(--pink)" title={t('Sounds')}>
-        <Switch checked={!!S.sound} onChange={v => update(s => { s.sound = v })} />
+        {/* Turning Sounds on is a tap: unlock the audio context now so a timer that ends before
+            the next set check can already sound (iOS, #152). */}
+        <Switch checked={!!S.sound} onChange={v => { if (v) unlock(true); update(s => { s.sound = v }) }} />
       </Row>
+      {/* iOS only (WebKit's audio-session API, iOS 17+): with it off the ring/silent switch mutes
+          the timer. On, the phone treats the timer like a music player — exclusive, and the
+          music app is not told it may resume — so it is a choice, off by default (lib/sound.js). */}
+      {S.sound && playOnSilentSupported() && (
+        <Row icon="bell" iconTint="var(--orange)" title={t('Play sounds when the phone is on silent')}
+          subtitle={t('Music playing on this phone stops during a workout and does not resume by itself.')}>
+          <Switch checked={!!S.soundOnSilent} onChange={v => update(s => { s.soundOnSilent = v })} />
+        </Row>
+      )}
       <Row icon="sun" iconTint="var(--yellow)" title={t('Flash screen when timer ends')}>
         <Switch checked={!!S.timerFlash} onChange={v => update(s => { s.timerFlash = v })} />
       </Row>
@@ -355,7 +393,7 @@ export default function Settings() {
         subtitle={t('Saves a dated copy to the Documents folder after finishing a workout or editing a routine — point a sync app at it, or copy it out by hand.')}>
         <Switch checked={!!S.autoBackup} onChange={v => update(s => { s.autoBackup = v })} />
       </Row>}
-      <Row icon="trash" iconTint="var(--red)" title={t('Reset everything')} danger onClick={() => confirmSheet({ title: t('Reset everything?'), message: t('Deletes your plan, workouts and body weight on this device. This cannot be undone.'), confirmText: t('Delete everything'), danger: true, onConfirm: () => { replaceState(JSON.parse(JSON.stringify(DEF)), true); nav('/home'); toast(t('All data reset')) } })} />
+      <Row icon="trash" iconTint="var(--red)" title={t('Reset everything')} danger onClick={resetEverything} />
     </Section>
     <input ref={fileRef} type="file" accept=".json,application/json" style={{ display: 'none' }} onChange={doImport} />
     {/* Reset after reading so picking the same file twice still fires onChange. */}
@@ -505,7 +543,7 @@ function McpCard({ toast }) {
   const load = () => Promise.all([api('/api/mcp/grants'), api('/api/mcp/proposals')]).then(([g, p]) => {
     setGrants(g.grants || []); setProposals(p.proposals || []); setProposalRevision(p.revision || '"0"')
   }).catch(() => {})
-  useEffect(load, [])
+  useEffect(() => { load() }, [])
   const create = async () => {
     if (!scopes.length) { toast(t('Choose at least one permission')); return }
     try {
@@ -583,9 +621,17 @@ function PushCard({ S, update, toast }) {
   const [busy, setBusy] = useState(false)
   const supported = pushSupported()
 
+  // "On" means the server holds this browser's subscription, not merely that the browser has
+  // one: a row the instance dropped (dead send, rebuilt db.json) left the switch on with nothing
+  // ever arriving. syncPushSubscription re-registers on the way; if the server cannot be asked
+  // (offline), the browser's side is the best answer available.
   useEffect(() => {
     if (!supported) return
-    navigator.serviceWorker.ready.then(reg => reg.pushManager.getSubscription()).then(sub => setOn(!!sub)).catch(() => {})
+    let gone = false
+    syncPushSubscription()
+      .then(ok => { if (!gone) setOn(ok) })
+      .catch(() => navigator.serviceWorker.ready.then(reg => reg.pushManager.getSubscription()).then(sub => { if (!gone) setOn(!!sub) }).catch(() => {}))
+    return () => { gone = true }
   }, [supported])
 
   const toggle = async v => {

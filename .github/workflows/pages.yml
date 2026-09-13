@@ -1,9 +1,8 @@
 # Publishes the browser-only demo to GitHub Pages: https://duartesantos8.github.io/openGym/
 #
-# DORMANT since 2026-08-19, when the GitHub account was suspended. The demo is now built with the
-# same command below and served from the project's own site at https://opengym.duarte-santos.ch/demo/
-# (Vite's base is './', so it drops into a subdirectory unchanged). Kept for the day the account
-# comes back, exactly like the other workflows in this folder.
+# Dormant from 2026-08-19 to 2026-09-10 while the GitHub account was suspended; live again since.
+# The same build (same command, Vite's base is './') is also served from the project's own site at
+# https://opengym.duarte-santos.ch/demo/, so the demo has two addresses with identical content.
 #
 # Pages serves static files only, so this build has no backend — VITE_DEMO=1 makes the app
 # boot straight into guest mode with a seeded example history (see frontend/src/lib/demo.js).

@@ -1,0 +1,59 @@
+# Keeps the GitLab copy identical to this repository, so nobody has to push twice.
+#
+# GitHub is the home of openGym; gitlab.com/DuarteSantos8/opengym is a mirror that stays
+# because its CI builds the release artefacts (signed APK, multi-arch images, SBOMs) and
+# nothing there is merged by hand. Every push to main and every v* tag is forwarded here.
+# Pull mirroring on gitlab.com is a paid feature, so the push runs from this side.
+#
+# Only fast-forward pushes: a rewrite on main, or a commit that landed on GitLab directly,
+# makes this job fail loudly instead of overwriting anything. Branches are never deleted
+# on the mirror from here.
+#
+# Needs one secret, GITLAB_MIRROR_TOKEN: a *project* access token of the GitLab project
+# (Settings → Access tokens) with the single scope `write_repository` and the Maintainer
+# role — main and v* are protected there and only Maintainers may push them. It has no
+# api scope, so a leak could push commits but not read variables, tokens or the registry.
+name: Mirror to GitLab
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One mirror push at a time, in order; never cancel a running one.
+concurrency:
+  group: mirror-to-gitlab
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    # Forks have neither the secret nor a mirror to push to.
+    if: github.repository == 'DuarteSantos8/openGym'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: false
+
+      - name: Push main and the v* tags to GitLab
+        env:
+          GITLAB_MIRROR_TOKEN: ${{ secrets.GITLAB_MIRROR_TOKEN }}
+        run: |
+          if [ -z "$GITLAB_MIRROR_TOKEN" ]; then
+            echo "::error::GITLAB_MIRROR_TOKEN is not set — add the GitLab project token as a repository secret."
+            exit 1
+          fi
+          # The token goes in through a credential helper, never on the command line or into
+          # .git/config, so it shows up in no process list and no log line.
+          git config credential.helper '!f() { echo "username=oauth2"; echo "password=$GITLAB_MIRROR_TOKEN"; }; f'
+          # main first, then the tags: a tag pipeline on GitLab checks that its commit is on
+          # main, so the branch has to be there before the tag arrives.
+          git push https://gitlab.com/DuarteSantos8/opengym.git refs/remotes/origin/main:refs/heads/main
+          git push https://gitlab.com/DuarteSantos8/opengym.git 'refs/tags/v*:refs/tags/v*'

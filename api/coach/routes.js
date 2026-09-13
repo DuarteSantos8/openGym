@@ -179,7 +179,8 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
           ? { ok: true, dropped: false, why: 'this provider runs no child process' }
           : canDropPrivileges(),
         // Counts and outcomes only — never intake answers, payloads or proposals (FR-12/A4).
-        jobsToday: log.filter(e => (e.at || '').slice(0, 10) === today).length,
+        // The same counter the instance cap reads, so the card and the cap cannot disagree.
+        jobsToday: cfg.daily?.date === today ? cfg.daily.count : 0,
         lastSuccess: cfgStore.lastSuccess(),
         lastError: cfgStore.lastError(),
         recent: log.slice(-20).reverse().map(e => ({ at: e.at, kind: e.kind, trigger: e.trigger, outcome: e.outcome, errorClass: e.errorClass, ms: e.ms }))

@@ -1161,3 +1161,18 @@ describe('lastEntryFor / buildSets skip a noProg entry', () => {
     expect(bestWeightFor(S, LIFT2)).toBe(140)
   })
 })
+
+describe('per-side volume and legacy timed sets (QA round 2026-09-12)', () => {
+  it('sums each side of a unilateral set on its own instead of max weight × total reps', () => {
+    const w = { entries: [{ id: 'x', sets: [
+      { done: true, sides: { L: { w: 14, r: 10, done: true }, R: { w: 12.5, r: 6, done: true } }, w: 14, r: 16 },
+      { done: true, w: 100, r: 10 }
+    ] }] }
+    expect(workoutVolume(w)).toBe(14 * 10 + 12.5 * 6 + 1000)
+  })
+  it('reads a timed or cardio set saved without a target from the set itself', () => {
+    expect(setLabel('0001', { sec: 45, done: true })).toBe('0:45')
+    expect(setLabel('0001', { min: 20, speed: 8, done: true })).toBe('20 min @ 8 km/h')
+    expect(setLabel('0025', { w: 60, r: 10, done: true })).toBe('60×10')
+  })
+})

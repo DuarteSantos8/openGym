@@ -8,10 +8,10 @@ This guide takes you from "just cloned it" to "using it from my phone over the i
 Requirements: [Docker](https://docs.docker.com/get-docker/) with the Compose plugin.
 
 ```bash
-git clone https://gitlab.com/DuarteSantos8/opengym
+git clone https://github.com/DuarteSantos8/openGym   # or https://gitlab.com/DuarteSantos8/opengym — same repo
 cd openGym
 cp .env.example .env
-docker compose pull   # prebuilt images from GitLab (amd64 + arm64) — or skip and build from source
+docker compose pull   # prebuilt images from GitLab's registry (amd64 + arm64; the same images are on ghcr.io) — or skip and build from source
 docker compose up -d
 ```
 
@@ -80,7 +80,9 @@ gym.example.com {
 ### Option C — Traefik / nginx / Nginx Proxy Manager
 
 Route `gym.example.com` (HTTPS) → `web:80` (or `<docker-host>:8080`). Any reverse proxy works —
-openGym only needs the browser to reach it over `https://gym.example.com`.
+openGym only needs the browser to reach it over `https://gym.example.com`. If that proxy caps
+request bodies (nginx does, at 1 MiB by default), allow at least 5 MiB on `/api/` — the app syncs
+its whole history in one PUT; the bundled web image already allows 5 MiB, matching the API.
 
 Then set your domain in `.env` and restart:
 
@@ -169,8 +171,16 @@ WEB_PORT=8080              # host port — what you browse to
 NGINX_PORT=80              # port the web container listens on, inside the container
 BACKEND=api                # name of the API service that /api is proxied to
 PORT=3000                  # port the API listens on; web proxies to the same value
+RESOLVER=127.0.0.11        # DNS nginx resolves BACKEND with — Docker's, unless you are not on Docker
 SESSION_DAYS=90            # how long a sign-in lasts
 ```
+
+`RESOLVER` only matters off Docker. nginx re-resolves `BACKEND` on every `/api` request so a
+recreated API container does not leave it proxying to a dead IP, and `127.0.0.11` is where
+Docker answers those lookups. Nothing listens there on another runtime, and an unreachable
+resolver does not fail fast — every `/api` request hangs until it times out. On Kubernetes set
+it to the cluster DNS service address (`kubectl -n kube-system get svc kube-dns`, commonly
+`10.96.0.10`); under Podman, to whatever its network provides.
 
 The web image renders its nginx config from these when the container starts, so they take effect
 on a **prebuilt image** — no rebuild. `BACKEND` and `PORT` together are what `/api` is proxied to,
@@ -215,6 +225,13 @@ No setup needed server-side, and nothing to configure per timezone: VAPID keys a
 first run and saved to `./data/vapid.json`, and each user's browser reports its own timezone
 automatically when they turn the reminder on — it fires at their local time, and follows them if
 they travel, regardless of what timezone the server itself runs in.
+
+Where it works: any desktop browser, Android Chrome, and on iOS only the app **added to the Home
+Screen** (Safari in a tab has no Web Push). The Android APK does not use Web Push at all — its
+day reminder is a local notification scheduled on the phone, and rest-timer alerts there only
+sound while the app is in the foreground. A reminder that was due while the server was down or
+restarting is still sent up to 15 minutes late, once; the browser re-registers its subscription
+with the server on every signed-in start, so a subscription the server lost heals itself.
 
 **Keep screen awake** (Settings → *During a workout*) has the same transport requirement: the
 Wake Lock API is only available over HTTPS or on `http://localhost`, so on a plain-LAN-IP
@@ -302,6 +319,7 @@ everybody registers again — which is why it pays to settle the domain before o
 | Port 8080 already used | Set `WEB_PORT=9090` in `.env` (and update `ORIGIN` for local testing). |
 | No "Notifications" option in Settings | Requires a signed-in profile and HTTPS (or `localhost`) — guest mode and plain HTTP over LAN can't subscribe. |
 | Day reminder fires at the wrong time | Toggle it off and on in Settings so it re-detects your browser's timezone (also happens automatically on every app load — see section 7). |
+| Notifications switch is off although I turned it on | The server no longer holds the subscription (rebuilt `data/db.json`, regenerated `vapid.json`); the app re-registers on the next start, or switch it on again. On iOS, push only works from the Home Screen icon. |
 | Want to reset a stuck login | Delete the cookie in your browser; sessions are just signed cookies. |
 | `docker compose pull` fails with "denied" / "unauthorized" | The prebuilt images aren't published yet, or need to be, or the GHCR package is still private — build from source instead (`docker compose up -d --build`). |
 | Exercise images/GIFs blank when a routine is open | Fixed in current images (issue #79). On an older build, see the note below. |
