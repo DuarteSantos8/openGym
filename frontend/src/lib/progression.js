@@ -75,7 +75,7 @@ export const POLICY_DESC = {
   greyskull: 'Two straight sets plus a final set taken to failure. Beat the target on that set and the weight goes up — double if you double the reps. One failure resets 10 %.',
   double: 'Work up through a rep range at the same weight. Reach the top of the range in every set and the weight goes up, reps back to the bottom.',
   time: 'Hold every set for the full duration and the target goes up.',
-  distance: 'Cover the target distance inside the cap in every set and the distance goes up — the cap stays where it is.'
+  distance: 'Cover the target distance inside the cap in every set and the distance goes up. The cap stays where it is.'
 }
 
 
@@ -351,13 +351,13 @@ export function nextPrescription(S, cfg, routine) {
     // distance goes up; the cap stays put, because a longer cap is who you were, not progress.
     if (last.ok) {
       const m = (last.goal || cfg.m || 0) + inc
-      return { policy, kind: 'up', m, why: ['Covered the distance in every set — go for {0} this time.', fmtDistance(m, unit)] }
+      return { policy, kind: 'up', m, why: ['Covered the distance in every set. Go for {0} this time.', fmtDistance(m, unit)] }
     }
     if (stalls >= deloadAt) {
       const m = deloadTo(last.goal || cfg.m || 0, inc)
-      return { policy, kind: 'deload', m, why: ['Fell short {0} sessions in a row — back off to {1} and build up again.', stalls, fmtDistance(m, unit)] }
+      return { policy, kind: 'deload', m, why: ['Fell short {0} sessions in a row. Back off to {1} and build up again.', stalls, fmtDistance(m, unit)] }
     }
-    return { policy, kind: 'hold', m: last.goal || cfg.m, why: ['Last time came up short — same distance again inside the cap.'] }
+    return { policy, kind: 'hold', m: last.goal || cfg.m, why: ['Last time came up short. Same distance again inside the cap.'] }
   }
 
   const w = last.weight

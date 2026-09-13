@@ -1245,8 +1245,8 @@ export default {
   // --- distance logging mode ---
   'Distance ({0})': 'दूरी ({0})',
   'Add distance': 'दूरी बढ़ाएँ',
-  'Cover the target distance inside the cap in every set and the distance goes up — the cap stays where it is.': 'हर सेट में समय सीमा के अंदर लक्ष्य दूरी पूरी करें तो दूरी बढ़ेगी — सीमा वही रहेगी।',
-  'Covered the distance in every set — go for {0} this time.': 'हर सेट में दूरी पूरी हुई — इस बार {0}।',
-  'Fell short {0} sessions in a row — back off to {1} and build up again.': '{0} सत्र लगातार अधूरे — {1} पर वापस जाकर फिर बनाएँ।',
-  'Last time came up short — same distance again inside the cap.': 'पिछली बार अधूरा — सीमा में वही दूरी फिर।',
+  'Cover the target distance inside the cap in every set and the distance goes up. The cap stays where it is.': 'हर सेट में समय सीमा के अंदर लक्ष्य दूरी पूरी करें तो दूरी बढ़ेगी. सीमा वही रहेगी।',
+  'Covered the distance in every set. Go for {0} this time.': 'हर सेट में दूरी पूरी हुई. इस बार {0}।',
+  'Fell short {0} sessions in a row. Back off to {1} and build up again.': '{0} सत्र लगातार अधूरे. {1} पर वापस जाकर फिर बनाएँ।',
+  'Last time came up short. Same distance again inside the cap.': 'पिछली बार अधूरा. सीमा में वही दूरी फिर।',
 }

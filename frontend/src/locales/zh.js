@@ -1245,8 +1245,8 @@ export default {
   // --- distance logging mode ---
   'Distance ({0})': '距离 ({0})',
   'Add distance': '增加距离',
-  'Cover the target distance inside the cap in every set and the distance goes up — the cap stays where it is.': '每组在时限内完成目标距离，距离就会增加——时限不变。',
-  'Covered the distance in every set — go for {0} this time.': '每组都完成了距离——这次冲 {0}。',
-  'Fell short {0} sessions in a row — back off to {1} and build up again.': '连续 {0} 次未达标——退回 {1} 再往上练。',
-  'Last time came up short — same distance again inside the cap.': '上次没完成——时限内仍是同一距离。',
+  'Cover the target distance inside the cap in every set and the distance goes up. The cap stays where it is.': '每组在时限内完成目标距离，距离就会增加. . 时限不变。',
+  'Covered the distance in every set. Go for {0} this time.': '每组都完成了距离. . 这次冲 {0}。',
+  'Fell short {0} sessions in a row. Back off to {1} and build up again.': '连续 {0} 次未达标. . 退回 {1} 再往上练。',
+  'Last time came up short. Same distance again inside the cap.': '上次没完成. . 时限内仍是同一距离。',
 }
