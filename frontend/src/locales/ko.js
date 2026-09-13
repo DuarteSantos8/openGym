@@ -1245,8 +1245,8 @@ export default {
   // --- distance logging mode ---
   'Distance ({0})': '거리 ({0})',
   'Add distance': '거리 늘리기',
-  'Cover the target distance inside the cap in every set and the distance goes up. The cap stays where it is.': '매 세트 제한 시간 안에 목표 거리를 채우면 거리가 늘고. 제한은 그대로입니다.',
-  'Covered the distance in every set. Go for {0} this time.': '모든 세트에서 거리 달성. 이번엔 {0}.',
-  'Fell short {0} sessions in a row. Back off to {1} and build up again.': '{0}회 연속 미달. {1}(으)로 낮추고 다시 올리세요.',
-  'Last time came up short. Same distance again inside the cap.': '지난번 미달. 제한 안에 같은 거리 다시.',
+  'Cover the target distance inside the cap in every set and the distance goes up — the cap stays where it is.': '매 세트 제한 시간 안에 목표 거리를 채우면 거리가 늘고 — 제한은 그대로입니다.',
+  'Covered the distance in every set — go for {0} this time.': '모든 세트에서 거리 달성 — 이번엔 {0}.',
+  'Fell short {0} sessions in a row — back off to {1} and build up again.': '{0}회 연속 미달 — {1}(으)로 낮추고 다시 올리세요.',
+  'Last time came up short — same distance again inside the cap.': '지난번 미달 — 제한 안에 같은 거리 다시.',
 }

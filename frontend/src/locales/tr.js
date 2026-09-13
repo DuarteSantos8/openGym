@@ -1245,8 +1245,8 @@ export default {
   // --- distance logging mode ---
   'Distance ({0})': 'Mesafe ({0})',
   'Add distance': 'Mesafeyi artır',
-  'Cover the target distance inside the cap in every set and the distance goes up. The cap stays where it is.': 'Her sette süre içinde hedef mesafeyi bitirirsen mesafe artar. Süre aynı kalır.',
-  'Covered the distance in every set. Go for {0} this time.': 'Her sette mesafe tamam. Bu sefer {0}.',
-  'Fell short {0} sessions in a row. Back off to {1} and build up again.': '{0} seans üst üste eksik. {1}e inip yeniden çık.',
-  'Last time came up short. Same distance again inside the cap.': 'Geçen sefer yetmedi. Süre içinde aynı mesafe.',
+  'Cover the target distance inside the cap in every set and the distance goes up — the cap stays where it is.': 'Her sette süre içinde hedef mesafeyi bitirirsen mesafe artar — süre aynı kalır.',
+  'Covered the distance in every set — go for {0} this time.': 'Her sette mesafe tamam — bu sefer {0}.',
+  'Fell short {0} sessions in a row — back off to {1} and build up again.': '{0} seans üst üste eksik — {1}e inip yeniden çık.',
+  'Last time came up short — same distance again inside the cap.': 'Geçen sefer yetmedi — süre içinde aynı mesafe.',
 }
