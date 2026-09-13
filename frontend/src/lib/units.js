@@ -3,6 +3,8 @@
 // can load: lb to the nearest 0.5, kg to the nearest 0.25 — enough that a value converted there
 // and back lands where it started for any plate-loadable number.
 import { isSideSet, syncSideAggregate } from './workout-model.js'
+import { EXIDX } from './exercises.js'
+import { defaultBarWeight } from './bar.js'
 
 const LB_PER_KG = 2.2046226218
 
@@ -32,6 +34,24 @@ const convTarget = (cfg, from, to) => {
   if (Array.isArray(out.warmup)) out.warmup = out.warmup.map(w => (w && w.weight != null ? { ...w, weight: convertWeight(w.weight, from, to) } : w))
   return out
 }
+// A bar is a stamped object, not a number: the 45 lb bar IS the 20 kg bar (44.1 lb), so an
+// override that equals the old unit's default for that bar type drops out and the new unit's
+// default takes over — 45 lb → 20 kg, not 20.5, which with a kg plate set would leave every row
+// "1 kg short". An explicit 0 ("no bar", lib/bar.js) stays 0. A custom bar converts like any
+// other weight (a 33 lb women's bar → 15 kg), and drops out too if it lands on the new default.
+const convBarWeights = (bw, from, to) => {
+  const out = {}
+  for (const [id, v] of Object.entries(bw || {})) {
+    if (typeof v !== 'number' || !Number.isFinite(v) || v < 0) continue
+    if (v === 0) { out[id] = 0; continue }
+    const eq = EXIDX[id]?.eq
+    if (eq && v === defaultBarWeight(eq, from)) continue
+    const c = convertWeight(v, from, to)
+    if (eq && c === defaultBarWeight(eq, to)) continue
+    out[id] = c
+  }
+  return out
+}
 const convEntry = (e, from, to) => {
   if (!e || typeof e !== 'object') return e
   return {
@@ -51,7 +71,7 @@ export function convertStateUnit(S, to) {
   if (Array.isArray(S.bodyweight)) out.bodyweight = S.bodyweight.map(b => ({ ...b, w: c(b.w) }))
   if (S.targetW != null) out.targetW = c(S.targetW)
   if (S.exWeights) out.exWeights = Object.fromEntries(Object.entries(S.exWeights).map(([k, v]) => [k, v && typeof v === 'object' ? { ...v, w: c(v.w) } : c(v)]))
-  if (S.barWeights) out.barWeights = Object.fromEntries(Object.entries(S.barWeights).map(([k, v]) => [k, c(v)]))
+  if (S.barWeights) out.barWeights = convBarWeights(S.barWeights, from, to)
   if (Array.isArray(S.routines)) out.routines = S.routines.map(r => ({ ...r, ex: (r.ex || []).map(cfg => convTarget(cfg, from, to)) }))
   if (Array.isArray(S.workouts)) out.workouts = S.workouts.map(w => ({ ...w, entries: (w.entries || []).map(e => convEntry(e, from, to)) }))
   if (S.active) out.active = { ...S.active, entries: (S.active.entries || []).map(e => convEntry(e, from, to)) }
