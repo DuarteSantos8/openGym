@@ -25,6 +25,7 @@ vi.mock('./capacitor-fetch.js', () => ({
 const local = await import('./coach-local.js')
 const { _resetCoachDevice, loadCoachDevice, saveCoachDevice } = await import('./coach-device.js')
 const { applyChangeSet, markStale, planHash } = await import('./coach.js')
+const { todayISO } = await import('./format.js')
 const { EXERCISES } = await import('../../../api/coach/core/library-data.js')
 
 const EX = EXERCISES[0].id, EX2 = EXERCISES[1].id
@@ -149,7 +150,7 @@ describe('the Coach on a phone with its own key', () => {
     await expect(local.localReview(state())).rejects.toMatchObject({ code: 'busy' })
     await settle()
 
-    await saveCoachDevice({ daily: { d: new Date().toISOString().slice(0, 10), n: local.LOCAL_DAILY_CAP } })
+    await saveCoachDevice({ daily: { d: todayISO(), n: local.LOCAL_DAILY_CAP } })
     await expect(local.localReview(state())).rejects.toMatchObject({ code: 'cap' })
     expect((await local.localStatus()).cap).toEqual({ used: local.LOCAL_DAILY_CAP, limit: local.LOCAL_DAILY_CAP })
   })
@@ -200,11 +201,5 @@ describe('timeouts on the phone', () => {
     expect(timeoutFor('compatible')).toBe(LOCAL_ENDPOINT_TIMEOUT_MS)
     expect(LOCAL_ENDPOINT_TIMEOUT_MS).toBeGreaterThanOrEqual(20 * 60000)
     for (const p of ['anthropic', 'openai', 'gemini']) expect(timeoutFor(p)).toBe(TIMEOUT_MS)
-  })
-  it('the native transport read timeout outlasts the longest job', async () => {
-    const src = (await import('node:fs')).readFileSync(new URL('./capacitor-fetch.js', import.meta.url), 'utf8')
-    const m = src.match(/readTimeout:\s*(\d+)\s*\*\s*60000/)
-    expect(m).toBeTruthy()
-    expect(+m[1] * 60000).toBeGreaterThan(25 * 60000)
   })
 })

@@ -19,7 +19,7 @@ Change something when the data says so:
 **Change nothing when nothing warrants it.** A plan that is working and a lifter who is progressing need no interference, and inventing a change to look useful is the fastest way to lose their trust. In that case answer:
 
 ```
-{ "coach_contract": 1, "nochange": true, "reading": "<a short honest paragraph on how the block went>" }
+{ "coach_contract": 1, "nochange": true, "reading": "<a short honest paragraph on how the block went>", "changes": [] }
 ```
 
 Prefer few, high-conviction changes over many small ones. Never propose more than about six.
