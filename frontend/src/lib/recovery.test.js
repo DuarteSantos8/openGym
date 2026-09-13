@@ -19,6 +19,7 @@ import {
 import { EXDB, registerCustom } from './exercises.js'
 import { MUSCLES, exerciseMuscleSnapshot, musclesOf } from './muscles.js'
 import { fatigueStateOf } from './recovery-view.js'
+import { weightedEstimate } from './onerm.js'
 
 const HOUR = 60 * 60 * 1000
 const DAY = 24 * HOUR
@@ -47,7 +48,10 @@ const workoutAt = (id, start, sets = [{ done: true }]) => ({
   start,
   entries: [{ id, sets: sets.map(set => ({ ...set })) }],
 })
-const V = 640 * (30 / 38) ** 1.5  // intensity-weighted tonnage of one 80x8 fixture set (its own Epley estimate implies intensity 30/38)
+// Weighted-mean anchor (onerm.js) for the 80 × 8 fixture sets, and the intensity-weighted
+// tonnage of one such set — its own blended 1RM implies intensity 80/ANCHOR.
+const ANCHOR_80x8 = weightedEstimate(80, 8)
+const V = 640 * (80 / ANCHOR_80x8) ** 1.5
 
 const doneWorkoutAt = (id, start, count = 1) =>
   workoutAt(id, start, Array.from({ length: count }, () => ({ done: true, w: 80, r: 8 })))
@@ -115,12 +119,14 @@ describe('fatigueOf and strengthOf', () => {
     // one set (80 x 8) never crosses the fatigued threshold on the saturating curve
     expect(fatiguedMuscles(workouts, NOW)).toEqual([])
 
-    // pure volume: one high-rep set at medium weight registers real tonnage (weighted by
-    // its intensity - its own Epley estimate with the 12-rep cap is 50 x 40/30 = 70 kg)
+    // pure volume: a very high-rep set at medium weight registers real tonnage. At 50 reps the
+    // weighted estimate refuses to guess (beyond WEIGHTED_REP_CAP), so no session anchor is
+    // formed and the set counts as raw, unweighted stimulus — honest rather than scaled by a
+    // fantasy 1RM.
     const highRep = [doneWorkoutAt(SINGLE.id, NOW, 1)]
     highRep[0].entries[0].sets[0].w = 50
     highRep[0].entries[0].sets[0].r = 50
-    const weighted = 2500 * (50 / (50 * (1 + 12 / 30))) ** 1.5
+    const weighted = 2500
     expect(fatigueOf(highRep, NOW)[SINGLE_SLUG]).toBeCloseTo(
       1 - Math.exp(-weighted / FATIGUE_REF_VOLUME),
       10,
@@ -440,9 +446,9 @@ describe('warm-up flag in strength and fatigue', () => {
 })
 
 describe('drop-set drops add fatigue tonnage on top of the main set', () => {
-  // Same within-session Epley baseline setTonnage derives from the row's own w/r (8 reps,
-  // under REP_CAP), so a drop is weighted against the same 1RM as the main set.
-  const oneRm = 80 * (1 + 8 / 30)
+  // Same within-session weighted-mean anchor setTonnage derives from the row's own w/r (8 reps),
+  // so a drop is weighted against the same 1RM as the main set.
+  const oneRm = ANCHOR_80x8
 
   it('a drop-set drop adds its own intensity-weighted tonnage', () => {
     const dropRow = { done: true, type: 'dropset', w: 80, r: 8, drops: [{ w: 60, r: 6 }] }

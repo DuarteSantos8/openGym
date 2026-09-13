@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { estimate1RM, bestSetOf, e1rmSeries, best1RM, is1RMRecord, REP_CAP, FORMULAS } from './onerm.js'
+import { estimate1RM, bestSetOf, e1rmSeries, best1RM, is1RMRecord, REP_CAP, WEIGHTED_REP_CAP, FORMULAS, calculate1RMAccuracy } from './onerm.js'
 
 describe('estimate1RM', () => {
   it('returns the load unchanged for a single rep', () => {
@@ -51,7 +51,7 @@ describe('estimate1RM', () => {
     const spread = r => Math.max(...Object.keys(FORMULAS).map(f => estimate1RM(100, r, f)))
       - Math.min(...Object.keys(FORMULAS).map(f => estimate1RM(100, r, f)))
     expect(spread(1)).toBe(0)                       // one rep is measured, not estimated
-    for (let r = 2; r <= 8; r++) expect(spread(r)).toBeLessThan(6)
+    for (let r = 2; r <= 8; r++) expect(spread(r)).toBeLessThan(10)
     const upTo = []
     for (let r = 1; r < REP_CAP; r++) upTo.push(spread(r))
     expect(spread(REP_CAP)).toBeGreaterThan(Math.max(...upTo))   // why REP_CAP exists
@@ -59,6 +59,150 @@ describe('estimate1RM', () => {
 
   it('falls back to the default for an unknown formula name', () => {
     expect(estimate1RM(100, 5, 'nope')).toBe(estimate1RM(100, 5))
+  })
+})
+
+describe('new formulas (oconner, mayhew, wathan, lander)', () => {
+  it('O\'Conner matches hand calculation at r=5', () => {
+    // w * (1 + r/40) = 100 * (1 + 5/40) = 112.5
+    expect(estimate1RM(100, 5, 'oconner')).toBe(112.5)
+  })
+
+  it('Mayhew matches hand calculation at r=5', () => {
+    // (100*100) / (52.2 + 41.9*exp(-0.055*5)) ≈ 119.0
+    const expected = (100 * 100) / (52.2 + 41.9 * Math.exp(-0.055 * 5))
+    expect(estimate1RM(100, 5, 'mayhew')).toBe(Math.round(expected * 10) / 10)
+  })
+
+  it('Wathan matches hand calculation at r=5', () => {
+    const expected = (100 * 100) / (48.8 + 53.8 * Math.exp(-0.075 * 5))
+    expect(estimate1RM(100, 5, 'wathan')).toBe(Math.round(expected * 10) / 10)
+  })
+
+  it('Lander matches hand calculation at r=5', () => {
+    // (100*100) / (101.3 - 2.67123*5) = 10000 / 87.94 ≈ 113.7
+    const expected = (100 * 100) / (101.3 - 2.67123 * 5)
+    expect(estimate1RM(100, 5, 'lander')).toBe(Math.round(expected * 10) / 10)
+  })
+
+  it('all seven formulas are present in FORMULAS', () => {
+    expect(Object.keys(FORMULAS)).toEqual(
+      expect.arrayContaining(['epley', 'brzycki', 'lombardi', 'oconner', 'mayhew', 'wathan', 'lander']),
+    )
+  })
+})
+
+describe('weighted formula', () => {
+  it('returns a finite estimate between the min and max of individual formulas', () => {
+    const est = estimate1RM(100, 5, 'weighted')
+    const vals = Object.keys(FORMULAS).map(f => estimate1RM(100, 5, f))
+    expect(est).toBeGreaterThan(Math.min(...vals) - 0.1)
+    expect(est).toBeLessThan(Math.max(...vals) + 0.1)
+  })
+
+  it('returns exactly w for a single rep', () => {
+    expect(estimate1RM(100, 1, 'weighted')).toBe(100)
+  })
+
+  it('returns null when effective reps exceed WEIGHTED_REP_CAP', () => {
+    expect(estimate1RM(100, WEIGHTED_REP_CAP, 'weighted')).not.toBeNull()
+    expect(estimate1RM(100, WEIGHTED_REP_CAP + 1, 'weighted')).toBeNull()
+  })
+
+  it('accepts reps above REP_CAP but within WEIGHTED_REP_CAP', () => {
+    expect(estimate1RM(100, 13, 'weighted')).not.toBeNull()
+    expect(estimate1RM(100, 13, 'epley')).toBeNull()
+  })
+
+  it('rounds to one decimal', () => {
+    const est = estimate1RM(100, 8, 'weighted')
+    expect(Number.isInteger(est * 10)).toBe(true)
+  })
+})
+
+describe('RIR handling', () => {
+  it('exactly 1 rep with RIR 0 returns the weight unchanged', () => {
+    expect(estimate1RM(100, 1, 'weighted', 0)).toBe(100)
+    expect(estimate1RM(80, 1, 'epley', 0)).toBe(80)
+  })
+
+  it('weighted with RIR computes effective reps for the formula ensemble', () => {
+    // 5 reps with RIR 2 → effectiveReps 7. Every formula is increasing in reps,
+    // and more reps to failure pushes the frozen %1RM estimate up.
+    const withRir = estimate1RM(100, 5, 'weighted', 2)
+    const withoutRir = estimate1RM(100, 5, 'weighted')
+    expect(withRir).toBeGreaterThan(withoutRir)
+  })
+
+  it('RIR map estimate alone (e.g. RIR 2, 5 reps) ≈ weight / 0.892', () => {
+    // effectiveReps = 7 → RIR_PCT[6] = 81.1 → 100/0.811 ≈ 123.3
+    const est = estimate1RM(100, 5, 'weighted', 2)
+    expect(est).toBeGreaterThan(110)
+    expect(est).toBeLessThan(140)
+  })
+
+  it('returns null when effective reps exceed WEIGHTED_REP_CAP', () => {
+    // 13 reps + RIR 3 = 16 > 15
+    expect(estimate1RM(100, 13, 'weighted', 3)).toBeNull()
+  })
+
+  it('ignores negative or non-numeric RIR', () => {
+    expect(estimate1RM(100, 5, 'weighted', -1)).toBe(estimate1RM(100, 5, 'weighted'))
+    expect(estimate1RM(100, 5, 'weighted', 'abc')).toBe(estimate1RM(100, 5, 'weighted'))
+  })
+
+  it('individual formulas ignore the RIR parameter', () => {
+    expect(estimate1RM(100, 5, 'epley', 2)).toBe(estimate1RM(100, 5, 'epley'))
+  })
+})
+
+describe('calculate1RMAccuracy', () => {
+  it('returns 1 for a single rep to failure', () => {
+    expect(calculate1RMAccuracy(1, 0)).toBe(1)
+  })
+
+  it('returns 0 for reps beyond WEIGHTED_REP_CAP', () => {
+    expect(calculate1RMAccuracy(WEIGHTED_REP_CAP + 1)).toBe(0)
+  })
+
+  it('returns 0 for non-positive or non-finite input', () => {
+    expect(calculate1RMAccuracy(0)).toBe(0)
+    expect(calculate1RMAccuracy(-1)).toBe(0)
+    expect(calculate1RMAccuracy(NaN)).toBe(0)
+  })
+
+  it('decreases accuracy as reps increase', () => {
+    const a3 = calculate1RMAccuracy(3)
+    const a8 = calculate1RMAccuracy(8)
+    const a13 = calculate1RMAccuracy(13)
+    expect(a3).toBeGreaterThan(a8)
+    expect(a8).toBeGreaterThan(a13)
+  })
+
+  it('penalises RIR presence by ~8%', () => {
+    const noRir = calculate1RMAccuracy(5)
+    const withRir = calculate1RMAccuracy(5, 2)
+    // 2-decimal rounding on the final product hides the exact ratio; allow a tolerance
+    expect(withRir).toBeCloseTo(noRir * 0.92, 1)
+  })
+
+  it('RIR 0 does not penalise (to failure)', () => {
+    expect(calculate1RMAccuracy(5, 0)).toBe(calculate1RMAccuracy(5))
+  })
+
+  it('returns a value between 0 and 1', () => {
+    for (let r = 1; r <= WEIGHTED_REP_CAP; r++) {
+      const acc = calculate1RMAccuracy(r)
+      expect(acc).toBeGreaterThanOrEqual(0)
+      expect(acc).toBeLessThanOrEqual(1)
+    }
+  })
+
+  it('spread factor applies only to the weighted formula', () => {
+    const weightedAcc = calculate1RMAccuracy(8, null, 'weighted')
+    const epleyAcc = calculate1RMAccuracy(8, null, 'epley')
+    // weighted should be ≤ epley because it adds the spread penalty
+    expect(weightedAcc).toBeLessThanOrEqual(epleyAcc)
   })
 })
 
@@ -164,9 +308,6 @@ describe('drop-sets, rest-pause sets and 1RM', () => {
   })
 
   it('refuses to estimate a planned rest-pause row once its total reps exceed REP_CAP, same as any other high-rep set', () => {
-    // A planned rest-pause row's own r is the total across every burst (see
-    // applyIntensifierPlan/history.js), so it commonly lands above REP_CAP — the row is real
-    // work, but "estimate a max from 20 broken-up reps" is exactly the fantasy REP_CAP refuses.
     const entry = { id: 'x', sets: [
       { type: 'restpause', w: 60, r: 20, done: true, clusters: [{ r: 10, restSec: 15 }, { r: 5, restSec: 15 }, { r: 3, restSec: 15 }, { r: 1, restSec: 15 }, { r: 1, restSec: 15 }] },
     ] }
