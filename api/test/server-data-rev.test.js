@@ -128,3 +128,48 @@ test('GET/PUT /api/data: revisions and strict conditional writes', async t => {
   assert.equal(r.body.error, 'invalid state');
   assert.equal(onDisk()._rev, 4);
 });
+
+test('PUT idempotent retry keeps the original ETag and revision after another write', async t => {
+  const h = await startServer(t);
+  const uid = 'u_rev_1';
+  const cookie = headers(uid);
+  const put = async (state, match, key) => {
+    const response = await fetch(`${h.api}/api/data`, {
+      method: 'PUT',
+      headers: { ...cookie, 'If-Match': match, 'Idempotency-Key': key },
+      body: JSON.stringify({ state })
+    });
+    return { response, body: await response.json() };
+  };
+
+  const first = await put({ _ts: 100, workouts: [], routines: [] }, '"0"', 'retry-original');
+  assert.equal(first.response.status, 200);
+  const intervening = await put({ _ts: 200, workouts: [], routines: [], restSec: 45 }, first.body.revision, 'retry-intervening');
+  assert.equal(intervening.response.status, 200);
+
+  const retry = await put({ _ts: 100, workouts: [], routines: [] }, intervening.body.revision, 'retry-original');
+  assert.equal(retry.response.status, 200);
+  assert.equal(retry.body.revision, first.body.revision);
+  assert.equal(retry.response.headers.get('etag'), first.response.headers.get('etag'));
+  assert.equal(retry.body.rev, first.body.rev);
+});
+
+test('profile writes fail closed when the stored revision cannot advance safely', async t => {
+  const h = await startServer(t);
+  const uid = 'u_rev_1';
+  const statePath = path.join(h.dataDir, `state-${uid}.json`);
+  const state = { _rev: Number.MAX_SAFE_INTEGER, _ts: 100, workouts: [], routines: [] };
+  fs.writeFileSync(statePath, JSON.stringify(state));
+
+  const current = await fetch(`${h.api}/api/data`, { headers: headers(uid) });
+  const currentBody = await current.json();
+  assert.equal(currentBody.rev, Number.MAX_SAFE_INTEGER);
+  const response = await fetch(`${h.api}/api/data`, {
+    method: 'PUT',
+    headers: { ...headers(uid), 'If-Match': current.headers.get('etag'), 'Idempotency-Key': 'unsafe-revision' },
+    body: JSON.stringify({ state: { _ts: 200, workouts: [], routines: [] } })
+  });
+  assert.equal(response.status, 503);
+  assert.equal((await response.json()).error, 'storage_corrupt');
+  assert.deepEqual(JSON.parse(fs.readFileSync(statePath, 'utf8')), state);
+});

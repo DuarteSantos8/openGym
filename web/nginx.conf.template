@@ -4,6 +4,11 @@ server {
     listen ${NGINX_PORT};
     root /usr/share/nginx/html;
     index index.html;
+    resolver ${RESOLVER} valid=10s ipv6=off;
+    # Resolve the optional MCP service only when one of its routes is requested. A literal
+    # proxy_pass makes nginx resolve `mcp` while loading the config, which prevents web-only
+    # startup when the optional gateway is not part of the stack.
+    set $mcp_upstream http://mcp:8787;
 
     # Sent on every response below. NOTE: an `add_header` inside a location replaces the whole
     # inherited set rather than adding to it, so the two locations further down that set their
@@ -23,7 +28,7 @@ server {
         # Match the API's own body limit (MAX_BODY in api/server.js): the whole workout history
         # travels in one PUT /api/data, and nginx's 1 MiB default would answer 413 here before the
         # API ever saw it — a sync that silently stops once the history grows past 1 MiB.
-        client_max_body_size 5m;
+        client_max_body_size 16m;
         # Resolved per request through the container runtime's DNS, not once at start-up: nginx
         # otherwise pins the api container's IP when it boots, and a recreated api (new IP) means
         # 502 on every /api call until web is restarted too (issue #16). The variable is what makes
@@ -34,12 +39,9 @@ server {
         # fail fast — every /api request hangs until it times out. Anywhere else, set RESOLVER to
         # the DNS the platform actually provides: on Kubernetes that is the kube-dns/CoreDNS
         # service address (`kubectl -n kube-system get svc kube-dns`, commonly 10.96.0.10).
-        resolver ${RESOLVER} valid=10s ipv6=off;
         set $api_upstream http://${BACKEND}:${PORT};
         proxy_pass $api_upstream;
         proxy_http_version 1.1;
-        # The API accepts private custom images up to 10 MiB plus JSON/base64 overhead.
-        client_max_body_size 16m;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         # DCR registrations are also reachable under /api. Overwrite the
@@ -62,7 +64,7 @@ server {
     # MCP discovery is served by the gateway as well. Keep these exact routes ahead of the SPA
     # fallback so clients do not receive index.html for a well-known metadata request.
     location = /.well-known/oauth-protected-resource {
-        proxy_pass http://mcp:8787;
+        proxy_pass $mcp_upstream;
         proxy_http_version 1.1;
         proxy_buffering off;
         proxy_set_header Host $host;
@@ -70,7 +72,7 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
     location = /.well-known/oauth-protected-resource/mcp {
-        proxy_pass http://mcp:8787;
+        proxy_pass $mcp_upstream;
         proxy_http_version 1.1;
         proxy_buffering off;
         proxy_set_header Host $host;
@@ -78,7 +80,7 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
     location = /.well-known/oauth-authorization-server {
-        proxy_pass http://mcp:8787;
+        proxy_pass $mcp_upstream;
         proxy_http_version 1.1;
         proxy_buffering off;
         proxy_set_header Host $host;
@@ -90,7 +92,7 @@ server {
     # signed openGym session cookie, which nginx forwards unchanged; no bearer or client secret is
     # minted at this edge.
     location ^~ /oauth {
-        proxy_pass http://mcp:8787;
+        proxy_pass $mcp_upstream;
         proxy_http_version 1.1;
         proxy_buffering off;
         proxy_set_header Host $host;
@@ -106,7 +108,7 @@ server {
     # grant. Keeping it on this origin preserves the existing Coolify/Traefik routing and passkey
     # host while avoiding a second public hostname.
     location ^~ /mcp {
-        proxy_pass http://mcp:8787;
+        proxy_pass $mcp_upstream;
         proxy_http_version 1.1;
         proxy_buffering off;
         proxy_set_header Host $host;

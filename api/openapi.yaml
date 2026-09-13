@@ -50,7 +50,7 @@ info:
     - Errors are always `{"error": "<human-readable message>"}`.
     - Unknown method+path pairs return `404 {"error":"not found"}`; an unhandled
       exception returns `500 {"error":"server error"}`.
-    - Request bodies are parsed as JSON regardless of Content-Type; max 5 MiB.
+    - Request bodies are parsed as JSON regardless of Content-Type; max 16 MiB.
     - CORS: the request's `Origin` is reflected in `Access-Control-Allow-Origin`
       **without** `Allow-Credentials` — cross-origin callers can only ever
       authenticate with a Bearer token, never with the cookie.
@@ -474,13 +474,16 @@ paths:
       summary: Pull the account's app state
       description: >-
         Returns the caller's entire app state as one JSON blob, or `{"state": null}`
-        if nothing has been synced yet, together with `rev`, the server's revision of
-        that document (0 when there is none). A client keeps the `rev` it last read or
-        wrote and sends it back as `baseRev` on the next push, which lets the server
-        refuse a write over a document the client never saw (see the 409 on PUT).
+        if nothing has been synced yet, together with `revision` (the strong ETag) and
+        `rev` (the numeric polling revision; 0 when there is no document). A client
+        sends the `revision` value it last read in `If-Match` on the next push.
       responses:
         '200':
           description: The stored state, or null, and its revision.
+          headers:
+            ETag:
+              schema: { type: string }
+              description: Strong validator for this exact stored document.
           content:
             application/json:
               schema:
@@ -493,6 +496,9 @@ paths:
                   rev:
                     type: integer
                     description: Server revision of the stored document; 0 when there is none.
+                  revision:
+                    type: string
+                    description: Strong ETag for the stored document; `"0"` when there is none.
         '401': { $ref: '#/components/responses/Unauthorized' }
     put:
       tags: [data]
@@ -501,15 +507,27 @@ paths:
       description: |
         Replaces the stored state wholesale (atomic write; there is no merge on the
         server). The `active` field — an in-progress workout — is stripped before
-        saving: a running session belongs to the device running it. Body limit 5 MiB.
+        saving: a running session belongs to the device running it. Body limit 16 MiB.
 
-        With `baseRev` the write is conditional: it goes through only when `baseRev`
-        equals the document's current revision, and answers 409 with the current
-        document otherwise — the client merges the two and pushes again with the
-        revision it was given. Without `baseRev` the write is unconditional (clients
-        from before revisions, and deliberate replaces such as a backup import). The
-        server stamps the new revision into the document as `_rev`; a `_rev` sent by
-        the client is ignored.
+        `If-Match` is required and must contain the exact strong ETag returned by
+        `GET /api/data` (or a prior successful write). A stale ETag answers 412 and
+        includes the current ETag; a missing ETag answers 428. `baseRev` is retained
+        in the body as a numeric polling hint for older clients, but it is not a
+        write precondition. Supplying an `Idempotency-Key` makes a retried request
+        return the original result, including its original ETag and numeric revision.
+        The server stamps the new revision into the document as `_rev`; a `_rev` sent
+        by the client is ignored.
+      parameters:
+        - in: header
+          name: If-Match
+          required: true
+          schema: { type: string }
+          description: Exact strong ETag from the last read or write of this profile.
+        - in: header
+          name: Idempotency-Key
+          required: false
+          schema: { type: string, maxLength: 200 }
+          description: Optional key for safely replaying the same request after a lost response.
       requestBody:
         required: true
         content:
@@ -522,8 +540,8 @@ paths:
                 baseRev:
                   oneOf: [{ type: integer }, { type: 'null' }]
                   description: >-
-                    The revision this client last read or wrote. Omit or null for an
-                    unconditional overwrite.
+                    Numeric polling hint retained for older clients. The server uses
+                    `If-Match`, not this field, as the write precondition.
       responses:
         '200':
           description: Saved.
@@ -539,21 +557,44 @@ paths:
                   rev:
                     type: integer
                     description: The revision the write produced.
+                  revision:
+                    type: string
+                    description: Strong ETag for the stored document after the write.
+          headers:
+            ETag:
+              schema: { type: string }
+              description: Strong validator for the stored document after the write.
         '409':
           description: >-
-            `baseRev` is not the current revision — another client wrote since this one
-            last read. Carries the current document so the client can merge and retry.
+            The supplied idempotency key was already used with a different request body.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '412':
+          description: >-
+            The `If-Match` ETag is stale — another device wrote the profile after this
+            client last read it. No write was accepted.
+          headers:
+            ETag:
+              schema: { type: string }
+              description: Current strong validator; use this for the merge retry.
           content:
             application/json:
               schema:
                 type: object
+                required: [error, revision]
                 properties:
-                  error: { type: string, const: conflict }
-                  rev: { type: integer }
-                  state:
-                    oneOf:
-                      - $ref: '#/components/schemas/State'
-                      - type: 'null'
+                  error: { type: string, const: stale revision }
+                  revision: { type: string, description: Current strong ETag. }
+        '428':
+          description: The required `If-Match` precondition was not supplied.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [error]
+                properties:
+                  error: { type: string, const: If-Match precondition required }
         '400':
           description: >-
             `state` missing or not an object, or `workouts`/`routines` set to anything
@@ -1264,7 +1305,7 @@ components:
         _rev:
           type: integer
           readOnly: true
-          description: Server-set revision, incremented on every accepted PUT. Ignored when sent by a client.
+          description: Server-set revision, incremented on every accepted profile write. Ignored when sent by a client.
         unit: { type: string, enum: [kg, lb] }
         lang:
           type: string

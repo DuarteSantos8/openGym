@@ -247,8 +247,11 @@ try {
   assert.equal(progress.workouts?.[0]?.sets_planned, fixtureWorkout.entries.reduce((n, e) => n + (e.sets || []).length, 0))
   assert.equal(progress.workouts?.[0]?.duration_ms, fixtureWorkout.end - fixtureWorkout.start)
   assert.equal(progress.workouts?.[0]?.duration, friendlyDuration(fixtureWorkout.end - fixtureWorkout.start))
+  const proposalBefore = assertStatus(await request(apiBase, '/api/data', { headers: { Cookie: `gymsid=${session}` } }), 200, 'proposal revision before').data
   const proposalCall = await localClient.call(4, 'tools/call', { name: 'propose_routine', arguments: { request_id: 'proposal-once', routine: { name: 'Approved from MCP', ex: [{ id: '0001', sets: 3, reps: 5, weight: 50 }] } } })
-  assert.equal(proposalCall.response.status, 200); const proposalText = proposalCall.data.result?.content?.[0]?.text || ''; const proposal = JSON.parse(proposalText).proposal; assert.ok(proposal?.id)
+  assert.equal(proposalCall.response.status, 200); const proposalText = proposalCall.data.result?.content?.[0]?.text || ''; const proposalResult = JSON.parse(proposalText); const proposal = proposalResult.proposal; assert.ok(proposal?.id)
+  assert.equal(proposalResult.rev, proposalBefore.rev + 1)
+  assert.equal(proposalResult.revision, (await request(apiBase, '/api/data', { headers: { Cookie: `gymsid=${session}` } })).data.revision)
   const duplicateProposalCall = await localClient.call(5, 'tools/call', { name: 'propose_routine', arguments: { request_id: 'proposal-once', routine: { name: 'Approved from MCP', ex: [{ id: '0001', sets: 3, reps: 5, weight: 50 }] } } })
   const duplicateProposal = JSON.parse(duplicateProposalCall.data.result?.content?.[0]?.text || '{}').proposal
   assert.equal(duplicateProposal?.id, proposal.id)
@@ -256,7 +259,10 @@ try {
   assert.equal(proposalOnlyCall.response.status, 200)
   const afterProposal = assertStatus(await request(apiBase, '/api/data', { headers: { Cookie: `gymsid=${session}` } }), 200, 'proposal snapshot').data
   assertStatus(await request(apiBase, `/api/mcp/proposals/${proposal.id}`, { headers: bearer(exerciseGrant) }), 403, 'proposal insufficient scope')
-  const approved = assertStatus(await request(apiBase, `/api/mcp/proposals/${proposal.id}`, { method: 'POST', headers: { Cookie: `gymsid=${session}`, 'If-Match': afterProposal.revision } }), 200, 'in-app proposal approval').data
+  const approvedResponse = assertStatus(await request(apiBase, `/api/mcp/proposals/${proposal.id}`, { method: 'POST', headers: { Cookie: `gymsid=${session}`, 'If-Match': afterProposal.revision } }), 200, 'in-app proposal approval')
+  const approved = approvedResponse.data
+  assert.equal(approved.rev, afterProposal.rev + 1)
+  assert.equal(approved.revision, approvedResponse.response.headers.get('etag'))
   const phoneSnapshot = approved.routine
     ? (await request(apiBase, '/api/data', { headers: { Cookie: `gymsid=${session}` } })).data.state
     : afterProposal.state
@@ -280,7 +286,11 @@ try {
   // Gate 4: decode/re-encode, ownership checks, quota, failed replacement
   // preservation, and a versioned backup manifest. Every fixture is local and
   // disposable; no public URL or production data is involved.
-  assert.match(fs.readFileSync(path.join(ROOT, 'web/nginx.conf.template'), 'utf8'), /client_max_body_size 16m/)
+  const nginxTemplate = fs.readFileSync(path.join(ROOT, 'web/nginx.conf.template'), 'utf8')
+  assert.equal((nginxTemplate.match(/client_max_body_size/g) || []).length, 1)
+  assert.match(nginxTemplate, /client_max_body_size 16m/)
+  assert.doesNotMatch(nginxTemplate, /proxy_pass http:\/\/mcp:8787/)
+  assert.match(nginxTemplate, /proxy_pass \$mcp_upstream/)
   const tinyPng = await solidImage('png', 1, 1, { r: 1, g: 2, b: 3 })
   const upload = assertStatus(await request(apiBase, '/api/assets', { ...bodyOptions({ mime: 'image/png', data: tinyPng.toString('base64') }), headers: { Cookie: `gymsid=${session}` } }), 201, 'private asset upload').data.asset
   assert.equal(upload.mime, 'image/webp')

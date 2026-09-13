@@ -1163,9 +1163,27 @@ try {
       const writeStarted = Date.now()
       tsWriteResult = await postPhase4cWorkout(workoutToken, phase4cWorkout('phase4c-ts-workout'), 'phase4c-ts-workout', before.revision)
       assert.equal(tsWriteResult.response.status, 201)
+      assert.equal(tsWriteResult.data.rev, before.rev + 1)
+      assert.equal(tsWriteResult.data.revision, tsWriteResult.response.headers.get('etag'))
       const after = status(await request(apiBase, '/api/data', { headers: { Cookie: hostCookie } }), 200, 'state after ts append').data
       const expectedFloor = Math.max(writeStarted, tsBefore + 1)
       assert.ok(Number(after.state?._ts) >= expectedFloor, `expected _ts >= ${expectedFloor}, got ${after.state?._ts}`)
+    })
+    await phase4cCheck('workout_retry_keeps_etag_revision_pair_after_intervening_write', async () => {
+      const first = tsWriteResult
+      const current = status(await request(apiBase, '/api/data', { headers: { Cookie: hostCookie } }), 200, 'revision before intervening write').data
+      const interveningState = JSON.parse(JSON.stringify(current.state))
+      interveningState._phase4c_intervening = true
+      const intervening = await request(apiBase, '/api/data', {
+        method: 'PUT', headers: { Cookie: hostCookie, 'If-Match': current.revision, 'Idempotency-Key': 'phase4c-intervening-write', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ state: interveningState })
+      })
+      assert.equal(intervening.response.status, 200)
+      const retry = await postPhase4cWorkout(workoutToken, phase4cWorkout('phase4c-ts-workout'), 'phase4c-ts-workout', intervening.data.revision)
+      assert.equal(retry.response.status, 200)
+      assert.equal(retry.data.revision, first.data.revision)
+      assert.equal(retry.data.rev, first.data.rev)
+      assert.equal(retry.response.headers.get('etag'), first.response.headers.get('etag'))
     })
     await phase4cCheck('workout_missing_if_match_still_428', async () => {
       const result = await request(apiBase, '/api/mcp/workouts', {

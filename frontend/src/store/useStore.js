@@ -16,9 +16,10 @@ import { WC_DEFAULT } from '../lib/workout-controls.js'
 
 const KEY = 'gym_state_v1'
 // Where this device stands with the server: the revision it last adopted or pushed, and its own
-// `_ts` at that moment. `rev` goes back to the server as `baseRev` on every push, so a write over
-// a document this device never saw is refused (409) instead of dropping another device's work;
-// `ts` tells a pull whether anything changed here since. See pushState/pullState.
+// `_ts` at that moment. The strong ETag goes back as `If-Match`, while `rev` is sent as `baseRev`
+// for polling compatibility, so a write over a document this device never saw is refused (412)
+// instead of dropping another device's work; `ts` tells a pull whether anything changed here since.
+// See pushState/pullState.
 const SYNC_KEY = 'gym_sync'
 const CHECK_MIN_MS = 3000    // rev checks closer together than this are the same event (focus + visibility)
 const POLL_MS = 30000        // while the app is open and signed in, ask the server for its revision this often
@@ -83,6 +84,12 @@ export const DEF = {
   weighIn: true,
 }
 const clone = o => JSON.parse(JSON.stringify(o))
+const withoutActive = state => {
+  const copy = clone(state || {})
+  delete copy.active
+  return copy
+}
+const sameSyncedState = (left, right) => JSON.stringify(withoutActive(left)) === JSON.stringify(withoutActive(right))
 
 const markDirty = () => {
   try { localStorage.setItem('gym_dirty', '1') } catch { /* a broken store is reported below */ }
@@ -509,6 +516,21 @@ export const useStore = create((set, get) => {
               const localNewer = (S._ts || 0) > (state._ts || 0)
               const preserveLocal = dirty || localNewer
               const hadBase = !!syncBase
+              // `active` is intentionally device-local and is not part of the server snapshot.
+              // When both snapshots still match the saved base, there is no pending profile
+              // change to push; mergePendingState would otherwise treat the presence of the base
+              // as a local edit and issue a needless PUT on every pull.
+              if (hadBase && sameSyncedState(S, syncBase) && sameSyncedState(state, syncBase)) {
+                const active = S.active
+                const next = Object.assign(clone(DEF), state)
+                if (active) next.active = active
+                saveRevision(); syncBase = clone(state); saveSyncBase(syncBase)
+                persist(next, false, false)
+                pushPending = false
+                localStorage.removeItem('gym_dirty')
+                setSync({ pending: false })
+                return
+              }
               const merged = hadBase ? mergePendingState(syncBase, S, state) : (preserveLocal ? S : state)
               const active = S.active
               if (active) merged.active = active

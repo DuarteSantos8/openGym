@@ -135,12 +135,30 @@ function readStateRecord(uid) {
   try { state = JSON.parse(raw.toString('utf8')); }
   catch (error) { throw new StorageCorruptError(file, error); }
   if (!state || typeof state !== 'object' || Array.isArray(state)) throw new StorageCorruptError(file, new Error('state is not an object'));
+  storedStateRevision(uid, state);
   return { state, etag: etagFor(raw) };
 }
-function writeState(uid, state) {
-  const text = JSON.stringify(state);
+function storedStateRevision(uid, state) {
+  const revision = state?._rev;
+  if (revision == null) return 0;
+  if (!Number.isSafeInteger(revision) || revision < 0) {
+    throw new StorageCorruptError(stateFile(uid), new Error('state revision is invalid'));
+  }
+  return revision;
+}
+function nextStateRevision(uid, state) {
+  const revision = storedStateRevision(uid, state);
+  if (revision >= Number.MAX_SAFE_INTEGER) {
+    throw new StorageCorruptError(stateFile(uid), new Error('state revision cannot advance'));
+  }
+  return revision + 1;
+}
+function writeState(uid, state, currentState = readStateRecord(uid).state) {
+  const next = JSON.parse(JSON.stringify(state));
+  next._rev = nextStateRevision(uid, currentState);
+  const text = JSON.stringify(next);
   durableStateWrite(stateFile(uid), text);
-  return etagFor(text);
+  return { revision: etagFor(text), rev: next._rev };
 }
 // Disposable acceptance-only ENOSPC injection. It is read once at process start and is never set
 // by Compose; the staging harness uses it to exercise the same fail-closed boundary as a genuinely
@@ -535,12 +553,14 @@ function recoverStateTxn(uid) {
   const revision = etagFor(text);
   const receipt = txn.receipt;
   const stateHash = receipt?.stateHash || receipt?.hash;
-  if (!receipt || receipt.uid !== uid || !receipt.key || stateHash !== requestHash(txn.state) || receipt.revision !== revision) {
+  storedStateRevision(uid, txn.state);
+  if ((receipt?.rev != null && receipt.rev !== txn.state._rev) || !receipt || receipt.uid !== uid || !receipt.key || stateHash !== requestHash(txn.state) || receipt.revision !== revision) {
     throw new StorageCorruptError(file, new Error('state transaction receipt is invalid'));
   }
   if (receiptsError) throw receiptsError;
   const prior = receipts.entries.find(e => e.uid === uid && e.key === receipt.key);
   if (prior && (prior.hash !== receipt.hash || prior.revision !== receipt.revision ||
+    (prior.rev != null && receipt.rev != null && prior.rev !== receipt.rev) ||
     (prior.stateHash && receipt.stateHash && prior.stateHash !== receipt.stateHash))) {
     throw new StorageCorruptError(file, new Error('state transaction conflicts with its receipt'));
   }
@@ -1772,7 +1792,7 @@ const routes = {
 
   // `rev` is the server's own count of writes to this profile (also stored inside the document as
   // `_rev`, so every other reader of the file — reminder tick, admin, Coach, MCP — is unaffected).
-  // A client pushes it back as `baseRev`, and a write over a document it never saw is refused.
+  // A client sends the strong `revision` back as `If-Match`; `baseRev` remains only a polling hint.
   'GET /api/data': async (req, res) => {
     if (dbError) return storageFailure(res, dbError);
     const user = readSession(req);
@@ -1821,26 +1841,27 @@ const routes = {
       const prior = key && receipts.entries.find(e => e.uid === user.id && e.key === key);
       if (prior) {
         if (prior.hash !== hash) return json(res, 409, { error: 'idempotency key was already used for another request' });
+        const priorRev = Number.isSafeInteger(prior.rev) ? prior.rev : Number.isSafeInteger(current.state?._rev) ? current.state._rev : 0;
         return json(res, 200, {
           ok: true,
           ts: prior.tsValue || null,
           revision: prior.revision,
-          rev: Number.isSafeInteger(current.state?._rev) ? current.state._rev : 0
+          rev: priorRev
         }, { ETag: prior.revision });
       }
       if (expected !== current.etag) return json(res, 412, { error: 'stale revision', revision: current.etag }, { ETag: current.etag });
-      const next = JSON.parse(JSON.stringify(body.state));
-      delete next.active;                       // in-progress workouts stay device-local
-      // Keep the upstream numeric revision for clients that poll /api/data/rev. It is server
-      // owned just like the ETag; callers cannot forge or roll it back in the submitted state.
-      next._rev = (Number.isSafeInteger(current.state?._rev) ? current.state._rev : 0) + 1;
       try {
+        const next = JSON.parse(JSON.stringify(body.state));
+        delete next.active;                       // in-progress workouts stay device-local
+        // Keep the upstream numeric revision for clients that poll /api/data/rev. It is server
+        // owned just like the ETag; callers cannot forge or roll it back in the submitted state.
+        next._rev = nextStateRevision(user.id, current.state);
         const text = JSON.stringify(next);
         const revision = etagFor(text);
         // `hash` remains the caller's exact request hash for receipt compatibility. `active` is
         // intentionally stripped from the durable profile, so the journal also records the hash
         // of those persisted bytes for crash-recovery validation.
-        const receipt = key && { uid: user.id, key: key.slice(0, 200), hash, stateHash: requestHash(next), revision, tsValue: next._ts || null, ts: Date.now() };
+        const receipt = key && { uid: user.id, key: key.slice(0, 200), hash, stateHash: requestHash(next), revision, rev: next._rev, tsValue: next._ts || null, ts: Date.now() };
         if (receipt) durableAtomicWrite(stateTxnFile(user.id), JSON.stringify({ state: next, receipt }), 0o600);
         durableStateWrite(stateFile(user.id), text);
         if (receipt) {
@@ -1924,7 +1945,8 @@ const routes = {
         if (prior.hash !== hash) return json(res, 409, { error: 'idempotency key was already used for another request' });
         const priorWorkout = (current.state?.workouts || []).find(workout => workout.id === prior.resultId);
         if (!priorWorkout) return storageFailure(res, new StorageCorruptError(receiptFile, new Error('workout receipt target is missing')));
-        return json(res, 200, { workout: priorWorkout, revision: current.etag }, { ETag: current.etag });
+        const priorRev = Number.isSafeInteger(prior.rev) ? prior.rev : Number.isSafeInteger(current.state?._rev) ? current.state._rev : 0;
+        return json(res, 200, { workout: priorWorkout, revision: prior.revision || current.etag, rev: priorRev }, { ETag: prior.revision || current.etag });
       }
       if (expected !== current.etag) return json(res, 412, { error: 'stale revision', revision: current.etag }, { ETag: current.etag });
       const source = current.state || { unit: 'kg', routines: [], week: {}, dayPlan: {}, customEx: [], workouts: [], bodyweight: [] };
@@ -1963,11 +1985,13 @@ const routes = {
       const nextTs = Math.max(Date.now(), priorTs + 1);
       if (!Number.isSafeInteger(nextTs) || nextTs < 0) return storageFailure(res, new StorageCorruptError(stateFile(grant.uid), new Error('state timestamp cannot advance')));
       next._ts = nextTs;
+      try { next._rev = nextStateRevision(grant.uid, current.state); }
+      catch (e) { return storageFailure(res, e); }
       try {
         const text = JSON.stringify(next);
         const revision = etagFor(text);
         const receipt = {
-          uid: grant.uid, key: receiptKey, hash, stateHash: requestHash(next), revision,
+          uid: grant.uid, key: receiptKey, hash, stateHash: requestHash(next), revision, rev: next._rev,
           tsValue: next._ts || null, ts: Date.now(), resultId: cleaned.workout.id
         };
         durableAtomicWrite(stateTxnFile(grant.uid), JSON.stringify({ state: next, receipt }), 0o600);
@@ -1975,7 +1999,7 @@ const routes = {
         receipts.entries.push(receipt);
         saveReceipts();
         durableUnlink(stateTxnFile(grant.uid));
-        return json(res, 201, { workout: cleaned.workout, revision }, { ETag: revision });
+        return json(res, 201, { workout: cleaned.workout, revision, rev: next._rev }, { ETag: revision });
       } catch (e) { return storageFailure(res, e); }
     });
   },
@@ -2024,8 +2048,8 @@ const routes = {
       };
       S.proposals = [...proposals, proposal];
       try {
-        const revision = writeState(grant.uid, S);
-        json(res, 201, { proposal, revision }, { ETag: revision });
+        const result = writeState(grant.uid, S, record.state);
+        json(res, 201, { proposal, revision: result.revision, rev: result.rev }, { ETag: result.revision });
       } catch (e) { storageFailure(res, e); }
     });
   },
@@ -2312,8 +2336,8 @@ async function approveProposal(req, res, id) {
     S.routines = [...(S.routines || []), routine];
     proposal.status = 'approved'; proposal.routineId = routine.id; proposal.approved = new Date().toISOString();
     try {
-      const revision = writeState(user.id, S);
-      json(res, 200, { proposal, routine, revision }, { ETag: revision });
+      const result = writeState(user.id, S, record.state);
+      json(res, 200, { proposal, routine, revision: result.revision, rev: result.rev }, { ETag: result.revision });
     } catch (e) { storageFailure(res, e); }
   });
 }

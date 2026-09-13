@@ -259,6 +259,11 @@ test:api:
     # api/coach/core is imported by the server under bare node AND by the phone under Vite.
     # vitest forgives what node does not (?raw, import.meta.glob); this runs outside vitest.
     - node api/scripts/check-core-loadable.mjs
+    # Exercise the real OAuth 2.1/PKCE and MCP transport against disposable API and gateway
+    # processes. The API job already has its dependencies; install the gateway beside it so this
+    # acceptance pass also runs in a clean CI checkout.
+    - npm ci --prefix mcp --cache mcp/.npm --prefer-offline --ignore-scripts
+    - node scripts/oauth-staging.mjs
   coverage: '/all files\s*\|\s*(\d+\.?\d*)/'
   artifacts:
     when: always

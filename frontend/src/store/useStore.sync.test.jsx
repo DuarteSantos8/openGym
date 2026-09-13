@@ -60,6 +60,20 @@ describe('pull against a revisioned server', () => {
     expect(useStore.getState().S.workouts.map(w => w.id)).toEqual(['w1'])
   })
 
+  it('does not PUT when a strong-ETag pull matches its saved sync base', async () => {
+    const server = { ...clone(DEF), _ts: 100, workouts: [workout('w1')], _rev: 1 }
+    signedIn({ ...server, active: { id: 'running' } })
+    localStorage.setItem('gym_sync', JSON.stringify({ rev: 1, ts: 100 }))
+    localStorage.setItem('gym_sync_meta_v1', JSON.stringify({ revision: '"same"' }))
+    localStorage.setItem('gym_sync_base_v1', JSON.stringify(server))
+    api.mockResolvedValueOnce({ state: clone(server), revision: '"same"', rev: 1 })
+
+    await useStore.getState().pullState()
+
+    expect(puts()).toHaveLength(0)
+    expect(useStore.getState().S.active).toEqual({ id: 'running' })
+  })
+
   it('pushes when only this device changed', async () => {
     signedIn({ ...clone(DEF), _ts: 150, workouts: [workout('w1')], restSec: 75 })
     localStorage.setItem('gym_sync', JSON.stringify({ rev: 1, ts: 100 }))
