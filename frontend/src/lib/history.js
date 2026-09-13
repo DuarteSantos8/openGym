@@ -527,7 +527,7 @@ export function setsDoneActive(A) {
   return n
 }
 export const lastBW = S => (S.bodyweight.length ? S.bodyweight[S.bodyweight.length - 1] : null)
-// Body-fat log is optional on older profiles — treat a missing array as empty.
+// Body-fat log is optional on older profiles; treat a missing array as empty.
 export const lastBF = S => ((S.bodyfat || []).length ? S.bodyfat[S.bodyfat.length - 1] : null)
 
 // Group consecutive items sharing a superset id (sg) into "units" of indices.
