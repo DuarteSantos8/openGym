@@ -671,6 +671,14 @@ export const PT_BR_OVERRIDES = {
   'Download & Install': 'Baixar e instalar',
   'Starting download…': 'Iniciando download…',
   'Downloading update…': 'Baixando atualização…',
+  // --- coach week (Home progress row, components/QueueRow.jsx; day sheet, sheets.jsx) ---
+  'Next: {0}, today': 'Próximo: {0}, hoje',
+  'Next: {0}': 'Próximo: {0}',
+  'Next week starts {0}': 'A próxima semana começa em {0}',
+  'Week complete, ask the coach': 'Semana concluída, pergunte ao Coach',
+  'Up next': 'Próximo',
+  'Later': 'Depois',
+  'Coach week': 'Semana do Coach',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

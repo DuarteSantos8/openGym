@@ -16,6 +16,7 @@ const workRowsForMode = (entry = {}, mode = 'reps') => {
 // for the hook — and it re-exports this very `t` from core, so nothing changes here except what
 // gets dragged along behind it.
 import { t } from './i18n-core.js'
+import { queueNext, pinState, queueLiveOn } from './queue.js'
 
 // How an exercise is logged (issue #16). This used to be derived from the body part alone,
 // which meant a plank or a farmer's carry could only be timed by filing it under cardio.
@@ -311,13 +312,29 @@ export function bestWeightFor(S, exId) {
  *
  * `S.dayPlan[iso]` stays scalar (a routine id, the `'rest'` sentinel, or undefined): the
  * per-date override and Start-time are single-pick. All array-tolerance is on `S.week`.
+ *
+ * A coach week (`S.queue`, lib/queue.js) has no weekdays: its sessions are done in order, and
+ * the first undone one is today's session — so it goes in front of whatever the weekday
+ * holds. The planner's own weekday pointers (a week applied before the queue existed) are
+ * hidden behind it; routines you planned yourself ride along as a combined day. `today` is a
+ * parameter so tests and the reminder builder can pin the clock; the override still wins.
+ *
+ * An override naming a queue session is a PIN (queue.js): the session is that day's, with the
+ * weekday's own routines riding along as on any queue day, and the floating rule skips it on
+ * other days. Once the session is done the pin is fulfilled and the day reads as if unpinned.
  */
-export function effectiveRoutineIds(S, iso) {
+export function effectiveRoutineIds(S, iso, today = todayISO()) {
   const ov = S.dayPlan[iso]
   if (ov === 'rest') return []
-  if (ov && S.routines.some(r => r.id === ov)) return [ov]
+  const pin = pinState(S, ov)
+  if (!pin && ov && S.routines.some(r => r.id === ov)) return [ov]
   const wd = new Date(iso + 'T12:00:00').getDay()
-  return [].concat(S.week[wd] || []).filter(id => S.routines.some(r => r.id === id))
+  const weekday = [].concat(S.week[wd] || []).filter(id => S.routines.some(r => r.id === id))
+  const q = pin === 'open' ? ov : queueNext(S, iso, today)
+  // The planner's weekday pointers stay hidden on the queue's day even when it has no session for
+  // it (every remaining one pinned to another day): those sessions have their days.
+  const own = q || queueLiveOn(S, iso, today) ? weekday.filter(id => !S.queue.ids.includes(id)) : weekday
+  return q ? [q, ...own] : own
 }
 export function effectiveRoutines(S, iso) {
   return effectiveRoutineIds(S, iso).map(id => S.routines.find(r => r.id === id)).filter(Boolean)
