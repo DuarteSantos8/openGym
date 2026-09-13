@@ -3,9 +3,10 @@ import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, smOf, matchExercise, exOr } from './lib/exercises.js'
 import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile } from './lib/equipment.js'
-import { fmtDate, fmtNum, capWords, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, DAYN, DAYS, weekOrder, weekStartOf, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
+import { fmtDate, fmtNum, fmtPlate, capWords, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, DAYN, DAYS, weekOrder, weekStartOf, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
 import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutVolume, setsDone, setsDoneActive, setUnitsTotal, lastBW, supersetUnits, unitOf, setLabel, defaultConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX } from './lib/history.js'
 import { usesBar, barWeightFor, defaultBarWeight, hasBarOverride } from './lib/bar.js'
+import { PLATE_SIZES, inventoryFor, pairsOf, loadKindFor, baseWeightFor } from './lib/plates.js'
 import { toScale, rirOf, EFFORT_PRESETS, effortColor } from './lib/effort.js'
 import { beep, vibrate } from './lib/sound.js'
 import { t, dateLocale, instrFor, exerciseNameFor, getLang, INSTR_LANGS } from './lib/i18n.js'
@@ -566,43 +567,113 @@ function GoalSheet({ close }) {
 }
 export const goalSheet = () => ui().openSheet(close => <GoalSheet close={close} />)
 
-/* ============================ bar weight ============================ */
-// One editor for every place the bar weight shows up (exercise detail, exercise config,
-// mid-workout sheet): a stepper over the effective value. What it saves is per exercise
-// and lives in S.barWeights, in the profile unit (see lib/bar.js) — stepping or typing
-// down to 0 clears the override and the field falls back to the default for the bar
-// type, the same "0 drops the key" shape a nullable set field has.
-function BarWeightEditor({ ex, extra }) {
+/* ============================ plate loading ============================ */
+// One editor for every place an exercise's loading shows up (exercise detail, exercise config,
+// mid-workout sheet). Three things, all per exercise and display-only (lib/plates.js):
+//   • how the weight is loaded — per side of a bar, one stack, or not plate-loaded at all
+//     (S.loadKind; absent = derived from the equipment, so most exercises never store it);
+//   • the base weight before any plate goes on — the bar (S.barWeights, profile unit, lib/bar.js;
+//     stepping down to 0 clears the override and falls back to the bar type's default), or a
+//     sled's / machine's own weight for anything else;
+//   • "No bar" for a bar exercise: an explicit 0 (issue #138 — a counterbalanced Smith machine),
+//     so the whole total is plates. Distinct from the stepper's 0, which means "default".
+// `cfg` is the routine/session config the caller has (its `bodyweight` flag turns a dumbbell
+// exercise into "added weight", i.e. a single stack) — the default kind is derived from the
+// same thing the workout screen derives it from, so what the editor shows as chosen is what
+// the rows do. Without one, the equipment alone decides.
+function BarWeightEditor({ ex, cfg, extra }) {
   const st = useStore(s => s.S)
+  const bar = usesBar(ex)
+  const ctx = { ...(cfg || {}), id: ex.id }
+  const kind = loadKindFor(st, ctx)
   const explicit = hasBarOverride(st, ex.id)
+  const noBar = bar && explicit && st.barWeights[ex.id] === 0
   const def = defaultBarWeight(ex.eq, st.unit)
+  const base = baseWeightFor(st, ex)
+  const setKind = k => update(s => {
+    s.loadKind = s.loadKind || {}
+    // Picking what the equipment already implies stores nothing.
+    if (k === loadKindFor(null, ctx)) delete s.loadKind[ex.id]; else s.loadKind[ex.id] = k
+  })
   const setBar = v => update(s => {
     s.barWeights = s.barWeights || {}
     const n = Math.max(0, Math.round((v || 0) * 100) / 100)
     if (n > 0) s.barWeights[ex.id] = n; else delete s.barWeights[ex.id]
   })
+  const setNoBar = on => update(s => {
+    s.barWeights = s.barWeights || {}
+    if (on) s.barWeights[ex.id] = 0; else delete s.barWeights[ex.id]
+  })
   return <>
-    <div className="row cfgrow" style={{ marginBottom: 6 }}>
-      <Stepper label={t('Bar ({0})', st.unit)} value={barWeightFor(st, ex) || 0} step={2.5} onChange={setBar} />
+    <Segmented className="seg-inline" value={kind} onChange={setKind}
+      options={[{ value: 'pairs', label: t('Per side') }, { value: 'single', label: t('Single stack') }, { value: 'none', label: t('Off') }]} />
+    <div className="small dim" style={{ margin: '8px 0 12px' }}>
+      {kind === 'pairs' ? t('Plates split over both sides of a bar.')
+        : kind === 'single' ? t('One stack — a belt, a landmine, a plate-loaded machine, a sled.')
+          : t('No plate line under the sets.')}
     </div>
-    <div className="small dim" style={{ marginBottom: 18 }}>
-      {explicit ? t('Set to 0 to go back to the default ({0}).', fmtNum(def) + ' ' + st.unit) : t('Default for this bar type.')}
-      {extra ? ' ' + extra : ''}
-    </div>
+    {kind !== 'none' && <>
+      {bar && <div className="row cfgrow" style={{ marginBottom: 6, justifyContent: 'space-between' }}>
+        <span>{t('No bar')}</span>
+        <Switch checked={noBar} onChange={setNoBar} />
+      </div>}
+      {!noBar && <div className="row cfgrow" style={{ marginBottom: 6 }}>
+        <Stepper label={bar ? t('Bar ({0})', st.unit) : t('Base weight ({0})', st.unit)} value={base} step={2.5} onChange={setBar} />
+      </div>}
+      <div className="small dim" style={{ marginBottom: 18 }}>
+        {noBar ? t('The whole weight is plates.')
+          : bar ? (explicit ? t('Set to 0 to go back to the default ({0}).', fmtNum(def) + ' ' + st.unit) : t('Default for this bar type.'))
+            : t('The machine or sled itself, before any plate goes on. 0 if it is all plates.')}
+        {extra ? ' ' + extra : ''}
+      </div>
+    </>}
   </>
 }
 
-// Tiny mid-workout sheet behind the "Bar … · … per side" chip — same value, same editor.
-function BarWeightSheet({ exId, close }) {
+// Mid-workout sheet behind the ⋯ menu's "Plate loading" — same values, same editor.
+function BarWeightSheet({ exId, cfg, close }) {
   const ex = exOr(exId)
   return <>
-    <h3>{t('Bar weight')}</h3>
+    <h3>{t('Plate loading')}</h3>
     <div className="muted small capitalize" style={{ marginBottom: 12 }}>{exerciseNameFor(ex)}</div>
-    <BarWeightEditor ex={ex} extra={t('Applies to this exercise everywhere, not just this plan.')} />
+    <BarWeightEditor ex={ex} cfg={cfg} extra={t('Applies to this exercise everywhere, not just this plan.')} />
     <Button variant="primary" onClick={close}>{t('Done')}</Button>
   </>
 }
-export const barWeightSheet = exId => ui().openSheet(close => <BarWeightSheet exId={exId} close={close} />)
+export const barWeightSheet = (exId, cfg) => ui().openSheet(close => <BarWeightSheet exId={exId} cfg={cfg} close={close} />)
+
+// The plates you own, as pairs per size, for the profile's unit (Settings → Equipment → Plates).
+// The first edit copies the standard set into S.plates[unit] and changes one count in it, so the
+// list you see is always the list the set rows load from. "Back to the standard set" drops the
+// unit's entry again.
+function PlateInventorySheet({ close }) {
+  const st = useStore(s => s.S)
+  const unit = st.unit === 'lb' ? 'lb' : 'kg'
+  const own = !!st.plates?.[unit]
+  const setPairs = (w, n) => update(s => {
+    s.plates = s.plates || {}
+    if (!s.plates[unit]) s.plates[unit] = Object.fromEntries(inventoryFor(s).map(p => [p.w, p.n]))
+    s.plates[unit][w] = Math.max(0, Math.round(n || 0))
+  })
+  const reset = () => update(s => { if (s.plates) delete s.plates[unit] })
+  return <>
+    <h3>{t('Plates')}</h3>
+    <div className="muted small" style={{ marginBottom: 14 }}>
+      {t('Pairs of each size you own. Every set row loads from this list, so a home gym with one pair of 45s is never told to use two.')}
+    </div>
+    {PLATE_SIZES[unit].map(w => (
+      <div className="row cfgrow" key={w} style={{ marginBottom: 6 }}>
+        <Stepper label={fmtPlate(w) + ' ' + unit} value={pairsOf(st, w)} step={1} decimal={false} unit={t('pairs')} onChange={n => setPairs(w, n)} />
+      </div>
+    ))}
+    <div className="small dim" style={{ margin: '4px 0 14px' }}>
+      {own ? t('Your own list for {0}.', unit) : t('The standard set, plenty of each — change any count to make it yours.')}
+    </div>
+    {own && <Button onClick={reset} style={{ marginBottom: 8 }}>{t('Back to the standard set')}</Button>}
+    <Button variant="primary" onClick={close}>{t('Done')}</Button>
+  </>
+}
+export const plateInventorySheet = () => ui().openSheet(close => <PlateInventorySheet close={close} />)
 
 /* ============================ exercise detail ============================ */
 // Estimated 1RM for one exercise (issue #18): what the log already implies, plus a calculator
@@ -666,9 +737,9 @@ function ExerciseDetail({ ex, close }) {
       <Button icon="pencil" style={{ flex: 1 }} onClick={() => { close(); customExSheet(ex) }}>{t('Edit')}</Button>
       <Button variant="danger" icon="trash" style={{ flex: 1 }} onClick={() => deleteCustomEx(ex, close)}>{t('Delete')}</Button>
     </div>}
-    {usesBar(ex) && <>
-      <h4 className="sec">{t('Bar weight')}</h4>
-      <BarWeightEditor ex={ex} extra={t('You still log the total weight — the bar only feeds the per-side plate math.')} />
+    {modeOf({ id: ex.id }) === 'reps' && <>
+      <h4 className="sec">{t('Plate loading')}</h4>
+      <BarWeightEditor ex={ex} extra={t('You still log the total weight — this only feeds the plate line under each set.')} />
     </>}
     {!isCardio(ex) && <OneRM ex={ex} />}
     {instrFor(ex).length > 0 &&<><h4 className="sec">{t('How to')}{!INSTR_LANGS.includes(getLang()) && <span className="dim" style={{ textTransform: 'none', letterSpacing: 0 }}> · {t('instructions in English')}</span>}</h4><ol className="steps-list">{instrFor(ex).map((s, i) => <li key={i}>{s}</li>)}</ol></>}
@@ -1358,11 +1429,11 @@ function ExConfig({ ex, existing, onSave, onDelete, close, routine, initial }) {
           : t('Every set becomes rest-pause: {0} reps to start, then {1} more split into short bursts, {2}s rest before each, roughly halving each time.', c.reps || 0, c.intensifier.totalReps, c.intensifier.restSec)}
       </div>}
     </>}
-    {/* The bar's own weight, for the plate math — per exercise, not per plan, so it sits
-        apart from the config fields above and writes straight to S.barWeights. */}
-    {usesBar(ex) && <>
-      <h4 className="sec">{t('Bar weight')}</h4>
-      <BarWeightEditor ex={ex} extra={t('Applies to this exercise everywhere, not just this plan.')} />
+    {/* How the weight is plate-loaded and what the bar weighs — per exercise, not per plan, so
+        it sits apart from the config fields above and writes straight to S.barWeights/S.loadKind. */}
+    {mode === 'reps' && <>
+      <h4 className="sec">{t('Plate loading')}</h4>
+      <BarWeightEditor ex={ex} cfg={c} extra={t('Applies to this exercise everywhere, not just this plan.')} />
     </>}
     <ProgressionFields ex={ex} mode={mode} c={c} setC={setC} routine={routine} unit={st.unit} perSide={perSide} />
     <textarea className="input" rows={3} maxLength={500} style={{ marginBottom: 18 }}

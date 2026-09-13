@@ -55,12 +55,20 @@ describe('barWeightFor', () => {
     expect(hasBarOverride(S, barbell)).toBe(false)
   })
 
-  test('a cleared (deleted or zeroed) override falls back to the default', () => {
+  test('a deleted override falls back to the default', () => {
     const S = { unit: 'kg', barWeights: { [ez]: 12.5 } }
     delete S.barWeights[ez]
     expect(barWeightFor(S, ez)).toBe(10)
-    expect(barWeightFor({ unit: 'kg', barWeights: { [ez]: 0 } }, ez)).toBe(10)
-    expect(hasBarOverride({ unit: 'kg', barWeights: { [ez]: 0 } }, ez)).toBe(false)
+    expect(hasBarOverride(S, ez)).toBe(false)
+  })
+
+  test('an explicit 0 is "no bar" and stays 0 (issue #138)', () => {
+    const S = { unit: 'kg', barWeights: { [ez]: 0 } }
+    expect(barWeightFor(S, ez)).toBe(0)
+    expect(hasBarOverride(S, ez)).toBe(true)
+    // Garbage in the map is not an override.
+    expect(barWeightFor({ unit: 'kg', barWeights: { [ez]: '0' } }, ez)).toBe(10)
+    expect(barWeightFor({ unit: 'kg', barWeights: { [ez]: -1 } }, ez)).toBe(10)
   })
 
   test('is null for anything without a bar', () => {
@@ -86,7 +94,7 @@ describe('plateSplit', () => {
     expect(plateSplit(20, 20)).toBe(null)    // bar only
     expect(plateSplit(15, 20)).toBe(null)    // below the bar
     expect(plateSplit(0, 20)).toBe(null)
-    expect(plateSplit(100, 0)).toBe(null)
+    expect(plateSplit(100, 0)).toBe(50)     // no bar: the whole total is plates
     expect(plateSplit(null, 20)).toBe(null)
     expect(plateSplit(100, null)).toBe(null)
     expect(plateSplit(undefined, undefined)).toBe(null)
