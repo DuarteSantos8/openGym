@@ -445,7 +445,7 @@ function authorizeForm(data, csrf, user) {
     .opengym-mark { display: inline-flex; align-items: center; gap: 8px; color: #164e63; font-weight: 800; letter-spacing: -.02em; font-size: 1.12rem; }
     .opengym-mark::before { content: "OG"; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; color: #fff; background: #164e63; font-size: .72rem; letter-spacing: .04em; }
     .eyebrow { margin: 28px 0 8px; color: #5f6368; font-size: .9rem; font-weight: 650; }
-    h1 { margin: 0; font-size: clamp(1.65rem, 5vw, 2.15rem); line-height: 1.12; letter-spacing: -.035em; }
+    h1 { margin: 0; font-size: clamp(1.65rem, 5vw, 2.15rem); line-height: 1.12; letter-spacing: -.035em; overflow-wrap: anywhere; }
     .lead { margin: 18px 0 20px; color: #4b4f52; line-height: 1.5; }
     .notice { border-left: 4px solid #d97706; border-radius: 8px; background: #fff8eb; color: #603a05; padding: 12px 14px; line-height: 1.45; }
     .account { display: grid; gap: 4px; margin: 20px 0; padding: 14px 16px; border: 1px solid #e2e3e5; border-radius: 10px; background: #fafafa; }
@@ -464,7 +464,7 @@ function authorizeForm(data, csrf, user) {
     .destination code { display: block; margin-top: 4px; color: #30353a; overflow-wrap: anywhere; }
     .oauth-actions { display: grid; grid-template-columns: 1fr 1.4fr; gap: 12px; margin-top: 26px; }
     button { min-height: 44px; border: 1px solid #ccd0d3; border-radius: 9px; padding: 10px 16px; font: inherit; font-weight: 750; cursor: pointer; }
-    button:focus-visible, input:focus-visible { outline: 3px solid #f59e0b; outline-offset: 2px; }
+    button:focus-visible, input:focus-visible { outline: 3px solid #164e63; outline-offset: 2px; }
     .deny { background: #fff; color: #30353a; }
     .allow { border-color: #164e63; background: #164e63; color: #fff; }
     .fine-print { margin: 18px 0 0; color: #687078; font-size: .82rem; line-height: 1.45; }
@@ -520,13 +520,14 @@ async function handleOAuthAuthorizeGet(req, res, url) {
   try { data = await authorizationRequest(url) }
   catch (error) { return jsonResponse(res, error.status || 400, { error: error.message || 'invalid_request' }) }
   const cookie = String(req.headers.cookie || '')
-  if (!cookie) return oauthLoginRedirect(res, url)
+  const sessionValue = sessionCookieValue(cookie)
+  if (!sessionValue) return oauthLoginRedirect(res, url)
   let me
   try { me = await apiCookie('/api/me', cookie) }
   catch { return oauthLoginRedirect(res, url) }
   pruneOAuth()
   const csrf = crypto.randomBytes(24).toString('base64url')
-  oauthPending.set(csrf, { ...data, uid: me.user?.id || null, expiresAt: Date.now() + OAUTH_TTL_MS })
+  oauthPending.set(csrf, { ...data, uid: me.user?.id || null, sessionHash: base64urlDigest(sessionValue), expiresAt: Date.now() + OAUTH_TTL_MS })
   return htmlResponse(res, 200, authorizeForm(data, csrf, me.user), { formActionOrigin: callbackOrigin(data.redirectUri) })
 }
 
@@ -637,6 +638,7 @@ async function handleOAuthAuthorizePost(req, res) {
   catch { return finish({ status: 401, body: { error: 'not signed in' } }) }
   replay.sessionHash = base64urlDigest(sessionValue)
   if (pending.uid && pending.uid !== me.user?.id) return finish({ status: 403, body: { error: 'session changed' } })
+  if (pending.sessionHash && pending.sessionHash !== replay.sessionHash) return finish({ status: 403, body: { error: 'session changed' } })
   if (decision === 'deny') {
     const redirect = new URL(data.redirectUri)
     redirect.searchParams.set('error', 'access_denied')

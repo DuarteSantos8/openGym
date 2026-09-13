@@ -21,7 +21,7 @@ const otherUid = 'oauth-other'
 const secret = 'oauth-staging-secret'
 const writeJson = (name, value) => fs.writeFileSync(path.join(dataDir, name), JSON.stringify(value, null, 2))
 const state = { unit: 'kg', routines: [{ id: 'oauth-routine', name: 'Staging routine', ex: [{ id: '0001', sets: 3, reps: 5, weight: 50 }] }], week: {}, dayPlan: {}, workouts: [{ id: 'oauth-workout', d: '2026-09-08', entries: [{ id: '0001', sets: [{ w: 50, r: 5, done: true }] }] }], bodyweight: [], customEx: [{ id: 'oauth-custom', n: 'OAuth custom', bp: 'chest', custom: true }] }
-writeJson('db.json', { users: [{ id: uid, name: 'OAuth staging user' }, { id: otherUid, name: 'Other user' }], creds: [], subs: [], invites: [] })
+writeJson('db.json', { users: [{ id: uid, name: 'OAuth staging <svg/onload=alert(1)>' }, { id: otherUid, name: 'Other user' }], creds: [], subs: [], invites: [] })
 writeJson(`state-${uid}.json`, state)
 writeJson(`state-${otherUid}.json`, { unit: 'kg', routines: [], workouts: [], customEx: [] })
 fs.writeFileSync(path.join(dataDir, 'secret'), secret, { mode: 0o600 })
@@ -201,6 +201,28 @@ try {
   const stored = status(await request(apiBase, `/api/oauth/clients/${registration.client_id}`), 200, 'stored client metadata').data
   assert.equal(stored.client_id, registration.client_id)
 
+  const wildcardRedirect = await request(mcpBase, '/oauth/register', dcrBody({
+    client_name: 'Wildcard redirect fixture', redirect_uris: ['https://*.example.test/callback'],
+    grant_types: ['authorization_code'], response_types: ['code'], token_endpoint_auth_method: 'none', scope: 'exercise:read'
+  }, { 'X-Forwarded-For': '198.51.100.20' }))
+  assert.equal(wildcardRedirect.response.status, 400)
+  assert.equal(wildcardRedirect.data.error, 'invalid_redirect_uris')
+  print('oauth_wildcard_redirect_rejected', 400)
+  const ipv6Redirect = await request(mcpBase, '/oauth/register', dcrBody({
+    client_name: 'IPv6 loopback fixture', redirect_uris: ['http://[::1]:49152/callback'],
+    grant_types: ['authorization_code'], response_types: ['code'], token_endpoint_auth_method: 'none', scope: 'exercise:read'
+  }, { 'X-Forwarded-For': '198.51.100.21' }))
+  assert.equal(ipv6Redirect.response.status, 400)
+  assert.equal(ipv6Redirect.data.error, 'invalid_redirect_uris')
+  print('oauth_ipv6_loopback_redirect_rejected', 400)
+  const localhostRedirect = status(await request(mcpBase, '/oauth/register', dcrBody({
+    client_name: 'Localhost redirect fixture', redirect_uris: ['http://localhost:49152/callback'],
+    grant_types: ['authorization_code'], response_types: ['code'], token_endpoint_auth_method: 'none', scope: 'exercise:read'
+  }, { 'X-Forwarded-For': '198.51.100.22' })), 201, 'localhost redirect fixture').data
+  assert.deepEqual(localhostRedirect.redirect_uris, ['http://localhost:49152/callback'])
+  print('oauth_localhost_redirect_retained', 201)
+  assert.deepEqual(registration.redirect_uris, ['https://client.example.test/callback'])
+
   // Codex sends this exact native-client shape, including a localhost callback and the optional
   // refresh_token grant. It must be accepted without overstating the server's capabilities.
   const codexRegistration = status(await request(mcpBase, '/oauth/register', dcrBody({
@@ -210,6 +232,8 @@ try {
   }, { 'X-Forwarded-For': '198.51.100.12' })), 201, 'Codex native dynamic client registration').data
   assert.deepEqual(codexRegistration.grant_types, ['authorization_code'])
   assert.equal(codexRegistration.token_endpoint_auth_method, 'none')
+  assert.deepEqual(codexRegistration.redirect_uris, ['http://127.0.0.1:49152/callback/openGym'])
+  print('oauth_https_and_ipv4_redirects_retained', 201)
   print('oauth_codex_refresh_grant_compatibility', 'PASS')
   print('oauth_codex_native_dcr', 'PASS')
   const unsupportedGrant = await request(mcpBase, '/oauth/register', dcrBody({
@@ -290,7 +314,11 @@ try {
   assert.match(consentHtml, /name="decision" value="allow"/)
   assert.match(consentHtml, /name="decision" value="deny"/)
   assert.match(consentHtml, /min-height:\s*44px/)
+  assert.match(consentHtml, /h1 \{[^}]*overflow-wrap:\s*anywhere/)
+  assert.match(consentHtml, /button:focus-visible, input:focus-visible \{ outline: 3px solid #164e63; outline-offset: 2px; \}/)
+  assert.doesNotMatch(consentHtml, /#f59e0b/)
   assert.doesNotMatch(consentHtml, /workout:write/)
+  assert.match(consentHtml, /&lt;svg\/onload=alert\(1\)&gt;/)
   const csrf = /name="csrf" value="([^"]+)"/.exec(consentHtml)?.[1]
   assert.ok(csrf)
   print('oauth_consent_polished_accessible_markup', 'PASS')
@@ -306,6 +334,28 @@ try {
   assert.match(xssHtml, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/)
   assert.doesNotMatch(xssHtml, /<script>alert\(1\)<\/script>/)
   print('oauth_consent_untrusted_fields_escaped', 'PASS')
+
+  const hostileRedirect = 'https://xss.example.test/callback?next=<script>alert(1)</script>;default-src *'
+  const hostileRegistration = status(await request(mcpBase, '/oauth/register', dcrBody({
+    client_name: '<img src=x onerror=alert(1)>', redirect_uris: [hostileRedirect],
+    grant_types: ['authorization_code'], response_types: ['code'], token_endpoint_auth_method: 'none', scope: 'exercise:read'
+  }, { 'X-Forwarded-For': '198.51.100.23' })), 201, 'hostile consent fixture').data
+  const hostileQuery = new URLSearchParams({
+    response_type: 'code', client_id: hostileRegistration.client_id, redirect_uri: hostileRedirect,
+    scope: 'exercise:read', code_challenge: challenge, code_challenge_method: 'S256', resource,
+    state: 'hostile-scope-context'
+  })
+  const hostileConsent = await fetch(mcpBase + `/oauth/authorize?${hostileQuery}`, { headers: { Cookie: `gymsid=${session}` } })
+  const hostileHtml = await hostileConsent.text()
+  const hostileCsp = hostileConsent.headers.get('content-security-policy') || ''
+  assert.equal(hostileConsent.status, 200)
+  assert.match(hostileHtml, /&lt;img src=x onerror=alert\(1\)&gt;/)
+  assert.match(hostileHtml, /https:\/\/xss\.example\.test\/callback\?next=&lt;script&gt;alert\(1\)&lt;\/script&gt;;default-src \*/)
+  assert.doesNotMatch(hostileHtml, /<img src=x|<script>alert\(1\)<\/script>/)
+  assert.match(hostileCsp, /form-action 'self' https:\/\/xss\.example\.test;/)
+  assert.doesNotMatch(hostileCsp, /\*/)
+  print('oauth_consent_client_account_redirect_escaped', 'PASS')
+  print('oauth_consent_csp_injection_blocked', 'PASS')
 
   // All seven supported scopes are rendered only when requested, with a human explanation and
   // the exact technical scope kept as secondary detail for an advanced user.
@@ -325,6 +375,22 @@ try {
   for (const copy of ['View exercises', 'View routines', 'View workout history', 'View bodyweight', 'View progress', 'Create workouts', 'Propose routines for your review']) assert.match(allScopesHtml, new RegExp(copy))
   for (const scope of allScopesRegistration.scope.split(/\s+/)) assert.match(allScopesHtml, new RegExp(`value="${scope}"`))
   print('oauth_consent_scope_descriptions', 'PASS')
+
+  const longClientName = 'L'.repeat(120)
+  const longNameRegistration = status(await request(mcpBase, '/oauth/register', dcrBody({
+    client_name: longClientName, redirect_uris: ['https://long-name.example.test/callback'],
+    grant_types: ['authorization_code'], response_types: ['code'], token_endpoint_auth_method: 'none', scope: 'exercise:read'
+  }, { 'X-Forwarded-For': '198.51.100.24' })), 201, 'long client name fixture').data
+  const longNameQuery = new URLSearchParams({
+    response_type: 'code', client_id: longNameRegistration.client_id, redirect_uri: longNameRegistration.redirect_uris[0],
+    scope: 'exercise:read', code_challenge: challenge, code_challenge_method: 'S256', resource, state: 'oauth-long-name'
+  })
+  const longNameConsent = await fetch(mcpBase + `/oauth/authorize?${longNameQuery}`, { headers: { Cookie: `gymsid=${session}` } })
+  const longNameHtml = await longNameConsent.text()
+  assert.equal(longNameConsent.status, 200)
+  assert.match(longNameHtml, new RegExp(longClientName))
+  assert.match(longNameHtml, /h1 \{[^}]*overflow-wrap:\s*anywhere/)
+  print('oauth_consent_long_client_name_wrap_safe', 'PASS')
 
   const cancelVerifier = crypto.randomBytes(32).toString('base64url')
   const cancelChallenge = hashVerifier(cancelVerifier)
@@ -384,6 +450,32 @@ try {
   assert.match(noSessionErrorHtml, /sign-in is no longer valid/i)
   print('oauth_consent_not_signed_in_browser_error', 'PASS')
 
+  // A logout/relogin in the same account produces a different valid cookie. A consent page
+  // opened before that transition must not approve or deny against the new session.
+  const staleOldPayload = `${otherUid}:${Date.now() + 3600000}:0`
+  const staleOldSession = `${staleOldPayload}.${crypto.createHmac('sha256', secret).update(staleOldPayload).digest('base64url')}`
+  const staleReloginPayload = `${otherUid}:${Date.now() + 3600001}:0`
+  const staleReloginSession = `${staleReloginPayload}.${crypto.createHmac('sha256', secret).update(staleReloginPayload).digest('base64url')}`
+  const staleQuery = new URLSearchParams({
+    response_type: 'code', client_id: registration.client_id, redirect_uri: registration.redirect_uris[0],
+    scope: 'exercise:read', code_challenge: challenge, code_challenge_method: 'S256', resource,
+    state: 'oauth-stale-relogin'
+  })
+  const staleConsent = await fetch(mcpBase + `/oauth/authorize?${staleQuery}`, { headers: { Cookie: `gymsid=${staleOldSession}` } })
+  const staleHtml = await staleConsent.text()
+  const staleCsrf = /name="csrf" value="([^"]+)"/.exec(staleHtml)?.[1]
+  assert.equal(staleConsent.status, 200)
+  assert.ok(staleCsrf)
+  const stalePost = await fetch(mcpBase + '/oauth/authorize', {
+    ...formBody({ csrf: staleCsrf, client_id: registration.client_id, redirect_uri: registration.redirect_uris[0], response_type: 'code', code_challenge: challenge, code_challenge_method: 'S256', resource, state: 'oauth-stale-relogin', scope: 'exercise:read', decision: 'deny' }),
+    headers: { Cookie: `gymsid=${staleReloginSession}`, Accept: 'text/html', 'Content-Type': 'application/x-www-form-urlencoded' }, redirect: 'manual'
+  })
+  const staleErrorHtml = await stalePost.text()
+  assert.equal(stalePost.status, 403)
+  assert.match(staleErrorHtml, /oauth-error/)
+  assert.match(staleErrorHtml, /session changed/i)
+  print('oauth_consent_stale_same_user_relogin_rejected', 'PASS')
+
   const authorization = await fetch(mcpBase + '/oauth/authorize', {
     ...formBody({ csrf, client_id: registration.client_id, redirect_uri: registration.redirect_uris[0], response_type: 'code', code_challenge: challenge, code_challenge_method: 'S256', resource, state: 'oauth-state-1', scope: ['exercise:read', 'routine:read', 'progress:read', 'bodyweight:read'] }),
     headers: { Cookie: `gymsid=${session}`, 'Content-Type': 'application/x-www-form-urlencoded' }, redirect: 'manual'
@@ -406,6 +498,13 @@ try {
   assert.match(conflictingHtml, /oauth-error/)
   assert.match(conflictingHtml, /authorization request changed/i)
   print('oauth_consent_conflicting_decision_rejected', 'PASS')
+  const allowRetry = await fetch(mcpBase + '/oauth/authorize', {
+    ...formBody({ csrf, client_id: registration.client_id, redirect_uri: registration.redirect_uris[0], response_type: 'code', code_challenge: challenge, code_challenge_method: 'S256', resource, state: 'oauth-state-1', scope: ['exercise:read', 'routine:read', 'progress:read', 'bodyweight:read'], decision: 'allow' }),
+    headers: { Cookie: `gymsid=${session}`, 'Content-Type': 'application/x-www-form-urlencoded' }, redirect: 'manual'
+  })
+  assert.equal(allowRetry.status, 302)
+  assert.equal(allowRetry.headers.get('location'), location)
+  print('oauth_consent_allow_retry_same_redirect', 'PASS')
 
   const expiredConsent = await fetch(mcpBase + '/oauth/authorize', {
     ...formBody({ csrf: 'expired-consent-fixture', decision: 'allow' }),
@@ -432,13 +531,21 @@ try {
   assert.equal(raceGet.status, 200)
   const raceCsrf = /name="csrf" value="([^"]+)"/.exec(raceHtml)?.[1]
   assert.ok(raceCsrf)
-  const raceForm = { csrf: raceCsrf, client_id: registration.client_id, redirect_uri: registration.redirect_uris[0], response_type: 'code', code_challenge: raceChallenge, code_challenge_method: 'S256', resource, scope: 'exercise:read' }
+  const raceForm = { csrf: raceCsrf, client_id: registration.client_id, redirect_uri: registration.redirect_uris[0], response_type: 'code', code_challenge: raceChallenge, code_challenge_method: 'S256', resource, scope: 'exercise:read', decision: 'allow' }
+  const raceGrantsBefore = status(await request(apiBase, '/api/mcp/grants', { headers: { Cookie: `gymsid=${session}` } }), 200, 'grants before concurrent Allow').data.grants.length
   const racePosts = await Promise.all([1, 2].map(() => fetch(mcpBase + '/oauth/authorize', {
     ...formBody(raceForm), headers: { Cookie: `gymsid=${session}`, 'Content-Type': 'application/x-www-form-urlencoded' }, redirect: 'manual'
   })))
   const raceStatuses = racePosts.map(response => response.status).sort((a, b) => a - b)
+  const raceLocations = racePosts.map(response => response.headers.get('location') || '')
+  const raceCodes = raceLocations.map(location => location ? new URL(location).searchParams.get('code') : null)
+  const raceGrantsAfter = status(await request(apiBase, '/api/mcp/grants', { headers: { Cookie: `gymsid=${session}` } }), 200, 'grants after concurrent Allow').data.grants.length
   assert.deepEqual(raceStatuses, [302, 302])
-  print('oauth_consent_nonce_concurrent_statuses', raceStatuses)
+  assert.equal(raceLocations[0], raceLocations[1])
+  assert.ok(raceCodes[0])
+  assert.equal(raceCodes[0], raceCodes[1])
+  assert.equal(raceGrantsAfter - raceGrantsBefore, 1)
+  print('oauth_consent_allow_concurrent_idempotent', { statuses: raceStatuses, same_location: true, same_code: true, grants_delta: raceGrantsAfter - raceGrantsBefore })
 
   const wrongResourceToken = await request(mcpBase, '/oauth/token', formBody({
     grant_type: 'authorization_code', code, client_id: registration.client_id,

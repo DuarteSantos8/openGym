@@ -670,7 +670,10 @@ function localRedirect(uri) {
 function validRedirect(uri) {
   try {
     const u = new URL(uri);
-    if (!['https:', 'http:'].includes(u.protocol) || u.username || u.password || u.hash) return false;
+    // A wildcard host is not a registered callback: it would also become an overly broad CSP
+    // source on the consent page. IPv6 loopback is rejected because its bracketed host form is
+    // not consistently matched by browser CSP host-source parsing; localhost/IPv4 remain valid.
+    if (!['https:', 'http:'].includes(u.protocol) || u.username || u.password || u.hash || u.hostname.includes('*') || u.hostname === '[::1]') return false;
     return u.protocol === 'https:' || localRedirect(uri);
   } catch { return false; }
 }
