@@ -831,3 +831,21 @@ describe('drop-sets and rest-pause sets in progression', () => {
     expect(out[1]).toEqual({ type: 'dropset', w: 0, r: 10, done: false })
   })
 })
+
+describe('a weight off the increment grid keeps its offset when it goes up (issue #175)', () => {
+  it('adds the step instead of snapping the sum to the grid', () => {
+    // A sled logged as its own 167 lb plus plates: 397 with a 10 lb step goes to 407, not 410.
+    const lin = { id: LIFT, sets: 3, reps: 5, weight: 397, prog: 'linear', inc: 10 }
+    const p = nextPrescription(hist(LIFT, [[397, 5, 5, 5]], { sets: 3, reps: 5, weight: 397 }), lin)
+    expect(p.kind).toBe('up')
+    expect(p.weight).toBe(407)
+    const dbl = { id: LIFT, sets: 3, reps: 12, repsMin: 8, weight: 397, prog: 'double', inc: 10 }
+    const d = nextPrescription(hist(LIFT, [[397, 12, 12, 12]], { sets: 3, reps: 12, weight: 397 }), dbl)
+    expect(d.kind).toBe('up')
+    expect(d.weight).toBe(407)
+  })
+  it('still snaps from a weight that sits on the grid', () => {
+    const p = nextPrescription(hist(LIFT, [[60, 5, 5, 5]]), { id: LIFT, sets: 3, reps: 5, weight: 60, prog: 'linear', inc: 2.5 })
+    expect(p.weight).toBe(62.5)
+  })
+})

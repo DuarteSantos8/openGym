@@ -1,4 +1,5 @@
-import { readFileSync } from 'node:fs'
+import { readFileSync, writeFileSync, existsSync } from 'node:fs'
+import { createHash } from 'node:crypto'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
@@ -29,6 +30,22 @@ const umami = {
   }
 }
 
+// The service worker's cache is named after the build (public/sw.js carries a `__BUILD__`
+// placeholder): a deploy is then a new worker with its own cache, and the previous build's
+// shell and chunks are dropped on activate instead of piling up under one fixed name. The
+// stamp is a hash of the built index.html — it changes exactly when the bundle does.
+const swStamp = {
+  name: 'opengym-sw-stamp',
+  apply: 'build',
+  closeBundle() {
+    const dir = new URL('./dist/', import.meta.url)
+    const html = new URL('index.html', dir), sw = new URL('sw.js', dir)
+    if (!existsSync(html) || !existsSync(sw)) return
+    const stamp = createHash('sha256').update(readFileSync(html)).digest('hex').slice(0, 10)
+    writeFileSync(sw, readFileSync(sw, 'utf8').replace('__BUILD__', stamp))
+  }
+}
+
 // The version people are asked for in #install-help and on every bug report. Read from
 // package.json so it cannot drift from the release it was built in, and inlined at build
 // time so no runtime fetch is involved.
@@ -36,7 +53,7 @@ const pkgVersion = JSON.parse(readFileSync(new URL('./package.json', import.meta
 
 export default defineConfig({
   define: { __APP_VERSION__: JSON.stringify(pkgVersion) },
-  plugins: [react(), umami],
+  plugins: [react(), umami, swStamp],
   base: './',
   server: {
     // The Coach's core (payload, validator, prompts, HTTP adapters) lives in ../api/coach/core

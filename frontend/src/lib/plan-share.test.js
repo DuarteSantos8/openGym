@@ -79,6 +79,14 @@ describe('what survives a shared plan', () => {
     expect(roundTrip({ restSec: 180 }).restSec).toBe(180)
   })
 
+  // The ramp's own rest is the same kind of prescription: a shared plan whose warm-up sets
+  // arrive resting the full working rest is not the plan that was written.
+  it('carries a per-exercise warm-up rest, and leaves it out when unset', () => {
+    expect(roundTrip({ restSec: 150, warmupRestSec: 45 }).warmupRestSec).toBe(45)
+    expect('warmupRestSec' in roundTrip({})).toBe(false)
+    expect('warmupRestSec' in roundTrip({ warmupRestSec: 0 })).toBe(false)
+  })
+
   // The absence has to survive too: writing a 0 would pin the recipient's timer to "off"
   // instead of letting the exercise keep inheriting whatever their own default is.
   it('leaves an exercise that set no rest free of the field', () => {

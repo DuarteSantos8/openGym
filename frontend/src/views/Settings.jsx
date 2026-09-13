@@ -6,6 +6,7 @@ import { convertStateUnit } from '../lib/units.js'
 import { useUI } from '../store/useUI.js'
 import { ACCENTS, todayISO, localTZ, weekStartOf, MONDAY, SUNDAY } from '../lib/format.js'
 import { effortOf } from '../lib/history.js'
+import { unlock, playOnSilentSupported } from '../lib/sound.js'
 import { api, webauthnOK, passkeyLogin, passkeyRegister, IS_ANDROID } from '../lib/api.js'
 import { pushSupported, enablePush, disablePush, sendTestPush, syncPushSubscription } from '../lib/push.js'
 import { wakeLockSupported } from '../lib/wakelock.js'
@@ -15,7 +16,7 @@ import { MOBILE, isAndroid, shareExport, syncReminder } from '../lib/mobile.js'
 import { checkForUpdate, downloadAndInstall } from '../lib/update.js'
 import { forgetCoach } from '../lib/coach-api.js'
 import { ConnectSheet } from './MobileOnboarding.jsx'
-import { starterPlanSheet, confirmSheet, importFromApp, importFromHevy, equipmentProfileSheet, menuSheet } from '../sheets.jsx'
+import { starterPlanSheet, confirmSheet, importFromApp, importFromHevy, equipmentProfileSheet, menuSheet, askAddDeviceData } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField } from '../components/ui.jsx'
 
@@ -24,7 +25,7 @@ export default function Settings() {
   const S = useStore(s => s.S)
   const user = useStore(s => s.user)
   const coachLocal = useStore(s => s.coachLocal)
-  const { update, replaceState, setUser, pullState, pushState, signOut, signOutAll, resetDemo, disconnectServer } = useStore()
+  const { update, replaceState, setUser, pullState, pushState, adoptProfile, signOut, signOutAll, resetDemo, disconnectServer } = useStore()
   const toast = useUI(s => s.toast)
   const fileRef = useRef(null)
   const importRef = useRef(null)
@@ -143,7 +144,7 @@ export default function Settings() {
     rd.readAsText(f)
   }
   const signInHere = async () => {
-    try { const u = await passkeyLogin(); setUser(u); await pullState(); toast(t('Welcome back, {0}', u.name)) }
+    try { const u = await passkeyLogin(); setUser(u); await adoptProfile(askAddDeviceData); toast(t('Welcome back, {0}', u.name)) }
     catch (e) { if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') toast(e.message || t('Sign-in failed')) }
   }
   const registerHere = () => useUI.getState().openSheet(close => <RegisterInline close={close} setUser={setUser} pushState={pushState} pullState={pullState} toast={toast} />)
@@ -260,6 +261,12 @@ export default function Settings() {
 
     {/* ---------- during a workout ---------- */}
     <Section title={t('During a workout')} footer={wakeOK ? t('The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.') : null}>
+      {/* The quick weigh-in that opens on Start (sheets.jsx startFlow, issue #137); off skips straight
+          to the session. Home and Stats still log weight by hand. */}
+      <Row icon="scale" iconTint="var(--green)" title={t('Weigh in before workouts')}
+        subtitle={t('Asks for your body weight when a workout starts. Off starts the session straight away.')}>
+        <Switch checked={S.weighIn !== false} onChange={v => update(s => { s.weighIn = v })} />
+      </Row>
       {/* One exercise at a time (cards with Prev/Next), the whole session stacked as a
           scrollable list, or that list stripped to just names and set rows (compact).
           Legacy/unknown values read as cards. The running session can override this from
@@ -301,8 +308,19 @@ export default function Settings() {
           onChange={v => update(s => { s.gifSize = v })} />
       </Row>
       <Row icon="bell" iconTint="var(--pink)" title={t('Sounds')}>
-        <Switch checked={!!S.sound} onChange={v => update(s => { s.sound = v })} />
+        {/* Turning Sounds on is a tap: unlock the audio context now so a timer that ends before
+            the next set check can already sound (iOS, #152). */}
+        <Switch checked={!!S.sound} onChange={v => { if (v) unlock(true); update(s => { s.sound = v }) }} />
       </Row>
+      {/* iOS only (WebKit's audio-session API, iOS 17+): with it off the ring/silent switch mutes
+          the timer. On, the phone treats the timer like a music player — exclusive, and the
+          music app is not told it may resume — so it is a choice, off by default (lib/sound.js). */}
+      {S.sound && playOnSilentSupported() && (
+        <Row icon="bell" iconTint="var(--orange)" title={t('Play sounds when the phone is on silent')}
+          subtitle={t('Music playing on this phone stops during a workout and does not resume by itself.')}>
+          <Switch checked={!!S.soundOnSilent} onChange={v => update(s => { s.soundOnSilent = v })} />
+        </Row>
+      )}
       <Row icon="sun" iconTint="var(--yellow)" title={t('Flash screen when timer ends')}>
         <Switch checked={!!S.timerFlash} onChange={v => update(s => { s.timerFlash = v })} />
       </Row>

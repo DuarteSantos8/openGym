@@ -1,6 +1,7 @@
 // The persisted boundary for a finished session. Keep this pure so compatibility tests can
 // exercise the exact shape the UI writes without mounting React or mutating store state.
 import { bestWeightForEntry } from './history.js'
+import { hasCompletedWork } from './workout-model.js'
 
 export function buildCompletedWorkout(active, { end = Date.now(), prs = [], snapshotFor } = {}) {
   const entries = (active?.entries || []).map(entry => {
@@ -28,7 +29,7 @@ export function buildCompletedWorkout(active, { end = Date.now(), prs = [], snap
       if (entry.notePin) completed.notePin = true
     }
     return completed
-  }).filter(entry => entry.sets.some(set => set.done))
+  }).filter(entry => entry.sets.some(hasCompletedWork))
 
   const sessionNote = (active?.note || '').trim()
   const routineIds = [].concat(active?.routineIds ?? (active?.routineId ? [active.routineId] : []))

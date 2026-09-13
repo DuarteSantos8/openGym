@@ -12,6 +12,7 @@
  * up, cannot run forever, and cannot lie about what happened when the container restarts.
  */
 import fs from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -327,7 +328,7 @@ async function execute(job) {
   aborts.set(job.uid, ctl);
   try {
     const ids = jobDir && unprivilegedIds();
-    if (ids) fs.chownSync(jobDir, ids.uid, ids.gid);
+    if (ids) shareJobDir(jobDir, ids);
 
     const attempt = await runPipeline({
       adapter, cfg, kind: job.kind, payload, model: cfgStore.modelFor(cfg), timeoutMs: TIMEOUT_MS,
@@ -357,7 +358,7 @@ async function execute(job) {
     return finish(job, { outcome: 'ready', pending });
   } finally {
     aborts.delete(job.uid);
-    if (jobDir) fs.rmSync(jobDir, { recursive: true, force: true });
+    if (jobDir) removeJobDir(jobDir, unprivilegedIds());
   }
 }
 
@@ -379,6 +380,48 @@ export function resolvePending(uid, { accepted = [], rejected = [], dismissed = 
 /* ---------- admin test + boot recovery ---------- */
 
 /** A2's "Test the Coach": the real adapter, a trivial round-trip, no user data anywhere near it. */
+/* Give the unprivileged `coach` user its job directory without locking this process out of it.
+ *
+ * The obvious move is chown(jobDir, coach) — and it breaks the spawn outright. libuv chdir()s
+ * into cwd BEFORE it drops to the child's uid, so the parent still has to be able to enter the
+ * directory it just gave away; mkdtemp creates 0700, and a container started with `drop: [ALL]`
+ * has no CAP_DAC_OVERRIDE for root to ignore that with. The child never starts and node reports
+ * EACCES, which the Agent SDK renders as "the native binary failed to launch … does not match
+ * this system's libc" — a guess, and a misleading one.
+ *
+ * So the directory stays owned by this process and `coach` reaches it through the group: 0770
+ * with the coach gid. The child can write, the parent can still chdir and still clean up
+ * afterwards, and nobody else on the container can read it. chmod before chown, while this
+ * process is still the owner — CAP_FOWNER is not in the capability set either.
+ */
+function shareJobDir(jobDir, ids) {
+  fs.chmodSync(jobDir, 0o770);
+  fs.chownSync(jobDir, process.getuid ? process.getuid() : 0, ids.gid);
+}
+
+/* Remove a job directory whose contents belong to somebody else.
+ *
+ * The child writes as `coach` and its own directories come out 0700/0755 coach-owned — this
+ * process cannot unlink inside them without CAP_DAC_OVERRIDE, which is the same capability the
+ * handover above is written to avoid needing. Left to `fs.rmSync` it throws EACCES from a
+ * `finally`, turning a completed run into a failed one.
+ *
+ * So the child's user clears its own files, and this process removes the directory it still
+ * owns. Best effort throughout: a leaked temp directory is a worse outcome than a failed job
+ * only in the sense that it is not one.
+ */
+function removeJobDir(jobDir, ids) {
+  if (ids) {
+    try {
+      const mine = fs.readdirSync(jobDir).map(n => path.join(jobDir, n));
+      // argv array, no shell — the same rule the provider spawn follows, and these paths are
+      // this module's own mkdtemp output rather than anything a user chose.
+      if (mine.length) spawnSync('/bin/rm', ['-rf', ...mine], { uid: ids.uid, gid: ids.gid, stdio: 'ignore' });
+    } catch { /* fall through: the removal below is still worth attempting */ }
+  }
+  try { fs.rmSync(jobDir, { recursive: true, force: true }); } catch { /* leaked, not fatal */ }
+}
+
 export async function testRun() {
   const cfg = cfgStore.load();
   const adapter = adapterFor(cfg.provider);
@@ -391,7 +434,7 @@ export async function testRun() {
     // a credential that belongs to a profile.
     const env = cfgStore.jobEnv(jobDir || os.tmpdir(), cfgStore.credentialFor(cfgStore.boundUidFor(cfg)));
     const ids = jobDir && unprivilegedIds();
-    if (ids) fs.chownSync(jobDir, ids.uid, ids.gid);
+    if (ids) shareJobDir(jobDir, ids);
     const check = await adapter.check(cfg, env);
     if (!check.ok) return { ok: false, error: check.error || 'the provider runtime could not be run' };
     const r = await adapter.invoke({
@@ -409,7 +452,7 @@ export async function testRun() {
     }
     return { ok: true, version: check.version };
   } finally {
-    if (jobDir) fs.rmSync(jobDir, { recursive: true, force: true });
+    if (jobDir) removeJobDir(jobDir, unprivilegedIds());
   }
 }
 

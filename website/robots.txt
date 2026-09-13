@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://opengym.duarte-santos.ch/sitemap.xml

@@ -467,26 +467,32 @@ const html = `<!DOCTYPE html>
 <title>API — openGym</title>
 <meta name="description" content="The complete openGym HTTP API, documented as an OpenAPI spec: passkey auth, state sync, push notifications, pairing and admin routes.">
 <meta name="theme-color" content="#000000">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="preconnect" href="https://stats.duarte-santos.ch">
 <meta property="og:title" content="openGym API reference">
 <meta property="og:description" content="The complete openGym HTTP API as an OpenAPI spec: passkey auth, state sync, push notifications, pairing and admin routes.">
-<meta property="og:image" content="https://opengym.duarte-santos.ch/img/banner.png">
+<meta property="og:image" content="https://opengym.duarte-santos.ch/img/social.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="openGym — your training, your data, your server. Two phones showing the home and workout screens.">
 <meta property="og:url" content="https://opengym.duarte-santos.ch/api.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="openGym">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="openGym API reference">
-<meta name="twitter:image" content="https://opengym.duarte-santos.ch/img/banner.png">
+<meta name="twitter:image" content="https://opengym.duarte-santos.ch/img/social.jpg">
 <link rel="canonical" href="https://opengym.duarte-santos.ch/api.html">
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 <link rel="icon" type="image/png" sizes="180x180" href="icon-180.png">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="styles.css?v=17">
+<link rel="stylesheet" href="styles.css?v=19">
 <script>document.documentElement.className += ' js'</script>
 <!-- Umami web analytics for opengym.duarte-santos.ch (self-hosted, cookieless). -->
 <script defer src="https://stats.duarte-santos.ch/script.js" data-website-id="db36019e-50f4-453c-9c56-d0588aefe233"></script>
 <style>${css}</style>
 </head>
 <body class="topnav">
+<a class="skip" href="#main">Skip to content</a>
 
 <nav><div class="wrap nav-in">
   <a class="brand" href="/">
@@ -551,7 +557,7 @@ ${railTags}
   <a class="side-link" href="/about.html"><b>About</b><span>The story and the milestones</span></a>
 </aside>
 
-<main class="api-main">
+<main id="main" class="api-main">
   <h1>API</h1>
   <p class="lead">Every route the openGym backend serves — passkey auth, state sync,
      push, pairing, admin — as one hand-written
@@ -609,7 +615,7 @@ ${schemaCards}
   </div>
 </div></footer>
 
-<script src="site.js?v=17" defer></script>
+<script src="site.js?v=19" defer></script>
 <script>${js}</script>
 </body>
 </html>

@@ -66,10 +66,13 @@ function mergeExWeights(n = {}, o = {}) {
   return out
 }
 
-export function mergeStates(a, b) {
+// `prefer` names the side whose settings, plan and per-exercise config win regardless of `_ts`:
+// on sign-in the server's profile is the truth and the device only contributes the entries it
+// logged while signed out. Without it the newer copy decides, as for a conflict between devices.
+export function mergeStates(a, b, { prefer } = {}) {
   if (!a) return b ? clone(b) : b
   if (!b) return clone(a)
-  const n = newerOf(a, b)
+  const n = prefer === 'a' ? a : prefer === 'b' ? b : newerOf(a, b)
   const o = n === a ? b : a
   const out = clone(n)
   out.workouts = unionById(n.workouts, o.workouts, workoutKey).map(clone).sort(byDayStart)
@@ -85,4 +88,18 @@ export function mergeStates(a, b) {
   out._ts = Math.max(a._ts || 0, b._ts || 0)
   delete out._rev
   return out
+}
+
+// What `local` holds that `server` does not: the workouts and weigh-ins a device logged while it
+// was signed out, and the custom exercises they use. Sign-in asks about these before the server's
+// profile replaces the local copy; zero of each means there is nothing to ask about.
+export function localExtras(local, server) {
+  const have = new Set(list(server?.workouts).map(workoutKey))
+  const days = new Set(list(server?.bodyweight).map(e => e?.d))
+  const ex = new Set(list(server?.customEx).map(e => e?.id))
+  return {
+    workouts: list(local?.workouts).filter(w => !have.has(workoutKey(w))).length,
+    bodyweight: list(local?.bodyweight).filter(e => e && e.d != null && !days.has(e.d)).length,
+    customEx: list(local?.customEx).filter(e => e && !ex.has(e.id)).length
+  }
 }

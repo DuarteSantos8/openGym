@@ -6,20 +6,25 @@
 <title>Docs — openGym</title>
 <meta name="description" content="The complete openGym reference: every feature, installing on Android and iPhone, self-hosting with Docker, every .env setting, the AI Coach, importing from FitNotes/Strong/Hevy, backups, the MCP server, and how it's built.">
 <meta name="theme-color" content="#000000">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="preconnect" href="https://stats.duarte-santos.ch">
 <meta property="og:title" content="openGym Docs — the complete reference">
 <meta property="og:description" content="The complete openGym reference: every feature, self-hosting with Docker, every setting, the AI Coach, imports, backups, MCP, troubleshooting.">
-<meta property="og:image" content="https://opengym.duarte-santos.ch/img/banner.png">
+<meta property="og:image" content="https://opengym.duarte-santos.ch/img/social.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="openGym — your training, your data, your server. Two phones showing the home and workout screens.">
 <meta property="og:url" content="https://opengym.duarte-santos.ch/docs.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="openGym">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="openGym Docs — the complete reference">
-<meta name="twitter:image" content="https://opengym.duarte-santos.ch/img/banner.png">
+<meta name="twitter:image" content="https://opengym.duarte-santos.ch/img/social.jpg">
 <link rel="canonical" href="https://opengym.duarte-santos.ch/docs.html">
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 <link rel="icon" type="image/png" sizes="180x180" href="icon-180.png">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="styles.css?v=17">
+<link rel="stylesheet" href="styles.css?v=19">
 <script>document.documentElement.className += ' js'</script>
 <!-- Umami web analytics for opengym.duarte-santos.ch (self-hosted, cookieless). -->
 <script defer src="https://stats.duarte-santos.ch/script.js" data-website-id="db36019e-50f4-453c-9c56-d0588aefe233"></script>
@@ -28,6 +33,7 @@
 </script>
 </head>
 <body class="topnav">
+<a class="skip" href="#main">Skip to content</a>
 
 <nav><div class="wrap nav-in">
   <a class="brand" href="/">
@@ -174,7 +180,7 @@
   <a class="side-link" href="about.html"><b>About</b><span>The story and the milestones</span></a>
 </aside>
 
-<main class="wrap prose">
+<main id="main" class="wrap prose">
   <h1>Docs</h1>
   <p class="lead">The complete reference — every feature, every setting, every way to run
      openGym. The same documents live
@@ -493,6 +499,25 @@ docker compose up -d   # restart alone does NOT re-read .env</code></pre>
      <code>./data/vapid.json</code>, and each browser reports its own timezone. Set
      <code>VAPID_SUBJECT=mailto:you@example.com</code> if you'd rather push services could
      reach an inbox than your origin URL.</p>
+  <p>Where it works: any desktop browser, Android Chrome, and on iOS only the app <b>added to
+     the Home Screen</b> (a Safari tab has no Web Push). The Android APK doesn't use Web Push —
+     its reminder is a local notification scheduled on the phone. A reminder that was due while
+     the server was down or restarting is still sent up to 15 minutes late, once; the browser
+     re-registers its subscription with the server on every signed-in start, so one the server
+     lost heals itself; and a rest-timer alert belongs to the device that started the rest, so
+     finishing a rest on the desktop no longer silences the phone.</p>
+
+  <h3 id="sh-sync">Sync between devices</h3>
+  <p>Signed in, <b>the profile on the server is the truth</b>. Signing in on a device adopts it
+     — settings, plan, history — and if that device logged workouts while signed out, one
+     dialog asks whether to add them to the profile or keep the profile as it is. While the
+     app is open it asks the server every 30 seconds (and every time it comes back to the
+     foreground) whether anything changed and fetches only what did, so a session logged on the
+     phone shows up on the desktop within half a minute. Two devices that both changed
+     something are merged on the server's revision — every workout, routine and weigh-in from
+     both sides is kept, settings follow the newer copy — instead of one overwriting the other.
+     Without a network the app keeps working on the device and says so under the header; the
+     changes go up when the connection is back.</p>
 
   <h3 id="sh-stack">Fitting it into an existing stack</h3>
   <p>The defaults assume openGym is alone: a service called <code>api</code> on port 3000,
@@ -587,8 +612,9 @@ ALLOW_GUEST=0              # remove "Continue without account"</code></pre>
   <p>Worth knowing: the pairing exchanges the code for a bearer token that is the same signed
      value a session cookie carries — so <b>"sign out everywhere"</b> in the browser revokes
      paired apps too. Use an HTTPS address if at all possible (the token would otherwise
-     cross the network in plain text). A connected app needs network access while in use —
-     no offline mirror, same as the browser PWA. Settings → <b>Disconnect</b> syncs one last
+     cross the network in plain text). A connected app keeps working without a network on the
+     last copy it synced — it shows an "Offline" line under the header and pushes your changes
+     as soon as the connection is back, same as the browser PWA. Settings → <b>Disconnect</b> syncs one last
      time, then drops the device cleanly back to local mode. (For the curious: it's
      <code>POST /api/pair/create</code> + <code>/api/pair/redeem</code> in
      <code>api/server.js</code>.)</p>
@@ -933,6 +959,6 @@ Leg Day,Leg Press,2026-08-21,200,1</code></pre>
   </div>
 </div></footer>
 
-<script src="site.js?v=17" defer></script>
+<script src="site.js?v=19" defer></script>
 </body>
 </html>

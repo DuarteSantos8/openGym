@@ -867,6 +867,14 @@ const routes = {
     const state = readState(user.id);
     json(res, 200, { state, rev: state?._rev || 0 });
   },
+  // Just the revision: the client asks this every half minute while it is open and on every
+  // return to the foreground, and fetches the document only when the number moved — a signed-in
+  // device is meant to show what the server has, and this is what keeps that cheap.
+  'GET /api/data/rev': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    json(res, 200, { rev: readState(user.id)?._rev || 0 });
+  },
 
   'PUT /api/data': async (req, res) => {
     const user = readSession(req);

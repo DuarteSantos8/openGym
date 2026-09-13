@@ -14,7 +14,7 @@
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
         <!-- Draw into the camera cutout like iOS does under the notch: the WebView then reports a
-             real env(safe-area-inset-top) and the sheets keep clear of it (index.css --sat). -->
+             real env(safe-area-inset-top) and the sheets keep clear of it (the sat variable in index.css). -->
         <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
     </style>
 

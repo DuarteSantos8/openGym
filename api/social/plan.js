@@ -17,7 +17,7 @@ export function sharedPlan(value) {
     return { ...scalars(r, ['id', 'name', 'emoji', 'prog', 'excludeFromProgression']), ex: r.ex.map(e => {
       if (!validId(e?.id)) throw new Error('Invalid exercise in the shared plan')
       const out = scalars(e, ['id', 'sets', 'min', 'speed', 'mode', 'sec', 'weight', 'reps', 'bodyweight',
-        'side', 'prog', 'inc', 'deloadFactor', 'repsMin', 'repsMax', 'restSec', 'sg', 'note', 'warmupSets'])
+        'side', 'prog', 'inc', 'deloadFactor', 'repsMin', 'repsMax', 'restSec', 'warmupRestSec', 'sg', 'note', 'warmupSets'])
       if (['dropset', 'restpause'].includes(e.intensifier?.type)) {
         out.intensifier = scalars(e.intensifier, ['type', 'count', 'pct', 'totalReps', 'restSec'])
       }

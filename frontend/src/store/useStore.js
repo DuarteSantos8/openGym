@@ -6,7 +6,7 @@ import { registerCustom } from '../lib/exercises.js'
 import { DEMO, DEMO_SEEDED } from '../lib/demo.js'
 import { guestAllowed } from '../lib/guest.js'
 import { MOBILE, initReminderSync, nativeLoad, nativeSave, onAppActive, syncReminder, writeAutoBackup } from '../lib/mobile.js'
-import { mergeStates } from '../lib/sync-merge.js'
+import { mergeStates, localExtras } from '../lib/sync-merge.js'
 import { loadRemote, chooseLocal, forgetRemote, connect } from '../lib/remote.js'
 import { loadCoachDevice, saveCoachDevice, coachDeviceSettings } from '../lib/coach-device.js'
 
@@ -18,9 +18,10 @@ const KEY = 'gym_state_v1'
 // a document this device never saw is refused (409) instead of dropping another device's work;
 // `ts` tells a pull whether anything changed here since. See pushState/pullState.
 const SYNC_KEY = 'gym_sync'
-const PULL_MIN_MS = 15000   // resume pulls closer together than this are noise, not news
+const CHECK_MIN_MS = 3000    // rev checks closer together than this are the same event (focus + visibility)
+const POLL_MS = 30000        // while the app is open and signed in, ask the server for its revision this often
 export const DEF = {
-  unit: 'kg', restSec: 90, restPauseSec: 15, sound: true, timerFlash: false, keepAwake: true, lang: 'en',
+  unit: 'kg', restSec: 90, restPauseSec: 15, sound: true, soundOnSilent: false, timerFlash: false, keepAwake: true, lang: 'en',
   theme: 'dark', accent: 'lime', body: 'male', targetW: null,
   bodyweight: [], routines: [], week: {}, dayPlan: {},
   exWeights: {}, workouts: [], active: null, customEx: [], gifSize: 'full',
@@ -74,6 +75,10 @@ export const DEF = {
   // card and the /checkin route; the saved gymCards stay so turning it back on restores them.
   // Defaults on; an older profile without the key reads as on (`!== false`).
   checkIn: true,
+  // Whether Start opens the quick weigh-in first (sheets.jsx startFlow, issue #137). Off starts
+  // the session straight away; weight can still be logged from Home/Stats. Defaults on; an
+  // older profile without the key reads as on (`!== false`).
+  weighIn: true,
 }
 const clone = o => JSON.parse(JSON.stringify(o))
 
@@ -106,10 +111,20 @@ export const useStore = create((set, get) => {
   let pulling = null       // the GET in flight, so two resume signals make one request
   let pushPending = false  // a change made before boot's pull — pushed once boot is through
   let forceNext = false    // the next push replaces the server copy outright (import, reset)
-  let lastPull = 0
+  let lastCheck = 0
+  let pollTm = null
+  let offlineChanges = false   // a push failed for lack of network — the next one that lands says so
 
   const readSync = () => { try { return JSON.parse(localStorage.getItem(SYNC_KEY)) || null } catch { return null } }
   const writeSync = (rev, ts) => localStorage.setItem(SYNC_KEY, JSON.stringify({ rev, ts: ts || 0 }))
+  // What the banner shows a signed-in user: `offline` when the server could not be reached at
+  // all, `pending` while a change is still owed to it (either way, or a push the server refused).
+  const setSync = patch => {
+    const cur = get().sync
+    const next = { ...cur, ...patch }
+    if (next.offline !== cur.offline || next.pending !== cur.pending || next.lastSynced !== cur.lastSynced) set({ sync: next })
+  }
+  const isNetworkError = e => e && e.status == null   // fetch itself failed: no response at all
 
   initReminderSync(() => get().S)
 
@@ -148,20 +163,39 @@ export const useStore = create((set, get) => {
     pushPending = false
   }
 
-  // The other side of the hidden-tab flush below: coming back — to the tab, the window, the app,
-  // the network — asks the server what happened meanwhile. A phone that sat in a pocket all
-  // afternoon and a desktop tab left open all week used to show, and then push, whatever they
-  // last had; now they catch up first. Throttled, since focus and visibility fire together.
-  const resumePull = (force = false) => {
+  // A signed-in device shows what the server has. Coming back — to the tab, the window, the app,
+  // the network — and every half minute while open, it asks the server for its revision (one
+  // small GET) and fetches the document only when the number moved; a change still owed to the
+  // server is pushed on the same occasion. A phone that sat in a pocket all afternoon and a
+  // desktop tab left open all week used to show, and then push, whatever they last had.
+  const checkRev = async (force = false) => {
     if (!get().user || !get().ready || document.visibilityState === 'hidden') return
-    if (!force && Date.now() - lastPull < PULL_MIN_MS) return
-    get().pullState()
+    if (!force && Date.now() - lastCheck < CHECK_MIN_MS) return
+    lastCheck = Date.now()
+    if (pulling) return pulling
+    const sync = readSync()
+    const owed = localStorage.getItem('gym_dirty') === '1' || pushTm !== null || pushPending
+    if (!sync || owed) return get().pullState()
+    try {
+      const { rev } = await api('/api/data/rev')
+      setSync({ offline: false })
+      if (rev !== sync.rev) return get().pullState()
+    } catch (e) {
+      if (e.status === 401) return
+      if (isNetworkError(e)) setSync({ offline: true })
+      else return get().pullState()   // a server that lacks the route (older API) — the full pull knows the old protocol
+    }
   }
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') resumePull() })
-  window.addEventListener('focus', () => resumePull())
-  window.addEventListener('pageshow', e => { if (e.persisted) resumePull() })
-  window.addEventListener('online', () => resumePull(true))   // also retries a push that failed offline
-  onAppActive(() => resumePull())
+  const schedulePoll = () => {
+    clearTimeout(pollTm)
+    pollTm = setTimeout(() => { checkRev(); schedulePoll() }, POLL_MS)
+  }
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkRev() })
+  window.addEventListener('focus', () => checkRev())
+  window.addEventListener('pageshow', e => { if (e.persisted) checkRev() })
+  window.addEventListener('online', () => checkRev(true))   // also retries a push that failed offline
+  onAppActive(() => checkRev())
+  schedulePoll()
 
   // Both copies changed: keep both sides' entries, let the newer copy decide the rest
   // (lib/sync-merge.js), and remember the server's revision so the push that follows is
@@ -192,9 +226,17 @@ export const useStore = create((set, get) => {
       else writeSync(r.rev, S._ts)
       localStorage.removeItem('gym_dirty')
       toldTooLarge = false
+      // Back from offline with changes that were waiting: say so once — the banner that promised
+      // "syncs when you're back online" has just kept its word.
+      setSync({ offline: false, pending: false, lastSynced: Date.now() })
+      if (offlineChanges) {
+        offlineChanges = false
+        import('./useUI.js').then(({ useUI }) => useUI.getState().toast(t('Back online — synced with the server.'))).catch(() => {})
+      }
     } catch (e) {
       // A session that is gone is boot's business (/api/me); the copy stays owed to the server.
       if (e.status === 401) { localStorage.setItem('gym_dirty', '1'); return }
+      if (isNetworkError(e)) { localStorage.setItem('gym_dirty', '1'); offlineChanges = true; setSync({ offline: true, pending: true }); return }
       if (e.status === 409 && e.data && attempt < 2) {
         // Another device wrote since this one last read. The server sent its document along;
         // merge and push once more against that revision. A second refusal in a row leaves the
@@ -203,6 +245,7 @@ export const useStore = create((set, get) => {
         return doPush(attempt + 1)
       }
       localStorage.setItem('gym_dirty', '1')
+      setSync({ offline: false, pending: true })
       // A 413 comes from the proxy in front of the API (nginx: client_max_body_size), which
       // caps the request body. Every later push is at least as big, so nothing reaches the
       // server until the limit is raised — said once per refusal streak; gym_dirty keeps the
@@ -220,8 +263,7 @@ export const useStore = create((set, get) => {
   // (e.g. setting the reminder time then immediately backgrounding to test it). On mobile the
   // same applies to the file mirror — backgrounding is often the last thing before the OS
   // kills the app.
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState !== 'hidden') return
+  const flush = () => {
     if (MOBILE && saveTm) {
       clearTimeout(saveTm)
       saveTm = null
@@ -233,7 +275,9 @@ export const useStore = create((set, get) => {
       pushTm = null
       get().pushState()
     }
-  })
+  }
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush() })
+  window.addEventListener('pagehide', flush)   // Safari kills the home-screen app without a visibilitychange at times
 
   // The owner check in setUser only runs in the tab that signs in. Another tab of the same
   // browser still holding the previous profile would keep writing that profile's data over the
@@ -267,6 +311,8 @@ export const useStore = create((set, get) => {
     S: (() => { const s = loadState(); registerCustom(s.customEx); return s })(),
     user: (() => { try { return JSON.parse(localStorage.getItem('gym_user')) || null } catch { return null } })(),
     ready: false,
+    // Server sync as the banner sees it (components/SyncBanner.jsx). Only meaningful signed in.
+    sync: { offline: false, pending: localStorage.getItem('gym_dirty') === '1', lastSynced: 0 },
     /* Instance capabilities from GET /api/config. `config.coach` is present only when the owner
        has both enabled the Coach and connected a provider — every Coach entry point in the app
        hangs off it via coachAvailable(), so an unconfigured instance renders exactly what it
@@ -360,7 +406,8 @@ export const useStore = create((set, get) => {
           if (pushTm) { clearTimeout(pushTm); pushTm = null; await get().pushState() }
           else if (pushing) await pushing
           const res = await api('/api/data')
-          lastPull = Date.now()
+          lastCheck = Date.now()
+          setSync({ offline: false })
           const { state, rev } = res
           const S = get().S
           // Owed to the server: a push that failed, or a change made while boot was still pulling.
@@ -393,10 +440,47 @@ export const useStore = create((set, get) => {
           mergeInto(S, state, rev)
           pushPending = false
           await get().pushState()
-        } catch (e) { /* offline — keep local */ }
+        } catch (e) { if (isNetworkError(e)) setSync({ offline: true }) /* keep local; the poll retries */ }
         finally { pulling = null }
       })()
       return pulling
+    },
+
+    // Sign-in (and pairing a phone) takes the server's profile as this device's copy — the
+    // profile is the truth for a signed-in user, whatever the timestamps say. The only thing
+    // the device may add are the entries it logged while signed out: `ask(extras)` (a dialog,
+    // supplied by the caller) decides whether those workouts, weigh-ins and custom exercises
+    // are added to the profile or dropped. A profile with no state yet simply takes the
+    // device's data, as creating a profile always did.
+    async adoptProfile(ask) {
+      if (pulling) await pulling
+      const res = await api('/api/data')   // a failure here is the caller's toast: sign-in needed the server anyway
+      const { state, rev } = res
+      const S = get().S
+      setSync({ offline: false })
+      if (!state) {
+        localStorage.removeItem('gym_dirty')
+        if (hasData(S)) { if (rev != null) writeSync(rev, 0); forceNext = true; await get().pushState() }
+        else if (rev != null) writeSync(rev, 0)
+        return { adopted: false, added: false }
+      }
+      const extras = localExtras(S, state)
+      const keep = (extras.workouts || extras.bodyweight || extras.customEx) && typeof ask === 'function' ? await ask(extras) : false
+      const serverCopy = Object.assign(clone(DEF), state, { active: S.active || null })
+      if (keep) {
+        const merged = Object.assign(clone(DEF), mergeStates(state, S, { prefer: 'a' }))
+        merged.active = S.active || null
+        persist(merged, false)
+        if (rev != null) writeSync(rev, 0)
+        else localStorage.removeItem(SYNC_KEY)
+        await get().pushState()
+        return { adopted: true, added: true }
+      }
+      localStorage.removeItem('gym_dirty')
+      if (rev != null) adopt(serverCopy, rev)
+      else { localStorage.removeItem(SYNC_KEY); persist(serverCopy, false, false) }
+      setSync({ pending: false })
+      return { adopted: true, added: false }
     },
 
     async signOut() {
@@ -413,11 +497,11 @@ export const useStore = create((set, get) => {
     },
     // Redeems the pairing code shown in the browser (Settings → "Pair the mobile app") and
     // switches this device over to that account, same as signing in on the web does.
-    async connectToServer(url, code) {
+    async connectToServer(url, code, ask) {
       const user = await connect(url, code)   // throws on a bad URL/expired code — caller shows it
       get().setUser(user)
       await get().refreshConfig()   // what this server offers (the Coach, guest mode) — see boot()
-      await get().pullState()
+      await get().adoptProfile(ask)
       syncReminder(get().S)
       set({ needsMobileOnboarding: false })
     },
@@ -470,7 +554,7 @@ export const useStore = create((set, get) => {
             await get().pullState()
           } catch (e) {
             if (e.status === 401) { await forgetRemote(); get().setGuest(true) }
-            else get().setUser(remote.user)   // offline — keep going from the last-synced local copy
+            else { get().setUser(remote.user); setSync({ offline: true }) }   // offline — keep going from the last-synced local copy
           }
           syncReminder(get().S)
           finishBoot()
@@ -519,6 +603,9 @@ export const useStore = create((set, get) => {
         }
       } catch (e) {
         if (e.status === 401) get().setUser(null)
+        // Started without a network (a home-screen app reopened in the gym's basement): keep the
+        // signed-in copy and say so from the first screen, not only after the first failed push.
+        else if (isNetworkError(e) && get().user) setSync({ offline: true })
       }
       finishBoot()
     }

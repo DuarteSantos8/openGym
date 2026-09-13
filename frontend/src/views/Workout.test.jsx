@@ -202,6 +202,25 @@ afterEach(async () => {
 })
 
 describe('Workout set completion flow', () => {
+  it('rests the exercise\'s warm-up rest between ramp sets, and its working rest after the last ramp set', async () => {
+    await mount([exercise('ramped-squat', [false, false, false, false], {
+      target: { mode: 'reps', reps: 6, weight: 125, bodyweight: false, restSec: 150, warmupRestSec: 45 },
+      sets: [
+        { w: 60, r: 8, done: false, phase: 'warmup' },
+        { w: 95, r: 5, done: false, phase: 'warmup' },
+        { w: 125, r: 6, done: false, phase: 'work' },
+        { w: 125, r: 6, done: false, phase: 'work' },
+      ],
+    })])
+    await toggleSet(0)
+    expect(mocks.startRest).toHaveBeenLastCalledWith(45, expect.any(Number))
+    await toggleSet(1)
+    expect(mocks.startRest).toHaveBeenLastCalledWith(150, expect.any(Number))
+    await toggleSet(2)
+    expect(mocks.startRest).toHaveBeenLastCalledWith(150, expect.any(Number))
+    expect(mocks.startRest).toHaveBeenCalledTimes(3)
+  })
+
   it('starts rest after a non-final ordinary set, but stops rest without restarting it on the final set', async () => {
     await mount([exercise('plain-bench', [false, false, false])])
     await toggleSet(0)
@@ -1306,5 +1325,40 @@ describe('effort rating auto-ends the set', () => {
     await act(async () => { onPick(null) })        // clear the number
     expect(mocks.S.active.entries[0].sets[0].rir).toBeUndefined()
     expect(mocks.S.active.entries[0].sets[0].done).toBe(true)   // still done
+  })
+})
+
+describe('per-side effort completion', () => {
+  it.each(['rir', 'rpe'])('completes only the rated side for %s and keeps undo explicit', async scale => {
+    const side = () => ({ w: 20, r: 8, done: false })
+    await mount([exercise('plain-bench', [false], {
+      target: { mode: 'reps', side: true, reps: 16, weight: 20, bodyweight: false },
+      sets: [
+        { w: 20, r: 16, done: false, sides: { L: side(), R: side() } },
+        { w: 20, r: 16, done: false, sides: { L: side(), R: side() } },
+      ],
+    })], 0, { effort: scale })
+    const cells = container.querySelectorAll('.side-rows .effcell.is-empty')
+    await act(async () => { cells[0].dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    const leftPick = mocks.effortPickerSheet.mock.calls.at(-1)[2]
+    await act(async () => { leftPick(scale === 'rir' ? 2 : 8) })
+    let set = mocks.S.active.entries[0].sets[0]
+    expect(set.sides.L.done).toBe(true)
+    expect(set.sides.R.done).toBe(false)
+    expect(set.done).toBe(false)
+    expect(mocks.startRest).not.toHaveBeenCalled()
+    await act(async () => { leftPick(3); leftPick(null) })
+    expect(mocks.S.active.entries[0].sets[0].sides.L.done).toBe(true)
+    expect(mocks.S.active.entries[0].sets[0].sides.L[scale]).toBeUndefined()
+    await act(async () => { cells[1].dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    const rightPick = mocks.effortPickerSheet.mock.calls.at(-1)[2]
+    await act(async () => { rightPick(scale === 'rir' ? 0 : 10) })
+    set = mocks.S.active.entries[0].sets[0]
+    expect(set.done).toBe(true)
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number))
+    const calls = mocks.startRest.mock.calls.length
+    await act(async () => { rightPick(1) })
+    expect(set.sides.R.done).toBe(true)
+    expect(mocks.startRest).toHaveBeenCalledTimes(calls)
   })
 })

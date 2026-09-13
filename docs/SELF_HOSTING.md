@@ -171,8 +171,16 @@ WEB_PORT=8080              # host port — what you browse to
 NGINX_PORT=80              # port the web container listens on, inside the container
 BACKEND=api                # name of the API service that /api is proxied to
 PORT=3000                  # port the API listens on; web proxies to the same value
+RESOLVER=127.0.0.11        # DNS nginx resolves BACKEND with — Docker's, unless you are not on Docker
 SESSION_DAYS=90            # how long a sign-in lasts
 ```
+
+`RESOLVER` only matters off Docker. nginx re-resolves `BACKEND` on every `/api` request so a
+recreated API container does not leave it proxying to a dead IP, and `127.0.0.11` is where
+Docker answers those lookups. Nothing listens there on another runtime, and an unreachable
+resolver does not fail fast — every `/api` request hangs until it times out. On Kubernetes set
+it to the cluster DNS service address (`kubectl -n kube-system get svc kube-dns`, commonly
+`10.96.0.10`); under Podman, to whatever its network provides.
 
 The web image renders its nginx config from these when the container starts, so they take effect
 on a **prebuilt image** — no rebuild. `BACKEND` and `PORT` together are what `/api` is proxied to,

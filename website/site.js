@@ -10,6 +10,9 @@ const GH_REPO = 'https://api.github.com/repos/DuarteSantos8/openGym'
 // Origin, so the browser is allowed to read it. The code is the permanent invite in the
 // nav; if that invite is ever revoked this returns 404 and the count simply stays blank.
 const DC_INVITE = 'https://discord.com/api/v10/invites/e62jY6fwVb?with_counts=1'
+// The two network lookups below are decoration; they wait until the page is idle so they
+// never compete with the stylesheet, the hero image or the demo frame.
+const whenIdle = (fn) => ('requestIdleCallback' in window ? requestIdleCallback(fn, { timeout: 2500 }) : setTimeout(fn, 1200))
 
 /* ------------------------------------------------------- one panel controller
    The navigation sheet and the contents drawer are the same object with different
@@ -232,7 +235,7 @@ function panel({ opener, panelEl, flag, closeBtn }) {
 
    The cache keys carry a _gh2 suffix: a visitor with a still-warm entry from the GitLab
    weeks would otherwise be read with the old field names and show NaN. */
-;(async () => {
+;whenIdle(async () => {
   const set = (id, v) => document.querySelectorAll('[data-gh="' + id + '"]').forEach(el => { el.textContent = v })
   try {
     let d = null
@@ -253,13 +256,13 @@ function panel({ opener, panelEl, flag, closeBtn }) {
     // Leave the placeholder standing rather than writing an empty box.
     if (d.open_issues_count !== '' && d.open_issues_count != null) set('issues-n', d.open_issues_count)
   } catch (e) { /* offline / rate-limited — leave placeholders */ }
-})()
+})
 
 /* --------------------------------------------------- Discord members (nav + specs)
    Same shape as the repo counts above, and just as optional: the placeholder next to
    the Discord link is empty, so a blocked or rate-limited request leaves the link
    reading exactly as it did before anyone counted anything. */
-;(async () => {
+;whenIdle(async () => {
   const set = (id, v) => document.querySelectorAll('[data-dc="' + id + '"]').forEach(el => { el.textContent = v })
   try {
     let n = null
@@ -278,7 +281,7 @@ function panel({ opener, panelEl, flag, closeBtn }) {
     set('members', fmt)
     set('members-n', fmt)
   } catch (e) { /* offline / blocked — the link keeps its plain label */ }
-})()
+})
 
 /* -------------------------------------------------------------- about timeline
    Built from the published GitHub releases, so the page updates itself with every

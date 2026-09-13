@@ -125,7 +125,7 @@ test('profile updates validate the name and raster avatar before saving', async 
 test('plan snapshots are available only to the intended friend and disappear after dismissal or removal', async () => {
   const { call, users } = socialHarness();
   const plan = { opengym_plan: 1, name: 'Push', unit: 'kg', week: { 1: ['r1'] }, customEx: [],
-    routines: [{ id: 'r1', name: 'Push', ex: [{ id: 'bench', sets: 3, reps: 5, weight: 60 }] }] };
+    routines: [{ id: 'r1', name: 'Push', ex: [{ id: 'bench', sets: 3, reps: 5, weight: 60, restSec: 150, warmupRestSec: 45 }] }] };
   assert.equal((await call('POST /api/social/plan', 'alice', { userId: 'bob', plan })).status, 403);
   await call('POST /api/social/request', 'alice', { userId: 'bob' });
   await call('POST /api/social/accept', 'bob', { userId: 'alice' });

@@ -30,7 +30,7 @@ export const MUSCLE_NAME = {
   serratus: 'Serratus', biceps: 'Biceps', triceps: 'Triceps', forearm: 'Forearms',
   abs: 'Abs', obliques: 'Obliques', 'lower-back': 'Lower back', gluteal: 'Glutes',
   quadriceps: 'Quads', hamstring: 'Hamstrings', adductors: 'Adductors',
-  'hip-flexors': 'Hip flexors', calves: 'Calves', tibialis: 'Shins',
+  'hip-flexors': 'Hip flexors', calves: 'Calves', tibialis: 'Shins', 'cardiovascular system': 'Cardiovascular system',
 }
 
 // Every spelling that occurs in the dataset's `tg` and `sm` fields. null = not drawable.
@@ -40,7 +40,7 @@ const ALIAS = {
   triceps: 'triceps', 'upper back': 'upper-back', lats: 'upper-back', calves: 'calves',
   quads: 'quadriceps', forearms: 'forearm', hamstrings: 'hamstring', spine: 'lower-back',
   traps: 'trapezius', adductors: 'adductors', 'serratus anterior': 'serratus',
-  abductors: 'gluteal', 'levator scapulae': 'trapezius', 'cardiovascular system': null,
+  abductors: 'gluteal', 'levator scapulae': 'trapezius', 'cardiovascular system': 'cardiovascular system',
   // secondaries
   shoulders: 'deltoids', deltoids: 'deltoids', 'rear deltoids': 'deltoids',
   'rotator cuff': 'deltoids', quadriceps: 'quadriceps', core: 'abs', abdominals: 'abs',

@@ -35,7 +35,7 @@ services:
   # Passkey auth + per-user data (Node, no framework).
   # image: prebuilt (docker compose pull). build: from source (docker compose up --build).
   api:
-    image: registry.gitlab.com/duartesantos8/opengym/api:latest
+    image: ghcr.io/duartesantos8/opengym-api:latest
     # Default target: no AI runtime, no AI dependency — the image every instance has always had.
     # To opt into the AI Coach, build the other target instead:
     #     API_TARGET=coach docker compose up --build api
@@ -61,7 +61,7 @@ services:
   # Builds the React frontend (multi-stage) and serves it, proxying /api → api
   # and the exercise media from the shared volume. Single origin for passkeys.
   web:
-    image: registry.gitlab.com/duartesantos8/opengym/web:latest
+    image: ghcr.io/duartesantos8/opengym-web:latest
     build:
       context: .
       dockerfile: web/Dockerfile
@@ -80,6 +80,8 @@ services:
       - NGINX_PORT=${NGINX_PORT:-80}
       - BACKEND=${BACKEND:-api}
       - PORT=${PORT:-3000}
+      # Docker's embedded DNS. Only ever needs changing on a runtime that is not Docker.
+      - RESOLVER=${RESOLVER:-127.0.0.11}
       # Empty drops the CF-Connecting-IP header, so a direct client cannot forge the address
       # the activity log records. Cloudflare users set CF_CONNECTING_IP=$$http_cf_connecting_ip.
       - CF_CONNECTING_IP=${CF_CONNECTING_IP:-}

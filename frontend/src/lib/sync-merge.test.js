@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { mergeBodyweight, mergeStates, newerOf, unionById } from './sync-merge.js'
+import { localExtras, mergeBodyweight, mergeStates, newerOf, unionById } from './sync-merge.js'
 
 const workout = (id, d = '2026-09-01', start = 1) => ({ id, d, start, entries: [] })
 const routine = (id, name = id) => ({ id, name, ex: [] })
@@ -129,5 +129,25 @@ describe('mergeStates', () => {
     expect(ids(m.workouts)).toEqual(['w1', 'from-phone'])
     expect(m.restSec).toBe(75)
     expect(m._ts).toBe(1002)
+  })
+})
+
+describe('sign-in adoption helpers', () => {
+  const server = { _ts: 100, unit: 'lb', restSec: 60, workouts: [{ id: 'w1', d: '2026-09-01' }], bodyweight: [{ d: '2026-09-01', w: 80, t: 1 }], routines: [{ id: 'r1', name: 'A' }], week: { 1: ['r1'] } }
+  const local = { _ts: 900, unit: 'kg', restSec: 90, workouts: [{ id: 'w9', d: '2026-09-11' }], bodyweight: [{ d: '2026-09-11', w: 81, t: 2 }, { d: '2026-09-01', w: 79, t: 9 }], routines: [{ id: 'rg', name: 'Guest' }], customEx: [{ id: 'c1', name: 'x' }], week: { 2: ['rg'] } }
+  it('localExtras counts what the device has that the server does not', () => {
+    expect(localExtras(local, server)).toEqual({ workouts: 1, bodyweight: 1, customEx: 1 })
+    expect(localExtras(server, server)).toEqual({ workouts: 0, bodyweight: 0, customEx: 0 })
+    expect(localExtras(null, server)).toEqual({ workouts: 0, bodyweight: 0, customEx: 0 })
+  })
+  it('mergeStates with prefer keeps the preferred side\'s settings and plan although the other is newer', () => {
+    const m = mergeStates(server, local, { prefer: 'a' })
+    expect(m.unit).toBe('lb'); expect(m.restSec).toBe(60); expect(m.week).toEqual({ 1: ['r1'] })
+    expect(m.workouts.map(w => w.id)).toEqual(['w1', 'w9'])
+    expect(m.routines.map(r => r.id).sort()).toEqual(['r1', 'rg'])
+    expect(m.customEx.map(e => e.id)).toEqual(['c1'])
+    // the weigh-in both sides have for the same day: the later `t` wins, as between devices
+    expect(m.bodyweight.find(e => e.d === '2026-09-01').w).toBe(79)
+    expect(mergeStates(server, local).unit).toBe('kg')   // without prefer the newer copy decides
   })
 })

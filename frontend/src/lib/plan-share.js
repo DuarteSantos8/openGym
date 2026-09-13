@@ -54,6 +54,7 @@ function cleanEx(e) {
   // only when set, so a plan that never asked for one leaves the recipient's own default
   // timer in charge. parsePlan and mergePlan carry it through by spread.
   if (e.restSec > 0) o.restSec = e.restSec
+  if (e.warmupRestSec > 0) o.warmupRestSec = e.warmupRestSec   // the ramp's own rest travels with the work rest
   if (e.sg) o.sg = e.sg
   if (e.note) o.note = e.note
   const warm = cleanWarmupSets(e.warmupSets)
@@ -142,8 +143,9 @@ export function parsePlan(raw) {
       const warm = cleanWarmupSets(e.warmupSets)
       const intens = cleanIntensifier(e.intensifier)
       const rest = cleanRestSec(e.restSec)
-      const { warmupSets, intensifier, restSec, ...passthrough } = e
-      return { ...passthrough, ...(warm ? { warmupSets: warm } : {}), ...(intens ? { intensifier: intens } : {}), ...(rest ? { restSec: rest } : {}) }
+      const warmRest = cleanRestSec(e.warmupRestSec)
+      const { warmupSets, intensifier, restSec, warmupRestSec, ...passthrough } = e
+      return { ...passthrough, ...(warm ? { warmupSets: warm } : {}), ...(intens ? { intensifier: intens } : {}), ...(rest ? { restSec: rest } : {}), ...(warmRest ? { warmupRestSec: warmRest } : {}) }
     })
   }))
   return {

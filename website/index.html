@@ -6,20 +6,27 @@
 <title>openGym — free, open-source gym &amp; body-weight tracker</title>
 <meta name="description" content="openGym is a free, open-source gym & body-weight tracker. Download the Android app or self-host it with Docker — no account, no cloud, no telemetry.">
 <meta name="theme-color" content="#000000">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="preconnect" href="https://stats.duarte-santos.ch">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="openGym — your workouts, your weights, your data">
 <meta name="twitter:description" content="Free, open-source gym & body-weight tracker. Android APK or self-hosted with Docker. No account, no cloud, no telemetry.">
-<meta name="twitter:image" content="https://opengym.duarte-santos.ch/img/banner.png">
+<meta name="twitter:image" content="https://opengym.duarte-santos.ch/img/social.jpg">
 <meta property="og:title" content="openGym — your workouts, your weights, your data">
 <meta property="og:description" content="Free, open-source gym & body-weight tracker. Android APK or self-hosted with Docker. No account, no cloud, no telemetry.">
-<meta property="og:image" content="https://opengym.duarte-santos.ch/img/banner.png">
+<meta property="og:image" content="https://opengym.duarte-santos.ch/img/social.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="openGym — your training, your data, your server. Two phones showing the home and workout screens.">
 <meta property="og:url" content="https://opengym.duarte-santos.ch/">
 <link rel="canonical" href="https://opengym.duarte-santos.ch/">
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="openGym">
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 <link rel="icon" type="image/png" sizes="180x180" href="icon-180.png">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="styles.css?v=17">
+<link rel="preload" as="image" type="image/webp" imagesrcset="img/home-480.webp 480w, img/home-600.webp 600w, img/home-1170.webp 1170w" imagesizes="(max-width: 700px) 62vw, 300px" fetchpriority="high">
+<link rel="stylesheet" href="styles.css?v=19">
 <!-- Marks that JS is alive before first paint, so the scroll-reveal styles never
      hide content from a browser that will not run them. -->
 <script>
@@ -42,12 +49,17 @@ try {
  "offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},
  "license":"https://www.gnu.org/licenses/agpl-3.0.html",
  "url":"https://opengym.duarte-santos.ch/",
+ "image":"https://opengym.duarte-santos.ch/img/social.jpg",
+ "screenshot":["https://opengym.duarte-santos.ch/img/home.png","https://opengym.duarte-santos.ch/img/workout.png","https://opengym.duarte-santos.ch/img/stats.png"],
+ "softwareVersion":"1.3.7","datePublished":"2026-07-18","dateModified":"2026-09-13","isAccessibleForFree":true,
+ "featureList":["Weekly plan with a routine per weekday","Guided workouts with rest timer, supersets, warm-up and timed sets","Progression rules: linear, Greyskull LP, double progression","Estimated 1RM, activity heatmap, muscle balance and fatigue maps","Body-weight tracking with a goal line","Import from Hevy, Strong, FitNotes and Apple Health","Passkey login and multi-device sync when self-hosted","Standalone Android APK with no account","14 languages","Optional AI coach on your own API key"],
  "downloadUrl":"https://opengym.duarte-santos.ch/openGym.apk",
  "author":{"@type":"Person","name":"Duarte Santos","url":"https://duarte-santos.ch"},
  "sameAs":["https://github.com/DuarteSantos8/openGym","https://gitlab.com/DuarteSantos8/opengym","https://discord.gg/e62jY6fwVb"]}
 </script>
 </head>
 <body class="topnav">
+<a class="skip" href="#main">Skip to content</a>
 
 <!-- Icon set: one sprite, referenced with <use>. Line icons at 24×24, stroke 1.7. -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
@@ -144,6 +156,7 @@ try {
   <a class="side-link" href="about.html"><b>About</b><span>The story and the milestones</span></a>
 </aside>
 
+<main id="main">
 <header class="hero">
   <div class="wrap">
     <p class="eyebrow">openGym</p>
@@ -157,8 +170,11 @@ try {
   </div>
   <div class="hero-stage">
     <div class="device">
-      <img src="img/home.png" alt="openGym home screen: the week at a glance, today's session and a body-weight chart"
-           width="1170" height="2532" fetchpriority="high">
+      <picture>
+        <source type="image/webp" srcset="img/home-480.webp 480w, img/home-600.webp 600w, img/home-1170.webp 1170w" sizes="(max-width: 700px) 62vw, 300px">
+        <img src="img/home.png" alt="openGym home screen: the week at a glance, today's session and a body-weight chart"
+             width="1170" height="2532" fetchpriority="high" decoding="async">
+      </picture>
     </div>
   </div>
   <div class="hero-fade"></div>
@@ -347,11 +363,11 @@ try {
   </div>
   <div class="bleed rv">
     <div class="rail">
-      <figure><div class="device"><img src="img/home.png" alt="Home screen with the weekly overview and body-weight chart" loading="lazy" width="1170" height="2532"></div><figcaption>Home</figcaption></figure>
-      <figure><div class="device"><img src="img/workout.png" alt="Guided workout screen with sets, rest timer and pre-filled weights" loading="lazy" width="1170" height="2532"></div><figcaption>Workout</figcaption></figure>
-      <figure><div class="device"><img src="img/stats.png" alt="Stats screen with the activity heatmap and charts" loading="lazy" width="1170" height="2532"></div><figcaption>Stats</figcaption></figure>
-      <figure><div class="device"><img src="img/plan.png" alt="Weekly plan screen with a routine per weekday" loading="lazy" width="1170" height="2532"></div><figcaption>Plan</figcaption></figure>
-      <figure><div class="device"><img src="img/library.png" alt="Exercise library with search and filters" loading="lazy" width="1170" height="2532"></div><figcaption>Library</figcaption></figure>
+      <figure><div class="device"><picture><source type="image/webp" srcset="img/home-480.webp 480w, img/home-600.webp 600w, img/home-1170.webp 1170w" sizes="(max-width: 700px) 60vw, 240px"><img src="img/home.png" alt="Home screen with the weekly overview and body-weight chart" loading="lazy" decoding="async" width="1170" height="2532"></picture></div><figcaption>Home</figcaption></figure>
+      <figure><div class="device"><picture><source type="image/webp" srcset="img/workout-480.webp 480w, img/workout-600.webp 600w, img/workout-1170.webp 1170w" sizes="(max-width: 700px) 60vw, 240px"><img src="img/workout.png" alt="Guided workout screen with sets, rest timer and pre-filled weights" loading="lazy" decoding="async" width="1170" height="2532"></picture></div><figcaption>Workout</figcaption></figure>
+      <figure><div class="device"><picture><source type="image/webp" srcset="img/stats-480.webp 480w, img/stats-600.webp 600w, img/stats-1170.webp 1170w" sizes="(max-width: 700px) 60vw, 240px"><img src="img/stats.png" alt="Stats screen with the activity heatmap and charts" loading="lazy" decoding="async" width="1170" height="2532"></picture></div><figcaption>Stats</figcaption></figure>
+      <figure><div class="device"><picture><source type="image/webp" srcset="img/plan-480.webp 480w, img/plan-600.webp 600w, img/plan-1170.webp 1170w" sizes="(max-width: 700px) 60vw, 240px"><img src="img/plan.png" alt="Weekly plan screen with a routine per weekday" loading="lazy" decoding="async" width="1170" height="2532"></picture></div><figcaption>Plan</figcaption></figure>
+      <figure><div class="device"><picture><source type="image/webp" srcset="img/library-480.webp 480w, img/library-600.webp 600w, img/library-1170.webp 1170w" sizes="(max-width: 700px) 60vw, 240px"><img src="img/library.png" alt="Exercise library with search and filters" loading="lazy" decoding="async" width="1170" height="2532"></picture></div><figcaption>Library</figcaption></figure>
     </div>
   </div>
   <div class="wrap"><p class="rail-hint">Swipe through them.</p></div>
@@ -404,7 +420,7 @@ try {
         </ul>
         <div class="push">
           <a class="btn" href="openGym.apk" download>Download for Android</a>
-          <p class="meta">v1.3.5 · 27.7 MB · Android 6.0+ · signed APK. Your browser will ask
+          <p class="meta">v1.3.7 · 27.7 MB · Android 6.0+ · signed APK. Your browser will ask
              before installing; that is normal outside the Play Store.</p>
           <p class="meta">Every release is also built and signed by CI and attached to the
              <a href="https://github.com/DuarteSantos8/openGym/releases" rel="noopener">GitHub
@@ -530,6 +546,8 @@ try {
 
 
 
+</main>
+
 <footer><div class="wrap foot">
   <span class="c">openGym · AGPL-3.0 · © 2026 <a href="https://duarte-santos.ch" rel="noopener">Duarte Santos</a></span>
   <div class="links">
@@ -542,6 +560,6 @@ try {
   </div>
 </div></footer>
 
-<script src="site.js?v=17" defer></script>
+<script src="site.js?v=19" defer></script>
 </body>
 </html>

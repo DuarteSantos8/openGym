@@ -4,16 +4,53 @@
 // loads, the React subscription hook) live in i18n.js and re-export from here.
 
 export const LANGS = {
-  en: 'English', de: 'Deutsch', es: 'Español', fr: 'Français', it: 'Italiano',
-  pt: 'Português (Portugal)', 'pt-BR': 'Português (Brasil)', pl: 'Polski',
+  en: 'English', de: 'Deutsch', 'de-CH': 'Deutsch (Schweiz)', es: 'Español', fr: 'Français',
+  it: 'Italiano', pt: 'Português (Portugal)', 'pt-BR': 'Português (Brasil)', pl: 'Polski',
   tr: 'Türkçe', ru: 'Русский', zh: '中文',
   ko: '한국어', hi: 'हिन्दी', th: 'ไทย', hu: 'Magyar'
 }
 export const INSTR_LANGS = ['en', 'es', 'fr', 'it', 'tr', 'ru', 'zh', 'hi', 'pl', 'ko', 'pt-BR', 'hu']
 export const EXERCISE_NAME_LANGS = ['pt-BR', 'hu']
 export const DATE_LOCALES = {
-  en: 'en-GB', de: 'de-DE', es: 'es-ES', fr: 'fr-FR', it: 'it-IT', pt: 'pt-PT', 'pt-BR': 'pt-BR',
+  en: 'en-GB', de: 'de-DE', 'de-CH': 'de-CH', es: 'es-ES', fr: 'fr-FR', it: 'it-IT',
+  pt: 'pt-PT', 'pt-BR': 'pt-BR',
   pl: 'pl-PL', tr: 'tr-TR', ru: 'ru-RU', zh: 'zh-CN', ko: 'ko-KR', hi: 'hi-IN', th: 'th-TH', hu: 'hu-HU'
+}
+
+// Locales derived from another language by a pure text transform rather than carried as their
+// own pack. Swiss Standard German has no ß — every one is written ss — so de-CH is de with a
+// single substitution. Deriving it keeps one German source of truth: a hand-maintained de-CH
+// would be 98.7% identical to de.js (16 of 1265 values differ), and check-locales.mjs would
+// then require every future German string to be written twice, forever.
+//
+// The transform is exact in this direction ONLY. Going back needs vowel length — "Maße" and
+// "Masse" both collapse to "Masse" — so de is always the base and never the derivative.
+//
+// Note this covers orthography, not vocabulary: a Swiss-specific word choice (Velo for
+// Fahrrad) would need a real pack. None of the current strings contain one.
+export const DERIVED_LOCALES = {
+  'de-CH': { base: 'de', transform: s => s.replace(/ß/g, 'ss') }
+}
+
+// The language whose packs a locale actually loads: a derived locale reads its base's, every
+// other language its own. Used for the INSTR_LANGS/EXERCISE_NAME_LANGS membership tests too,
+// so de-CH gains instructions and exercise names exactly when de does, with no second entry
+// to remember to add.
+export const baseLang = l => DERIVED_LOCALES[l]?.base || l
+
+// Applies a derived locale's transform to a loaded pack, returning it unchanged for a language
+// that is not derived. Packs are trees of strings: the locale pack is flat { source: target },
+// instruction packs are { exId: [steps] }, exercise-name packs { exId: name }.
+export function derivePack(l, pack) {
+  const transform = DERIVED_LOCALES[l]?.transform
+  if (!transform || !pack) return pack
+  const walk = v =>
+    typeof v === 'string' ? transform(v)
+      : Array.isArray(v) ? v.map(walk)
+        : v && typeof v === 'object'
+          ? Object.fromEntries(Object.entries(v).map(([k, inner]) => [k, walk(inner)]))
+          : v
+  return walk(pack)
 }
 
 let lang = 'en'                 // set only by _setLangState, called from i18n.js setLang
@@ -63,8 +100,10 @@ export const exerciseNameSearchText = ex => {
 export function _setLangState(newLang, newDict, newInstr, newExerciseNames) {
   lang = LANGS[newLang] ? newLang : 'en'
   dict = lang === 'en' ? {} : (newDict || {})
-  instr = lang === 'en' || !INSTR_LANGS.includes(lang) ? null : (newInstr || null)
-  exerciseNames = lang === 'en' || !EXERCISE_NAME_LANGS.includes(lang) ? null : (newExerciseNames || null)
+  instr = lang === 'en' || !INSTR_LANGS.includes(baseLang(lang)) ? null : (newInstr || null)
+  exerciseNames = lang === 'en' || !EXERCISE_NAME_LANGS.includes(baseLang(lang))
+    ? null
+    : (newExerciseNames || null)
   version++
   return version
 }

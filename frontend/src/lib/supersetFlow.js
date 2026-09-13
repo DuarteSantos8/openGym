@@ -1,5 +1,7 @@
 // Pure decisions for the active-workout superset flow. Keeping these independent of React and
 // the stores makes the uneven-round and re-check rules explicit and directly testable.
+import { isWarmupRow } from './workout-model.js'
+
 const hasWork = (entries, idx) => !!entries[idx]?.sets?.some(set => !set.done)
 
 // Return the first unfinished navigation unit after the current one, wrapping once so a user
@@ -87,6 +89,25 @@ export function restSecFor(entries, unit, defaultRestSec) {
     const own = entries?.[idx]?.target?.restSec
     return Math.max(longest, own > 0 ? own : fallback)
   }, 0)
+}
+
+/**
+ * The rest a completed set earns when it was a warm-up ramp set.
+ *
+ * Ramp sets are light and short, so an exercise may carry its own `warmupRestSec` in its target
+ * next to `restSec`. It applies between ramp sets only: the break after the LAST ramp set, into
+ * the first work set, is `workRestSec` (the value restSecFor resolved), because that is the rest
+ * the first heavy set actually needs. An exercise without the field, or a work set, rests
+ * `workRestSec` — exactly what every routine did before the field existed.
+ */
+export function warmupRestSecFor(entry, setIdx, workRestSec) {
+  const sets = Array.isArray(entry?.sets) ? entry.sets : []
+  const set = sets[setIdx]
+  if (!set || !isWarmupRow(set)) return workRestSec
+  const next = sets.slice(setIdx + 1).find(s => !s.done)
+  if (!next || !isWarmupRow(next)) return workRestSec
+  const own = Number(entry?.target?.warmupRestSec)
+  return own > 0 ? own : workRestSec
 }
 
 // Decide where a newly completed superset set goes next. Spent members are skipped, including
