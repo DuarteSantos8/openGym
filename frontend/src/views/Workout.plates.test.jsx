@@ -19,6 +19,8 @@ const clone = value => JSON.parse(JSON.stringify(value))
 const SQUAT = '0043'      // barbell full squat
 const DB_BENCH = '0289'   // dumbbell bench press
 const COCOONS = '0260'    // body weight, done here with +25
+const LUNGE = '0054'      // barbell lunge — the coach runs it per side
+const BAND_PULL = '0993'  // band pull-apart (band)
 // One pair of each — the home gym the coach plans for.
 const HOME = { 45: 1, 35: 1, 25: 1, 15: 1, 10: 1, 5: 1, 2.5: 1 }
 
@@ -61,15 +63,38 @@ describe('plate line under set rows', () => {
     expect(EXIDX[SQUAT].eq).toBe('barbell')
     expect(EXIDX[DB_BENCH].eq).toBe('dumbbell')
     expect(EXIDX[COCOONS].eq).toBe('body weight')
+    expect(EXIDX[LUNGE].eq).toBe('barbell')
+    expect(EXIDX[BAND_PULL].eq).toBe('band')
+  })
+
+  it('a per-side bar exercise (barbell lunge): the work rows load from the sides\' shared bar', () => {
+    const side = (L, R) => ({ w: Math.max(L, R), r: 16, done: false, sides: { L: { w: L, r: 8, done: false }, R: { w: R, r: 8, done: false } } })
+    mount([entry(LUNGE, [warm(45), side(65, 65), side(65, 65), side(65, 0)], { w: 65, side: true })])
+    expect(lines()).toEqual([
+      { text: 'Bar only', moves: null },
+      { text: '10 per side', moves: '+10' },
+    ])
+    expect(container.querySelectorAll('.setrow-side').length).toBe(3)
+  })
+
+  it('sides carrying different weights get no line', () => {
+    const side = (L, R) => ({ w: Math.max(L, R), r: 16, done: false, sides: { L: { w: L, r: 8, done: false }, R: { w: R, r: 8, done: false } } })
+    mount([entry(LUNGE, [side(65, 75)], { w: 65, side: true })])
+    expect(lines()).toEqual([])
+  })
+
+  it('a band has no plates: no line even with a "weight" logged', () => {
+    mount([entry(BAND_PULL, [work(10), work(10)], { w: 10 })])
+    expect(lines()).toEqual([])
   })
 
   it("Monday's squat ramp: a line where the stack changes, once for the three work sets", () => {
     mount([entry(SQUAT, [warm(70), warm(100), warm(120), work(145), work(145), work(145)], { w: 145 })])
     expect(lines()).toEqual([
-      { text: '10 · 2.5 per side', moves: null },
-      { text: '25 · 2.5 per side', moves: '−10 +25' },
-      { text: '35 · 2.5 per side', moves: '−25 +35' },
-      { text: '45 · 5 per side', moves: '−35 −2.5 +45 +5' },
+      { text: '10 + 2.5 per side', moves: null },
+      { text: '25 + 2.5 per side', moves: '−10 +25' },
+      { text: '35 + 2.5 per side', moves: '−25 +35' },
+      { text: '45 + 5 per side', moves: '−35 −2.5 +45 +5' },
     ])
     // The line sits under its own row: six set rows, four lines, the last two rows bare.
     expect(container.querySelectorAll('.setrow').length).toBe(6)
@@ -111,9 +136,9 @@ describe('plate line under set rows', () => {
     const dropped = { w: 145, r: 6, done: false, type: 'dropset', drops: [{ w: 115, r: 8 }] }
     mount([entry(SQUAT, [dropped, work(145)], { w: 145 })])
     expect(lines()).toEqual([
-      { text: '45 · 5 per side', moves: null },
+      { text: '45 + 5 per side', moves: null },
       { text: '35 per side', moves: '−45 −5 +35' },
-      { text: '45 · 5 per side', moves: '−35 +45 +5' },
+      { text: '45 + 5 per side', moves: '−35 +45 +5' },
     ])
     // The drop's line follows its sub-row, not the main row.
     const sub = container.querySelector('.subrow')
@@ -128,9 +153,9 @@ describe('plate line under set rows', () => {
   it('the compact view keeps the stacks and drops the strip/add moves', () => {
     mount([entry(SQUAT, [warm(70), warm(100), work(145)], { w: 145 })], { workoutView: 'compact' })
     expect(lines()).toEqual([
-      { text: '10 · 2.5 per side', moves: null },
-      { text: '25 · 2.5 per side', moves: null },
-      { text: '45 · 5 per side', moves: null },
+      { text: '10 + 2.5 per side', moves: null },
+      { text: '25 + 2.5 per side', moves: null },
+      { text: '45 + 5 per side', moves: null },
     ])
   })
 

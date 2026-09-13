@@ -128,9 +128,10 @@ export function plateDelta(prev, next) {
 /**
  * How an exercise's weight is loaded: 'pairs' (a bar or a two-post machine — plates split per
  * side beyond the bar), 'single' (one stack: dip belt, landmine, plate-loaded machine, sled — all
- * of it beyond the base weight), 'none' (dumbbells, kettlebells, cables, pin machines). The
- * user's own choice in S.loadKind wins; otherwise bar equipment → pairs, body-weight and
+ * of it beyond the base weight), 'none' (dumbbells, kettlebells, cables, pin machines, bands).
+ * The user's own choice in S.loadKind wins; otherwise bar equipment → pairs, body-weight and
  * "weighted" exercises and sleds → single (the added load is what you hang on), the rest → none.
+ * A band's "weight" is its tension, not plates, so bands are none even though isBw counts them.
  */
 export function loadKindFor(S, cfgOrId) {
   const cfg = typeof cfgOrId === 'string' ? { id: cfgOrId } : (cfgOrId || {})
@@ -138,6 +139,7 @@ export function loadKindFor(S, cfgOrId) {
   const own = S?.loadKind?.[cfg.id]
   if (own === 'pairs' || own === 'single' || own === 'none') return own
   if (usesBar(ex)) return 'pairs'
+  if (ex?.eq === 'band' || ex?.eq === 'resistance band') return 'none'
   if (SINGLE_EQ.has(ex?.eq) || isBw(cfg)) return 'single'
   return 'none'
 }
