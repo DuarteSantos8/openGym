@@ -270,7 +270,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="ov">
     <h3>Conventions</h3>
-<ul><li>Every response body is JSON with <code>Cache-Control: no-store</code>.</li><li>Errors are always <code>{&quot;error&quot;: &quot;&lt;human-readable message&gt;&quot;}</code>.</li><li>Unknown method+path pairs return <code>404 {&quot;error&quot;:&quot;not found&quot;}</code>; an unhandled exception returns <code>500 {&quot;error&quot;:&quot;server error&quot;}</code>.</li><li>Request bodies are parsed as JSON regardless of Content-Type; max 5 MiB.</li><li>CORS: the request's <code>Origin</code> is reflected in <code>Access-Control-Allow-Origin</code> <b>without</b> <code>Allow-Credentials</code> — cross-origin callers can only ever authenticate with a Bearer token, never with the cookie.</li></ul>
+<ul><li>Every response body is JSON with <code>Cache-Control: no-store</code>.</li><li>Errors are always <code>{&quot;error&quot;: &quot;&lt;human-readable message&gt;&quot;}</code>.</li><li>Unknown method+path pairs return <code>404 {&quot;error&quot;:&quot;not found&quot;}</code>; an unhandled exception returns <code>500 {&quot;error&quot;:&quot;server error&quot;}</code>.</li><li>Request bodies are parsed as JSON regardless of Content-Type; max 16 MiB.</li><li>CORS: the request's <code>Origin</code> is reflected in <code>Access-Control-Allow-Origin</code> <b>without</b> <code>Allow-Credentials</code> — cross-origin callers can only ever authenticate with a Bearer token, never with the cookie.</li></ul>
   </div>
     </div>
   </section>
@@ -655,7 +655,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Pull the account's app state</span>
   </summary>
   <div class="ep-body">
-<p>Returns the caller's entire app state as one JSON blob, or <code>{&quot;state&quot;: null}</code> if nothing has been synced yet, together with <code>rev</code>, the server's revision of that document (0 when there is none). A client keeps the <code>rev</code> it last read or wrote and sends it back as <code>baseRev</code> on the next push, which lets the server refuse a write over a document the client never saw (see the 409 on PUT).</p>
+<p>Returns the caller's entire app state as one JSON blob, or <code>{&quot;state&quot;: null}</code> if nothing has been synced yet, together with <code>revision</code> (the strong ETag) and <code>rev</code> (the numeric polling revision; 0 when there is no document). A client sends the <code>revision</code> value it last read in <code>If-Match</code> on the next push.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
 
 
@@ -663,7 +663,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <div class="ptab">
   <div class="prow rrow">
     <span class="r-code s2">200</span>
-    <span class="p-desc">The stored state, or null, and its revision.<span class="r-sig">{ state: <a href="#schema-State">State</a> | null, rev: integer }</span></span>
+    <span class="p-desc">The stored state, or null, and its revision.<span class="r-sig">{ state: <a href="#schema-State">State</a> | null, rev: integer, revision: string } &middot; sets <code>ETag</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>
@@ -681,10 +681,21 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Push the account's app state</span>
   </summary>
   <div class="ep-body">
-<p>Replaces the stored state wholesale (atomic write; there is no merge on the server). The <code>active</code> field — an in-progress workout — is stripped before saving: a running session belongs to the device running it. Body limit 5 MiB.</p>
-<p>With <code>baseRev</code> the write is conditional: it goes through only when <code>baseRev</code> equals the document's current revision, and answers 409 with the current document otherwise — the client merges the two and pushes again with the revision it was given. Without <code>baseRev</code> the write is unconditional (clients from before revisions, and deliberate replaces such as a backup import). The server stamps the new revision into the document as <code>_rev</code>; a <code>_rev</code> sent by the client is ignored.</p>
+<p>Replaces the stored state wholesale (atomic write; there is no merge on the server). The <code>active</code> field — an in-progress workout — is stripped before saving: a running session belongs to the device running it. Body limit 16 MiB.</p>
+<p><code>If-Match</code> is required and must contain the exact strong ETag returned by <code>GET /api/data</code> (or a prior successful write). A stale ETag answers 412 and includes the current ETag; a missing ETag answers 428. <code>baseRev</code> is retained in the body as a numeric polling hint for older clients, but it is not a write precondition. Supplying an <code>Idempotency-Key</code> makes a retried request return the original result, including its original ETag and numeric revision. The server stamps the new revision into the document as <code>_rev</code>; a <code>_rev</code> sent by the client is ignored.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
-
+<p class="ep-h">Query parameters</p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">If-Match <span class="p-hint">(header)</span><em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Exact strong ETag from the last read or write of this profile.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">Idempotency-Key <span class="p-hint">(header)</span></span>
+    <span class="p-type">string <span class="p-hint">(&le; 200 chars)</span></span>
+    <span class="p-desc">Optional key for safely replaying the same request after a lost response.</span>
+  </div>
+</div>
 <p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
   <div class="prow">
     <span class="p-name">state<em class="p-req" title="required">required</em></span>
@@ -694,14 +705,14 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow">
     <span class="p-name">baseRev</span>
     <span class="p-type">integer | null</span>
-    <span class="p-desc">The revision this client last read or wrote. Omit or null for an unconditional overwrite.</span>
+    <span class="p-desc">Numeric polling hint retained for older clients. The server uses <code>If-Match</code>, not this field, as the write precondition.</span>
   </div>
 </div>
     <p class="ep-h">Responses</p>
     <div class="ptab">
   <div class="prow rrow">
     <span class="r-code s2">200</span>
-    <span class="p-desc">Saved.<span class="r-sig">{ ok: always true, ts: number | null, rev: integer }</span></span>
+    <span class="p-desc">Saved.<span class="r-sig">{ ok: always true, ts: number | null, rev: integer, revision: string } &middot; sets <code>ETag</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">400</span>
@@ -713,7 +724,15 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">409</span>
-    <span class="p-desc"><code>baseRev</code> is not the current revision — another client wrote since this one last read. Carries the current document so the client can merge and retry.</span>
+    <span class="p-desc">The supplied idempotency key was already used with a different request body.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">412</span>
+    <span class="p-desc">The <code>If-Match</code> ETag is stale — another device wrote the profile after this client last read it. No write was accepted.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">428</span>
+    <span class="p-desc">The required <code>If-Match</code> precondition was not supplied.</span>
   </div>
     </div>
   </div>
@@ -1645,7 +1664,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow">
     <span class="p-name">_rev</span>
     <span class="p-type">integer</span>
-    <span class="p-desc">Server-set revision, incremented on every accepted PUT. Ignored when sent by a client.</span>
+    <span class="p-desc">Server-set revision, incremented on every accepted profile write. Ignored when sent by a client.</span>
   </div>
   <div class="prow">
     <span class="p-name">unit</span>

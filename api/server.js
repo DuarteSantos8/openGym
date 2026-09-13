@@ -1841,13 +1841,16 @@ const routes = {
       const prior = key && receipts.entries.find(e => e.uid === user.id && e.key === key);
       if (prior) {
         if (prior.hash !== hash) return json(res, 409, { error: 'idempotency key was already used for another request' });
-        const priorRev = Number.isSafeInteger(prior.rev) ? prior.rev : Number.isSafeInteger(current.state?._rev) ? current.state._rev : 0;
-        return json(res, 200, {
+        // Receipts written before numeric revisions were introduced still carry a valid strong
+        // ETag, but cannot prove which numeric rev belonged to that response. Preserve the
+        // original ETag and omit rev instead of pairing it with today's count after another write.
+        const replay = {
           ok: true,
           ts: prior.tsValue || null,
-          revision: prior.revision,
-          rev: priorRev
-        }, { ETag: prior.revision });
+          revision: prior.revision || current.etag
+        };
+        if (prior.revision && Number.isSafeInteger(prior.rev)) replay.rev = prior.rev;
+        return json(res, 200, replay, { ETag: replay.revision });
       }
       if (expected !== current.etag) return json(res, 412, { error: 'stale revision', revision: current.etag }, { ETag: current.etag });
       try {
@@ -1945,8 +1948,11 @@ const routes = {
         if (prior.hash !== hash) return json(res, 409, { error: 'idempotency key was already used for another request' });
         const priorWorkout = (current.state?.workouts || []).find(workout => workout.id === prior.resultId);
         if (!priorWorkout) return storageFailure(res, new StorageCorruptError(receiptFile, new Error('workout receipt target is missing')));
-        const priorRev = Number.isSafeInteger(prior.rev) ? prior.rev : Number.isSafeInteger(current.state?._rev) ? current.state._rev : 0;
-        return json(res, 200, { workout: priorWorkout, revision: prior.revision || current.etag, rev: priorRev }, { ETag: prior.revision || current.etag });
+        // Upgrade-era MCP receipts have the original strong ETag but no numeric rev. Keep that
+        // validator as the replay identity and omit rev rather than claiming the current count.
+        const replay = { workout: priorWorkout, revision: prior.revision || current.etag };
+        if (prior.revision && Number.isSafeInteger(prior.rev)) replay.rev = prior.rev;
+        return json(res, 200, replay, { ETag: replay.revision });
       }
       if (expected !== current.etag) return json(res, 412, { error: 'stale revision', revision: current.etag }, { ETag: current.etag });
       const source = current.state || { unit: 'kg', routines: [], week: {}, dayPlan: {}, customEx: [], workouts: [], bodyweight: [] };

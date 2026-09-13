@@ -517,10 +517,11 @@ export const useStore = create((set, get) => {
               const preserveLocal = dirty || localNewer
               const hadBase = !!syncBase
               // `active` is intentionally device-local and is not part of the server snapshot.
-              // When both snapshots still match the saved base, there is no pending profile
-              // change to push; mergePendingState would otherwise treat the presence of the base
-              // as a local edit and issue a needless PUT on every pull.
-              if (hadBase && sameSyncedState(S, syncBase) && sameSyncedState(state, syncBase)) {
+              // When local still matches the saved base, the server is the only side that moved
+              // (or neither side moved), so adopt it without a merge write. mergePendingState
+              // would otherwise treat the presence of the base as a local edit and issue a
+              // needless PUT on every remote-only pull, causing revision ping-pong.
+              if (hadBase && sameSyncedState(S, syncBase)) {
                 const active = S.active
                 const next = Object.assign(clone(DEF), state)
                 if (active) next.active = active

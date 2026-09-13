@@ -18,21 +18,24 @@ function mintSession(uid, sv = 0) {
   return payload + '.' + crypto.createHmac('sha256', SECRET).update(payload).digest('base64url');
 }
 const headers = uid => ({ Cookie: `gymsid=${mintSession(uid)}`, 'Content-Type': 'application/json' });
+const digest = value => crypto.createHash('sha256').update(value).digest('hex');
+const etag = text => `"${digest(text)}"`;
 
 const freePort = () => new Promise(r => {
   const s = net.createServer(); s.listen(0, '127.0.0.1', () => { const p = s.address().port; s.close(() => r(p)); });
 });
 
-async function startServer(t) {
+async function startServer(t, { prepare, env = {} } = {}) {
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gym-rev-'));
   fs.writeFileSync(path.join(dataDir, 'secret'), SECRET, { mode: 0o600 });
   fs.writeFileSync(path.join(dataDir, 'db.json'), JSON.stringify({
     users: [{ id: 'u_rev_1', name: 'One', created: new Date().toISOString() }], creds: [], subs: [], invites: []
   }));
+  if (prepare) prepare(dataDir);
   const port = await freePort();
   const child = spawn(process.execPath, ['server.js'], {
     cwd: API, stdio: ['ignore', 'pipe', 'pipe'],
-    env: { ...process.env, PORT: String(port), DATA_DIR: dataDir, ORIGIN: 'http://localhost:8080', RP_ID: 'localhost' }
+    env: { ...process.env, PORT: String(port), DATA_DIR: dataDir, ORIGIN: 'http://localhost:8080', RP_ID: 'localhost', ...env }
   });
   const h = { api: `http://127.0.0.1:${port}`, log: '', dataDir };
   child.stdout.on('data', d => h.log += d);
@@ -172,4 +175,95 @@ test('profile writes fail closed when the stored revision cannot advance safely'
   assert.equal(response.status, 503);
   assert.equal((await response.json()).error, 'storage_corrupt');
   assert.deepEqual(JSON.parse(fs.readFileSync(statePath, 'utf8')), state);
+});
+
+test('legacy data receipt omits unknown numeric rev on retry after an intervening write', async t => {
+  const uid = 'u_rev_1';
+  const state = { _rev: 1, _ts: 100, workouts: [], routines: [] };
+  const stateText = JSON.stringify(state);
+  const legacyKey = 'legacy-data-receipt';
+  const h = await startServer(t, {
+    prepare: dataDir => {
+      fs.writeFileSync(path.join(dataDir, `state-${uid}.json`), stateText);
+      fs.writeFileSync(path.join(dataDir, 'idempotency.json'), JSON.stringify({ entries: [{
+        uid, key: legacyKey, hash: digest(JSON.stringify(state)), revision: etag(stateText),
+        tsValue: state._ts, ts: Date.now()
+      }] }));
+    }
+  });
+  const cookie = headers(uid);
+  const current = await fetch(`${h.api}/api/data`, { headers: cookie });
+  const currentBody = await current.json();
+  assert.equal(currentBody.rev, 1);
+
+  const intervening = await fetch(`${h.api}/api/data`, {
+    method: 'PUT',
+    headers: { ...cookie, 'If-Match': current.headers.get('etag'), 'Idempotency-Key': 'legacy-data-intervening' },
+    body: JSON.stringify({ state: { ...state, _ts: 200, restSec: 45 } })
+  });
+  const interveningBody = await intervening.json();
+  assert.equal(intervening.status, 200);
+  assert.equal(interveningBody.rev, 2);
+
+  const retry = await fetch(`${h.api}/api/data`, {
+    method: 'PUT',
+    headers: { ...cookie, 'If-Match': intervening.headers.get('etag'), 'Idempotency-Key': legacyKey },
+    body: JSON.stringify({ state })
+  });
+  const retryBody = await retry.json();
+  assert.equal(retry.status, 200);
+  assert.equal(retryBody.revision, etag(stateText));
+  assert.equal(retry.headers.get('etag'), etag(stateText));
+  assert.equal(Object.prototype.hasOwnProperty.call(retryBody, 'rev'), false);
+  const after = await fetch(`${h.api}/api/data`, { headers: cookie });
+  assert.equal((await after.json()).rev, 2);
+});
+
+test('legacy MCP workout receipt omits unknown numeric rev on retry after an intervening write', async t => {
+  const uid = 'u_rev_1';
+  const token = 'legacy-mcp-token';
+  const workout = { id: 'legacy-mcp-workout' };
+  const state = { _rev: 1, _ts: 100, workouts: [workout], routines: [] };
+  const stateText = JSON.stringify(state);
+  const key = 'legacy-mcp-receipt';
+  const h = await startServer(t, {
+    env: { MCP_ENABLED: '1' },
+    prepare: dataDir => {
+      fs.writeFileSync(path.join(dataDir, `state-${uid}.json`), stateText);
+      fs.writeFileSync(path.join(dataDir, 'idempotency.json'), JSON.stringify({ entries: [{
+        uid, key: `mcp-workout:${key}`, hash: digest(JSON.stringify(workout)), revision: etag(stateText),
+        tsValue: state._ts, ts: Date.now(), resultId: workout.id
+      }] }));
+      fs.writeFileSync(path.join(dataDir, 'mcp-grants.json'), JSON.stringify({ grants: [{
+        id: 'legacy-mcp-grant', uid, scopes: ['workout:write'], tokenHash: digest(token),
+        created: new Date().toISOString(), expires: Date.now() + 86400000
+      }] }));
+    }
+  });
+  const cookie = headers(uid);
+  const current = await fetch(`${h.api}/api/data`, { headers: cookie });
+  const currentBody = await current.json();
+  const intervening = await fetch(`${h.api}/api/data`, {
+    method: 'PUT',
+    headers: { ...cookie, 'If-Match': current.headers.get('etag'), 'Idempotency-Key': 'legacy-mcp-intervening' },
+    body: JSON.stringify({ state: { ...state, _ts: 200, restSec: 45 } })
+  });
+  const interveningBody = await intervening.json();
+  assert.equal(intervening.status, 200);
+  assert.equal(interveningBody.rev, 2);
+
+  const retry = await fetch(`${h.api}/api/mcp/workouts`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', 'If-Match': intervening.headers.get('etag'), 'Idempotency-Key': key },
+    body: JSON.stringify({ workout, request_id: key })
+  });
+  const retryBody = await retry.json();
+  assert.equal(retry.status, 200);
+  assert.equal(retryBody.workout.id, workout.id);
+  assert.equal(retryBody.revision, etag(stateText));
+  assert.equal(retry.headers.get('etag'), etag(stateText));
+  assert.equal(Object.prototype.hasOwnProperty.call(retryBody, 'rev'), false);
+  assert.equal(currentBody.rev, 1);
+  const after = await fetch(`${h.api}/api/data`, { headers: cookie });
+  assert.equal((await after.json()).rev, 2);
 });

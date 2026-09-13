@@ -74,6 +74,25 @@ describe('pull against a revisioned server', () => {
     expect(useStore.getState().S.active).toEqual({ id: 'running' })
   })
 
+  it('adopts a remote-only strong-ETag change when local still equals sync base', async () => {
+    const base = { ...clone(DEF), _ts: 100, routines: [routine('base')], _rev: 1 }
+    const remote = { ...clone(base), _ts: 200, routines: [routine('base'), routine('remote')], _rev: 2 }
+    signedIn({ ...base, active: { id: 'running' } })
+    localStorage.setItem('gym_sync', JSON.stringify({ rev: 1, ts: 100 }))
+    localStorage.setItem('gym_sync_meta_v1', JSON.stringify({ revision: '"base"' }))
+    localStorage.setItem('gym_sync_base_v1', JSON.stringify(base))
+    api.mockResolvedValueOnce({ state: remote, revision: '"remote"', rev: 2 })
+
+    await useStore.getState().pullState()
+
+    expect(puts()).toHaveLength(0)
+    expect(useStore.getState().S.routines.map(r => r.id)).toEqual(['base', 'remote'])
+    expect(useStore.getState().S._ts).toBe(200)
+    expect(useStore.getState().S.active).toEqual({ id: 'running' })
+    expect(sync()).toEqual({ rev: 2, ts: 200 })
+    expect(localStorage.getItem('gym_dirty')).toBeNull()
+  })
+
   it('pushes when only this device changed', async () => {
     signedIn({ ...clone(DEF), _ts: 150, workouts: [workout('w1')], restSec: 75 })
     localStorage.setItem('gym_sync', JSON.stringify({ rev: 1, ts: 100 }))

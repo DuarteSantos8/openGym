@@ -256,6 +256,10 @@ test:api:
     # A dataset or prompt change that forgets to regenerate them would otherwise only surface as
     # "the Coach can't find that exercise" — or a prompt edit that never reached the model.
     - node scripts/build-coach-assets.mjs --check
+    # The static API reference is generated from the same OpenAPI contract. Keep the committed
+    # website page fresh when an endpoint contract changes.
+    - npm ci --ignore-scripts --prefer-offline
+    - node scripts/build-api-docs.mjs --check
     # api/coach/core is imported by the server under bare node AND by the phone under Vite.
     # vitest forgives what node does not (?raw, import.meta.glob); this runs outside vitest.
     - node api/scripts/check-core-loadable.mjs

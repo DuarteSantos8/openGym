@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Builds website/api.html — the static API reference — from api/openapi.yaml.
 //
-//   node scripts/build-api-docs.mjs
+//   node scripts/build-api-docs.mjs           # write
+//   node scripts/build-api-docs.mjs --check   # fail if stale (CI)
 //
 // Deterministic: the same spec always produces byte-identical output (no
 // timestamps), so re-running it only dirties the file when the spec changed.
@@ -19,6 +20,7 @@ const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
 const specPath = path.join(root, 'api', 'openapi.yaml')
 const outPath = path.join(root, 'website', 'api.html')
 const spec = yaml.load(fs.readFileSync(specPath, 'utf8'))
+const check = process.argv.includes('--check')
 
 /* ------------------------------------------------------------------ helpers */
 
@@ -621,5 +623,16 @@ ${schemaCards}
 </html>
 `
 
-fs.writeFileSync(outPath, html)
-console.log(`wrote ${path.relative(root, outPath)} — ${ops.length} endpoints, ${Object.keys(spec.components.schemas).length} schemas, ${(html.length / 1024).toFixed(1)} KB`)
+const note = `${ops.length} endpoints, ${Object.keys(spec.components.schemas).length} schemas, ${(html.length / 1024).toFixed(1)} KB`
+if (check) {
+  let current = null
+  try { current = fs.readFileSync(outPath, 'utf8') } catch { /* missing counts as stale */ }
+  if (current !== html) {
+    console.error(`${path.relative(root, outPath)} is out of date — run: node scripts/build-api-docs.mjs`)
+    process.exit(1)
+  }
+  console.log(`${path.relative(root, outPath)} in sync (${note}).`)
+} else {
+  fs.writeFileSync(outPath, html)
+  console.log(`wrote ${path.relative(root, outPath)} — ${note}`)
+}
