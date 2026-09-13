@@ -101,6 +101,8 @@ export function buildDemoState() {
       // same session suddenly got easy.
       const back = blockWk === DELOAD_WEEK ? 0.88 : 1
       const w = base ? Math.max(step, round((base + inc * weekIdx) * back, step)) : 0
+      // A distance set is judged like a timed hold: the effort scales are rep+load vocabulary,
+      // so distance-mode sets stay un-rated — the check below already keys on reps alone.
       const rateable = modeOf(cfg) === 'reps' && cfg.id !== NEVER_RATED
       const sets = []
       for (let i = 0; i < cfg.sets; i++) {

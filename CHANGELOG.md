@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- 🏃 **Distance logging mode** for carries and loaded walks: sets are `{ sec, m }` (time cap + farthest metres). Storage stays metric; lb profiles enter/show **feet**. Progression gets **Add distance** (+10 m) with deload after repeated misses. CSV import, Stats farthest-distance, mode registry (`MODES` / `METRIC_MODES`), and all 14 locale packs included.
+
 ## v1.3.7 — 2026-09-12
 
 The v1.3.6 tag's Android build failed on a double dash inside an XML comment, so the APK for everything in v1.3.6 is this one — plus the iPhone timer-sound fix that landed an hour later. Web bundle, APK and API image; v1.3.6 and v1.3.7 are the same code apart from the two items below.

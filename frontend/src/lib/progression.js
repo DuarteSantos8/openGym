@@ -16,39 +16,15 @@
 //   · fewer sets than prescribed                       → miss
 // So a session that fell apart can never advance the load as though it had succeeded.
 
-import { modeOf, repStep, rerampWarmups, isBw, isPerSide, entryExcluded } from './history.js'
+import { modeOf, repStep, rerampWarmups, isBw, isPerSide, entryExcluded, fmtDistance } from './history.js'
 import { EXIDX } from './exercises.js'
 import { isWarmupRow, isSideSet, syncSideAggregate, makeSideSet } from './workout-model.js'
 import { normalizeRepRange } from './rep-range.js'
 
-export const POLICIES = ['off', 'linear', 'greyskull', 'double', 'time']
-
-// Which policies can sensibly drive which logging mode.
-export const POLICIES_FOR = {
-  reps: ['off', 'linear', 'greyskull', 'double'],
-  time: ['off', 'time'],
-  cardio: ['off']
-}
-
-export const POLICY_NAME = {
-  off: 'No automatic progression',
-  linear: 'Linear progression',
-  greyskull: 'Greyskull LP',
-  double: 'Double progression',
-  time: 'Add time'
-}
-export const POLICY_DESC = {
-  off: 'Targets stay where you set them.',
-  linear: 'Hit every rep in every set and the weight goes up. Repeated misses trigger a deload.',
-  greyskull: 'Two straight sets plus a final set taken to failure. Beat the target on that set and the weight goes up — double if you double the reps. One failure resets 10 %.',
-  double: 'Work up through a rep range at the same weight. Reach the top of the range in every set and the weight goes up, reps back to the bottom.',
-  time: 'Hold every set for the full duration and the target goes up.'
-}
-
 // The Epley target is a soft objective mapped onto the exercise's real load grid. Keep the
 // default out of saved configs so plans written before this policy stays byte-for-byte compatible.
 export const DELOAD_FACTOR = 0.9
-export const DELOAD_AFTER = { linear: 3, greyskull: 1, double: 3, time: 3 }
+export const DELOAD_AFTER = { linear: 3, greyskull: 1, double: 3, time: 3, distance: 3 }
 export const DELOAD_FACTOR_MIN = 0.5
 export const DELOAD_FACTOR_MAX = 0.95
 
@@ -75,6 +51,34 @@ export function deloadTarget1RM(weight, reps, factor = DELOAD_FACTOR, perSide = 
   return base == null ? null : round1(base * f)
 }
 
+export const POLICIES = ['off', 'linear', 'greyskull', 'double', 'time', 'distance']
+
+// Which policies can sensibly drive which logging mode.
+export const POLICIES_FOR = {
+  reps: ['off', 'linear', 'greyskull', 'double'],
+  time: ['off', 'time'],
+  cardio: ['off'],
+  distance: ['off', 'distance']
+}
+
+export const POLICY_NAME = {
+  off: 'No automatic progression',
+  linear: 'Linear progression',
+  greyskull: 'Greyskull LP',
+  double: 'Double progression',
+  time: 'Add time',
+  distance: 'Add distance'
+}
+export const POLICY_DESC = {
+  off: 'Targets stay where you set them.',
+  linear: 'Hit every rep in every set and the weight goes up. Repeated misses trigger a deload.',
+  greyskull: 'Two straight sets plus a final set taken to failure. Beat the target on that set and the weight goes up — double if you double the reps. One failure resets 10 %.',
+  double: 'Work up through a rep range at the same weight. Reach the top of the range in every set and the weight goes up, reps back to the bottom.',
+  time: 'Hold every set for the full duration and the target goes up.',
+  distance: 'Cover the target distance inside the cap in every set and the distance goes up — the cap stays where it is.'
+}
+
+
 // Body parts where a 5 kg jump is normal rather than brutal.
 const HEAVY_BP = ['upper legs', 'lower legs', 'back', 'hips', 'glutes']
 
@@ -92,6 +96,9 @@ export function weightIncrement(cfg, unit) {
   return cfg && cfg.inc > 0 ? cfg.inc : defaultIncrement(cfg?.id, unit)
 }
 export const DEFAULT_SEC_INCREMENT = 5
+// Distance taps out of a time cap in metres, and a useful step is a length of the path you
+// already walk — cones to cone. Ten metres is the small honest jump a carry can actually add.
+export const DEFAULT_M_INCREMENT = 10
 // Where adding another set of push-ups stops being progress and starts being a way to spend
 // an evening. Past this the honest advice is load or a harder variation (issue #33).
 export const MAX_BW_SETS = 6
@@ -233,6 +240,19 @@ export function readSession(entry, fallback) {
       ok: goal > 0 && enough && held.length > 0 && held.every(h => h >= goal)
     }
   }
+  if (mode === 'distance') {
+    // A distance set carries a time cap and a distance: the set is hit when you beat the
+    // distance inside the cap, and what carries into the next prescription is the distance.
+    const goal = target.m || 0
+    const metres = sets.map(s => (s.done ? (s.m || 0) : 0))
+    return {
+      mode, goal, held: metres,
+      sec: target.sec || 0,
+      weight: 0,
+      best: Math.max(0, ...metres),
+      ok: goal > 0 && enough && metres.length > 0 && metres.every(d => d >= goal)
+    }
+  }
   const goal = target.reps || 0
   const reps = sets.map(s => (s.done ? (s.r || 0) : 0))
   return {
@@ -302,8 +322,8 @@ export function nextPrescription(S, cfg, routine) {
   const mode = modeOf(cfg)
   const policy = policyFor(cfg, routine, mode)
   const unit = S.unit || 'kg'
-  const inc = mode === 'time'
-    ? (cfg.inc > 0 ? cfg.inc : DEFAULT_SEC_INCREMENT)
+  const inc = mode === 'time' || mode === 'distance'
+    ? (cfg.inc > 0 ? cfg.inc : (mode === 'time' ? DEFAULT_SEC_INCREMENT : DEFAULT_M_INCREMENT))
     : weightIncrement(cfg, unit)
   if (policy === 'off') return { policy, kind: 'off' }
 
@@ -324,6 +344,20 @@ export function nextPrescription(S, cfg, routine) {
       return { policy, kind: 'deload', sec, why: ['Short {0} sessions in a row — back off to {1}s and build up again.', stalls, sec] }
     }
     return { policy, kind: 'hold', sec: last.goal || cfg.sec, why: ['Last time came up short — same target again.'] }
+  }
+
+  if (mode === 'distance') {
+    // Same shape as the time policy, one field over: beat the metres inside the cap and the
+    // distance goes up; the cap stays put, because a longer cap is who you were, not progress.
+    if (last.ok) {
+      const m = (last.goal || cfg.m || 0) + inc
+      return { policy, kind: 'up', m, why: ['Covered the distance in every set — go for {0} this time.', fmtDistance(m, unit)] }
+    }
+    if (stalls >= deloadAt) {
+      const m = deloadTo(last.goal || cfg.m || 0, inc)
+      return { policy, kind: 'deload', m, why: ['Fell short {0} sessions in a row — back off to {1} and build up again.', stalls, fmtDistance(m, unit)] }
+    }
+    return { policy, kind: 'hold', m: last.goal || cfg.m, why: ['Last time came up short — same distance again inside the cap.'] }
   }
 
   const w = last.weight
@@ -466,6 +500,7 @@ export function applyPrescription(sets, p, step = 2.5) {
     if (p.weight != null) o.w = p.weight
     if (p.reps != null) o.r = p.reps
     if (p.sec != null) o.sec = p.sec
+    if (p.m != null) o.m = p.m
     return o
   })
   // A policy that decided on a set count gets to grow the list — bodyweight progression adds

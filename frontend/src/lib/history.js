@@ -23,11 +23,12 @@ import { t } from './i18n-core.js'
 //   reps   — weight × reps      sets look like { w, r }
 //   time   — a work duration    sets look like { sec, w }   (w = 0 for bodyweight)
 //   cardio — duration + speed   sets look like { min, speed }
+//   distance — max distance within a time cap (sandbag carries), sets look like { sec, m }
 // An entry without `mode` behaves exactly as before, so every existing plan, workout and
 // plan file is read unchanged and nothing needs migrating.
 export function modeOf(cfg) {
   const m = cfg && cfg.mode
-  if (m === 'reps' || m === 'time' || m === 'cardio') return m
+  if (m === 'reps' || m === 'time' || m === 'cardio' || m === 'distance') return m
   return isCardio(cfg && cfg.id) ? 'cardio' : 'reps'
 }
 export const isTimed = cfg => modeOf(cfg) === 'time'
@@ -58,6 +59,28 @@ export const repStep = cfg => (isPerSide(cfg) ? 2 : 1)
 export function fmtSec(sec) {
   const n = Math.max(0, Math.round(Number(sec) || 0))
   return Math.floor(n / 60) + ':' + String(n % 60).padStart(2, '0')
+}
+
+// Distance is stored in metres (labels-only unit rule, same as weight). lb profiles show feet.
+const M_TO_FT = 3.280839895
+export function fmtDistance(m, unit) {
+  const n = Math.max(0, Math.round(Number(m) || 0))
+  return unit === 'lb'
+    ? fmtNum(Math.round(n * M_TO_FT * 10) / 10) + ' ft'
+    : fmtNum(n) + ' m'
+}
+/** Metres → stepper display value (ft to 1 decimal for lb; whole metres otherwise). */
+export function metresToDisplay(m, unit) {
+  const n = Math.max(0, Number(m) || 0)
+  return unit === 'lb' ? Math.round(n * M_TO_FT * 10) / 10 : Math.round(n)
+}
+/** Inverse of metresToDisplay — apply on save so `.m` stays metres. */
+export function displayToMetres(d, unit) {
+  const n = Math.max(0, Number(d) || 0)
+  return unit === 'lb' ? n / M_TO_FT : n
+}
+export function distanceUnitLabel(unit) {
+  return unit === 'lb' ? 'ft' : 'm'
 }
 
 // How hard a set felt, if the profile logs it at all. Two scales for the same thing, kept in
@@ -104,14 +127,17 @@ const effortTail = s => {
 }
 
 // One-line summary of a logged set. `cfg` carries the mode when the caller has it (a routine
-// entry or a workout entry); passing an id alone keeps the old body-part behaviour.
-export function setLabel(id, s, cfg) {
+// entry or a workout entry); passing an id alone keeps the old body-part behaviour. `unit`
+// is the profile's unit, when the caller has one — a caller without it falls back to metres,
+// the stored unit, rather than guessing somebody's settings.
+export function setLabel(id, s, cfg, unit) {
   const c = cfg || { id }
   let mode = modeOf(c)
   // A set saved by an older build carries no target with it; the set's own fields still say what
   // it was — seconds for a timed set, minutes for cardio — so those are not read back as "0 reps".
   if (!cfg && !(s.r > 0)) { if (s.min > 0 || s.speed > 0) mode = 'cardio'; else if (s.sec > 0) mode = 'time' }
   if (mode === 'cardio') return `${s.min || 0} min @ ${fmtNum(s.speed || 0)} km/h`
+  if (mode === 'distance') return fmtSec(s.sec) + ' · ' + fmtDistance(s.m, unit)
   if (mode === 'time') return fmtSec(s.sec) + (s.w > 0 ? ` · ${fmtNum(s.w)}` : '')
   const bw = isBw({ ...c, id: c.id ?? id })
   // One side's "weight×reps" (or bodyweight "reps" / "+belt × reps"), the same shape a whole
@@ -137,6 +163,7 @@ export function setLabel(id, s, cfg) {
 export function defaultConfig(id, mode) {
   const m = mode || modeOf({ id })
   if (m === 'cardio') return { sets: 1, min: 20, speed: 8 }
+  if (m === 'distance') return { sets: 3, sec: 600, m: 400, mode: 'distance' }
   // Written only when it is true, so a barbell config is byte-for-byte what it was before
   // the flag existed and a plan file gains nothing it does not need.
   const bw = isBodyweightEq(id) ? { bodyweight: true } : {}
@@ -151,6 +178,7 @@ export function exLine(cfg, unit) {
   // Added weight reads as added: "+10 kg" on a dip belt, "60 kg" on a barbell.
   const load = cfg.weight ? ' · ' + (isBw(cfg) ? '+' : '') + fmtNum(cfg.weight) + ' ' + unit : ''
   if (mode === 'cardio') return `${n} × ${cfg.min || 20} min @ ${fmtNum(cfg.speed || 8)} km/h`
+  if (mode === 'distance') return `${n} × ${fmtSec(cfg.sec || 600)} · ${fmtDistance(cfg.m || 400, unit)}`
   if (mode === 'time') return `${n} × ${fmtSec(cfg.sec || 45)}${load}`
   // This is the line with room for it, so the split is spelled out: "3 × 16 · 8/side".
   const split = isPerSide(cfg) ? ' · ' + t('{0}/side', fmtNum(sideReps(cfg.reps))) : ''
@@ -390,6 +418,15 @@ function buildWorkSets(S, cfg, options = {}) {
     for (let i = 0; i < n; i++) {
       const prev = prevAt(i)
       sets.push({ min: prev ? prev.min : (cfg.min || 20), speed: prev ? prev.speed : (cfg.speed || 8), done: false })
+    }
+    return sets
+  }
+  if (mode === 'distance') {
+    for (let i = 0; i < n; i++) {
+      // Only reuse prior metres from a distance set (not from reps/time).
+      const prev = prevAt(i)
+      const carried = prev && prev.m > 0 ? prev : null
+      sets.push({ sec: carried ? carried.sec : (cfg.sec || 600), m: carried ? carried.m : (cfg.m || 400), done: false })
     }
     return sets
   }
@@ -655,6 +692,12 @@ export function insertWarmupRow(rows, mode, target, step = 2.5) {
       speed: prev ? prev.speed : (work ? work.speed : (target.speed || 8)),
       done: false, phase: 'warmup', warmup: true,
     }
+    : mode === 'distance'
+      ? {
+        sec: prev ? prev.sec : (work ? work.sec : (target.sec || 600)),
+        m: prev ? prev.m : (work ? work.m : (target.m || 400)),
+        done: false, phase: 'warmup', warmup: true,
+      }
     : mode === 'time'
       ? {
         sec: prev ? prev.sec : (work ? work.sec : (target.sec || 45)),
@@ -686,7 +729,7 @@ export function workSetsDone(w) {
   )
 }
 
-const METRIC_MODES = ['reps', 'time', 'cardio']
+const METRIC_MODES = ['reps', 'time', 'cardio', 'distance']
 const completedRowsForMode = (entry, mode) => workRowsForMode(entry, mode).filter(s => s.done === true && !isWarmupRow(s))
 
 export function metricRowsForEntry(entry, mode) {

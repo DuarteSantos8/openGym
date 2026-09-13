@@ -1,7 +1,7 @@
 // Focused workout semantics shared by session, history, and strength views.
 // Legacy records have no explicit phase or mode, so the defaults preserve main's work/reps shape.
 
-const MODES = ['reps', 'time', 'cardio']
+const MODES = ['reps', 'time', 'cardio', 'distance']
 const objectOf = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {}
 
 function normalizedPhase(value, fallback = 'work') {
@@ -306,6 +306,7 @@ function modeFromUnit(value) {
   if (['rep', 'reps', 'repetition', 'repetitions'].includes(token)) return 'reps'
   if (['sec', 'secs', 'second', 'seconds'].includes(token)) return 'time'
   if (['min', 'mins', 'minute', 'minutes'].includes(token)) return 'cardio'
+  if (['m', 'metre', 'metres', 'meter', 'meters', 'ft', 'foot', 'feet', 'distance'].includes(token)) return 'distance'
   return null
 }
 
@@ -321,6 +322,8 @@ function inferredMode(source) {
   if (explicit) return explicit
   if (String(value.mode || '').trim().toLowerCase() === 'amrap') return 'reps'
   if (value.min != null || value.speed != null) return 'cardio'
+  // Distance sets are { sec, m }. Check `.m` before bare `.sec` so a carry is not read as timed.
+  if (value.m != null) return 'distance'
   if (value.sec != null || value.seconds != null || value.durationSec != null) return 'time'
   if (value.r != null || value.reps != null || value.actualReps != null) return 'reps'
   return null
