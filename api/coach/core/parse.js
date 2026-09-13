@@ -28,4 +28,4 @@ export function extractJSON(text) {
 }
 
 /** An answer may omit the contract field; it may not claim a different one. */
-export const contractOK = data => !data?.coach_contract || data.coach_contract === CONTRACT;
+export const contractOK = data => data?.coach_contract === undefined || data.coach_contract === CONTRACT;
