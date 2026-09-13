@@ -30,27 +30,32 @@ export const usesBar = exOrId => BAR_EQ.has(exOf(exOrId)?.eq)
 export const defaultBarWeight = (eq, unit) =>
   (unit === 'lb' ? DEFAULT_BAR_LB : DEFAULT_BAR_KG)[eq] ?? null
 
-/** True when the user has set their own bar weight for this exercise. */
-export const hasBarOverride = (S, exId) => ((S?.barWeights || {})[exId] || 0) > 0
+/** True when the user has set their own bar weight for this exercise (0 = "no bar" counts). */
+export const hasBarOverride = (S, exId) => {
+  const v = (S?.barWeights || {})[exId]
+  return typeof v === 'number' && v >= 0
+}
 
 /**
  * Effective bar weight for one exercise, in the profile unit: the explicit
- * S.barWeights[exId] if set, else the default for the bar type. null for anything
- * that is not a bar exercise.
+ * S.barWeights[exId] if set — an explicit 0 is "no bar" (a Smith machine whose carriage is
+ * counterbalanced, issue #138) and stays 0 — else the default for the bar type. null for
+ * anything that is not a bar exercise.
  */
 export function barWeightFor(S, exOrId) {
   const ex = exOf(exOrId)
   if (!BAR_EQ.has(ex?.eq)) return null
   const own = (S?.barWeights || {})[ex.id]
-  if (own > 0) return own
+  if (typeof own === 'number' && own >= 0) return own
   return defaultBarWeight(ex.eq, S?.unit)
 }
 
 /**
  * Plates per side: (total − bar) / 2, rounded to 2 decimals. null when there is nothing
- * sensible to show — a missing number, or a total at or below the bar itself.
+ * sensible to show — a missing number, or a total at or below the bar itself. A bar of 0
+ * ("no bar") splits the whole total.
  */
 export function plateSplit(total, bar) {
-  if (!(total > 0) || !(bar > 0) || total <= bar) return null
+  if (!(total > 0) || !(typeof bar === 'number' && bar >= 0) || total <= bar) return null
   return Math.round(((total - bar) / 2) * 100) / 100
 }

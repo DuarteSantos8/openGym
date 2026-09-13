@@ -13,7 +13,7 @@
  *   - bodyweight: union by day, the later-edited (`t`) entry of a day that both have
  *   - favEx: ordered set union, the newer copy first
  *   - exWeights: union by exercise, the larger `w` (the app itself only ever raises it — a PR
- *     logged on the other device must not be forgotten); exNotes, barWeights: key union
+ *     logged on the other device must not be forgotten); exNotes, barWeights, loadKind, plates: key union
  *   - `_ts`: the later of the two; `_rev` dropped (the server sets it); `active` left to the caller
  *
  * Known limit: with no record of what each side deleted, an entry removed on one device inside
@@ -82,7 +82,7 @@ export function mergeStates(a, b, { prefer } = {}) {
   out.bodyweight = mergeBodyweight(n.bodyweight, o.bodyweight).map(clone)
   if (list(n.favEx).length || list(o.favEx).length) out.favEx = [...new Set([...list(n.favEx), ...list(o.favEx)])]
   out.exWeights = clone(mergeExWeights(n.exWeights, o.exWeights))
-  for (const f of ['exNotes', 'barWeights']) {
+  for (const f of ['exNotes', 'barWeights', 'loadKind', 'plates']) {
     if (n[f] || o[f]) out[f] = clone({ ...(o[f] || {}), ...(n[f] || {}) })
   }
   out._ts = Math.max(a._ts || 0, b._ts || 0)
