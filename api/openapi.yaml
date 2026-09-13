@@ -80,6 +80,8 @@ tags:
     description: Web Push (VAPID) subscriptions, rest-timer and test pushes
   - name: activity
     description: Live-workout presence heartbeat
+  - name: social
+    description: Friend requests, progress summaries and shared plan snapshots
   - name: admin
     description: Admin dashboard — requires an admin session (`ADMIN_UIDS` or `admin:true`)
 
@@ -151,6 +153,48 @@ paths:
                 type: object
                 properties:
                   user: { $ref: '#/components/schemas/SessionUser' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/profile:
+    post:
+      tags: [auth]
+      operationId: updateProfile
+      summary: Update the signed-in profile
+      description: >-
+        Updates the display name, optional avatar and body-weight sharing preference. Avatars must
+        be client-cropped JPEG or WebP data URLs no larger than 128 KiB. At least one field is
+        required; omitted fields remain unchanged.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  maxLength: 40
+                avatar:
+                  type: [string, 'null']
+                  format: data-url
+                  description: A JPEG or WebP data URL, or null to remove the current avatar.
+                shareBodyWeight:
+                  type: boolean
+                  description: Whether accepted friends may see the latest weight and 30-day change.
+      responses:
+        '200':
+          description: Updated profile identity.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { $ref: '#/components/schemas/SessionUser' }
+        '400':
+          description: No changes, an empty name, or an invalid/oversized avatar.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
   /api/register/options:
@@ -834,6 +878,358 @@ paths:
               schema: { $ref: '#/components/schemas/Ok' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
+  /api/social:
+    get:
+      tags:
+        - social
+      operationId: socialOverview
+      summary: List friends, requests and shared plans
+      description: >-
+        Only accepted, enabled friends have progress summaries. Pending requests include identity
+        only. Other enabled accounts are returned as suggestions. Streaks use the friend’s
+        week-start setting and saved time zone (UTC if absent); personal records follow exercise
+        history. No full workout state or body-weight log is returned.
+      responses:
+        '200':
+          description: Suggested profiles, requests, friend summaries and plan inbox.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SocialOverview'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/social/counts:
+    get:
+      tags:
+        - social
+      operationId: socialCounts
+      summary: Count actionable Social items
+      description: Returns incoming friend requests and valid shared plans for navigation badges.
+      responses:
+        '200':
+          description: Current badge counts.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [incoming, plans, total]
+                properties:
+                  incoming: { type: integer }
+                  plans: { type: integer }
+                  total: { type: integer }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/social/request:
+    post:
+      tags:
+        - social
+      operationId: socialRequest
+      summary: Send a friend request
+      description: >-
+        The target must be an enabled profile registered on this server. Accepting the request is
+        required before either user can access the other's training profile.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+              properties:
+                userId:
+                  type: string
+      responses:
+        '200':
+          description: Action completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ok'
+        '400':
+          description: The target is the caller's own profile.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Connection unavailable because either participant has blocked it.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: No enabled account matches userId.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Already connected, a request is pending, or either account has 100 connections.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/social/profile:
+    get:
+      tags:
+        - social
+      operationId: socialProfile
+      summary: Read an accepted friend's training profile
+      description: >-
+        Returns derived workout stats, the latest body weight when that profile allows it, a
+        sanitized read-only plan and every personal record. Full workout and weigh-in history,
+        workout and routine notes, gym cards and account settings are not returned.
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The accepted friend's training profile.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SocialProfile'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: The profile is missing, disabled or not an accepted friend.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/social/accept:
+    post:
+      tags:
+        - social
+      operationId: socialAccept
+      summary: Accept an incoming friend request
+      description: Only the recipient can accept a pending request. Progress becomes visible in both directions.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+              properties:
+                userId:
+                  type: string
+      responses:
+        '200':
+          description: Action completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ok'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: No incoming request from an enabled account matches userId.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/social/remove:
+    post:
+      tags:
+        - social
+      operationId: socialRemove
+      summary: Decline, cancel or remove a connection
+      description: >-
+        Either participant may remove a connection. Pending plan snapshots between the two accounts
+        are deleted. Previously imported routines remain. Repeating this action succeeds.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+              properties:
+                userId:
+                  type: string
+      responses:
+        '200':
+          description: Action completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ok'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/social/block:
+    post:
+      tags: [social]
+      operationId: socialBlock
+      summary: Block a profile and revoke the connection
+      description: Removes the connection and pending plans and prevents discovery, requests and friend access in both directions. Repeating the action succeeds.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId]
+              properties:
+                userId: { type: string }
+      responses:
+        '200':
+          description: Profile blocked.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ok'
+        '400':
+          description: Missing, disabled or own profile.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/social/unblock:
+    post:
+      tags: [social]
+      operationId: socialUnblock
+      summary: Remove a block created by the caller
+      description: Does not remove the other participant's block or restore a friendship or shared plans. Repeating the action succeeds.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId]
+              properties:
+                userId: { type: string }
+      responses:
+        '200':
+          description: Caller's block removed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ok'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/social/plan:
+    post:
+      tags:
+        - social
+      operationId: socialSharePlan
+      summary: Send a plan snapshot to a friend
+      description: >-
+        Only accepted, enabled friends can receive a plan. Replaces the caller’s previous pending
+        snapshot for this recipient. Stores only plan fields; maximum 256 KB, 100 routines, 100
+        exercises per routine. Exercise notes are stripped unless includeNotes is explicitly true.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+                - plan
+              properties:
+                userId:
+                  type: string
+                includeNotes:
+                  type: boolean
+                  default: false
+                  description: Explicit permission to include exercise notes in this snapshot.
+                plan:
+                  $ref: '#/components/schemas/SocialPlan'
+      responses:
+        '200':
+          description: Action completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ok'
+        '400':
+          description: Invalid, empty or oversized plan.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: The target is not an accepted, enabled friend.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - social
+      operationId: socialReadPlan
+      summary: Read a received plan for review
+      description: >-
+        Only the intended recipient can read a snapshot, while the sender remains an enabled friend.
+        Loading a plan does not import or dismiss it.
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The plan snapshot.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  plan:
+                    $ref: '#/components/schemas/SocialPlan'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Snapshot missing, dismissed, replaced, or inaccessible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/social/plan/dismiss:
+    post:
+      tags:
+        - social
+      operationId: socialDismissPlan
+      summary: Dismiss a received plan
+      description: >-
+        Only removes snapshots belonging to the caller’s inbox; does not change routines or the friend
+        connection. The client also calls this after a successful import.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id
+              properties:
+                id:
+                  type: string
+      responses:
+        '200':
+          description: Action completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ok'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
   /api/admin/users:
     get:
       tags: [admin]
@@ -1149,6 +1545,252 @@ components:
       properties:
         ok: { type: boolean, const: true }
 
+    SocialUser:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        avatar:
+          type: string
+          format: data-url
+          description: Present only for the caller or an accepted friend, never server discovery.
+    SocialRecord:
+      type: object
+      required:
+        - exerciseId
+        - name
+        - metric
+        - value
+        - date
+      properties:
+        exerciseId:
+          type: string
+        name:
+          type:
+            - string
+            - 'null'
+          description: Custom exercise name, or null for a built-in catalogue exercise.
+        metric:
+          type: string
+          enum:
+            - weight
+            - reps
+            - sec
+            - min
+        value:
+          type: number
+        reps:
+          type: number
+          description: Repetitions from the completed set that first achieved the load record. Omitted when unavailable or the metric is not weight.
+        date:
+          type: string
+          format: date
+          description: First date the current record was reached.
+    SocialFriend:
+      allOf:
+        - $ref: '#/components/schemas/SocialUser'
+        - type: object
+          properties:
+            unit:
+              type: string
+              enum:
+                - kg
+                - lb
+            weekStreak:
+              type: integer
+            workouts:
+              type: integer
+            thisWeek:
+              type: integer
+            lastWorkout:
+              type:
+                - string
+                - 'null'
+              format: date
+            recordCount:
+              type: integer
+            records:
+              type: array
+              items:
+                $ref: '#/components/schemas/SocialRecord'
+              description: Most recently set personal records, newest first.
+    SocialProfile:
+      allOf:
+        - $ref: '#/components/schemas/SocialFriend'
+        - type: object
+          required:
+            - thisMonth
+            - weekStart
+            - bodyWeightShared
+            - bodyWeight
+            - plan
+          properties:
+            thisMonth:
+              type: integer
+            weekStart:
+              type: integer
+              enum: [0, 1]
+            bodyWeightShared:
+              type: boolean
+            bodyWeight:
+              oneOf:
+                - type: 'null'
+                - type: object
+                  required: [date, value, change30d]
+                  properties:
+                    date: { type: string, format: date }
+                    value: { type: number }
+                    change30d:
+                      type: [number, 'null']
+            plan:
+              type: object
+              required: [routines, week, customExercises]
+              properties:
+                routines:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id: { type: string }
+                      name: { type: string }
+                      emoji: { type: string }
+                      ex:
+                        type: array
+                        items:
+                          type: object
+                          description: Sanitized exercise targets; routine notes are omitted.
+                week:
+                  type: object
+                  description: Weekday index 0–6 mapped to routine-ID arrays.
+                customExercises:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id: { type: string }
+                      'n': { type: string }
+    SocialPlan:
+      type: object
+      required:
+        - opengym_plan
+        - routines
+      description: >-
+        The existing plan-file format. Contains routines, schedule and referenced custom exercises. No
+        workout history, weigh-ins or account settings.
+      properties:
+        opengym_plan:
+          type: integer
+          const: 1
+        name:
+          type: string
+        exported:
+          type: string
+          format: date
+        unit:
+          type: string
+          enum:
+            - kg
+            - lb
+          description: Source weight unit; the client converts loads when importing into a different unit.
+        routines:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            type: object
+            required:
+              - id
+              - name
+              - ex
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              emoji:
+                type: string
+              prog:
+                type: string
+              excludeFromProgression:
+                type: boolean
+              ex:
+                type: array
+                maxItems: 100
+                items:
+                  type: object
+                  description: >-
+                    Exercise prescription from the plan-file format, including progression, warm-up,
+                    rest and intensifier settings.
+        week:
+          type: object
+          description: Weekday index 0–6 mapped to routine-ID arrays.
+        customEx:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              'n':
+                type: string
+              bp:
+                type: string
+              desc:
+                type: string
+    SocialOverview:
+      type: object
+      required:
+        - friends
+        - incoming
+        - outgoing
+        - suggestions
+        - plans
+        - blocks
+      properties:
+        blocks:
+          type: array
+          description: Enabled profiles blocked by the caller. Blocks created by other accounts are never listed.
+          items:
+            $ref: '#/components/schemas/SocialUser'
+        friends:
+          type: array
+          items:
+            $ref: '#/components/schemas/SocialFriend'
+        incoming:
+          type: array
+          items:
+            $ref: '#/components/schemas/SocialUser'
+        outgoing:
+          type: array
+          items:
+            $ref: '#/components/schemas/SocialUser'
+        suggestions:
+          type: array
+          description: Enabled profiles not already connected to the caller or blocked in either direction.
+          items:
+            $ref: '#/components/schemas/SocialUser'
+        plans:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              from:
+                $ref: '#/components/schemas/SocialUser'
+              name:
+                type: string
+              created:
+                type: string
+                format: date-time
+              routines:
+                type: integer
+
     SessionUser:
       type: object
       description: The caller's identity, as returned by /api/me and the sign-in routes.
@@ -1156,7 +1798,9 @@ components:
         id: { type: string, description: Stable user id (16 base64url chars). }
         name: { type: string }
         admin: { type: boolean }
-      example: { id: "Zk3q9XyPbA2LmN0v", name: "Ada", admin: false }
+        avatar: { type: [string, 'null'], format: data-url }
+        shareBodyWeight: { type: boolean }
+      example: { id: "Zk3q9XyPbA2LmN0v", name: "Ada", admin: false, avatar: null, shareBodyWeight: false }
 
     # ------------------------------------------------------------------ WebAuthn
     # These mirror @simplewebauthn/server v13's JSON shapes (themselves the W3C

@@ -93,16 +93,20 @@ export function Switch({ checked, onChange, disabled }) {
 /* ============================ segmented ============================ */
 
 // options: [{ value, label, icon? }]  — the selected pill slides between cells.
-export function Segmented({ options, value, onChange, className = '' }) {
+export function Segmented({ options, value, onChange, className = '', tablist = false, ariaLabel }) {
   const i = Math.max(0, options.findIndex(o => o.value === value))
   return (
-    <div className={'seg ' + className} style={{ '--n': options.length, '--i': i }}>
+    <div className={'seg ' + className} style={{ '--n': options.length, '--i': i }}
+      role={tablist ? 'tablist' : undefined} aria-label={ariaLabel}>
       <span className="seg-sel" aria-hidden="true" />
       {options.map(o => (
         <button
           key={o.value}
           className={o.value === value ? 'on' : ''}
-          aria-pressed={o.value === value}
+          role={tablist ? 'tab' : undefined}
+          aria-selected={tablist ? o.value === value : undefined}
+          aria-pressed={tablist ? undefined : o.value === value}
+          aria-controls={tablist ? o.controls : undefined}
           onClick={() => onChange(o.value)}
         >
           {o.icon && <Icon name={o.icon} />}

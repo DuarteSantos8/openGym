@@ -4,7 +4,7 @@ import { useUI } from './store/useUI.js'
 import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, smOf, matchExercise, exOr } from './lib/exercises.js'
 import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile } from './lib/equipment.js'
 import { fmtDate, fmtNum, capWords, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, DAYN, DAYS, weekOrder, weekStartOf, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
-import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutVolume, setsDone, setsDoneActive, setUnitsTotal, lastBW, supersetUnits, unitOf, setLabel, defaultConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX } from './lib/history.js'
+import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutVolume, setsDone, setsDoneActive, setUnitsTotal, lastBW, supersetUnits, unitOf, setLabel, defaultConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX, exLine } from './lib/history.js'
 import { usesBar, barWeightFor, defaultBarWeight, hasBarOverride } from './lib/bar.js'
 import { toScale, rirOf, EFFORT_PRESETS, effortColor } from './lib/effort.js'
 import { beep, vibrate } from './lib/sound.js'
@@ -1508,18 +1508,29 @@ function PlanTools({ close }) {
   </>
 }
 
-export const planImportSheet = bundle => ui().openSheet(close => <PlanImport bundle={bundle} close={close} />)
+export const planImportSheet = (bundle, onImported, socialPlanId) => ui().openSheet(close => <PlanImport bundle={bundle} close={close} onImported={onImported} socialPlanId={socialPlanId} />)
 
-function PlanImport({ bundle, close }) {
+function PlanImport({ bundle, close, onImported, socialPlanId }) {
   const [schedule, setSchedule] = useState(false)
+  const [error, setError] = useState('')
+  const applying = useRef(false)
+  const unit = useStore(s => s.S.unit)
+  const alreadyImported = useStore(s => !!socialPlanId && !!s.S.importedSocialPlans?.includes(socialPlanId))
   const apply = () => {
-    update(s => mergePlan(s, bundle, { schedule }))
+    if (applying.current) return
+    applying.current = true
+    let result
+    try { update(s => { result = mergePlan(s, bundle, { schedule, socialPlanId }) }) }
+    catch (e) { setError(e.message); applying.current = false; return }
+    onImported?.()
     close()
-    toast(t('Added {0} routines to your plan', bundle.routineCount))
+    toast(result.alreadyImported ? t('Already imported') : t('Added {0} routines to your plan', result.routines))
     nav('/plan')
   }
   return <>
     <h3>{bundle.name ? t('Import “{0}”', bundle.name) : t('Import this plan')}</h3>
+    {error && <p role="alert" className="social-error">{error}</p>}
+    {alreadyImported && <p role="status">{t('Already imported')}</p>}
     <div className="muted small" style={{ marginBottom: 14 }}>
       {t(bundle.routineCount === 1 ? '{0} routine' : '{0} routines', bundle.routineCount)}
       {' · ' + exCount(bundle.exerciseCount)}
@@ -1528,6 +1539,20 @@ function PlanImport({ bundle, close }) {
         : ''}
     </div>
     <div className="dim small" style={{ marginBottom: 14, lineHeight: 1.4 }}>{t('These are added as new routines — nothing you already have is changed.')}</div>
+    <div style={{ marginBottom: 16 }}>
+      {bundle.routines.map((routine, index) => <details key={index} className="social-records">
+        <summary>{routine.name} · {exCount(routine.ex.length)}</summary>
+        {routine.ex.map((entry, i) => {
+          const exercise = EXIDX[entry.id] || bundle.customEx.find(ex => ex.id === entry.id)
+          const cfg = { ...entry, mode: entry.mode || (exercise?.bp === 'cardio' ? 'cardio' : 'reps') }
+          return <div key={i} style={{ padding: '6px 0' }}>
+            <b className="small">{exerciseNameFor(exercise)}</b>
+            <div className="small muted">{exLine(cfg, bundle.unit || unit)}</div>
+          </div>
+        })}
+      </details>)}
+    </div>
+    {bundle.unit && bundle.unit !== unit && <p className="small muted">{t('Weights will be converted from {0} to {1} when imported.', bundle.unit, unit)}</p>}
     {bundle.dropped > 0 && <div className="small" style={{ color: 'var(--yellow)', marginBottom: 14, lineHeight: 1.4 }}>
       {t(bundle.dropped === 1
         ? '{0} exercise in the file isn’t in your library and was left out.'
@@ -1537,7 +1562,7 @@ function PlanImport({ bundle, close }) {
       <div><div className="tt" style={{ fontSize: 15 }}>{t('Use this weekly schedule')}</div><div className="small dim">{t('Replaces your current Mon–Sun assignments.')}</div></div>
       <Switch checked={schedule} onChange={setSchedule} />
     </div>}
-    <Button variant="primary" onClick={apply}>{t('Add to my plan')}</Button>
+    <Button variant="primary" disabled={alreadyImported || !bundle.exerciseCount} onClick={apply}>{t('Add to my plan')}</Button>
     <div style={{ height: 8 }} />
     <Button variant="ghost" className="dim" onClick={close}>{t('Cancel')}</Button>
   </>

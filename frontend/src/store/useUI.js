@@ -73,6 +73,9 @@ export const useUI = create((set, get) => ({
                        // forIdx: index of the active entry whose set started the rest (undefined when unknown)
   work: null,          // work countdown DURING a timed set (issue #16) — { left, total, endsAt, label }
   timerFlashId: 0,     // changing the id retriggers the theme-blink visual alert
+  socialCount: 0,      // actionable friend requests and shared plans
+
+  setSocialCount(socialCount) { set({ socialCount: Math.max(0, Number(socialCount) || 0) }) },
 
   flashTimer() {
     if (!useStore.getState().S.timerFlash) return

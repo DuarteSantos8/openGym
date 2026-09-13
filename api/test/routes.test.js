@@ -5,6 +5,200 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
 import { tempData } from './helpers.mjs';
+import { socialRoutes } from '../social/routes.js';
+import { accountView, profileRoutes } from '../profile.js';
+
+function socialHarness() {
+  const users = [{ id: 'alice', name: 'Alice' },
+    { id: 'bob', name: 'Bob', avatar: 'data:image/jpeg;base64,/9j/2Q==' },
+    { id: 'eve', name: 'Eve', avatar: 'data:image/jpeg;base64,/9j/2Q==' }];
+  let data = { connections: [], plans: [] };
+  const routes = socialRoutes({
+    json: (res, status, body) => Object.assign(res, { status, body }),
+    readBody: async req => req.body,
+    readSession: req => users.find(u => u.id === req.user && !u.disabled),
+    users: () => users,
+    readState: () => ({ unit: 'kg', week: { 1: ['push'] }, routines: [{ id: 'push', name: 'Push',
+      ex: [{ id: 'bench', sets: 3, reps: 5, weight: 60, note: 'private routine note' }] }],
+    workouts: [{ id: 'w1', d: '2026-09-07', bw: 80, note: 'private workout note',
+      entries: [{ id: 'bench', sets: [{ w: 60, r: 5, done: true }] },
+        ...Array.from({ length: 13 }, (_, i) => ({ id: `exercise-${i}`, sets: [{ w: 10 + i, r: 5, done: true }] }))] }],
+    bodyweight: [{ d: '2026-09-06', w: 80 }] }),
+    load: () => structuredClone(data), save: next => { data = next; },
+    userNow: () => ({ date: '2026-09-11' })
+  });
+  return { users, call: async (key, user = 'alice', body = {}, query = '') => {
+    const res = {};
+    await routes[key]({ user, body, url: key.split(' ')[1] + query }, res);
+    return res;
+  } };
+}
+
+test('social requests require acceptance, reveal only summaries, and are revoked on removal', async () => {
+  const { call } = socialHarness();
+  assert.equal((await call('GET /api/social', null)).status, 401);
+  const bob = await call('GET /api/social', 'bob');
+  assert.deepEqual(bob.body.suggestions, [{ id: 'alice', name: 'Alice' }, { id: 'eve', name: 'Eve' }]);
+  assert.deepEqual((await call('GET /api/social/counts', 'bob')).body, { incoming: 0, plans: 0, total: 0 });
+  assert.equal((await call('POST /api/social/request', 'alice', { userId: 'bob' })).status, 200);
+  assert.equal((await call('POST /api/social/request', 'alice', { userId: 'bob' })).status, 409);
+  assert.equal((await call('POST /api/social/request', 'bob', { userId: 'bob' })).status, 400);
+  assert.equal((await call('POST /api/social/request', 'alice', { userId: 'invalid' })).status, 404);
+  const pending = (await call('GET /api/social', 'bob')).body;
+  assert.deepEqual(pending.incoming, [{ id: 'alice', name: 'Alice' }]);
+  assert.deepEqual(pending.friends, []);
+  assert.deepEqual(pending.suggestions, [{ id: 'eve', name: 'Eve' }]);
+  assert.deepEqual((await call('GET /api/social/counts', 'bob')).body, { incoming: 1, plans: 0, total: 1 });
+  assert.equal((await call('GET /api/social/profile', 'alice', {}, '?id=bob')).status, 404);
+  assert.equal((await call('POST /api/social/accept', 'alice', { userId: 'bob' })).status, 404);
+  assert.equal((await call('POST /api/social/accept', 'eve', { userId: 'alice' })).status, 404);
+  assert.equal((await call('POST /api/social/accept', 'bob', { userId: 'alice' })).status, 200);
+  const friends = (await call('GET /api/social', 'alice')).body.friends;
+  assert.equal(friends[0].id, 'bob');
+  assert.equal(friends[0].avatar, 'data:image/jpeg;base64,/9j/2Q==');
+  assert.equal(friends[0].weekStreak, 1);
+  assert.equal(friends[0].records[0].value, 60);
+  assert.equal(friends[0].records.length, 12);
+  assert.ok(!JSON.stringify(friends).includes('private'));
+  const profile = (await call('GET /api/social/profile', 'alice', {}, '?id=bob')).body;
+  assert.equal(profile.bodyWeight.value, 80);
+  assert.equal(profile.bodyWeightShared, true);
+  assert.equal(profile.avatar, 'data:image/jpeg;base64,/9j/2Q==');
+  assert.equal(profile.thisMonth, 1);
+  assert.equal(profile.records[0].exerciseId, 'bench');
+  assert.equal(profile.records.length, 14);
+  assert.equal(profile.plan.routines[0].name, 'Push');
+  assert.ok(!JSON.stringify(profile).includes('private'));
+  assert.equal((await call('GET /api/social/profile', 'eve', {}, '?id=bob')).status, 404);
+  assert.equal((await call('GET /api/social', 'eve')).body.friends.length, 0);
+  await call('POST /api/social/remove', 'bob', { userId: 'alice' });
+  assert.deepEqual((await call('GET /api/social', 'alice')).body.friends, []);
+  assert.deepEqual((await call('GET /api/social', 'bob')).body.friends, []);
+});
+
+test('friend body weight follows the profile privacy choice', async () => {
+  const { call, users } = socialHarness();
+  await call('POST /api/social/request', 'alice', { userId: 'bob' });
+  await call('POST /api/social/accept', 'bob', { userId: 'alice' });
+  users.find(user => user.id === 'bob').shareBodyWeight = false;
+  const profile = (await call('GET /api/social/profile', 'alice', {}, '?id=bob')).body;
+  assert.equal(profile.bodyWeightShared, false);
+  assert.equal(profile.bodyWeight, null);
+});
+
+test('profile updates validate the name and raster avatar before saving', async () => {
+  const users = [{ id: 'alice', name: 'Alice' }];
+  let saves = 0;
+  const routes = profileRoutes({
+    json: (res, status, body) => Object.assign(res, { status, body }),
+    readBody: async req => req.body,
+    readSession: req => users.find(user => user.id === req.user),
+    save: () => { saves++; },
+    isAdmin: () => false
+  });
+  const call = async (user, body) => {
+    const res = {};
+    await routes['POST /api/profile']({ user, body }, res);
+    return res;
+  };
+  assert.equal((await call(null, {})).status, 401);
+  assert.equal((await call('alice', {})).status, 400);
+  assert.equal((await call('alice', { name: '   ' })).status, 400);
+  assert.equal((await call('alice', { avatar: 'data:image/svg+xml;base64,PHN2Zz4=' })).status, 400);
+  const changed = await call('alice', {
+    name: '  Alice Strong  ', avatar: 'data:image/jpeg;base64,/9j/2Q==', shareBodyWeight: false
+  });
+  assert.equal(changed.status, 200);
+  assert.deepEqual(changed.body.user, {
+    id: 'alice', name: 'Alice Strong', admin: false,
+    avatar: 'data:image/jpeg;base64,/9j/2Q==', shareBodyWeight: false
+  });
+  assert.equal(saves, 1);
+  const cleared = await call('alice', { avatar: null });
+  assert.equal(cleared.body.user.avatar, null);
+  assert.equal(saves, 2);
+  assert.deepEqual(accountView({ id: 'legacy', name: 'Legacy' }, () => false), {
+    id: 'legacy', name: 'Legacy', admin: false, avatar: null, shareBodyWeight: true
+  });
+});
+
+test('plan snapshots are available only to the intended friend and disappear after dismissal or removal', async () => {
+  const { call, users } = socialHarness();
+  const plan = { opengym_plan: 1, name: 'Push', unit: 'kg', week: { 1: ['r1'] }, customEx: [],
+    routines: [{ id: 'r1', name: 'Push', ex: [{ id: 'bench', sets: 3, reps: 5, weight: 60, restSec: 150, warmupRestSec: 45 }] }] };
+  assert.equal((await call('POST /api/social/plan', 'alice', { userId: 'bob', plan })).status, 403);
+  await call('POST /api/social/request', 'alice', { userId: 'bob' });
+  await call('POST /api/social/accept', 'bob', { userId: 'alice' });
+  assert.equal((await call('POST /api/social/plan', 'alice', { userId: 'bob', plan: {} })).status, 400);
+  assert.equal((await call('POST /api/social/plan', 'alice', { userId: 'bob', plan })).status, 200);
+  let id = (await call('GET /api/social', 'bob')).body.plans[0].id;
+  assert.equal((await call('GET /api/social/plan', 'eve', {}, '?id=' + id)).status, 404);
+  assert.equal((await call('GET /api/social/plan', 'alice', {}, '?id=' + id)).status, 404);
+  assert.deepEqual((await call('GET /api/social/plan', 'bob', {}, '?id=' + id)).body.plan, plan);
+  await call('POST /api/social/plan/dismiss', 'eve', { id });
+  assert.equal((await call('GET /api/social/plan', 'bob', {}, '?id=' + id)).status, 200);
+  await call('POST /api/social/plan', 'alice', { userId: 'bob', plan: { ...plan, name: 'Updated push' } });
+  assert.equal((await call('GET /api/social', 'bob')).body.plans.length, 1);
+  assert.equal((await call('GET /api/social/plan', 'bob', {}, '?id=' + id)).status, 404);
+  id = (await call('GET /api/social', 'bob')).body.plans[0].id;
+  users[0].disabled = true;
+  assert.deepEqual((await call('GET /api/social', 'bob')).body.plans, []);
+  assert.deepEqual((await call('GET /api/social', 'bob')).body.friends, []);
+  assert.equal((await call('GET /api/social/plan', 'bob', {}, '?id=' + id)).status, 404);
+  users[0].disabled = false;
+  await call('POST /api/social/plan/dismiss', 'bob', { id });
+  assert.equal((await call('GET /api/social/plan', 'bob', {}, '?id=' + id)).status, 404);
+  await call('POST /api/social/plan', 'alice', { userId: 'bob', plan });
+  id = (await call('GET /api/social', 'bob')).body.plans[0].id;
+  await call('POST /api/social/remove', 'bob', { userId: 'alice' });
+  assert.equal((await call('GET /api/social/plan', 'bob', {}, '?id=' + id)).status, 404);
+});
+
+test('blocking revokes access and pending plans, prevents requests both ways, and only the blocker can undo it', async () => {
+  const { call } = socialHarness();
+  const plan = { opengym_plan: 1, routines: [{ id: 'r1', name: 'Push', ex: [{ id: 'bench', sets: 3 }] }] };
+  await call('POST /api/social/request', 'alice', { userId: 'bob' });
+  await call('POST /api/social/accept', 'bob', { userId: 'alice' });
+  await call('POST /api/social/plan', 'alice', { userId: 'bob', plan });
+  const id = (await call('GET /api/social', 'bob')).body.plans[0].id;
+  assert.equal((await call('POST /api/social/block', null, { userId: 'bob' })).status, 401);
+  assert.equal((await call('POST /api/social/block', 'alice', { userId: 'alice' })).status, 400);
+  await call('POST /api/social/block', 'alice', { userId: 'bob' });
+  await call('POST /api/social/block', 'alice', { userId: 'bob' });
+  assert.deepEqual((await call('GET /api/social', 'alice')).body.blocks, [{ id: 'bob', name: 'Bob' }]);
+  for (const [a, b] of [['alice', 'bob'], ['bob', 'alice']]) {
+    const overview = (await call('GET /api/social', a)).body;
+    assert.equal(overview.friends.length, 0);
+    assert.ok(!overview.suggestions.some(u => u.id === b));
+    assert.equal((await call('GET /api/social/profile', a, {}, '?id=' + b)).status, 404);
+    assert.equal((await call('POST /api/social/request', a, { userId: b })).status, 403);
+    assert.equal((await call('POST /api/social/plan', a, { userId: b, plan })).status, 403);
+  }
+  assert.equal((await call('GET /api/social/plan', 'bob', {}, '?id=' + id)).status, 404);
+  assert.deepEqual((await call('GET /api/social/counts', 'bob')).body, { incoming: 0, plans: 0, total: 0 });
+  assert.deepEqual((await call('GET /api/social', 'bob')).body.blocks, []);
+  await call('POST /api/social/unblock', 'bob', { userId: 'alice' });
+  await call('POST /api/social/remove', 'bob', { userId: 'alice' });
+  assert.equal((await call('POST /api/social/request', 'bob', { userId: 'alice' })).status, 403);
+  await call('POST /api/social/unblock', 'alice', { userId: 'bob' });
+  assert.deepEqual((await call('GET /api/social', 'alice')).body.friends, []);
+  assert.equal((await call('POST /api/social/request', 'bob', { userId: 'alice' })).status, 200);
+  await call('POST /api/social/block', 'alice', { userId: 'bob' });
+  assert.equal((await call('POST /api/social/accept', 'alice', { userId: 'bob' })).status, 404);
+});
+
+test('Social plan notes require explicit consent in the request', async () => {
+  const { call } = socialHarness();
+  await call('POST /api/social/request', 'alice', { userId: 'bob' });
+  await call('POST /api/social/accept', 'bob', { userId: 'alice' });
+  const plan = { opengym_plan: 1, routines: [{ id: 'r1', name: 'Push', ex: [{ id: 'bench', sets: 3, note: 'Personal note' }] }] };
+  for (const includeNotes of [undefined, false, 'true', true]) {
+    await call('POST /api/social/plan', 'alice', { userId: 'bob', plan, includeNotes });
+    const id = (await call('GET /api/social', 'bob')).body.plans[0].id;
+    const snapshot = (await call('GET /api/social/plan', 'bob', {}, '?id=' + id)).body.plan;
+    assert.equal(snapshot.routines[0].ex[0].note, includeNotes === true ? 'Personal note' : undefined);
+  }
+});
 
 tempData();
 const cfg = await import('../coach/config.js');

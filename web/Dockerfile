@@ -19,6 +19,7 @@ COPY frontend/package.json frontend/package-lock.json* ./
 # timed out on the shared runners — a lockfile-ignoring `npm install` fallback is no answer to that.
 RUN npm ci --ignore-scripts
 COPY api/coach/core/ /app/api/coach/core/
+COPY api/training/ /app/api/training/
 COPY frontend/ ./
 RUN npm run build
 

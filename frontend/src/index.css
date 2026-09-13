@@ -330,6 +330,12 @@ h4.sec{
    fade on the <svg> instead of in the stroke colour flattens the icon first and
    fades it as one shape — and it does that for every icon, not just this one. */
 #tabbar button .icn{font-size:25px;--icon-stroke:1.65;color:var(--label)}
+#tabbar .tab-icon{position:relative;display:block}
+#tabbar .tab-icon>b{
+  position:absolute;top:-6px;left:16px;display:grid;place-items:center;min-width:17px;height:17px;
+  padding:0 4px;border-radius:9px;background:var(--red);color:#fff;font-size:9px;font-weight:700;line-height:1;
+  border:2px solid var(--bg-el);box-sizing:border-box;
+}
 #tabbar button.on{color:var(--acc)}
 #tabbar button.on .icn{--icon-stroke:2;color:inherit;opacity:1}
 #tabbar button.start{margin-top:-24px}
@@ -563,6 +569,9 @@ body.chips-dragging *{cursor:inherit}
 .seg-range{margin-bottom:10px}
 .seg-inline button{padding:5px 10px;font-size:13px;min-height:28px}
 .seg-inline button .icn{font-size:14px}
+.profile-section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 12px}
+.profile-section-heading h2{font-size:22px;line-height:1.18;font-weight:700;letter-spacing:-.021em;margin:0}
+.profile-section-heading p{font-size:14px;color:var(--label-2);margin:3px 0 0}
 
 /* native time input, restyled to sit in a row like a value label */
 .timef{
