@@ -4,7 +4,7 @@ import { useUI } from './store/useUI.js'
 import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, smOf, matchExercise, exOr } from './lib/exercises.js'
 import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile } from './lib/equipment.js'
 import { fmtDate, fmtNum, capWords, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, DAYN, DAYS, weekOrder, weekStartOf, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
-import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutVolume, setsDone, setsDoneActive, setUnitsTotal, lastBW, supersetUnits, unitOf, setLabel, defaultConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX } from './lib/history.js'
+import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutVolume, setsDone, setsDoneActive, setUnitsTotal, lastBW, lastBF, supersetUnits, unitOf, setLabel, defaultConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX } from './lib/history.js'
 import { usesBar, barWeightFor, defaultBarWeight, hasBarOverride } from './lib/bar.js'
 import { toScale, rirOf, EFFORT_PRESETS, effortColor } from './lib/effort.js'
 import { beep, vibrate } from './lib/sound.js'
@@ -26,6 +26,7 @@ import { buildPlanBundle, parsePlan, mergePlan, printPlan, planPrintHTML } from 
 import { estimate1RM, best1RM, is1RMRecord, REP_CAP } from './lib/onerm.js'
 import { exerciseHistory } from './lib/exercise-history.js'
 import { nextPrescription, applyPrescription, policyFor, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC, MAX_BW_SETS, weightIncrement } from './lib/progression.js'
+import { jp3BodyFatPct, jp3SitesFor, clampBodyFatPct } from './lib/bodyfat.js'
 import { normalizeRepRange } from './lib/rep-range.js'
 import { MOBILE, shareExport, printHtml } from './lib/mobile.js'
 import { buildCompletedWorkout } from './lib/finish-workout.js'
@@ -565,6 +566,178 @@ function GoalSheet({ close }) {
   </>
 }
 export const goalSheet = () => ui().openSheet(close => <GoalSheet close={close} />)
+
+/* ============================ body fat ============================ */
+// Parallel to body weight: a dated log + optional goal line on the Home/Stats charts.
+// Two entry paths share one list — type a % directly, or run Jackson–Pollock 3-site
+// calipers (sex-specific sites from S.body, age from S.age). Stored shape:
+//   { d, pct, t, method: 'manual'|'jp3', sites?, age? }
+const SITE_LABEL = {
+  chest: 'Chest',
+  abdomen: 'Abdomen',
+  thigh: 'Thigh',
+  triceps: 'Triceps',
+  suprailiac: 'Suprailiac',
+}
+
+function BfPctInput({ value, setValue }) {
+  const clamp = x => Math.max(1, Math.min(60, Math.round((x || 0) * 10) / 10))
+  const onSlide = v => setValue(clamp(v))
+  return <>
+    <div className="bwstep">
+      <button className="bw-pm" onClick={() => onSlide(value - 0.1)} aria-label="minus 0.1"><Icon name="minus" /></button>
+      <div className="bw-read">{fmtNum(value)}<span className="u"> %</span></div>
+      <button className="bw-pm" onClick={() => onSlide(value + 0.1)} aria-label="plus 0.1"><Icon name="plus" /></button>
+    </div>
+    <div className="chips" style={{ justifyContent: 'center', margin: '8px 0' }}>
+      <button className="chip" onClick={() => onSlide(value - 1)}>−1</button>
+      <button className="chip" onClick={() => onSlide(value - 0.5)}>−0.5</button>
+      <button className="chip" onClick={() => onSlide(value + 0.5)}>+0.5</button>
+      <button className="chip" onClick={() => onSlide(value + 1)}>+1</button>
+    </div>
+    <Slider value={Math.max(1, Math.min(60, value))} min={1} max={60} step={0.5} onChange={onSlide} />
+  </>
+}
+
+function MmInput({ label, value, setValue }) {
+  const clamp = x => Math.max(0, Math.min(80, Math.round((x || 0) * 10) / 10))
+  return (
+    <div className="row between" style={{ padding: '8px 0', borderBottom: '1px solid var(--sep)', gap: 12 }}>
+      <span className="small" style={{ fontWeight: 500 }}>{label}</span>
+      <div className="row" style={{ gap: 8, alignItems: 'center' }}>
+        <button className="bw-pm" style={{ width: 34, height: 34 }} onClick={() => setValue(clamp(value - 0.5))} aria-label="minus"><Icon name="minus" /></button>
+        <b style={{ minWidth: 52, textAlign: 'center' }}>{fmtNum(value)} <span className="dim small">mm</span></b>
+        <button className="bw-pm" style={{ width: 34, height: 34 }} onClick={() => setValue(clamp(value + 0.5))} aria-label="plus"><Icon name="plus" /></button>
+      </div>
+    </div>
+  )
+}
+
+function BfSheet({ close }) {
+  const st = useStore(s => s.S)
+  const bf = lastBF(st)
+  const [mode, setMode] = useState('jp3')
+  const [pct, setPct] = useState(bf ? bf.pct : 20)
+  const [age, setAge] = useState(st.age || 40)
+  const siteKeys = jp3SitesFor(st.body)
+  const [sites, setSites] = useState(() => Object.fromEntries(siteKeys.map(k => [k, (bf && bf.sites && bf.sites[k]) || 15])))
+  const preview = mode === 'jp3' ? jp3BodyFatPct(sites, age, st.body) : clampBodyFatPct(pct)
+
+  const saveEntry = (n, extra = {}) => {
+    update(s => {
+      if (!s.bodyfat) s.bodyfat = []
+      if (Number.isFinite(age) && age >= 10) s.age = Math.round(age)
+      const iso = todayISO()
+      const ex = s.bodyfat.find(b => b.d === iso)
+      const row = { d: iso, pct: n, t: Date.now(), ...extra }
+      if (ex) Object.assign(ex, row)
+      else s.bodyfat.push(row)
+      s.bodyfat.sort((a, b) => (a.d < b.d ? -1 : 1))
+    })
+    close()
+    toast(t('Body fat saved: {0}%', fmtNum(n)))
+  }
+
+  const save = () => {
+    if (mode === 'jp3') {
+      const n = jp3BodyFatPct(sites, age, st.body)
+      if (n == null) { toast(t('Enter age and all three skinfolds in mm')); return }
+      saveEntry(n, { method: 'jp3', sites: { ...sites }, age: Math.round(age) })
+      return
+    }
+    const n = clampBodyFatPct(pct)
+    if (n == null) { toast(t('Enter a valid body fat percentage')); return }
+    saveEntry(n, { method: 'manual' })
+  }
+
+  const recent = [...(st.bodyfat || [])].reverse().slice(0, 3)
+  const delEntry = d => update(s => { s.bodyfat = (s.bodyfat || []).filter(b => b.d !== d) })
+
+  return <>
+    <h3>{t('Log body fat')}</h3>
+    <div className="muted small">{t('Today') + ', ' + fmtDate(todayISO(), true)}</div>
+    <div style={{ height: 10 }} />
+    <Segmented
+      options={[{ value: 'jp3', label: t('Calipers (JP3)') }, { value: 'manual', label: t('Manual %') }]}
+      value={mode}
+      onChange={setMode}
+    />
+    <div style={{ height: 12 }} />
+    {mode === 'manual' ? (
+      <BfPctInput value={pct} setValue={setPct} />
+    ) : <>
+      <div className="muted small" style={{ marginBottom: 8 }}>
+        {st.body === 'female'
+          ? t('Women: triceps, suprailiac, and thigh skinfolds (mm). Jackson–Pollock 3-site + Siri.')
+          : t('Men: chest, abdomen, and thigh skinfolds (mm). Jackson–Pollock 3-site + Siri.')}
+      </div>
+      <div className="row between" style={{ padding: '8px 0', borderBottom: '1px solid var(--sep)', gap: 12 }}>
+        <span className="small" style={{ fontWeight: 500 }}>{t('Age')}</span>
+        <div className="row" style={{ gap: 8, alignItems: 'center' }}>
+          <button className="bw-pm" style={{ width: 34, height: 34 }} onClick={() => setAge(Math.max(10, (age || 40) - 1))} aria-label="minus age"><Icon name="minus" /></button>
+          <b style={{ minWidth: 40, textAlign: 'center' }}>{Math.round(age || 0)}</b>
+          <button className="bw-pm" style={{ width: 34, height: 34 }} onClick={() => setAge(Math.min(100, (age || 40) + 1))} aria-label="plus age"><Icon name="plus" /></button>
+        </div>
+      </div>
+      {siteKeys.map(k => (
+        <MmInput
+          key={k}
+          label={t(SITE_LABEL[k])}
+          value={sites[k] || 0}
+          setValue={v => setSites(s => ({ ...s, [k]: v }))}
+        />
+      ))}
+      <div className="row between" style={{ marginTop: 12 }}>
+        <span className="muted small">{t('Estimated body fat')}</span>
+        <b style={{ fontSize: 22 }}>{preview == null ? '—' : fmtNum(preview) + '%'}</b>
+      </div>
+    </>}
+    <div style={{ height: 14 }} />
+    <Button variant="primary" onClick={save} disabled={preview == null}>{t('Save')}</Button>
+    {recent.length > 0 && <>
+      <h4 className="sec">{t('Recent body-fat logs')}</h4>
+      <div className="list" style={{ gap: 0 }}>
+        {recent.map(b => <div key={b.d} className="row between" style={{ padding: '9px 2px', borderBottom: '1px solid var(--sep)' }}>
+          <span className="small muted">{fmtDate(b.d, true)}{b.method === 'jp3' ? ' · JP3' : ''}</span>
+          <span className="row" style={{ gap: 12 }}><b>{fmtNum(b.pct)}%</b>
+            <button className="iconbtn" style={{ width: 32, height: 30, borderRadius: 8, fontSize: 15, color: 'var(--red)' }} onClick={() => delEntry(b.d)} aria-label="delete"><Icon name="trash" /></button></span>
+        </div>)}
+      </div>
+    </>}
+  </>
+}
+
+export function bfSheet() {
+  return ui().openSheet(close => <BfSheet close={close} />)
+}
+
+export function bfDeltaColor(delta, currentPct) {
+  if (!delta) return 'var(--label-2)'
+  if (!S().targetBf) return 'var(--label)'
+  const up = S().targetBf > currentPct
+  return (delta > 0) === up ? 'var(--acc)' : 'var(--red)'
+}
+
+function BfGoalSheet({ close }) {
+  const st = S()
+  const bf = lastBF(st)
+  const [v, setV] = useState(st.targetBf || (bf ? bf.pct : 15))
+  return <>
+    <h3>{t('Target body fat')}</h3>
+    <div className="muted small">{t('Drawn as a line on the body-fat chart. Gains and losses are colored by whether they move toward it.')}</div>
+    <BfPctInput value={v} setValue={setV} />
+    <div style={{ height: 14 }} />
+    <Button variant="primary" onClick={() => {
+      const n = clampBodyFatPct(v)
+      if (n == null) { toast(t('Enter a valid body fat percentage')); return }
+      update(s => { s.targetBf = n }); close()
+      const b = lastBF(S()); toast(t('Goal set: {0}%', fmtNum(n)) + (b ? ' (' + t('{0} to go', fmtNum(Math.abs(n - b.pct))) + ')' : ''))
+    }}>{t('Save goal')}</Button>
+    {st.targetBf && <><div style={{ height: 8 }} /><Button variant="danger" onClick={() => { update(s => { s.targetBf = null }); close(); toast(t('Goal removed')) }}>{t('Remove goal')}</Button></>}
+  </>
+}
+export const bfGoalSheet = () => ui().openSheet(close => <BfGoalSheet close={close} />)
+
 
 /* ============================ bar weight ============================ */
 // One editor for every place the bar weight shows up (exercise detail, exercise config,

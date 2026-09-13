@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- 📊 **Body fat tracker**: log body-fat % on Home and Stats with the same curve/goal pattern as body weight. Enter a % directly, or run the Jackson–Pollock 3-site caliper protocol (chest/abdomen/thigh for men; triceps/suprailiac/thigh for women) using the profile body diagram sex and an age field (Settings + log sheet). Formula: JP3 body density → Siri %BF.
+
 ## v1.3.7 — 2026-09-12
 
 The v1.3.6 tag's Android build failed on a double dash inside an XML comment, so the APK for everything in v1.3.6 is this one — plus the iPhone timer-sound fix that landed an hour later. Web bundle, APK and API image; v1.3.6 and v1.3.7 are the same code apart from the two items below.

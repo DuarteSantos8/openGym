@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
-import { effectiveRoutines, effectiveRoutineIds, nextTrainingDay, streakWeeks, lastBW, setsDoneActive } from '../lib/history.js'
+import { effectiveRoutines, effectiveRoutineIds, nextTrainingDay, streakWeeks, lastBW, lastBF, setsDoneActive } from '../lib/history.js'
 import { fmtNum, fmtDate, todayISO, isoOf, weekKey, weekStartOf, weekDayOffset, DAYS, DAYN } from '../lib/format.js'
 import { t, dateLocale } from '../lib/i18n.js'
-import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, startFlow, starterPlanSheet, bwDeltaColor } from '../sheets.jsx'
+import { bwSheet, goalSheet, bfSheet, bfGoalSheet, dayOverrideSheet, calendarSheet, startFlow, starterPlanSheet, bwDeltaColor, bfDeltaColor } from '../sheets.jsx'
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
@@ -56,6 +56,10 @@ export default function Home() {
   // Days scheduled, not routines — a combined day counts as 1, matching wThisWeek (one w).
   const plannedPerWeek = Object.values(S.week).filter(ids => ids?.length).length
   const bwPoints = S.bodyweight.slice(-30).map(b => ({ t: b.t || new Date(b.d).getTime(), y: b.w, d: b.d }))
+  const bf = lastBF(S)
+  const prevBF = (S.bodyfat || []).length > 1 ? S.bodyfat[S.bodyfat.length - 2] : null
+  const bfDelta = bf && prevBF ? Math.round((bf.pct - prevBF.pct) * 10) / 10 : 0
+  const bfPoints = (S.bodyfat || []).slice(-30).map(b => ({ t: b.t || new Date(b.d).getTime(), y: b.pct, d: b.d }))
 
   // today's session shown right under the week strip
   const onToday = () => { if (S.active) nav('/workout'); else if (todayRoutines.length) startFlow(effectiveRoutineIds(S, todayISO())); else dayOverrideSheet(todayISO()) }
@@ -158,6 +162,35 @@ export default function Home() {
       </> : <div className="muted small">{S.weighIn === false
         ? t('No entries yet — log your weight to start the curve.')
         : t("No entries yet — log your weight to start the curve. It's also asked before every workout.")}</div>}
+    </div>
+
+    <div className="card">
+      <div className="row between" style={{ marginBottom: 6 }}>
+        <h2 style={{ margin: 0 }}>{t('Body fat')}</h2>
+        <div className="row" style={{ gap: 8 }}>
+          <Button size="sm" icon="target" style={S.targetBf ? { color: 'var(--yellow)' } : undefined} onClick={bfGoalSheet}>{S.targetBf != null ? fmtNum(S.targetBf) + '%' : t('Goal')}</Button>
+          <Button size="sm" icon="plus" onClick={() => bfSheet()}>{t('Log')}</Button>
+        </div>
+      </div>
+      {bf ? <>
+        <div className="row" style={{ gap: 8, alignItems: 'baseline' }}>
+          <div className="big">{fmtNum(bf.pct)} <span className="muted" style={{ fontSize: '1rem' }}>%</span></div>
+          {!!bfDelta && (
+            <span className="small row" style={{ gap: 2, fontWeight: 500, color: bfDeltaColor(bfDelta, bf.pct) }}>
+              <Icon name={bfDelta > 0 ? 'arrowUp' : 'arrowDown'} style={{ fontSize: 12 }} />
+              {fmtNum(Math.abs(bfDelta))}
+            </span>
+          )}
+          <span className="dim small" style={{ marginLeft: 'auto' }}>{fmtDate(bf.d, true)}</span>
+        </div>
+        {S.targetBf != null && (
+          <div className="small row" style={{ color: 'var(--yellow)', marginTop: 4, gap: 5 }}>
+            <Icon name="target" style={{ fontSize: 13 }} />
+            <span>{t('Goal')} {fmtNum(S.targetBf)}% · {Math.abs(S.targetBf - bf.pct) < 0.05 ? t('reached!') : t(S.targetBf > bf.pct ? '{0} to gain' : '{0} to lose', fmtNum(Math.abs(S.targetBf - bf.pct)) + '%')}</span>
+          </div>
+        )}
+        <div className="chart" style={{ marginTop: 8 }}><LineChart points={bfPoints} h={130} unit="%" goal={S.targetBf} /></div>
+      </> : <div className="muted small">{t('No entries yet — log a Jackson–Pollock 3-site caliper reading or type a body-fat %.')}</div>}
     </div>
 
     <div className="card tappable" style={{ cursor: 'pointer' }} {...tappable(() => calendarSheet())}>
