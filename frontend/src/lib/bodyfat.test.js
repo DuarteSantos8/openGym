@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   jp3SitesFor, navyCircKeysFor, sumSkinfolds, jp3BodyDensity, siriBodyFatPct, jp3BodyFatPct,
-  navyBodyFatPct, clampBodyFatPct, toInches, lengthUnitFor
+  navyBodyFatPct, clampBodyFatPct, toInches, lengthUnitFor, formatFtIn, clampHeightInches
 } from './bodyfat.js'
 
 describe('Jackson–Pollock 3-site', () => {
@@ -73,5 +73,15 @@ describe('clampBodyFatPct', () => {
     expect(clampBodyFatPct(18.56)).toBe(18.6)
     expect(clampBodyFatPct(0)).toBe(null)
     expect(clampBodyFatPct(90)).toBe(null)
+  })
+})
+
+
+describe('height feet-inches', () => {
+  it('formats and steps whole inches', () => {
+    expect(formatFtIn(69)).toBe("5'9\"")
+    expect(formatFtIn(72)).toBe("6'0\"")
+    expect(clampHeightInches(69.4)).toBe(69)
+    expect(clampHeightInches(47)).toBe(48)
   })
 })

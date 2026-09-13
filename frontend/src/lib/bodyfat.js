@@ -137,9 +137,27 @@ export function clampBodyFatPct(n) {
 }
 
 /** Short label for a saved method key. */
+
+/** Whole inches → 5'9" display. */
+export function formatFtIn(totalInches) {
+  const n = Math.round(Number(totalInches))
+  if (!Number.isFinite(n) || n <= 0) return '—'
+  const ft = Math.floor(n / 12)
+  const inch = ((n % 12) + 12) % 12
+  return ft + "'" + inch + '"'
+}
+
+/** Clamp height in whole inches (typical adult range). */
+export function clampHeightInches(n, min = 48, max = 90) {
+  const v = Math.round(Number(n))
+  if (!Number.isFinite(v)) return min
+  return Math.max(min, Math.min(max, v))
+}
+
 export function bodyFatMethodLabel(method) {
-  if (method === 'jp3') return 'JP3'
-  if (method === 'navy') return 'Navy'
+  if (method === 'jp3') return 'Caliper'
+  if (method === 'navy') return 'Tape'
   if (method === 'manual') return 'Manual'
+  if (method === 'estimate' || method === 'estimated') return 'Est.'
   return method || ''
 }

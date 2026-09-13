@@ -26,7 +26,7 @@ import { buildPlanBundle, parsePlan, mergePlan, printPlan, planPrintHTML } from 
 import { estimate1RM, best1RM, is1RMRecord, REP_CAP } from './lib/onerm.js'
 import { exerciseHistory } from './lib/exercise-history.js'
 import { nextPrescription, applyPrescription, policyFor, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC, MAX_BW_SETS, weightIncrement } from './lib/progression.js'
-import { jp3BodyFatPct, jp3SitesFor, navyCircKeysFor, navyBodyFatPct, clampBodyFatPct, lengthUnitFor, inToCm, bodyFatMethodLabel } from './lib/bodyfat.js'
+import { jp3BodyFatPct, jp3SitesFor, navyCircKeysFor, navyBodyFatPct, clampBodyFatPct, lengthUnitFor, bodyFatMethodLabel, clampHeightInches } from './lib/bodyfat.js'
 import { normalizeRepRange } from './lib/rep-range.js'
 import { MOBILE, shareExport, printHtml } from './lib/mobile.js'
 import { buildCompletedWorkout } from './lib/finish-workout.js'
@@ -622,6 +622,7 @@ function MeasureRow({ label, value, setValue, unit, step = 0.5, min = 0, max = 2
   )
 }
 
+
 function BfSheet({ close }) {
   const st = useStore(s => s.S)
   const bf = lastBF(st)
@@ -629,12 +630,12 @@ function BfSheet({ close }) {
   const lenUnit = lengthUnitFor(st.unit)
   const [mode, setMode] = useState('jp3')
   const [pct, setPct] = useState(bf ? bf.pct : 20)
-  const [age, setAge] = useState(st.age || 40)
-  // Height is stored in cm on the profile; show it in the profile's length unit.
-  const heightStoredCm = st.height > 0 ? st.height : (st.unit === 'lb' ? 70 * 2.54 : 178)
-  const [heightUi, setHeightUi] = useState(() => lenUnit === 'in'
-    ? Math.round((heightStoredCm / 2.54) * 10) / 10
-    : Math.round(heightStoredCm * 10) / 10)
+  const age = Number(st.age)
+  const ageOk = Number.isFinite(age) && age >= 10 && age <= 100
+  const heightOk = Number(st.height) > 0
+  const heightUi = heightOk
+    ? (lenUnit === 'in' ? clampHeightInches(st.height / 2.54) : Math.round(st.height * 10) / 10)
+    : null
   const siteKeys = jp3SitesFor(st.body)
   const circKeys = navyCircKeysFor(st.body)
   const [sites, setSites] = useState(() => Object.fromEntries(siteKeys.map(k => [k, (bf && bf.sites && bf.sites[k]) || 15])))
@@ -643,27 +644,25 @@ function BfSheet({ close }) {
     : { neck: 38, waist: 86, hip: 96 }
   const [circ, setCirc] = useState(() => Object.fromEntries(circKeys.map(k => [k, (bf && bf.circ && bf.circ[k]) || defaultCirc[k]])))
 
-  // Sex change mid-sheet: rebuild site/circ keys without dropping shared thigh/neck/waist values.
   useEffect(() => {
     setSites(prev => Object.fromEntries(jp3SitesFor(st.body).map(k => [k, prev[k] || 15])))
     setCirc(prev => Object.fromEntries(navyCircKeysFor(st.body).map(k => [k, prev[k] || defaultCirc[k]])))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [st.body, st.unit])
 
+  const jp3Pct = ageOk ? jp3BodyFatPct(sites, age, st.body) : null
+  // When height is missing, still keep the tape fields mounted (blurred under the gate)
+  // so the sheet height stays locked with the other methods.
+  const navyPct = heightOk ? navyBodyFatPct(circ, heightUi, st.body, lenUnit) : null
   const preview = mode === 'jp3'
-    ? jp3BodyFatPct(sites, age, st.body)
+    ? jp3Pct
     : mode === 'navy'
-      ? navyBodyFatPct(circ, heightUi, st.body, lenUnit)
+      ? navyPct
       : clampBodyFatPct(pct)
 
   const saveEntry = (n, extra = {}) => {
     update(s => {
       if (!s.bodyfat) s.bodyfat = []
-      if (Number.isFinite(age) && age >= 10) s.age = Math.round(age)
-      if (mode === 'navy') {
-        const cm = lenUnit === 'in' ? inToCm(heightUi) : Number(heightUi)
-        if (cm > 0) s.height = Math.round(cm * 10) / 10
-      }
       const iso = todayISO()
       const ex = s.bodyfat.find(b => b.d === iso)
       const row = { d: iso, pct: n, t: Date.now(), ...extra }
@@ -677,26 +676,33 @@ function BfSheet({ close }) {
 
   const save = () => {
     if (mode === 'jp3') {
+      if (!ageOk) { toast(t('Set your age in Settings first')); return }
       const n = jp3BodyFatPct(sites, age, st.body)
-      if (n == null) { toast(t('Enter age and all three skinfolds in mm')); return }
+      if (n == null) { toast(t('Enter all three skinfolds in mm')); return }
       saveEntry(n, { method: 'jp3', sites: { ...sites }, age: Math.round(age) })
       return
     }
     if (mode === 'navy') {
+      if (!heightOk) { toast(t('Set your height in Settings first')); return }
       const n = navyBodyFatPct(circ, heightUi, st.body, lenUnit)
       if (n == null) {
         toast(female
-          ? t('Enter neck, waist, hip and height (waist + hip must exceed neck)')
-          : t('Enter neck, waist and height (waist must exceed neck)'))
+          ? t('Enter neck, waist and hip (waist + hip must exceed neck)')
+          : t('Enter neck and waist (waist must exceed neck)'))
         return
       }
-      const heightCm = lenUnit === 'in' ? inToCm(heightUi) : Number(heightUi)
-      saveEntry(n, { method: 'navy', circ: { ...circ }, heightCm: Math.round(heightCm * 10) / 10, lengthUnit: lenUnit })
+      saveEntry(n, { method: 'navy', circ: { ...circ }, heightCm: Math.round(Number(st.height) * 10) / 10, lengthUnit: lenUnit })
       return
     }
     const n = clampBodyFatPct(pct)
     if (n == null) { toast(t('Enter a valid body fat percentage')); return }
     saveEntry(n, { method: 'manual' })
+  }
+
+  const goAddHeight = () => {
+    close()
+    useUI.getState().closeAll()
+    nav('/settings#height')
   }
 
   const recent = [...(st.bodyfat || [])].reverse().slice(0, 3)
@@ -706,68 +712,104 @@ function BfSheet({ close }) {
     return label ? ' · ' + label : ''
   }
 
+  // Keep all three method panels mounted in one grid cell so the sheet height stays
+  // locked to the tallest option while toggling (visibility:hidden still contributes size).
+  const panelStyle = on => ({
+    gridArea: '1 / 1',
+    visibility: on ? 'visible' : 'hidden',
+    pointerEvents: on ? 'auto' : 'none',
+  })
+
+  const navyFields = <>
+    {circKeys.map(k => (
+      <MeasureRow
+        key={k}
+        label={t(NAVY_CIRC_LABEL[k])}
+        value={circ[k] || 0}
+        setValue={v => setCirc(s => ({ ...s, [k]: v }))}
+        unit={lenUnit}
+        step={0.5}
+        min={lenUnit === 'in' ? 8 : 20}
+        max={lenUnit === 'in' ? 70 : 180}
+      />
+    ))}
+  </>
+
+  const tapeNeedsHeight = mode === 'navy' && !heightOk
+
+  const methodBody = <>
+    <div style={{ display: 'grid' }}>
+      <div style={panelStyle(mode === 'jp3')}>
+        {!ageOk && (
+          <div className="small" style={{ color: 'var(--yellow)', marginBottom: 8 }}>
+            {t('Set your age in Settings to calculate body fat from calipers.')}
+          </div>
+        )}
+        {siteKeys.map(k => (
+          <MeasureRow
+            key={k}
+            label={t(JP3_SITE_LABEL[k])}
+            value={sites[k] || 0}
+            setValue={v => setSites(s => ({ ...s, [k]: v }))}
+            unit="mm"
+            step={0.5}
+            min={1}
+            max={80}
+          />
+        ))}
+      </div>
+
+      <div style={panelStyle(mode === 'navy')}>
+        {navyFields}
+      </div>
+
+      <div style={panelStyle(mode === 'manual')}>
+        <BfPctInput value={pct} setValue={setPct} />
+      </div>
+    </div>
+    {/* One estimate row for every method — pinned under the field stack so it does not jump. */}
+    <div className="row between" style={{ marginTop: 12 }}>
+      <span className="muted small">{t('Estimated body fat')}</span>
+      <b style={{ fontSize: 22 }}>{preview == null ? '—' : fmtNum(preview) + '%'}</b>
+    </div>
+    <div style={{ height: 14 }} />
+    <Button variant="primary" onClick={save} disabled={preview == null || tapeNeedsHeight}>{t('Save')}</Button>
+  </>
+
   return <>
     <h3>{t('Log body fat')}</h3>
     <div className="muted small">{t('Today') + ', ' + fmtDate(todayISO(), true)}</div>
     <div style={{ height: 10 }} />
     <Segmented
       options={[
-        { value: 'jp3', label: t('JP3') },
-        { value: 'navy', label: t('Navy') },
+        { value: 'jp3', label: t('Caliper') },
+        { value: 'navy', label: t('Tape Measure') },
         { value: 'manual', label: t('Manual') },
       ]}
       value={mode}
       onChange={setMode}
     />
-    <div className="muted small" style={{ marginTop: 8, marginBottom: 4 }}>
-      {mode === 'jp3' && (female
-        ? t('Calipers — Jackson–Pollock 3-site for women: triceps, suprailiac, thigh (mm).')
-        : t('Calipers — Jackson–Pollock 3-site for men: chest, abdomen, thigh (mm).'))}
-      {mode === 'navy' && (female
-        ? t('Tape — U.S. Navy method for women: neck, waist, hip and height.')
-        : t('Tape — U.S. Navy method for men: neck, waist and height.'))}
-      {mode === 'manual' && t('Type a body-fat percentage from any source (DEXA, scale, prior estimate).')}
-    </div>
     <div style={{ height: 8 }} />
-    {mode === 'manual' && <BfPctInput value={pct} setValue={setPct} />}
-    {mode === 'jp3' && <>
-      <MeasureRow label={t('Age')} value={age} setValue={setAge} unit={t('yr')} step={1} min={10} max={100} />
-      {siteKeys.map(k => (
-        <MeasureRow
-          key={k}
-          label={t(JP3_SITE_LABEL[k])}
-          value={sites[k] || 0}
-          setValue={v => setSites(s => ({ ...s, [k]: v }))}
-          unit="mm"
-          step={0.5}
-          min={1}
-          max={80}
-        />
-      ))}
-    </>}
-    {mode === 'navy' && <>
-      <MeasureRow label={t('Height')} value={heightUi} setValue={setHeightUi} unit={lenUnit} step={0.5} min={lenUnit === 'in' ? 48 : 120} max={lenUnit === 'in' ? 90 : 230} />
-      {circKeys.map(k => (
-        <MeasureRow
-          key={k}
-          label={t(NAVY_CIRC_LABEL[k])}
-          value={circ[k] || 0}
-          setValue={v => setCirc(s => ({ ...s, [k]: v }))}
-          unit={lenUnit}
-          step={0.5}
-          min={lenUnit === 'in' ? 8 : 20}
-          max={lenUnit === 'in' ? 70 : 180}
-        />
-      ))}
-    </>}
-    {(mode === 'jp3' || mode === 'navy') && (
-      <div className="row between" style={{ marginTop: 12 }}>
-        <span className="muted small">{t('Estimated body fat')}</span>
-        <b style={{ fontSize: 22 }}>{preview == null ? '—' : fmtNum(preview) + '%'}</b>
+    <div style={{ position: 'relative' }}>
+      <div
+        aria-hidden={tapeNeedsHeight}
+        className={tapeNeedsHeight ? 'bf-tape-gated' : undefined}
+      >
+        {methodBody}
       </div>
-    )}
-    <div style={{ height: 14 }} />
-    <Button variant="primary" onClick={save} disabled={preview == null}>{t('Save')}</Button>
+      {tapeNeedsHeight && (
+        // CTA only — no scrim. Fields are blurred in place via .bf-tape-gated (blur(2px),
+        // same radius as .mback). Flex + inset centers on any phone width/height.
+        <div className="bf-tape-cta">
+          <div>
+            <div style={{ lineHeight: 1.45, marginBottom: 16, fontSize: 15, fontWeight: 500 }}>
+              {t('To use the tape measure calculator, add your height to openGym.')}
+            </div>
+            <Button variant="primary" onClick={goAddHeight}>{t('Add now')}</Button>
+          </div>
+        </div>
+      )}
+    </div>
     {recent.length > 0 && <>
       <h4 className="sec">{t('Recent body-fat logs')}</h4>
       <div className="list" style={{ gap: 0 }}>

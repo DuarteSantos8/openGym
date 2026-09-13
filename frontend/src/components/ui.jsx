@@ -103,6 +103,8 @@ export function Segmented({ options, value, onChange, className = '' }) {
           key={o.value}
           className={o.value === value ? 'on' : ''}
           aria-pressed={o.value === value}
+          aria-disabled={!!o.dimmed}
+          style={o.dimmed ? { opacity: 0.45, filter: 'blur(0.6px)' } : undefined}
           onClick={() => onChange(o.value)}
         >
           {o.icon && <Icon name={o.icon} />}
@@ -273,10 +275,10 @@ export function Section({ title, footer, children, className = '' }) {
   )
 }
 
-export function Row({ icon, iconTint, title, subtitle, value, accessory = 'none', onClick, danger, children, className = '' }) {
+export function Row({ id, icon, iconTint, title, subtitle, value, accessory = 'none', onClick, danger, children, className = '' }) {
   const Tag = onClick ? 'button' : 'div'
   return (
-    <Tag className={'lrow' + (onClick ? ' tap' : '') + (danger ? ' danger' : '') + ' ' + className} onClick={onClick}>
+    <Tag id={id} className={'lrow' + (onClick ? ' tap' : '') + (danger ? ' danger' : '') + ' ' + className} onClick={onClick}>
       {icon && <span className="lrow-i" style={iconTint ? { '--tint': iconTint } : null}><Icon name={icon} /></span>}
       <span className="lrow-m">
         <span className="lrow-t">{title}</span>
