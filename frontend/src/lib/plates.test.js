@@ -90,6 +90,9 @@ describe('loadKindFor', () => {
     expect(loadKindFor({}, sled)).toBe('single')
     expect(loadKindFor({}, db)).toBe('none')
     expect(loadKindFor({}, 'no-such-id')).toBe('none')
+    expect(loadKindFor({}, idOf('band'))).toBe('none')             // tension, not plates
+    expect(loadKindFor({}, idOf('resistance band'))).toBe('none')
+    expect(loadKindFor({}, { id: idOf('band'), bodyweight: true })).toBe('none')
   })
 
   test('a routine flagging an exercise as body-weight follows the flag', () => {

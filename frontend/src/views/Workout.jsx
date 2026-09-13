@@ -205,18 +205,25 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
   // three under the sets and four more below the card is a single list you open once a session.
   // Plate loading, per set row (lib/plates.js): which plates make THIS row's weight, from the
   // plates you own. 'pairs' splits what is beyond the bar per side, 'single' is one stack (a
-  // belt, a sled), 'none' shows nothing. A unilateral row logs each side's own weight and gets
-  // no line. Only reps mode has a weight to load. The rows and their drop-set sub-rows form one
-  // sequence in the order the bar sees them, keyed `i` for a set and `i:dN` for its N-th drop;
-  // a rest-pause burst keeps the set's weight, so it is not in the sequence.
+  // belt, a sled), 'none' shows nothing. A unilateral row logs each side's own weight; a bar is
+  // the same bar for both legs, so the line uses the sides' weight while they agree (or only one
+  // side has a number yet) and stays away once they differ. Only reps mode has a weight to load.
+  // The rows and their drop-set sub-rows form one sequence in the order the bar sees them, keyed
+  // `i` for a set and `i:dN` for its N-th drop; a rest-pause burst keeps the set's weight, so it
+  // is not in the sequence.
   const loadKind = mode === 'reps' ? loadKindFor(S, cfg) : 'none'
   const base = baseWeightFor(S, entry.id)
   const loadSeq = loadKind === 'none' ? [] : (() => {
     const inv = inventoryFor(S)
     const out = []
     entry.sets.forEach((s, i) => {
-      if (perSide && isSideSet(s)) return
-      out.push({ key: String(i), load: rowLoad(loadKind, s.w, base, inv) })
+      let w = s.w
+      if (perSide && isSideSet(s)) {
+        const L = s.sides.L?.w || 0, R = s.sides.R?.w || 0
+        if (L && R && L !== R) return
+        w = L || R
+      }
+      out.push({ key: String(i), load: rowLoad(loadKind, w, base, inv) })
       dropsOf(s).forEach((d, di) => out.push({ key: i + ':d' + di, load: rowLoad(loadKind, d.w, base, inv) }))
     })
     return out
@@ -235,7 +242,8 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
     while (p >= 0 && !loadSeq[p].load) p--
     const prev = p >= 0 ? loadSeq[p].load : null
     if (prev && sameLoad(prev, L)) return null
-    const stack = L.plates.map(w => fmtPlate(w)).join(' · ')
+    // "+" between plates: "45 + 5 per side" reads as a sum, a dot did not (Boris, 2026-09-13).
+    const stack = L.plates.map(w => fmtPlate(w)).join(' + ')
     const text = L.barOnly ? t('Bar only')
       : L.kind === 'pairs' ? t('{0} per side', stack || '—') : t('Load {0}', stack || '—')
     const d = prev && !dense ? plateDelta(prev.plates, L.plates) : null
