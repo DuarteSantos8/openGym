@@ -26,7 +26,7 @@ import { buildPlanBundle, parsePlan, mergePlan, printPlan, planPrintHTML } from 
 import { estimate1RM, best1RM, is1RMRecord, REP_CAP } from './lib/onerm.js'
 import { exerciseHistory } from './lib/exercise-history.js'
 import { nextPrescription, applyPrescription, policyFor, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC, MAX_BW_SETS, weightIncrement } from './lib/progression.js'
-import { jp3BodyFatPct, jp3SitesFor, clampBodyFatPct } from './lib/bodyfat.js'
+import { jp3BodyFatPct, jp3SitesFor, navyCircKeysFor, navyBodyFatPct, clampBodyFatPct, lengthUnitFor, inToCm, bodyFatMethodLabel } from './lib/bodyfat.js'
 import { normalizeRepRange } from './lib/rep-range.js'
 import { MOBILE, shareExport, printHtml } from './lib/mobile.js'
 import { buildCompletedWorkout } from './lib/finish-workout.js'
@@ -567,17 +567,26 @@ function GoalSheet({ close }) {
 }
 export const goalSheet = () => ui().openSheet(close => <GoalSheet close={close} />)
 
+
 /* ============================ body fat ============================ */
-// Parallel to body weight: a dated log + optional goal line on the Home/Stats charts.
-// Two entry paths share one list — type a % directly, or run Jackson–Pollock 3-site
-// calipers (sex-specific sites from S.body, age from S.age). Stored shape:
-//   { d, pct, t, method: 'manual'|'jp3', sites?, age? }
-const SITE_LABEL = {
+// Parallel to body weight: dated log + optional goal on Home/Stats.
+// Three entry paths share one list:
+//   manual — type a %
+//   jp3    — Jackson–Pollock 3-site calipers (sex-specific skinfolds + age)
+//   navy   — U.S. Navy tape (neck/waist[/hip] + height; sex-specific)
+// Stored: { d, pct, t, method, sites?|circ?, age?, heightCm? }
+
+const JP3_SITE_LABEL = {
   chest: 'Chest',
   abdomen: 'Abdomen',
   thigh: 'Thigh',
   triceps: 'Triceps',
   suprailiac: 'Suprailiac',
+}
+const NAVY_CIRC_LABEL = {
+  neck: 'Neck',
+  waist: 'Waist',
+  hip: 'Hip',
 }
 
 function BfPctInput({ value, setValue }) {
@@ -599,15 +608,15 @@ function BfPctInput({ value, setValue }) {
   </>
 }
 
-function MmInput({ label, value, setValue }) {
-  const clamp = x => Math.max(0, Math.min(80, Math.round((x || 0) * 10) / 10))
+function MeasureRow({ label, value, setValue, unit, step = 0.5, min = 0, max = 200 }) {
+  const clamp = x => Math.max(min, Math.min(max, Math.round((x || 0) * 10) / 10))
   return (
     <div className="row between" style={{ padding: '8px 0', borderBottom: '1px solid var(--sep)', gap: 12 }}>
       <span className="small" style={{ fontWeight: 500 }}>{label}</span>
       <div className="row" style={{ gap: 8, alignItems: 'center' }}>
-        <button className="bw-pm" style={{ width: 34, height: 34 }} onClick={() => setValue(clamp(value - 0.5))} aria-label="minus"><Icon name="minus" /></button>
-        <b style={{ minWidth: 52, textAlign: 'center' }}>{fmtNum(value)} <span className="dim small">mm</span></b>
-        <button className="bw-pm" style={{ width: 34, height: 34 }} onClick={() => setValue(clamp(value + 0.5))} aria-label="plus"><Icon name="plus" /></button>
+        <button className="bw-pm" style={{ width: 34, height: 34 }} onClick={() => setValue(clamp(value - step))} aria-label="minus"><Icon name="minus" /></button>
+        <b style={{ minWidth: 64, textAlign: 'center' }}>{fmtNum(value)} <span className="dim small">{unit}</span></b>
+        <button className="bw-pm" style={{ width: 34, height: 34 }} onClick={() => setValue(clamp(value + step))} aria-label="plus"><Icon name="plus" /></button>
       </div>
     </div>
   )
@@ -616,17 +625,45 @@ function MmInput({ label, value, setValue }) {
 function BfSheet({ close }) {
   const st = useStore(s => s.S)
   const bf = lastBF(st)
+  const female = st.body === 'female'
+  const lenUnit = lengthUnitFor(st.unit)
   const [mode, setMode] = useState('jp3')
   const [pct, setPct] = useState(bf ? bf.pct : 20)
   const [age, setAge] = useState(st.age || 40)
+  // Height is stored in cm on the profile; show it in the profile's length unit.
+  const heightStoredCm = st.height > 0 ? st.height : (st.unit === 'lb' ? 70 * 2.54 : 178)
+  const [heightUi, setHeightUi] = useState(() => lenUnit === 'in'
+    ? Math.round((heightStoredCm / 2.54) * 10) / 10
+    : Math.round(heightStoredCm * 10) / 10)
   const siteKeys = jp3SitesFor(st.body)
+  const circKeys = navyCircKeysFor(st.body)
   const [sites, setSites] = useState(() => Object.fromEntries(siteKeys.map(k => [k, (bf && bf.sites && bf.sites[k]) || 15])))
-  const preview = mode === 'jp3' ? jp3BodyFatPct(sites, age, st.body) : clampBodyFatPct(pct)
+  const defaultCirc = lenUnit === 'in'
+    ? { neck: 15, waist: 34, hip: 38 }
+    : { neck: 38, waist: 86, hip: 96 }
+  const [circ, setCirc] = useState(() => Object.fromEntries(circKeys.map(k => [k, (bf && bf.circ && bf.circ[k]) || defaultCirc[k]])))
+
+  // Sex change mid-sheet: rebuild site/circ keys without dropping shared thigh/neck/waist values.
+  useEffect(() => {
+    setSites(prev => Object.fromEntries(jp3SitesFor(st.body).map(k => [k, prev[k] || 15])))
+    setCirc(prev => Object.fromEntries(navyCircKeysFor(st.body).map(k => [k, prev[k] || defaultCirc[k]])))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [st.body, st.unit])
+
+  const preview = mode === 'jp3'
+    ? jp3BodyFatPct(sites, age, st.body)
+    : mode === 'navy'
+      ? navyBodyFatPct(circ, heightUi, st.body, lenUnit)
+      : clampBodyFatPct(pct)
 
   const saveEntry = (n, extra = {}) => {
     update(s => {
       if (!s.bodyfat) s.bodyfat = []
       if (Number.isFinite(age) && age >= 10) s.age = Math.round(age)
+      if (mode === 'navy') {
+        const cm = lenUnit === 'in' ? inToCm(heightUi) : Number(heightUi)
+        if (cm > 0) s.height = Math.round(cm * 10) / 10
+      }
       const iso = todayISO()
       const ex = s.bodyfat.find(b => b.d === iso)
       const row = { d: iso, pct: n, t: Date.now(), ...extra }
@@ -645,6 +682,18 @@ function BfSheet({ close }) {
       saveEntry(n, { method: 'jp3', sites: { ...sites }, age: Math.round(age) })
       return
     }
+    if (mode === 'navy') {
+      const n = navyBodyFatPct(circ, heightUi, st.body, lenUnit)
+      if (n == null) {
+        toast(female
+          ? t('Enter neck, waist, hip and height (waist + hip must exceed neck)')
+          : t('Enter neck, waist and height (waist must exceed neck)'))
+        return
+      }
+      const heightCm = lenUnit === 'in' ? inToCm(heightUi) : Number(heightUi)
+      saveEntry(n, { method: 'navy', circ: { ...circ }, heightCm: Math.round(heightCm * 10) / 10, lengthUnit: lenUnit })
+      return
+    }
     const n = clampBodyFatPct(pct)
     if (n == null) { toast(t('Enter a valid body fat percentage')); return }
     saveEntry(n, { method: 'manual' })
@@ -652,53 +701,78 @@ function BfSheet({ close }) {
 
   const recent = [...(st.bodyfat || [])].reverse().slice(0, 3)
   const delEntry = d => update(s => { s.bodyfat = (s.bodyfat || []).filter(b => b.d !== d) })
+  const methodTag = m => {
+    const label = bodyFatMethodLabel(m)
+    return label ? ' · ' + label : ''
+  }
 
   return <>
     <h3>{t('Log body fat')}</h3>
     <div className="muted small">{t('Today') + ', ' + fmtDate(todayISO(), true)}</div>
     <div style={{ height: 10 }} />
     <Segmented
-      options={[{ value: 'jp3', label: t('Calipers (JP3)') }, { value: 'manual', label: t('Manual %') }]}
+      options={[
+        { value: 'jp3', label: t('JP3') },
+        { value: 'navy', label: t('Navy') },
+        { value: 'manual', label: t('Manual') },
+      ]}
       value={mode}
       onChange={setMode}
     />
-    <div style={{ height: 12 }} />
-    {mode === 'manual' ? (
-      <BfPctInput value={pct} setValue={setPct} />
-    ) : <>
-      <div className="muted small" style={{ marginBottom: 8 }}>
-        {st.body === 'female'
-          ? t('Women: triceps, suprailiac, and thigh skinfolds (mm). Jackson–Pollock 3-site + Siri.')
-          : t('Men: chest, abdomen, and thigh skinfolds (mm). Jackson–Pollock 3-site + Siri.')}
-      </div>
-      <div className="row between" style={{ padding: '8px 0', borderBottom: '1px solid var(--sep)', gap: 12 }}>
-        <span className="small" style={{ fontWeight: 500 }}>{t('Age')}</span>
-        <div className="row" style={{ gap: 8, alignItems: 'center' }}>
-          <button className="bw-pm" style={{ width: 34, height: 34 }} onClick={() => setAge(Math.max(10, (age || 40) - 1))} aria-label="minus age"><Icon name="minus" /></button>
-          <b style={{ minWidth: 40, textAlign: 'center' }}>{Math.round(age || 0)}</b>
-          <button className="bw-pm" style={{ width: 34, height: 34 }} onClick={() => setAge(Math.min(100, (age || 40) + 1))} aria-label="plus age"><Icon name="plus" /></button>
-        </div>
-      </div>
+    <div className="muted small" style={{ marginTop: 8, marginBottom: 4 }}>
+      {mode === 'jp3' && (female
+        ? t('Calipers — Jackson–Pollock 3-site for women: triceps, suprailiac, thigh (mm).')
+        : t('Calipers — Jackson–Pollock 3-site for men: chest, abdomen, thigh (mm).'))}
+      {mode === 'navy' && (female
+        ? t('Tape — U.S. Navy method for women: neck, waist, hip and height.')
+        : t('Tape — U.S. Navy method for men: neck, waist and height.'))}
+      {mode === 'manual' && t('Type a body-fat percentage from any source (DEXA, scale, prior estimate).')}
+    </div>
+    <div style={{ height: 8 }} />
+    {mode === 'manual' && <BfPctInput value={pct} setValue={setPct} />}
+    {mode === 'jp3' && <>
+      <MeasureRow label={t('Age')} value={age} setValue={setAge} unit={t('yr')} step={1} min={10} max={100} />
       {siteKeys.map(k => (
-        <MmInput
+        <MeasureRow
           key={k}
-          label={t(SITE_LABEL[k])}
+          label={t(JP3_SITE_LABEL[k])}
           value={sites[k] || 0}
           setValue={v => setSites(s => ({ ...s, [k]: v }))}
+          unit="mm"
+          step={0.5}
+          min={1}
+          max={80}
         />
       ))}
+    </>}
+    {mode === 'navy' && <>
+      <MeasureRow label={t('Height')} value={heightUi} setValue={setHeightUi} unit={lenUnit} step={0.5} min={lenUnit === 'in' ? 48 : 120} max={lenUnit === 'in' ? 90 : 230} />
+      {circKeys.map(k => (
+        <MeasureRow
+          key={k}
+          label={t(NAVY_CIRC_LABEL[k])}
+          value={circ[k] || 0}
+          setValue={v => setCirc(s => ({ ...s, [k]: v }))}
+          unit={lenUnit}
+          step={0.5}
+          min={lenUnit === 'in' ? 8 : 20}
+          max={lenUnit === 'in' ? 70 : 180}
+        />
+      ))}
+    </>}
+    {(mode === 'jp3' || mode === 'navy') && (
       <div className="row between" style={{ marginTop: 12 }}>
         <span className="muted small">{t('Estimated body fat')}</span>
         <b style={{ fontSize: 22 }}>{preview == null ? '—' : fmtNum(preview) + '%'}</b>
       </div>
-    </>}
+    )}
     <div style={{ height: 14 }} />
     <Button variant="primary" onClick={save} disabled={preview == null}>{t('Save')}</Button>
     {recent.length > 0 && <>
       <h4 className="sec">{t('Recent body-fat logs')}</h4>
       <div className="list" style={{ gap: 0 }}>
         {recent.map(b => <div key={b.d} className="row between" style={{ padding: '9px 2px', borderBottom: '1px solid var(--sep)' }}>
-          <span className="small muted">{fmtDate(b.d, true)}{b.method === 'jp3' ? ' · JP3' : ''}</span>
+          <span className="small muted">{fmtDate(b.d, true)}{methodTag(b.method)}</span>
           <span className="row" style={{ gap: 12 }}><b>{fmtNum(b.pct)}%</b>
             <button className="iconbtn" style={{ width: 32, height: 30, borderRadius: 8, fontSize: 15, color: 'var(--red)' }} onClick={() => delEntry(b.d)} aria-label="delete"><Icon name="trash" /></button></span>
         </div>)}
@@ -737,6 +811,7 @@ function BfGoalSheet({ close }) {
   </>
 }
 export const bfGoalSheet = () => ui().openSheet(close => <BfGoalSheet close={close} />)
+
 
 
 /* ============================ bar weight ============================ */

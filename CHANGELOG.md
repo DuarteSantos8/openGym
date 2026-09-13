@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- 📊 **Body fat tracker**: log body-fat % on Home and Stats with the same curve/goal pattern as body weight. Enter a % directly, or run the Jackson–Pollock 3-site caliper protocol (chest/abdomen/thigh for men; triceps/suprailiac/thigh for women) using the profile body diagram sex and an age field (Settings + log sheet). Formula: JP3 body density → Siri %BF.
+- 📊 **Body fat tracker**: log body-fat % on Home and Stats with the same curve/goal pattern as body weight. Pick a method when logging: **manual %**, **Jackson–Pollock 3-site calipers** (sex-specific sites + age), or **U.S. Navy tape** (neck/waist/height; hip too for women). Profile body diagram sex picks the equations; age and height live in Settings and are reused on the log sheet.
 
 ## v1.3.7 — 2026-09-12
 

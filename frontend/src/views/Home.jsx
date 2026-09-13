@@ -190,7 +190,7 @@ export default function Home() {
           </div>
         )}
         <div className="chart" style={{ marginTop: 8 }}><LineChart points={bfPoints} h={130} unit="%" goal={S.targetBf} /></div>
-      </> : <div className="muted small">{t('No entries yet — log a Jackson–Pollock 3-site caliper reading or type a body-fat %.')}</div>}
+      </> : <div className="muted small">{t('No entries yet — log with JP3 calipers, U.S. Navy tape, or type a body-fat %.')}</div>}
     </div>
 
     <div className="card tappable" style={{ cursor: 'pointer' }} {...tappable(() => calendarSheet())}>
