@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
-  phaseForSet, isWarmupRow, modeForSet, modeForEntry,
+  phaseForSet, isWarmupRow, modeForSet, modeForEntry, normalizeMode,
   setType, isDropSet, isRestPauseSet, dropsOf, clustersOf, extraVolumeOf,
   addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt,
   nextDropWeight, nextBurstReps, splitBurstReps,
@@ -343,5 +343,31 @@ describe('addSideCluster / removeSideClusterAt / setSideClusterAt', () => {
     expect(s.sides.L.clusters).toEqual([])
     expect(s.sides.L.r).toBe(8)                        // back to the base
     expect(s.type).toBeUndefined()
+  })
+})
+
+describe('distance mode inference', () => {
+  it('lists distance among MODES via normalizeMode', () => {
+    expect(normalizeMode('distance')).toBe('distance')
+    expect(normalizeMode('DISTANCE')).toBe('distance')
+  })
+
+  it('infers distance from { sec, m } instead of treating it as timed', () => {
+    expect(modeForSet({ sec: 600, m: 400 })).toBe('distance')
+    // An explicit mode on the parent target still wins (same rule as other modes).
+    expect(modeForSet({ sec: 600, m: 400 }, { mode: 'reps' })).toBe('reps')
+    expect(modeForSet({ sec: 600, m: 400 }, { mode: 'distance' })).toBe('distance')
+  })
+
+  it('still reads a pure timed hold as time', () => {
+    expect(modeForSet({ sec: 45, w: 0 })).toBe('time')
+  })
+
+  it('resolves an entry whose target is distance', () => {
+    const entry = {
+      target: { mode: 'distance', sets: 2, sec: 600, m: 400 },
+      sets: [{ sec: 600, m: 410, done: true }, { sec: 600, m: 400, done: true }],
+    }
+    expect(modeForEntry(entry)).toBe('distance')
   })
 })

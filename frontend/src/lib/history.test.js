@@ -932,6 +932,13 @@ describe('session row helpers', () => {
     expect(insertWarmupRow([{ min: 20, speed: 10, done: false }], 'cardio', { min: 20 }, 2.5)[0])
       .toMatchObject({ min: 20, speed: 10, phase: 'warmup' })
   })
+  it('builds a distance warm-up carrying the planned cap and metres', () => {
+    const next = insertWarmupRow([{ sec: 600, m: 400, done: false }], 'distance', { sec: 600, m: 400 }, 2.5)
+    expect(next).toHaveLength(2)
+    expect(next[0]).toMatchObject({ sec: 600, m: 400, phase: 'warmup', warmup: true, done: false })
+    expect(next[1]).toMatchObject({ sec: 600, m: 400, done: false })
+  })
+
 
   it('removeRowAt never empties an entry below one row', () => {
     expect(removeRowAt([{ w: 60 }], 0).length).toBe(1)
@@ -1262,5 +1269,16 @@ describe('distance metrics', () => {
       ],
     }
     expect(metricModeForEntry(entry)).toBe('distance')
+  })
+})
+
+describe('distance entry rounding (config save path)', () => {
+  it('Math.round(displayToMetres(feet)) stays close when shown again in feet', () => {
+    // Mirrors ExConfig: m: Math.max(1, Math.round(displayToMetres(c.m, unit)) || 400)
+    const enteredFt = 400
+    const storedM = Math.round(displayToMetres(enteredFt, 'lb'))
+    const shownAgain = metresToDisplay(storedM, 'lb')
+    expect(storedM).toBe(122) // 400 / 3.280839895 ≈ 121.92
+    expect(shownAgain).toBe(400.3) // one-decimal ft display after whole-metre store
   })
 })

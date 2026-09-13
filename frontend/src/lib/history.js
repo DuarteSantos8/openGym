@@ -61,11 +61,7 @@ export function fmtSec(sec) {
   return Math.floor(n / 60) + ':' + String(n % 60).padStart(2, '0')
 }
 
-// Distance is stored in metres so the data is unit-neutral — exactly the rule weight and
-// speed already follow: a switch of units changes what is displayed, never what is stored.
-// Display converts to feet only for a lb (imperial) profile, one decimal at the sub-metre
-// scale a carry resolves to (m rounds to whole, ft keeps the decimal because 12 ft of
-// difference between 40 ft and 41 ft is real progress there).
+// Distance is stored in metres (labels-only unit rule, same as weight). lb profiles show feet.
 const M_TO_FT = 3.280839895
 export function fmtDistance(m, unit) {
   const n = Math.max(0, Math.round(Number(m) || 0))
@@ -73,16 +69,12 @@ export function fmtDistance(m, unit) {
     ? fmtNum(Math.round(n * M_TO_FT * 10) / 10) + ' ft'
     : fmtNum(n) + ' m'
 }
-// Entry surfaces call these at the edit boundary so the stored `.m` stays metres whatever the
-// user sees or types — the same labels-only rule weight follows (the unit changes what is
-// shown/entered, never what is written). `metresToDisplay` converts metres to the value a
-// stepper shows (feet rounded to one decimal for a lb profile, whole metres otherwise);
-// `displayToMetres` is its inverse and is applied on save; `distanceUnitLabel` is the label
-// suffix ('ft' vs 'm').
+/** Metres → stepper display value (ft to 1 decimal for lb; whole metres otherwise). */
 export function metresToDisplay(m, unit) {
   const n = Math.max(0, Number(m) || 0)
   return unit === 'lb' ? Math.round(n * M_TO_FT * 10) / 10 : Math.round(n)
 }
+/** Inverse of metresToDisplay — apply on save so `.m` stays metres. */
 export function displayToMetres(d, unit) {
   const n = Math.max(0, Number(d) || 0)
   return unit === 'lb' ? n / M_TO_FT : n
