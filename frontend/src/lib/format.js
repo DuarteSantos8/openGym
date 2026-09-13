@@ -45,6 +45,8 @@ export const fmtNum = n => {
   const p = decimals === 2 ? 100 : 10
   return (Math.round(n * p) / p).toLocaleString(dateLocale(), { maximumFractionDigits: decimals })
 }
+// Plate sizes keep their quarter: 1.25 and 21.25 are real numbers on a plate and a bar.
+export const fmtPlate = n => (Math.round(n * 100) / 100).toLocaleString(dateLocale())
 // Volume stays in the profile's unit throughout: the old shorthand turned anything over
 // 10 000 into "t", which is wrong for a pound profile and made one list mix "18.8t" with
 // "7'535 kg" — two numbers you can't compare at a glance.

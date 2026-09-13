@@ -62,6 +62,15 @@ export const DEF = {
   // lib/bar.js). Personal equipment, so it syncs with the account but never travels in a
   // shared plan. Logged weights stay the total — this only feeds the plate math.
   barWeights: {},
+  // Plate inventory, per unit: { lb: { 45: 1, 35: 1, … }, kg: { … } } — pairs of each size you
+  // own (lib/plates.js). Kept per unit like the bar weight: a 45 lb plate is not a 20.4 kg
+  // one, so a unit switch shows the other unit's inventory instead of converting this one.
+  // Absent for a unit = the standard set, plenty of each. Display only, like barWeights.
+  plates: {},
+  // How an exercise is plate-loaded when the equipment does not say: 'pairs' | 'single' |
+  // 'none', keyed by exercise id (lib/plates.js loadKindFor). A plate-loaded leg press is
+  // 'single'; a barbell you never load plates on is 'none'. Absent = derived from equipment.
+  loadKind: {},
   // Gym check-in cards (see views/CheckIn.jsx). Each is a membership
   // code shown as a QR/barcode at the gym's turnstile — added by typing it, importing a photo
   // of the card, or scanning it. We only ever keep the code's VALUE, never a photo: the image

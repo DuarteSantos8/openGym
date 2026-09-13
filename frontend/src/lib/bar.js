@@ -47,8 +47,9 @@ export const hasBarOverride = (S, exId) => {
 
 /**
  * Effective bar weight for one exercise, in the profile unit: the explicit
- * S.barWeights[exId] if set, else the default for the bar type. null for anything
- * that is not a bar exercise.
+ * S.barWeights[exId] if set — an explicit 0 is "no bar" (a Smith machine whose carriage is
+ * counterbalanced, issue #138) and stays 0 — else the default for the bar type. null for
+ * anything that is not a bar exercise.
  */
 export function barWeightFor(S, exOrId) {
   const ex = exOf(exOrId)
@@ -61,7 +62,8 @@ export function barWeightFor(S, exOrId) {
 
 /**
  * Plates per side: (total − bar) / 2, rounded to 2 decimals. null when there is nothing
- * sensible to show — a missing number, or a total at or below the bar itself.
+ * sensible to show — a missing number, or a total at or below the bar itself. A bar of 0
+ * ("no bar") splits the whole total.
  */
 export function plateSplit(total, bar) {
   // `bar` of 0 is a real answer, not a missing one: with no bar every kilo you logged is on the
