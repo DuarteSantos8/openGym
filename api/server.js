@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import https from 'node:https';
 import dns from 'node:dns';
+import net from 'node:net';
 import sharp from 'sharp';
 import {
   generateRegistrationOptions, verifyRegistrationResponse,
@@ -664,18 +665,33 @@ function oauthClientView(c) {
 function localRedirect(uri) {
   try {
     const u = new URL(uri);
-    return u.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(u.hostname);
+    return u.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(String(u.hostname).toLowerCase());
   } catch { return false; }
+}
+function validRedirectHost(hostname) {
+  const host = String(hostname || '').toLowerCase();
+  if (!host || host.includes('*') || host.includes('_')) return false;
+  const literal = host.startsWith('[') && host.endsWith(']') ? host.slice(1, -1) : host;
+  if (net.isIP(literal)) return true;
+  if (host.length > 253) return false;
+  const labels = host.split('.');
+  return labels.length > 0 && labels.every(label =>
+    label.length > 0 && label.length <= 63 && /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(label)
+  );
 }
 function validRedirect(uri) {
   try {
-    const u = new URL(uri);
-    // A wildcard host is not a registered callback: it would also become an overly broad CSP
-    // source on the consent page. IPv6 loopback is rejected because its bracketed host form is
-    // not consistently matched by browser CSP host-source parsing; localhost/IPv4 remain valid.
-    if (!['https:', 'http:'].includes(u.protocol) || u.username || u.password || u.hash || u.hostname.includes('*') || u.hostname === '[::1]') return false;
+    const raw = String(uri);
+    const u = new URL(raw);
+    const authority = u.href.slice(u.protocol.length + 2).split(/[\/?#]/, 1)[0];
+    const rawAuthority = /^[a-z][a-z\d+.-]*:\/\/([^\/?#]*)/i.exec(raw)?.[1] || '';
+    if (!['https:', 'http:'].includes(u.protocol) || authority.includes('@') || rawAuthority.includes('@') || u.username || u.password || raw.includes('#') || !validRedirectHost(u.hostname)) return false;
     return u.protocol === 'https:' || localRedirect(uri);
   } catch { return false; }
+}
+function validStoredOAuthClient(client) {
+  return !!client && Array.isArray(client.redirectUris) && client.redirectUris.length > 0 && client.redirectUris.length <= 10
+    && client.redirectUris.every(uri => typeof uri === 'string' && uri.length <= 2000 && validRedirect(uri));
 }
 function registrationMetadata(body) {
   const redirectUris = Array.isArray(body?.redirect_uris) ? [...new Set(body.redirect_uris.map(String))] : [];
@@ -2203,6 +2219,7 @@ http.createServer(async (req, res) => {
     if (!MCP_ENABLED) return json(res, 404, { error: 'feature disabled' });
     if (oauthClientsError) return storageFailure(res, oauthClientsError);
     const client = oauthClients.clients.find(c => c.clientId === oauthClientMatch[1]);
+    if (client && !validStoredOAuthClient(client)) return json(res, 404, { error: 'unknown client' });
     if (client) {
       client.lastUsedAt = new Date().toISOString();
       try { saveOAuthClients(); } catch { /* metadata reads remain available if the journal is full */ }

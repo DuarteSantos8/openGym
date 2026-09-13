@@ -3,6 +3,7 @@
    bearer grant and reads/writes only through the openGym API. */
 import http from 'node:http'
 import crypto from 'node:crypto'
+import net from 'node:net'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
 import { z } from 'zod'
@@ -48,6 +49,20 @@ function htmlResponse(res, status, body, { formActionOrigin = '' } = {}) {
   res.writeHead(status, {
     'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store',
     'Content-Security-Policy': `default-src 'none'; form-action ${formAction}; style-src 'unsafe-inline'`
+  })
+  res.end(body)
+}
+
+const RELAY_CSP = "default-src 'none'; form-action 'self'; base-uri 'none'; style-src 'unsafe-inline'"
+
+function oauthRelayResponse(res, location) {
+  const escapedLocation = htmlEscape(location)
+  const body = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta http-equiv="refresh" content="0;url=${escapedLocation}"><title>Returning to the requesting client</title><style>
+    :root { color-scheme: light; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #202124; background: #f7f7f5; } * { box-sizing: border-box; } body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 16px; background: #f7f7f5; } .oauth-card { width: min(100%, 520px); padding: clamp(24px, 6vw, 42px); border: 1px solid #deded8; border-radius: 16px; background: #fff; box-shadow: 0 14px 40px rgba(32, 33, 36, .10); } h1 { margin: 0 0 14px; font-size: 1.7rem; overflow-wrap: anywhere; } p { line-height: 1.5; color: #4b4f52; } a { display: inline-flex; align-items: center; min-height: 44px; margin-top: 10px; padding: 10px 16px; border-radius: 9px; background: #164e63; color: #fff; font-weight: 750; text-decoration: none; } a:focus-visible { outline: 3px solid #164e63; outline-offset: 2px; }
+  </style></head><body><main class="oauth-card" role="status"><h1>Authorization complete</h1><p>Continue to the requesting client.</p><a href="${escapedLocation}">Continue to the requesting client</a></main></body></html>`
+  res.writeHead(200, {
+    'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store',
+    'Content-Security-Policy': RELAY_CSP, 'Referrer-Policy': 'no-referrer'
   })
   res.end(body)
 }
@@ -165,7 +180,8 @@ async function authorizationRequest(url) {
     const error = new Error('invalid code challenge'); error.status = 400; throw error
   }
   const client = await oauthClient(clientId)
-  if (!client || (client.client_expires_at && client.client_expires_at <= Math.floor(Date.now() / 1000)) || !Array.isArray(client.redirect_uris) || !client.redirect_uris.includes(redirectUri)) {
+  const callback = callbackInfo(redirectUri)
+  if (!client || (client.client_expires_at && client.client_expires_at <= Math.floor(Date.now() / 1000)) || !Array.isArray(client.redirect_uris) || !client.redirect_uris.includes(redirectUri) || !callback) {
     const error = new Error('unknown client or redirect_uri'); error.status = 400; throw error
   }
   const requested = formScope(p.get('scope') || client.scope)
@@ -173,7 +189,7 @@ async function authorizationRequest(url) {
   if (!registered.length || !requested.length || requested.some(scope => !OAUTH_SCOPES.includes(scope) || !registered.includes(scope))) {
     const error = new Error('invalid scope'); error.status = 400; throw error
   }
-  return { client, clientId, redirectUri, challenge, method, resource, state, requested }
+  return { client, clientId, redirectUri, callback, challenge, method, resource, state, requested }
 }
 
 async function readFormBody(req) {
@@ -422,11 +438,34 @@ const scopeCopy = {
   'routine:propose': ['Propose routines for your review', 'Save routine drafts for you to review in OpenGym.']
 }
 
-function callbackOrigin(redirectUri) {
+function validCallbackHost(hostname) {
+  const host = String(hostname || '').toLowerCase()
+  if (!host || host.includes('*') || host.includes('_')) return false
+  const literal = host.startsWith('[') && host.endsWith(']') ? host.slice(1, -1) : host
+  if (net.isIP(literal)) return true
+  if (host.length > 253) return false
+  return host.split('.').every(label => label.length > 0 && label.length <= 63 && /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(label))
+}
+
+function callbackInfo(redirectUri) {
   try {
-    const origin = new URL(redirectUri).origin
-    return origin === 'null' ? '' : origin
-  } catch { return '' }
+    const raw = String(redirectUri)
+    const url = new URL(raw)
+    const host = String(url.hostname || '').toLowerCase()
+    const literal = host.startsWith('[') && host.endsWith(']') ? host.slice(1, -1) : host
+    const ipVersion = net.isIP(literal)
+    const authority = url.href.slice(url.protocol.length + 2).split(/[\/?#]/, 1)[0]
+    const rawAuthority = /^[a-z][a-z\d+.-]*:\/\/([^\/?#]*)/i.exec(raw)?.[1] || ''
+    if (!['https:', 'http:'].includes(url.protocol) || authority.includes('@') || rawAuthority.includes('@') || url.username || url.password || raw.includes('#') || !validCallbackHost(host)) return null
+    if (url.protocol === 'http:' && !['localhost', '127.0.0.1', '[::1]'].includes(host)) return null
+    if (url.origin === 'null') return null
+    const relay = ipVersion === 6 || (ipVersion === 4 && url.protocol === 'https:' && host !== '127.0.0.1')
+    return { origin: relay ? '' : url.origin, relay }
+  } catch { return null }
+}
+
+function callbackOrigin(redirectUri) {
+  return callbackInfo(redirectUri)?.origin || ''
 }
 
 function authorizeForm(data, csrf, user) {
@@ -563,6 +602,7 @@ function oauthFormHash(form) {
 
 function oauthResultResponse(req, res, result) {
   if (result?.status === 302) {
+    if (result.relay) return oauthRelayResponse(res, result.location)
     res.writeHead(302, { Location: result.location, 'Cache-Control': 'no-store' })
     return res.end()
   }
@@ -643,7 +683,7 @@ async function handleOAuthAuthorizePost(req, res) {
     const redirect = new URL(data.redirectUri)
     redirect.searchParams.set('error', 'access_denied')
     if (data.state) redirect.searchParams.set('state', data.state)
-    return finish({ status: 302, location: redirect.toString() })
+    return finish({ status: 302, location: redirect.toString(), relay: !!data.callback?.relay })
   }
   let grant
   try {
@@ -666,7 +706,7 @@ async function handleOAuthAuthorizePost(req, res) {
   const redirect = new URL(data.redirectUri)
   redirect.searchParams.set('code', code)
   if (data.state) redirect.searchParams.set('state', data.state)
-  return finish({ status: 302, location: redirect.toString() })
+  return finish({ status: 302, location: redirect.toString(), relay: !!data.callback?.relay })
 }
 
 async function handleOAuthToken(req, res) {

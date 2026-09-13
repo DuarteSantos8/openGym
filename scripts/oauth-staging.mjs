@@ -25,6 +25,15 @@ writeJson('db.json', { users: [{ id: uid, name: 'OAuth staging <svg/onload=alert
 writeJson(`state-${uid}.json`, state)
 writeJson(`state-${otherUid}.json`, { unit: 'kg', routines: [], workouts: [], customEx: [] })
 fs.writeFileSync(path.join(dataDir, 'secret'), secret, { mode: 0o600 })
+const legacyClientId = 'legacy-wildcard-client'
+writeJson('oauth-clients.json', {
+  clients: [{
+    clientId: legacyClientId, clientName: 'Legacy wildcard fixture',
+    redirectUris: ['https://*.legacy.example.test/callback'],
+    grantTypes: ['authorization_code'], responseTypes: ['code'], tokenEndpointAuthMethod: 'none',
+    scope: 'exercise:read', createdAt: new Date().toISOString()
+  }]
+})
 
 const session = (() => {
   const payload = `${uid}:${Date.now() + 3600000}:0`
@@ -201,6 +210,29 @@ try {
   const stored = status(await request(apiBase, `/api/oauth/clients/${registration.client_id}`), 200, 'stored client metadata').data
   assert.equal(stored.client_id, registration.client_id)
 
+  // A pre-fix persisted client must fail closed at both retrieval and authorization. The raw
+  // record remains untouched so an operator can repair it deliberately instead of losing data.
+  const legacyFile = path.join(dataDir, 'oauth-clients.json')
+  const legacyBefore = fs.readFileSync(legacyFile, 'utf8')
+  const legacyLookup = await request(apiBase, `/api/oauth/clients/${legacyClientId}`)
+  assert.equal(legacyLookup.response.status, 404)
+  assert.equal(fs.readFileSync(legacyFile, 'utf8'), legacyBefore)
+  const legacyChallenge = hashVerifier(crypto.randomBytes(32).toString('base64url'))
+  const legacyQuery = new URLSearchParams({
+    response_type: 'code', client_id: legacyClientId, redirect_uri: 'https://*.legacy.example.test/callback',
+    scope: 'exercise:read', code_challenge: legacyChallenge, code_challenge_method: 'S256', resource,
+    state: 'legacy-wildcard-state'
+  })
+  const legacyAuthorize = await fetch(mcpBase + `/oauth/authorize?${legacyQuery}`, {
+    headers: { Cookie: `gymsid=${session}`, Accept: 'text/html' }
+  })
+  const legacyAuthorizeBody = await legacyAuthorize.text()
+  assert.equal(legacyAuthorize.status, 400)
+  assert.match(legacyAuthorize.headers.get('content-type') || '', /application\/json/)
+  assert.doesNotMatch(legacyAuthorizeBody, /<form|form-action|legacy\.example\.test/)
+  print('oauth_legacy_invalid_client_lookup_fail_closed', { status: 404, persisted_record_unchanged: true })
+  print('oauth_legacy_wildcard_authorization_blocked', 400)
+
   const wildcardRedirect = await request(mcpBase, '/oauth/register', dcrBody({
     client_name: 'Wildcard redirect fixture', redirect_uris: ['https://*.example.test/callback'],
     grant_types: ['authorization_code'], response_types: ['code'], token_endpoint_auth_method: 'none', scope: 'exercise:read'
@@ -208,13 +240,29 @@ try {
   assert.equal(wildcardRedirect.response.status, 400)
   assert.equal(wildcardRedirect.data.error, 'invalid_redirect_uris')
   print('oauth_wildcard_redirect_rejected', 400)
+  for (const [label, redirectUri, address] of [
+    ['underscore', 'https://bad_name.example.test/callback', '198.51.100.25'],
+    ['credentials', 'https://user:pass@example.test/callback', '198.51.100.26'],
+    ['fragment', 'https://fragment.example.test/callback#oauth', '198.51.100.27'],
+    ['empty_credentials', 'https://@empty-credentials.example.test/callback', '198.51.100.30'],
+    ['empty_fragment', 'https://empty-fragment.example.test/callback#', '198.51.100.31'],
+    ['invalid_host', 'https://-bad.example.test/callback', '198.51.100.28']
+  ]) {
+    const invalidRedirect = await request(mcpBase, '/oauth/register', dcrBody({
+      client_name: `${label} redirect fixture`, redirect_uris: [redirectUri],
+      grant_types: ['authorization_code'], response_types: ['code'], token_endpoint_auth_method: 'none', scope: 'exercise:read'
+    }, { 'X-Forwarded-For': address }))
+    assert.equal(invalidRedirect.response.status, 400)
+    assert.equal(invalidRedirect.data.error, 'invalid_redirect_uris')
+    print(`oauth_${label}_redirect_rejected`, 400)
+  }
   const ipv6Redirect = await request(mcpBase, '/oauth/register', dcrBody({
     client_name: 'IPv6 loopback fixture', redirect_uris: ['http://[::1]:49152/callback'],
     grant_types: ['authorization_code'], response_types: ['code'], token_endpoint_auth_method: 'none', scope: 'exercise:read'
   }, { 'X-Forwarded-For': '198.51.100.21' }))
-  assert.equal(ipv6Redirect.response.status, 400)
-  assert.equal(ipv6Redirect.data.error, 'invalid_redirect_uris')
-  print('oauth_ipv6_loopback_redirect_rejected', 400)
+  assert.equal(ipv6Redirect.response.status, 201)
+  assert.deepEqual(ipv6Redirect.data.redirect_uris, ['http://[::1]:49152/callback'])
+  print('oauth_ipv6_loopback_redirect_retained', 201)
   const localhostRedirect = status(await request(mcpBase, '/oauth/register', dcrBody({
     client_name: 'Localhost redirect fixture', redirect_uris: ['http://localhost:49152/callback'],
     grant_types: ['authorization_code'], response_types: ['code'], token_endpoint_auth_method: 'none', scope: 'exercise:read'
@@ -481,6 +529,8 @@ try {
     headers: { Cookie: `gymsid=${session}`, 'Content-Type': 'application/x-www-form-urlencoded' }, redirect: 'manual'
   })
   assert.equal(authorization.status, 302)
+  assert.equal(authorization.headers.get('content-security-policy'), null)
+  assert.equal(authorization.headers.get('referrer-policy'), null)
   const location = authorization.headers.get('location')
   assert.ok(location)
   const redirect = new URL(location)
@@ -488,6 +538,125 @@ try {
   const code = redirect.searchParams.get('code')
   assert.ok(code)
   print('oauth_pkce_authorization_consent', 'PASS')
+
+  // IPv6 loopback is valid for native RFC 8252 clients but cannot be represented as a CSP
+  // host-source. Keep the consent POST same-origin and finish with a no-script relay page.
+  const ipv6Verifier = crypto.randomBytes(32).toString('base64url')
+  const ipv6Challenge = hashVerifier(ipv6Verifier)
+  const ipv6RedirectUri = ipv6Redirect.data.redirect_uris[0]
+  const ipv6AllowQuery = new URLSearchParams({
+    response_type: 'code', client_id: ipv6Redirect.data.client_id, redirect_uri: ipv6RedirectUri,
+    scope: 'exercise:read', code_challenge: ipv6Challenge, code_challenge_method: 'S256', resource,
+    state: 'oauth-ipv6-allow'
+  })
+  const ipv6Consent = await fetch(mcpBase + `/oauth/authorize?${ipv6AllowQuery}`, { headers: { Cookie: `gymsid=${session}` } })
+  const ipv6ConsentHtml = await ipv6Consent.text()
+  assert.equal(ipv6Consent.status, 200)
+  const ipv6ConsentCsp = ipv6Consent.headers.get('content-security-policy') || ''
+  assert.equal(ipv6ConsentCsp, "default-src 'none'; form-action 'self'; style-src 'unsafe-inline'")
+  assert.doesNotMatch(ipv6ConsentCsp, /::1|\*/)
+  const ipv6Csrf = /name="csrf" value="([^"]+)"/.exec(ipv6ConsentHtml)?.[1]
+  assert.ok(ipv6Csrf)
+  const ipv6AllowForm = {
+    csrf: ipv6Csrf, client_id: ipv6Redirect.data.client_id, redirect_uri: ipv6RedirectUri, response_type: 'code',
+    code_challenge: ipv6Challenge, code_challenge_method: 'S256', resource, state: 'oauth-ipv6-allow',
+    scope: 'exercise:read', decision: 'allow'
+  }
+  const ipv6Allow = await fetch(mcpBase + '/oauth/authorize', {
+    ...formBody(ipv6AllowForm), headers: { Cookie: `gymsid=${session}`, Accept: 'text/html', 'Content-Type': 'application/x-www-form-urlencoded' }, redirect: 'manual'
+  })
+  const ipv6RelayHtml = await ipv6Allow.text()
+  const relayCsp = "default-src 'none'; form-action 'self'; base-uri 'none'; style-src 'unsafe-inline'"
+  assert.equal(ipv6Allow.status, 200)
+  assert.equal(ipv6Allow.headers.get('content-security-policy'), relayCsp)
+  assert.equal(ipv6Allow.headers.get('referrer-policy'), 'no-referrer')
+  assert.match(ipv6RelayHtml, /<meta[^>]+http-equiv="refresh"[^>]+content="0;url=http:\/\/\[::1\]:49152\/callback\?code=[A-Za-z0-9_-]+&amp;state=oauth-ipv6-allow"/i)
+  assert.match(ipv6RelayHtml, /href="http:\/\/\[::1\]:49152\/callback\?code=[A-Za-z0-9_-]+&amp;state=oauth-ipv6-allow"/)
+  assert.match(ipv6RelayHtml, /Continue to the requesting client/i)
+  assert.doesNotMatch(ipv6RelayHtml, /<script|access_token|client_secret|code_verifier|tokenHash/i)
+  const ipv6Code = /callback\?code=([A-Za-z0-9_-]+)/.exec(ipv6RelayHtml)?.[1]
+  assert.ok(ipv6Code)
+  const ipv6AllowRetry = await fetch(mcpBase + '/oauth/authorize', {
+    ...formBody(ipv6AllowForm), headers: { Cookie: `gymsid=${session}`, Accept: 'text/html', 'Content-Type': 'application/x-www-form-urlencoded' }, redirect: 'manual'
+  })
+  const ipv6RelayRetryHtml = await ipv6AllowRetry.text()
+  assert.equal(ipv6AllowRetry.status, 200)
+  assert.equal(ipv6RelayRetryHtml, ipv6RelayHtml)
+  assert.equal(ipv6AllowRetry.headers.get('content-security-policy'), relayCsp)
+  print('oauth_ipv6_allow_relay', { status: 200, csp: relayCsp, referrer_policy: 'no-referrer', same_retry: true, code_present: true })
+
+  const ipv6Token = status(await request(mcpBase, '/oauth/token', formBody({
+    grant_type: 'authorization_code', code: ipv6Code, client_id: ipv6Redirect.data.client_id,
+    redirect_uri: ipv6RedirectUri, resource, code_verifier: ipv6Verifier
+  })), 200, 'IPv6 relay authorization-code token').data
+  assert.equal(ipv6Token.resource, resource)
+  assert.equal(ipv6Token.scope, 'exercise:read')
+  print('oauth_ipv6_relay_code_exchange', 'PASS')
+
+  const ipv6DenyVerifier = crypto.randomBytes(32).toString('base64url')
+  const ipv6DenyChallenge = hashVerifier(ipv6DenyVerifier)
+  const ipv6DenyQuery = new URLSearchParams({
+    response_type: 'code', client_id: ipv6Redirect.data.client_id, redirect_uri: ipv6RedirectUri,
+    scope: 'exercise:read', code_challenge: ipv6DenyChallenge, code_challenge_method: 'S256', resource,
+    state: 'oauth-ipv6-deny'
+  })
+  const ipv6DenyConsent = await fetch(mcpBase + `/oauth/authorize?${ipv6DenyQuery}`, { headers: { Cookie: `gymsid=${session}` } })
+  const ipv6DenyHtml = await ipv6DenyConsent.text()
+  const ipv6DenyCsrf = /name="csrf" value="([^"]+)"/.exec(ipv6DenyHtml)?.[1]
+  assert.equal(ipv6DenyConsent.status, 200)
+  assert.ok(ipv6DenyCsrf)
+  const grantsBeforeIpv6Deny = status(await request(apiBase, '/api/mcp/grants', { headers: { Cookie: `gymsid=${session}` } }), 200, 'grants before IPv6 denial').data.grants.length
+  const ipv6DenyForm = {
+    csrf: ipv6DenyCsrf, client_id: ipv6Redirect.data.client_id, redirect_uri: ipv6RedirectUri, response_type: 'code',
+    code_challenge: ipv6DenyChallenge, code_challenge_method: 'S256', resource, state: 'oauth-ipv6-deny',
+    scope: 'exercise:read', decision: 'deny'
+  }
+  const ipv6Deny = await fetch(mcpBase + '/oauth/authorize', {
+    ...formBody(ipv6DenyForm), headers: { Cookie: `gymsid=${session}`, Accept: 'text/html', 'Content-Type': 'application/x-www-form-urlencoded' }, redirect: 'manual'
+  })
+  const ipv6DenyRelayHtml = await ipv6Deny.text()
+  assert.equal(ipv6Deny.status, 200)
+  assert.equal(ipv6Deny.headers.get('content-security-policy'), relayCsp)
+  assert.equal(ipv6Deny.headers.get('referrer-policy'), 'no-referrer')
+  assert.match(ipv6DenyRelayHtml, /error=access_denied&amp;state=oauth-ipv6-deny/)
+  assert.doesNotMatch(ipv6DenyRelayHtml, /[?&]code=|access_token|client_secret|code_verifier/i)
+  const grantsAfterIpv6Deny = status(await request(apiBase, '/api/mcp/grants', { headers: { Cookie: `gymsid=${session}` } }), 200, 'grants after IPv6 denial').data.grants.length
+  assert.equal(grantsAfterIpv6Deny, grantsBeforeIpv6Deny)
+  const ipv6DenyRetry = await fetch(mcpBase + '/oauth/authorize', {
+    ...formBody(ipv6DenyForm), headers: { Cookie: `gymsid=${session}`, Accept: 'text/html', 'Content-Type': 'application/x-www-form-urlencoded' }, redirect: 'manual'
+  })
+  const ipv6DenyRetryHtml = await ipv6DenyRetry.text()
+  assert.equal(ipv6DenyRetry.status, 200)
+  assert.equal(ipv6DenyRetryHtml, ipv6DenyRelayHtml)
+  print('oauth_ipv6_deny_relay', { status: 200, access_denied: true, no_grant: true, same_retry: true })
+
+  const httpsIpRegistration = status(await request(mcpBase, '/oauth/register', dcrBody({
+    client_name: 'HTTPS IP relay fixture', redirect_uris: ['https://192.0.2.44/callback'],
+    grant_types: ['authorization_code'], response_types: ['code'], token_endpoint_auth_method: 'none', scope: 'exercise:read'
+  }, { 'X-Forwarded-For': '198.51.100.29' })), 201, 'HTTPS IP relay fixture').data
+  const httpsIpVerifier = crypto.randomBytes(32).toString('base64url')
+  const httpsIpChallenge = hashVerifier(httpsIpVerifier)
+  const httpsIpQuery = new URLSearchParams({
+    response_type: 'code', client_id: httpsIpRegistration.client_id, redirect_uri: httpsIpRegistration.redirect_uris[0],
+    scope: 'exercise:read', code_challenge: httpsIpChallenge, code_challenge_method: 'S256', resource, state: 'oauth-https-ip'
+  })
+  const httpsIpConsent = await fetch(mcpBase + `/oauth/authorize?${httpsIpQuery}`, { headers: { Cookie: `gymsid=${session}` } })
+  const httpsIpConsentHtml = await httpsIpConsent.text()
+  assert.equal(httpsIpConsent.status, 200)
+  assert.equal(httpsIpConsent.headers.get('content-security-policy'), "default-src 'none'; form-action 'self'; style-src 'unsafe-inline'")
+  assert.doesNotMatch(httpsIpConsent.headers.get('content-security-policy') || '', /192\.0\.2\.44|\*/)
+  const httpsIpCsrf = /name="csrf" value="([^"]+)"/.exec(httpsIpConsentHtml)?.[1]
+  assert.ok(httpsIpCsrf)
+  const httpsIpAllow = await fetch(mcpBase + '/oauth/authorize', {
+    ...formBody({ csrf: httpsIpCsrf, client_id: httpsIpRegistration.client_id, redirect_uri: httpsIpRegistration.redirect_uris[0], response_type: 'code', code_challenge: httpsIpChallenge, code_challenge_method: 'S256', resource, state: 'oauth-https-ip', scope: 'exercise:read', decision: 'allow' }),
+    headers: { Cookie: `gymsid=${session}`, Accept: 'text/html', 'Content-Type': 'application/x-www-form-urlencoded' }, redirect: 'manual'
+  })
+  const httpsIpRelayHtml = await httpsIpAllow.text()
+  assert.equal(httpsIpAllow.status, 200)
+  assert.equal(httpsIpAllow.headers.get('content-security-policy'), relayCsp)
+  assert.equal(httpsIpAllow.headers.get('referrer-policy'), 'no-referrer')
+  assert.match(httpsIpRelayHtml, /https:\/\/192\.0\.2\.44\/callback\?code=[A-Za-z0-9_-]+&amp;state=oauth-https-ip/)
+  print('oauth_https_ip_relay', { status: 200, csp: relayCsp, referrer_policy: 'no-referrer' })
 
   const conflictingDecision = await fetch(mcpBase + '/oauth/authorize', {
     ...formBody({ csrf, client_id: registration.client_id, redirect_uri: registration.redirect_uris[0], response_type: 'code', code_challenge: challenge, code_challenge_method: 'S256', resource, state: 'oauth-state-1', scope: ['exercise:read', 'routine:read', 'progress:read', 'bodyweight:read'], decision: 'deny' }),
