@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { EXIDX, matchExercise } from '../lib/exercises.js'
-import { lastBW, streakWeeks, setLabel, modeOf, effortOf, metricModeForEntry, metricRowsForEntry, bestWeightForEntry } from '../lib/history.js'
+import { lastBW, streakWeeks, setLabel, modeOf, effortOf, metricModeForEntry, metricRowsForEntry, bestWeightForEntry, metresToDisplay, distanceUnitLabel } from '../lib/history.js'
 import { fmtNum, fmtDate, fmtVol, todayISO, weekStartOf } from '../lib/format.js'
 import { t, exerciseNameFor, getLang } from '../lib/i18n.js'
 import { bwSheet, goalSheet, calendarSheet, workoutDetailSheet, WorkoutRow, bwDeltaColor } from '../sheets.jsx'
@@ -341,7 +341,7 @@ export default function Stats() {
       const mx = mode === 'reps' ? bestWeightForEntry(en) : Math.max(0, ...rows.map(metric))
       // Distance is stored in metres and shown in the profile's unit (see fmtDistance) —
       // the headline number converts with it so the label never lies about the value.
-      if (mx > 0) return { mx: mode === 'distance' && S.unit === 'lb' ? Math.round(mx * 3.280839895 * 10) / 10 : mx, unit: mode === 'cardio' ? 'km/h' : mode === 'distance' ? (S.unit === 'lb' ? 'ft' : 'm') : mode === 'time' ? 's' : S.unit }
+      if (mx > 0) return { mx: mode === 'distance' ? metresToDisplay(mx, S.unit) : mx, unit: mode === 'cardio' ? 'km/h' : mode === 'distance' ? distanceUnitLabel(S.unit) : mode === 'time' ? 's' : S.unit }
       // Unloaded reps work still has a current figure — its rep count. Without this the whole
       // picker label went blank and the exercise sorted to the bottom as if it had no history.
       if (mode === 'reps') {
@@ -383,7 +383,7 @@ export default function Stats() {
   const metric = s => curCardio ? (s.speed || 0) : curDist ? (s.m || 0) : curTimed ? (s.sec || 0) : (s.w || 0)
   // Distance converts at display time like the headline above — metres stored, feet shown.
   const exUnit = curCardio ? 'km/h' : curDist ? (S.unit === 'lb' ? 'ft' : 'm') : curTimed ? 's' : repsOnly ? t('reps') : S.unit
-  const toExUnit = v => curDist && S.unit === 'lb' ? Math.round(v * 3.280839895 * 10) / 10 : v
+  const toExUnit = v => curDist ? metresToDisplay(v, S.unit) : v
   let exPts = [], exList = [], exBest = 0
   if (curEx) {
     workouts.forEach(w => {

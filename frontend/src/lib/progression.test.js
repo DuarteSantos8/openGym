@@ -894,4 +894,11 @@ describe('distance progression', () => {
     expect(out[0].m).toBe(410)
     expect(out[0].sec).toBe(600)        // cap untouched
   })
+
+  it('deloads after repeated misses at the same distance', () => {
+    const misses = distHist([[400, 380], [400, 350], [400, 360], [400, 370]])
+    const p = nextPrescription({ unit: 'kg', ...misses }, cfg)
+    expect(p.kind).toBe('deload')
+    expect(p.m).toBeLessThan(400)
+  })
 })

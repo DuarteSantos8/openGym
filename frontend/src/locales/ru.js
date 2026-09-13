@@ -1241,4 +1241,12 @@ export default {
   'already added': 'уже добавлено',
   'no exercises': 'нет упражнений',
   'Pick equipment': 'Выбрать оборудование',
+
+  // --- distance logging mode ---
+  'Distance ({0})': 'Дистанция ({0})',
+  'Add distance': 'Увеличить дистанцию',
+  'Cover the target distance inside the cap in every set and the distance goes up — the cap stays where it is.': 'Закрой целевую дистанцию в лимите в каждом подходе — дистанция растёт, лимит тот же.',
+  'Covered the distance in every set — go for {0} this time.': 'Дистанция в каждом подходе — в этот раз {0}.',
+  'Fell short {0} sessions in a row — back off to {1} and build up again.': 'Не хватило {0} тренировок подряд — назад к {1} и снова вверх.',
+  'Last time came up short — same distance again inside the cap.': 'В прошлый раз не хватило — та же дистанция в лимите.',
 }

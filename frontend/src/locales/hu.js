@@ -1239,4 +1239,17 @@ export default {
   'already added': 'már hozzáadva',
   'no exercises': 'nincs gyakorlat',
   'Pick equipment': 'Eszköz kiválasztása',
+
+  // --- distance logging mode ---
+  'Distance ({0})': 'Táv ({0})',
+  'Add distance': 'Táv növelése',
+  'Cover the target distance inside the cap in every set and the distance goes up — the cap stays where it is.': 'Ha minden szettben megvan a céltáv az időkereten belül, nő a táv — a keret marad.',
+  'Covered the distance in every set — go for {0} this time.': 'Minden szettben megvolt a táv — most {0}.',
+  'Fell short {0} sessions in a row — back off to {1} and build up again.': '{0} edzés egymás után nem sikerült — vissza {1}-re, majd újra fel.',
+  'Last time came up short — same distance again inside the cap.': 'Legutóbb nem jött össze — ugyanaz a táv az időkereten belül.',
+  'Distance': 'Táv',
+  'Time cap': 'Időkeret',
+  'Distance (m)': 'Táv (m)',
+  'Farthest distance per workout': 'Leghosszabb táv edzésenként',
+  'Step (m)': 'Lépés (m)',
 }

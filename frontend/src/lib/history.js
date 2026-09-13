@@ -738,7 +738,7 @@ export function workSetsDone(w) {
   )
 }
 
-const METRIC_MODES = ['reps', 'time', 'cardio']
+const METRIC_MODES = ['reps', 'time', 'cardio', 'distance']
 const completedRowsForMode = (entry, mode) => workRowsForMode(entry, mode).filter(s => s.done === true && !isWarmupRow(s))
 
 export function metricRowsForEntry(entry, mode) {

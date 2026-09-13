@@ -1241,4 +1241,12 @@ export default {
   'already added': 'ya añadido',
   'no exercises': 'sin ejercicios',
   'Pick equipment': 'Elegir equipamiento',
+
+  // --- distance logging mode ---
+  'Distance ({0})': 'Distancia ({0})',
+  'Add distance': 'Añadir distancia',
+  'Cover the target distance inside the cap in every set and the distance goes up — the cap stays where it is.': 'Si cubres la distancia objetivo dentro del límite en cada serie, la distancia sube — el límite se queda.',
+  'Covered the distance in every set — go for {0} this time.': 'Distancia cubierta en cada serie — esta vez {0}.',
+  'Fell short {0} sessions in a row — back off to {1} and build up again.': 'Fallaste {0} sesiones seguidas — baja a {1} y vuelve a subir.',
+  'Last time came up short — same distance again inside the cap.': 'La última vez te faltó — misma distancia dentro del límite.',
 }

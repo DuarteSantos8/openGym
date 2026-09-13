@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { nextTrainingDay, modeOf, isTimed, fmtSec, setLabel, defaultConfig, buildSets, freestyleConfig, exLine, workoutVolume, bestWeightFor, bestWeightForEntry, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, removeRowAt, workSetsDone, setsDone, setsDoneActive, setUnits, doneUnits, setUnitsTotal, pairAdjacent, unpairSuperset, supersetUnits, applyIntensifierPlan, pinnedNoteFor, exNoteFor, effectiveRoutineIds, effectiveRoutines, effectiveRoutineId, effectiveRoutine, lastEntryFor, entryExcluded, fmtDistance, metresToDisplay, displayToMetres, distanceUnitLabel } from './history.js'
+import { nextTrainingDay, modeOf, isTimed, fmtSec, setLabel, defaultConfig, buildSets, freestyleConfig, exLine, workoutVolume, bestWeightFor, bestWeightForEntry, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, removeRowAt, workSetsDone, setsDone, setsDoneActive, setUnits, doneUnits, setUnitsTotal, pairAdjacent, unpairSuperset, supersetUnits, applyIntensifierPlan, pinnedNoteFor, exNoteFor, effectiveRoutineIds, effectiveRoutines, effectiveRoutineId, effectiveRoutine, lastEntryFor, entryExcluded, fmtDistance, metresToDisplay, displayToMetres, distanceUnitLabel, metricModeForEntry} from './history.js'
 import { makeSideSet, setSideField, toggleSide } from './workout-model.js'
 import { EXDB } from './exercises.js'
 
@@ -1249,5 +1249,18 @@ describe('per-side volume and legacy timed sets (QA round 2026-09-12)', () => {
     expect(setLabel('0001', { sec: 45, done: true })).toBe('0:45')
     expect(setLabel('0001', { min: 20, speed: 8, done: true })).toBe('20 min @ 8 km/h')
     expect(setLabel('0025', { w: 60, r: 10, done: true })).toBe('60×10')
+  })
+})
+
+describe('distance metrics', () => {
+  it('prefers distance when completed rows carry metres', () => {
+    const entry = {
+      target: { mode: 'distance', sets: 2, sec: 600, m: 400 },
+      sets: [
+        { sec: 600, m: 410, done: true },
+        { sec: 600, m: 400, done: true },
+      ],
+    }
+    expect(metricModeForEntry(entry)).toBe('distance')
   })
 })

@@ -678,6 +678,13 @@ export const PT_BR_OVERRIDES = {
   'Distance (m)': 'Distância (m)',
   'Farthest distance per workout': 'Maior distância por treino',
   'Step (m)': 'Passo (m)',
+  'Distance ({0})': 'Distância ({0})',
+  'Add distance': 'Aumentar distância',
+  'Cover the target distance inside the cap in every set and the distance goes up — the cap stays where it is.': 'Cubra a distância alvo dentro do limite em cada série e a distância sobe — o limite fica.',
+  'Covered the distance in every set — go for {0} this time.': 'Distância coberta em cada série — desta vez {0}.',
+  'Fell short {0} sessions in a row — back off to {1} and build up again.': 'Falhou {0} sessões seguidas — volte a {1} e suba de novo.',
+  'Last time came up short — same distance again inside the cap.': 'Da última vez faltou — mesma distância no limite.',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
+

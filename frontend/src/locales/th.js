@@ -1247,4 +1247,17 @@ export default {
   'already added': 'เพิ่มแล้ว',
   'no exercises': 'ไม่มีท่าออกกำลังกาย',
   'Pick equipment': 'เลือกอุปกรณ์',
+
+  // --- distance logging mode ---
+  'Distance ({0})': 'ระยะทาง ({0})',
+  'Add distance': 'เพิ่มระยะทาง',
+  'Cover the target distance inside the cap in every set and the distance goes up — the cap stays where it is.': 'ทำระยะเป้าหมายให้ครบในเวลาที่กำหนดทุกเซต ระยะจะเพิ่ม — เพดานเวลาเท่าเดิม',
+  'Covered the distance in every set — go for {0} this time.': 'ครบระยะทุกเซต — รอบนี้ {0}',
+  'Fell short {0} sessions in a row — back off to {1} and build up again.': 'พลาด {0} เซสชันติด — ลดเหลือ {1} แล้วค่อยไต่ขึ้นใหม่',
+  'Last time came up short — same distance again inside the cap.': 'ครั้งก่อนไม่ครบ — ระยะเดิมในเวลาจำกัด',
+  'Distance': 'ระยะทาง',
+  'Time cap': 'เวลาจำกัด',
+  'Distance (m)': 'ระยะทาง (ม.)',
+  'Farthest distance per workout': 'ระยะไกลสุดต่อครั้งฝึก',
+  'Step (m)': 'ขั้น (ม.)',
 }

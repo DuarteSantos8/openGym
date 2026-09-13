@@ -1241,4 +1241,12 @@ export default {
   'already added': 'już dodano',
   'no exercises': 'brak ćwiczeń',
   'Pick equipment': 'Wybierz sprzęt',
+
+  // --- distance logging mode ---
+  'Distance ({0})': 'Dystans ({0})',
+  'Add distance': 'Zwiększ dystans',
+  'Cover the target distance inside the cap in every set and the distance goes up — the cap stays where it is.': 'Pokryj dystans docelowy w limicie w każdej serii, a dystans rośnie — limit zostaje.',
+  'Covered the distance in every set — go for {0} this time.': 'Dystans w każdej serii — tym razem {0}.',
+  'Fell short {0} sessions in a row — back off to {1} and build up again.': 'Nie udało się {0} sesji z rzędu — wróć do {1} i buduj dalej.',
+  'Last time came up short — same distance again inside the cap.': 'Ostatnio za mało — ten sam dystans w limicie.',
 }
