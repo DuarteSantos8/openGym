@@ -503,11 +503,43 @@ export function workoutVolume(w) {
   // A per-side row's mirror is `w = max(L, R), r = L + R` (workout-model syncSideAggregate) —
   // right for a headline, wrong for a product: 14×10 left and 12.5×6 right is 215, not 14×16.
   // Each side is its own weight × reps, with its own drops and bursts.
-  w.entries.forEach(e => e.sets.forEach(s => {
+  ;(Array.isArray(w?.entries) ? w.entries : []).forEach(e => (Array.isArray(e?.sets) ? e.sets : []).forEach(s => {
     if (!isWarmupRow(s)) v += completedVolumeOf(s)
   }))
   return v
 }
+// Finished sessions carry their canonical local calendar day in `d`. Keep it aligned with
+// History/calendar readers, and use the local start timestamp only for older records whose date
+// is missing or malformed. Invalid records stay out of the activity map.
+const timestampOf = value => {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null
+  if (typeof value === 'string' && value.trim()) {
+    const n = Number(value)
+    return Number.isFinite(n) ? n : null
+  }
+  return null
+}
+export function workoutDay(w) {
+  const day = String(w?.d || '')
+  if (/^\d{4}-\d{2}-\d{2}$/.test(day)) {
+    const date = new Date(day + 'T12:00:00')
+    if (isoOf(date) === day) return day
+  }
+  const start = timestampOf(w?.start)
+  if (start !== null) {
+    const date = new Date(start)
+    if (!Number.isNaN(date.getTime())) return isoOf(date)
+  }
+  return null
+}
+
+// Duration is derived from the completed session timestamps rather than a cached display value.
+export function workoutDuration(w) {
+  const start = timestampOf(w?.start)
+  const end = timestampOf(w?.end)
+  return start !== null && end !== null ? Math.max(0, end - start) : 0
+}
+
 // A unilateral row counts as two toward the "x / y sets" progress — one per side — since each
 // side is logged and ticked on its own (issue #60). Every other row counts as one.
 export const setUnits = s => (isSideSet(s) ? 2 : 1)

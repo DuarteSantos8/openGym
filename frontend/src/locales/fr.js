@@ -252,6 +252,8 @@ export default {
   'Recent workouts': 'Séances récentes',
   'Less time': 'Moins',
   'More time': 'Plus',
+  'Less volume': 'Moins de volume',
+  'More volume': 'Plus de volume',
   'No data yet': 'Pas encore de données',
   'Your weekly routine': 'Ta routine hebdomadaire',
   'Week schedule': 'Planning de la semaine',
