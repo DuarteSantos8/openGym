@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { nextTrainingDay, modeOf, isTimed, fmtSec, setLabel, defaultConfig, buildSets, freestyleConfig, exLine, workoutVolume, bestWeightFor, bestWeightForEntry, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, removeRowAt, workSetsDone, setsDone, setsDoneActive, setUnits, doneUnits, setUnitsTotal, pairAdjacent, unpairSuperset, supersetUnits, applyIntensifierPlan, pinnedNoteFor, exNoteFor, effectiveRoutineIds, effectiveRoutines, effectiveRoutineId, effectiveRoutine, lastEntryFor, entryExcluded } from './history.js'
-import { makeSideSet, setSideField, toggleSide } from './workout-model.js'
+import { makeSideSet, setSideField, toggleSide, WEIGHT_ORIGIN_MANUAL } from './workout-model.js'
 import { EXDB } from './exercises.js'
 
 // Real ids out of the shipped catalogue, so the body-part fallback is exercised for real.
@@ -814,6 +814,37 @@ describe('session row helpers', () => {
     expect(next[0].w).toBe(60)             // done set untouched
     expect('w' in next[1]).toBe(false)
     expect('w' in next[2]).toBe(false)
+  })
+
+  it('cascadeWeight lowers inherited rows but keeps an explicitly edited heavier row and done rows', () => {
+    const rows = [
+      { w: 100, done: false },
+      { w: 100, done: false },
+      { w: 120, weightOrigin: WEIGHT_ORIGIN_MANUAL, done: false },
+      { w: 100, done: true },
+      { w: 100, done: false },
+    ]
+    const next = cascadeWeight(rows, 0, 80)
+    expect(next[1].w).toBe(80)             // inherited rows follow downward corrections
+    expect(next[2].w).toBe(120)             // only explicit manual edits are protected
+    expect(next[3].w).toBe(100)             // performed work is immutable
+    expect(next[4].w).toBe(80)
+  })
+
+  it('cascadeWeight cascades one per-side lane, preserving manual and completed limbs', () => {
+    const inherited = makeSideSet({ w: 20, r: 16 })
+    const manualRight = setSideField(makeSideSet({ w: 20, r: 16 }), 'R', 'w', 25)
+    manualRight.sides.R.weightOrigin = WEIGHT_ORIGIN_MANUAL
+    const partial = toggleSide(makeSideSet({ w: 20, r: 16 }), 'L')
+    const rows = [makeSideSet({ w: 20, r: 16 }), inherited, manualRight, partial]
+    const next = cascadeWeight(rows, 0, 15, 'L')
+
+    expect(next[1].sides.L.w).toBe(15)
+    expect(next[1].sides.R.w).toBe(20)
+    expect(next[2].sides.L.w).toBe(15)
+    expect(next[2].sides.R.w).toBe(25)      // an explicit right-side edit is independent
+    expect(next[3].sides.L.w).toBe(20)      // completed left side is immutable
+    expect(next[3].sides.R.w).toBe(20)       // the edit was for the left-side lane only
   })
 
   it('insertWarmupRow inserts before the first work row, ramping toward the work weight', () => {

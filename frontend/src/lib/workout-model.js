@@ -154,6 +154,11 @@ export function isSideSet(set) {
   return !!(s.sides && typeof s.sides === 'object' && s.sides.L && s.sides.R)
 }
 
+// A load explicitly changed by the user is protected from a later cascade. Missing provenance
+// means the row was inherited from the preceding load, including rows written before this field
+// existed. The marker is deliberately tiny and preserved on a side through aggregate resync.
+export const WEIGHT_ORIGIN_MANUAL = 'manual'
+
 /** Includes a completed limb even when its partner is still unchecked. */
 export const hasCompletedWork = set => isSideSet(set)
   ? set.sides.L.done === true || set.sides.R.done === true
@@ -171,6 +176,7 @@ const sideOf = value => {
   const out = { w: Number(v.w) || 0, r: Number(v.r) || 0, done: v.done === true }
   if (v.rir != null) out.rir = v.rir
   if (v.rpe != null) out.rpe = v.rpe
+  if (v.weightOrigin === WEIGHT_ORIGIN_MANUAL) out.weightOrigin = WEIGHT_ORIGIN_MANUAL
   // A side can carry its own intensifier (issue #60): drop-sets and rest-pause bursts are logged
   // per limb, exactly like the main set, so the same {type, drops, clusters} shape rides on the
   // side. Reuses the row-level helpers below (addDrop/dropsOf/…), which read this very shape.
