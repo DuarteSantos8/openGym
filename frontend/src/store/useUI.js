@@ -65,13 +65,14 @@ let timerTick = null
 let workInt = null
 let workTick = null
 let workDone = null
+const MAX_WORK_OVERTIME_SEC = 15 * 60
 
 export const useUI = create((set, get) => ({
   sheets: [],          // { id, render:(close)=>JSX, kind:'sheet'|'center', locked }
   toastMsg: '',
-  timer: null,         // rest countdown between sets — { left, total, endsAt, forIdx }
+  timer: null,         // rest countdown between sets — { left, total, endsAt, forIdx, ready? }
                        // forIdx: index of the active entry whose set started the rest (undefined when unknown)
-  work: null,          // work countdown DURING a timed set (issue #16) — { left, total, endsAt, label }
+  work: null,          // work countdown DURING a timed set (issue #16) — { left, total, endsAt, label, overtime? }
   timerFlashId: 0,     // changing the id retriggers the theme-blink visual alert
 
   flashTimer() {
@@ -105,7 +106,7 @@ export const useUI = create((set, get) => ({
     pushRestTimer(sec)
     timerTick = () => {
       const tm = get().timer
-      if (!tm) return
+      if (!tm || tm.ready) return
       const left = Math.max(0, Math.round((tm.endsAt - Date.now()) / 1000))
       const seenLive = !document.hidden && pageHiddenAt === null
       if (!document.hidden) pageHiddenAt = null
@@ -120,7 +121,12 @@ export const useUI = create((set, get) => ({
         // without push permission, gets no notification, and a countdown that silently vanishes
         // on reopen reads like a bug. Only the loud parts (beep, vibration, flash) are gated.
         get().toast(t('Rest over — next set!'))
-        maybeRestNotification(); get().stopRest(); return
+        maybeRestNotification()
+        cancelPushRestTimer()
+        if (timerInt) clearInterval(timerInt); timerInt = null
+        if (timerTick) document.removeEventListener('visibilitychange', timerTick); timerTick = null
+        set({ timer: { ...tm, left: 0, ready: true } })
+        return
       }
       if (left <= 3) beep(snd, 660, 0.1)
       set({ timer: { ...tm, left } })
@@ -131,6 +137,7 @@ export const useUI = create((set, get) => ({
   addRest(sec) {
     const tm = get().timer
     if (!tm) return
+    if (tm.ready) { if (sec > 0) get().startRest(sec, tm.forIdx); else get().stopRest(); return }
     const left = tm.left + sec
     // taking off more than is left means "I'm ready now" — same as skipping, and it keeps a
     // negative duration out of both the progress bar and the server-side push schedule
@@ -166,23 +173,24 @@ export const useUI = create((set, get) => ({
     const total = Math.max(1, Math.round(sec) || 1)
     const endsAt = Date.now() + total * 1000
     workDone = onDone
-    set({ work: { left: total, total, endsAt, label } })
+    set({ work: { left: total, total, endsAt, label, overtime: useStore.getState().S.timedSetOvertime === true } })
     workTick = () => {
       const wk = get().work
       if (!wk) return
-      const left = Math.max(0, Math.round((wk.endsAt - Date.now()) / 1000))
+      const left = Math.max(wk.overtime ? -MAX_WORK_OVERTIME_SEC : 0, Math.round((wk.endsAt - Date.now()) / 1000))
       const seenLive = !document.hidden && pageHiddenAt === null
       if (!document.hidden) pageHiddenAt = null
       if (left === wk.left) return
       const snd = useStore.getState().S.sound
       if (left <= 0) {
-        if (seenLive) {
+        if (seenLive && !wk.alerted) {
           beep(snd, 880, 0.15); beep(snd, 880, 0.15, 0.25); beep(snd, 1320, 0.4, 0.5)
           vibrate([200, 100, 200]); get().flashTimer()
         }
+        if (wk.overtime && left > -MAX_WORK_OVERTIME_SEC) { set({ work: { ...wk, left, alerted: true } }); return }
         const done = workDone
         get().stopWork()
-        if (done) done(wk.total)
+        if (done) done(wk.total - left)
         return
       }
       if (left <= 3) beep(snd, 660, 0.1)
@@ -195,7 +203,8 @@ export const useUI = create((set, get) => ({
   finishWorkEarly() {
     const wk = get().work
     if (!wk) return
-    const elapsed = Math.max(1, wk.total - wk.left)
+    const startedAt = wk.endsAt - wk.total * 1000
+    const elapsed = Math.max(1, Math.min(wk.total + (wk.overtime ? MAX_WORK_OVERTIME_SEC : 0), Math.round((Date.now() - startedAt) / 1000)))
     const done = workDone
     vibrate(30)
     get().stopWork()

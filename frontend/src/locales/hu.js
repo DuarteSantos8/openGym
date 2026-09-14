@@ -1239,4 +1239,6 @@ export default {
   'already added': 'már hozzáadva',
   'no exercises': 'nincs gyakorlat',
   'Pick equipment': 'Eszköz kiválasztása',
+  'Keep timing after target': 'Időzítés folytatása a cél után',
+  'Timed sets continue up to 15 extra minutes. Tap Done to log the actual duration.': 'Az időzített sorozatok legfeljebb 15 extra percig folytatódnak. A tényleges idő rögzítéséhez koppints a Kész gombra.',
 }

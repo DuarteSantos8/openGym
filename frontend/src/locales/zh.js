@@ -1236,4 +1236,6 @@ export default {
   'already added': '已添加',
   'no exercises': '没有动作',
   'Pick equipment': '选择器械',
+  'Keep timing after target': '达到目标后继续计时',
+  'Timed sets continue up to 15 extra minutes. Tap Done to log the actual duration.': '计时组最多继续 15 分钟。点击“完成”记录实际时长。',
 }

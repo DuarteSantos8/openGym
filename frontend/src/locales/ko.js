@@ -1236,4 +1236,6 @@ export default {
   'already added': '이미 추가됨',
   'no exercises': '운동 없음',
   'Pick equipment': '기구 선택',
+  'Keep timing after target': '목표 시간 후에도 계속 측정',
+  'Timed sets continue up to 15 extra minutes. Tap Done to log the actual duration.': '시간 제한 세트는 최대 15분 추가로 계속됩니다. 실제 시간을 기록하려면 완료를 누르세요.',
 }

@@ -130,3 +130,16 @@ describe('Settings — Sounds switch unlocks audio from the tap', () => {
     expect(unlock).not.toHaveBeenCalled()
   })
 })
+
+describe('Settings — optional timed-set overtime', () => {
+  it('offers the opt-in beside the timer alerts and writes the preference', () => {
+    mount()
+    const row = rowTitled('Keep timing after target')
+    expect(row).toBeTruthy()
+    expect(row.querySelector('.lrow-s').textContent).toBe('Timed sets continue up to 15 extra minutes. Tap Done to log the actual duration.')
+    const sw = switchIn(row)
+    expect(sw.getAttribute('aria-label')).toBe('Keep timing after target')
+    act(() => { sw.click() })
+    expect(mocks.S.timedSetOvertime).toBe(true)
+  })
+})

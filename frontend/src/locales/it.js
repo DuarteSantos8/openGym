@@ -1236,4 +1236,6 @@ export default {
   'already added': 'già aggiunto',
   'no exercises': 'nessun esercizio',
   'Pick equipment': 'Scegli l’attrezzatura',
+  'Keep timing after target': 'Continua a cronometrare dopo l’obiettivo',
+  'Timed sets continue up to 15 extra minutes. Tap Done to log the actual duration.': 'Le serie a tempo continuano fino a 15 minuti extra. Tocca Fine per registrare la durata effettiva.',
 }
