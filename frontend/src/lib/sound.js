@@ -86,5 +86,22 @@ export function setPlayOnSilent(on) {
   try { navigator.audioSession.type = on ? 'playback' : 'auto' } catch (e) { /* */ }
 }
 
+// One rest-over sound per kind of rest, so you can tell without looking whether to stay at the
+// station, go back to the top of the superset, or move on:
+//   set   — same exercise, next set:          two mid beeps
+//   round — a superset round is over:         three quick high beeps
+//   block — this exercise (or superset) is finished and another follows: a long two-note chime
+// None of them opens on the 660 Hz countdown tick, and none is a rising triple like the
+// finish-workout fanfare (sheets.jsx) or the unchanged hold-done sound (useUI.js).
+// The kind is decided in supersetFlow.restKind, next to the rule that decides whether a set
+// earns a rest at all. Unknown kinds get the plain set sound.
+const REST_OVER = {
+  set: [[880, 0.15, 0], [880, 0.15, 0.25]],
+  round: [[1100, 0.1, 0], [1100, 0.1, 0.15], [1100, 0.1, 0.3]],
+  block: [[880, 0.25, 0], [1320, 0.5, 0.35]],
+}
+export function restOver(enabled, kind) {
+  for (const [freq, dur, when] of REST_OVER[kind] || REST_OVER.set) beep(enabled, freq, dur, when)
+}
 
 export function vibrate(p) { try { navigator.vibrate && navigator.vibrate(p) } catch (e) { /* */ } }

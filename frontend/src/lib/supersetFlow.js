@@ -49,6 +49,52 @@ export function restAfterSet({ unitDone, lastUnit }) {
 }
 
 /**
+ * Which rest-over sound the rest after this set gets (see lib/sound.js REST_OVER):
+ *
+ *   'set'   — the exercise has more sets: stay where you are.
+ *   'round' — a superset round is over: back to the first exercise of the group. Also the
+ *             only rest a superset takes before it is finished, so a mid-group re-check gets it.
+ *   'block' — this exercise or superset is finished and another one follows: move on.
+ *
+ * Decided here, next to restAfterSet, so the four places that start a rest agree on what the
+ * sound means. Whether a rest starts at all is still restAfterSet / restOnRecheck's call.
+ */
+export function restKind({ unitDone, superset }) {
+  if (unitDone) return 'block'
+  return superset ? 'round' : 'set'
+}
+
+/**
+ * The exercise a running rest points you at — what the timer bar names and what the List
+ * layout scrolls to. Not always the exercise whose set started the rest (forIdx):
+ *
+ *   'set'   — that exercise: its next set is yours.
+ *   'round' — the first member of its superset: the round starts over there.
+ *   'block' — the first member of the next unfinished unit (wrapping, like nextUnfinishedUnit);
+ *             the finished exercise itself when nothing is left.
+ */
+export function restFocusIdx(entries, units, forIdx, kind) {
+  if (kind === 'block') return nextUnfinishedUnit(entries, units, forIdx)?.[0] ?? forIdx
+  if (kind === 'round') return units.find(u => u.includes(forIdx))?.[0] ?? forIdx
+  return forIdx
+}
+
+/**
+ * Which kind of set the rest after set `setIdx` leads into, for the timer bar's wording:
+ * 'warmup' when the next unfinished set after it is a warm-up (ramp) row, 'work' otherwise, null
+ * when the exercise has no warm-up rows at all — then "next set" says everything and "working"
+ * would be noise. Looks at the first unfinished set AFTER the one just checked, not anywhere in
+ * the exercise, so a ramp row you skipped and left unticked cannot make the bar call a working
+ * rest a warm-up rest. Decided where the rest starts and carried on the timer, like the length.
+ */
+export function restSetPhase(entry, setIdx) {
+  const sets = Array.isArray(entry?.sets) ? entry.sets : []
+  if (!sets.some(isWarmupRow)) return null
+  const next = sets.slice(setIdx + 1).find(set => !set.done)
+  return next && isWarmupRow(next) ? 'warmup' : 'work'
+}
+
+/**
  * Whether re-checking an already-completed set should start a rest.
  *
  * The high-water rule deliberately swallows a re-check so that unchecking and re-checking

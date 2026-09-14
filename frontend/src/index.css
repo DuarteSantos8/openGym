@@ -166,8 +166,9 @@ button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp butto
   max-width:560px;margin:0 auto;
 }
 /* Keep the last workout controls clear of the mobile overlays without adding a second
-   screenful of blank scroll space. The stacked rest timer needs the larger reserve. */
-body.resting #app{padding-bottom:calc(206px + var(--sab))}
+   screenful of blank scroll space. The stacked rest timer needs the larger reserve: the rest
+   variant is three rows tall (label, clock and bar, controls) and clears the tab bar too. */
+body.resting #app{padding-bottom:calc(300px + var(--sab))}
 .workout-end-spacer{height:0}
 @keyframes viewfade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 #app.vfade{animation:viewfade var(--med) var(--ease)}
@@ -841,32 +842,33 @@ body.chips-dragging *{cursor:inherit}
      clock hard to pick out mid-set. The blur stays, so it still sits above the page. */
   background:color-mix(in srgb,var(--surface) 97%,transparent);
   -webkit-backdrop-filter:saturate(180%) blur(10px);backdrop-filter:saturate(180%) blur(10px);
-  border-radius:var(--r-lg);padding:12px 14px;
-  display:flex;align-items:center;gap:12px;
+  border-radius:var(--r-lg);padding:14px 16px;
+  display:flex;flex-direction:column;align-items:stretch;gap:8px;
   box-shadow:0 12px 34px -8px rgba(0,0,0,.55);
   animation:slideup var(--med) var(--ease);
 }
 @keyframes slideup{from{transform:translateY(16px);opacity:0}to{transform:none;opacity:1}}
-#timer .t{font-size:26px;font-weight:600;letter-spacing:-.026em;font-variant-numeric:tabular-nums;min-width:66px}
-#timer .bar{flex:1;height:4px;background:var(--surface-3);border-radius:99px;overflow:hidden}
+/* Sized to be read from the floor, one arm's length away, mid-set. */
+#timer .t{font-size:34px;font-weight:600;letter-spacing:-.026em;font-variant-numeric:tabular-nums;min-width:84px}
+#timer .bar{flex:1;height:6px;background:var(--surface-3);border-radius:99px;overflow:hidden}
+/* What is being timed: the kind of rest (next set / round / exercise) or "Hold", then the
+   exercise it belongs to. One line, the name gives way first. */
+#timer .lbl{font-size:13px;color:var(--label-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#timer .lbl b{font-weight:600;color:var(--label)}
+#timer .lbl .who{text-transform:capitalize}   /* library names arrive lowercase, like the chips */
 #timer .bar i{display:block;height:100%;background:var(--acc);transition:width 1s linear}
-/* rest variant: −15/+15/Skip and the clock won't share one line on a phone, so the clock and
-   bar take the top row and the controls take their own. The work timer keeps a single row —
-   it only ever has two buttons. */
-#timer.rest{flex-direction:column;align-items:stretch;gap:10px}
-#timer.rest .head{display:flex;align-items:center;gap:12px}
-#timer.rest .acts{display:flex;align-items:center;gap:8px}
-#timer.rest .acts .btn{padding-top:11px;padding-bottom:11px}   /* sweaty hands, mid-set */
-#timer.rest .acts .skip{margin-left:auto;min-width:84px}
+/* Both variants stack the same way: the controls and the clock won't share one line on a
+   phone (−15/+15/Skip at 360px left the bar ~30px), so what is running takes the top row, clock
+   and bar the second, controls the third. The confirming button sits at the far edge, away
+   from the one you tap to buy more time. */
+#timer .head{display:flex;align-items:center;gap:12px}
+#timer .acts{display:flex;align-items:center;gap:8px}
+#timer .acts .btn{padding-top:11px;padding-bottom:11px}   /* sweaty hands, mid-set */
+#timer .acts .skip,#timer .acts .go{margin-left:auto;min-width:84px}
 /* work timer (issue #16): the same bar doing the opposite job — outlined and tinted so a
    glance tells "you are holding this" apart from "you are recovering". */
 #timer.working{border:var(--hair) solid var(--acc)}
 #timer.working .t{color:var(--acc)}
-#timer.working .grow{flex:1;min-width:0}
-#timer.working .lbl{
-  font-size:12px;color:var(--label-2);margin-bottom:5px;text-transform:capitalize;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
 
 /* ---------------------------------------------------------------- modal -- */
 #modal-root{position:fixed;inset:0;z-index:100;display:none}
@@ -1200,8 +1202,10 @@ body.chips-dragging *{cursor:inherit}
   .center{width:340px}
   #timer{left:50%;right:auto;margin-left:-260px;width:520px;bottom:112px}
   /* 520px fits the clock, the bar and all three controls on one line again */
-  #timer.rest{flex-direction:row;align-items:center;gap:14px}
-  #timer.rest .head{flex:1;min-width:0}
+  /* the label keeps its own line; clock+bar and the controls share the second */
+  #timer{flex-direction:row;flex-wrap:wrap;align-items:center;gap:6px 14px}
+  #timer .lbl{flex:0 0 100%}
+  #timer .head{flex:1;min-width:0}
   .exmedia img{height:380px}
   .hm-wrap{display:flex;flex-direction:column;align-items:center}
 }

@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => {
     timer: null,
     work: null,
     startRest: vi.fn(),
+    startWork: vi.fn(),
     stopRest: null,
     stopWork: null,
     confirmSheet: vi.fn(),
@@ -43,7 +44,7 @@ const mocks = vi.hoisted(() => {
     stopRest: state.stopRest,
     stopWork: state.stopWork,
     shiftRestOwner: vi.fn(),
-    startWork: vi.fn(),
+    startWork: state.startWork,
     toast: state.toast,
   })
   return state
@@ -213,11 +214,11 @@ describe('Workout set completion flow', () => {
       ],
     })])
     await toggleSet(0)
-    expect(mocks.startRest).toHaveBeenLastCalledWith(45, expect.any(Number))
+    expect(mocks.startRest).toHaveBeenLastCalledWith(45, expect.any(Number), 'set', 'warmup')
     await toggleSet(1)
-    expect(mocks.startRest).toHaveBeenLastCalledWith(150, expect.any(Number))
+    expect(mocks.startRest).toHaveBeenLastCalledWith(150, expect.any(Number), 'set', 'work')
     await toggleSet(2)
-    expect(mocks.startRest).toHaveBeenLastCalledWith(150, expect.any(Number))
+    expect(mocks.startRest).toHaveBeenLastCalledWith(150, expect.any(Number), 'set', 'work')
     expect(mocks.startRest).toHaveBeenCalledTimes(3)
   })
 
@@ -226,7 +227,7 @@ describe('Workout set completion flow', () => {
     await toggleSet(0)
 
     expect(mocks.startRest).toHaveBeenCalledOnce()
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number))
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), 'set', null)
     expect(mocks.stopRest).not.toHaveBeenCalled()
 
     await unmount()
@@ -249,7 +250,7 @@ describe('Workout set completion flow', () => {
     expect(mocks.S.exWeights['plain-bench']).toBeUndefined()   // written at the finish, not while ticking
     expect(mocks.topWeightSheet).not.toHaveBeenCalled()
     expect(mocks.S.active.cur).toBe(0)
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number))
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), 'block', null)
 
     await pressNext()
 
@@ -275,11 +276,273 @@ describe('Workout set completion flow', () => {
 
     expect(mocks.topWeightSheet).not.toHaveBeenCalled()
     expect(mocks.S.active.cur).toBe(1)
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number))
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), 'block', null)
 
     await pressNext()
 
     expect(mocks.S.active.cur).toBe(2)
+  })
+
+  // The rest-over sound says what comes next (#152 follow-up). The kind is decided by
+  // supersetFlow.restKind; these pin what each of the four call sites hands the timer.
+  it('a finished superset round rests with the round sound; the finished superset with the block sound', async () => {
+    const group = 'superset-1'
+    await mount([
+      exercise('superset-a', [false, false], { sg: group }),
+      exercise('superset-b', [false, false], { sg: group }),
+      exercise('next', [false]),
+    ])
+
+    await toggleSet(0)                       // a, round 1 → straight on to b, no rest
+    expect(mocks.startRest).not.toHaveBeenCalled()
+    await rerender()
+    await toggleSet(2)                       // b, round 1 → round over, back to a
+    expect(mocks.startRest).toHaveBeenLastCalledWith(90, expect.any(Number), 'round', null)
+
+    await rerender()
+    await toggleSet(1)                       // a, round 2
+    await rerender()
+    await toggleSet(3)                       // b, round 2 → superset finished, 'next' follows
+    expect(mocks.startRest).toHaveBeenLastCalledWith(90, expect.any(Number), 'block', null)
+  })
+
+  it('a re-check that owes you a rest uses the same kind the first check did', async () => {
+    await mount([exercise('plain-bench', [false, false])])
+    await toggleSet(0)
+    expect(mocks.startRest).toHaveBeenLastCalledWith(90, expect.any(Number), 'set', null)
+    await rerender()
+    await toggleSet(0)                       // uncheck
+    await rerender()
+    await toggleSet(0)                       // re-check with no rest running: restOnRecheck starts it again
+    expect(mocks.startRest).toHaveBeenCalledTimes(2)
+    expect(mocks.startRest).toHaveBeenLastCalledWith(90, expect.any(Number), 'set', null)
+  })
+
+  // The bar at the bottom and the exercise it times should be on screen together: in the List
+  // layout a rest starting scrolls the exercise it points you at into view. Cards only ever
+  // shows that unit. The harness records scrollIntoView calls in mocks.scrollCalls.
+  const scrolledTo = call => ({ exidx: call.node.closest('[data-exidx]')?.getAttribute('data-exidx'), row: call.node.className, inSuperset: !!call.node.closest('.ss-ex') })
+
+  it('list layout: a rest starting scrolls to the next set of the exercise it belongs to, once per rest', async () => {
+    await mount([exercise('a', [false]), exercise('b', [false]), exercise('c', [true, false])], 0, { workoutView: 'list' })
+    mocks.scrollCalls.length = 0
+    mocks.timer = { left: 90, total: 90, endsAt: Date.now() + 90_000, forIdx: 2, kind: 'set' }
+    await rerender()
+    expect(mocks.scrollCalls).toHaveLength(1)
+    expect(scrolledTo(mocks.scrollCalls[0])).toMatchObject({ exidx: '2', inSuperset: false })
+    expect(mocks.scrollCalls[0].node.className).toMatch(/\bsetrow\b/)         // the first unfinished set row
+    expect(mocks.scrollCalls[0].node.className).not.toMatch(/\bdone\b/)
+    expect(mocks.scrollCalls[0].options).toEqual({ behavior: 'smooth', block: 'center' })
+
+    // Ticks, ±15 s and a re-pointed owner (an exercise removed above it) change the timer
+    // object but not the rest: no second scroll.
+    mocks.timer = { ...mocks.timer, left: 89 }
+    await rerender()
+    mocks.timer = { ...mocks.timer, left: 104, total: 105, endsAt: mocks.timer.endsAt + 15_000 }
+    await rerender()
+    mocks.timer = { ...mocks.timer, forIdx: 1 }
+    await rerender()
+    expect(mocks.scrollCalls).toHaveLength(1)
+
+    // A new rest for the same exercise is a new rest: it scrolls again.
+    mocks.timer = { left: 90, total: 90, endsAt: Date.now() + 200_000, forIdx: 2, kind: 'set' }
+    await rerender()
+    expect(mocks.scrollCalls).toHaveLength(2)
+  })
+
+  it('list layout: a superset rest scrolls to the first member of the group', async () => {
+    await mount([exercise('solo', [false]), exercise('ss-a', [false], { sg: 'g' }), exercise('ss-b', [false], { sg: 'g' })], 0, { workoutView: 'list' })
+    mocks.scrollCalls.length = 0
+    mocks.timer = { left: 90, total: 90, endsAt: Date.now() + 90_000, forIdx: 2, kind: 'round' }
+    await rerender()
+    expect(mocks.scrollCalls).toHaveLength(1)
+    expect(scrolledTo(mocks.scrollCalls[0])).toMatchObject({ exidx: '1', inSuperset: true })
+  })
+
+  it('list layout: after a finished exercise the rest scrolls to the exercise you go to next', async () => {
+    await mount([exercise('done-first', [true]), exercise('b', [false]), exercise('c', [false])], 0, { workoutView: 'list' })
+    mocks.scrollCalls.length = 0
+    mocks.timer = { left: 90, total: 90, endsAt: Date.now() + 90_000, forIdx: 0, kind: 'block' }
+    await rerender()
+    expect(mocks.scrollCalls).toHaveLength(1)
+    expect(scrolledTo(mocks.scrollCalls[0]).exidx).toBe('1')
+  })
+
+  it('cards layout: a rest starting does not scroll, even when the exercise has a scroll anchor', async () => {
+    await mount([exercise('ss-a', [false], { sg: 'g' }), exercise('ss-b', [false], { sg: 'g' })], 0)
+    mocks.scrollCalls.length = 0                 // the superset flow scrolls once on mount
+    mocks.timer = { left: 90, total: 90, endsAt: Date.now() + 90_000, forIdx: 0, kind: 'round' }
+    await rerender()
+    expect(mocks.scrollCalls).toHaveLength(0)
+  })
+
+  // A timed exercise runs itself once started: hold → rest → next hold, until its sets are done.
+  // The harness's startWork/startRest are mocks, so the hand-over is driven by hand here.
+  const hold = (id, sets, extra = {}) => exercise(id, [], { target: { mode: 'time', sec: 30, weight: 0 }, sets: sets.map(done => ({ sec: 30, w: 0, done })), ...extra })
+  async function pressStart(row) {
+    const btn = container.querySelectorAll('.setrow .setgo')[row]
+    expect(btn).toBeTruthy()
+    await act(async () => { btn.dispatchEvent(new dom.Event('click', { bubbles: true })) })
+  }
+
+  it('a hold started from its row carries its position among the exercise\'s holds', async () => {
+    await mount([hold('plank', [false, false, false])])
+    await pressStart(0)
+    expect(mocks.startWork).toHaveBeenCalledTimes(1)
+    expect(mocks.startWork.mock.calls[0][0]).toBe(30)
+    expect(mocks.startWork.mock.calls[0][3]).toEqual({ phase: 'work', n: 1, of: 3 })
+    expect(mocks.startWork.mock.calls[0][4]).toBe(0)                  // its owner, for the end-of-hold write
+  })
+
+  it('a hold that ends after an exercise was added above it writes to the moved row, by the owner it is handed', async () => {
+    await mount([hold('plank', [false, false])], 0, { workoutView: 'list' })
+    await pressStart(0)
+    const holdDone = mocks.startWork.mock.calls[0][2]
+    mocks.S.active.entries.unshift(exercise('added-above', [false]))   // in the app, shiftRestOwner moves work.forIdx to 1
+    await rerender()
+    await act(async () => { holdDone(28, 1) })
+    expect(mocks.S.active.entries[1].sets[0]).toMatchObject({ sec: 28, done: true })
+    expect(mocks.S.active.entries[0].sets[0].done).toBe(false)
+    await act(async () => { holdDone(28, 0) })                   // a wrong owner is refused, not written
+    expect(mocks.S.active.entries[0].sets[0].done).toBe(false)
+  })
+
+  it('a hold\'s end and its hand-over use the newest render, not the one that started it', async () => {
+    await mount([hold('plank', [false, false])])
+    await pressStart(0)
+    mocks.S.restSec = 120                                        // changed in Settings while the hold ran
+    await rerender()
+    await act(async () => { mocks.startWork.mock.calls[0][2](30, 0) })
+    expect(mocks.startRest).toHaveBeenLastCalledWith(120, 0, 'set', null, expect.any(Function))
+  })
+
+  it('warm-up holds are counted apart, like the set rows', async () => {
+    await mount([hold('plank', [], { sets: [{ sec: 20, w: 0, done: false, phase: 'warmup' }, { sec: 45, w: 0, done: false }, { sec: 45, w: 0, done: false }] })])
+    await pressStart(0)
+    expect(mocks.startWork.mock.calls[0][3]).toEqual({ phase: 'warmup', n: 1, of: 1 })
+    await pressStart(1)
+    expect(mocks.startWork.mock.calls[1][3]).toEqual({ phase: 'work', n: 1, of: 2 })
+  })
+
+  it('a finished hold hands its rest the next hold, which starts when the rest is over', async () => {
+    await mount([hold('plank', [false, false, false]), exercise('next', [false])])
+    await pressStart(0)
+    const holdDone = mocks.startWork.mock.calls[0][2]
+    await act(async () => { holdDone(30, 0) })                      // the countdown ran out
+    expect(mocks.S.active.entries[0].sets[0].done).toBe(true)
+    expect(mocks.startRest).toHaveBeenCalledTimes(1)
+    expect(mocks.startRest).toHaveBeenLastCalledWith(90, 0, 'set', null, expect.any(Function))
+    const restOver = mocks.startRest.mock.calls[0][4]
+    await act(async () => { restOver(0) })                      // the rest ran out on screen; 0 = its owner
+    expect(mocks.startWork).toHaveBeenCalledTimes(2)
+    expect(mocks.startWork.mock.calls[1][3]).toEqual({ phase: 'work', n: 2, of: 3 })
+  })
+
+  it('the last hold of the exercise hands over nothing, and neither does a set ticked by hand', async () => {
+    await mount([hold('plank', [true, true, false]), exercise('next', [false])])
+    await pressStart(2)
+    await act(async () => { mocks.startWork.mock.calls[0][2](30, 0) })
+    expect(mocks.startRest).toHaveBeenLastCalledWith(90, 0, 'block', null)   // no fifth argument
+
+    await unmount(); vi.clearAllMocks()
+    await mount([hold('plank', [false, false])])
+    await toggleSet(0)                                           // ticked, not held
+    expect(mocks.startRest).toHaveBeenLastCalledWith(90, 0, 'set', null)
+  })
+
+  it('the hand-over checks the workout has not moved on before starting anything', async () => {
+    await mount([hold('plank', [false, false, false])])
+    await pressStart(0)
+    await act(async () => { mocks.startWork.mock.calls[0][2](30, 0) })
+    const restOver = mocks.startRest.mock.calls[0][4]
+    mocks.S.active.entries[0].sets[1].done = true               // ticked by hand during the rest
+    await act(async () => { restOver(0) })
+    expect(mocks.startWork).toHaveBeenCalledTimes(1)
+    mocks.S.active.entries[0].sets[1].done = false
+    mocks.work = { left: 10, total: 30, endsAt: Date.now() + 10_000, label: 'x' }   // another hold is running
+    await act(async () => { restOver(0) })
+    expect(mocks.startWork).toHaveBeenCalledTimes(1)
+    mocks.work = null
+    mocks.S.active.entries[0].sets.push({ sec: 30, w: 0, done: false })   // a row was added during the rest
+    await act(async () => { restOver(0) })
+    expect(mocks.startWork).toHaveBeenCalledTimes(1)
+    mocks.S.active.entries[0].sets.pop()
+    mocks.S.active.entries[0] = exercise('swapped-in', [false])   // the exercise was swapped out
+    await act(async () => { restOver(0) })
+    expect(mocks.startWork).toHaveBeenCalledTimes(1)
+  })
+
+  it('the hand-over starts the hold at the index the rest hands it, not the one captured when the rest began', async () => {
+    await mount([hold('plank', [false, false, false])], 0, { workoutView: 'list' })
+    await pressStart(0)
+    await act(async () => { mocks.startWork.mock.calls[0][2](30, 0) })
+    const restOver = mocks.startRest.mock.calls[0][4]
+    mocks.S.active.entries.unshift(exercise('added-above', [false]))   // in the app, shiftRestOwner moves timer.forIdx to 1
+    await rerender()
+    await act(async () => { restOver(0) })                      // a stale index would land on the added exercise
+    expect(mocks.startWork).toHaveBeenCalledTimes(1)
+    await act(async () => { restOver(1) })                      // the owner as the rest knows it now
+    expect(mocks.startWork).toHaveBeenCalledTimes(2)
+    expect(mocks.startWork.mock.calls[1][3]).toEqual({ phase: 'work', n: 2, of: 3 })
+  })
+
+  it('an unticked and redone hold keeps the exercise running itself (the re-check path)', async () => {
+    await mount([hold('plank', [false, false, false])])
+    await pressStart(0)
+    await act(async () => { mocks.startWork.mock.calls[0][2](30, 0) })
+    expect(mocks.startRest.mock.calls[0]).toHaveLength(5)
+    await rerender()
+    await toggleSet(0)                                           // untick to redo it
+    expect(mocks.S.active.entries[0].sets[0].done).toBe(false)
+    await rerender()
+    await pressStart(0)
+    await act(async () => { mocks.startWork.mock.calls[1][2](30, 0) })
+    expect(mocks.startRest).toHaveBeenCalledTimes(2)
+    expect(mocks.startRest.mock.calls[1]).toHaveLength(5)
+    expect(mocks.startRest.mock.calls[1][4]).toEqual(expect.any(Function))
+  })
+
+  it('a chained hold judges the finish prompt on the workout as it is, not as it was when play was tapped', async () => {
+    await mount([hold('plank', [false, false])])
+    await pressStart(0)
+    await act(async () => { mocks.startWork.mock.calls[0][2](30, 0) })
+    const restOver = mocks.startRest.mock.calls[0][4]
+    mocks.S.active.entries.push(exercise('added-during-rest', [false]))
+    await rerender()
+    await act(async () => { restOver(0) })
+    expect(mocks.startWork).toHaveBeenCalledTimes(2)
+    await act(async () => { mocks.startWork.mock.calls[1][2](30, 0) })   // last plank hold ends
+    expect(mocks.workoutCompleteSheet).not.toHaveBeenCalled()
+    expect(mocks.startRest).toHaveBeenLastCalledWith(90, 0, 'block', null)
+  })
+
+  it('a chain armed before leaving the workout tab runs on the instance that is on screen after coming back', async () => {
+    await mount([hold('plank', [false, false]), exercise('next', [false])])
+    await pressStart(0)
+    await act(async () => { mocks.startWork.mock.calls[0][2](30, 0) })
+    const restOver = mocks.startRest.mock.calls[0][4]
+    // Tab away (the route wrapper unmounts the view), shorten the rest in Settings, come back.
+    await act(async () => { root.unmount() })
+    mocks.S.restSec = 30
+    installDom()
+    await act(async () => { root.render(React.createElement(Workout)) })
+    await act(async () => { restOver(0) })
+    expect(mocks.startWork).toHaveBeenCalledTimes(2)
+    await act(async () => { mocks.startWork.mock.calls[1][2](30, 0) })
+    expect(mocks.S.active.entries[0].sets[1]).toMatchObject({ sec: 30, done: true })
+    expect(mocks.startRest).toHaveBeenLastCalledWith(30, 0, 'block', null)   // the new instance's rest length, exercise finished
+  })
+
+  it('in a superset a finished hold hands over nothing', async () => {
+    await mount([hold('plank', [false, false], { sg: 'g' }), hold('side-plank', [false, false], { sg: 'g' })], 0)
+    await pressStart(0)
+    await act(async () => { mocks.startWork.mock.calls[0][2](30, 0) })   // plank set 1 → on to side plank, no rest yet
+    expect(mocks.startRest).not.toHaveBeenCalled()
+    await rerender()
+    await pressStart(2)                                          // side plank set 1 → round over
+    await act(async () => { mocks.startWork.mock.calls[1][2](30, 1) })
+    expect(mocks.startRest).toHaveBeenCalledTimes(1)
+    expect(mocks.startRest).toHaveBeenLastCalledWith(90, 1, 'round', null)
   })
 
   it.each(['warmup', 'warm-up', 'warm_up'])(
@@ -372,7 +635,7 @@ describe('Workout set completion flow', () => {
 
     expect(mocks.topWeightSheet).not.toHaveBeenCalled()
     expect(mocks.S.active.cur).toBe(1)
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number))
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), 'block', null)
   })
 
   it('does not auto-select an unfinished superset after completing an ordinary exercise', async () => {
@@ -388,7 +651,7 @@ describe('Workout set completion flow', () => {
     expect(mocks.S.active.cur).toBe(0)
     expect(mocks.workoutCompleteSheet).not.toHaveBeenCalled()
     expect(mocks.toast).toHaveBeenCalledWith('Hold logged')
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number))
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), 'block', null)
   })
 
   it('does not auto-select earlier unfinished work after completing an ordinary exercise', async () => {
@@ -401,7 +664,7 @@ describe('Workout set completion flow', () => {
 
     expect(mocks.S.active.cur).toBe(1)
     expect(mocks.workoutCompleteSheet).not.toHaveBeenCalled()
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number))
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), 'block', null)
   })
 
   it('leaves a completed ordinary exercise selected without declaring completion while work remains', async () => {
@@ -415,7 +678,7 @@ describe('Workout set completion flow', () => {
     expect(mocks.topWeightSheet).not.toHaveBeenCalled()
     expect(mocks.workoutCompleteSheet).not.toHaveBeenCalled()
     expect(mocks.S.active.cur).toBe(0)
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number))
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), 'block', null)
   })
 
   it('shows workout completion only when no unfinished unit remains', async () => {
@@ -871,7 +1134,7 @@ describe('superset flow survives an exercise being removed mid-session', () => {
 
     // Partner closes the round (each still has a second set), which is what starts the rest.
     await toggleSet(2)
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number))
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), 'round', null)
   })
 })
 
@@ -1054,7 +1317,7 @@ describe('workout list view', () => {
 
     expect(mocks.S.active.entries[0].sets[0].done).toBe(true)
     expect(mocks.S.active.cur).toBe(0)
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number))
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), 'block', null)
   })
 
   it('does not declare the workout complete after a set of a non-current exercise while sets remain', async () => {
@@ -1069,7 +1332,7 @@ describe('workout list view', () => {
 
     expect(mocks.S.active.entries[1].sets[0].done).toBe(true)
     expect(mocks.workoutCompleteSheet).not.toHaveBeenCalled()
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number))
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), 'set', null)
   })
 
   it('renders a superset as one grouped unit with its own unpair control', async () => {
@@ -1164,7 +1427,7 @@ describe('workout compact view', () => {
     await toggleSet(0)
 
     expect(mocks.S.active.entries[0].sets[0].done).toBe(true)
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number))
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), 'block', null)
   })
 })
 
@@ -1300,7 +1563,7 @@ describe('effort rating auto-ends the set', () => {
 
     expect(mocks.S.active.entries[0].sets[0].rir).toBe(2)
     expect(mocks.S.active.entries[0].sets[0].done).toBe(true)
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number))
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), 'set', null)
   })
 
   it('does not re-toggle a set that is already done — a rating change leaves it done', async () => {
@@ -1355,7 +1618,7 @@ describe('per-side effort completion', () => {
     await act(async () => { rightPick(scale === 'rir' ? 0 : 10) })
     set = mocks.S.active.entries[0].sets[0]
     expect(set.done).toBe(true)
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number))
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), 'set', null)
     const calls = mocks.startRest.mock.calls.length
     await act(async () => { rightPick(1) })
     expect(set.sides.R.done).toBe(true)
