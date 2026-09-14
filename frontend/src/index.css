@@ -1129,6 +1129,10 @@ body.chips-dragging *{cursor:inherit}
   background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--acc-line);
 }
 .workout-swipe-surface{touch-action:pan-y}
+.workout-swipe-stack{position:relative;isolation:isolate;overflow:hidden}
+.workout-swipe-stack>.workout-swipe-card,.workout-swipe-stack>.workout-swipe-preview{min-width:0}
+.workout-swipe-card{position:relative;z-index:2;background:var(--bg)}
+.workout-swipe-preview{position:absolute;z-index:1;inset:0 auto auto 0;width:100%;pointer-events:none;background:var(--bg)}
 /* A superset nests a card inside the page's own gutter, so its inset is paid twice. On a
    narrow phone that left the weight and reps steppers too tight to show a three-digit
    number — reported as "the reps textbox becomes too small when superset on mobile". The
