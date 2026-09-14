@@ -252,6 +252,8 @@ export default {
   'Recent workouts': 'Недавние тренировки',
   'Less time': 'Меньше',
   'More time': 'Больше',
+  'Less volume': 'Меньше объёма',
+  'More volume': 'Больше объёма',
   'No data yet': 'Данных пока нет',
   'Your weekly routine': 'Твой недельный план',
   'Week schedule': 'Расписание недели',

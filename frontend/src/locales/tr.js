@@ -252,6 +252,8 @@ export default {
   'Recent workouts': 'Son antrenmanlar',
   'Less time': 'Az',
   'More time': 'Çok',
+  'Less volume': 'Daha az hacim',
+  'More volume': 'Daha çok hacim',
   'No data yet': 'Henüz veri yok',
   'Your weekly routine': 'Haftalık rutinin',
   'Week schedule': 'Hafta programı',
