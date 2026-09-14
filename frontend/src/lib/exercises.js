@@ -191,11 +191,27 @@ function corpusOf(e) {
   return s
 }
 
+// Allow one missing, extra or substituted character, or an adjacent transposition, in long
+// query tokens. Short tokens stay exact/substring-only: words such as "row" and "curl" are too
+// common for fuzzy matching to be useful.
+function nearWord(a, b) {
+  if (a.length < 5 || Math.abs(a.length - b.length) > 1) return false
+  let i = 0
+  while (i < a.length && a[i] === b[i]) i++
+  if (i === a.length) return b.length - i <= 1
+  if (a.length === b.length) {
+    return a.slice(i + 1) === b.slice(i + 1) ||
+      (a[i] === b[i + 1] && a[i + 1] === b[i] && a.slice(i + 2) === b.slice(i + 2))
+  }
+  return a.length > b.length ? a.slice(i + 1) === b.slice(i) : a.slice(i) === b.slice(i + 1)
+}
+
 export function matchExercise(e, query) {
   if (!query) return true
   const tokens = normalizeStr(query).split(/\s+/).filter(Boolean)
   if (!tokens.length) return true
   if (!e || typeof e !== 'object') return false
   const corpus = corpusOf(e)
-  return tokens.every(tok => corpus.includes(tok))
+  const words = corpus.split(/\s+/)
+  return tokens.every(tok => corpus.includes(tok) || words.some(word => nearWord(tok, word)))
 }
