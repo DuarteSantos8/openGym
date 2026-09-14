@@ -53,9 +53,18 @@ server {
         proxy_set_header CF-Connecting-IP "${CF_CONNECTING_IP}";
     }
 
-    # SPA fallback
+    # The app routes behind the hash (/#/plan, /#/history …), so a path is never a screen, and the
+    # shell's asset URLs are relative (vite base './' — the Pages demo lives under /demo/). Serving
+    # index.html AT a deep path (/plan/r/x: a typo, a stale link) gave a page whose scripts resolved
+    # under that path and 404'd — blank, with a 200. Send the browser to the root instead. The
+    # query string travels along; the hash never reaches the server anyway. Relative Location so
+    # the redirect keeps the scheme and host the reverse proxy in front presented, not nginx's own.
     location / {
-        try_files $uri $uri/ /index.html;
+        try_files $uri $uri/ @root;
+    }
+    location @root {
+        absolute_redirect off;
+        return 302 /$is_args$args;
     }
 
     # App shell: always revalidate so updates show up immediately
