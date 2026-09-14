@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import SwipeCards from '../components/SwipeCards.jsx'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { workoutControls } from '../lib/workout-controls.js'
@@ -21,10 +22,6 @@ import { progressionGuidance } from '../lib/progression-copy.js'
 import { glyphOf } from '../lib/glyphs.js'
 import { isWarmupRow, isDropSet, isRestPauseSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt } from '../lib/workout-model.js'
 import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit } from '../lib/active-workout-order.js'
-
-const SWIPE_MIN_DISTANCE = 48
-const SWIPE_AXIS_RATIO = 1.25
-const SWIPE_IGNORED_TARGETS = 'button,input,textarea,select,a,[role="button"],[role="checkbox"],[role="switch"],[role="slider"],[contenteditable="true"],.exmedia,[data-swipe-ignore]'
 
 /* ---------- start chooser (no active workout) ---------- */
 function StartChooser() {
@@ -507,7 +504,7 @@ function ActiveWorkout() {
   const nav = useNavigate()
   const S = useStore(s => s.S)
   const update = useStore(s => s.update)
-  const { startRest: liveRest, stopRest, stopWork, work } = useUI()
+  const { startRest: liveRest, stopRest, stopWork, work, timer } = useUI()
   const A = S.active
   // A past workout has no rest to time — the sets were done days ago. The work timer for
   // timed sets stays, since counting a hold is how its duration gets entered.
@@ -553,7 +550,6 @@ function ActiveWorkout() {
       if (!refs.size) setRefs.current.delete(entry)
     }
   }
-  const swipe = useRef(null)
   const progressHighWater = useRef(A.entries.map(e => e.sets.filter(s => s.done).length))
   // The marks are index-keyed, and removing an exercise shifts every index above it down
   // (removeActiveExercise splices). Re-baseline whenever the list length changes, otherwise a
@@ -705,24 +701,6 @@ function ActiveWorkout() {
       { icon: 'list', label: t('Layout'), sub: LAYOUT_LABEL[workoutView] || LAYOUT_LABEL.cards, onClick: openLayoutMenu },
     ],
   })
-  const onSwipePointerDown = event => {
-    if (swipe.current || (event.pointerType && event.pointerType !== 'touch' && event.pointerType !== 'pen')) return
-    if (event.target.closest?.(SWIPE_IGNORED_TARGETS)) return
-    swipe.current = { id: event.pointerId, x: event.clientX, y: event.clientY }
-    event.currentTarget.setPointerCapture?.(event.pointerId)
-  }
-  const finishSwipe = (event, navigate) => {
-    const start = swipe.current
-    if (!start || start.id !== event.pointerId) return
-    swipe.current = null
-    event.currentTarget.releasePointerCapture?.(event.pointerId)
-    if (!navigate) return
-    const dx = event.clientX - start.x
-    const dy = event.clientY - start.y
-    if (Math.abs(dx) < SWIPE_MIN_DISTANCE || Math.abs(dx) < Math.abs(dy) * SWIPE_AXIS_RATIO) return
-    navigateUnit(dx < 0 ? 1 : -1)
-  }
-
   const openProgressionSettings = idx => {
     const state = useStore.getState().S
     const entry = state.active?.entries?.[idx]
@@ -983,12 +961,20 @@ function ActiveWorkout() {
       </div>
     ) : <>
       <div className="muted small" style={{ marginBottom: 6 }}>{isSuperset ? t('Superset {0} / {1}', unitIdx + 1, units.length) : t('Exercise {0} / {1}', unitIdx + 1, units.length)}</div>
-      <div className="workout-swipe-surface" data-testid="workout-swipe-surface"
-        onPointerDown={onSwipePointerDown}
-        onPointerUp={event => finishSwipe(event, true)}
-        onPointerCancel={event => finishSwipe(event, false)}
-        onLostPointerCapture={event => {
-          if (swipe.current?.id === event.pointerId) swipe.current = null
+      <SwipeCards index={unitIdx} count={units.length} revision={A}
+        timerKey={timer && `${timer.endsAt}:${timer.forIdx ?? ''}`} workKey={work?.endsAt}
+        onNavigate={navigateUnit} renderPreview={direction => {
+          const adjacent = units[unitIdx + direction] || []
+          if (!adjacent.length) return null
+          return adjacent.length > 1 ? (
+            <div className="ss-card">
+              <div className="ss-hd"><Icon name="link" />{t('Superset · do these back-to-back, rest when done')}</div>
+              {adjacent.map((idx, k) => <div key={idx} className="ss-ex">
+                {k > 0 && <div className="ss-amp">+</div>}
+                <ExerciseBlock entryIdx={idx} compact />
+              </div>)}
+            </div>
+          ) : <ExerciseBlock entryIdx={adjacent[0]} />
         }}>
       {isSuperset ? (
         <div className="ss-card">
@@ -1008,7 +994,7 @@ function ActiveWorkout() {
       ) : (
         <ExerciseBlock entryIdx={cur} onPairPrev={onPairPrev} onPairNext={onPairNext} {...blockProps(cur)} />
       )}
-      </div>
+      </SwipeCards>
     </>) : <div className="empty"><div className="ico"><Icon name="shuffle" /></div>{t('Freestyle workout — add your first exercise.')}</div>}
 
     <div style={{ height: 12 }} />
