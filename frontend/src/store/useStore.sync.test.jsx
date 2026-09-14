@@ -162,6 +162,173 @@ describe('push against a revisioned server', () => {
     expect(localStorage.getItem('gym_dirty')).toBeNull()
   })
 
+  it('a 409 keeps a history draft but adopts the remotely changed original record', async () => {
+    const original = { ...workout('w1'), note: 'original' }
+    const active = { ...clone(original), entries: [], editingWorkoutId: 'w1', editingOriginal: clone(original) }
+    signedIn({ ...clone(DEF), _ts: 300, workouts: [original], active })
+    localStorage.setItem('gym_sync', JSON.stringify({ rev: 1, ts: 100 }))
+    const remote = { ...clone(DEF), _ts: 200, workouts: [{ ...original, note: 'from phone' }], _rev: 2 }
+    api.mockRejectedValueOnce(httpError(409, { error: 'conflict', rev: 2, state: remote }))
+    api.mockResolvedValueOnce({ ok: true, rev: 3 })
+
+    await useStore.getState().pushState()
+
+    expect(puts()).toHaveLength(2)
+    expect(puts()[1].state.workouts[0].note).toBe('from phone')
+    expect(useStore.getState().S.active.editingWorkoutId).toBe('w1')
+    expect(useStore.getState().S.active.editingOriginal.note).toBe('original')
+  })
+
+  it('a 409 after local Save restores that correction as a draft over the remote original', async () => {
+    const row = weight => ({ id: 'sq', target: { mode: 'reps' }, sets: [{ w: weight, r: 5, done: true }] })
+    const original = { ...workout('w1'), end: 2, note: 'original', entries: [row(40)] }
+    const active = { ...clone(original), cur: 0, entries: [row(50)], editingWorkoutId: 'w1', editingOriginal: clone(original) }
+    signedIn({ ...clone(DEF), _ts: 300, workouts: [original], active })
+    localStorage.setItem('gym_sync', JSON.stringify({ rev: 1, ts: 100 }))
+    const remote = { ...clone(DEF), _ts: 400, workouts: [{ ...original, note: 'from phone' }], exWeights: { sq: { w: 40, d: original.d } }, _rev: 2 }
+    api.mockRejectedValueOnce(httpError(409, { error: 'conflict', rev: 2, state: remote }))
+    api.mockResolvedValueOnce({ ok: true, rev: 3 })
+
+    useStore.getState().saveHistoryEdit()
+    await useStore.getState().pushState()
+
+    expect(puts()).toHaveLength(2)
+    expect(puts()[1].state.workouts[0].note).toBe('from phone')
+    expect(useStore.getState().S.active.entries[0].sets[0].w).toBe(50)
+    expect(useStore.getState().S.active.editingOriginal.note).toBe('from phone')
+    expect(useStore.getState().S.exWeights.sq.w).toBe(40)
+    expect(localStorage.getItem('gym_history_edit_pending')).toBeNull()
+  })
+
+  it('restores historical PR flags from canonical history when a lowering edit conflicts', async () => {
+    const row = weight => ({ id: 'sq', target: { mode: 'reps' }, sets: [{ w: weight, r: 5, done: true }] })
+    const original = { ...workout('w1'), end: 2, entries: [row(40)], prs: ['sq'] }
+    const later = { ...workout('w2', '2026-09-02'), end: 3, entries: [row(30)], prs: [] }
+    const active = { ...clone(original), cur: 0, entries: [row(20)], editingWorkoutId: 'w1', editingOriginal: clone(original) }
+    signedIn({ ...clone(DEF), _ts: 300, workouts: [original, later], active, exWeights: { sq: { w: 40, d: original.d } } })
+    localStorage.setItem('gym_sync', JSON.stringify({ rev: 1, ts: 100 }))
+    const remote = { ...clone(DEF), _ts: 400, workouts: [{ ...original, note: 'from phone' }, later], exWeights: { sq: { w: 40, d: original.d } }, _rev: 2 }
+    api.mockRejectedValueOnce(httpError(409, { error: 'conflict', rev: 2, state: remote }))
+    api.mockResolvedValueOnce({ ok: true, rev: 3 })
+
+    useStore.getState().saveHistoryEdit()
+    expect(useStore.getState().S.workouts[1].prs).toEqual(['sq'])
+    await useStore.getState().pushState()
+
+    expect(useStore.getState().S.workouts[1].prs).toEqual([])
+    expect(useStore.getState().S.exWeights.sq).toEqual({ w: 40, d: original.d })
+  })
+
+  it('keeps a saved correction and its conflict receipt while offline', async () => {
+    const original = { ...workout('w1'), end: 2, entries: [{ id: 'sq', target: { mode: 'reps' }, sets: [{ w: 40, r: 5, done: true }] }] }
+    const active = { ...clone(original), cur: 0, editingWorkoutId: 'w1', editingOriginal: clone(original) }
+    active.entries[0].sets[0].w = 50
+    signedIn({ ...clone(DEF), _ts: 300, workouts: [original], active })
+    localStorage.setItem('gym_sync', JSON.stringify({ rev: 1, ts: 100 }))
+    api.mockRejectedValueOnce(new TypeError('offline'))
+
+    useStore.getState().saveHistoryEdit()
+    await useStore.getState().pushState()
+
+    expect(useStore.getState().S.active).toBeNull()
+    expect(useStore.getState().S.workouts[0].entries[0].sets[0].w).toBe(50)
+    expect(localStorage.getItem('gym_history_edit_pending')).not.toBeNull()
+    expect(localStorage.getItem('gym_dirty')).toBe('1')
+  })
+
+  it('does not clear an edit saved after an earlier PUT started', async () => {
+    vi.useFakeTimers()
+    const row = weight => ({ id: 'sq', target: { mode: 'reps' }, sets: [{ w: weight, r: 5, done: true }] })
+    const original = { ...workout('w1'), end: 2, entries: [row(40)] }
+    const active = { ...clone(original), cur: 0, entries: [row(50)], editingWorkoutId: 'w1', editingOriginal: clone(original) }
+    signedIn({ ...clone(DEF), _ts: 300, workouts: [original], active })
+    let release
+    api.mockImplementationOnce(() => new Promise(resolve => { release = () => resolve({ ok: true, rev: 2 }) }))
+
+    const earlier = useStore.getState().pushState()
+    useStore.getState().saveHistoryEdit()
+    release()
+    await earlier
+
+    const pending = JSON.parse(localStorage.getItem('gym_history_edit_pending'))
+    expect(pending).toHaveLength(1)
+    expect(pending[0].saved.entries[0].sets[0].w).toBe(50)
+  })
+
+  it('keeps separate offline receipts for edits to two workouts', () => {
+    vi.useFakeTimers()
+    const row = weight => ({ id: 'sq', target: { mode: 'reps' }, sets: [{ w: weight, r: 5, done: true }] })
+    const originals = [
+      { ...workout('w1'), end: 2, entries: [row(40)] },
+      { ...workout('w2'), end: 2, entries: [row(60)] },
+    ]
+    const activeFor = (original, weight) => ({
+      ...clone(original), cur: 0, entries: [row(weight)],
+      editingWorkoutId: original.id, editingOriginal: clone(original),
+    })
+    signedIn({ ...clone(DEF), workouts: originals, active: activeFor(originals[0], 45) })
+    useStore.getState().saveHistoryEdit()
+    const second = clone(useStore.getState().S.workouts.find(saved => saved.id === 'w2'))
+    useStore.getState().update(state => { state.active = activeFor(second, 65) }, false)
+    useStore.getState().saveHistoryEdit()
+
+    const pending = JSON.parse(localStorage.getItem('gym_history_edit_pending'))
+    expect(pending.map(edit => edit.id)).toEqual(['w1', 'w2'])
+    expect(pending.map(edit => edit.saved.entries[0].sets[0].w)).toEqual([45, 65])
+  })
+
+  it('halts conflict retry when a live workout occupies the recovered editor slot', async () => {
+    const row = weight => ({ id: 'sq', target: { mode: 'reps' }, sets: [{ w: weight, r: 5, done: true }] })
+    const original = { ...workout('w1'), end: 2, note: 'original', entries: [row(40)] }
+    const active = { ...clone(original), cur: 0, entries: [row(50)], editingWorkoutId: 'w1', editingOriginal: clone(original) }
+    signedIn({ ...clone(DEF), _ts: 300, workouts: [original], active })
+    localStorage.setItem('gym_sync', JSON.stringify({ rev: 1, ts: 100 }))
+    useStore.getState().saveHistoryEdit()
+    useStore.getState().update(state => { state.active = { id: 'live', entries: [] } }, false)
+    const remote = { ...clone(DEF), _ts: 400, workouts: [{ ...original, note: 'from phone' }], _rev: 2 }
+    api.mockRejectedValueOnce(httpError(409, { error: 'conflict', rev: 2, state: remote }))
+
+    await useStore.getState().pushState()
+
+    expect(puts()).toHaveLength(1)
+    expect(useStore.getState().S.workouts[0].note).toBe('from phone')
+    expect(useStore.getState().S.active.id).toBe('live')
+    expect(JSON.parse(localStorage.getItem('gym_history_edit_pending'))[0].saved.entries[0].sets[0].w).toBe(50)
+    expect(localStorage.getItem('gym_dirty')).toBe('1')
+  })
+
+  it('keeps multiple conflicting corrections and recovers them one editor at a time', async () => {
+    vi.useFakeTimers()
+    const row = weight => ({ id: 'sq', target: { mode: 'reps' }, sets: [{ w: weight, r: 5, done: true }] })
+    const originals = [
+      { ...workout('w1'), end: 2, note: 'one', entries: [row(40)] },
+      { ...workout('w2'), end: 2, note: 'two', entries: [row(60)] },
+    ]
+    const saved = [
+      { ...clone(originals[0]), entries: [row(45)] },
+      { ...clone(originals[1]), entries: [row(65)] },
+    ]
+    signedIn({ ...clone(DEF), _ts: 300, workouts: saved })
+    localStorage.setItem('gym_sync', JSON.stringify({ rev: 1, ts: 100 }))
+    localStorage.setItem('gym_history_edit_pending', JSON.stringify(originals.map((original, i) => ({
+      id: original.id, original, saved: saved[i],
+    }))))
+    const remote = { ...clone(DEF), _ts: 400, workouts: originals.map(original => ({ ...original, note: 'remote-' + original.id })), _rev: 2 }
+    api.mockRejectedValueOnce(httpError(409, { error: 'conflict', rev: 2, state: remote }))
+
+    await useStore.getState().pushState()
+
+    expect(puts()).toHaveLength(1)
+    expect(useStore.getState().S.workouts.map(item => item.note)).toEqual(['remote-w1', 'remote-w2'])
+    expect(useStore.getState().S.active.editingWorkoutId).toBe('w1')
+    expect(JSON.parse(localStorage.getItem('gym_history_edit_pending')).map(edit => edit.id)).toEqual(['w1', 'w2'])
+    expect(sync().rev).toBe(1)
+    expect(localStorage.getItem('gym_dirty')).toBe('1')
+
+    useStore.getState().discardHistoryEdit()
+    expect(JSON.parse(localStorage.getItem('gym_history_edit_pending')).map(edit => edit.id)).toEqual(['w2'])
+  })
+
   it('gives up after two conflicts in a row and leaves the copy dirty for the next pull', async () => {
     signedIn({ ...clone(DEF), _ts: 300, workouts: [workout('w1')] })
     localStorage.setItem('gym_sync', JSON.stringify({ rev: 1, ts: 100 }))

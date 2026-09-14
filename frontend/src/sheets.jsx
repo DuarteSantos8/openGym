@@ -37,6 +37,7 @@ import { isFav, toggleFav, sortFavouritesFirst } from './lib/favourites.js'
 import { buildSessionEntries } from './lib/session-start.js'
 import { buildCombinedEntries, deriveSessionName } from './lib/session-merge.js'
 import { workoutsOn, backfillStart, backfillEnd, completeBackfill } from './lib/backfill.js'
+import { editCompletedSession } from './lib/session-edit.js'
 
 const S = () => useStore.getState().S
 const update = (...a) => useStore.getState().update(...a)
@@ -1690,6 +1691,12 @@ function WorkoutDetail({ w, close }) {
       placeholder={t('How the session went as a whole.')}
       onFocus={onNoteFocus} onChange={e => setNote(e.target.value)} onBlur={saveNote} />
     <div style={{ height: 14 }} />
+    {st.active && <p className="small muted">{t('Finish the current workout first.')}</p>}
+    <Button icon="pencil" disabled={!!st.active} onClick={() => {
+      try { update(state => editCompletedSession(state, w.id)); close(); nav('/workout') }
+      catch (error) { toast(t(error.message)) }
+    }}>{t('Edit workout')}</Button>
+    <div style={{ height: 8 }} />
     <Button variant="danger" onClick={() => confirmSheet({ title: t('Delete workout?'), message: t('This removes it from your history for good.'), confirmText: t('Delete'), danger: true, onConfirm: () => { update(s => { s.workouts = s.workouts.filter(x => x.id !== w.id) }); close(); toast(t('Workout deleted')) } })}>{t('Delete workout')}</Button>
   </>
 }
@@ -1970,6 +1977,7 @@ function ExerciseNote({ entryIdx, close }) {
   const st = useStore(s => s.S)
   const update = useStore(s => s.update)
   const A = st.active
+  const editing = !!A?.editingWorkoutId
   const entry = A ? A.entries[entryIdx] : null
   const ex = entry ? exOr(entry.id) : null
   const [note, setNote] = useState(entry?.note || '')
@@ -1987,9 +1995,11 @@ function ExerciseNote({ entryIdx, close }) {
         if (today) { e.note = today; if (pin) e.notePin = true; else delete e.notePin }
         else { delete e.note; delete e.notePin }
       }
-      s.exNotes = s.exNotes || {}
-      if (always) s.exNotes[entry.id] = always
-      else delete s.exNotes[entry.id]
+      if (!editing) {
+        s.exNotes = s.exNotes || {}
+        if (always) s.exNotes[entry.id] = always
+        else delete s.exNotes[entry.id]
+      }
     })
     close()
   }
@@ -2007,11 +2017,13 @@ function ExerciseNote({ entryIdx, close }) {
         <Switch checked={pin} onChange={setPin} disabled={!note.trim()} />
       </Row>
     </div>
-    <div style={{ height: 18 }} />
-    <div className="small muted" style={{ marginBottom: 6 }}>{t('Always for this exercise')}</div>
-    <textarea className="input" rows={2} maxLength={NOTE_MAX} value={standing}
-      placeholder={t('Seat height, pin position, a form cue — shown every session.')}
-      onChange={e => setStanding(e.target.value)} />
+    {!editing && <>
+      <div style={{ height: 18 }} />
+      <div className="small muted" style={{ marginBottom: 6 }}>{t('Always for this exercise')}</div>
+      <textarea className="input" rows={2} maxLength={NOTE_MAX} value={standing}
+        placeholder={t('Seat height, pin position, a form cue — shown every session.')}
+        onChange={e => setStanding(e.target.value)} />
+    </>}
     <div style={{ height: 18 }} />
     <Button variant="primary" onClick={save}>{t('Save')}</Button>
   </>
@@ -2068,6 +2080,35 @@ function WorkoutComplete({ close }) {
 }
 export const workoutCompleteSheet = () => ui().openSheet(close => <WorkoutComplete close={close} />, { kind: 'center' })
 
+export function saveWorkoutEdits(onExit = () => nav('/history')) {
+  try {
+    useStore.getState().saveHistoryEdit()
+    useUI.getState().stopRest()
+    useUI.getState().stopWork()
+    useStore.getState().autoBackupNow()
+    toast(t('Workout updated'))
+    onExit()
+  } catch (error) { toast(t(error.message)) }
+}
+
+export function exitWorkoutEdit(onExit = () => nav('/history')) {
+  ui().openSheet(close => <>
+    <h3>{t('Save workout changes?')}</h3>
+    <p className="muted">{t('Save your edits to this workout, or keep the original record.')}</p>
+    <Button variant="primary" onClick={() => { close(); saveWorkoutEdits(onExit) }}>{t('Save changes')}</Button>
+    <div style={{ height: 8 }} />
+    <Button onClick={() => {
+      close()
+      useStore.getState().discardHistoryEdit()
+      useUI.getState().stopRest()
+      useUI.getState().stopWork()
+      onExit()
+    }}>{t("Don't save")}</Button>
+    <div style={{ height: 8 }} />
+    <Button variant="ghost" className="dim" onClick={close}>{t('Keep editing')}</Button>
+  </>, { kind: 'center' })
+}
+
 function FinishSummary({ w, prs, e1prs = [], close }) {
   const st = useStore(s => s.S)
   return <div style={{ textAlign: 'center', padding: '8px 0' }}>
@@ -2090,6 +2131,7 @@ function FinishSummary({ w, prs, e1prs = [], close }) {
   </div>
 }
 export function finishWorkout() {
+  if (S().active?.editingWorkoutId) { saveWorkoutEdits(); return }
   const A = S().active
   if (!A) return
   const done = setsDoneActive(A)

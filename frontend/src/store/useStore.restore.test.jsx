@@ -176,6 +176,7 @@ describe('signing in as a different profile', () => {
 
   it('does not move the previous profile data into a brand-new account', async () => {
     signInAsAThenExpire()
+    localStorage.setItem('gym_history_edit_pending', JSON.stringify({ id: 'A-workout' }))
     api.mockResolvedValue({ state: null })
 
     useStore.getState().setUser({ id: 'B', name: 'B' })
@@ -187,6 +188,7 @@ describe('signing in as a different profile', () => {
     expect(useStore.getState().S.active).toBeNull()
     expect(JSON.parse(localStorage.getItem('gym_state_v1')).routines).toEqual([])
     expect(localStorage.getItem('gym_owner')).toBe('B')
+    expect(localStorage.getItem('gym_history_edit_pending')).toBeNull()
   })
 
   it('adopts the new profile own state even when it is older or a push failed after expiry', async () => {

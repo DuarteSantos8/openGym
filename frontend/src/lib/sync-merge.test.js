@@ -80,6 +80,13 @@ describe('mergeStates', () => {
     expect(m.barWeights).toEqual({ sq: 20, dl: 15 })
   })
 
+  it('does not resurrect a cached best lowered by the winning workout correction', () => {
+    const set = w => ({ id: 'sq', target: { mode: 'reps' }, sets: [{ w, r: 5, done: true }] })
+    const older = base({ _ts: 100, workouts: [{ ...workout('w1'), entries: [set(100)] }], exWeights: { sq: { w: 100, d: '2026-09-01' } } })
+    const corrected = base({ _ts: 200, workouts: [{ ...workout('w1'), entries: [set(80)] }], exWeights: { sq: { w: 80, d: '2026-09-01' } } })
+    expect(mergeStates(corrected, older).exWeights.sq).toEqual({ w: 80, d: '2026-09-01' })
+  })
+
   it('is commutative on the union fields and idempotent', () => {
     const ab = mergeStates(A(), B()), ba = mergeStates(B(), A())
     for (const f of ['workouts', 'routines', 'customEx', 'gymCards']) expect(ids(ab[f]).sort()).toEqual(ids(ba[f]).sort())

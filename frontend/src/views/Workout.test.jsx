@@ -67,6 +67,7 @@ vi.mock('../sheets.jsx', () => ({
   exerciseDetailSheet: vi.fn(),
   topWeightSheet: mocks.topWeightSheet,
   finishWorkout: vi.fn(),
+  exitWorkoutEdit: vi.fn(),
   workoutCompleteSheet: mocks.workoutCompleteSheet,
   confirmSheet: mocks.confirmSheet,
   swapActiveWorkoutExercise: mocks.swapActiveWorkoutExercise,
@@ -195,6 +196,24 @@ beforeEach(() => {
   mocks.timer = null
   mocks.work = null
   mocks.scrollCalls.length = 0
+})
+
+it('edits a saved set without running live completion, rest or success feedback', async () => {
+  await mount([exercise('plain-bench', [false], {
+    plan: { policy: 'linear', kind: 'first', why: ['Nothing logged yet — this session sets the baseline.'] },
+  })], 0, {
+    active: { editingWorkoutId: 'saved', editingOriginal: { id: 'saved' } },
+  })
+  await toggleSet(0)
+  expect(mocks.S.active.entries[0].sets[0].done).toBe(true)
+  expect(mocks.startRest).not.toHaveBeenCalled()
+  expect(mocks.workoutCompleteSheet).not.toHaveBeenCalled()
+  expect(mocks.toast).not.toHaveBeenCalled()
+  expect(container.textContent).toContain('Editing a saved workout')
+  expect(container.querySelector('.progline')).toBeNull()
+  const more = container.querySelector('button[aria-label="More"]')
+  await act(async () => { more.dispatchEvent(new dom.Event('click', { bubbles: true })) })
+  expect(mocks.menuSheet.mock.calls.at(-1)[0].items.filter(Boolean).map(item => item.label)).not.toContain('Progression settings')
 })
 
 afterEach(async () => {
