@@ -1236,4 +1236,6 @@ export default {
   'already added': 'уже добавлено',
   'no exercises': 'нет упражнений',
   'Pick equipment': 'Выбрать оборудование',
+  'Keep timing after target': 'Продолжать отсчёт после цели',
+  'Timed sets continue up to 15 extra minutes. Tap Done to log the actual duration.': 'Подходы на время продолжаются ещё до 15 минут. Нажмите «Готово», чтобы записать фактическую длительность.',
 }

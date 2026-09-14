@@ -1236,4 +1236,6 @@ export default {
   'already added': 'zaten ekli',
   'no exercises': 'egzersiz yok',
   'Pick equipment': 'Ekipman seç',
+  'Keep timing after target': 'Hedeften sonra zamanlamayı sürdür',
+  'Timed sets continue up to 15 extra minutes. Tap Done to log the actual duration.': 'Süreli setler en fazla 15 dakika daha devam eder. Gerçek süreyi kaydetmek için Bitti’ye dokunun.',
 }

@@ -1247,4 +1247,6 @@ export default {
   'already added': 'เพิ่มแล้ว',
   'no exercises': 'ไม่มีท่าออกกำลังกาย',
   'Pick equipment': 'เลือกอุปกรณ์',
+  'Keep timing after target': 'จับเวลาต่อหลังถึงเป้าหมาย',
+  'Timed sets continue up to 15 extra minutes. Tap Done to log the actual duration.': 'เซ็ตแบบจับเวลาจะทำต่อได้อีกสูงสุด 15 นาที แตะ “เสร็จแล้ว” เพื่อบันทึกระยะเวลาจริง',
 }

@@ -1236,4 +1236,6 @@ export default {
   'already added': 'पहले से जोड़ा हुआ',
   'no exercises': 'कोई व्यायाम नहीं',
   'Pick equipment': 'उपकरण चुनें',
+  'Keep timing after target': 'लक्ष्य के बाद भी समय जारी रखें',
+  'Timed sets continue up to 15 extra minutes. Tap Done to log the actual duration.': 'समयबद्ध सेट 15 अतिरिक्त मिनट तक जारी रहेंगे। वास्तविक अवधि दर्ज करने के लिए “पूरा” दबाएँ।',
 }

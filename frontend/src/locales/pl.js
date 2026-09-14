@@ -1236,4 +1236,6 @@ export default {
   'already added': 'już dodano',
   'no exercises': 'brak ćwiczeń',
   'Pick equipment': 'Wybierz sprzęt',
+  'Keep timing after target': 'Kontynuuj pomiar po czasie docelowym',
+  'Timed sets continue up to 15 extra minutes. Tap Done to log the actual duration.': 'Serie na czas trwają do 15 dodatkowych minut. Stuknij Gotowe, aby zapisać rzeczywisty czas.',
 }
