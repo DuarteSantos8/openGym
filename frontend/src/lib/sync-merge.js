@@ -1,3 +1,5 @@
+import { bestWeightForEntry } from './history.js'
+
 /* Two copies of the account state, one merged copy.
  *
  * The server refuses a push over a document the device never saw (PUT /api/data with a stale
@@ -12,8 +14,9 @@
  *     of an id that both have; workouts sorted by day and start like every other writer
  *   - bodyweight: union by day, the later-edited (`t`) entry of a day that both have
  *   - favEx: ordered set union, the newer copy first
- *   - exWeights: union by exercise, the larger `w` (the app itself only ever raises it — a PR
- *     logged on the other device must not be forgotten); exNotes, barWeights: key union
+ *   - exWeights: union by exercise, normally the larger `w`; when the winning side changed an
+ *     existing workout, affected exercises are rebuilt from that side and the merged history so
+ *     a deliberate history correction can lower a stale cached best
  *   - `_ts`: the later of the two; `_rev` dropped (the server sets it); `active` left to the caller
  *
  * Known limit: with no record of what each side deleted, an entry removed on one device inside
@@ -58,10 +61,19 @@ export function mergeBodyweight(a = [], b = []) {
   return [...byDay.values()].sort((x, y) => (x.d < y.d ? -1 : 1))
 }
 
-function mergeExWeights(n = {}, o = {}) {
+function mergeExWeights(n = {}, o = {}, workouts = [], corrected = new Set()) {
   const out = { ...(o || {}), ...(n || {}) }
   for (const k of Object.keys(o || {})) {
     if (n && n[k] && o[k] && (o[k].w || 0) > (n[k].w || 0)) out[k] = o[k]
+  }
+  for (const id of corrected) {
+    const logged = workouts.flatMap(workout => list(workout.entries)
+      .filter(entry => entry?.id === id)
+      .map(entry => ({ w: bestWeightForEntry(entry), d: workout.d })))
+      .filter(value => value.w > 0)
+    const candidates = [...logged, ...(n?.[id]?.w > 0 ? [n[id]] : [])].sort((a, b) => b.w - a.w)
+    if (candidates.length) out[id] = candidates[0]
+    else delete out[id]
   }
   return out
 }
@@ -76,12 +88,19 @@ export function mergeStates(a, b, { prefer } = {}) {
   const o = n === a ? b : a
   const out = clone(n)
   out.workouts = unionById(n.workouts, o.workouts, workoutKey).map(clone).sort(byDayStart)
+  const olderWorkouts = new Map(list(o.workouts).map(workout => [workoutKey(workout), workout]))
+  const corrected = new Set()
+  for (const workout of list(n.workouts)) {
+    const older = olderWorkouts.get(workoutKey(workout))
+    if (!older || JSON.stringify(workout.entries) === JSON.stringify(older.entries)) continue
+    for (const entry of [...list(workout.entries), ...list(older.entries)]) if (entry?.id != null) corrected.add(entry.id)
+  }
   for (const f of ['routines', 'customEx', 'equipProfiles', 'gymCards']) {
     if (list(n[f]).length || list(o[f]).length) out[f] = unionById(n[f], o[f]).map(clone)
   }
   out.bodyweight = mergeBodyweight(n.bodyweight, o.bodyweight).map(clone)
   if (list(n.favEx).length || list(o.favEx).length) out.favEx = [...new Set([...list(n.favEx), ...list(o.favEx)])]
-  out.exWeights = clone(mergeExWeights(n.exWeights, o.exWeights))
+  out.exWeights = clone(mergeExWeights(n.exWeights, o.exWeights, out.workouts, corrected))
   for (const f of ['exNotes', 'barWeights']) {
     if (n[f] || o[f]) out[f] = clone({ ...(o[f] || {}), ...(n[f] || {}) })
   }

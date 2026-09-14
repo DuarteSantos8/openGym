@@ -7,6 +7,7 @@ import { DEMO, DEMO_SEEDED } from '../lib/demo.js'
 import { guestAllowed } from '../lib/guest.js'
 import { MOBILE, initReminderSync, nativeLoad, nativeSave, onAppActive, syncReminder, writeAutoBackup } from '../lib/mobile.js'
 import { mergeStates, localExtras } from '../lib/sync-merge.js'
+import { prepareLocalStateForEditMerge, rebuildHistoryDerived, saveWorkoutEdit } from '../lib/session-edit.js'
 import { loadRemote, chooseLocal, forgetRemote, connect } from '../lib/remote.js'
 import { loadCoachDevice, saveCoachDevice, coachDeviceSettings } from '../lib/coach-device.js'
 
@@ -18,6 +19,7 @@ const KEY = 'gym_state_v1'
 // a document this device never saw is refused (409) instead of dropping another device's work;
 // `ts` tells a pull whether anything changed here since. See pushState/pullState.
 const SYNC_KEY = 'gym_sync'
+const HISTORY_EDIT_KEY = 'gym_history_edit_pending'
 const CHECK_MIN_MS = 3000    // rev checks closer together than this are the same event (focus + visibility)
 const POLL_MS = 30000        // while the app is open and signed in, ask the server for its revision this often
 export const DEF = {
@@ -116,6 +118,25 @@ export const useStore = create((set, get) => {
   let offlineChanges = false   // a push failed for lack of network — the next one that lands says so
 
   const readSync = () => { try { return JSON.parse(localStorage.getItem(SYNC_KEY)) || null } catch { return null } }
+  const readPendingEdits = () => {
+    try {
+      const value = JSON.parse(localStorage.getItem(HISTORY_EDIT_KEY))
+      return Array.isArray(value) ? value : (value?.id ? [value] : [])
+    } catch { return [] }
+  }
+  const writePendingEdits = edits => {
+    if (edits.length) localStorage.setItem(HISTORY_EDIT_KEY, JSON.stringify(edits))
+    else localStorage.removeItem(HISTORY_EDIT_KEY)
+  }
+  const clearSentEdits = (sent, sentState) => writePendingEdits(readPendingEdits().filter(current => {
+    const captured = sent.find(receipt => JSON.stringify(receipt) === JSON.stringify(current))
+    if (!captured) return true
+    if (!captured.saved) return false
+    const canonical = sentState.workouts?.find(workout => workout.id === captured.id)
+    const represented = JSON.stringify(canonical) === JSON.stringify(captured.saved)
+      || sentState.active?.editingWorkoutId === captured.id
+    return !represented
+  }))
   const writeSync = (rev, ts) => localStorage.setItem(SYNC_KEY, JSON.stringify({ rev, ts: ts || 0 }))
   // What the banner shows a signed-in user: `offline` when the server could not be reached at
   // all, `pending` while a change is still owed to it (either way, or a push the server refused).
@@ -203,16 +224,20 @@ export const useStore = create((set, get) => {
   // real change this device now holds — while `ts` in the marker stays old, so a pull that
   // happens before the push lands still sees it as unsent.
   const mergeInto = (local, remote, rev) => {
-    const merged = Object.assign(clone(DEF), mergeStates(local, remote))
-    merged.active = local.active || null
+    const prepared = prepareLocalStateForEditMerge(local, remote, readPendingEdits())
+    const merged = Object.assign(clone(DEF), mergeStates(prepared.state, remote))
+    merged.active = prepared.state.active || local.active || null
+    rebuildHistoryDerived(merged, prepared.affectedExerciseIds)
     persist(merged, false)
-    writeSync(rev, readSync()?.ts || 0)
+    if (!prepared.blocked) writeSync(rev, readSync()?.ts || 0)
+    return prepared.blocked
   }
   // Take the server's copy as this device's own, timestamp and all (see persist).
   const adopt = (next, rev) => { persist(next, false, false); writeSync(rev, next._ts) }
 
   const doPush = async (attempt = 0) => {
     const S = get().S
+    const sentEdits = readPendingEdits()
     const sync = readSync()
     const force = forceNext
     const body = { state: S }
@@ -225,6 +250,7 @@ export const useStore = create((set, get) => {
       if (r.rev == null) localStorage.removeItem(SYNC_KEY)
       else writeSync(r.rev, S._ts)
       localStorage.removeItem('gym_dirty')
+      clearSentEdits(sentEdits, S)
       toldTooLarge = false
       // Back from offline with changes that were waiting: say so once — the banner that promised
       // "syncs when you're back online" has just kept its word.
@@ -241,7 +267,12 @@ export const useStore = create((set, get) => {
         // Another device wrote since this one last read. The server sent its document along;
         // merge and push once more against that revision. A second refusal in a row leaves the
         // copy dirty and the next resume pull takes it from there.
-        mergeInto(get().S, e.data.state, e.data.rev || 0)
+        const blocked = mergeInto(get().S, e.data.state, e.data.rev || 0)
+        if (blocked) {
+          localStorage.setItem('gym_dirty', '1')
+          setSync({ offline: false, pending: true })
+          return
+        }
         return doPush(attempt + 1)
       }
       localStorage.setItem('gym_dirty', '1')
@@ -302,6 +333,7 @@ export const useStore = create((set, get) => {
     localStorage.removeItem('gym_guest')
     localStorage.removeItem('gym_dirty')
     localStorage.removeItem(SYNC_KEY)
+    localStorage.removeItem(HISTORY_EDIT_KEY)
     localStorage.removeItem(KEY)
     persist(clone(DEF), false)
     localStorage.removeItem('gym_owner')
@@ -331,6 +363,22 @@ export const useStore = create((set, get) => {
       const S = clone(get().S)
       mut(S)
       persist(S, push)
+    },
+    saveHistoryEdit() {
+      const S = clone(get().S)
+      const original = clone(S.active?.editingOriginal)
+      const id = S.active?.editingWorkoutId
+      const saved = saveWorkoutEdit(S)
+      if (get().user) writePendingEdits([...readPendingEdits().filter(edit => edit.id !== id), { id, original, saved: clone(saved) }])
+      persist(S)
+      return saved
+    },
+    discardHistoryEdit() {
+      const S = clone(get().S)
+      const id = S.active?.editingWorkoutId
+      S.active = null
+      if (id) writePendingEdits(readPendingEdits().filter(edit => edit.id !== id))
+      persist(S)
     },
     // A replace that is meant to reach the server (backup import, reset) is a deliberate
     // overwrite, not a change to merge: the push it arms goes without a baseRev.
@@ -373,6 +421,7 @@ export const useStore = create((set, get) => {
         if (owner && owner !== u.id) {
           localStorage.removeItem('gym_dirty')
           localStorage.removeItem(SYNC_KEY)
+          localStorage.removeItem(HISTORY_EDIT_KEY)
           localStorage.removeItem(KEY)
           persist(clone(DEF), false)
         }
