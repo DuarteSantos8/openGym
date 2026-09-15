@@ -95,7 +95,7 @@ function copiedEntry(entry) {
 
 export function routineFromSession(session, name = session?.name) {
   const ex = groupIds(sessionEntries(session).filter(entry => entry?.sets?.length).map(copiedEntry))
-  if (!ex.length) throw new Error('This session has no exercises to save.')
+  if (!ex.length) throw new Error('no exercises')
   return { id: uid(), name: String(name || 'Workout').trim() || 'Workout', ex }
 }
 

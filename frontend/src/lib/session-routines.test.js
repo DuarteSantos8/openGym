@@ -118,7 +118,7 @@ describe('routineFromSession', () => {
   })
 
   it('rejects a saved session with no exercise setup', () => {
-    expect(() => routineFromSession({ name: 'Empty', entries: [] })).toThrow('This session has no exercises to save.')
+    expect(() => routineFromSession({ name: 'Empty', entries: [] })).toThrow('no exercises')
   })
 })
 
