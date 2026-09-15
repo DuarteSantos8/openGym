@@ -1481,7 +1481,7 @@ function PlanTools({ close }) {
     const f = ev.target.files[0]; ev.target.value = ''; if (!f) return
     const rd = new FileReader()
     rd.onload = () => {
-      try { const bundle = parsePlan(rd.result); close(); planImportSheet(bundle) }
+      try { const bundle = parsePlan(rd.result, st.unit || 'kg'); close(); planImportSheet(bundle) }
       catch (e) { toast(t('Import failed: {0}', e.message)) }
     }
     rd.readAsText(f)

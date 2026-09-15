@@ -13,10 +13,50 @@ import { modeOf, fmtSec, isBw, isPerSide, sideReps, MAX_PLANNED_WARMUPS } from '
 import { deriveSessionName } from './session-merge.js'
 import { uid, todayISO, DAYN, weekOrder, weekStartOf, fmtNum, exCount } from './format.js'
 import { t, exerciseNameFor } from './i18n-core.js'
+import { convertWeight } from './units.js'
 
 const PLAN_FMT = 1
 const WEEK_DAYS = [1, 2, 3, 4, 5, 6, 0]   // every getDay() index; only the reader's own
                                           // screen puts them in an order (see weekOrder)
+const PLAN_UNITS = new Set(['kg', 'lb'])
+
+// A plan's numbers are in the unit that wrote it. Missing unit is deliberately legacy-compatible:
+// old files were read as already being in the recipient's unit, so keep their values unchanged.
+const planUnit = value => value === 'lbs' ? 'lb' : PLAN_UNITS.has(value) ? value : null
+const unitError = () => { throw new Error(t('this isn’t an openGym plan file')) }
+
+function declaredPlanUnit(data) {
+  let declared = null
+  for (const key of ['unit', 'weightUnit']) {
+    if (data[key] == null) continue
+    const unit = planUnit(data[key])
+    if (!unit || (declared && declared !== unit)) unitError()
+    declared = unit
+  }
+  return declared
+}
+
+function convertedExercise(e, sourceUnit, destinationUnit) {
+  if (!sourceUnit || sourceUnit === destinationUnit) return e
+  const out = { ...e }
+  if (out.weight != null) out.weight = convertWeight(out.weight, sourceUnit, destinationUnit)
+  // A timed increment is seconds, not a load. Rep-mode increments are load overrides.
+  if (modeOf(out) === 'reps' && out.inc > 0) out.inc = convertWeight(out.inc, sourceUnit, destinationUnit)
+  return out
+}
+
+function convertedBundle(bundle, destinationUnit) {
+  const sourceUnit = declaredPlanUnit(bundle)
+  if (!sourceUnit || sourceUnit === destinationUnit) return bundle
+  return {
+    ...bundle,
+    unit: destinationUnit,
+    routines: (bundle.routines || []).map(r => ({
+      ...r,
+      ex: (r.ex || []).map(e => convertedExercise(e, sourceUnit, destinationUnit))
+    }))
+  }
+}
 
 // Keep only the meaningful config fields, so the file stays small and readable.
 function cleanEx(e) {
@@ -95,6 +135,8 @@ function cleanIntensifier(x) {
 
 /** Build the shareable bundle: every routine, the week schedule, referenced customs. */
 export function buildPlanBundle(S, name) {
+  const unit = planUnit(S.unit == null ? 'kg' : S.unit)
+  if (!unit) unitError()
   const routines = (S.routines || []).map(r => ({
     id: r.id, name: r.name, emoji: r.emoji,
     ...(r.prog ? { prog: r.prog } : {}),
@@ -110,7 +152,7 @@ export function buildPlanBundle(S, name) {
   // written after are read the same way at the other end.
   const week = {}
   WEEK_DAYS.forEach(d => { if (S.week?.[d]?.length) week[d] = [].concat(S.week[d]) })
-  return { opengym_plan: PLAN_FMT, exported: todayISO(), name: name || '', week, routines, customEx }
+  return { opengym_plan: PLAN_FMT, exported: todayISO(), name: name || '', unit, week, routines, customEx }
 }
 
 /**
@@ -122,11 +164,13 @@ export function buildPlanBundle(S, name) {
  * would sit invisibly in the routine and only surface as a blank screen when the routine
  * is trained.
  */
-export function parsePlan(raw) {
+export function parsePlan(raw, destinationUnit = 'kg') {
   const data = typeof raw === 'string' ? JSON.parse(raw) : raw
-  if (!data || !data.opengym_plan || !Array.isArray(data.routines)) {
+  const destination = planUnit(destinationUnit)
+  if (!data || typeof data !== 'object' || Array.isArray(data) || !data.opengym_plan || !Array.isArray(data.routines) || !destination) {
     throw new Error(t('this isn’t an openGym plan file'))
   }
+  const sourceUnit = declaredPlanUnit(data)
   const customEx = (Array.isArray(data.customEx) ? data.customEx : []).filter(c => c && c.id)
   const known = new Set(customEx.map(c => c.id))
   let dropped = 0
@@ -144,7 +188,7 @@ export function parsePlan(raw) {
       const rest = cleanRestSec(e.restSec)
       const warmRest = cleanRestSec(e.warmupRestSec)
       const { warmupSets, intensifier, restSec, warmupRestSec, ...passthrough } = e
-      return { ...passthrough, ...(warm ? { warmupSets: warm } : {}), ...(intens ? { intensifier: intens } : {}), ...(rest ? { restSec: rest } : {}), ...(warmRest ? { warmupRestSec: warmRest } : {}) }
+      return convertedExercise({ ...passthrough, ...(warm ? { warmupSets: warm } : {}), ...(intens ? { intensifier: intens } : {}), ...(rest ? { restSec: rest } : {}), ...(warmRest ? { warmupRestSec: warmRest } : {}) }, sourceUnit || destination, destination)
     })
   }))
   return {
@@ -155,7 +199,12 @@ export function parsePlan(raw) {
     dropped,
     routineCount: routines.length,
     exerciseCount: routines.reduce((n, r) => n + r.ex.length, 0),
-    scheduledDays: WEEK_DAYS.filter(d => data.week?.[d]?.length).length
+    scheduledDays: WEEK_DAYS.filter(d => data.week?.[d]?.length).length,
+    // `unit` is the unit of the returned prescriptions. `sourceUnit` is null for a legacy file;
+    // that absence means its numbers were intentionally treated as already in `destination`.
+    unit: destination,
+    sourceUnit: sourceUnit || null,
+    destinationUnit: destination
   }
 }
 
@@ -167,9 +216,12 @@ export function parsePlan(raw) {
  *    leaves empty become rest days — a half-overwritten week would silently mix two plans)
  */
 export function mergePlan(s, bundle, { schedule } = {}) {
+  const destination = planUnit(s.unit == null ? 'kg' : s.unit)
+  if (!destination) unitError()
+  const source = convertedBundle(bundle, destination)
   s.customEx = s.customEx || []
   const exIdMap = {}
-  ;(bundle.customEx || []).forEach(c => {
+  ;(source.customEx || []).forEach(c => {
     const same = s.customEx.find(x => (x.n || '').toLowerCase() === (c.n || '').toLowerCase() && x.bp === c.bp)
     if (same) { exIdMap[c.id] = same.id; return }
     const nid = uid()
@@ -177,7 +229,7 @@ export function mergePlan(s, bundle, { schedule } = {}) {
     s.customEx.push({ id: nid, n: c.n, bp: c.bp, ...(c.desc ? { desc: c.desc } : {}) })
   })
   const ridMap = {}
-  bundle.routines.forEach(r => {
+  source.routines.forEach(r => {
     const nid = uid()
     ridMap[r.id] = nid
     s.routines.push({
@@ -191,7 +243,7 @@ export function mergePlan(s, bundle, { schedule } = {}) {
   })
   if (schedule) {
     WEEK_DAYS.forEach(d => { delete s.week[d] })
-    Object.entries(bundle.week || {}).forEach(([d, val]) => {
+    Object.entries(source.week || {}).forEach(([d, val]) => {
       // `[].concat` tolerates a pre-upgrade scalar bundle value. An element whose routine id
       // didn't survive parsing is dropped, not written as undefined; a day that ends up empty
       // is left absent rather than stored as `[]`.
@@ -199,7 +251,7 @@ export function mergePlan(s, bundle, { schedule } = {}) {
       if (ids.length) s.week[d] = ids
     })
   }
-  return { routines: bundle.routines.length }
+  return { routines: source.routines.length }
 }
 
 /* ------------------------------- printable PDF ------------------------------- */
