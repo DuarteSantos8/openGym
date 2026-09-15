@@ -592,7 +592,7 @@ function BfPctInput({ value, setValue }) {
       <div className="bw-read">{fmtNum(value)}<span className="u"> %</span></div>
       <button className="bw-pm" onClick={() => onSlide(value + 0.1)} aria-label="plus 0.1"><Icon name="plus" /></button>
     </div>
-    <div className="chips center">
+    <div className="chips" style={{ justifyContent: 'center', margin: '8px 0' }}>
       <button className="chip" onClick={() => onSlide(value - 1)}>−1</button>
       <button className="chip" onClick={() => onSlide(value - 0.5)}>−0.5</button>
       <button className="chip" onClick={() => onSlide(value + 0.5)}>+0.5</button>
