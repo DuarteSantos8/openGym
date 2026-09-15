@@ -11,6 +11,9 @@ import { adapterFor } from './adapters/index.js';
 import { canDropPrivileges } from './adapters/spawn.js';
 import { DATA_CATEGORIES } from './core/payload.js';
 import { validateBaseUrl, baseUrlFor } from './core/providers.js';
+import { CAPABILITY_IDS } from './core/catalog.js';
+import * as credentials from './core/credentials.js';
+import * as oauth from './core/oauth.js';
 
 // Job failures the user sees, in the app's own voice. The raw provider detail never reaches
 // them — it goes to the admin card, which is where someone can act on it (FR-47).
@@ -147,6 +150,16 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
           setupToken: !!p.setupToken, deviceLogin: !!p.deviceLogin, apiKey: !!p.apiKeyEnv,
           http: !!p.http, baseUrl: !!p.baseUrl, keyOptional: !!p.keyOptional, keyPlaceholder: p.keyPlaceholder || null,
           defaultModel: p.defaultModel || null,
+          // A provider that offers a browser sign-in says so here, and the card draws its second
+          // choice from it. The two credential choices stay visibly distinct — a single
+          // "Connect" button that sometimes wants a key and sometimes a browser is what makes
+          // logout and reauthentication ambiguous later.
+          connect: p.connect || null,
+          // The provider's own mark, when it has one. Served from this app's own /public.
+          logo: p.logo || null,
+          // Whether the picker's contents come from a filtered capability catalog rather than
+          // the endpoint's whole inventory. The card uses it to say which rule produced the list.
+          catalog: p.catalog ? (p.catalog.capability || true) : null,
           // Which providers already hold a key — so switching chips is visibly not a reset.
           connected: !!(cfgStore.authFor(cfg, id) && cfgStore.authFor(cfg, id).data)
         })),
@@ -227,15 +240,26 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
     },
 
     /* The models the configured endpoint serves, so the card can offer a list rather than a
-       text field that goes stale with every model release. HTTPS providers only. */
+       text field that goes stale with every model release. HTTPS providers only.
+
+       `capability` narrows a provider whose catalog is filtered — OrcaRouter is the one — so the
+       card can ask for the same rule the job will actually run under instead of the endpoint's
+       whole inventory. An unknown value is refused rather than ignored: silently returning chat
+       models to a caller that asked for embeddings is how a wrong picker looks correct. */
     'POST /api/admin/coach/models': async (req, res) => {
       if (!requireAdmin(req, res)) return;
       const cfg = cfgStore.load();
       const adapter = adapterFor(cfg.provider);
       if (!adapter || typeof adapter.models !== 'function') return json(res, 200, { ok: false, error: 'this provider does not list models', models: [] });
+      const body = await readBody(req);
+      let capability = null;
+      if (body && body.capability !== undefined && body.capability !== null && body.capability !== '') {
+        capability = String(body.capability);
+        if (!CAPABILITY_IDS.includes(capability)) return json(res, 400, { error: `unknown capability "${capability}"` });
+      }
       const cred = cfgStore.credentialFor(cfgStore.boundUidFor(cfg));
       const env = cfgStore.jobEnv(process.env.TMPDIR || '/tmp', cred.ok ? cred : undefined);
-      json(res, 200, await adapter.models(cfg, env));
+      json(res, 200, await adapter.models(cfg, env, capability ? { capability } : {}));
     },
 
     /* Connect the instance credential. Deferred while the fixture was the only provider — it
@@ -274,8 +298,126 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
       const body = await readBody(req);
       const provider = body.provider !== undefined ? String(body.provider) : cfgStore.load().provider;
       if (!cfgStore.PROVIDERS[provider]) return json(res, 400, { error: 'unknown provider' });
+      // A disconnect is also the end of any sign-in that was in flight for that provider: the
+      // pending attempt is dropped so a code fetched before the removal cannot refill the slot.
+      if (cfgStore.PROVIDERS[provider].connect === 'pkce') oauth.registry.clear();
       cfgStore.saveAuth(provider, null);
       json(res, 200, { ok: true });
+    },
+
+    /* ------------------- OrcaRouter: connect with an account -------------------
+       The second credential choice, beside the API-key field above. Out-of-band PKCE: the server
+       holds the verifier, the admin opens the consent page and pastes back the code it displays.
+       The alternative — a loopback redirect — needs a browser and a listener on the *same*
+       machine, and this dashboard is served to whatever address the owner deployed it on.
+
+       What these three routes must not do, and do not: return the verifier to the browser, keep a
+       finished attempt alive, or let a completion from a superseded attempt write a credential.
+       The registry's generation is the guard; every completion names the attempt it belongs to. */
+
+    'POST /api/admin/coach/connect/orcarouter/start': async (req, res) => {
+      if (!requireAdmin(req, res)) return;
+      const cfg = cfgStore.load();
+      const provider = cfgStore.PROVIDERS.orcarouter ? 'orcarouter' : cfg.provider;
+      if (provider !== 'orcarouter') return json(res, 400, { error: 'the OrcaRouter provider is not registered' });
+
+      const body = await readBody(req);
+      const bounded = {};
+      if (body && typeof body === 'object') {
+        if (body.scope !== undefined) {
+          const scope = String(body.scope || '').trim();
+          if (scope && scope !== 'api') return json(res, 400, { error: 'scope must be "api"' });
+          bounded.scope = scope || 'api';
+        }
+        if (body.loginHint) bounded.loginHint = String(body.loginHint).slice(0, 200);
+      }
+
+      const { url, scope, generation, expiresAt } = await credentials.pkceAdapter.begin(oauth, {
+        scope: bounded.scope || 'api', loginHint: bounded.loginHint || null
+      });
+      json(res, 200, {
+        ok: true,
+        // The exact URL to open. Returned rather than opened server-side: the browser is on the
+        // admin's machine, not this container's, so there is nothing here to open it with — and
+        // showing it is also the fallback when their browser does not launch from a link.
+        url,
+        scope,
+        // The generation the browser must quote back. Not a secret; the state and challenge are
+        // in the URL and the verifier is not, which is the entire point.
+        generation,
+        expiresAt,
+        appName: credentials.APP_NAME,
+        consoleUrl: credentials.consoleUrl()
+      });
+    },
+
+    'POST /api/admin/coach/connect/orcarouter/complete': async (req, res) => {
+      if (!requireAdmin(req, res)) return;
+      const cfg = cfgStore.load();
+      const provider = 'orcarouter';
+      if (!cfgStore.PROVIDERS[provider]) return json(res, 400, { error: 'unknown provider' });
+      const meta = cfgStore.PROVIDERS[provider];
+      if (!meta.apiKeyEnv) return json(res, 400, { error: `${provider} does not take a credential` });
+
+      const body = await readBody(req);
+      const generation = body.generation !== undefined ? Number(body.generation) : oauth.registry.generation();
+      const attempt = oauth.registry.attemptFor(generation);
+      if (!attempt) {
+        // Expired, cancelled, or superseded by a newer attempt. Terminal, and it says which.
+        return json(res, 409, { error: 'that sign-in is no longer pending — start it again', code: 'no-attempt' });
+      }
+
+      const code = String(body.code || '').trim();
+      if (!code) return json(res, 400, { error: 'paste the code shown on the consent page' });
+
+      let result;
+      try {
+        result = await credentials.pkceAdapter.complete(oauth, attempt, code);
+      } catch {
+        // Never let an unexpected throw escape with the request body in it.
+        result = { ok: false, reason: 'network', message: 'Could not reach OrcaRouter. Check this server\'s network and try again.' };
+      }
+      // The attempt is spent either way: a code is single-use, and a failed exchange means the
+      // next try starts from a fresh verifier regardless. The lock is released here so a denial
+      // or a network error does not leave the card permanently busy.
+      oauth.registry.clear(generation);
+
+      if (!result.ok) {
+        // A failure is reported in the same shape the API-key path uses for a bad input —
+        // `{ error }` — so the card has one thing to render. `code` is the stable machine reason.
+        const status = result.reason === 'rate-limited' ? 429 : result.reason === 'no-attempt' ? 409 : 400;
+        return json(res, status, { ok: false, error: result.message, code: result.reason });
+      }
+
+      // The key goes into the same encrypted slot the pasted one does. Nothing downstream — the
+      // transport, the catalog, the job env — can tell which of the two produced it.
+      cfgStore.saveAuth(provider, {
+        type: result.type,
+        account: String(body.account || result.account || '').slice(0, 120),
+        data: cfgStore.encrypt({ token: result.token }),
+        connectedAt: new Date().toISOString(),
+        via: result.via
+      });
+      json(res, 200, { ok: true, via: result.via, account: result.account || null, scope: result.scope });
+    },
+
+    // Explicit cancel. Idempotent, and safe when the attempt already completed or expired — the
+    // card calls it on a Cancel button, a provider switch, and pagehide, and none of those may
+    // fail because another one got there first.
+    'POST /api/admin/coach/connect/orcarouter/cancel': async (req, res) => {
+      if (!requireAdmin(req, res)) return;
+      const body = await readBody(req).catch(() => ({}));
+      const generation = body && body.generation !== undefined ? Number(body.generation) : null;
+      oauth.registry.clear(generation);
+      json(res, 200, { ok: true });
+    },
+
+    /* The reject path a person takes on the consent screen: they decline, and the card says so
+       rather than sitting on a spinner until the attempt expires. */
+    'POST /api/admin/coach/connect/orcarouter/denied': async (req, res) => {
+      if (!requireAdmin(req, res)) return;
+      oauth.registry.clear();
+      json(res, 200, { ok: true, reason: 'denied', message: 'Authorization was declined. Nothing was saved.' });
     },
 
     /* Still absent: `authMode`, and with it the per-profile credential routes. Instance mode is
