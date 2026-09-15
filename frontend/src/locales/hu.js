@@ -1239,4 +1239,7 @@ export default {
   'already added': 'már hozzáadva',
   'no exercises': 'nincs gyakorlat',
   'Pick equipment': 'Eszköz kiválasztása',
+  'Save as routine?': 'Mentés rutinként?',
+  'Save as routine': 'Mentés rutinként',
+  'Create an independent routine from these exercise targets. Your workout history is kept.': 'Független rutin létrehozása ezekből a célokból. Az edzéstörténeted megmarad.',
 }

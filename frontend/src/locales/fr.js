@@ -1236,4 +1236,7 @@ export default {
   'already added': 'déjà ajouté',
   'no exercises': 'aucun exercice',
   'Pick equipment': 'Choisir l’équipement',
+  'Save as routine?': 'Enregistrer comme routine ?',
+  'Save as routine': 'Enregistrer comme routine',
+  'Create an independent routine from these exercise targets. Your workout history is kept.': 'Créer une routine indépendante à partir de ces objectifs. Votre historique reste conservé.',
 }
