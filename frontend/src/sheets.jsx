@@ -4,7 +4,7 @@ import { useUI } from './store/useUI.js'
 import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, smOf, matchExercise, exOr } from './lib/exercises.js'
 import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile } from './lib/equipment.js'
 import { fmtDate, fmtNum, capWords, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, DAYN, DAYS, weekOrder, weekStartOf, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
-import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutVolume, setsDone, setsDoneActive, setUnitsTotal, lastBW, supersetUnits, unitOf, setLabel, defaultConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX } from './lib/history.js'
+import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutVolume, setsDone, setsDoneActive, setUnitsTotal, lastBW, lastBF, supersetUnits, unitOf, setLabel, defaultConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX } from './lib/history.js'
 import { usesBar, barWeightFor, defaultBarWeight, hasBarOverride } from './lib/bar.js'
 import { toScale, rirOf, EFFORT_PRESETS, effortColor } from './lib/effort.js'
 import { beep, vibrate } from './lib/sound.js'
@@ -26,6 +26,7 @@ import { buildPlanBundle, parsePlan, mergePlan, printPlan, planPrintHTML } from 
 import { estimate1RM, best1RM, is1RMRecord, REP_CAP } from './lib/onerm.js'
 import { exerciseHistory } from './lib/exercise-history.js'
 import { nextPrescription, applyPrescription, policyFor, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC, MAX_BW_SETS, weightIncrement } from './lib/progression.js'
+import { jp3BodyFatPct, jp3SitesFor, navyCircKeysFor, navyBodyFatPct, clampBodyFatPct, lengthUnitFor, bodyFatMethodLabel, clampHeightInches } from './lib/bodyfat.js'
 import { normalizeRepRange } from './lib/rep-range.js'
 import { MOBILE, shareExport, printHtml } from './lib/mobile.js'
 import { buildCompletedWorkout } from './lib/finish-workout.js'
@@ -232,11 +233,11 @@ function BwSheet({ required, onDone, close }) {
     </>}
     {!required && recent.length > 0 && <>
       <h4 className="sec">{t('Recent weigh-ins')}</h4>
-      <div className="list" style={{ gap: 0 }}>
-        {recent.map(b => <div key={b.d} className="row between" style={{ padding: '9px 2px', borderBottom: '1px solid var(--sep)' }}>
+      <div className="sheet-log-list">
+        {recent.map(b => <div key={b.d} className="sheet-log-row">
           <span className="small muted">{fmtDate(b.d, true)}</span>
           <span className="row" style={{ gap: 12 }}><b>{fmtNum(b.w)} {unit}</b>
-            <button className="iconbtn" style={{ width: 32, height: 30, borderRadius: 8, fontSize: 15, color: 'var(--red)' }} onClick={() => delEntry(b.d)} aria-label="delete"><Icon name="trash" /></button></span>
+            <button className="iconbtn sm-danger" onClick={() => delEntry(b.d)} aria-label="delete"><Icon name="trash" /></button></span>
         </div>)}
       </div>
     </>}
@@ -565,6 +566,270 @@ function GoalSheet({ close }) {
   </>
 }
 export const goalSheet = () => ui().openSheet(close => <GoalSheet close={close} />)
+
+
+/* ============================ body fat ============================ */
+
+const JP3_SITE_LABEL = {
+  chest: 'Chest',
+  abdomen: 'Abdomen',
+  thigh: 'Thigh',
+  triceps: 'Triceps',
+  suprailiac: 'Suprailiac',
+}
+const NAVY_CIRC_LABEL = {
+  neck: 'Neck',
+  waist: 'Waist',
+  hip: 'Hip',
+}
+
+function BfPctInput({ value, setValue }) {
+  const clamp = x => Math.max(1, Math.min(60, Math.round((x || 0) * 10) / 10))
+  const onSlide = v => setValue(clamp(v))
+  return <>
+    <div className="bwstep">
+      <button className="bw-pm" onClick={() => onSlide(value - 0.1)} aria-label="minus 0.1"><Icon name="minus" /></button>
+      <div className="bw-read">{fmtNum(value)}<span className="u"> %</span></div>
+      <button className="bw-pm" onClick={() => onSlide(value + 0.1)} aria-label="plus 0.1"><Icon name="plus" /></button>
+    </div>
+    <div className="chips" style={{ justifyContent: 'center', margin: '8px 0' }}>
+      <button className="chip" onClick={() => onSlide(value - 1)}>−1</button>
+      <button className="chip" onClick={() => onSlide(value - 0.5)}>−0.5</button>
+      <button className="chip" onClick={() => onSlide(value + 0.5)}>+0.5</button>
+      <button className="chip" onClick={() => onSlide(value + 1)}>+1</button>
+    </div>
+    <Slider value={Math.max(1, Math.min(60, value))} min={1} max={60} step={0.5} onChange={onSlide} />
+  </>
+}
+
+function MeasureRow({ label, value, setValue, unit, step = 0.5, min = 0, max = 200 }) {
+  const clamp = x => Math.max(min, Math.min(max, Math.round((x || 0) * 10) / 10))
+  return (
+    <div className="bf-measure">
+      <span className="bf-measure-label">{label}</span>
+      <div className="bf-measure-ctrls">
+        <button className="bw-pm sm" onClick={() => setValue(clamp(value - step))} aria-label="minus"><Icon name="minus" /></button>
+        <b className="bf-measure-val">{fmtNum(value)} <span className="dim small">{unit}</span></b>
+        <button className="bw-pm sm" onClick={() => setValue(clamp(value + step))} aria-label="plus"><Icon name="plus" /></button>
+      </div>
+    </div>
+  )
+}
+
+function BfSheet({ close }) {
+  const st = useStore(s => s.S)
+  const bf = lastBF(st)
+  const female = st.body === 'female'
+  const lenUnit = lengthUnitFor(st.unit)
+  const [mode, setMode] = useState('jp3')
+  const [pct, setPct] = useState(bf ? bf.pct : 20)
+  const age = Number(st.age)
+  const ageOk = Number.isFinite(age) && age >= 10 && age <= 100
+  const heightOk = Number(st.height) > 0
+  const heightUi = heightOk
+    ? (lenUnit === 'in' ? clampHeightInches(st.height / 2.54) : Math.round(st.height * 10) / 10)
+    : null
+  const siteKeys = jp3SitesFor(st.body)
+  const circKeys = navyCircKeysFor(st.body)
+  const [sites, setSites] = useState(() => Object.fromEntries(siteKeys.map(k => [k, (bf && bf.sites && bf.sites[k]) || 15])))
+  const defaultCirc = lenUnit === 'in'
+    ? { neck: 15, waist: 34, hip: 38 }
+    : { neck: 38, waist: 86, hip: 96 }
+  const [circ, setCirc] = useState(() => Object.fromEntries(circKeys.map(k => [k, (bf && bf.circ && bf.circ[k]) || defaultCirc[k]])))
+
+  useEffect(() => {
+    setSites(prev => Object.fromEntries(jp3SitesFor(st.body).map(k => [k, prev[k] || 15])))
+    setCirc(prev => Object.fromEntries(navyCircKeysFor(st.body).map(k => [k, prev[k] || defaultCirc[k]])))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [st.body, st.unit])
+
+  const jp3Pct = ageOk ? jp3BodyFatPct(sites, age, st.body) : null
+  const navyPct = heightOk ? navyBodyFatPct(circ, heightUi, st.body, lenUnit) : null
+  const preview = mode === 'jp3'
+    ? jp3Pct
+    : mode === 'navy'
+      ? navyPct
+      : clampBodyFatPct(pct)
+
+  const saveEntry = (n, extra = {}) => {
+    update(s => {
+      if (!s.bodyfat) s.bodyfat = []
+      const iso = todayISO()
+      const ex = s.bodyfat.find(b => b.d === iso)
+      const row = { d: iso, pct: n, t: Date.now(), ...extra }
+      if (ex) Object.assign(ex, row)
+      else s.bodyfat.push(row)
+      s.bodyfat.sort((a, b) => (a.d < b.d ? -1 : 1))
+    })
+    close()
+    toast(t('Body fat saved: {0}%', fmtNum(n)))
+  }
+
+  const save = () => {
+    if (mode === 'jp3') {
+      if (!ageOk) { toast(t('Set your age in Settings first')); return }
+      const n = jp3BodyFatPct(sites, age, st.body)
+      if (n == null) { toast(t('Enter all three skinfolds in mm')); return }
+      saveEntry(n, { method: 'jp3', sites: { ...sites }, age: Math.round(age) })
+      return
+    }
+    if (mode === 'navy') {
+      if (!heightOk) { toast(t('Set your height in Settings first')); return }
+      const n = navyBodyFatPct(circ, heightUi, st.body, lenUnit)
+      if (n == null) {
+        toast(female
+          ? t('Enter neck, waist and hip (waist + hip must exceed neck)')
+          : t('Enter neck and waist (waist must exceed neck)'))
+        return
+      }
+      saveEntry(n, { method: 'navy', circ: { ...circ }, heightCm: Math.round(Number(st.height) * 10) / 10, lengthUnit: lenUnit })
+      return
+    }
+    const n = clampBodyFatPct(pct)
+    if (n == null) { toast(t('Enter a valid body fat percentage')); return }
+    saveEntry(n, { method: 'manual' })
+  }
+
+  const goAddHeight = () => {
+    close()
+    useUI.getState().closeAll()
+    nav('/settings#height')
+  }
+
+  const recent = [...(st.bodyfat || [])].reverse().slice(0, 3)
+  const delEntry = d => update(s => { s.bodyfat = (s.bodyfat || []).filter(b => b.d !== d) })
+  const methodTag = m => {
+    const label = bodyFatMethodLabel(m)
+    return label ? ' · ' + label : ''
+  }
+
+  const tapeNeedsHeight = mode === 'navy' && !heightOk
+
+  const methodBody = <>
+    <div className="bf-stack">
+      <div className={'bf-panel' + (mode === 'jp3' ? ' is-on' : '')}>
+        {!ageOk && (
+          <div className="small bf-warn">
+            {t('Set your age in Settings.')}
+          </div>
+        )}
+        {siteKeys.map(k => (
+          <MeasureRow
+            key={k}
+            label={t(JP3_SITE_LABEL[k])}
+            value={sites[k] || 0}
+            setValue={v => setSites(s => ({ ...s, [k]: v }))}
+            unit="mm"
+            step={0.5}
+            min={1}
+            max={80}
+          />
+        ))}
+      </div>
+
+      <div className={'bf-panel' + (mode === 'navy' ? ' is-on' : '')}>
+        {circKeys.map(k => (
+          <MeasureRow
+            key={k}
+            label={t(NAVY_CIRC_LABEL[k])}
+            value={circ[k] || 0}
+            setValue={v => setCirc(s => ({ ...s, [k]: v }))}
+            unit={lenUnit}
+            step={0.5}
+            min={lenUnit === 'in' ? 8 : 20}
+            max={lenUnit === 'in' ? 70 : 180}
+          />
+        ))}
+      </div>
+
+      <div className={'bf-panel' + (mode === 'manual' ? ' is-on' : '')}>
+        <BfPctInput value={pct} setValue={setPct} />
+      </div>
+    </div>
+    <div className="bf-estimate">
+      <span className="muted small">{t('Estimated body fat')}</span>
+      <b className="bf-estimate-pct">{preview == null ? '—' : fmtNum(preview) + '%'}</b>
+    </div>
+    <div style={{ height: 14 }} />
+    <Button variant="primary" onClick={save} disabled={preview == null || tapeNeedsHeight}>{t('Save')}</Button>
+  </>
+
+  return <>
+    <h3>{t('Log body fat')}</h3>
+    <div className="muted small">{t('Today') + ', ' + fmtDate(todayISO(), true)}</div>
+    <div style={{ height: 10 }} />
+    <Segmented
+      options={[
+        { value: 'jp3', label: t('Caliper') },
+        { value: 'navy', label: t('Tape Measure') },
+        { value: 'manual', label: t('Manual') },
+      ]}
+      value={mode}
+      onChange={setMode}
+    />
+    <div style={{ height: 8 }} />
+    <div className="bf-wrap">
+      <div
+        aria-hidden={tapeNeedsHeight}
+        className={tapeNeedsHeight ? 'bf-tape-gated' : undefined}
+      >
+        {methodBody}
+      </div>
+      {tapeNeedsHeight && (
+        <div className="bf-tape-cta">
+          <div>
+            <div className="bf-cta-copy">
+              {t('To use the tape measure calculator, add your height to openGym.')}
+            </div>
+            <Button variant="primary" onClick={goAddHeight}>{t('Add now')}</Button>
+          </div>
+        </div>
+      )}
+    </div>
+    {recent.length > 0 && <>
+      <h4 className="sec">{t('Recent body-fat logs')}</h4>
+      <div className="sheet-log-list">
+        {recent.map(b => <div key={b.d} className="sheet-log-row">
+          <span className="small muted">{fmtDate(b.d, true)}{methodTag(b.method)}</span>
+          <span className="row" style={{ gap: 12 }}><b>{fmtNum(b.pct)}%</b>
+            <button className="iconbtn sm-danger" onClick={() => delEntry(b.d)} aria-label="delete"><Icon name="trash" /></button></span>
+        </div>)}
+      </div>
+    </>}
+  </>
+}
+
+export function bfSheet() {
+  return ui().openSheet(close => <BfSheet close={close} />)
+}
+
+export function bfDeltaColor(delta, currentPct) {
+  if (!delta) return 'var(--label-2)'
+  if (!S().targetBf) return 'var(--label)'
+  const up = S().targetBf > currentPct
+  return (delta > 0) === up ? 'var(--acc)' : 'var(--red)'
+}
+
+function BfGoalSheet({ close }) {
+  const st = S()
+  const bf = lastBF(st)
+  const [v, setV] = useState(st.targetBf || (bf ? bf.pct : 15))
+  return <>
+    <h3>{t('Target body fat')}</h3>
+    <div className="muted small">{t('Drawn as a line on the body-fat chart. Gains and losses are colored by whether they move toward it.')}</div>
+    <BfPctInput value={v} setValue={setV} />
+    <div style={{ height: 14 }} />
+    <Button variant="primary" onClick={() => {
+      const n = clampBodyFatPct(v)
+      if (n == null) { toast(t('Enter a valid body fat percentage')); return }
+      update(s => { s.targetBf = n }); close()
+      const b = lastBF(S()); toast(t('Goal set: {0}%', fmtNum(n)) + (b ? ' (' + t('{0} to go', fmtNum(Math.abs(n - b.pct))) + ')' : ''))
+    }}>{t('Save goal')}</Button>
+    {st.targetBf && <><div style={{ height: 8 }} /><Button variant="danger" onClick={() => { update(s => { s.targetBf = null }); close(); toast(t('Goal removed')) }}>{t('Remove goal')}</Button></>}
+  </>
+}
+export const bfGoalSheet = () => ui().openSheet(close => <BfGoalSheet close={close} />)
+
 
 /* ============================ bar weight ============================ */
 // One editor for every place the bar weight shows up (exercise detail, exercise config,

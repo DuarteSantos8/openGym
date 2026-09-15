@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
-import { effectiveRoutines, effectiveRoutineIds, nextTrainingDay, streakWeeks, lastBW, setsDoneActive } from '../lib/history.js'
+import { effectiveRoutines, effectiveRoutineIds, nextTrainingDay, streakWeeks, lastBW, lastBF, setsDoneActive } from '../lib/history.js'
 import { fmtNum, fmtDate, todayISO, isoOf, weekKey, weekStartOf, weekDayOffset, DAYS, DAYN } from '../lib/format.js'
 import { t, dateLocale } from '../lib/i18n.js'
-import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, startFlow, starterPlanSheet, bwDeltaColor } from '../sheets.jsx'
+import { bwSheet, goalSheet, bfSheet, bfGoalSheet, dayOverrideSheet, calendarSheet, startFlow, starterPlanSheet, bwDeltaColor, bfDeltaColor } from '../sheets.jsx'
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
@@ -56,6 +56,10 @@ export default function Home() {
   // Days scheduled, not routines — a combined day counts as 1, matching wThisWeek (one w).
   const plannedPerWeek = Object.values(S.week).filter(ids => ids?.length).length
   const bwPoints = S.bodyweight.slice(-30).map(b => ({ t: b.t || new Date(b.d).getTime(), y: b.w, d: b.d }))
+  const bf = lastBF(S)
+  const prevBF = (S.bodyfat || []).length > 1 ? S.bodyfat[S.bodyfat.length - 2] : null
+  const bfDelta = bf && prevBF ? Math.round((bf.pct - prevBF.pct) * 10) / 10 : 0
+  const bfPoints = (S.bodyfat || []).slice(-30).map(b => ({ t: b.t || new Date(b.d).getTime(), y: b.pct, d: b.d }))
 
   // today's session shown right under the week strip
   const onToday = () => { if (S.active) nav('/workout'); else if (todayRoutines.length) startFlow(effectiveRoutineIds(S, todayISO())); else dayOverrideSheet(todayISO()) }
@@ -129,35 +133,64 @@ export default function Home() {
     )}
 
     <div className="card">
-      <div className="row between" style={{ marginBottom: 6 }}>
-        <h2 style={{ margin: 0 }}>{t('Body weight')}</h2>
-        <div className="row" style={{ gap: 8 }}>
-          <Button size="sm" icon="target" style={S.targetW ? { color: 'var(--yellow)' } : undefined} onClick={goalSheet}>{S.targetW ? fmtNum(S.targetW) : t('Goal')}</Button>
+      <div className="card-hd">
+        <h2>{t('Body weight')}</h2>
+        <div className="card-hd-actions">
+          <Button size="sm" icon="target" className={S.targetW ? 'goal-on' : undefined} onClick={goalSheet}>{S.targetW ? fmtNum(S.targetW) : t('Goal')}</Button>
           <Button size="sm" icon="plus" onClick={() => bwSheet()}>{t('Log')}</Button>
         </div>
       </div>
       {bw ? <>
-        <div className="row" style={{ gap: 8, alignItems: 'baseline' }}>
+        <div className="metric-row">
           <div className="big">{fmtNum(bw.w)} <span className="muted" style={{ fontSize: '1rem' }}>{S.unit}</span></div>
           {/* only when it actually moved — an unchanged weight used to read as "− 0" */}
           {!!delta && (
-            <span className="small row" style={{ gap: 2, fontWeight: 500, color: bwDeltaColor(delta, bw.w) }}>
+            <span className="delta" style={{ color: bwDeltaColor(delta, bw.w) }}>
               <Icon name={delta > 0 ? 'arrowUp' : 'arrowDown'} style={{ fontSize: 12 }} />
               {fmtNum(Math.abs(delta))}
             </span>
           )}
-          <span className="dim small" style={{ marginLeft: 'auto' }}>{fmtDate(bw.d, true)}</span>
+          <span className="dim small when">{fmtDate(bw.d, true)}</span>
         </div>
         {S.targetW && (
-          <div className="small row" style={{ color: 'var(--yellow)', marginTop: 4, gap: 5 }}>
-            <Icon name="target" style={{ fontSize: 13 }} />
+          <div className="goal-hint">
+            <Icon name="target" />
             <span>{t('Goal')} {fmtNum(S.targetW)} {S.unit} · {Math.abs(S.targetW - bw.w) < 0.05 ? t('reached!') : t(S.targetW > bw.w ? '{0} to gain' : '{0} to lose', fmtNum(Math.abs(S.targetW - bw.w)) + ' ' + S.unit)}</span>
           </div>
         )}
-        <div className="chart" style={{ marginTop: 8 }}><LineChart points={bwPoints} h={130} unit={S.unit} goal={S.targetW} /></div>
+        <div className="chart tight"><LineChart points={bwPoints} h={130} unit={S.unit} goal={S.targetW} /></div>
       </> : <div className="muted small">{S.weighIn === false
         ? t('No entries yet — log your weight to start the curve.')
         : t("No entries yet — log your weight to start the curve. It's also asked before every workout.")}</div>}
+    </div>
+
+    <div className="card">
+      <div className="card-hd">
+        <h2>{t('Body fat')}</h2>
+        <div className="card-hd-actions">
+          <Button size="sm" icon="target" className={S.targetBf ? 'goal-on' : undefined} onClick={bfGoalSheet}>{S.targetBf != null ? fmtNum(S.targetBf) + '%' : t('Goal')}</Button>
+          <Button size="sm" icon="plus" onClick={() => bfSheet()}>{t('Log')}</Button>
+        </div>
+      </div>
+      {bf ? <>
+        <div className="metric-row">
+          <div className="big">{fmtNum(bf.pct)} <span className="muted" style={{ fontSize: '1rem' }}>%</span></div>
+          {!!bfDelta && (
+            <span className="delta" style={{ color: bfDeltaColor(bfDelta, bf.pct) }}>
+              <Icon name={bfDelta > 0 ? 'arrowUp' : 'arrowDown'} style={{ fontSize: 12 }} />
+              {fmtNum(Math.abs(bfDelta))}
+            </span>
+          )}
+          <span className="dim small when">{fmtDate(bf.d, true)}</span>
+        </div>
+        {S.targetBf != null && (
+          <div className="goal-hint">
+            <Icon name="target" />
+            <span>{t('Goal')} {fmtNum(S.targetBf)}% · {Math.abs(S.targetBf - bf.pct) < 0.05 ? t('reached!') : t(S.targetBf > bf.pct ? '{0} to gain' : '{0} to lose', fmtNum(Math.abs(S.targetBf - bf.pct)) + '%')}</span>
+          </div>
+        )}
+        <div className="chart tight"><LineChart points={bfPoints} h={130} unit="%" goal={S.targetBf} /></div>
+      </> : <div className="muted small">{t('No entries yet')}</div>}
     </div>
 
     <div className="card tappable" style={{ cursor: 'pointer' }} {...tappable(() => calendarSheet())}>

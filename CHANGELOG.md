@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- 📊 **Body fat tracker** (Home + Stats): log body-fat % with the same curve/goal pattern as body weight.
+  - **Caliper** — Jackson–Pollock 3-site (sex-specific sites + age from Settings / body diagram).
+  - **Tape Measure** — U.S. Navy / Hodgdon–Beckett (neck/waist[/hip] + height from Settings; hip for women).
+  - **Manual %** — type a value from DEXA, scale, etc.
+  - Settings: **Age** and **Height** (feet+inches when unit is lb); tape gate prompts **Add now** → Height with scroll + soft flash.
+  - Pinned **Estimated body fat** row across methods; styles live in `index.css` beside `.bw*` (no separate CSS file).
+  - Pure helpers + Vitest coverage in `lib/bodyfat.js` (JP3, Navy, labels, lean-mass hold estimates).
+
 ## v1.3.7 — 2026-09-12
 
 The v1.3.6 tag's Android build failed on a double dash inside an XML comment, so the APK for everything in v1.3.6 is this one — plus the iPhone timer-sound fix that landed an hour later. Web bundle, APK and API image; v1.3.6 and v1.3.7 are the same code apart from the two items below.

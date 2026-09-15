@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState, forwardRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useStore, DEF, hasData } from '../store/useStore.js'
 import { workoutControls } from '../lib/workout-controls.js'
 import { convertStateUnit } from '../lib/units.js'
 import { useUI } from '../store/useUI.js'
-import { ACCENTS, todayISO, localTZ, weekStartOf, MONDAY, SUNDAY } from '../lib/format.js'
+import { ACCENTS, todayISO, localTZ, weekStartOf, MONDAY, SUNDAY, fmtNum } from '../lib/format.js'
+import { formatFtIn, clampHeightInches, inToCm } from '../lib/bodyfat.js'
 import { effortOf } from '../lib/history.js'
 import { unlock, playOnSilentSupported } from '../lib/sound.js'
 import { api, webauthnOK, passkeyLogin, passkeyRegister, IS_ANDROID } from '../lib/api.js'
@@ -22,6 +23,32 @@ import { Section, Row, SelectRow, Switch, Segmented, Button, TextField } from '.
 
 export default function Settings() {
   const nav = useNavigate()
+  const location = useLocation()
+  useEffect(() => {
+    if (location.hash !== '#height') return
+    let cancelled = false
+    const timers = []
+    // Wait past Modals' post-close scroll restore (0ms + 350ms) before scrolling/flashing.
+    timers.push(window.setTimeout(() => {
+      if (cancelled) return
+      const el = document.getElementById('settings-height')
+      if (!el || typeof el.scrollIntoView !== 'function') return
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      timers.push(window.setTimeout(() => {
+        if (cancelled) return
+        el.classList.remove('settings-row-flash')
+        void el.offsetWidth
+        el.classList.add('settings-row-flash')
+        const done = () => el.classList.remove('settings-row-flash')
+        el.addEventListener('animationend', done, { once: true })
+      }, 550))
+    }, 400))
+    return () => {
+      cancelled = true
+      timers.forEach(id => window.clearTimeout(id))
+      document.getElementById('settings-height')?.classList.remove('settings-row-flash')
+    }
+  }, [location.hash])
   const S = useStore(s => s.S)
   const user = useStore(s => s.user)
   const coachLocal = useStore(s => s.coachLocal)
@@ -354,6 +381,38 @@ export default function Settings() {
         />
       </Row>
       {/* Purely how the muscle map is drawn — nothing else in the app reads this. */}
+      <Row icon="timer" iconTint="var(--purple)" title={t('Age')}>
+        <div className="row" style={{ gap: 8, alignItems: 'center' }}>
+          <button className="bw-pm sm" onClick={() => update(s => { s.age = Math.max(10, (s.age || 30) - 1) })} aria-label={t('Decrease age')}><Icon name="minus" /></button>
+          <b style={{ minWidth: 36, textAlign: 'center' }}>{S.age || '—'}</b>
+          <button className="bw-pm sm" onClick={() => update(s => { s.age = Math.min(100, (s.age || 30) + 1) })} aria-label={t('Increase age')}><Icon name="plus" /></button>
+        </div>
+      </Row>
+      <Row id="settings-height" icon="figureRun" iconTint="var(--blue)" title={t('Height')}>
+        <div className="row" style={{ gap: 8, alignItems: 'center' }}>
+          <button className="bw-pm sm" onClick={() => update(s => {
+            if (s.unit === 'lb') {
+              const inches = clampHeightInches((s.height || 170) / 2.54 - 1)
+              s.height = Math.round(inToCm(inches) * 10) / 10
+            } else {
+              s.height = Math.max(120, Math.round(((s.height || 170) - 0.5) * 10) / 10)
+            }
+          })} aria-label={t('Decrease height')}><Icon name="minus" /></button>
+          <b style={{ minWidth: 56, textAlign: 'center' }}>{S.height
+            ? (S.unit === 'lb'
+              ? formatFtIn(S.height / 2.54)
+              : fmtNum(S.height) + ' cm')
+            : '—'}</b>
+          <button className="bw-pm sm" onClick={() => update(s => {
+            if (s.unit === 'lb') {
+              const inches = clampHeightInches((s.height || 170) / 2.54 + 1)
+              s.height = Math.round(inToCm(inches) * 10) / 10
+            } else {
+              s.height = Math.min(230, Math.round(((s.height || 170) + 0.5) * 10) / 10)
+            }
+          })} aria-label={t('Increase height')}><Icon name="plus" /></button>
+        </div>
+      </Row>
       <Row icon="figureStrength" iconTint="var(--teal)" title={t('Body diagram')}>
         <Segmented
           className="seg-inline"
