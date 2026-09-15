@@ -1,4 +1,4 @@
-import { metricModeForEntry, metricRowsForEntry, bestWeightForEntry, modeOf } from './history.js'
+import { metricEntriesForExercise, bestWeightForEntry, completedRepsOf, modeOf } from './history.js'
 import { completedVolumeOf } from './workout-model.js'
 import { bestSetOf } from './onerm.js'
 
@@ -32,11 +32,14 @@ export function exerciseHistory(S, exId, { limit = HISTORY_SESSIONS } = {}) {
   // inserted by date rather than appended.
   const logged = []
   workouts.forEach(w => {
-    const en = (w.entries || []).find(e => e.id === exId)
-    if (!en) return
-    const mode = metricModeForEntry(en)
-    if (!mode) return
-    const rows = metricRowsForEntry(en, mode)
+    // A combined session can contain the same exercise more than once. Keep one dated
+    // snapshot, but read every completed occurrence that shares the session's latest mode.
+    const entries = metricEntriesForExercise(w, exId)
+    if (!entries.length) return
+    const mode = entries.at(-1).mode
+    const sameMode = entries.filter(item => item.mode === mode)
+    const rows = sameMode.flatMap(item => item.rows)
+    const en = { ...sameMode.at(-1).entry, sets: rows }
     if (rows.length) logged.push({ w, en, mode, rows })
   })
   logged.sort((a, b) => startOf(a.w) - startOf(b.w))
@@ -50,7 +53,7 @@ export function exerciseHistory(S, exId, { limit = HISTORY_SESSIONS } = {}) {
   const valueOf = ({ en, rows }) => {
     if (metric === 'min') return rows.reduce((a, s) => a + (Number(s.min) || 0), 0)
     if (metric === 'sec') return Math.max(0, ...rows.map(s => Number(s.sec) || 0))
-    if (metric === 'reps') return Math.max(0, ...rows.map(s => Number(s.r) || 0))
+    if (metric === 'reps') return Math.max(0, ...rows.map(completedRepsOf))
     return bestWeightForEntry(en)
   }
 
