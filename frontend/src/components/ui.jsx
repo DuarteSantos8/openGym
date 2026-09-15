@@ -132,7 +132,7 @@ export function Segmented({ options, value, onChange, className = '' }) {
 // `min` and `max` hold for the buttons at once, but for typing only once the field is left:
 // clamped on every keystroke, a field emptied to type a new number snapped to the minimum, and
 // the digits typed next landed after it (a 48 retyped as 75 saved 175).
-export function Stepper({ value, step = 1, min = 0, max = Infinity, onChange, decimal = true, className = '', label, unit, invalid = false }) {
+export function Stepper({ value, step = 1, min = 0, max = Infinity, onChange, decimal = true, className = '', label, unit, invalid = false, disabled = false, onStep, ariaLabel }) {
   const clamp = v => Math.min(max, Math.max(min, v))
   const set = v => onChange(clamp(Math.round((v || 0) * 100) / 100))
   // Holding a button repeats the step; the latest value/step live in a ref so
@@ -140,7 +140,7 @@ export function Stepper({ value, step = 1, min = 0, max = Infinity, onChange, de
   const live = useRef({ value, step, set })
   live.current = { value, step, set }
   const hold = useRef({ delay: null, tick: null, count: 0, repeated: false })
-  const bump = dir => { const { value, step, set } = live.current; set((+value || 0) + dir * step) }
+  const bump = dir => { const { value, step, set } = live.current; set(onStep ? onStep(value, step, dir) : (+value || 0) + dir * step) }
   const stopHold = () => {
     const h = hold.current
     window.clearTimeout(h.delay); window.clearInterval(h.tick)
@@ -173,12 +173,12 @@ export function Stepper({ value, step = 1, min = 0, max = Infinity, onChange, de
   })
   const inner = (
     <div className={'stp ' + className}>
-      <button {...holdProps(-1)} aria-label={t('Decrease')}><Icon name="minus" /></button>
+      <button {...holdProps(-1)} aria-label={ariaLabel ? `Decrease ${ariaLabel}` : t('Decrease')} disabled={disabled}><Icon name="minus" /></button>
       <span className="val" onBlur={() => { const v = +value || 0; if (clamp(v) !== v) onChange(clamp(v)) }}>
-        <NumberField value={value} decimal={decimal} onChange={onChange} aria-invalid={invalid ? 'true' : undefined} />
+        <NumberField value={value} decimal={decimal} onChange={onChange} disabled={disabled} aria-invalid={invalid ? 'true' : undefined} />
         {unit && <i>{unit}</i>}
       </span>
-      <button {...holdProps(1)} aria-label={t('Increase')}><Icon name="plus" /></button>
+      <button {...holdProps(1)} aria-label={ariaLabel ? `Increase ${ariaLabel}` : t('Increase')} disabled={disabled}><Icon name="plus" /></button>
     </div>
   )
   if (!label) return inner
@@ -191,7 +191,7 @@ export function Stepper({ value, step = 1, min = 0, max = Infinity, onChange, de
 // pseudo-elements, which is the only way the control looks identical on every
 // platform and can pick up the accent colour.
 export const SLIDER_GRAB_PX = 22
-export function Slider({ value, min = 0, max = 100, step = 1, onChange, className = '' }) {
+export function Slider({ value, min = 0, max = 100, step = 1, onChange, className = '', disabled = false }) {
   const ref = useRef(null)
   const [drag, setDrag] = useState(false)
   // Grabbing the knob drags it relative to where the finger landed; a finger
@@ -231,6 +231,7 @@ export function Slider({ value, min = 0, max = 100, step = 1, onChange, classNam
   }, [drag, onChange, posToValue])
 
   const key = e => {
+    if (disabled) return
     // The arrow pointing at the inline-end (max) end still increases; in RTL that is Left.
     const inc = document.documentElement.dir === 'rtl' ? 'ArrowLeft' : 'ArrowRight'
     const dec = document.documentElement.dir === 'rtl' ? 'ArrowRight' : 'ArrowLeft'
@@ -246,11 +247,13 @@ export function Slider({ value, min = 0, max = 100, step = 1, onChange, classNam
       ref={ref}
       className={'sld' + (drag ? ' dragging' : '') + ' ' + className}
       role="slider"
-      tabIndex={0}
+      tabIndex={disabled ? -1 : 0}
       aria-valuenow={value} aria-valuemin={min} aria-valuemax={max}
+      aria-disabled={disabled}
       data-nodrag                                  /* keeps the sheet from swipe-dismissing */
       onKeyDown={key}
       onPointerDown={e => {
+        if (disabled) return
         e.currentTarget.setPointerCapture?.(e.pointerId)
         const r = e.currentTarget.getBoundingClientRect()
         // The knob is measured from inline-start: left in LTR, right in RTL.
