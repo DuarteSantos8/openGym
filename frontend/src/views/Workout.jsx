@@ -21,6 +21,7 @@ import { progressionGuidance } from '../lib/progression-copy.js'
 import { glyphOf } from '../lib/glyphs.js'
 import { isWarmupRow, isDropSet, isRestPauseSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt } from '../lib/workout-model.js'
 import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit } from '../lib/active-workout-order.js'
+import FocusView from './FocusView.jsx'
 
 const SWIPE_MIN_DISTANCE = 48
 const SWIPE_AXIS_RATIO = 1.25
@@ -527,8 +528,10 @@ function ActiveWorkout() {
   // parameterised, so these only change what is rendered — completion, rest, top-weight and
   // auto-advance share one path. Unknown/absent values read as cards, keeping every
   // pre-existing profile (and a session started before this field) as it was.
-  const workoutView = A.workoutView || S.workoutView
+  const requestedView = A.workoutView || S.workoutView
+  const workoutView = ['list', 'compact', 'focus'].includes(requestedView) ? requestedView : 'cards'
   const listMode = workoutView === 'list' || workoutView === 'compact'
+  const focusMode = workoutView === 'focus'
   const dense = workoutView === 'compact'
   const wc = workoutControls(S)
   // Superset flow: center the actionable row when completing a set moves to the partner or
@@ -536,6 +539,7 @@ function ActiveWorkout() {
   // distinct, while each rendered set index identifies the existing row within that entry.
   const exRefs = useRef(new Map())
   const setRefs = useRef(new Map())
+  const focusPointerEpoch = useRef(0)
   const bindExRef = (entry, el) => {
     if (el) exRefs.current.set(entry, el)
     else {
@@ -617,9 +621,11 @@ function ActiveWorkout() {
   })
   const removeSetAt = (idx, i) => mutEntry(idx, e => { e.sets = removeRowAt(e.sets, i) })
   const pairAt = (first, second) => update(s => {
+    if (focusMode) focusPointerEpoch.current++
     s.active.entries = pairAdjacent(s.active.entries, first, second)
   })
   const unpairAt = idx => update(s => {
+    if (focusMode) focusPointerEpoch.current++
     s.active.entries = unpairSuperset(s.active.entries, idx)
   })
   const onPairPrev = !isSuperset && cur > 0 ? () => pairAt(cur - 1, cur) : null
@@ -631,6 +637,7 @@ function ActiveWorkout() {
     // Invalidate an old timed callback before indexes shift. A running rest is not cancelled:
     // it belongs to an exercise (timer.forIdx), and that exercise only changes position.
     ui.stopWork()
+    focusPointerEpoch.current++
     update(s => {
       const moved = moveActiveWorkoutUnit(s.active, at, direction)
       if (!moved) return
@@ -648,23 +655,34 @@ function ActiveWorkout() {
   // One prop object per entry so the card and list layouts share the exact same wiring. The
   // exercise-level actions (swap, move, remove) address the entry itself, so the "more" menu of
   // a superset member acts on that member, not on whatever the marker happens to point at.
+  const swapExercise = idx => {
+    if (focusMode) focusPointerEpoch.current++
+    swapActiveWorkoutExercise(idx)
+  }
   const blockProps = idx => ({
-    onSwap: () => swapActiveWorkoutExercise(idx),
+    onSwap: () => swapExercise(idx),
     onMoveUp: () => moveUnitAt(idx, -1),
     onMoveDown: () => moveUnitAt(idx, 1),
     canMoveUp: canMoveActiveWorkoutUnit(A, idx, -1),
     canMoveDown: canMoveActiveWorkoutUnit(A, idx, 1),
     onRemoveExercise: () => confirmRemoveExercise(idx),
     busy: !!work,
-    onToggle: i => toggle(idx, i),
-    onToggleSide: (i, side) => toggle(idx, i, side),
+    onToggle: (i, onFocusProgress) => toggle(idx, i, undefined, onFocusProgress),
+    onToggleSide: (i, side, onFocusProgress) => toggle(idx, i, side, onFocusProgress),
     onField: (i, f, v) => setField(idx, i, f, v),
+    onMutateSet: (i, fn) => mutEntry(idx, entry => { entry.sets[i] = fn(entry.sets[i]) }),
     onAddSet: () => addSet(idx),
     onRemoveSet: () => removeSet(idx),
     onAddWarmup: () => addWarmup(idx),
     onRemoveSetAt: i => removeSetAt(idx, i),
-    onStartTimed: i => startTimed(idx, i),
+    onStartTimed: (i, onFocusProgress) => startTimed(idx, i, onFocusProgress),
     onProgressionSettings: () => openProgressionSettings(idx),
+  })
+  const selectFocusEntry = idx => update(s => { if (s.active) s.active.cur = idx })
+  const advanceFocusUnit = () => update(s => {
+    if (!s.active) return
+    const next = nextUnfinishedUnit(s.active.entries, supersetUnits(s.active.entries), s.active.cur)
+    if (next) s.active.cur = next[0]
   })
   const navigateUnit = direction => {
     const targetFor = active => {
@@ -688,13 +706,19 @@ function ActiveWorkout() {
   // (Settings → During a workout → Workout view). It writes s.active.workoutView, which the
   // render above prefers over S.workoutView.
   const setWorkoutView = v => update(s => { if (s.active) s.active.workoutView = v })
-  const LAYOUT_LABEL = { cards: t('Cards'), list: t('List'), compact: t('Compact') }
+  const LAYOUT_LABEL = {
+    cards: t('Cards'),
+    list: t('List'),
+    compact: t('Compact'),
+    focus: t('Focus'),
+  }
   const openLayoutMenu = () => menuSheet({
     title: t('Layout'),
     items: [
       { icon: 'clipboard', label: t('Cards'), on: workoutView === 'cards', onClick: () => setWorkoutView('cards') },
       { icon: 'list', label: t('List'), on: workoutView === 'list', onClick: () => setWorkoutView('list') },
       { icon: 'minimize', label: t('Compact'), on: workoutView === 'compact', onClick: () => setWorkoutView('compact') },
+      { icon: 'target', label: t('Focus'), on: workoutView === 'focus', onClick: () => setWorkoutView('focus') },
     ],
   })
   // The header ⋮: bring another routine into the session, then the layout switch nested a
@@ -770,7 +794,7 @@ function ActiveWorkout() {
 
   // Remove a whole exercise from the session. The confirmation always asks first; in a
   // superset it asks WHICH exercise of the group to remove.
-  const removeExercise = removeActiveExercise
+  const removeExercise = idx => { focusPointerEpoch.current++; removeActiveExercise(idx) }
   const confirmRemoveExercise = idx => {
     const e = A.entries[idx]
     if (!e) return
@@ -804,18 +828,18 @@ function ActiveWorkout() {
   // finish logs 0:38 of a 0:45 target rather than crediting the full prescription — and then
   // checks the set off through the normal path, so rest, supersets and the finish prompt all
   // behave exactly as they do for a reps set.
-  const startTimed = (idx, i) => {
+  const startTimed = (idx, i, onFocusProgress) => {
     const e = A.entries[idx]
     // This tap may be the only one before the hold's countdown beeps (a timed first exercise):
     // get the audio context running while it still counts as a gesture (iOS, #152).
     unlock(S.sound)
     useUI.getState().startWork(e.sets[i].sec || 45, exerciseNameFor(exOr(e.id)), elapsed => {
       mutEntry(idx, en => { en.sets[i].sec = elapsed })
-      if (!useStore.getState().S.active.entries[idx].sets[i].done) toggle(idx, i)
+      if (!useStore.getState().S.active.entries[idx].sets[i].done) toggle(idx, i, undefined, onFocusProgress)
     })
   }
 
-  const toggle = (idx, i, side) => {
+  const toggle = (idx, i, side, onFocusProgress) => {
     // Ticking a set ends the typing in that row: drop the keyboard before the rest timer, the
     // effort sheet or the next exercise moves in. WebKit keeps the input focused across the
     // button tap, and a focused input with its keyboard gone is what leaves the tab bar
@@ -887,17 +911,19 @@ function ActiveWorkout() {
       if (freshUnitDone) stopRest()
       if (!freshUnit || freshUnit.length <= 1) {
         if (!restBeforeWarmup && restAfterSet({ unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) startRest(restAfter, idx)
+        onFocusProgress?.({ unitDone: freshUnitDone })
         return
       }
 
       const step = supersetFlowStep(fresh.entries, freshUnit, idx)
-      if (!step) return
+      if (!step) { onFocusProgress?.({ unitDone: freshUnitDone }); return }
       if (step.unitDone) {
         if (nextUnit?.length && !restBeforeWarmup) startRest(restAfter, idx)
       } else {
         if (step.nextIdx != null) update(s => { if (s.active) s.active.cur = step.nextIdx })
         if (step.roundDone) startRest(restAfter, idx)
       }
+      onFocusProgress?.({ unitDone: freshUnitDone })
     }
   }
 
@@ -990,7 +1016,12 @@ function ActiveWorkout() {
         onLostPointerCapture={event => {
           if (swipe.current?.id === event.pointerId) swipe.current = null
         }}>
-      {isSuperset ? (
+      {focusMode ? (
+        <FocusView entryIdx={cur} unit={unit}
+          onSelectEntry={selectFocusEntry} onAdvanceUnit={advanceFocusUnit} pointerEpoch={focusPointerEpoch.current}
+          onPairPrev={onPairPrev} onPairNext={onPairNext} onUnpair={() => unpairAt(cur)}
+          {...blockProps(cur)} />
+      ) : isSuperset ? (
         <div className="ss-card">
           <div className="ss-hd" style={{ justifyContent: 'space-between' }}>
             <span className="row" style={{ gap: 5 }}><Icon name="link" />{t('Superset · do these back-to-back, rest when done')}</span>
@@ -1030,20 +1061,23 @@ function ActiveWorkout() {
       // sheet and carry its completed rows forward. A planned session uses its configured
       // target when progression is off, while progression-enabled sessions keep their path.
       const seed = freestyle ? freestyleConfig(S, { id: ex.id, ...defaultConfig(ex.id) }) : null
-      const commit = cfg => update(s => {
-        const full = { ...cfg, id: ex.id }
-        const plan = freestyle ? null : nextPrescription(s, full, routine)
-        const sets = buildSets(s, full, {
-          step: modeOf(full) === 'reps' ? weightIncrement(full, s.unit) : defaultIncrement(ex.id, s.unit),
-          ...(freestyle ? { preferLast: true } : {}),
-          ...(plan?.kind === 'off' ? { useTarget: true } : {})
+      const commit = cfg => {
+        focusPointerEpoch.current++
+        update(s => {
+          const full = { ...cfg, id: ex.id }
+          const plan = freestyle ? null : nextPrescription(s, full, routine)
+          const sets = buildSets(s, full, {
+            step: modeOf(full) === 'reps' ? weightIncrement(full, s.unit) : defaultIncrement(ex.id, s.unit),
+            ...(freestyle ? { preferLast: true } : {}),
+            ...(plan?.kind === 'off' ? { useTarget: true } : {})
+          })
+          const progressed = freestyle ? sets : applyPrescription(sets, plan, modeOf(full) === 'reps' ? weightIncrement(full, s.unit) : defaultIncrement(ex.id, s.unit))
+          const insertAt = insertionIndexAfterCurrentUnit(supersetUnits(s.active.entries), s.active.cur, s.active.entries.length)
+          s.active.entries.splice(insertAt, 0, { id: ex.id, target: { ...cfg }, plan, sets: applyIntensifierPlan(progressed, full), ...(curRid ? { rid: curRid } : {}) })
+          s.active.cur = insertAt
+          useUI.getState().shiftRestOwner(insertAt, 1)
         })
-        const progressed = freestyle ? sets : applyPrescription(sets, plan, modeOf(full) === 'reps' ? weightIncrement(full, s.unit) : defaultIncrement(ex.id, s.unit))
-        const insertAt = insertionIndexAfterCurrentUnit(supersetUnits(s.active.entries), s.active.cur, s.active.entries.length)
-        s.active.entries.splice(insertAt, 0, { id: ex.id, target: { ...cfg }, plan, sets: applyIntensifierPlan(progressed, full), ...(curRid ? { rid: curRid } : {}) })
-        s.active.cur = insertAt
-        useUI.getState().shiftRestOwner(insertAt, 1)
-      })
+      }
       // The "+" on a picker row reads as "add this now" — routed through the same detail
       // sheet before, so it added nothing until you'd scrolled past it and found the real
       // button. Quick-add commits with the same default (or, freestyle, last-session) config
@@ -1063,7 +1097,7 @@ function ActiveWorkout() {
       <div style={{ height: 6 }} />
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <Button size="sm" icon="shuffle" aria-label={t('Swap exercise')} disabled={!!work}
-          onClick={() => swapActiveWorkoutExercise(cur)}>{t('Swap exercise')}</Button>
+          onClick={() => swapExercise(cur)}>{t('Swap exercise')}</Button>
       </div>
       <div style={{ height: 6 }} />
       <div style={{ display: 'flex', justifyContent: 'center' }}>

@@ -2018,6 +2018,40 @@ function ExerciseNote({ entryIdx, close }) {
 }
 export const exerciseNoteSheet = entryIdx => ui().openSheet(close => <ExerciseNote entryIdx={entryIdx} close={close} />)
 
+function SetNote({ entryIdx, setIdx, close }) {
+  const noteRef = useRef(null)
+  const onNoteFocus = useSheetKeyboard(noteRef)
+  const row = useStore(s => s.S.active?.entries?.[entryIdx]?.sets?.[setIdx])
+  const update = useStore(s => s.update)
+  const [note, setNote] = useState(row?.note || '')
+
+  useEffect(() => { if (!row) close() }, [!row])
+  if (!row) return null
+
+  const save = () => {
+    const text = note.trim().slice(0, NOTE_MAX)
+    update(s => {
+      const set = s.active?.entries?.[entryIdx]?.sets?.[setIdx]
+      if (!set) return
+      if (text) set.note = text
+      else delete set.note
+    }, true)
+    close()
+  }
+
+  return <>
+    <h3>{t('Set note')}</h3>
+    <textarea ref={noteRef} className="input" rows={4} maxLength={NOTE_MAX} value={note}
+      placeholder={t('Anything specific to remember about this set.')}
+      onFocus={onNoteFocus} onChange={event => setNote(event.target.value)} />
+    <div style={{ height: 18 }} />
+    <Button variant="primary" onClick={save}>{t('Save')}</Button>
+  </>
+}
+
+export const setNoteSheet = (entryIdx, setIdx) =>
+  ui().openSheet(close => <SetNote entryIdx={entryIdx} setIdx={setIdx} close={close} />)
+
 /* The session note: how the whole workout went, as opposed to how one exercise went. It lives
    on the active session, so buildCompletedWorkout carries it onto the finished workout and it
    shows up again in history — where it stays editable. Written here rather than only after the

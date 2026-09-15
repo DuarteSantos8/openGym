@@ -115,14 +115,14 @@ export function Segmented({ options, value, onChange, className = '' }) {
 
 /* ============================ stepper ============================ */
 
-export function Stepper({ value, step = 1, onChange, decimal = true, className = '', label, unit, invalid = false }) {
+export function Stepper({ value, step = 1, onChange, decimal = true, className = '', label, unit, invalid = false, disabled = false, onStep, ariaLabel }) {
   const set = v => onChange(Math.max(0, Math.round((v || 0) * 100) / 100))
   // Holding a button repeats the step; the latest value/step live in a ref so
   // the interval doesn't keep stepping from the value it was started with.
   const live = useRef({ value, step, set })
   live.current = { value, step, set }
   const hold = useRef({ delay: null, tick: null, count: 0, repeated: false })
-  const bump = dir => { const { value, step, set } = live.current; set((+value || 0) + dir * step) }
+  const bump = dir => { const { value, step, set } = live.current; set(onStep ? onStep(value, step, dir) : (+value || 0) + dir * step) }
   const stopHold = () => {
     const h = hold.current
     window.clearTimeout(h.delay); window.clearInterval(h.tick)
@@ -155,12 +155,12 @@ export function Stepper({ value, step = 1, onChange, decimal = true, className =
   })
   const inner = (
     <div className={'stp ' + className}>
-      <button {...holdProps(-1)} aria-label="Decrease"><Icon name="minus" /></button>
+      <button {...holdProps(-1)} aria-label={ariaLabel ? `Decrease ${ariaLabel}` : 'Decrease'} disabled={disabled}><Icon name="minus" /></button>
       <span className="val">
-        <NumberField value={value} decimal={decimal} onChange={onChange} aria-invalid={invalid ? 'true' : undefined} />
+        <NumberField value={value} decimal={decimal} onChange={onChange} disabled={disabled} aria-invalid={invalid ? 'true' : undefined} />
         {unit && <i>{unit}</i>}
       </span>
-      <button {...holdProps(1)} aria-label="Increase"><Icon name="plus" /></button>
+      <button {...holdProps(1)} aria-label={ariaLabel ? `Increase ${ariaLabel}` : 'Increase'} disabled={disabled}><Icon name="plus" /></button>
     </div>
   )
   if (!label) return inner
@@ -173,7 +173,7 @@ export function Stepper({ value, step = 1, onChange, decimal = true, className =
 // pseudo-elements, which is the only way the control looks identical on every
 // platform and can pick up the accent colour.
 export const SLIDER_GRAB_PX = 22
-export function Slider({ value, min = 0, max = 100, step = 1, onChange, className = '' }) {
+export function Slider({ value, min = 0, max = 100, step = 1, onChange, className = '', disabled = false }) {
   const ref = useRef(null)
   const [drag, setDrag] = useState(false)
   // Grabbing the knob drags it relative to where the finger landed; a finger
@@ -210,6 +210,7 @@ export function Slider({ value, min = 0, max = 100, step = 1, onChange, classNam
   }, [drag, onChange, posToValue])
 
   const key = e => {
+    if (disabled) return
     const d = e.key === 'ArrowRight' || e.key === 'ArrowUp' ? step
       : e.key === 'ArrowLeft' || e.key === 'ArrowDown' ? -step : 0
     if (!d) return
@@ -222,11 +223,13 @@ export function Slider({ value, min = 0, max = 100, step = 1, onChange, classNam
       ref={ref}
       className={'sld' + (drag ? ' dragging' : '') + ' ' + className}
       role="slider"
-      tabIndex={0}
+      tabIndex={disabled ? -1 : 0}
       aria-valuenow={value} aria-valuemin={min} aria-valuemax={max}
+      aria-disabled={disabled}
       data-nodrag                                  /* keeps the sheet from swipe-dismissing */
       onKeyDown={key}
       onPointerDown={e => {
+        if (disabled) return
         e.currentTarget.setPointerCapture?.(e.pointerId)
         const r = e.currentTarget.getBoundingClientRect()
         const knobX = r.left + (pct / 100) * r.width

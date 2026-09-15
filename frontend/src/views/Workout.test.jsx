@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => {
     S: null,
     timer: null,
     work: null,
+    startWork: vi.fn(),
     startRest: vi.fn(),
     stopRest: null,
     stopWork: null,
@@ -24,6 +25,7 @@ const mocks = vi.hoisted(() => {
     menuSheet: vi.fn(),
     effortPickerSheet: vi.fn(),
     exerciseHistorySheet: vi.fn(),
+    setNoteSheet: vi.fn(),
   }
   state.stopRest = vi.fn(() => { state.timer = null })
   state.stopWork = vi.fn(() => { state.work = null })
@@ -43,7 +45,7 @@ const mocks = vi.hoisted(() => {
     stopRest: state.stopRest,
     stopWork: state.stopWork,
     shiftRestOwner: vi.fn(),
-    startWork: vi.fn(),
+    startWork: state.startWork,
     toast: state.toast,
   })
   return state
@@ -75,6 +77,7 @@ vi.mock('../sheets.jsx', () => ({
   // Both note sheets belong here even though the tests never open one: Workout.jsx reads
   // sessionNoteSheet during render, so a missing export is a render crash, not a no-op.
   exerciseNoteSheet: vi.fn(),
+  setNoteSheet: mocks.setNoteSheet,
   sessionNoteSheet: vi.fn(),
   effortPickerSheet: mocks.effortPickerSheet,
   exerciseHistorySheet: mocks.exerciseHistorySheet,
@@ -151,6 +154,12 @@ async function pressNext() {
     .find(button => button.textContent.trim() === 'Next')
   expect(button).toBeTruthy()
   await act(async () => { button.dispatchEvent(new dom.Event('click', { bubbles: true })) })
+}
+
+const buttonNamed = name => container.querySelector(`button[aria-label="${name}"]`)
+const click = async element => {
+  expect(element).toBeTruthy()
+  await act(async () => { element.dispatchEvent(new dom.Event('click', { bubbles: true })) })
 }
 
 async function pressProgression(index = 0) {
@@ -1008,6 +1017,434 @@ describe('active exercise swap control', () => {
   })
 })
 
+describe('workout focus view', () => {
+  it('shows only the first incomplete set with its prescription and tactile controls', async () => {
+    await mount([exercise('plain-bench', [true, false, false], {
+      target: { mode: 'reps', reps: 5, repsMin: 3, weight: 60, restSec: 120 },
+    })], 0, { active: { workoutView: 'focus' }, effort: 'rpe' })
+
+    expect(container.querySelector('[data-testid="focus-view"]')).toBeTruthy()
+    expect(container.querySelectorAll('[data-testid="focus-set"]').length).toBe(1)
+    expect(container.textContent).toContain('2/3')
+    expect(container.textContent).toContain('3–5 Reps')
+    expect(container.textContent).toContain('@ 60 kg')
+    expect(container.textContent).toContain('Rest 120s')
+    expect(buttonNamed('Previous set').disabled).toBe(false)
+    expect(buttonNamed('Next set').disabled).toBe(false)
+  })
+
+  it('moves with chevrons, dots, and Skip without completing a set', async () => {
+    await mount([exercise('plain-bench', [false, false, false])], 0, { active: { workoutView: 'focus' } })
+
+    await click(buttonNamed('Next set'))
+    expect(container.textContent).toContain('2/3')
+    await click(container.querySelector('button[aria-label="Set 3"]'))
+    expect(container.textContent).toContain('3/3')
+    await click(buttonNamed('Previous set'))
+    expect(container.textContent).toContain('2/3')
+    await click(buttonNamed('Skip set'))
+    expect(container.textContent).toContain('3/3')
+    expect(mocks.S.active.entries[0].sets.every(set => !set.done)).toBe(true)
+  })
+
+  it('locks later Focus sets while keeping them inspectable', async () => {
+    await mount([exercise('plain-bench', [false, false])], 0, { active: { workoutView: 'focus' }, effort: 'rpe' })
+
+    await click(buttonNamed('Next set'))
+
+    expect(container.querySelector('[data-testid="focus-set"]').classList.contains('locked')).toBe(true)
+    expect(container.textContent).toContain('Complete set 1 to edit this one.')
+    expect(buttonNamed('Increase load').disabled).toBe(true)
+    expect(buttonNamed('Increase reps').disabled).toBe(true)
+    expect(buttonNamed('RPE').disabled).toBe(true)
+  })
+
+  it('pairs adjacent exercises from Focus and can unpair them', async () => {
+    await mount([exercise('plain-bench', [false]), exercise('plain-row', [false])], 0, { active: { workoutView: 'focus' } })
+
+    await click(buttonNamed('More'))
+    const pair = mocks.menuSheet.mock.calls.at(-1)[0].items.find(item => item?.label === 'Make superset with next')
+    expect(pair).toBeTruthy()
+    await act(async () => { pair.onClick() })
+    await rerender()
+    expect(container.querySelector('.focus-superset')).toBeNull()
+    expect(container.querySelector('.focus-card .focus-superset-inline')).toBeTruthy()
+
+    await click(buttonNamed('Unpair'))
+    await rerender()
+    expect(container.querySelector('.focus-superset')).toBeNull()
+  })
+
+  it('uses the shared effort picker for the selected RPE scale', async () => {
+    await mount([exercise('plain-bench', [false])], 0, { active: { workoutView: 'focus' }, effort: 'rpe' })
+
+    await click(buttonNamed('Increase load'))
+    await click(buttonNamed('Increase reps'))
+    await click(buttonNamed('RPE'))
+    const [, value, onPick] = mocks.effortPickerSheet.mock.calls.at(-1)
+    expect(mocks.effortPickerSheet.mock.calls.at(-1)[0]).toBe('rpe')
+    expect(value).toBeNull()
+    await act(async () => { onPick(6.5) })
+
+    expect(mocks.S.active.entries[0].sets[0].w).toBe(62.5)
+    expect(mocks.S.active.entries[0].sets[0].r).toBe(6)
+    expect(mocks.S.active.entries[0].sets[0].rpe).toBe(6.5)
+  })
+
+  it('hides effort in Focus when Settings selects none and stores the selected RIR scale', async () => {
+    await mount([exercise('plain-bench', [false])], 0, { active: { workoutView: 'focus' }, effort: 'none' })
+    expect(buttonNamed('RPE')).toBeNull()
+    expect(buttonNamed('RIR')).toBeNull()
+
+    await mount([exercise('plain-bench', [false])], 0, { active: { workoutView: 'focus' }, effort: 'rir' })
+    await click(buttonNamed('RIR'))
+    const [, , onPick] = mocks.effortPickerSheet.mock.calls.at(-1)
+    await act(async () => { onPick(2) })
+    expect(mocks.S.active.entries[0].sets[0]).toMatchObject({ rir: 2 })
+  })
+
+  it('locks completed set inputs and mutes their values', async () => {
+    await mount([exercise('plain-bench', [false])], 0, { active: { workoutView: 'focus' }, effort: 'rpe' })
+
+    await click(buttonNamed('Complete set'))
+    await rerender()
+
+    expect(container.querySelector('[data-testid="focus-set"]').classList.contains('complete')).toBe(true)
+    expect(buttonNamed('Increase load').disabled).toBe(true)
+    expect(buttonNamed('Increase reps').disabled).toBe(true)
+    expect(container.querySelectorAll('[data-testid="focus-set"] .stp input:disabled')).toHaveLength(2)
+    expect(buttonNamed('RPE').disabled).toBe(true)
+  })
+
+  it('renders and updates independent unilateral sides', async () => {
+    await mount([exercise('split-squat', [false], {
+      target: { mode: 'reps', reps: 10, weight: 20, side: true },
+      sets: [{
+        w: 20, r: 10, done: false,
+        sides: {
+          L: { w: 20, r: 5, done: false },
+          R: { w: 20, r: 5, done: false },
+        },
+      }],
+    })], 0, { active: { workoutView: 'focus' } })
+
+    expect(container.querySelectorAll('[data-focus-side]').length).toBe(2)
+    await click(container.querySelector('[data-focus-side="L"] button[aria-label="Increase reps"]'))
+    expect(mocks.S.active.entries[0].sets[0].sides.L.r).toBe(6)
+    expect(mocks.S.active.entries[0].sets[0].sides.R.r).toBe(5)
+    await click(container.querySelector('[data-focus-side="L"] button[aria-label="Complete left side"]'))
+    expect(mocks.S.active.entries[0].sets[0].sides.L.done).toBe(true)
+    expect(mocks.S.active.entries[0].sets[0].done).toBe(false)
+  })
+
+  it('completes both unilateral sides through the side mutator before advancing Focus', async () => {
+    await mount([
+      exercise('split-squat', [false], {
+        target: { mode: 'reps', reps: 10, weight: 20, side: true },
+        sets: [{ w: 20, r: 10, done: false, sides: {
+          L: { w: 20, r: 5, done: false }, R: { w: 20, r: 5, done: false },
+        } }],
+      }),
+      exercise('plain-row', [false]),
+    ], 0, { active: { workoutView: 'focus' } })
+
+    await click(buttonNamed('Complete set'))
+
+    const set = mocks.S.active.entries[0].sets[0]
+    expect(set.sides.L.done).toBe(true)
+    expect(set.sides.R.done).toBe(true)
+    expect(set.done).toBe(true)
+    expect(mocks.S.active.cur).toBe(1)
+  })
+
+  it('advances Focus when the second individual side is completed', async () => {
+    await mount([
+      exercise('split-squat', [false], {
+        target: { mode: 'reps', reps: 10, weight: 20, side: true },
+        sets: [{ w: 20, r: 10, done: false, sides: {
+          L: { w: 20, r: 5, done: false }, R: { w: 20, r: 5, done: false },
+        } }],
+      }),
+      exercise('plain-row', [false]),
+    ], 0, { active: { workoutView: 'focus' } })
+
+    await click(buttonNamed('Complete left side'))
+    await rerender()
+    await click(buttonNamed('Complete right side'))
+
+    expect(mocks.S.active.entries[0].sets[0].done).toBe(true)
+    expect(mocks.S.active.cur).toBe(1)
+  })
+
+  it('renders and edits unilateral extras added through the set menu', async () => {
+    await mount([exercise('split-squat', [false], {
+      target: { mode: 'reps', reps: 10, weight: 20, side: true },
+      sets: [{
+        w: 20, r: 10, done: false,
+        sides: {
+          L: { w: 20, r: 5, done: false },
+          R: { w: 20, r: 5, done: false },
+        },
+      }],
+    })], 0, { active: { workoutView: 'focus' } })
+
+    await click(buttonNamed('Set menu'))
+    await act(async () => { mocks.menuSheet.mock.calls.at(-1)[0].items[1].onClick() })
+    await rerender()
+    const left = container.querySelector('[data-focus-side="L"]')
+    expect(left.textContent).toContain('Drop 1')
+    await click(left.querySelectorAll('button[aria-label="Increase load"]')[1])
+    expect(mocks.S.active.entries[0].sets[0].sides.L.drops[0].w).toBe(18.5)
+    expect(mocks.S.active.entries[0].sets[0].sides.R.drops[0].w).toBe(16)
+
+    await click(buttonNamed('Set menu'))
+    await act(async () => { mocks.menuSheet.mock.calls.at(-1)[0].items[2].onClick() })
+    await rerender()
+    const burstLeft = container.querySelector('[data-focus-side="L"]')
+    expect(burstLeft.textContent).toContain('Drop 1')
+    expect(burstLeft.textContent).toContain('Burst 1')
+    const burst = [...burstLeft.querySelectorAll('.focus-extra')].find(row => row.textContent.includes('Burst 1'))
+    await click(burst.querySelector('button[aria-label="Increase reps"]'))
+    expect(mocks.S.active.entries[0].sets[0].sides.L.clusters[0].r).toBe(4)
+    expect(mocks.S.active.entries[0].sets[0].sides.R.clusters[0].r).toBe(3)
+  })
+
+  it('shows the existing timer action instead of reps for timed sets', async () => {
+    await mount([exercise('plank', [false], {
+      target: { mode: 'time', sec: 45, weight: 0 },
+      sets: [{ sec: 45, w: 0, done: false }],
+    })], 0, { active: { workoutView: 'focus' } })
+
+    expect(container.textContent).toContain('45s hold')
+    expect(buttonNamed('Start set')).toBeTruthy()
+    expect(buttonNamed('Increase reps')).toBeNull()
+    await click(buttonNamed('Start set'))
+    expect(mocks.uiSnapshot().startWork).toHaveBeenCalled()
+  })
+
+  it('advances Focus when a timed set finishes through the shared timer', async () => {
+    await mount([
+      exercise('plank', [false], {
+        target: { mode: 'time', sec: 45, weight: 0 },
+        sets: [{ sec: 45, w: 0, done: false }],
+      }),
+      exercise('plain-row', [false]),
+    ], 0, { active: { workoutView: 'focus' } })
+
+    await click(buttonNamed('Start set'))
+    await act(async () => { mocks.uiSnapshot().startWork.mock.calls.at(-1)[2](45) })
+
+    expect(mocks.S.active.entries[0].sets[0].done).toBe(true)
+    expect(mocks.S.active.cur).toBe(1)
+  })
+
+  it('does not advance Focus when rechecking a completed final set', async () => {
+    await mount([
+      exercise('plain-bench', [true]),
+      exercise('plain-row', [false]),
+    ], 0, { active: { workoutView: 'focus' } })
+
+    await click(buttonNamed('Complete set'))
+    await rerender()
+    await click(buttonNamed('Complete set'))
+
+    expect(mocks.S.active.entries[0].sets[0].done).toBe(true)
+    expect(mocks.S.active.cur).toBe(0)
+  })
+
+  it('uses the established duration and speed fields for cardio', async () => {
+    await mount([exercise('plain-treadmill', [false], {
+      target: { mode: 'cardio', min: 20, speed: 8 },
+      sets: [{ min: 20, speed: 8, done: false }],
+    })], 0, { active: { workoutView: 'focus' } })
+
+    expect(container.textContent).toContain('Duration (min)')
+    expect(container.textContent).toContain('Speed (km/h)')
+    expect(container.querySelectorAll('button[aria-label="Increase reps"]').length).toBe(0)
+    await click(container.querySelector('button[aria-label="Increase duration"]'))
+    await click(container.querySelector('button[aria-label="Increase speed"]'))
+    expect(mocks.S.active.entries[0].sets[0]).toMatchObject({ min: 21, speed: 8.5 })
+  })
+
+  it('keeps drop and burst rows editable and opens every set action', async () => {
+    await mount([exercise('plain-bench', [false], {
+      sets: [{
+        w: 60, r: 8, done: false,
+        drops: [{ w: 45, r: 8 }],
+        clusters: [{ r: 3, restSec: 15 }],
+      }],
+    })], 0, { active: { workoutView: 'focus' } })
+
+    expect(container.textContent).toContain('Drop 1')
+    expect(container.textContent).toContain('Burst 1')
+    await click(container.querySelectorAll('button[aria-label="Increase load"]')[1])
+    await click(container.querySelectorAll('button[aria-label="Increase reps"]')[2])
+    expect(mocks.S.active.entries[0].sets[0].drops[0].w).toBe(47.5)
+    expect(mocks.S.active.entries[0].sets[0].clusters[0].r).toBe(4)
+    expect(mocks.S.active.entries[0].sets[0].r).toBe(9)
+    await click(buttonNamed('Set menu'))
+    const labels = mocks.menuSheet.mock.calls.at(-1)[0].items.filter(Boolean).map(item => item.label)
+    expect(labels).toEqual(['Mark as warm-up', 'Add drop set', 'Add burst', 'Delete set'])
+  })
+
+  it('does not expose a Focus-only set note action', async () => {
+    await mount([exercise('plain-bench', [false, false])], 0, { active: { workoutView: 'focus' } })
+    await click(buttonNamed('Next set'))
+    expect(buttonNamed('Set note')).toBeNull()
+  })
+
+  it('completes, starts rest, advances sets, then advances to the next unfinished exercise', async () => {
+    await mount([
+      exercise('plain-bench', [false, false]),
+      exercise('plain-row', [false]),
+    ], 0, { active: { workoutView: 'focus' } })
+
+    await click(buttonNamed('Complete set'))
+    expect(mocks.S.active.entries[0].sets[0].done).toBe(true)
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number))
+    expect(container.textContent).toContain('2/2')
+
+    await click(buttonNamed('Complete set'))
+    expect(mocks.S.active.entries[0].sets[1].done).toBe(true)
+    expect(mocks.S.active.cur).toBe(1)
+  })
+
+  it('shows one superset member and follows round-major completion order', async () => {
+    await mount([
+      exercise('0968', [false, false], { sg: 'arms' }),
+      exercise('1254', [false, false], { sg: 'arms' }),
+      exercise('squat', [false]),
+    ], 0, { active: { workoutView: 'focus' } })
+
+    expect(container.textContent).toContain('band alternating biceps curl + band bench press')
+    expect(container.textContent).toContain('Round 1')
+    expect(container.textContent).toContain('Exercise 1 of 2')
+
+    await click(buttonNamed('Complete set'))
+    expect(mocks.S.active.cur).toBe(1)
+    await rerender()
+    expect(container.textContent).toContain('Exercise 2 of 2')
+
+    await click(buttonNamed('Complete set'))
+    expect(mocks.S.active.cur).toBe(0)
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number))
+    await rerender()
+    expect(container.textContent).toContain('Round 2')
+
+    await click(buttonNamed('Complete set'))
+    expect(mocks.S.active.cur).toBe(1)
+    await rerender()
+    await click(buttonNamed('Complete set'))
+    expect(mocks.S.active.cur).toBe(2)
+  })
+
+  it('uses the superset chevrons and dots for inspection without completing work', async () => {
+    await mount([
+      exercise('0968', [false, false], { sg: 'arms' }),
+      exercise('1254', [false, false], { sg: 'arms' }),
+    ], 0, { active: { workoutView: 'focus' } })
+
+    await click(buttonNamed('Next superset set'))
+    expect(mocks.S.active.cur).toBe(1)
+    await rerender()
+    expect(container.textContent).toContain('Exercise 2 of 2')
+    expect(mocks.S.active.entries.flatMap(entry => entry.sets).every(set => !set.done)).toBe(true)
+  })
+
+  it('clears inspected set pointers when superset completion auto-advances', async () => {
+    await mount([
+      exercise('0968', [false, false], { sg: 'arms' }),
+      exercise('1254', [false, false], { sg: 'arms' }),
+    ], 0, { active: { workoutView: 'focus' } })
+
+    await click(buttonNamed('Next superset set'))
+    await rerender()
+    await click(buttonNamed('Previous superset set'))
+    await rerender()
+    await click(buttonNamed('Complete set'))
+    await rerender()
+    await click(buttonNamed('Complete set'))
+    await rerender()
+
+    expect(container.textContent).toContain('Round 2')
+    expect(container.textContent).toContain('2/2')
+  })
+
+  it('clears a manually selected set when an uneven superset auto-selects the same entry', async () => {
+    await mount([
+      exercise('0968', [false, false], { sg: 'arms' }),
+      exercise('1254', [true], { sg: 'arms' }),
+    ], 0, { active: { workoutView: 'focus' } })
+
+    await click(buttonNamed('Set 1'))
+    await click(buttonNamed('Complete set'))
+    expect(mocks.S.active.cur).toBe(0)
+    await rerender()
+
+    expect(container.textContent).toContain('Round 2')
+    expect(container.textContent).toContain('2/2')
+  })
+
+  it('omits missing member sets from the superset sequence', async () => {
+    await mount([
+      exercise('0968', [false, false], { sg: 'arms' }),
+      exercise('1254', [false], { sg: 'arms' }),
+    ], 0, { active: { workoutView: 'focus' } })
+
+    await click(buttonNamed('Next superset set'))
+    await rerender()
+    await click(buttonNamed('Next superset set'))
+    await rerender()
+
+    expect(container.textContent).toContain('Round 2')
+    expect(container.textContent).toContain('Exercise 1 of 2')
+    expect(buttonNamed('Next superset set').disabled).toBe(true)
+  })
+
+  it('clears set pointers after an exercise move changes entry indexes', async () => {
+    await mount([
+      exercise('plain-bench', [false, false, false]),
+      exercise('plain-row', [false, false, false]),
+    ], 0, { active: { workoutView: 'focus' }, wc: { exerciseButtons: true } })
+
+    await click(container.querySelector('button[aria-label="Set 3"]'))
+    await rerenderAt(1)
+    await click(container.querySelector('button[aria-label="Move up"]'))
+    await rerender()
+
+    expect(container.textContent).toContain('1/3')
+  })
+
+  it('clears an inspected set pointer before Focus swaps the exercise', async () => {
+    await mount([exercise('plain-bench', [false, false, false])], 0, { active: { workoutView: 'focus' } })
+
+    await click(container.querySelector('button[aria-label="Set 3"]'))
+    await click(buttonNamed('More'))
+    await act(async () => {
+      mocks.menuSheet.mock.calls.at(-1)[0].items.find(item => item?.label === 'Swap exercise').onClick()
+      mocks.S.active.entries[0] = exercise('plain-row', [true, false, false])
+    })
+    await rerender()
+
+    expect(mocks.swapActiveWorkoutExercise).toHaveBeenCalledWith(0)
+    expect(container.textContent).toContain('2/3')
+  })
+
+  it('clears an inspected set pointer before the Focus bottom swap button', async () => {
+    await mount([exercise('plain-bench', [false, false, false])], 0, {
+      active: { workoutView: 'focus' }, wc: { exerciseButtons: true },
+    })
+
+    await click(container.querySelector('button[aria-label="Set 3"]'))
+    await click(container.querySelector('button[aria-label="Swap exercise"]'))
+    mocks.S.active.entries[0] = exercise('plain-row', [true, false, false])
+    await rerender()
+
+    expect(mocks.swapActiveWorkoutExercise).toHaveBeenCalledWith(0)
+    expect(container.textContent).toContain('2/3')
+  })
+})
+
 describe('workout list view', () => {
   const units = () => [...container.querySelectorAll('.wl-unit')]
   const focusButton = unit => [...unit.querySelectorAll('button')].find(b => b.textContent.trim() === 'Set current')
@@ -1183,16 +1620,16 @@ describe('workout view header menu', () => {
     return mocks.menuSheet.mock.calls.at(-1)[0]
   }
 
-  it('leads with Add routine, then a Layout sheet with the three layouts marked current', async () => {
-    await mount([exercise('plain-bench', [false])], 0, { active: { workoutView: 'list', routineIds: [] } })
+  it('leads with Add routine, then a Layout sheet with the four layouts marked current', async () => {
+    await mount([exercise('plain-bench', [false])], 0, { active: { workoutView: 'focus', routineIds: [] } })
 
     const menu = await openMenu()
     expect(menu.items.filter(Boolean).map(it => it.label)).toEqual(['Add routine', 'Layout'])
-    expect(item(menu, 'Layout').sub).toBe('List')
+    expect(item(menu, 'Layout').sub).toBe('Focus')
 
     const layout = await openLayout(menu)
-    expect(layout.items.filter(Boolean).map(it => it.label)).toEqual(['Cards', 'List', 'Compact'])
-    expect(item(layout, 'List').on).toBe(true)
+    expect(layout.items.filter(Boolean).map(it => it.label)).toEqual(['Cards', 'List', 'Compact', 'Focus'])
+    expect(item(layout, 'Focus').on).toBe(true)
     expect(item(layout, 'Cards').on).toBe(false)
   })
 
