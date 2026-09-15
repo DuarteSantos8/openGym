@@ -397,7 +397,7 @@ export default function Settings({ page = null, find = null, via = null }) {
     autoBackup: !!S.autoBackup, synced: !!sync, installTip: !MOBILE && !standalone(), androidWeb: IS_ANDROID,
   }
   const mode = scheduleModeOf(S)
-  const layout = ['list', 'compact'].includes(S.workoutView) ? S.workoutView : 'cards'
+  const layout = ['list', 'compact', 'focus'].includes(S.workoutView) ? S.workoutView : 'cards'
   const layoutLabel = { cards: t('Cards'), list: t('List'), compact: t('Compact') }[layout]
   const activeProfile = (S.equipProfiles || []).find(p => p.id === S.activeEquipId)
   const themeLabel = { dark: t('Dark'), light: t('Light'), system: t('System') }[S.theme || 'dark'] || t('Dark')
@@ -473,7 +473,7 @@ export default function Settings({ page = null, find = null, via = null }) {
             unknown values read as cards. The workout's ⋯ menu can override it for one session. */}
         <Row icon="layout" iconTint="var(--blue)" title={t('Layout')}>
           <Segmented className="seg-inline"
-            options={[{ value: 'cards', label: t('Cards') }, { value: 'list', label: t('List') }, { value: 'compact', label: t('Compact') }]}
+            options={[{ value: 'cards', label: t('Cards') }, { value: 'list', label: t('List') }, { value: 'compact', label: t('Compact') }, { value: 'focus', label: t('Focus') }]}
             value={layout} onChange={v => update(s => { s.workoutView = v })} />
         </Row>
       </Section>

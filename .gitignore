@@ -16,8 +16,12 @@ node_modules/
 node_modules
 .claude/
 .agents/
+.superpowers/
 
 # CI reports (test:* jobs write these next to the suites)
 junit.xml
 coverage/
 frontend/bundle-size.json
+
+# Local planning notes
+docs/superpowers/plans/
