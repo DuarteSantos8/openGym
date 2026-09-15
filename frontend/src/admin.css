@@ -60,6 +60,10 @@
   background:var(--acc-soft);color:var(--acc)
 }
 .chip.on .adm-chip-key{background:rgba(0,0,0,.18);color:inherit}
+/* A provider's own mark, when the provider has one. Fixed box so a mark with different internal
+   padding cannot resize the chip it sits in, and inline-block so it lines up with the label
+   rather than sitting on the text baseline. */
+.adm-chip-logo{display:inline-block;width:18px;height:18px;object-fit:contain;flex:0 0 auto;vertical-align:-4px}
 
 /* label + control pairs inside a step */
 .adm-field{display:flex;flex-direction:column;gap:6px;margin:0 0 10px}

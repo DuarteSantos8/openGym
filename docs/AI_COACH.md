@@ -19,11 +19,12 @@ rest of this document applies to you.
 | **Anthropic API** | plain HTTPS to `api.anthropic.com` | an API key | default |
 | **OpenAI API** | plain HTTPS to `api.openai.com` | an API key | default |
 | **Google Gemini** | plain HTTPS to `generativelanguage.googleapis.com` | an API key | default |
-| **OpenAI-compatible endpoint** | plain HTTPS to a URL you give it — Ollama, LM Studio, vLLM, OpenRouter, a gateway of your own | an API key, optional | default |
+| **OrcaRouter** | plain HTTPS to `api.orcarouter.ai/v1` | an `sk-orca-…` key — pasted, or issued by signing in | default |
+| **OpenAI-compatible endpoint** | plain HTTPS to a URL you give it — Ollama, LM Studio, vLLM, an OpenRouter-style gateway, one of your own | an API key, optional | default |
 | **Claude (Anthropic)** | the Claude Agent SDK, inside the container | a `claude setup-token` | `coach` |
 | **Codex (OpenAI)** | the Codex CLI, inside the container | Codex's own device sign-in | `coach` |
 
-The first four spawn nothing. A job is one HTTPS request from the api process, so there is no
+The first five spawn nothing. A job is one HTTPS request from the api process, so there is no
 child process to drop privileges on, no runtime to carry in the image, and nothing to install:
 **they work on the image every instance already has.** The `coach` image, the unprivileged
 `coach` user and the `./coach-auth` mount described further down exist for the last two only.
@@ -31,6 +32,53 @@ child process to drop privileges on, no runtime to carry in the image, and nothi
 A model on your own LAN is the compatible endpoint with no key: point it at
 `http://ollama.lan:11434` and pick a model from the list it serves. That is the whole
 configuration.
+
+### OrcaRouter, and the two ways to connect it
+
+[OrcaRouter](https://www.orcarouter.ai) is an OpenAI-compatible gateway in front of many
+vendors' models — one endpoint, one key, `vendor/model` names. It has a chip of its own because
+it is a named service with a fixed endpoint and its own credential flow, not a URL you retype.
+
+**It is the one provider with two ways in, and they are offered side by side:**
+
+| Choice | What you need | What happens |
+| --- | --- | --- |
+| **Add API key** | an `sk-orca-…` key from [your console](https://www.orcarouter.ai/console) | pasted, encrypted into `./data/coach.json`, never shown again |
+| **Connect with OrcaRouter** | a browser and your OrcaRouter account | you approve on the consent page, paste back the short code it shows, and a key is issued to this server |
+
+Either way the result is the same thing: a normal OrcaRouter API key **on your account**. It is
+billed to you, listed in your console, and revocable by you at any time — from
+<https://www.orcarouter.ai/console/authorized-apps>, which deletes every key issued to this app
+in one click. openGym never sees a password, and no client secret is involved.
+
+**The connect flow is OAuth 2.0 + PKCE (out-of-band).** The server generates a fresh random
+verifier per attempt, sends only its SHA-256 challenge to the consent page, and presents the
+verifier when it exchanges the code. Nothing that could redeem an intercepted code ever leaves
+the process. Out-of-band rather than a loopback redirect because this dashboard is served to
+whatever address you deployed it on — a NAS, a LAN box, a reverse-proxied hostname — so the
+server is in no position to listen on your machine's `127.0.0.1`.
+
+**It signs you in once, not every launch.** The issued key is durable and is reused until it is
+revoked; there is no refresh grant and none is attempted. Two things follow that are worth
+knowing:
+
+- There is a cap of **10 PKCE-issued keys per user per 24 hours**. Re-authorising on every
+  restart would lock you out by lunchtime, which is why the key is stored and reused.
+- If you revoke the app in your console, the next job fails with an authentication error. That is
+  the signal to connect again — **Replace** / **Connect with OrcaRouter** on the card, not a
+  restart and not a retry loop.
+
+**Self-hosted OrcaRouter.** The public service uses `www.orcarouter.ai` for authentication and
+`api.orcarouter.ai/v1` for inference. A self-hosted deployment serving both from one address sets
+`ORCA_BASE_URL`; one that splits them sets `ORCA_AUTH_BASE_URL` and `ORCA_API_BASE_URL`, which
+take precedence over the shared value. HTTPS is required for anything but loopback.
+
+**The model list is filtered, not a text field.** OrcaRouter's catalogue is an aggregator's —
+hundreds of names, embeddings, image, video and rerank entries included. The picker asks it for
+`?capability=chat` and keeps only what it declares it can serve this request shape, so nothing
+in the list answers a plan request with prose the validator then rejects. If the catalogue cannot
+be reached, a small verified seed is used instead and the card says the list is a fallback; there
+is no state in which you type a model name by hand.
 
 ## Turning it on
 

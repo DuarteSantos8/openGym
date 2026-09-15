@@ -8,6 +8,9 @@ data/
 # Local config
 .env
 
+__pycache__/
+*.pyc
+
 # Build output / deps
 frontend/dist/
 node_modules/
@@ -16,6 +19,11 @@ node_modules/
 node_modules
 .claude/
 .agents/
+
+# Generated UI evidence for an OrcaRouter delivery check. Produced at review time by
+# scripts/orca-evidence/capture.py against the real built app, not committed: a
+# screenshot in the tree would be a claim nobody re-measured.
+orca-evidence/
 
 # CI reports (test:* jobs write these next to the suites)
 junit.xml
