@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { EXIDX, matchExercise } from '../lib/exercises.js'
-import { lastBW, streakWeeks, setLabel, modeOf, effortOf, metricModeForEntry, metricRowsForEntry, bestWeightForEntry } from '../lib/history.js'
+import { lastBW, streakWeeks, setLabel, modeOf, effortOf, entriesForExercise, metricEntriesForExercise, metricModeForEntry, bestWeightForEntry, completedRepsOf } from '../lib/history.js'
 import { fmtNum, fmtDate, fmtVol, todayISO, weekStartOf } from '../lib/format.js'
 import { t, exerciseNameFor, getLang } from '../lib/i18n.js'
 import { bwSheet, goalSheet, calendarSheet, workoutDetailSheet, WorkoutRow, bwDeltaColor } from '../sheets.jsx'
@@ -299,6 +299,13 @@ export default function Stats() {
   const workouts = S.workouts
   const monthW = workouts.filter(w => String(w.d || '').slice(0, 7) === todayISO().slice(0, 7)).length
 
+  const metricDataOf = (workout, id) => {
+    const entries = metricEntriesForExercise(workout, id)
+    const mode = entries.at(-1)?.mode || null
+    const sameMode = entries.filter(item => item.mode === mode)
+    const best = mode === 'reps' ? Math.max(0, ...sameMode.map(item => bestWeightForEntry(item.entry))) : 0
+    return { mode, entries: sameMode, rows: sameMode.flatMap(item => item.rows), best }
+  }
   const entryOf = id => workouts.flatMap(w => w.entries).find(e => e.id === id)
   const listOf = value => Array.isArray(value) ? value : value == null || value === '' ? [] : [value]
   const firstAvailable = (...values) => {
@@ -333,16 +340,18 @@ export default function Stats() {
   }
   const currentOf = id => {
     for (let i = workouts.length - 1; i >= 0; i--) {
-      const en = workouts[i].entries.find(e => e.id === id)
-      if (!en) continue
-      const mode = metricModeForEntry(en) || modeOf({ id })
-      const rows = metricRowsForEntry(en, mode)
-      const mx = mode === 'reps' ? bestWeightForEntry(en) : Math.max(0, ...rows.map(s => mode === 'cardio' ? (s.speed || 0) : mode === 'time' ? (s.sec || 0) : (s.w || 0)))
+      const data = metricDataOf(workouts[i], id)
+      if (!data.mode) continue
+      const mode = data.mode
+      const rows = data.rows
+      const mx = mode === 'reps'
+        ? data.best
+        : Math.max(0, ...rows.map(s => mode === 'cardio' ? (s.speed || 0) : mode === 'time' ? (s.sec || 0) : (s.w || 0)))
       if (mx > 0) return { mx, unit: mode === 'cardio' ? 'km/h' : mode === 'time' ? 's' : S.unit }
       // Unloaded reps work still has a current figure — its rep count. Without this the whole
       // picker label went blank and the exercise sorted to the bottom as if it had no history.
       if (mode === 'reps') {
-        const reps = Math.max(0, ...rows.map(s => Number(s.r) || 0))
+        const reps = Math.max(0, ...rows.map(completedRepsOf))
         if (reps > 0) return { mx: reps, unit: t('reps') }
       }
     }
@@ -356,9 +365,11 @@ export default function Stats() {
   // target also contains timed/cardio work. Entries without reps rows use their selected mode.
   const curMode = curEx ? (() => {
     for (let i = workouts.length - 1; i >= 0; i--) {
-      const en = workouts[i].entries.find(e => e.id === curEx)
-      if (en) {
-        const mode = metricModeForEntry(en)
+      const data = metricDataOf(workouts[i], curEx)
+      if (data.mode) return data.mode
+      const entries = entriesForExercise(workouts[i], curEx)
+      for (let j = entries.length - 1; j >= 0; j--) {
+        const mode = metricModeForEntry(entries[j])
         if (mode) return mode
       }
     }
@@ -371,26 +382,22 @@ export default function Stats() {
   // them (issue #5). When nothing in an exercise's history was ever loaded, the progress IS
   // the rep count, so plot that. Add a weighted set later and it switches back to weight on
   // its own, which is also the honest reading: that is when load became the thing improving.
-  const repsOnly = curEx && curMode === 'reps' && !workouts.some(w => {
-    const en = w.entries.find(e => e.id === curEx)
-    return en && bestWeightForEntry(en) > 0
-  })
-  const bestRepsOf = en => Math.max(0, ...metricRowsForEntry(en, 'reps').map(s => Number(s.r) || 0))
+  const repsOnly = curEx && curMode === 'reps' && !workouts.some(w =>
+    entriesForExercise(w, curEx).some(en => bestWeightForEntry(en) > 0))
   const metric = s => curCardio ? (s.speed || 0) : curTimed ? (s.sec || 0) : (s.w || 0)
   const exUnit = curCardio ? 'km/h' : curTimed ? 's' : repsOnly ? t('reps') : S.unit
   let exPts = [], exList = [], exBest = 0
   if (curEx) {
     workouts.forEach(w => {
-      const en = w.entries.find(e => e.id === curEx)
-      if (en) {
-        const loggedMode = metricModeForEntry(en)
-        if (loggedMode !== curMode) return
-        const doneSets = metricRowsForEntry(en, curMode)
+      const data = metricDataOf(w, curEx)
+      if (data.mode === curMode) {
+        const doneSets = data.rows
+        const representative = data.entries.at(-1)?.entry
         const mx = curMode === 'reps'
-          ? (repsOnly ? bestRepsOf(en) : bestWeightForEntry(en))
+          ? (repsOnly ? Math.max(0, ...doneSets.map(completedRepsOf)) : data.best)
           : Math.max(0, ...doneSets.map(metric))
         if (mx > 0) {
-          exPts.push({ t: w.start, y: mx, d: w.d, sets: doneSets, target: en.target })
+          exPts.push({ t: w.start, y: mx, d: w.d, sets: doneSets, target: representative?.target })
           if (mx > exBest) exBest = mx
         }
       }

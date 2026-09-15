@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { nextTrainingDay, modeOf, isTimed, fmtSec, setLabel, defaultConfig, buildSets, freestyleConfig, exLine, workoutVolume, bestWeightFor, bestWeightForEntry, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, removeRowAt, workSetsDone, setsDone, setsDoneActive, setUnits, doneUnits, setUnitsTotal, pairAdjacent, unpairSuperset, supersetUnits, applyIntensifierPlan, pinnedNoteFor, exNoteFor, effectiveRoutineIds, effectiveRoutines, effectiveRoutineId, effectiveRoutine, lastEntryFor, entryExcluded } from './history.js'
+import { nextTrainingDay, modeOf, isTimed, fmtSec, setLabel, defaultConfig, buildSets, freestyleConfig, exLine, workoutVolume, bestWeightFor, bestWeightForEntry, completedRepsOf, metricRowsForEntry, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, removeRowAt, workSetsDone, setsDone, setsDoneActive, setUnits, doneUnits, setUnitsTotal, pairAdjacent, unpairSuperset, supersetUnits, applyIntensifierPlan, pinnedNoteFor, exNoteFor, effectiveRoutineIds, effectiveRoutines, effectiveRoutineId, effectiveRoutine, lastEntryFor, entryExcluded } from './history.js'
 import { makeSideSet, setSideField, toggleSide } from './workout-model.js'
 import { EXDB } from './exercises.js'
 
@@ -1054,6 +1054,17 @@ describe('per-side aggregate stays readable by existing consumers', () => {
   it('bestWeightForEntry reads the aggregate weight of a completed per-side set', () => {
     const s = toggleSide(toggleSide(setSideField(makeSideSet({ w: 15, r: 16 }), 'R', 'w', 17.5), 'L'), 'R')
     expect(bestWeightForEntry({ id: LIFT, target: { id: LIFT, side: true }, sets: [s] })).toBe(17.5)
+  })
+
+  it('uses only completed side loads and reps when the other limb is unfinished', () => {
+    const partial = {
+      id: LIFT,
+      target: { id: LIFT, mode: 'reps', side: true },
+      sets: [{ phase: 'work', w: 200, r: 10, done: false,
+        sides: { L: { w: 100, r: 5, done: true }, R: { w: 200, r: 5, done: false } } }],
+    }
+    expect(bestWeightForEntry(partial)).toBe(100)
+    expect(completedRepsOf(metricRowsForEntry(partial, 'reps')[0])).toBe(5)
   })
 })
 
