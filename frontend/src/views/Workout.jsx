@@ -905,6 +905,28 @@ function ActiveWorkout() {
     latest.startTimed(forIdx, nextI)
   }
 
+  // A rest that runs out hands the screen over to whatever it has been naming all along
+  // (supersetFlow.restFocusIdx — the same exercise the bar shows and the List layout scrolls
+  // to). Without this the bar said "Next exercise · X", the countdown ended, and you were left
+  // looking at the exercise you had just finished, with no way forward but Next.
+  //
+  // Built when the rest starts, judged when it fires, like chainedHold: a rest outlives the
+  // render that armed it. `fromCur` is where the marker stood when the rest began — if it has
+  // moved since, you navigated during the break, and a countdown does not overrule that.
+  const handOver = (kind, chain) => {
+    const fromCur = useStore.getState().S.active?.cur
+    return forIdx => {
+      const active = useStore.getState().S.active
+      if (active && forIdx != null && active.cur === fromCur) {
+        const to = restFocusIdx(active.entries, supersetUnits(active.entries), forIdx, kind)
+        if (to != null && to !== fromCur && active.entries[to]) {
+          update(s => { if (s.active && s.active.cur === fromCur) s.active.cur = to })
+        }
+      }
+      chain?.(forIdx)
+    }
+  }
+
   const toggle = (idx, i, side, opts) => {
     // Ticking a set ends the typing in that row: drop the keyboard before the rest timer, the
     // effort sheet or the next exercise moves in. WebKit keeps the input focused across the
@@ -974,9 +996,17 @@ function ActiveWorkout() {
       // Also on a re-check, so an unticked-and-redone hold keeps the exercise running itself.
       const alone = !freshUnit || freshUnit.length <= 1
       const nextI = opts?.fromHold && alone && !freshUnitDone ? nextUndoneAfter(fresh.entries[idx].sets, i) : -1
-      const rest = () => nextI >= 0
-        ? startRest(restAfter, idx, kind, phase, chainedHold(fresh.entries[idx].id, nextI, fresh.entries[idx].sets.length))
-        : startRest(restAfter, idx, kind, phase)
+      const rest = () => startRest(restAfter, idx, kind, phase, handOver(kind,
+        nextI >= 0 ? chainedHold(fresh.entries[idx].id, nextI, fresh.entries[idx].sets.length) : null))
+      // Finishing an exercise owes you the next one. Normally the rest carries you there when
+      // it ends; when nothing is going to time that gap — the rest timer is Off, the next
+      // exercise has warm-up sets of its own to ramp through first, or this is a backfilled
+      // session that has no rest at all — the move happens now instead of not at all.
+      const gapIsTimed = !!restAfter && !A.backfill && !restBeforeWarmup
+      const moveOn = () => {
+        if (!freshUnitDone || !nextUnit?.length || gapIsTimed) return
+        update(s => { if (s.active && s.active.entries[nextUnit[0]]) s.active.cur = nextUnit[0] })
+      }
 
       // A re-check of finished work must not navigate or reopen a sheet, but it may still owe
       // you a rest — see restOnRecheck, and the other half of issue #3.
@@ -991,16 +1021,18 @@ function ActiveWorkout() {
       if (freshUnitDone) stopRest()
       if (alone) {
         if (!restBeforeWarmup && restAfterSet({ unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) rest()
+        moveOn()
         return
       }
 
       const step = supersetFlowStep(fresh.entries, freshUnit, idx)
       if (!step) return
       if (step.unitDone) {
-        if (nextUnit?.length && !restBeforeWarmup) startRest(restAfter, idx, kind, phase)
+        if (nextUnit?.length && !restBeforeWarmup) rest()
+        moveOn()
       } else {
         if (step.nextIdx != null) update(s => { if (s.active) s.active.cur = step.nextIdx })
-        if (step.roundDone) startRest(restAfter, idx, kind, phase)
+        if (step.roundDone) rest()
       }
     }
   }
