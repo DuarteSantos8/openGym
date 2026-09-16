@@ -112,9 +112,11 @@ const runRest = (set, get) => {
       // locked it never runs at all.
       get().toast(t('Rest over — next set!'))
       if (!MOBILE) maybeRestNotification()
-      // The hand-over only for a rest that ran out on screen, and only once: the rest stays on
-      // Ready below, and Dismiss has nothing left to hand over.
-      const done = seenLive ? restDone : null
+      // The hand-over, once: the rest stays on Ready below, and Dismiss has nothing left to hand
+      // over. It is told whether the countdown actually ran out on screen: a rest that expired in
+      // your pocket must not start a hold nobody watched, but moving the screen on to the next
+      // exercise is exactly what you want waiting for you when you unlock the phone.
+      const done = restDone
       restDone = null
       cancelPushRestTimer()
       stopRestTicking()
@@ -122,7 +124,7 @@ const runRest = (set, get) => {
       // After Ready is set, so a hold the hand-over starts replaces it (startWork stops the rest).
       // It gets the rest's owner as it is now, not as it was when the rest started: an exercise
       // added, removed or moved above it re-pointed forIdx along the way.
-      if (done) done(tm.forIdx)
+      if (done) done(tm.forIdx, seenLive)
       return
     }
     if (left <= 3) beep(snd, 660, 0.1)
@@ -272,7 +274,7 @@ export const useUI = create((set, get) => ({
     const done = restDone
     const at = get().timer?.forIdx
     get().stopRest()
-    if (done) done(at)
+    if (done) done(at, true)             // you are looking at it — you tapped Skip
   },
   stopRest() {
     restDone = null
