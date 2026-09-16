@@ -69,13 +69,21 @@ export function restKind({ unitDone, superset }) {
  * layout scrolls to. Not always the exercise whose set started the rest (forIdx):
  *
  *   'set'   — that exercise: its next set is yours.
- *   'round' — the first member of its superset: the round starts over there.
+ *   'round' — the first member of its superset that still has work: the round starts over
+ *             there. A member whose sets ran out earlier (groups whose members do not all have
+ *             the same number of sets) is skipped — the top of the group is only where the
+ *             round restarts while there is still something to do there, and naming a finished
+ *             partner sends you back to work you have already done.
  *   'block' — the first member of the next unfinished unit (wrapping, like nextUnfinishedUnit);
  *             the finished exercise itself when nothing is left.
  */
 export function restFocusIdx(entries, units, forIdx, kind) {
   if (kind === 'block') return nextUnfinishedUnit(entries, units, forIdx)?.[0] ?? forIdx
-  if (kind === 'round') return units.find(u => u.includes(forIdx))?.[0] ?? forIdx
+  if (kind === 'round') {
+    const unit = units.find(u => u.includes(forIdx))
+    if (!unit?.length) return forIdx
+    return unit.find(idx => hasWork(entries, idx)) ?? unit[0]
+  }
   return forIdx
 }
 

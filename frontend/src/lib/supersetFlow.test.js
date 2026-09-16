@@ -125,6 +125,19 @@ describe('restFocusIdx', () => {
     expect(restFocusIdx(entries, units, 1, 'round')).toBe(1)
   })
 
+  it('round: skips a partner whose sets ran out, so it never points at finished work', () => {
+    // A group whose members have different set counts: 'a' had one set, 'b' has two. After b's
+    // first set the round is over, but the top of the group is spent — the only work left is
+    // b's own second set, and that is where the rest points.
+    const uneven = [entry([true]), entry([true, false])]
+    expect(restFocusIdx(uneven, [[0, 1]], 1, 'round')).toBe(1)
+  })
+
+  it('round: the whole group finished falls back to its first member', () => {
+    const spent = [entry([true]), entry([true])]
+    expect(restFocusIdx(spent, [[0, 1]], 1, 'round')).toBe(0)
+  })
+
   it('block: the first member of the next unfinished unit, wrapping', () => {
     expect(restFocusIdx(entries, units, 0, 'block')).toBe(1)
     expect(restFocusIdx(entries, units, 3, 'block')).toBe(1)   // wraps past the finished first exercise
