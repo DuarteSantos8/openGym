@@ -273,8 +273,13 @@ export default function Settings() {
           the workout header's ⋮ menu without changing this default. */}
       <Row icon="list" iconTint="var(--blue)" title={t('Workout view')}>
         <Segmented className="seg-inline"
-          options={[{ value: 'cards', label: t('Cards') }, { value: 'list', label: t('List') }, { value: 'compact', label: t('Compact') }]}
-          value={['list', 'compact'].includes(S.workoutView) ? S.workoutView : 'cards'}
+          options={[
+            { value: 'cards', label: t('Cards') },
+            { value: 'list', label: t('List') },
+            { value: 'compact', label: t('Compact') },
+            { value: 'focus', label: t('Focus') },
+          ]}
+          value={['list', 'compact', 'focus'].includes(S.workoutView) ? S.workoutView : 'cards'}
           onChange={v => update(s => { s.workoutView = v })} />
       </Row>
       {/* The lean workout screen keeps the sets and one "more" button per exercise; each switch

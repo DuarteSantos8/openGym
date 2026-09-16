@@ -60,9 +60,9 @@ describe('Slider', () => {
 
 describe('Stepper', () => {
   // controlled like every real caller: the parent re-renders with the new value
-  function Host({ initial, onChange, step }) {
+  function Host({ initial, onChange, step, ...props }) {
     const [v, setV] = React.useState(initial)
-    return <Stepper value={v} step={step} onChange={n => { setV(n); onChange(n) }} />
+    return <Stepper value={v} step={step} onChange={n => { setV(n); onChange(n) }} {...props} />
   }
   const mountStepper = (value, onChange, step = 1) => {
     act(() => root.render(<Host initial={value} step={step} onChange={onChange} />))
@@ -104,5 +104,31 @@ describe('Stepper', () => {
     const plus = mountStepper(10, onChange)
     act(() => plus.click())
     expect(onChange).toHaveBeenCalledWith(11)
+  })
+
+  it('names controls for their field when requested', () => {
+    const onChange = vi.fn()
+    act(() => root.render(<Host initial={10} step={1} onChange={onChange} ariaLabel="load" />))
+    expect(host.querySelector('button[aria-label="Decrease load"]')).toBeTruthy()
+    expect(host.querySelector('button[aria-label="Increase load"]')).toBeTruthy()
+  })
+
+  it('uses the caller step rule', () => {
+    const onChange = vi.fn()
+    act(() => root.render(<Host initial={61.3} step={2.5} onChange={onChange}
+      onStep={(value, increment, direction) => value + increment * 10 + direction} />))
+    act(() => host.querySelector('button[aria-label="Increase"]').click())
+    expect(onChange).toHaveBeenCalledWith(87.3)
+  })
+
+  it('disables all editing controls', () => {
+    const onChange = vi.fn()
+    act(() => root.render(<Host initial={61.3} step={2.5} onChange={onChange} disabled />))
+    const [minus, plus] = host.querySelectorAll('button')
+    expect(minus.disabled).toBe(true)
+    expect(plus.disabled).toBe(true)
+    expect(host.querySelector('input').disabled).toBe(true)
+    act(() => plus.click())
+    expect(onChange).not.toHaveBeenCalled()
   })
 })
