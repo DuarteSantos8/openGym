@@ -148,8 +148,10 @@ describe('rest-over sound per kind of rest', () => {
   })
 })
 
-// A rest can hand over to something (a timed exercise's next hold): when it runs out on screen
-// or is skipped — never when it ran out while the app was hidden, never on a plain stop.
+// A rest hands over when it runs out or is skipped, never on a plain stop. It also says whether
+// the countdown actually ran out on screen: one that expired while the app was hidden still fires
+// (the screen can move on to the next exercise) but must not start a hold nobody watched — that
+// half is the caller's to gate, and Workout.jsx does.
 describe('what a rest hands over to', () => {
   let originalSettings
   const goHidden = () => { Object.defineProperty(document, 'hidden', { value: true, configurable: true }); document.dispatchEvent(new Event('visibilitychange')) }
@@ -167,7 +169,7 @@ describe('what a rest hands over to', () => {
     useUI.getState().startRest(1, 0, 'set', null, done)
     vi.advanceTimersByTime(1000)
     expect(done).toHaveBeenCalledTimes(1)
-    expect(done).toHaveBeenCalledWith(0)            // the rest's owner index
+    expect(done).toHaveBeenCalledWith(0, true)      // the rest's owner index, and: seen live
     vi.advanceTimersByTime(3000)
     expect(done).toHaveBeenCalledTimes(1)
   })
@@ -177,7 +179,7 @@ describe('what a rest hands over to', () => {
     useUI.getState().startRest(1, 2, 'set', null, done)
     useUI.getState().shiftRestOwner(0, 1)             // an exercise inserted above
     vi.advanceTimersByTime(1000)
-    expect(done).toHaveBeenCalledWith(3)
+    expect(done).toHaveBeenCalledWith(3, true)
   })
 
   it('rest set to Off: no rest, no hand-over — the next hold waits for a tap', () => {
@@ -193,7 +195,7 @@ describe('what a rest hands over to', () => {
     useUI.getState().startRest(90, 0, 'set', null, done)
     useUI.getState().skipRest()
     expect(done).toHaveBeenCalledTimes(1)
-    expect(done).toHaveBeenCalledWith(0)
+    expect(done).toHaveBeenCalledWith(0, true)
     expect(useUI.getState().timer).toBe(null)
   })
 
@@ -212,14 +214,14 @@ describe('what a rest hands over to', () => {
     expect(done).not.toHaveBeenCalled()
   })
 
-  it('does not fire when the rest ran out while the app was hidden', () => {
+  it('fires, but says it was not seen live, when the rest ran out while the app was hidden', () => {
     const done = vi.fn()
     useUI.getState().startRest(90, 0, 'set', null, done)
     goHidden()
     vi.setSystemTime(Date.now() + 91_000)
     goVisible()
     expect(useUI.getState().timer).toBe(null)
-    expect(done).not.toHaveBeenCalled()
+    expect(done).toHaveBeenCalledWith(0, false)
   })
 
   it('a new rest replaces the hand-over, a rest without one clears it', () => {

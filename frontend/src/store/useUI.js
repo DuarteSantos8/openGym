@@ -125,11 +125,14 @@ export const useUI = create((set, get) => ({
         get().toast(t('Rest over — next set!'))
         maybeRestNotification()
         // The hand-over gets the rest's owner as it is now, not as it was when the rest started:
-        // an exercise added, removed or moved above it re-pointed forIdx along the way.
-        const done = seenLive ? restDone : null
+        // an exercise added, removed or moved above it re-pointed forIdx along the way. It is
+        // also told whether the countdown actually ran out on screen: a rest that expired in
+        // your pocket must not start a hold nobody watched, but moving the screen on to the
+        // next exercise is exactly what you want waiting for you when you unlock the phone.
+        const done = restDone
         const at = tm.forIdx
         get().stopRest()
-        if (done) done(at)
+        if (done) done(at, seenLive)
         return
       }
       if (left <= 3) beep(snd, 660, 0.1)
@@ -163,7 +166,7 @@ export const useUI = create((set, get) => ({
     const done = restDone
     const at = get().timer?.forIdx
     get().stopRest()
-    if (done) done(at)
+    if (done) done(at, true)             // you are looking at it — you tapped Skip
   },
   stopRest() {
     restDone = null

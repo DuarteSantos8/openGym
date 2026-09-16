@@ -454,7 +454,7 @@ describe('Workout set completion flow', () => {
     expect(mocks.startRest).toHaveBeenCalledTimes(1)
     expect(mocks.startRest).toHaveBeenLastCalledWith(90, 0, 'set', null, expect.any(Function))
     const restOver = mocks.startRest.mock.calls[0][4]
-    await act(async () => { restOver(0) })                      // the rest ran out on screen; 0 = its owner
+    await act(async () => { restOver(0, true) })                      // the rest ran out on screen; 0 = its owner
     expect(mocks.startWork).toHaveBeenCalledTimes(2)
     expect(mocks.startWork.mock.calls[1][3]).toEqual({ phase: 'work', n: 2, of: 3 })
   })
@@ -467,14 +467,14 @@ describe('Workout set completion flow', () => {
     await pressStart(2)
     await act(async () => { mocks.startWork.mock.calls[0][2](30, 0) })
     expect(mocks.startRest).toHaveBeenLastCalledWith(90, 0, 'block', null, expect.any(Function))
-    await act(async () => { mocks.startRest.mock.calls.at(-1)[4](0) })
+    await act(async () => { mocks.startRest.mock.calls.at(-1)[4](0, true) })
     expect(mocks.startWork).toHaveBeenCalledTimes(1)             // the rest ending starts no hold
 
     await unmount(); vi.clearAllMocks()
     await mount([hold('plank', [false, false])])
     await toggleSet(0)                                           // ticked, not held
     expect(mocks.startRest).toHaveBeenLastCalledWith(90, 0, 'set', null, expect.any(Function))
-    await act(async () => { mocks.startRest.mock.calls.at(-1)[4](0) })
+    await act(async () => { mocks.startRest.mock.calls.at(-1)[4](0, true) })
     expect(mocks.startWork).not.toHaveBeenCalled()
   })
 
@@ -484,19 +484,19 @@ describe('Workout set completion flow', () => {
     await act(async () => { mocks.startWork.mock.calls[0][2](30, 0) })
     const restOver = mocks.startRest.mock.calls[0][4]
     mocks.S.active.entries[0].sets[1].done = true               // ticked by hand during the rest
-    await act(async () => { restOver(0) })
+    await act(async () => { restOver(0, true) })
     expect(mocks.startWork).toHaveBeenCalledTimes(1)
     mocks.S.active.entries[0].sets[1].done = false
     mocks.work = { left: 10, total: 30, endsAt: Date.now() + 10_000, label: 'x' }   // another hold is running
-    await act(async () => { restOver(0) })
+    await act(async () => { restOver(0, true) })
     expect(mocks.startWork).toHaveBeenCalledTimes(1)
     mocks.work = null
     mocks.S.active.entries[0].sets.push({ sec: 30, w: 0, done: false })   // a row was added during the rest
-    await act(async () => { restOver(0) })
+    await act(async () => { restOver(0, true) })
     expect(mocks.startWork).toHaveBeenCalledTimes(1)
     mocks.S.active.entries[0].sets.pop()
     mocks.S.active.entries[0] = exercise('swapped-in', [false])   // the exercise was swapped out
-    await act(async () => { restOver(0) })
+    await act(async () => { restOver(0, true) })
     expect(mocks.startWork).toHaveBeenCalledTimes(1)
   })
 
@@ -507,9 +507,9 @@ describe('Workout set completion flow', () => {
     const restOver = mocks.startRest.mock.calls[0][4]
     mocks.S.active.entries.unshift(exercise('added-above', [false]))   // in the app, shiftRestOwner moves timer.forIdx to 1
     await rerender()
-    await act(async () => { restOver(0) })                      // a stale index would land on the added exercise
+    await act(async () => { restOver(0, true) })                      // a stale index would land on the added exercise
     expect(mocks.startWork).toHaveBeenCalledTimes(1)
-    await act(async () => { restOver(1) })                      // the owner as the rest knows it now
+    await act(async () => { restOver(1, true) })                      // the owner as the rest knows it now
     expect(mocks.startWork).toHaveBeenCalledTimes(2)
     expect(mocks.startWork.mock.calls[1][3]).toEqual({ phase: 'work', n: 2, of: 3 })
   })
@@ -537,7 +537,7 @@ describe('Workout set completion flow', () => {
     const restOver = mocks.startRest.mock.calls[0][4]
     mocks.S.active.entries.push(exercise('added-during-rest', [false]))
     await rerender()
-    await act(async () => { restOver(0) })
+    await act(async () => { restOver(0, true) })
     expect(mocks.startWork).toHaveBeenCalledTimes(2)
     await act(async () => { mocks.startWork.mock.calls[1][2](30, 0) })   // last plank hold ends
     expect(mocks.workoutCompleteSheet).not.toHaveBeenCalled()
@@ -554,7 +554,7 @@ describe('Workout set completion flow', () => {
     mocks.S.restSec = 30
     installDom()
     await act(async () => { root.render(React.createElement(Workout)) })
-    await act(async () => { restOver(0) })
+    await act(async () => { restOver(0, true) })
     expect(mocks.startWork).toHaveBeenCalledTimes(2)
     await act(async () => { mocks.startWork.mock.calls[1][2](30, 0) })
     expect(mocks.S.active.entries[0].sets[1]).toMatchObject({ sec: 30, done: true })
@@ -571,7 +571,7 @@ describe('Workout set completion flow', () => {
     await act(async () => { mocks.startWork.mock.calls[1][2](30, 1) })
     expect(mocks.startRest).toHaveBeenCalledTimes(1)
     expect(mocks.startRest).toHaveBeenLastCalledWith(90, 1, 'round', null, expect.any(Function))
-    await act(async () => { mocks.startRest.mock.calls[0][4](1) })
+    await act(async () => { mocks.startRest.mock.calls[0][4](1, true) })
     expect(mocks.startWork).toHaveBeenCalledTimes(2)             // the round's rest starts no hold
   })
 
@@ -1176,7 +1176,7 @@ describe('superset flow survives an exercise being removed mid-session', () => {
 // becomes the current one. Before this the countdown ended, the toast said "next set!", and you
 // were left looking at the exercise you had just finished.
 describe('a finished rest moves the screen on', () => {
-  const restOver = (call, forIdx) => act(async () => { call[4](forIdx) })
+  const restOver = (call, forIdx) => act(async () => { call[4](forIdx, true) })
 
   it('takes you to the next exercise when a block rest ends', async () => {
     await mount([exercise('bench', [true, false]), exercise('row', [false, false])], 0)
@@ -1215,6 +1215,16 @@ describe('a finished rest moves the screen on', () => {
     mocks.S.active = null                                        // finished or discarded during the rest
     await restOver(call, 0)
     expect(mocks.S.active).toBeNull()
+  })
+
+  it('still moves on when the rest ran out while the phone was in your pocket', async () => {
+    // The next hold is the half that must not run unwatched; the move is safe either way, and
+    // is what you want waiting for you when you unlock the phone.
+    await mount([exercise('bench', [true, false]), exercise('row', [false, false])], 0)
+    await toggleSet(1)
+    const call = mocks.startRest.mock.calls.at(-1)
+    await act(async () => { call[4](0, false) })
+    expect(mocks.S.active.cur).toBe(1)
   })
 
   it('moves on straight away when the rest timer is off and nothing will time the gap', async () => {

@@ -915,7 +915,7 @@ function ActiveWorkout() {
   // moved since, you navigated during the break, and a countdown does not overrule that.
   const handOver = (kind, chain) => {
     const fromCur = useStore.getState().S.active?.cur
-    return forIdx => {
+    return (forIdx, seenLive) => {
       const active = useStore.getState().S.active
       if (active && forIdx != null && active.cur === fromCur) {
         const to = restFocusIdx(active.entries, supersetUnits(active.entries), forIdx, kind)
@@ -923,7 +923,9 @@ function ActiveWorkout() {
           update(s => { if (s.active && s.active.cur === fromCur) s.active.cur = to })
         }
       }
-      chain?.(forIdx)
+      // The next hold is the half that must not run unwatched: a rest that expired in your
+      // pocket would otherwise log a hold you never did. The move above is safe either way.
+      if (seenLive) chain?.(forIdx)
     }
   }
 
