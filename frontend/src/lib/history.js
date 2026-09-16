@@ -1,6 +1,6 @@
 // Pure helpers over the state object S (ported 1:1 from the vanilla app).
 import { todayISO, isoOf, weekKey, weekStartOf, fmtNum } from './format.js'
-import { isCardio, isBodyweightEq } from './exercises.js'
+import { isCardio, isBodyweightEq, isAssisted } from './exercises.js'
 import { phaseForSet, modeForSet, modeForEntry, isWarmupRow, normalizeMode, completedVolumeOf, nextDropWeight, splitBurstReps, makeSideSet, isSideSet, syncSideAggregate } from './workout-model.js'
 const objectOf = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {}
 // Completed-state-independent work rows whose authoritative mode matches the requested mode.
@@ -297,11 +297,32 @@ export function freestyleConfig(S, cfg) {
   }
 }
 export function bestWeightFor(S, exId) {
-  let best = 0
+  const assisted = isAssisted(exId)
+  let best = assisted ? Infinity : 0
+  let found = false
   S.workouts.forEach(w => w.entries.forEach(e => {
-    if (e.id === exId) best = Math.max(best, bestWeightForEntry(e))
+    if (e.id === exId) {
+      const v = bestWeightForEntry(e)
+      if (v > 0) {
+        found = true
+        best = assisted ? Math.min(best, v) : Math.max(best, v)
+      }
+    }
   }))
+  if (!found) return 0
   return best
+}
+
+export function hasWeightHistory(S, exId) {
+  return (S.workouts || []).some(w => (w.entries || []).some(e => e.id === exId && bestWeightForEntry(e) > 0))
+}
+
+export function isWeightPR(S, exId, weight) {
+  const w = Number(weight)
+  if (!Number.isFinite(w) || w <= 0) return false
+  if (!hasWeightHistory(S, exId)) return true
+  const best = bestWeightFor(S, exId)
+  return isAssisted(exId) ? w < best : w > best
 }
 /**
  * The routines planned for a date, in merge order. Plural is the primary form now that a
@@ -708,6 +729,7 @@ export function metricModeForEntry(entry, fallback = null) {
 
 export function bestWeightForEntry(entry = {}) {
   const target = entry.target || entry
+  const assisted = isAssisted(target) || isAssisted(entry.id)
   const workRows = Array.isArray(entry.sets)
     ? entry.sets.filter(s => phaseForSet(s) === 'work')
     : []
@@ -717,18 +739,18 @@ export function bestWeightForEntry(entry = {}) {
   const completedRows = repsRows.length
     ? repsRows
     : workRows.filter(set => set?.done === true && !isWarmupRow(set))
-  let best = 0
+  let best = assisted ? Infinity : 0
   let hasUsableWeight = false
   completedRows.forEach(set => {
     const weight = Number(set?.w)
     if (!Number.isFinite(weight)) return
     hasUsableWeight = true
-    if (weight > best) best = weight
+    if (assisted) { if (weight < best) best = weight } else { if (weight > best) best = weight }
   })
 
   // A real completed row, including an explicit zero for an unloaded bodyweight set, always
   // wins. A manual topW is only useful for old records whose rows did not carry a usable load.
-  if (hasUsableWeight) return best
+  if (hasUsableWeight) return best === Infinity ? 0 : best
 
   const parentMode = modeForSet({}, target)
   const hasNonRepsWorkRow = workRows.some(set => modeForSet(set, target) !== 'reps')
@@ -737,6 +759,10 @@ export function bestWeightForEntry(entry = {}) {
   // topW predates phase-tagged warm-ups. It remains a fallback for legacy all-work records,
   // but cannot override resolved work rows once any warm-up marker exists.
   if (parentMode === 'reps' && !hasNonRepsWorkRow && !hasWarmupRow
-    && Number.isFinite(topWeight) && topWeight > best) best = topWeight
+    && Number.isFinite(topWeight)) {
+    if (assisted) { if (topWeight < best) best = topWeight }
+    else { if (topWeight > best) best = topWeight }
+  }
+  if (best === Infinity) return 0
   return best
 }

@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
-import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, smOf, matchExercise, exOr } from './lib/exercises.js'
+import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, isAssisted, allExercises, equipmentOf, smOf, matchExercise, exOr } from './lib/exercises.js'
 import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile } from './lib/equipment.js'
 import { fmtDate, fmtNum, capWords, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, DAYN, DAYS, weekOrder, weekStartOf, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
-import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutVolume, setsDone, setsDoneActive, setUnitsTotal, lastBW, supersetUnits, unitOf, setLabel, defaultConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX } from './lib/history.js'
+import { lastEntryFor, bestWeightFor, bestWeightForEntry, isWeightPR, buildSets, effectiveRoutineIds, workoutVolume, setsDone, setsDoneActive, setUnitsTotal, lastBW, supersetUnits, unitOf, setLabel, defaultConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX } from './lib/history.js'
 import { usesBar, barWeightFor, defaultBarWeight, hasBarOverride } from './lib/bar.js'
 import { toScale, rirOf, EFFORT_PRESETS, effortColor } from './lib/effort.js'
 import { beep, vibrate } from './lib/sound.js'
@@ -1912,9 +1912,14 @@ function TopWeight({ entryIdx, close }) {
   // to sit after every one of them.
   const entry = A ? A.entries[entryIdx] : null
   const ex = entry && EXIDX[entry.id]
+  const assisted = entry ? isAssisted(entry.id) : false
   const maxSet = entry ? Math.max(0, ...entry.sets.filter(s => s.done && !isWarmupRow(s)).map(s => s.w || 0)) : 0
-  const prevBest = entry ? Math.max((st.exWeights[entry.id] || {}).w || 0, bestWeightFor(st, entry.id)) : 0
-  const [v, setV] = useState(entry ? (Math.max(maxSet, prevBest) || entry.target.weight || 0) : 0)
+  const minSet = entry ? (() => { const vals = entry.sets.filter(s => s.done && !isWarmupRow(s)).map(s => s.w || 0).filter(v => v > 0); return vals.length ? Math.min(...vals) : 0 })() : 0
+  const curSet = assisted ? minSet : maxSet
+  const assistBest = assisted ? (() => { const v = bestWeightFor(st, entry.id); return v > 0 ? v : Infinity })() : bestWeightFor(st, entry.id)
+  const prevBest = entry ? (assisted ? Math.min((st.exWeights[entry.id] || {}).w || Infinity, assistBest) : Math.max((st.exWeights[entry.id] || {}).w || 0, assistBest)) : 0
+  const prevBestDisplay = assisted && prevBest === Infinity ? 0 : prevBest
+  const [v, setV] = useState(entry ? ((assisted ? (curSet > 0 && curSet < prevBest ? curSet : prevBestDisplay) : Math.max(maxSet, prevBest)) || entry.target.weight || 0) : 0)
   useEffect(() => { if (!entry) close() }, [!entry])
 
   const units = supersetUnits(A ? A.entries : [])
@@ -1930,7 +1935,13 @@ function TopWeight({ entryIdx, close }) {
     update(s => {
       s.active.entries[entryIdx].topW = n
       const cur = s.exWeights[entry.id]
-      s.exWeights[entry.id] = { w: Math.max(n, cur ? cur.w : 0), d: todayISO() }
+      if (isAssisted(entry.id)) {
+        const curW = cur ? cur.w : Infinity
+        const best = n > 0 && n < curW ? n : (cur ? cur.w : n)
+        s.exWeights[entry.id] = { w: best, d: todayISO() }
+      } else {
+        s.exWeights[entry.id] = { w: Math.max(n, cur ? cur.w : 0), d: todayISO() }
+      }
     })
     close()
     if (advance && unitDone) {
@@ -1943,7 +1954,7 @@ function TopWeight({ entryIdx, close }) {
     <div className="muted small">{t('Confirm the weight you worked with — your highest becomes the default next time.')}{!unitDone && unit.length > 1 ? ' ' + t('Then finish the superset partner.') : ''}</div>
     <WeightInput value={v} setValue={setV} unit={st.unit} />
     <div style={{ height: 10 }} />
-    {prevBest > 0 ? <div className="small dim" style={{ textAlign: 'center', marginBottom: 12 }}>{t('Previous best:')} {fmtNum(prevBest)} {st.unit}{maxSet > prevBest && <span style={{ color: 'var(--yellow)' }}> — {t('new record!')}</span>}</div> : <div style={{ height: 4 }} />}
+    {prevBestDisplay > 0 ? <div className="small dim" style={{ textAlign: 'center', marginBottom: 12 }}>{t('Previous best:')} {fmtNum(prevBestDisplay)} {st.unit}{(assisted ? curSet > 0 && curSet < prevBest : maxSet > prevBest) && <span style={{ color: 'var(--yellow)' }}> — {t('new record!')}</span>}</div> : <div style={{ height: 4 }} />}
     {unitDone ? <>
       <Button variant="primary" trailingIcon={workoutDone ? null : 'chevronRight'} onClick={() => commit(true)}>{workoutDone ? t('Save') : t('Save & next exercise')}</Button>
       <div style={{ height: 8 }} /><Button variant="ghost" className="dim" onClick={() => commit(false)}>{t('Just close')}</Button>
@@ -2108,8 +2119,11 @@ function doFinishWorkout() {
   // A workout logged into the past cannot claim records against the history that came after
   // it, so a backfilled session reports none and leaves the confirmed weights alone.
   if (!past) A.entries.forEach(e => {
-    const mx = Math.max(0, ...e.sets.filter(s => s.done && !isWarmupRow(s)).map(s => s.w))
-    if (mx > 0 && mx > bestWeightFor(st, e.id)) prs.push(e.id)
+    const doneWeights = e.sets.filter(s => s.done && !isWarmupRow(s)).map(s => s.w).filter(v => v > 0)
+    const mx = doneWeights.length ? Math.max(...doneWeights) : 0
+    const mn = doneWeights.length ? Math.min(...doneWeights) : 0
+    const val = isAssisted(e.id) ? mn : mx
+    if (isWeightPR(st, e.id, val)) prs.push(e.id)
     // A heavier estimate without a heavier top set is its own kind of progress —
     // same weight for more reps. Reported separately so it can't be read as a load PR.
     const rec = is1RMRecord(st, e.id, e)
@@ -2127,7 +2141,11 @@ function doFinishWorkout() {
     } else {
       w.entries.forEach(e => {
         const mx = bestWeightForEntry(e)
-        if (mx > 0) { const cur = s.exWeights[e.id]; if (!cur || mx > cur.w) s.exWeights[e.id] = { w: mx, d: w.d } }
+        if (mx > 0) {
+          const cur = s.exWeights[e.id]
+          if (isAssisted(e.id)) { if (!cur || mx < cur.w) s.exWeights[e.id] = { w: mx, d: w.d } }
+          else { if (!cur || mx > cur.w) s.exWeights[e.id] = { w: mx, d: w.d } }
+        }
       })
       s.workouts.push(w)
     }

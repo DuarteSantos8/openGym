@@ -1,4 +1,5 @@
 import { metricModeForEntry, metricRowsForEntry, bestWeightForEntry, modeOf } from './history.js'
+import { isAssisted } from './exercises.js'
 import { completedVolumeOf } from './workout-model.js'
 import { bestSetOf } from './onerm.js'
 
@@ -54,7 +55,8 @@ export function exerciseHistory(S, exId, { limit = HISTORY_SESSIONS } = {}) {
     return bestWeightForEntry(en)
   }
 
-  let best = 0, prId = null
+  const assisted = isAssisted(exId)
+  let best = assisted ? Infinity : 0, prId = null
   const sessions = [], points = [], e1rmPoints = []
   logged.forEach(({ w, en, mode: m, rows }) => {
     const same = m === mode
@@ -63,7 +65,9 @@ export function exerciseHistory(S, exId, { limit = HISTORY_SESSIONS } = {}) {
     const t = startOf(w)
     // "PR" goes on the session that first reached the all-time best, not on every session
     // that later matched it — one marker says where the record was set.
-    if (value != null && value > best) { best = value; prId = w.id }
+    if (value != null && value > 0) {
+      if (assisted ? value < best : value > best) { best = value; prId = w.id }
+    }
     if (value != null && value > 0) points.push({ t, d: w.d, y: value, e1rm })
     if (e1rm != null) e1rmPoints.push({ t, d: w.d, y: e1rm })
     sessions.push({
@@ -73,7 +77,8 @@ export function exerciseHistory(S, exId, { limit = HISTORY_SESSIONS } = {}) {
   })
   // The "first reached" rule only holds for records above zero: a bodyweight session with
   // no weight logged is not a PR of anything.
-  if (best <= 0) prId = null
+  if (!Number.isFinite(best) || best <= 0) prId = null
+  if (assisted && !Number.isFinite(best)) best = 0
 
   return {
     mode, metric, best, prId, total: sessions.length,

@@ -149,6 +149,47 @@ const BODYWEIGHT_EQ = new Set(['body weight', 'band', 'resistance band'])
 export const isBodyweightEq = idOrEx =>
   BODYWEIGHT_EQ.has((typeof idOrEx === 'string' ? EXIDX[idOrEx] : idOrEx)?.eq)
 
+// Assisted exercises use a machine to reduce the load (e.g. assisted pull-up, assisted dip).
+// Less assistance is harder, so the best weight is the minimum, not the maximum.
+// The catalogue has no explicit flag; detection is via the exercise name (covers built-in
+// and custom exercises in English/Spanish) plus an explicit `assisted` boolean on the config
+// so any exercise can be marked as assisted.
+export function isAssisted(idOrCfg) {
+  if (!idOrCfg) return false
+  if (typeof idOrCfg === 'object') {
+    if (idOrCfg.assisted === true) return true
+    if (idOrCfg.assisted === false) return false
+    const target = idOrCfg.target
+    if (target && typeof target === 'object') {
+      if (target.assisted === true) return true
+      if (target.assisted === false) return false
+    }
+    const id = idOrCfg.id
+    if (typeof id === 'string') {
+      const ex = EXIDX[id]
+      if (ex) {
+        if (ex.assisted === true) return true
+        if (ex.assisted === false) return false
+      }
+      // Fall through to name check for objects that carry both id and n
+    }
+    const n = idOrCfg.n || idOrCfg.name || ''
+    if (typeof n === 'string' && n) {
+      const low = n.toLowerCase()
+      if (low.includes('assist') || low.includes('asist')) return true
+    }
+    if (typeof id === 'string') return isAssisted(id)
+    return false
+  }
+  const ex = EXIDX[idOrCfg]
+  if (!ex) return false
+  if (ex.assisted === true) return true
+  if (ex.assisted === false) return false
+  const n = ex.n || ''
+  const low = n.toLowerCase()
+  return low.includes('assist') || low.includes('asist')
+}
+
 // An id that resolves to nothing — a plan file built against a different exercise dataset,
 // a custom exercise deleted on another device before the sync arrived — still has to
 // render. A placeholder keeps it visible (and removable) instead of taking the whole view

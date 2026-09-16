@@ -21,6 +21,7 @@
  * on resume and every push is conditional), and a resurrected entry beats a lost one. Tombstones
  * would close it.
  */
+import { isAssisted } from './exercises.js'
 const clone = o => JSON.parse(JSON.stringify(o))
 const list = v => (Array.isArray(v) ? v : [])
 
@@ -61,7 +62,12 @@ export function mergeBodyweight(a = [], b = []) {
 function mergeExWeights(n = {}, o = {}) {
   const out = { ...(o || {}), ...(n || {}) }
   for (const k of Object.keys(o || {})) {
-    if (n && n[k] && o[k] && (o[k].w || 0) > (n[k].w || 0)) out[k] = o[k]
+    if (n && n[k] && o[k]) {
+      const assisted = isAssisted(k)
+      const nw = n[k].w || 0
+      const ow = o[k].w || 0
+      if (assisted ? (ow > 0 && ow < nw) : ow > nw) out[k] = o[k]
+    }
   }
   return out
 }

@@ -17,7 +17,7 @@
 // So a session that fell apart can never advance the load as though it had succeeded.
 
 import { modeOf, repStep, rerampWarmups, isBw, isPerSide, entryExcluded } from './history.js'
-import { EXIDX } from './exercises.js'
+import { EXIDX, isAssisted } from './exercises.js'
 import { isWarmupRow, isSideSet, syncSideAggregate, makeSideSet } from './workout-model.js'
 import { normalizeRepRange } from './rep-range.js'
 
@@ -217,6 +217,7 @@ export function selectDeloadCandidate({ currentWeight, targetWeight, targetReps,
 export function readSession(entry, fallback) {
   const target = (entry && entry.target) || fallback || {}
   const mode = modeOf({ ...target, id: entry && entry.id })
+  const assisted = isAssisted(target) || isAssisted(entry && entry.id)
   // Warm-up rows are prep, not the session: one filtered read beats guarding every consumer
   // below (an undone warm-up otherwise poisons `ok` forever and its reps drag `low`/`count`).
   const sets = ((entry && entry.sets) || []).filter(s => !isWarmupRow(s))
@@ -226,18 +227,22 @@ export function readSession(entry, fallback) {
   if (mode === 'time') {
     const goal = target.sec || 0
     const held = sets.map(s => (s.done ? (s.sec || 0) : 0))
+    const doneWeights = sets.filter(s => s.done).map(s => s.w || 0).filter(v => v > 0)
+    const weight = doneWeights.length ? (assisted ? Math.min(...doneWeights) : Math.max(...doneWeights)) : 0
     return {
       mode, target, goal, held,
-      weight: Math.max(0, ...sets.filter(s => s.done).map(s => s.w || 0)),
+      weight: Math.max(0, weight),
       best: Math.max(0, ...held),
       ok: goal > 0 && enough && held.length > 0 && held.every(h => h >= goal)
     }
   }
   const goal = target.reps || 0
   const reps = sets.map(s => (s.done ? (s.r || 0) : 0))
+  const doneWeights = sets.filter(s => s.done).map(s => s.w || 0).filter(v => v > 0)
+  const weight = doneWeights.length ? (assisted ? Math.min(...doneWeights) : Math.max(...doneWeights)) : 0
   return {
     mode, target, goal, reps,
-    weight: Math.max(0, ...sets.filter(s => s.done).map(s => s.w || 0)),
+    weight: Math.max(0, weight),
     count: reps.length,                                   // the dimension bodyweight work grows (#33)
     low: reps.length ? Math.min(...reps) : 0,
     amrap: reps.length ? reps[reps.length - 1] : 0,       // Greyskull's final set
@@ -327,6 +332,43 @@ export function nextPrescription(S, cfg, routine) {
   }
 
   const w = last.weight
+  const assisted = isAssisted(cfg) || isAssisted(last.target)
+  // Assisted work uses less assistance as progress, so invert the direction.
+  // Handle it before the bodyweight branch when there is assistance to progress.
+  if (assisted && w > 0) {
+    const assistedDeload = () => {
+      // For assisted, a deload means more assistance (easier). Use a simple step up.
+      const dw = addStep(w, inc, inc)
+      return { policy, kind: 'deload', weight: dw, why: stalls > 1 ? ['Missed reps {0} sessions running — add assistance to {1} {2} and work back down.', stalls, dw, unit] : ['Missed reps — add assistance to {0} {1} and work back down.', dw, unit] }
+    }
+    if (policy === 'double') {
+      const range = normalizeRepRange(cfg.reps || last.goal || 10, cfg.repsMin, repStep(cfg))
+      const top = range.reps
+      const bottom = range.repsMin
+      if (last.ok) {
+        const nw = addStep(w, -inc, inc)
+        return { policy, kind: 'up', weight: nw, reps: bottom, why: ['Top of the rep range in every set — {0} {1} less assistance, back to {2} reps.', inc, unit, bottom] }
+      }
+      if (stalls >= deloadAt) return assistedDeload()
+      const aim = Math.min(top, Math.max(bottom, last.low + repStep(cfg)))
+      return { policy, kind: 'hold', weight: w, reps: aim, why: ['Same assistance — aim for {0} reps this time.', aim] }
+    }
+    // linear + greyskull for assisted
+    if (last.ok) {
+      const dbl = policy === 'greyskull' && last.goal > 0 && last.amrap >= last.goal * 2
+      const step = dbl ? inc * 2 : inc
+      const nw = addStep(w, -step, inc)
+      return {
+        policy, kind: 'up', weight: nw,
+        why: dbl
+          ? ['Last set hit {0} reps — twice the target, so reduce assistance by {1} {2}.', last.amrap, step, unit]
+          : ['Every rep last time — {0} {1} less assistance.', step, unit]
+      }
+    }
+    if (stalls >= deloadAt) return assistedDeload()
+    return { policy, kind: 'hold', weight: w, why: ['Missed reps last time — same assistance again ({0} of {1} to go).', deloadAt - stalls, deloadAt] }
+  }
+
   // Bodyweight work carries no external load, so there is nothing to add or take away —
   // "deload your push-ups to 2.5 kg" is not advice. Progress in reps instead. This runs ahead
   // of the individual policies because it is true for all of them. Note the trigger is the
@@ -357,6 +399,7 @@ export function nextPrescription(S, cfg, routine) {
   // weight remains the hard upper bound for the selected candidate.
   const epleyDeload = () => {
     if (mode !== 'reps' || (policy !== 'linear' && policy !== 'double')) return null
+    if (assisted) return null
     const previous = last.target || {}
     const target = {
       ...cfg,
