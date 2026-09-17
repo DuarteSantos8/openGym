@@ -1236,4 +1236,6 @@ export default {
   'already added': 'पहले से जोड़ा हुआ',
   'no exercises': 'कोई व्यायाम नहीं',
   'Pick equipment': 'उपकरण चुनें',
+  'Collapse completed exercises': 'पूरे हुए व्यायाम समेटें',
+  'Keep the current exercise open': 'वर्तमान व्यायाम खुला रखें',
 }

@@ -1236,4 +1236,6 @@ export default {
   'already added': 'zaten ekli',
   'no exercises': 'egzersiz yok',
   'Pick equipment': 'Ekipman seç',
+  'Collapse completed exercises': 'Tamamlanan egzersizleri daralt',
+  'Keep the current exercise open': 'Geçerli egzersizi açık tut',
 }

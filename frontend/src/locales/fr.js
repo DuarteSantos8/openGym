@@ -1236,4 +1236,6 @@ export default {
   'already added': 'déjà ajouté',
   'no exercises': 'aucun exercice',
   'Pick equipment': 'Choisir l’équipement',
+  'Collapse completed exercises': 'Replier les exercices terminés',
+  'Keep the current exercise open': 'Garder l’exercice actuel ouvert',
 }

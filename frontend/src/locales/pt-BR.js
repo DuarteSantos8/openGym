@@ -671,6 +671,8 @@ export const PT_BR_OVERRIDES = {
   'Download & Install': 'Baixar e instalar',
   'Starting download…': 'Iniciando download…',
   'Downloading update…': 'Baixando atualização…',
+  'Collapse completed exercises': 'Recolher exercícios concluídos',
+  'Keep the current exercise open': 'Manter o exercício atual aberto',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

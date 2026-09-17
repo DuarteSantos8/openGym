@@ -1236,4 +1236,6 @@ export default {
   'already added': '이미 추가됨',
   'no exercises': '운동 없음',
   'Pick equipment': '기구 선택',
+  'Collapse completed exercises': '완료한 운동 접기',
+  'Keep the current exercise open': '현재 운동은 펼쳐 두기',
 }
