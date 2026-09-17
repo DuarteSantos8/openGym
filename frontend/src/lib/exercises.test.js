@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { matchExercise, normalizeStr } from './exercises.js'
+import { matchExercise, normalizeStr, cleanUrl } from './exercises.js'
 import { _setLangState } from './i18n-core.js'
 
 describe('normalizeStr', () => {
@@ -119,3 +119,29 @@ describe('matchExercise', () => {
     expect(matchExercise(benchPress, 'bench')).toBe(true)
   })
 })
+
+describe('cleanUrl', () => {
+  it('accepts valid https and http URLs', () => {
+    expect(cleanUrl('https://www.youtube.com/watch?v=123')).toBe('https://www.youtube.com/watch?v=123')
+    expect(cleanUrl('http://example.com/guide')).toBe('http://example.com/guide')
+  })
+
+  it('prepends https:// if protocol is omitted', () => {
+    expect(cleanUrl('youtube.com/watch?v=123')).toBe('https://youtube.com/watch?v=123')
+    expect(cleanUrl('www.vimeo.com/456')).toBe('https://www.vimeo.com/456')
+  })
+
+  it('rejects malicious or dangerous protocols at trust boundary', () => {
+    expect(cleanUrl('javascript:alert(1)')).toBeNull()
+    expect(cleanUrl('data:text/html,<h1>hi</h1>')).toBeNull()
+    expect(cleanUrl('vbscript:msgbox(1)')).toBeNull()
+  })
+
+  it('rejects empty or invalid strings', () => {
+    expect(cleanUrl('')).toBeNull()
+    expect(cleanUrl('   ')).toBeNull()
+    expect(cleanUrl(null)).toBeNull()
+    expect(cleanUrl(undefined)).toBeNull()
+  })
+})
+

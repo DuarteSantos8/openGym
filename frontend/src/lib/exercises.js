@@ -199,3 +199,42 @@ export function matchExercise(e, query) {
   const corpus = corpusOf(e)
   return tokens.every(tok => corpus.includes(tok))
 }
+
+// ponytail: accepts http/https URLs only, prepending https:// if protocol is omitted.
+// Rejects dangerous schemes (javascript:, data:, vbscript:) at the trust boundary.
+export function cleanUrl(raw) {
+  if (!raw || typeof raw !== 'string') return null
+  let s = raw.trim()
+  if (!s) return null
+  if (!/^https?:\/\//i.test(s)) {
+    if (/^[a-z0-9+.-]+:/i.test(s)) return null
+    s = 'https://' + s
+  }
+  try {
+    const u = new URL(s)
+    if (u.protocol === 'http:' || u.protocol === 'https:') return u.href
+  } catch {}
+  return null
+}
+
+// Extract 11-character YouTube video ID from watch, short, embed, or youtu.be links.
+export function getYouTubeId(url) {
+  if (!url || typeof url !== 'string') return null
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/)
+  return m ? m[1] : null
+}
+
+export function isInstagramUrl(url) {
+  if (!url || typeof url !== 'string') return false
+  return /(?:instagram\.com|instagr\.am)\/(?:p|reel|reels)\/([A-Za-z0-9_-]+)/i.test(url)
+}
+
+export function isTikTokUrl(url) {
+  if (!url || typeof url !== 'string') return false
+  return /(?:tiktok\.com\/.*(?:video|v)\/(\d+)|vm\.tiktok\.com\/[A-Za-z0-9]+)/i.test(url)
+}
+
+export function isDirectVideoUrl(url) {
+  if (!url || typeof url !== 'string') return false
+  return /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url)
+}

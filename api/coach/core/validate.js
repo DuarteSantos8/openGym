@@ -79,7 +79,13 @@ export function validatePlan(data, ctx = {}) {
   const customEx = (Array.isArray(data.customEx) ? data.customEx : [])
     .filter(c => c && safeId(c.id) && !libraryHas(c.id) && isStr(c.n))
     .slice(0, 20)
-    .map(c => ({ id: clampStr(c.id, 40), n: clampStr(c.n, 60), bp: clampStr(c.bp || 'waist', 30), ...(c.desc ? { desc: clampStr(c.desc, 400) } : {}) }));
+    .map(c => ({
+      id: clampStr(c.id, 40),
+      n: clampStr(c.n, 60),
+      bp: clampStr(c.bp || 'waist', 30),
+      ...(c.desc ? { desc: clampStr(c.desc, 400) } : {}),
+      ...(isStr(c.url) && /^https?:\/\//i.test(c.url.trim()) ? { url: clampStr(c.url.trim(), 500) } : {})
+    }));
   // Ids the plan may name: invented in this same answer, or already the user's own.
   const proposedIds = new Set([...customEx.map(c => c.id), ...(ctx.customIds || [])]);
 

@@ -8,7 +8,7 @@
 //  2. A clean, printable page (Save as PDF) where a single exercise never splits across
 //     a page break — each exercise, and each routine that fits, stays in one place.
 
-import { EXIDX, isBodyweightEq } from './exercises.js'
+import { EXIDX, isBodyweightEq, cleanUrl } from './exercises.js'
 import { modeOf, fmtSec, isBw, isPerSide, sideReps, MAX_PLANNED_WARMUPS } from './history.js'
 import { deriveSessionName } from './session-merge.js'
 import { uid, todayISO, DAYN, weekOrder, weekStartOf, fmtNum, exCount } from './format.js'
@@ -104,7 +104,7 @@ export function buildPlanBundle(S, name) {
   const usedIds = new Set(routines.flatMap(r => r.ex.map(e => e.id)))
   const customEx = (S.customEx || [])
     .filter(c => usedIds.has(c.id))
-    .map(c => ({ id: c.id, n: c.n, bp: c.bp, ...(c.desc ? { desc: c.desc } : {}) }))
+    .map(c => ({ id: c.id, n: c.n, bp: c.bp, ...(c.desc ? { desc: c.desc } : {}), ...(c.url ? { url: c.url } : {}) }))
   // A weekday can hold several routines (merge order preserved). `[].concat` normalises a
   // legacy scalar id to a one-element list, so a bundle written before this change and one
   // written after are read the same way at the other end.
@@ -127,7 +127,11 @@ export function parsePlan(raw) {
   if (!data || !data.opengym_plan || !Array.isArray(data.routines)) {
     throw new Error(t('this isn’t an openGym plan file'))
   }
-  const customEx = (Array.isArray(data.customEx) ? data.customEx : []).filter(c => c && c.id)
+  const customEx = (Array.isArray(data.customEx) ? data.customEx : []).filter(c => c && c.id).map(c => {
+    const u = cleanUrl(c.url)
+    const { url: _orig, ...rest } = c
+    return { ...rest, ...(u ? { url: u } : {}) }
+  })
   const known = new Set(customEx.map(c => c.id))
   let dropped = 0
   const routines = data.routines.filter(r => r && Array.isArray(r.ex)).map(r => ({
@@ -171,10 +175,18 @@ export function mergePlan(s, bundle, { schedule } = {}) {
   const exIdMap = {}
   ;(bundle.customEx || []).forEach(c => {
     const same = s.customEx.find(x => (x.n || '').toLowerCase() === (c.n || '').toLowerCase() && x.bp === c.bp)
-    if (same) { exIdMap[c.id] = same.id; return }
+    if (same) {
+      if (!same.url && c.url) {
+        const u = cleanUrl(c.url)
+        if (u) same.url = u
+      }
+      exIdMap[c.id] = same.id
+      return
+    }
     const nid = uid()
     exIdMap[c.id] = nid
-    s.customEx.push({ id: nid, n: c.n, bp: c.bp, ...(c.desc ? { desc: c.desc } : {}) })
+    const u = cleanUrl(c.url)
+    s.customEx.push({ id: nid, n: c.n, bp: c.bp, custom: true, ...(c.desc ? { desc: c.desc } : {}), ...(u ? { url: u } : {}) })
   })
   const ridMap = {}
   bundle.routines.forEach(r => {

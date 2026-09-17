@@ -676,6 +676,43 @@ body.chips-dragging *{cursor:inherit}
 .exmedia.compact .exmedia-x{height:120px}
 .exmedia.mini .exmedia-x{height:84px}
 
+/* external video/guide link card: compact, non-intrusive action tile */
+.exlink-card{
+  display:flex;align-items:center;gap:12px;
+  background:var(--surface);border-radius:var(--r-card);
+  padding:10px 14px;margin-bottom:12px;
+  cursor:pointer;color:var(--label);
+  transition:background var(--fast),transform var(--fast);
+  user-select:none;-webkit-user-select:none;
+}
+.exlink-card:active{background:var(--surface-2);transform:scale(.98)}
+.exlink-icon{
+  width:34px;height:34px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--surface-2);color:var(--label);font-size:18px;flex:none;
+}
+.exlink-icon.ig{
+  background:radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+  color:#fff;
+}
+.exlink-icon.tt{
+  background:#000;color:#fff;box-shadow:0 0 0 .5px var(--sep);
+}
+.exlink-meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.exlink-title{
+  font-size:15px;font-weight:500;color:var(--label);line-height:1.25;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.exlink-sub{
+  font-size:12px;color:var(--label-2);line-height:1.2;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.exlink-arr{color:var(--label-3);font-size:14px;flex:none}
+.exlink-card.mini{padding:6px 12px;gap:10px}
+.exlink-card.mini .exlink-icon{width:28px;height:28px;font-size:15px;border-radius:7px}
+.exlink-card.mini .exlink-title{font-size:13px}
+.exlink-card.mini .exlink-sub{display:none}
+
 .sethead{
   display:flex;align-items:center;gap:8px;padding:0 0 6px;
   font-size:11px;color:var(--label-3);font-weight:500;text-transform:uppercase;letter-spacing:.045em;
