@@ -143,4 +143,33 @@ describe('week schedule as a routine-id list', () => {
   it('scheduledDays counts a populated array day as 1 and a [] / absent day as 0', () => {
     expect(parsePlan({ opengym_plan: 1, routines: [], customEx: [], week: { 1: ['a'], 2: [], 4: 'b' } }).scheduledDays).toBe(2)
   })
+
+  it('carries custom exercise url through bundle export, parse, and merge', () => {
+    const custom = { id: 'c1', n: 'Trap Bar Deadlift', bp: 'back', desc: 'Hip hinge', url: 'https://youtube.com/watch?v=trapbar' }
+    const source = {
+      routines: [{ id: 'r1', name: 'Pull', ex: [{ id: 'c1', sets: 3, reps: 5 }] }],
+      week: { 1: ['r1'] },
+      customEx: [custom]
+    }
+    const bundle = buildPlanBundle(source, 'Trap Bar Plan')
+    expect(bundle.customEx[0].url).toBe('https://youtube.com/watch?v=trapbar')
+
+    const parsed = parsePlan(bundle)
+    expect(parsed.customEx[0].url).toBe('https://youtube.com/watch?v=trapbar')
+
+    const target = { routines: [], week: {}, customEx: [] }
+    mergePlan(target, parsed)
+    expect(target.customEx[0].url).toBe('https://youtube.com/watch?v=trapbar')
+    expect(target.customEx[0].custom).toBe(true)
+
+    // Merging into a target that already has the same exercise without a url backfills it
+    const targetWithExisting = {
+      routines: [],
+      week: {},
+      customEx: [{ id: 'existing1', n: 'Trap Bar Deadlift', bp: 'back', custom: true }]
+    }
+    mergePlan(targetWithExisting, parsed)
+    expect(targetWithExisting.customEx[0].url).toBe('https://youtube.com/watch?v=trapbar')
+  })
 })
+

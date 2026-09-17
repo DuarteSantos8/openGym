@@ -49,10 +49,20 @@ test('a plan referencing an unknown exercise is rejected, not quietly trimmed', 
 test('a plan may reference a custom exercise it defines in the same answer', () => {
   const r = validatePlan({
     routines: [{ name: 'A', ex: [{ id: 'cx1', sets: 3, reps: 10 }] }],
-    customEx: [{ id: 'cx1', n: 'Sandbag carry', bp: 'back' }]
+    customEx: [{ id: 'cx1', n: 'Sandbag carry', bp: 'back', url: 'https://youtube.com/watch?v=123' }]
   });
   assert.equal(r.ok, true);
   assert.equal(r.bundle.customEx[0].n, 'Sandbag carry');
+  assert.equal(r.bundle.customEx[0].url, 'https://youtube.com/watch?v=123');
+});
+
+test('custom exercise url must be http/https, javascript url is stripped', () => {
+  const r = validatePlan({
+    routines: [{ name: 'A', ex: [{ id: 'cx1', sets: 3, reps: 10 }] }],
+    customEx: [{ id: 'cx1', n: 'Sandbag carry', bp: 'back', url: 'javascript:alert(1)' }]
+  });
+  assert.equal(r.ok, true);
+  assert.equal(r.bundle.customEx[0].url, undefined);
 });
 
 test('the week may only point at routines the plan actually defines', () => {
