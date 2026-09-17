@@ -1256,4 +1256,6 @@ export default {
   'already added': 'schon drin',
   'no exercises': 'keine Übungen',
   'Pick equipment': 'Gerät wählen',
+  'Collapse completed exercises': 'Fertige Übungen einklappen',
+  'Keep the current exercise open': 'Die aktuelle Übung bleibt geöffnet',
 }

@@ -12,6 +12,7 @@ import { t, exerciseNameFor } from '../lib/i18n.js'
 import { api } from '../lib/api.js'
 import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor } from '../lib/supersetFlow.js'
 import Media from '../components/Media.jsx'
+import WorkoutScrollAnchor from '../components/WorkoutScrollAnchor.jsx'
 import { startFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, finishWorkout, workoutCompleteSheet, confirmSheet, exerciseNoteSheet, sessionNoteSheet, swapActiveWorkoutExercise, barWeightSheet, menuSheet, effortPickerSheet, exerciseHistorySheet, addRoutineToSessionSheet } from '../sheets.jsx'
 import { effortColor } from '../lib/effort.js'
 import Icon from '../components/Icon.jsx'
@@ -530,6 +531,11 @@ function ActiveWorkout() {
   const workoutView = A.workoutView || S.workoutView
   const listMode = workoutView === 'list' || workoutView === 'compact'
   const dense = workoutView === 'compact'
+  // Keep the current superset together until the user moves on, including its finished
+  // members. Empty exercises and partially completed warm-ups/left-right sets stay open.
+  const collapsed = new Set(listMode && A.collapseCompleted ? units.filter(u =>
+    !u.includes(cur) && u.every(idx => A.entries[idx].sets.length > 0 && A.entries[idx].sets.every(s => s.done)),
+  ).map(u => u.join('-')) : [])
   const wc = workoutControls(S)
   // Superset flow: center the actionable row when completing a set moves to the partner or
   // back to the first exercise of the next round. Entry-bound maps keep repeated exercise IDs
@@ -695,6 +701,9 @@ function ActiveWorkout() {
       { icon: 'clipboard', label: t('Cards'), on: workoutView === 'cards', onClick: () => setWorkoutView('cards') },
       { icon: 'list', label: t('List'), on: workoutView === 'list', onClick: () => setWorkoutView('list') },
       { icon: 'minimize', label: t('Compact'), on: workoutView === 'compact', onClick: () => setWorkoutView('compact') },
+      listMode && { icon: 'minimize', label: t('Collapse completed exercises'),
+        sub: t('Keep the current exercise open'), on: !!A.collapseCompleted,
+        onClick: () => update(s => { if (s.active) s.active.collapseCompleted = !s.active.collapseCompleted }) },
     ],
   })
   // The header ⋮: bring another routine into the session, then the layout switch nested a
@@ -928,7 +937,7 @@ function ActiveWorkout() {
     }
   }, [])
 
-  return <div className="narrow">
+  return <WorkoutScrollAnchor enabled={listMode && A.collapseCompleted} collapsed={[...collapsed].join(',')}>
     {/* In list mode the whole session scrolls under the header, so the header (name, clock,
         set counter, discard/finish, progress) stays pinned — the one thing you want in view
         while you are somewhere in the middle of a long stack. Cards mode never scrolls far. */}
@@ -950,14 +959,22 @@ function ActiveWorkout() {
         {units.map((u, ui) => {
           const multi = u.length > 1
           const isCur = u.includes(cur)
-          return <section key={u.join('-')} className={'wl-unit' + (isCur ? ' cur' : '')} data-exidx={u[0]}>
+          const isCollapsed = collapsed.has(u.join('-'))
+          return <section key={u.join('-')} className={'wl-unit' + (isCur ? ' cur' : '')} data-exidx={u[0]} data-unit-key={u.join('-')}>
             <div className="wl-hd">
               <span className="muted small">{multi ? t('Superset {0} / {1}', ui + 1, units.length) : t('Exercise {0} / {1}', ui + 1, units.length)}</span>
               {isCur
                 ? <span className="tag acc">{t('Current')}</span>
-                : <button className="chip" onClick={() => focusUnit(u[0])}>{t('Set current')}</button>}
+                : <button className="chip" aria-expanded={!isCollapsed} aria-controls={'workout-unit-' + u.join('-')}
+                    onClick={() => focusUnit(u[0])}>{t('Set current')}</button>}
             </div>
-            {multi ? (
+            <div id={'workout-unit-' + u.join('-')}>
+            {isCollapsed ? <div className="wl-summary">
+              {u.map(idx => <div key={idx} className="row between" style={{ gap: 8 }}>
+                <span style={{ fontWeight: 600, textTransform: 'capitalize' }}>{exerciseNameFor(exOr(A.entries[idx].id))}</span>
+                <span className="tag acc nocap"><Icon name="check" />{t('{0} sets', A.entries[idx].sets.length)}</span>
+              </div>)}
+            </div> : multi ? (
               <div className="ss-card">
                 <div className="ss-hd" style={{ justifyContent: 'space-between' }}>
                   <span className="row" style={{ gap: 5 }}><Icon name="link" />{t('Superset · do these back-to-back, rest when done')}</span>
@@ -978,6 +995,7 @@ function ActiveWorkout() {
                 onPairNext={u[0] < A.entries.length - 1 ? () => pairAt(u[0], u[0] + 1) : null}
                 {...blockProps(u[0])} />
             )}
+            </div>
           </section>
         })}
       </div>
@@ -1086,7 +1104,7 @@ function ActiveWorkout() {
       </button>
     })()}
     <div className="workout-end-spacer" />
-  </div>
+  </WorkoutScrollAnchor>
 }
 
 export default function Workout() {

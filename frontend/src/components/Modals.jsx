@@ -174,13 +174,23 @@ export default function Modals() {
     const b = document.body.style
     b.position = 'fixed'; b.top = -y + 'px'; b.left = '0'; b.right = '0'; b.width = '100%'
     return () => {
+      // A workout layout change can move the anchor while this sheet is open.
+      const restoreY = -(parseFloat(b.top) || 0)
       b.position = b.top = b.left = b.right = b.width = ''
-      window.scrollTo(0, y)
+      window.scrollTo(0, restoreY)
       // If the sheet closed with the keyboard still up (tap "+" in the picker, then finish),
       // iOS scrolls the page again while the keyboard dismisses — after the line above ran.
       // Ask once more when that animation is over. The window-level guard in
       // lib/viewport-guard.js covers the keyboard closing while a sheet stays open.
-      window.setTimeout(() => { if (document.body.style.position !== 'fixed') window.scrollTo(0, y) }, 350)
+      const cancelRestore = () => {
+        window.clearTimeout(restoreTimer)
+        window.removeEventListener('workout-scroll-anchor', cancelRestore)
+      }
+      const restoreTimer = window.setTimeout(() => {
+        window.removeEventListener('workout-scroll-anchor', cancelRestore)
+        if (document.body.style.position !== 'fixed') window.scrollTo(0, restoreY)
+      }, 350)
+      window.addEventListener('workout-scroll-anchor', cancelRestore, { once: true })
     }
   }, [sheets.length > 0])
 

@@ -1239,4 +1239,6 @@ export default {
   'already added': 'már hozzáadva',
   'no exercises': 'nincs gyakorlat',
   'Pick equipment': 'Eszköz kiválasztása',
+  'Collapse completed exercises': 'Befejezett gyakorlatok összecsukása',
+  'Keep the current exercise open': 'Az aktuális gyakorlat maradjon nyitva',
 }

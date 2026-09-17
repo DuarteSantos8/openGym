@@ -1247,4 +1247,6 @@ export default {
   'already added': 'เพิ่มแล้ว',
   'no exercises': 'ไม่มีท่าออกกำลังกาย',
   'Pick equipment': 'เลือกอุปกรณ์',
+  'Collapse completed exercises': 'ย่อท่าฝึกที่เสร็จแล้ว',
+  'Keep the current exercise open': 'เปิดท่าฝึกปัจจุบันไว้',
 }

@@ -1236,4 +1236,6 @@ export default {
   'already added': 'уже добавлено',
   'no exercises': 'нет упражнений',
   'Pick equipment': 'Выбрать оборудование',
+  'Collapse completed exercises': 'Сворачивать завершённые упражнения',
+  'Keep the current exercise open': 'Оставлять текущее упражнение открытым',
 }

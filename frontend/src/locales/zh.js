@@ -1236,4 +1236,6 @@ export default {
   'already added': '已添加',
   'no exercises': '没有动作',
   'Pick equipment': '选择器械',
+  'Collapse completed exercises': '折叠已完成的动作',
+  'Keep the current exercise open': '保持当前动作展开',
 }
