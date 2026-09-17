@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { uid } from '../lib/format.js'
-import { beep, chime, restOver, vibrate } from '../lib/sound.js'
+import { chime, countdown, holdSession, hush, restOver, vibrate } from '../lib/sound.js'
 import { api } from '../lib/api.js'
 import { t } from '../lib/i18n.js'
 import { deviceId } from '../lib/push.js'
@@ -96,6 +96,10 @@ const runRest = (set, get) => {
     const left = Math.max(0, Math.round((tm.endsAt - Date.now()) / 1000))
     const seenLive = !document.hidden && pageHiddenAt === null
     if (!document.hidden) pageHiddenAt = null
+    // Back on screen after a lock or an app switch. The queued countdown froze with the audio
+    // clock while the page was away, so it would now tick late; queue it again against the
+    // time that is really left. Fires once, on the first tick back.
+    if (!seenLive && !document.hidden && left > 0) countdown(useStore.getState().S.sound, left)
     if (left === tm.left) return
     const snd = useStore.getState().S.sound
     if (left <= 0) {
@@ -120,6 +124,8 @@ const runRest = (set, get) => {
       restDone = null
       cancelPushRestTimer()
       stopRestTicking()
+      hush()               // nothing left to count, so the volume buttons can go back to the ringer
+      holdSession(false)
       set({ timer: { ...tm, left: 0, ready: true } })
       // After Ready is set, so a hold the hand-over starts replaces it (startWork stops the rest).
       // It gets the rest's owner as it is now, not as it was when the rest started: an exercise
@@ -127,7 +133,6 @@ const runRest = (set, get) => {
       if (done) done(tm.forIdx, seenLive)
       return
     }
-    if (left <= 3) beep(snd, 660, 0.1)
     set({ timer: { ...tm, left } })
   }
   timerInt = setInterval(timerTick, 1000)
@@ -191,6 +196,12 @@ export const useUI = create((set, get) => ({
     restDone = typeof onDone === 'function' ? onDone : null
     const endsAt = Date.now() + sec * 1000
     set({ timer: { left: sec, total: sec, endsAt, forIdx, kind, phase } })
+    // The last seconds are queued now, inside the tap that finished the set, rather than beeped
+    // by the ticks below — the ticks stop running when the phone goes in a pocket (lib/sound.js
+    // countdown). Every exit from this timer calls stopRest, which calls them off; a pause calls
+    // them off too and a resume queues them again (pauseRest, resumeRest).
+    countdown(useStore.getState().S.sound, sec)
+    holdSession(true)      // so the phone's volume buttons reach the timer, not the ringer
     bookRestEnd(endsAt, sec)
     runRest(set, get)
   },
@@ -204,6 +215,10 @@ export const useUI = create((set, get) => ({
     if (!tm || tm.ready || tm.paused) return
     stopRestTicking()
     cancelPushRestTimer()
+    // The count-in queued for the old end would tick on through the pause; and a held rest has no
+    // tone to reach with the volume buttons, so the audio session goes back too.
+    hush()
+    holdSession(false)
     const left = Math.max(1, Math.round((tm.endsAt - Date.now()) / 1000))
     holdRestAlert(left, tm.total)
     set({ timer: { ...tm, left, paused: true } })
@@ -219,6 +234,8 @@ export const useUI = create((set, get) => ({
     pageHiddenAt = document.hidden ? Date.now() : null
     const endsAt = Date.now() + tm.left * 1000
     set({ timer: { ...rest, endsAt } })
+    countdown(useStore.getState().S.sound, tm.left)
+    holdSession(true)
     bookRestEnd(endsAt, tm.total)
     runRest(set, get)
   },
@@ -236,6 +253,7 @@ export const useUI = create((set, get) => ({
     const endsAt = tm.endsAt + sec * 1000
     set({ timer: { ...tm, left, total: tm.total + sec, endsAt } })
     bookRestEnd(endsAt, tm.total + sec)
+    countdown(useStore.getState().S.sound, left)   // the end moved; so do the last five seconds
   },
   // The active list changed shape (an exercise removed or inserted at `at`): keep the rest
   // pointing at the same exercise. Returns nothing; the caller decides whether to stop instead.
@@ -256,11 +274,15 @@ export const useUI = create((set, get) => ({
     const phase = tm?.phase
     if (paused) {
       stopRestTicking()
+      hush()
+      holdSession(false)
       set({ timer: { left, total, endsAt, forIdx, kind, phase, paused: true } })
       return
     }
     const ticking = !!timerInt && !!tm && !tm.paused && !tm.ready
     set({ timer: { left, total, endsAt, forIdx, kind, phase } })
+    countdown(useStore.getState().S.sound, left)   // against the notification's end, as addRest does
+    holdSession(true)
     if (ticking) return
     // As in resumeRest: a hide from while it was held or over is no catch-up of this countdown.
     pageHiddenAt = document.hidden ? Date.now() : null
@@ -276,8 +298,21 @@ export const useUI = create((set, get) => ({
     get().stopRest()
     if (done) done(at, true)             // you are looking at it — you tapped Skip
   },
+  // Sounds or the volume changed in Settings while a timer runs: the countdown for this timer
+  // was queued at its loudness, seconds ago, so re-queue it at the new one. Without this a
+  // change made mid-rest — which is exactly when you make it, because that is when you heard
+  // the timer — would not be audible until the next rest.
+  restartCountdown() {
+    // A paused rest has no count-in queued (pauseRest called it off) and must not get one: it
+    // would tick a frozen clock down to nothing. Resuming queues it again at the level set now.
+    const tm = get().timer
+    const left = tm ? (tm.paused ? null : tm.left) : get().work?.left
+    if (left != null) countdown(useStore.getState().S.sound, left)
+  },
   stopRest() {
     restDone = null
+    hush()
+    holdSession(false)
     stopRestTicking()
     // Skip, Dismiss, a rest replacing this one and "rest off" all take the native alarm and
     // its notifications down with it, or the alert fires after the user already moved on.
@@ -305,12 +340,18 @@ export const useUI = create((set, get) => ({
     workDone = onDone
     pageHiddenAt = document.hidden ? Date.now() : null   // see startRest: a stale hide is not a catch-up
     set({ work: { left: total, total, endsAt, label, overtime: useStore.getState().S.timedSetOvertime === true, set: setInfo || null, forIdx } })
+    countdown(useStore.getState().S.sound, total)
+    holdSession(true)
     workTick = () => {
       const wk = get().work
       if (!wk) return
       const left = Math.max(wk.overtime ? -MAX_WORK_OVERTIME_SEC : 0, Math.round((wk.endsAt - Date.now()) / 1000))
       const seenLive = !document.hidden && pageHiddenAt === null
       if (!document.hidden) pageHiddenAt = null
+      // Back on screen after a lock or an app switch. The queued countdown froze with the audio
+      // clock while the page was away, so it would now tick late; queue it again against the
+      // time that is really left. Fires once, on the first tick back.
+      if (!seenLive && !document.hidden && left > 0) countdown(useStore.getState().S.sound, left)
       if (left === wk.left) return
       const snd = useStore.getState().S.sound
       if (left <= 0) {
@@ -326,7 +367,6 @@ export const useUI = create((set, get) => ({
         if (done) done(wk.total - left, { chimed: seenLive && !wk.alerted, forIdx: wk.forIdx })
         return
       }
-      if (left <= 3) beep(snd, 660, 0.1)
       set({ work: { ...wk, left } })
     }
     workInt = setInterval(workTick, 1000)
@@ -363,6 +403,8 @@ export const useUI = create((set, get) => ({
   },
   // Abandon without logging anything.
   stopWork() {
+    hush()
+    holdSession(false)
     if (workInt) clearInterval(workInt); workInt = null
     if (workTick) document.removeEventListener('visibilitychange', workTick); workTick = null
     workDone = null
