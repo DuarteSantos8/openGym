@@ -48,13 +48,80 @@ describe('viewport guard', () => {
     // and the page displaced, that focus is what keeps iOS from putting the viewports back.
     const active = { tagName: 'INPUT', blur: vi.fn() }
     const w = fakeWindow({ offsetTop: 190, active })
-    expect(realign(w)).toBe(true)
+    expect(realign(w, { release: active })).toBe(true)
     expect(active.blur).toHaveBeenCalledTimes(1)
     expect(w.scrollTo).toHaveBeenCalledWith(0, 0)
     // an aligned page is left alone, focus included (a desktop browser mid-typing)
     const typing = { tagName: 'INPUT', blur: vi.fn() }
     expect(realign(fakeWindow({ active: typing }))).toBe(false)
     expect(typing.blur).not.toHaveBeenCalled()
+  })
+
+  it('blurs only the field it is told to release', () => {
+    const active = { tagName: 'INPUT', blur: vi.fn() }
+    const w = fakeWindow({ offsetTop: 190, active })
+    expect(realign(w)).toBe(false)
+    expect(realign(w, { release: { tagName: 'INPUT' } })).toBe(false)
+    expect(active.blur).not.toHaveBeenCalled()
+    expect(w.scrollTo).not.toHaveBeenCalled()
+  })
+
+  it('keeps a tapped field focused while its keyboard is still coming up (#242)', () => {
+    vi.useFakeTimers()
+    const field = { tagName: 'INPUT', blur: vi.fn() }
+    const w = fakeWindow({ active: field })
+    installViewportGuard(w)
+    // iOS scrolls to the field first ...
+    w.visualViewport.offsetTop = 190
+    w.fire(w.visualViewport, 'scroll')
+    w.fire(w.visualViewport, 'scroll')
+    // ... and the viewport shrinks for the keyboard afterwards
+    w.visualViewport.height = 480
+    w.fire(w.visualViewport, 'resize')
+    vi.advanceTimersByTime(1000)
+    expect(field.blur).not.toHaveBeenCalled()
+    expect(w.scrollTo).not.toHaveBeenCalled()
+    vi.useRealTimers()
+  })
+
+  it('does not blur the next field after focus moves from one to another', () => {
+    vi.useFakeTimers()
+    const w = fakeWindow({ offsetTop: 190, active: { tagName: 'BODY' } })
+    installViewportGuard(w)
+    const prev = { tagName: 'INPUT' }
+    w.fire(w.document, 'focusout', { target: prev })   // activeElement is the body during focusout
+    const next = { tagName: 'INPUT', blur: vi.fn() }
+    w.document.activeElement = next
+    vi.advanceTimersByTime(400)
+    expect(next.blur).not.toHaveBeenCalled()
+    vi.useRealTimers()
+  })
+
+  it('lets go of the field once the keyboard has closed around it', () => {
+    vi.useFakeTimers()
+    const field = { tagName: 'INPUT', blur: vi.fn() }
+    const w = fakeWindow({ vvHeight: 480, active: field })
+    installViewportGuard(w)
+    w.visualViewport.height = 800; w.visualViewport.offsetTop = 190
+    w.fire(w.visualViewport, 'resize')
+    expect(field.blur).toHaveBeenCalledTimes(1)
+    expect(w.scrollTo).toHaveBeenCalledTimes(1)
+    vi.useRealTimers()
+  })
+
+  it('lets go of a focused field on a displaced page when no keyboard ever reported itself open', () => {
+    vi.useFakeTimers()
+    const field = { tagName: 'INPUT', blur: vi.fn() }
+    const w = fakeWindow({ active: field })
+    installViewportGuard(w)
+    w.visualViewport.offsetTop = 190
+    w.fire(w.visualViewport, 'scroll')
+    vi.advanceTimersByTime(600)
+    expect(field.blur).not.toHaveBeenCalled()
+    vi.advanceTimersByTime(200)
+    expect(field.blur).toHaveBeenCalledTimes(1)
+    expect(w.scrollTo).toHaveBeenCalledTimes(1)
+    vi.useRealTimers()
   })
 
   it('unpins the body for one scroll when a sheet has it fixed, and pins it back where it was', () => {

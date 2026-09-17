@@ -16,6 +16,7 @@
  */
 const KEYBOARD_MIN_PX = 100
 const SETTLE_MS = 350   // the keyboard's dismiss animation; the offset is only wrong after it
+const OPEN_MS = 700     // time for a keyboard to report itself open after its field was focused
 
 const isText = el => !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)
 
@@ -33,15 +34,20 @@ export function keyboardOpen(win = window) {
   return (win.innerHeight - vv.height) > KEYBOARD_MIN_PX
 }
 
-/** Realign the viewports if iOS left them apart. Returns true when a correction was issued. */
-export function realign(win = window) {
+/** Realign the viewports if iOS left them apart. Returns true when a correction was issued.
+ *  `release` is the one text field that may be blurred to get there. */
+export function realign(win = window, { release = null } = {}) {
   if (keyboardOpen(win)) return false
   if (viewportDisplacement(win) <= 1) return false
   // The keyboard is gone but a text field may still hold focus: on WebKit tapping a <button>
   // (the set's tick, the RIR cell) does not blur the input, and iOS only puts the viewports
-  // back once focus has left. Nothing is being typed with the keyboard down, so let it go.
+  // back once focus has left. Nothing is being typed with the keyboard down, so let it go —
+  // but only the field the caller names: any other may have its keyboard still coming up (#242).
   const active = win.document.activeElement
-  if (isText(active)) active.blur?.()
+  if (isText(active)) {
+    if (active !== release) return false
+    active.blur?.()
+  }
   if (bodyPinned(win)) return realignPinned(win)
   win.scrollTo(win.scrollX || 0, win.scrollY || 0)
   return true
@@ -71,14 +77,25 @@ export function installViewportGuard(win = window) {
   let wasOpen = keyboardOpen(win)
   const timers = new Set()
   const later = (fn, ms) => { const t = win.setTimeout(() => { timers.delete(t); fn() }, ms); timers.add(t) }
-  const settle = () => { realign(win); later(() => realign(win), SETTLE_MS) }
+  const settle = (release = null) => { realign(win, { release }); later(() => realign(win, { release }), SETTLE_MS) }
 
   const onResize = () => {
     const open = keyboardOpen(win)
-    if (wasOpen && !open) settle()
+    if (wasOpen && !open) settle(win.document.activeElement)
     wasOpen = open
   }
-  const onScroll = () => { if (!wasOpen) realign(win) }
+  // Tapping a field makes iOS scroll to it before the visual viewport shrinks for the keyboard,
+  // which looks just like a keyboard that closed and left the page displaced. So a focused field
+  // is only let go if the keyboard still has not shown up a while later.
+  let pending = null
+  const onScroll = () => {
+    if (wasOpen) return
+    const active = win.document.activeElement
+    if (!isText(active)) { realign(win); return }
+    if (pending === active) return
+    pending = active
+    later(() => { pending = null; if (win.document.activeElement === active) realign(win, { release: active }) }, OPEN_MS)
+  }
   const onFocusOut = e => { if (isText(e.target)) settle() }
 
   vv.addEventListener('resize', onResize)
