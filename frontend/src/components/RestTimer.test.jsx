@@ -8,7 +8,7 @@ import { DEF, useStore } from '../store/useStore.js'
 import { exOr } from '../lib/exercises.js'
 import { exerciseNameFor } from '../lib/i18n.js'
 
-vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), vibrate: vi.fn(), unlock: vi.fn(), restOver: vi.fn() }))
+vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), vibrate: vi.fn(), unlock: vi.fn(), restOver: vi.fn(), countdown: vi.fn(), hush: vi.fn(), holdSession: vi.fn() }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})) }))
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true

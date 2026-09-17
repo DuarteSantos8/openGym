@@ -10,6 +10,7 @@ export const PT_BR_OVERRIDES = {
   'Not synced yet — tap to retry.': 'Ainda não sincronizado — toque para tentar novamente.',
   'Enter a positive step to use this progression rule.': 'Digite um passo positivo para usar esta regra de progressão.',
   'Layout': 'Layout',
+  'Loudest also means highest. Your phone’s own volume is the master — press volume up while a rest is counting down, when the buttons control the timer rather than the ringer.': 'Mais alto também significa mais agudo. O volume do próprio celular é que manda — aumente o volume enquanto um descanso está em contagem regressiva, que é quando os botões controlam o cronômetro e não o toque.',
   'No sessions logged yet': 'Ainda não há sessões registradas',
   'What should change?': 'O que deve mudar?',
   'Coach is thinking…': 'O Coach está pensando…',
