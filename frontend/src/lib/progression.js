@@ -14,6 +14,7 @@
 //   · a set checked off with fewer reps                → miss (you logged what you got)
 //   · a set never checked off                          → miss (it was not performed)
 //   · fewer sets than prescribed                       → miss
+//   · a set beyond what was prescribed                 → not judged (issue #233)
 // So a session that fell apart can never advance the load as though it had succeeded.
 
 import { modeOf, repStep, rerampWarmups, isBw, isPerSide, entryExcluded } from './history.js'
@@ -222,23 +223,29 @@ export function readSession(entry, fallback) {
   const sets = ((entry && entry.sets) || []).filter(s => !isWarmupRow(s))
   const planned = target.sets || sets.length
   const enough = sets.length >= planned
+  // A set beyond what was prescribed is bonus work, not part of what is graded (issue #233):
+  // an unplanned heavier set must not become the recorded working weight, and an unplanned
+  // set that comes up short must not turn an otherwise clean session into a miss. `count`
+  // stays the real total, though — that is the dimension bodyweight work grows by (#33), and
+  // an intentional extra set there is exactly how that progression is meant to happen.
+  const scored = planned < sets.length ? sets.slice(0, planned) : sets
 
   if (mode === 'time') {
     const goal = target.sec || 0
-    const held = sets.map(s => (s.done ? (s.sec || 0) : 0))
+    const held = scored.map(s => (s.done ? (s.sec || 0) : 0))
     return {
       mode, target, goal, held,
-      weight: Math.max(0, ...sets.filter(s => s.done).map(s => s.w || 0)),
+      weight: Math.max(0, ...scored.filter(s => s.done).map(s => s.w || 0)),
       best: Math.max(0, ...held),
       ok: goal > 0 && enough && held.length > 0 && held.every(h => h >= goal)
     }
   }
   const goal = target.reps || 0
-  const reps = sets.map(s => (s.done ? (s.r || 0) : 0))
+  const reps = scored.map(s => (s.done ? (s.r || 0) : 0))
   return {
     mode, target, goal, reps,
-    weight: Math.max(0, ...sets.filter(s => s.done).map(s => s.w || 0)),
-    count: reps.length,                                   // the dimension bodyweight work grows (#33)
+    weight: Math.max(0, ...scored.filter(s => s.done).map(s => s.w || 0)),
+    count: sets.length,                                   // the dimension bodyweight work grows (#33)
     low: reps.length ? Math.min(...reps) : 0,
     amrap: reps.length ? reps[reps.length - 1] : 0,       // Greyskull's final set
     ok: goal > 0 && enough && reps.length > 0 && reps.every(r => r >= goal)
