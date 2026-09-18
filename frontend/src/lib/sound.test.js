@@ -167,8 +167,23 @@ describe('the context is held open while a timer runs', () => {
     sound.holdSession(true)
     vi.advanceTimersByTime(60000)
     sound.holdSession(false)
-    vi.advanceTimersByTime(1100)
+    vi.advanceTimersByTime(1900)
+    expect(ctx().state).toBe('running')     // the rest-over sound played just before letting go
+    vi.advanceTimersByTime(200)
     expect(ctx().state).toBe('suspended')
+  })
+
+  it('letting go early overrides the deadline the queued countdown left', () => {
+    // A 90 s rest queues its last tick for 0:89, and that used to keep the context running to
+    // the end of the rest after a Skip at 0:30 — with the page awake behind a locked phone.
+    sound.holdSession(true)
+    sound.countdown(true, 90)
+    vi.advanceTimersByTime(30000)
+    sound.hush()
+    sound.holdSession(false)
+    vi.advanceTimersByTime(2100)
+    expect(ctx().state).toBe('suspended')
+    expect(ctx().suspends).toBe(1)
   })
 
   it('holding gets the context running even when nothing has played yet', () => {
