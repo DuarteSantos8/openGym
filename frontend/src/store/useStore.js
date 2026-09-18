@@ -41,6 +41,13 @@ export const DEF = {
   // server pull, backup import) still falls back to the `showRir` boolean this replaced and
   // keeps the column it had. See effortOf.
   reminder: { on: false, time: '08:00', tz: null }, effort: null, autoBackup: false,
+  // Set by the "Push notifications" toggle in Settings (issue #239). The browser cannot revoke
+  // Notification permission once granted, so turning the toggle off only unsubscribes this
+  // browser from server push (see lib/push.js disablePush) — without this flag the rest timer's
+  // own local alert (useUI.js maybeRestNotification, for when the tab is merely backgrounded)
+  // kept firing anyway. Defaults to false so a profile saved before this setting existed, and a
+  // guest who never sees the toggle, keep the local alert they already had.
+  pushOptOut: false,
   // Equipment profiles (issue: filter Library/picker/routines by what you actually own —
   // e.g. "Home" vs "Gym" — building on the session-only equipment filter from issue #6).
   equipProfiles: [], activeEquipId: null, equipFilterOn: false,

@@ -578,8 +578,8 @@ function PushCard({ S, update, toast }) {
   const toggle = async v => {
     setBusy(true)
     try {
-      if (!v) { await disablePush(); setOn(false); toast(t('Notifications off')) }
-      else { await enablePush(); setOn(true); toast(t('Notifications on')) }
+      if (!v) { await disablePush(); setOn(false); update(s => { s.pushOptOut = true }); toast(t('Notifications off')) }
+      else { await enablePush(); setOn(true); update(s => { s.pushOptOut = false }); toast(t('Notifications on')) }
     } catch (e) { toast(e.message || t('Could not change notification settings')) }
     setBusy(false)
   }

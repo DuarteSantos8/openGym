@@ -96,3 +96,49 @@ describe('opt-in timer screen flash', () => {
     expect(useUI.getState().timerFlashId).toBe(1)
   })
 })
+
+// The local alert fires while the tab is merely backgrounded (the rest timer keeps running).
+// Turning "Push notifications" off in Settings sets S.pushOptOut — the browser has no API to
+// take back Notification permission once granted, so that flag is the only way to honour "off".
+describe('rest-timer local notification (issue #239)', () => {
+  let originalSettings
+  let notify
+
+  beforeEach(() => {
+    vi.useFakeTimers()
+    originalSettings = useStore.getState().S
+    useUI.setState({ timer: null })
+    notify = vi.fn()
+    vi.stubGlobal('Notification', Object.assign(
+      function (title, opts) { notify(title, opts) },
+      { permission: 'granted', requestPermission: vi.fn().mockResolvedValue('granted') }
+    ))
+    Object.defineProperty(navigator, 'serviceWorker', {
+      configurable: true,
+      value: { getRegistration: () => Promise.resolve(undefined) }
+    })
+    Object.defineProperty(document, 'hidden', { value: true, configurable: true })
+  })
+
+  afterEach(() => {
+    useUI.getState().stopRest()
+    useStore.setState({ S: originalSettings })
+    Object.defineProperty(document, 'hidden', { value: false, configurable: true })
+    vi.unstubAllGlobals()
+    vi.useRealTimers()
+  })
+
+  it('alerts locally while backgrounded, by default', async () => {
+    useStore.setState({ S: { ...useStore.getState().S, pushOptOut: false } })
+    useUI.getState().startRest(1)
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(notify).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not alert locally once Push notifications is turned off', async () => {
+    useStore.setState({ S: { ...useStore.getState().S, pushOptOut: true } })
+    useUI.getState().startRest(1)
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(notify).not.toHaveBeenCalled()
+  })
+})
