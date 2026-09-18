@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, restKind, restFocusIdx, restSetPhase } from './supersetFlow.js'
+import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, nextUnitAhead, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, restKind, restFocusIdx, restSetPhase } from './supersetFlow.js'
 
 const entry = done => ({ sets: done.map(value => ({ done: value })) })
 
@@ -69,6 +69,18 @@ describe('active workout unit ordering', () => {
   it('returns null only when every unit is complete', () => {
     const entries = [entry([true]), entry([true])]
     expect(nextUnfinishedUnit(entries, [[0], [1]], 1)).toBeNull()
+  })
+
+  // Where the screen goes on its own is the forward-only half: it skips finished units ahead and
+  // never wraps back to work left behind — a skipped warm-up at the top stays where it is.
+  it('the unit ahead skips finished units and never wraps', () => {
+    const entries = [entry([false]), entry([true]), entry([false]), entry([true])]
+    const units = [[0], [1], [2, 3]]
+    expect(nextUnitAhead(entries, units, 0)).toEqual([2, 3])
+    expect(nextUnitAhead(entries, units, 1)).toEqual([2, 3])
+    expect(nextUnitAhead(entries, units, 2)).toBeNull()          // unit 0 has work, but it is behind
+    expect(nextUnitAhead(entries, units, 7)).toBeNull()          // not in any unit: nowhere to go
+    expect(nextUnitAhead(entries, [], 0)).toBeNull()
   })
 })
 

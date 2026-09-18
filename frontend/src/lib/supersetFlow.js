@@ -15,6 +15,20 @@ export function nextUnfinishedUnit(entries, units, fromIdx) {
   return ordered.find(unit => unit.some(idx => hasWork(entries, idx))) || null
 }
 
+// Where the screen may go on its own (Workout.jsx moveOn / handOver): the next unit AFTER this one
+// that still has work, never wrapping. nextUnfinishedUnit wraps because it answers "is the session
+// over, and is a rest owed" — a warm-up skipped at the top still counts as work. Sending the screen
+// back there uninvited is what a wrap does to a session whose warm-up was skipped: the last
+// exercise's rest ends by yanking you to the first one. The bar may still NAME that exercise
+// (restFocusIdx wraps, truthfully: it has work left); the screen only ever moves forward, and stays
+// put — null — when nothing ahead has work.
+export function nextUnitAhead(entries, units, fromIdx) {
+  if (!Array.isArray(entries) || !Array.isArray(units) || units.length === 0) return null
+  const current = units.findIndex(unit => unit.includes(fromIdx))
+  if (current < 0) return null
+  return units.slice(current + 1).find(unit => unit.some(idx => hasWork(entries, idx))) || null
+}
+
 // The current exercise may be one member of a contiguous superset. Insert after that complete
 // navigation unit; invalid/empty state safely falls back to the end of the entry list.
 export function insertionIndexAfterCurrentUnit(units, currentIndex, entryCount) {
