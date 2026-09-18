@@ -324,3 +324,88 @@ describe('ordering', () => {
     expect(gets()).toHaveLength(3)
   })
 })
+
+/* Two tabs of one browser, one account: the saved copy and the revision marker are shared, the
+   in-memory copy is not. The tab that was left open used to push its whole stale state over the
+   other tab's work, quoting the marker that tab had just written — accepted, no 409, no banner. */
+describe('another tab of the same browser saves', () => {
+  const savedElsewhere = state => {
+    localStorage.setItem('gym_state_v1', JSON.stringify(state))
+    window.dispatchEvent(new StorageEvent('storage', { key: 'gym_state_v1', newValue: JSON.stringify(state) }))
+  }
+
+  it('takes the newer copy, keeps its own in-progress workout, and pushes both sides\' work', async () => {
+    vi.useFakeTimers()
+    localStorage.setItem('gym_owner', 'user-1')
+    signedIn({ ...clone(DEF), _ts: 100, workouts: [workout('w1')], active: { id: 'running' } })
+    localStorage.setItem('gym_sync', JSON.stringify({ rev: 7, ts: 100 }))
+
+    // the other tab saved a workout, pushed it, and left the marker at the revision it got back
+    savedElsewhere({ ...clone(DEF), _ts: 200, workouts: [workout('w1'), workout('w2', '2026-09-18')] })
+    localStorage.setItem('gym_sync', JSON.stringify({ rev: 8, ts: 200 }))
+
+    expect(useStore.getState().S.workouts.map(w => w.id)).toEqual(['w1', 'w2'])
+    expect(useStore.getState().S.active).toEqual({ id: 'running' })
+
+    api.mockResolvedValue({ ok: true, rev: 9 })
+    useStore.getState().update(s => { s.restSec = 120 })
+    await vi.advanceTimersByTimeAsync(1600)
+
+    expect(puts()).toHaveLength(1)
+    expect(puts()[0].baseRev).toBe(8)
+    expect(puts()[0].state.workouts.map(w => w.id)).toEqual(['w1', 'w2'])
+  })
+
+  it('merges the other tab\'s copy into the change it still owes, and pushes the two together', async () => {
+    vi.useFakeTimers()
+    localStorage.setItem('gym_owner', 'user-1')
+    localStorage.setItem('gym_dirty', '1')   // a push that failed: this tab owes a change
+    signedIn({ ...clone(DEF), _ts: 300, workouts: [workout('w1'), workout('wA', '2026-09-17')] })
+    localStorage.setItem('gym_sync', JSON.stringify({ rev: 8, ts: 100 }))
+
+    savedElsewhere({ ...clone(DEF), _ts: 400, workouts: [workout('w1'), workout('wB', '2026-09-18')] })
+
+    expect(useStore.getState().S.workouts.map(w => w.id)).toEqual(['w1', 'wA', 'wB'])
+
+    api.mockResolvedValue({ ok: true, rev: 9 })
+    await vi.advanceTimersByTimeAsync(1600)
+
+    expect(puts()).toHaveLength(1)
+    expect(puts()[0].state.workouts.map(w => w.id)).toEqual(['w1', 'wA', 'wB'])
+  })
+
+  // The merge is a change this tab now owes, so it arms a push — but not before boot has pulled,
+  // where the copy in hand may still be older than the server's and the marker stale with it.
+  it('waits for boot before pushing the merge it just made', async () => {
+    vi.useFakeTimers()
+    localStorage.setItem('gym_owner', 'user-1')
+    localStorage.setItem('gym_dirty', '1')
+    useStore.setState({ S: { ...clone(DEF), _ts: 300, workouts: [workout('wA', '2026-09-17')] }, user: { id: 'user-1' }, ready: false })
+    localStorage.setItem('gym_sync', JSON.stringify({ rev: 8, ts: 100 }))
+    api.mockResolvedValue({ ok: true, rev: 9 })
+
+    savedElsewhere({ ...clone(DEF), _ts: 400, workouts: [workout('wB', '2026-09-18')] })
+    expect(useStore.getState().S.workouts.map(w => w.id)).toEqual(['wA', 'wB'])
+
+    await vi.advanceTimersByTimeAsync(5000)
+    expect(puts()).toHaveLength(0)
+
+    useStore.setState({ ready: true })          // what boot does last, on every path
+    useStore.getState().update(s => { s.restSec = 45 })
+    await vi.advanceTimersByTimeAsync(2000)
+
+    expect(puts()).toHaveLength(1)
+    expect(puts()[0].state.workouts.map(w => w.id)).toEqual(['wA', 'wB'])
+  })
+
+  it('leaves the copy alone when the owner changed, and when nothing newer was saved', () => {
+    localStorage.setItem('gym_owner', 'someone-else')   // another profile signed in elsewhere
+    signedIn({ ...clone(DEF), _ts: 100, workouts: [workout('w1')] })
+    savedElsewhere({ ...clone(DEF), _ts: 200, workouts: [workout('w2', '2026-09-18')] })
+    expect(useStore.getState().S.workouts.map(w => w.id)).toEqual(['w1'])
+
+    localStorage.setItem('gym_owner', 'user-1')
+    savedElsewhere({ ...clone(DEF), _ts: 50, workouts: [] })   // older than what this tab holds
+    expect(useStore.getState().S.workouts.map(w => w.id)).toEqual(['w1'])
+  })
+})
