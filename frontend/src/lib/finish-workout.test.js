@@ -16,6 +16,36 @@ describe('completed workout boundary', () => {
     })
   })
 
+  // planSec is live-session bookkeeping — the plan a hold displaced before it finished put aside
+  // (Workout.startTimed). A finished session keeps only what was logged, so an unfinished row goes
+  // back to recording its plan and the key never reaches S.workouts.
+  it('never stores planSec: an unfinished row goes back to recording its plan', () => {
+    const active = {
+      id: 'a', d: '2026-09-18', start: 1000,
+      entries: [{
+        id: 'plank',
+        sets: [
+          { done: true, sec: 30, w: 0 },
+          { done: false, sec: 3, planSec: 30, w: 0 },
+          { done: true, sec: 28, planSec: 45, w: 0 },
+        ],
+      }],
+    }
+    const sets = buildCompletedWorkout(active, { end: 2000 }).entries[0].sets
+    expect(sets).toEqual([
+      { done: true, sec: 30, w: 0 },
+      { done: false, sec: 30, w: 0 },      // the plan it was asking for, and what it held is gone
+      { done: true, sec: 28, w: 0 },       // a logged row keeps its log
+    ])
+    expect(JSON.stringify(sets)).not.toContain('planSec')
+  })
+
+  it('leaves the rows it has nothing to strip exactly as they are', () => {
+    const rows = [{ done: true, w: 60, r: 8 }]
+    const active = { id: 'a', d: '2026-09-18', start: 1000, entries: [{ id: '0025', sets: rows }] }
+    expect(buildCompletedWorkout(active, { end: 2000 }).entries[0].sets[0]).toBe(rows[0])
+  })
+
   it('mirrors routineIds → routineId, and tolerates a legacy scalar active.routineId', () => {
     const base = {
       id: 'w', d: '2026-08-08', start: 1,

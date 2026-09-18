@@ -147,11 +147,56 @@ describe('a rest and a hold never run together', () => {
 
   it('so a left-over hold cannot reach zero under a running rest and log a set nobody held', () => {
     const holdDone = vi.fn()
-    useUI.getState().startWork(3, 'Plank', holdDone)
-    useUI.getState().startRest(90, 0)
-    vi.advanceTimersByTime(3000)                      // where the hold would have run out
-    expect(useUI.getState().timer.left).toBe(87)      // the rest is still counting, untouched
+    useUI.getState().startWork(30, 'Plank', holdDone)
+    vi.advanceTimersByTime(12_000)                    // 12 s of the plank held
+    useUI.getState().startRest(90, 1)
+    vi.advanceTimersByTime(30_000)                    // past where the hold would have run out
+    expect(useUI.getState().timer.left).toBe(60)      // the rest is still counting, untouched
     expect(useUI.getState().work).toBe(null)
+    // Once, on the way out, and never again — and with the 12 s it actually held, marked as no
+    // finish. The count alone would not say which: a hold left running reaches its own zero and
+    // calls back too, with the full 30 s target for a set that stopped being held at 12.
+    expect(holdDone).toHaveBeenCalledTimes(1)
+    expect(holdDone).toHaveBeenCalledWith(12, true)
+  })
+
+  // The hold cannot survive the rest, but the time it held is real: it is handed back on the way
+  // out so its own row keeps it. Before this a plank in progress vanished without a trace every
+  // time a set was ticked somewhere else — one tap away in the List layout.
+  it('the displaced hold hands back what it held, marked as no finish', () => {
+    const holdDone = vi.fn()
+    useUI.getState().startWork(45, 'Plank', holdDone)
+    vi.advanceTimersByTime(18_000)
+    useUI.getState().startRest(90, 1)
+    expect(useUI.getState().work).toBe(null)
+    expect(holdDone).toHaveBeenCalledTimes(1)
+    expect(holdDone).toHaveBeenCalledWith(18, true)   // the seconds held, and: abandoned
+  })
+
+  it('under two seconds there is nothing to hand back — that was a play button by accident', () => {
+    const holdDone = vi.fn()
+    useUI.getState().startWork(45, 'Plank', holdDone)
+    vi.advanceTimersByTime(1000)
+    useUI.getState().startRest(90, 1)
+    expect(useUI.getState().work).toBe(null)
+    expect(holdDone).not.toHaveBeenCalled()
+  })
+
+  it('a hold displaced by another hold hands back what it held too', () => {
+    const first = vi.fn()
+    useUI.getState().startWork(45, 'Plank', first)
+    vi.advanceTimersByTime(18_000)
+    useUI.getState().startWork(60, 'Side plank', vi.fn())
+    expect(first).toHaveBeenCalledWith(18, true)
+    expect(useUI.getState().work.total).toBe(60)
+  })
+
+  it('and a rest that never starts hands back nothing, because the hold is still going', () => {
+    const holdDone = vi.fn()
+    useUI.getState().startWork(45, 'Plank', holdDone)
+    vi.advanceTimersByTime(18_000)
+    useUI.getState().startRest(0, 1)
+    expect(useUI.getState().work).not.toBe(null)
     expect(holdDone).not.toHaveBeenCalled()
   })
 })

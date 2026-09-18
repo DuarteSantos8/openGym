@@ -631,6 +631,10 @@ function ActiveWorkout() {
   // what was actually logged — in the session, in history and in a backup.
   const setField = (idx, i, field, v) => mutEntry(idx, e => {
     if (v == null) delete e.sets[i][field]; else e.sets[i][field] = v
+    // Typing a duration IS the new plan, the same way ticking the row ends it: a plan a displaced
+    // hold put aside must not outrank what you just typed, or the field would read 45 and the ▶
+    // would still hold the 30 the row was asking for before.
+    if (field === 'sec') delete e.sets[i].planSec
     // Changing a weight cascades to the following sets of the same phase, so a
     // heavier bar carries through the set instead of retyping every row.
     if (field === 'w') {
@@ -854,8 +858,27 @@ function ActiveWorkout() {
     // This tap may be the only one before the hold's countdown beeps (a timed first exercise):
     // get the audio context running while it still counts as a gesture (iOS, #152).
     unlock(S.sound)
-    useUI.getState().startWork(e.sets[i].sec || 45, exerciseNameFor(exOr(e.id)), elapsed => {
-      mutEntry(idx, en => { en.sets[i].sec = elapsed })
+    // How long to hold: the row's own seconds, unless it is carrying a plan from a hold that was
+    // displaced before it finished. `sec` on a timed row is both the plan and the log, so writing
+    // what a part-held set managed would otherwise become the next hold's target — 3 seconds of a
+    // 30 second plank, and every hold after it is 3 seconds. planSec keeps the plan aside until
+    // the row is held to the end, ticked, or given a duration you typed yourself, and it never
+    // reaches S.workouts (lib/finish-workout.js).
+    const plan = (!e.sets[i].done && e.sets[i].planSec) || e.sets[i].sec || 45
+    useUI.getState().startWork(plan, exerciseNameFor(exOr(e.id)), (elapsed, abandoned) => {
+      // A hold a rest displaced (useUI.abandonWork: a set ticked on another row, or another
+      // exercise) keeps its seconds and nothing else. It is not a finish: the row stays unticked
+      // and starts no rest, because the rest that displaced the hold is already counting down —
+      // and the plan it was held against is put aside so the row still knows what it is asking for.
+      if (abandoned) {
+        // A row ticked by hand while its hold ran comes through here too — toggle starts the rest
+        // that displaces the hold, so the hand-back lands on a row that is already ticked. It
+        // still wants the seconds (that is what was held, not the target), but a finished row has
+        // no use for a plan set aside.
+        mutEntry(idx, en => { if (en.sets[i].planSec == null && !en.sets[i].done) en.sets[i].planSec = plan; en.sets[i].sec = elapsed })
+        return
+      }
+      mutEntry(idx, en => { en.sets[i].sec = elapsed; delete en.sets[i].planSec })
       if (!useStore.getState().S.active.entries[idx].sets[i].done) toggle(idx, i)
     })
   }
@@ -876,6 +899,8 @@ function ActiveWorkout() {
       if (side) e.sets[i] = toggleSide(e.sets[i], side)
       else e.sets[i].done = !e.sets[i].done
       checked = e.sets[i].done
+      // A finished row has no use for a plan set aside by a hold that did not finish.
+      if (checked && e.sets[i].planSec != null) delete e.sets[i].planSec
       if (e.sets[i].done) {
         beep(S.sound, 1040, 0.12); vibrate(30)
         // The unit that owns the ticked set — not the marked one. Since !92 the marker no longer

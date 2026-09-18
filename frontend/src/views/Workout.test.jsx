@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => {
     timer: null,
     work: null,
     startRest: vi.fn(),
+    startWork: vi.fn(),
     stopRest: null,
     stopWork: null,
     confirmSheet: vi.fn(),
@@ -45,7 +46,7 @@ const mocks = vi.hoisted(() => {
     stopRest: state.stopRest,
     stopWork: state.stopWork,
     shiftRestOwner: vi.fn(),
-    startWork: vi.fn(),
+    startWork: state.startWork,
     toast: state.toast,
   })
   return state
@@ -561,6 +562,116 @@ describe('active workout weight controls', () => {
     expect(mocks.S.active.entries[0].sets[0].sec).toBe(35)
     await press('Increase', '.setrow .stp.r')
     expect(mocks.S.active.entries[0].sets[0].w).toBe(62.5)
+  })
+})
+
+// A rest that starts while a hold is running takes the hold down (useUI: the two must never run
+// together), so the hold hands back what it held on the way out and its own row keeps it. It is
+// explicitly not a finish: the row stays unticked and starts no rest of its own, because the rest
+// that displaced it is the one counting down. And `sec` on a timed row is both the plan and the
+// log, so a part-held set must not become the next hold's target.
+describe('a hold a rest displaced', () => {
+  const timed = (sec = 30) => exercise('timed-plank', [false, false], {
+    target: { mode: 'time', sec, weight: 0, bodyweight: true },
+    sets: [{ sec, w: 0, done: false }, { sec, w: 0, done: false }],
+  })
+  const pressStart = async (index = 0) => {
+    const button = container.querySelectorAll('button.setgo')[index]
+    expect(button).toBeTruthy()
+    await act(async () => { button.dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    await rerender()
+  }
+  // What useUI.abandonWork hands the owner: the seconds held, and "this was not a finish".
+  const handBack = async (elapsed, call = 0) => {
+    await act(async () => { mocks.startWork.mock.calls[call][2](elapsed, true) })
+    await rerender()
+  }
+
+  it('keeps its seconds, stays unticked and starts no rest', async () => {
+    await mount([timed()])
+    await pressStart(0)
+    mocks.startRest.mockClear()
+
+    await handBack(18)
+
+    expect(mocks.S.active.entries[0].sets[0]).toMatchObject({ sec: 18, done: false })
+    expect(mocks.startRest).not.toHaveBeenCalled()
+  })
+
+  it('shows what it held without becoming the next hold\'s target', async () => {
+    await mount([timed(30)])
+    await pressStart(0)
+    expect(mocks.startWork.mock.calls[0][0]).toBe(30)
+
+    await handBack(3)
+    expect(mocks.S.active.entries[0].sets[0]).toMatchObject({ sec: 3, planSec: 30, done: false })
+
+    await pressStart(0)                                          // hold it again
+    expect(mocks.startWork.mock.calls[1][0]).toBe(30)            // the plan, not the 3 s it managed
+  })
+
+  it('a plan you edited yourself survives the same way', async () => {
+    await mount([timed(55)])
+    await pressStart(0)
+    expect(mocks.startWork.mock.calls[0][0]).toBe(55)
+    await handBack(4)
+    await pressStart(0)
+    expect(mocks.startWork.mock.calls[1][0]).toBe(55)
+  })
+
+  it('and typing a duration is the new plan, so the plan it kept aside goes', async () => {
+    await mount([timed(30)])
+    await pressStart(0)
+    await handBack(3)
+    expect(mocks.S.active.entries[0].sets[0].planSec).toBe(30)
+
+    // The seconds stepper on a timed row is the '.stp.w' one (the first column).
+    const button = container.querySelector('.setrow .stp.w button[aria-label="Increase"]')
+    expect(button).toBeTruthy()
+    await act(async () => { button.dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    await rerender()
+
+    expect(mocks.S.active.entries[0].sets[0].planSec).toBeUndefined()
+    const typed = mocks.S.active.entries[0].sets[0].sec
+    await pressStart(0)
+    expect(mocks.startWork.mock.calls[1][0]).toBe(typed)         // what the field says, not the old plan
+  })
+
+  it('and once the row is ticked, the plan it kept aside goes', async () => {
+    await mount([timed(30)])
+    await pressStart(0)
+    await handBack(3)
+    expect(mocks.S.active.entries[0].sets[0].planSec).toBe(30)
+
+    await toggleSet(0)                                           // ticked by hand
+    expect(mocks.S.active.entries[0].sets[0].planSec).toBeUndefined()
+    expect(mocks.S.active.entries[0].sets[0].done).toBe(true)
+  })
+
+  // Ticking the held row's own Check is the same mechanism from the other side: the tick starts
+  // the rest, the rest displaces the hold, and the hand-back lands on the row the tick just
+  // ticked. So the row logs what was actually held rather than its target, and keeps no plan.
+  it('ticking the held row by hand logs what was held, not the target', async () => {
+    await mount([timed(30)])
+    await pressStart(0)
+    mocks.work = { left: 12, total: 30, endsAt: Date.now() + 12_000, label: 'timed-plank' }
+    await rerender()
+
+    await toggleSet(0)
+    await handBack(18)               // what useUI.abandonWork hands back under that tick
+
+    expect(mocks.S.active.entries[0].sets[0]).toMatchObject({ sec: 18, done: true })
+    expect(mocks.S.active.entries[0].sets[0].planSec).toBeUndefined()
+  })
+
+  it('a hold held to the end still logs and ticks, and keeps no plan behind', async () => {
+    await mount([timed(30)])
+    await pressStart(0)
+    await act(async () => { mocks.startWork.mock.calls[0][2](30) })   // no abandoned flag: a finish
+    await rerender()
+
+    expect(mocks.S.active.entries[0].sets[0]).toMatchObject({ sec: 30, done: true })
+    expect(mocks.S.active.entries[0].sets[0].planSec).toBeUndefined()
   })
 })
 
