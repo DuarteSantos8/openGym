@@ -1232,6 +1232,33 @@ describe('a finished rest moves the screen on', () => {
     await toggleSet(1)
     expect(mocks.S.active.cur).toBe(1)
   })
+
+  // Forward only. The rest is still owed and the bar still names the exercise with work left
+  // (restFocusIdx wraps), but the screen is not sent back to a warm-up you skipped.
+  it('never wraps backwards: with work left only behind you, a block rest leaves you where you are', async () => {
+    await mount([exercise('warmup', [false]), exercise('bench', [true, false])], 1)
+    await toggleSet(1)                                           // bench finished; the warm-up at the top was skipped
+    const call = mocks.startRest.mock.calls.at(-1)
+    expect(call.slice(0, 4)).toEqual([90, 1, 'block', null])
+    await restOver(call, 1)
+    expect(mocks.S.active.cur).toBe(1)
+  })
+
+  it('nor at the tap, when nothing times the gap', async () => {
+    await mount([exercise('warmup', [false]), exercise('bench', [true, false])], 1, { restSec: 0 })
+    await toggleSet(1)
+    expect(mocks.S.active.cur).toBe(1)
+  })
+
+  it('a rest owed by a re-check moves nothing: finished work you unticked and ticked again stays put', async () => {
+    await mount([exercise('bench', [true, true]), exercise('row', [false])], 0)
+    await toggleSet(1)                                           // untick the closing set …
+    await toggleSet(1)                                           // … and tick it again: no new progress, a rest still owed
+    const call = mocks.startRest.mock.calls.at(-1)
+    expect(call.slice(0, 4)).toEqual([90, 0, 'block', null])
+    await restOver(call, 0)
+    expect(mocks.S.active.cur).toBe(0)
+  })
 })
 
 describe('superset actionable-set centring', () => {

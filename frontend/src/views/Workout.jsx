@@ -11,7 +11,7 @@ import { beep, vibrate, unlock } from '../lib/sound.js'
 import { holdPosition, nextUndoneAfter } from '../lib/workout-model.js'
 import { t, exerciseNameFor } from '../lib/i18n.js'
 import { api, appBase } from '../lib/api.js'
-import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, restKind, restFocusIdx, restSetPhase } from '../lib/supersetFlow.js'
+import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, nextUnitAhead, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, restKind, restFocusIdx, restSetPhase } from '../lib/supersetFlow.js'
 import Media from '../components/Media.jsx'
 import { startFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, finishWorkout, workoutCompleteSheet, confirmSheet, exerciseNoteSheet, sessionNoteSheet, renameWorkoutSheet, swapActiveWorkoutExercise, barWeightSheet, menuSheet, effortPickerSheet, exerciseHistorySheet, addRoutineToSessionSheet } from '../sheets.jsx'
 import { effortColor } from '../lib/effort.js'
@@ -64,7 +64,12 @@ function Elapsed({ start }) {
   const [t, setT] = useState('0:00')
   useEffect(() => {
     const tick = () => { const s = Math.floor((Date.now() - start) / 1000); setT(Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0')) }
-    tick(); const iv = setInterval(tick, 1000); return () => clearInterval(iv)
+    // A hidden page changes nothing on screen (useUI.timerTick has the story): the page keeps
+    // running behind a locked phone while a rest holds the audio session, and a clock re-rendered
+    // every second there is a layout iOS is not showing. Catch up on the way back instead.
+    const live = () => { if (!document.hidden) tick() }
+    live(); const iv = setInterval(live, 1000); document.addEventListener('visibilitychange', live)
+    return () => { clearInterval(iv); document.removeEventListener('visibilitychange', live) }
   }, [start])
   return <span>{t}</span>
 }
@@ -905,20 +910,32 @@ function ActiveWorkout() {
     latest.startTimed(forIdx, nextI)
   }
 
-  // A rest that runs out hands the screen over to whatever it has been naming all along
+  // A rest that runs out hands the screen over to what it has been naming all along
   // (supersetFlow.restFocusIdx — the same exercise the bar shows and the List layout scrolls
   // to). Without this the bar said "Next exercise · X", the countdown ended, and you were left
   // looking at the exercise you had just finished, with no way forward but Next.
   //
+  // With one exception: forward only. After the closing set of an exercise the bar names the next
+  // unit with work, WRAPPING — a warm-up skipped at the top of the session is still work, and that
+  // is the honest thing to call the rest. But a rest that ends by yanking the screen back to the
+  // first exercise is worse than one that leaves you where you are (2026-09-18, a coach session
+  // with the warm-up block skipped: every later exercise "jumped, but not to the next exercise").
+  // So the screen takes the next unit AHEAD with work (nextUnitAhead) and otherwise stays.
+  //
   // Built when the rest starts, judged when it fires, like chainedHold: a rest outlives the
   // render that armed it. `fromCur` is where the marker stood when the rest began — if it has
   // moved since, you navigated during the break, and a countdown does not overrule that.
-  const handOver = (kind, chain) => {
+  // `move` is false for a rest a re-check owes: finished work you unticked and ticked again must
+  // not navigate (the promise above restOnRecheck), while a redone hold still chains its next one.
+  const handOver = (kind, chain, move = true) => {
     const fromCur = useStore.getState().S.active?.cur
     return (forIdx, seenLive) => {
       const active = useStore.getState().S.active
-      if (active && forIdx != null && active.cur === fromCur) {
-        const to = restFocusIdx(active.entries, supersetUnits(active.entries), forIdx, kind)
+      if (move && active && forIdx != null && active.cur === fromCur) {
+        const units = supersetUnits(active.entries)
+        const to = kind === 'block'
+          ? nextUnitAhead(active.entries, units, forIdx)?.[0]
+          : restFocusIdx(active.entries, units, forIdx, kind)
         if (to != null && to !== fromCur && active.entries[to]) {
           update(s => { if (s.active && s.active.cur === fromCur) s.active.cur = to })
         }
@@ -998,22 +1015,26 @@ function ActiveWorkout() {
       // Also on a re-check, so an unticked-and-redone hold keeps the exercise running itself.
       const alone = !freshUnit || freshUnit.length <= 1
       const nextI = opts?.fromHold && alone && !freshUnitDone ? nextUndoneAfter(fresh.entries[idx].sets, i) : -1
-      const rest = () => startRest(restAfter, idx, kind, phase, handOver(kind,
-        nextI >= 0 ? chainedHold(fresh.entries[idx].id, nextI, fresh.entries[idx].sets.length) : null))
+      const rest = (move = true) => startRest(restAfter, idx, kind, phase, handOver(kind,
+        nextI >= 0 ? chainedHold(fresh.entries[idx].id, nextI, fresh.entries[idx].sets.length) : null, move))
       // Finishing an exercise owes you the next one. Normally the rest carries you there when
       // it ends; when nothing is going to time that gap — the rest timer is Off, the next
       // exercise has warm-up sets of its own to ramp through first, or this is a backfilled
-      // session that has no rest at all — the move happens now instead of not at all.
+      // session that has no rest at all — the move happens now instead of not at all. Forward
+      // only, like the hand-over: `nextUnit` wraps to work left behind, and that is where the
+      // rest is owed, not where the screen goes.
       const gapIsTimed = !!restAfter && !A.backfill && !restBeforeWarmup
+      const ahead = freshUnitDone ? nextUnitAhead(fresh.entries, freshUnits, idx) : null
       const moveOn = () => {
-        if (!freshUnitDone || !nextUnit?.length || gapIsTimed) return
-        update(s => { if (s.active && s.active.entries[nextUnit[0]]) s.active.cur = nextUnit[0] })
+        if (!freshUnitDone || !ahead || gapIsTimed) return
+        update(s => { if (s.active && s.active.entries[ahead[0]]) s.active.cur = ahead[0] })
       }
 
       // A re-check of finished work must not navigate or reopen a sheet, but it may still owe
-      // you a rest — see restOnRecheck, and the other half of issue #3.
+      // you a rest — see restOnRecheck, and the other half of issue #3. So the rest it starts
+      // carries no move (a redone hold still chains its next one).
       if (!progress.isNew) {
-        if (!restBeforeWarmup && restOnRecheck({ timerRunning: !!useUI.getState().timer, unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) rest()
+        if (!restBeforeWarmup && restOnRecheck({ timerRunning: !!useUI.getState().timer, unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) rest(false)
         return
       }
 
