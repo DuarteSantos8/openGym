@@ -98,6 +98,11 @@ export const useUI = create((set, get) => ({
     // Rest timer set to Off. Stopping and returning rather than starting a zero-length timer
     // keeps every caller honest: the four places that start a rest do not each need to know.
     if (!(sec > 0)) return
+    // Nothing clears pageHiddenAt but a tick, so an app switch with no timer running left it set
+    // for good. The next timer's first tick then read it as "this countdown ran out while the app
+    // was away" and finished in silence — a one-second rest, started on screen, over on screen,
+    // with no beep, no vibration and no flash. Each timer starts from where the page is now.
+    pageHiddenAt = document.hidden ? Date.now() : null
     const endsAt = Date.now() + sec * 1000
     set({ timer: { left: sec, total: sec, endsAt, forIdx } })
     pushRestTimer(sec)
@@ -164,6 +169,7 @@ export const useUI = create((set, get) => ({
     const total = Math.max(1, Math.round(sec) || 1)
     const endsAt = Date.now() + total * 1000
     workDone = onDone
+    pageHiddenAt = document.hidden ? Date.now() : null   // see startRest: a stale hide is not a catch-up
     set({ work: { left: total, total, endsAt, label } })
     workTick = () => {
       const wk = get().work

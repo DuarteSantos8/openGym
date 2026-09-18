@@ -95,6 +95,26 @@ describe('opt-in timer screen flash', () => {
     vi.advanceTimersByTime(1000)
     expect(useUI.getState().timerFlashId).toBe(1)
   })
+
+  // Nothing clears the "the app went away" mark but a tick, so an app switch with no timer
+  // running left it set for good and the next timer read it as a catch-up on its very first tick.
+  // Only a timer short enough to finish on that first tick can hit it, which is why it went
+  // unnoticed: a one-second rest, started on screen and over on screen, ran out in silence.
+  it('a hide and a show BEFORE the rest starts is no catch-up: it still flashes', () => {
+    useStore.setState({ S: { ...useStore.getState().S, timerFlash: true } })
+    goHidden(); goVisible()                 // switched apps and came back, with no timer running
+    useUI.getState().startRest(1)
+    vi.advanceTimersByTime(1000)
+    expect(useUI.getState().timerFlashId).toBe(1)
+  })
+
+  it('a hide and a show BEFORE the hold starts is no catch-up: it still flashes', () => {
+    useStore.setState({ S: { ...useStore.getState().S, timerFlash: true } })
+    goHidden(); goVisible()                 // switched apps and came back, with no timer running
+    useUI.getState().startWork(1, 'Plank', vi.fn())
+    vi.advanceTimersByTime(1000)
+    expect(useUI.getState().timerFlashId).toBe(1)
+  })
 })
 
 // The rest and the hold mean opposite things and the store has always said so, but only
