@@ -327,3 +327,30 @@ describe('Modals scroll restore on close', () => {
     vi.useRealTimers()
   })
 })
+
+// The page behind a sheet is pinned (body fixed, shifted by the scroll position) and put back
+// where it was when the sheet goes — in the same commit, so there is no frame at scroll 0.
+describe('pinning the page behind a sheet', () => {
+  it('pins on open with the scroll position folded in, and restores it on close, three times over', async () => {
+    vi.useFakeTimers()
+    // the sheet closes with the keyboard still up, so the 350 ms restore is armed too (QA C1)
+    dom.innerHeight = 800
+    dom.visualViewport = { height: 460 }
+    Object.defineProperty(dom, 'scrollY', { configurable: true, value: 343 })
+    const rafs = []
+    dom.requestAnimationFrame = fn => { rafs.push(fn); return rafs.length }
+    await setSheets([sheet('a')])
+    expect(document.body.style.position).toBe('fixed')
+    expect(document.body.style.top).toBe('-343px')
+    expect(dom.scrollTo).not.toHaveBeenCalled()
+    await setSheets([])
+    expect(document.body.style.position).toBe('')
+    expect(dom.scrollTo).toHaveBeenCalledTimes(1)              // at once, in the same commit
+    expect(dom.scrollTo).toHaveBeenCalledWith(0, 343)
+    rafs.forEach(fn => fn())
+    expect(dom.scrollTo).toHaveBeenCalledTimes(2)              // again on the next frame (iOS scrolls asynchronously)
+    vi.advanceTimersByTime(400)
+    expect(dom.scrollTo).toHaveBeenCalledTimes(3)              // and after the keyboard's dismiss animation
+    vi.useRealTimers()
+  })
+})
