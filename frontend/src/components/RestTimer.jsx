@@ -6,6 +6,7 @@ import { supersetUnits } from '../lib/history.js'
 import { restFocusIdx } from '../lib/supersetFlow.js'
 import { t } from '../lib/i18n.js'
 import { exerciseNameText } from '../lib/format.js'
+import { realign } from '../lib/viewport-guard.js'
 import { Button } from './ui.jsx'
 
 const clock = sec => Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0')
@@ -44,7 +45,13 @@ export default function RestTimer() {
   // rest that was the next set's row. Extra bottom padding lets the page scroll clear.
   useEffect(() => {
     document.body.classList.toggle('resting', !!on)
-    return () => document.body.classList.remove('resting')
+    // The bar leaving takes that padding back — the page gets ~210px shorter at once, often in
+    // the same commit that ticks a set or swaps the card. When that clamps the scroll
+    // position, iOS can be left with the two viewports apart: the tab bar mid-screen, scrolling
+    // with the page. Ask for them to be checked once the layout has settled; a no-op wherever
+    // they already agree (lib/viewport-guard.js).
+    const frame = on ? null : requestAnimationFrame(() => realign())
+    return () => { if (frame) cancelAnimationFrame(frame); document.body.classList.remove('resting') }
   }, [!!on])
   if (!on) return null
   const pct = Math.max(0, Math.min(100, (on.left / on.total) * 100))
