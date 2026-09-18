@@ -103,6 +103,23 @@ describe('viewport guard', () => {
     vi.useRealTimers()
   })
 
+  it('checks again when the page comes back on screen, and not when it goes away', () => {
+    vi.useFakeTimers()
+    const w = fakeWindow()
+    installViewportGuard(w)
+    // the page ran on while hidden and came back with the viewports apart
+    w.document.hidden = true
+    w.visualViewport.offsetTop = 190
+    w.fire(w.document, 'visibilitychange')
+    expect(w.scrollTo).not.toHaveBeenCalled()      // hidden: nothing to put right yet
+    w.document.hidden = false
+    w.fire(w.document, 'visibilitychange')
+    expect(w.scrollTo).toHaveBeenCalledTimes(1)
+    vi.advanceTimersByTime(400)
+    expect(w.scrollTo).toHaveBeenCalledTimes(2)   // and once more after anything still animating
+    vi.useRealTimers()
+  })
+
   it('does nothing while the keyboard is open, and nothing at all without a visualViewport', () => {
     const w = fakeWindow({ vvHeight: 480, offsetTop: 190 })
     installViewportGuard(w)

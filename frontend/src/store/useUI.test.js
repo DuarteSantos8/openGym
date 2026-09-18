@@ -393,3 +393,89 @@ describe('the hold\'s owner', () => {
     expect(useUI.getState().work.forIdx).toBe(0)
   })
 })
+
+// The audio session is held for the whole rest (lib/sound.js holdSession), so the page keeps
+// running while the phone is locked — where it used to be frozen — and the ticks arrive there.
+// A hidden page changes nothing on screen: no per-second re-render, no toast, no hand-over.
+// All of it waits for the tick that visibilitychange fires when the page is back, exactly as
+// when the page was frozen. The one thing a hidden page owes is the alert, and a signed-in
+// device gets that from the server push; a guest, who has no push, gets the local one — once.
+describe('a timer that runs while the page is hidden', () => {
+  let originalSettings, originalUser, shown
+  const goHidden = () => { Object.defineProperty(document, 'hidden', { value: true, configurable: true }); document.dispatchEvent(new Event('visibilitychange')) }
+  const goVisible = () => { Object.defineProperty(document, 'hidden', { value: false, configurable: true }); document.dispatchEvent(new Event('visibilitychange')) }
+  const flush = async () => { for (let i = 0; i < 5; i++) await Promise.resolve() }
+  beforeEach(() => {
+    vi.useFakeTimers()
+    originalSettings = useStore.getState().S
+    originalUser = useStore.getState().user
+    useStore.setState({ S: { ...originalSettings, sound: false, timerFlash: false } })
+    useUI.setState({ timer: null, work: null, toastMsg: '' })
+    shown = vi.fn()
+    // A granted permission and a service worker to show through — the local notification's path.
+    globalThis.Notification = { permission: 'granted', requestPermission: vi.fn(async () => 'granted') }
+    // …and a push subscription: since issue #239 the local alert follows the Push switch, and
+    // "on" is this browser holding one.
+    Object.defineProperty(navigator, 'serviceWorker', { configurable: true, value: { getRegistration: async () => ({ showNotification: shown, pushManager: { getSubscription: async () => ({ endpoint: 'https://push.example/x' }) } }) } })
+  })
+  afterEach(() => {
+    goVisible(); useUI.getState().stopRest(); useUI.getState().stopWork()
+    useStore.setState({ S: originalSettings, user: originalUser })
+    delete globalThis.Notification
+    delete navigator.serviceWorker
+    vi.useRealTimers()
+  })
+
+  it('a hidden rest neither ticks nor finishes; it all happens on the first tick back', () => {
+    const done = vi.fn()
+    useUI.getState().startRest(3, 0, 'block', null, done)
+    goHidden()
+    vi.advanceTimersByTime(10_000)
+    const tm = useUI.getState().timer
+    expect(tm).not.toBe(null)
+    expect(tm.left).toBe(3)                          // not a single re-render while hidden
+    expect(done).not.toHaveBeenCalled()
+    expect(useUI.getState().toastMsg).toBe('')
+    goVisible()
+    expect(useUI.getState().timer).toBe(null)
+    expect(done).toHaveBeenCalledTimes(1)
+    expect(done).toHaveBeenCalledWith(0, false)      // fired, and says it was not watched
+    expect(useUI.getState().toastMsg).toBe('Rest over — next set!')
+  })
+
+  it('signed in, a hidden rest leaves the alert to the server push — no local notification', async () => {
+    useStore.setState({ user: { id: 'u1' } })
+    useUI.getState().startRest(2, 0, 'set')
+    goHidden()
+    vi.advanceTimersByTime(6000)
+    await flush()
+    expect(shown).not.toHaveBeenCalled()
+    goVisible()
+    await flush()
+    expect(shown).not.toHaveBeenCalled()             // back on screen there is nothing to notify
+  })
+
+  it('a hidden rest that runs out notifies once, not once per tick', async () => {
+    useStore.setState({ user: null })
+    useUI.getState().startRest(2, 0, 'set')
+    useUI.getState().addRest(15); useUI.getState().addRest(-15)   // ±15 s moves endsAt; still one rest
+    goHidden()
+    vi.advanceTimersByTime(6000)                     // four ticks past zero
+    await flush()
+    expect(shown).toHaveBeenCalledTimes(1)
+    expect(shown).toHaveBeenCalledWith('Rest over — next set!', expect.objectContaining({ tag: 'rest-timer' }))   // the push's tag: one tray entry
+    expect(useUI.getState().timer).not.toBe(null)    // the rest itself still waits for the screen
+  })
+
+  it('a hidden hold finishes on the first tick back, at its full length', () => {
+    const done = vi.fn()
+    useUI.getState().startWork(2, 'Plank', done, null, 0)
+    goHidden()
+    vi.advanceTimersByTime(10_000)
+    expect(useUI.getState().work).not.toBe(null)
+    expect(done).not.toHaveBeenCalled()
+    goVisible()
+    expect(useUI.getState().work).toBe(null)
+    expect(done).toHaveBeenCalledWith(2, 0)
+  })
+})

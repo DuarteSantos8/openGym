@@ -5,6 +5,7 @@ import { exOr } from '../lib/exercises.js'
 import { supersetUnits } from '../lib/history.js'
 import { restFocusIdx } from '../lib/supersetFlow.js'
 import { t, exerciseNameFor } from '../lib/i18n.js'
+import { realign } from '../lib/viewport-guard.js'
 import { Button } from './ui.jsx'
 
 const clock = sec => Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0')
@@ -43,7 +44,13 @@ export default function RestTimer() {
   // rest that was the next set's row. Extra bottom padding lets the page scroll clear.
   useEffect(() => {
     document.body.classList.toggle('resting', !!on)
-    return () => document.body.classList.remove('resting')
+    // The bar leaving takes that padding back — the page gets ~210px shorter in the same commit
+    // that swaps the card to the next exercise (Workout.handOver). When that clamps the scroll
+    // position, iOS can be left with the two viewports apart: the tab bar mid-screen, scrolling
+    // with the page. Ask for them to be checked once the layout has settled; a no-op wherever
+    // they already agree (lib/viewport-guard.js).
+    const frame = on ? null : requestAnimationFrame(() => realign())
+    return () => { if (frame) cancelAnimationFrame(frame); document.body.classList.remove('resting') }
   }, [!!on])
   if (!on) return null
   const pct = (on.left / on.total) * 100

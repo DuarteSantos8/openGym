@@ -86,14 +86,22 @@ export function installViewportGuard(win = window) {
   }
   const onScroll = () => { if (!wasOpen) realign(win) }
   const onFocusOut = e => { if (isText(e.target)) settle() }
+  // Back on screen after a lock or an app switch. A page that kept running while hidden (a rest
+  // timer holds the audio session, and iOS keeps a page playing audio alive) was laid out against
+  // a viewport iOS was not showing, and can come back with the two viewports apart — the tab bar
+  // and the timer bar sitting mid-page and scrolling with it — with no resize, scroll or focus
+  // event to bring the checks above. So the return itself is one.
+  const onVisible = () => { if (!win.document.hidden) settle() }
 
   vv.addEventListener('resize', onResize)
   vv.addEventListener('scroll', onScroll)
   win.document.addEventListener('focusout', onFocusOut)
+  win.document.addEventListener('visibilitychange', onVisible)
   return () => {
     vv.removeEventListener('resize', onResize)
     vv.removeEventListener('scroll', onScroll)
     win.document.removeEventListener('focusout', onFocusOut)
+    win.document.removeEventListener('visibilitychange', onVisible)
     timers.forEach(t => win.clearTimeout(t))
   }
 }
