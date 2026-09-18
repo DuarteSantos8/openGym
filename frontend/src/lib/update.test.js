@@ -265,6 +265,34 @@ describe('semver comparison (via checkForUpdate behavior)', () => {
     expect((await checkForUpdate()).hasUpdate).toBe(true)
   })
 
+  // A version may say which build it came from, as semver build metadata ("1.3.8+2026-09-18.2").
+  // It takes no part in precedence, and splitting it on "." used to make the patch NaN — which
+  // read as 0, so a tag carrying it compared as x.y.0 and a real update went unnoticed. Dropped
+  // on both operands, so the same holds whichever side carries it; here it is the tag, which is
+  // the side a test can reach (__APP_VERSION__ is a build-time define).
+  const BUILD = '+2026-09-18.2'
+  const [MAJOR, MINOR, PATCH_N] = __APP_VERSION__.split('+')[0].split('.').map(Number)
+  const tagged = (maj, min, patch) => 'v' + [maj, min, patch].join('.') + BUILD
+
+  it('judges a tag that carries build metadata on its numbers alone', async () => {
+    mockRelease(tagged(MAJOR, MINOR, PATCH_N + 1))
+    expect((await checkForUpdate()).hasUpdate).toBe(true)
+
+    resetUpdateCheck()
+    mockRelease(tagged(MAJOR, MINOR, PATCH_N))
+    const same = await checkForUpdate()
+    expect(same.hasUpdate).toBe(false)                                   // the running release
+    expect(same.latestVersion).toBe(__APP_VERSION__.split('+')[0] + BUILD)   // echoed as it came
+
+    resetUpdateCheck()
+    mockRelease(tagged(MAJOR, Math.max(0, MINOR - 1), 0))
+    expect((await checkForUpdate()).hasUpdate).toBe(false)
+
+    resetUpdateCheck()
+    mockRelease(tagged(MAJOR + 1, 0, 0))
+    expect((await checkForUpdate()).hasUpdate).toBe(true)
+  })
+
   it('does not flag an older patch as an update', async () => {
     // One patch below current (current patch is always >= our test floor)
     mockRelease('v' + [MAJ, MIN, Math.max(0, PATCH - 1)].join('.'))
