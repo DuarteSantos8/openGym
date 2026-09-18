@@ -44,6 +44,10 @@ const requestRestNotificationPermission = async () => {
 const maybeRestNotification = async () => {
   if (!notificationsSupported()) return
   if (!document.hidden && document.visibilityState !== 'hidden') return
+  // The browser cannot un-grant Notification permission from JS, so "Push notifications" off
+  // in Settings has to be its own flag — otherwise this local alert kept firing after the
+  // toggle was turned off (issue #239).
+  if (useStore.getState().S.pushOptOut) return
   if (Notification.permission !== 'granted' && !(await requestRestNotificationPermission())) return
   try {
     // Android Chrome forbids the Notification constructor (Illegal constructor) - the
