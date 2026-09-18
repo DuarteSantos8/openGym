@@ -237,7 +237,13 @@ async function sendPush(userId, payload, deviceId) {
     }
   };
   await Promise.all(Array.from({ length: Math.min(PUSH_CONCURRENCY, subs.length) }, worker));
-  if (dirty) saveDb();
+  // Pruning dead subscriptions is bookkeeping, not the send. Most callers do not await this
+  // function at all (the rest-timer setTimeout, the Coach proposal hook), so a ./data that cannot
+  // be written right now — disk full, read-only mount, EIO — would turn the throw into an
+  // unhandled rejection and take the process down. The row is already gone from db.subs in
+  // memory, so only the copy on disk lags: the next saveDb() that succeeds, from any route,
+  // writes it out, and a restart re-reads the old file and prunes it again on the next send.
+  if (dirty) { try { saveDb(); } catch (e) { console.error('push: could not save db.json', e.message); } }
 }
 
 // Rest-timer alerts: client schedules on start/extend, cancels on skip or on-screen completion —
