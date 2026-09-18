@@ -53,6 +53,33 @@ describe('readSession', () => {
     expect(readSession({ id: LIFT, target: {}, sets: [{ w: 60, r: 5, done: true }] }).ok).toBe(false)
   })
 
+  it('ignores a set beyond the plan when it is heavier than the working weight (#233)', () => {
+    const s = readSession({
+      id: LIFT, target: T,
+      sets: [
+        { w: 60, r: 5, done: true },
+        { w: 60, r: 5, done: true },
+        { w: 60, r: 5, done: true },
+        { w: 70, r: 3, done: true } // an extra set, not part of the 3 prescribed
+      ]
+    })
+    expect(s.ok).toBe(true)
+    expect(s.weight).toBe(60)
+  })
+
+  it('does not let a missed extra set turn an otherwise clean session into a miss (#233)', () => {
+    const s = readSession({
+      id: LIFT, target: T,
+      sets: [
+        { w: 60, r: 5, done: true },
+        { w: 60, r: 5, done: true },
+        { w: 60, r: 5, done: true },
+        { w: 60, r: 0, done: false } // an extra set, never finished
+      ]
+    })
+    expect(s.ok).toBe(true)
+  })
+
   it('reads a timed session by the hold, not by reps', () => {
     const s = readSession({ id: LIFT, target: { sets: 2, sec: 45, mode: 'time' }, sets: [{ sec: 45, w: 0, done: true }, { sec: 50, w: 0, done: true }] })
     expect(s.mode).toBe('time')
