@@ -342,6 +342,7 @@ export default {
   'Deletes your plan, workouts and body weight on this device. This cannot be undone.': '이 기기의 계획, 운동, 체중을 삭제합니다. 되돌릴 수 없어요.',
   'Deletes your plan, workouts and body weight from your profile on this server and on every signed-in device. This cannot be undone.': '이 서버의 프로필과 로그인된 모든 기기에서 계획, 운동, 체중을 삭제합니다. 되돌릴 수 없어요.',
   'Sync failed: the server refused the upload as too large. Your changes have not reached the server.': '동기화 실패: 서버가 업로드가 너무 크다며 거부했습니다. 변경 내용이 서버에 반영되지 않았습니다.',
+  'This device is out of storage: the change is not saved on it. Signed in, it still goes to the server.': '이 기기에 저장 공간이 없습니다: 변경 내용이 기기에 저장되지 않았습니다. 로그인 상태라면 서버로는 그대로 전송됩니다.',
   'Delete everything': '전부 삭제',
   'All data reset': '모든 데이터 초기화됨',
   'Backup exported': '백업 내보냄',

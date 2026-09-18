@@ -109,6 +109,7 @@ export const useStore = create((set, get) => {
   let pushTm = null
   let saveTm = null
   let toldTooLarge = false
+  let toldNoRoom = false   // the save itself was refused — said once per streak, like the above
   let pushing = null       // the PUT in flight, so a second push waits for it instead of racing it
   let pushAgain = false    // a push asked for while one was in flight — run once more after it
   let pulling = null       // the GET in flight, so two resume signals make one request
@@ -148,7 +149,22 @@ export const useStore = create((set, get) => {
   const persist = (S, push = true, stamp = true) => {
     if (stamp) S._ts = Date.now()
     registerCustom(S.customEx)
-    localStorage.setItem(KEY, JSON.stringify(S))
+    // A refused write used to take the change with it — Finish looked like it simply did
+    // nothing. The copy is kept in memory either way and marked as owed to the server, so a
+    // signed-in device still gets it there; and it is said out loud once, because a change that
+    // is not on the device is the one thing the screen cannot show on its own.
+    try {
+      localStorage.setItem(KEY, JSON.stringify(S))
+      toldNoRoom = false
+    } catch (e) {
+      try { localStorage.setItem('gym_dirty', '1') } catch { /* the same wall */ }
+      if (!toldNoRoom) {
+        toldNoRoom = true
+        import('./useUI.js')
+          .then(({ useUI }) => useUI.getState().toast(t('This device is out of storage: the change is not saved on it. Signed in, it still goes to the server.')))
+          .catch(() => {})
+      }
+    }
     set({ S })
     if (MOBILE) nativePersist()
     if (push && get().user) {

@@ -127,6 +127,7 @@ export const PT_BR_OVERRIDES = {
   'Deletes your plan, workouts and body weight on this device. This cannot be undone.': 'Exclui seu plano, seus treinos e seu peso corporal deste dispositivo. Esta ação não pode ser desfeita.',
   'Deletes your plan, workouts and body weight from your profile on this server and on every signed-in device. This cannot be undone.': 'Exclui seu plano, seus treinos e seu peso corporal do seu perfil neste servidor e de todos os dispositivos conectados. Esta ação não pode ser desfeita.',
   'Sync failed: the server refused the upload as too large. Your changes have not reached the server.': 'A sincronização falhou: o servidor recusou o envio por ser grande demais. Suas alterações não chegaram ao servidor.',
+  'This device is out of storage: the change is not saved on it. Signed in, it still goes to the server.': 'Este dispositivo está sem espaço: a alteração não está salva nele. Com a sessão iniciada, ela chega ao servidor de qualquer forma.',
   'Delete everything': 'Excluir tudo',
   'Backup exported': 'Backup exportado',
   'Import backup?': 'Importar backup?',

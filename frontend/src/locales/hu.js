@@ -343,6 +343,7 @@ export default {
   'Deletes your plan, workouts and body weight on this device. This cannot be undone.': 'Törli a terved, edzéseid és testsúlyod ezen az eszközön. Ez nem vonható vissza.',
   'Deletes your plan, workouts and body weight from your profile on this server and on every signed-in device. This cannot be undone.': 'Törli a terved, edzéseid és testsúlyod a profilodból ezen a szerveren és minden bejelentkezett eszközön. Ez nem vonható vissza.',
   'Sync failed: the server refused the upload as too large. Your changes have not reached the server.': 'A szinkronizálás nem sikerült: a szerver túl nagynak találta a feltöltést és elutasította. A módosításaid nem jutottak el a szerverre.',
+  'This device is out of storage: the change is not saved on it. Signed in, it still goes to the server.': 'Ezen az eszközön elfogyott a tárhely: a módosítás nincs rajta elmentve. Bejelentkezve így is eljut a kiszolgálóra.',
   'Delete everything': 'Minden törlése',
   'All data reset': 'Minden adat visszaállítva',
   'Backup exported': 'Biztonsági mentés exportálva',
