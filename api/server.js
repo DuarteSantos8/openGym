@@ -317,6 +317,8 @@ const minutesLate = (time, now) => hhmmToMin(now.hhmm) - hhmmToMin(time);
 // The tick reads every subscribed user's state file every 10 s. Most of those files do not
 // change between ticks; a stat is far cheaper than a read and a parse of a state that can be
 // megabytes, and it keeps the tick short — a slow tick was one more way to miss the minute.
+// Nothing evicts by age or size, so this holds one parsed state per user who polls or gets a
+// reminder, for the life of the process (single-user deployment here; an upstream caveat).
 const stateCache = new Map(); // uid -> { mtimeMs, size, S }
 function readStateCached(uid) {
   let st;
@@ -910,10 +912,13 @@ const routes = {
   // Just the revision: the client asks this every half minute while it is open and on every
   // return to the foreground, and fetches the document only when the number moved — a signed-in
   // device is meant to show what the server has, and this is what keeps that cheap.
+  // Cheap means the stat cache the reminder tick already uses: parsing a megabytes-long document
+  // to read one number off it cost 31 ms per poll on a 2.4 MB state, all of it on the event loop.
+  // Every write goes through atomicWrite's rename, so the cache can never hand out a stale rev.
   'GET /api/data/rev': async (req, res) => {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
-    json(res, 200, { rev: readState(user.id)?._rev || 0 });
+    json(res, 200, { rev: readStateCached(user.id)?._rev || 0 });
   },
 
   'PUT /api/data': async (req, res) => {
@@ -948,6 +953,13 @@ const routes = {
     delete body.state.active;              // in-progress workouts stay device-local
     body.state._rev = curRev + 1;          // server-owned; whatever the client sent is ignored
     atomicWrite(stateFile(user.id), JSON.stringify(body.state));
+    // The stat cache cannot see this write on its own: mtime granularity is 4 ms here (ext4 on
+    // this kernel — 3901 of 3999 back-to-back same-size writes shared one timestamp), and a
+    // `_rev` going from 7 to 8 does not change the file's size, so two writes inside one 4 ms
+    // tick are the same (mtimeMs, size) key. A reader that sampled between them would then serve
+    // the old revision until some later write happened to land on a different tick. This is the
+    // only writer of a state file in the tree, so evicting here is the whole fix.
+    stateCache.delete(user.id);
     json(res, 200, { ok: true, ts: body.state._ts || null, rev: body.state._rev });
   },
 
@@ -1005,7 +1017,7 @@ const routes = {
   'POST /api/push/test': async (req, res) => {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
-    await sendPush(user.id, testPush(readState(user.id)?.lang));
+    await sendPush(user.id, testPush(readStateCached(user.id)?.lang));
     json(res, 200, { ok: true });
   },
 
@@ -1020,7 +1032,7 @@ const routes = {
     const n = typeof raw === 'number' || typeof raw === 'string' ? Number(raw) : NaN;
     if (!(n >= 1)) return json(res, 400, { error: 'seconds required' });
     const sec = Math.min(3600, Math.round(n));
-    scheduleRestTimer(user.id, deviceIdOf(body.deviceId), sec, readState(user.id)?.lang);
+    scheduleRestTimer(user.id, deviceIdOf(body.deviceId), sec, readStateCached(user.id)?.lang);
     json(res, 200, { ok: true });
   },
 
