@@ -46,7 +46,15 @@ const wake = () => {
 let held = false
 export function holdSession(on) {
   held = !!on
-  if (held) { try { wake() } catch (e) { /* */ } } else sleepAfter(0)
+  if (held) { try { wake() } catch (e) { /* */ } return }
+  // Letting go has to override the deadline the queued countdown left behind: its last tick was
+  // scheduled for the END of the rest, so sleepAfter(0) — "a second from now is earlier than
+  // that, keep the later one" — was a no-op, and a rest skipped at 0:30 of 1:30 kept the context
+  // (and, under 'playback', the phone's silence and this page's timers) running to 1:30. hush()
+  // has already called those ticks off. Two seconds is past the tail of the longest rest-over
+  // sound (~0.9 s), which is scheduled just before the timer lets go.
+  clearTimeout(idleTm); idleTm = null; idleAt = 0
+  sleepAfter(1)
 }
 
 // Suspend once every scheduled tone is over. A burst schedules several tones in one go; the
