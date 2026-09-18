@@ -26,6 +26,16 @@ describe('rest timer set to Off', () => {
     useUI.getState().startRest(90)
     expect(useUI.getState().timer.total).toBe(90)
   })
+
+  // A rest that does not start has nothing to run alongside a hold, so it leaves it alone: with
+  // the timer Off, ticking a set somewhere must not throw away a plank in progress.
+  it('leaves a running hold alone — there is no rest for it to clash with', () => {
+    useUI.getState().startWork(45, 'Plank', vi.fn())
+    useUI.getState().startRest(0, 1)
+    expect(useUI.getState().work).not.toBe(null)
+    expect(useUI.getState().work.total).toBe(45)
+    useUI.getState().stopWork()
+  })
 })
 
 describe('opt-in timer screen flash', () => {

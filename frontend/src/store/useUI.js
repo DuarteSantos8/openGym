@@ -89,15 +89,17 @@ export const useUI = create((set, get) => ({
 
   startRest(sec, forIdx) {
     get().stopRest()
+    // Rest timer set to Off. Stopping and returning rather than starting a zero-length timer
+    // keeps every caller honest: the four places that start a rest do not each need to know.
+    if (!(sec > 0)) return
     // And the hold, the other way round from startWork: the two must never run together (see the
     // work timer below). A set ticked by hand while its hold ran used to leave both going — the
     // rest bar with its Skip and ±15 s hidden behind the hold bar, and then the hold reaching
     // zero under a rest that was still counting down, beeping its own end and logging the full
-    // target for a set nobody was holding any more.
+    // target for a set nobody was holding any more. Below the guard, not above it: a rest that
+    // does not start has nothing to run alongside the hold, and taking the hold down for it
+    // would throw away a plank in progress for nothing.
     get().stopWork()
-    // Rest timer set to Off. Stopping and returning rather than starting a zero-length timer
-    // keeps every caller honest: the four places that start a rest do not each need to know.
-    if (!(sec > 0)) return
     // Nothing clears pageHiddenAt but a tick, so an app switch with no timer running left it set
     // for good. The next timer's first tick then read it as "this countdown ran out while the app
     // was away" and finished in silence — a one-second rest, started on screen, over on screen,
