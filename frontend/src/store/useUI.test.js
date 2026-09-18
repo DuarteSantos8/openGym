@@ -96,3 +96,32 @@ describe('opt-in timer screen flash', () => {
     expect(useUI.getState().timerFlashId).toBe(1)
   })
 })
+
+// The rest and the hold mean opposite things and the store has always said so, but only
+// startWork enforced it. Ticking a timed set's own checkbox by hand starts a rest
+// (Workout.toggle) while the hold is still running, which left both going.
+describe('a rest and a hold never run together', () => {
+  beforeEach(() => { vi.useFakeTimers(); useUI.setState({ timer: null, work: null }) })
+  afterEach(() => {
+    useUI.getState().stopRest()
+    useUI.getState().stopWork()
+    vi.useRealTimers()
+  })
+
+  it('a rest starting ends the hold, the way a hold starting ends the rest', () => {
+    useUI.getState().startWork(45, 'Plank', vi.fn())
+    useUI.getState().startRest(90, 0)
+    expect(useUI.getState().work).toBe(null)
+    expect(useUI.getState().timer).not.toBe(null)
+  })
+
+  it('so a left-over hold cannot reach zero under a running rest and log a set nobody held', () => {
+    const holdDone = vi.fn()
+    useUI.getState().startWork(3, 'Plank', holdDone)
+    useUI.getState().startRest(90, 0)
+    vi.advanceTimersByTime(3000)                      // where the hold would have run out
+    expect(useUI.getState().timer.left).toBe(87)      // the rest is still counting, untouched
+    expect(useUI.getState().work).toBe(null)
+    expect(holdDone).not.toHaveBeenCalled()
+  })
+})

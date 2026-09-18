@@ -89,6 +89,12 @@ export const useUI = create((set, get) => ({
 
   startRest(sec, forIdx) {
     get().stopRest()
+    // And the hold, the other way round from startWork: the two must never run together (see the
+    // work timer below). A set ticked by hand while its hold ran used to leave both going — the
+    // rest bar with its Skip and ±15 s hidden behind the hold bar, and then the hold reaching
+    // zero under a rest that was still counting down, beeping its own end and logging the full
+    // target for a set nobody was holding any more.
+    get().stopWork()
     // Rest timer set to Off. Stopping and returning rather than starting a zero-length timer
     // keeps every caller honest: the four places that start a rest do not each need to know.
     if (!(sec > 0)) return
