@@ -15,6 +15,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { boundPort } from './helpers.mjs';
 
 const API = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const SECRET = 'test-secret-rev-endpoint';
@@ -31,17 +32,9 @@ test('GET /api/data/rev tracks PUT /api/data', async t => {
   // The boot line carries the port the listener actually bound, so there is no window in which
   // anything else could be holding it — the server is listening by the time it is printed.
   let log = '';
-  const port = await new Promise((resolve, reject) => {
-    const give = setTimeout(() => reject(new Error(`server never announced a port:\n${log}`)), 20000);
-    const look = d => {
-      log += d;
-      const m = /gym-api on :(\d+)/.exec(log);
-      if (m) { clearTimeout(give); resolve(+m[1]); }
-    };
-    child.stdout.on('data', look);
-    child.stderr.on('data', d => { log += d; });
-    child.on('exit', c => { clearTimeout(give); reject(new Error(`server exited (${c}):\n${log}`)); });
-  });
+  child.stdout.on('data', d => { log += d; });
+  child.stderr.on('data', d => { log += d; });
+  const port = await boundPort(child, () => log);
   const base = `http://127.0.0.1:${port}`;
   assert.equal((await fetch(`${base}/api/health`)).status, 200);
 

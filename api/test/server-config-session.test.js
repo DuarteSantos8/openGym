@@ -11,6 +11,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { boundPort } from './helpers.mjs';
 
 const API = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SECRET = crypto.randomBytes(32).toString('hex');
@@ -36,12 +37,9 @@ async function startServer(t, env = {}) {
   });
   t.after(() => { child.kill('SIGKILL'); fs.rmSync(dataDir, { recursive: true, force: true }); });
   let log = '';
-  const port = await new Promise((resolve, reject) => {
-    const give = setTimeout(() => reject(new Error(`server never announced a port:\n${log}`)), 20000);
-    child.stdout.on('data', d => { log += d; const m = /gym-api on :(\d+)/.exec(log); if (m) { clearTimeout(give); resolve(+m[1]); } });
-    child.stderr.on('data', d => { log += d; });
-    child.on('exit', c => { clearTimeout(give); reject(new Error(`server exited (${c}):\n${log}`)); });
-  });
+  child.stdout.on('data', d => { log += d; });
+  child.stderr.on('data', d => { log += d; });
+  const port = await boundPort(child, () => log);
   return { api: `http://127.0.0.1:${port}`, dataDir };
 }
 
