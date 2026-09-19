@@ -1104,6 +1104,26 @@ describe('workout list view', () => {
     expect(container.querySelector('[data-testid="workout-swipe-surface"]')).toBeTruthy()
     expect(container.querySelector('[data-testid="workout-list"]')).toBeNull()
   })
+
+  // #224: switching to list view mid-workout used to always render scrolled to the top,
+  // so checking the next/previous exercise from deep into a session meant scrolling back
+  // down past everything already logged.
+  it('scrolls to the current exercise when switching into list view mid-workout', async () => {
+    await mount([
+      exercise('plain-bench', [true]),
+      exercise('plain-row', [true]),
+      exercise('plain-squat', [false]),
+    ], 2, { workoutView: 'cards', active: { workoutView: 'cards' } })
+
+    mocks.scrollCalls.length = 0
+    mocks.S.active.workoutView = 'list'
+    await rerender()
+
+    const scrolled = units().find(u => mocks.scrollCalls.some(c => c.node === u))
+    expect(scrolled).toBeTruthy()
+    expect(scrolled.dataset.exidx).toBe('2')
+    expect(scrolled.textContent).toContain('Current')
+  })
 })
 
 describe('workout compact view', () => {
