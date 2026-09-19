@@ -56,20 +56,53 @@ export function equipmentOf(list) {
   return Object.keys(c).sort((a, b) => c[b] - c[a] || (a < b ? -1 : 1))
 }
 
-// Custom (user-created) exercises live in synced state S.customEx (issue #11) and are
-// merged into the id index here so every EXIDX[id] lookup keeps working unchanged.
+// The built-in catalogue overlaid with user overrides (renamed/edited fields) — CATALOGUE/EXDB
+// stay pristine (export/print/import keep reading them untouched), while everything that lists
+// or looks up an exercise resolves through this so an edit shows up everywhere at once.
+// `_ov` carries the raw override object alongside the merged fields — it's the marker i18n-core
+// needs to tell "this field is the user's deliberate edit" apart from "this field is just the
+// pristine catalogue's own (always-present, English) value", since both look identical once
+// merged onto the exercise object (see instrFor/exerciseNameFor).
+export const effectiveCatalogue = st => CATALOGUE.map(e => {
+  const ov = st?.exOverrides?.[e.id]
+  return ov ? { ...e, ...ov, _ov: ov } : e
+})
+export const isHidden = (id, st) => (st?.deletedEx || []).includes(id)
+export const allows = (ex, st) => !isHidden(ex.id, st)
+// Full searchable catalogue — customs first so your own exercises are easy to find; hidden
+// built-ins are dropped everywhere (library, pickers, search) so there's one place that decides
+// what's visible, not one gate per screen.
+export const allExercises = st => [...(st.customEx || []), ...effectiveCatalogue(st).filter(ex => allows(ex, st))]
+
+// Custom (user-created) exercises and built-in overrides/hides both live in synced state (issue
+// #11, exercise parity) and are folded into the id index here so every EXIDX[id] lookup keeps
+// resolving to the effective exercise. Replaces the old customEx-only registerCustom: called
+// with the whole state object after every persisted, initialized, or restored S so overrides and
+// hidden ids converge into the index immediately.
 let customIds = []
-export function registerCustom(list) {
-  customIds.forEach(id => {
-    delete EXIDX[id]
-    const builtIn = CATALOGUE.find(ex => ex.id === id)
-    if (builtIn) EXIDX[id] = builtIn
-  })
-  customIds = (list || []).map(e => e.id)
-  ;(list || []).forEach(e => { EXIDX[e.id] = e })
+export function registerExerciseState(st) {
+  // Drop ids from a custom exercise that was renamed/removed since the last call, then reset
+  // every built-in id back to pristine CATALOGUE and clear hidden ids entirely, so a removed
+  // override or restored hide converges even if this call never touched that id before.
+  customIds.forEach(id => { delete EXIDX[id] })
+  CATALOGUE.forEach(e => { EXIDX[e.id] = e })
+  // Hidden built-ins (deletedEx) are deliberately NOT removed from EXIDX: hiding only affects
+  // library/picker/search listing (decided solely by allExercises' allows() filter below, which
+  // never consults EXIDX membership) — historical workouts that logged a since-hidden exercise
+  // still need EXIDX[id] to resolve to the real exercise for name/type/recovery/stats lookups.
+  // Overlay overrides on the (still pristine-keyed) built-ins left standing. A custom exercise
+  // is applied after, last write wins, so a custom id that happens to collide with a built-in
+  // id (only ever done in tests exercising this precedence) still takes over the slot.
+  effectiveCatalogue(st || {}).forEach(e => { if (EXIDX[e.id] !== undefined) EXIDX[e.id] = e })
+  const customList = st?.customEx || []
+  customIds = customList.map(e => e.id)
+  customList.forEach(e => { EXIDX[e.id] = e })
 }
-// Full searchable catalogue — customs first so your own exercises are easy to find.
-export const allExercises = st => [...(st.customEx || []), ...CATALOGUE]
+
+// Back-compat shim for existing test suites written against the old customEx-only API
+// (registerCustom(list)) — not part of this task's interface, kept so unrelated specs that
+// stub a custom exercise directly don't need touching.
+export const registerCustom = list => registerExerciseState({ customEx: list })
 
 function searchableText(value) {
   if (Array.isArray(value)) return value.map(searchableText).join(' ')
@@ -97,7 +130,7 @@ export function searchScore(exercise, query) {
   const needle = searchableText(query).toLowerCase().trim()
   if (!needle) return 1
   const source = exercise && typeof exercise === 'object' ? exercise : {}
-  const fields = [['n', 100], ['tg', 40], ['eq', 40], ['sm', 30], ['muscleGroups', 30], ['primaries', 30], ['secondaries', 30], ['desc', 10], ['cues', 10]]
+  const fields = [['n', 100], ['tg', 40], ['eq', 40], ['sm', 30], ['muscleGroups', 30], ['primaries', 30], ['secondaries', 30], ['desc', 10], ['cues', 10], ['st', 20]]
   // Token-level matching: every query word must match somewhere (any order), so
   // "press bench" finds "Bench Press". The score sums each token's best hit.
   const tokens = needle.split(/[^a-z0-9]+/).filter(Boolean)
@@ -132,8 +165,11 @@ export function matchesExerciseSearch(exercise, query) {
 const ENV = import.meta.env || {}
 const IMG_BASE = ENV.VITE_IMG_BASE || 'img/'
 const GIF_BASE = ENV.VITE_GIF_BASE || 'gif/'
-export const imgSrc = ex => IMG_BASE + ex.img
-export const gifSrc = ex => GIF_BASE + ex.gif
+// Custom exercises (and built-in overrides) may hold a full URL instead of a dataset-relative
+// filename — pass those through unchanged, otherwise prefix with the existing base as before.
+const isAbsoluteUrl = s => /^https?:\/\//.test(s || '')
+export const imgSrc = ex => isAbsoluteUrl(ex?.img) ? ex.img : IMG_BASE + ex?.img
+export const gifSrc = ex => isAbsoluteUrl(ex?.gif) ? ex.gif : GIF_BASE + ex?.gif
 
 // Cardio exercises log time + speed instead of weight × reps.
 export const isCardio = idOrEx => (typeof idOrEx === 'string' ? EXIDX[idOrEx] : idOrEx)?.bp === 'cardio'
@@ -153,7 +189,11 @@ export const isBodyweightEq = idOrEx =>
 // a custom exercise deleted on another device before the sync arrived — still has to
 // render. A placeholder keeps it visible (and removable) instead of taking the whole view
 // down on the first `ex.n`.
-export const exOr = id => EXIDX[id] ||
+// A hidden built-in is deliberately absent from EXIDX (registerExerciseState drops every
+// `deletedEx` id so it disappears from the library/pickers/search), but its pristine row is
+// still sitting in CATALOGUE untouched — historical workouts that logged it should keep
+// showing its real name, not fall all the way through to the placeholder.
+export const exOr = id => EXIDX[id] || CATALOGUE.find(e => e.id === id) ||
   { id, n: t('Unknown exercise'), bp: '', tg: '', eq: '', sm: [], st: [], missing: true }
 
 // Normalizes text by lowercasing and stripping diacritics/accents (e.g. "elevação" -> "elevacao")
@@ -185,7 +225,8 @@ function corpusOf(e) {
     e?.eq || '', t(e?.eq || ''),
     e?.bp || '', t(e?.bp || ''),
     ...sm, ...sm.map(m => t(m)),
-    e?.desc || ''
+    e?.desc || '',
+    Array.isArray(e?.st) ? e.st.join(' ') : ''
   ].join(' '))
   corpusCache.set(e, { v, s })
   return s

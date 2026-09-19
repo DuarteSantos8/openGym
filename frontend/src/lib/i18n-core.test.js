@@ -1,9 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import {
   LANGS, INSTR_LANGS, EXERCISE_NAME_LANGS, DATE_LOCALES, DERIVED_LOCALES,
-  baseLang, derivePack, dateLocale, getLang, t, _setLangState
+  baseLang, derivePack, dateLocale, getLang, t, _setLangState, instrFor
 } from './i18n-core.js'
 import de from '../locales/de.js'
+import itInstr from '../instr/it.js'
+import { EXDB, effectiveCatalogue } from './exercises.js'
 
 describe('baseLang', () => {
   it('maps a derived locale to the language whose packs it loads', () => {
@@ -97,5 +99,27 @@ describe('de-CH as a selectable language', () => {
     // must never be generated from the Swiss one.
     expect(DERIVED_LOCALES['de-CH'].base).toBe('de')
     expect(DERIVED_LOCALES.de).toBeUndefined()
+  })
+})
+
+describe('instrFor with a built-in override', () => {
+  it('lets a user\'s edited steps win over the generic Italian instruction pack', () => {
+    const id = '1000' // has a real Italian entry in ../instr/it.js
+    expect(itInstr[id]).toBeTruthy()
+    _setLangState('it', {}, itInstr, null)
+    try {
+      const pristine = EXDB.find(e => e.id === id)
+      // Unmodified: the pack still drives the UI for the ~1300 exercises nobody has touched.
+      expect(instrFor(pristine)).toEqual(itInstr[id])
+
+      // Overridden: the user's own edit is more specific/intentional than the generic pack.
+      const overriddenSteps = ['My own custom first step.']
+      const resolved = effectiveCatalogue({ exOverrides: { [id]: { st: overriddenSteps } } })
+        .find(e => e.id === id)
+      expect(instrFor(resolved)).toEqual(overriddenSteps)
+      expect(instrFor(resolved)).not.toEqual(itInstr[id])
+    } finally {
+      _setLangState('en', {}, null, null)
+    }
   })
 })
