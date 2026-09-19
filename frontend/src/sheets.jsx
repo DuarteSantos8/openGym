@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
-import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, smOf, matchExercise, exOr } from './lib/exercises.js'
+import { EXDB, EXIDX, CATALOGUE, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, smOf, matchExercise, exOr } from './lib/exercises.js'
 import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile } from './lib/equipment.js'
 import { fmtDate, fmtNum, capWords, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, DAYN, DAYS, weekOrder, weekStartOf, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
 import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutVolume, setsDone, setsDoneActive, setUnitsTotal, lastBW, supersetUnits, unitOf, setLabel, defaultConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX } from './lib/history.js'
@@ -662,9 +662,12 @@ function ExerciseDetail({ ex, close }) {
     {best > 0 && <div className="small row" style={{ marginBottom: 6, gap: 5 }}><Icon name="trophy" style={{ fontSize: 14, color: 'var(--yellow)' }} />{t('Best:')} <b className="accent" style={{ whiteSpace: 'nowrap' }}>{fmtNum(best)} {st.unit}</b>{last ? ` · ${t('last')} ${fmtDate(last.d)}: ${last.sets.map(s => setLabel(ex.id, s, last.target)).join(', ')}` : ''}</div>}
     <Button variant="primary" icon="plus" style={{ margin: '10px 0 4px' }} onClick={() => addToRoutineSheet(ex)}>{t('Add to my plan')}</Button>
     {last && <Button icon="history" style={{ marginTop: 4 }} onClick={() => exerciseHistorySheet(ex.id)}>{t('History')}</Button>}
-    {ex.custom && <div className="row" style={{ gap: 8, marginTop: 8 }}>
+    {/* Workout.jsx's "Details" menu item passes exOr(entry.id), which resolves to the
+        { missing: true } placeholder for a logged id no longer in the dataset — same
+        unresolvable-id exposure as ExConfig below, guarded the same way. */}
+    {!ex.missing && <div className="row" style={{ gap: 8, marginTop: 8 }}>
       <Button icon="pencil" style={{ flex: 1 }} onClick={() => { close(); customExSheet(ex) }}>{t('Edit')}</Button>
-      <Button variant="danger" icon="trash" style={{ flex: 1 }} onClick={() => deleteCustomEx(ex, close)}>{t('Delete')}</Button>
+      <Button variant="danger" icon="trash" style={{ flex: 1 }} onClick={() => deleteCustomEx(ex, close)}>{ex.custom ? t('Delete') : t('Hide')}</Button>
     </div>}
     {usesBar(ex) && <>
       <h4 className="sec">{t('Bar weight')}</h4>
@@ -759,61 +762,151 @@ function AddToRoutine({ ex, close }) {
 }
 export const addToRoutineSheet = ex => ui().openSheet(close => <AddToRoutine ex={ex} close={close} />)
 
-/* ============================ custom exercises (issue #11) ============================ */
+/* ============================ custom exercises (issue #11, #199) ============================ */
 // Name + body part is all it takes — the exercise then behaves like any built-in one
-// (planning, logging, PRs, stats), just without an animation.
+// (planning, logging, PRs, stats), just without an animation. This same form edits a built-in
+// too: its changes land in `exOverrides[id]` instead of `customEx`, and only the fields that
+// actually differ from the pristine catalogue row are kept, so an unmodified save leaves no
+// footprint (issue #199, exercise parity).
+const derivePrimaries = ex => {
+  if (ex && Array.isArray(ex.primaries) && ex.primaries.length) return [...ex.primaries]
+  if (ex?.bp === 'cardio') return ['cardiovascular system']
+  const norm = hasExplicitMuscleMetadata(ex || {}) ? normalizeMuscleGroups(ex || {}) : []
+  return norm.length ? [norm[0]] : []
+}
+const deriveSecondaries = ex => {
+  if (ex && Array.isArray(ex.primaries) && ex.primaries.length) return [...(ex.secondaries || [])]
+  const norm = hasExplicitMuscleMetadata(ex || {}) ? normalizeMuscleGroups(ex || {}) : []
+  return norm.slice(1)
+}
+// Only a valid http(s) URL is ever stored — a bare dataset filename still resolves through the
+// configured media base (imgSrc/gifSrc), so there is nothing to reimplement here.
+const validMedia = (value, key) => /^https?:\/\//.test(value || '') ? { [key]: value } : {}
+const sameField = (a, b) => Array.isArray(a) || Array.isArray(b) ? JSON.stringify(a || []) === JSON.stringify(b || []) : (a || '') === (b || '')
+// Per-field "revert to catalogue value" control for an overridden built-in — only rendered when
+// that field's current form value actually differs from its pristine one, so an untouched field
+// never shows a reset button.
+const ResetField = ({ show, onClick }) => !show ? null :
+  <button type="button" className="iconbtn" aria-label={t('Reset to default')} onClick={onClick}><Icon name="reset" /></button>
+
 function CustomExForm({ existing, prefill, onDone, close }) {
   const nameRef = useRef(null)
   const onNameFocus = useSheetKeyboard(nameRef)
+  const isBuiltin = !!existing && !existing.custom
+  // Hoisted once so both the save-time diff and the per-field "reset to default" buttons below
+  // compare against the exact same pristine values.
+  const pristine = useMemo(() => isBuiltin ? (CATALOGUE.find(e => e.id === existing.id) || {}) : null, [isBuiltin, existing])
+  const pristinePrim = useMemo(() => isBuiltin ? derivePrimaries(pristine) : [], [isBuiltin, pristine])
+  const pristineSec = useMemo(() => isBuiltin ? deriveSecondaries(pristine) : [], [isBuiltin, pristine])
   const [n, setN] = useState(existing ? existing.n : (prefill || ''))
   const [bp, setBp] = useState(existing ? existing.bp : '')
   const [eq, setEq] = useState(existing ? (existing.eq || '') : '')
   const [desc, setDesc] = useState(existing ? (existing.desc || '') : '')
-  const [primaries, setPrimaries] = useState(() => {
-    if (existing && Array.isArray(existing.primaries) && existing.primaries.length) return [...existing.primaries]
-    if (existing?.bp === 'cardio') return ['cardiovascular system']
-    const norm = hasExplicitMuscleMetadata(existing || {}) ? normalizeMuscleGroups(existing || {}) : []
-    return norm.length ? [norm[0]] : []
-  })
-  const [secondaries, setSecondaries] = useState(() => {
-    if (existing && Array.isArray(existing.primaries) && existing.primaries.length) return [...(existing.secondaries || [])]
-    const norm = hasExplicitMuscleMetadata(existing || {}) ? normalizeMuscleGroups(existing || {}) : []
-    return norm.slice(1)
+  const [primaries, setPrimaries] = useState(() => derivePrimaries(existing))
+  const [secondaries, setSecondaries] = useState(() => deriveSecondaries(existing))
+  // A built-in's own step text is not an override until you actually type one — the editor
+  // starts blank rather than pre-loading (and inviting a no-op re-save of) the dataset default.
+  const [steps, setSteps] = useState(() => isBuiltin
+    ? [...((S().exOverrides || {})[existing.id]?.st || [])]
+    : [...(existing?.st || [])])
+  const [mediaType, setMediaType] = useState(() => /^https?:\/\//.test(existing?.gif || '') ? 'gif' : 'img')
+  const [mediaUrl, setMediaUrl] = useState(() => {
+    if (/^https?:\/\//.test(existing?.gif || '')) return existing.gif
+    if (/^https?:\/\//.test(existing?.img || '')) return existing.img
+    return ''
   })
   const togglePrimary = value => setPrimaries(current => current.includes(value) ? current.filter(m => m !== value) : [...current, value])
   const toggleSecondary = value => setSecondaries(current => current.includes(value) ? current.filter(m => m !== value) : [...current, value])
+  const addStep = () => setSteps(s => [...s, ''])
+  const editStep = (i, v) => setSteps(s => s.map((x, idx) => idx === i ? v : x))
+  const removeStep = i => setSteps(s => s.filter((_, idx) => idx !== i))
+  const moveStep = (i, dir) => setSteps(s => {
+    const j = i + dir
+    if (j < 0 || j >= s.length) return s
+    const next = [...s]
+    ;[next[i], next[j]] = [next[j], next[i]]
+    return next
+  })
+  const cleanSteps = steps.map(s => s.trim()).filter(Boolean)
   const save = () => {
     const name = n.trim()
     if (!name) { toast(t('Give it a name')); return }
     if (!bp) { toast(t('Pick a body part')); return }
     if (!eq) { toast(t('Pick equipment')); return }
-    const dup = allExercises(S()).find(e => e.n.toLowerCase() === name.toLowerCase() && e.id !== (existing || {}).id)
+    const id = existing ? existing.id : 'c' + uid()
+    // The catalogue itself has genuine duplicate names (e.g. two "lever chest press" entries).
+    // Customs must stay unique, but a built-in edit that leaves the name untouched — a pure
+    // steps/media fix — must not trip on a pre-existing collision that has nothing to do with
+    // this save.
+    const dup = (!isBuiltin || name.toLowerCase() !== (pristine.n || '').toLowerCase())
+      ? allExercises(S()).find(e => e.n.toLowerCase() === name.toLowerCase() && e.id !== id)
+      : null
     if (dup) { toast(t('“{0}” already exists', dup.n)); return }
     const d = desc.trim().slice(0, 1000)
     const prim = bp === 'cardio' ? ['cardiovascular system'] : [...primaries]
     const sm = secondaries.filter(m => !prim.includes(m))
     const groups = [...prim, ...sm]
-    let id = existing && existing.id
-    if (existing) update(s => { const c = (s.customEx || []).find(x => x.id === id); if (c) {
-      c.n = name; c.bp = bp; c.desc = d; c.tg = prim[0] || ''; c.sm = sm; c.muscleGroups = groups; c.primaries = prim; c.secondaries = sm; c.eq = eq
-    } })
-    else {
-      id = 'c' + uid()
-      update(s => { (s.customEx = s.customEx || []).push({ id, n: name, bp, desc: d, tg: prim[0] || '', sm, muscleGroups: groups, primaries: prim, secondaries: sm, eq, custom: true }) })
+    const imgTyped = mediaType === 'img' ? validMedia(mediaUrl.trim(), 'img') : {}
+    const gifTyped = mediaType === 'gif' ? validMedia(mediaUrl.trim(), 'gif') : {}
+
+    if (isBuiltin) {
+      const pristineSm = pristineSec.filter(m => !pristinePrim.includes(m))
+      const pristineFields = {
+        n: pristine.n, bp: pristine.bp, eq: pristine.eq, tg: pristinePrim[0] || '', sm: pristineSm,
+        muscleGroups: [...pristinePrim, ...pristineSm], primaries: pristinePrim, secondaries: pristineSm,
+        desc: pristine.desc, img: pristine.img, gif: pristine.gif,
+      }
+      const candidate = {
+        n: name, bp, eq, tg: prim[0] || '', sm, muscleGroups: groups, primaries: prim, secondaries: sm, desc: d,
+        img: imgTyped.img !== undefined ? imgTyped.img : pristine.img,
+        gif: gifTyped.gif !== undefined ? gifTyped.gif : pristine.gif,
+      }
+      update(s => {
+        const overrides = {}
+        Object.keys(candidate).forEach(key => { if (!sameField(candidate[key], pristineFields[key])) overrides[key] = candidate[key] })
+        // Steps only ever register as an override once you have actually typed one — an empty
+        // editor must never blank out a built-in's real instructions.
+        if (cleanSteps.length && !sameField(cleanSteps, pristine.st)) overrides.st = cleanSteps
+        s.exOverrides = s.exOverrides || {}
+        if (Object.keys(overrides).length) s.exOverrides[id] = overrides
+        else delete s.exOverrides[id]
+      })
+    } else if (existing) {
+      update(s => {
+        const c = (s.customEx || []).find(x => x.id === id)
+        if (c) {
+          c.n = name; c.bp = bp; c.desc = d; c.tg = prim[0] || ''; c.sm = sm; c.muscleGroups = groups
+          c.primaries = prim; c.secondaries = sm; c.eq = eq; c.st = cleanSteps
+          if (imgTyped.img !== undefined) c.img = imgTyped.img; else delete c.img
+          if (gifTyped.gif !== undefined) c.gif = gifTyped.gif; else delete c.gif
+        }
+      })
+    } else {
+      update(s => { (s.customEx = s.customEx || []).push({
+        id, n: name, bp, desc: d, tg: prim[0] || '', sm, muscleGroups: groups, primaries: prim, secondaries: sm, eq,
+        custom: true, st: cleanSteps, ...imgTyped, ...gifTyped,
+      }) })
     }
     close()
     toast(existing ? t('Saved') : t('“{0}” created', name))
     onDone && onDone(EXIDX[id])
   }
   return <>
-    <h3>{existing ? t('Edit custom exercise') : t('Create your own exercise')}</h3>
-    <div className="muted small" style={{ marginBottom: 12 }}>{t('Name it and pick a body part — it behaves like any other exercise, just without an animation.')}</div>
-    <input ref={nameRef} className="input" placeholder={t('Exercise name')} value={n} onFocus={onNameFocus} onChange={e => setN(e.target.value)} />
+    <h3>{!existing ? t('Create your own exercise') : isBuiltin ? t('Edit exercise') : t('Edit custom exercise')}</h3>
+    <div className="muted small" style={{ marginBottom: 12 }}>{isBuiltin
+      ? t('Changes are kept as your own overrides — the rest of your library sees them everywhere this exercise appears.')
+      : t('Name it and pick a body part — it behaves like any other exercise, just without an animation.')}</div>
+    <div className="row" style={{ gap: 6, alignItems: 'center' }}>
+      <input ref={nameRef} className="input grow" placeholder={t('Exercise name')} value={n} onFocus={onNameFocus} onChange={e => setN(e.target.value)} />
+      <ResetField show={isBuiltin && n !== pristine.n} onClick={() => setN(pristine.n)} />
+    </div>
     <div className="chips" style={{ margin: '12px 0' }}>
       {BODYPARTS.map(b => <button key={b} className={'chip' + (bp === b ? ' on' : '')} onClick={() => setBp(b)}>{t(b)}</button>)}
+      <ResetField show={isBuiltin && bp !== pristine.bp} onClick={() => setBp(pristine.bp)} />
     </div>
     <div className="chips" style={{ margin: '12px 0' }}>
       {ALL_EQUIPMENT.map(k => (<button key={k} className={'chip' + (eq === k ? ' on' : '')} onClick={() => setEq(k)}>{t(k)}</button>))}
+      <ResetField show={isBuiltin && eq !== pristine.eq} onClick={() => setEq(pristine.eq)} />
     </div>
     {bp && <>
       {bp !== 'cardio' && <MultiSelectRow title={t('Primary muscle groups')} sheetTitle={t('Primary muscle groups')}
@@ -825,38 +918,76 @@ function CustomExForm({ existing, prefill, onDone, close }) {
         values={secondaries}
         options={MUSCLES.filter(m => !primaries.includes(m)).map(m => ({ value: m, label: t(MUSCLE_NAME[m]) }))}
         onToggle={toggleSecondary} noneLabel={t('No explicit muscle group')} doneLabel={t('Done')} />
+      <ResetField show={isBuiltin && (!sameField(primaries, pristinePrim) || !sameField(secondaries, pristineSec))}
+        onClick={() => { setPrimaries(pristinePrim); setSecondaries(pristineSec) }} />
     </>}
     {bp === 'cardio' && <div className="small dim row" style={{ marginBottom: 10, gap: 5 }}><Icon name="figureRun" style={{ fontSize: 13 }} />{t('Cardio exercises log time + speed instead of weight × reps.')}</div>}
-    <textarea className="input" rows={4} maxLength={1000} placeholder={t('Description (optional) — setup, cues, anything you want to remember')}
-      value={desc} onChange={e => setDesc(e.target.value)} />
-    <div style={{ height: 14 }} />
+    <div className="row" style={{ gap: 6, alignItems: 'flex-start' }}>
+      <textarea className="input grow" rows={4} maxLength={1000} placeholder={t('Description (optional) — setup, cues, anything you want to remember')}
+        value={desc} onChange={e => setDesc(e.target.value)} />
+      <ResetField show={isBuiltin && desc !== (pristine.desc || '')} onClick={() => setDesc(pristine.desc || '')} />
+    </div>
+    <div className="row" style={{ alignItems: 'center', gap: 6, marginTop: 14 }}>
+      <h4 className="sec" style={{ margin: 0 }}>{t('How to')}</h4>
+      <ResetField show={isBuiltin && steps.length > 0} onClick={() => setSteps([])} />
+    </div>
+    <div className="list" style={{ marginBottom: 8 }}>
+      {steps.map((s, i) => <div key={i} className="item" style={{ gap: 6 }}>
+        <span className="muted small" style={{ minWidth: 16 }}>{i + 1}.</span>
+        <input className="input grow" aria-label={t('Step {0}', i + 1)} value={s} onChange={e => editStep(i, e.target.value)} />
+        <button className="iconbtn" aria-label={t('Move step up')} disabled={i === 0} onClick={() => moveStep(i, -1)}><Icon name="arrowUp" /></button>
+        <button className="iconbtn" aria-label={t('Move step down')} disabled={i === steps.length - 1} onClick={() => moveStep(i, 1)}><Icon name="arrowDown" /></button>
+        <button className="iconbtn" aria-label={t('Remove step')} onClick={() => removeStep(i)}><Icon name="xmark" /></button>
+      </div>)}
+    </div>
+    <Button icon="plus" onClick={addStep} style={{ marginBottom: 14 }}>{t('Add step')}</Button>
+    <div className="row" style={{ gap: 8, margin: '4px 0 8px', alignItems: 'center' }}>
+      <button className={'chip' + (mediaType === 'img' ? ' on' : '')} onClick={() => setMediaType('img')}>{t('Image')}</button>
+      <button className={'chip' + (mediaType === 'gif' ? ' on' : '')} onClick={() => setMediaType('gif')}>{t('Animation')}</button>
+      <ResetField show={isBuiltin && mediaUrl.trim() !== ''} onClick={() => setMediaUrl('')} />
+    </div>
+    <input className="input" placeholder={t('Image/animation URL (optional, https://…)')}
+      value={mediaUrl} onChange={e => setMediaUrl(e.target.value)} style={{ marginBottom: 14 }} />
     <Button variant="primary" onClick={save}>{existing ? t('Save') : t('Create exercise')}</Button>
-    {existing && <><div style={{ height: 8 }} /><Button variant="danger" icon="trash" onClick={() => { close(); deleteCustomEx(existing) }}>{t('Delete exercise')}</Button></>}
+    {existing && <><div style={{ height: 8 }} /><Button variant="danger" icon="trash" onClick={() => { close(); deleteCustomEx(existing) }}>{isBuiltin ? t('Hide exercise') : t('Delete exercise')}</Button></>}
   </>
 }
 export const customExSheet = (existing, onDone, prefill) => ui().openSheet(close => <CustomExForm existing={existing} prefill={prefill} onDone={onDone} close={close} />)
 
+// The canonical safe-deletion flow for either exercise kind: a custom exercise leaves `customEx`
+// for good (its catalogue row would otherwise vanish entirely), while a built-in is only ever
+// hidden — its pristine row stays in EXDB/CATALOGUE, so no history snapshot is needed and
+// restoring it later is just removing the id from `deletedEx`. Both share the same active-workout
+// guard, routine/superset cleanup, exWeights and favourites cleanup.
 export function deleteCustomEx(ex, afterDelete) {
   if (S().active?.entries.some(e => e.id === ex.id)) { toast(t('Finish your current workout first')); return }
+  const isBuiltin = !ex.custom
   confirmSheet({
-    title: t('Delete “{0}”?', ex.n),
-    message: t('It will be removed from your routines. Already-logged workouts keep their sets.'),
-    confirmText: t('Delete'), danger: true,
+    title: isBuiltin ? t('Hide “{0}”?', ex.n) : t('Delete “{0}”?', ex.n),
+    message: isBuiltin
+      ? t('It will be hidden from your library, not permanently removed — you can restore it later.')
+      : t('It will be removed from your routines. Already-logged workouts keep their sets.'),
+    confirmText: isBuiltin ? t('Hide') : t('Delete'), danger: true,
     onConfirm: () => {
       update(s => {
-        // Keep display and muscle metadata in history before the custom catalogue row disappears.
-        const snapshot = exerciseMuscleSnapshot(ex)
-        s.workouts.forEach(w => w.entries.forEach(e => {
-          if (e.id !== ex.id) return
-          e.n = ex.n
-          if (!e.muscleSnapshot || !Object.keys(e.muscleSnapshot).length) e.muscleSnapshot = snapshot
-        }))
-        s.customEx = (s.customEx || []).filter(x => x.id !== ex.id)
+        if (isBuiltin) {
+          s.deletedEx = s.deletedEx || []
+          if (!s.deletedEx.includes(ex.id)) s.deletedEx.push(ex.id)
+        } else {
+          // Keep display and muscle metadata in history before the custom catalogue row disappears.
+          const snapshot = exerciseMuscleSnapshot(ex)
+          s.workouts.forEach(w => w.entries.forEach(e => {
+            if (e.id !== ex.id) return
+            e.n = ex.n
+            if (!e.muscleSnapshot || !Object.keys(e.muscleSnapshot).length) e.muscleSnapshot = snapshot
+          }))
+          s.customEx = (s.customEx || []).filter(x => x.id !== ex.id)
+        }
         s.routines.forEach(r => { r.ex = r.ex.filter(e => e.id !== ex.id); cleanupSg(r.ex) })
         delete s.exWeights[ex.id]
         s.favEx = (s.favEx || []).filter(id => id !== ex.id)
       })
-      toast(t('Exercise deleted'))
+      toast(isBuiltin ? t('Exercise hidden') : t('Exercise deleted'))
       afterDelete && afterDelete()
     }
   })
@@ -1369,7 +1500,11 @@ function ExConfig({ ex, existing, onSave, onDelete, close, routine, initial }) {
       placeholder={t('Note (optional) — loading cues, "bar only then +1 plate/side each set", anything worth remembering here')}
       value={c.note || ''} onChange={e => setC(x => ({ ...x, note: e.target.value }))} />
     <Button variant="primary" disabled={progressionStepInvalid} onClick={save}>{existing ? t('Save') : t('Add to routine')}</Button>
-    {ex.custom && <><div style={{ height: 8 }} /><Button icon="pencil" onClick={() => { close(); customExSheet(ex) }}>{t('Edit or delete this exercise')}</Button></>}
+    {/* An unresolvable id (RoutineEdit passes exOr(e.id) for a stale/foreign id) resolves to
+        the { missing: true } placeholder — CATALOGUE.find(id) can never find it, so a save
+        would write a permanent exOverrides[<unresolvable-id>] entry effectiveCatalogue can
+        never surface, and a hide would leave a meaningless stale row in deletedEx forever. */}
+    {!ex.missing && <><div style={{ height: 8 }} /><Button icon="pencil" onClick={() => { close(); customExSheet(ex) }}>{t('Edit or delete this exercise')}</Button></>}
     {onDelete && <><div style={{ height: 8 }} /><Button variant="danger" onClick={() => { close(); onDelete() }}>{t('Remove from routine')}</Button></>}
   </>
 }

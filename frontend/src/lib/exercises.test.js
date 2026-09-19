@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { matchExercise, normalizeStr } from './exercises.js'
+import { matchExercise, normalizeStr, EXDB, EXIDX, effectiveCatalogue, allExercises, imgSrc, gifSrc, registerExerciseState, exOr } from './exercises.js'
 import { _setLangState } from './i18n-core.js'
 
 describe('normalizeStr', () => {
@@ -117,5 +117,42 @@ describe('matchExercise', () => {
     _setLangState('en', null, null, null)
     expect(matchExercise(benchPress, 'supino')).toBe(false)
     expect(matchExercise(benchPress, 'bench')).toBe(true)
+  })
+})
+
+describe('exercise state resolution', () => {
+  it('overlays and hides built-ins without changing EXDB', () => {
+    const base = EXDB[0]
+    const st = { customEx: [], exOverrides: { [base.id]: { n: 'My press', st: ['Set up'] } }, deletedEx: [] }
+    expect(effectiveCatalogue(st).find(e => e.id === base.id)).toMatchObject({ n: 'My press', st: ['Set up'] })
+    expect(base.n).not.toBe('My press')
+    expect(allExercises({ ...st, deletedEx: [base.id] }).some(e => e.id === base.id)).toBe(false)
+  })
+
+  it('rebuilds EXIDX from resolved state and preserves absolute media URLs', () => {
+    const base = EXDB[0]
+    registerExerciseState({ customEx: [], exOverrides: { [base.id]: { n: 'Renamed' } }, deletedEx: [] })
+    expect(EXIDX[base.id].n).toBe('Renamed')
+    expect(imgSrc({ img: 'https://example.test/image.jpg' })).toBe('https://example.test/image.jpg')
+    expect(gifSrc({ gif: 'clip.gif' })).toContain('clip.gif')
+  })
+
+  // Hiding a built-in must only affect library/picker/search listing (allExercises' allows()
+  // filter) — it must NOT remove the id from EXIDX, or every historical/data lookup that reads
+  // EXIDX directly (history rows, PR banners, recovery, muscle balance, Stats...) would silently
+  // degrade for a past workout that logged the now-hidden exercise. exOr is kept exercised too
+  // as harmless defense-in-depth, but EXIDX itself must resolve the real (possibly overridden)
+  // exercise object.
+  it('keeps a hidden built-in resolvable in EXIDX with its real name, not removed', () => {
+    const base = EXDB[0]
+    registerExerciseState({ customEx: [], exOverrides: {}, deletedEx: [base.id] })
+    expect(EXIDX[base.id]).toBeDefined()
+    expect(EXIDX[base.id].n).toBe(base.n)
+    const resolved = exOr(base.id)
+    expect(resolved.n).toBe(base.n)
+    expect(resolved.n).not.toBe('Unknown exercise')
+    expect(resolved.missing).toBeUndefined()
+    // Restore so this test's global registerExerciseState call doesn't leak into others.
+    registerExerciseState({ customEx: [], exOverrides: {}, deletedEx: [] })
   })
 })
