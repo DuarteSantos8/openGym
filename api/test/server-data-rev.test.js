@@ -110,3 +110,35 @@ test('GET/PUT /api/data: revisions, conditional writes and the legacy overwrite'
   assert.equal(r.body.error, 'invalid state');
   assert.equal(onDisk()._rev, 4);
 });
+
+// `{}` keeps every rule this route has and still empties the profile: it is
+// an object, it is not an array, `workouts` and `routines` are absent (which is legal — a client
+// fills its own defaults), so the document on disk becomes `{"_rev":n+1}` with every routine,
+// workout and weigh-in gone, and the revision keeps counting so the next poll sees nothing wrong.
+// No shipped client sends it: the web and mobile clients push a state built on DEF, which always
+// carries its keys.
+test('PUT /api/data refuses an empty object, which would wipe the profile and keep counting', async t => {
+  const h = await startServer(t);
+  const uid = 'u_rev_1';
+  const put = async body => { const r = await fetch(`${h.api}/api/data`, { method: 'PUT', headers: headers(uid), body: JSON.stringify(body) }); return { status: r.status, body: await r.json() }; };
+  const rev = async () => (await fetch(`${h.api}/api/data/rev`, { headers: headers(uid) }).then(r => r.json())).rev;
+  const onDisk = () => JSON.parse(fs.readFileSync(path.join(h.dataDir, `state-${uid}.json`), 'utf8'));
+
+  assert.equal((await put({ state: { _ts: 100, workouts: [{ id: 'w1', d: '2026-09-01' }], routines: [] } })).status, 200);
+  assert.equal(await rev(), 1);
+
+  // `_rev` and `_ts` are this route's own bookkeeping — it stamps the one and echoes the other —
+  // so a document carrying nothing but those is the same empty push wearing a hat, and did the
+  // same damage: `{"_rev":5}` wrote `{"_rev":2}` over the profile.
+  for (const state of [{}, { _rev: 5 }, { _ts: Date.now() }, { _rev: 5, _ts: Date.now() }]) {
+    const r = await put({ state, baseRev: 1 });
+    assert.equal(r.status, 400, `state: ${JSON.stringify(state)}`);
+    assert.equal(r.body.error, 'state required');
+  }
+  assert.equal(await rev(), 1, 'nothing was written');
+  assert.deepEqual(onDisk().workouts.map(w => w.id), ['w1'], 'the profile is still there');
+
+  // …and a document that carries one real key alongside them is a profile, and goes through.
+  assert.equal((await put({ state: { _rev: 99, _ts: 1, routines: [] }, baseRev: 1 })).status, 200);
+  assert.equal(await rev(), 2);
+});

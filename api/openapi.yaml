@@ -560,10 +560,11 @@ paths:
                       - type: 'null'
         '400':
           description: >-
-            `state` missing or not an object, `state` an array, or `workouts`/`routines`
-            set to anything other than an array or null. Entries inside those two arrays
-            that are not objects (`null`, numbers, nested arrays) are dropped before the
-            write rather than refused, so a client with a damaged copy still syncs.
+            `state` missing or not an object, `state` an array or an object with nothing of
+            the profile in it (`_rev`/`_ts` do not count — both would empty the profile), or
+            `workouts`/`routines` set to anything other than an array or null. Entries inside
+            those two arrays that are not objects (`null`, numbers, nested arrays) are dropped
+            before the write rather than refused, so a client with a damaged copy still syncs.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }

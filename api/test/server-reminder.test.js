@@ -69,9 +69,11 @@ test('PUT /api/data refuses a state whose workouts or routines is not an array',
   }
   assert.equal(fs.existsSync(file), false, 'nothing landed on disk');
 
-  // the shapes real clients send still go through: arrays, the field left out, or null
+  // the shapes real clients send still go through: arrays, the field left out, or null.
+  // (Something of the profile has to be in there — a document that is only `_ts`/`_rev` is the
+  // empty push the route refuses, so the "left out" case carries a real key of its own.)
   assert.equal((await put({ _ts: 2, workouts: [], routines: [] })).status, 200);
-  assert.equal((await put({ _ts: 3 })).status, 200);
+  assert.equal((await put({ _ts: 3, unit: 'kg' })).status, 200);
   assert.equal((await put({ _ts: 4, workouts: null, routines: null })).status, 200);
   assert.equal(JSON.parse(fs.readFileSync(file, 'utf8'))._ts, 4);
 });
