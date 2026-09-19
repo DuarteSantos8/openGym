@@ -22,5 +22,8 @@ describe('gifSrc and VITE_CLIP_EXT', () => {
     expect(imgSrc(ex, 'male')).toBe('exercise-media/still/0025.webp')
     // a fork's GIF stays a GIF
     expect(gifSrc({ ...ex, gif: '0025.gif', fv: undefined }, 'male')).toBe('exercise-media/clip/0025.gif')
+    const edited = { gif: 'custom.mp4' }
+    expect(gifSrc({ ...ex, ...edited, _ov: edited }, 'female')).toBe('exercise-media/clip/custom.webp')
+    expect(gifSrc({ ...ex, gif: 'https://example.test/custom.mp4' }, 'female')).toBe('https://example.test/custom.mp4')
   })
 })
