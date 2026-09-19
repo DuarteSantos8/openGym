@@ -91,6 +91,59 @@ describe('sw.js install and activate', () => {
     expect(await globalThis.caches.keys()).toContain('opengym-rt-oldbuild')
   })
 
+  it('a chunk that will not cache fails the install, so the build on the device stays', async () => {
+    await loadSW()
+    const old = await previousBuild()
+    globalThis.fetch = async u => (String(u) === 'index.html'
+      ? { ok: true, status: 200, redirected: false, text: async () => shellHtml }
+      : { ok: false, status: 404 })
+
+    await expect(fire('install')).rejects.toThrow(/index-new\.js/)
+    expect(skipWaiting).toBe(0)
+    // The shell is written after its code, so a half-filled cache cannot read as this build.
+    expect((await globalThis.caches.open(CACHE)).keys()).not.toContain('index.html')
+
+    await fire('activate')
+    expect(await globalThis.caches.keys()).toContain('opengym-rt-oldbuild')
+    expect(await old.match('index.html')).toBeTruthy()
+  })
+
+  it('a chunk answered by a redirect to a login page fails the install too', async () => {
+    // An auth proxy in front answers every request with its login page — 200, and `cache.add`
+    // would have stored that HTML under the main bundle's URL.
+    await loadSW()
+    const old = await previousBuild()
+    globalThis.fetch = async u => (String(u) === 'index.html'
+      ? { ok: true, status: 200, redirected: false, text: async () => shellHtml }
+      : { ok: true, status: 200, redirected: true, text: async () => '<html>sign in</html>' })
+
+    await expect(fire('install')).rejects.toThrow(/index-new\.js.*redirected/)
+    expect(skipWaiting).toBe(0)
+    expect((await globalThis.caches.open(CACHE)).keys()).toEqual([])
+
+    await fire('activate')
+    expect(await globalThis.caches.keys()).toContain('opengym-rt-oldbuild')
+    expect(await old.match('index.html')).toBeTruthy()
+  })
+
+  it('an icon that will not cache is not worth failing an install over', async () => {
+    await loadSW()
+    await previousBuild()
+    const withIcon = '<html><head><script src="./assets/index-new.js"></script>'
+      + '<link rel="stylesheet" href="./assets/index-new.css"><link rel="icon" href="./icon-512.png"></head></html>'
+    globalThis.fetch = async u => (String(u) === 'index.html'
+      ? { ok: true, status: 200, redirected: false, text: async () => withIcon }
+      : String(u).endsWith('.png') ? { ok: false, status: 404 } : { ok: true, status: 200, clone: () => ({}) })
+
+    await fire('install')
+    expect(skipWaiting).toBe(1)
+    await fire('activate')
+
+    expect(await globalThis.caches.keys()).toEqual([CACHE])
+    const c = await globalThis.caches.open(CACHE)
+    expect(c.keys()).toEqual(expect.arrayContaining(['./assets/index-new.js', './assets/index-new.css', 'index.html']))
+  })
+
   it('an install that got the shell takes over and drops the previous build', async () => {
     await loadSW()
     await previousBuild()

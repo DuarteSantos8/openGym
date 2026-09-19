@@ -18,10 +18,29 @@ async function precache() {
   // on this device, and its cache, in place; a returned-quietly install activates and sweeps.
   if (!res.ok || res.redirected) throw new Error('precache: index.html ' + res.status + (res.redirected ? ' redirected' : ''))
   const html = await res.text()
+  const refs = [...new Set([...html.matchAll(/(?:src|href)="([^"]+)"/g)].map(m => m[1])
+    .filter(u => /\.(?:js|css|png|svg|webmanifest|json)(?:\?|$)/.test(u) && !/^(?:https?:)?\/\//.test(u)))]
+  // The scripts and the stylesheets ARE the app. Every sub-resource used to be best-effort, so an
+  // install that got index.html and lost one chunk to a flaky connection still activated, still
+  // swept the build this device came from, and the next offline open was a shell with no code:
+  // a blank page. A chunk that will not cache fails the install instead, which keeps the working
+  // build and its cache exactly where they are. Images, icons and the manifest stay best-effort —
+  // a missing icon is not a broken app.
+  const code = refs.filter(u => /\.(?:js|css)(?:\?|$)/.test(u))
+  // Fetched by hand rather than with `cache.add`, for the same reason index.html is: `add` takes
+  // a REDIRECT for an answer, and an auth proxy in front answers every request with its login
+  // page once the session there expires. A 200 of HTML stored under the main bundle's URL is
+  // worse than nothing cached at all —
+  // the install would report success and then sweep the build that still worked.
+  await Promise.all(code.map(async u => {
+    const r = await fetch(u, { cache: 'no-cache' }).catch(e => { throw new Error('precache: ' + u + ' — ' + (e?.message || e)) })
+    if (!r.ok || r.redirected) throw new Error('precache: ' + u + ' ' + r.status + (r.redirected ? ' redirected' : ''))
+    await c.put(u, r)
+  }))
+  await Promise.all(refs.filter(u => !code.includes(u)).map(u => c.add(u).catch(() => {})))
+  // The shell goes in last, so activate's guard — an index.html in THIS build's cache — means the
+  // whole shell is there rather than just its first file.
   await c.put('index.html', new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8' } }))
-  const refs = [...html.matchAll(/(?:src|href)="([^"]+)"/g)].map(m => m[1])
-    .filter(u => /\.(?:js|css|png|svg|webmanifest|json)(?:\?|$)/.test(u) && !/^(?:https?:)?\/\//.test(u))
-  await Promise.all([...new Set(refs)].map(u => c.add(u).catch(() => {})))
 }
 
 self.addEventListener('install', e => {
