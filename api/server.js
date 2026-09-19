@@ -317,16 +317,33 @@ const minutesLate = (time, now) => hhmmToMin(now.hhmm) - hhmmToMin(time);
 // The tick reads every subscribed user's state file every 10 s. Most of those files do not
 // change between ticks; a stat is far cheaper than a read and a parse of a state that can be
 // megabytes, and it keeps the tick short — a slow tick was one more way to miss the minute.
-// Nothing evicts by age or size, so this holds one parsed state per user who polls or gets a
-// reminder, for the life of the process (single-user deployment here; an upstream caveat).
-const stateCache = new Map(); // uid -> { mtimeMs, size, S }
+//
+// What it holds is a whole parsed state per user, and a state can be megabytes, so the two
+// bounds below are what keep it a cache rather than a leak on an instance with more than one
+// person on it: an entry nobody has touched for ten minutes is dropped, and the map never holds
+// more than STATE_CACHE_MAX users. Map iteration order is insertion order, so re-inserting on
+// every hit makes the first key the least recently hit one — which is the one to evict.
+const STATE_CACHE_MAX = 64;
+// Ten minutes: far longer than the gap between a client's polls (30 s) or the reminder tick's
+// (10 s), so nobody who is actually using the instance is ever evicted by age; the tests shorten
+// it, as they do REMINDER_TICK_MS.
+const STATE_CACHE_TTL_MS = Math.max(50, +(process.env.STATE_CACHE_TTL_MS || 600000) || 600000);
+const stateCache = new Map(); // uid -> { mtimeMs, size, hitAt, S }
 function readStateCached(uid) {
   let st;
   try { st = fs.statSync(stateFile(uid)); } catch { stateCache.delete(uid); return null; }
+  const now = Date.now();
+  for (const [k, v] of stateCache) if (now - v.hitAt > STATE_CACHE_TTL_MS) stateCache.delete(k);
   const hit = stateCache.get(uid);
-  if (hit && hit.mtimeMs === st.mtimeMs && hit.size === st.size) return hit.S;
+  stateCache.delete(uid);                       // re-inserted below, so the map stays in hit order
+  if (hit && hit.mtimeMs === st.mtimeMs && hit.size === st.size) {
+    hit.hitAt = now;
+    stateCache.set(uid, hit);
+    return hit.S;
+  }
   const S = readState(uid);
-  stateCache.set(uid, { mtimeMs: st.mtimeMs, size: st.size, S });
+  stateCache.set(uid, { mtimeMs: st.mtimeMs, size: st.size, hitAt: now, S });
+  while (stateCache.size > STATE_CACHE_MAX) stateCache.delete(stateCache.keys().next().value);
   return S;
 }
 setInterval(() => {
