@@ -1248,7 +1248,7 @@ coachJobs.setProposalHook((uid, pending) => {
 startCadence({ users: () => db.users, userNow });
 startWarmup();
 
-http.createServer(async (req, res) => {
+const server = http.createServer(async (req, res) => {
   // Same-origin (the deployed nginx-proxied web app) never triggers CORS, so this only matters
   // for the paired mobile app calling in from its own WebView origin. It carries no cookie
   // (auth is the Authorization header instead), so Allow-Credentials is deliberately never set —
@@ -1288,4 +1288,9 @@ http.createServer(async (req, res) => {
     console.error(key, e);
     if (!res.headersSent) json(res, 500, { error: 'server error' });
   }
-}).listen(PORT, () => console.log(`gym-api on :${PORT} (rpID=${RP_ID}, origin=${ORIGIN})`));
+});
+// The port is read back off the listener rather than echoed from PORT, so the line states the
+// port that was actually bound: with PORT=0 the OS picks one, and a caller that did not choose it
+// (the tests spawn the server that way, and so does anyone running two instances on one box) has
+// no other way to learn it.
+server.listen(PORT, () => console.log(`gym-api on :${server.address().port} (rpID=${RP_ID}, origin=${ORIGIN})`));
