@@ -553,6 +553,14 @@ function ActiveWorkout() {
       if (!refs.size) setRefs.current.delete(entry)
     }
   }
+  // One ref per rendered unit section in list/compact mode, keyed by the unit's first entry
+  // index (the same key `units` and `data-exidx` already use). Lets switching into the list
+  // scroll straight to wherever `cur` is, instead of always landing on the first section.
+  const sectionRefs = useRef(new Map())
+  const bindSectionRef = (exIdx, el) => {
+    if (el) sectionRefs.current.set(exIdx, el)
+    else sectionRefs.current.delete(exIdx)
+  }
   const swipe = useRef(null)
   const progressHighWater = useRef(A.entries.map(e => e.sets.filter(s => s.done).length))
   // The marks are index-keyed, and removing an exercise shifts every index above it down
@@ -578,6 +586,19 @@ function ActiveWorkout() {
     const el = (setIdx >= 0 && setRefs.current.get(entry)?.get(setIdx)) || exRefs.current.get(entry)
     if (el && typeof el.scrollIntoView === 'function') el.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }, [cur, isSuperset, listMode, A.entries.length])
+  // Switching into list/compact view (the header ⋯ menu, mid-workout) used to always render
+  // scrolled to the top, so checking the next or previous exercise from deep into a session
+  // meant scrolling back down past everything already done (#224). Land on the section for
+  // whichever exercise is current instead, the same one the "Current" tag marks.
+  useEffect(() => {
+    if (!listMode) return
+    const key = unitOf(units, cur)[0]
+    const el = sectionRefs.current.get(key)
+    if (el && typeof el.scrollIntoView === 'function') el.scrollIntoView({ block: 'center' })
+    // Only on entering list mode, not on every exercise switch within it — the "Set current"
+    // control is for browsing without being yanked back, per the list-view design above.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [listMode])
 
   const total = setUnitsTotal(A.entries)
   const done = setsDoneActive(A)
@@ -950,7 +971,7 @@ function ActiveWorkout() {
         {units.map((u, ui) => {
           const multi = u.length > 1
           const isCur = u.includes(cur)
-          return <section key={u.join('-')} className={'wl-unit' + (isCur ? ' cur' : '')} data-exidx={u[0]}>
+          return <section key={u.join('-')} ref={el => bindSectionRef(u[0], el)} className={'wl-unit' + (isCur ? ' cur' : '')} data-exidx={u[0]}>
             <div className="wl-hd">
               <span className="muted small">{multi ? t('Superset {0} / {1}', ui + 1, units.length) : t('Exercise {0} / {1}', ui + 1, units.length)}</span>
               {isCur
