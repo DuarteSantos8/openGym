@@ -1,10 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import {
   LANGS, INSTR_LANGS, EXERCISE_NAME_LANGS, DATE_LOCALES, DERIVED_LOCALES,
-  baseLang, derivePack, dateLocale, getLang, t, _setLangState, exerciseNameClass, exerciseNameFor, CASED_NAME_LANGS
+  baseLang, derivePack, dateLocale, getLang, t, _setLangState, exerciseNameClass, exerciseNameFor, CASED_NAME_LANGS, instrFor, instrTranslated, descFor, _setDetailsLoader, _setDetails
 } from './i18n-core.js'
-import { EXDB } from './exercises-data.js'
 import de from '../locales/de.js'
+import itInstr from '../instr/it.js'
+import { EXDB, effectiveCatalogue } from './exercises.js'
 
 describe('baseLang', () => {
   it('maps a derived locale to the language whose packs it loads', () => {
@@ -214,5 +215,62 @@ describe('English-name switches with every exercise-name pack', () => {
       expect(exerciseNameClass(ex)).toBe('capitalize')
     }
     _setLangState('en', {}, null, null)
+  })
+})
+
+describe('instrFor with a built-in override', () => {
+  it('lets a user\'s edited steps win over the generic Italian instruction pack', () => {
+    const id = '1000' // has a real Italian entry in ../instr/it.js
+    expect(itInstr[id]).toBeTruthy()
+    _setLangState('it', {}, itInstr, null)
+    try {
+      const pristine = EXDB.find(e => e.id === id)
+      // Unmodified: the pack still drives the UI for the ~1300 exercises nobody has touched.
+      expect(instrFor(pristine)).toEqual(itInstr[id])
+
+      // Overridden: the user's own edit is more specific/intentional than the generic pack.
+      const overriddenSteps = ['My own custom first step.']
+      const resolved = effectiveCatalogue({ exOverrides: { [id]: { st: overriddenSteps } } })
+        .find(e => e.id === id)
+      expect(instrFor(resolved)).toEqual(overriddenSteps)
+      expect(instrFor(resolved)).not.toEqual(itInstr[id])
+    } finally {
+      _setLangState('en', {}, null, null)
+    }
+  })
+
+  it('keeps deliberate empty steps while untouched exercises load their English fallback', () => {
+    let loads = 0
+    const ex = { id: 'lazy-override-test' }
+    _setLangState('it', {}, null, null)
+    _setDetailsLoader(() => { loads++ })
+    try {
+      const edited = { ...ex, _ov: { st: [] } }
+      expect(instrFor(edited)).toEqual([])
+      expect(instrTranslated(edited)).toBe(true)
+      expect(loads).toBe(0)
+      expect(instrFor(ex)).toEqual([])
+      expect(loads).toBe(1)
+      _setDetails({ [ex.id]: ['English fallback'] }, {}, null)
+      expect(instrFor(ex)).toEqual(['English fallback'])
+      expect(instrTranslated(ex)).toBe(false)
+      expect(instrFor(edited)).toEqual([])
+    } finally {
+      _setDetailsLoader(null)
+      _setLangState('en', {}, null, null)
+    }
+  })
+
+  it('keeps an edited or cleared description ahead of lazy description packs', () => {
+    const id = 'description-override-test'
+    _setLangState('it', {}, null, null)
+    _setDetails({}, { [id]: 'English description' }, { [id]: 'Italian description' })
+    try {
+      expect(descFor({ id })).toBe('Italian description')
+      expect(descFor({ id, desc: 'My description', _ov: { desc: 'My description' } })).toBe('My description')
+      expect(descFor({ id, desc: '', _ov: { desc: '' } })).toBe('')
+    } finally {
+      _setLangState('en', {}, null, null)
+    }
   })
 })
