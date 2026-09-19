@@ -717,8 +717,24 @@ const routes = {
   // single flag every piece of Coach UI hangs off, so an unconfigured instance is byte-for-byte
   // the app it was before the feature existed.
   'GET /api/config': async (req, res) => {
-    const coach = coachConfig.publicConfig();
-    json(res, 200, { invite_only: INVITE_ONLY, allow_guest: ALLOW_GUEST, ...(coach ? { coach } : {}) });
+    // The Coach block names the provider this instance is wired to — the same fact
+    // /api/coach/disclosure refuses to hand out without a session, and for the same reason: on an
+    // invite-only instance, which model this box talks to is nobody's business who has not been
+    // let in. The two flags above it are what the login screen and the pre-login boot read
+    // (invite code field, "continue without account"), so those stay public.
+    //
+    // Every Coach consumer on the client side already requires a signed-in user before it looks
+    // at this block (lib/coach.js coachAvailable), so nothing that could render loses anything.
+    //
+    // A signed-in caller always gets the key, even on an instance with no Coach, where it is
+    // null. The client caches this answer for the page load and has to know whether the copy it
+    // holds was made for a session: without the key it cannot tell "no Coach here" from "you
+    // were not signed in when you asked", and would re-ask on every sign-in on every instance
+    // that has no Coach. The key's absence is that answer.
+    json(res, 200, {
+      invite_only: INVITE_ONLY, allow_guest: ALLOW_GUEST,
+      ...(readSession(req) ? { coach: coachConfig.publicConfig() } : {})
+    });
   },
 
   'GET /api/me': async (req, res) => {

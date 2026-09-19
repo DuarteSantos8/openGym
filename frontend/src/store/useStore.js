@@ -112,6 +112,7 @@ export const useStore = create((set, get) => {
   let pushing = null       // the PUT in flight, so a second push waits for it instead of racing it
   let pushAgain = false    // a push asked for while one was in flight — run once more after it
   let pulling = null       // the GET in flight, so two resume signals make one request
+  let configFetch = null   // the /api/config in flight, so two callers make one request
   let pushPending = false  // a change made before boot's pull — pushed once boot is through
   let forceNext = false    // the next push replaces the server copy outright (import, reset)
   let lastCheck = 0
@@ -360,9 +361,16 @@ export const useStore = create((set, get) => {
     },
     // Always asks. The cached copy is right for one boot, but an admin can switch the Coach on
     // while a paired phone sits on the setup screen — that screen wants today's answer.
+    // Two callers that ask at once get one request: signing in re-asks (setUser) and the pairing
+    // flow awaits a refresh of its own immediately after, and there is one answer to have.
     async refreshConfig() {
-      try { const c = await api('/api/config'); set({ config: c }); return c }
-      catch { return null }
+      if (configFetch) return configFetch
+      configFetch = (async () => {
+        try { const c = await api('/api/config'); set({ config: c }); return c }
+        catch { return null }
+        finally { configFetch = null }
+      })()
+      return configFetch
     },
 
     setUser(u) {
@@ -381,6 +389,13 @@ export const useStore = create((set, get) => {
         }
         localStorage.setItem('gym_owner', u.id)
         localStorage.setItem('gym_user', JSON.stringify(u)); localStorage.removeItem('gym_guest')
+        // The server answers /api/config with a `coach` key only to a session — the block, or
+        // null on an instance that has no Coach. So a copy with no key at all is one fetched
+        // before this sign-in (boot's, or the login screen asking for invite_only), and every
+        // Coach entry point would stay hidden until the next reload. Ask again, unawaited:
+        // nothing on this path waits for the answer. A copy that has the key was made for a
+        // session and is already the right answer, Coach or no Coach.
+        if (get().config && !('coach' in get().config)) get().refreshConfig()
       } else localStorage.removeItem('gym_user')
       set({ user: u })
     },
