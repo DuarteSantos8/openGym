@@ -13,7 +13,7 @@ export const geminiSpec = {
   body: ({ prompt, system, maxTokens }) => ({
     systemInstruction: { parts: [{ text: system ? SYSTEM_PROMPT + '\n\n' + system : SYSTEM_PROMPT }] },
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
-    generationConfig: { responseMimeType: 'application/json', maxOutputTokens: maxTokens }
+    generationConfig: { responseMimeType: 'application/json', ...(maxTokens == null ? {} : { maxOutputTokens: maxTokens }) }
   }),
   errorMessage: data => data && data.error && data.error.message,
   readText: data => {

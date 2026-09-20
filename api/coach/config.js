@@ -70,6 +70,15 @@ export const PROVIDERS = {
   ...HTTP_PROVIDERS
 };
 
+export const DEFAULT_MESSAGE_LIMIT = 1000;
+export const MIN_MESSAGE_LIMIT = 100;
+export const MAX_MESSAGE_LIMIT = 10000;
+export const DEFAULT_OUTPUT_TOKEN_LIMIT = 16000;
+export const MAX_OUTPUT_TOKEN_LIMIT = 128000;
+const limit = (value, fallback, min, max) => value === null ? null : Math.max(min, Math.min(max, Math.round(+value || fallback)));
+export const messageLimit = (cfg = load()) => limit(cfg.messageLimit, DEFAULT_MESSAGE_LIMIT, MIN_MESSAGE_LIMIT, MAX_MESSAGE_LIMIT);
+export const outputTokenLimit = (cfg = load()) => limit(cfg.outputTokenLimit, DEFAULT_OUTPUT_TOKEN_LIMIT, 1, MAX_OUTPUT_TOKEN_LIMIT);
+
 const DEFAULTS = {
   enabled: false,
   provider: 'fixture',
@@ -81,6 +90,8 @@ const DEFAULTS = {
   providerOptions: {},                               // { [provider]: { baseUrl } }
   boundUid: {},                                      // instance mode: { [provider]: the profile its credential bound to }
   caps: { perProfileDaily: 10, instanceDaily: 0 },   // 0 = unlimited
+  messageLimit: DEFAULT_MESSAGE_LIMIT,
+  outputTokenLimit: DEFAULT_OUTPUT_TOKEN_LIMIT,
   daily: null,                                       // { date, count }: jobs enqueued today across every profile
   // Anonymous medians across profiles that opt in ("compare with others"). Off by default: it
   // is the one feature where one person's numbers feed into what another person sees.
@@ -129,6 +140,8 @@ export function load() {
   let stored = {};
   try { stored = JSON.parse(fs.readFileSync(FILE, 'utf8')); } catch { /* absent = feature off */ }
   cache = { ...DEFAULTS, ...stored, caps: { ...DEFAULTS.caps, ...(stored.caps || {}) } };
+  cache.messageLimit = messageLimit(cache);
+  cache.outputTokenLimit = outputTokenLimit(cache);
 
   // Until v1.2.11 this file held ONE credential, ONE model and ONE binding — for whichever
   // provider was selected at the time. Lift each onto that provider. One-way on purpose: a
@@ -310,7 +323,7 @@ export function isConnected() {
 export function publicConfig() {
   if (!isEnabled() || !isConnected()) return null;
   const cfg = load();
-  return { enabled: true, provider: cfg.provider, providerLabel: providerMeta(cfg).label, authMode: cfg.authMode, community: !!cfg.community };
+  return { enabled: true, provider: cfg.provider, providerLabel: providerMeta(cfg).label, authMode: cfg.authMode, community: !!cfg.community, messageLimit: messageLimit(cfg), outputTokenLimit: outputTokenLimit(cfg) };
 }
 
 /**

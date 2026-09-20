@@ -27,7 +27,7 @@ export function chatCompletionsSpec(id, { maxTokensField = 'max_completion_token
       response_format: schema
         ? { type: 'json_schema', json_schema: { name: 'coach_answer', schema } }
         : { type: 'json_object' },
-      [maxTokensField]: maxTokens
+      ...(maxTokens == null ? {} : { [maxTokensField]: maxTokens })
     }),
     // A server that rejects schema/JSON mode gets the same request once more with plain JSON
     // mode, then without any; the parser copes with a fenced answer and the validator is the

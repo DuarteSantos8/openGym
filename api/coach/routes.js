@@ -66,10 +66,11 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
       const user = guard(req, res); if (!user) return;
       const body = await readBody(req);
       try {
+        const limit = cfgStore.messageLimit();
         const job = jobs.enqueue(user.id, {
           kind: 'create',
           intake: body.intake || null,
-          refine: body.refine ? String(body.refine).slice(0, 1000) : null
+          refine: body.refine ? (limit == null ? String(body.refine) : String(body.refine).slice(0, limit)) : null
         });
         json(res, 202, { job });
       } catch (e) { failEnqueue(res, e); }
@@ -79,7 +80,8 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
       const user = guard(req, res); if (!user) return;
       const body = await readBody(req);
       try {
-        const job = jobs.enqueue(user.id, { kind: 'review', note: body.note ? String(body.note).slice(0, 1000) : null });
+        const limit = cfgStore.messageLimit();
+        const job = jobs.enqueue(user.id, { kind: 'review', note: body.note ? (limit == null ? String(body.note) : String(body.note).slice(0, limit)) : null });
         json(res, 202, { job });
       } catch (e) { failEnqueue(res, e); }
     },
@@ -155,6 +157,8 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
         baseUrl: cfgStore.providerMeta(cfg).http ? baseUrlFor(cfg.provider, cfg) : null,
         knownModels: check.models || null,
         caps: cfg.caps,
+        messageLimit: cfgStore.messageLimit(cfg),
+        outputTokenLimit: cfgStore.outputTokenLimit(cfg),
         community: !!cfg.community,
         runtime: { ok: !!check.ok, version: check.version || null, error: check.error || null, needsKey: !!check.needsKey },
         authMode: cfg.authMode,
@@ -210,6 +214,11 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
         patch.providerOptions = { ...current.providerOptions, [target]: { ...(current.providerOptions[target] || {}), baseUrl: v.value } };
       }
       if (body.community !== undefined) patch.community = !!body.community;
+      if (body.messageLimit !== undefined) patch.messageLimit = cfgStore.messageLimit({ messageLimit: body.messageLimit });
+      if (body.outputTokenLimit !== undefined) {
+        if (body.outputTokenLimit === null && target === 'anthropic') return json(res, 400, { error: 'Anthropic requires an output token limit' });
+        patch.outputTokenLimit = cfgStore.outputTokenLimit({ outputTokenLimit: body.outputTokenLimit });
+      }
       if (body.caps) {
         patch.caps = {
           perProfileDaily: Math.max(0, Math.min(200, +body.caps.perProfileDaily || 0)),

@@ -22,7 +22,7 @@ import { validatePlan, validateReview, validateDebrief } from './validate.js';
  * @returns {{ ok:true, nochange?:boolean, reading?:string, result?:object }
  *        | { ok:false, errorClass:string, detail?:string, repairable?:boolean, errors?:string[], raw?:string }}
  */
-export async function attemptOnce({ adapter, cfg, kind, payload, model, timeoutMs, invokeOpts = {} }, repair) {
+export async function attemptOnce({ adapter, cfg, kind, payload, model, timeoutMs, maxTokens, invokeOpts = {} }, repair) {
   // HTTP providers get the rules/payload split (prefix caching, schema-constrained decoding);
   // the runtime-backed CLIs still get one flat prompt — they have no message roles to split over.
   const parts = buildPromptParts(kind, payload, repair);
@@ -31,7 +31,7 @@ export async function attemptOnce({ adapter, cfg, kind, payload, model, timeoutM
     cfg,
     prompt: split ? parts.user : parts.system + '\n\n---\n\n' + parts.user,
     ...(split ? { system: parts.system, schema: SCHEMAS[parts.task] || null } : {}),
-    model: model || null, timeoutMs, ...invokeOpts
+    model: model || null, timeoutMs, maxTokens, ...invokeOpts
   });
 
   if (r.timedOut) return { ok: false, errorClass: 'timeout' };
