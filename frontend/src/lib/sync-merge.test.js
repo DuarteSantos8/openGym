@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { localExtras, mergeBodyweight, mergeStates, newerOf, unionById } from './sync-merge.js'
+import { retimeWorkout } from './workout-date.js'
 
 const workout = (id, d = '2026-09-01', start = 1) => ({ id, d, start, entries: [] })
 const routine = (id, name = id) => ({ id, name, ex: [] })
@@ -116,6 +117,26 @@ describe('mergeStates', () => {
   it('a workout without an id is kept once by day and start', () => {
     const legacy = { d: '2026-09-01', start: 5, entries: [] }
     const m = mergeStates({ _ts: 2, workouts: [legacy] }, { _ts: 1, workouts: [{ ...legacy }, { d: '2026-09-01', start: 6, entries: [] }] })
+    expect(m.workouts).toHaveLength(2)
+  })
+
+  // Editing the date of a pre-id workout changes the very thing it is keyed by, so the other
+  // device's untouched copy has to be recognised as the same record. retimeWorkout freezes the
+  // old day-and-start as the id, which is what makes that hold.
+  it('a legacy workout moved to another day replaces its untouched copy', () => {
+    const legacy = { d: '2026-09-01', start: 5, entries: [], prs: [] }
+    const moved = retimeWorkout(legacy, '2026-08-20', '07:00')
+    const m = mergeStates({ _ts: 2, workouts: [moved] }, { _ts: 1, workouts: [{ ...legacy }] })
+    expect(m.workouts).toHaveLength(1)
+    expect(m.workouts[0].d).toBe('2026-08-20')
+  })
+
+  // Why the id is the old key rather than a fresh one: a new id shares nothing with the copy
+  // on the other device, so the union keeps both and the workout comes back twice.
+  it('a fresh id on the same edit would have duplicated it', () => {
+    const legacy = { d: '2026-09-01', start: 5, entries: [], prs: [] }
+    const renamed = { ...legacy, id: 'brand-new', d: '2026-08-20' }
+    const m = mergeStates({ _ts: 2, workouts: [renamed] }, { _ts: 1, workouts: [{ ...legacy }] })
     expect(m.workouts).toHaveLength(2)
   })
 
