@@ -261,6 +261,10 @@ export default function AdminCoach() {
           <div className="adm-kv"><span className="k">Whole instance, per day</span>
             <span className="v"><input className="num" type="number" min="0" max="5000" defaultValue={d.caps.instanceDaily} disabled={busy}
               onBlur={e => +e.target.value !== d.caps.instanceDaily && patch({ caps: { ...d.caps, instanceDaily: +e.target.value } })} /></span></div>
+          <div className="adm-kv"><span className="k">Message length</span>
+            <span className="v"><input className="num" type="number" min="100" max="10000" defaultValue={d.messageLimit} disabled={busy}
+              onBlur={e => +e.target.value !== d.messageLimit && patch({ messageLimit: +e.target.value })} /></span></div>
+          <div className="adm-hint">Maximum characters a person can send to the Coach. Default: 1,000.</div>
 
           <div className="adm-group-t" style={{ marginTop: 14 }}>Compare with others</div>
           <div className="row between" style={{ gap: 12, alignItems: 'flex-start' }}>

@@ -143,6 +143,23 @@ test('the compatible endpoint: base URL is validated, a keyless endpoint counts 
   } finally { mock.close(); }
 });
 
+test('the admin message limit persists, is exposed to clients, and stays within safe bounds', async () => {
+  fresh();
+  const { call } = harness();
+  let r = await call('GET /api/admin/coach');
+  assert.equal(r.body.messageLimit, 1000);
+
+  await call('POST /api/admin/coach/config', { messageLimit: 4000 });
+  assert.equal(cfg.load().messageLimit, 4000);
+  assert.equal((await call('GET /api/admin/coach')).body.messageLimit, 4000);
+  assert.equal(cfg.publicConfig().messageLimit, 4000);
+
+  await call('POST /api/admin/coach/config', { messageLimit: 999999 });
+  assert.equal(cfg.load().messageLimit, 10000);
+  await call('POST /api/admin/coach/config', { messageLimit: 1 });
+  assert.equal(cfg.load().messageLimit, 100);
+});
+
 test('the disclosure names the provider and the same five categories the payload builds from', async () => {
   fresh({ provider: 'gemini' });
   const { call } = harness();

@@ -87,6 +87,7 @@ export default function CoachChat() {
 
   if (!ready) return null
   const coach = S.coach || emptyCoach()
+  const messageLimit = config?.coach?.messageLimit || 1000
   const community = !!config?.coach?.community && !DEMO && !(MOBILE && coachMode === 'byok')
 
   const send = async () => {
@@ -207,7 +208,7 @@ export default function CoachChat() {
         {community && <button className="qchip" onClick={showCohort}><Icon name="person" />{t('Compare')}</button>}
       </div>}
       <div className="composer-in">
-        <textarea rows={1} value={text} maxLength={1000} placeholder={placeholder} disabled={!!job}
+        <textarea rows={1} value={text} maxLength={messageLimit} placeholder={placeholder} disabled={!!job}
           onChange={e => setText(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }} />
         <button className="send" onClick={send} disabled={!text.trim() || busy || !!job} aria-label={t('Send')}><Icon name="arrowUp" /></button>
