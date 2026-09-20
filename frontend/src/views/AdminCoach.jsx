@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useUI } from '../store/useUI.js'
 import { api } from '../lib/api.js'
 import Icon from '../components/Icon.jsx'
@@ -159,6 +159,9 @@ export default function AdminCoach() {
           <div className="adm-chips">
             {g.items.map(p => <button key={p.id} className={'chip' + (p.id === d.provider ? ' on' : '')} disabled={busy}
               onClick={() => { setTestResult(null); patch({ provider: p.id }) }}>
+              {/* The provider's own mark when it has one, tinted to the chip's text colour so it
+                  sits in the row rather than on top of it. */}
+              {p.logo && <img className="adm-chip-logo" src={p.logo} alt="" width="18" height="18" />}
               {p.label}{p.connected && <span className="adm-chip-key">key saved</span>}
             </button>)}
           </div>
@@ -187,6 +190,11 @@ export default function AdminCoach() {
           <div className="adm-actions">
             {meta.apiKey && <Button size="sm" variant="tinted" icon="lock" disabled={busy}
               onClick={() => openSheet(close => <ApiKeySheet close={close} onDone={load} label={meta.label} placeholder={meta.keyPlaceholder} optional={meta.keyOptional} />)}>Replace key</Button>}
+            {/* The account choice stays available after a key is connected: a key pasted in
+                first is not a reason to lose the browser flow, and replacing the credential is
+                the same action either way. */}
+            {meta.connect === 'pkce' && <Button size="sm" variant="tinted" icon="sparkles" disabled={busy}
+              onClick={() => openSheet(close => <OrcaConnectSheet close={close} onDone={load} label={meta.label} connectedAs={d.auth.account} />)}>Connect with {meta.label}</Button>}
             <Button size="sm" danger disabled={busy} onClick={disconnect}>Remove</Button>
           </div>
         </> : <>
@@ -197,13 +205,22 @@ export default function AdminCoach() {
           {authState === 'none' && <div className="adm-hint">{meta.setupToken
             ? 'Paste either a Claude Code setup token (your subscription) or an Anthropic API key (pay per use).'
             : 'Paste an API key from the provider\'s console. It is stored encrypted on this server and sent to the provider only while a job runs.'}</div>}
+          {/* The two ways to connect, side by side and both named. They are not
+              interchangeable — one needs a key from the console, the other a browser and an
+              account — so they are two buttons rather than one that behaves differently
+              depending on something the admin cannot see. */}
           <div className="adm-actions">
             {meta.setupToken && <Button size="sm" variant="primary" icon="key" disabled={busy}
               onClick={() => openSheet(close => <SetupTokenSheet close={close} onDone={load} label={meta.label} />)}>Add Claude Code token</Button>}
-            {meta.apiKey && <Button size="sm" variant={meta.setupToken ? undefined : 'primary'} icon="lock" disabled={busy}
+            {meta.apiKey && <Button size="sm" variant={meta.setupToken || meta.connect === 'pkce' ? undefined : 'primary'} icon="lock" disabled={busy}
               onClick={() => openSheet(close => <ApiKeySheet close={close} onDone={load} label={meta.label} placeholder={meta.keyPlaceholder} optional={meta.keyOptional} />)}>
               {meta.keyOptional ? 'Add API key (optional)' : 'Add API key'}</Button>}
+            {meta.connect === 'pkce' && <Button size="sm" variant="primary" icon="sparkles" disabled={busy}
+              onClick={() => openSheet(close => <OrcaConnectSheet close={close} onDone={load} label={meta.label} />)}>Connect with {meta.label}</Button>}
           </div>
+          {meta.connect === 'pkce' && <div className="adm-hint" style={{ margin: '8px 0 0' }}>
+            Both end at the same key on your account. Use an API key if you already have one; use Connect to sign in and have one issued to this server.
+          </div>}
         </>}
       </Step>}
 
@@ -423,6 +440,197 @@ function ApiKeySheet({ close, onDone, label, placeholder, optional }) {
     <TextField value={key} autoFocus type="password" placeholder={placeholder || 'sk-…'} autoCapitalize="none" autoCorrect="off" onChange={e => setKey(e.target.value)} />
     <div style={{ height: 12 }} />
     <Button variant="primary" disabled={busy || !key.trim()} onClick={save}>Save key</Button>
+    <div style={{ height: 8 }} />
+  </>
+}
+
+/* ------------------------- connect with an account (PKCE) -------------------------
+   The second of the two ways to hold an OrcaRouter key, and the one with a lifecycle.
+
+   Out-of-band by design: this dashboard is served from wherever the owner deployed it, so the
+   server is in no position to receive a redirect to a loopback address. The admin opens the
+   consent page and pastes back the code it shows — the same gesture the Claude setup-token sheet
+   above already asks for, so nothing here is a new habit for whoever runs the box.
+
+   What this sheet has to get right is the leaving. A sign-in can end by succeeding, by being
+   denied, by failing, by timing out, by Cancel, by switching provider, by closing the sheet, by
+   unmounting, or by the browser navigating away — and every one of those has to release the
+   server-side lock, not just the happy path. Two mechanisms do that:
+
+     generationRef — a client-side counter. Every response carries the attempt it belongs to, and
+     a late answer from an abandoned attempt is dropped rather than written into state. Without
+     it, cancelling and starting again can leave the first attempt's URL or error on screen.
+
+     pagehide — handled by clearing the busy flag and the hint *synchronously*, then sending the
+     cancel with `keepalive`. It cannot be left to the cancelled request's own `finally`: that
+     block is guarded by the generation and will correctly refuse to touch state, which on a
+     back-forward-cache restore means a page that comes back permanently busy. */
+function OrcaConnectSheet({ close, onDone, label, connectedAs }) {
+  const toast = useUI(s => s.toast)
+  const [phase, setPhase] = useState('starting')   // starting | pending | exchanging | failed
+  const [attempt, setAttempt] = useState(null)     // { url, generation, expiresAt }
+  const [code, setCode] = useState('')
+  const [error, setError] = useState(null)
+  const [unreachable, setUnreachable] = useState(false)
+
+  // The generation guard, and the live copy the pagehide handler reads. A ref because the
+  // handler is installed once and must see the current value, not the one from its first render.
+  const generationRef = useRef(0)
+  const attemptRef = useRef(null)
+  const busyRef = useRef(true)
+
+  const invalidate = useCallback(() => { generationRef.current += 1; return generationRef.current }, [])
+
+  const start = useCallback(async () => {
+    const gen = invalidate()
+    setPhase('starting'); setError(null); setAttempt(null); setCode('')
+    busyRef.current = true
+    try {
+      const r = await api('/api/admin/coach/connect/orcarouter/start', { method: 'POST', body: '{}' })
+      if (gen !== generationRef.current) return          // a newer attempt already replaced this one
+      attemptRef.current = { url: r.url, generation: r.generation, expiresAt: r.expiresAt }
+      setAttempt(attemptRef.current)
+      setPhase('pending')
+      busyRef.current = false
+    } catch (e) {
+      if (gen !== generationRef.current) return
+      busyRef.current = false
+      setError(e.message || 'Could not start the connection.')
+      setPhase('failed')
+    }
+  }, [invalidate])
+
+  useEffect(() => { start() }, [start])
+
+  /* The server holds the lock; every way out of this sheet has to tell it so. `keepalive` lets
+     the request survive the page going away, which is the whole point on pagehide. */
+  const releaseServer = useCallback((opts = {}) => {
+    const generation = attemptRef.current?.generation
+    const body = JSON.stringify(generation != null ? { generation } : {})
+    const path = opts.denied ? '/api/admin/coach/connect/orcarouter/denied' : '/api/admin/coach/connect/orcarouter/cancel'
+    try {
+      fetch(path, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body, keepalive: true
+      }).catch(() => {})
+    } catch { /* a page that is going away has nothing to report to */ }
+    attemptRef.current = null
+  }, [])
+
+  // Closing the sheet — by the X, by Escape, or by the backdrop — is a cancellation. The server
+  // must not keep a lock on an attempt nobody is looking at any more.
+  useEffect(() => () => { invalidate(); releaseServer() }, [invalidate, releaseServer])
+
+  useEffect(() => {
+    const onPageHide = () => {
+      // Synchronously, before anything can be cancelled: a back-forward-cache restore brings this
+      // component back exactly as it was, so anything left true here is a page stuck on "busy".
+      invalidate()
+      busyRef.current = false
+      setError('The page was closed before this finished. Start the connection again.')
+      setPhase('failed')
+      // The attempt is gone server-side, so the URL on screen is dead. Dropping it is what makes
+      // the sheet offer a fresh start rather than a code field that cannot succeed.
+      attemptRef.current = null
+      setAttempt(null)
+      releaseServer()
+    }
+    window.addEventListener('pagehide', onPageHide)
+    return () => window.removeEventListener('pagehide', onPageHide)
+  }, [invalidate, releaseServer])
+
+  const cancel = () => { invalidate(); releaseServer(); toast('Connection cancelled'); close(); onDone() }
+
+  const deny = async () => {
+    invalidate()
+    releaseServer({ denied: true })
+    toast('Authorization declined — nothing was saved')
+    close(); onDone()
+  }
+
+  const submit = async () => {
+    const gen = generationRef.current
+    const started = attemptRef.current
+    if (!started) return
+    setPhase('exchanging'); setError(null); busyRef.current = true
+    try {
+      const r = await api('/api/admin/coach/connect/orcarouter/complete', {
+        method: 'POST', body: JSON.stringify({ generation: started.generation, code: code.trim() })
+      })
+      if (gen !== generationRef.current) return
+      attemptRef.current = null
+      busyRef.current = false
+      toast('Connected ✅')
+      close(); onDone()
+    } catch (e) {
+      if (gen !== generationRef.current) return
+      busyRef.current = false
+      setError(e.message || 'That code was not accepted.')
+      setPhase('failed')
+    }
+  }
+
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(attempt.url); toast('Link copied') }
+    catch { toast('Copy the link above') }
+  }
+
+  if (phase === 'starting') return <>
+    <h3>Connect {label}</h3>
+    <div className="muted small" style={{ lineHeight: 1.5 }}>Asking this server for an authorization link…</div>
+  </>
+
+  if (phase === 'failed' && !attempt) return <>
+    <h3>Connect {label}</h3>
+    <div className="adm-result bad" style={{ marginTop: 0 }}><b>Could not start</b>{error}</div>
+    <div style={{ height: 12 }} />
+    <Button variant="primary" onClick={start}>Try again</Button>
+    <div style={{ height: 8 }} />
+    <Button onClick={cancel}>Cancel</Button>
+    <div style={{ height: 8 }} />
+  </>
+
+  return <>
+    <h3>Connect {label}</h3>
+    <div className="muted small" style={{ lineHeight: 1.5, marginBottom: 12 }}>
+      {connectedAs
+        ? `This replaces the key currently connected as ${connectedAs}. `
+        : ''}Open the link below, approve access on your OrcaRouter account, then paste the code the page shows you here. No password is shared with this server, and no client secret is involved — the code only works for this one request.
+    </div>
+
+    <div className="adm-field">
+      <label>Authorization link</label>
+      {/* Shown as text, not only as a button: the browser may not launch from a link on a
+          headless box or over SSH, and the admin still has to be able to get there. */}
+      <div className="adm-code" style={{ display: 'block', wordBreak: 'break-all', letterSpacing: 0, fontWeight: 500, fontSize: 12 }} data-testid="orca-auth-url">{attempt.url}</div>
+    </div>
+    <div className="adm-actions">
+      <Button size="sm" variant="tinted" icon="link" onClick={() => window.open(attempt.url, '_blank', 'noopener,noreferrer')}>Open consent page</Button>
+      <Button size="sm" onClick={copy}>Copy link</Button>
+    </div>
+
+    <div style={{ height: 12 }} />
+    <div className="adm-field">
+      <label>Code from that page</label>
+      <TextField value={code} type="text" placeholder="paste the code" autoCapitalize="none" autoCorrect="off" spellCheck={false}
+        onChange={e => setCode(e.target.value)} disabled={phase === 'exchanging'} />
+    </div>
+
+    {error && <div className="adm-result bad"><b>Not connected</b>{error}</div>}
+
+    <div style={{ height: 12 }} />
+    <div className="adm-actions">
+      <Button variant="primary" disabled={phase === 'exchanging' || !code.trim()} onClick={submit}>
+        {phase === 'exchanging' ? 'Connecting…' : 'Connect'}</Button>
+      <Button disabled={phase === 'exchanging'} onClick={cancel}>Cancel</Button>
+    </div>
+    {/* A person who declined on the consent page needs a way to say so here, rather than a
+        spinner that runs until the attempt expires on its own. */}
+    <div style={{ height: 4 }} />
+    <Button variant="plain" size="sm" disabled={phase === 'exchanging'} onClick={deny}>I declined on that page</Button>
+    <div style={{ height: 10 }} />
+    <div className="muted small" style={{ lineHeight: 1.5 }}>
+      The key issued this way belongs to your OrcaRouter account: it is billed to you and can be revoked any time from your console. This server keeps it encrypted and reuses it until you remove it — it will not ask you to sign in again on every restart.
+    </div>
     <div style={{ height: 8 }} />
   </>
 }

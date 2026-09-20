@@ -20,6 +20,7 @@
  * A provider is described by a spec (see anthropic.js etc.); this file owns the transport.
  */
 import { HTTP_PROVIDERS, baseUrlFor } from '../providers.js';
+import { capabilityQuery, filterCatalog, normalizeCatalog, seedFor } from '../catalog.js';
 
 export const MAX_OUTPUT_TOKENS = 16000;
 const DEFAULT_TIMEOUT_MS = 5 * 60000;
@@ -58,6 +59,79 @@ async function readJson(res) {
   try { return { data: JSON.parse(text), text }; } catch { return { data: null, text }; }
 }
 
+/**
+ * The un-filtered list: read ids out of whatever the endpoint answered, as the specs have always
+ * done. Kept for the providers that already worked this way, byte for byte.
+ */
+async function legacyModels({ adapter, spec, cfg, env, fetchImpl, timeoutMs, signal }) {
+  const meta = HTTP_PROVIDERS[spec.id];
+  const base = adapter.baseUrl(cfg);
+  if (!base) return { ok: false, error: 'no endpoint configured', models: [] };
+  const key = (env && env[meta.apiKeyEnv]) || null;
+  if (!key && !meta.keyOptional) return { ok: false, error: 'no API key configured', models: [] };
+  let res;
+  try {
+    res = await call(fetchImpl, base + spec.modelsPath, { method: 'GET', headers: spec.headers(key) }, timeoutMs, signal);
+  } catch (e) {
+    return { ok: false, error: e.name === 'AbortError' ? 'timed out' : `could not reach ${hostOf(base)}: ${trim(e.message, 120)}`, models: [] };
+  }
+  const { data, text } = await readJson(res);
+  if (!res.ok) return { ok: false, error: `${res.status} ${trim(spec.errorMessage(data) || text, 200)}`, models: [] };
+  let models;
+  try { models = spec.readModels(data); } catch { models = null; }
+  if (!Array.isArray(models)) return { ok: false, error: 'unexpected model list shape', models: [] };
+  return { ok: true, models: models.filter(m => typeof m === 'string' && m).sort() };
+}
+
+/**
+ * The filtered list: one shared capability rule over an aggregator's catalog.
+ *
+ * Live discovery is authoritative when it answers. When it does not — no key yet, an outage, a
+ * timeout, a shape this app cannot read — the verified seed stands in, marked `degraded` so the
+ * UI can say so, with its ids filtered through the same rule rather than handed over raw. The
+ * seed is never mixed into a successful live result: a list that is half live and half stale
+ * would be worse than either, because nothing in it could be trusted.
+ */
+async function catalogModels({ adapter, spec, cfg, env, cap, fetchImpl, timeoutMs, signal }) {
+  const meta = HTTP_PROVIDERS[spec.id];
+  const base = adapter.baseUrl(cfg);
+  const key = (env && env[meta.apiKeyEnv]) || null;
+  const fallback = error => ({
+    ok: false, error, models: seedFor(cap).slice().sort(), seed: true, degraded: true,
+    catalogSource: 'verified seed', capability: cap
+  });
+
+  if (!base) return fallback('no endpoint configured');
+  if (!key && !meta.keyOptional) return fallback('no API key configured');
+
+  const q = capabilityQuery(cap);
+  const url = base + spec.modelsPath + (q ? `?capability=${encodeURIComponent(q)}` : '');
+  let res;
+  try {
+    res = await call(fetchImpl, url, { method: 'GET', headers: { ...spec.headers(key), accept: 'application/json' } }, timeoutMs, signal);
+  } catch (e) {
+    if (e.name === 'AbortError') return fallback('timed out');
+    return fallback(`could not reach ${hostOf(base)}: ${trim(e.message, 120)}`);
+  }
+  const { data, text } = await readJson(res);
+  if (!res.ok) return fallback(`${res.status} ${trim(spec.errorMessage(data) || text, 200)}`);
+
+  const records = normalizeCatalog(data);
+  if (!records) return fallback('unexpected model list shape');
+
+  // A catalog that declares endpoint types gets filtered on them. One that does not is the plain
+  // OpenAI `/v1/models` shape, where the absence of `supported_endpoint_types` is not a
+  // capability claim — the endpoint serving that list under that path is serving chat by
+  // construction, so those ids pass through. Anything the endpoint *did* declare is honoured.
+  const declarative = records.filter(m => m.endpointTypes.length);
+  const models = declarative.length ? filterCatalog(records, cap) : records.map(m => m.id);
+  if (!models.length) return fallback('no model in the catalog can serve this request');
+  return {
+    ok: true, models: [...models].sort(), seed: false, degraded: false,
+    catalogSource: new URL(url).origin, capability: cap, records
+  };
+}
+
 export function httpAdapter(spec) {
   const id = spec.id;
   const meta = HTTP_PROVIDERS[id];
@@ -90,23 +164,13 @@ export function httpAdapter(spec) {
     },
 
     /** The models this endpoint serves, so a UI can offer a list instead of a text field. */
-    async models(cfg, env, { fetch: fetchImpl = globalThis.fetch, timeoutMs = 20000, signal } = {}) {
-      const base = adapter.baseUrl(cfg);
-      if (!base) return { ok: false, error: 'no endpoint configured', models: [] };
-      const key = keyOf(env);
-      if (!key && !meta.keyOptional) return { ok: false, error: 'no API key configured', models: [] };
-      let res;
-      try {
-        res = await call(fetchImpl, base + spec.modelsPath, { method: 'GET', headers: spec.headers(key) }, timeoutMs, signal);
-      } catch (e) {
-        return { ok: false, error: e.name === 'AbortError' ? 'timed out' : `could not reach ${hostOf(base)}: ${trim(e.message, 120)}`, models: [] };
-      }
-      const { data, text } = await readJson(res);
-      if (!res.ok) return { ok: false, error: `${res.status} ${trim(spec.errorMessage(data) || text, 200)}`, models: [] };
-      let models;
-      try { models = spec.readModels(data); } catch { models = null; }
-      if (!Array.isArray(models)) return { ok: false, error: 'unexpected model list shape', models: [] };
-      return { ok: true, models: models.filter(m => typeof m === 'string' && m).sort() };
+    async models(cfg, env, { fetch: fetchImpl = globalThis.fetch, timeoutMs = 20000, signal, capability = null } = {}) {
+      const cap = capability || spec.catalog?.capability || null;
+      // A spec that declares a catalog is filtered, not merely listed. The whole implementation
+      // lives in ../catalog.js so the admin card, the phone's setup screen and any future entry
+      // point cannot end up with three opinions about what "can chat" means.
+      if (cap) return catalogModels({ adapter, spec, cfg, env, cap, fetchImpl, timeoutMs, signal });
+      return legacyModels({ adapter, spec, cfg, env, fetchImpl, timeoutMs, signal });
     },
 
     /**
