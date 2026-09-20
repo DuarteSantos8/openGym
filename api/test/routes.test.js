@@ -158,6 +158,14 @@ test('the admin message limit persists, is exposed to clients, and stays within 
   assert.equal(cfg.load().messageLimit, 10000);
   await call('POST /api/admin/coach/config', { messageLimit: 1 });
   assert.equal(cfg.load().messageLimit, 100);
+
+  await call('POST /api/admin/coach/config', { outputTokenLimit: 64000 });
+  assert.equal(cfg.load().outputTokenLimit, 64000);
+  assert.equal(cfg.publicConfig().outputTokenLimit, 64000);
+  await call('POST /api/admin/coach/config', { outputTokenLimit: null });
+  assert.equal(cfg.load().outputTokenLimit, null);
+  await call('POST /api/admin/coach/config', { outputTokenLimit: 999999 });
+  assert.equal(cfg.load().outputTokenLimit, 128000);
 });
 
 test('the disclosure names the provider and the same five categories the payload builds from', async () => {

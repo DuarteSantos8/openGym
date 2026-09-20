@@ -331,7 +331,7 @@ async function execute(job) {
     if (ids) shareJobDir(jobDir, ids);
 
     const attempt = await runPipeline({
-      adapter, cfg, kind: job.kind, payload, model: cfgStore.modelFor(cfg), timeoutMs: TIMEOUT_MS,
+      adapter, cfg, kind: job.kind, payload, model: cfgStore.modelFor(cfg), timeoutMs: TIMEOUT_MS, maxTokens: cfgStore.outputTokenLimit(cfg),
       // The HTTP adapters take the fetch and the abort signal they are given; the runtime
       // adapters ignore both.
       invokeOpts: { jobDir, env, fetch: fetchFor(TIMEOUT_MS), signal: ctl.signal }
