@@ -1087,15 +1087,17 @@ describe('workout list view', () => {
   })
 
   it('marks the current unit and moves the mark with Set current', async () => {
-    await mount([exercise('plain-bench', [false]), exercise('plain-row', [false])], 0, { workoutView: 'list' })
+    await mount([exercise('plain-bench', [false]), exercise('plain-row', [false])], 0, {
+      workoutView: 'list', active: { workoutView: 'list' },
+    })
 
     await act(async () => { focusButton(units()[1]).dispatchEvent(new dom.Event('click', { bubbles: true })) })
     expect(mocks.S.active.cur).toBe(1)
 
-    await rerender()
-    expect(units()[0].textContent).not.toContain('Current')
-    expect(units()[1].textContent).toContain('Current')
-    expect(focusButton(units()[0])).toBeTruthy()
+    // #260: "Set current" has no purpose besides jumping to that exercise, so it now also
+    // drops the session back into card view - the only place a single exercise is front and
+    // center - instead of leaving you in the list to tap Cards yourself.
+    expect(mocks.S.active.workoutView).toBe('cards')
   })
 
   // Since !92 finishing an exercise no longer moves the current marker on its own (cards use

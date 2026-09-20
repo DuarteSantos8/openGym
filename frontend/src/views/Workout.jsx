@@ -727,7 +727,14 @@ function ActiveWorkout() {
   // List mode shows every unit at once, so the "current" exercise is chosen by tapping
   // "Set current" on its header instead of Prev/Next. The bottom Move/Swap/Remove actions
   // keep operating on it, and completing sets still advances it on its own.
-  const focusUnit = firstIdx => update(s => { if (s.active) s.active.cur = firstIdx })
+  // "Set current" has no purpose besides picking which exercise to look at next, so it also
+  // switches the session into card view (#260) rather than leaving you in the list to open
+  // Cards yourself - three taps for one intent otherwise.
+  const focusUnit = firstIdx => update(s => {
+    if (!s.active) return
+    s.active.cur = firstIdx
+    s.active.workoutView = 'cards'
+  })
   // The header ⋮ re-lays-out the running session without touching the saved default
   // (Settings → During a workout → Workout view). It writes s.active.workoutView, which the
   // render above prefers over S.workoutView.
