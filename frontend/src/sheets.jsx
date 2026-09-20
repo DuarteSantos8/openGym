@@ -37,6 +37,7 @@ import { isFav, toggleFav, sortFavouritesFirst } from './lib/favourites.js'
 import { buildSessionEntries } from './lib/session-start.js'
 import { buildCombinedEntries, deriveSessionName } from './lib/session-merge.js'
 import { workoutsOn, backfillStart, backfillEnd, completeBackfill } from './lib/backfill.js'
+import { moveWorkout, sameWorkout, startTimeOf } from './lib/workout-date.js'
 
 const S = () => useStore.getState().S
 const update = (...a) => useStore.getState().update(...a)
@@ -1617,6 +1618,41 @@ function DayAddRoutine({ day, close }) {
 export const dayAddRoutineSheet = day => ui().openSheet(close => <DayAddRoutine day={day} close={close} />)
 
 /* ============================ workout detail ============================ */
+// Correcting when a saved session happened: typed in from another app, or logged on the wrong
+// day. Only its place in history moves — the sets, the volume and the notes are the record, and
+// the session keeps the length it had. The PR badges of the exercises it trained are worked out
+// again, because "this was a record" is a claim about the sessions before it.
+function WorkoutDateEdit({ w, onDone, close }) {
+  const [date, setDate] = useState(w.d)
+  const [time, setTime] = useState(startTimeOf(w))
+  const today = todayISO()
+  const save = () => {
+    if (!date || date > today) { toast(t('Pick a day up to today')); return }
+    // Nothing to do, and nothing to push: a no-op save and a workout deleted from another
+    // sheet both just close.
+    if (date === w.d && time === startTimeOf(w)) { close(); return }
+    if (!(S().workouts || []).some(x => sameWorkout(x, w))) { close(); return }
+    update(s => {
+      const next = moveWorkout(s.workouts, w, date, time)
+      if (next) s.workouts = next
+    })
+    close()
+    onDone && onDone()
+    toast(t('Workout moved'))
+  }
+  return <>
+    <h3>{t('Change date & time')}</h3>
+    <div className="muted small" style={{ marginBottom: 12 }}>{t('The session keeps its length. Personal records are worked out again from the new order.')}</div>
+    <Row icon="calendar" title={t('Date')}>
+      <input type="date" className="timef" value={date} max={today} onChange={e => setDate(e.target.value)} /></Row>
+    <Row icon="clock" title={t('Start time')}>
+      <input type="time" className="timef" value={time} onChange={e => setTime(e.target.value)} /></Row>
+    <div style={{ height: 18 }} />
+    <Button variant="primary" onClick={save}>{t('Save')}</Button>
+  </>
+}
+export const workoutDateSheet = (w, onDone) => ui().openSheet(close => <WorkoutDateEdit w={w} onDone={onDone} close={close} />)
+
 function WorkoutDetail({ w, close }) {
   const noteRef = useRef(null)
   const onNoteFocus = useSheetKeyboard(noteRef)
@@ -1690,6 +1726,13 @@ function WorkoutDetail({ w, close }) {
       placeholder={t('How the session went as a whole.')}
       onFocus={onNoteFocus} onChange={e => setNote(e.target.value)} onBlur={saveNote} />
     <div style={{ height: 14 }} />
+    {/* The note lives in a textarea that only writes on blur, and moving the workout re-keys a
+        legacy record — so flush it first and stop the unmount hook writing it a second time. */}
+    <Button icon="calendar" style={{ marginBottom: 8 }} onClick={() => {
+      saveNote()
+      initial.current = latest.current.trim().slice(0, NOTE_MAX)
+      workoutDateSheet(w, close)
+    }}>{t('Change date & time')}</Button>
     <Button variant="danger" onClick={() => confirmSheet({ title: t('Delete workout?'), message: t('This removes it from your history for good.'), confirmText: t('Delete'), danger: true, onConfirm: () => { update(s => { s.workouts = s.workouts.filter(x => x.id !== w.id) }); close(); toast(t('Workout deleted')) } })}>{t('Delete workout')}</Button>
   </>
 }

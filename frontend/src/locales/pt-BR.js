@@ -618,6 +618,9 @@ export const PT_BR_OVERRIDES = {
   'Log a past workout': 'Registrar um treino passado',
   'Logged on the usual workout screen, without timers.': 'Registrado na tela de treino habitual, só sem temporizadores.',
   'Pick a day up to today': 'Escolha um dia até hoje',
+  'Change date & time': 'Alterar data e hora',
+  'Workout moved': 'Treino movido',
+  'The session keeps its length. Personal records are worked out again from the new order.': 'A sessão mantém a duração. Os recordes pessoais são recalculados pela nova ordem.',
   'Finish the current workout first.': 'Termine primeiro o treino atual.',
   'Logging a past workout — no rest timers.': 'Registrando um treino passado — sem temporizadores de descanso.',
   // --- bar weight (plate math) --- ('Peso da barra', 'Barra ({0})', 'Barra {0}' inherit)
