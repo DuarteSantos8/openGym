@@ -1228,6 +1228,13 @@ export default {
   '{0} %': '{0}%',
   '{0} MB': '{0} MB',
   'Checksum not available — not installing': 'Suma kontrolna niedostępna — instalacja przerwana',
+  // --- coach week (Home progress row, components/QueueRow.jsx; day sheet, sheets.jsx) ---
+  'Next: {0}, today': 'Następny: {0}, dziś',
+  'Next: {0}': 'Następny: {0}',
+  'Next week starts {0}': 'Następny tydzień zaczyna się {0}',
+  'Week complete, ask the coach': 'Tydzień ukończony, zapytaj trenera',
+  'Up next': 'Następny',
+  'Later': 'Później',
   // --- combine routines / layout / deload (v1.3.6) ---
   'Add routine': 'Dodaj rutynę',
   'Bring another routine into this session': 'Dołącz kolejną rutynę do tej sesji',
@@ -1250,4 +1257,5 @@ export default {
   'already added': 'już dodano',
   'no exercises': 'brak ćwiczeń',
   'Pick equipment': 'Wybierz sprzęt',
+  'Coach week': 'Tydzień trenera',
 }

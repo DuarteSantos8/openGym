@@ -7,8 +7,9 @@ import {
   fmt, setLabel, exLine, muscleName, policyName, friendlyDuration, ratio, muscleOrder
 } from './labels.js'
 import {
-  modeOf, workoutVolume, setsDone, effectiveRoutine, effectiveRoutineId, lastEntryFor
+  modeOf, workoutVolume, setsDone, effectiveRoutine, effectiveRoutineIds, lastEntryFor
 } from '../../frontend/src/lib/history.js'
+import { queueView, queueNext, pinState } from '../../frontend/src/lib/queue.js'
 import { exOr } from '../../frontend/src/lib/exercises.js'
 import { isWarmupRow } from '../../frontend/src/lib/workout-model.js'
 import {
@@ -153,10 +154,11 @@ export const getRoutine = {
   }
 }
 
-/** get_week_plan — what's scheduled each weekday + today. */
+/** get_week_plan — what's scheduled each weekday + today, and the coach week when one is running. */
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 export const getWeekPlan = {
   name: 'get_week_plan',
-  description: 'Show the user\'s weekly plan: which routine (if any) is assigned to each weekday, keyed by JS getDay() (Sunday=0, Monday=1, … Saturday=6 — the same convention the openGym state file uses). Also reports today\'s date and what routine applies today, accounting for one-off overrides the user may have set for a specific date (a "rest" override cancels the day).',
+  description: 'Show the user\'s training plan. `days` is the authoritative answer to "what is planned when": the next seven dates from today with the routines planned for each (a date can hold several — a combined day) and how each was decided: a coach-week session ("coach"), a session the user pinned to that date ("pinned"), a one-off routine override ("override"), a "rest" override ("rest_override"), the weekday plan ("weekday") or nothing ("rest"). `coach_week` is the current coach week when one is running (a week written by an external planner through the API, never by the app): its sessions are done IN ORDER on whatever days the user trains (no weekday attached), the first undone one is today\'s session, a session can be pinned to a date, and `waiting` means the week starts on `starts_on`. `weekdays` is the user\'s own weekly plan keyed by JS getDay() (Sunday=0 … Saturday=6, the openGym state convention) — in a coach week it holds only the routines the user planned themselves, which ride along beside the coach-week session.',
   schema: {},
   handler: () => {
     const S = getState()
@@ -164,25 +166,59 @@ export const getWeekPlan = {
     const today = new Date()
     const isoToday = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0')
     const todayWd = today.getDay()
+    const routines = S.routines || []
+    const nameOf = id => routines.find(x => x.id === id)?.name || null
+    // A weekday holds a routine-id list (combine routines); older states hold one id.
+    const weekdayIds = d => [].concat(S.week?.[d] || []).filter(id => routines.some(x => x.id === id))
+    const todayIds = effectiveRoutineIds(S, isoToday, isoToday)
+    const view = queueView(S, isoToday)
+    // How a date's plan was decided — the same precedence as effectiveRoutineIds, named.
+    const plannedBy = (iso, ids) => {
+      const ov = S.dayPlan?.[iso]
+      if (ov === 'rest') return 'rest_override'
+      const pin = pinState(S, ov)
+      if (pin === 'open') return 'pinned'
+      if (!pin && ov && routines.some(x => x.id === ov)) return 'override'
+      if (ids.length && queueNext(S, iso, isoToday) === ids[0]) return 'coach'
+      return ids.length ? 'weekday' : 'rest'
+    }
+    const days = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() + i, 12)
+      const iso = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
+      const ids = effectiveRoutineIds(S, iso, isoToday)
+      return { date: iso, weekday: d.getDay(), weekday_name: DAY_NAMES[d.getDay()], routine_ids: ids, routine_names: ids.map(nameOf), planned_by: plannedBy(iso, ids) }
+    })
     return {
       today: isoToday,
+      today_routine_id: todayIds[0] ?? null,
+      today_routine_name: todayIds.length ? nameOf(todayIds[0]) : null,
+      today_routine_ids: todayIds,
+      today_routine_names: todayIds.map(nameOf),
+      coach_week: view ? {
+        label: view.label,
+        starts_on: view.startsOn,
+        waiting: view.waiting,
+        complete: view.complete,
+        // state: done | next (today's session) | pinned (to `pinned_to`) | later
+        sessions: view.items.map(i => ({ routine_id: i.id, routine_name: i.name, state: i.state, pinned_to: i.on ?? null }))
+      } : null,
+      days,
       weekdays: [0, 1, 2, 3, 4, 5, 6].map(d => {
-        const rid = S.week?.[d] || null
-        const r = rid ? (S.routines || []).find(x => x.id === rid) : null
+        const ids = weekdayIds(d)
         // Surface today's override only (not the whole dayPlan dict — usually empty, but might
         // have grown from repeated "move this day" actions).
         const overrideForToday = d === todayWd ? (S.dayPlan?.[isoToday] ?? null) : null
         return {
           weekday: d,
-          weekday_name: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][d],
-          routine_id: rid,
-          routine_name: r?.name || null,
-          routine_emoji: r?.emoji || null,
+          weekday_name: DAY_NAMES[d],
+          routine_ids: ids,
+          routine_names: ids.map(nameOf),
+          routine_id: ids[0] ?? null,
+          routine_name: ids.length ? nameOf(ids[0]) : null,
+          routine_emoji: ids.length ? (routines.find(x => x.id === ids[0])?.emoji || null) : null,
           override_for_today_or_null: overrideForToday
         }
-      }),
-      today_routine_id: effectiveRoutineId(S, isoToday),
-      today_routine_name: effectiveRoutine(S, isoToday)?.name || null
+      })
     }
   }
 }

@@ -266,6 +266,112 @@ describe('get_week_plan', () => {
   })
 })
 
+/* ---------- get_week_plan — coach week (S.queue) and pins ---------- */
+
+describe('get_week_plan — coach week and pins', () => {
+  // Today is the pinned Monday 2026-07-27. The planner's queue reuses the demo routines as its
+  // three sessions; the queue was applied that morning.
+  const rid = name => S.routines.find(x => x.name === name).id
+  const SINCE = () => Date.parse('2026-07-27T08:00:00')
+  const coachWeek = (over = {}) => {
+    S.queue = { ids: [rid('Push Day'), rid('Pull Day'), rid('Leg Day')], since: SINCE(), startsOn: FAKE_TODAY_ISO, label: 'W1', ...over }
+    S.week = {}
+  }
+  const logged = (name, d = FAKE_TODAY_ISO) => ({ id: 'w-' + name, d, start: SINCE() + 3600000, end: SINCE() + 7200000, routineIds: [rid(name)], routineId: rid(name), name, entries: [] })
+
+  test('without a coach week: coach_week is null, days run seven dates from today by the weekday plan', () => {
+    const r = call('get_week_plan')
+    expect(r.coach_week).toBeNull()
+    expect(r.days.map(d => d.date)).toEqual(['2026-07-27', '2026-07-28', '2026-07-29', '2026-07-30', '2026-07-31', '2026-08-01', '2026-08-02'])
+    expect(r.days[0]).toMatchObject({ weekday: 1, weekday_name: 'Monday', routine_names: ['Push Day'], planned_by: 'weekday' })
+    expect(r.days[1]).toMatchObject({ routine_ids: [], routine_names: [], planned_by: 'rest' })
+    expect(r.days[2]).toMatchObject({ routine_names: ['Pull Day'], planned_by: 'weekday' })
+    expect(r.today_routine_ids).toEqual([rid('Push Day')])
+    expect(r.today_routine_names).toEqual(['Push Day'])
+  })
+
+  test('a weekday holding several routines (combine routines) lists them all; the singular fields keep the first', () => {
+    S.week[2] = [rid('Pull Day'), rid('Leg Day')]
+    const r = call('get_week_plan')
+    const tue = r.weekdays.find(d => d.weekday === 2)
+    expect(tue.routine_ids).toEqual([rid('Pull Day'), rid('Leg Day')])
+    expect(tue.routine_names).toEqual(['Pull Day', 'Leg Day'])
+    expect(tue.routine_id).toBe(rid('Pull Day'))
+    expect(tue.routine_name).toBe('Pull Day')
+    expect(r.days[1]).toMatchObject({ routine_names: ['Pull Day', 'Leg Day'], planned_by: 'weekday' })
+    // …and a legacy single id still reads as a one-item list.
+    expect(r.weekdays.find(d => d.weekday === 1).routine_ids).toEqual([rid('Push Day')])
+  })
+
+  test('a coach week: today is the first undone session, the other days carry nothing, and the week is described', () => {
+    coachWeek()
+    const r = call('get_week_plan')
+    expect(r.coach_week).toMatchObject({ label: 'W1', starts_on: FAKE_TODAY_ISO, waiting: false, complete: false })
+    expect(r.coach_week.sessions.map(x => x.state)).toEqual(['next', 'later', 'later'])
+    expect(r.coach_week.sessions.map(x => x.pinned_to)).toEqual([null, null, null])
+    expect(r.today_routine_name).toBe('Push Day')
+    expect(r.days[0]).toMatchObject({ routine_names: ['Push Day'], planned_by: 'coach' })
+    r.days.slice(1).forEach(d => expect(d).toMatchObject({ routine_ids: [], planned_by: 'rest' }))
+    // The weekday table is the user's own plan only — empty here.
+    r.weekdays.forEach(d => expect(d.routine_ids).toEqual([]))
+  })
+
+  test('a done session moves today to the next one; the rest of the week still floats', () => {
+    coachWeek()
+    S.workouts.push(logged('Push Day'))
+    const r = call('get_week_plan')
+    expect(r.coach_week.sessions.map(x => x.state)).toEqual(['done', 'next', 'later'])
+    expect(r.today_routine_name).toBe('Pull Day')
+    expect(r.days[0].planned_by).toBe('coach')
+  })
+
+  test('a session pinned to a date sits there, is skipped today, and the pin is fulfilled once done', () => {
+    coachWeek()
+    S.dayPlan['2026-07-29'] = rid('Leg Day')
+    let r = call('get_week_plan')
+    expect(r.coach_week.sessions[2]).toMatchObject({ state: 'pinned', pinned_to: '2026-07-29' })
+    expect(r.days[2]).toMatchObject({ date: '2026-07-29', routine_names: ['Leg Day'], planned_by: 'pinned' })
+    expect(r.today_routine_name).toBe('Push Day')
+    // Done early: the pin reads as no override and Wednesday goes back to floating (nothing there).
+    S.workouts.push(logged('Leg Day'))
+    r = call('get_week_plan')
+    expect(r.coach_week.sessions[2].state).toBe('done')
+    expect(r.days[2]).toMatchObject({ routine_ids: [], planned_by: 'rest' })
+  })
+
+  test('a coach week waiting for its start day: today is the weekday plan, the week says when it starts', () => {
+    coachWeek({ startsOn: '2026-08-03' })
+    S.week = { 1: rid('Push Day') }
+    const r = call('get_week_plan')
+    expect(r.coach_week).toMatchObject({ waiting: true, starts_on: '2026-08-03' })
+    expect(r.days[0]).toMatchObject({ routine_names: ['Push Day'], planned_by: 'weekday' })
+  })
+
+  test('the user\'s own weekday routine rides along beside the coach session', () => {
+    coachWeek({ ids: [rid('Push Day'), rid('Pull Day')] })
+    S.week = { 1: [rid('Leg Day')] }
+    const r = call('get_week_plan')
+    expect(r.today_routine_names).toEqual(['Push Day', 'Leg Day'])
+    expect(r.today_routine_name).toBe('Push Day')
+    expect(r.days[0].planned_by).toBe('coach')
+    expect(r.weekdays.find(d => d.weekday === 1).routine_names).toEqual(['Leg Day'])
+  })
+
+  test('rest and routine overrides are named as such', () => {
+    coachWeek()
+    S.dayPlan[FAKE_TODAY_ISO] = 'rest'
+    S.dayPlan['2026-07-28'] = rid('Leg Day')   // a coach id → a pin, not an override
+    let r = call('get_week_plan')
+    expect(r.days[0]).toMatchObject({ routine_ids: [], planned_by: 'rest_override' })
+    expect(r.days[1].planned_by).toBe('pinned')
+    S.queue = null
+    S.week = { 1: rid('Push Day') }
+    S.dayPlan = { '2026-07-28': rid('Leg Day') }
+    r = call('get_week_plan')
+    expect(r.days[1]).toMatchObject({ routine_names: ['Leg Day'], planned_by: 'override' })
+  })
+})
+
 /* ---------- list_workouts ---------- */
 
 describe('list_workouts', () => {

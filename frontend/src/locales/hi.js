@@ -1228,6 +1228,13 @@ export default {
   '{0} %': '{0}%',
   '{0} MB': '{0} MB',
   'Checksum not available — not installing': 'चेकसम उपलब्ध नहीं — इंस्टॉल नहीं किया गया',
+  // --- coach week (Home progress row, components/QueueRow.jsx; day sheet, sheets.jsx) ---
+  'Next: {0}, today': 'अगला: {0}, आज',
+  'Next: {0}': 'अगला: {0}',
+  'Next week starts {0}': 'अगला सप्ताह {0} से शुरू होगा',
+  'Week complete, ask the coach': 'सप्ताह पूरा हुआ, कोच से पूछें',
+  'Up next': 'अगला',
+  'Later': 'बाद में',
   // --- combine routines / layout / deload (v1.3.6) ---
   'Add routine': 'रूटीन जोड़ें',
   'Bring another routine into this session': 'इस सत्र में एक और रूटीन लाएँ',
@@ -1250,4 +1257,5 @@ export default {
   'already added': 'पहले से जोड़ा हुआ',
   'no exercises': 'कोई व्यायाम नहीं',
   'Pick equipment': 'उपकरण चुनें',
+  'Coach week': 'कोच का सप्ताह',
 }
