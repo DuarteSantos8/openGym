@@ -182,7 +182,7 @@ export default function CoachIntake() {
         <h1 className="ob-h">{t('What can you train with?')}</h1>
         <p className="ob-p">{t('Pick everything you have access to. Leave it empty and the Coach will use the whole library.')}</p>
         <div className="ob-chips">
-          {EQUIPMENT.map(e => <button key={e} className={'chip' + (p.equipment.includes(e) ? ' on' : '')} onClick={() => toggleEq(e)}>{e}</button>)}
+          {EQUIPMENT.map(e => <button key={e} className={'chip' + (p.equipment.includes(e) ? ' on' : '')} onClick={() => toggleEq(e)}>{t(e)}</button>)}
         </div>
       </>}
 
