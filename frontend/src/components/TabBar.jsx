@@ -5,6 +5,18 @@ import { todayISO } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
 import Icon from './Icon.jsx'
 
+// Module scope, not TabBar's render body. Declared inside it, `Tab` was a new function on every
+// render, so React saw a different component type each time and threw the button away and built a
+// fresh one — on a bar that is fixed on screen, and once a second for the whole of a rest. The
+// state it took with it is the DOM node itself: focus, the :active tint, any in-flight transition.
+function Tab({ active, icon, label, onClick }) {
+  return (
+    <button className={active ? 'on' : ''} onClick={onClick}>
+      <Icon name={icon} /><span>{label}</span>
+    </button>
+  )
+}
+
 export default function TabBar({ onStart }) {
   const nav = useNavigate()
   const loc = useLocation()
@@ -23,16 +35,11 @@ export default function TabBar({ onStart }) {
     }
     nav('/workout')
   }
-  const Tab = ({ k, icon, to, label }) => (
-    <button className={on(k) ? 'on' : ''} onClick={() => nav(to)}>
-      <Icon name={icon} /><span>{label}</span>
-    </button>
-  )
 
   return (
     <nav id="tabbar">
-      <Tab k="home" icon="house" to="/home" label={t('Home')} />
-      <Tab k="plan" icon="calendar" to="/plan" label={t('Plan')} />
+      <Tab active={on('home')} icon="house" label={t('Home')} onClick={() => nav('/home')} />
+      <Tab active={on('plan')} icon="calendar" label={t('Plan')} onClick={() => nav('/plan')} />
       {/* On the workout screen itself there is nothing to resume, so the button reads as the
           tab it is and stays lit (#29); anywhere else it brings you back to the exercise you
           were on — the marker is kept in S.active.cur and never moves on its own (#21). */}
@@ -40,8 +47,8 @@ export default function TabBar({ onStart }) {
         <span className="cir"><Icon name={S.active ? (cur === 'workout' ? 'dumbbell' : 'play') : 'dumbbell'} /></span>
         <span>{S.active ? (cur === 'workout' ? t('Workout') : t('Resume')) : t('Start')}</span>
       </button>
-      <Tab k="stats" icon="chart" to="/stats" label={t('Stats')} />
-      <Tab k="library" icon="list" to="/library" label={t('Exercises')} />
+      <Tab active={on('stats')} icon="chart" label={t('Stats')} onClick={() => nav('/stats')} />
+      <Tab active={on('library')} icon="list" label={t('Exercises')} onClick={() => nav('/library')} />
     </nav>
   )
 }
