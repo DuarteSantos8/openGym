@@ -357,6 +357,7 @@ export default {
   'Deletes your plan, workouts and body weight on this device. This cannot be undone.': 'Löscht Plan, Trainings und Körpergewicht auf diesem Gerät. Das kann nicht rückgängig gemacht werden.',
   'Deletes your plan, workouts and body weight from your profile on this server and on every signed-in device. This cannot be undone.': 'Löscht Plan, Trainings und Körpergewicht aus deinem Profil auf diesem Server und auf allen angemeldeten Geräten. Das kann nicht rückgängig gemacht werden.',
   'Sync failed: the server refused the upload as too large. Your changes have not reached the server.': 'Synchronisierung fehlgeschlagen: Der Server hat den Upload als zu groß abgelehnt. Deine Änderungen sind noch nicht auf dem Server angekommen.',
+  'This device is out of storage: the change is not saved on it. Signed in, it still goes to the server.': 'Auf diesem Gerät ist kein Speicher mehr frei: Die Änderung ist nicht auf ihm gespeichert. Angemeldet geht sie trotzdem an den Server.',
   'Delete everything': 'Alles löschen',
   'All data reset': 'Alle Daten zurückgesetzt',
   'Backup exported': 'Backup exportiert',

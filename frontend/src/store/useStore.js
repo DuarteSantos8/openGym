@@ -109,6 +109,7 @@ export const useStore = create((set, get) => {
   let pushTm = null
   let saveTm = null
   let toldTooLarge = false
+  let toldNoRoom = false   // the save itself was refused — said once per streak, like the above
   let pushing = null       // the PUT in flight, so a second push waits for it instead of racing it
   let pushAgain = false    // a push asked for while one was in flight — run once more after it
   let pulling = null       // the GET in flight, so two resume signals make one request
@@ -128,6 +129,9 @@ export const useStore = create((set, get) => {
     if (next.offline !== cur.offline || next.pending !== cur.pending || next.lastSynced !== cur.lastSynced) set({ sync: next })
   }
   const isNetworkError = e => e && e.status == null   // fetch itself failed: no response at all
+  // A change this device still owes the server: a push that failed, one still in the debounce, or
+  // one made before boot's pull had finished.
+  const owes = () => localStorage.getItem('gym_dirty') === '1' || pushTm !== null || pushPending
 
   initReminderSync(() => get().S)
 
@@ -145,7 +149,22 @@ export const useStore = create((set, get) => {
   const persist = (S, push = true, stamp = true) => {
     if (stamp) S._ts = Date.now()
     registerCustom(S.customEx)
-    localStorage.setItem(KEY, JSON.stringify(S))
+    // A refused write used to take the change with it — Finish looked like it simply did
+    // nothing. The copy is kept in memory either way and marked as owed to the server, so a
+    // signed-in device still gets it there; and it is said out loud once, because a change that
+    // is not on the device is the one thing the screen cannot show on its own.
+    try {
+      localStorage.setItem(KEY, JSON.stringify(S))
+      toldNoRoom = false
+    } catch (e) {
+      try { localStorage.setItem('gym_dirty', '1') } catch { /* the same wall */ }
+      if (!toldNoRoom) {
+        toldNoRoom = true
+        import('./useUI.js')
+          .then(({ useUI }) => useUI.getState().toast(t('This device is out of storage: the change is not saved on it. Signed in, it still goes to the server.')))
+          .catch(() => {})
+      }
+    }
     set({ S })
     if (MOBILE) nativePersist()
     if (push && get().user) {
@@ -177,8 +196,7 @@ export const useStore = create((set, get) => {
     lastCheck = Date.now()
     if (pulling) return pulling
     const sync = readSync()
-    const owed = localStorage.getItem('gym_dirty') === '1' || pushTm !== null || pushPending
-    if (!sync || owed) return get().pullState()
+    if (!sync || owes()) return get().pullState()
     try {
       const { rev } = await api('/api/data/rev')
       setSync({ offline: false })
@@ -281,6 +299,40 @@ export const useStore = create((set, get) => {
   }
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush() })
   window.addEventListener('pagehide', flush)   // Safari kills the home-screen app without a visibilitychange at times
+
+  // Two tabs of one browser share the saved copy and the revision marker but each hold their own
+  // S in memory. A tab left open never learned that the other one had saved: its next change went
+  // out as its whole stale state quoting the marker the other tab had just written, so the server
+  // accepted it and the other tab's workout was gone from both. Here the tab that was left open
+  // follows along instead — a change it still owes is merged in (the same union a 409 uses),
+  // otherwise it takes the newer copy. The in-progress workout stays with the tab running it.
+  // Only memory is touched: the saved copy is already what this event carried, and writing it
+  // back would land as a storage event in the other tab, which would answer in kind. A merge
+  // lives in memory until the push that carries it — which is where it has to survive anyway,
+  // the other tab's save having already replaced this tab's copy in storage.
+  window.addEventListener('storage', e => {
+    if (e.key !== KEY || !e.newValue) return
+    // Another profile signing in elsewhere writes its wiped copy through this key too, just
+    // before it records itself as the owner. That case belongs to the listener below, which
+    // drops this profile — its data must not be merged into the new owner's copy.
+    if ((get().user?.id || null) !== (localStorage.getItem('gym_owner') || null)) return
+    let saved = null
+    try { saved = JSON.parse(e.newValue) } catch { return }
+    if (!saved || typeof saved !== 'object') return
+    const S = get().S
+    const owed = owes()
+    if (!owed && (saved._ts || 0) <= (S._ts || 0)) return
+    const next = Object.assign(clone(DEF), owed ? mergeStates(S, saved) : saved)
+    next.active = S.active || null
+    registerCustom(next.customEx)
+    set({ S: next })
+    if (!owed || !get().user) return
+    // The same gate persist uses: before boot has pulled, the copy in hand may be older than
+    // the server's and a push now would carry it with a stale baseRev. It waits for finishBoot.
+    if (!get().ready) { pushPending = true; return }
+    clearTimeout(pushTm)
+    pushTm = setTimeout(() => get().pushState(), 1500)
+  })
 
   // The owner check in setUser only runs in the tab that signs in. Another tab of the same
   // browser still holding the previous profile would keep writing that profile's data over the

@@ -355,3 +355,50 @@ describe('push failures', () => {
     await vi.waitFor(() => expect(toast).toHaveBeenCalledTimes(2))
   })
 })
+
+describe('a save this device refuses', () => {
+  // localStorage throwing (a device genuinely full, a private window with next to no quota) used
+  // to take the change with it: persist wrote before it told the store, so Finish just did
+  // nothing at all and said nothing either.
+  const refusingStorage = () => {
+    const real = Object.getOwnPropertyDescriptor(globalThis, 'localStorage')
+    const store = globalThis.localStorage
+    const guard = new Proxy(store, {
+      get(target, prop) {
+        const value = Reflect.get(target, prop)
+        if (prop === 'setItem') return (key, v) => { if (key === 'gym_state_v1') throw new DOMException('quota', 'QuotaExceededError'); return store.setItem(key, v) }
+        return typeof value === 'function' ? value.bind(target) : value
+      }
+    })
+    Object.defineProperty(globalThis, 'localStorage', { value: guard, configurable: true })
+    return () => Object.defineProperty(globalThis, 'localStorage', real)
+  }
+
+  it('keeps the change, marks it owed to the server, and says so once', async () => {
+    toast.mockClear()
+    useStore.setState({ S: clone(DEF), user: { id: 'user-1' }, ready: true })
+    api.mockResolvedValue({})
+    const undo = refusingStorage()
+    try {
+      useStore.getState().update(s => { s.workouts.push(workout('logged-with-no-room')) }, false)
+      expect(useStore.getState().S.workouts.map(w => w.id)).toEqual(['logged-with-no-room'])
+      expect(localStorage.getItem('gym_dirty')).toBe('1')
+      await vi.waitFor(() => expect(toast).toHaveBeenCalledTimes(1))
+      expect(toast.mock.calls[0][0]).toMatch(/out of storage/)
+
+      useStore.getState().update(s => { s.restSec = 120 }, false)   // still refused — said once
+      expect(useStore.getState().S.restSec).toBe(120)
+      await new Promise(r => setTimeout(r, 0))
+      expect(toast).toHaveBeenCalledTimes(1)
+    } finally { undo() }
+
+    // Room again: the next refusal is news once more.
+    useStore.getState().update(s => { s.restSec = 90 }, false)
+    expect(JSON.parse(localStorage.getItem('gym_state_v1')).restSec).toBe(90)
+    const undo2 = refusingStorage()
+    try {
+      useStore.getState().update(s => { s.restSec = 150 }, false)
+      await vi.waitFor(() => expect(toast).toHaveBeenCalledTimes(2))
+    } finally { undo2() }
+  })
+})

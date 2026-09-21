@@ -11,21 +11,54 @@ const CACHE = 'opengym-rt-__BUILD__'
 async function precache() {
   const c = await caches.open(CACHE)
   const res = await fetch('index.html', { cache: 'no-cache' })
-  if (!res.ok) return
+  // Whatever came back is not the shell: the server was restarting mid-deploy (5xx), or the
+  // request was answered by something else after a redirect — an auth proxy in front (Authelia,
+  // Cloudflare Access; docs/SELF_HOSTING.md) sends its login page once the session there expires.
+  // Throwing fails the install, which is the only thing that keeps the build already
+  // on this device, and its cache, in place; a returned-quietly install activates and sweeps.
+  if (!res.ok || res.redirected) throw new Error('precache: index.html ' + res.status + (res.redirected ? ' redirected' : ''))
   const html = await res.text()
+  const refs = [...new Set([...html.matchAll(/(?:src|href)="([^"]+)"/g)].map(m => m[1])
+    .filter(u => /\.(?:js|css|png|svg|webmanifest|json)(?:\?|$)/.test(u) && !/^(?:https?:)?\/\//.test(u)))]
+  // The scripts and the stylesheets ARE the app. Every sub-resource used to be best-effort, so an
+  // install that got index.html and lost one chunk to a flaky connection still activated, still
+  // swept the build this device came from, and the next offline open was a shell with no code:
+  // a blank page. A chunk that will not cache fails the install instead, which keeps the working
+  // build and its cache exactly where they are. Images, icons and the manifest stay best-effort —
+  // a missing icon is not a broken app.
+  const code = refs.filter(u => /\.(?:js|css)(?:\?|$)/.test(u))
+  // Fetched by hand rather than with `cache.add`, for the same reason index.html is: `add` takes
+  // a REDIRECT for an answer, and an auth proxy in front answers every request with its login
+  // page once the session there expires. A 200 of HTML stored under the main bundle's URL is
+  // worse than nothing cached at all —
+  // the install would report success and then sweep the build that still worked.
+  await Promise.all(code.map(async u => {
+    const r = await fetch(u, { cache: 'no-cache' }).catch(e => { throw new Error('precache: ' + u + ' — ' + (e?.message || e)) })
+    if (!r.ok || r.redirected) throw new Error('precache: ' + u + ' ' + r.status + (r.redirected ? ' redirected' : ''))
+    await c.put(u, r)
+  }))
+  await Promise.all(refs.filter(u => !code.includes(u)).map(u => c.add(u).catch(() => {})))
+  // The shell goes in last, so activate's guard — an index.html in THIS build's cache — means the
+  // whole shell is there rather than just its first file.
   await c.put('index.html', new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8' } }))
-  const refs = [...html.matchAll(/(?:src|href)="([^"]+)"/g)].map(m => m[1])
-    .filter(u => /\.(?:js|css|png|svg|webmanifest|json)(?:\?|$)/.test(u) && !/^(?:https?:)?\/\//.test(u))
-  await Promise.all([...new Set(refs)].map(u => c.add(u).catch(() => {})))
 }
 
 self.addEventListener('install', e => {
-  e.waitUntil(precache().catch(() => {}).then(() => self.skipWaiting()))
+  e.waitUntil(precache().then(() => self.skipWaiting()))
 })
 self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(keys =>
-    Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-  ).then(() => self.clients.claim()))
+  e.waitUntil((async () => {
+    // The previous build's files are what a reopen without a network comes back from, so they go
+    // only once this build's shell is really in its own cache. An install that never got the
+    // shell used to take them anyway, and the app opened on the browser's error page until the
+    // next load with a network.
+    const c = await caches.open(CACHE)
+    if (await c.match('index.html')) {
+      const keys = await caches.keys()
+      await Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+    }
+    await self.clients.claim()
+  })())
 })
 
 // The payload is parsed inside waitUntil: a push whose handler throws before showing anything is
