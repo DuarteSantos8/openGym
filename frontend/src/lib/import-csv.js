@@ -320,17 +320,45 @@ const effortNum = (raw, zeroMeansRated) => {
 }
 const LB_TO_KG = 0.45359237
 const p2 = n => String(n).padStart(2, '0')
-const MON = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 }
+// Month names as the exporting app wrote them. Hevy and Strong localize the date on every
+// row to the language the app was set to, so an English-only table silently dropped seven
+// months of a French history: `févr.`/`août`/`déc.` never even matched, because the accent
+// falls inside the first three letters, and `avr.`/`mai`/`juin`/`juil.` matched the shape
+// but stood for nothing. Only janv./mars/sept./oct./nov. came through, by looking exactly
+// like their English counterparts. Keys are lower-case and stripped of diacritics.
+const MON = {
+  // English
+  jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12,
+  // French — juin/juil. differ only at the fourth letter, which is why the lookup below
+  // tries the whole word and a 4-letter prefix before falling back to three.
+  janv: 1, fevr: 2, mars: 3, avri: 4, avr: 4, mai: 5, juin: 6, juil: 7, aout: 8,
+  sept: 9, octo: 10, nove: 11, dece: 12,
+  // Spanish · Portuguese
+  ene: 1, fev: 2, abr: 4, ago: 8, set: 9, out: 10, dic: 12,
+  // German · Dutch
+  mrz: 3, mei: 5, okt: 10, dez: 12,
+  // Italian
+  gen: 1, mag: 5, giu: 6, lug: 7, ott: 10,
+}
 
-/** "2020-12-30 18:51:52" · "2024-03-07" · "2024/03/07" · "2024.03.07" · "22 Dec 2025, 08:00" · "07/03/2024" -> { d, t } */
+/** A month word in any of the languages above -> 1-12, or null. */
+const monthOf = w => {
+  const k = String(w || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+  return MON[k] || MON[k.slice(0, 4)] || MON[k.slice(0, 3)] || null
+}
+
+/** "2020-12-30 18:51:52" · "2024-03-07" · "2024/03/07" · "2024.03.07" · "22 Dec 2025, 08:00" · "21 août 2024, 18:00" · "07/03/2024" -> { d, t } */
 export function parseWhen(s) {
   const v = String(s || '').trim()
   let m = v.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?:[T ](\d{1,2}):(\d{2}))?/)
   if (m) return { d: `${m[1]}-${p2(m[2])}-${p2(m[3])}`, t: hm(m[4], m[5]) }
-  m = v.match(/^(\d{1,2})\s+([A-Za-z]{3})[a-z]*\.?\s+(\d{4})(?:,?\s+(\d{1,2}):(\d{2}))?/)
-  if (m && MON[m[2].toLowerCase()]) return { d: `${m[3]}-${p2(MON[m[2].toLowerCase()])}-${p2(m[1])}`, t: hm(m[4], m[5]) }
-  m = v.match(/^([A-Za-z]{3})[a-z]*\.?\s+(\d{1,2}),?\s+(\d{4})(?:,?\s+(\d{1,2}):(\d{2}))?/)
-  if (m && MON[m[1].toLowerCase()]) return { d: `${m[3]}-${p2(MON[m[1].toLowerCase()])}-${p2(m[2])}`, t: hm(m[4], m[5]) }
+  // \p{L} rather than [A-Za-z]: the month word carries an accent in most languages.
+  m = v.match(/^(\d{1,2})\s+(\p{L}{3,})\.?\s+(\d{4})(?:,?\s+(\d{1,2}):(\d{2}))?/u)
+  let mon = m && monthOf(m[2])
+  if (mon) return { d: `${m[3]}-${p2(mon)}-${p2(m[1])}`, t: hm(m[4], m[5]) }
+  m = v.match(/^(\p{L}{3,})\.?\s+(\d{1,2}),?\s+(\d{4})(?:,?\s+(\d{1,2}):(\d{2}))?/u)
+  mon = m && monthOf(m[1])
+  if (mon) return { d: `${m[3]}-${p2(mon)}-${p2(m[2])}`, t: hm(m[4], m[5]) }
   // Day-first when ambiguous: FitNotes/Strong/Hevy all write unambiguous dates, so a
   // bare numeric one came through a spreadsheet, and those are usually European.
   m = v.match(/^(\d{1,2})[/.](\d{1,2})[/.](\d{4})(?:[, ]+(\d{1,2}):(\d{2}))?/)
