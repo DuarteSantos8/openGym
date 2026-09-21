@@ -571,7 +571,10 @@ function readBody(req) {
       if (!body || typeof body !== 'object' || Array.isArray(body)) return reject(new HttpError(400, 'invalid json'));
       resolve(body);
     });
-    req.on('error', reject);
+    // A browser hanging up mid-body — which is what pagehide does to an in-flight sync — is not
+    // the caller getting a request wrong, it is nobody being left to answer. Marked so the
+    // catch-all at the bottom says one line instead of a stack trace and a 500 into a dead socket.
+    req.on('error', e => reject(Object.assign(e, { clientGone: true })));
   });
 }
 // A caller-supplied field that is meant to be text. String() alone is not safe on a parsed body:
@@ -1254,6 +1257,7 @@ http.createServer(async (req, res) => {
   }
   try { await handler(req, res); }
   catch (e) {
+    if (e?.clientGone) { console.warn(key, 'client went away mid-body:', e.message); return; }
     if (e instanceof HttpError) {
       if (!res.headersSent) json(res, e.status, { error: e.message });
       return;
