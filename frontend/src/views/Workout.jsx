@@ -1,12 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { workoutControls } from '../lib/workout-controls.js'
 import { useUI } from '../store/useUI.js'
 import { exOr, betterWeight } from '../lib/exercises.js'
-import { usesBar, barWeightFor, plateSplit } from '../lib/bar.js'
+import { usesBar } from '../lib/bar.js'
+import { loadKindFor, baseWeightFor, inventoryFor, rowLoad, sameLoad, plateDelta } from '../lib/plates.js'
 import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, freestyleConfig, defaultConfig, setsDoneActive, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, stepEffort, capEffort, cascadeWeight, insertWarmupRow, removeRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor } from '../lib/history.js'
-import { fmtNum, capWords, fmtDate, todayISO, exCount, DAYN } from '../lib/format.js'
+import { fmtNum, fmtPlate, capWords, fmtDate, todayISO, exCount, DAYN } from '../lib/format.js'
 import { beep, vibrate, unlock } from '../lib/sound.js'
 import { t, exerciseNameFor } from '../lib/i18n.js'
 import { api, appBase } from '../lib/api.js'
@@ -202,18 +203,57 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
   // Everything about this exercise that is not a set you are logging right now lives behind one
   // button. What used to be a row of buttons in the header, a chip under the bar, a strip of
   // three under the sets and four more below the card is a single list you open once a session.
-  const barInfo = (!cardio && !(bw && !added) && usesBar(ex)) ? (() => {
-    const bar = barWeightFor(S, entry.id)
-    if (bar == null || bar < 0) return null
-    const nextW = entry.sets.find(s => !s.done)?.w
-    const refW = nextW > 0 ? nextW : Math.max(0, ...entry.sets.map(s => s.w || 0))
-    const split = plateSplit(refW, bar)
-    const perSide = split != null ? t('{0} per side', fmtNum(split) + ' ' + S.unit) : null
-    // With no bar there is no bar weight worth naming — the chip is then just the plate math,
-    // and it still opens the same sheet to turn it back on (issue #138).
-    if (bar === 0) return perSide ? { bar, text: perSide } : null
-    return { bar, text: t('Bar {0}', fmtNum(bar) + ' ' + S.unit) + (perSide ? ' · ' + perSide : '') }
-  })() : null
+  // Plate loading, per set row (lib/plates.js): which plates make THIS row's weight, from the
+  // plates you own. 'pairs' splits what is beyond the bar per side, 'single' is one stack (a
+  // belt, a sled), 'none' shows nothing. A unilateral row logs each side's own weight; a bar is
+  // the same bar for both legs, so the line uses the sides' weight while they agree (or only one
+  // side has a number yet) and stays away once they differ. Only reps mode has a weight to load.
+  // The rows and their drop-set sub-rows form one sequence in the order the bar sees them, keyed
+  // `i` for a set and `i:dN` for its N-th drop; a rest-pause burst keeps the set's weight, so it
+  // is not in the sequence.
+  const loadKind = mode === 'reps' ? loadKindFor(S, cfg) : 'none'
+  const base = baseWeightFor(S, entry.id)
+  const loadSeq = loadKind === 'none' ? [] : (() => {
+    const inv = inventoryFor(S)
+    const out = []
+    entry.sets.forEach((s, i) => {
+      let w = s.w
+      if (perSide && isSideSet(s)) {
+        const L = s.sides.L?.w || 0, R = s.sides.R?.w || 0
+        if (L && R && L !== R) return
+        w = L || R
+      }
+      out.push({ key: String(i), load: rowLoad(loadKind, w, base, inv) })
+      dropsOf(s).forEach((d, di) => out.push({ key: i + ':d' + di, load: rowLoad(loadKind, d.w, base, inv) }))
+    })
+    return out
+  })()
+  const loadSummary = loadKind === 'none' ? t('Off')
+    : loadKind === 'single' ? t('Single stack')
+      : base > 0 ? t('Bar {0}', fmtNum(base) + ' ' + S.unit) : usesBar(ex) ? t('No bar') : t('Per side')
+  // The line under a set row (or a drop sub-row): shown on the first loaded row and whenever the
+  // stack changes from the loaded row before it, so a run of equal weights shows its plates once.
+  // What to strip and what to add rides along, except in the compact view.
+  const loadLine = key => {
+    const at = loadSeq.findIndex(x => x.key === key)
+    const L = at >= 0 ? loadSeq[at].load : null
+    if (!L) return null
+    let p = at - 1
+    while (p >= 0 && !loadSeq[p].load) p--
+    const prev = p >= 0 ? loadSeq[p].load : null
+    if (prev && sameLoad(prev, L)) return null
+    // "+" between plates: "45 + 5 per side" reads as a sum, a dot did not (Boris, 2026-09-13).
+    const stack = L.plates.map(w => fmtPlate(w)).join(' + ')
+    const text = L.barOnly ? t('Bar only')
+      : L.kind === 'pairs' ? t('{0} per side', stack || '—') : t('Load {0}', stack || '—')
+    const d = prev && !dense ? plateDelta(prev.plates, L.plates) : null
+    const moves = d ? [...d.strip.map(w => '−' + fmtPlate(w)), ...d.add.map(w => '+' + fmtPlate(w))] : []
+    return <div className="plateline">
+      <Icon name="plate" />
+      <span>{text}{L.missing > 0 && <> · <span className="short">{t('{0} short', fmtPlate(L.missing) + ' ' + S.unit)}</span></>}</span>
+      {moves.length > 0 && <span className="moves">{moves.join(' ')}</span>}
+    </div>
+  }
   const openMore = () => menuSheet({
     title: exerciseNameFor(ex),
     items: [
@@ -221,7 +261,7 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
       { icon: 'info', label: t('Details'), onClick: () => exerciseDetailSheet(ex) },
       { icon: 'history', label: t('History'), sub: last ? t('Last time') + ' ' + fmtDate(last.d) : undefined, onClick: () => exerciseHistorySheet(entry.id) },
       onProgressionSettings && { icon: 'chartLine', label: t('Progression settings'), sub: guidance ? t(guidance.policyLabel) : undefined, onClick: onProgressionSettings },
-      barInfo && { icon: 'barbell', label: t('Bar weight'), sub: barInfo.text, onClick: () => barWeightSheet(entry.id) },
+      mode === 'reps' && { icon: 'plate', label: t('Plate loading'), sub: loadSummary, onClick: () => barWeightSheet(entry.id, cfg) },
       { icon: 'flame', label: t('Add warm-up set'), onClick: onAddWarmup },
       onPairPrev && { icon: 'link', label: t('Make superset with previous'), onClick: onPairPrev },
       onPairNext && { icon: 'link', label: t('Make superset with next'), onClick: onPairNext },
@@ -404,13 +444,6 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
     </div>}
     {entry.note && <div className="exnote">{entry.note}</div>}
     {last && <div className="small dim" style={{ marginBottom: 4 }}>{t('Last time')} ({fmtDate(last.d)}): {last.sets.map(s => setLabel(entry.id, s, last.target)).join(', ')}</div>}
-    {/* Bar + plates for barbell work: what to load per side for the set in front of you
-        (first undone set; the heaviest row once everything is checked). The logged number
-        stays the total — this chip is the split, and tapping it edits the bar's own weight
-        (S.barWeights, per exercise) mid-workout. Weight ≤ bar leaves just the bar. */}
-    {barInfo && <div className="small dim" style={{ marginBottom: 6, display: 'flex', alignItems: 'center', gap: 5 }}>
-      <Icon name="dumbbell" style={{ fontSize: 12 }} />{barInfo.text}
-    </div>}
     {guidance && <button type="button" className={'progline' + (plan.kind === 'deload' ? ' warn' : '')}
       aria-label={t('Open progression settings')} onClick={onProgressionSettings}>
       <Icon name={plan.kind === 'up' ? 'arrowUp' : plan.kind === 'deload' ? 'arrowDown' : 'lightbulb'} />
@@ -455,6 +488,7 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
             <Check checked={s.done} onChange={() => onToggle(i)} />
           </div>
           )}
+          {loadLine(String(i))}
           {/* Drop-sets and rest-pause bursts extend this same row — no long rest, no new set.
               A planned exercise arrives with these already filled in (applyIntensifierPlan);
               every value here is just as editable as the main row's own weight/reps. */}
@@ -466,7 +500,7 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
                 {miniStepper(d.r, 1, false, v => setDropField(i, di, 'r', v))}
                 <button className="iconbtn" aria-label={t('Remove drop')} onClick={() => removeDrop(i, di)}><Icon name="xmark" /></button>
               </div>
-            ))}
+            )).flatMap((el, di) => [el, <Fragment key={'dl' + di}>{loadLine(i + ':d' + di)}</Fragment>])}
             {clustersOf(s).map((c, ci) => (
               <div className="subrow" key={'c' + ci}>
                 <span className="subn">{t('Burst {0}', ci + 1)}</span>
