@@ -9,12 +9,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
-import net from 'node:net';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { boundPort } from './helpers.mjs';
 
 const API = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SECRET = crypto.randomBytes(32).toString('hex');
@@ -26,10 +26,6 @@ function mintSession(uid) {
 }
 const cookie = { Cookie: `gymsid=${mintSession('u_test_1')}` };
 
-const freePort = () => new Promise(r => {
-  const s = net.createServer(); s.listen(0, '127.0.0.1', () => { const p = s.address().port; s.close(() => r(p)); });
-});
-
 const USERS = [
   { id: 'u_test_1', name: 'One', created: new Date().toISOString() },
   { id: 'u_test_2', name: 'Two', created: new Date().toISOString() }
@@ -39,21 +35,18 @@ async function startServer(t, subs = []) {
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gym-reminder-'));
   fs.writeFileSync(path.join(dataDir, 'secret'), SECRET, { mode: 0o600 });
   fs.writeFileSync(path.join(dataDir, 'db.json'), JSON.stringify({ users: USERS, creds: [], subs, invites: [] }));
-  const port = await freePort();
   const child = spawn(process.execPath, ['server.js'], {
     cwd: API, stdio: ['ignore', 'pipe', 'pipe'],
-    env: { ...process.env, PORT: String(port), DATA_DIR: dataDir, ORIGIN: 'http://localhost:8080', RP_ID: 'localhost', REMINDER_TICK_MS: '300' }
+    env: { ...process.env, PORT: '0', DATA_DIR: dataDir, ORIGIN: 'http://localhost:8080', RP_ID: 'localhost', REMINDER_TICK_MS: '300' }
   });
-  const h = { api: `http://127.0.0.1:${port}`, dataDir, child, log: '' };
+  const h = { api: '', dataDir, child, log: '' };
   child.stdout.on('data', d => h.log += d);
   child.stderr.on('data', d => h.log += d);
   t.after(() => { child.kill('SIGKILL'); fs.rmSync(dataDir, { recursive: true, force: true }); });
-  let up = false;
-  for (let i = 0; i < 100 && !up; i++) {
-    try { up = (await fetch(`${h.api}/api/health`)).ok; } catch { /* not up yet */ }
-    if (!up) await new Promise(r => setTimeout(r, 100));
-  }
-  assert.ok(up, `server never came up:\n${h.log}`);
+  // The boot line carries the port the listener bound, so it is both the address and the
+  // readiness signal — see boundPort in helpers.mjs for why the test does not pick one.
+  h.port = await boundPort(child, () => h.log);
+  h.api = `http://127.0.0.1:${h.port}`;
   return h;
 }
 
@@ -69,9 +62,11 @@ test('PUT /api/data refuses a state whose workouts or routines is not an array',
   }
   assert.equal(fs.existsSync(file), false, 'nothing landed on disk');
 
-  // the shapes real clients send still go through: arrays, the field left out, or null
+  // the shapes real clients send still go through: arrays, the field left out, or null.
+  // (Something of the profile has to be in there — a document that is only `_ts`/`_rev` is the
+  // empty push the route refuses, so the "left out" case carries a real key of its own.)
   assert.equal((await put({ _ts: 2, workouts: [], routines: [] })).status, 200);
-  assert.equal((await put({ _ts: 3 })).status, 200);
+  assert.equal((await put({ _ts: 3, unit: 'kg' })).status, 200);
   assert.equal((await put({ _ts: 4, workouts: null, routines: null })).status, 200);
   assert.equal(JSON.parse(fs.readFileSync(file, 'utf8'))._ts, 4);
 });

@@ -117,14 +117,24 @@ paths:
     get:
       tags: [meta]
       operationId: getConfig
-      summary: Public instance configuration
+      summary: Instance configuration
       description: |
         The flags the login screen needs before anyone is signed in. Both reflect
         environment variables on the server (`INVITE_ONLY`, `ALLOW_GUEST`).
+
+        A caller with a valid session also gets a `coach` key: the block when the
+        instance has the AI Coach switched on **and** a provider connected, and `null`
+        when it has not. A caller with no session gets no key at all — the block names
+        the provider this instance talks to, which is the same fact
+        `GET /api/coach/disclosure` will not hand out unauthenticated.
+
+        The key is always present for a session, `null` included, so a client that
+        caches this answer can tell "no Coach on this instance" from "you were not
+        signed in when you asked" and knows whether asking again would change it.
       security: []
       responses:
         '200':
-          description: Instance flags.
+          description: Instance flags, plus the Coach block for a signed-in caller.
           content:
             application/json:
               schema:
@@ -138,7 +148,33 @@ paths:
                     description: >-
                       When false, the client hides "continue without account".
                       Guest mode is purely client-side and never calls this API.
-              example: { invite_only: true, allow_guest: false }
+                  coach:
+                    description: >-
+                      Present for a signed-in caller and absent otherwise; `null` when this
+                      instance has no Coach enabled and connected. Every Coach entry point
+                      in the client hangs off the block being there.
+                    type: ['object', 'null']
+                    properties:
+                      enabled: { type: boolean, const: true }
+                      provider:
+                        type: string
+                        description: Provider id, e.g. `anthropic`, `compatible`, `fixture`.
+                      providerLabel: { type: string, description: Human-readable provider name. }
+                      authMode:
+                        type: string
+                        enum: [instance, profile]
+                        description: Whose credential the jobs spend.
+                      community:
+                        type: boolean
+                        description: Whether "compare with others" is offered on this instance.
+              examples:
+                anonymous: { value: { invite_only: true, allow_guest: false } }
+                signedInNoCoach: { value: { invite_only: true, allow_guest: false, coach: null } }
+                signedIn:
+                  value:
+                    invite_only: true
+                    allow_guest: false
+                    coach: { enabled: true, provider: compatible, providerLabel: "OpenAI-compatible endpoint", authMode: instance, community: false }
 
   /api/me:
     get:
@@ -560,10 +596,11 @@ paths:
                       - type: 'null'
         '400':
           description: >-
-            `state` missing or not an object, `state` an array, or `workouts`/`routines`
-            set to anything other than an array or null. Entries inside those two arrays
-            that are not objects (`null`, numbers, nested arrays) are dropped before the
-            write rather than refused, so a client with a damaged copy still syncs.
+            `state` missing or not an object, `state` an array or an object with nothing of
+            the profile in it (`_rev`/`_ts` do not count — both would empty the profile), or
+            `workouts`/`routines` set to anything other than an array or null. Entries inside
+            those two arrays that are not objects (`null`, numbers, nested arrays) are dropped
+            before the write rather than refused, so a client with a damaged copy still syncs.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }

@@ -237,7 +237,13 @@ async function sendPush(userId, payload, deviceId) {
     }
   };
   await Promise.all(Array.from({ length: Math.min(PUSH_CONCURRENCY, subs.length) }, worker));
-  if (dirty) saveDb();
+  // Pruning dead subscriptions is bookkeeping, not the send. Most callers do not await this
+  // function at all (the rest-timer setTimeout, the Coach proposal hook), so a ./data that cannot
+  // be written right now — disk full, read-only mount, EIO — would turn the throw into an
+  // unhandled rejection and take the process down. The row is already gone from db.subs in
+  // memory, so only the copy on disk lags: the next saveDb() that succeeds, from any route,
+  // writes it out, and a restart re-reads the old file and prunes it again on the next send.
+  if (dirty) { try { saveDb(); } catch (e) { console.error('push: could not save db.json', e.message); } }
 }
 
 // Rest-timer alerts: client schedules on start/extend, cancels on skip or on-screen completion —
@@ -311,14 +317,33 @@ const minutesLate = (time, now) => hhmmToMin(now.hhmm) - hhmmToMin(time);
 // The tick reads every subscribed user's state file every 10 s. Most of those files do not
 // change between ticks; a stat is far cheaper than a read and a parse of a state that can be
 // megabytes, and it keeps the tick short — a slow tick was one more way to miss the minute.
-const stateCache = new Map(); // uid -> { mtimeMs, size, S }
+//
+// What it holds is a whole parsed state per user, and a state can be megabytes, so the two
+// bounds below are what keep it a cache rather than a leak on an instance with more than one
+// person on it: an entry nobody has touched for ten minutes is dropped, and the map never holds
+// more than STATE_CACHE_MAX users. Map iteration order is insertion order, so re-inserting on
+// every hit makes the first key the least recently hit one — which is the one to evict.
+const STATE_CACHE_MAX = 64;
+// Ten minutes: far longer than the gap between a client's polls (30 s) or the reminder tick's
+// (10 s), so nobody who is actually using the instance is ever evicted by age; the tests shorten
+// it, as they do REMINDER_TICK_MS.
+const STATE_CACHE_TTL_MS = Math.max(50, +(process.env.STATE_CACHE_TTL_MS || 600000) || 600000);
+const stateCache = new Map(); // uid -> { mtimeMs, size, hitAt, S }
 function readStateCached(uid) {
   let st;
   try { st = fs.statSync(stateFile(uid)); } catch { stateCache.delete(uid); return null; }
+  const now = Date.now();
+  for (const [k, v] of stateCache) if (now - v.hitAt > STATE_CACHE_TTL_MS) stateCache.delete(k);
   const hit = stateCache.get(uid);
-  if (hit && hit.mtimeMs === st.mtimeMs && hit.size === st.size) return hit.S;
+  stateCache.delete(uid);                       // re-inserted below, so the map stays in hit order
+  if (hit && hit.mtimeMs === st.mtimeMs && hit.size === st.size) {
+    hit.hitAt = now;
+    stateCache.set(uid, hit);
+    return hit.S;
+  }
   const S = readState(uid);
-  stateCache.set(uid, { mtimeMs: st.mtimeMs, size: st.size, S });
+  stateCache.set(uid, { mtimeMs: st.mtimeMs, size: st.size, hitAt: now, S });
+  while (stateCache.size > STATE_CACHE_MAX) stateCache.delete(stateCache.keys().next().value);
   return S;
 }
 setInterval(() => {
@@ -565,7 +590,10 @@ function readBody(req) {
       if (!body || typeof body !== 'object' || Array.isArray(body)) return reject(new HttpError(400, 'invalid json'));
       resolve(body);
     });
-    req.on('error', reject);
+    // A browser hanging up mid-body — which is what pagehide does to an in-flight sync — is not
+    // the caller getting a request wrong, it is nobody being left to answer. Marked so the
+    // catch-all at the bottom says one line instead of a stack trace and a 500 into a dead socket.
+    req.on('error', e => reject(Object.assign(e, { clientGone: true })));
   });
 }
 // A caller-supplied field that is meant to be text. String() alone is not safe on a parsed body:
@@ -689,8 +717,24 @@ const routes = {
   // single flag every piece of Coach UI hangs off, so an unconfigured instance is byte-for-byte
   // the app it was before the feature existed.
   'GET /api/config': async (req, res) => {
-    const coach = coachConfig.publicConfig();
-    json(res, 200, { invite_only: INVITE_ONLY, allow_guest: ALLOW_GUEST, ...(coach ? { coach } : {}) });
+    // The Coach block names the provider this instance is wired to — the same fact
+    // /api/coach/disclosure refuses to hand out without a session, and for the same reason: on an
+    // invite-only instance, which model this box talks to is nobody's business who has not been
+    // let in. The two flags above it are what the login screen and the pre-login boot read
+    // (invite code field, "continue without account"), so those stay public.
+    //
+    // Every Coach consumer on the client side already requires a signed-in user before it looks
+    // at this block (lib/coach.js coachAvailable), so nothing that could render loses anything.
+    //
+    // A signed-in caller always gets the key, even on an instance with no Coach, where it is
+    // null. The client caches this answer for the page load and has to know whether the copy it
+    // holds was made for a session: without the key it cannot tell "no Coach here" from "you
+    // were not signed in when you asked", and would re-ask on every sign-in on every instance
+    // that has no Coach. The key's absence is that answer.
+    json(res, 200, {
+      invite_only: INVITE_ONLY, allow_guest: ALLOW_GUEST,
+      ...(readSession(req) ? { coach: coachConfig.publicConfig() } : {})
+    });
   },
 
   'GET /api/me': async (req, res) => {
@@ -901,10 +945,13 @@ const routes = {
   // Just the revision: the client asks this every half minute while it is open and on every
   // return to the foreground, and fetches the document only when the number moved — a signed-in
   // device is meant to show what the server has, and this is what keeps that cheap.
+  // Cheap means the stat cache the reminder tick already uses: parsing a megabytes-long document
+  // to read one number off it cost 31 ms per poll on a 2.4 MB state, all of it on the event loop.
+  // Every write goes through atomicWrite's rename, so the cache can never hand out a stale rev.
   'GET /api/data/rev': async (req, res) => {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
-    json(res, 200, { rev: readState(user.id)?._rev || 0 });
+    json(res, 200, { rev: readStateCached(user.id)?._rev || 0 });
   },
 
   'PUT /api/data': async (req, res) => {
@@ -912,6 +959,17 @@ const routes = {
     if (!user) return json(res, 401, { error: 'not signed in' });
     const body = await readBody(req);
     if (!body.state || typeof body.state !== 'object') return json(res, 400, { error: 'state required' });
+    // An object with nothing of the profile in it empties the document with the counter left
+    // intact: what lands on disk is `{"_rev":n+1}`, every routine, workout and weigh-in gone, and
+    // the next poll reports a revision the client accepts as its own. `_rev` and `_ts` do not
+    // count towards "something of the profile" — both are bookkeeping this route writes or echoes
+    // itself, so `{}` and `{"_rev":5}` are the same push and get the same refusal. Nothing
+    // shipped sends either: the web and mobile clients push a state built on DEF
+    // (frontend/src/store/useStore.js), which always carries its keys. An array is a document
+    // loss of its own and is left to the `invalid state` check below, which already refuses it.
+    if (!Array.isArray(body.state) && !Object.keys(body.state).some(k => k !== '_rev' && k !== '_ts')) {
+      return json(res, 400, { error: 'state required' });
+    }
     // The reminder tick and the admin routes iterate these two on the server's side, so a truthy
     // non-array would throw there on every pass for as long as it sat on disk. Absent or null is
     // fine — every client fills its own defaults. An array is `typeof 'object'` but no document:
@@ -939,6 +997,13 @@ const routes = {
     delete body.state.active;              // in-progress workouts stay device-local
     body.state._rev = curRev + 1;          // server-owned; whatever the client sent is ignored
     atomicWrite(stateFile(user.id), JSON.stringify(body.state));
+    // The stat cache cannot see this write on its own: mtime granularity is 4 ms here (ext4 on
+    // this kernel — 3901 of 3999 back-to-back same-size writes shared one timestamp), and a
+    // `_rev` going from 7 to 8 does not change the file's size, so two writes inside one 4 ms
+    // tick are the same (mtimeMs, size) key. A reader that sampled between them would then serve
+    // the old revision until some later write happened to land on a different tick. This is the
+    // only writer of a state file in the tree, so evicting here is the whole fix.
+    stateCache.delete(user.id);
     json(res, 200, { ok: true, ts: body.state._ts || null, rev: body.state._rev });
   },
 
@@ -996,7 +1061,7 @@ const routes = {
   'POST /api/push/test': async (req, res) => {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
-    await sendPush(user.id, testPush(readState(user.id)?.lang));
+    await sendPush(user.id, testPush(readStateCached(user.id)?.lang));
     json(res, 200, { ok: true });
   },
 
@@ -1011,7 +1076,7 @@ const routes = {
     const n = typeof raw === 'number' || typeof raw === 'string' ? Number(raw) : NaN;
     if (!(n >= 1)) return json(res, 400, { error: 'seconds required' });
     const sec = Math.min(3600, Math.round(n));
-    scheduleRestTimer(user.id, deviceIdOf(body.deviceId), sec, readState(user.id)?.lang);
+    scheduleRestTimer(user.id, deviceIdOf(body.deviceId), sec, readStateCached(user.id)?.lang);
     json(res, 200, { ok: true });
   },
 
@@ -1216,7 +1281,7 @@ coachJobs.setProposalHook((uid, pending) => {
 startCadence({ users: () => db.users, userNow });
 startWarmup();
 
-http.createServer(async (req, res) => {
+const server = http.createServer(async (req, res) => {
   // Same-origin (the deployed nginx-proxied web app) never triggers CORS, so this only matters
   // for the paired mobile app calling in from its own WebView origin. It carries no cookie
   // (auth is the Authorization header instead), so Allow-Credentials is deliberately never set —
@@ -1248,6 +1313,7 @@ http.createServer(async (req, res) => {
   }
   try { await handler(req, res); }
   catch (e) {
+    if (e?.clientGone) { console.warn(key, 'client went away mid-body:', e.message); return; }
     if (e instanceof HttpError) {
       if (!res.headersSent) json(res, e.status, { error: e.message });
       return;
@@ -1255,4 +1321,9 @@ http.createServer(async (req, res) => {
     console.error(key, e);
     if (!res.headersSent) json(res, 500, { error: 'server error' });
   }
-}).listen(PORT, () => console.log(`gym-api on :${PORT} (rpID=${RP_ID}, origin=${ORIGIN})`));
+});
+// The port is read back off the listener rather than echoed from PORT, so the line states the
+// port that was actually bound: with PORT=0 the OS picks one, and a caller that did not choose it
+// (the tests spawn the server that way, and so does anyone running two instances on one box) has
+// no other way to learn it.
+server.listen(PORT, () => console.log(`gym-api on :${server.address().port} (rpID=${RP_ID}, origin=${ORIGIN})`));
