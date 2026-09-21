@@ -27,9 +27,19 @@ describe('Brazilian Portuguese locale', () => {
       .sort(byCodeUnit)
     const fingerprint = createHash('sha256').update(JSON.stringify(inherited)).digest('hex')
 
-    expect(Object.keys(PT_BR_OVERRIDES)).toHaveLength(645)
-    expect(inherited).toHaveLength(660)
-    // If this fails, review the changed keys and wording before accepting a new hash. From
+    // Every override names a real source string, so the two sets partition pt-PT's keys between
+    // them and the fingerprint below covers everything not overridden. A typo'd override key
+    // would otherwise sit in the file translating nothing.
+    const stray = Object.keys(PT_BR_OVERRIDES).filter(key => !(key in pt))
+    expect(stray, 'override keys that are not pt-PT keys').toEqual([])
+    expect(Object.keys(PT_BR_OVERRIDES).length + inherited.length).toBe(Object.keys(pt).length)
+    // …and each one really reaches the pack, whatever the spread order does.
+    for (const [key, value] of Object.entries(PT_BR_OVERRIDES)) expect(ptBR[key], key).toBe(value)
+
+    // The counts themselves are read off the pack rather than pinned here: a new UI string lands
+    // in pt.js and pt-BR.js together and moves both, and a number in a test that every new string
+    // has to be taught is a number nobody reads. What the numbers stood for is asserted above.
+    // If the hash fails, review the changed keys and wording before accepting a new one. From
     // frontend/: node scripts/pt-br-inheritance-fingerprint.mjs --list
     expect(fingerprint, 'pt-PT inheritance changed; review the inherited pt-BR wording').toBe('a2027d64b3944dcef644b11b4d9688b88fe5cff0693acf04c73f0667e2b86825')
   })
