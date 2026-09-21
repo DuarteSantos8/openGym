@@ -29,13 +29,29 @@ export const durPart = ms => (ms >= 60000 ? [fmtDur(ms)] : [])
 // Exercise names are stored lower-case and shown through CSS `capitalize`; text that has no
 // element of its own (a toast) capitalises here instead.
 export const capWords = s => String(s || '').replace(/(^|[\s(\-\/])(\p{Ll})/gu, (m, pre, ch) => pre + ch.toUpperCase())
-export const fmtNum = n => (Math.round(n * 10) / 10).toLocaleString(dateLocale())
+/* How many decimals a weight is shown with. One is enough for plate-loadable numbers, but a
+ * per-side figure from kg plates lands on .25 and .75 and reading those as .3 and .8 is the
+ * complaint in issue #139 — as is microplate work. The setting is read here rather than passed
+ * through sixty-odd call sites, the same way the date locale is; App.jsx pushes it whenever
+ * `S.wdec` changes.
+ *
+ * It only ever adds precision that is really there: a whole number still prints whole, and
+ * 62.5 is 62.5 either way. Nothing rounds differently in storage — this is display only.
+ */
+let decimals = 1
+export const setWeightDecimals = n => { decimals = n === 2 ? 2 : 1 }
+export const weightDecimals = () => decimals
+export const fmtNum = n => {
+  const p = decimals === 2 ? 100 : 10
+  return (Math.round(n * p) / p).toLocaleString(dateLocale(), { maximumFractionDigits: decimals })
+}
 // Volume stays in the profile's unit throughout: the old shorthand turned anything over
 // 10 000 into "t", which is wrong for a pound profile and made one list mix "18.8t" with
 // "7'535 kg" — two numbers you can't compare at a glance.
 export const fmtVol = (v, unit) => fmtNum(v) + ' ' + unit
 // Plural forms are not automatic when the English string is the key.
 export const exCount = n => t(n === 1 ? '{0} exercise' : '{0} exercises', n)
+export const routineCount = n => t(n === 1 ? '{0} routine' : '{0} routines', n)
 
 /* ---------------------------------------------------------------- week start --
    Where a week begins is a local convention, not a fact: most of Europe starts on

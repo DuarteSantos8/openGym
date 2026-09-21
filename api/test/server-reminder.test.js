@@ -163,3 +163,22 @@ test('a reminder 20 minutes past is not delivered late, and a day already traine
   await wait(1500);
   assert.equal(firings(h.log), 0, `a trained day must stay silent:\n${h.log}`);
 });
+
+/* A null entry inside an otherwise fine list is not a shape the tick can refuse at the door:
+   PUT /api/data drops those now, but a file written before it did still has them, and the tick
+   walks both lists (`w.d`, `r.id`). It threw on the first entry and skipped the user — every
+   day, silently, for as long as the file stayed that way. The entries are skipped; the reminder
+   is not. */
+test('a null entry in workouts or routines does not cost that profile its reminder', async t => {
+  const late = hhmmMinusMinutes(2);
+  if (!late.sameDay) return t.skip('just after midnight UTC — a same-day window cannot be set up');
+  const h = await startServer(t, [sub]);
+  fs.writeFileSync(path.join(h.dataDir, 'state-u_test_1.json'), goodState(late.hhmm, {
+    workouts: [null, { id: 'w1', d: '2026-01-01' }],
+    routines: [null, { id: 'r1', name: 'Full body', emoji: '💪', ex: [] }]
+  }));
+  const deadline = Date.now() + 30000;
+  while (Date.now() < deadline && !firings(h.log)) await wait(300);
+  assert.equal(firings(h.log), 1, h.log);
+  assert.doesNotMatch(h.log, /reminder tick u_test_1 TypeError/, h.log);
+});

@@ -20,6 +20,7 @@ const LEGACY_SNAPSHOT_ID = 'legacy-snapshot-only'
 const mocks = vi.hoisted(() => ({
   maps: [],
   mapMounts: 0,
+  exerciseHistorySheet: vi.fn(),
   S: {
     unit: 'kg', body: 'male', effort: 'rir', targetW: null,
     bodyweight: [], routines: [], workouts: [],
@@ -32,6 +33,7 @@ vi.mock('../store/useStore.js', () => ({
 vi.mock('react-router-dom', () => ({ useNavigate: () => () => {} }))
 vi.mock('../sheets.jsx', () => ({
   bwSheet: () => {}, goalSheet: () => {}, calendarSheet: () => {}, workoutDetailSheet: () => {},
+  exerciseHistorySheet: mocks.exerciseHistorySheet,
   WorkoutRow: () => React.createElement('div'), bwDeltaColor: () => 'inherit',
 }))
 vi.mock('../components/LineChart.jsx', () => ({ default: () => React.createElement('div') }))
@@ -139,6 +141,7 @@ function resetFixture(workouts = lifecycleWorkouts()) {
   mocks.S.workouts = workouts
   mocks.maps.length = 0
   mocks.mapMounts = 0
+  mocks.exerciseHistorySheet.mockClear()
   useUI.setState({ sheets: [] })
 }
 
@@ -303,6 +306,36 @@ describe('Stats muscle recovery view runtime', () => {
     expect(Object.values(strengthMap.load).every(value => value < 1)).toBe(true)
     expect(Math.min(...Object.values(strengthMap.load))).toBe(STRENGTH_FLOOR)
     expect(strengthMap.thresholds.at(-1)).toEqual({ at: 1, level: 4 })
+  })
+})
+
+describe('Stats strength exercise rows', () => {
+  // The rows under "Exercises · <muscle>" are presented as buttons (role, tabIndex, pointer
+  // cursor) but for a year called a handler that never existed, so every tap threw
+  // "onExercise is not defined" and opened nothing (QA C13). A tap now opens the exercise's
+  // history sheet — the one place that already draws the Est. 1RM curve the row quotes.
+  it('opens the exercise history sheet when a row is tapped instead of throwing', async () => {
+    resetFixture(exercisePickerWorkouts())
+    await mountStats()
+    const thrown = []
+    dom.addEventListener('error', e => { thrown.push(e.error || e.message); e.preventDefault() })
+
+    await click(viewButton('Strength'))
+    await click(muscleCard().querySelector('[data-muscle="chest"]'))
+    expect(muscleCard().textContent).toContain('Exercises · Chest')
+    const row = [...muscleCard().querySelectorAll('.mrow[role="button"]')].find(el => el.textContent.includes('Est. 1RM'))
+    expect(row, 'expected a tappable exercise row for the chest').toBeTruthy()
+    expect(row.textContent).toContain('barbell bench press')
+
+    await click(row)
+    expect(thrown).toEqual([])
+    expect(mocks.exerciseHistorySheet).toHaveBeenCalledTimes(1)
+    expect(mocks.exerciseHistorySheet).toHaveBeenCalledWith('0025')
+
+    // The keyboard path of tappable() must land in the same place.
+    await act(async () => { row.dispatchEvent(new dom.KeyboardEvent('keydown', { key: 'Enter', bubbles: true })) })
+    expect(thrown).toEqual([])
+    expect(mocks.exerciseHistorySheet).toHaveBeenCalledTimes(2)
   })
 })
 

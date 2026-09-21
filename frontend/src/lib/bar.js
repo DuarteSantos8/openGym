@@ -30,8 +30,20 @@ export const usesBar = exOrId => BAR_EQ.has(exOf(exOrId)?.eq)
 export const defaultBarWeight = (eq, unit) =>
   (unit === 'lb' ? DEFAULT_BAR_LB : DEFAULT_BAR_KG)[eq] ?? null
 
-/** True when the user has set their own bar weight for this exercise. */
-export const hasBarOverride = (S, exId) => ((S?.barWeights || {})[exId] || 0) > 0
+/**
+ * A stored 0 is "no bar", not "unset" (issue #138). Smith machines that counterbalance their
+ * carriage put nothing in your hands, so the plate math and the drop-set steps have to start
+ * from the weight you logged, not from a 9 kg bar that is not there. The key being absent is
+ * what means "use the default for this bar type" — which is why the editor clears the key
+ * rather than writing a 0 when you ask for the default back.
+ */
+export const isNoBar = (S, exId) => (S?.barWeights || {})[exId] === 0
+
+/** True when the user has set their own bar weight for this exercise — including "no bar". */
+export const hasBarOverride = (S, exId) => {
+  const own = (S?.barWeights || {})[exId]
+  return own === 0 || own > 0
+}
 
 /**
  * Effective bar weight for one exercise, in the profile unit: the explicit
@@ -42,6 +54,7 @@ export function barWeightFor(S, exOrId) {
   const ex = exOf(exOrId)
   if (!BAR_EQ.has(ex?.eq)) return null
   const own = (S?.barWeights || {})[ex.id]
+  if (own === 0) return 0
   if (own > 0) return own
   return defaultBarWeight(ex.eq, S?.unit)
 }
@@ -51,6 +64,8 @@ export function barWeightFor(S, exOrId) {
  * sensible to show — a missing number, or a total at or below the bar itself.
  */
 export function plateSplit(total, bar) {
-  if (!(total > 0) || !(bar > 0) || total <= bar) return null
+  // `bar` of 0 is a real answer, not a missing one: with no bar every kilo you logged is on the
+  // ends, so the split is simply half of it (issue #138).
+  if (!(total > 0) || !(bar >= 0) || bar === null || bar === undefined || total <= bar) return null
   return Math.round(((total - bar) / 2) * 100) / 100
 }

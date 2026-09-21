@@ -4,16 +4,16 @@ import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { workoutControls } from '../lib/workout-controls.js'
 import { useUI } from '../store/useUI.js'
-import { exOr } from '../lib/exercises.js'
+import { exOr, betterWeight } from '../lib/exercises.js'
 import { usesBar, barWeightFor, plateSplit } from '../lib/bar.js'
 import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, freestyleConfig, defaultConfig, setsDoneActive, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, stepEffort, capEffort, cascadeWeight, insertWarmupRow, removeRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor } from '../lib/history.js'
 import { fmtNum, capWords, fmtDate, todayISO, exCount, DAYN } from '../lib/format.js'
 import { beep, vibrate, unlock } from '../lib/sound.js'
 import { t, exerciseNameFor } from '../lib/i18n.js'
-import { api } from '../lib/api.js'
+import { api, appBase } from '../lib/api.js'
 import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor } from '../lib/supersetFlow.js'
 import Media from '../components/Media.jsx'
-import { startFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, finishWorkout, workoutCompleteSheet, confirmSheet, exerciseNoteSheet, sessionNoteSheet, swapActiveWorkoutExercise, barWeightSheet, menuSheet, effortPickerSheet, exerciseHistorySheet, addRoutineToSessionSheet } from '../sheets.jsx'
+import { startFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, finishWorkout, workoutCompleteSheet, confirmSheet, exerciseNoteSheet, sessionNoteSheet, renameWorkoutSheet, swapActiveWorkoutExercise, barWeightSheet, menuSheet, effortPickerSheet, exerciseHistorySheet, addRoutineToSessionSheet } from '../sheets.jsx'
 import { effortColor } from '../lib/effort.js'
 import Icon from '../components/Icon.jsx'
 import { Button, Check, NumberField } from '../components/ui.jsx'
@@ -22,6 +22,7 @@ import { progressionGuidance } from '../lib/progression-copy.js'
 import { glyphOf } from '../lib/glyphs.js'
 import { isWarmupRow, isDropSet, isRestPauseSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt } from '../lib/workout-model.js'
 import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit } from '../lib/active-workout-order.js'
+import { MUSCLE_NAME } from '../lib/muscles.js'
 
 /* ---------- start chooser (no active workout) ---------- */
 function StartChooser() {
@@ -130,7 +131,12 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
   // telling you what to do in it is behind you, and the block is already long.
   const pinnedNote = entry.sets.some(s => !s.done) ? pinnedNoteFor(S, entry.id) : null
   // The number is the heaviest logged set, or the working weight you kept.
-  const best = cardio ? 0 : Math.max(bestWeightFor(S, entry.id), (S.exWeights[entry.id] || {}).w || 0)
+  // On an assistance machine the best is the least help, and a 0 on either side means "nothing
+  // logged" rather than a record (issue #232).
+  const bestHist = bestWeightFor(S, entry.id)
+  const bestKept = (S.exWeights[entry.id] || {}).w || 0
+  const best = cardio ? 0
+    : bestHist > 0 && bestKept > 0 ? betterWeight(entry.id, bestHist, bestKept) : Math.max(bestHist, bestKept)
   // What the progression policy decided for this session, and why (issue #17). Computed when
   // the session was built so the reason matches the numbers already in the rows.
   const plan = entry.plan
@@ -195,11 +201,15 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
   // three under the sets and four more below the card is a single list you open once a session.
   const barInfo = (!cardio && !(bw && !added) && usesBar(ex)) ? (() => {
     const bar = barWeightFor(S, entry.id)
-    if (!(bar > 0)) return null
+    if (bar == null || bar < 0) return null
     const nextW = entry.sets.find(s => !s.done)?.w
     const refW = nextW > 0 ? nextW : Math.max(0, ...entry.sets.map(s => s.w || 0))
     const split = plateSplit(refW, bar)
-    return { bar, text: t('Bar {0}', fmtNum(bar) + ' ' + S.unit) + (split != null ? ' · ' + t('{0} per side', fmtNum(split) + ' ' + S.unit) : '') }
+    const perSide = split != null ? t('{0} per side', fmtNum(split) + ' ' + S.unit) : null
+    // With no bar there is no bar weight worth naming — the chip is then just the plate math,
+    // and it still opens the same sheet to turn it back on (issue #138).
+    if (bar === 0) return perSide ? { bar, text: perSide } : null
+    return { bar, text: t('Bar {0}', fmtNum(bar) + ' ' + S.unit) + (perSide ? ' · ' + perSide : '') }
   })() : null
   const openMore = () => menuSheet({
     title: exerciseNameFor(ex),
@@ -375,7 +385,7 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
           "{n} per side" chip — which halved the combined total for display — is gone: the split
           is no longer derived, it is what you enter. The tag only flags that this is per-side. */}
       {!cardio && !timed && isPerSide(cfg) && <span className="tag acc nocap"><Icon name="shuffle" />{t('Per side')}</span>}
-      {(ex.tg || ex.bp) && <span className="tag">{t(ex.tg || ex.bp)}</span>}
+      {(ex.tg || ex.bp) && <span className="tag">{t(MUSCLE_NAME[ex.tg] || ex.tg || ex.bp)}</span>}
       {ex.eq && <span className="tag">{t(ex.eq)}</span>}
       {best > 0 && <span className="tag nocap">{t('Best:')} {fmtNum(best)} {S.unit}</span>}
     </div>
@@ -405,8 +415,9 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
     </button>}
     </>}
     <div className="card" style={{ marginTop: 10, marginBottom: 0 }}>
-      {/* the header carries the same eff3 sizing as the rows, or the labels drift off their columns */}
-      <div className={'sethead' + (col3 ? ' eff3' : '')}><span className="n-sp" /><span className="w-sp">{col1.hd}</span>{col2 && <span className="r-sp">{col2.hd}</span>}{col3 && <span className="eff-sp">{col3.hd}</span>}{timed && <span className="ck-sp" />}<span className="ck-sp" /></div>
+      {/* the header carries the same eff3/timed sizing as the rows, or the labels drift off their
+          columns; over L/R rows it also has to skip the side badge that sits in front of the weight cell */}
+      <div className={'sethead' + (col3 ? ' eff3' : '') + (timed ? ' timed' : '') + (perSide ? ' per-side' : '') + (wc.steppers ? '' : ' plain')}><span className="n-sp" /><span className="w-sp">{col1.hd}</span>{col2 && <span className="r-sp">{col2.hd}</span>}{col3 && <span className="eff-sp">{col3.hd}</span>}{timed && <span className="ck-sp" />}<span className="ck-sp" /></div>
       {entry.sets.map((s, i) => {
         const warm = isWarmupRow(s)
         const warmBefore = i > 0 && isWarmupRow(entry.sets[i - 1])
@@ -429,7 +440,7 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
               </div>
             </div>
           ) : (
-          <div ref={el => onSetRowRef?.(i, el)} className={'setrow' + (s.done ? ' done' : '') + (col3 ? ' eff3' : '')}>
+          <div ref={el => onSetRowRef?.(i, el)} className={'setrow' + (s.done ? ' done' : '') + (col3 ? ' eff3' : '') + (timed ? ' timed' : '')}>
             <button type="button" className="n" aria-label={t('Set {0}', phaseNum)} title={t('More')} onClick={() => openSetMenu(s, i)}>{phaseNum}</button>
             {cell(s, i, col1, 'w')}
             {col2 && cell(s, i, col2, 'r')}
@@ -574,6 +585,39 @@ function ActiveWorkout() {
     const el = (setIdx >= 0 && setRefs.current.get(entry)?.get(setIdx)) || exRefs.current.get(entry)
     if (el && typeof el.scrollIntoView === 'function') el.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }, [cur, isSuperset, listMode, A.entries.length])
+  // The list opens at the exercise you are on, not at the top of the session (issue #224): you
+  // switch to it mid-workout to look at what comes before and after. Only on the way in — once
+  // the list is open, "current" moves because you tick rows in it, and a list that scrolls
+  // itself under your thumb is worse than one that stays put. List ↔ Compact counts as a way
+  // in: the rows change height, so the same scroll offset lands somewhere else.
+  //
+  // The scroll waits for the next frame rather than running in the effect itself. App.jsx
+  // restores the route's remembered position in a frame it asked for during the same commit
+  // (a reload, a back navigation), and a sheet closing (⋯ → Layout → List) puts the page back
+  // where it was before the sheet opened, in an effect cleanup that runs before this one —
+  // both would win over a scroll made right here. A frame asked for now runs after theirs.
+  const listRef = useRef(null)
+  const hdrRef = useRef(null)
+  useEffect(() => {
+    if (!listMode) return
+    const schedule = callback => window.requestAnimationFrame
+      ? window.requestAnimationFrame(callback)
+      : window.setTimeout(callback, 0)
+    const cancel = frame => window.cancelAnimationFrame
+      ? window.cancelAnimationFrame(frame)
+      : window.clearTimeout(frame)
+    const frame = schedule(() => {
+      const list = listRef.current
+      const el = list?.querySelector('.wl-unit.cur')
+      if (!el || typeof el.scrollIntoView !== 'function') return
+      // The sticky header grows when the workout name wraps; the unit's scroll margin (index.css)
+      // clears whatever height it has right now, with a one-line height as the fallback.
+      const hdrH = hdrRef.current?.offsetHeight
+      if (hdrH) list.style.setProperty('--whdr-h', hdrH + 'px')
+      el.scrollIntoView({ block: 'start' })
+    })
+    return () => cancel(frame)
+  }, [workoutView])
 
   const total = setUnitsTotal(A.entries)
   const done = setsDoneActive(A)
@@ -697,6 +741,7 @@ function ActiveWorkout() {
   // level down (it used to be the whole menu).
   const openViewMenu = () => menuSheet({
     items: [
+      { icon: 'pencil', label: t('Rename workout'), onClick: renameWorkoutSheet },
       { icon: 'plus', label: t('Add routine'), sub: t('Bring another routine into this session'), onClick: addRoutineToSessionSheet },
       { icon: 'list', label: t('Layout'), sub: LAYOUT_LABEL[workoutView] || LAYOUT_LABEL.cards, onClick: openLayoutMenu },
     ],
@@ -901,7 +946,7 @@ function ActiveWorkout() {
     return () => {
       stopped = true; clearInterval(iv)
       // best-effort "left" signal: sendBeacon survives a tab close, fetch covers in-app nav
-      try { navigator.sendBeacon?.('/api/activity', new Blob([JSON.stringify({ active: false })], { type: 'application/json' })) } catch { /* */ }
+      try { navigator.sendBeacon?.(appBase().replace(/\/$/, '') + '/api/activity', new Blob([JSON.stringify({ active: false })], { type: 'application/json' })) } catch { /* */ }
       api('/api/activity', { method: 'POST', body: JSON.stringify({ active: false }) }).catch(() => {})
     }
   }, [])
@@ -910,7 +955,7 @@ function ActiveWorkout() {
     {/* In list mode the whole session scrolls under the header, so the header (name, clock,
         set counter, discard/finish, progress) stays pinned — the one thing you want in view
         while you are somewhere in the middle of a long stack. Cards mode never scrolls far. */}
-    <div className={'whdr' + (listMode ? ' stick' : '')}>
+    <div className={'whdr' + (listMode ? ' stick' : '')} ref={hdrRef}>
     <div className="hdr">
       <button className="iconbtn" aria-label={t('Discard')} onClick={() => confirmSheet({ title: t('Discard workout?'), message: t('The sets you logged in this session will be lost.'), confirmText: t('Discard'), danger: true, onConfirm: () => { update(s => { s.active = null }); stopRest(); stopWork(); nav('/home') } })}><Icon name="xmark" /></button>
       <div style={{ textAlign: 'center' }}><div style={{ fontWeight: 600 }}>{A.name}</div><div className="sub">{A.backfill ? fmtDate(A.d, true) : <Elapsed start={A.start} />} · {t('{0} sets', done + '/' + total)}</div></div>
@@ -924,7 +969,7 @@ function ActiveWorkout() {
     {A.backfill && <div className="muted small" style={{ marginBottom: 8 }}>{t('Logging a past workout — no rest timers.')}</div>}
 
     {A.entries.length ? (listMode ? (
-      <div className="workout-list" data-testid="workout-list">
+      <div className="workout-list" data-testid="workout-list" ref={listRef}>
         {units.map((u, ui) => {
           const multi = u.length > 1
           const isCur = u.includes(cur)

@@ -20,10 +20,12 @@ const mocks = vi.hoisted(() => {
     exConfigSheet: vi.fn(),
     toast: vi.fn(),
     scrollCalls: [],
+    headerHeight: 0,
     swapActiveWorkoutExercise: vi.fn(),
     menuSheet: vi.fn(),
     effortPickerSheet: vi.fn(),
     exerciseHistorySheet: vi.fn(),
+    renameWorkoutSheet: vi.fn(),
   }
   state.stopRest = vi.fn(() => { state.timer = null })
   state.stopWork = vi.fn(() => { state.work = null })
@@ -76,6 +78,7 @@ vi.mock('../sheets.jsx', () => ({
   // sessionNoteSheet during render, so a missing export is a render crash, not a no-op.
   exerciseNoteSheet: vi.fn(),
   sessionNoteSheet: vi.fn(),
+  renameWorkoutSheet: mocks.renameWorkoutSheet,
   effortPickerSheet: mocks.effortPickerSheet,
   exerciseHistorySheet: mocks.exerciseHistorySheet,
   addRoutineToSessionSheet: vi.fn(),
@@ -111,6 +114,8 @@ function workout(entries, cur = 0, overrides = {}) {
   }
 }
 
+const frames = []
+
 function installDom() {
   const parsed = parseHTML('<!doctype html><html><body><div id="root"></div></body></html>')
   dom = parsed.window
@@ -120,6 +125,13 @@ function installDom() {
   for (const key of ['HTMLElement', 'Node', 'Element', 'Event', 'Blob']) globalThis[key] = dom[key]
   dom.Element.prototype.scrollIntoView = vi.fn(function (options) {
     mocks.scrollCalls.push({ node: this, options })
+  })
+  frames.length = 0
+  dom.requestAnimationFrame = cb => frames.push(cb)
+  dom.cancelAnimationFrame = id => { const i = frames.indexOf(id); if (i >= 0) frames.splice(i, 1) }
+  // linkedom has no layout; the sticky workout header reports the height a test gives it.
+  Object.defineProperty(dom.HTMLElement.prototype, 'offsetHeight', {
+    configurable: true, get() { return this.classList.contains('whdr') ? mocks.headerHeight : 0 },
   })
   globalThis.IS_REACT_ACT_ENVIRONMENT = true
   container = document.getElementById('root')
@@ -185,6 +197,14 @@ async function addExerciseThroughSheets(ex = { id: 'added-exercise' }, cfg = { m
   await act(async () => { configCall[2](cfg) })
 }
 
+// The list's scroll-to-current waits for the next frame. linkedom has no requestAnimationFrame,
+// and leaning on the component's 0 ms fallback made this race under a loaded full-suite run — so
+// the DOM gets a frame queue the test drains itself, which is also the path a browser takes.
+async function flushFrame() {
+  const due = frames.splice(0)
+  await act(async () => { due.forEach(cb => cb(0)) })
+}
+
 async function rerenderAt(cur) {
   mocks.S.active.cur = cur
   await act(async () => { root.render(React.createElement(Workout)) })
@@ -195,6 +215,7 @@ beforeEach(() => {
   mocks.timer = null
   mocks.work = null
   mocks.scrollCalls.length = 0
+  mocks.headerHeight = 0
 })
 
 afterEach(async () => {
@@ -1012,6 +1033,41 @@ describe('workout list view', () => {
   const units = () => [...container.querySelectorAll('.wl-unit')]
   const focusButton = unit => [...unit.querySelectorAll('button')].find(b => b.textContent.trim() === 'Set current')
 
+  it('opens at the current exercise instead of the top of the session (#224)', async () => {
+    await mount([exercise('plain-bench', [true]), exercise('plain-row', [true]), exercise('plain-curl', [false])], 2, { workoutView: 'list' })
+    // Not in the mount's own effect pass: App restores the route's scroll position in a frame
+    // of its own, so the list scrolls in the frame after it, or the restore would win.
+    expect(mocks.scrollCalls.length).toBe(0)
+    await flushFrame()
+    expect(mocks.scrollCalls.length).toBe(1)
+    expect(mocks.scrollCalls[0].node).toBe(units()[2])
+    expect(mocks.scrollCalls[0].node.classList.contains('cur')).toBe(true)
+  })
+
+  it('clears the sticky header at its measured height, not a one-line guess (QA C27)', async () => {
+    mocks.headerHeight = 143   // a routine name that wraps to three lines at 368 px
+    await mount([exercise('plain-bench', [true]), exercise('plain-row', [true]), exercise('plain-curl', [false])], 2, { workoutView: 'list' })
+    await flushFrame()
+    expect(mocks.scrollCalls.length).toBe(1)
+    expect(container.querySelector('.workout-list').style.getPropertyValue('--whdr-h')).toBe('143px')
+  })
+
+  it('re-anchors on the current exercise when the layout changes between list and compact (QA C1)', async () => {
+    await mount([exercise('plain-bench', [true]), exercise('plain-row', [true]), exercise('plain-curl', [false])], 2, { workoutView: 'list' })
+    await flushFrame()
+    mocks.scrollCalls.length = 0
+    mocks.S.active.workoutView = 'compact'
+    await rerender()
+    await flushFrame()
+    expect(mocks.scrollCalls.length).toBe(1)
+    expect(mocks.scrollCalls[0].node.classList.contains('cur')).toBe(true)
+    // ...but not when "current" merely moves inside the open list (that was #224's rule).
+    mocks.scrollCalls.length = 0
+    await rerenderAt(1)
+    await flushFrame()
+    expect(mocks.scrollCalls.length).toBe(0)
+  })
+
   it('stacks every exercise, labels each unit, and hides card navigation', async () => {
     await mount([exercise('plain-bench', [false, false]), exercise('plain-row', [false])], 0, { workoutView: 'list' })
 
@@ -1183,12 +1239,15 @@ describe('workout view header menu', () => {
     return mocks.menuSheet.mock.calls.at(-1)[0]
   }
 
-  it('leads with Add routine, then a Layout sheet with the three layouts marked current', async () => {
+  it('includes Rename workout and Add routine, then a Layout sheet with the three layouts marked current', async () => {
     await mount([exercise('plain-bench', [false])], 0, { active: { workoutView: 'list', routineIds: [] } })
 
     const menu = await openMenu()
-    expect(menu.items.filter(Boolean).map(it => it.label)).toEqual(['Add routine', 'Layout'])
+    expect(menu.items.filter(Boolean).map(it => it.label)).toEqual(['Rename workout', 'Add routine', 'Layout'])
     expect(item(menu, 'Layout').sub).toBe('List')
+
+    await act(async () => { item(menu, 'Rename workout').onClick() })
+    expect(mocks.renameWorkoutSheet).toHaveBeenCalled()
 
     const layout = await openLayout(menu)
     expect(layout.items.filter(Boolean).map(it => it.label)).toEqual(['Cards', 'List', 'Compact'])
@@ -1360,5 +1419,79 @@ describe('per-side effort completion', () => {
     await act(async () => { rightPick(1) })
     expect(set.sides.R.done).toBe(true)
     expect(mocks.startRest).toHaveBeenCalledTimes(calls)
+  })
+})
+
+// QA C9: custom exercises store their target as a muscle-map id ("gluteal"); the tag under the
+// exercise name has to show the same label the detail sheet does (Glutes), not the raw id.
+describe('Workout exercise tags', () => {
+  it('names a custom exercise\'s target muscle by its display name', async () => {
+    const { registerCustom } = await import('../lib/exercises.js')
+    registerCustom([{ id: 'cqa1', n: 'QA Custom Thrust', bp: 'upper legs', eq: 'barbell', custom: true, tg: 'gluteal', sm: [], primaries: ['gluteal'], secondaries: [], muscleGroups: ['gluteal'] }])
+    try {
+      await mount([exercise('cqa1', [false])])
+      const tags = [...container.querySelectorAll('.tag')].map(tag => tag.textContent.trim())
+      expect(tags).toContain('Glutes')
+      expect(tags).not.toContain('gluteal')
+    } finally { registerCustom([]) }
+  })
+
+  // The cardio target "cardiovascular system" is a translated key of its own; mapping it through
+  // MUSCLE_NAME must not turn "Herz-Kreislauf" back into English for every built-in cardio exercise.
+  it('keeps the cardio target translated (burpee, de)', async () => {
+    const { _setLangState } = await import('../lib/i18n-core.js')
+    const { default: de } = await import('../locales/de.js')
+    _setLangState('de', de, null, null)
+    try {
+      await mount([exercise('1160', [false])])
+      const tags = [...container.querySelectorAll('.tag')].map(tag => tag.textContent.trim())
+      expect(tags).toContain('Herz-Kreislauf')
+      expect(tags).not.toContain('Cardiovascular system')
+    } finally { _setLangState('en', null, null, null) }
+  })
+})
+
+describe('set-row column header', () => {
+  // The L/R rows carry a badge in front of the weight cell that a straight row does not have, so
+  // the shared header needs to know it is sitting over per-side rows to offset its columns (QA C5).
+  it('marks the header of a per-side exercise so the CSS can offset it by the L/R badge', async () => {
+    const side = () => ({ w: 20, r: 8, done: false })
+    await mount([
+      exercise('plain-bench', [false]),
+      exercise('side-curl', [false], {
+        target: { mode: 'reps', side: true, reps: 16, weight: 20, bodyweight: false },
+        sets: [{ w: 20, r: 16, done: false, sides: { L: side(), R: side() } }],
+      }),
+    ], 0, { active: { workoutView: 'list' } })
+    const heads = container.querySelectorAll('.sethead')
+    expect(heads.length).toBe(2)
+    expect(heads[0].classList.contains('per-side')).toBe(false)
+    expect(heads[1].classList.contains('per-side')).toBe(true)
+    expect(container.querySelector('.setrow-side .sidetag')).toBeTruthy()
+  })
+
+  // A weighted hold's row has the play button in front of the tick, so its cells get less room than
+  // a straight row's and the CSS sizes them (and the header over them) by the `timed` marker.
+  it('marks a timed hold\'s rows and header, and neither on a rep set', async () => {
+    await mount([
+      exercise('timed-plank', [false], {
+        target: { mode: 'time', sec: 30, weight: 60, bodyweight: false },
+        sets: [{ sec: 30, w: 60, done: false }],
+      }),
+      exercise('plain-bench', [false]),
+    ], 0, { active: { workoutView: 'list' } })
+    const heads = container.querySelectorAll('.sethead')
+    expect(heads[0].classList.contains('timed')).toBe(true)
+    expect(container.querySelector('.setrow.timed .setgo')).toBeTruthy()
+    expect(heads[1].classList.contains('timed')).toBe(false)
+    expect(container.querySelectorAll('.setrow.timed').length).toBe(1)
+  })
+
+  // With the +/- buttons switched off the cells' floors are the bare numbers; the header must
+  // freeze its columns the same way or the labels drift, so it carries the cells' `plain`.
+  it('carries `plain` on the header when the steppers are off', async () => {
+    await mount([exercise('plain-bench', [false])], 0, { wc: { steppers: false } })
+    expect(container.querySelector('.sethead').classList.contains('plain')).toBe(true)
+    expect(container.querySelector('.setrow .stp.w').classList.contains('plain')).toBe(true)
   })
 })

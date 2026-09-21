@@ -36,6 +36,26 @@ function UserDetail({ id, onChanged, close }) {
   useEffect(() => { api('/api/admin/user?id=' + encodeURIComponent(id)).then(setD).catch(e => toast(e.message)) }, [id])
   if (!d) return <div className="muted small">Loading…</div>
   const u = d.user
+  // The document comes straight off the user's state file. PUT /api/data drops null and
+  // shapeless entries now, but a file written before it did still answers with them, and this
+  // sheet renders outside the route's ErrorBoundary: one throw here blanked the whole app and
+  // left exactly this account un-disableable. setsDone/workoutVolume walk entries and sets, so
+  // an entry that lacks either has nothing to show and is skipped rather than drawn.
+  const workouts = (d.workouts || []).filter(w => w && Array.isArray(w.entries) && w.entries.every(e => e && Array.isArray(e.sets)))
+  // Their whole record as the admin API already returns it — the export the delete sheet offers.
+  const exportUser = () => {
+    const blob = new Blob([JSON.stringify(d, null, 2)], { type: 'application/json' })
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = `opengym-${u.name.replace(/[^a-zA-Z0-9_-]+/g, '-').toLowerCase()}-${u.id}.json`
+    document.body.appendChild(a); a.click(); a.remove()
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000)
+  }
+  const doDelete = () => {
+    api('/api/admin/user/delete', { method: 'POST', body: JSON.stringify({ id: u.id }) })
+      .then(() => { toast('Account deleted'); onChanged(); close() })
+      .catch(e => toast(e.message))
+  }
   const setDisabled = disabled => {
     api('/api/admin/user/disable', { method: 'POST', body: JSON.stringify({ id: u.id, disabled }) })
       .then(() => { toast(disabled ? 'User disabled' : 'User enabled'); onChanged(); close() })
@@ -50,7 +70,7 @@ function UserDetail({ id, onChanged, close }) {
       <span className="adm-pill">joined {u.created ? fmtDate(u.created.slice(0, 10)) : '—'}</span>
     </div>
     <div className="tiles" style={{ textAlign: 'left' }}>
-      <div className="tile"><div className="l">Workouts</div><div className="v" style={{ fontSize: '1.1rem' }}>{d.workouts.length}</div></div>
+      <div className="tile"><div className="l">Workouts</div><div className="v" style={{ fontSize: '1.1rem' }}>{workouts.length}</div></div>
       <div className="tile"><div className="l">Weigh-ins</div><div className="v" style={{ fontSize: '1.1rem' }}>{d.bodyweight.length}</div></div>
       <div className="tile"><div className="l">Routines</div><div className="v" style={{ fontSize: '1.1rem' }}>{d.routines.length}</div></div>
       <div className="tile"><div className="l">Last sync</div><div className="v" style={{ fontSize: '.95rem' }}>{rel(d.lastSync)}</div></div>
@@ -61,10 +81,29 @@ function UserDetail({ id, onChanged, close }) {
           : confirmSheet({ title: 'Disable ' + u.name + '?', message: 'They are signed out everywhere and can no longer sync or log in until re-enabled. Their data stays.', confirmText: 'Disable', danger: true, onConfirm: () => setDisabled(true) })}>
         {u.disabled ? 'Enable account' : 'Disable account'}</button>
       <div className="adm-hint">{u.disabled ? 'Enabling lets them sign in and sync again.' : 'Disabling signs them out everywhere and blocks sign-in. Nothing is deleted.'}</div>
+      {/* The one destructive action in the app (issue #107), so it asks twice and offers the
+          export first — that history is theirs. The second step names the account again, because
+          the first sheet can be dismissed by anyone who was not reading. */}
+      <button className="btn danger" style={{ margin: '14px 0 4px' }}
+        onClick={() => confirmSheet({
+          title: 'Delete ' + u.name + '?',
+          message: 'Everything goes: their workouts, weigh-ins, routines, passkeys and notifications. This cannot be undone, and the invite code they joined with stays used. Download their data first if they might want it.',
+          confirmText: 'Continue',
+          danger: true,
+          onConfirm: () => confirmSheet({
+            title: 'Delete ' + u.name + ' for good?',
+            message: 'Last chance — there is no undo and no backup of this on the server.',
+            confirmText: 'Delete account',
+            danger: true,
+            onConfirm: doDelete,
+          }),
+        })}>Delete account</button>
+      <button className="btn" style={{ marginBottom: 4 }} onClick={exportUser}>Download their data</button>
+      <div className="adm-hint">Deleting removes the account and every trace of its training history from this server.</div>
     </>}
     <h4 className="sec">Workout history</h4>
-    {d.workouts.length ? <div className="list" style={{ gap: 0 }}>
-      {d.workouts.slice(0, 60).map(w => <div key={w.id} className="row between" style={{ padding: '9px 2px', borderBottom: '1px solid var(--sep)' }}>
+    {workouts.length ? <div className="list" style={{ gap: 0 }}>
+      {workouts.slice(0, 60).map(w => <div key={w.id} className="row between" style={{ padding: '9px 2px', borderBottom: '1px solid var(--sep)' }}>
         <div><div className="small" style={{ fontWeight: 600 }}>{w.name}</div>
           <div className="dim" style={{ fontSize: '.72rem' }}>{fmtDate(w.d, true)} · {fmtDur((w.end || w.start) - w.start)} · {setsDone(w)} sets{w.prs?.length ? ' · ' + w.prs.length + ' PR' : ''}</div></div>
         <span className="small muted">{fmtVol(w.vol ?? workoutVolume(w), d.unit)}</span>

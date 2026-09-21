@@ -3,6 +3,7 @@
 // the apply engine accepts. Also the three things this mode has to get right on its own: the
 // daily cap, the key never touching S, and a proposal surviving in the device file.
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { todayISO } from './format.js'
 
 // The device file and the secret store are in-memory here; nativeFetch is the script.
 const device = { data: null }
@@ -149,7 +150,7 @@ describe('the Coach on a phone with its own key', () => {
     await expect(local.localReview(state())).rejects.toMatchObject({ code: 'busy' })
     await settle()
 
-    await saveCoachDevice({ daily: { d: new Date().toISOString().slice(0, 10), n: local.LOCAL_DAILY_CAP } })
+    await saveCoachDevice({ daily: { d: todayISO(), n: local.LOCAL_DAILY_CAP } })
     await expect(local.localReview(state())).rejects.toMatchObject({ code: 'cap' })
     expect((await local.localStatus()).cap).toEqual({ used: local.LOCAL_DAILY_CAP, limit: local.LOCAL_DAILY_CAP })
   })

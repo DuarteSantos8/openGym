@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- GENERATED FILE - do not edit by hand.
-     Built by scripts/build-api-docs.mjs from api/openapi.yaml (openGym API v1.3.7).
+     Built by scripts/build-api-docs.mjs from api/openapi.yaml (openGym API v1.3.8).
      Regenerate with: node scripts/build-api-docs.mjs -->
 <html lang="en">
 <head>
@@ -238,7 +238,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
-    <span>openGym v1.3.7</span>
+    <span>openGym v1.3.8</span>
     <span>30 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
@@ -270,7 +270,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="ov">
     <h3>Conventions</h3>
-<ul><li>Every response body is JSON with <code>Cache-Control: no-store</code>.</li><li>Errors are always <code>{&quot;error&quot;: &quot;&lt;human-readable message&gt;&quot;}</code>.</li><li>Unknown method+path pairs return <code>404 {&quot;error&quot;:&quot;not found&quot;}</code>; an unhandled exception returns <code>500 {&quot;error&quot;:&quot;server error&quot;}</code>.</li><li>Request bodies are parsed as JSON regardless of Content-Type; max 5 MiB.</li><li>CORS: the request's <code>Origin</code> is reflected in <code>Access-Control-Allow-Origin</code> <b>without</b> <code>Allow-Credentials</code> — cross-origin callers can only ever authenticate with a Bearer token, never with the cookie.</li></ul>
+<ul><li>Every response body is JSON with <code>Cache-Control: no-store</code>.</li><li>Errors are always <code>{&quot;error&quot;: &quot;&lt;human-readable message&gt;&quot;}</code>.</li><li>Unknown method+path pairs return <code>404 {&quot;error&quot;:&quot;not found&quot;}</code>; an unhandled exception returns <code>500 {&quot;error&quot;:&quot;server error&quot;}</code>.</li><li>Request bodies are parsed as JSON regardless of Content-Type. A body that does not parse, or parses to anything but an object (<code>null</code>, a string, an array), is <code>400 {&quot;error&quot;:&quot;invalid json&quot;}</code> on every route that reads one; an empty body counts as <code>{}</code>. A body over 5 MiB is <code>413 {&quot;error&quot;:&quot;body too large&quot;}</code>; the rest of the upload is discarded so the answer reaches the client.</li><li>CORS: the request's <code>Origin</code> is reflected in <code>Access-Control-Allow-Origin</code> <b>without</b> <code>Allow-Credentials</code> — cross-origin callers can only ever authenticate with a Bearer token, never with the cookie.</li></ul>
   </div>
     </div>
   </section>
@@ -705,7 +705,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">400</span>
-    <span class="p-desc"><code>state</code> missing or not an object, or <code>workouts</code>/<code>routines</code> set to anything other than an array or null.<span class="r-sig"><code>{&quot;error&quot;:&quot;state required&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;invalid state&quot;}</code></span></span>
+    <span class="p-desc"><code>state</code> missing or not an object, <code>state</code> an array, or <code>workouts</code>/<code>routines</code> set to anything other than an array or null. Entries inside those two arrays that are not objects (<code>null</code>, numbers, nested arrays) are dropped before the write rather than refused, so a client with a damaged copy still syncs.<span class="r-sig"><code>{&quot;error&quot;:&quot;state required&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;invalid state&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>
@@ -887,8 +887,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Schedule a server-side rest-timer push</span>
   </summary>
   <div class="ep-body">
-<p>Schedules one push after <code>seconds</code> (clamped to 1–3600). One pending timer per device — <code>deviceId</code>, the same token the subscription was registered with; a new call from the same device replaces it, and the push goes only to that device's subscriptions. Without a <code>deviceId</code> there is one timer per account and the push goes to every subscription, as before. The client schedules this on rest start/extend and cancels on skip or on-screen completion — the push only actually fires when the tab was backgrounded/suspended and never got to cancel it. Timers live in memory: an API restart drops them.</p>
-<p>Note: the documented <code>400 seconds required</code> exists in the code but is unreachable — the clamp turns any missing/invalid value into 1.</p>
+<p>Schedules one push after <code>seconds</code> (a number or numeric string ≥ 1, clamped to 3600). One pending timer per device — <code>deviceId</code>, the same token the subscription was registered with; a new call from the same device replaces it, and the push goes only to that device's subscriptions. Without a <code>deviceId</code> there is one timer per account and the push goes to every subscription, as before. The client schedules this on rest start/extend and cancels on skip or on-screen completion — the push only actually fires when the tab was backgrounded/suspended and never got to cancel it. Timers live in memory: an API restart drops them.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
 
 <p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
@@ -912,6 +911,10 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s2">200</span>
     <span class="p-desc">Timer scheduled.<span class="r-sig"><a href="#schema-Ok">Ok</a></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc"><code>seconds</code> missing, not numeric, or below 1. Nothing is scheduled.<span class="r-sig"><code>{&quot;error&quot;:&quot;seconds required&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>
@@ -1046,7 +1049,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">List all users</span>
   </summary>
   <div class="ep-body">
-<p>One row per user with workout counts, last sync, push status and live presence. Admin only.</p>
+<p>One row per user with workout counts, last sync, push status and live presence. <code>workouts</code> counts only the entries the drill-down can show. Admin only.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only — a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
 
 
@@ -1076,7 +1079,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">One user in detail</span>
   </summary>
   <div class="ep-body">
-<p>Drill-down — full workout history (newest first) and body-weight log for one user. Admin only.</p>
+<p>Drill-down — full workout history (newest first) and body-weight log for one user. Admin only. Anything in <code>routines</code>, <code>bodyweight</code> or <code>workouts</code> that is not an object is left out, and a list that is not an array reads as empty: PUT /api/data drops those entries now, but a state file written before it did still has them and this route has to answer for it.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only — a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
 <p class="ep-h">Query parameters</p><div class="ptab">
   <div class="prow">

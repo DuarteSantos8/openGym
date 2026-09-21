@@ -1,19 +1,15 @@
 import { describe, it, expect } from 'vitest'
+import { readFileSync } from 'node:fs'
 import { auditCat, auditLabel, auditReason, auditLine, fmtWhen } from './audit.js'
 
-// Every event name and reason code the server can emit (api/server.js, the audit block).
+// Every event name and reason code the server can emit, read off api/server.js itself rather
+// than kept as a second list here: the hand-kept copy silently missed the three pairing events
+// for several releases, and the dashboard printed 'auth.pair.create' at the operator (QA C18).
 // If a new one is added there without a label here, the first test fails rather than the
 // dashboard quietly printing a dotted identifier at a person.
-const EVENTS = [
-  'auth.login.ok', 'auth.login.fail', 'auth.register.ok', 'auth.register.fail',
-  'auth.register.denied', 'auth.logout', 'auth.logout.all',
-  'admin.user.disable', 'admin.user.enable', 'admin.invite.create',
-  'admin.invite.revoke', 'admin.audit.clear', 'admin.denied'
-]
-const REASONS = [
-  'challenge-expired', 'unknown-credential', 'verify-error', 'not-verified',
-  'user-missing', 'account-disabled', 'credential-exists', 'invite-invalid', 'invite-rejected'
-]
+const SERVER = readFileSync(new URL('../../../api/server.js', import.meta.url), 'utf8')
+const EVENTS = [...new Set([...SERVER.matchAll(/audit\(req, '([a-z.]+)'/g)].map(m => m[1]))]
+const REASONS = [...new Set([...SERVER.matchAll(/msg: '([a-z-]+)'/g)].map(m => m[1]))]
 
 describe('auditLabel', () => {
   it('has a sentence for every event the server emits', () => {
@@ -58,6 +54,14 @@ describe('auditReason', () => {
 })
 
 describe('auditLine', () => {
+  it('reads the server lists off api/server.js, pairing events included', () => {
+    // Guards the extraction itself: an empty match would make the two loops above vacuous.
+    expect(EVENTS).toEqual(expect.arrayContaining(['auth.login.ok', 'auth.pair.create', 'auth.pair.ok', 'auth.pair.fail', 'admin.audit.clear']))
+    expect(REASONS).toEqual(expect.arrayContaining(['challenge-expired', 'code-invalid', 'user-unavailable']))
+    expect(auditLine({ ev: 'auth.pair.fail', ok: false, msg: 'code-invalid' })).toEqual({ title: 'Pairing failed', sub: 'unknown caller · wrong or expired pairing code' })
+    expect(auditLine({ ev: 'auth.pair.ok', ok: true, name: 'Verifier' })).toEqual({ title: 'Paired a phone', sub: 'Verifier' })
+  })
+
   it('names the person who did it', () => {
     expect(auditLine({ ev: 'auth.login.ok', ok: true, uid: 'u1', name: 'Duarte' }))
       .toEqual({ title: 'Signed in', sub: 'Duarte' })
