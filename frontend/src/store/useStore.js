@@ -82,6 +82,15 @@ export const DEF = {
   // the session straight away; weight can still be logged from Home/Stats. Defaults on; an
   // older profile without the key reads as on (`!== false`).
   weighIn: true,
+  // Per-language choice for translated exercise names: whether the original English name is
+  // shown in parentheses next to the translation. Map { '<lang>': boolean }; a missing key
+  // (any profile written before this setting existed) reads as shown.
+  enParens: {},
+  // Per-language choice for translated exercise names: whether the translation is replaced
+  // entirely by the original English name. Independent of enParens and keyed by the same base
+  // language, so e.g. Italian can keep its parens while German pins names to English. Map
+  // { '<lang>': boolean }; a missing key reads as off (translation shown as usual).
+  enOnly: {},
 }
 const clone = o => JSON.parse(JSON.stringify(o))
 
