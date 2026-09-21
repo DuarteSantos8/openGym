@@ -10,7 +10,7 @@ import { unlock, playOnSilentSupported } from '../lib/sound.js'
 import { api, webauthnOK, passkeyLogin, passkeyRegister, IS_ANDROID } from '../lib/api.js'
 import { pushSupported, enablePush, disablePush, sendTestPush, syncPushSubscription } from '../lib/push.js'
 import { wakeLockSupported } from '../lib/wakelock.js'
-import { t, LANGS, INSTR_LANGS } from '../lib/i18n.js'
+import { t, LANGS, INSTR_LANGS, EXERCISE_NAME_LANGS, baseLang } from '../lib/i18n.js'
 import { DEMO, REPO } from '../lib/demo.js'
 import { MOBILE, isAndroid, shareExport, syncReminder } from '../lib/mobile.js'
 import { checkForUpdate, downloadAndInstall } from '../lib/update.js'
@@ -240,6 +240,19 @@ export default function Settings() {
           subtitle: INSTR_LANGS.includes(k) ? null : t("Exercise instructions aren't available in this language yet — they stay in English."),
         }))}
       />
+      {EXERCISE_NAME_LANGS.includes(baseLang(S.lang || 'en')) && <>
+        <Row icon="textHeight" iconTint="var(--purple)" title={t('English exercise names')}
+          subtitle={t('Show the English name in parentheses next to the translated one.')}>
+          <Switch checked={S.enParens?.[baseLang(S.lang || 'en')] ?? true}
+            disabled={S.enOnly?.[baseLang(S.lang || 'en')] === true}
+            onChange={v => update(s => { s.enParens = { ...(s.enParens || {}), [baseLang(S.lang || 'en')]: v } })} />
+        </Row>
+        <Row icon="textHeight" iconTint="var(--purple)" title={t('English names only')}
+          subtitle={t('Replace the translated names with the original English ones.')}>
+          <Switch checked={S.enOnly?.[baseLang(S.lang || 'en')] === true}
+            onChange={v => update(s => { s.enOnly = { ...(s.enOnly || {}), [baseLang(S.lang || 'en')]: v } })} />
+        </Row>
+      </>}
       <Row icon="scale" iconTint="var(--teal)" title={t('Weight unit')}>
         <Segmented className="seg-inline"
           options={[{ value: 'kg', label: 'kg' }, { value: 'lb', label: 'lb' }]}
