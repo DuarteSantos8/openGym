@@ -7,7 +7,16 @@ export function buildCompletedWorkout(active, { end = Date.now(), prs = [], snap
   const entries = (active?.entries || []).map(entry => {
     const completed = {
       id: entry.id,
-      sets: entry.sets,
+      // planSec is live-session bookkeeping: a hold displaced before it finished puts its plan
+      // aside so the row still knows what it is asking for (Workout.startTimed). A finished
+      // session keeps only what was logged, so the key never reaches S.workouts — an unfinished
+      // row goes back to recording its plan, exactly as it did before any of this. Rows without
+      // it are passed through by reference, so an ordinary session is the shape it always was.
+      sets: (entry.sets || []).map(set => {
+        if (!set || set.planSec == null) return set
+        const { planSec, ...rest } = set
+        return rest.done ? rest : { ...rest, sec: planSec }
+      }),
       topW: bestWeightForEntry(entry) || null,
       target: entry.target || null,
       // Which routine this entry came from, and whether it counts for progression. Written

@@ -92,6 +92,20 @@ export const useUI = create((set, get) => ({
     // Rest timer set to Off. Stopping and returning rather than starting a zero-length timer
     // keeps every caller honest: the four places that start a rest do not each need to know.
     if (!(sec > 0)) return
+    // And the hold, the other way round from startWork: the two must never run together (see the
+    // work timer below). A set ticked by hand while its hold ran used to leave both going — the
+    // rest bar with its Skip and ±15 s hidden behind the hold bar, and then the hold reaching
+    // zero under a rest that was still counting down, beeping its own end and logging the full
+    // target for a set nobody was holding any more. Below the guard, not above it: a rest that
+    // does not start has nothing to run alongside the hold, and taking the hold down for it
+    // would throw away a plank in progress for nothing. What it held is kept either way —
+    // abandonWork, not stopWork.
+    get().abandonWork()
+    // Nothing clears pageHiddenAt but a tick, so an app switch with no timer running left it set
+    // for good. The next timer's first tick then read it as "this countdown ran out while the app
+    // was away" and finished in silence — a one-second rest, started on screen, over on screen,
+    // with no beep, no vibration and no flash. Each timer starts from where the page is now.
+    pageHiddenAt = document.hidden ? Date.now() : null
     const endsAt = Date.now() + sec * 1000
     set({ timer: { left: sec, total: sec, endsAt, forIdx } })
     pushRestTimer(sec)
@@ -153,11 +167,12 @@ export const useUI = create((set, get) => ({
      finish; the elapsed time is what actually gets logged, so stopping at 0:38 of a 0:45
      hold records 0:38 rather than crediting the full target. */
   startWork(sec, label, onDone) {
-    get().stopWork()
+    get().abandonWork()   // a hold this one replaces keeps what it held, same as a rest replacing one
     get().stopRest()
     const total = Math.max(1, Math.round(sec) || 1)
     const endsAt = Date.now() + total * 1000
     workDone = onDone
+    pageHiddenAt = document.hidden ? Date.now() : null   // see startRest: a stale hide is not a catch-up
     set({ work: { left: total, total, endsAt, label } })
     workTick = () => {
       const wk = get().work
@@ -192,6 +207,24 @@ export const useUI = create((set, get) => ({
     vibrate(30)
     get().stopWork()
     if (done) done(elapsed)
+  },
+  // A rest is starting while a hold runs that is not the one being ticked — a set finished on
+  // another row, or on another exercise, which the List layout puts one tap away. The hold cannot
+  // survive (the two must never run together) but the time it held is real, so it is handed back
+  // before it goes and its own row keeps it. The `abandoned` flag tells the owner this was not a
+  // finish: the row is not ticked off and earns no rest of its own, since the rest that displaced
+  // the hold is the one now running.
+  abandonWork() {
+    const wk = get().work
+    if (!wk) { get().stopWork(); return }
+    const elapsed = wk.total - wk.left
+    const done = workDone
+    get().stopWork()
+    // Under two seconds there is nothing to keep: that is a play button tapped by accident, or
+    // tapped and thought better of, and rounding it up to one second the way an early finish does
+    // would write a one-second plank over a real plan. (finishWorkEarly's Math.max(1, …) is right
+    // for what it is: you pressed Done, so you held it, however briefly.)
+    if (done && elapsed >= 2) done(elapsed, true)
   },
   // Abandon without logging anything.
   stopWork() {
