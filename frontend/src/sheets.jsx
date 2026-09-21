@@ -1736,7 +1736,10 @@ function WorkoutDetail({ w, close }) {
       placeholder={t('How the session went as a whole.')}
       onFocus={onNoteFocus} onChange={e => setNote(e.target.value)} onBlur={saveNote} />
     <div style={{ height: 14 }} />
-    <Button variant="danger" onClick={() => confirmSheet({ title: t('Delete workout?'), message: t('This removes it from your history for good.'), confirmText: t('Delete'), danger: true, onConfirm: () => { update(s => { s.workouts = s.workouts.filter(x => x.id !== w.id) }); close(); toast(t('Workout deleted')) } })}>{t('Delete workout')}</Button>
+    <div className="row" style={{ gap: 10 }}>
+      <Button style={{ flex: 1 }} icon="pencil" onClick={() => { close(); nav(`/history/edit/${w.id}`) }}>{t('Edit workout')}</Button>
+      <Button variant="danger" style={{ flex: 1 }} icon="trash" onClick={() => confirmSheet({ title: t('Delete workout?'), message: t('This removes it from your history for good.'), confirmText: t('Delete'), danger: true, onConfirm: () => { update(s => { s.workouts = s.workouts.filter(x => x.id !== w.id) }); close(); toast(t('Workout deleted')) } })}>{t('Delete workout')}</Button>
+    </div>
   </>
 }
 export const workoutDetailSheet = w => ui().openSheet(close => <WorkoutDetail w={w} close={close} />)
