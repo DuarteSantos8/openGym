@@ -86,6 +86,10 @@ tags:
     description: Live-workout presence heartbeat
   - name: admin
     description: Admin dashboard — requires an admin session (`ADMIN_UIDS` or `admin:true`)
+  - name: coach
+    description: >-
+      AI Coach — plans, reviews and debriefs. Every route here answers 503 unless the
+      instance has the Coach switched on and a provider connected.
 
 security:
   - cookieAuth: []
@@ -574,7 +578,7 @@ paths:
 
   /api/data/rev:
     get:
-      tags: [Data]
+      tags: [data]
       summary: Current revision of the caller's profile state
       description: |
         The `rev` that `GET /api/data` would return, without the document. Signed-in clients poll
@@ -948,6 +952,51 @@ paths:
               schema: { $ref: '#/components/schemas/Error' }
               example: { error: "no such user" }
 
+  /api/admin/user/delete:
+    post:
+      tags: [admin]
+      operationId: adminUserDelete
+      summary: 'Admin: delete a user and everything of theirs'
+      description: |
+        Removes the account for good: the user record, their passkeys, their push
+        subscriptions, their live presence, their training history file and any Coach
+        credential stored for them. Not reversible — `/api/admin/user/disable` is the
+        reversible one. An admin cannot delete their own account, and the last admin
+        cannot be deleted. Audited by name, since the id stops meaning anything.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id]
+              properties:
+                id: { type: string, description: The user id. }
+      responses:
+        '200':
+          description: The account and everything of theirs is gone.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+                  id: { type: string }
+        '400':
+          description: Your own account, or the last admin.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "you cannot delete your own account" }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404':
+          description: No user with that id.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "no such user" }
+
   /api/admin/invites:
     get:
       tags: [admin]
@@ -1115,6 +1164,494 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
+  # ---------------------------------------------------------------- AI Coach
+  # The routes live in api/coach/routes.js and are mixed into the same route table as
+  # everything above; they are inert — 503 — while the instance has no Coach enabled
+  # and connected.
+
+  /api/coach/disclosure:
+    get:
+      tags: [coach]
+      operationId: getCoachDisclosure
+      summary: What the consent screen must say
+      description: |
+        The categories of data a Coach job would send, and the provider it would go to,
+        read straight from the module that builds the payload — so the consent screen
+        cannot drift from what actually leaves the box.
+
+        Needs a session but *not* a connected Coach: the screen that collects consent
+        runs before there is anything to consent to.
+      responses:
+        '200':
+          description: The disclosure.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  provider: { type: string, description: "Provider id, e.g. `anthropic`." }
+                  providerLabel: { type: string }
+                  categories:
+                    type: array
+                    items: { type: string, enum: [plan, training, bodyweight, profile, prefs] }
+                    description: The data categories a job may send. Nothing else ever is.
+                  version: { type: integer, description: Disclosure version the consent is recorded against. }
+              example:
+                provider: anthropic
+                providerLabel: Claude
+                categories: [plan, training, bodyweight, profile, prefs]
+                version: 1
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/coach/status:
+    get:
+      tags: [coach]
+      operationId: getCoachStatus
+      summary: The running job, the waiting proposal and today's budget
+      description: |
+        What the Coach screen polls. Also the only place a proposal past its 14-day
+        expiry is retired — a phone that stays closed never polls, so nothing else
+        would notice.
+      responses:
+        '200':
+          description: This profile's Coach state.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CoachStatus' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/CoachOff' }
+
+  /api/coach/plan:
+    post:
+      tags: [coach]
+      operationId: postCoachPlan
+      summary: Ask for a training plan
+      description: |
+        Queues a `create` job. With `intake` it builds a plan from the answers given on
+        the intake screen; with `refine` it reworks the proposal already waiting, in the
+        words of the person reading it. The answer is 202 and a job id — the result
+        arrives through `GET /api/coach/status`.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                intake:
+                  $ref: '#/components/schemas/CoachIntake'
+                refine:
+                  type: string
+                  maxLength: 1000
+                  description: A change asked for in plain words, applied to the proposal now waiting.
+            example: { intake: { goal: muscle, experience: novice, daysPerWeek: 3, equipment: [dumbbell, barbell] } }
+      responses:
+        '202': { $ref: '#/components/responses/CoachJobQueued' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/CoachRefused' }
+        '409': { $ref: '#/components/responses/CoachRefused' }
+        '429': { $ref: '#/components/responses/CoachRefused' }
+        '503': { $ref: '#/components/responses/CoachOff' }
+
+  /api/coach/review:
+    post:
+      tags: [coach]
+      operationId: postCoachReview
+      summary: Ask for a review of the training since the last one
+      description: |
+        Queues a `review` job — the same job the weekly cadence queues on its own. The
+        answer is either a change-set to accept or reject, or "nothing to change" with
+        the reason, both delivered through `GET /api/coach/status`.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                note:
+                  type: string
+                  maxLength: 1000
+                  description: Anything the profile wants the Coach to know this time round.
+      responses:
+        '202': { $ref: '#/components/responses/CoachJobQueued' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/CoachRefused' }
+        '409': { $ref: '#/components/responses/CoachRefused' }
+        '429': { $ref: '#/components/responses/CoachRefused' }
+        '503': { $ref: '#/components/responses/CoachOff' }
+
+  /api/coach/debrief:
+    post:
+      tags: [coach]
+      operationId: postCoachDebrief
+      summary: Ask for a read of one session
+      description: |
+        Queues a `debrief` job: one workout, read closely. It changes nothing — the card
+        it produces is kept in the profile's log. With no `workoutId` the most recent
+        session is read.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                workoutId:
+                  oneOf: [{ type: string, maxLength: 40 }, { type: 'null' }]
+                  description: The workout to read; null or absent means the latest.
+      responses:
+        '202': { $ref: '#/components/responses/CoachJobQueued' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/CoachRefused' }
+        '409': { $ref: '#/components/responses/CoachRefused' }
+        '429': { $ref: '#/components/responses/CoachRefused' }
+        '503': { $ref: '#/components/responses/CoachOff' }
+
+  /api/coach/pending/resolve:
+    post:
+      tags: [coach]
+      operationId: postCoachResolve
+      summary: Apply or discard the waiting proposal
+      description: |
+        The client applies the accepted changes to its own state and syncs them through
+        `PUT /api/data`; this only records the decision and clears the proposal. Sending
+        it when nothing is waiting is a no-op, not an error.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                accepted:
+                  type: array
+                  items: { type: string }
+                  description: Ids of the changes the person kept.
+                rejected:
+                  type: array
+                  items: { type: string }
+                  description: Ids of the changes they turned down.
+                dismissed:
+                  type: boolean
+                  description: True when the whole proposal was thrown away unread.
+      responses:
+        '200':
+          description: Recorded; the proposal is cleared.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Ok' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/CoachOff' }
+
+  /api/coach/cohort:
+    get:
+      tags: [coach]
+      operationId: getCoachCohort
+      summary: How this profile sits against the others who opted in
+      description: |
+        Medians only, and only when at least three profiles on the instance share. Nothing
+        at all for a profile that does not share itself, or on an instance where the admin
+        has not switched the comparison on — each of those is a 200 saying which it is.
+      responses:
+        '200':
+          description: The comparison, or the reason there isn't one.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CoachCohort' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/CoachOff' }
+
+  /api/coach/cohort/share:
+    post:
+      tags: [coach]
+      operationId: postCoachCohortShare
+      summary: Opt this profile in or out of the comparison
+      description: >-
+        Held server-side rather than in the synced state: this flag decides whether the
+        profile's numbers reach other people, and a stale device syncing an older copy
+        must not be able to turn it back on.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                share: { type: boolean }
+            example: { share: true }
+      responses:
+        '200':
+          description: The flag as it now stands.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+                  sharing: { type: boolean }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/CoachOff' }
+
+  /api/coach/account:
+    get:
+      tags: [coach]
+      operationId: getCoachAccount
+      summary: Whose provider account this profile would spend
+      description: >-
+        Its own route because both the Coach screen and the admin card have to state it,
+        and neither should be inferring it from settings. In instance mode a personal
+        credential binds to the first profile that spends it; every other profile is
+        refused outright rather than warned, and `reason` says so.
+      responses:
+        '200':
+          description: The account this profile's jobs would run on.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mode: { type: string, enum: [instance, profile] }
+                  provider: { type: string }
+                  providerLabel: { type: string }
+                  account:
+                    oneOf: [{ type: string }, { type: 'null' }]
+                    description: What the admin labelled the credential, when there is one.
+                  connected: { type: boolean }
+                  reason:
+                    oneOf: [{ type: string }, { type: 'null' }]
+                    description: Why not, when `connected` is false — e.g. `shared-account`.
+                  message:
+                    oneOf: [{ type: string }, { type: 'null' }]
+                    description: The refusal in the app's own voice, ready to show.
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/coach/forget:
+    post:
+      tags: [coach]
+      operationId: postCoachForget
+      summary: Drop everything the server holds for this profile
+      description: |
+        Consent withdrawn, or the Coach switched off for this profile: the job record,
+        the waiting proposal, the history and the sharing flag go at once, without waiting
+        for a sync to carry the news. A job already running is cancelled where the adapter
+        allows it and writes nothing back either way.
+
+        Today's job count is the one thing that survives — it is the spending record the
+        daily cap reads, and forgetting must not hand out a fresh cap.
+
+        Needs a session only: a profile must be able to be forgotten on an instance whose
+        Coach has since been switched off.
+      responses:
+        '200':
+          description: Forgotten.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Ok' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/admin/coach:
+    get:
+      tags: [admin, coach]
+      operationId: getAdminCoach
+      summary: 'Admin: the Coach card'
+      description: |
+        Everything the admin screen renders in one round trip, including a live check of
+        the configured provider — for a runtime provider "is the runtime there", for an
+        HTTPS one the model list its stored key can see.
+
+        Counts and outcomes only: no intake answers, no payloads, no proposals, and never
+        a credential — only whether one is filed and what it is labelled.
+      responses:
+        '200':
+          description: The card.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminCoach' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/admin/coach/config:
+    post:
+      tags: [admin, coach]
+      operationId: postAdminCoachConfig
+      summary: 'Admin: change the Coach settings'
+      description: |
+        A patch — every field is optional and only what is sent is changed. Model,
+        endpoint and credential are all keyed by provider, so switching provider never
+        drops any of them.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                enabled: { type: boolean }
+                provider: { type: string, description: "Must be one of the ids GET /api/admin/coach lists." }
+                model:
+                  type: string
+                  maxLength: 80
+                  description: For the provider being set (or the current one). Empty string clears it.
+                baseUrl:
+                  type: string
+                  description: Only for a provider with a configurable endpoint; validated before it is stored.
+                community: { type: boolean, description: Offer the cohort comparison on this instance. }
+                caps:
+                  type: object
+                  properties:
+                    perProfileDaily: { type: integer, minimum: 0, maximum: 200, description: 0 = no cap. }
+                    instanceDaily: { type: integer, minimum: 0, maximum: 5000, description: 0 = no cap. }
+            example: { enabled: true, provider: compatible, model: qwen3.8-27b, caps: { perProfileDaily: 10, instanceDaily: 0 } }
+      responses:
+        '200':
+          description: Saved.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Ok' }
+        '400':
+          description: Unknown provider, an endpoint set on a provider that has a fixed one, or a base URL that did not validate.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "unknown provider" }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/admin/coach/test:
+    post:
+      tags: [admin, coach]
+      operationId: postAdminCoachTest
+      summary: 'Admin: run one round trip against the provider'
+      description: |
+        Checks the runtime, then asks the model for one fixed JSON object and validates
+        the shape that comes back — the whole path a job takes, on nobody's profile.
+
+        Always 200: the outcome is in the body, because "the provider refused" is an
+        answer to the question the button asks, not a failure of the request. It brings
+        the two short upstream retry pauses rather than `COACH_RETRY_DELAYS_MS`, since
+        an admin is watching it through a proxy with a timeout of its own.
+      responses:
+        '200':
+          description: The result of the round trip.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  version:
+                    type: string
+                    description: What the runtime reported, when it could be asked.
+                  error:
+                    type: string
+                    description: Present when `ok` is false — the provider's own words, trimmed.
+              examples:
+                ok: { value: { ok: true, version: "1.2.3" } }
+                refused: { value: { ok: false, error: "401 invalid x-api-key" } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/admin/coach/models:
+    post:
+      tags: [admin, coach]
+      operationId: postAdminCoachModels
+      summary: 'Admin: list the models the endpoint serves'
+      description: >-
+        So the card can offer a list rather than a text field that goes stale with every
+        model release. HTTPS providers only; a provider that cannot be asked answers
+        `ok: false` with an empty list rather than an error status.
+      responses:
+        '200':
+          description: The models, or why there are none.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  models:
+                    type: array
+                    items: { type: string }
+                  error: { type: string }
+              example: { ok: true, models: [qwen3.8-27b, gpt-oss-120b] }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/admin/coach/connect:
+    post:
+      tags: [admin, coach]
+      operationId: postAdminCoachConnect
+      summary: 'Admin: file the provider credential'
+      description: |
+        The token is accepted once and never read back: it is encrypted with the
+        instance secret and leaves again only as an environment variable on a job's child
+        process. `type` has to match a variable the provider actually declares, so a key
+        for one provider cannot be filed under another and then silently go nowhere.
+
+        A key may be filed for a provider that is not the active one, so the chips can be
+        prepared before switching.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [type, token]
+              properties:
+                provider: { type: string, description: Defaults to the active provider. }
+                type:
+                  type: string
+                  enum: [cli-token, oauth, apikey]
+                token: { type: string, description: "Never returned by any route, ever." }
+                account:
+                  type: string
+                  maxLength: 120
+                  description: A label for whose account this is — shown on the card.
+            example: { type: apikey, token: "sk-…", account: "team@example.com" }
+      responses:
+        '200':
+          description: Filed.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Ok' }
+        '400':
+          description: Unknown provider, a credential type that provider does not take, or no token.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "no token supplied" }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/admin/coach/disconnect:
+    post:
+      tags: [admin, coach]
+      operationId: postAdminCoachDisconnect
+      summary: 'Admin: remove the provider credential'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                provider: { type: string, description: Defaults to the active provider. }
+      responses:
+        '200':
+          description: Removed.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Ok' }
+        '400':
+          description: Unknown provider.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "unknown provider" }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
 components:
   securitySchemes:
     cookieAuth:
@@ -1148,6 +1685,48 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
           example: { error: "forbidden" }
+    CoachOff:
+      description: >-
+        The Coach is not set up on this instance — switched off, or no provider connected.
+        Every Coach route answers this rather than pretending, so an unconfigured instance
+        renders exactly the app it was before the feature existed.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: "the Coach is not set up on this instance" }
+    CoachJobQueued:
+      description: >-
+        Queued. The job runs in the background; its outcome arrives through
+        `GET /api/coach/status`, which the client polls.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              job:
+                type: object
+                properties:
+                  id: { type: string, description: 16 hex characters. }
+          example: { job: { id: "9f1c2d3e4a5b6c7d" } }
+    CoachRefused:
+      description: |
+        The Coach will not take this job, and says which reason in `code`:
+
+        - `busy` (409) — a job for this profile is already running.
+        - `shared` (409) — instance mode, and the credential belongs to another profile.
+        - `cap` (429) — this profile's or the instance's daily limit is spent.
+        - `consent` (403) — no consent recorded for this profile.
+        - `unprivileged` (503) — the privilege drop cannot be performed, so no job runs.
+
+        The message is the one to show; the raw provider detail never reaches the user.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error: { type: string }
+              code: { type: string, enum: [off, busy, cap, consent, shared, unprivileged] }
+          example: { error: "the Coach is already thinking about your training", code: busy }
 
   schemas:
     Error:
@@ -1534,3 +2113,240 @@ components:
         ok: true
         uid: Zk3q9XyPbA2LmN0v
         name: Ada
+
+    # ------------------------------------------------------------------ AI Coach
+    CoachCap:
+      type: object
+      description: What this profile has spent of its daily allowance.
+      properties:
+        used: { type: integer }
+        limit: { type: integer, description: 0 means no per-profile cap. }
+
+    CoachStatus:
+      type: object
+      properties:
+        job:
+          oneOf:
+            - type: object
+              properties:
+                id: { type: string }
+                kind: { type: string, enum: [create, review, debrief] }
+                state: { type: string, enum: [queued, running] }
+                startedAt: { type: integer, description: Epoch ms. }
+            - type: 'null'
+          description: The job running now, or null. One at a time per profile.
+        pending:
+          oneOf:
+            - $ref: '#/components/schemas/CoachProposal'
+            - type: 'null'
+        cap: { $ref: '#/components/schemas/CoachCap' }
+        last:
+          oneOf:
+            - type: object
+              description: How the most recent job ended, so the chat can say so in the Coach's own voice.
+              properties:
+                id: { type: string }
+                kind: { type: string, enum: [create, review, debrief] }
+                outcome: { type: string, enum: [ready, nochange, applied, dismissed, expired, failed] }
+                errorClass:
+                  oneOf: [{ type: string }, { type: 'null' }]
+                  description: e.g. `provider`, `unusable`, `restart`, `forgotten`, `consent`, `noworkout`.
+                at: { type: integer, description: Epoch ms. }
+                reading: { type: string, description: "Present on `nochange` — why there was nothing to change." }
+            - type: 'null'
+
+    CoachProposal:
+      type: object
+      description: |
+        The answer waiting for a decision, from whichever kind of job produced it. It
+        expires 14 days after it was made; the first status poll after that retires it.
+        `changes` comes from a review, `bundle` from a plan, `score`/`highlights` from a
+        debrief — one of the three, never more.
+      properties:
+        id: { type: string, description: The job's id. }
+        kind: { type: string, enum: [create, review, debrief] }
+        createdAt: { type: integer, description: Epoch ms. }
+        expiresAt: { type: integer, description: Epoch ms. }
+        planHash: { type: string, description: The plan this was written against — a later edit makes it stale. }
+        iteration: { type: integer, description: "1, or higher after a refine." }
+        summary: { type: string, maxLength: 1200 }
+        changes:
+          type: array
+          description: A review's change-set, each one applied or rejected on its own.
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              type:
+                type: string
+                enum: [add-exercise, remove-exercise, swap-exercise, sets, reps, repsMin, repsMax,
+                       sec, cardio, reorder, superset, routine-prog, exercise-prog, inc,
+                       add-routine, remove-routine, rename-routine, week]
+              why: { type: string }
+              before: { description: What the plan says now — the client checks it before applying. }
+              after: { description: What it would say. }
+            additionalProperties: true
+        evidence:
+          type: object
+          description: The window the review read.
+          properties:
+            from: { oneOf: [{ type: string }, { type: 'null' }] }
+            to: { oneOf: [{ type: string }, { type: 'null' }] }
+            sessions: { oneOf: [{ type: integer }, { type: 'null' }] }
+        notes:
+          type: array
+          items: { type: string }
+        bundle:
+          type: object
+          description: A whole plan, from a `create` job — routines, week and any custom exercises.
+          properties:
+            opengym_plan: { type: integer, const: 1 }
+            name: { type: string, maxLength: 40 }
+            summary: { type: string }
+            basedOn: { type: string }
+            week: { type: object }
+            routines: { type: array, items: { type: object } }
+            customEx: { type: array, items: { type: object } }
+          additionalProperties: true
+        score: { type: integer, minimum: 1, maximum: 10, description: A debrief's score for the session. }
+        highlights: { type: array, items: { type: string } }
+        watch: { type: array, items: { type: string } }
+        nextTime: { type: array, items: { type: string } }
+        workout:
+          type: object
+          description: Which session a debrief read.
+          additionalProperties: true
+      additionalProperties: true
+
+    CoachIntake:
+      type: object
+      description: >-
+        The intake answers, as the plan screen collects them. Stored in the profile's own
+        state as well; sent here so a plan can be asked for with answers that have not
+        been synced yet.
+      properties:
+        goal: { type: string, description: "e.g. `muscle`, `strength`, `fat-loss`." }
+        experience: { type: string }
+        daysPerWeek: { type: integer }
+        preferredDays: { type: array, items: { type: integer }, description: 0 = Sunday. }
+        sessionMin: { type: integer, description: Minutes per session. }
+        equipment: { type: array, items: { type: string } }
+        limitations: { type: string, description: Injuries and anything to work around. }
+      additionalProperties: true
+
+    CoachCohort:
+      type: object
+      description: |
+        Medians across the profiles that opted in, and where this one stands among them.
+        `ok` is false whenever there is nothing to show, and the other flags say why:
+        the admin has the comparison switched off (`enabled: false`), this profile does
+        not share (`sharing: false`), or there are not yet three who do.
+      properties:
+        ok: { type: boolean }
+        enabled: { type: boolean }
+        sharing: { type: boolean }
+        people: { type: integer }
+        minPeople: { type: integer, description: Three. Below it nothing is computed at all. }
+        unit: { type: string, enum: [kg, lb], description: The reader's own unit — every number below is in it. }
+        sessionsPerWeek:
+          type: object
+          properties:
+            median: { type: number }
+            you: { type: number }
+        exercises:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              name: { type: string }
+              people: { type: integer }
+              median: { oneOf: [{ type: number }, { type: 'null' }] }
+              you: { oneOf: [{ type: number }, { type: 'null' }] }
+        rankPct:
+          oneOf: [{ type: integer }, { type: 'null' }]
+          description: Share of the others at or below this profile, averaged over the listed exercises.
+
+    AdminCoach:
+      type: object
+      description: The whole admin card in one answer. Never a credential — only whether one is filed.
+      properties:
+        disabledByEnv: { type: boolean, description: "COACH_DISABLED is set, so nothing the admin toggles matters." }
+        enabled: { type: boolean }
+        provider: { type: string }
+        providers:
+          type: array
+          description: Every provider this build knows, and what each one needs.
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              label: { type: string }
+              runtime: { type: string, description: "The runtime it spawns, when it spawns one." }
+              setupToken: { type: boolean }
+              deviceLogin: { type: boolean }
+              apiKey: { type: boolean }
+              http: { type: boolean }
+              baseUrl: { type: boolean, description: Whether its endpoint is configurable. }
+              keyOptional: { type: boolean }
+              keyPlaceholder: { oneOf: [{ type: string }, { type: 'null' }] }
+              defaultModel: { oneOf: [{ type: string }, { type: 'null' }] }
+              connected: { type: boolean, description: Whether a credential is already filed for it. }
+        model: { type: string, description: The model in force for the active provider. }
+        models: { type: object, description: Model per provider — switching provider keeps them all. }
+        baseUrl: { oneOf: [{ type: string }, { type: 'null' }] }
+        knownModels:
+          oneOf: [{ type: array, items: { type: string } }, { type: 'null' }]
+          description: From the live check, when the provider could be asked.
+        caps:
+          type: object
+          properties:
+            perProfileDaily: { type: integer }
+            instanceDaily: { type: integer }
+        community: { type: boolean }
+        runtime:
+          type: object
+          description: The live check performed while answering this request.
+          properties:
+            ok: { type: boolean }
+            version: { oneOf: [{ type: string }, { type: 'null' }] }
+            error: { oneOf: [{ type: string }, { type: 'null' }] }
+            needsKey: { type: boolean }
+        authMode: { type: string, enum: [instance, profile] }
+        boundUid:
+          oneOf: [{ type: string }, { type: 'null' }]
+          description: The profile an instance credential bound itself to, once one has spent it.
+        auth:
+          type: object
+          description: >-
+            Whether a credential is filed, and whose. `unreadable` is its own state because it
+            has a specific cause and a specific fix — ./data restored without its `secret`.
+          properties:
+            state: { type: string, enum: [not-required, none, optional, connected, unreadable] }
+            type: { oneOf: [{ type: string }, { type: 'null' }] }
+            account: { oneOf: [{ type: string }, { type: 'null' }] }
+            connectedAt: { oneOf: [{ type: string, format: date-time }, { type: 'null' }] }
+        unprivileged:
+          type: object
+          description: >-
+            Whether the privilege drop can be performed. It fails closed: if `ok` is false no
+            job runs at all, and the admin needs to hear that here rather than from a user.
+          properties:
+            ok: { type: boolean }
+            dropped: { type: boolean }
+            why: { type: string }
+        jobsToday: { type: integer }
+        lastSuccess: { oneOf: [{ type: string, format: date-time }, { type: 'null' }] }
+        lastError: { description: "The last failure the instance log recorded, or null." }
+        recent:
+          type: array
+          description: The last 20 jobs, newest first — counts and outcomes only, never contents.
+          items:
+            type: object
+            properties:
+              at: { type: string, format: date-time }
+              kind: { type: string }
+              trigger: { type: string, enum: [manual, scheduled] }
+              outcome: { type: string }
+              errorClass: { oneOf: [{ type: string }, { type: 'null' }] }
+              ms: { type: integer }

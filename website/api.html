@@ -216,7 +216,8 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <a class="side-link" href="#data"><b>Data</b><span>State sync</span></a>
   <a class="side-link" href="#push"><b>Push</b><span>Notifications &amp; rest timer</span></a>
   <a class="side-link" href="#activity"><b>Activity</b><span>Live presence</span></a>
-  <a class="side-link" href="#admin"><b>Admin</b><span>Users, invites, audit log</span></a>
+  <a class="side-link" href="#coach"><b>AI Coach</b><span>Plans, reviews, debriefs</span></a>
+  <a class="side-link" href="#admin"><b>Admin</b><span>Users, invites, audit log, Coach</span></a>
   <a class="side-link" href="#schemas"><b>Schemas</b><span>The state blob, the error shape &amp; co.</span></a>
   <p class="side-label">More</p>
   <a class="side-link" href="/"><b>Home</b><span>The tour, the demo, the download</span></a>
@@ -239,7 +240,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.3.8</span>
-    <span>30 endpoints</span>
+    <span>47 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -718,6 +719,32 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     </div>
   </div>
 </details>
+
+<details class="ep" id="op-undefined">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/data/rev</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Current revision of the caller's profile state</span>
+  </summary>
+  <div class="ep-body">
+<p>The <code>rev</code> that <code>GET /api/data</code> would return, without the document. Signed-in clients poll this while open and on every return to the foreground and fetch the document only when the number changed.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The current revision (0 when the profile has no state yet).<span class="r-sig">{ rev: integer }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
   </div>
 </section>
 
@@ -1036,6 +1063,399 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
 </section>
 
+<section class="api-sec" id="coach">
+  <h2>AI Coach</h2>
+  <p class="sub">AI Coach — plans, reviews and debriefs. Every route here answers 503 unless the instance has the Coach switched on and a provider connected.</p>
+  <div class="eps">
+
+<details class="ep" id="op-getCoachDisclosure">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/coach/disclosure</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">What the consent screen must say</span>
+  </summary>
+  <div class="ep-body">
+<p>The categories of data a Coach job would send, and the provider it would go to, read straight from the module that builds the payload — so the consent screen cannot drift from what actually leaves the box.</p>
+<p>Needs a session but <i>not</i> a connected Coach: the screen that collects consent runs before there is anything to consent to.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The disclosure.<span class="r-sig">{ provider: string, providerLabel: string, categories: (&quot;plan&quot; | &quot;training&quot; | &quot;bodyweight&quot; | &quot;profile&quot; | &quot;prefs&quot;)[], version: integer }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-getCoachStatus">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/coach/status</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The running job, the waiting proposal and today's budget</span>
+  </summary>
+  <div class="ep-body">
+<p>What the Coach screen polls. Also the only place a proposal past its 14-day expiry is retired — a phone that stays closed never polls, so nothing else would notice.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">This profile's Coach state.<span class="r-sig"><a href="#schema-CoachStatus">CoachStatus</a></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">503</span>
+    <span class="p-desc">The Coach is not set up on this instance — switched off, or no provider connected. Every Coach route answers this rather than pretending, so an unconfigured instance renders exactly the app it was before the feature existed.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is not set up on this instance&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-postCoachPlan">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/coach/plan</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Ask for a training plan</span>
+  </summary>
+  <div class="ep-body">
+<p>Queues a <code>create</code> job. With <code>intake</code> it builds a plan from the answers given on the intake screen; with <code>refine</code> it reworks the proposal already waiting, in the words of the person reading it. The answer is 202 and a job id — the result arrives through <code>GET /api/coach/status</code>.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span> <span class="p-hint">(optional)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">intake</span>
+    <span class="p-type"><a href="#schema-CoachIntake">CoachIntake</a></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">refine</span>
+    <span class="p-type">string <span class="p-hint">(&le; 1000 chars)</span></span>
+    <span class="p-desc">A change asked for in plain words, applied to the proposal now waiting.</span>
+  </div>
+</div>
+<pre><code>{
+  &quot;intake&quot;: {
+    &quot;goal&quot;: &quot;muscle&quot;,
+    &quot;experience&quot;: &quot;novice&quot;,
+    &quot;daysPerWeek&quot;: 3,
+    &quot;equipment&quot;: [
+      &quot;dumbbell&quot;,
+      &quot;barbell&quot;
+    ]
+  }
+}</code></pre>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">202</span>
+    <span class="p-desc">Queued. The job runs in the background; its outcome arrives through <code>GET /api/coach/status</code>, which the client polls.<span class="r-sig">{ job: object }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">The Coach will not take this job, and says which reason in <code>code</code>: - <code>busy</code> (409) — a job for this profile is already running. - <code>shared</code> (409) — instance mode, and the credential belongs to another profile. - <code>cap</code> (429) — this profile's or the instance's daily limit is spent. - <code>consent</code> (403) — no consent recorded for this profile. - <code>unprivileged</code> (503) — the privilege drop cannot be performed, so no job runs. The message is the one to show; the raw provider detail never reaches the user.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is already thinking about your training&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">The Coach will not take this job, and says which reason in <code>code</code>: - <code>busy</code> (409) — a job for this profile is already running. - <code>shared</code> (409) — instance mode, and the credential belongs to another profile. - <code>cap</code> (429) — this profile's or the instance's daily limit is spent. - <code>consent</code> (403) — no consent recorded for this profile. - <code>unprivileged</code> (503) — the privilege drop cannot be performed, so no job runs. The message is the one to show; the raw provider detail never reaches the user.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is already thinking about your training&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">The Coach will not take this job, and says which reason in <code>code</code>: - <code>busy</code> (409) — a job for this profile is already running. - <code>shared</code> (409) — instance mode, and the credential belongs to another profile. - <code>cap</code> (429) — this profile's or the instance's daily limit is spent. - <code>consent</code> (403) — no consent recorded for this profile. - <code>unprivileged</code> (503) — the privilege drop cannot be performed, so no job runs. The message is the one to show; the raw provider detail never reaches the user.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is already thinking about your training&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">503</span>
+    <span class="p-desc">The Coach is not set up on this instance — switched off, or no provider connected. Every Coach route answers this rather than pretending, so an unconfigured instance renders exactly the app it was before the feature existed.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is not set up on this instance&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-postCoachReview">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/coach/review</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Ask for a review of the training since the last one</span>
+  </summary>
+  <div class="ep-body">
+<p>Queues a <code>review</code> job — the same job the weekly cadence queues on its own. The answer is either a change-set to accept or reject, or &quot;nothing to change&quot; with the reason, both delivered through <code>GET /api/coach/status</code>.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span> <span class="p-hint">(optional)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">note</span>
+    <span class="p-type">string <span class="p-hint">(&le; 1000 chars)</span></span>
+    <span class="p-desc">Anything the profile wants the Coach to know this time round.</span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">202</span>
+    <span class="p-desc">Queued. The job runs in the background; its outcome arrives through <code>GET /api/coach/status</code>, which the client polls.<span class="r-sig">{ job: object }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">The Coach will not take this job, and says which reason in <code>code</code>: - <code>busy</code> (409) — a job for this profile is already running. - <code>shared</code> (409) — instance mode, and the credential belongs to another profile. - <code>cap</code> (429) — this profile's or the instance's daily limit is spent. - <code>consent</code> (403) — no consent recorded for this profile. - <code>unprivileged</code> (503) — the privilege drop cannot be performed, so no job runs. The message is the one to show; the raw provider detail never reaches the user.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is already thinking about your training&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">The Coach will not take this job, and says which reason in <code>code</code>: - <code>busy</code> (409) — a job for this profile is already running. - <code>shared</code> (409) — instance mode, and the credential belongs to another profile. - <code>cap</code> (429) — this profile's or the instance's daily limit is spent. - <code>consent</code> (403) — no consent recorded for this profile. - <code>unprivileged</code> (503) — the privilege drop cannot be performed, so no job runs. The message is the one to show; the raw provider detail never reaches the user.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is already thinking about your training&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">The Coach will not take this job, and says which reason in <code>code</code>: - <code>busy</code> (409) — a job for this profile is already running. - <code>shared</code> (409) — instance mode, and the credential belongs to another profile. - <code>cap</code> (429) — this profile's or the instance's daily limit is spent. - <code>consent</code> (403) — no consent recorded for this profile. - <code>unprivileged</code> (503) — the privilege drop cannot be performed, so no job runs. The message is the one to show; the raw provider detail never reaches the user.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is already thinking about your training&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">503</span>
+    <span class="p-desc">The Coach is not set up on this instance — switched off, or no provider connected. Every Coach route answers this rather than pretending, so an unconfigured instance renders exactly the app it was before the feature existed.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is not set up on this instance&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-postCoachDebrief">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/coach/debrief</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Ask for a read of one session</span>
+  </summary>
+  <div class="ep-body">
+<p>Queues a <code>debrief</code> job: one workout, read closely. It changes nothing — the card it produces is kept in the profile's log. With no <code>workoutId</code> the most recent session is read.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span> <span class="p-hint">(optional)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">workoutId</span>
+    <span class="p-type">string <span class="p-hint">(&le; 40 chars)</span> | null</span>
+    <span class="p-desc">The workout to read; null or absent means the latest.</span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">202</span>
+    <span class="p-desc">Queued. The job runs in the background; its outcome arrives through <code>GET /api/coach/status</code>, which the client polls.<span class="r-sig">{ job: object }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">The Coach will not take this job, and says which reason in <code>code</code>: - <code>busy</code> (409) — a job for this profile is already running. - <code>shared</code> (409) — instance mode, and the credential belongs to another profile. - <code>cap</code> (429) — this profile's or the instance's daily limit is spent. - <code>consent</code> (403) — no consent recorded for this profile. - <code>unprivileged</code> (503) — the privilege drop cannot be performed, so no job runs. The message is the one to show; the raw provider detail never reaches the user.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is already thinking about your training&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">The Coach will not take this job, and says which reason in <code>code</code>: - <code>busy</code> (409) — a job for this profile is already running. - <code>shared</code> (409) — instance mode, and the credential belongs to another profile. - <code>cap</code> (429) — this profile's or the instance's daily limit is spent. - <code>consent</code> (403) — no consent recorded for this profile. - <code>unprivileged</code> (503) — the privilege drop cannot be performed, so no job runs. The message is the one to show; the raw provider detail never reaches the user.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is already thinking about your training&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">The Coach will not take this job, and says which reason in <code>code</code>: - <code>busy</code> (409) — a job for this profile is already running. - <code>shared</code> (409) — instance mode, and the credential belongs to another profile. - <code>cap</code> (429) — this profile's or the instance's daily limit is spent. - <code>consent</code> (403) — no consent recorded for this profile. - <code>unprivileged</code> (503) — the privilege drop cannot be performed, so no job runs. The message is the one to show; the raw provider detail never reaches the user.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is already thinking about your training&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">503</span>
+    <span class="p-desc">The Coach is not set up on this instance — switched off, or no provider connected. Every Coach route answers this rather than pretending, so an unconfigured instance renders exactly the app it was before the feature existed.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is not set up on this instance&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-postCoachResolve">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/coach/pending/resolve</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Apply or discard the waiting proposal</span>
+  </summary>
+  <div class="ep-body">
+<p>The client applies the accepted changes to its own state and syncs them through <code>PUT /api/data</code>; this only records the decision and clears the proposal. Sending it when nothing is waiting is a no-op, not an error.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span> <span class="p-hint">(optional)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">accepted</span>
+    <span class="p-type">string[]</span>
+    <span class="p-desc">Ids of the changes the person kept.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">rejected</span>
+    <span class="p-type">string[]</span>
+    <span class="p-desc">Ids of the changes they turned down.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">dismissed</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc">True when the whole proposal was thrown away unread.</span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Recorded; the proposal is cleared.<span class="r-sig"><a href="#schema-Ok">Ok</a></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">503</span>
+    <span class="p-desc">The Coach is not set up on this instance — switched off, or no provider connected. Every Coach route answers this rather than pretending, so an unconfigured instance renders exactly the app it was before the feature existed.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is not set up on this instance&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-getCoachCohort">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/coach/cohort</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">How this profile sits against the others who opted in</span>
+  </summary>
+  <div class="ep-body">
+<p>Medians only, and only when at least three profiles on the instance share. Nothing at all for a profile that does not share itself, or on an instance where the admin has not switched the comparison on — each of those is a 200 saying which it is.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The comparison, or the reason there isn't one.<span class="r-sig"><a href="#schema-CoachCohort">CoachCohort</a></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">503</span>
+    <span class="p-desc">The Coach is not set up on this instance — switched off, or no provider connected. Every Coach route answers this rather than pretending, so an unconfigured instance renders exactly the app it was before the feature existed.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is not set up on this instance&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-postCoachCohortShare">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/coach/cohort/share</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Opt this profile in or out of the comparison</span>
+  </summary>
+  <div class="ep-body">
+<p>Held server-side rather than in the synced state: this flag decides whether the profile's numbers reach other people, and a stale device syncing an older copy must not be able to turn it back on.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">share</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+<pre><code>{
+  &quot;share&quot;: true
+}</code></pre>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The flag as it now stands.<span class="r-sig">{ ok: always true, sharing: boolean }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">503</span>
+    <span class="p-desc">The Coach is not set up on this instance — switched off, or no provider connected. Every Coach route answers this rather than pretending, so an unconfigured instance renders exactly the app it was before the feature existed.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is not set up on this instance&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-getCoachAccount">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/coach/account</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Whose provider account this profile would spend</span>
+  </summary>
+  <div class="ep-body">
+<p>Its own route because both the Coach screen and the admin card have to state it, and neither should be inferring it from settings. In instance mode a personal credential binds to the first profile that spends it; every other profile is refused outright rather than warned, and <code>reason</code> says so.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The account this profile's jobs would run on.<span class="r-sig">{ mode: &quot;instance&quot; | &quot;profile&quot;, provider: string, providerLabel: string, account: string | null, connected: boolean, reason: string | null, message: string | null }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-postCoachForget">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/coach/forget</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Drop everything the server holds for this profile</span>
+  </summary>
+  <div class="ep-body">
+<p>Consent withdrawn, or the Coach switched off for this profile: the job record, the waiting proposal, the history and the sharing flag go at once, without waiting for a sync to carry the news. A job already running is cancelled where the adapter allows it and writes nothing back either way.</p>
+<p>Today's job count is the one thing that survives — it is the spending record the daily cap reads, and forgetting must not hand out a fresh cap.</p>
+<p>Needs a session only: a profile must be able to be forgotten on an instance whose Coach has since been switched off.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Forgotten.<span class="r-sig"><a href="#schema-Ok">Ok</a></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+  </div>
+</section>
+
 <section class="api-sec" id="admin">
   <h2>Admin</h2>
   <p class="sub">Admin dashboard — requires an admin session (<code>ADMIN_UIDS</code> or <code>admin:true</code>)</p>
@@ -1143,6 +1563,50 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s4">400</span>
     <span class="p-desc">Target is an admin.<span class="r-sig"><code>{&quot;error&quot;:&quot;cannot disable an admin&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Signed in, but not an admin. The attempt is recorded in the audit log.<span class="r-sig"><code>{&quot;error&quot;:&quot;forbidden&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">No user with that id.<span class="r-sig"><code>{&quot;error&quot;:&quot;no such user&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-adminUserDelete">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/admin/user/delete</code><span class="ep-chip admin">admin</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Delete a user and everything of theirs</span>
+  </summary>
+  <div class="ep-body">
+<p>Removes the account for good: the user record, their passkeys, their push subscriptions, their live presence, their training history file and any Coach credential stored for them. Not reversible — <code>/api/admin/user/disable</code> is the reversible one. An admin cannot delete their own account, and the last admin cannot be deleted. Audited by name, since the id stops meaning anything.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only — a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">id<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The user id.</span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The account and everything of theirs is gone.<span class="r-sig">{ ok: always true, id: string }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">Your own account, or the last admin.<span class="r-sig"><code>{&quot;error&quot;:&quot;you cannot delete your own account&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>
@@ -1333,6 +1797,283 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s2">200</span>
     <span class="p-desc">Cleared.<span class="r-sig"><a href="#schema-Ok">Ok</a></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Signed in, but not an admin. The attempt is recorded in the audit log.<span class="r-sig"><code>{&quot;error&quot;:&quot;forbidden&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-getAdminCoach">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/admin/coach</code><span class="ep-chip admin">admin</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The Coach card</span>
+  </summary>
+  <div class="ep-body">
+<p>Everything the admin screen renders in one round trip, including a live check of the configured provider — for a runtime provider &quot;is the runtime there&quot;, for an HTTPS one the model list its stored key can see.</p>
+<p>Counts and outcomes only: no intake answers, no payloads, no proposals, and never a credential — only whether one is filed and what it is labelled.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only — a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The card.<span class="r-sig"><a href="#schema-AdminCoach">AdminCoach</a></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Signed in, but not an admin. The attempt is recorded in the audit log.<span class="r-sig"><code>{&quot;error&quot;:&quot;forbidden&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-postAdminCoachConfig">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/admin/coach/config</code><span class="ep-chip admin">admin</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Change the Coach settings</span>
+  </summary>
+  <div class="ep-body">
+<p>A patch — every field is optional and only what is sent is changed. Model, endpoint and credential are all keyed by provider, so switching provider never drops any of them.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only — a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">enabled</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">provider</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Must be one of the ids GET /api/admin/coach lists.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">model</span>
+    <span class="p-type">string <span class="p-hint">(&le; 80 chars)</span></span>
+    <span class="p-desc">For the provider being set (or the current one). Empty string clears it.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">baseUrl</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Only for a provider with a configurable endpoint; validated before it is stored.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">community</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc">Offer the cohort comparison on this instance.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">caps</span>
+    <span class="p-type">object</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">caps.perProfileDaily</span>
+    <span class="p-type">integer <span class="p-hint">(0&ndash;200)</span></span>
+    <span class="p-desc">0 = no cap.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">caps.instanceDaily</span>
+    <span class="p-type">integer <span class="p-hint">(0&ndash;5000)</span></span>
+    <span class="p-desc">0 = no cap.</span>
+  </div>
+</div>
+<pre><code>{
+  &quot;enabled&quot;: true,
+  &quot;provider&quot;: &quot;compatible&quot;,
+  &quot;model&quot;: &quot;qwen3.8-27b&quot;,
+  &quot;caps&quot;: {
+    &quot;perProfileDaily&quot;: 10,
+    &quot;instanceDaily&quot;: 0
+  }
+}</code></pre>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Saved.<span class="r-sig"><a href="#schema-Ok">Ok</a></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">Unknown provider, an endpoint set on a provider that has a fixed one, or a base URL that did not validate.<span class="r-sig"><code>{&quot;error&quot;:&quot;unknown provider&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Signed in, but not an admin. The attempt is recorded in the audit log.<span class="r-sig"><code>{&quot;error&quot;:&quot;forbidden&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-postAdminCoachTest">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/admin/coach/test</code><span class="ep-chip admin">admin</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Run one round trip against the provider</span>
+  </summary>
+  <div class="ep-body">
+<p>Checks the runtime, then asks the model for one fixed JSON object and validates the shape that comes back — the whole path a job takes, on nobody's profile.</p>
+<p>Always 200: the outcome is in the body, because &quot;the provider refused&quot; is an answer to the question the button asks, not a failure of the request. It brings the two short upstream retry pauses rather than <code>COACH_RETRY_DELAYS_MS</code>, since an admin is watching it through a proxy with a timeout of its own.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only — a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The result of the round trip.<span class="r-sig">{ ok: boolean, version: string, error: string }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Signed in, but not an admin. The attempt is recorded in the audit log.<span class="r-sig"><code>{&quot;error&quot;:&quot;forbidden&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-postAdminCoachModels">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/admin/coach/models</code><span class="ep-chip admin">admin</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">List the models the endpoint serves</span>
+  </summary>
+  <div class="ep-body">
+<p>So the card can offer a list rather than a text field that goes stale with every model release. HTTPS providers only; a provider that cannot be asked answers <code>ok: false</code> with an empty list rather than an error status.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only — a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The models, or why there are none.<span class="r-sig">{ ok: boolean, models: string[], error: string }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Signed in, but not an admin. The attempt is recorded in the audit log.<span class="r-sig"><code>{&quot;error&quot;:&quot;forbidden&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-postAdminCoachConnect">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/admin/coach/connect</code><span class="ep-chip admin">admin</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">File the provider credential</span>
+  </summary>
+  <div class="ep-body">
+<p>The token is accepted once and never read back: it is encrypted with the instance secret and leaves again only as an environment variable on a job's child process. <code>type</code> has to match a variable the provider actually declares, so a key for one provider cannot be filed under another and then silently go nowhere.</p>
+<p>A key may be filed for a provider that is not the active one, so the chips can be prepared before switching.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only — a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">provider</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Defaults to the active provider.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">type<em class="p-req" title="required">required</em></span>
+    <span class="p-type">&quot;cli-token&quot; | &quot;oauth&quot; | &quot;apikey&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">token<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Never returned by any route, ever.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">account</span>
+    <span class="p-type">string <span class="p-hint">(&le; 120 chars)</span></span>
+    <span class="p-desc">A label for whose account this is — shown on the card.</span>
+  </div>
+</div>
+<pre><code>{
+  &quot;type&quot;: &quot;apikey&quot;,
+  &quot;token&quot;: &quot;sk-…&quot;,
+  &quot;account&quot;: &quot;team@example.com&quot;
+}</code></pre>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Filed.<span class="r-sig"><a href="#schema-Ok">Ok</a></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">Unknown provider, a credential type that provider does not take, or no token.<span class="r-sig"><code>{&quot;error&quot;:&quot;no token supplied&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Signed in, but not an admin. The attempt is recorded in the audit log.<span class="r-sig"><code>{&quot;error&quot;:&quot;forbidden&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-postAdminCoachDisconnect">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/admin/coach/disconnect</code><span class="ep-chip admin">admin</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Remove the provider credential</span>
+  </summary>
+  <div class="ep-body">
+
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only — a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span> <span class="p-hint">(optional)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">provider</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Defaults to the active provider.</span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Removed.<span class="r-sig"><a href="#schema-Ok">Ok</a></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">Unknown provider.<span class="r-sig"><code>{&quot;error&quot;:&quot;unknown provider&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>
@@ -2261,6 +3002,634 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-name">ip</span>
     <span class="p-type">string</span>
     <span class="p-desc">Only when AUDIT_IP is on — the full address (<code>full</code>) or just the network, /24 or /48 (<code>net</code>).</span>
+  </div>
+</div>
+  </div>
+</details>
+
+<details class="ep sch" id="schema-CoachCap">
+  <summary>
+    <span class="sch-name"><code>CoachCap</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">What this profile has spent of its daily allowance.</span>
+  </summary>
+  <div class="ep-body">
+
+<div class="ptab">
+  <div class="prow">
+    <span class="p-name">used</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">limit</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc">0 means no per-profile cap.</span>
+  </div>
+</div>
+  </div>
+</details>
+
+<details class="ep sch" id="schema-CoachStatus">
+  <summary>
+    <span class="sch-name"><code>CoachStatus</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum"></span>
+  </summary>
+  <div class="ep-body">
+
+<div class="ptab">
+  <div class="prow">
+    <span class="p-name">job</span>
+    <span class="p-type">object | null</span>
+    <span class="p-desc">The job running now, or null. One at a time per profile.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">pending</span>
+    <span class="p-type"><a href="#schema-CoachProposal">CoachProposal</a> | null</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">cap</span>
+    <span class="p-type"><a href="#schema-CoachCap">CoachCap</a></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">last</span>
+    <span class="p-type">object | null</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+  </div>
+</details>
+
+<details class="ep sch" id="schema-CoachProposal">
+  <summary>
+    <span class="sch-name"><code>CoachProposal</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The answer waiting for a decision, from whichever kind of job produced it.</span>
+  </summary>
+  <div class="ep-body">
+<p>It expires 14 days after it was made; the first status poll after that retires it. <code>changes</code> comes from a review, <code>bundle</code> from a plan, <code>score</code>/<code>highlights</code> from a debrief — one of the three, never more.</p>
+<div class="ptab">
+  <div class="prow">
+    <span class="p-name">id</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The job's id.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">kind</span>
+    <span class="p-type">&quot;create&quot; | &quot;review&quot; | &quot;debrief&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">createdAt</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc">Epoch ms.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">expiresAt</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc">Epoch ms.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">planHash</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The plan this was written against — a later edit makes it stale.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">iteration</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc">1, or higher after a refine.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">summary</span>
+    <span class="p-type">string <span class="p-hint">(&le; 1200 chars)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">changes</span>
+    <span class="p-type">object[]</span>
+    <span class="p-desc">A review's change-set, each one applied or rejected on its own.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">changes[].id</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">changes[].type</span>
+    <span class="p-type">&quot;add-exercise&quot; | &quot;remove-exercise&quot; | &quot;swap-exercise&quot; | &quot;sets&quot; | &quot;reps&quot; | &quot;repsMin&quot; | &quot;repsMax&quot; | &quot;sec&quot; | &quot;cardio&quot; | &quot;reorder&quot; | &quot;superset&quot; | &quot;routine-prog&quot; | &quot;exercise-prog&quot; | &quot;inc&quot; | &quot;add-routine&quot; | &quot;remove-routine&quot; | &quot;rename-routine&quot; | &quot;week&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">changes[].why</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">changes[].before</span>
+    <span class="p-type">object</span>
+    <span class="p-desc">What the plan says now — the client checks it before applying.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">changes[].after</span>
+    <span class="p-type">object</span>
+    <span class="p-desc">What it would say.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">evidence</span>
+    <span class="p-type">object</span>
+    <span class="p-desc">The window the review read.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">evidence.from</span>
+    <span class="p-type">string | null</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">evidence.to</span>
+    <span class="p-type">string | null</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">evidence.sessions</span>
+    <span class="p-type">integer | null</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">notes</span>
+    <span class="p-type">string[]</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">bundle</span>
+    <span class="p-type">object</span>
+    <span class="p-desc">A whole plan, from a <code>create</code> job — routines, week and any custom exercises.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">bundle.opengym_plan</span>
+    <span class="p-type">always 1</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">bundle.name</span>
+    <span class="p-type">string <span class="p-hint">(&le; 40 chars)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">bundle.summary</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">bundle.basedOn</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">bundle.week</span>
+    <span class="p-type">object</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">bundle.routines</span>
+    <span class="p-type">object[]</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">bundle.customEx</span>
+    <span class="p-type">object[]</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">score</span>
+    <span class="p-type">integer <span class="p-hint">(1&ndash;10)</span></span>
+    <span class="p-desc">A debrief's score for the session.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">highlights</span>
+    <span class="p-type">string[]</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">watch</span>
+    <span class="p-type">string[]</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">nextTime</span>
+    <span class="p-type">string[]</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">workout</span>
+    <span class="p-type">object</span>
+    <span class="p-desc">Which session a debrief read.</span>
+  </div>
+</div>
+  </div>
+</details>
+
+<details class="ep sch" id="schema-CoachIntake">
+  <summary>
+    <span class="sch-name"><code>CoachIntake</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The intake answers, as the plan screen collects them.</span>
+  </summary>
+  <div class="ep-body">
+<p>Stored in the profile's own state as well; sent here so a plan can be asked for with answers that have not been synced yet.</p>
+<div class="ptab">
+  <div class="prow">
+    <span class="p-name">goal</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">e.g. <code>muscle</code>, <code>strength</code>, <code>fat-loss</code>.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">experience</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">daysPerWeek</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">preferredDays</span>
+    <span class="p-type">integer[]</span>
+    <span class="p-desc">0 = Sunday.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">sessionMin</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc">Minutes per session.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">equipment</span>
+    <span class="p-type">string[]</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">limitations</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Injuries and anything to work around.</span>
+  </div>
+</div>
+  </div>
+</details>
+
+<details class="ep sch" id="schema-CoachCohort">
+  <summary>
+    <span class="sch-name"><code>CoachCohort</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Medians across the profiles that opted in, and where this one stands among them.</span>
+  </summary>
+  <div class="ep-body">
+<p><code>ok</code> is false whenever there is nothing to show, and the other flags say why: the admin has the comparison switched off (<code>enabled: false</code>), this profile does not share (<code>sharing: false</code>), or there are not yet three who do.</p>
+<div class="ptab">
+  <div class="prow">
+    <span class="p-name">ok</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">enabled</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">sharing</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">people</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">minPeople</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc">Three. Below it nothing is computed at all.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">unit</span>
+    <span class="p-type">&quot;kg&quot; | &quot;lb&quot;</span>
+    <span class="p-desc">The reader's own unit — every number below is in it.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">sessionsPerWeek</span>
+    <span class="p-type">object</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">sessionsPerWeek.median</span>
+    <span class="p-type">number</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">sessionsPerWeek.you</span>
+    <span class="p-type">number</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">exercises</span>
+    <span class="p-type">object[]</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">exercises[].id</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">exercises[].name</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">exercises[].people</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">exercises[].median</span>
+    <span class="p-type">number | null</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">exercises[].you</span>
+    <span class="p-type">number | null</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">rankPct</span>
+    <span class="p-type">integer | null</span>
+    <span class="p-desc">Share of the others at or below this profile, averaged over the listed exercises.</span>
+  </div>
+</div>
+  </div>
+</details>
+
+<details class="ep sch" id="schema-AdminCoach">
+  <summary>
+    <span class="sch-name"><code>AdminCoach</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The whole admin card in one answer.</span>
+  </summary>
+  <div class="ep-body">
+<p>Never a credential — only whether one is filed.</p>
+<div class="ptab">
+  <div class="prow">
+    <span class="p-name">disabledByEnv</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc">COACH_DISABLED is set, so nothing the admin toggles matters.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">enabled</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">provider</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">providers</span>
+    <span class="p-type">object[]</span>
+    <span class="p-desc">Every provider this build knows, and what each one needs.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">providers[].id</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">providers[].label</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">providers[].runtime</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The runtime it spawns, when it spawns one.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">providers[].setupToken</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">providers[].deviceLogin</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">providers[].apiKey</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">providers[].http</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">providers[].baseUrl</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc">Whether its endpoint is configurable.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">providers[].keyOptional</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">providers[].keyPlaceholder</span>
+    <span class="p-type">string | null</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">providers[].defaultModel</span>
+    <span class="p-type">string | null</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">providers[].connected</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc">Whether a credential is already filed for it.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">model</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The model in force for the active provider.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">models</span>
+    <span class="p-type">object</span>
+    <span class="p-desc">Model per provider — switching provider keeps them all.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">baseUrl</span>
+    <span class="p-type">string | null</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">knownModels</span>
+    <span class="p-type">string[] | null</span>
+    <span class="p-desc">From the live check, when the provider could be asked.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">caps</span>
+    <span class="p-type">object</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">caps.perProfileDaily</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">caps.instanceDaily</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">community</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">runtime</span>
+    <span class="p-type">object</span>
+    <span class="p-desc">The live check performed while answering this request.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">runtime.ok</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">runtime.version</span>
+    <span class="p-type">string | null</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">runtime.error</span>
+    <span class="p-type">string | null</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">runtime.needsKey</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">authMode</span>
+    <span class="p-type">&quot;instance&quot; | &quot;profile&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">boundUid</span>
+    <span class="p-type">string | null</span>
+    <span class="p-desc">The profile an instance credential bound itself to, once one has spent it.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">auth</span>
+    <span class="p-type">object</span>
+    <span class="p-desc">Whether a credential is filed, and whose. <code>unreadable</code> is its own state because it has a specific cause and a specific fix — ./data restored without its <code>secret</code>.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">auth.state</span>
+    <span class="p-type">&quot;not-required&quot; | &quot;none&quot; | &quot;optional&quot; | &quot;connected&quot; | &quot;unreadable&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">auth.type</span>
+    <span class="p-type">string | null</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">auth.account</span>
+    <span class="p-type">string | null</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">auth.connectedAt</span>
+    <span class="p-type">string <span class="p-hint">(date-time)</span> | null</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">unprivileged</span>
+    <span class="p-type">object</span>
+    <span class="p-desc">Whether the privilege drop can be performed. It fails closed: if <code>ok</code> is false no job runs at all, and the admin needs to hear that here rather than from a user.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">unprivileged.ok</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">unprivileged.dropped</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">unprivileged.why</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">jobsToday</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">lastSuccess</span>
+    <span class="p-type">string <span class="p-hint">(date-time)</span> | null</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">lastError</span>
+    <span class="p-type">object</span>
+    <span class="p-desc">The last failure the instance log recorded, or null.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">recent</span>
+    <span class="p-type">object[]</span>
+    <span class="p-desc">The last 20 jobs, newest first — counts and outcomes only, never contents.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">recent[].at</span>
+    <span class="p-type">string <span class="p-hint">(date-time)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">recent[].kind</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">recent[].trigger</span>
+    <span class="p-type">&quot;manual&quot; | &quot;scheduled&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">recent[].outcome</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">recent[].errorClass</span>
+    <span class="p-type">string | null</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">recent[].ms</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc"></span>
   </div>
 </div>
   </div>

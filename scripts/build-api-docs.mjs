@@ -126,7 +126,10 @@ const TAGS = {
   data: { title: 'Data', side: 'State sync' },
   push: { title: 'Push', side: 'Notifications &amp; rest timer' },
   activity: { title: 'Activity', side: 'Live presence' },
-  admin: { title: 'Admin', side: 'Users, invites, audit log' }
+  // A tag missing from this map renders nowhere at all, silently — so every tag in the
+  // spec needs a line here.
+  coach: { title: 'AI Coach', side: 'Plans, reviews, debriefs' },
+  admin: { title: 'Admin', side: 'Users, invites, audit log, Coach' }
 }
 
 // "Admin: list all users" → "List all users": the section heading and the ADMIN
