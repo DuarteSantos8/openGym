@@ -1452,16 +1452,28 @@ export const glyphPicker = (current, onPick) => {
 // RPE sees the same buttons labelled on its own scale (toScale), coloured identically — the
 // colour is the effort, not the number, so 0 RIR and 10 RPE are both the "went to failure" end.
 function EffortPicker({ kind, value, onPick, close }) {
-  // Local mirror so the ticked preset and the exact field track typing live; the store is
-  // written on every change through onPick, the same as the stepper did.
+  // Local mirror so the ticked preset and the exact field track typing live.
   const [v, setV] = useState(value ?? null)
-  const set = nv => { setV(nv); onPick(nv) }
+  // The exact field used to write through on every change, and onPick concludes the set (issue
+  // #64): it ticks the set, beeps and starts the rest. Since stepEffort(kind, null, 1) returns
+  // the band's minimum, one tap of + — or typing the `1` of `10` — was a committed rating, fired
+  // under the sheet you were still typing into, and on the last set of the last exercise it
+  // stacked workoutCompleteSheet on top of the picker. So typing moves the mirror only, and the
+  // rating is written once, when the sheet goes away: Done, the backdrop, a swipe or Escape all
+  // unmount this. A preset row still commits on the spot, which is what makes it one tap.
+  const typed = useRef(value ?? null)
+  const done = useRef(false)
+  const set = nv => { typed.current = nv; setV(nv) }
+  useEffect(() => () => {
+    if (done.current) return
+    if (typed.current !== (value ?? null)) onPick(typed.current)
+  }, [])
   // `v` is in the profile's own scale (whatever sits on the set: s.rir or s.rpe). Compare in
   // RIR so the tick lands on the right preset on either scale, and so a typed RPE colours the
   // same as the RIR it equals.
   const curRir = rirOf(kind === 'rpe' ? { rpe: v } : { rir: v })
   const curColor = effortColor(curRir)
-  const commit = nv => { close(); onPick(nv) }
+  const commit = nv => { done.current = true; close(); onPick(nv) }
   const pick = rir => commit(toScale(kind, rir))
   const hd = EFFORT[kind].hd
   // Same list the ⋯ menus use: a tinted square with the value where the icon goes, the sentence
@@ -1494,6 +1506,9 @@ function EffortPicker({ kind, value, onPick, close }) {
     </div>
     {v != null && <>
       <div style={{ height: 10 }} />
+      {/* Only after the exact field has moved the value off what is stored: the preset rows
+          close themselves, so this row exists for the one path that does not. */}
+      {v !== (value ?? null) && <Button icon="check" onClick={() => commit(v)}>{t('Done')}</Button>}
       <Button variant="ghost" className="dim" icon="xmark" onClick={() => commit(null)}>{t('Clear rating')}</Button>
     </>}
     <div style={{ height: 4 }} />
