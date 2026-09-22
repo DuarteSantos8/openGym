@@ -932,6 +932,8 @@ export default {
   'Each request goes straight to {0} with your key — nobody else sees it, and you pay for it.': 'Cada pedido vai diretamente para {0} com a tua chave — mais ninguém o vê, e és tu que pagas.',
   'Endpoint': 'Endpoint',
   'Enter your API key': 'Introduz a tua chave de API',
+  'Enter the endpoint URL': 'Introduz o URL do endpoint',
+  'There is no routine to review yet — build one with at least two exercises first.': 'Ainda não há nenhuma rotina para rever — cria primeiro uma com pelo menos dois exercícios.',
   'How should the Coach run?': 'Como deve correr o Treinador?',
   'List models': 'Listar modelos',
   'Model': 'Modelo',

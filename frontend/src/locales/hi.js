@@ -932,6 +932,8 @@ export default {
   'Each request goes straight to {0} with your key — nobody else sees it, and you pay for it.': 'हर अनुरोध आपकी कुंजी के साथ सीधे {0} को जाता है — कोई और इसे नहीं देखता, और भुगतान आप करते हैं।',
   'Endpoint': 'एंडपॉइंट',
   'Enter your API key': 'अपनी API कुंजी दर्ज करें',
+  'Enter the endpoint URL': 'एंडपॉइंट URL दर्ज करें',
+  'There is no routine to review yet — build one with at least two exercises first.': 'अभी समीक्षा के लिए कोई रूटीन नहीं — पहले कम से कम दो व्यायामों वाला एक रूटीन बनाएँ।',
   'How should the Coach run?': 'कोच कैसे चले?',
   'List models': 'मॉडल सूची',
   'Model': 'मॉडल',

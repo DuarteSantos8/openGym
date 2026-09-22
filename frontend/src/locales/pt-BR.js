@@ -635,6 +635,8 @@ export const PT_BR_OVERRIDES = {
   'Scan': 'Escanear',
   'e.g. FitZone downtown': 'ex. FitZone centro',
   'Gym card': 'Cartão da academia',
+  'Enter the endpoint URL': 'Digite a URL do endpoint',
+  'There is no routine to review yet — build one with at least two exercises first.': 'Ainda não há nenhuma rotina para revisar — crie primeiro uma com pelo menos dois exercícios.',
   'Re-scan': 'Escanear de novo',
   'Scan it with the camera or import a photo.': 'Escaneie com a câmera ou importe uma foto.',
   'Import a photo of your membership card or scan it with the camera. No extra app needed at the gym — just open this screen.': 'Importe uma foto do seu cartão de sócio ou escaneie com a câmera. Não é preciso outro app na academia — é só abrir esta tela.',

@@ -932,6 +932,8 @@ export default {
   'Each request goes straight to {0} with your key — nobody else sees it, and you pay for it.': 'Her istek anahtarınla doğrudan {0} adresine gider — başka kimse görmez ve ücretini sen ödersin.',
   'Endpoint': 'Uç nokta',
   'Enter your API key': 'API anahtarını gir',
+  'Enter the endpoint URL': 'Uç nokta URL’sini gir',
+  'There is no routine to review yet — build one with at least two exercises first.': 'İncelenecek rutin yok — önce en az iki hareketi olan bir rutin oluştur.',
   'How should the Coach run?': 'Koç nasıl çalışsın?',
   'List models': 'Modelleri listele',
   'Model': 'Model',

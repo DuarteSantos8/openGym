@@ -123,6 +123,14 @@ test('the compatible endpoint: base URL is validated, a keyless endpoint counts 
     const { call } = harness();
     let r = await call('POST /api/admin/coach/config', { provider: 'compatible', baseUrl: 'http://user:pw@x' });
     assert.equal(r.status, 400);
+    // Empty passes validateBaseUrl on purpose (it means "the default" for anthropic/openai/gemini),
+    // but compatible has no default, so empty is nowhere to call. This used to save baseUrl: null
+    // and baseUrlFor() then handed the adapter ''. The phone refuses it too.
+    r = await call('POST /api/admin/coach/config', { provider: 'compatible', baseUrl: '' });
+    assert.equal(r.status, 400, 'an empty endpoint for a provider with no default');
+    assert.match(r.body.error, /no default endpoint/);
+    r = await call('POST /api/admin/coach/config', { provider: 'compatible', baseUrl: '   ' });
+    assert.equal(r.status, 400, 'whitespace is empty');
     r = await call('POST /api/admin/coach/config', { provider: 'compatible', baseUrl: base + '/' });
     assert.equal(r.status, 200);
 

@@ -932,6 +932,8 @@ export default {
   'Each request goes straight to {0} with your key — nobody else sees it, and you pay for it.': '모든 요청은 당신의 키로 {0}에 바로 전송됩니다 — 다른 누구도 볼 수 없고, 비용은 당신이 냅니다.',
   'Endpoint': '엔드포인트',
   'Enter your API key': 'API 키를 입력하세요',
+  'Enter the endpoint URL': '엔드포인트 URL을 입력하세요',
+  'There is no routine to review yet — build one with at least two exercises first.': '아직 검토할 루틴이 없어요 — 먼저 운동이 두 개 이상인 루틴을 만드세요.',
   'How should the Coach run?': '코치를 어떻게 실행할까요?',
   'List models': '모델 목록',
   'Model': '모델',

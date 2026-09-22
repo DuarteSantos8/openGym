@@ -932,6 +932,8 @@ export default {
   'Each request goes straight to {0} with your key — nobody else sees it, and you pay for it.': 'Каждый запрос уходит напрямую в {0} с вашим ключом — больше никто его не видит, и платите за него вы.',
   'Endpoint': 'Эндпоинт',
   'Enter your API key': 'Введите API-ключ',
+  'Enter the endpoint URL': 'Введите URL эндпоинта',
+  'There is no routine to review yet — build one with at least two exercises first.': 'Пока нет программы для разбора — сначала создай одну хотя бы с двумя упражнениями.',
   'How should the Coach run?': 'Как должен работать тренер?',
   'List models': 'Показать модели',
   'Model': 'Модель',

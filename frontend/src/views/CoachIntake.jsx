@@ -85,13 +85,17 @@ export default function CoachIntake() {
   }
 
   const finish = async () => {
-    const profile = { ...p, daysPerWeek: Math.min(7, Math.max(1, p.daysPerWeek || 3)) }
+    // `??`, not `||`: only a missing answer takes the default. Nought is an answer, and the clamp
+    // turns it into one day like every other count below the floor.
+    const profile = { ...p, daysPerWeek: Math.min(7, Math.max(1, p.daysPerWeek ?? 3)) }
     update(s => {
       const c = (s.coach = s.coach || emptyCoach())
       c.profile = profile
       // The conversation opens with the answers — rendered from the profile, so an edit later
-      // is reflected rather than duplicated.
-      if (!editing || !(c.chat || []).some(m => m.kind === 'intake')) appendChat(s, { role: 'user', kind: 'intake' })
+      // is reflected rather than duplicated. One intake line whoever is writing it: a first-timer
+      // whose plan request failed presses the button again, and must not open the thread with
+      // the questionnaire twice.
+      if (!(c.chat || []).some(m => m.kind === 'intake')) appendChat(s, { role: 'user', kind: 'intake' })
     })
     if (editing) { toast(t('Saved')); nav('/coach'); return }
     setBusy(true)
