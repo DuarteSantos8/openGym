@@ -131,6 +131,28 @@ const LOANWORDS = new Set([
 // vowel length tells it apart from Maße, which is why the derivation runs ß → ss and never back.
 const SWISS_FORMS = /\b(gesäss|füsse|fuss|gross|aussen|schliess|strasse)\w*/iu
 
+// German puts the equipment in a trailing phrase ("Bankdrücken mit Langhantel", "Rudern am
+// Kabelzug") or into a compound ("Kurzhantel-Curl"). Leading it as a bare noun — "Kurzhantel
+// Schrägbank einarmige Fliegende" — is the English word order with German words in it, which is
+// what an English-title-per-line translation produces unless something rejects it. Built from
+// EQUIPMENT_TERMS so the nouns the equipment rule demands are exactly the ones checked here.
+const EQUIPMENT_NOUNS = [...new Set(EQUIPMENT_TERMS.map(([, , term]) => term))]
+const LEADING_EQUIPMENT = new RegExp(`^(${EQUIPMENT_NOUNS.join('|')})(?=\\s)`, 'u')
+
+// German lowercases an adjective or participle wherever it is not the first word. The model
+// capitalises them mid-name because the English title capitalises nothing and it is copying
+// position, not grammar. A closed list, matched only as a whole word with an inflectional
+// ending, so the noun compounds these stems also appear in ("Schrägbank", "Sitzbank") are
+// untouched.
+const ADJECTIVE_STEMS = [
+  'sitzend', 'stehend', 'liegend', 'kniend', 'hängend', 'assistiert', 'gewichtet',
+  'einarmig', 'zweiarmig', 'beidarmig', 'einbeinig', 'zweibeinig', 'gebeugt', 'gestreckt',
+  'vorgebeugt', 'abwechselnd', 'gedreht', 'umgekehrt', 'reverse', 'seitlich', 'vertikal',
+  'horizontal', 'lateral', 'unilateral', 'bilateral', 'breit', 'eng', 'weit', 'hoch', 'tief',
+  'schräg', 'negativ', 'innere?', 'äußere?', 'vorder', 'hinter', 'steifbeinig', 'fixiert',
+]
+const MID_NAME_ADJECTIVE = new RegExp(`^(${ADJECTIVE_STEMS.join('|')})(e|er|es|en|em)?$`, 'u')
+
 const words = s => s.toLowerCase().match(/[a-zäöüß][a-zäöüß-]*/giu) || []
 
 // Returns [] for a name that breaks nothing. `exercise` is an EXDB entry (its `n` and `eq` are
@@ -148,6 +170,17 @@ export function checkName(exercise, german) {
   if (/[.!?]$/u.test(name)) add('punctuation', `Remove the final "${name.slice(-1)}" from "${name}" — a name is not a sentence.`)
   if (/[()]/u.test(name)) add('parentheses', `Remove the parentheses from "${name}" — the app appends the English title itself.`)
   if (name[0] !== name[0].toLocaleUpperCase('de')) add('capitalisation', `Start "${name}" with a capital letter.`)
+
+  const leading = name.match(LEADING_EQUIPMENT)
+  if (leading) {
+    add('word-order', `"${name}" starts with "${leading[1]}" as a bare noun, which is the English word order. Name the movement first and put the equipment in a trailing phrase ("… mit ${leading[1]}", "… am ${leading[1]}") or join it into one compound word with a hyphen.`)
+  }
+
+  const midCap = name.split(/\s+/).slice(1)
+    .find(word => /^[A-ZÄÖÜ]/u.test(word) && MID_NAME_ADJECTIVE.test(word.toLocaleLowerCase('de')))
+  if (midCap) {
+    add('mid-capitalisation', `"${midCap}" is an adjective in "${name}" and German only capitalises it as the first word. Write it as "${midCap.toLocaleLowerCase('de')}".`)
+  }
 
   const swiss = name.match(SWISS_FORMS)
   if (swiss) add('sharp-s', `Write "${swiss[0]}" with ß, not ss — the app derives the Swiss spelling itself.`)

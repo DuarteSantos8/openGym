@@ -125,7 +125,8 @@ Rules:
 - Return only the structured JSON required by the schema, with every ID exactly once and in input order.
 - Return only the German title in "name". Do not append, repeat or bracket the English title — the app shows it itself.
 - A title is a noun phrase, not a sentence: no final full stop, and German noun capitalisation ("Bankdrücken mit Langhantel", "Rudern am Kabelzug").
-- Capitalise the first word whatever it is. A leading adjective is capitalised here even though German would lowercase it mid-sentence: "Abwechselnder Latzug am Kabelzug", "Assistierter Klimmzug an der Hebelmaschine".
+- Capitalise the first word whatever it is. A leading adjective is capitalised here even though German would lowercase it mid-sentence: "Abwechselnder Latzug am Kabelzug", "Assistierter Klimmzug an der Hebelmaschine". Every LATER adjective stays lowercase: "Assistiertes hängendes Knieheben", never "Assistiertes Hängendes Knieheben".
+- Name the movement first and put the equipment in a trailing phrase, or join it into one hyphenated compound. Do NOT copy the English order, which leads with the equipment. "dumbbell incline one arm fly" is "Einarmige Fliegende auf der Schrägbank mit Kurzhantel" or "Einarmige Schrägbank-Fliegende mit Kurzhantel" — never "Kurzhantel Schrägbank einarmige Fliegende". German joins nouns with a hyphen or a preposition; it does not stack them with spaces.
 - Preserve exercise identity: equipment, stance, grip, direction, side, assisted/weighted status and version qualifiers all distinguish one catalogue entry from another.
 - Prefer established German gym terminology (Bankdrücken, Kniebeuge, Kreuzheben, Rudern, Latzug, Klimmzug, Liegestütz, Ausfallschritt, Wadenheben, Beinpresse, Fliegende, Nackendrücken).
 - Use standard German ß (Gesäß, Fuß), not the Swiss ss — the app derives the Swiss spelling from this pack.
