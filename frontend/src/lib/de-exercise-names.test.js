@@ -2,7 +2,7 @@ import { afterEach, describe, expect, test } from 'vitest'
 import { readFileSync } from 'node:fs'
 import de from '../exercise-names/de.js'
 import { EXDB } from './exercises-data.js'
-import { checkName, stagedExercises } from '../../../scripts/de-name-rules.mjs'
+import { AWAITING_REVIEW, checkName, stagedExercises } from '../../../scripts/de-name-rules.mjs'
 import {
   EXERCISE_NAME_LANGS, _setLangState, derivePack, exerciseNameFor, exerciseNameSearchText
 } from './i18n-core.js'
@@ -21,11 +21,12 @@ describe('German exercise names', () => {
     expect(EXERCISE_NAME_LANGS).toContain('de')
   })
 
-  test('covers every staged exercise and no body-weight one', () => {
+  test('covers every staged exercise, and nothing outside the stage', () => {
     for (const exercise of staged) expect(de[exercise.id]?.trim(), exercise.id).toBeTruthy()
     for (const exercise of EXDB) {
-      if (exercise.eq && exercise.eq !== 'body weight') continue
-      expect(de[exercise.id], `${exercise.id} is body weight and must stay English`).toBeUndefined()
+      if (exercise.eq && exercise.eq !== 'body weight' && !AWAITING_REVIEW.has(exercise.id)) continue
+      const why = AWAITING_REVIEW.has(exercise.id) ? 'awaits native review' : 'is body weight'
+      expect(de[exercise.id], `${exercise.id} ${why} and must stay English`).toBeUndefined()
     }
   })
 
