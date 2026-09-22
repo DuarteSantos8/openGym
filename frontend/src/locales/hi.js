@@ -1186,6 +1186,7 @@ export default {
   'Could not start the scanner': 'स्कैनर शुरू नहीं हो सका',
   'Gym check-in': 'जिम चेक-इन',
   'Show a card on Home with your membership QR codes.': 'होम पर आपके सदस्यता QR कोड वाला कार्ड दिखाता है।',
+  'Show the body weight card on Home.': 'होम पर शरीर के वजन का कार्ड दिखाता है।',
   'Point the camera at the QR code': 'कैमरे को QR कोड पर रखें',
   'Camera is not available here — import a photo or type the code instead.': 'कैमरा यहाँ उपलब्ध नहीं है — फ़ोटो इंपोर्ट करें या कोड टाइप करें।',
   'Camera access was denied — allow it in your browser and try again.': 'कैमरे की अनुमति नहीं मिली — ब्राउज़र में अनुमति दें और फिर कोशिश करें।',

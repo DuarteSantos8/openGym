@@ -1186,6 +1186,7 @@ export default {
   'Could not start the scanner': '스캐너를 시작할 수 없습니다',
   'Gym check-in': '헬스장 체크인',
   'Show a card on Home with your membership QR codes.': '홈 화면에 회원 QR 코드 카드를 표시합니다.',
+  'Show the body weight card on Home.': '홈 화면에 체중 카드를 표시합니다.',
   'Point the camera at the QR code': '카메라를 QR 코드에 맞추세요',
   'Camera is not available here — import a photo or type the code instead.': '여기서는 카메라를 사용할 수 없습니다 — 사진을 가져오거나 코드를 입력하세요.',
   'Camera access was denied — allow it in your browser and try again.': '카메라 접근이 거부되었습니다 — 브라우저에서 허용한 뒤 다시 시도하세요.',
