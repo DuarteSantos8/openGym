@@ -50,8 +50,13 @@ to write:
 
 ```sh
 node scripts/translate-de-exercise-names.mjs --equipment='trap bar'
-node scripts/translate-de-exercise-names.mjs --equipment=dumbbell --apply
+node scripts/translate-de-exercise-names.mjs --equipment=dumbbell --limit=999 --apply
 ```
+
+`--limit` caps how many names one invocation translates and defaults to 40, so a run
+without it stops early and still exits successfully — pass a limit at least as large as
+the family you are translating. Names already in `de.json` are skipped, so re-running
+after an interrupt costs nothing.
 
 Equipment and identity-changing qualifiers (assisted, weighted, one-arm,
 seated, incline …) are checked against `scripts/de-name-rules.mjs` while the

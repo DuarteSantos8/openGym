@@ -125,6 +125,7 @@ Rules:
 - Return only the structured JSON required by the schema, with every ID exactly once and in input order.
 - Return only the German title in "name". Do not append, repeat or bracket the English title — the app shows it itself.
 - A title is a noun phrase, not a sentence: no final full stop, and German noun capitalisation ("Bankdrücken mit Langhantel", "Rudern am Kabelzug").
+- Capitalise the first word whatever it is. A leading adjective is capitalised here even though German would lowercase it mid-sentence: "Abwechselnder Latzug am Kabelzug", "Assistierter Klimmzug an der Hebelmaschine".
 - Preserve exercise identity: equipment, stance, grip, direction, side, assisted/weighted status and version qualifiers all distinguish one catalogue entry from another.
 - Prefer established German gym terminology (Bankdrücken, Kniebeuge, Kreuzheben, Rudern, Latzug, Klimmzug, Liegestütz, Ausfallschritt, Wadenheben, Beinpresse, Fliegende, Nackendrücken).
 - Use standard German ß (Gesäß, Fuß), not the Swiss ss — the app derives the Swiss spelling from this pack.
@@ -145,10 +146,16 @@ ${JSON.stringify(input)}`
   // on while it still has the batch in hand. A batch that cannot be fixed is never written.
   let prompt = basePrompt
   let accepted
+  // A name that has passed the rules once is kept, and the model is never asked for it again.
+  // Without this the loop oscillates: told only about what is broken *now*, the model rewrites
+  // the batch from scratch and silently reverts the corrections it made on the previous attempt,
+  // so a batch can fail after three attempts having had every name clean at some point in them.
+  const pinned = new Map()
   for (let attempt = 0; ; attempt++) {
     const structured = await requestStructured(prompt, batch)
     const received = new Map(structured.translations.map(row => [row.id, row.name.trim()]))
     if (received.size !== batch.length) throw new Error(`${provider} returned duplicate or missing IDs`)
+    for (const [id, name] of pinned) received.set(id, name)
 
     const problems = []
     for (const exercise of batch) {
@@ -156,6 +163,7 @@ ${JSON.stringify(input)}`
       if (!name) throw new Error(`${exercise.id}: missing translated name`)
       const broken = checkName(exercise, name)
       if (broken.length) problems.push({ id: exercise.id, name, broken })
+      else pinned.set(exercise.id, name)
     }
 
     if (!problems.length) {
@@ -172,8 +180,12 @@ ${JSON.stringify(input)}`
 
     // Only the broken names are quoted back. Re-sending the whole batch as "wrong" invites the
     // model to rewrite names that were already fine, which loses good work and breaks other rules.
+    // The settled names are still listed, because a model that is not shown them invents new ones
+    // for those IDs — harmless now that they are pinned, but it spends the batch's attention on
+    // work that will be discarded instead of on the names that are actually still wrong.
+    const settled = [...pinned].map(([id, name]) => `- ${id}: ${JSON.stringify(name)}`).join('\n')
     prompt = `${basePrompt}
-
+${settled ? `\nThese names are already accepted. Return them back exactly as they are:\n${settled}\n` : ''}
 Your previous answer broke these rules. Return the FULL JSON for every ID again, changing only the names listed here:
 ${problems.map(p => `- ${p.id} was: ${JSON.stringify(p.name)}\n${p.broken.map(v => `  ${v.fix}`).join('\n')}`).join('\n')}`
   }

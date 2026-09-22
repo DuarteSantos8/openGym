@@ -84,6 +84,40 @@ const LOANWORDS = new Set([
   'ergometer', 'hack', 'hammer', 'kettlebell', 'kettlebells', 'pilates', 'plank', 'planks',
   'romanian', 'scott', 'sit-up', 'sit-ups', 'skierg', 'smith', 'sprint', 'sprints', 'step',
   'stepper', 'sumo', 'trap', 'yoga', 'v', 't', 'x', 'z', 'l', 'band', 'bands',
+  // Hyphenated as one token by `words`, so listing the parts is not enough — 'step' and 'v' are
+  // both above and neither matched "step-up" or "v-up". German gyms say these exactly as Sit-up
+  // is said, which is why that one was already here.
+  'step-up', 'step-ups', 'v-up', 'v-ups',
+  // Plain German nouns that happen to be spelled the same in English, so the inverted check reads
+  // a correct German name as a leak. "Arm" is the one that stalled a batch: the model wrote
+  // "gebeugter Arm" and was told three times to write the German word, which it already had.
+  // Only the singulars — German pluralises these differently (Arme, Hände), so an English plural
+  // in a German name really is a leak.
+  'arm', 'ball', 'hand', 'finger', 'rotation', 'position',
+  // Eponyms. A surname is the same word in every language, so flagging one is always a false
+  // positive — there is no "German word instead" for the model to write.
+  'arnold', 'bradford', 'cossack', 'cuban', 'frankenstein', 'hyght', 'jefferson', 'jm',
+  'london', 'otis', 'pallof', 'pendlay', 'rocky', 'russian', 'svend', 'tate', 'thibaudeau',
+  'turkish', 'zercher', 'zottman',
+  // Anglicisms German gyms use untranslated. Deliberately short: Kniebeuge, Drücken, Rudern and
+  // Heben stay enforced, so this concedes the names that have no German form in use, not the
+  // ones a translation exists for.
+  'twist', 'twists', 'twisting', 'twisted', 'pullover', 'split', 'drag', 'goblet', 'thruster',
+  'kickback', 'kickbacks', 'skull', 'crusher', 'skullcrusher', 'good', 'morning',
+  // Attachment names, said as-is on a German gym floor. 'ez-bar' is deliberately absent: the
+  // equipment rule requires SZ-Stange for that machine, and the two would contradict each other.
+  't-bar', 'v-bar', 'landmine',
+  // Found by surveying the titles still untranslated rather than by stalling on each in turn:
+  // Kettlebell Swing, Ball Slam, Donkey Wadenheben, Sissy Squat and the POV camera-angle entries
+  // all keep the English word on a German gym floor. Translatable neighbours are deliberately
+  // absent — shrug, swing's cousin jump, throw and catch all have German forms the model produces.
+  'pov', 'slam', 'swing', 'donkey', 'sissy',
+  // Anatomical terms German takes from Latin unchanged, which is what stalled the pronation
+  // batch: "Pronation" IS the German word, so no correction the model can make will satisfy a
+  // rule that calls it English. The colloquial English forms stay flagged — 'glutes' and 'abs'
+  // are not here, because Gesäß and Bauch exist and PREFERRED_TERMS asks for them.
+  'pronation', 'supination', 'hyperextension', 'flexor', 'adductor', 'deltoid',
+  'pectoralis', 'gluteus', 'piriformis', 'rectus', 'femoris', 'tibialis', 'posterior', 'major',
   // German gyms say Battle Ropes, not Kampfseile; the rope rule accepts either word for that
   // reason. Everything else on this list is a term with no German equivalent in use.
   'battle', 'battling', 'rope', 'ropes',
