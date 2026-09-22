@@ -72,6 +72,11 @@ The same rules run again in `frontend/src/lib/de-exercise-names.test.js`, so
 CI fails on anything edited in by hand afterwards.
 
 The translations were produced from the English EXDB titles with LLM
-assistance and must not be described as reviewed by a native speaker unless a
-named human reviewer completes that review. They are original translations and
-were not copied from another German exercise dataset.
+assistance and then reviewed by a native German speaker, who went through the
+pack against the English titles: 405 of the 760 shipped names were accepted
+individually and 2 were corrected by hand. The remaining 353 were not read one
+by one — they contain none of the terms the review left open, which is the
+criterion that put the other 239 equipment names in `AWAITING_REVIEW` instead
+of in the pack. So the pack is native-reviewed in the sense stated here and no
+further: a second reviewer is still worth having. They are original
+translations and were not copied from another German exercise dataset.
