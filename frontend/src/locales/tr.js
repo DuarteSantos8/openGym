@@ -1186,6 +1186,7 @@ export default {
   'Could not start the scanner': 'Tarayıcı başlatılamadı',
   'Gym check-in': 'Salon girişi',
   'Show a card on Home with your membership QR codes.': 'Ana sayfada üyelik QR kodlarınızı içeren bir kart gösterir.',
+  'Show the body weight card on Home.': 'Ana sayfada vücut ağırlığı kartını gösterir.',
   'Point the camera at the QR code': 'Kamerayı QR koda tutun',
   'Camera is not available here — import a photo or type the code instead.': 'Kamera burada kullanılamıyor — bir fotoğraf içe aktarın veya kodu yazın.',
   'Camera access was denied — allow it in your browser and try again.': 'Kamera erişimi reddedildi — tarayıcıda izin verip tekrar deneyin.',

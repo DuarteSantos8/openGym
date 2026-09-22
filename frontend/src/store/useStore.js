@@ -78,6 +78,10 @@ export const DEF = {
   // card and the /checkin route; the saved gymCards stay so turning it back on restores them.
   // Defaults on; an older profile without the key reads as on (`!== false`).
   checkIn: true,
+  // Whether the body-weight summary card is shown on Home. Off only hides that card: existing
+  // entries, Stats, imports and the separate pre-workout weigh-in flow keep working.
+  // Defaults on; an older profile without the key reads as on (`!== false`).
+  showWeightCard: true,
   // Whether Start opens the quick weigh-in first (sheets.jsx startFlow, issue #137). Off starts
   // the session straight away; weight can still be logged from Home/Stats. Defaults on; an
   // older profile without the key reads as on (`!== false`).

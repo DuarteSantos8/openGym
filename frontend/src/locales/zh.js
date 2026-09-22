@@ -1186,6 +1186,7 @@ export default {
   'Could not start the scanner': '无法启动扫描器',
   'Gym check-in': '健身房签到',
   'Show a card on Home with your membership QR codes.': '在首页显示一张包含会员二维码的卡片。',
+  'Show the body weight card on Home.': '在首页显示体重卡片。',
   'Point the camera at the QR code': '将摄像头对准二维码',
   'Camera is not available here — import a photo or type the code instead.': '此处无法使用摄像头 — 请导入照片或手动输入代码。',
   'Camera access was denied — allow it in your browser and try again.': '摄像头访问被拒绝 — 请在浏览器中允许后重试。',

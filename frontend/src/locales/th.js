@@ -1197,6 +1197,7 @@ export default {
   'Message the Coach…': 'ส่งข้อความถึงโค้ช…',
   'Gym check-in': 'เช็คอินที่ยิม',
   'Show a card on Home with your membership QR codes.': 'แสดงการ์ดพร้อม QR โค้ดสมาชิกของคุณบนหน้าหลัก',
+  'Show the body weight card on Home.': 'แสดงการ์ดน้ำหนักตัวบนหน้าหลัก',
   'Point the camera at the QR code': 'เล็งกล้องไปที่ QR โค้ด',
   'Camera is not available here — import a photo or type the code instead.': 'ใช้กล้องที่นี่ไม่ได้ — นำเข้ารูปภาพหรือพิมพ์รหัสแทน',
   'Camera access was denied — allow it in your browser and try again.': 'การเข้าถึงกล้องถูกปฏิเสธ — อนุญาตในเบราว์เซอร์แล้วลองอีกครั้ง',

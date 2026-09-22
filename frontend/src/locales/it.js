@@ -1186,6 +1186,7 @@ export default {
   'Could not start the scanner': 'Impossibile avviare lo scanner',
   'Gym check-in': 'Check-in in palestra',
   'Show a card on Home with your membership QR codes.': 'Mostra nella Home una scheda con i tuoi codici QR di iscrizione.',
+  'Show the body weight card on Home.': 'Mostra la scheda del peso corporeo nella Home.',
   'Point the camera at the QR code': 'Inquadra il codice QR con la fotocamera',
   'Camera is not available here — import a photo or type the code instead.': 'La fotocamera non è disponibile qui — importa una foto o digita il codice.',
   'Camera access was denied — allow it in your browser and try again.': 'Accesso alla fotocamera negato — consentilo nel browser e riprova.',

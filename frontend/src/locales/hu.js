@@ -1189,6 +1189,7 @@ export default {
   'Message the Coach…': 'Üzenet az Edzőnek…',
   'Gym check-in': 'Bejelentkezés a teremben',
   'Show a card on Home with your membership QR codes.': 'A Kezdőlapon egy kártyát mutat a tagsági QR-kódjaiddal.',
+  'Show the body weight card on Home.': 'Megjeleníti a testsúlykártyát a Kezdőlapon.',
   'Point the camera at the QR code': 'Irányítsd a kamerát a QR-kódra',
   'Camera is not available here — import a photo or type the code instead.': 'A kamera itt nem elérhető — importálj egy fotót vagy írd be a kódot.',
   'Camera access was denied — allow it in your browser and try again.': 'A kamera-hozzáférés elutasítva — engedélyezd a böngészőben, és próbáld újra.',
