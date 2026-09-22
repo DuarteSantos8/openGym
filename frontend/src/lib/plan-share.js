@@ -12,7 +12,7 @@ import { EXIDX, isBodyweightEq } from './exercises.js'
 import { modeOf, fmtSec, isBw, isPerSide, sideReps, MAX_PLANNED_WARMUPS } from './history.js'
 import { deriveSessionName } from './session-merge.js'
 import { uid, todayISO, DAYN, weekOrder, weekStartOf, fmtNum, exCount } from './format.js'
-import { t, exerciseNameFor } from './i18n-core.js'
+import { t, exerciseNameFor, exerciseNameClass } from './i18n-core.js'
 import { convertWeight } from './units.js'
 import { MUSCLES, inMuscleOrder } from './muscles.js'
 
@@ -390,7 +390,7 @@ export function planPrintHTML(S, owner) {
   .ex { display: flex; flex-direction: column; padding: 6px 0; break-inside: avoid; page-break-inside: avoid; }
   .ex + .ex, .ss + .ex, .ex + .ss { border-top: 1px solid #f2f3f6; }
   .ex-row { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; }
-  .ex-n { text-transform: capitalize; font-weight: 500; }
+  .ex-n { text-transform: ${exerciseNameClass() ? 'capitalize' : 'none'}; font-weight: 500; }
   .ex-n .part { text-transform: capitalize; color: #9aa0ae; font-weight: 400; font-size: 12px; margin-left: 8px; }
   .ex-s { color: #3d424e; white-space: nowrap; font-variant-numeric: tabular-nums; }
   .ex-note { color: #6a7080; font-size: 12px; margin-top: 2px; }

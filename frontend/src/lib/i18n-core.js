@@ -90,6 +90,14 @@ export const exerciseNameFor = ex => {
     : `${translated} (${ex.n})`
 }
 
+// EXDB stores English names lower-case and the UI title-cases them with CSS. A translated pack
+// carries its own casing and must not be cased again on top: German lower-cases adjectives
+// ("Assistiertes hängendes Knieheben"), Hungarian lower-cases common nouns. So the class that
+// does the title-casing belongs on the element only while the English fallback is showing.
+// Callers spread this onto the element that holds exerciseNameFor's output, nothing else —
+// muscle and equipment labels next to it are t() strings and keep their own capitalize.
+export const exerciseNameClass = () => (exerciseNames ? '' : 'capitalize')
+
 // Search both the localized and canonical English title without changing persisted data.
 export const exerciseNameSearchText = ex => {
   const translated = exerciseNames && ex && exerciseNames[ex.id]
