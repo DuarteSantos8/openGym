@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   LANGS, INSTR_LANGS, EXERCISE_NAME_LANGS, DATE_LOCALES, DERIVED_LOCALES,
-  baseLang, derivePack, dateLocale, getLang, t, _setLangState
+  baseLang, derivePack, dateLocale, getLang, t, _setLangState, exerciseNameClass
 } from './i18n-core.js'
 import de from '../locales/de.js'
 
@@ -97,5 +97,21 @@ describe('de-CH as a selectable language', () => {
     // must never be generated from the Swiss one.
     expect(DERIVED_LOCALES['de-CH'].base).toBe('de')
     expect(DERIVED_LOCALES.de).toBeUndefined()
+  })
+})
+
+// EXDB stores English names lower-case and the UI title-cases them with CSS. A translated pack
+// brings its own casing, and applying capitalize on top of it produced "Bankdrücken Mit
+// Langhantel" in German and "Has" for Hungarian common nouns.
+describe('exerciseNameClass', () => {
+  it('title-cases only while the English fallback is showing', () => {
+    _setLangState('en', {}, null, null)
+    expect(exerciseNameClass()).toBe('capitalize')
+    _setLangState('de', {}, null, null)
+    expect(exerciseNameClass()).toBe('capitalize')
+    _setLangState('de', {}, null, { '0025': 'Bankdrücken mit Langhantel' })
+    expect(exerciseNameClass()).toBe('')
+    _setLangState('en', {}, null, null)
+    expect(exerciseNameClass()).toBe('capitalize')
   })
 })

@@ -10,7 +10,7 @@ export const LANGS = {
   ko: '한국어', hi: 'हिन्दी', th: 'ไทย', hu: 'Magyar'
 }
 export const INSTR_LANGS = ['en', 'es', 'fr', 'it', 'tr', 'ru', 'zh', 'hi', 'pl', 'ko', 'pt-BR', 'hu']
-export const EXERCISE_NAME_LANGS = ['pt-BR', 'hu']
+export const EXERCISE_NAME_LANGS = ['pt-BR', 'hu', 'de']
 export const DATE_LOCALES = {
   en: 'en-GB', de: 'de-DE', 'de-CH': 'de-CH', es: 'es-ES', fr: 'fr-FR', it: 'it-IT',
   pt: 'pt-PT', 'pt-BR': 'pt-BR',
@@ -73,7 +73,9 @@ export function t(s, ...args) {
 // Instructions for an exercise in the current language (English steps as fallback).
 export const instrFor = ex => (instr && instr[ex.id]) || ex.st || []
 
-// Built-in catalogue names are bilingual when a complete translated name pack is active.
+// Built-in catalogue names are bilingual when a translated name pack is active. A pack need not
+// be complete: German covers the equipment exercises and not the body-weight ones, and an
+// exercise the pack has no entry for keeps its English title, one exercise at a time.
 // User-created exercises have no entry in the pack and keep their exact chosen name.
 export const exerciseNameFor = ex => {
   const translated = exerciseNames && ex && exerciseNames[ex.id]
@@ -87,6 +89,14 @@ export const exerciseNameFor = ex => {
     ? translated
     : `${translated} (${ex.n})`
 }
+
+// EXDB stores English names lower-case and the UI title-cases them with CSS. A translated pack
+// carries its own casing and must not be cased again on top: German lower-cases adjectives
+// ("Assistiertes hängendes Knieheben"), Hungarian lower-cases common nouns. So the class that
+// does the title-casing belongs on the element only while the English fallback is showing.
+// Callers spread this onto the element that holds exerciseNameFor's output, nothing else —
+// muscle and equipment labels next to it are t() strings and keep their own capitalize.
+export const exerciseNameClass = () => (exerciseNames ? '' : 'capitalize')
 
 // Search both the localized and canonical English title without changing persisted data.
 export const exerciseNameSearchText = ex => {
