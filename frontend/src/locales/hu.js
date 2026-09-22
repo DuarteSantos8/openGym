@@ -996,6 +996,8 @@ export default {
   'Each request goes straight to {0} with your key — nobody else sees it, and you pay for it.': 'Minden kérés közvetlenül ide megy a kulcsoddal: {0} — más nem látja, és te fizeted.',
   'Endpoint': 'Végpont',
   'Enter your API key': 'Add meg az API-kulcsodat',
+  'Enter the endpoint URL': 'Add meg a végpont URL-jét',
+  'There is no routine to review yet — build one with at least two exercises first.': 'Még nincs átnézhető rutin — előbb hozz létre egyet legalább két gyakorlattal.',
   'How should the Coach run?': 'Hogyan fusson az Edző?',
   'List models': 'Modellek listázása',
   'Model': 'Modell',

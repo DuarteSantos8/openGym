@@ -66,6 +66,9 @@ export default function CoachSetup() {
   const prepare = async () => {
     const v = validateBaseUrl(meta.baseUrl ? baseUrl : '')
     if (!v.ok) return toast(v.error)
+    // An empty field passes the validator on purpose: for a provider with a fixed endpoint,
+    // empty means the default. This one has no default, so empty is nowhere to call.
+    if (meta.baseUrl && !meta.defaultBase && !v.value) return toast(t('Enter the endpoint URL'))
     if (!meta.keyOptional && !key.trim() && !hasKey) return toast(t('Enter your API key'))
     setBusy(true); setStep(0)
     try {
@@ -83,6 +86,12 @@ export default function CoachSetup() {
   }
 
   const save = async () => {
+    // The same check "List models" makes. The endpoint field stays editable after a successful
+    // listing, and taking `.value` off an unchecked result turned a typo into `baseUrl: null` —
+    // saved, "The Coach is on", and the phone pointed at nothing.
+    const v = validateBaseUrl(meta.baseUrl ? baseUrl : '')
+    if (!v.ok) return toast(v.error)
+    if (meta.baseUrl && !meta.defaultBase && !v.value) return toast(t('Enter the endpoint URL'))
     const chosen = model || meta.defaultModel
     if (!chosen) return toast(t('Pick a model'))
     setBusy(true)
@@ -90,7 +99,7 @@ export default function CoachSetup() {
       // The mode first, the key second: the settings file is the cheap, reliable write, the
       // key goes through the platform's secure store, which is the step that can misbehave.
       // Either way the user hears what happened instead of watching a greyed-out button (#42).
-      await setCoachLocal({ mode: 'byok', provider, model: chosen, baseUrl: meta.baseUrl ? (validateBaseUrl(baseUrl).value || null) : null })
+      await setCoachLocal({ mode: 'byok', provider, model: chosen, baseUrl: meta.baseUrl ? v.value : null })
       if (key.trim()) { await setApiKey(key.trim()); setHasKey(true); setKey('') }
       toast(t('The Coach is on'))
       nav('/coach')

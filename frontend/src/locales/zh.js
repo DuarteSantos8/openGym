@@ -932,6 +932,8 @@ export default {
   'Each request goes straight to {0} with your key — nobody else sees it, and you pay for it.': '每个请求都会用你的密钥直接发送到 {0}——其他人看不到，费用由你承担。',
   'Endpoint': '端点',
   'Enter your API key': '请输入你的 API 密钥',
+  'Enter the endpoint URL': '请输入端点 URL',
+  'There is no routine to review yet — build one with at least two exercises first.': '还没有可点评的训练计划——先创建一个至少包含两个动作的计划。',
   'How should the Coach run?': '教练应如何运行？',
   'List models': '列出模型',
   'Model': '模型',

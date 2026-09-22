@@ -1004,6 +1004,8 @@ export default {
   'Each request goes straight to {0} with your key — nobody else sees it, and you pay for it.': 'ทุกคำขอส่งตรงไปยัง {0} ด้วยคีย์ของคุณ — ไม่มีใครเห็น และคุณเป็นผู้จ่าย',
   'Endpoint': 'ปลายทาง',
   'Enter your API key': 'ป้อนคีย์ API ของคุณ',
+  'Enter the endpoint URL': 'ป้อน URL ปลายทาง',
+  'There is no routine to review yet — build one with at least two exercises first.': 'ยังไม่มีรูทีนให้ตรวจ — สร้างรูทีนที่มีอย่างน้อยสองท่าก่อน',
   'How should the Coach run?': 'ให้โค้ชทำงานอย่างไร',
   'List models': 'แสดงรายการโมเดล',
   'Model': 'โมเดล',

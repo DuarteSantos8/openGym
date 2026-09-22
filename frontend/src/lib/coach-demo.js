@@ -25,16 +25,23 @@ const DELAY = 2200      // long enough to see "the Coach is thinking…", short 
 let pending = null
 let job = null
 let timer = null
+let lastError = null    // the last job that ended without a proposal, in the server's shape
 
 const iso = d => d.toISOString().slice(0, 10)
 
+/** The routine the canned review aims at: the first with two exercises, one to swap and one to cut a set from. */
+const reviewable = S => (S.routines || []).find(r => (r.ex || []).length >= 2)
+
 /** A change-set that reads like a real one, aimed at whatever the demo profile actually has. */
 function buildReview(S) {
-  const routine = (S.routines || []).find(r => (r.ex || []).length >= 2)
+  const routine = reviewable(S)
   if (!routine) return null
   const reps = (routine.ex || []).filter(e => modeOf(e) === 'reps')
   const first = reps[0] || routine.ex[0]
-  const second = reps[1] || routine.ex[1]
+  // Anything but `first`: the two changes below swap `first` away and re-set `second`, so the
+  // same entry in both aborts the whole change-set on apply (`missing target`). `reps[1]` was
+  // not enough — a routine whose only rep-mode exercise sits at index 1 landed on it twice.
+  const second = reps.find(e => e !== first) || routine.ex.find(e => e !== first)
   const other = (S.routines || []).find(r => r.id !== routine.id)
 
   // Something plausible that is *not* in this routine, from the same body part as the first
@@ -116,9 +123,14 @@ function buildDebrief(S, workoutId) {
   const all = (S.workouts || []).filter(w => w && w.d)
   const w = all.find(x => x.id === workoutId) || all[all.length - 1]
   if (!w) return null
-  const done = (w.entries || []).reduce((n, en) => n + (en.sets || []).filter(s => s.done && !isWarmupRow(s)).length, 0)
-  const planned = (w.entries || []).reduce((n, en) => n + (en.sets || []).filter(s => !isWarmupRow(s)).length, 0)
-  const vol = Math.round(Number.isFinite(w.vol) ? w.vol : workoutVolume(w))
+  // workoutVolume() reads `w.entries` and `e.sets` without a guard; every other line here
+  // tolerates both being absent. A workout carrying a date and nothing else therefore threw
+  // inside the timer below, where at the time nothing caught it — the job stayed 'running'
+  // for ever and every later request answered 409.
+  const entries = (w.entries || []).map(en => ({ ...en, sets: en.sets || [] }))
+  const done = entries.reduce((n, en) => n + en.sets.filter(s => s.done && !isWarmupRow(s)).length, 0)
+  const planned = entries.reduce((n, en) => n + en.sets.filter(s => !isWarmupRow(s)).length, 0)
+  const vol = Math.round(Number.isFinite(w.vol) ? w.vol : workoutVolume({ ...w, entries }))
   const prs = (w.prs || []).length
   const minutes = w.end && w.start ? Math.round((w.end - w.start) / 60000) : null
   const complete = planned > 0 && done >= planned
@@ -156,19 +168,38 @@ export function demoCohort(S) {
 
 /* ---------------- the API surface the demo stands in for ---------------- */
 
-export const demoStatus = () => ({ job, pending, cap: { used: 0, limit: 0 } })
+export const demoStatus = () => ({ job, pending, cap: { used: 0, limit: 0 }, lastError })
 
 function start(kind, make) {
   if (job) throw Object.assign(new Error(t('The Coach is already thinking about your training.')), { status: 409 })
   job = { id: 'demo-' + kind, kind, state: 'running', startedAt: Date.now() }
+  lastError = null
   clearTimeout(timer)
-  timer = setTimeout(() => { pending = make(); job = null }, DELAY)
+  // A builder that throws still has to end the job: left uncaught, one throw kept `job` at
+  // 'running' for ever and every later request answered 409 until the page was reloaded. The
+  // failure is recorded the way the server and the phone record theirs, so the chat's
+  // job-ended effect writes the same error line it would for them. `nostate` because the only
+  // thing a builder can trip over is the shape of the profile's own data.
+  timer = setTimeout(() => {
+    try { pending = make() }
+    catch (e) { lastError = { errorClass: 'nostate', detail: String(e && e.message || e) } }
+    finally { job = null }
+  }, DELAY)
   return { job }
 }
-export const demoReview = S => start('review', () => buildReview(S))
+export const demoReview = S => {
+  // Refused before the job starts, the way demoDebrief refuses with no workout: without a
+  // two-exercise routine buildReview has nothing to aim at, and a job that runs the whole wait
+  // and ends with neither a proposal nor an error reads as the Coach ignoring you.
+  if (!reviewable(S)) throw Object.assign(new Error(t('There is no routine to review yet — build one with at least two exercises first.')), { status: 409, code: 'noroutine' })
+  return start('review', () => buildReview(S))
+}
 export const demoPlan = (S, intake) => start('create', () => buildPlan(S, intake))
+// A refine re-reads the saved answers, as the server's payload does when a refine carries no
+// intake of its own (`opts.intake || coach.profile`). Built from nothing, every revised plan
+// went back to Mon/Wed/Fri whatever days were chosen at intake.
 export const demoRefine = S => start('create', () => {
-  const p = buildPlan(S, null)
+  const p = buildPlan(S, S.coach?.profile || null)
   return { ...p, iteration: (pending?.iteration || 1) + 1, summary: t('Revised as you asked. Everything you did not question is exactly as it was.') + ' ' + p.summary }
 })
 export const demoDebrief = (S, workoutId) => {

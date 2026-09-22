@@ -207,6 +207,11 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
         if (!cfgStore.PROVIDERS[target].baseUrl) return json(res, 400, { error: `${target} has a fixed endpoint` });
         const v = validateBaseUrl(body.baseUrl);
         if (!v.ok) return json(res, 400, { error: v.error });
+        // An empty value passes the validator on purpose: for a provider with a default it means
+        // "back to the default". A provider with none (compatible) would be saved pointing at ''
+        // and baseUrlFor() would hand the adapter nothing to call. The phone's CoachSetup refuses
+        // the same case; the admin route has to as well or the hole just moves.
+        if (!v.value && !cfgStore.PROVIDERS[target].defaultBase) return json(res, 400, { error: `${target} has no default endpoint, enter one` });
         patch.providerOptions = { ...current.providerOptions, [target]: { ...(current.providerOptions[target] || {}), baseUrl: v.value } };
       }
       if (body.community !== undefined) patch.community = !!body.community;
