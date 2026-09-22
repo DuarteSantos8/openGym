@@ -26,9 +26,13 @@ export { DATA_CATEGORIES } from './categories.js';
 /* ---------- reading a session the way the engine reads it ----------
    Duplicated from frontend/src/lib/history.js rather than shared: the two runtimes have no
    build step in common, and this is the same trade-off server.js already made for
-   effectiveRoutineId. coach-parity.test.js pins these against the frontend's own copies over
-   a shared table of configs, so the duplicate cannot drift silently — which it otherwise
-   would have, quietly, when v1.2.4 taught the app about bodyweight work. */
+   effectiveRoutineId. frontend/src/lib/coach-parity.test.js pins modeOf, isBw and isPerSide
+   against the frontend's own copies over a shared table of configs, so the duplicate cannot
+   drift silently — which it otherwise would have, quietly, when v1.2.4 taught the app about
+   bodyweight work. isWarmupSet and readSession are duplicated the same way but were pinned by
+   nothing; api/test/payload-parity.test.js pins them now. It has to be a separate file: that
+   test imports the frontend's own readSession, and a vitest test cannot import into a
+   node:test file or back. */
 export const modeOf = (cfg, ex) => {
   const m = cfg && cfg.mode;
   if (m === 'reps' || m === 'time' || m === 'cardio') return m;
@@ -60,9 +64,16 @@ function readSession(entry, fallback) {
   const ex = LIB_BY_ID.get(entry?.id);
   const mode = modeOf(target, ex);
   const bw = isBw(target, ex);
-  const sets = ((entry && entry.sets) || []).filter(s => !isWarmupSet(s));
-  const planned = target.sets || sets.length;
-  const enough = sets.length >= planned;
+  const logged = ((entry && entry.sets) || []).filter(s => !isWarmupSet(s));
+  const planned = target.sets || logged.length;
+  const enough = logged.length >= planned;
+  // Only the sets the plan asked for decide whether the session was hit, exactly as
+  // frontend/src/lib/progression.js readSession has done since issue #233. This copy graded
+  // every logged set, so a fourth set taken short of the goal on a clean 3x10 was a hit in the
+  // app and a miss here — and stallCount, reading only this copy, reported a stall the athlete
+  // never had. `count` below stays the real total: extra sets are exactly how bodyweight work
+  // is meant to grow (#33), they just do not decide whether the prescription was met.
+  const sets = logged.slice(0, Math.max(1, planned));
   if (mode === 'time') {
     const goal = target.sec || 0;
     const held = sets.map(s => (s.done ? (s.sec || 0) : 0));
@@ -72,7 +83,7 @@ function readSession(entry, fallback) {
   const reps = sets.map(s => (s.done ? (s.r || 0) : 0));
   // Set count is the dimension bodyweight work grows once reps hit their ceiling (upstream
   // #33), so it travels alongside the reps rather than being inferred from them downstream.
-  const done = sets.filter(s => s.done).length;
+  const done = logged.filter(s => s.done).length;
   return { mode, bw, goal, count: done, ok: goal > 0 && enough && reps.length > 0 && reps.every(r => r >= goal) };
 }
 /** Consecutive misses counting back from the most recent session. */
