@@ -201,3 +201,28 @@ test('a debrief is enqueued as its own kind, and the cohort routes gate on the a
   while (jobs.status('admin-1').job && Date.now() < until) await new Promise(res => setTimeout(res, 25));
   assert.equal(jobs.status('admin-1').last.errorClass, 'noworkout');
 });
+
+/* ---------- configurable max message length (issue #267) ---------- */
+test('an admin can raise the Coach message length past the old 1000-char default, clamped to a sane range', async () => {
+  fresh();
+  const { call } = harness();
+
+  // A safe default for an instance that has never touched the setting.
+  assert.equal((await call('GET /api/admin/coach')).body.maxMessageLen, 1000);
+
+  const set = await call('POST /api/admin/coach/config', { maxMessageLen: 2500 });
+  assert.equal(set.status, 200);
+  assert.equal((await call('GET /api/admin/coach')).body.maxMessageLen, 2500);
+  assert.equal(cfg.load().maxMessageLen, 2500, 'persists with the rest of the Coach config');
+
+  // Clamped, not trusted outright — the admin route validates the same way `caps` does above.
+  await call('POST /api/admin/coach/config', { maxMessageLen: 999999 });
+  assert.equal((await call('GET /api/admin/coach')).body.maxMessageLen, 4000, 'ceiling');
+  await call('POST /api/admin/coach/config', { maxMessageLen: 1 });
+  assert.equal((await call('GET /api/admin/coach')).body.maxMessageLen, 200, 'floor');
+
+  // The chat UI reads the limit off the status poll, not the admin card it cannot reach.
+  await call('POST /api/admin/coach/config', { maxMessageLen: 1800 });
+  const status = await call('GET /api/coach/status');
+  assert.equal(status.body.maxMessageLen, 1800);
+});

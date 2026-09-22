@@ -17,6 +17,12 @@ export const CONTRACT = 1;
 // makes the payload bigger and the reading vaguer, not better.
 export const MAX_WEEKS = 12;
 export const MAX_SESSIONS = 60;
+// Last-resort ceiling for a free-text note/refine (issue #267). The real limit is the admin's
+// `maxMessageLen`, enforced in jobs.js before a message ever reaches this module — this module
+// stays a pure allowlist with no config import of its own, so it keeps its own constant instead.
+// It has to stay >= config.js's MAX_MESSAGE_LEN_CEILING, or a raised admin limit would still get
+// clipped back down here.
+export const MAX_NOTE_CHARS = 4000;
 
 /* ---------- the data categories the consent screen names (FR-09/10) ----------
    Kept here, next to the code that acts on it, and rendered by the consent UI from the same
@@ -399,7 +405,7 @@ export function build(S, opts = {}) {
       goal: S.targetW ?? null,
       series: (S.bodyweight || []).filter(b => !p.window.from || b.d >= p.window.from).map(b => ({ d: b.d, w: b.w }))
     };
-    if (opts.note) p.userNote = String(opts.note).slice(0, 1000);
+    if (opts.note) p.userNote = String(opts.note).slice(0, MAX_NOTE_CHARS);
     if (opts.cohort) p.cohort = opts.cohort;
     // A review names mostly what is already trained; 60 candidates is plenty for a swap.
     p.library = librarySlice(S, profile?.equipment, { keep: trainedIds(S, workouts), max: 60 });
@@ -419,12 +425,12 @@ export function build(S, opts = {}) {
       };
     }
     if (opts.refine && opts.previous) {
-      p.refine = { text: String(opts.refine).slice(0, 1000), previous: opts.previous };
+      p.refine = { text: String(opts.refine).slice(0, MAX_NOTE_CHARS), previous: opts.previous };
     } else if (opts.refine) {
       // "Refine" with nothing to refine: the first plan failed, or was dismissed, and the
       // person typed what they want instead. That is a fresh plan with a note, not a
       // revision of a plan that does not exist — refine.md would be reading `previous: null`.
-      p.userNote = String(opts.refine).slice(0, 1000);
+      p.userNote = String(opts.refine).slice(0, MAX_NOTE_CHARS);
     }
   }
   if (opts.kind !== 'debrief') {

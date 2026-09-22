@@ -44,7 +44,7 @@ export default function CoachChat() {
   const storeReady = useStore(s => s.ready)
   const toast = useUI(s => s.toast)
   const openSheet = useUI(s => s.openSheet)
-  const { job, pending, cap, loading, lastError, last, refresh } = useCoachStatus(true)
+  const { job, pending, cap, loading, lastError, last, refresh, maxMessageLen } = useCoachStatus(true)
   const [text, setText] = useState('')
   const [busy, setBusy] = useState(false)
   const endRef = useRef(null)
@@ -207,7 +207,7 @@ export default function CoachChat() {
         {community && <button className="qchip" onClick={showCohort}><Icon name="person" />{t('Compare')}</button>}
       </div>}
       <div className="composer-in">
-        <textarea rows={1} value={text} maxLength={1000} placeholder={placeholder} disabled={!!job}
+        <textarea rows={1} value={text} maxLength={maxMessageLen || 1000} placeholder={placeholder} disabled={!!job}
           onChange={e => setText(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }} />
         <button className="send" onClick={send} disabled={!text.trim() || busy || !!job} aria-label={t('Send')}><Icon name="arrowUp" /></button>

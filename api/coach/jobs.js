@@ -178,6 +178,19 @@ class CoachError extends Error {
 export { CoachError };
 
 /**
+ * Clamp a free-text note/refine message to the admin's configured `maxMessageLen` (issue #267).
+ * The one place this is enforced — `routes.js` only applies a generous sanity ceiling before a
+ * string reaches here, and `payload.js`'s own bound exists purely so a caller that skips this
+ * module (coach-local.js's in-process pipeline) still has a limit. Exported so the clamp itself
+ * is directly testable without walking the whole enqueue → execute pipeline.
+ */
+export function clampMessage(text) {
+  if (!text) return null;
+  const max = cfgStore.load().maxMessageLen || 1000;
+  return String(text).slice(0, max);
+}
+
+/**
  * Enqueue a job. Throws CoachError with a code the routes layer maps to an HTTP status:
  * `off`, `busy`, `cap`, `consent`.
  */
@@ -230,8 +243,8 @@ export function enqueue(uid, opts) {
     trigger: opts.trigger || 'manual',                // 'manual' | 'scheduled'
     workoutId: opts.workoutId ? String(opts.workoutId).slice(0, 40) : null,
     intake: opts.intake || null,
-    note: opts.note || null,
-    refine: opts.refine || null,
+    note: clampMessage(opts.note),
+    refine: clampMessage(opts.refine),
     state: 'queued',
     startedAt: Date.now()
   };

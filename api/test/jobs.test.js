@@ -467,3 +467,41 @@ test('an HTTPS provider is not refused for lacking a privilege drop, and runs en
     server.close();
   }
 });
+
+test('a note is truncated to the admin\'s configured max, not clipped to the old 1000-char default (issue #267)', async () => {
+  // Same shape as the HTTPS test above: a local server speaking OpenAI's Chat Completions shape,
+  // so the exact string that reached the provider can be read back out of the request body.
+  const http = await import('node:http');
+  const seen = [];
+  const server = http.createServer((req, res) => {
+    let body = '';
+    req.on('data', c => { body += c; });
+    req.on('end', () => {
+      seen.push(JSON.parse(body || '{}'));
+      res.setHeader('content-type', 'application/json');
+      res.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: '{"coach_contract":1,"nochange":true,"reading":"ok"}' } }] }));
+    });
+  });
+  await new Promise(r => server.listen(0, '127.0.0.1', r));
+  const base = `http://127.0.0.1:${server.address().port}`;
+
+  const uid = 'u-note-len';
+  writeState(DIR, uid, sampleState());
+  cfg.save({
+    enabled: true, provider: 'compatible', providerOptions: { compatible: { baseUrl: base } },
+    models: { compatible: 'local-model' }, maxMessageLen: 2500
+  });
+  forcePrivilegeVerdict({ ok: false, dropped: false, why: 'no `coach` user exists in this image' });
+  try {
+    jobs.enqueue(uid, { kind: 'review', note: 'x'.repeat(3000) });
+    await settle(uid);
+    const sentText = seen[0].messages[1].content;
+    const match = sentText.match(/"userNote":"(x+)"/);
+    assert.ok(match, 'the note rode in the payload');
+    assert.equal(match[1].length, 2500, 'kept the admin\'s configured length rather than the old 1000-char default');
+  } finally {
+    forcePrivilegeVerdict({ ok: true, dropped: false, why: 'pinned by the test suite' });
+    cfg.save({ provider: 'fixture', maxMessageLen: 1000 });
+    server.close();
+  }
+});

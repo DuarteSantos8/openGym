@@ -221,6 +221,23 @@ test('a refine with no plan to refine is a fresh plan with a note, never refine.
   assert.equal(q.userNote, undefined);
 });
 
+test('a note/refine is capped at MAX_NOTE_CHARS, not the old 1000-char literal (issue #267)', () => {
+  // jobs.enqueue already truncates to the admin's configured maxMessageLen before this module
+  // ever sees the string — this is the last-resort ceiling for anything that reaches build()
+  // without going through that path (coach-local.js's in-process pipeline). It has to be at
+  // least as generous as the admin's ceiling (coach/config.js clamps maxMessageLen to 4000), or
+  // an admin who raised the limit would still see every note clipped back down here.
+  assert.equal(payload.MAX_NOTE_CHARS, 4000);
+  const S = sampleState();
+  const long = 'n'.repeat(5000);
+  const review = payload.build(S, { handle: handleFor('u1'), kind: 'review', note: long });
+  assert.equal(review.userNote.length, payload.MAX_NOTE_CHARS);
+  const create = payload.build(S, { handle: handleFor('u1'), kind: 'create', refine: long });
+  assert.equal(create.userNote.length, payload.MAX_NOTE_CHARS);
+  const refine = payload.build(S, { handle: handleFor('u1'), kind: 'create', refine: long, previous: { routines: [] } });
+  assert.equal(refine.refine.text.length, payload.MAX_NOTE_CHARS);
+});
+
 test('the last few chat lines travel as conversation — user text and Coach verdicts only, never the message being sent', () => {
   const S = sampleState();
   S.coach = { ...(S.coach || {}), chat: [

@@ -59,17 +59,22 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
 
     'GET /api/coach/status': async (req, res) => {
       const user = guard(req, res); if (!user) return;
-      json(res, 200, jobs.status(user.id));
+      // The chat composer's maxLength rides on this poll rather than a one-off fetch, so an
+      // admin raising or lowering the limit reaches an open chat within one poll cycle.
+      json(res, 200, { ...jobs.status(user.id), maxMessageLen: cfgStore.load().maxMessageLen });
     },
 
     'POST /api/coach/plan': async (req, res) => {
       const user = guard(req, res); if (!user) return;
       const body = await readBody(req);
       try {
+        // The admin's configured length is the real limit; jobs.enqueue is where it is actually
+        // enforced (it is the one place that already loads config for every job). This slice is
+        // only a sanity ceiling so an oversized string is not carried further than it has to be.
         const job = jobs.enqueue(user.id, {
           kind: 'create',
           intake: body.intake || null,
-          refine: body.refine ? String(body.refine).slice(0, 1000) : null
+          refine: body.refine ? String(body.refine).slice(0, cfgStore.MAX_MESSAGE_LEN_CEILING) : null
         });
         json(res, 202, { job });
       } catch (e) { failEnqueue(res, e); }
@@ -79,7 +84,10 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
       const user = guard(req, res); if (!user) return;
       const body = await readBody(req);
       try {
-        const job = jobs.enqueue(user.id, { kind: 'review', note: body.note ? String(body.note).slice(0, 1000) : null });
+        const job = jobs.enqueue(user.id, {
+          kind: 'review',
+          note: body.note ? String(body.note).slice(0, cfgStore.MAX_MESSAGE_LEN_CEILING) : null
+        });
         json(res, 202, { job });
       } catch (e) { failEnqueue(res, e); }
     },
@@ -155,6 +163,7 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
         baseUrl: cfgStore.providerMeta(cfg).http ? baseUrlFor(cfg.provider, cfg) : null,
         knownModels: check.models || null,
         caps: cfg.caps,
+        maxMessageLen: cfg.maxMessageLen,
         community: !!cfg.community,
         runtime: { ok: !!check.ok, version: check.version || null, error: check.error || null, needsKey: !!check.needsKey },
         authMode: cfg.authMode,
@@ -215,6 +224,12 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
           perProfileDaily: Math.max(0, Math.min(200, +body.caps.perProfileDaily || 0)),
           instanceDaily: Math.max(0, Math.min(5000, +body.caps.instanceDaily || 0))
         };
+      }
+      if (body.maxMessageLen !== undefined) {
+        patch.maxMessageLen = Math.max(
+          cfgStore.MAX_MESSAGE_LEN_FLOOR,
+          Math.min(cfgStore.MAX_MESSAGE_LEN_CEILING, +body.maxMessageLen || current.maxMessageLen)
+        );
       }
       cfgStore.save(patch);
       json(res, 200, { ok: true });
