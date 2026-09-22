@@ -11,7 +11,42 @@
 // The builder, the translator and the test all read the staged set from here, so "which
 // exercises does German cover" has exactly one answer.
 export const BODY_WEIGHT = 'body weight'
-export const stagedExercises = EXDB => EXDB.filter(exercise => exercise.eq && exercise.eq !== BODY_WEIGHT)
+
+// Equipment exercises whose German name is written but not yet signed off by a native speaker:
+// either the reviewer marked the name itself unsure, or it carries terminology the review left
+// open (the half-declined "Reverses …", and the English "Clean"). They are deliberately NOT in
+// the pack — the per-exercise fallback in exerciseNameFor keeps their English title — so that
+// what ships is only what a German speaker has actually read. Reviewing one means deleting its
+// id here and adding its name to de.json; the test enforces that the two stay in step.
+export const AWAITING_REVIEW = new Set([
+  '0009', '0014', '0023', '0024', '0028', '0029', '0031', '0034', '0035', '0036',
+  '0037', '0038', '0046', '0048', '0051', '0052', '0059', '0060', '0070', '0072',
+  '0074', '0079', '0080', '0081', '0082', '0085', '0087', '0089', '0095', '0097',
+  '0098', '0099', '0103', '0104', '0105', '0106', '0107', '0110', '0111', '0112',
+  '0113', '0114', '0125', '0126', '0127', '0128', '0162', '0164', '0172', '0174',
+  '0188', '0195', '0197', '0198', '0200', '0205', '0209', '0211', '0221', '0223',
+  '0224', '0225', '0237', '0238', '0241', '0242', '0247', '0287', '0288', '0299',
+  '0309', '0310', '0311', '0321', '0324', '0335', '0344', '0346', '0347', '0349',
+  '0358', '0359', '0371', '0373', '0377', '0381', '0410', '0431', '0436', '0438',
+  '0445', '0450', '0455', '0525', '0562', '0609', '0640', '0641', '0741', '0742',
+  '0743', '0749', '0750', '0755', '0757', '0759', '0762', '0763', '0764', '0768',
+  '0772', '0774', '0777', '0811', '0818', '0830', '0833', '0844', '0851', '0856',
+  '0859', '0968', '0969', '0971', '0976', '0978', '0979', '0981', '0986', '0991',
+  '0992', '0994', '1001', '1008', '1013', '1015', '1016', '1017', '1022', '1201',
+  '1256', '1257', '1282', '1283', '1291', '1296', '1312', '1316', '1317', '1339',
+  '1341', '1342', '1354', '1361', '1380', '1383', '1384', '1388', '1389', '1394',
+  '1411', '1412', '1414', '1417', '1433', '1435', '1436', '1456', '1457', '1459',
+  '1461', '1462', '1496', '1545', '1582', '1618', '1619', '1620', '1621', '1629',
+  '1635', '1639', '1640', '1645', '1660', '1667', '1700', '1707', '1710', '1714',
+  '1728', '1733', '1738', '1743', '1744', '1751', '1752', '1754', '1755', '1760',
+  '1767', '2133', '2136', '2137', '2138', '2139', '2142', '2143', '2187', '2203',
+  '2204', '2209', '2397', '2401', '2402', '2405', '2407', '2414', '2459', '2464',
+  '2705', '2706', '2796', '2805', '2808', '2812', '2987', '3017', '3142', '3194',
+  '3235', '3237', '3305', '3313', '3541', '3542', '3635', '3643', '3888',
+])
+
+export const stagedExercises = EXDB =>
+  EXDB.filter(exercise => exercise.eq && exercise.eq !== BODY_WEIGHT && !AWAITING_REVIEW.has(exercise.id))
 
 // Equipment is identity: a barbell row and a dumbbell row are different exercises, so the
 // German name has to carry the same equipment the catalogue records. Keyed by the EXDB `eq`
@@ -93,7 +128,7 @@ const LOANWORDS = new Set([
   // "gebeugter Arm" and was told three times to write the German word, which it already had.
   // Only the singulars — German pluralises these differently (Arme, Hände), so an English plural
   // in a German name really is a leak.
-  'arm', 'ball', 'hand', 'finger', 'rotation', 'position',
+  'arm', 'ball', 'hand', 'finger', 'rotation', 'position', 'hang',
   // Eponyms. A surname is the same word in every language, so flagging one is always a false
   // positive — there is no "German word instead" for the model to write.
   'arnold', 'bradford', 'cossack', 'cuban', 'frankenstein', 'hyght', 'jefferson', 'jm',
@@ -138,6 +173,10 @@ const SWISS_FORMS = /\b(gesäss|füsse|fuss|gross|aussen|schliess|strasse)\w*/iu
 // EQUIPMENT_TERMS so the nouns the equipment rule demands are exactly the ones checked here.
 const EQUIPMENT_NOUNS = [...new Set(EQUIPMENT_TERMS.map(([, , term]) => term))]
 const LEADING_EQUIPMENT = new RegExp(`^(${EQUIPMENT_NOUNS.join('|')})(?=\\s)`, 'u')
+// The same calque one word later: "Abwechselndes Kettlebell Drücken" leads with an adjective, so
+// the anchored rule above never sees it. Mid-name the tell is a following CAPITALISED word — a
+// noun stacked against the equipment — while "mit Kettlebell und zwei Armen" is ordinary German.
+const STACKED_EQUIPMENT = new RegExp(`(?:^|[^-\\w])(${EQUIPMENT_NOUNS.join('|')})\\s+([A-ZÄÖÜ]\\w+)`, 'u')
 
 // German lowercases an adjective or participle wherever it is not the first word. The model
 // capitalises them mid-name because the English title capitalises nothing and it is copying
@@ -150,6 +189,10 @@ const ADJECTIVE_STEMS = [
   'vorgebeugt', 'abwechselnd', 'gedreht', 'umgekehrt', 'reverse', 'seitlich', 'vertikal',
   'horizontal', 'lateral', 'unilateral', 'bilateral', 'breit', 'eng', 'weit', 'hoch', 'tief',
   'schräg', 'negativ', 'innere?', 'äußere?', 'vorder', 'hinter', 'steifbeinig', 'fixiert',
+  // Added after reading the built pack: these slipped through because the stem list was written
+  // from the glossary rather than from what the model actually produced.
+  'militärisch', 'rückwärtig', 'aufrecht', 'überkreuzt', 'angezogen', 'neutral', 'proniert',
+  'supiniert', 'gebogen', 'erhöht', 'gerade', 'voll', 'tief', 'kontralateral', 'invers',
 ]
 const MID_NAME_ADJECTIVE = new RegExp(`^(${ADJECTIVE_STEMS.join('|')})(e|er|es|en|em)?$`, 'u')
 
@@ -171,9 +214,19 @@ export function checkName(exercise, german) {
   if (/[()]/u.test(name)) add('parentheses', `Remove the parentheses from "${name}" — the app appends the English title itself.`)
   if (name[0] !== name[0].toLocaleUpperCase('de')) add('capitalisation', `Start "${name}" with a capital letter.`)
 
+  // The catalogue marks variants "v. 2" and the pack had picked up three spellings of it
+  // ("Version 2", "V. 2", and the marker stranded mid-name). One spelling, always last.
+  const version = name.match(/\b(?:[Vv]\.\s*|[Vv]ersion\s+|Variante\s+)(\d+)\b/u)
+  if (version && !name.endsWith(`v. ${version[1]}`)) {
+    add('version', `Write the variant marker in "${name}" as "v. ${version[1]}" at the very end of the name.`)
+  }
+
   const leading = name.match(LEADING_EQUIPMENT)
+  const stacked = leading ? null : name.match(STACKED_EQUIPMENT)
   if (leading) {
     add('word-order', `"${name}" starts with "${leading[1]}" as a bare noun, which is the English word order. Name the movement first and put the equipment in a trailing phrase ("… mit ${leading[1]}", "… am ${leading[1]}") or join it into one compound word with a hyphen.`)
+  } else if (stacked) {
+    add('word-order', `"${name}" puts "${stacked[1]} ${stacked[2]}" side by side as two bare nouns, which is the English word order. Write "${stacked[2]} … mit ${stacked[1]}" instead, or join the two with a hyphen.`)
   }
 
   const midCap = name.split(/\s+/).slice(1)

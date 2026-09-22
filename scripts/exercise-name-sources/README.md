@@ -27,13 +27,19 @@ were not copied from another Portuguese exercise dataset.
 # German exercise names
 
 `de.json` is the editable source for the German exercise-name pack, and it
-covers a stage rather than the whole catalogue: the 999 built-in exercises
-that use equipment, and not the 325 whose equipment is `body weight`. Those
-keep their English title — the app falls back per exercise, so a partial pack
-costs nothing beyond the names it does not yet carry. Which exercises the
-stage contains is enforced, not approximate: `scripts/de-name-rules.mjs`
-defines the set, and the builder refuses a source that misses one of them or
-adds a body-weight entry.
+covers a stage rather than the whole catalogue: 760 of the 1,324 built-in
+exercises. Left out are the 325 whose equipment is `body weight`, and 239
+equipment exercises whose German name is written but not yet signed off by a
+native speaker (`AWAITING_REVIEW` in `scripts/de-name-rules.mjs` lists them,
+with the reason). Both groups keep their English title — the app falls back
+per exercise, so a partial pack costs nothing beyond the names it does not
+yet carry. Which exercises the stage contains is enforced, not approximate:
+`scripts/de-name-rules.mjs` defines the set, and the builder refuses a source
+that misses one of them or adds an entry from outside it.
+
+Clearing a name from `AWAITING_REVIEW` is what a second German-speaking
+reviewer does: delete its id there, put its name in `de.json`, rebuild. The
+test fails if the two ever disagree, so the list cannot quietly rot.
 
 `de-CH` ships no pack of its own. It derives this one by replacing ß with ss,
 so German names are written with ß here and the Swiss spelling follows
