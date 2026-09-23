@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Status-bar icons are an alpha mask, so this stays white. -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M2,8h2.4v8H2zM4.8,9.6h1.8v4.8H4.8zM7,11.1h10v1.8H7zM17.4,9.6h1.8v4.8h-1.8zM19.6,8H22v8h-2.4z" />
+</vector>

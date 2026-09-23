@@ -4,4 +4,7 @@
     <string name="title_activity_main">openGym</string>
     <string name="package_name">ch.duartesantos.opengym</string>
     <string name="custom_url_scheme">ch.duartesantos.opengym</string>
+    <string name="rest_countdown_channel_name">Rest countdown</string>
+    <string name="rest_channel_name">Rest timer</string>
+    <string name="rest_channel_desc">Rest between sets, in the notification shade. The lock screen shows it only when notifications are allowed there.</string>
 </resources>

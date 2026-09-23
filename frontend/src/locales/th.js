@@ -23,6 +23,7 @@ export default {
   'Home': 'หน้าหลัก',
   'Start': 'เริ่ม',
   'Resume': 'เล่นต่อ',
+  'Pause': 'หยุด',
   'Stats': 'สถิติ',
   'Exercises': 'ท่าออกกำลังกาย',
   'By muscle': 'ตามกล้ามเนื้อ',
@@ -212,6 +213,7 @@ export default {
   'Superset · do these back-to-back, rest when done': 'ซูเปอร์เซ็ต · ทำต่อเนื่องกัน แล้วค่อยพักหลังทำครบทั้งคู่',
   'Freestyle workout — add your first exercise.': 'ออกกำลังกายแบบฟรีสไตล์ — เพิ่มท่าแรกของคุณ',
   'Finish workout early · {0} exercises': 'จบก่อนกำหนด · {0} ท่า',
+  'Rest over': 'พักครบ',
   'Rest over — next set!': 'หมดเวลาพัก — เซ็ตถัดไป!',
   // --- home ---
   'Hi {0}': 'สวัสดี {0}',
