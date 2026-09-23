@@ -1250,4 +1250,7 @@ export default {
   'already added': 'już dodano',
   'no exercises': 'brak ćwiczeń',
   'Pick equipment': 'Wybierz sprzęt',
+  'Save as routine?': 'Zapisać jako rutynę?',
+  'Save as routine': 'Zapisz jako rutynę',
+  'Create an independent routine from these exercise targets. Your workout history is kept.': 'Utwórz niezależną rutynę z tych celów ćwiczeń. Historia treningów pozostanie bez zmian.',
 }

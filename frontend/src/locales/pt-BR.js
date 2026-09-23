@@ -672,6 +672,9 @@ export const PT_BR_OVERRIDES = {
   'Download & Install': 'Baixar e instalar',
   'Starting download…': 'Iniciando download…',
   'Downloading update…': 'Baixando atualização…',
+  'Save as routine?': 'Salvar como rotina?',
+  'Save as routine': 'Salvar como rotina',
+  'Create an independent routine from these exercise targets. Your workout history is kept.': 'Criar uma rotina independente a partir destes objetivos. O histórico de treinos será mantido.',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

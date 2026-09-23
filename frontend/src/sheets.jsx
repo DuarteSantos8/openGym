@@ -30,6 +30,7 @@ import { normalizeRepRange } from './lib/rep-range.js'
 import { MOBILE, shareExport, printHtml } from './lib/mobile.js'
 import { buildCompletedWorkout } from './lib/finish-workout.js'
 import { isWarmupRow, hasCompletedWork } from './lib/workout-model.js'
+import { saveSessionAsRoutine } from './lib/session-routines.js'
 import { nextUnfinishedUnit } from './lib/supersetFlow.js'
 import { swapActiveExercise } from './lib/active-exercise-swap.js'
 import { useSheetKeyboard, useRevealActiveChip, tappable } from './lib/use-sheet-keyboard.js'
@@ -1736,6 +1737,19 @@ function WorkoutDetail({ w, close }) {
       placeholder={t('How the session went as a whole.')}
       onFocus={onNoteFocus} onChange={e => setNote(e.target.value)} onBlur={saveNote} />
     <div style={{ height: 14 }} />
+    <Button icon="plus" onClick={() => confirmSheet({
+      title: t('Save as routine?'),
+      message: t('Create an independent routine from these exercise targets. Your workout history is kept.'),
+      confirmText: t('Save'),
+      onConfirm: () => {
+        let id
+        try { update(s => { id = saveSessionAsRoutine(s, w, w.name) }) }
+        catch (e) { toast(t(e.message)); return }
+        close()
+        nav('/plan/r/' + id)
+      }
+    })}>{t('Save as routine')}</Button>
+    <div style={{ height: 10 }} />
     <Button variant="danger" onClick={() => confirmSheet({ title: t('Delete workout?'), message: t('This removes it from your history for good.'), confirmText: t('Delete'), danger: true, onConfirm: () => { update(s => { s.workouts = s.workouts.filter(x => x.id !== w.id) }); close(); toast(t('Workout deleted')) } })}>{t('Delete workout')}</Button>
   </>
 }

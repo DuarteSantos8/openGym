@@ -1250,4 +1250,7 @@ export default {
   'already added': 'уже добавлено',
   'no exercises': 'нет упражнений',
   'Pick equipment': 'Выбрать оборудование',
+  'Save as routine?': 'Сохранить как тренировку?',
+  'Save as routine': 'Сохранить как тренировку',
+  'Create an independent routine from these exercise targets. Your workout history is kept.': 'Создать отдельную тренировку из этих целей. История тренировок сохранится.',
 }

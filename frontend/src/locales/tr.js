@@ -1250,4 +1250,7 @@ export default {
   'already added': 'zaten ekli',
   'no exercises': 'egzersiz yok',
   'Pick equipment': 'Ekipman seç',
+  'Save as routine?': 'Rutin olarak kaydedilsin mi?',
+  'Save as routine': 'Rutin olarak kaydet',
+  'Create an independent routine from these exercise targets. Your workout history is kept.': 'Bu egzersiz hedeflerinden bağımsız bir rutin oluştur. Antrenman geçmişin korunur.',
 }

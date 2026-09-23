@@ -1261,4 +1261,7 @@ export default {
   'already added': 'เพิ่มแล้ว',
   'no exercises': 'ไม่มีท่าออกกำลังกาย',
   'Pick equipment': 'เลือกอุปกรณ์',
+  'Save as routine?': 'บันทึกเป็นรูทีนไหม',
+  'Save as routine': 'บันทึกเป็นรูทีน',
+  'Create an independent routine from these exercise targets. Your workout history is kept.': 'สร้างรูทีนอิสระจากเป้าหมายเหล่านี้ ประวัติการออกกำลังกายของคุณจะยังคงอยู่',
 }

@@ -1250,4 +1250,7 @@ export default {
   'already added': '이미 추가됨',
   'no exercises': '운동 없음',
   'Pick equipment': '기구 선택',
+  'Save as routine?': '루틴으로 저장할까요?',
+  'Save as routine': '루틴으로 저장',
+  'Create an independent routine from these exercise targets. Your workout history is kept.': '이 운동 목표로 독립 루틴을 만듭니다. 운동 기록은 그대로 유지됩니다.',
 }
