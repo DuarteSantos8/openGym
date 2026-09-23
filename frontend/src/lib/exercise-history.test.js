@@ -109,4 +109,44 @@ describe('exerciseHistory', () => {
     expect(h.points).toHaveLength(1)
     expect(h.sessions.map(s => [s.id, s.value])).toEqual([['b', 20], ['a', null]])
   })
+
+  it('aggregates duplicate occurrences into one dated snapshot and keeps only completed work', () => {
+    const first = { id: 'bench', target: { mode: 'reps' }, sets: [warm(120, 5), work(60, 5)] }
+    const later = { id: 'bench', target: { mode: 'reps' }, sets: [work(80, 5), work(200, 5, false)] }
+    const S = { workouts: [{ id: 'combined', d: iso(4), start: T0 + 4 * DAY, entries: [first, later] }] }
+    const before = structuredClone(S)
+    const h = exerciseHistory(S, 'bench')
+    expect(h).toMatchObject({ total: 1, best: 80, prId: 'combined' })
+    expect(h.sessions[0]).toMatchObject({ id: 'combined', d: iso(4), value: 80, volume: 700 })
+    expect(h.sessions[0].sets).toEqual([work(60, 5), work(80, 5)])
+    expect(h.sessions[0].e1rm).toBe(estimate1RM(80, 5))
+    expect(S).toEqual(before)
+  })
+
+  it('uses completed per-side limbs from duplicate occurrences without combining modes', () => {
+    const partialSide = {
+      id: 'bench', target: { mode: 'reps', side: true }, sets: [{ phase: 'work', w: 100, r: 10, done: false,
+        sides: { L: { w: 100, r: 5, done: true }, R: { w: 200, r: 5, done: false } } }],
+    }
+    const timed = { id: 'bench', target: { mode: 'time' }, sets: [{ sec: 60, done: true }] }
+    const S = { workouts: [{ id: 'sides', d: iso(5), start: T0 + 5 * DAY, entries: [timed, partialSide] }] }
+    const h = exerciseHistory(S, 'bench')
+    expect(h).toMatchObject({ total: 1, mode: 'reps', metric: 'weight', best: 100 })
+    expect(h.sessions[0]).toMatchObject({ value: 100, volume: 500, e1rm: estimate1RM(100, 5) })
+    expect(h.sessions[0].sets).toHaveLength(1)
+    expect(h.sessions[0].sets[0]).toBe(partialSide.sets[0])
+  })
+
+  it('aggregates timed and cardio duplicates by their own metric', () => {
+    const hold = { id: 'hold', d: iso(6), start: T0 + 6 * DAY, entries: [
+      { id: 'plank', target: { mode: 'time' }, sets: [{ sec: 30, done: true }] },
+      { id: 'plank', target: { mode: 'time' }, sets: [{ sec: 45, done: true }] },
+    ] }
+    const run = { id: 'run', d: iso(7), start: T0 + 7 * DAY, entries: [
+      { id: 'run', target: { mode: 'cardio' }, sets: [{ min: 20, speed: 9, done: true }] },
+      { id: 'run', target: { mode: 'cardio' }, sets: [{ min: 5, speed: 10, done: true }] },
+    ] }
+    expect(exerciseHistory({ workouts: [hold] }, 'plank').sessions[0]).toMatchObject({ value: 45, volume: null })
+    expect(exerciseHistory({ workouts: [run] }, 'run').sessions[0]).toMatchObject({ value: 25, volume: null })
+  })
 })

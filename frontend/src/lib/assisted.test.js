@@ -47,6 +47,14 @@ describe('the record is the lightest assistance', () => {
     expect(bestWeightForEntry({ id: PLAIN, sets: [set(30, 8), set(20, 8)] })).toBe(30)
   })
 
+  it('folds repeated occurrences in one workout with the assisted ordering', () => {
+    const repeated = { unit: 'kg', workouts: [{ d: '2026-09-08', start: 1, entries: [
+      { id: ASSISTED, sets: [set(30, 8)] },
+      { id: ASSISTED, sets: [set(20, 8)] },
+    ] }] }
+    expect(bestWeightFor(repeated, ASSISTED)).toBe(20)
+  })
+
   it('ignores an unlogged load instead of calling 0 the best', () => {
     expect(bestWeightForEntry({ id: ASSISTED, sets: [set(0, 8), set(25, 8)] })).toBe(25)
   })
@@ -84,7 +92,10 @@ describe('no one-rep max for an assistance machine', () => {
   it('leaves it out of the estimate, the curve and the record check', () => {
     const entry = { id: ASSISTED, sets: [set(30, 8)] }
     expect(bestSetOf(entry)).toBe(null)
-    const S = { unit: 'kg', workouts: [workout('2026-09-01', ASSISTED, [set(30, 8)])] }
+    const S = { unit: 'kg', workouts: [{ d: '2026-09-01', start: 1, entries: [
+      { id: ASSISTED, sets: [set(30, 8)] },
+      { id: ASSISTED, sets: [set(20, 8)] },
+    ] }] }
     expect(e1rmSeries(S, ASSISTED)).toEqual([])
     expect(is1RMRecord(S, ASSISTED, entry)).toBe(null)
     // the ordinary lift still gets one

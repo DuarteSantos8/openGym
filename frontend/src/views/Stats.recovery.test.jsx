@@ -19,6 +19,7 @@ const LEGACY_SNAPSHOT_ID = 'legacy-snapshot-only'
 
 const mocks = vi.hoisted(() => ({
   maps: [],
+  charts: [],
   mapMounts: 0,
   exerciseHistorySheet: vi.fn(),
   S: {
@@ -36,7 +37,10 @@ vi.mock('../sheets.jsx', () => ({
   exerciseHistorySheet: mocks.exerciseHistorySheet,
   WorkoutRow: () => React.createElement('div'), bwDeltaColor: () => 'inherit',
 }))
-vi.mock('../components/LineChart.jsx', () => ({ default: () => React.createElement('div') }))
+vi.mock('../components/LineChart.jsx', () => ({ default: props => {
+  mocks.charts.push(props)
+  return React.createElement('div')
+} }))
 vi.mock('../components/Heatmap.jsx', () => ({ default: () => React.createElement('div') }))
 vi.mock('../components/Icon.jsx', () => ({ default: props => React.createElement('span', props) }))
 vi.mock('../components/BodyMap.jsx', () => ({
@@ -140,6 +144,7 @@ function resetFixture(workouts = lifecycleWorkouts()) {
   mocks.S.bodyweight = []
   mocks.S.workouts = workouts
   mocks.maps.length = 0
+  mocks.charts.length = 0
   mocks.mapMounts = 0
   mocks.exerciseHistorySheet.mockClear()
   useUI.setState({ sheets: [] })
@@ -340,6 +345,76 @@ describe('Stats strength exercise rows', () => {
 })
 
 describe('Stats exercise progress picker', () => {
+  it('keeps a legacy reps record whose load is stored only in topW', async () => {
+    resetFixture([workout('legacy-topw', BASE_NOW, [
+      { id: '0025', target: { mode: 'reps' }, topW: 70, sets: [] },
+    ])])
+    await mountStats()
+
+    const card = [...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')
+    expect(card.textContent).toContain('70 kg')
+    const progressChart = mocks.charts.find(chart => chart.points?.some(point => point.y === 70))
+    expect(progressChart?.points).toHaveLength(1)
+    expect(progressChart.points[0].y).toBe(70)
+  })
+
+  it('keeps the strongest topW across repeated legacy records', async () => {
+    resetFixture([workout('legacy-topw-duplicates', BASE_NOW, [
+      { id: '0025', target: { mode: 'reps' }, topW: 70, sets: [] },
+      { id: '0025', target: { mode: 'reps' }, topW: 60, sets: [] },
+    ])])
+    await mountStats()
+
+    const card = [...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')
+    expect(card.textContent).toContain('70 kg')
+    const progressChart = mocks.charts.find(chart => chart.points?.some(point => point.y === 70))
+    expect(progressChart?.points).toHaveLength(1)
+    expect(progressChart.points[0].y).toBe(70)
+  })
+
+  it('keeps a legacy topW when a modern occurrence shares the workout', async () => {
+    resetFixture([workout('modern-and-legacy', BASE_NOW, [
+      entry('0025', [set(true, { w: 50, r: 5 })]),
+      { id: '0025', target: { mode: 'reps' }, topW: 70, sets: [] },
+    ])])
+    await mountStats()
+
+    const card = [...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')
+    expect(card.textContent).toContain('70 kg')
+    const progressChart = mocks.charts.find(chart => chart.points?.some(point => point.y === 70))
+    expect(progressChart?.points).toHaveLength(1)
+    expect(progressChart.points[0].y).toBe(70)
+  })
+
+  it('aggregates duplicate exercise occurrences into one progress point', async () => {
+    resetFixture([workout('duplicate', BASE_NOW, [
+      entry('0025', [set(true, { w: 60, r: 5 })]),
+      entry('0025', [set(true, { w: 80, r: 5 })]),
+    ])])
+    await mountStats()
+
+    const card = [...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')
+    expect(card.textContent).toContain('80 kg')
+    const progressChart = mocks.charts.find(chart => chart.points?.some(point => point.y === 80))
+    expect(progressChart?.points).toHaveLength(1)
+    expect(progressChart.points[0].y).toBe(80)
+    expect(card.textContent).toContain('60×5  80×5')
+  })
+
+  it('aggregates repeated assisted occurrences by the lightest load', async () => {
+    resetFixture([workout('assisted-duplicate', BASE_NOW, [
+      entry('0017', [set(true, { w: 30, r: 8 })]),
+      entry('0017', [set(true, { w: 20, r: 8 })]),
+    ])])
+    await mountStats()
+
+    const card = [...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')
+    expect(card.textContent).toContain('20 kg')
+    const progressChart = mocks.charts.find(chart => chart.points?.some(point => point.y === 20))
+    expect(progressChart?.points).toHaveLength(1)
+    expect(progressChart.points[0].y).toBe(20)
+  })
+
   it('filters with the shared exercise matcher and still selects from the mounted sheet', async () => {
     resetFixture(exercisePickerWorkouts())
     await mountStats()

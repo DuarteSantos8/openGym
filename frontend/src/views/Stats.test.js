@@ -25,9 +25,10 @@ describe('Stats mixed-entry metric contract', () => {
     expect(source).not.toContain('onExercise')
   })
 
-  it('uses the shared metric mode and row helpers rather than entryMode as a chart gate', () => {
+  it('uses the shared metric mode and occurrence helpers rather than entryMode as a chart gate', () => {
     expect(source).toContain('metricModeForEntry')
-    expect(source).toContain('metricRowsForEntry')
+    expect(source).toContain('metricEntriesForExercise')
+    expect(source).toContain('completedRepsOf')
     expect(source).toContain('bestWeightForEntry')
     expect(source).not.toContain('const loggedMode = entryMode(en)')
     expect(source).not.toContain('(en.topW || 0)')

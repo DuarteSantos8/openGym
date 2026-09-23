@@ -1,7 +1,7 @@
 // Pure helpers over the state object S (ported 1:1 from the vanilla app).
 import { todayISO, isoOf, weekKey, weekStartOf, fmtNum } from './format.js'
 import { isCardio, isBodyweightEq, isAssisted, betterWeight } from './exercises.js'
-import { phaseForSet, modeForSet, modeForEntry, isWarmupRow, normalizeMode, completedVolumeOf, nextDropWeight, splitBurstReps, makeSideSet, isSideSet, syncSideAggregate } from './workout-model.js'
+import { phaseForSet, modeForSet, modeForEntry, isWarmupRow, normalizeMode, completedVolumeOf, hasCompletedWork, nextDropWeight, splitBurstReps, makeSideSet, isSideSet, syncSideAggregate } from './workout-model.js'
 const objectOf = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {}
 // Completed-state-independent work rows whose authoritative mode matches the requested mode.
 const workRowsForMode = (entry = {}, mode = 'reps') => {
@@ -690,7 +690,7 @@ export function workSetsDone(w) {
 }
 
 const METRIC_MODES = ['reps', 'time', 'cardio']
-const completedRowsForMode = (entry, mode) => workRowsForMode(entry, mode).filter(s => s.done === true && !isWarmupRow(s))
+const completedRowsForMode = (entry, mode) => workRowsForMode(entry, mode).filter(s => hasCompletedWork(s) && !isWarmupRow(s))
 
 export function metricRowsForEntry(entry, mode) {
   const requested = typeof mode === 'string' ? mode.trim().toLowerCase() : ''
@@ -707,6 +707,30 @@ export function metricModeForEntry(entry, fallback = null) {
   return modeForEntry(entry, fallback)
 }
 
+/** Every saved occurrence of an exercise in one workout, in its stored order. */
+export function entriesForExercise(workout, exId) {
+  if (exId == null || exId === '') return []
+  return (workout?.entries || []).filter(entry => entry?.id === exId)
+}
+
+/** Metric data for every occurrence in one workout, including legacy reps topW-only records. */
+export function metricEntriesForExercise(workout, exId) {
+  return entriesForExercise(workout, exId)
+    .map(entry => ({ entry, mode: metricModeForEntry(entry) }))
+    .map(({ entry, mode }) => ({ entry, mode, rows: mode ? metricRowsForEntry(entry, mode) : [] }))
+    .filter(item => item.rows.length || (item.mode === 'reps' && bestWeightForEntry(item.entry) > 0))
+}
+
+/** Total reps from one completed row, counting only completed limbs of a per-side row. */
+export function completedRepsOf(set = {}) {
+  if (isSideSet(set)) {
+    return [set.sides.L, set.sides.R]
+      .filter(side => side?.done === true)
+      .reduce((total, side) => total + Math.max(0, Number(side.r) || 0), 0)
+  }
+  return set?.done === true ? Math.max(0, Number(set.r) || 0) : 0
+}
+
 /** Best load from completed work rows, with a guarded reps-only legacy topW fallback. */
 
 export function bestWeightForEntry(entry = {}) {
@@ -719,22 +743,27 @@ export function bestWeightForEntry(entry = {}) {
   // completed work row (timed holds can carry an added load too).
   const completedRows = repsRows.length
     ? repsRows
-    : workRows.filter(set => set?.done === true && !isWarmupRow(set))
+    : workRows.filter(set => hasCompletedWork(set) && !isWarmupRow(set))
   // On an assistance machine the smallest load is the best set, so "best" folds the other way
   // (issue #232). Everything below still returns a plain number — the caller does not branch.
   const assisted = isAssisted(entry.id ? { id: entry.id } : entry)
   let best = 0
   let hasUsableWeight = false
   completedRows.forEach(set => {
-    const weight = Number(set?.w)
-    if (!Number.isFinite(weight)) return
-    // A 0 on an assistance machine is a row with no load entered, not a set done with no help
-    // at all — folding it in as "the least assistance ever" would invent a record nobody did
-    // and then ask for negative help next time. Anyone truly needing none has left the machine
-    // behind and should log the unassisted exercise instead.
-    if (assisted && !(weight > 0)) return
-    best = hasUsableWeight ? betterWeight(entry.id, best, weight) : weight
-    hasUsableWeight = true
+    const completedSets = isSideSet(set)
+      ? [set.sides.L, set.sides.R].filter(side => side?.done === true)
+      : [set]
+    completedSets.forEach(completedSet => {
+      const weight = Number(completedSet?.w)
+      if (!Number.isFinite(weight)) return
+      // A 0 on an assistance machine is a row with no load entered, not a set done with no help
+      // at all — folding it in as "the least assistance ever" would invent a record nobody did
+      // and then ask for negative help next time. Anyone truly needing none has left the machine
+      // behind and should log the unassisted exercise instead.
+      if (assisted && !(weight > 0)) return
+      best = hasUsableWeight ? betterWeight(entry.id, best, weight) : weight
+      hasUsableWeight = true
+    })
   })
 
   // A real completed row, including an explicit zero for an unloaded bodyweight set, always
