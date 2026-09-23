@@ -25,7 +25,9 @@ export function buildSessionEntries(st, r) {
     const sets = applyIntensifierPlan(applyPrescription(buildSets(st, cfg, { step, useTarget: plan.kind === 'off' }), plan, step), cfg)
     const target = { ...cfg }
     if (plan.weight != null) target.weight = plan.weight
-    if (plan.reps != null) target.reps = plan.reps
+    // `topReps` (double progression only) is the range's top, not this session's climbing aim —
+    // that's what grading needs, so it wins over `plan.reps` when present.
+    if (plan.reps != null) target.reps = plan.topReps ?? plan.reps
     if (plan.sec != null) target.sec = plan.sec
     if (plan.sets != null) target.sets = plan.sets
     return { id: cfg.id, sg: cfg.sg, target, plan, sets, ...(noProg ? { noProg: true } : {}) }
