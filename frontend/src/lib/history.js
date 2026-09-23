@@ -1,6 +1,6 @@
 // Pure helpers over the state object S (ported 1:1 from the vanilla app).
 import { todayISO, isoOf, weekKey, weekStartOf, fmtNum } from './format.js'
-import { isCardio, isBodyweightEq } from './exercises.js'
+import { isCardio, isBodyweightEq, isAssisted, betterWeight } from './exercises.js'
 import { phaseForSet, modeForSet, modeForEntry, isWarmupRow, normalizeMode, completedVolumeOf, hasCompletedWork, nextDropWeight, splitBurstReps, makeSideSet, isSideSet, syncSideAggregate } from './workout-model.js'
 const objectOf = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {}
 // Completed-state-independent work rows whose authoritative mode matches the requested mode.
@@ -297,9 +297,12 @@ export function freestyleConfig(S, cfg) {
   }
 }
 export function bestWeightFor(S, exId) {
+  // 0 means "nothing logged with a load yet" and must not win a min() for an assisted machine.
   let best = 0
   S.workouts.forEach(w => w.entries.forEach(e => {
-    if (e.id === exId) best = Math.max(best, bestWeightForEntry(e))
+    if (e.id !== exId) return
+    const entryBest = bestWeightForEntry(e)
+    if (entryBest > 0) best = best > 0 ? betterWeight(exId, best, entryBest) : entryBest
   }))
   return best
 }
@@ -741,6 +744,9 @@ export function bestWeightForEntry(entry = {}) {
   const completedRows = repsRows.length
     ? repsRows
     : workRows.filter(set => hasCompletedWork(set) && !isWarmupRow(set))
+  // On an assistance machine the smallest load is the best set, so "best" folds the other way
+  // (issue #232). Everything below still returns a plain number — the caller does not branch.
+  const assisted = isAssisted(entry.id ? { id: entry.id } : entry)
   let best = 0
   let hasUsableWeight = false
   completedRows.forEach(set => {
@@ -750,8 +756,13 @@ export function bestWeightForEntry(entry = {}) {
     completedSets.forEach(completedSet => {
       const weight = Number(completedSet?.w)
       if (!Number.isFinite(weight)) return
+      // A 0 on an assistance machine is a row with no load entered, not a set done with no help
+      // at all — folding it in as "the least assistance ever" would invent a record nobody did
+      // and then ask for negative help next time. Anyone truly needing none has left the machine
+      // behind and should log the unassisted exercise instead.
+      if (assisted && !(weight > 0)) return
+      best = hasUsableWeight ? betterWeight(entry.id, best, weight) : weight
       hasUsableWeight = true
-      if (weight > best) best = weight
     })
   })
 
@@ -765,7 +776,7 @@ export function bestWeightForEntry(entry = {}) {
   const topWeight = Number(entry.topW)
   // topW predates phase-tagged warm-ups. It remains a fallback for legacy all-work records,
   // but cannot override resolved work rows once any warm-up marker exists.
-  if (parentMode === 'reps' && !hasNonRepsWorkRow && !hasWarmupRow
-    && Number.isFinite(topWeight) && topWeight > best) best = topWeight
+  if (parentMode === 'reps' && !hasNonRepsWorkRow && !hasWarmupRow && Number.isFinite(topWeight)
+    && (best <= 0 || (assisted ? topWeight > 0 && topWeight < best : topWeight > best))) best = topWeight
   return best
 }

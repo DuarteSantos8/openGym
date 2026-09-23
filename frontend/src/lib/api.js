@@ -15,10 +15,31 @@ let remoteBase = ''
 let remoteToken = null
 export function setRemoteAuth(base, token) { remoteBase = base || ''; remoteToken = token || null }
 
+/* Where this copy of the app is served from, e.g. "/" or "/myGym/" (issue #238).
+ *
+ * The app routes behind the hash and its assets are relative (vite `base: './'`), so the only
+ * thing that assumed the site root was the API call. A reverse proxy that puts openGym under a
+ * subpath — and strips that prefix before the container sees it, which is what Caddy's
+ * `handle_path` and its equivalents do — got `/api/...` at the proxy's own root, where there is
+ * nothing to answer it.
+ *
+ * `location.pathname` is the base because the router never leaves it: every screen is a hash,
+ * and a path that is not a file is sent back to the app's root before React boots
+ * (web/nginx.conf.template). Anything after the last slash is therefore index.html or a stale
+ * deep link, and is dropped.
+ */
+export function appBase(loc = typeof location !== 'undefined' ? location : null) {
+  const path = (loc && loc.pathname) || '/'
+  return path.slice(0, path.lastIndexOf('/') + 1) || '/'
+}
+
 export async function api(path, opts) {
   const headers = Object.assign({ 'Content-Type': 'application/json' }, opts && opts.headers)
   if (remoteToken) headers.Authorization = 'Bearer ' + remoteToken
-  const r = await fetch(remoteBase + path, Object.assign({}, opts, { headers }))
+  // A paired phone has an absolute base of its own; everyone else is relative to where the app
+  // is served, so a subpath deployment reaches its own API instead of the proxy's root.
+  const url = remoteBase ? remoteBase + path : appBase().replace(/\/$/, '') + path
+  const r = await fetch(url, Object.assign({}, opts, { headers }))
   const data = await r.json().catch(() => ({}))
   // The body rides along on the error: a 409 from /api/data carries the server's document.
   if (!r.ok) { const e = new Error(data.error || ('HTTP ' + r.status)); e.status = r.status; e.data = data; throw e }

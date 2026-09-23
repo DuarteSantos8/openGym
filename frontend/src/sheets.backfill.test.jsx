@@ -1,5 +1,7 @@
 // @vitest-environment happy-dom
 import React, { act } from 'react'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createRoot } from 'react-dom/client'
 import { useStore } from './store/useStore.js'
@@ -22,6 +24,7 @@ function mountTopSheet() {
   return host
 }
 const button = (host, text) => [...host.querySelectorAll('button')].find(b => b.textContent.trim() === text)
+const cssSource = readFileSync(resolve(process.cwd(), 'src/index.css'), 'utf8')
 
 describe('log a past workout', () => {
   beforeEach(() => {
@@ -51,6 +54,26 @@ describe('log a past workout', () => {
     expect(prompt.textContent).toContain('There is already a workout on that day.')
     expect(['Replace', 'Add as second workout', 'Cancel'].map(t => !!button(prompt, t))).toEqual([true, true, true])
     expect(useStore.getState().S.active).toBeNull()
+  })
+
+  // The Date and Start-time rows are the only .lrow rows in the app that pair a title with a
+  // fixed-width field and nothing that can give way. A pixel floor under the title column therefore
+  // comes straight out of the field: 104px pushed the date input 23px off a 320px screen, calendar
+  // picker and all, so there was no way to open the picker on a small phone. The floor has to be the
+  // row's own longest word (min-width:auto), which these short titles barely ask for.
+  it('gives the date and time fields a title column that can shrink', () => {
+    logPastWorkoutSheet()
+    const host = mountTopSheet()
+    const fields = [...host.querySelectorAll('.lrow input.timef')]
+    expect(fields.map(i => i.type)).toEqual(['date', 'time'])
+    for (const field of fields) expect(field.closest('.lrow').querySelectorAll('.lrow-v')).toHaveLength(0)
+    const rule = cssSource.match(/^\.lrow-m\{([^}]*)\}/m)
+    expect(rule?.[1]).toContain('min-width:auto')
+    expect(rule[1]).not.toMatch(/min-width:\s*[\d.]/)
+    // and where even the longest word leaves no room for the field (Polish "Godzina rozpoczęcia"
+    // at 320px), the field drops onto its own line rather than over the edge of the card.
+    expect(cssSource).toContain('.lrow:has(.timef){flex-wrap:wrap}')
+    expect(cssSource).toContain('.lrow>.timef{margin-left:auto}')
   })
 
   it('starts a backfilled session straight away on a free day', () => {

@@ -9,6 +9,57 @@ const stateWith = ex => ({
 })
 const roundTrip = ex => parsePlan(JSON.stringify(buildPlanBundle(stateWith(ex), 'Plan'))).routines[0].ex[0]
 
+describe('plan-share units', () => {
+  it('exports a unit and converts every load prescription at the import boundary', () => {
+    const source = {
+      unit: 'kg', week: {}, customEx: [],
+      routines: [{ id: 'r', name: 'Strength', ex: [
+        { id: '0025', mode: 'reps', sets: 3, reps: 5, weight: 60, inc: 2.5 },
+        { id: '0007', mode: 'time', sets: 1, sec: 30, weight: 20, inc: 5 },
+      ] }],
+    }
+    const bundle = buildPlanBundle(source, 'Strength')
+    expect(bundle.unit).toBe('kg')
+    const imported = parsePlan(bundle, 'lb')
+    expect(imported.unit).toBe('lb')
+    expect(imported.routines[0].ex[0]).toMatchObject({ weight: 132.5, inc: 5.5 })
+    expect(imported.routines[0].ex[1]).toMatchObject({ weight: 44, inc: 5 })
+  })
+
+  it('converts pounds back to kilograms and merges the converted prescription', () => {
+    const source = {
+      unit: 'lb', week: {}, customEx: [],
+      routines: [{ id: 'r', name: 'Strength', ex: [{ id: '0025', sets: 3, reps: 5, weight: 135, inc: 10 }] }],
+    }
+    const bundle = buildPlanBundle(source, 'Strength')
+    const target = { unit: 'kg', routines: [], customEx: [], week: {} }
+    mergePlan(target, bundle)
+    expect(target.routines[0].ex[0]).toMatchObject({ weight: 61.25, inc: 4.5 })
+  })
+
+  it('keeps valid legacy bundles without a unit in their destination-unit semantics', () => {
+    const legacy = {
+      opengym_plan: 1, name: 'Legacy', summary: 'old export',
+      week: { 1: 'r' }, customEx: [],
+      routines: [{ id: 'r', name: 'Strength', ex: [{ id: '0025', sets: 3, reps: 5, weight: 60, inc: 2.5 }] }],
+    }
+    const parsed = parsePlan(legacy, 'lb')
+    expect(parsed.unit).toBe('lb')
+    expect(parsed.routines[0].ex[0]).toMatchObject({ weight: 60, inc: 2.5 })
+  })
+
+  it('accepts legacy root omissions and the older weightUnit marker', () => {
+    const legacy = {
+      opengym_plan: 1, weightUnit: 'lbs', legacyNote: 'kept as metadata',
+      routines: [{ id: 'r', name: 'Strength', ex: [{ id: '0025', sets: 3, reps: 5, weight: 135, inc: 10 }] }],
+    }
+    const parsed = parsePlan(legacy, 'kg')
+    expect(parsed.routines[0].ex[0]).toMatchObject({ weight: 61.25, inc: 4.5 })
+    expect(parsed.week).toEqual({})
+    expect(parsed.customEx).toEqual([])
+  })
+})
+
 describe('what survives a shared plan', () => {
   it('carries a drop-set prescription', () => {
     expect(roundTrip({ intensifier: { type: 'dropset', count: 2, pct: 20 } }).intensifier)
@@ -142,5 +193,66 @@ describe('week schedule as a routine-id list', () => {
 
   it('scheduledDays counts a populated array day as 1 and a [] / absent day as 0', () => {
     expect(parsePlan({ opengym_plan: 1, routines: [], customEx: [], week: { 1: ['a'], 2: [], 4: 'b' } }).scheduledDays).toBe(2)
+  })
+})
+
+// ---- custom exercises travel whole (QA C7) ----
+// The bundle used to carry only {id, n, bp} and mergePlan stored exactly that: the recipient's copy
+// showed an empty equipment tag, no muscle credit, and — without `custom: true` — no Edit or Delete,
+// so a wrong import could only be fixed by hand-editing localStorage.
+describe('custom exercises in a shared plan', () => {
+  // The shape CustomExForm writes, in the map's order.
+  const landmine = {
+    id: 'c1', n: 'QA Landmine Row', bp: 'back', desc: 'Bar in the corner', tg: 'upper-back', sm: ['biceps'],
+    muscleGroups: ['upper-back', 'biceps'], primaries: ['upper-back'], secondaries: ['biceps'], eq: 'barbell', custom: true,
+  }
+  const source = {
+    routines: [{ id: 'r', name: 'Back day', ex: [{ id: 'c1', sets: 3, reps: 8, weight: 40 }] }],
+    week: {}, customEx: [landmine],
+  }
+
+  it('exports equipment, muscles and description with the custom exercise', () => {
+    expect(buildPlanBundle(source, 'Plan').customEx[0]).toEqual({
+      id: 'c1', n: 'QA Landmine Row', bp: 'back', desc: 'Bar in the corner', eq: 'barbell', tg: 'upper-back',
+      primaries: ['upper-back'], secondaries: ['biceps'], muscleGroups: ['upper-back', 'biceps'],
+    })
+  })
+
+  it('stores the imported custom exercise the way the form would have created it', () => {
+    const parsed = parsePlan(JSON.stringify(buildPlanBundle(source, 'Plan')))
+    const target = { routines: [], week: {}, customEx: [] }
+    mergePlan(target, parsed)
+    const stored = target.customEx[0]
+    expect(stored).toMatchObject({ ...landmine, id: stored.id })
+    expect(stored.id).not.toBe('c1')
+    expect(target.routines[0].ex[0].id).toBe(stored.id)
+  })
+
+  // A file written before the metadata travelled has only a name and a body part; it still imports,
+  // and the recipient can now add the equipment and muscles themselves.
+  it('keeps importing an old name-plus-body-part file, editable at the other end', () => {
+    const legacy = { opengym_plan: 1, routines: [{ id: 'r', name: 'R', ex: [{ id: 'x', sets: 3, reps: 5 }] }], customEx: [{ id: 'x', n: 'Old one', bp: 'legs' }] }
+    const target = { routines: [], week: {}, customEx: [] }
+    mergePlan(target, parsePlan(legacy))
+    expect(target.customEx[0]).toEqual({ id: target.customEx[0].id, n: 'Old one', bp: 'legs', custom: true })
+    expect(target.routines[0].ex[0].id).toBe(target.customEx[0].id)
+  })
+
+  // A plan file is someone else's data: only muscles the map can draw are kept, and a muscle listed
+  // as both primary and secondary counts once, as the form itself enforces.
+  it('drops muscles it cannot draw and a secondary that repeats a primary', () => {
+    const bundle = { opengym_plan: 1, routines: [], customEx: [{ id: 'x', n: 'Odd', bp: 'back', eq: 'barbell', primaries: ['upper-back', 'wings'], secondaries: ['upper-back', 'biceps', 7] }] }
+    const target = { routines: [], week: {}, customEx: [] }
+    mergePlan(target, parsePlan(bundle))
+    expect(target.customEx[0]).toMatchObject({ primaries: ['upper-back'], secondaries: ['biceps'], muscleGroups: ['upper-back', 'biceps'], tg: 'upper-back', sm: ['biceps'] })
+  })
+
+  it('still reuses a custom the recipient already has under the same name and body part', () => {
+    const parsed = parsePlan(JSON.stringify(buildPlanBundle(source, 'Plan')))
+    const mine = { id: 'mine', n: 'qa landmine row', bp: 'back', eq: 'landmine', custom: true }
+    const target = { routines: [], week: {}, customEx: [mine] }
+    mergePlan(target, parsed)
+    expect(target.customEx).toEqual([mine])
+    expect(target.routines[0].ex[0].id).toBe('mine')
   })
 })

@@ -1,3 +1,4 @@
+import { isAssisted } from './exercises.js'
 import { isSideSet } from './workout-model.js'
 import { entriesForExercise, metricRowsForEntry } from './history.js'
 // Estimated one-rep max (issue #18).
@@ -44,6 +45,10 @@ export function estimate1RM(w, r, formula = DEFAULT_FORMULA) {
 // `topW` is ignored on purpose: it records the working weight a user confirmed after the
 // exercise, with no rep count attached, so it cannot produce an estimate.
 export function bestSetOf(entry, formula = DEFAULT_FORMULA) {
+  // An assistance machine has no one-rep max to estimate: the load is the help you were given,
+  // so Epley on it would rise as you got weaker and call that a record (issue #232). These
+  // exercises stay out of the estimate, the curve and the strength list entirely.
+  if (isAssisted(entry?.id ? { id: entry.id } : entry)) return null
   let best = null
   metricRowsForEntry(entry, 'reps').forEach(s => {
     const sets = isSideSet(s)
@@ -69,6 +74,7 @@ function bestSetOfEntries(entries, formula = DEFAULT_FORMULA) {
 // One point per workout in which the exercise produced an estimate — feeds the trend chart.
 // Chronological, matching the order workouts are appended in.
 export function e1rmSeries(S, exId, formula = DEFAULT_FORMULA) {
+  if (isAssisted(exId)) return []
   const pts = []
   ;(S.workouts || []).forEach(w => {
     const best = bestSetOfEntries(entriesForExercise(w, exId), formula)

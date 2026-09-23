@@ -37,11 +37,17 @@ export function keyboardOpen(win = window) {
 export function realign(win = window) {
   if (keyboardOpen(win)) return false
   if (viewportDisplacement(win) <= 1) return false
-  // The keyboard is gone but a text field may still hold focus: on WebKit tapping a <button>
-  // (the set's tick, the RIR cell) does not blur the input, and iOS only puts the viewports
-  // back once focus has left. Nothing is being typed with the keyboard down, so let it go.
-  const active = win.document.activeElement
-  if (isText(active)) active.blur?.()
+  // Never touch a page while a text field has focus — no blur, no scroll, no unpin (issue #242).
+  // `keyboardOpen` cannot be trusted mid-animation: both sides of its subtraction move, because
+  // the browser chrome collapses while the keyboard comes up. Measured on iOS 26.6 with the
+  // keyboard animating in, `innerHeight` fell 684 → 374 while the visual viewport sat at 158,
+  // so the difference dropped back under the threshold and the keyboard read as closed about
+  // 100 ms after every tap. This used to blur the field there, which is why the login sheet's
+  // name and invite-code fields threw the keyboard straight back out.
+  // Nothing is lost by standing down: the correction still runs on `focusout`, which is when
+  // iOS actually needs it, and the two cases the blur was written for let go of the field
+  // themselves — Workout.jsx blurs when a set is ticked, Modals.jsx when a sheet opens.
+  if (isText(win.document.activeElement)) return false
   if (bodyPinned(win)) return realignPinned(win)
   win.scrollTo(win.scrollX || 0, win.scrollY || 0)
   return true

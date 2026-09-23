@@ -1,5 +1,93 @@
 # Changelog
 
+## v1.3.8 — 2026-09-20
+
+Twenty-four reports closed: the keyboard that would not stay open on iPhone and iPad, notifications
+that arrived with notifications switched off, reps you could not read on a narrow phone, and
+assisted pull-ups that recorded your progress backwards. Plus the four things this milestone
+promised — reorder your routines, a Smith machine with no bar, two-decimal weights, and deleting an
+account for real. Eleven community pull requests from six contributors. Web bundle, APK and API image.
+
+**The fixes people actually hit**
+
+- ⌨️ **The keyboard stays open** (FabianReitz, hectorroaz, #242). On iPhone and iPad, tapping a field
+  threw the keyboard straight back out about four times in five — worst on "Create new profile",
+  where a new user could not type a name. The page-alignment guard blurred the field you had just
+  tapped, because its "is the keyboard open?" check compares two numbers that *both* move while the
+  keyboard animates in. Measured on iOS 26.6: `innerHeight` fell 684 → 374 while the visual viewport
+  sat at 158, so the keyboard read as closed ~100 ms after every tap. Nothing acts on that check
+  while a text field has focus now.
+- 🔔 **Notifications respect the switch** (shibbrich1, #239). The rest-timer alert asked for the
+  browser permission itself and then fired whether or not Push was on — and a permission cannot be
+  handed back. Off is off.
+- 📱 **Reps are readable again on a narrow phone** (seals187, #235). A row with weight, reps, an
+  effort column and the +/− buttons left the number nothing: at 320 px the reps field was empty and
+  102.5 kg showed as "102". Every number field now reserves the widest value it shows and the
+  buttons give way first — checked across 108 combinations of width, layout, effort mode and
+  per-side rows.
+- 🏋️ **Assisted pull-ups and dips count the right way** (dpatrongomez, kvalev, #232, #176). The
+  stack carries part of your weight, so less assistance is the harder set — but 30 kg stayed the
+  record over 20 kg, and progression answered a clean session by offering *more* help. Eight
+  catalogue exercises are affected, and `assisted` on a custom exercise marks any other.
+- 📋 **List view keeps your place** (xwr3, #224) — it opens at the exercise you are on, not at the
+  top of the session.
+- ➕ **Extra sets stay out of the plan** (kvalev, #233). A heavier bonus set used to raise next
+  session's weight, and a hard one taken short reported the whole session as missed.
+- 🌐 **Subpath deployments work** (leon332157, #238). Behind a proxy that strips its prefix there is
+  nothing to configure; one that passes the prefix through takes `BASE_PATH=/gym`.
+
+**The four this milestone promised**
+
+- ↕️ **Reorder your routines** (hjeroen-git, #142) — arrows in Plan, and the Start screen, the
+  day sheets and every picker follow the same order.
+- 🔩 **"No bar"** (Aoto Ideguchi, #138) — a Smith machine that carries its own carriage now counts
+  plates from zero instead of snapping back to a 9 kg bar.
+- 🔢 **Two-decimal weights** (Aoto Ideguchi, #139) — Settings → Weight decimals, for quarter plates
+  and microplates. 62.75 stays 62.75 instead of rounding to 62.8.
+- 🗑️ **Delete an account** (shibbrich1, #107) — the admin dashboard can remove a profile and
+  everything attached to it, not just disable it. It asks twice and offers their data as a download
+  first; it refuses to delete you or the last admin.
+
+**Community pull requests**
+
+- kurktchiev: the iOS Home Screen icon behind an auth proxy (#184), an unknown path no longer serves
+  a shell that cannot load (#185), and a way back to the Start screen on a day that already has a
+  plan (#237).
+- Space-Hermes: typo-tolerant exercise search (#206), Olympic-lift muscle groups (#207), shared plans
+  keep their kg/lb unit (#210), and a Coach test that no longer fails around midnight (#208).
+- aaron-rai: the activity heatmap follows your week-start setting (#220).
+- ncbachh: rename a workout while it is running (#228).
+- Strazdonis: the big weight read-out can be typed into (#234).
+- mkoester: standard ß in the German pack (#190).
+
+**Found by a QA sweep of every screen, and fixed**
+
+- 🔍 Search: "wrist" returned 200 abdominal exercises, because the typo tolerance matched body parts
+  and equipment as well as names. Fuzzy matching is now name-only, and only for words with no exact
+  hit anywhere.
+- ⚖️ Switching kg ↔ lb left each workout's stored total and session body weight in the old unit, so
+  History, the calendar and the heatmap showed kilo totals under a pound label. Body weight also
+  converts at 0.1 now, not in plate steps, so a round trip comes home.
+- 📤 Sharing a plan stripped a custom exercise down to its name and body part: it arrived with no
+  equipment, no muscles, and no way to edit or delete it.
+- 📥 Importing a second export re-created the custom exercises the first one had made, splitting the
+  history in two; imported volume counted warm-up sets; hyphenated names ("Stiff-Legged Deadlift")
+  were filed under the wrong body part.
+- 📊 Tapping an exercise in Stats → Strength threw instead of opening its history.
+- 🛠️ Admin: a profile whose stored file held a malformed entry blanked the whole dashboard, and that
+  account could then not be disabled. The API answers 400 (or 413) for a request the client got
+  wrong instead of 500 with a stack trace, and refuses an array as the state document — which used
+  to wipe the profile and silently reset its revision.
+- 📐 Phone-width layout: the double-progression row wraps into pairs, list-row titles keep their
+  width, page headers give way before their button, drop-set rows and cardio speeds are readable,
+  and the column header lines up over per-side rows.
+- 🇷🇺 Muscle names no longer leak internal ids ("gluteal", "hip-flexors") into the picker, the config
+  sheet or the Muscles list, and a day with one routine says "1 routine".
+
+**Known and not fixed**: counts in Russian and the other Slavic packs use the English two-form plural
+rule, so "2 дней" where it should read "2 дня". It affects every counter in the app and is being
+done properly rather than patched here.
+
 ## v1.3.7 — 2026-09-12
 
 The v1.3.6 tag's Android build failed on a double dash inside an XML comment, so the APK for everything in v1.3.6 is this one — plus the iPhone timer-sound fix that landed an hour later. Web bundle, APK and API image; v1.3.6 and v1.3.7 are the same code apart from the two items below.

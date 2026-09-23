@@ -21,6 +21,7 @@ const mocks = vi.hoisted(() => ({
   maps: [],
   charts: [],
   mapMounts: 0,
+  exerciseHistorySheet: vi.fn(),
   S: {
     unit: 'kg', body: 'male', effort: 'rir', targetW: null,
     bodyweight: [], routines: [], workouts: [],
@@ -33,6 +34,7 @@ vi.mock('../store/useStore.js', () => ({
 vi.mock('react-router-dom', () => ({ useNavigate: () => () => {} }))
 vi.mock('../sheets.jsx', () => ({
   bwSheet: () => {}, goalSheet: () => {}, calendarSheet: () => {}, workoutDetailSheet: () => {},
+  exerciseHistorySheet: mocks.exerciseHistorySheet,
   WorkoutRow: () => React.createElement('div'), bwDeltaColor: () => 'inherit',
 }))
 vi.mock('../components/LineChart.jsx', () => ({ default: props => {
@@ -144,6 +146,7 @@ function resetFixture(workouts = lifecycleWorkouts()) {
   mocks.maps.length = 0
   mocks.charts.length = 0
   mocks.mapMounts = 0
+  mocks.exerciseHistorySheet.mockClear()
   useUI.setState({ sheets: [] })
 }
 
@@ -311,6 +314,36 @@ describe('Stats muscle recovery view runtime', () => {
   })
 })
 
+describe('Stats strength exercise rows', () => {
+  // The rows under "Exercises · <muscle>" are presented as buttons (role, tabIndex, pointer
+  // cursor) but for a year called a handler that never existed, so every tap threw
+  // "onExercise is not defined" and opened nothing (QA C13). A tap now opens the exercise's
+  // history sheet — the one place that already draws the Est. 1RM curve the row quotes.
+  it('opens the exercise history sheet when a row is tapped instead of throwing', async () => {
+    resetFixture(exercisePickerWorkouts())
+    await mountStats()
+    const thrown = []
+    dom.addEventListener('error', e => { thrown.push(e.error || e.message); e.preventDefault() })
+
+    await click(viewButton('Strength'))
+    await click(muscleCard().querySelector('[data-muscle="chest"]'))
+    expect(muscleCard().textContent).toContain('Exercises · Chest')
+    const row = [...muscleCard().querySelectorAll('.mrow[role="button"]')].find(el => el.textContent.includes('Est. 1RM'))
+    expect(row, 'expected a tappable exercise row for the chest').toBeTruthy()
+    expect(row.textContent).toContain('barbell bench press')
+
+    await click(row)
+    expect(thrown).toEqual([])
+    expect(mocks.exerciseHistorySheet).toHaveBeenCalledTimes(1)
+    expect(mocks.exerciseHistorySheet).toHaveBeenCalledWith('0025')
+
+    // The keyboard path of tappable() must land in the same place.
+    await act(async () => { row.dispatchEvent(new dom.KeyboardEvent('keydown', { key: 'Enter', bubbles: true })) })
+    expect(thrown).toEqual([])
+    expect(mocks.exerciseHistorySheet).toHaveBeenCalledTimes(2)
+  })
+})
+
 describe('Stats exercise progress picker', () => {
   it('keeps a legacy reps record whose load is stored only in topW', async () => {
     resetFixture([workout('legacy-topw', BASE_NOW, [
@@ -366,6 +399,20 @@ describe('Stats exercise progress picker', () => {
     expect(progressChart?.points).toHaveLength(1)
     expect(progressChart.points[0].y).toBe(80)
     expect(card.textContent).toContain('60×5  80×5')
+  })
+
+  it('aggregates repeated assisted occurrences by the lightest load', async () => {
+    resetFixture([workout('assisted-duplicate', BASE_NOW, [
+      entry('0017', [set(true, { w: 30, r: 8 })]),
+      entry('0017', [set(true, { w: 20, r: 8 })]),
+    ])])
+    await mountStats()
+
+    const card = [...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')
+    expect(card.textContent).toContain('20 kg')
+    const progressChart = mocks.charts.find(chart => chart.points?.some(point => point.y === 20))
+    expect(progressChart?.points).toHaveLength(1)
+    expect(progressChart.points[0].y).toBe(20)
   })
 
   it('filters with the shared exercise matcher and still selects from the mounted sheet', async () => {
