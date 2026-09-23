@@ -65,6 +65,7 @@ vi.mock('../sheets.jsx', () => ({
   barWeightSheet: vi.fn(),
   exerciseNoteSheet: vi.fn(),
   sessionNoteSheet: vi.fn(),
+  renameWorkoutSheet: vi.fn(),
 }))
 vi.mock('../components/Media.jsx', () => ({ default: () => null }))
 vi.mock('../lib/api.js', () => ({

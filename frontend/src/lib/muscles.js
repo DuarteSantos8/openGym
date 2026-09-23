@@ -21,16 +21,25 @@ export const MUSCLES = [
   'calves', 'tibialis',
 ]
 
+// A picked list in the map's own order rather than the order the chips were tapped in — two
+// people building the same exercise get the same exercise. Unknown names keep their place at the end.
+export const inMuscleOrder = list => {
+  const at = m => { const i = MUSCLES.indexOf(m); return i < 0 ? MUSCLES.length : i }
+  return [...(list || [])].sort((a, b) => at(a) - at(b))
+}
+
 // Drawn as the silhouette, never shaded: they carry no training load.
 export const INERT = ['head', 'hair', 'neck', 'hands', 'feet', 'knees', 'ankles']
 
-// English display names; these strings are the i18n keys (see lib/i18n.js).
+// English display names; these strings are the i18n keys (see lib/i18n.js). The packs know
+// the cardio pseudo-muscle only under the dataset's own lowercase spelling, and every place
+// that shows it capitalises with CSS — a capitalised key here rendered English everywhere.
 export const MUSCLE_NAME = {
   trapezius: 'Traps', deltoids: 'Shoulders', chest: 'Chest', 'upper-back': 'Upper back',
   serratus: 'Serratus', biceps: 'Biceps', triceps: 'Triceps', forearm: 'Forearms',
   abs: 'Abs', obliques: 'Obliques', 'lower-back': 'Lower back', gluteal: 'Glutes',
   quadriceps: 'Quads', hamstring: 'Hamstrings', adductors: 'Adductors',
-  'hip-flexors': 'Hip flexors', calves: 'Calves', tibialis: 'Shins', 'cardiovascular system': 'Cardiovascular system',
+  'hip-flexors': 'Hip flexors', calves: 'Calves', tibialis: 'Shins', 'cardiovascular system': 'cardiovascular system',
 }
 
 // Every spelling that occurs in the dataset's `tg` and `sm` fields. null = not drawable.

@@ -12,8 +12,9 @@
  *     of an id that both have; workouts sorted by day and start like every other writer
  *   - bodyweight: union by day, the later-edited (`t`) entry of a day that both have
  *   - favEx: ordered set union, the newer copy first
- *   - exWeights: union by exercise, the larger `w` (the app itself only ever raises it — a PR
- *     logged on the other device must not be forgotten); exNotes, barWeights: key union
+ *   - exWeights: union by exercise, the better `w` for that exercise — larger for an ordinary
+ *     lift, smaller on an assistance machine (a PR logged on the other device must not be
+ *     forgotten, whichever way it runs); exNotes, barWeights: key union
  *   - `_ts`: the later of the two; `_rev` dropped (the server sets it); `active` left to the caller
  *
  * Known limit: with no record of what each side deleted, an entry removed on one device inside
@@ -21,6 +22,8 @@
  * on resume and every push is conditional), and a resurrected entry beats a lost one. Tombstones
  * would close it.
  */
+import { beatsWeight } from './exercises.js'
+
 const clone = o => JSON.parse(JSON.stringify(o))
 const list = v => (Array.isArray(v) ? v : [])
 
@@ -58,10 +61,16 @@ export function mergeBodyweight(a = [], b = []) {
   return [...byDay.values()].sort((x, y) => (x.d < y.d ? -1 : 1))
 }
 
+// The kept load per exercise. "The larger one wins" held while the app only ever raised it —
+// but an assistance machine progresses downwards, so there the smaller number is the newer,
+// harder setting and taking the larger would hand back the help the other device just dropped
+// (issue #232). `beatsWeight` knows which way round each exercise runs; the date breaks a tie
+// on an exercise where both sides moved in the same direction.
 function mergeExWeights(n = {}, o = {}) {
   const out = { ...(o || {}), ...(n || {}) }
   for (const k of Object.keys(o || {})) {
-    if (n && n[k] && o[k] && (o[k].w || 0) > (n[k].w || 0)) out[k] = o[k]
+    if (!(n && n[k] && o[k])) continue
+    if (beatsWeight(k, o[k].w || 0, n[k].w || 0)) out[k] = o[k]
   }
   return out
 }

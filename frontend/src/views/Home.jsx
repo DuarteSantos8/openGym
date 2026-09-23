@@ -97,6 +97,17 @@ export default function Home() {
           : routine ? <span className="tag acc">{t('Start')}</span>
           : <Icon name="plus" className="chev" />}
       </div>
+      {/* The row above starts today's plan in one tap, and so does the Start button in the tab
+          bar — which is the whole problem when you want something else. Both jump straight into
+          the planned session whenever there is one, so the Start screen (a freestyle session,
+          and your other routines) is only reachable on a day with nothing planned. The one other
+          way in, "Choose a different workout" on the weigh-in sheet, does not exist when the
+          weigh-in is switched off. This is that door, and it starts nothing on its own. */}
+      {!S.active && <div style={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
+        <Button size="sm" variant="ghost" className="dim" icon="reset" onClick={() => nav('/workout')}>
+          {t('Choose a different workout')}
+        </Button>
+      </div>}
     </div>
 
     {/* Jump to the gym check-in cards (QR membership codes). Shown here as a quick tap on
@@ -129,7 +140,7 @@ export default function Home() {
     )}
 
     <div className="card">
-      <div className="row between" style={{ marginBottom: 6 }}>
+      <div className="row between bw-head" style={{ marginBottom: 6 }}>
         <h2 style={{ margin: 0 }}>{t('Body weight')}</h2>
         <div className="row" style={{ gap: 8 }}>
           <Button size="sm" icon="target" style={S.targetW ? { color: 'var(--yellow)' } : undefined} onClick={goalSheet}>{S.targetW ? fmtNum(S.targetW) : t('Goal')}</Button>

@@ -14,7 +14,6 @@ const pushRestTimer = sec => { if (useStore.getState().user) api('/api/push/rest
 const cancelPushRestTimer = () => { if (useStore.getState().user) api('/api/push/rest-timer/cancel', { method: 'POST', body: JSON.stringify({ deviceId: deviceId() }) }).catch(() => {}) }
 
 const notificationsSupported = () => typeof window !== 'undefined' && 'Notification' in window
-let requestRestNotificationPermissionP = null
 
 // Set the moment the tab goes hidden, never cleared here — timerTick/workTick read and
 // clear it themselves once they're running visible again. Lets a completion tick tell
@@ -26,34 +25,28 @@ if (typeof document !== 'undefined') {
   document.addEventListener('visibilitychange', () => { if (document.hidden) pageHiddenAt = Date.now() })
 }
 
-const requestRestNotificationPermission = async () => {
-  if (!notificationsSupported()) return false
-  if (Notification.permission === 'granted') return true
-  if (Notification.permission === 'denied') return false
-  if (!requestRestNotificationPermissionP) {
-    requestRestNotificationPermissionP = Notification.requestPermission()
-      .then(perm => perm === 'granted')
-      .catch(() => false)
-      .finally(() => {
-        requestRestNotificationPermissionP = null
-      })
-  }
-  return requestRestNotificationPermissionP
+// The Push switch in Settings is the one place notifications are turned on, and "on" means this
+// browser holds a push subscription. This local alert used to ignore it: every rest asked for the
+// permission by itself, and once granted — a page cannot hand a permission back — it fired with the
+// switch off (issue #239). Off is off now; the permission is only ever asked for by the switch.
+const restAlertsOn = async reg => {
+  if (Notification.permission !== 'granted') return false
+  try { return !!(await reg?.pushManager?.getSubscription?.()) } catch { return false }
 }
 
 const maybeRestNotification = async () => {
   if (!notificationsSupported()) return
   if (!document.hidden && document.visibilityState !== 'hidden') return
-  if (Notification.permission !== 'granted' && !(await requestRestNotificationPermission())) return
   try {
+    const reg = await navigator.serviceWorker?.getRegistration?.()
+    if (!(await restAlertsOn(reg))) return
+    // Same tag as the server's push (api/push-messages.js): whichever lands second replaces the
+    // first instead of stacking a second banner. No body — it only repeated the title.
     // Android Chrome forbids the Notification constructor (Illegal constructor) - the
     // service-worker registration path is the one that actually pops there.
-    const reg = await navigator.serviceWorker?.getRegistration?.()
-    if (reg?.showNotification) {
-      reg.showNotification(t('Rest over — next set!'), { body: t('Rest over — next set!') })
-      return
-    }
-    new Notification(t('Rest over — next set!'), { body: t('Rest over — next set!') })
+    const opts = { tag: 'rest-timer', icon: 'icon-512.png' }
+    if (reg?.showNotification) { reg.showNotification(t('Rest over — next set!'), opts); return }
+    new Notification(t('Rest over — next set!'), opts)
   } catch {
     // Intentionally ignore: notification APIs vary by browser and policy in edge cases.
   }
@@ -101,7 +94,6 @@ export const useUI = create((set, get) => ({
     if (!(sec > 0)) return
     const endsAt = Date.now() + sec * 1000
     set({ timer: { left: sec, total: sec, endsAt, forIdx } })
-    requestRestNotificationPermission()
     pushRestTimer(sec)
     timerTick = () => {
       const tm = get().timer

@@ -1,8 +1,8 @@
 // @vitest-environment happy-dom
-import React, { act } from 'react'
+import React, { act, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { Slider, Stepper, SLIDER_GRAB_PX } from './ui.jsx'
+import { Slider, Stepper, NumberField, numWidthCh, SLIDER_GRAB_PX } from './ui.jsx'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -104,5 +104,43 @@ describe('Stepper', () => {
     const plus = mountStepper(10, onChange)
     act(() => plus.click())
     expect(onChange).toHaveBeenCalledWith(11)
+  })
+})
+
+describe('NumberField fit', () => {
+  // A field that hugs its digits, for the big weight read-out where the unit sits right beside
+  // the number. Digits are one ch each under tabular numerals; a decimal point is narrower.
+  it('measures digits as one ch and a decimal point as half', () => {
+    expect(numWidthCh('82')).toBe(2)
+    expect(numWidthCh('82.5')).toBe(3.5)
+    expect(numWidthCh('')).toBe(1)
+  })
+
+  // The width follows what is on screen while typing (the draft), not the last committed
+  // number — otherwise clearing the field would leave a 2ch-wide box around a lone caret and
+  // the digits typed next would be clipped until the parent caught up.
+  it('tracks the draft on screen while typing, and stays unsized without fit', () => {
+    const type = (el, value) => {
+      Object.getOwnPropertyDescriptor(el.constructor.prototype, 'value').set.call(el, value)
+      el.dispatchEvent(new Event('input', { bubbles: true }))
+    }
+    function Harness({ fit }) {
+      const [v, setV] = useState(70)
+      return <NumberField fit={fit} value={v} onChange={setV} />
+    }
+    act(() => root.render(<Harness fit />))
+    const input = host.querySelector('input')
+    expect(input.style.width).toBe('2ch')
+
+    act(() => type(input, ''))
+    expect(input.value).toBe('')
+    expect(input.style.width).toBe('1ch')
+
+    act(() => type(input, '82,5'))
+    expect(input.value).toBe('82.5')
+    expect(input.style.width).toBe('3.5ch')
+
+    act(() => root.render(<Harness fit={false} />))
+    expect(host.querySelector('input').style.width).toBe('')
   })
 })
