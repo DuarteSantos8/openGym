@@ -233,10 +233,20 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
   })
   // The set number is the set's own menu: drop / burst / remove — three things that used to
   // sit as chips and an X on every single row.
+  // A timed per-side exercise plans in L/R pairs (buildWorkSets, addSet above), so the two
+  // halves of a pair read as one set number — "Set 1 — Left" then "Set 1 — Right" — rather than
+  // counting every row and making the second half look like an extra set.
+  const setNumOf = (s, i) => {
+    const warm = isWarmupRow(s)
+    const phaseNum = entry.sets.slice(0, i + 1).filter(x => isWarmupRow(x) === warm).length
+    return s.side ? Math.ceil(phaseNum / 2) : phaseNum
+  }
+  const sideTagOf = s => s.side === 'L' ? t('Left') : s.side === 'R' ? t('Right') : null
   const openSetMenu = (s, i) => {
     const warm = isWarmupRow(s)
+    const sideTag = sideTagOf(s)
     menuSheet({
-      title: (warm ? t('Warm-up') : t('Set {0}', entry.sets.slice(0, i + 1).filter(x => isWarmupRow(x) === warm).length)),
+      title: warm ? t('Warm-up') : sideTag ? t('Set {0} — {1}', setNumOf(s, i), sideTag) : t('Set {0}', setNumOf(s, i)),
       subtitle: setLabel(entry.id, s, entry.target),
       items: [
         !warm && mode === 'reps' && !isRestPauseSet(s) && { icon: 'arrowDown', label: t('Drop set'), sub: t('+ Drop'), onClick: () => addDropRow(i) },
@@ -384,10 +394,11 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
     {!dense && <>
     <div className="row" style={{ gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
       {cardio && <span className="tag acc"><Icon name="figureRun" />{t('Cardio')}</span>}
-      {/* A unilateral exercise is logged per side directly (the L/R rows below), so the old
-          "{n} per side" chip — which halved the combined total for display — is gone: the split
-          is no longer derived, it is what you enter. The tag only flags that this is per-side. */}
-      {!cardio && !timed && isPerSide(cfg) && <span className="tag acc nocap"><Icon name="shuffle" />{t('Per side')}</span>}
+      {/* A unilateral exercise is logged per side directly (the L/R rows below for reps, a
+          "Left"/"Right" tag on each doubled row for a timed hold), so the old "{n} per side"
+          chip — which halved the combined total for display — is gone: the split is no longer
+          derived, it is what you enter. The tag only flags that this is per-side. */}
+      {!cardio && isPerSide(cfg) && <span className="tag acc nocap"><Icon name="shuffle" />{t('Per side')}</span>}
       {(ex.tg || ex.bp) && <span className="tag">{t(MUSCLE_NAME[ex.tg] || ex.tg || ex.bp)}</span>}
       {ex.eq && <span className="tag">{t(ex.eq)}</span>}
       {best > 0 && <span className="tag nocap">{t('Best:')} {fmtNum(best)} {S.unit}</span>}
@@ -444,7 +455,8 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
             </div>
           ) : (
           <div ref={el => onSetRowRef?.(i, el)} className={'setrow' + (s.done ? ' done' : '') + (col3 ? ' eff3' : '') + (timed ? ' timed' : '')}>
-            <button type="button" className="n" aria-label={t('Set {0}', phaseNum)} title={t('More')} onClick={() => openSetMenu(s, i)}>{phaseNum}</button>
+            <button type="button" className="n" aria-label={sideTagOf(s) ? t('Set {0} — {1}', setNumOf(s, i), sideTagOf(s)) : t('Set {0}', setNumOf(s, i))} title={t('More')} onClick={() => openSetMenu(s, i)}>{setNumOf(s, i)}</button>
+            {sideTagOf(s) && <span className="tag acc nocap">{sideTagOf(s)}</span>}
             {cell(s, i, col1, 'w')}
             {col2 && cell(s, i, col2, 'r')}
             {col3 && effortCell(s, i, col3)}
@@ -642,7 +654,14 @@ function ActiveWorkout() {
     const l = e.sets[e.sets.length - 1]
     const m = modeOf({ ...(e.target || {}), id: e.id })
     if (m === 'cardio') e.sets.push({ min: l ? l.min : (e.target.min || 20), speed: l ? l.speed : (e.target.speed || 8), done: false })
-    else if (m === 'time') e.sets.push({ sec: l ? l.sec : (e.target.sec || 45), w: l ? (l.w || 0) : (e.target.weight || 0), done: false })
+    else if (m === 'time') {
+      const sec = l ? l.sec : (e.target.sec || 45)
+      const w = l ? (l.w || 0) : (e.target.weight || 0)
+      // A timed per-side exercise is planned in pairs (buildWorkSets), so one more "set" is one
+      // more hold on each side, not a lone row an L/R count would fall out of sync with.
+      if (isPerSide({ ...(e.target || {}), id: e.id })) e.sets.push({ sec, w, done: false, side: 'L' }, { sec, w, done: false, side: 'R' })
+      else e.sets.push({ sec, w, done: false })
+    }
     else {
       const row = { w: l ? l.w : 0, r: l ? l.r : e.target.reps, done: false }
       // A unilateral exercise keeps adding per-side rows (issue #60): seed each side from the

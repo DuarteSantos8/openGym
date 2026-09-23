@@ -786,7 +786,64 @@ export const addToRoutineSheet = ex => ui().openSheet(close => <AddToRoutine ex=
 
 /* ============================ custom exercises (issue #11) ============================ */
 // Name + body part is all it takes — the exercise then behaves like any built-in one
-// (planning, logging, PRs, stats), just without an animation.
+// (planning, logging, PRs, stats). It has no animation from the shipped dataset (that media is
+// not ours to redistribute, see NOTICE.md) — but a photo or GIF you supply yourself is fine, and
+// is stored as a data: URL right on the exercise (imgSrc/gifSrc in lib/exercises.js pass it
+// through as-is). No upload endpoint, no server-side storage: it rides along inside the same
+// PUT /api/data blob everything else in the store already goes through.
+const CUSTOM_MEDIA_MAX_RAW = 4 * 1024 * 1024
+const CUSTOM_MEDIA_MAX_ENCODED = 1.5 * 1024 * 1024 // keeps a whole state PUT well under MAX_BODY (5 MB, api/server.js) even with a few of these
+const CUSTOM_MEDIA_MAX_DIM = 640
+
+function readFileAsDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const rd = new FileReader()
+    rd.onload = () => resolve(String(rd.result))
+    rd.onerror = () => reject(new Error('read failed'))
+    rd.readAsDataURL(file)
+  })
+}
+
+// Downscales onto a canvas and re-encodes as JPEG, so a phone photo (often several MB) does not
+// have to be turned away just because it was never meant to be a thumbnail.
+function downscaleImage(dataUrl) {
+  return new Promise((resolve, reject) => {
+    const el = new Image()
+    el.onload = () => {
+      const scale = Math.min(1, CUSTOM_MEDIA_MAX_DIM / Math.max(el.width, el.height))
+      const w = Math.max(1, Math.round(el.width * scale)), h = Math.max(1, Math.round(el.height * scale))
+      const canvas = document.createElement('canvas')
+      canvas.width = w; canvas.height = h
+      canvas.getContext('2d').drawImage(el, 0, 0, w, h)
+      resolve(canvas.toDataURL('image/jpeg', 0.82))
+    }
+    el.onerror = () => reject(new Error('decode failed'))
+    el.src = dataUrl
+  })
+}
+
+// A GIF is used as both the still (Thumb) and the animation (Media) — there is no separate
+// first frame to pull out of it without a library, and showing the animation in both spots is a
+// fair trade for one. A GIF is not itself downscaled (canvas re-encoding would flatten it to a
+// still), so its own size is the only cap.
+async function customExMediaFromFile(file) {
+  if (file.size > CUSTOM_MEDIA_MAX_RAW) { toast(t('That file is too big — under 4 MB, please.')); return null }
+  try {
+    if (file.type === 'image/gif') {
+      const url = await readFileAsDataURL(file)
+      if (url.length > CUSTOM_MEDIA_MAX_ENCODED) { toast(t('That GIF is too big — try a shorter or smaller one.')); return null }
+      return { img: url, gif: url }
+    }
+    const url = await readFileAsDataURL(file)
+    const img = await downscaleImage(url)
+    if (img.length > CUSTOM_MEDIA_MAX_ENCODED) { toast(t('That photo is too big — try a smaller one.')); return null }
+    return { img, gif: '' }
+  } catch {
+    toast(t('Could not read that file'))
+    return null
+  }
+}
+
 function CustomExForm({ existing, prefill, onDone, close }) {
   const nameRef = useRef(null)
   const onNameFocus = useSheetKeyboard(nameRef)
@@ -794,6 +851,18 @@ function CustomExForm({ existing, prefill, onDone, close }) {
   const [bp, setBp] = useState(existing ? existing.bp : '')
   const [eq, setEq] = useState(existing ? (existing.eq || '') : '')
   const [desc, setDesc] = useState(existing ? (existing.desc || '') : '')
+  const [media, setMedia] = useState({ img: existing?.img || '', gif: existing?.gif || '' })
+  const [mediaBusy, setMediaBusy] = useState(false)
+  const mediaFileRef = useRef(null)
+  const onMediaFile = async ev => {
+    const file = ev.target.files && ev.target.files[0]
+    ev.target.value = ''
+    if (!file) return
+    setMediaBusy(true)
+    const next = await customExMediaFromFile(file)
+    setMediaBusy(false)
+    if (next) setMedia(next)
+  }
   const [primaries, setPrimaries] = useState(() => {
     if (existing && Array.isArray(existing.primaries) && existing.primaries.length) return [...existing.primaries]
     if (existing?.bp === 'cardio') return ['cardiovascular system']
@@ -838,10 +907,13 @@ function CustomExForm({ existing, prefill, onDone, close }) {
     let id = existing && existing.id
     if (existing) update(s => { const c = (s.customEx || []).find(x => x.id === id); if (c) {
       c.n = name; c.bp = bp; c.desc = d; c.tg = tg; c.sm = sm; c.muscleGroups = groups; c.primaries = prim; c.secondaries = sm; c.eq = eq
+      if (media.img) c.img = media.img; else delete c.img
+      if (media.gif) c.gif = media.gif; else delete c.gif
     } })
     else {
       id = 'c' + uid()
-      update(s => { (s.customEx = s.customEx || []).push({ id, n: name, bp, desc: d, tg, sm, muscleGroups: groups, primaries: prim, secondaries: sm, eq, custom: true }) })
+      const mediaFields = media.img ? { img: media.img, ...(media.gif ? { gif: media.gif } : {}) } : {}
+      update(s => { (s.customEx = s.customEx || []).push({ id, n: name, bp, desc: d, tg, sm, muscleGroups: groups, primaries: prim, secondaries: sm, eq, custom: true, ...mediaFields }) })
     }
     close()
     toast(existing ? t('Saved') : t('“{0}” created', name))
@@ -857,6 +929,17 @@ function CustomExForm({ existing, prefill, onDone, close }) {
     <div className="chips" style={{ margin: '12px 0' }}>
       {ALL_EQUIPMENT.map(k => (<button key={k} className={'chip' + (eq === k ? ' on' : '')} onClick={() => setEq(k)}>{t(k)}</button>))}
     </div>
+    <Row icon="image" iconTint="var(--blue)" title={t('Photo or GIF')}
+      subtitle={media.img ? t('Shown in your library and workouts.') : t('Optional — a picture makes it easier to spot in a list.')}>
+      <div className="row" style={{ gap: 8, alignItems: 'center' }}>
+        {media.img && <img src={media.img} alt="" style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'cover' }} />}
+        <Button variant="tinted" icon="image" onClick={() => mediaFileRef.current?.click()} disabled={mediaBusy}>
+          {mediaBusy ? t('Loading…') : media.img ? t('Change') : t('Add')}
+        </Button>
+        {media.img && <Button variant="ghost" icon="xmark" onClick={() => setMedia({ img: '', gif: '' })} disabled={mediaBusy} />}
+      </div>
+    </Row>
+    <input ref={mediaFileRef} type="file" accept="image/*,image/gif" hidden onChange={onMediaFile} />
     {bp && <>
       {bp !== 'cardio' && <MultiSelectRow title={t('Primary muscle groups')} sheetTitle={t('Primary muscle groups')}
         values={primaries}
@@ -1216,9 +1299,10 @@ function ExConfig({ ex, existing, onSave, onDelete, close, routine, initial }) {
     }
     // Written only when it differs from what the dataset already says, so a barbell config
     // stays exactly the shape it was before these flags existed.
-    // `bodyweight` is true of a hold as much as of a set of reps; `side` is not — it counts
-    // reps, and a timed hold has none. Switching an exercise to Time therefore drops it
-    // rather than carrying a flag nothing downstream can read.
+    // `bodyweight` is true of a hold as much as of a set of reps. `side` used to be dropped on
+    // switching to Time too — a timed hold has no rep count to split — but "per side" does not
+    // have to mean splitting: for a hold it means doing the whole thing once per side, so the
+    // flag now survives the switch and buildWorkSets doubles the planned sets instead.
     const flags = {}
     if (bw !== isBodyweightEq(ex.id)) flags.bodyweight = bw
     // Free text, e.g. a pyramid's per-set loading ("bar only, +1 plate/side each set") — the
@@ -1236,7 +1320,7 @@ function ExConfig({ ex, existing, onSave, onDelete, close, routine, initial }) {
     const restSec = Math.max(0, Math.round(c.restSec) || 0)
     const withRest = restSec ? { restSec } : {}
     if (cardio) onSave({ sets, min: Math.max(1, Math.round(c.min) || 20), speed: Math.max(0, c.speed || 8), ...withNote, ...withRest })
-    else if (mode === 'time') onSave({ sets, mode: 'time', sec: Math.max(1, Math.round(c.sec) || 45), weight: Math.max(0, c.weight || 0), ...flags, ...prog, ...withNote, ...withWarmups, ...withRest })
+    else if (mode === 'time') onSave({ sets, mode: 'time', sec: Math.max(1, Math.round(c.sec) || 45), weight: Math.max(0, c.weight || 0), ...flags, ...(perSide ? { side: true } : {}), ...prog, ...withNote, ...withWarmups, ...withRest })
     else {
       // A unilateral target is stored even: the split has to divide, and a typed 15 would
       // otherwise plan seven reps on one side and eight on the other, every session.
@@ -1333,11 +1417,17 @@ function ExConfig({ ex, existing, onSave, onDelete, close, routine, initial }) {
         subtitle={bw ? t('No weight to enter — just log the reps.') : t('Ask for a weight on every set.')}>
         <Switch checked={bw} onChange={v => setC(x => ({ ...x, bodyweight: v, weight: v ? 0 : x.weight }))} />
       </Row>
-      {mode === 'reps' && <Row icon="shuffle" iconTint="var(--blue)" title={t('Reps per side')}
-        subtitle={perSide ? t('You still log the total: {0} is {1} per side.', c.reps || 0, fmtNum(sideReps(c.reps))) : t('For lunges, single-arm rows and the like.')}>
-        {/* Turning it on rounds the target up to an even number, since half of an odd
-            total is a rep one side does not get. */}
+      {mode !== 'cardio' && <Row icon="shuffle" iconTint="var(--blue)" title={t('Per side')}
+        subtitle={mode === 'time'
+          ? (perSide
+            ? t('{0} sets become {1}: one on each side, {2}s held every time.', c.sets || 0, (c.sets || 0) * 2, c.sec || 0)
+            : t('For a side plank, single-arm hold and the like — trains each side on its own.'))
+          : (perSide ? t('You still log the total: {0} is {1} per side.', c.reps || 0, fmtNum(sideReps(c.reps))) : t('For lunges, single-arm rows and the like.'))}>
+        {/* Reps: turning it on rounds the target up to an even number, since half of an odd total
+            is a rep one side does not get. Time: nothing to round — a hold's whole duration
+            happens twice, so only the flag changes (buildWorkSets doubles the planned sets). */}
         <Switch checked={perSide} onChange={v => setC(x => {
+          if (mode === 'time') return { ...x, side: v || undefined }
           const next = { ...x, side: v || undefined, reps: v ? Math.ceil((x.reps || 0) / 2) * 2 : x.reps }
           return policyFor({ ...next, id: ex.id }, routine, 'reps') === 'double'
             ? { ...next, ...normalizeRepRange(next.reps, next.repsMin, v ? 2 : 1) }

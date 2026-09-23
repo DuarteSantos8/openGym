@@ -289,9 +289,12 @@ describe('sideReps', () => {
   })
 })
 
-describe('exLine — per side never reaches a timed hold', () => {
-  it('ignores a stale side flag on a hold, which has no reps to split', () => {
-    expect(exLine({ id: LIFT, sets: 3, sec: 45, mode: 'time', side: true }, 'kg')).toBe('3 × 0:45')
+describe('exLine — per side on a timed hold', () => {
+  it('reads "per side" rather than splitting a duration in half', () => {
+    expect(exLine({ id: LIFT, sets: 3, sec: 45, mode: 'time', side: true }, 'kg')).toBe('3 × 0:45 · per side')
+  })
+  it('leaves a plain hold untouched', () => {
+    expect(exLine({ id: LIFT, sets: 3, sec: 45, mode: 'time' }, 'kg')).toBe('3 × 0:45')
   })
 })
 
@@ -456,6 +459,22 @@ describe('buildSets', () => {
   it('builds timed sets, carrying the planned duration and load', () => {
     expect(buildSets(emptyS, { id: LIFT, mode: 'time', sets: 2, sec: 60, weight: 20 }))
       .toEqual([{ sec: 60, w: 20, done: false }, { sec: 60, w: 20, done: false }])
+  })
+
+  it('doubles a per-side timed hold — once on each side, full duration both times', () => {
+    expect(buildSets(emptyS, { id: LIFT, mode: 'time', sets: 2, sec: 30, weight: 0, side: true }))
+      .toEqual([
+        { sec: 30, w: 0, done: false, side: 'L' }, { sec: 30, w: 0, done: false, side: 'R' },
+        { sec: 30, w: 0, done: false, side: 'L' }, { sec: 30, w: 0, done: false, side: 'R' },
+      ])
+  })
+
+  it('carries a per-side timed hold forward by row, L and R each keeping their own history', () => {
+    const S = { exWeights: {}, workouts: [{ d: '2026-01-01', entries: [{ id: LIFT, target: { mode: 'time', side: true }, sets: [
+      { sec: 40, w: 5, done: true, side: 'L' }, { sec: 35, w: 5, done: true, side: 'R' },
+    ] }] }] }
+    expect(buildSets(S, { id: LIFT, mode: 'time', sets: 1, sec: 30, weight: 0, side: true }))
+      .toEqual([{ sec: 40, w: 5, done: false, side: 'L' }, { sec: 35, w: 5, done: false, side: 'R' }])
   })
 
   it('builds cardio sets unchanged', () => {

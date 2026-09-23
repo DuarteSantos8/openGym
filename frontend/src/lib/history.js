@@ -151,7 +151,9 @@ export function exLine(cfg, unit) {
   // Added weight reads as added: "+10 kg" on a dip belt, "60 kg" on a barbell.
   const load = cfg.weight ? ' · ' + (isBw(cfg) ? '+' : '') + fmtNum(cfg.weight) + ' ' + unit : ''
   if (mode === 'cardio') return `${n} × ${cfg.min || 20} min @ ${fmtNum(cfg.speed || 8)} km/h`
-  if (mode === 'time') return `${n} × ${fmtSec(cfg.sec || 45)}${load}`
+  // A timed hold has no rep count to spell a split out of ("8/side" below) — the sets figure
+  // stays what was typed and "per side" says it happens twice, once each side (buildWorkSets).
+  if (mode === 'time') return `${n} × ${fmtSec(cfg.sec || 45)}${load}${isPerSide(cfg) ? ' · ' + t('per side') : ''}`
   // This is the line with room for it, so the split is spelled out: "3 × 16 · 8/side".
   const split = isPerSide(cfg) ? ' · ' + t('{0}/side', fmtNum(sideReps(cfg.reps))) : ''
   return `${n} × ${cfg.reps}${load}${split}`
@@ -397,12 +399,20 @@ function buildWorkSets(S, cfg, options = {}) {
     return sets
   }
   if (mode === 'time') {
-    for (let i = 0; i < n; i++) {
+    // A timed hold has no rep count to split in half, so "per side" here means the whole hold
+    // happens once per side rather than once total: the planned sets double (2 sets of 30s
+    // becomes 2 left + 2 right, each still 30s) instead of the duration being divided. Plain
+    // rows tagged with `side`, not the L/R sub-row pair reps uses (isSideSet) — there is only
+    // one duration to log per row, not two independent values to track side by side.
+    const count = isPerSide(cfg) ? n * 2 : n
+    for (let i = 0; i < count; i++) {
       // Only carry a previous value over when it came from a timed set — switching an
       // exercise from reps to time must not seed the duration from a rep count.
       const prev = prevAt(i)
       const carried = prev && prev.sec > 0 ? prev : null
-      sets.push({ sec: carried ? carried.sec : (cfg.sec || 45), w: carried ? (carried.w || 0) : (cfg.weight || 0), done: false })
+      const row = { sec: carried ? carried.sec : (cfg.sec || 45), w: carried ? (carried.w || 0) : (cfg.weight || 0), done: false }
+      if (isPerSide(cfg)) row.side = i % 2 === 0 ? 'L' : 'R'
+      sets.push(row)
     }
     return sets
   }
