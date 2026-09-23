@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { fmtVol, isoOf, todayISO, MONTHS } from '../lib/format.js'
+import { fmtVol, isoOf, todayISO, MONTHS, weekStartOf, weekDayOffset } from '../lib/format.js'
 import { workoutDay, workoutDuration, workoutVolume } from '../lib/history.js'
 import { t } from '../lib/i18n.js'
 import { tappable } from '../lib/use-sheet-keyboard.js'
@@ -45,8 +45,14 @@ export default function Heatmap({ S, onDay, metric: selectedMetric, onMetricChan
   const level = a => !a ? 0 : !a[metricValue] ? 1 : a[metricValue] >= t3 ? 4 : a[metricValue] >= t2 ? 3 : a[metricValue] >= t1 ? 2 : 1
 
   const today = new Date(); today.setHours(12, 0, 0, 0)
-  const end = new Date(today); end.setDate(today.getDate() - ((today.getDay() + 6) % 7))
+  const ws = weekStartOf(S)
+  const end = new Date(today); end.setDate(today.getDate() - weekDayOffset(today.getDay(), ws))
   const start = new Date(end); start.setDate(end.getDate() - 52 * 7)
+
+  const dayLabels = Array(7).fill(null)
+  dayLabels[weekDayOffset(1, ws)] = 'Mon'
+  dayLabels[weekDayOffset(3, ws)] = 'Wed'
+  dayLabels[weekDayOffset(5, ws)] = 'Fri'
 
   const months = [], cols = []
   let lastMonth = -1
@@ -75,7 +81,7 @@ export default function Heatmap({ S, onDay, metric: selectedMetric, onMetricChan
     <div className="hm-wrap" ref={wrapRef}>
       <div className="hm-months" style={{ marginLeft: 30 }}>{months}</div>
       <div className="hm-body">
-        <div className="hm-days"><span>{t('Mon')}</span><span /><span>{t('Wed')}</span><span /><span>{t('Fri')}</span><span /><span /></div>
+        <div className="hm-days">{dayLabels.map((lbl, i) => <span key={i}>{lbl ? t(lbl) : ''}</span>)}</div>
         <div className="hm-grid">{cols}</div>
       </div>
     </div>

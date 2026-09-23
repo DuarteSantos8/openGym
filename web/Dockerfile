@@ -58,6 +58,10 @@ ENV RESOLVER=127.0.0.11
 # front. Defined here too, not just in compose, so the template always renders for anyone
 # running the prebuilt image from their own compose file.
 ENV CF_CONNECTING_IP=""
+# Subpath deployments behind a reverse proxy that does NOT strip its prefix: "/gym", no trailing
+# slash. Empty (the default) serves the app at the root exactly as before. A proxy that strips
+# the prefix needs nothing here — the app derives the API address from its own URL.
+ENV BASE_PATH=""
 
 # Probe the port nginx was actually told to listen on (NGINX_PORT is configurable, so a
 # hardcoded http://localhost/ breaks on any instance that changed it), and address it as

@@ -55,12 +55,15 @@ describe('barWeightFor', () => {
     expect(hasBarOverride(S, barbell)).toBe(false)
   })
 
-  test('a cleared (deleted or zeroed) override falls back to the default', () => {
+  test('a deleted override falls back to the default, but a stored 0 is "no bar"', () => {
     const S = { unit: 'kg', barWeights: { [ez]: 12.5 } }
     delete S.barWeights[ez]
     expect(barWeightFor(S, ez)).toBe(10)
-    expect(barWeightFor({ unit: 'kg', barWeights: { [ez]: 0 } }, ez)).toBe(10)
-    expect(hasBarOverride({ unit: 'kg', barWeights: { [ez]: 0 } }, ez)).toBe(false)
+    // Changed with issue #138: 0 used to mean "clear this override". It now means the exercise
+    // has no bar (a counterbalanced Smith carriage), which is a value of its own — the editor
+    // deletes the key to ask for the default back.
+    expect(barWeightFor({ unit: 'kg', barWeights: { [ez]: 0 } }, ez)).toBe(0)
+    expect(hasBarOverride({ unit: 'kg', barWeights: { [ez]: 0 } }, ez)).toBe(true)
   })
 
   test('is null for anything without a bar', () => {
@@ -86,7 +89,7 @@ describe('plateSplit', () => {
     expect(plateSplit(20, 20)).toBe(null)    // bar only
     expect(plateSplit(15, 20)).toBe(null)    // below the bar
     expect(plateSplit(0, 20)).toBe(null)
-    expect(plateSplit(100, 0)).toBe(null)
+    // 100 with no bar is 50 a side, not "nothing to show" (issue #138) — see bar-nobar.test.js
     expect(plateSplit(null, 20)).toBe(null)
     expect(plateSplit(100, null)).toBe(null)
     expect(plateSplit(undefined, undefined)).toBe(null)

@@ -72,16 +72,19 @@ the phone, nginx resolver, custom-exercise equipment, per-side data, warm-up res
 QA sweep of every screen. Left over: routine reordering (#142), the Smith-bar "no bar" option
 (#138), two decimals (#139), delete user in the admin (#107).
 
-## v1.3.8 — Promised items  (2026-09-27)
+## v1.3.8 — Promised items  (released 2026-09-20, a week early)
 
-- Reorder routines in Plan; the Start sheet follows that order (#142)
-- "No bar" per exercise, so Smith-machine lifts calculate plates and drop sets from 0 (#138)
-- Two decimals on per-side weights, as a display toggle (#139)
-- Delete a user from the admin dashboard: credentials, state file, subscriptions, Coach data (#107)
+All four promises, plus the iOS keyboard, the assisted machines and a QA sweep of every screen —
+twenty-four reports in total. See the changelog for the full list.
+
+- Reorder routines in Plan; the Start sheet follows that order (#142) ✅
+- "No bar" per exercise, so Smith-machine lifts calculate plates and drop sets from 0 (#138) ✅
+- Two decimals on weights, as a display toggle (#139) ✅
+- Delete a user from the admin dashboard: credentials, state file, subscriptions, Coach data (#107) ✅
 - Custom-exercise muscle order is fixed, not click order; the import fallback classifies "wrist
-  curl", "row … neutral grip" and Romanian deadlifts correctly (Discord)
+  curl", "row … neutral grip" and Romanian deadlifts correctly (Discord) ✅
 - The small open pull requests: unknown-path redirect (#185), manifest behind an auth proxy (#184),
-  standard ß (#190), distance in feet and the distance mode (#177, #178)
+  standard ß (#190) ✅ — the distance mode (#177, #178) moves to a later release
 
 ## v1.3.9 — Editing history  (2026-10-11)
 

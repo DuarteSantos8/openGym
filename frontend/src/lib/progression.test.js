@@ -5,9 +5,12 @@ import {
   deloadFactorOf, DELOAD_FACTOR, POLICIES_FOR, DELOAD_AFTER, MAX_BW_SETS
 } from './progression.js'
 import { entryExcluded } from './history.js'
-import { EXDB } from './exercises.js'
+import { EXDB, isAssisted } from './exercises.js'
 
-const LIFT = EXDB.find(e => e.bp !== 'cardio' && !['upper legs', 'lower legs', 'back', 'hips', 'glutes'].includes(e.bp) && !['body weight', 'band', 'resistance band'].includes(e.eq)).id
+// A plainly loaded lift: more weight is harder. The first match used to be `assisted chest dip`,
+// whose stack takes weight off you and which therefore progresses downwards (issue #232) — these
+// tests are about the ordinary direction, so the assistance machines are excluded by name here.
+const LIFT = EXDB.find(e => e.bp !== 'cardio' && !['upper legs', 'lower legs', 'back', 'hips', 'glutes'].includes(e.bp) && !['body weight', 'band', 'resistance band'].includes(e.eq) && !isAssisted(e.id)).id
 const HEAVY = EXDB.find(e => e.bp === 'upper legs').id
 const CARDIO = EXDB.find(e => e.bp === 'cardio').id
 

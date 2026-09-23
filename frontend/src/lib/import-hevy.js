@@ -267,7 +267,8 @@ export function parseHevyWorkouts(workouts, templates, { unit = 'kg' } = {}) {
       id: 'iw' + uid(), d, start: startMs, end: endMs > startMs ? endMs : startMs,
       routineId: null, name: day.name || 'Imported', entries, prs: [],
     }
-    workout.vol = entries.reduce((a, e) => a + e.sets.reduce((b, s) => b + (s.w || 0) * (s.r || 0), 0), 0)
+    // Work sets only, the number `workoutVolume` gives a workout finished in the app; it is stored for good.
+    workout.vol = entries.reduce((a, e) => a + e.sets.reduce((b, s) => b + (isWarmupRow(s) ? 0 : (s.w || 0) * (s.r || 0)), 0), 0)
     return workout
   })
 

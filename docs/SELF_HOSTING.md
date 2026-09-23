@@ -159,6 +159,16 @@ same device.
 Prefer to keep the whole thing off the open internet? A VPN or an auth proxy (Authelia, Cloudflare
 Access…) in front still works, and composes with the above.
 
+Behind an auth proxy, let three files through without a login: `/icon-180.png`, `/icon-512.png`
+and `/manifest.json` — the app's icon and its manifest, nothing personal in them. iOS fetches the
+Home Screen icon outside the page, without your session cookie, so a gated icon comes back as the
+proxy's login page and iOS 26 draws a letter tile instead of the dumbbell (observed on iOS 26.6
+behind Teleport; Authelia users know the same from favicons and manifests). Authelia: a `bypass`
+rule for those paths; Authentik: unauthenticated paths; Cloudflare Access: a bypass policy;
+oauth2-proxy: `skip_auth_routes`. A proxy that cannot exempt a path (Teleport) has to serve the
+icons inline as `data:` URLs instead — Safari 26 accepts those, older iOS does not, which is why
+that is not the default here.
+
 ## 5. Fitting it into an existing stack
 
 The defaults assume openGym is the only thing here: a service called `api` on port 3000, and nginx
@@ -172,6 +182,7 @@ NGINX_PORT=80              # port the web container listens on, inside the conta
 BACKEND=api                # name of the API service that /api is proxied to
 PORT=3000                  # port the API listens on; web proxies to the same value
 RESOLVER=127.0.0.11        # DNS nginx resolves BACKEND with — Docker's, unless you are not on Docker
+BASE_PATH=                 # subpath openGym is served under, e.g. /gym — see below; empty = site root
 SESSION_DAYS=90            # how long a sign-in lasts
 ```
 
@@ -189,6 +200,40 @@ so they have to name a service the web container can actually reach on your comp
 Note the difference from `VITE_IMG_BASE` / `VITE_GIF_BASE` (see Troubleshooting): those are
 build-time values baked into the frontend bundle, and setting them next to `docker compose` does
 nothing to an image you pulled.
+
+### Serving openGym under a subpath
+
+openGym can live at `https://example.com/gym/` rather than on a host of its own. Which of the two
+setups below you need depends on one thing: whether your reverse proxy strips the prefix before
+the container sees the request.
+
+**The proxy strips the prefix** (Caddy's `handle_path`, Traefik's `StripPrefix` middleware,
+nginx `proxy_pass` with a trailing slash). Nothing to configure. The app's assets are relative
+and it asks its own address for the API, so everything stays inside the prefix on its own:
+
+```caddy
+example.com {
+    handle_path /gym/* {
+        reverse_proxy opengym-web:80
+    }
+}
+```
+
+**The proxy passes the prefix through.** Tell the web container what it is, without a trailing
+slash:
+
+```bash
+BASE_PATH=/gym
+```
+
+That is a start-up setting like the others above, so it works on a prebuilt image. Forward only
+the prefix to the container — openGym does not serve itself at the site root as well, and a copy
+reached there would look for an API that is not on that path.
+
+Either way, keep `ORIGIN` and `RP_ID` pointing at the address in the browser's bar
+(`ORIGIN=https://example.com`, `RP_ID=example.com`). Passkeys key on the host, not the path, so a
+subpath changes nothing about section 2 — but it does mean two instances under one hostname share
+a passkey scope and can see each other's credentials. Give each its own hostname if that matters.
 
 ## 6. Backups
 
