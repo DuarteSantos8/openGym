@@ -30,6 +30,24 @@
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
         </provider>
 
+        <!-- Rest-over alarm. Explicit class, no intent-filter: only this app can send it. -->
+        <receiver
+            android:name=".RestAlertReceiver"
+            android:exported="false" />
+
+        <!-- Reposts the rest countdown every second so the notification shade keeps the
+             clock and a shrinking bar after the WebView is frozen. The lock screen shows
+             it only when the user allows notifications there. specialUse: this is a timer,
+             not media playback. -->
+        <service
+            android:name=".RestTimerService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Shows how long is left in the rest between sets." />
+        </service>
+
         <!-- Gym check-in scanner (@capacitor-mlkit/barcode-scanning): pre-fetch the ML Kit
              barcode model at install time so the first scan doesn't wait on a download. -->
         <meta-data android:name="com.google.mlkit.vision.DEPENDENCIES" android:value="barcode_ui" />
@@ -43,6 +61,13 @@
          on Android 12+. Where it isn't granted, scheduling silently falls back to inexact
          alarms — the reminder still arrives, just not to the minute. -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <!-- Same exact-alarm permission as the day reminder. Where it isn't granted, the rest
+         alert falls back to an inexact alarm and, if this phone is paired, to Web Push. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <!-- Gym check-in: scanning a membership QR/barcode with the camera. -->
     <uses-permission android:name="android.permission.CAMERA" />
 </manifest>

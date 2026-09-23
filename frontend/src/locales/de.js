@@ -22,6 +22,7 @@ export default {
   'Home': 'Start',
   'Start': 'Los',
   'Resume': 'Weiter',
+  'Pause': 'Pause',
   'Stats': 'Statistik',
   'Exercises': 'Übungen',
   'By muscle': 'Nach Muskel',
@@ -221,6 +222,7 @@ export default {
   'Superset · do these back-to-back, rest when done': 'Supersatz · direkt nacheinander, Pause erst danach',
   'Freestyle workout — add your first exercise.': 'Freies Training — füge deine erste Übung hinzu.',
   'Finish workout early · {0} exercises': 'Training vorzeitig beenden · {0} Übungen',
+  'Rest over': 'Pause vorbei',
   'Rest over — next set!': 'Pause vorbei — nächster Satz!',
   // --- home ---
   'Hi {0}': 'Hi {0}',

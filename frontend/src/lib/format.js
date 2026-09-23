@@ -92,3 +92,7 @@ export const localTZ = () => { try { return Intl.DateTimeFormat().resolvedOption
 
 export const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7)
 export const ACCENTS = { lime: '#30d158', sky: '#0a84ff', orange: '#ff9f0a', violet: '#bf5af2', pink: '#ff375f', red: '#ff453a', teal: '#40c8e0', gold: '#ffd60a' }
+// Text drawn on top of that swatch. Matches the --on-acc values in index.css.
+export const ACCENT_INK = { lime: '#000000', sky: '#ffffff', orange: '#000000', violet: '#ffffff', pink: '#ffffff', red: '#ffffff', teal: '#000000', gold: '#000000' }
+// Android color int, opaque. JS bitwise ops are signed, so the high bit is cleared back to unsigned.
+export const argb = hex => (0xff000000 | parseInt(hex.slice(1), 16)) >>> 0

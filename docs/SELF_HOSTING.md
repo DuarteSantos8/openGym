@@ -272,9 +272,11 @@ automatically when they turn the reminder on — it fires at their local time, a
 they travel, regardless of what timezone the server itself runs in.
 
 Where it works: any desktop browser, Android Chrome, and on iOS only the app **added to the Home
-Screen** (Safari in a tab has no Web Push). The Android APK does not use Web Push at all — its
-day reminder is a local notification scheduled on the phone, and rest-timer alerts there only
-sound while the app is in the foreground. A reminder that was due while the server was down or
+Screen** (Safari in a tab has no Web Push). The Android APK's day reminder is a local
+notification. Its rest timer is a local alarm: the notification shade shows the time left as a
+shrinking bar, and the end alert still fires with the screen off. The lock screen shows that
+notification only when notifications are enabled and the system is set to show them there. A paired account still gets the server push if that alarm
+cannot be scheduled. A reminder that was due while the server was down or
 restarting is still sent up to 15 minutes late, once; the browser re-registers its subscription
 with the server on every signed-in start, so a subscription the server lost heals itself.
 
