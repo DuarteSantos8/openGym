@@ -85,6 +85,10 @@ services:
       # Empty drops the CF-Connecting-IP header, so a direct client cannot forge the address
       # the activity log records. Cloudflare users set CF_CONNECTING_IP=$$http_cf_connecting_ip.
       - CF_CONNECTING_IP=${CF_CONNECTING_IP:-}
+      # Subpath deployments behind a proxy that passes its prefix through ("/gym", no trailing
+      # slash). Empty serves the app at the site root, which is what it has always done; a proxy
+      # that strips the prefix needs nothing set (docs/SELF_HOSTING.md §5).
+      - BASE_PATH=${BASE_PATH:-}
     volumes:
       - ./media/img:/usr/share/nginx/html/img:ro
       - ./media/gif:/usr/share/nginx/html/gif:ro

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useUI } from '../store/useUI.js'
+import { keyboardOpen } from '../lib/viewport-guard.js'
 
 // One bottom sheet (or centered dialog) with swipe-to-dismiss.
 function Sheet({ sheet }) {
@@ -180,6 +181,12 @@ export default function Modals() {
       // iOS scrolls the page again while the keyboard dismisses — after the line above ran.
       // Ask once more when that animation is over. The window-level guard in
       // lib/viewport-guard.js covers the keyboard closing while a sheet stays open.
+      // Only with the keyboard up, though: without one there is nothing to undo, and a late
+      // restore would overwrite a scroll the page behind made on purpose because the sheet
+      // closed — the workout list going to the current exercise after ⋯ → Layout → List
+      // (issue #224). At this point the sheet's field is already out of the DOM but the
+      // keyboard has not started to go, so the visual viewport still tells the truth.
+      if (!keyboardOpen()) return
       window.setTimeout(() => { if (document.body.style.position !== 'fixed') window.scrollTo(0, y) }, 350)
     }
   }, [sheets.length > 0])

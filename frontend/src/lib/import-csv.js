@@ -265,19 +265,34 @@ export function matchHevyTitle(name) {
 // Hevy exports no category column, so every invented exercise fell through to the
 // 'upper legs' default and a third of an imported history was attributed to the legs in
 // the muscle map. When there is no category, read the body part off the name instead.
+// Order is the rule: the first match wins, so the specific word has to come before the broad one.
+// A grip is a modifier on a row or a pulldown, never the movement ("Chest Supported T Row Neutral
+// Grip" is a back exercise); a wrist or reverse curl is a forearm exercise that happens to say
+// "curl"; a leg curl is not an arm curl; and a Romanian or stiff-leg deadlift trains the legs where
+// the conventional pull is filed under the back. "grip" alone still reads as forearms — last.
 const NAME_BP = [
-  [/\b(curl|bicep|biceps|tricep|triceps|skullcrusher|pushdown)\b/, 'upper arms'],
-  [/\b(wrist|forearm|forearms|grip)\b/, 'lower arms'],
+  [/\b(wrist|forearm|forearms|reverse curl)\b/, 'lower arms'],
+  [/\b(leg curl|leg curls|hamstring curl|nordic)\b/, 'upper legs'],
+  [/\b(romanian|rdl|stiff leg|stiff legged|straight leg)\b.*\bdeadlifts?\b|\brdl\b/, 'upper legs'],
+  [/\b(curl|curls|bicep|biceps|tricep|triceps|skullcrusher|pushdown)\b/, 'upper arms'],
+  [/\bchest supported\b/, 'back'],   // where the chest rests, not what it trains
   [/\b(bench|chest|pec|fly|flye|crossover|crossovers|dip)\b/, 'chest'],
-  [/\b(row|pulldown|pullup|pull up|chin up|lat|lats|back|deadlift|shrug)\b/, 'back'],
+  [/\b(row|rows|pulldown|pullup|pull up|chin up|lat|lats|back|deadlift|deadlifts|shrug)\b/, 'back'],
   [/\b(shoulder|delt|delts|overhead|lateral raise|front raise|face pull|press up)\b/, 'shoulders'],
   [/\b(calf|calves)\b/, 'lower legs'],
-  [/\b(squat|lunge|leg|glute|hamstring|quad|hip thrust|deadlift)\b/, 'upper legs'],
+  [/\b(squat|lunge|leg|glute|hamstring|quad|hip thrust)\b/, 'upper legs'],
   [/\b(ab|abs|core|plank|crunch|sit up|oblique|russian twist)\b/, 'waist'],
   [/\b(run|running|jog|bike|cycling|rope|ropes|jump|jacks|burpee|sprint|treadmill|stair)\b/, 'cardio'],
   [/\bneck\b/, 'neck'],
+  [/\bgrip\b/, 'lower arms'],
 ]
-const bpFromName = name => (NAME_BP.find(([re]) => re.test(name)) || [])[1] || null
+// Hyphens, underscores and slashes read as spaces first: "Stiff-Legged Deadlift" and
+// "Chest-Supported Row" are the same names the rules above spell with a space, and the
+// matcher (wordsOf) already treats the two spellings as one exercise — the body part has to agree.
+export const bpFromName = name => {
+  const n = String(name || '').toLowerCase().replace(/[-_/]+/g, ' ').replace(/\s+/g, ' ').trim()
+  return (NAME_BP.find(([re]) => re.test(n)) || [])[1] || null
+}
 
 // Categories the exporters use -> the dataset's body parts, for exercises we invent.
 const CATEGORY_BP = {
@@ -483,7 +498,9 @@ export function parseWorkoutCSV(text, { unit = 'kg' } = {}) {
       id: 'iw' + uid(), d, start, end: end > start ? end : start,
       routineId: null, name: day.name || 'Imported', entries, prs: [],
     }
-    w.vol = entries.reduce((a, e) => a + e.sets.reduce((b, s) => b + (s.w || 0) * (s.r || 0), 0), 0)
+    // Work sets only, like `workoutVolume` for a workout finished in the app: warm-ups are
+    // promised to stay out of the volume, and this number is stored with the workout for good.
+    w.vol = entries.reduce((a, e) => a + e.sets.reduce((b, s) => b + (isWarmupRow(s) ? 0 : (s.w || 0) * (s.r || 0)), 0), 0)
     return w
   })
 
@@ -580,10 +597,23 @@ export function mergeImport(S, parsed) {
     return { added: fresh.length, skipped: parsed.bodyweight.length - fresh.length }
   }
   const have = new Set(S.workouts.map(w => w.d))
+  // Every parse invents fresh ids for the names it cannot match, and a later export of the same
+  // account names those exercises again. So a custom exercise is looked up by name among the ones
+  // already here — from an earlier import or made by hand — and the new days are pointed at it,
+  // the way mergeHevyRoutines and mergePlan do; otherwise the Library lists "Grip Trainer" twice,
+  // each with half the history. Only a name with no match becomes a new exercise.
+  S.customEx = S.customEx || []
+  const nameKey = n => String(n || '').toLowerCase().replace(/\s+/g, ' ').trim()
+  const exIdMap = {}
+  parsed.customEx.forEach(c => {
+    const same = S.customEx.find(x => x.id !== c.id && nameKey(x.n) === nameKey(c.n))
+    if (same) exIdMap[c.id] = same.id
+  })
   const fresh = parsed.workouts.filter(w => !have.has(w.d))
+    .map(w => ({ ...w, entries: w.entries.map(e => (exIdMap[e.id] ? { ...e, id: exIdMap[e.id] } : e)) }))
   const used = new Set(fresh.flatMap(w => w.entries.map(e => e.id)))
   const customs = parsed.customEx.filter(c => used.has(c.id) && !EXIDX[c.id])
-  S.customEx = [...(S.customEx || []), ...customs]
+  S.customEx = [...S.customEx, ...customs]
   S.workouts = [...S.workouts, ...fresh].sort((a, b) => (a.d < b.d ? -1 : 1))
   // seed the weight suggestions from the newest imported set of each lift
   fresh.forEach(w => w.entries.forEach(e => {

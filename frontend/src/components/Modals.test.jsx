@@ -292,3 +292,38 @@ describe('Modals drag axis lock and dismiss', () => {
     expect(mocks.state.sheets).toHaveLength(1)
   })
 })
+
+describe('Modals scroll restore on close', () => {
+  // The body is pinned while a sheet is open and the page is put back where it was on close.
+  // The second, delayed restore exists for one reason — iOS scrolling the page again while the
+  // keyboard dismisses — so it must only be armed when the keyboard is actually up (QA C1).
+  async function openAndClose() {
+    dom.scrollY = 320
+    await setSheets([sheet('menu')])
+    expect(document.body.style.position).toBe('fixed')
+    dom.scrollTo.mockClear()
+    await setSheets([])
+  }
+
+  it('restores the position once and leaves a scroll the page made afterwards alone', async () => {
+    vi.useFakeTimers()
+    await openAndClose()
+    expect(dom.scrollTo).toHaveBeenCalledTimes(1)
+    expect(dom.scrollTo).toHaveBeenCalledWith(0, 320)
+    await act(async () => { vi.advanceTimersByTime(400) })
+    expect(dom.scrollTo).toHaveBeenCalledTimes(1)
+    vi.useRealTimers()
+  })
+
+  it('restores again after the keyboard dismiss animation when the sheet closed with the keyboard up', async () => {
+    vi.useFakeTimers()
+    dom.innerHeight = 800
+    dom.visualViewport = { height: 460 }
+    await openAndClose()
+    expect(dom.scrollTo).toHaveBeenCalledTimes(1)
+    await act(async () => { vi.advanceTimersByTime(400) })
+    expect(dom.scrollTo).toHaveBeenCalledTimes(2)
+    expect(dom.scrollTo).toHaveBeenLastCalledWith(0, 320)
+    vi.useRealTimers()
+  })
+})
