@@ -83,7 +83,11 @@ self.addEventListener('fetch', e => {
   // Network first; the copy for the cache is cloned before the response is handed to the page —
   // cloning later, once the page has started reading the body, throws and caches nothing, which
   // is why the shell never used to survive an offline reload.
-  e.respondWith(fetch(e.request).then(res => {
+  // A dead radio does not reject fetch() quickly — it just never settles — so a cold-launch of
+  // the installed app with no network stayed on a blank screen forever, with the cache fallback
+  // below never getting a chance to run (issue #274). Bounding the request with an abortable
+  // timeout gives it up and falls back to the cached shell instead.
+  e.respondWith(fetch(e.request, { signal: AbortSignal.timeout(3000) }).then(res => {
     if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)).catch(() => {}) }
     return res
   }).catch(() => caches.match(e.request, { ignoreSearch: true }).then(hit =>
