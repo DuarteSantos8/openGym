@@ -1270,4 +1270,6 @@ export default {
   'already added': 'schon drin',
   'no exercises': 'keine Übungen',
   'Pick equipment': 'Gerät wählen',
+  'Keep timing after target': 'Nach dem Ziel weiterzählen',
+  'Timed sets continue up to 15 extra minutes. Tap Done to log the actual duration.': 'Zeitbasierte Sätze laufen bis zu 15 zusätzliche Minuten weiter. Tippe auf „Fertig“, um die tatsächliche Dauer zu speichern.',
 }

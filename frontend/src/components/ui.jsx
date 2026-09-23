@@ -86,9 +86,10 @@ export const SearchField = forwardRef(function SearchField({ value, onChange, on
 
 /* ============================ switch ============================ */
 
-export function Switch({ checked, onChange, disabled }) {
+export function Switch({ checked, onChange, disabled, ...accessibility }) {
   return (
     <button
+      {...accessibility}
       role="switch"
       aria-checked={!!checked}
       disabled={disabled}
