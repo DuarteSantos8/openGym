@@ -3,7 +3,7 @@ import { HashRouter, Routes, Route, Navigate, useNavigate, useLocation, useNavig
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { bindUI } from './components/ui.jsx'
-import { ACCENTS } from './lib/format.js'
+import { ACCENTS, setWeightDecimals } from './lib/format.js'
 import { setLang, useLang } from './lib/i18n.js'
 import { setPlayOnSilent } from './lib/sound.js'
 import { setNav } from './lib/nav.js'
@@ -81,11 +81,13 @@ function Shell() {
     return () => mql.removeEventListener('change', onChange)
   }, [S.theme, S.accent])
   useEffect(() => { setLang(S.lang || 'en') }, [S.lang])
+  // Same shape as the language: a module-level display setting, pushed when it changes (#139).
+  useEffect(() => { setWeightDecimals(S.wdec) }, [S.wdec])
   useEffect(() => { document.documentElement.lang = S.lang || 'en' }, [langV, S.lang])
   // Forward navigation starts at the top; going back lands where you left off.
   // The position is recorded from scroll events rather than read at route
   // change, because by then a shorter page may already have clamped it.
-  const pathRef = useRef(loc.pathname)
+  const pathRef = useRef(null)
   // iOS leaves the page displaced after the keyboard goes away (see lib/viewport-guard.js).
   useEffect(() => installViewportGuard(), [])
   // Click-drag a horizontal chip strip to scroll it sideways (lib/hchips.js) — on a desktop
@@ -108,8 +110,16 @@ function Shell() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
   useLayoutEffect(() => {
+    const samePath = pathRef.current === loc.pathname
     pathRef.current = loc.pathname
     if (navType !== 'POP') { window.scrollTo(0, 0); return }
+    // A POP that stays on the route we are on is not a back-navigation: it is the history
+    // entry a sheet pushed (Modals.jsx, #63) being unwound as the sheet closes. Nothing new
+    // mounted, Modals puts the page back where it was itself, and a view that scrolled on
+    // purpose because the sheet closed — the workout list going to the current exercise after
+    // ⋯ → Layout → List (#224) — must not be dragged back to a position recorded before that
+    // scroll's event had even been dispatched.
+    if (samePath) return
     const y = scrollPositions.get(loc.pathname) || 0
     // the restored view needs a layout pass before it is tall enough to scroll to y
     const frame = window.requestAnimationFrame(() => window.scrollTo(0, y))

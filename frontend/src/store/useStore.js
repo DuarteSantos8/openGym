@@ -55,6 +55,9 @@ export const DEF = {
   // every profile written before this setting existed keeps the week it has been looking at.
   // See lib/format.js: nothing reads this field directly, everything goes through the helpers.
   weekStart: 1,
+  // Decimals on displayed weights: 1 by default, 2 for anyone loading quarter plates or
+  // microplates (issue #139). Display only — nothing is stored or rounded differently.
+  wdec: 1,
   // Per-exercise bar weight overrides, keyed by exercise id, in the profile unit (see
   // lib/bar.js). Personal equipment, so it syncs with the account but never travels in a
   // shared plan. Logged weights stay the total — this only feeds the plate math.

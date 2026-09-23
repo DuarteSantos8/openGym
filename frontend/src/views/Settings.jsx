@@ -245,6 +245,14 @@ export default function Settings() {
           options={[{ value: 'kg', label: 'kg' }, { value: 'lb', label: 'lb' }]}
           value={S.unit} onChange={v => switchUnit(v)} />
       </Row>
+      {/* Display only: one decimal reads fine for plate-loadable numbers, two for anyone whose
+          per-side figure lands on .25 or .75, or who loads microplates (issue #139). Nothing is
+          stored or rounded differently — lib/format.js fmtNum just prints what is already there. */}
+      <Row icon="plate" iconTint="var(--teal)" title={t('Weight decimals')} subtitle={t('How precisely weights are shown.')}>
+        <Segmented className="seg-inline"
+          options={[{ value: 1, label: t('0.5') }, { value: 2, label: t('0.25') }]}
+          value={S.wdec === 2 ? 2 : 1} onChange={v => update(s => { s.wdec = v })} />
+      </Row>
       {/* Monday or Sunday — the Plan list, the Home strip, the calendar grid and every
           "this week" total follow it. Stored as a getDay() index (see lib/format.js). */}
       <Row icon="calendar" iconTint="var(--orange)" title={t('Week starts on')}>

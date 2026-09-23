@@ -21,8 +21,14 @@ const LABELS = {
   'auth.register.denied': 'Signup refused',
   'auth.logout': 'Signed out',
   'auth.logout.all': 'Signed out everywhere',
+  // Device pairing (Settings → "Pair the mobile app"): the code is minted in a signed-in browser
+  // tab and redeemed by the app, so "ok" is the phone coming online, not a sign-in.
+  'auth.pair.create': 'Created a pairing code',
+  'auth.pair.ok': 'Paired a phone',
+  'auth.pair.fail': 'Pairing failed',
   'admin.user.disable': 'Disabled an account',
   'admin.user.enable': 'Re-enabled an account',
+  'admin.user.delete': 'Deleted an account',
   'admin.invite.create': 'Created an invite code',
   'admin.invite.revoke': 'Revoked an invite code',
   'admin.audit.clear': 'Cleared the activity log',
@@ -41,7 +47,9 @@ const REASONS = {
   'account-disabled': 'the account is disabled',
   'credential-exists': 'that passkey already belongs to a profile',
   'invite-invalid': 'the invite code was used or revoked in the meantime',
-  'invite-rejected': 'wrong or already-used invite code'
+  'invite-rejected': 'wrong or already-used invite code',
+  'code-invalid': 'wrong or expired pairing code',
+  'user-unavailable': 'the profile behind the pairing code is disabled or gone'
 }
 export const auditReason = msg => REASONS[msg] || (msg ? String(msg) : '')
 

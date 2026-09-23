@@ -10,7 +10,10 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="openGym">
-<link rel="manifest" href="manifest.json">
+<!-- use-credentials: browsers fetch the manifest without cookies, even same-origin; behind an auth
+     proxy (Authelia, Cloudflare Access, Teleport…) that fetch is a login redirect and the Home Screen
+     icon comes out generic. iOS 26 reads the icon from the manifest, so this is where it shows. -->
+<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-180.png">
 </head>

@@ -18,12 +18,18 @@ import Icon from './Icon.jsx'
 
 /* ============================ text ============================ */
 
+// Width of a numeric string in `ch`, for a field sized to its own digits (NumberField's
+// `fit`): with tabular numerals every digit is exactly one ch, a decimal point roughly half.
+export const numWidthCh = s => Math.max(1, [...s].reduce((n, c) => n + (c === '.' ? 0.5 : 1), 0))
+
 // Numeric input accepting "," as decimal separator — iOS decimal keypads in many
 // locales only offer a comma, and type="number" reports "" for it (value snaps to
 // 0). Keeps a local string draft while focused so partial input like "33," survives.
 // `nullable` is for fields where "nothing entered" and 0 mean different things (RIR: a
 // logged 0 is a set taken to failure). Those clear back to null instead of snapping to 0.
-export function NumberField({ value, onChange, decimal = true, nullable = false, className = '', ...rest }) {
+// `fit` sizes the field to the digits on screen instead of filling its cell — for the big
+// weight read-out, where the unit sits right beside the number.
+export function NumberField({ value, onChange, decimal = true, nullable = false, fit = false, className = '', ...rest }) {
   const [draft, setDraft] = useState(null)
   const committed = useRef(null)
   // null and undefined are the same "empty" here — a nullable field's key is dropped once cleared.
@@ -37,12 +43,16 @@ export function NumberField({ value, onChange, decimal = true, nullable = false,
     setDraft(s)
     onChange(n)
   }
+  const shown = draft ?? (value ?? '')
   return (
     <input
       type="text"
       inputMode={decimal ? 'decimal' : 'numeric'}
       className={'num ' + className}
-      value={draft ?? (value ?? '')}
+      value={shown}
+      // `fit` hugs the digits on screen — a big read-out with its unit sitting right beside
+      // it — where the default fills whatever cell the field is in.
+      style={fit ? { width: numWidthCh(String(shown)) + 'ch' } : undefined}
       onFocus={e => e.target.select()}
       onChange={e => commit(e.target.value)}
       onBlur={() => { setDraft(null); committed.current = null }}
