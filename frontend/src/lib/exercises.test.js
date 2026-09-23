@@ -1,6 +1,20 @@
 import { describe, it, expect } from 'vitest'
-import { matchExercise, normalizeStr } from './exercises.js'
+import { matchExercise, normalizeStr, imgSrc, gifSrc } from './exercises.js'
 import { _setLangState } from './i18n-core.js'
+
+describe('imgSrc / gifSrc', () => {
+  it('prefixes the dataset base onto a bundled exercise\'s own filename', () => {
+    expect(imgSrc({ img: '0001.jpg' })).toBe('img/0001.jpg')
+    expect(gifSrc({ gif: '0001.gif' })).toBe('gif/0001.gif')
+  })
+
+  it('passes a custom exercise\'s own data: URL through untouched', () => {
+    const img = 'data:image/jpeg;base64,/9j/AAA='
+    const gif = 'data:image/gif;base64,R0lGOD='
+    expect(imgSrc({ img })).toBe(img)
+    expect(gifSrc({ gif })).toBe(gif)
+  })
+})
 
 describe('normalizeStr', () => {
   it('handles null, undefined and empty strings', () => {
