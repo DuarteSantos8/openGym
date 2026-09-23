@@ -868,7 +868,7 @@ function ActiveWorkout() {
     if (typeof document !== 'undefined') { const a = document.activeElement; if (a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA')) a.blur?.() }
     const m = modeAt(idx)
     const cardioEntry = m === 'cardio'
-    let exJustDone = false, workoutDone = false, checked = false
+    let exJustDone = false, workoutDone = false, checked = false, loopToPending = null
     update(s => {
       const e = s.active.entries[idx]
       // A per-side tick flips just that side; the row's own `done` (both sides) is then
@@ -883,7 +883,18 @@ function ActiveWorkout() {
         // the marker's unit here declared the workout complete after one set elsewhere.
         const ownUnit = unitOf(units, idx)
         const unitDone = ownUnit.every(ui => (ui === idx ? e : A.entries[ui]).sets.every(x => x.done))
-        if (unitDone) workoutDone = !nextUnfinishedUnit(A.entries, supersetUnits(A.entries), idx)
+        if (unitDone) {
+          const nextUnit = nextUnfinishedUnit(A.entries, supersetUnits(A.entries), idx)
+          if (!nextUnit) {
+            const allDone = A.entries.every(ent => (ent === e ? e : ent).sets.every(x => x.done))
+            if (allDone) {
+              workoutDone = true
+            } else {
+              const pendingIdx = A.entries.findIndex(ent => (ent === e ? e : ent).sets.some(x => !x.done))
+              if (pendingIdx !== -1) loopToPending = pendingIdx
+            }
+          }
+        }
         if (e.sets.every(x => x.done)) {
           exJustDone = true
           // topW is captured now; exWeights only at the finish (doFinishWorkout), so a typo you
@@ -893,6 +904,13 @@ function ActiveWorkout() {
       }
     }, true)
     if (workoutDone) workoutCompleteSheet()
+    else if (loopToPending !== null) {
+      const pe = A.entries[loopToPending]
+      const peEx = exOr(pe.id)
+      const pCount = pe.sets.filter(s => !s.done).length
+      update(s => { s.active.cur = loopToPending })
+      useUI.getState().toast(t('Heading back to {0} · {1} sets pending', exerciseNameFor(peEx) || peEx.n || pe.id, pCount))
+    }
     else if (exJustDone && cardioEntry) useUI.getState().toast(t('Cardio logged'))
     else if (exJustDone && m === 'time') useUI.getState().toast(t('Hold logged'))
 

@@ -33,11 +33,47 @@
         <!-- Gym check-in scanner (@capacitor-mlkit/barcode-scanning): pre-fetch the ML Kit
              barcode model at install time so the first scan doesn't wait on a download. -->
         <meta-data android:name="com.google.mlkit.vision.DEPENDENCIES" android:value="barcode_ui" />
+
+        <receiver
+            android:name=".RestTimerReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="ch.duartesantos.opengym.ACTION_START" />
+                <action android:name="ch.duartesantos.opengym.ACTION_MINUS_15" />
+                <action android:name="ch.duartesantos.opengym.ACTION_PLUS_15" />
+                <action android:name="ch.duartesantos.opengym.ACTION_SKIP" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".WorkoutWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="ch.duartesantos.opengym.WIDGET_ACTION_WEIGHT_MINUS" />
+                <action android:name="ch.duartesantos.opengym.WIDGET_ACTION_WEIGHT_PLUS" />
+                <action android:name="ch.duartesantos.opengym.WIDGET_ACTION_REPS_MINUS" />
+                <action android:name="ch.duartesantos.opengym.WIDGET_ACTION_REPS_PLUS" />
+                <action android:name="ch.duartesantos.opengym.WIDGET_ACTION_LOG_SET" />
+                <action android:name="ch.duartesantos.opengym.WIDGET_ACTION_REST_PLUS_15" />
+                <action android:name="ch.duartesantos.opengym.WIDGET_ACTION_REST_SKIP" />
+                <action android:name="ch.duartesantos.opengym.WORKOUT_STATE_CHANGED" />
+                <action android:name="ch.duartesantos.opengym.ACTION_MIDNIGHT_RESET" />
+                <action android:name="android.intent.action.DATE_CHANGED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/workout_widget_info" />
+        </receiver>
     </application>
 
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <!-- Workout-day reminder: lets the local-notifications plugin fire at the exact minute
          on Android 12+. Where it isn't granted, scheduling silently falls back to inexact

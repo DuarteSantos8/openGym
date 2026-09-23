@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- openGym dumbbell glyph -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M6,7 C5.45,7 5,7.45 5,8 L5,16 C5,16.55 5.45,17 6,17 L8,17 C8.55,17 9,16.55 9,16 L9,8 C9,7.45 8.55,7 8,7 L6,7 Z M16,7 C15.45,7 15,7.45 15,8 L15,16 C15,16.55 15.45,17 16,17 L18,17 C18.55,17 19,16.55 19,16 L19,8 C19,7.45 18.55,7 18,7 L16,7 Z M9,11 L15,11 L15,13 L9,13 Z M3,9.5 C2.72,9.5 2.5,9.72 2.5,10 L2.5,14 C2.5,14.28 2.72,14.5 3,14.5 L4.5,14.5 L4.5,9.5 L3,9.5 Z M19.5,9.5 L19.5,14.5 L21,14.5 C21.28,14.5 21.5,14.28 21.5,14 L21.5,10 C21.5,9.72 21.28,9.5 21,9.5 L19.5,9.5 Z" />
+</vector>

@@ -10,10 +10,23 @@
 // Like the demo build, MOBILE is replaced at build time, so all of this folds away in
 // web bundles; the Capacitor plugins are only ever imported behind it.
 import { t } from './i18n-core.js'
-import { isoOf, todayISO } from './format.js'
+import { isoOf, todayISO, ACCENTS } from './format.js'
 import { effectiveRoutineIds } from './history.js'
+import { registerPlugin } from '@capacitor/core'
 
-export const MOBILE = import.meta.env.VITE_MOBILE === '1'
+export const MOBILE = import.meta.env.VITE_MOBILE === '1' || (typeof window !== 'undefined' && !!window.Capacitor?.isNativePlatform?.())
+
+export const RestTimerNative = MOBILE ? registerPlugin('RestTimerNative') : null
+export const WorkoutWidgetNative = MOBILE ? registerPlugin('WorkoutWidgetNative') : null
+
+export function toTitleCase(str) {
+  if (!str) return ''
+  return str
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
 
 // Some features only make sense on Android. The in-app updater downloads an .apk and hands it
 // to the system package installer — there is no equivalent on iOS (App Store only) or on the
@@ -41,11 +54,36 @@ export async function nativeLoad() {
   } catch (e) { return null }   // first launch, or unreadable — localStorage copy takes over
 }
 
+export async function updateWidgetNative() {
+  if (!MOBILE || !WorkoutWidgetNative) return
+  try {
+    await WorkoutWidgetNative.updateWidget()
+  } catch (e) { /* ignore */ }
+}
+
+let isSaving = false
+let queuedState = null
+
 export async function nativeSave(state) {
+  if (!MOBILE) return
+  if (isSaving) {
+    queuedState = state
+    return
+  }
+  isSaving = true
   try {
     const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
     await Filesystem.writeFile({ path: FILE, directory: Directory.Data, data: JSON.stringify(state), encoding: Encoding.UTF8 })
+    updateWidgetNative()
   } catch (e) { /* keep the localStorage copy */ }
+  finally {
+    isSaving = false
+    if (queuedState) {
+      const next = queuedState
+      queuedState = null
+      nativeSave(next)
+    }
+  }
 }
 
 // "Connect to my server" mode (lib/remote.js): which of local-only / a paired remote account this
@@ -209,4 +247,101 @@ export async function writeAutoBackup(state) {
       recursive: true,
     })
   } catch (e) { /* best effort — the private mirror in Directory.Data still has the data */ }
+}
+
+// Register notification action buttons (-15s, +15s, Skip) and event listener for the rest timer
+export async function initMobileNotifications(store) {
+  if (!MOBILE) return
+  try {
+    if (RestTimerNative) {
+      RestTimerNative.addListener('onRestAction', ({ action }) => {
+        if (action === 'skip' || action === 'completed') {
+          store.getState().stopRest()
+        } else if (action === 'plus15') {
+          store.getState().addRest(15)
+        } else if (action === 'minus15') {
+          store.getState().addRest(-15)
+        }
+      })
+    }
+    if (WorkoutWidgetNative) {
+      WorkoutWidgetNative.addListener('onWidgetStateChanged', async () => {
+        const st = await nativeLoad()
+        if (st) {
+          const { useStore } = await import('../store/useStore.js')
+          useStore.getState().replaceState(st, false)
+        }
+      })
+
+      const triggerAutoStart = async () => {
+        const { useStore } = await import('../store/useStore.js')
+        const { startFlow } = await import('../sheets.jsx')
+        const { nav } = await import('./nav.js')
+        const st = useStore.getState().S
+        if (st.active) {
+          nav('/workout')
+          return
+        }
+        const dayOfWeek = new Date().getDay()
+        const scheduledId = st.week ? st.week[dayOfWeek] : null
+        const routine = scheduledId ? (st.routines || []).find(r => r.id === scheduledId) : null
+        startFlow(routine ? routine.id : null)
+      }
+
+      WorkoutWidgetNative.addListener('onAutoStartWorkout', () => {
+        triggerAutoStart()
+      })
+
+      try {
+        const res = await WorkoutWidgetNative.checkPendingAutoStart()
+        if (res && res.autoStart) {
+          triggerAutoStart()
+        }
+      } catch (e) { /* ignore */ }
+    }
+  } catch (e) { /* ignore */ }
+}
+
+// Scheduled ongoing rest timer notification widget
+export async function scheduleRestNotification(seconds, meta = {}) {
+  if (!MOBILE || !RestTimerNative) return
+  try {
+    const rawName = meta.exercise || ''
+    const exName = toTitleCase(rawName)
+    const setInfo = meta.set ? (meta.totalSets ? `${t('Set')} ${meta.set}/${meta.totalSets}` : `${t('Set')} ${meta.set}`) : ''
+    const accentColor = (meta.accent && ACCENTS[meta.accent]) ? ACCENTS[meta.accent] : '#30d158'
+    await RestTimerNative.startRest({
+      seconds: Math.max(1, seconds),
+      exercise: exName,
+      set: setInfo,
+      accentColor: accentColor
+    })
+  } catch (e) { /* ignore */ }
+}
+
+export async function addRestNotification(seconds) {
+  if (!MOBILE || !RestTimerNative) return
+  try {
+    await RestTimerNative.addRest({ seconds })
+  } catch (e) { /* ignore */ }
+}
+
+export async function cancelRestNotification() {
+  if (!MOBILE || !RestTimerNative) return
+  try {
+    await RestTimerNative.stopRest()
+  } catch (e) { /* ignore */ }
+}
+
+export async function sendTestLocalNotification() {
+  if (!MOBILE || !RestTimerNative) return false
+  try {
+    await RestTimerNative.startRest({
+      seconds: 90,
+      exercise: 'Barbell Bench Press',
+      set: 'Set 2/4',
+      accentColor: '#30d158'
+    })
+    return true
+  } catch (e) { return false }
 }
