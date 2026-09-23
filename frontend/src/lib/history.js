@@ -1,7 +1,7 @@
 // Pure helpers over the state object S (ported 1:1 from the vanilla app).
 import { todayISO, isoOf, weekKey, weekStartOf, fmtNum } from './format.js'
 import { isCardio, isBodyweightEq, isAssisted, betterWeight } from './exercises.js'
-import { phaseForSet, modeForSet, modeForEntry, isWarmupRow, normalizeMode, completedVolumeOf, nextDropWeight, splitBurstReps, makeSideSet, isSideSet, syncSideAggregate } from './workout-model.js'
+import { phaseForSet, modeForSet, modeForEntry, isWarmupRow, normalizeMode, completedVolumeOf, nextDropWeight, splitBurstReps, makeSideSet, isSideSet, syncSideAggregate, WEIGHT_ORIGIN_MANUAL } from './workout-model.js'
 const objectOf = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {}
 // Completed-state-independent work rows whose authoritative mode matches the requested mode.
 const workRowsForMode = (entry = {}, mode = 'reps') => {
@@ -576,16 +576,42 @@ export function streakWeeks(S) {
 }
 
 /**
- * Cascade a weight change forward: following sets of the same warm-up flag that are still
- * undone take the new value (null deletes the key). Done sets are never rewritten.
+ * Cascade an explicit load edit through later inherited rows in the same phase.
+ *
+ * Missing `weightOrigin` is inherited for compatibility with existing sessions. A row or side
+ * marked `manual` is an explicit exception, so it stays put even when it is heavier or lighter.
+ * `side` narrows a per-side edit to one limb; without it both limbs are eligible independently.
+ * Completed rows (and completed limbs) never get rewritten. Clearing an inherited load removes
+ * its `w` key just like a direct edit.
  */
-export function cascadeWeight(rows, from, value) {
-  const warm = isWarmupRow(rows[from])
+export function cascadeWeight(rows, from, value, side) {
+  const source = rows[from]
+  if (!source) return rows.slice()
+  const warm = isWarmupRow(source)
+  const sides = isSideSet(source) ? (side ? [side] : ['L', 'R']) : null
   const next = rows.slice()
+  const setWeight = row => {
+    const out = { ...row }
+    if (value == null) delete out.w
+    else out.w = value
+    return out
+  }
+  const setSideWeight = (row, key) => {
+    const current = row.sides?.[key]
+    if (!current || current.done === true || current.weightOrigin === WEIGHT_ORIGIN_MANUAL) return row
+    const nextSide = setWeight(current)
+    return syncSideAggregate({ ...row, sides: { ...row.sides, [key]: nextSide } })
+  }
   for (let j = from + 1; j < next.length; j++) {
-    if (isWarmupRow(next[j]) === warm && !next[j].done) {
-      if (value == null) delete next[j].w
-      else next[j].w = value
+    const row = next[j]
+    if (isWarmupRow(row) !== warm) continue
+    if (sides) {
+      if (!isSideSet(row)) continue
+      let out = row
+      for (const key of sides) out = setSideWeight(out, key)
+      next[j] = out
+    } else if (!isSideSet(row) && !row.done && row.weightOrigin !== WEIGHT_ORIGIN_MANUAL) {
+      next[j] = setWeight(row)
     }
   }
   return next

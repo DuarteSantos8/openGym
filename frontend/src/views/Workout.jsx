@@ -19,7 +19,7 @@ import { Button, Check, NumberField } from '../components/ui.jsx'
 import { nextPrescription, applyPrescription, defaultIncrement, weightIncrement, stepWeight } from '../lib/progression.js'
 import { progressionGuidance } from '../lib/progression-copy.js'
 import { glyphOf } from '../lib/glyphs.js'
-import { isWarmupRow, isDropSet, isRestPauseSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt } from '../lib/workout-model.js'
+import { isWarmupRow, isDropSet, isRestPauseSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL } from '../lib/workout-model.js'
 import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit } from '../lib/active-workout-order.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
 
@@ -108,7 +108,16 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
   // the row's aggregate (r/w/done/effort) in step via the model helper so every other reader
   // stays right. The done tick goes through onToggleSide → toggle() instead, so ticking a side
   // still fires the rest timer / auto-advance / workout-complete flow.
-  const setSide = (i, side, field, v) => mutSet(i, row => setSideField(row, side, field, v))
+  const setSide = (i, side, field, v) => {
+    if (field !== 'w') return mutSet(i, row => setSideField(row, side, field, v))
+    update(s => {
+      const e = s.active.entries[entryIdx]
+      const row = setSideField(e.sets[i], side, field, v)
+      row.sides[side].weightOrigin = WEIGHT_ORIGIN_MANUAL
+      e.sets[i] = row
+      e.sets = cascadeWeight(e.sets, i, v, side)
+    }, true)
+  }
   // Drop/burst edits accept an optional `side` ('L'|'R'): present for a per-side row (edits that
   // one limb's drop/burst), absent for a straight row (edits the row's own).
   const removeDrop = (i, di) => mutSet(i, row => isSideSet(row) ? removeSideDropAt(row, di) : removeDropAt(row, di))
@@ -631,9 +640,10 @@ function ActiveWorkout() {
   // what was actually logged — in the session, in history and in a backup.
   const setField = (idx, i, field, v) => mutEntry(idx, e => {
     if (v == null) delete e.sets[i][field]; else e.sets[i][field] = v
-    // Changing a weight cascades to the following sets of the same phase, so a
-    // heavier bar carries through the set instead of retyping every row.
+    // Changing a weight cascades to following inherited sets of the same phase, so a correction
+    // carries through without retyping every row while explicit manual exceptions stay put.
     if (field === 'w') {
+      e.sets[i].weightOrigin = WEIGHT_ORIGIN_MANUAL
       e.sets = cascadeWeight(e.sets, i, v)
     }
   })

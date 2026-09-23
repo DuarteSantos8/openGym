@@ -4,7 +4,7 @@ import {
   setType, isDropSet, isRestPauseSet, dropsOf, clustersOf, extraVolumeOf,
   addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt,
   nextDropWeight, nextBurstReps, splitBurstReps,
-  isSideSet, makeSideSet, syncSideAggregate, setSideField, toggleSide,
+  isSideSet, makeSideSet, syncSideAggregate, setSideField, toggleSide, WEIGHT_ORIGIN_MANUAL,
   addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt,
 } from './workout-model.js'
 
@@ -14,6 +14,17 @@ describe('phaseForSet / isWarmupRow', () => {
     expect(isWarmupRow({ warmup: true })).toBe(true)
     expect(isWarmupRow({ phase: 'work' })).toBe(false)
     expect(isWarmupRow({})).toBe(false)
+  })
+})
+
+describe('per-side load provenance', () => {
+  it('survives aggregate resync when the other side changes', () => {
+    const row = makeSideSet({ w: 20, r: 16 })
+    row.sides.R.weightOrigin = WEIGHT_ORIGIN_MANUAL
+    const next = setSideField(row, 'L', 'w', 15)
+    expect(next.sides.L.w).toBe(15)
+    expect(next.sides.R.w).toBe(20)
+    expect(next.sides.R.weightOrigin).toBe(WEIGHT_ORIGIN_MANUAL)
   })
 })
 
