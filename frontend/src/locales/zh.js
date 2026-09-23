@@ -254,6 +254,8 @@ export default {
   'Recent workouts': '最近训练',
   'Less time': '少',
   'More time': '多',
+  'Less volume': '较少总量',
+  'More volume': '较多总量',
   'No data yet': '暂无数据',
   'Your weekly routine': '你的每周安排',
   'Week schedule': '每周日程',

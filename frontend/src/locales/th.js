@@ -255,6 +255,8 @@ export default {
   'Recent workouts': 'การออกกำลังกายล่าสุด',
   'Less time': 'เวลาน้อย',
   'More time': 'เวลามาก',
+  'Less volume': 'ปริมาณน้อย',
+  'More volume': 'ปริมาณมาก',
   'No data yet': 'ยังไม่มีข้อมูล',
   // --- plan view ---
   'Your weekly routine': 'รูทีนรายสัปดาห์ของคุณ',

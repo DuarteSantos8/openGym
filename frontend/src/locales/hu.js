@@ -255,6 +255,8 @@ export default {
   'Recent workouts': 'Legutóbbi edzések',
   'Less time': 'Kevesebb',
   'More time': 'Több',
+  'Less volume': 'Kevesebb volumen',
+  'More volume': 'Több volumen',
   'No data yet': 'Még nincs adat',
   // --- plan view ---
   'Your weekly routine': 'A heti rutinod',

@@ -254,6 +254,8 @@ export default {
   'Recent workouts': '최근 운동',
   'Less time': '적음',
   'More time': '많음',
+  'Less volume': '적은 볼륨',
+  'More volume': '많은 볼륨',
   'No data yet': '데이터 없음',
   'Your weekly routine': '주간 루틴',
   'Week schedule': '주간 일정',

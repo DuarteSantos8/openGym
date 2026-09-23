@@ -254,6 +254,8 @@ export default {
   'Recent workouts': 'हाल के वर्कआउट',
   'Less time': 'कम',
   'More time': 'ज़्यादा',
+  'Less volume': 'कम वॉल्यूम',
+  'More volume': 'ज़्यादा वॉल्यूम',
   'No data yet': 'अभी डेटा नहीं',
   'Your weekly routine': 'आपका साप्ताहिक रूटीन',
   'Week schedule': 'हफ़्ते का कार्यक्रम',

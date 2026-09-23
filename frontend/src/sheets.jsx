@@ -4,7 +4,7 @@ import { useUI } from './store/useUI.js'
 import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, smOf, searchExercises, exOr, isAssisted, betterWeight, beatsWeight } from './lib/exercises.js'
 import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile } from './lib/equipment.js'
 import { fmtDate, fmtNum, capWords, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, DAYN, DAYS, weekOrder, weekStartOf, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
-import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutVolume, setsDone, setsDoneActive, setUnitsTotal, lastBW, supersetUnits, unitOf, setLabel, defaultConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX } from './lib/history.js'
+import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutDay, workoutVolume, setsDone, setsDoneActive, setUnitsTotal, lastBW, supersetUnits, unitOf, setLabel, defaultConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX } from './lib/history.js'
 import { usesBar, barWeightFor, defaultBarWeight, hasBarOverride, isNoBar } from './lib/bar.js'
 import { toScale, rirOf, EFFORT_PRESETS, effortColor } from './lib/effort.js'
 import { beep, vibrate } from './lib/sound.js'
@@ -1747,12 +1747,15 @@ function Calendar({ start, close }) {
   const [cur, setCur] = useState(() => { const d = start ? new Date(start) : new Date(); d.setDate(1); return d })
   const y = cur.getFullYear(), mo = cur.getMonth()
   const byDay = {}
-  st.workouts.forEach(w => (byDay[w.d] = byDay[w.d] || []).push(w))
+  st.workouts.forEach(w => {
+    const day = workoutDay(w)
+    if (day) (byDay[day] = byDay[day] || []).push(w)
+  })
   // Which column the 1st sits in, and therefore how many blanks come before it.
   const ws = weekStartOf(st)
   const startOffset = weekDayOffset(new Date(y, mo, 1).getDay(), ws)
   const daysIn = new Date(y, mo + 1, 0).getDate()
-  const monthWs = st.workouts.filter(w => w.d.startsWith(y + '-' + String(mo + 1).padStart(2, '0')))
+  const monthWs = st.workouts.filter(w => workoutDay(w)?.startsWith(y + '-' + String(mo + 1).padStart(2, '0')))
   const monthVol = monthWs.reduce((a, w) => a + (w.vol || 0), 0)
   const monthMs = monthWs.reduce((a, w) => a + Math.max(0, (w.end || w.start) - w.start), 0)
   const cells = []

@@ -264,6 +264,8 @@ export default {
   'Recent workouts': 'Letzte Trainings',
   'Less time': 'Weniger',
   'More time': 'Mehr',
+  'Less volume': 'Weniger Volumen',
+  'More volume': 'Mehr Volumen',
   'No data yet': 'Noch keine Daten',
   // --- plan view ---
   'Your weekly routine': 'Deine Wochenroutine',

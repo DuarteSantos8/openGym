@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { EXIDX, matchExercise, betterWeight } from '../lib/exercises.js'
-import { lastBW, streakWeeks, setLabel, modeOf, effortOf, metricModeForEntry, metricRowsForEntry, bestWeightForEntry } from '../lib/history.js'
+import { lastBW, streakWeeks, setLabel, modeOf, effortOf, metricModeForEntry, metricRowsForEntry, bestWeightForEntry, workoutDay } from '../lib/history.js'
 import { fmtNum, fmtDate, fmtVol, todayISO, weekStartOf } from '../lib/format.js'
 import { t, exerciseNameFor, getLang } from '../lib/i18n.js'
 import { bwSheet, goalSheet, calendarSheet, workoutDetailSheet, exerciseHistorySheet, WorkoutRow, bwDeltaColor } from '../sheets.jsx'
@@ -299,7 +299,7 @@ export default function Stats() {
   const bw30 = S.bodyweight.filter(b => (b.t || new Date(b.d).getTime()) > now - 30 * 86400000)
   const bwDelta30 = bw30.length > 1 ? bw30[bw30.length - 1].w - bw30[0].w : null
   const workouts = S.workouts
-  const monthW = workouts.filter(w => String(w.d || '').slice(0, 7) === todayISO().slice(0, 7)).length
+  const monthW = workouts.filter(w => workoutDay(w)?.slice(0, 7) === todayISO().slice(0, 7)).length
 
   const entryOf = id => workouts.flatMap(w => w.entries).find(e => e.id === id)
   const listOf = value => Array.isArray(value) ? value : value == null || value === '' ? [] : [value]
@@ -446,8 +446,13 @@ export default function Stats() {
     </div>
 
     <div className="card">
-      <h2>{t('Activity — last 12 months')} <span className="dim" style={{ textTransform: 'none', letterSpacing: 0 }}>· {t('by time trained')}</span></h2>
-      <Heatmap S={S} onDay={iso => { const ws = workouts.filter(w => w.d === iso); if (ws.length === 1) workoutDetailSheet(ws[0]); else if (ws.length) calendarSheet(iso) }} />
+      <h2>{t('Activity — last 12 months')}</h2>
+      <Heatmap
+        S={S}
+        metric={S.heatmapMetric === 'vol' ? 'vol' : 'time'}
+        onMetricChange={metric => useStore.getState().update(s => { s.heatmapMetric = metric })}
+        onDay={iso => { const ws = workouts.filter(w => workoutDay(w) === iso); if (ws.length === 1) workoutDetailSheet(ws[0]); else if (ws.length) calendarSheet(iso) }}
+      />
     </div>
 
     {workouts.length > 0 && <MuscleBalance S={S} />}
