@@ -429,25 +429,28 @@ export function nextPrescription(S, cfg, routine) {
     const range = normalizeRepRange(cfg.reps || last.goal || 10, cfg.repsMin, repStep(cfg))
     const top = range.reps
     const bottom = range.repsMin
+    // `reps` is this session's climbing aim; `topReps` is the range's actual top, which is what
+    // a session must clear to advance (session-start.js stores it as `target.reps`, so later
+    // grading uses the top, not the aim).
     if (last.ok) return {
-      policy, kind: 'up', weight: harder(w, inc), reps: bottom,
+      policy, kind: 'up', weight: harder(w, inc), reps: bottom, topReps: top,
       why: assisted
         ? ['Top of the rep range in every set — {0} {1} less help, back to {2} reps.', inc, unit, bottom]
         : ['Top of the rep range in every set — {0} {1} more, back to {2} reps.', inc, unit, bottom]
     }
     if (stalls >= deloadAt) {
       const selected = epleyDeload()
-      if (selected) return selected
+      if (selected) return { ...selected, topReps: top }
       const dw = easier(w)
       return {
-        policy, kind: 'deload', weight: dw, reps: bottom,
+        policy, kind: 'deload', weight: dw, reps: bottom, topReps: top,
         why: assisted
           ? ['Stalled {0} sessions — back to {1} {2} of help and build up again.', stalls, dw, unit]
           : ['Stalled {0} sessions — deload to {1} {2}.', stalls, dw, unit]
       }
     }
     const aim = Math.min(top, Math.max(bottom, last.low + repStep(cfg)))
-    return { policy, kind: 'hold', weight: w, reps: aim, why: ['Same weight — aim for {0} reps this time.', aim] }
+    return { policy, kind: 'hold', weight: w, reps: aim, topReps: top, why: ['Same weight — aim for {0} reps this time.', aim] }
   }
 
   // linear + greyskull

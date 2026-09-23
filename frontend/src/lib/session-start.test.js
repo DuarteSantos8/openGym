@@ -67,4 +67,34 @@ describe('buildSessionEntries', () => {
     const r = { id: 'r', prog: 'off', ex: [{ id: '0025', sets: 3, reps: 5, weight: 60 }] }
     expect(buildSessionEntries(st, r)[0].rid).toBeUndefined()
   })
+
+  // Regression: this used to stamp the climbing aim (e.g. 8 of an 8-12 range) onto
+  // entry.target.reps instead of the range's top, so hitting the aim graded as "top of the
+  // range" and raised the weight every session. progression.test.js hand-builds targets at
+  // the top directly, so it never exercised this path.
+  it('grades a live double-progression session against the top of the range, not the aim shown that session', () => {
+    const cfg = { id: '0025', sets: 3, reps: 12, repsMin: 8, weight: 40, prog: 'double' }
+    const r = { id: 'r', prog: 'double', ex: [cfg] }
+    const live = { unit: 'kg', exWeights: {}, routines: [], workouts: [] }
+
+    const perform = (weight, reps, d) => {
+      const entries = buildSessionEntries(live, r)
+      const entry = entries[0]
+      entry.sets = entry.sets.map(s => isWarmupRow(s) ? s : { ...s, w: weight, r: reps, done: true })
+      live.workouts.push({ d, entries: [entry] })
+      return entry
+    }
+
+    // Session 1: every set at the top of the range (12) — earns the weight increase.
+    perform(40, 12, '2026-01-01')
+    const s2 = perform(42.5, 8, '2026-01-02')   // session 2: opened at the bottom of the range (8)
+    expect(s2.target.reps).toBe(12)             // graded against the top, not the aim (8)
+    expect(s2.plan.kind).toBe('up')
+
+    // Session 3: only matches session 2's aim (8), not the top of the range (12) — must NOT
+    // raise the weight again.
+    const s3 = perform(42.5, 8, '2026-01-03')
+    expect(s3.plan.kind).not.toBe('up')
+    expect(s3.plan.weight).toBe(42.5)
+  })
 })
