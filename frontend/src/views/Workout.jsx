@@ -12,7 +12,7 @@ import { t, exerciseNameFor } from '../lib/i18n.js'
 import { api, appBase } from '../lib/api.js'
 import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor } from '../lib/supersetFlow.js'
 import Media from '../components/Media.jsx'
-import { startFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, finishWorkout, workoutCompleteSheet, confirmSheet, exerciseNoteSheet, sessionNoteSheet, renameWorkoutSheet, swapActiveWorkoutExercise, barWeightSheet, menuSheet, effortPickerSheet, exerciseHistorySheet, addRoutineToSessionSheet } from '../sheets.jsx'
+import { startFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, finishWorkout, exitWorkoutEdit, workoutCompleteSheet, confirmSheet, exerciseNoteSheet, sessionNoteSheet, renameWorkoutSheet, swapActiveWorkoutExercise, barWeightSheet, menuSheet, effortPickerSheet, exerciseHistorySheet, addRoutineToSessionSheet } from '../sheets.jsx'
 import { effortColor } from '../lib/effort.js'
 import Icon from '../components/Icon.jsx'
 import { Button, Check, NumberField } from '../components/ui.jsx'
@@ -73,7 +73,7 @@ function Elapsed({ start }) {
 // drops everything that is not a set you are logging — media, tag chips, the note lines, the
 // "last time" recap and the progression line — leaving the name, the ⋯ menu and the sets.
 // Nothing dropped is lost: it is all still on the ⋯ menu, or one ⋮ switch back to list/cards.
-function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onField, onAddSet, onRemoveSet, onAddWarmup, onRemoveSetAt, onStartTimed, onPairPrev, onPairNext, onSetRowRef, onProgressionSettings, onSwap, onMoveUp, onMoveDown, canMoveUp, canMoveDown, onRemoveExercise, busy }) {
+function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSide, onField, onAddSet, onRemoveSet, onAddWarmup, onRemoveSetAt, onStartTimed, onPairPrev, onPairNext, onSetRowRef, onProgressionSettings, onSwap, onMoveUp, onMoveDown, canMoveUp, canMoveDown, onRemoveExercise, busy }) {
   const S = useStore(s => s.S)
   const update = useStore(s => s.update)
   const working = useUI(s => s.work)
@@ -202,7 +202,7 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
   // Everything about this exercise that is not a set you are logging right now lives behind one
   // button. What used to be a row of buttons in the header, a chip under the bar, a strip of
   // three under the sets and four more below the card is a single list you open once a session.
-  const barInfo = (!cardio && !(bw && !added) && usesBar(ex)) ? (() => {
+  const barInfo = (!editing && !cardio && !(bw && !added) && usesBar(ex)) ? (() => {
     const bar = barWeightFor(S, entry.id)
     if (bar == null || bar < 0) return null
     const nextW = entry.sets.find(s => !s.done)?.w
@@ -241,7 +241,7 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
       items: [
         !warm && mode === 'reps' && !isRestPauseSet(s) && { icon: 'arrowDown', label: t('Drop set'), sub: t('+ Drop'), onClick: () => addDropRow(i) },
         !warm && mode === 'reps' && !isDropSet(s) && { icon: 'bolt', label: t('Rest-pause burst'), sub: t('+ Burst'), onClick: () => addBurstRow(i) },
-        { icon: 'trash', label: t('Remove this set'), danger: true, disabled: entry.sets.length <= 1, onClick: () => onRemoveSetAt(i) },
+        { icon: 'trash', label: t('Remove this set'), danger: true, disabled: !editing && entry.sets.length <= 1, onClick: () => onRemoveSetAt(i) },
       ],
     })
   }
@@ -411,7 +411,7 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
     {barInfo && <div className="small dim" style={{ marginBottom: 6, display: 'flex', alignItems: 'center', gap: 5 }}>
       <Icon name="dumbbell" style={{ fontSize: 12 }} />{barInfo.text}
     </div>}
-    {guidance && <button type="button" className={'progline' + (plan.kind === 'deload' ? ' warn' : '')}
+    {guidance && onProgressionSettings && <button type="button" className={'progline' + (plan.kind === 'deload' ? ' warn' : '')}
       aria-label={t('Open progression settings')} onClick={onProgressionSettings}>
       <Icon name={plan.kind === 'up' ? 'arrowUp' : plan.kind === 'deload' ? 'arrowDown' : 'lightbulb'} />
       <span><strong>{t(guidance.policyLabel)}</strong> · {t(...guidance.why)}</span>
@@ -450,7 +450,7 @@ function ExerciseBlock({ entryIdx, compact, dense, onToggle, onToggleSide, onFie
             {col3 && effortCell(s, i, col3)}
             {/* A timed set is started, not typed: the timer counts the hold down and checks the
                 set off itself. The checkbox stays for anyone who timed it on their own watch. */}
-            {timed && <button className="setgo" aria-label={t('Start set')} disabled={s.done || !!working}
+            {timed && !editing && <button className="setgo" aria-label={t('Start set')} disabled={s.done || !!working}
               onClick={() => onStartTimed(i)}><Icon name="play" /></button>}
             <Check checked={s.done} onChange={() => onToggle(i)} />
           </div>
@@ -520,9 +520,10 @@ function ActiveWorkout() {
   const update = useStore(s => s.update)
   const { startRest: liveRest, stopRest, stopWork, work } = useUI()
   const A = S.active
+  const editing = !!A.editingWorkoutId
   // A past workout has no rest to time — the sets were done days ago. The work timer for
   // timed sets stays, since counting a hold is how its duration gets entered.
-  const startRest = A.backfill ? () => {} : liveRest
+  const startRest = (A.backfill || editing) ? () => {} : liveRest
   const units = supersetUnits(A.entries)
   const cur = Number.isInteger(A.cur)
     ? Math.min(Math.max(A.cur, 0), Math.max(0, A.entries.length - 1))
@@ -659,7 +660,10 @@ function ActiveWorkout() {
     const m = modeOf({ ...(e.target || {}), id: e.id })
     e.sets = insertWarmupRow(e.sets, m, e.target || {}, defaultIncrement(e.id, S.unit))
   })
-  const removeSetAt = (idx, i) => mutEntry(idx, e => { e.sets = removeRowAt(e.sets, i) })
+  const removeSetAt = (idx, i) => mutEntry(idx, e => {
+    if (editing) e.sets.splice(i, 1)
+    else e.sets = removeRowAt(e.sets, i)
+  })
   const pairAt = (first, second) => update(s => {
     s.active.entries = pairAdjacent(s.active.entries, first, second)
   })
@@ -693,6 +697,7 @@ function ActiveWorkout() {
   // exercise-level actions (swap, move, remove) address the entry itself, so the "more" menu of
   // a superset member acts on that member, not on whatever the marker happens to point at.
   const blockProps = idx => ({
+    editing,
     onSwap: () => swapActiveWorkoutExercise(idx),
     onMoveUp: () => moveUnitAt(idx, -1),
     onMoveDown: () => moveUnitAt(idx, 1),
@@ -708,7 +713,7 @@ function ActiveWorkout() {
     onAddWarmup: () => addWarmup(idx),
     onRemoveSetAt: i => removeSetAt(idx, i),
     onStartTimed: i => startTimed(idx, i),
-    onProgressionSettings: () => openProgressionSettings(idx),
+    onProgressionSettings: editing ? null : () => openProgressionSettings(idx),
   })
   const navigateUnit = direction => {
     const targetFor = active => {
@@ -746,7 +751,7 @@ function ActiveWorkout() {
   const openViewMenu = () => menuSheet({
     items: [
       { icon: 'pencil', label: t('Rename workout'), onClick: renameWorkoutSheet },
-      { icon: 'plus', label: t('Add routine'), sub: t('Bring another routine into this session'), onClick: addRoutineToSessionSheet },
+      !editing && { icon: 'plus', label: t('Add routine'), sub: t('Bring another routine into this session'), onClick: addRoutineToSessionSheet },
       { icon: 'list', label: t('Layout'), sub: LAYOUT_LABEL[workoutView] || LAYOUT_LABEL.cards, onClick: openLayoutMenu },
     ],
   })
@@ -850,6 +855,7 @@ function ActiveWorkout() {
   // checks the set off through the normal path, so rest, supersets and the finish prompt all
   // behave exactly as they do for a reps set.
   const startTimed = (idx, i) => {
+    if (editing) return
     const e = A.entries[idx]
     // This tap may be the only one before the hold's countdown beeps (a timed first exercise):
     // get the audio context running while it still counts as a gesture (iOS, #152).
@@ -876,7 +882,7 @@ function ActiveWorkout() {
       if (side) e.sets[i] = toggleSide(e.sets[i], side)
       else e.sets[i].done = !e.sets[i].done
       checked = e.sets[i].done
-      if (e.sets[i].done) {
+      if (e.sets[i].done && !editing) {
         beep(S.sound, 1040, 0.12); vibrate(30)
         // The unit that owns the ticked set — not the marked one. Since !92 the marker no longer
         // follows a finished exercise, and in list mode any exercise can be worked on, so judging
@@ -892,6 +898,7 @@ function ActiveWorkout() {
         }
       }
     }, true)
+    if (editing) return
     if (workoutDone) workoutCompleteSheet()
     else if (exJustDone && cardioEntry) useUI.getState().toast(t('Cardio logged'))
     else if (exJustDone && m === 'time') useUI.getState().toast(t('Hold logged'))
@@ -949,7 +956,7 @@ function ActiveWorkout() {
   // Live-presence heartbeat so the admin dashboard can show who's training now. Signed-in only —
   // guests have no server session. Reads fresh state each tick so progress stays current.
   useEffect(() => {
-    if (!useStore.getState().user) return
+    if (!useStore.getState().user || editing) return
     let stopped = false
     const ping = active => {
       const A2 = useStore.getState().S.active
@@ -979,15 +986,16 @@ function ActiveWorkout() {
         while you are somewhere in the middle of a long stack. Cards mode never scrolls far. */}
     <div className={'whdr' + (listMode ? ' stick' : '')} ref={hdrRef}>
     <div className="hdr">
-      <button className="iconbtn" aria-label={t('Discard')} onClick={() => confirmSheet({ title: t('Discard workout?'), message: t('The sets you logged in this session will be lost.'), confirmText: t('Discard'), danger: true, onConfirm: () => { update(s => { s.active = null }); stopRest(); stopWork(); nav('/home') } })}><Icon name="xmark" /></button>
-      <div style={{ textAlign: 'center' }}><div style={{ fontWeight: 600 }}>{A.name}</div><div className="sub">{A.backfill ? fmtDate(A.d, true) : <Elapsed start={A.start} />} · {t('{0} sets', done + '/' + total)}</div></div>
+      <button className="iconbtn" aria-label={t(editing ? 'Close editor' : 'Discard')} onClick={() => editing ? exitWorkoutEdit() : confirmSheet({ title: t('Discard workout?'), message: t('The sets you logged in this session will be lost.'), confirmText: t('Discard'), danger: true, onConfirm: () => { update(s => { s.active = null }); stopRest(); stopWork(); nav('/home') } })}><Icon name="xmark" /></button>
+      <div style={{ textAlign: 'center' }}><div style={{ fontWeight: 600 }}>{A.name}</div><div className="sub">{(A.backfill || editing) ? fmtDate(A.d, true) : <Elapsed start={A.start} />} · {t('{0} sets', done + '/' + total)}</div></div>
       <div className="row" style={{ gap: 4, flex: 'none' }}>
         <button className="iconbtn" aria-label={t('Workout view')} title={t('Workout view')} onClick={openViewMenu}><Icon name="more" /></button>
-        <button className="iconbtn" style={{ color: 'var(--acc)' }} aria-label={t('Finish')} onClick={finishWorkout}><Icon name="check" /></button>
+        <button className="iconbtn" style={{ color: 'var(--acc)' }} aria-label={t(editing ? 'Save changes' : 'Finish')} onClick={finishWorkout}><Icon name="check" /></button>
       </div>
     </div>
     <div className="wprog"><i style={{ width: (total ? done / total * 100 : 0) + '%' }} /></div>
     </div>
+    {editing && <p className="muted small">{t('Editing a saved workout. Date and duration stay unchanged.')}</p>}
     {A.backfill && <div className="muted small" style={{ marginBottom: 8 }}>{t('Logging a past workout — no rest timers.')}</div>}
 
     {A.entries.length ? (listMode ? (
@@ -1127,7 +1135,7 @@ function ActiveWorkout() {
       const exDone = A.entries.filter(e => e.sets.length && e.sets.every(s => s.done)).length
       const allDone = A.entries.length > 0 && exDone === A.entries.length
       return <button className={allDone ? 'btn primary' : 'btn ghost dim'} onClick={finishWorkout}>
-        {allDone ? t('Finish workout') : t('Finish workout early · {0} exercises', exDone + '/' + A.entries.length)}
+        {editing ? t('Save changes') : allDone ? t('Finish workout') : t('Finish workout early · {0} exercises', exDone + '/' + A.entries.length)}
       </button>
     })()}
     <div className="workout-end-spacer" />

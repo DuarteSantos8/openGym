@@ -13,7 +13,7 @@ import { installViewportGuard } from './lib/viewport-guard.js'
 import { installChipDrag } from './lib/hchips.js'
 import { syncPushSubscription } from './lib/push.js'
 import { MOBILE } from './lib/mobile.js'
-import { startFlow } from './sheets.jsx'
+import { exitWorkoutEdit, startFlow } from './sheets.jsx'
 import Icon from './components/Icon.jsx'
 import TabBar from './components/TabBar.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
@@ -69,6 +69,17 @@ function Shell() {
   const needsMobileOnboarding = useStore(s => s.needsMobileOnboarding)
   const langV = useLang()   // re-renders the whole shell when the language (pack) changes
   useEffect(() => { setNav(navigate) }, [navigate])
+  const lastEditPath = useRef(loc.pathname)
+  // Any in-app route exit, browser back included, returns to the persisted draft and asks for a
+  // save decision. Reload needs no prompt because the draft itself is already in local storage.
+  useEffect(() => {
+    const previous = lastEditPath.current
+    lastEditPath.current = loc.pathname
+    if (previous !== '/workout' || !S.active?.editingWorkoutId || loc.pathname === '/workout') return
+    const destination = loc.pathname + loc.search
+    navigate('/workout', { replace: true })
+    exitWorkoutEdit(() => navigate(destination, { replace: true }))
+  }, [loc.pathname, loc.search, S.active?.editingWorkoutId, navigate])
   useEffect(() => { applyPrefs(S.theme, S.accent) }, [S.theme, S.accent])
   // 'system' needs to react live if the OS theme flips while the app is open, not just on
   // the next mount — a fixed 'dark'/'light' choice never re-fires this since matchMedia
@@ -126,7 +137,7 @@ function Shell() {
     return () => window.cancelAnimationFrame(frame)
   }, [loc.pathname, navType])
   // bound to the workout, not to the route — checking Stats mid-session keeps the screen on
-  useWakeLock(!!S.active && S.keepAwake !== false)
+  useWakeLock(!!S.active && !S.active.editingWorkoutId && S.keepAwake !== false)
 
   const authed = user || isGuest
   if (!ready && !authed) return (

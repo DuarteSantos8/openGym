@@ -672,6 +672,17 @@ export const PT_BR_OVERRIDES = {
   'Download & Install': 'Baixar e instalar',
   'Starting download…': 'Iniciando download…',
   'Downloading update…': 'Baixando atualização…',
+  'Edit workout': 'Editar treino',
+  'Workout updated': 'Treino atualizado',
+  'Save workout changes?': 'Salvar alterações do treino?',
+  'Save your edits to this workout, or keep the original record.': 'Salve as alterações deste treino ou mantenha o registro original.',
+  'Save changes': 'Salvar alterações',
+  "Don't save": 'Não salvar',
+  'Keep editing': 'Continuar editando',
+  'This workout was deleted on another device. Your edits are still here.': 'Este treino foi excluído em outro dispositivo. Suas alterações continuam aqui.',
+  'This workout changed on another device. Your edits are still here.': 'Este treino foi alterado em outro dispositivo. Suas alterações continuam aqui.',
+  'Close editor': 'Fechar editor',
+  'Editing a saved workout. Date and duration stay unchanged.': 'Você está editando um treino salvo. A data e a duração permanecem iguais.',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
