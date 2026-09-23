@@ -429,7 +429,12 @@ export function nextPrescription(S, cfg, routine) {
     const range = normalizeRepRange(cfg.reps || last.goal || 10, cfg.repsMin, repStep(cfg))
     const top = range.reps
     const bottom = range.repsMin
-    if (last.ok) return {
+    // `last.ok` only means "matched whatever was recorded as this session's target" - the
+    // first session for a fresh exercise (or one mid-climb) is seeded below the top of the
+    // range, so hitting that recorded target is compliance with the plan, not "reached the
+    // top". Double progression must not add weight until every set actually reaches the top
+    // of the range (issue #278).
+    if (last.ok && last.low >= top) return {
       policy, kind: 'up', weight: harder(w, inc), reps: bottom,
       why: assisted
         ? ['Top of the rep range in every set — {0} {1} less help, back to {2} reps.', inc, unit, bottom]

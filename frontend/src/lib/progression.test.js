@@ -375,6 +375,17 @@ describe('double progression', () => {
     expect(p.reps).toBe(8)
   })
 
+  it('does not raise the weight for a session that only matched its own recorded target, short of the top of the range (issue #278)', () => {
+    // The very first logged session for a fresh double-progression exercise gets its target
+    // seeded at the bottom of the range (8 here), not the top (12). Hitting exactly that many
+    // reps in every set is compliance with the plan, not "reached the top of the range" - so
+    // it must not be graded as a hit that earns more weight.
+    const target = { sets: 3, reps: 8, weight: 40 }
+    const p = nextPrescription(hist(LIFT, [[40, 8, 8, 8]], target), cfg)
+    expect(p.kind).not.toBe('up')
+    expect(p.weight).toBe(40)
+  })
+
   it('does not deload again when the deload was performed exactly as prescribed', () => {
     const target = { sets: 3, reps: 12 }
     // Three sessions stuck mid-range where every set misses the top, so a deload falls due (see DELOAD_POLICY)
