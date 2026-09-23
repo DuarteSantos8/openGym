@@ -17,7 +17,7 @@
 // So a session that fell apart can never advance the load as though it had succeeded.
 
 import { modeOf, repStep, rerampWarmups, isBw, isPerSide, entryExcluded } from './history.js'
-import { EXIDX } from './exercises.js'
+import { EXIDX, isAssisted } from './exercises.js'
 import { isWarmupRow, isSideSet, syncSideAggregate, makeSideSet } from './workout-model.js'
 import { normalizeRepRange } from './rep-range.js'
 
@@ -214,21 +214,38 @@ export function selectDeloadCandidate({ currentWeight, targetWeight, targetReps,
  * entry without its own target is judged against `fallback`, the exercise's current plan,
  * which is exactly what the app's old weight hint compared against.
  */
+// The load the session is judged by. On an assistance machine less is harder, so the set that
+// counts is the one with the least help — and a 0 there means "no load logged", not "best ever"
+// (issue #232).
+function loadOf(entry, sets) {
+  const done = sets.filter(s => s.done).map(s => s.w || 0)
+  if (!isAssisted(entry && entry.id ? { id: entry.id } : entry)) return Math.max(0, ...done)
+  const loaded = done.filter(w => w > 0)
+  return loaded.length ? Math.min(...loaded) : 0
+}
+
 export function readSession(entry, fallback) {
   const target = (entry && entry.target) || fallback || {}
   const mode = modeOf({ ...target, id: entry && entry.id })
   // Warm-up rows are prep, not the session: one filtered read beats guarding every consumer
   // below (an undone warm-up otherwise poisons `ok` forever and its reps drag `low`/`count`).
-  const sets = ((entry && entry.sets) || []).filter(s => !isWarmupRow(s))
-  const planned = target.sets || sets.length
-  const enough = sets.length >= planned
+  const logged = ((entry && entry.sets) || []).filter(s => !isWarmupRow(s))
+  const planned = target.sets || logged.length
+  const enough = logged.length >= planned
+  // Only the sets the plan asked for decide what happens next (issue #233). A set added on top
+  // is extra work, and it used to be read as part of the prescription: one heavier bonus set
+  // raised the weight for next time, and a hard one taken short of the target reps reported the
+  // whole session as missed. Extra sets still count everywhere else — volume, PRs, history —
+  // they just do not move the plan. The plan's own sets are the ones it laid out first, so the
+  // read stops at that many; a session with fewer than planned is short either way (`enough`).
+  const sets = logged.slice(0, Math.max(1, planned))
 
   if (mode === 'time') {
     const goal = target.sec || 0
     const held = sets.map(s => (s.done ? (s.sec || 0) : 0))
     return {
       mode, target, goal, held,
-      weight: Math.max(0, ...sets.filter(s => s.done).map(s => s.w || 0)),
+      weight: loadOf(entry, sets),
       best: Math.max(0, ...held),
       ok: goal > 0 && enough && held.length > 0 && held.every(h => h >= goal)
     }
@@ -237,7 +254,7 @@ export function readSession(entry, fallback) {
   const reps = sets.map(s => (s.done ? (s.r || 0) : 0))
   return {
     mode, target, goal, reps,
-    weight: Math.max(0, ...sets.filter(s => s.done).map(s => s.w || 0)),
+    weight: loadOf(entry, sets),
     count: reps.length,                                   // the dimension bodyweight work grows (#33)
     low: reps.length ? Math.min(...reps) : 0,
     amrap: reps.length ? reps[reps.length - 1] : 0,       // Greyskull's final set
@@ -306,6 +323,13 @@ export function nextPrescription(S, cfg, routine) {
     ? (cfg.inc > 0 ? cfg.inc : DEFAULT_SEC_INCREMENT)
     : weightIncrement(cfg, unit)
   if (policy === 'off') return { policy, kind: 'off' }
+  // An assistance machine progresses downwards: the stack carries part of your weight, so the
+  // reward for a clean session is less help, and a stall means taking more (issue #232). Only
+  // the direction changes — the step, the grid and the stall counting are the same.
+  const assisted = isAssisted(cfg)
+  const harder = (weight, step) => (assisted ? Math.max(0, addStep(weight, -step, inc)) : addStep(weight, step, inc))
+  const easier = weight => (assisted ? addStep(weight, inc, inc) : deloadTo(weight, inc))
+
 
   const sessions = sessionsFor(S, cfg.id, cfg).filter(s => s.mode === mode)
   const last = sessions[sessions.length - 1]
@@ -356,6 +380,8 @@ export function nextPrescription(S, cfg, routine) {
   // session that stalled (falling back field-by-field to the current config), while the logged
   // weight remains the hard upper bound for the selected candidate.
   const epleyDeload = () => {
+    // Epley reads load as the work done; on an assistance machine it is the work taken away.
+    if (assisted) return null
     if (mode !== 'reps' || (policy !== 'linear' && policy !== 'double')) return null
     const previous = last.target || {}
     const target = {
@@ -403,12 +429,22 @@ export function nextPrescription(S, cfg, routine) {
     const range = normalizeRepRange(cfg.reps || last.goal || 10, cfg.repsMin, repStep(cfg))
     const top = range.reps
     const bottom = range.repsMin
-    if (last.ok) return { policy, kind: 'up', weight: addStep(w, inc, inc), reps: bottom, why: ['Top of the rep range in every set — {0} {1} more, back to {2} reps.', inc, unit, bottom] }
+    if (last.ok) return {
+      policy, kind: 'up', weight: harder(w, inc), reps: bottom,
+      why: assisted
+        ? ['Top of the rep range in every set — {0} {1} less help, back to {2} reps.', inc, unit, bottom]
+        : ['Top of the rep range in every set — {0} {1} more, back to {2} reps.', inc, unit, bottom]
+    }
     if (stalls >= deloadAt) {
       const selected = epleyDeload()
       if (selected) return selected
-      const dw = deloadTo(w, inc)
-      return { policy, kind: 'deload', weight: dw, reps: bottom, why: ['Stalled {0} sessions — deload to {1} {2}.', stalls, dw, unit] }
+      const dw = easier(w)
+      return {
+        policy, kind: 'deload', weight: dw, reps: bottom,
+        why: assisted
+          ? ['Stalled {0} sessions — back to {1} {2} of help and build up again.', stalls, dw, unit]
+          : ['Stalled {0} sessions — deload to {1} {2}.', stalls, dw, unit]
+      }
     }
     const aim = Math.min(top, Math.max(bottom, last.low + repStep(cfg)))
     return { policy, kind: 'hold', weight: w, reps: aim, why: ['Same weight — aim for {0} reps this time.', aim] }
@@ -421,21 +457,25 @@ export function nextPrescription(S, cfg, routine) {
     const dbl = policy === 'greyskull' && last.goal > 0 && last.amrap >= last.goal * 2
     const step = dbl ? inc * 2 : inc
     return {
-      policy, kind: 'up', weight: addStep(w, step, inc),
+      policy, kind: 'up', weight: harder(w, step),
       why: dbl
         ? ['Last set hit {0} reps — twice the target, so take a double jump of {1} {2}.', last.amrap, step, unit]
-        : ['Every rep last time — {0} {1} more.', step, unit]
+        : assisted
+          ? ['Every rep last time — {0} {1} less help.', step, unit]
+          : ['Every rep last time — {0} {1} more.', step, unit]
     }
   }
   if (stalls >= deloadAt) {
     const selected = epleyDeload()
     if (selected) return selected
-    const dw = deloadTo(w, inc)
+    const dw = easier(w)
     return {
       policy, kind: 'deload', weight: dw,
-      why: stalls > 1
-        ? ['Missed reps {0} sessions running — reset to {1} {2} and work back up.', stalls, dw, unit]
-        : ['Missed reps — reset to {0} {1} and work back up.', dw, unit]
+      why: assisted
+        ? ['Missed reps — {0} {1} of help while you build back up.', dw, unit]
+        : stalls > 1
+          ? ['Missed reps {0} sessions running — reset to {1} {2} and work back up.', stalls, dw, unit]
+          : ['Missed reps — reset to {0} {1} and work back up.', dw, unit]
     }
   }
   return { policy, kind: 'hold', weight: w, why: ['Missed reps last time — same weight again ({0} of {1} to go).', deloadAt - stalls, deloadAt] }

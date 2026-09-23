@@ -16,7 +16,8 @@ import { bestWeightForEntry } from './history.js'
  *   - favEx: ordered set union, the newer copy first
  *   - exWeights: union by exercise, normally the larger `w`; when the winning side changed an
  *     existing workout, affected exercises are rebuilt from that side and the merged history so
- *     a deliberate history correction can lower a stale cached best
+ *     a deliberate history correction can lower a stale cached best. Assistance machines use
+ *     their smaller-is-better ordering; exNotes and barWeights remain key unions.
  *   - `_ts`: the later of the two; `_rev` dropped (the server sets it); `active` left to the caller
  *
  * Known limit: with no record of what each side deleted, an entry removed on one device inside
@@ -24,6 +25,8 @@ import { bestWeightForEntry } from './history.js'
  * on resume and every push is conditional), and a resurrected entry beats a lost one. Tombstones
  * would close it.
  */
+import { beatsWeight } from './exercises.js'
+
 const clone = o => JSON.parse(JSON.stringify(o))
 const list = v => (Array.isArray(v) ? v : [])
 
@@ -61,18 +64,28 @@ export function mergeBodyweight(a = [], b = []) {
   return [...byDay.values()].sort((x, y) => (x.d < y.d ? -1 : 1))
 }
 
+// The kept load per exercise. "The larger one wins" held while the app only ever raised it —
+// but an assistance machine progresses downwards, so there the smaller number is the newer,
+// harder setting and taking the larger would hand back the help the other device just dropped
+// (issue #232). `beatsWeight` knows which way round each exercise runs; the date breaks a tie
+// on an exercise where both sides moved in the same direction.
 function mergeExWeights(n = {}, o = {}, workouts = [], corrected = new Set()) {
   const out = { ...(o || {}), ...(n || {}) }
   for (const k of Object.keys(o || {})) {
-    if (n && n[k] && o[k] && (o[k].w || 0) > (n[k].w || 0)) out[k] = o[k]
+    if (!(n && n[k] && o[k])) continue
+    if (beatsWeight(k, o[k].w || 0, n[k].w || 0)) out[k] = o[k]
   }
   for (const id of corrected) {
     const logged = workouts.flatMap(workout => list(workout.entries)
       .filter(entry => entry?.id === id)
       .map(entry => ({ w: bestWeightForEntry(entry), d: workout.d })))
       .filter(value => value.w > 0)
-    const candidates = [...logged, ...(n?.[id]?.w > 0 ? [n[id]] : [])].sort((a, b) => b.w - a.w)
-    if (candidates.length) out[id] = candidates[0]
+    const candidates = [...logged, ...(n?.[id]?.w > 0 ? [n[id]] : [])]
+    let best = null
+    for (const candidate of candidates) {
+      if (!best || beatsWeight(id, candidate.w, best.w)) best = candidate
+    }
+    if (best) out[id] = best
     else delete out[id]
   }
   return out

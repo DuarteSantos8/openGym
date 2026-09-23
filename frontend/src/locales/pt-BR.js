@@ -210,6 +210,7 @@ export const PT_BR_OVERRIDES = {
   '{0} exercise in the file isn’t in your library and was left out.': '{0} exercício do arquivo não está na sua biblioteca e foi ignorado.',
   '{0} exercises in the file aren’t in your library and were left out.': '{0} exercícios do arquivo não estão na sua biblioteca e foram ignorados.',
   'Replaces your current Mon–Sun assignments.': 'Substitui os dias definidos de segunda a domingo.',
+  'Added {0} routine to your plan': '{0} rotina adicionada ao seu plano',
   'Added {0} routines to your plan': '{0} rotinas adicionadas ao seu plano',
   'this isn’t an openGym plan file': 'este não é um arquivo de plano do openGym',
   'This screen could not be drawn. Your data is safe on this device.': 'Não foi possível exibir esta tela. Seus dados estão seguros neste dispositivo.',

@@ -48,6 +48,20 @@ describe('saved workout editing', () => {
     expect(state.workouts[1].prs).toEqual(['0025'])
   })
 
+  it('keeps assisted-machine records ordered by less help after an edit', () => {
+    const state = fixture()
+    state.workouts[0].entries = [entry(30, '0017')]
+    state.workouts[0].prs = ['0017']
+    state.workouts.push({ id: 'later', d: '2026-09-02', start: 3000, end: 4000, entries: [entry(25, '0017')], prs: [] })
+    state.exWeights['0017'] = { w: 30, d: '2026-09-01' }
+    editCompletedSession(state, 'workout')
+    state.active.entries[0].sets[0].w = 20
+    saveWorkoutEdit(state)
+    expect(state.exWeights['0017']).toEqual({ w: 20, d: '2026-09-01' })
+    expect(state.workouts[0].prs).toEqual(['0017'])
+    expect(state.workouts[1].prs).toEqual([])
+  })
+
   it('preserves repeated occurrences, combined-routine ownership and per-side fields', () => {
     const state = fixture(), workout = state.workouts[0]
     workout.routineIds = ['a', 'b']

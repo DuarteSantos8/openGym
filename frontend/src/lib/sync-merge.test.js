@@ -87,6 +87,13 @@ describe('mergeStates', () => {
     expect(mergeStates(corrected, older).exWeights.sq).toEqual({ w: 80, d: '2026-09-01' })
   })
 
+  it('keeps assisted-machine correction caches ordered by less help', () => {
+    const set = w => ({ id: '0017', target: { mode: 'reps' }, sets: [{ w, r: 5, done: true }] })
+    const older = base({ _ts: 100, workouts: [{ ...workout('w1'), entries: [set(30)] }], exWeights: { '0017': { w: 30, d: '2026-09-01' } } })
+    const corrected = base({ _ts: 200, workouts: [{ ...workout('w1'), entries: [set(20)] }], exWeights: { '0017': { w: 20, d: '2026-09-01' } } })
+    expect(mergeStates(corrected, older).exWeights['0017']).toEqual({ w: 20, d: '2026-09-01' })
+  })
+
   it('is commutative on the union fields and idempotent', () => {
     const ab = mergeStates(A(), B()), ba = mergeStates(B(), A())
     for (const f of ['workouts', 'routines', 'customEx', 'gymCards']) expect(ids(ab[f]).sort()).toEqual(ids(ba[f]).sort())

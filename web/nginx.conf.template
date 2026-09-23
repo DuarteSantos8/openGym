@@ -19,7 +19,7 @@ server {
     # `^~` so this prefix beats the regex locations below: without it a request for a path such
     # as /api/anything.json would be matched by the \.(js|css|json|html)$ block instead and be
     # looked for on disk rather than proxied.
-    location ^~ /api/ {
+    location ^~ ${BASE_PATH}/api/ {
         # Match the API's own body limit (MAX_BODY in api/server.js): the whole workout history
         # travels in one PUT /api/data, and nginx's 1 MiB default would answer 413 here before the
         # API ever saw it — a sync that silently stops once the history grows past 1 MiB.
@@ -53,13 +53,34 @@ server {
         proxy_set_header CF-Connecting-IP "${CF_CONNECTING_IP}";
     }
 
-    # SPA fallback
-    location / {
-        try_files $uri $uri/ /index.html;
+    # The app routes behind the hash (/#/plan, /#/history …), so a path is never a screen, and the
+    # shell's asset URLs are relative (vite base './' — the Pages demo lives under /demo/). Serving
+    # index.html AT a deep path (/plan/r/x: a typo, a stale link) gave a page whose scripts resolved
+    # under that path and 404'd — blank, with a 200. Send the browser to the root instead. The
+    # query string travels along; the hash never reaches the server anyway. Relative Location so
+    # the redirect keeps the scheme and host the reverse proxy in front presented, not nginx's own.
+    #
+    # BASE_PATH (default empty) is for a reverse proxy that serves openGym under a subpath and
+    # passes that prefix through — "/gym", no trailing slash. A proxy that strips the prefix
+    # before the container sees it needs nothing set here: the app asks its own address for the
+    # API (lib/api.js appBase), so the call carries whatever prefix the browser is using.
+    location ${BASE_PATH}/ {
+        # `rewrite ... break` rather than `alias`: try_files inside an aliased prefix location is
+        # a long-standing nginx trap (it still resolves the untranslated URI). With BASE_PATH
+        # empty this rewrite is an identity and the block behaves exactly as it always has.
+        rewrite ^${BASE_PATH}/(.*)$ /$1 break;
+        try_files $uri $uri/ @root;
+    }
+    location @root {
+        absolute_redirect off;
+        return 302 ${BASE_PATH}/$is_args$args;
     }
 
     # App shell: always revalidate so updates show up immediately
     location ~* \.(js|css|json|html)$ {
+        # A regex location wins over the prefix block above, so it never saw its rewrite and
+        # looked for the file under the prefix on disk. Same identity-when-empty rewrite here.
+        rewrite ^${BASE_PATH}/(.*)$ /$1 break;
         add_header Cache-Control "no-cache, must-revalidate";
         add_header X-Frame-Options "DENY" always;
         add_header X-Content-Type-Options "nosniff" always;
@@ -69,6 +90,9 @@ server {
 
     # Exercise images/GIFs never change → cache hard
     location ~* \.(png|jpg|jpeg|gif|ico|svg|woff|woff2|webp|avif)$ {
+        # A regex location wins over the prefix block above, so it never saw its rewrite and
+        # looked for the file under the prefix on disk. Same identity-when-empty rewrite here.
+        rewrite ^${BASE_PATH}/(.*)$ /$1 break;
         expires 30d;
         add_header Cache-Control "public, max-age=2592000, immutable";
         add_header X-Frame-Options "DENY" always;

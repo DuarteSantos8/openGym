@@ -124,6 +124,9 @@ describe('parseHevyWorkouts', () => {
     expect(pulldown.topW).toBe(52)
     expect(parsed.warmups).toBe(1)
     expect(parsed.rpeSets).toBe(1)
+    // The stored volume leaves the warm-up out, like a workout finished in the app (QA C14):
+    // 52×15 + 52×10 + 20×12 = 1,540, not 1,915.
+    expect(parsed.workouts[0].vol).toBe(1540)
 
     const custom = entries.find(e => String(e.id).startsWith('im'))
     expect(custom).toBeTruthy()

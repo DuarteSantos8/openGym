@@ -1,4 +1,5 @@
 import { buildCompletedWorkout } from './finish-workout.js'
+import { beatsWeight } from './exercises.js'
 import { bestWeightForEntry, workoutVolume } from './history.js'
 import { hasCompletedWork } from './workout-model.js'
 
@@ -30,9 +31,14 @@ export function rebuildHistoryDerived(state, exerciseIds) {
   for (const workout of [...state.workouts].sort(byDayStart)) {
     const existing = (workout.prs || []).filter(id => !ids.has(id))
     for (const id of ids) {
-      const weight = Math.max(0, ...workout.entries.filter(entry => entry.id === id).map(bestWeightForEntry))
-      if (weight > (best.get(id) || 0)) existing.push(id)
-      if (weight > (best.get(id) || 0)) best.set(id, weight)
+      let weight = 0
+      for (const entry of workout.entries.filter(entry => entry.id === id)) {
+        const entryWeight = bestWeightForEntry(entry)
+        if (beatsWeight(id, entryWeight, weight)) weight = entryWeight
+      }
+      const previous = best.get(id) || 0
+      if (beatsWeight(id, weight, previous)) existing.push(id)
+      if (beatsWeight(id, weight, previous)) best.set(id, weight)
     }
     workout.prs = [...new Set(existing)]
   }
@@ -41,8 +47,11 @@ export function rebuildHistoryDerived(state, exerciseIds) {
       .filter(entry => entry.id === id)
       .map(entry => ({ w: bestWeightForEntry(entry), d: workout.d })))
       .filter(value => value.w > 0)
-      .sort((a, b) => b.w - a.w)
-    if (candidates.length) state.exWeights[id] = candidates[0]
+    let bestCandidate = null
+    for (const candidate of candidates) {
+      if (!bestCandidate || beatsWeight(id, candidate.w, bestCandidate.w)) bestCandidate = candidate
+    }
+    if (bestCandidate) state.exWeights[id] = bestCandidate
     else delete state.exWeights[id]
   }
 }
