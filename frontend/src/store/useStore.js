@@ -41,6 +41,7 @@ export const DEF = {
   // server pull, backup import) still falls back to the `showRir` boolean this replaced and
   // keeps the column it had. See effortOf.
   reminder: { on: false, time: '08:00', tz: null }, effort: null, autoBackup: false,
+  widgetTheme: 'auto',
   // Equipment profiles (issue: filter Library/picker/routines by what you actually own —
   // e.g. "Home" vs "Gym" — building on the session-only equipment filter from issue #6).
   equipProfiles: [], activeEquipId: null, equipFilterOn: false,
@@ -133,9 +134,15 @@ export const useStore = create((set, get) => {
 
   // Mobile build: mirror the state into a file in the app's data directory (survives WebView
   // storage eviction) and keep the native reminder schedule in step with the weekly plan.
-  const nativePersist = () => {
+  const nativePersist = immediate => {
     clearTimeout(saveTm)
-    saveTm = setTimeout(() => { saveTm = null; nativeSave(get().S); syncReminder(get().S) }, 800)
+    nativeSave(get().S)
+    if (immediate) {
+      saveTm = null
+      syncReminder(get().S)
+    } else {
+      saveTm = setTimeout(() => { saveTm = null; syncReminder(get().S) }, 800)
+    }
   }
 
   // `_ts` is when this device last changed the data — it decides which copy wins on the next
@@ -143,11 +150,12 @@ export const useStore = create((set, get) => {
   // stamp it came with: re-stamping a read would make an unchanged copy look newer than a real
   // change made on another device, and push it over that change.
   const persist = (S, push = true, stamp = true) => {
+    const activeChanged = (!!S.active !== !!get().S?.active) || (S.active?.cur !== get().S?.active?.cur)
     if (stamp) S._ts = Date.now()
     registerCustom(S.customEx)
     localStorage.setItem(KEY, JSON.stringify(S))
     set({ S })
-    if (MOBILE) nativePersist()
+    if (MOBILE) nativePersist(activeChanged)
     if (push && get().user) {
       // Before boot has pulled, the copy in hand may be older than the server's: a push now
       // would carry it with a stale (or no) baseRev. It waits for finishBoot.
@@ -315,7 +323,7 @@ export const useStore = create((set, get) => {
     user: (() => { try { return JSON.parse(localStorage.getItem('gym_user')) || null } catch { return null } })(),
     ready: false,
     // Server sync as the banner sees it (components/SyncBanner.jsx). Only meaningful signed in.
-    sync: { offline: false, pending: localStorage.getItem('gym_dirty') === '1', lastSynced: 0 },
+    sync: { offline: false, pending: (() => { try { return localStorage.getItem('gym_dirty') === '1' } catch { return false } })(), lastSynced: 0 },
     /* Instance capabilities from GET /api/config. `config.coach` is present only when the owner
        has both enabled the Coach and connected a provider — every Coach entry point in the app
        hangs off it via coachAvailable(), so an unconfigured instance renders exactly what it

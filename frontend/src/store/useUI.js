@@ -5,6 +5,7 @@ import { api } from '../lib/api.js'
 import { t } from '../lib/i18n.js'
 import { deviceId } from '../lib/push.js'
 import { useStore } from './useStore.js'
+import { scheduleRestNotification, addRestNotification, cancelRestNotification, initMobileNotifications } from '../lib/mobile.js'
 
 // Fire-and-forget: lets the server push a "rest over" alert if this tab gets suspended
 // before the local timer completes. No-ops for guests / offline. The device id keeps the
@@ -95,6 +96,18 @@ export const useUI = create((set, get) => ({
     const endsAt = Date.now() + sec * 1000
     set({ timer: { left: sec, total: sec, endsAt, forIdx } })
     pushRestTimer(sec)
+    const accentKey = useStore.getState().S?.accent || 'lime'
+    let meta = {}
+    if (forIdx != null) {
+      const active = useStore.getState().S?.active
+      const entry = active?.entries?.[forIdx]
+      if (entry) {
+        meta.exercise = entry.id
+        meta.set = (entry.sets.filter(s => s.done).length || 0) + 1
+        meta.totalSets = entry.sets.length
+      }
+    }
+    scheduleRestNotification(sec, { ...meta, accent: accentKey })
     timerTick = () => {
       const tm = get().timer
       if (!tm) return
@@ -129,6 +142,7 @@ export const useUI = create((set, get) => ({
     if (left <= 0) { get().stopRest(); return }
     set({ timer: { ...tm, left, total: tm.total + sec, endsAt: tm.endsAt + sec * 1000 } })
     pushRestTimer(left)
+    addRestNotification(sec)
   },
   // The active list changed shape (an exercise removed or inserted at `at`): keep the rest
   // pointing at the same exercise. Returns nothing; the caller decides whether to stop instead.
@@ -141,6 +155,7 @@ export const useUI = create((set, get) => ({
     if (timerInt) clearInterval(timerInt); timerInt = null
     if (timerTick) document.removeEventListener('visibilitychange', timerTick); timerTick = null
     if (get().timer) cancelPushRestTimer()
+    cancelRestNotification()
     set({ timer: null })
   },
 
@@ -201,3 +216,17 @@ export const useUI = create((set, get) => ({
     set({ work: null })
   }
 }))
+
+// Connect action button events from native notifications or service worker
+initMobileNotifications(useUI)
+
+if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', event => {
+    if (event.data?.type === 'REST_ACTION') {
+      const act = event.data.action
+      if (act === 'skip') useUI.getState().stopRest()
+      else if (act === 'plus15') useUI.getState().addRest(15)
+      else if (act === 'minus15') useUI.getState().addRest(-15)
+    }
+  })
+}
