@@ -5,16 +5,16 @@ application (Claude Desktop, Cursor, Cline, Continue, etc.) read your openGym pr
 routines, workouts, body-weight log, estimated 1RMs, and muscle balance — directly from your
 self-hosted `./data` directory.
 
-It is read-only, runs locally as a stdio process spawned by the LLM client, adds no new
-container, and requires no extra authentication. The LLM never sees passkeys, VAPID keys, or
-session secrets — it can only read the same `state-<uid>.json` files the openGym api already
-writes.
+It is read-only, runs as a stdio process spawned by the LLM client **or** as an HTTP server
+reachable over the network, and requires no extra authentication (stdio) or an optional API
+key (HTTP). The LLM never sees passkeys, VAPID keys, or session secrets — it can only read the
+same `state-<uid>.json` files the openGym api already writes.
 
 The numbers it answers with are computed by the **same pure functions the React UI uses**
 (`frontend/src/lib/*.js`) — `estimate1RM`, `loadOfWorkouts`, `effectiveRoutine`, etc. — so a
 "what's my bench 1RM?" answer matches the Stats screen exactly.
 
-> Phase 1 of a multi-phase plan. Read-only today; long-lived token auth + write tools are
+> Phase 1 + Phase 1.5 shipped. Read-only today; long-lived token auth + write tools are
 > planned but not shipped yet. See **Roadmap** below.
 
 ## Quick start
@@ -65,6 +65,65 @@ For Cursor and other MCP-compatible clients, see the client's MCP docs — the s
 Restart the client; you should see the openGym tools appear with "serving profile \<name\>" on
 the server's stderr.
 
+## HTTP mode (remote access)
+
+When the LLM client runs on a different machine (Kubernetes, a remote desktop, …) the stdio
+transport won't work. HTTP mode runs the **Streamable HTTP** transport (the current MCP HTTP
+spec) on a single endpoint that clients reach over the network.
+
+### 1. Start the server
+
+```bash
+# local (Node installed):
+OPENGYM_UID=<your-uid> OPENGYM_HTTP_PORT=3100 node src/http.js
+
+# Docker (built via docker-compose):
+OPENGYM_UID=<your-uid> docker compose up mcp
+```
+
+Environment variables:
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `OPENGYM_DATA` | `./data` | Path to the data directory (same as stdio) |
+| `OPENGYM_UID` | *(auto-detect)* | Profile to serve when no `?uid=` param is given. Auto-detected exactly like stdio mode (single state file / single profile in `db.json`) |
+| `OPENGYM_HTTP_PORT` | `3100` | Port to listen on |
+| `OPENGYM_API_KEY` | *(none)* | If set, requires `Authorization: Bearer <key>` header |
+
+### 2. Connect from your LLM client
+
+Point the client at `http://<host>:3100/mcp` (optionally with `?uid=<uid>` to pick the
+profile). Most MCP clients speak Streamable HTTP natively — a bare `url` is enough; no
+transport override, no SSE anything:
+
+```jsonc
+{
+  "mcpServers": {
+    "opengym": {
+      "url": "http://<host>:3100/mcp?uid=<your-uid>",   // ?uid= optional when OPENGYM_UID is set
+      "headers": {
+        "Authorization": "Bearer <your-api-key>"        // only if OPENGYM_API_KEY is set
+      }
+    }
+  }
+}
+```
+
+The server:
+
+- answers JSON-RPC on `POST /mcp` — the SDK mints a session id (stateful mode) returned in
+  the `Mcp-Session-Id` response header, and every subsequent request must echo it.
+- accepts `DELETE /mcp` to end a session.
+- answers `405` to `GET /mcp` — this server never initiates messages, so the optional
+  standalone SSE stream would have nothing to carry.
+- exposes an unauthenticated `GET /health` used by the container healthcheck.
+
+Multiple clients can be connected at once, each with its own session (and optionally its own
+`?uid=`).
+
+For Docker Compose deployments the service is optional — it is **not** started by a plain
+`docker compose up`. Start it explicitly: `docker compose up mcp`.
+
 ## Tools
 
 Nine read-only tools in v1:
@@ -107,12 +166,17 @@ dependencies landed in `frontend/`, no public exports changed.
 ## Design constraints honoured
 
 - **One runtime dependency beyond the MCP SDK:** none. No database driver, no HTTP framework.
-- **No new container.** stdio transport is spawned by the LLM client; nothing to add to
+  The HTTP mode uses the SDK's built-in `StreamableHTTPServerTransport`.
+- **stdio: no new container.** Stdio transport is spawned by the LLM client; nothing to add to
   `docker-compose.yml`.
-- **No new auth.** The filesystem is the boundary — same as `docker compose` running on the
-  user's box. No passkey material, VAPID keys, or session secrets ever cross it.
-- **No telemetry, no network.** Reads `./data/*.json` and exits when the LLM client
-  disconnects.
+- **HTTP: opt-in 4th container.** The MCP Dockerfile and a `mcp` service in
+  `docker-compose.yml` are optional — not started by a plain `docker compose up`.
+- **No new auth (stdio).** The filesystem is the boundary — same as `docker compose` running on
+  the user's box. No passkey material, VAPID keys, or session secrets ever cross it.
+- **Optional API key (HTTP).** `OPENGYM_API_KEY` provides a simple Bearer-token guard. It is
+  not a substitute for TLS; use it behind a reverse proxy with HTTPS in production.
+- **No telemetry, no outbound network.** Reads `./data/*.json` and stays alive only while an
+  LLM client is connected (stdio) or an SSE session is active (HTTP).
 
 ## Tests
 
@@ -129,15 +193,16 @@ their own 92 tests in `frontend/src/lib/*.test.js`.
 
 ## Roadmap
 
-- **Done (Phase 1):** read-only stdio, 8 tools, direct `./data` access.
+- **Done (Phase 1):** read-only stdio, 9 tools, direct `./data` access.
 - **Done (Phase 1.5):** `preview_session` — the policy's next prescription, the opening set
   rows it produces, and which of plan / confirmed weight / history each number came from.
+- **Done (Phase 1.5b):** Streamable HTTP transport — `src/http.js` + `mcp/Dockerfile` +
+  optional `mcp` service in `docker-compose.yml`. Per-session profiles via `?uid=` query
+  param, else auto-detected. Optional API key.
 - **Phase 2:** read+write over stdio. Requires a long-lived token auth path minted from the
   admin dashboard (new `./data/tokens.json`) and a write-lock against the web UI's read-modify-
   write of `state-<uid>.json`. Tools: `log_workout`, `add_bodyweight`, `edit_routine`,
   `assign_weekday`, `override_day`.
-- **Phase 3:** Streamable HTTP transport, opt-in 4th container in `docker-compose.yml`. Same
-  tool implementations, second transport — the MCP SDK supports both behind one tool registration.
 
 ## License
 
