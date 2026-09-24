@@ -231,10 +231,17 @@ export function entryExcluded(w, entry) {
   return w?.excludeFromProgression === true || entry?.noProg === true
 }
 
-export function lastEntryFor(S, exId) {
+export function lastEntryFor(S, exId, rid) {
   for (let i = S.workouts.length - 1; i >= 0; i--) {
     const w = S.workouts[i]
-    const en = w.entries.find(e => e.id === exId)
+    // With `rid`, "last time" means last time *in this slot*: the same lift can be heavy in one
+    // routine and light in another, and carrying one slot's rows into the other is what #216
+    // reports. Sessions logged before `rid` existed carry none and still answer for every slot,
+    // so nobody's history disappears the day they update.
+    const matches = w.entries.filter(e => e.id === exId)
+    const en = rid
+      ? (matches.find(e => e.rid === rid) || matches.find(e => !e.rid))
+      : matches[0]
     if (!en) continue
     // A session that does not count — a planned deload, or a rehab block merged into a real
     // session — is not "last time" for the next regular prescription: its reps and durations
@@ -381,7 +388,7 @@ function buildWorkSets(S, cfg, options = {}) {
   // `lastEntryFor` now skips any entry that does not count — a planned deload, or a rehab
   // block merged into a real session (entryExcluded) — so the rows seed from the last
   // *counting* session without this function pre-filtering the history itself.
-  const last = lastEntryFor(S, cfg.id)
+  const last = lastEntryFor(S, cfg.id, options.rid)
   const n = Math.max(1, cfg.sets || 1)
   const mode = modeOf(cfg)
   const sets = []
