@@ -32,8 +32,9 @@ function stateFile(uid) {
 
 // Pick the uid: OPENGYM_UID env, else the only state-* file, else the only user in db.json.
 // Throws listing the options if ambiguous. The sanitiser on stateFile() keeps a sneaky
-// '..' in OPENGYM_UID harmless.
-function resolveUid() {
+// '..' in OPENGYM_UID harmless. Exported for HTTP mode, which auto-detects the profile the
+// same way stdio does when no ?uid= query param or OPENGYM_UID env is given.
+export function resolveUid() {
   const envUid = (process.env.OPENGYM_UID || '').trim()
   if (envUid) {
     if (!/^[a-zA-Z0-9_-]+$/.test(envUid)) throw new Error(`OPENGYM_UID contains characters that aren't safe in a filename: ${JSON.stringify(envUid)}`)
@@ -126,6 +127,11 @@ export function getUser() {
 }
 
 export const dataDir = () => resolveDataDir()
+
+// The uid the process is currently serving (null before init). HTTP mode uses this to
+// skip redundant setActiveUser() swaps when a session's tools run while its uid is
+// already the active one.
+export const activeUid = () => _uid
 
 // Switch the active user mid-process (HTTP mode). Resets watcher, state, and db so the next
 // getState() call reads the new user's files. In stdio mode this is never called — the process

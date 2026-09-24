@@ -13,8 +13,8 @@ web/       multi-stage Dockerfile (builds frontend → nginx) + nginx.conf (serv
 media/     exercise img/gif (gitignored, fetched at runtime).
 docs/      self-hosting guide.
 mcp/       optional Model Context Protocol server — read-only stdio bridge (spawned by the
-            LLM client) or HTTP/SSE server (reachable over the network). Tools query a user's
-            workouts/1RM/muscle balance. stdio: not in the Docker build. HTTP: optional
+            LLM client) or Streamable HTTP server (reachable over the network). Tools query a
+            user's workouts/1RM/muscle balance. stdio: not in the Docker build. HTTP: optional
             `mcp` service in docker-compose.yml. See mcp/README.md.
 ```
 

@@ -1,4 +1,4 @@
-# MCP server (HTTP/SSE mode). Serves the same read-only tools over HTTP so an LLM
+# MCP server (HTTP mode). Serves the same read-only tools over Streamable HTTP so an LLM
 # client on a different host can reach the data without sharing the filesystem.
 #
 # Build:  docker build -t opengym-mcp ./mcp
@@ -34,4 +34,4 @@ EXPOSE 3100
 CMD ["node", "src/http.js"]
 
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
-    CMD wget --spider -q "http://127.0.0.1:${OPENGYM_HTTP_PORT}/sse" || exit 1
+    CMD wget --spider -q "http://127.0.0.1:${OPENGYM_HTTP_PORT}/health" || exit 1
