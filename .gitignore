@@ -16,6 +16,7 @@ node_modules/
 node_modules
 .claude/
 .agents/
+.omo
 
 # CI reports (test:* jobs write these next to the suites)
 junit.xml
