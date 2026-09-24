@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { buildSessionEntries } from './session-start.js'
+import { buildCombinedEntries } from './session-merge.js'
 import { readSession } from './progression.js'
 import { isWarmupRow } from './workout-model.js'
 
@@ -66,5 +67,46 @@ describe('buildSessionEntries', () => {
   it('does not stamp rid — that is the merge helper’s job', () => {
     const r = { id: 'r', prog: 'off', ex: [{ id: '0025', sets: 3, reps: 5, weight: 60 }] }
     expect(buildSessionEntries(st, r)[0].rid).toBeUndefined()
+  })
+})
+
+// #216: progression state and rep carry-over were keyed by exercise alone, so the classic
+// heavy-slot / light-slot pattern (one lift in two routines) had each session overwrite the
+// other's opening numbers. Every start path stamps `entry.rid`; history now reads per slot.
+describe('one exercise in two routines', () => {
+  const BENCH = '0025'
+  const heavy = { id: 'rC', prog: 'greyskull', ex: [{ id: BENCH, sets: 3, reps: 8, weight: 72.5, prog: 'greyskull' }] }
+  const light = { id: 'rA', prog: 'linear', ex: [{ id: BENCH, sets: 3, reps: 10, weight: 65, prog: 'linear' }] }
+  const work = entry => entry.sets.filter(s => !isWarmupRow(s))
+
+  const logged = (st, routine, d) => {
+    const entries = buildCombinedEntries(st, [routine.id]).entries
+    return { d, entries: entries.map(e => ({ ...e, sets: e.sets.map(s => ({ ...s, done: true })) })) }
+  }
+
+  it('opens each routine on its own numbers after the other one was trained', () => {
+    const st = { unit: 'kg', exWeights: {}, routines: [heavy, light], workouts: [] }
+    st.workouts.push(logged(st, heavy, '2026-01-01'))
+
+    const a = buildCombinedEntries(st, [light.id]).entries[0]
+    expect(work(a).map(s => s.w), 'the light slot keeps its own weight').toEqual([65, 65, 65])
+    expect(work(a).map(s => s.r), 'and its own reps').toEqual([10, 10, 10])
+
+    // The slot that was actually trained still progresses off its own history.
+    const c = buildCombinedEntries(st, [heavy.id]).entries[0]
+    expect(work(c)[0].w, 'the heavy slot advances').toBeGreaterThan(72.5)
+  })
+
+  it('keeps a session logged before rid existed readable from either routine', () => {
+    // Legacy entries carry no rid. Ignoring them per slot would silently reset everyone's
+    // progression on update, so they still answer for whichever routine asks.
+    const st = {
+      unit: 'kg', exWeights: {}, routines: [heavy, light],
+      workouts: [{ d: '2026-01-01', entries: [{ id: BENCH, target: { sets: 3, reps: 8, weight: 80 }, sets: [80, 80, 80].map(w => ({ w, r: 8, done: true })) }] }]
+    }
+    for (const r of [heavy, light]) {
+      const entry = buildCombinedEntries(st, [r.id]).entries[0]
+      expect(work(entry)[0].w, `${r.id} reads the legacy session`).toBeGreaterThanOrEqual(80)
+    }
   })
 })

@@ -22,7 +22,7 @@ export function buildSessionEntries(st, r) {
     // plates exist), not the unit default; a timed exercise's `inc` is seconds, so it keeps the
     // default for its optional load.
     const step = modeOf(cfg) === 'reps' ? weightIncrement(cfg, st.unit) : defaultIncrement(cfg.id, st.unit)
-    const sets = applyIntensifierPlan(applyPrescription(buildSets(st, cfg, { step, useTarget: plan.kind === 'off' }), plan, step), cfg)
+    const sets = applyIntensifierPlan(applyPrescription(buildSets(st, cfg, { step, useTarget: plan.kind === 'off', rid: r?.id }), plan, step), cfg)
     const target = { ...cfg }
     if (plan.weight != null) target.weight = plan.weight
     if (plan.reps != null) target.reps = plan.reps

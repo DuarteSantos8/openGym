@@ -246,10 +246,18 @@ export function readSession(entry, fallback) {
 }
 
 /** Every past session for one exercise, oldest first. `fallback` — see readSession. */
-export function sessionsFor(S, exId, fallback) {
+export function sessionsFor(S, exId, fallback, rid) {
   const out = []
   ;(S.workouts || []).forEach(w => {
-    const entry = w.entries.find(e => e.id === exId)
+    // One exercise can sit in more than one slot — the same lift heavy in one routine and light
+    // in another, or twice inside one combined session. Reading `find(e => e.id === exId)` took
+    // whichever came first and let one slot's numbers open the other (#216). Every start path
+    // stamps `entry.rid`, so a routine reads its own line; sessions logged before `rid` existed
+    // carry none and stay shared, which keeps their history rather than resetting everyone.
+    const matches = w.entries.filter(e => e.id === exId)
+    const entry = rid
+      ? (matches.find(e => e.rid === rid) || matches.find(e => !e.rid))
+      : matches[0]
     if (!entry) return
     // A session that does not count for this exercise cannot become the baseline for its next
     // prescription. Exclusion is per-entry now (ENG-11): a legacy whole-workout
@@ -307,7 +315,7 @@ export function nextPrescription(S, cfg, routine) {
     : weightIncrement(cfg, unit)
   if (policy === 'off') return { policy, kind: 'off' }
 
-  const sessions = sessionsFor(S, cfg.id, cfg).filter(s => s.mode === mode)
+  const sessions = sessionsFor(S, cfg.id, cfg, routine?.id).filter(s => s.mode === mode)
   const last = sessions[sessions.length - 1]
   if (!last) return { policy, kind: 'first', why: ['Nothing logged yet — this session sets the baseline.'] }
 
