@@ -15,7 +15,6 @@ cd openGym
 # edit the soec.template.env.containers["api"].env with at least your URL
 kubectl apply -k kubernetes/
 ```
-```
 
 
 You will also need an API Gateway, that is configured to work with TLS. It has been tested with [Envoy Gateway](https://gateway.envoyproxy.io) and [Cert-Manager](https://cert-manager.io).
