@@ -1,0 +1,113 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: opengym
+  name: opengym
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: opengym
+  template:
+    metadata:
+      labels:
+        app: opengym
+    spec:
+      initContainers:
+        - name: media-download
+          image: alpine/git
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              mkdir -p /out/img /out/gif
+              if [ -z "$(ls -A /out/img 2>/dev/null)" ]; then
+                git clone --depth 1 https://github.com/hasaneyldrm/exercises-dataset /tmp/ds
+                cp /tmp/ds/images/*.jpg /out/img/ && cp /tmp/ds/videos/*.gif /out/gif/
+              fi
+          volumeMounts:
+            - name: opengym-media
+              mountPath: /out
+          resources:
+            requests:
+              memory: 128Mi
+            limits:
+              memory: 256Mi
+      containers:
+        - name: api
+          image: ghcr.io/duartesantos8/opengym-api:latest
+          imagePullPolicy: Always
+          env:
+            - name: PORT
+              value: "3000"
+            - name: DATA_DIR
+              value: /data
+            - name: RP_ID
+              value: opengym.example.com
+            - name: ORIGIN
+              value: https://opengym.example.com
+          ports:
+            - containerPort: 3000
+              name: http
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+          volumeMounts:
+            - name: opengym-data
+              mountPath: /data
+          resources:
+            requests:
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+        - name: web
+          image: ghcr.io/duartesantos8/opengym-web:latest
+          imagePullPolicy: Always
+          env:
+            - name: NGINX_PORT
+              value: "80"
+            - name: BACKEND
+              value: 127.0.0.1
+            - name: PORT
+              value: "3000"
+          ports:
+            - containerPort: 80
+              name: web
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 30
+          volumeMounts:
+            - name: opengym-media
+              mountPath: /usr/share/nginx/html/img
+              subPath: img
+            - name: opengym-media
+              mountPath: /usr/share/nginx/html/gif
+              subPath: gif
+          resources:
+            requests:
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+      volumes:
+        - name: opengym-data
+          persistentVolumeClaim:
+            claimName: opengym-data
+        - name: opengym-media
+          persistentVolumeClaim:
+            claimName: opengym-media
