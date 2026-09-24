@@ -4,7 +4,11 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-const DATA_DIR = process.env.OPENGYM_DATA || path.join(process.cwd(), 'data')
+// DATA_DIR can be overridden per-request in HTTP mode (setActiveUser).
+// In stdio mode it comes from the env var or cwd — set once at startup.
+function resolveDataDir() {
+  return _dataDir || process.env.OPENGYM_DATA || path.join(process.cwd(), 'data')
+}
 
 // null = no state file (brand-new account); undefined = not yet loaded.
 let _state = undefined
@@ -12,15 +16,18 @@ let _db = undefined
 let _uid = null
 let _watcher = null
 let _loadedMtime = 0    // mtimeMs we last read at — used to catch watcher omissions
+let _dataDir = null     // current DATA_DIR (may differ from env default in HTTP mode)
 
 function readJsonOrNull(file) {
   try { return JSON.parse(fs.readFileSync(file, 'utf8')) } catch { return null }
 }
 
-function reloadDb() { _db = readJsonOrNull(path.join(DATA_DIR, 'db.json')) || { users: [], creds: [], subs: [], invites: [] } }
+function reloadDb() {
+  _db = readJsonOrNull(path.join(resolveDataDir(), 'db.json')) || { users: [], creds: [], subs: [], invites: [] }
+}
 
 function stateFile(uid) {
-  return path.join(DATA_DIR, 'state-' + uid.replace(/[^a-zA-Z0-9_-]/g, '') + '.json')
+  return path.join(resolveDataDir(), 'state-' + uid.replace(/[^a-zA-Z0-9_-]/g, '') + '.json')
 }
 
 // Pick the uid: OPENGYM_UID env, else the only state-* file, else the only user in db.json.
@@ -32,31 +39,34 @@ function resolveUid() {
     if (!/^[a-zA-Z0-9_-]+$/.test(envUid)) throw new Error(`OPENGYM_UID contains characters that aren't safe in a filename: ${JSON.stringify(envUid)}`)
     return envUid
   }
-  const files = fs.readdirSync(DATA_DIR)
+  const files = fs.readdirSync(resolveDataDir())
     .filter(f => /^state-[a-zA-Z0-9_-]+\.json$/.test(f))
     .map(f => f.replace(/^state-/, '').replace(/\.json$/, ''))
   if (files.length === 1) return files[0]
   if (files.length === 0) {
     reloadDb()
     if (_db.users.length === 1) return _db.users[0].id
-    if (_db.users.length === 0) throw new Error(`no openGym users found in ${path.join(DATA_DIR, 'db.json')} — sign in at least once on a device`)
+    if (_db.users.length === 0) throw new Error(`no openGym users found in ${path.join(resolveDataDir(), 'db.json')} — sign in at least once on a device`)
     // Multiple users in db.json but no state files yet — list their ids, not the (empty)
     // files list. Hit when accounts exist but none has signed in on a device.
     throw new Error(
       `multiple openGym users found — set OPENGYM_UID to one of: ${_db.users.map(u => u.id).join(', ')}\n` +
-      `  (look them up in ${path.join(DATA_DIR, 'db.json')} under "users"[].id)`
+      `  (look them up in ${path.join(resolveDataDir(), 'db.json')} under "users"[].id)`
     )
   }
   throw new Error(
     `multiple openGym users found — set OPENGYM_UID to one of: ${files.join(', ')}\n` +
-    `  (look them up in ${path.join(DATA_DIR, 'db.json')} under "users"[].id)`
+    `  (look them up in ${path.join(resolveDataDir(), 'db.json')} under "users"[].id)`
   )
 }
 
-// Idempotent. Picks the uid, loads db.json, attaches the watcher, primes state.
+// Idempotent in stdio mode (returns early if already initialized).
+// Picks the uid, loads db.json, attaches the watcher, primes state.
 export function init() {
   if (_uid !== null) return
-  if (!fs.existsSync(DATA_DIR)) throw new Error(`OPENGYM_DATA dir does not exist: ${DATA_DIR}`)
+  const dir = resolveDataDir()
+  _dataDir = dir
+  if (!fs.existsSync(dir)) throw new Error(`OPENGYM_DATA dir does not exist: ${dir}`)
   _uid = resolveUid()
   reloadDb()
   const file = stateFile(_uid)
@@ -115,7 +125,21 @@ export function getUser() {
   return { id: u.id, name: u.name, created: u.created || null }
 }
 
-export const dataDir = () => DATA_DIR
+export const dataDir = () => resolveDataDir()
+
+// Switch the active user mid-process (HTTP mode). Resets watcher, state, and db so the next
+// getState() call reads the new user's files. In stdio mode this is never called — the process
+// serves one user for its entire lifetime.
+export function setActiveUser(uid, dataDirPath) {
+  if (_watcher) { _watcher.close(); _watcher = null }
+  _state = undefined
+  _db = undefined
+  _uid = null
+  _loadedMtime = 0
+  _dataDir = dataDirPath || null
+  process.env.OPENGYM_UID = uid
+  init()
+}
 
 // Test-only: work against a passed-in state, not the disk.
 export function _seedStateForTests(state) {
