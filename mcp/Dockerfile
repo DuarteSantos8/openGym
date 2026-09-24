@@ -19,6 +19,12 @@ WORKDIR /app
 COPY mcp/package.json mcp/package-lock.json* ./
 RUN npm ci --omit=dev --omit=optional && npm cache clean --force
 
+# tools.js imports from ../../frontend/src/lib/ — recreate that path in the image so the
+# relative imports resolve without modification. Only lib/ is needed; the rest of frontend/
+# is React/Vite-specific and not used by the MCP server.
+COPY frontend/src/lib/ /frontend/src/lib/
+RUN ln -s /frontend /app/frontend
+
 COPY mcp/src/ ./src/
 
 ENV NODE_ENV=production
