@@ -25,7 +25,13 @@ export function buildSessionEntries(st, r) {
     const sets = applyIntensifierPlan(applyPrescription(buildSets(st, cfg, { step, useTarget: plan.kind === 'off' }), plan, step), cfg)
     const target = { ...cfg }
     if (plan.weight != null) target.weight = plan.weight
-    if (plan.reps != null) target.reps = plan.reps
+    // Double progression opens at `aim`, a rung on the way up the range, but it is graded
+    // against the top of that range — readSession compares every set to `target.reps`. Storing
+    // the rung here made the session grade itself against what it opened at, so hitting the
+    // opened reps read as "top of the range in every set" and the weight climbed every session
+    // without the range ever being completed (#278). `repsTop` is the grading target.
+    if (plan.repsTop != null) target.reps = plan.repsTop
+    else if (plan.reps != null) target.reps = plan.reps
     if (plan.sec != null) target.sec = plan.sec
     if (plan.sets != null) target.sets = plan.sets
     return { id: cfg.id, sg: cfg.sg, target, plan, sets, ...(noProg ? { noProg: true } : {}) }

@@ -403,15 +403,15 @@ export function nextPrescription(S, cfg, routine) {
     const range = normalizeRepRange(cfg.reps || last.goal || 10, cfg.repsMin, repStep(cfg))
     const top = range.reps
     const bottom = range.repsMin
-    if (last.ok) return { policy, kind: 'up', weight: addStep(w, inc, inc), reps: bottom, why: ['Top of the rep range in every set — {0} {1} more, back to {2} reps.', inc, unit, bottom] }
+    if (last.ok) return { policy, kind: 'up', weight: addStep(w, inc, inc), reps: bottom, repsTop: top, why: ['Top of the rep range in every set — {0} {1} more, back to {2} reps.', inc, unit, bottom] }
     if (stalls >= deloadAt) {
       const selected = epleyDeload()
-      if (selected) return selected
+      if (selected) return { ...selected, repsTop: top }
       const dw = deloadTo(w, inc)
-      return { policy, kind: 'deload', weight: dw, reps: bottom, why: ['Stalled {0} sessions — deload to {1} {2}.', stalls, dw, unit] }
+      return { policy, kind: 'deload', weight: dw, reps: bottom, repsTop: top, why: ['Stalled {0} sessions — deload to {1} {2}.', stalls, dw, unit] }
     }
     const aim = Math.min(top, Math.max(bottom, last.low + repStep(cfg)))
-    return { policy, kind: 'hold', weight: w, reps: aim, why: ['Same weight — aim for {0} reps this time.', aim] }
+    return { policy, kind: 'hold', weight: w, reps: aim, repsTop: top, why: ['Same weight — aim for {0} reps this time.', aim] }
   }
 
   // linear + greyskull

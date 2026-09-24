@@ -67,4 +67,40 @@ describe('buildSessionEntries', () => {
     const r = { id: 'r', prog: 'off', ex: [{ id: '0025', sets: 3, reps: 5, weight: 60 }] }
     expect(buildSessionEntries(st, r)[0].rid).toBeUndefined()
   })
+
+  // #278. Double progression opens at a rung of the rep range and is graded against its top.
+  // Writing the opened rung into `target.reps` made every session grade itself against what
+  // it opened at, so the range was never actually climbed: hitting the opened reps read as a
+  // hit and the weight went up again the session after, and the one after that.
+  it('grades a double-progression session against the top of the range, not the reps it opened at', () => {
+    const cfg = { id: '0025', sets: 3, reps: 12, repsMin: 8, weight: 42, inc: 6, prog: 'double' }
+    const r = { id: 'r', prog: 'double', ex: [cfg] }
+    let st = { unit: 'kg', exWeights: {}, routines: [r], workouts: [] }
+    const log = (entry, reps, d) => {
+      const work = entry.sets.filter(s => !isWarmupRow(s))
+      return { d, entries: [{ ...entry, sets: work.map(s => ({ ...s, r: reps, done: true })) }] }
+    }
+
+    // Session one falls short of the top: eight of a required twelve.
+    const first = buildSessionEntries(st, r)[0]
+    expect(first.target.reps).toBe(12)
+    st = { ...st, workouts: [log(first, 8, '2026-01-01')] }
+
+    // Every session after opens one rep higher and holds the weight, because the top of the
+    // range is what counts — not the rung it opened at, which the lifter is hitting exactly.
+    for (const [n, opened] of [[2, 9], [3, 10], [4, 11], [5, 12]]) {
+      const entry = buildSessionEntries(st, r)[0]
+      const work = entry.sets.filter(s => !isWarmupRow(s))
+      expect(work.every(s => s.r === opened), `session ${n} opens at ${opened}`).toBe(true)
+      expect(entry.target.reps, `session ${n} is graded against the top`).toBe(12)
+      expect(entry.target.weight, `session ${n} holds the weight`).toBe(42)
+      st = { ...st, workouts: [...st.workouts, log(entry, opened, `2026-01-0${n}`)] }
+    }
+
+    // Twelve in every set is the whole range: now the weight moves and the reps reset.
+    const after = buildSessionEntries(st, r)[0]
+    expect(after.plan.kind).toBe('up')
+    expect(after.target.weight).toBe(48)
+    expect(after.sets.filter(s => !isWarmupRow(s)).every(s => s.r === 8)).toBe(true)
+  })
 })
