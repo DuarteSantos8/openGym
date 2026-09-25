@@ -27,9 +27,13 @@ const EX = Object.keys(EXIDX).find(id => (EXIDX[id].bp || '') !== 'cardio' && !E
 const DAY = 86400000
 const T0 = Date.UTC(2026, 2, 2, 9)
 const iso = i => new Date(T0 + i * DAY).toISOString().slice(0, 10)
-const session = (i, rows) => ({
+const set = (setId, weight, reps, status = 'completed') => ({ setId, status, observations: [{ metric: 'repetitions', value: reps }], resistance: { kind: 'external-load', value: weight }, segments: [] })
+const session = (i, sets) => ({
   id: 'w' + i, d: iso(i), start: T0 + i * DAY, end: T0 + i * DAY + 3600000, name: 'Push', vol: 0,
-  entries: [{ id: EX, target: { mode: 'reps', bodyweight: false }, sets: rows }],
+  exposures: [{ exerciseId: EX, performance: { sets } }],
+})
+const historyState = workouts => ({
+  workouts: workouts.map(workout => ({ ...workout, exposures: workout.exposures.map(exposure => ({ ...exposure, mode: 'reps', performance: { sets: exposure.performance.sets.map(row => ({ ...row, role: row.setId === 'warmup' ? 'warmup' : 'work' })) } })) })),
 })
 
 beforeEach(() => {
@@ -52,18 +56,18 @@ describe('exercise history sheet', () => {
   })
 
   it('lists sessions newest first with labelled sets, volume and one PR marker', () => {
-    useStore.setState(s => ({ S: { ...s.S, workouts: [
-      session(0, [{ w: 40, r: 8, done: true, phase: 'warmup' }, { w: 60, r: 5, done: true }, { w: 60, r: 5, done: true }]),
-      session(2, [{ w: 70, r: 5, done: true }]),
-      session(4, [{ w: 70, r: 3, done: true }, { w: 90, r: 1, done: false }]),
-    ] } }))
+    useStore.setState(s => ({ S: { ...s.S, ...historyState([
+      session(0, [set('warmup', 40, 8), set('work1', 60, 5), set('work2', 60, 5)]),
+      session(2, [set('work', 70, 5)]),
+      session(4, [set('work', 70, 3), set('skipped', 90, 1, 'skipped')]),
+    ]) } }))
     exerciseHistorySheet(EX)
     const host = renderTop()
     const rows = [...host.querySelectorAll('.list .item')]
     expect(rows).toHaveLength(3)
     // newest first, oldest last; the warm-up and the unfinished set never show up
-    expect(rows[0].querySelector('.ss').textContent).toBe('70×3')
-    expect(rows[2].querySelector('.ss').textContent).toBe('60×5  ·  60×5')
+    expect(rows[0].querySelector('.ss').textContent).toBe('+70 × 3')
+    expect(rows[2].querySelector('.ss').textContent).toBe('+60 × 5  ·  +60 × 5')
     expect(rows[2].textContent).toContain('Volume 600 kg')
     // the record was set in the middle session and only that one carries the badge
     expect(rows.map(r => !!r.querySelector('.pr'))).toEqual([false, true, false])
@@ -77,7 +81,7 @@ describe('exercise history sheet', () => {
     const before = renderTop()
     expect([...before.querySelectorAll('button')].some(b => b.textContent === 'History')).toBe(false)
 
-    useStore.setState(s => ({ S: { ...s.S, workouts: [session(0, [{ w: 60, r: 5, done: true }])] } }))
+    useStore.setState(s => ({ S: { ...s.S, ...historyState([session(0, [set('work', 60, 5)])]) } }))
     useUI.setState({ sheets: [] })
     exerciseDetailSheet(EXIDX[EX])
     const host = renderTop()

@@ -1,70 +1,76 @@
-import { describe, it, expect } from 'vitest'
-import { buildSessionEntries } from './session-start.js'
-import { readSession } from './progression.js'
-import { isWarmupRow } from './workout-model.js'
+import { describe, expect, it } from 'vitest'
+import { buildSessionExposures, lastLogFor, missingOneRms, occurrenceFor } from './session-start.js'
+import { ruleOccurrence } from './test-fixtures.js'
+import { EXIDX, isAssisted } from './exercises.js'
 
-// The session builder used by the live start and by "log a past workout".
-describe('buildSessionEntries', () => {
-  const st = { unit: 'kg', workouts: [], exWeights: {}, routines: [] }
+const ctx = { now: Date.UTC(2026, 8, 24), newId: seed => seed, unit: 'kg' }
+const profile = over => ({ unit: 'kg', workouts: [], prescriptions: {}, oneRepMaxes: {}, progression: {}, ...over })
+const percent = ruleOccurrence('0025', { patch: r => ({ ...r, parameters: { ...r.parameters, load: { mode: 'percent_1rm', percent: 70 } }, increment: { type: 'percentage_points', value: 2.5 } }) })
 
-  it('ramps the warm-ups on the exercise’s own increment, not the unit default', () => {
-    const r = { id: 'r', prog: 'off', ex: [{ id: '0025', sets: 3, reps: 5, weight: 60, inc: 1.25, warmupSets: 2 }] }
-    const entries = buildSessionEntries(st, r)
-    const warm = entries[0].sets.filter(isWarmupRow).map(s => s.w)
-    expect(warm).toHaveLength(2)
-    for (const w of warm) expect(Math.round(w / 1.25 * 1000) / 1000 % 1).toBe(0)   // a multiple of 1.25
-    expect(entries[0].sets.filter(s => !isWarmupRow(s)).every(s => s.w === 60)).toBe(true)
+describe('buildSessionExposures', () => {
+  it('stores one prescription per occurrence, tracked by occurrence', () => {
+    const S = profile()
+    const [a, b] = buildSessionExposures(S, { id: 'r1', ex: [ruleOccurrence('0025'), ruleOccurrence('0032', { preset: 'double' })] }, ctx)
+    expect(a).toMatchObject({ exerciseId: '0025', occurrenceId: 'occ-0025', trackId: 'occ-0025', routineId: 'r1', excludedFromProgression: false, performance: { sets: [] } })
+    expect(S.prescriptions[a.prescriptionId]).toMatchObject({ trackId: 'occ-0025', preset: 'linear', generatedAt: '2026-09-24T00:00:00.000Z' })
+    expect(S.prescriptions[b.prescriptionId].preset).toBe('double')
   })
 
-  it('keeps the unit default for timed exercises, whose inc is seconds', () => {
-    const r = { id: 'r', prog: 'off', ex: [{ id: '0025', mode: 'time', sets: 2, sec: 30, inc: 10, weight: 0 }] }
-    const entries = buildSessionEntries(st, r)
-    expect(entries[0].sets.every(s => s.sec === 30)).toBe(true)
+  it('advances from the track state and the newest log', () => {
+    const S = profile()
+    const routine = { id: 'r1', ex: [ruleOccurrence('0025')] }
+    const [first] = buildSessionExposures(S, routine, ctx)
+    S.workouts.push({ id: 'w1', exposures: [{ ...first, actual: { sets: 3, reps: 5, load: { value: 20, unit: 'kg' } }, audit: [] }] })
+    S.progression['occ-0025'] = { trackId: 'occ-0025', status: 'active', readyToIncrement: true, planRuleRevision: 1, position: 0, lastPrescriptionId: first.prescriptionId }
+    expect(lastLogFor(S, 'occ-0025').exposureId).toBe(first.exposureId)
+    const [second] = buildSessionExposures(S, routine, { ...ctx, now: ctx.now + 1 })
+    expect(S.prescriptions[second.prescriptionId].parameters.load.resolved).toEqual({ value: 22.5, unit: 'kg' })
   })
 
-  it('persists the effective deload target so completing the opened rows reads as a hit', () => {
-    const cfg = { id: '0025', sets: 3, reps: 8, weight: 60, prog: 'linear' }
-    const st = {
-      unit: 'kg', exWeights: {}, routines: [],
-      workouts: [1, 2, 3].map((n) => ({
-        d: `2026-01-0${n}`,
-        entries: [{
-          id: cfg.id,
-          target: { sets: 3, reps: 8, weight: 60 },
-          sets: [6, 6, 6].map(r => ({ w: 60, r, done: true }))
-        }]
-      }))
-    }
-    const r = { id: 'r', prog: 'linear', ex: [cfg] }
-    const entries = buildSessionEntries(st, r)
-    const entry = entries[0]
-    const work = entry.sets.filter(s => !isWarmupRow(s))
-
-    expect(entry.plan.kind).toBe('deload')
-    expect(entry.target).toMatchObject({ reps: entry.plan.reps, weight: entry.plan.weight })
-    expect(readSession({ ...entry, sets: entry.sets.map(s => ({ ...s, done: true })) }, cfg).ok).toBe(true)
-    expect(work.every(s => s.r === entry.target.reps && s.w === entry.target.weight)).toBe(true)
+  it('records the out-of-plan log the next prescription was derived from', () => {
+    const S = profile()
+    const routine = { id: 'r1', ex: [ruleOccurrence('0025')] }
+    const [first] = buildSessionExposures(S, routine, ctx)
+    S.workouts.push({ id: 'w1', exposures: [{ ...first, actual: { sets: 3, reps: 5, load: { value: 250, unit: 'kg' } }, audit: [{ code: 'above_cap' }] }] })
+    const [second] = buildSessionExposures(S, routine, { ...ctx, now: ctx.now + 1 })
+    expect(S.prescriptions[second.prescriptionId].provenance).toEqual({ derivedFromOutOfPlan: true, sourceLogId: first.exposureId })
   })
 
-  it('returns a bare array — no { entries, excluded } wrapper', () => {
-    const r = { id: 'r', prog: 'off', ex: [{ id: '0025', sets: 3, reps: 5, weight: 60 }] }
-    const out = buildSessionEntries(st, r)
-    expect(Array.isArray(out)).toBe(true)
-    expect(out).toHaveLength(1)
+  it('embeds the current 1RM and lists exercises whose percent rule has none', () => {
+    const S = profile()
+    expect(missingOneRms(S, [{ id: 'r1', ex: [percent, ruleOccurrence('0032')] }])).toEqual(['0025'])
+    S.oneRepMaxes.o1 = { id: 'o1', exerciseId: '0025', value: 100, unit: 'kg', source: 'manual', capturedAt: '2026-09-01T00:00:00.000Z' }
+    expect(missingOneRms(S, [{ id: 'r1', ex: [percent] }])).toEqual([])
+    const [x] = buildSessionExposures(S, { id: 'r1', ex: [percent] }, ctx)
+    expect(S.prescriptions[x.prescriptionId].parameters.load.resolved).toEqual({ value: 70, unit: 'kg' })
   })
+})
 
-  it('stamps noProg + plan.kind "off" on every entry of an excluded routine, and neither on a normal one', () => {
-    const ex = [{ id: '0025', sets: 3, reps: 5, weight: 60 }, { id: '0031', sets: 3, reps: 8, weight: 40 }]
-    const excluded = buildSessionEntries(st, { id: 'rehab', excludeFromProgression: true, ex })
-    expect(excluded.every(e => e.noProg === true)).toBe(true)
-    expect(excluded.every(e => e.plan.kind === 'off')).toBe(true)
-
-    const normal = buildSessionEntries(st, { id: 'r', prog: 'off', ex })
-    expect(normal.every(e => e.noProg === undefined)).toBe(true)
+describe('occurrenceFor', () => {
+  it('builds an occurrence from plain numbers', () => {
+    expect(occurrenceFor('0025', { sets: 4, reps: 6, weight: 50 }, { id: 'o1', unit: 'kg' }).rule).toMatchObject({
+      preset: 'manual', parameters: { sets: { min: 4, max: 4 }, reps: { min: 6, max: 6 }, load: { mode: 'absolute', value: 50, unit: 'kg' } }
+    })
+    expect(occurrenceFor('0025', { sets: 3, sec: 45 }, { id: 'o2' }).rule.parameters).toMatchObject({ durationSeconds: { min: 45, max: 45 }, reps: { min: 1, max: 1 } })
   })
+})
 
-  it('does not stamp rid — that is the merge helper’s job', () => {
-    const r = { id: 'r', prog: 'off', ex: [{ id: '0025', sets: 3, reps: 5, weight: 60 }] }
-    expect(buildSessionEntries(st, r)[0].rid).toBeUndefined()
+describe('warm-up inputs', () => {
+  const occ = (exerciseId, warmup) => {
+    const o = occurrenceFor(exerciseId, { sets: 3, reps: 5, weight: 100 }, { id: 'o-' + exerciseId, routineId: 'rt' })
+    return warmup ? { ...o, warmup } : o
+  }
+  const run = ex => {
+    const profile = { workouts: [], prescriptions: {}, progression: {}, oneRepMaxes: {} }
+    const [x] = buildSessionExposures(profile, { id: 'rt', ex: [ex] }, { now: 0, newId: s => s })
+    return profile.prescriptions[x.prescriptionId]
+  }
+  it('passes the occurrence recipe and the exercise equipment', () => {
+    const id = Object.keys(EXIDX).find(k => EXIDX[k].eq === 'barbell')
+    expect(run(occ(id, { mode: 'smart', count: 5 })).warmupRows).toHaveLength(5)
+  })
+  it('an assisted machine gets no automatic warm-ups', () => {
+    const id = Object.keys(EXIDX).find(k => isAssisted(k))
+    expect(run(occ(id, { mode: 'smart', count: 3 })).warmupRows).toBeUndefined()
   })
 })

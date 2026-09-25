@@ -8,6 +8,7 @@
 import { EXIDX } from './exercises.js'
 import { uid } from './format.js'
 import { isWarmupRow } from './workout-model.js'
+import { occurrenceFor } from './session-start.js'
 import { HEVY_ID_MAP, HEVY_TITLE_MAP } from './hevy-id-map.js'
 
 export { HEVY_ID_MAP, HEVY_TITLE_MAP }
@@ -386,8 +387,17 @@ export function mergeHevyRoutines(S, parsed) {
   // id is replaced in place (its exercises re-read from Hevy), everything else is appended.
   let added = 0, updated = 0
   for (const r of parsed.routines || []) {
-    const ex = (r.ex || []).map(e => ({ ...e, id: exIdMap[e.id] || e.id }))
     const existing = r.hevyId ? S.routines.find(x => x.hevyId === r.hevyId) : null
+    const routineId = existing ? existing.id : uid()
+    const ex = (r.ex || []).map(e => {
+      const cfg = { ...e, id: exIdMap[e.id] || e.id }
+      return {
+        ...occurrenceFor(cfg.id, cfg, { id: uid(), unit: S.unit || 'kg', routineId }),
+        ...(cfg.sg ? { sg: cfg.sg } : {}),
+        ...(cfg.warmupSets ? { warmup: { mode: 'smart', count: Math.min(5, cfg.warmupSets) } } : {}),
+        ...(cfg.note ? { note: cfg.note } : {})
+      }
+    })
     if (existing) {
       existing.name = r.name
       existing.ex = ex
@@ -395,7 +405,7 @@ export function mergeHevyRoutines(S, parsed) {
       continue
     }
     S.routines.push({
-      id: uid(),
+      id: routineId,
       name: r.name,
       emoji: r.emoji || 'figureStrength',
       ...(r.hevyId ? { hevyId: r.hevyId } : {}),

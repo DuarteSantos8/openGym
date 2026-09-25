@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { copyRoutine } from './routines.js'
+import { ruleOccurrence } from './test-fixtures.js'
 
 const routine = {
   id: 'r1',
@@ -86,5 +87,15 @@ describe('copyRoutine of a copy', () => {
     expect(second.name).toBe('Push (Copy 2)')
     expect(copyRoutine(second).name).toBe('Push (Copy 3)')
     expect(copyRoutine({ id: 'r', name: 'Push (Kopie)', ex: [] }, 'Kopie').name).toBe('Push (Kopie 2)')
+  })
+
+  it('gives each copied occurrence its own track and rule, owned by the copy', () => {
+    const source = { id: 'r1', name: 'Push', ex: [ruleOccurrence('0025')] }
+    const [occ] = copyRoutine(source).ex
+    const copy = copyRoutine(source)
+    expect(occ.occurrenceId).not.toBe('occ-0025')
+    expect(occ.rule.id).not.toBe(source.ex[0].rule.id)
+    expect(copy.ex[0].rule.routineId).toBe(copy.id)
+    expect({ ...occ.rule, id: 0, routineId: 0 }).toEqual({ ...source.ex[0].rule, id: 0, routineId: 0 })
   })
 })

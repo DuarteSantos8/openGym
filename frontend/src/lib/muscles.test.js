@@ -2,8 +2,9 @@ import { describe, it, expect } from 'vitest'
 import { EXIDX, EXDB, smOf } from './exercises.js'
 import {
   MUSCLE_NAME, exerciseMuscleSnapshot, hasExplicitMuscleMetadata, levelsOf, loadOf,
-  loadOfWorkouts, matchesMuscleGroups, muscleBalanceWindow, muscleGroupsOf, musclesOf, rankOf
+  loadOfWorkouts, loadOfRoutine, matchesMuscleGroups, muscleBalanceWindow, muscleGroupsOf, musclesOf, rankOf
 } from './muscles.js'
+import { loggedExposure, ruleOccurrence } from './test-fixtures.js'
 
 describe('multi-muscle exercise metadata', () => {
   it('normalizes legacy primary/secondary fields and removes duplicate groups', () => {
@@ -147,7 +148,7 @@ describe('map load with warm-up phases', () => {
 })
 
 // A custom exercise that was deleted from the catalogue survives in history only as the
-// muscleSnapshot finish-workout wrote. Reading it back is what keeps those sessions in the
+// muscleSnapshot the finish reducer wrote. Reading it back is what keeps those sessions in the
 // body map and in Stats instead of silently contributing nothing.
 describe('deleted custom exercises', () => {
   const snapshotEntry = {
@@ -208,6 +209,20 @@ describe('muscle balance windows and ranking', () => {
     const deleted = { id: 'deleted', muscleSnapshot: { muscleWeights: { chest: 1 } }, sets: [{ done: true }] }
     expect(loadOfWorkouts([{ entries: [known] }])).toEqual({ chest: 1, triceps: 0.4, deltoids: 0.4, biceps: 0.4 })
     expect(loadOfWorkouts([{ entries: [deleted] }])).toEqual({ chest: 1 })
+  })
+})
+
+describe('v2 shapes', () => {
+  it('counts completed work sets of an exposure, not warm-ups or skipped sets', () => {
+    const w = { d: '2026-08-01', exposures: [loggedExposure('0025', [{ role: 'warmup', r: 5, w: 20 }, { r: 5, w: 60 }, { r: 5, w: 60, done: false }])] }
+    expect(loadOfWorkouts([w]).chest).toBe(1)
+  })
+  it('reads a deleted custom exercise from the exposure snapshot', () => {
+    const w = { exposures: [loggedExposure('gone', [{ r: 5 }], { muscleSnapshot: { muscleWeights: { chest: 1 } } })] }
+    expect(loadOfWorkouts([w])).toEqual({ chest: 1 })
+  })
+  it('a routine of occurrences weighs by the rule set count', () => {
+    expect(loadOfRoutine({ ex: [ruleOccurrence('0025')] }).chest).toBe(3)
   })
 })
 

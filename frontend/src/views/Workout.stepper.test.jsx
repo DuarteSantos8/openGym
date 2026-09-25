@@ -14,6 +14,7 @@ import Workout from './Workout.jsx'
 const mocks = vi.hoisted(() => {
   const state = {
     S: null,
+    A: null,
     startRest: vi.fn(),
     stopRest: vi.fn(),
     stopWork: vi.fn(),
@@ -21,11 +22,17 @@ const mocks = vi.hoisted(() => {
   }
   state.storeSnapshot = () => ({
     S: state.S,
+    A: state.A,
     user: null,
     update: mut => {
       const next = structuredClone(state.S)
       mut(next)
       state.S = next
+    },
+    updateActive: mut => {
+      const next = structuredClone(state.A)
+      mut(next)
+      state.A = next
     },
   })
   state.uiSnapshot = () => ({
@@ -88,9 +95,11 @@ function exercise(id, sets, extra = {}) {
 
 function workout(entries, cur = 0) {
   return {
-    unit: 'kg', restSec: 90, sound: false, effort: 'none', gifSize: 'full',
-    workouts: [], exWeights: {}, routines: [],
-    active: { id: 'active', name: 'Test workout', start: Date.now(), cur, entries },
+    S: {
+      unit: 'kg', restSec: 90, sound: false, effort: 'none', gifSize: 'full',
+      workouts: [], exWeights: {}, routines: [],
+    },
+    A: { id: 'active', name: 'Test workout', start: Date.now(), cur, entries },
   }
 }
 
@@ -108,7 +117,9 @@ function installDom() {
 }
 
 async function mount(entries, cur = 0) {
-  mocks.S = workout(entries, cur)
+  const built = workout(entries, cur)
+  mocks.S = built.S
+  mocks.A = built.A
   installDom()
   await act(async () => { root.render(React.createElement(Workout)) })
 }
@@ -158,7 +169,7 @@ describe('superset stepper — one tap moves one step', () => {
 
     await tap(stepperButton(0, 0, 0, 'Increase'))
 
-    expect(mocks.S.active.entries[0].sets[0].w).toBe(62.5)
+    expect(mocks.A.entries[0].sets[0].w).toBe(62.5)
   })
 
   // Reps step by 1 and do not cascade, so they isolate the stepper from weight's carry-through.
@@ -174,7 +185,7 @@ describe('superset stepper — one tap moves one step', () => {
     await tap(stepperButton(0, 0, 1, 'Increase'))
     await tap(stepperButton(0, 0, 1, 'Increase'))
 
-    expect(mocks.S.active.entries[0].sets[0].r).toBe(8)
+    expect(mocks.A.entries[0].sets[0].r).toBe(8)
   })
 
   // The partner exercise shares the subscription that gets replaced on every write. Tapping its
@@ -189,8 +200,8 @@ describe('superset stepper — one tap moves one step', () => {
     await tap(stepperButton(0, 0, 1, 'Increase'))
     await tap(stepperButton(1, 0, 1, 'Increase'))
 
-    expect(mocks.S.active.entries[0].sets[0].r).toBe(6)
-    expect(mocks.S.active.entries[1].sets[0].r).toBe(6)
+    expect(mocks.A.entries[0].sets[0].r).toBe(6)
+    expect(mocks.A.entries[1].sets[0].r).toBe(6)
   })
 
   // Decrement walks the same path and must not undershoot or need a double tap either.
@@ -202,6 +213,6 @@ describe('superset stepper — one tap moves one step', () => {
 
     await tap(stepperButton(0, 0, 0, 'Decrease'))
 
-    expect(mocks.S.active.entries[0].sets[0].w).toBe(57.5)
+    expect(mocks.A.entries[0].sets[0].w).toBe(57.5)
   })
 })

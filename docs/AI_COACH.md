@@ -237,6 +237,16 @@ So the payload carries `bodyweight`, `side` and `repsMax`, the session reader ca
 count (the dimension bodyweight work grows once reps hit their ceiling), and the prompts say
 that reps and then sets are the progression, and that per-side targets step in twos.
 
+## Progression rules
+
+The plan stores a full progression rule per exercise (twelve presets, see the README); the Coach
+still speaks the older, smaller vocabulary — `prog` of `off`, `linear`, `greyskull`, `double` or
+`time`, plus `sets`, `reps`/`repsMin`/`repsMax`, `sec`, `weight` and `inc`. `api/coach/core/plan-view.js`
+is the only translation between the two. A rule with no old equivalent (pyramid, 5/3/1, triple
+progression, timed holds…) reaches the Coach as `prog: 'off'` with its `preset` named, and an
+accepted change that keeps `prog` edits that rule in place; changing `prog` replaces it with the
+new preset's defaults.
+
 The server re-implements three reading rules the frontend owns — `modeOf`, `isBw`, `isPerSide` —
 because the api image has no build step in common with the frontend. `coach-parity.test.js`
 pins them against the originals over a table of configs, so the copies cannot drift silently.

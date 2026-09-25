@@ -108,3 +108,14 @@ test('forgetting a profile takes it out of the room at once, cache or no cache',
   assert.equal(jobs.isSharing('b'), false);
   assert.equal(cohort.computeCohort('a').people, 3);
 });
+
+test('a migrated (v2) profile is read from its exposures, warm-ups excluded', () => {
+  writeState(DIR, 'v2', sampleState({ engineSchemaVersion: 2, unit: 'kg', workouts: [{ id: 'x', d: daysAgo(1), name: 'A', start: 1, end: 60001, exposures: [{
+    exerciseId: '0001', mode: 'reps', performance: { sets: [
+      { role: 'work', status: 'completed', observations: [{ metric: 'repetitions', value: 5 }], resistance: { kind: 'external-load', value: 90 } },
+      { role: 'warmup', status: 'completed', observations: [{ metric: 'repetitions', value: 5 }], resistance: { kind: 'external-load', value: 500 } }
+    ] } }] }] }));
+  jobs.setShare('v2', true);
+  cohort.invalidate();
+  assert.equal(cohort.computeCohort('v2').exercises.find(x => x.id === '0001').you, Math.round(e(90, 5) * 10) / 10);
+});

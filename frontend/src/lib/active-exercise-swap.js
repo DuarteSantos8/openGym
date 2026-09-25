@@ -1,4 +1,5 @@
 import { supersetUnits, unitOf } from './history.js'
+import { insertActiveOccurrence, replaceActiveOccurrence } from './active-session.js'
 
 function hasLoggedSet(entry) {
   return Array.isArray(entry?.sets) && entry.sets.some(set => set?.done === true)
@@ -15,14 +16,18 @@ export function swapActiveExercise(active, index, replacement, {
   loggedConfirmed = false,
   groupDisposition
 } = {}) {
-  if (!active || !Array.isArray(active.entries) || !replacement || index < 0 || index >= active.entries.length) return null
+  if (!active || !Array.isArray(active.entries) || !replacement?.entry || !replacement?.exposure || index < 0 || index >= active.entries.length) return null
 
   const current = active.entries[index]
   if (!hasLoggedSet(current)) {
     const metadata = Object.fromEntries(Object.entries(current).filter(([key]) => (
       !['id', 'target', 'plan', 'sets', 'sg'].includes(key)
     )))
-    active.entries[index] = { ...metadata, ...replacement, ...(current.sg ? { sg: current.sg } : {}) }
+    const next = {
+      exposure: replacement.exposure,
+      entry: { ...metadata, ...replacement.entry, ...(current.sg ? { sg: current.sg } : {}) }
+    }
+    if (!replaceActiveOccurrence(active, index, next)) return null
     active.cur = index
     return { inserted: false, index }
   }
@@ -35,13 +40,17 @@ export function swapActiveExercise(active, index, replacement, {
   const unit = unitOf(supersetUnits(active.entries), index)
   const keepGroup = current.sg && groupDisposition === 'keep'
   const insertAt = keepGroup ? index + 1 : (unit.length > 1 ? unit.at(-1) + 1 : index + 1)
-  active.entries.splice(insertAt, 0, {
-    ...replacement,
-    // A swap does not change which routine the slot belongs to — carry its `rid` the same
-    // way `sg` is carried, so a combined session's WorkoutDetail groups stay contiguous.
-    ...(current.rid ? { rid: current.rid } : {}),
-    ...(keepGroup ? { sg: current.sg } : {})
-  })
+  const next = {
+    exposure: replacement.exposure,
+    entry: {
+      ...replacement.entry,
+      // A swap does not change which routine the slot belongs to — carry its `rid` the same
+      // way `sg` is carried, so a combined session's WorkoutDetail groups stay contiguous.
+      ...(current.rid ? { rid: current.rid } : {}),
+      ...(keepGroup ? { sg: current.sg } : {})
+    }
+  }
+  if (!insertActiveOccurrence(active, insertAt, next)) return null
   active.cur = insertAt
   return { inserted: true, index: insertAt }
 }

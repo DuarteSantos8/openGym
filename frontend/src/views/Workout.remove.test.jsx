@@ -28,11 +28,13 @@ let sheetContainer
 function setActive(entries, cur = 0) {
   const S = clone(DEF)
   S.wc = { ...S.wc, exerciseButtons: true }   // the removal button is opt-in now; the menu path is covered in Workout.test.jsx
-  S.active = {
+  entries = entries.map((item, index) => ({ ...item, exposureId: `exposure-${index}` }))
+  const A = {
     id: 'remove-test', d: '2026-08-11', start: Date.now(), routineId: null,
-    name: 'Remove test', bw: null, cur, entries
+    name: 'Remove test', bw: null, cur, entries,
+    exposures: entries.map(item => ({ exposureId: item.exposureId, exerciseId: item.id }))
   }
-  useStore.setState({ S, user: null })
+  useStore.setState({ S, A, user: null })
 }
 
 function renderWorkout(entries) {
@@ -96,19 +98,20 @@ describe('active-session exercise removal', () => {
 
   it('cancels a pending timed callback before indexes shift and cleans a one-member group', () => {
     setActive([entry('1001', 'sg-1'), entry('1002', 'sg-1'), entry('1003')], 1)
-    expect(useStore.getState().S.active.cur).toBe(1)
+    expect(useStore.getState().A.cur).toBe(1)
     const wrongWrite = vi.fn(elapsed => {
-      useStore.getState().update(s => { s.active.entries[0].sets[0].sec = elapsed })
+      useStore.getState().updateActive(A => { A.entries[0].sets[0].sec = elapsed })
     })
     useUI.getState().startWork(5, 'Hold', wrongWrite)
 
     removeActiveExercise(0)
     vi.advanceTimersByTime(10_000)
 
-    const active = useStore.getState().S.active
+    const active = useStore.getState().A
     expect(useUI.getState().work).toBeNull()
     expect(wrongWrite).not.toHaveBeenCalled()
     expect(active.entries.map(e => e.id)).toEqual(['1002', '1003'])
+    expect(active.exposures.map(e => e.exerciseId)).toEqual(['1002', '1003'])
     expect(active.cur).toBe(0)
     expect(active.entries[0].sg).toBeUndefined()
     expect(active.entries[0].sets[0].sec).toBeUndefined()
@@ -122,7 +125,7 @@ describe('active-session exercise removal', () => {
     act(() => { removeActiveExercise(0) })
 
     expect(useUI.getState().timer).toBeNull()
-    expect(useStore.getState().S.active.entries.map(e => e.id)).toEqual(['1002'])
+    expect(useStore.getState().A.entries.map(e => e.id)).toEqual(['1002'])
   })
 
   it('keeps a rest countdown that belongs to another exercise, re-pointed at it', () => {
@@ -131,11 +134,11 @@ describe('active-session exercise removal', () => {
 
     act(() => { removeActiveExercise(0) })
     expect(useUI.getState().timer?.forIdx).toBe(0)
-    expect(useStore.getState().S.active.entries.map(e => e.id)).toEqual(['1002', '1003'])
+    expect(useStore.getState().A.entries.map(e => e.id)).toEqual(['1002', '1003'])
 
     act(() => { removeActiveExercise(1) })
     expect(useUI.getState().timer?.forIdx).toBe(0)
-    expect(useStore.getState().S.active.entries.map(e => e.id)).toEqual(['1002'])
+    expect(useStore.getState().A.entries.map(e => e.id)).toEqual(['1002'])
 
     act(() => { removeActiveExercise(0) })
     expect(useUI.getState().timer).toBeNull()
@@ -153,26 +156,26 @@ describe('active-session exercise removal', () => {
     renderWorkout([entry('1001'), entry('1002')])
 
     act(() => removeButton().click())
-    expect(useStore.getState().S.active.entries.map(e => e.id)).toEqual(['1001', '1002'])
+    expect(useStore.getState().A.entries.map(e => e.id)).toEqual(['1001', '1002'])
 
     let dialog = renderTopSheet()
     const cancel = [...dialog.querySelectorAll('button')].find(button => button.textContent === 'Cancel')
     act(() => cancel.click())
-    expect(useStore.getState().S.active.entries.map(e => e.id)).toEqual(['1001', '1002'])
+    expect(useStore.getState().A.entries.map(e => e.id)).toEqual(['1001', '1002'])
 
     act(() => removeButton().click())
     dialog = renderTopSheet()
     const confirm = [...dialog.querySelectorAll('button')].find(button => button.textContent === 'Remove')
     act(() => confirm.click())
-    expect(useStore.getState().S.active.entries.map(e => e.id)).toEqual(['1002'])
+    expect(useStore.getState().A.entries.map(e => e.id)).toEqual(['1002'])
   })
 
   it('uses the selected superset member occurrence rather than its exercise id', () => {
     renderWorkout([entry('1001', 'pair'), entry('1001', 'pair'), entry('1002')])
-    useStore.getState().update(s => {
-      s.active.entries[0].target.marker = 'keep-first'
-      s.active.entries[1].target.marker = 'remove-second'
-    }, false)
+    useStore.getState().updateActive(A => {
+      A.entries[0].target.marker = 'keep-first'
+      A.entries[1].target.marker = 'remove-second'
+    })
 
     act(() => removeButton().click())
     const chooser = renderTopSheet()
@@ -184,7 +187,7 @@ describe('active-session exercise removal', () => {
     const confirm = [...dialog.querySelectorAll('button')].find(button => button.textContent === 'Remove')
     act(() => confirm.click())
 
-    const active = useStore.getState().S.active
+    const active = useStore.getState().A
     expect(active.entries.map(e => e.id)).toEqual(['1001', '1002'])
     expect(active.entries[0].target.marker).toBe('keep-first')
     expect(active.entries[0].sg).toBeUndefined()
@@ -224,7 +227,7 @@ describe('remove-exercise edge cases', () => {
   it('removing the last remaining exercise leaves an empty, coherent session', () => {
     setActive([entry('a')], 0)
     act(() => { removeActiveExercise(0) })
-    const A = useStore.getState().S.active
+    const A = useStore.getState().A
     expect(A.entries).toHaveLength(0)
     expect(A.cur).toBe(0)
   })
@@ -232,7 +235,7 @@ describe('remove-exercise edge cases', () => {
   it('removing one half of a two-member superset dissolves the group', () => {
     setActive([entry('a', 'g1'), entry('b', 'g1'), entry('c')], 0)
     act(() => { removeActiveExercise(1) })
-    const A = useStore.getState().S.active
+    const A = useStore.getState().A
     expect(A.entries.map(e => e.id)).toEqual(['a', 'c'])
     // A superset of one is not a superset.
     expect(A.entries[0].sg).toBeUndefined()
@@ -241,30 +244,38 @@ describe('remove-exercise edge cases', () => {
   it('removing an entry below the active one keeps cur on the same exercise', () => {
     setActive([entry('a'), entry('b'), entry('c')], 2)
     act(() => { removeActiveExercise(0) })
-    const A = useStore.getState().S.active
+    const A = useStore.getState().A
     expect(A.entries.map(e => e.id)).toEqual(['b', 'c'])
     expect(A.entries[A.cur].id).toBe('c')
   })
 
-  it('persists the shortened active session for reload without changing completed history', () => {
+  it('persists the shortened active session to its own key, for reload, without touching the profile', () => {
     const first = entry('same')
     first.target.marker = 'keep-first'
     const second = entry('same')
     second.target.marker = 'remove-second'
     setActive([first, second, entry('other')], 1)
     const workouts = [{ id: 'completed', d: '2026-08-10', entries: [{ id: 'same', sets: [{ w: 42, r: 5, done: true }] }] }]
-    useStore.setState(state => ({ S: { ...state.S, workouts: clone(workouts) } }))
+    // A real persist (not the raw setState above) so gym_state_v1 has a known baseline —
+    // removeActiveExercise no longer clones/re-persists the profile at all (that's the point
+    // of the storage split), so it has to already be there to prove it's left alone.
+    useStore.getState().update(s => { s.workouts = clone(workouts) })
+    const profileBefore = localStorage.getItem('gym_state_v1')
 
     act(() => { removeActiveExercise(1) })
 
-    const persisted = JSON.parse(localStorage.getItem('gym_state_v1'))
-    expect(persisted.workouts).toEqual(workouts)
-    expect(persisted.active.entries.map(e => e.id)).toEqual(['same', 'other'])
-    expect(persisted.active.entries[0].target.marker).toBe('keep-first')
-    expect(persisted.active.cur).toBe(1)
+    // The removal writes only the session's own key — the profile key is not rewritten.
+    expect(localStorage.getItem('gym_state_v1')).toBe(profileBefore)
 
-    useStore.setState({ S: Object.assign(clone(DEF), persisted), user: null })
-    expect(useStore.getState().S.active.entries.map(e => e.id)).toEqual(['same', 'other'])
+    const persistedA = JSON.parse(localStorage.getItem('gym_active_v1'))
+    expect(persistedA.entries.map(e => e.id)).toEqual(['same', 'other'])
+    expect(persistedA.entries[0].target.marker).toBe('keep-first')
+    expect(persistedA.cur).toBe(1)
+
+    // Round-trips like a reload would: the profile's workouts and the session's shortened
+    // entries both come back as they were persisted, from their own keys.
+    useStore.setState({ S: Object.assign(clone(DEF), JSON.parse(profileBefore)), A: persistedA, user: null })
+    expect(useStore.getState().A.entries.map(e => e.id)).toEqual(['same', 'other'])
     expect(useStore.getState().S.workouts).toEqual(workouts)
   })
 })

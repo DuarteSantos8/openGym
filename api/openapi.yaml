@@ -591,6 +591,50 @@ paths:
                   rev: { type: integer }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
+  /api/data/migration-status:
+    get:
+      tags: [Data]
+      summary: Whether the caller's profile still needs the v2 engine migration
+      description: |
+        Not gated by `X-OpenGym-Engine-Schema`. `revision` is the `_rev` of the exact file examined;
+        send it back as `baseRev` to `POST /api/data/migrate-engine-v2`.
+      responses:
+        '200':
+          description: Migration status (no profile yet reads as not required, revision 0).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  required: { type: boolean }
+                  schemaVersion: { type: integer }
+                  revision: { type: integer }
+                  summary:
+                    type: object
+                    nullable: true
+                    properties:
+                      routines: { type: integer }
+                      workouts: { type: integer }
+                      bytes: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { description: '`unsupported-schema` or `profile-unreadable`.' }
+
+  /api/data/migrate-engine-v2:
+    post:
+      tags: [Data]
+      summary: Convert the caller's v1 profile to the v2 engine
+      description: |
+        Body must be exactly `{ "confirmed": true, "baseRev": <revision from migration-status> }`.
+        Writes `state-<uid>.pre-engine-v1.json` once (never replaced), validates the converted
+        profile, then atomically replaces the state file with `_rev` + 1. A v2 profile answers
+        `{ migrated: false }` and changes nothing.
+      responses:
+        '200': { description: '`{ migrated, revision, summary? }`.' }
+        '400': { description: '`invalid-migration-request`.' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { description: '`migration-state-changed` (stale baseRev), `unsupported-schema` or `profile-unreadable`.' }
+        '500': { description: '`migration-failed`; the original file is untouched.' }
+
   /api/push/public-key:
     get:
       tags: [push]

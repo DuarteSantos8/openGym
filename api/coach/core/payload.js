@@ -11,6 +11,8 @@
  * and appearance settings, and every other profile's everything.
  */
 import { LIBRARY, LIB_BY_ID, libraryHas, libraryName, librarySlice, MAX_LIBRARY } from './library.js';
+import { legacyEntriesOf } from '../../engine/index.js';
+import { coachRoutinesOf } from './plan-view.js';
 
 export const CONTRACT = 1;
 // Bounds from FR-22. A review reads a training block, not a training career: more history
@@ -47,7 +49,7 @@ export const isBw = (cfg, ex) =>
 export const isPerSide = cfg => !!(cfg && cfg.side);
 // Mirror of frontend/src/lib/workout-model.js isWarmupRow: an explicit phase wins, else the
 // legacy boolean. A warm-up row is prep, not the session: it is filtered out of the stall
-// count exactly as progression.js filters it, it never counts as a done set or a top set,
+// count exactly as the training engine filters it, it never counts as a done set or a top set,
 // and where it does travel (the last few sessions in full) it is flagged so the model reads
 // "0x12 warm-up" as what it is rather than as a failed set.
 export const isWarmupSet = s => {
@@ -55,6 +57,9 @@ export const isWarmupSet = s => {
   if (ph) return ph === 'warmup' || ph === 'warm-up' || ph === 'warm_up';
   return s?.warmup === true;
 };
+// v2 routines hold an occurrence's PlanRule; every reader below wants the v1 exercise fields
+// instead, so this is the one place that runs them through the adapter.
+const planRoutines = S => coachRoutinesOf(S, id => LIB_BY_ID.get(id) || (S.customEx || []).find(c => c.id === id));
 function readSession(entry, fallback) {
   const target = (entry && entry.target) || fallback || {};
   const ex = LIB_BY_ID.get(entry?.id);
@@ -91,6 +96,7 @@ function cleanEx(e) {
   else if (mode === 'time') { if (e.sec != null) o.sec = e.sec; if (e.weight) o.weight = e.weight; }
   else { if (e.reps != null) o.reps = e.reps; if (e.weight) o.weight = e.weight; }
   if (e.prog) o.prog = e.prog;
+  if (e.preset) o.preset = e.preset;
   if (e.inc > 0) o.inc = e.inc;
   if (e.repsMin != null) o.repsMin = e.repsMin;
   // repsMax is the ceiling that turns "+1 rep forever" into "add a set and start over"; without
@@ -116,7 +122,7 @@ export function canonicalPlan(S) {
   const custom = new Map((S.customEx || []).map(c => [c.id, c]));
   const exOf = id => LIB_BY_ID.get(id) || custom.get(id);
   return {
-    routines: (S.routines || []).map(r => ({
+    routines: planRoutines(S).map(r => ({
       id: r.id, name: r.name || '', prog: r.prog || '',
       ex: (r.ex || []).map(e => {
         const mode = modeOf(e, exOf(e.id));
@@ -144,7 +150,7 @@ export function canonicalPlan(S) {
 }
 
 export function cleanPlan(S) {
-  const routines = (S.routines || []).map(r => ({
+  const routines = planRoutines(S).map(r => ({
     id: r.id, name: r.name, emoji: r.emoji, ...(r.prog ? { prog: r.prog } : {}), ex: (r.ex || []).map(cleanEx)
   }));
   const week = {};
@@ -176,8 +182,8 @@ function aggregates(S, workouts) {
   // Per-exercise stall/deload picture, computed over the same sessions the engine would see.
   const byEx = new Map();
   const planCfg = new Map();
-  (S.routines || []).forEach(r => (r.ex || []).forEach(e => planCfg.set(e.id, e)));
-  (S.workouts || []).forEach(w => (w.entries || []).forEach(en => {
+  planRoutines(S).forEach(r => (r.ex || []).forEach(e => planCfg.set(e.id, e)));
+  (S.workouts || []).forEach(w => legacyEntriesOf(w, S.prescriptions).forEach(en => {
     if (!en.sets?.some(s => s.done)) return;
     if (!byEx.has(en.id)) byEx.set(en.id, []);
     byEx.get(en.id).push(readSession(en, planCfg.get(en.id)));
@@ -198,7 +204,7 @@ function aggregates(S, workouts) {
 
   // Muscle coverage in the window, by body part — the "not trained" gap the Stats screen shows.
   const hit = {};
-  workouts.forEach(w => (w.entries || []).forEach(en => {
+  workouts.forEach(w => legacyEntriesOf(w, S.prescriptions).forEach(en => {
     const work = (en.sets || []).filter(s => s.done && !isWarmupSet(s));
     if (!work.length) return;
     const bp = LIB_BY_ID.get(en.id)?.bp;
@@ -220,8 +226,8 @@ function aggregates(S, workouts) {
  *  be able to refer to, so they ride in the library slice whatever the cap or the filter. */
 function trainedIds(S, workouts) {
   const ids = new Set();
-  (S.routines || []).forEach(r => (r.ex || []).forEach(e => ids.add(e.id)));
-  (workouts || []).forEach(w => (w.entries || []).forEach(en => ids.add(en.id)));
+  planRoutines(S).forEach(r => (r.ex || []).forEach(e => ids.add(e.id)));
+  (workouts || []).forEach(w => legacyEntriesOf(w).forEach(en => ids.add(en.id)));
   return [...ids];
 }
 
@@ -239,14 +245,14 @@ const fmtSet = s => {
 };
 
 /** One older workout as a summary: what was done, the top set, whether targets were hit. */
-function compactWorkout(w) {
+function compactWorkout(w, prescriptions) {
   return {
     d: w.d,
     name: w.name || null,
     minutes: w.end && w.start ? Math.round((w.end - w.start) / 60000) : null,
     prs: (w.prs || []).length,
     compact: true,
-    entries: (w.entries || []).map(en => {
+    entries: legacyEntriesOf(w, prescriptions).map(en => {
       const sets = (en.sets || []).filter(s => !isWarmupSet(s));
       const done = sets.filter(s => s.done);
       let top = null;
@@ -265,7 +271,7 @@ function compactWorkout(w) {
 }
 
 /** One workout, reduced to what a coach reads. */
-function cleanWorkout(w) {
+function cleanWorkout(w, prescriptions) {
   return {
     d: w.d,
     name: w.name || null,
@@ -273,7 +279,7 @@ function cleanWorkout(w) {
     ...(w.rating ? { rating: w.rating } : {}),
     ...(w.note ? { note: String(w.note).slice(0, 300) } : {}),
     prs: (w.prs || []).length,
-    entries: (w.entries || []).map(en => ({
+    entries: legacyEntriesOf(w, prescriptions).map(en => ({
       id: en.id,
       name: libraryName(en.id),
       target: en.target ? { sets: en.target.sets, reps: en.target.reps, sec: en.target.sec, weight: en.target.weight } : null,
@@ -304,7 +310,7 @@ export function workoutMeta(S, workoutId) {
   if (!w) return null;
   let vol = 0;
   let sets = 0;
-  (w.entries || []).forEach(en => (en.sets || []).forEach(s => {
+  legacyEntriesOf(w, S.prescriptions).forEach(en => (en.sets || []).forEach(s => {
     if (!s.done || isWarmupSet(s)) return;
     sets++;
     vol += (s.w || 0) * (s.r || 0);
@@ -373,9 +379,9 @@ export function build(S, opts = {}) {
       const all = (S.workouts || []).filter(x => x && x.d);
       const idx = all.indexOf(w);
       const previous = all.slice(0, idx).filter(x => x.name && x.name === w.name).slice(-3);
-      p.session = { id: w.id || null, ...cleanWorkout(w) };
-      p.previous = previous.map(cleanWorkout);
-      const inSession = new Set((w.entries || []).map(en => en.id));
+      p.session = { id: w.id || null, ...cleanWorkout(w, S.prescriptions) };
+      p.previous = previous.map(x => cleanWorkout(x, S.prescriptions));
+      const inSession = new Set(legacyEntriesOf(w).map(en => en.id));
       const agg = aggregates(S, [w]);
       p.aggregates = { ...agg, exercises: agg.exercises.filter(e => inSession.has(e.id)) };
       const since = new Date(w.d + 'T12:00:00'); since.setDate(since.getDate() - 28);
@@ -392,7 +398,7 @@ export function build(S, opts = {}) {
     p.window = {
       from: workouts[0]?.d || null,
       to: workouts[workouts.length - 1]?.d || null,
-      workouts: workouts.map((w, i) => (i >= detailFrom ? cleanWorkout(w) : compactWorkout(w)))
+      workouts: workouts.map((w, i) => (i >= detailFrom ? cleanWorkout(w, S.prescriptions) : compactWorkout(w, S.prescriptions)))
     };
     p.aggregates = aggregates(S, workouts);
     p.bodyweight = {
@@ -408,7 +414,7 @@ export function build(S, opts = {}) {
     // Creation for a returning user: what they have actually handled, so proposed baselines
     // start from evidence rather than optimism (B2/FR-20).
     const best = {};
-    (S.workouts || []).forEach(w => (w.entries || []).forEach(en => en.sets?.forEach(s => {
+    (S.workouts || []).forEach(w => legacyEntriesOf(w).forEach(en => en.sets?.forEach(s => {
       if (s.done && s.w > 0 && !isWarmupSet(s)) best[en.id] = Math.max(best[en.id] || 0, s.w);
     })));
     if (Object.keys(best).length) {

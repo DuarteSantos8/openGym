@@ -59,14 +59,60 @@ let instr = null                // { exId: [steps] } for the current language, n
 let exerciseNames = null        // { exId: translated name }, null = original catalogue name
 let version = 0                 // bumped on every setLang; drives the React subscription selector
 
+// Engine refs are stable identifiers, not readable English. Locale packs can override any key;
+// this small source dictionary keeps English and incomplete translations human-readable.
+const ENGINE_EN = {
+  'preset.core.manual.name': 'Manual', 'preset.core.manual.desc': 'Fixed targets with no automatic progression.',
+  'preset.core.selfRegulated.name': 'Self-regulated', 'preset.core.selfRegulated.desc': 'Adjust volume from completed work.',
+  'preset.strength.linear.name': 'Linear progression', 'preset.strength.linear.desc': 'Add load after successful sessions.',
+  'preset.strength.greyskull.name': 'Greyskull LP', 'preset.strength.greyskull.desc': 'Linear load with an AMRAP final set.',
+  'preset.strength.double.name': 'Double progression', 'preset.strength.double.desc': 'Raise reps, then load.',
+  'preset.strength.triple.name': 'Triple progression', 'preset.strength.triple.desc': 'Raise reps, sets, then load.',
+  'preset.strength.531.name': '5/3/1', 'preset.strength.531.desc': 'Four-week training-max cycle.',
+  'preset.strength.pyramid.name': 'Pyramid', 'preset.strength.pyramid.desc': 'Sets rise and fall around an anchor load.',
+  'preset.strength.reverse-pyramid.name': 'Reverse pyramid', 'preset.strength.reverse-pyramid.desc': 'Heavy first set followed by lighter work.',
+  'preset.duration.linear.name': 'Duration progression', 'preset.duration.linear.desc': 'Add time after successful sessions.',
+  'preset.bodyweight.ladder.name': 'Volume ladder', 'preset.bodyweight.ladder.desc': 'Raise reps, sets, then difficulty.',
+  'param.setCount': 'Sets', 'param.setCountRange': 'Set range', 'param.reps': 'Reps', 'param.repRange': 'Rep range',
+  'param.load': 'Weight', 'param.loadRange': 'Weight range', 'param.loadStep': 'Weight step', 'param.roundingStep': 'Rounding step',
+  'param.sec': 'Seconds', 'param.secStep': 'Time step', 'param.restSec': 'Rest', 'param.deloadFactor': 'Deload factor',
+  'param.anchorLoad': 'Anchor load', 'param.tmIncrement': 'Training-max increment', 'param.scaleId': 'Scale',
+  'param.scaleVersion': 'Scale version', 'param.scaleValue': 'Scale value',
+  'engine.reason.linearStart': 'Start at {value}.', 'engine.reason.linearAdvance': 'Advance from {from} to {to}.',
+  'engine.reason.linearRecover': 'Reset from {from} to {to}.', 'engine.reason.linearRepeat': 'Repeat {value}.',
+  'engine.reason.rangeStart': 'Start at {reps} reps.', 'engine.reason.rangeAdvanceLoad': 'Increase load from {from} to {to}.',
+  'engine.reason.rangeAdvanceReps': 'Increase reps from {from} to {to}.', 'engine.reason.rangeRecover': 'Reset load from {from} to {to}.',
+  'engine.reason.rangeRepeat': 'Repeat {load} for {reps} reps.', 'engine.reason.manualFrozen': 'Keep the configured target.',
+  'engine.reason.anchoredStart': 'Start at {value}.', 'engine.reason.anchoredAdvance': 'Advance from {from} to {to}.',
+  'engine.reason.anchoredRecover': 'Reset from {from} to {to}.', 'engine.reason.anchoredRepeat': 'Repeat {value}.',
+  'engine.reason.ladderStart': 'Start the volume ladder.', 'engine.reason.ladderReps': 'Increase to {to} reps.',
+  'engine.reason.ladderSets': 'Increase to {to} sets.', 'engine.reason.ladderLoad': 'Increase load from {from} to {to}.',
+  'engine.reason.ladderScale': 'Advance to difficulty {to}.', 'engine.reason.ladderCeiling': 'The ladder ceiling is reached.',
+  'engine.reason.ladderRecover': 'Reset load from {from} to {to}.', 'engine.reason.ladderRepeat': 'Repeat the current ladder step.',
+  'engine.reason.sequenceStart': 'Start phase {phase}.', 'engine.reason.sequencePhase': 'Move to phase {phase}.',
+  'engine.reason.sequenceCycleComplete': 'Cycle complete.', 'engine.reason.selfRegulatedStart': 'Start with {setCount} sets.',
+  'engine.reason.selfRegulatedCarry': 'Use {setCount} sets after completing {last}.',
+  'engine.reason.decisionAdvance': 'Advance next session.', 'engine.reason.decisionComplete': 'Program complete.',
+  'engine.reason.decisionNone': 'No change: {status}.', 'engine.reason.decisionRecover': 'Apply the recovery rule.',
+  'engine.reason.decisionRepeat': 'Repeat next session.', 'engine.reason.decisionReview': 'Review this result manually.',
+  'engine.reason.succeeded': 'All required targets were met.', 'engine.reason.stalled': 'A required target was missed.',
+  'engine.reason.improved': 'Improved from {previous} to {value}.', 'engine.reason.improvedOvershoot': 'Exceeded the target with {value}.',
+  'engine.reason.belowLoad': 'Load was below target.', 'engine.reason.belowTarget': 'A target was not met.',
+  'engine.reason.effortMissing': 'Effort was not recorded.', 'engine.reason.excluded': 'Excluded from progression.',
+  'engine.reason.setMissing': 'A required set was not completed.',
+}
+
 export const getLang = () => lang
 export const dateLocale = () => DATE_LOCALES[lang] || 'en-GB'
 export const getVersion = () => version
 
 // Translate a source string; {0},{1}… are replaced with args (also on the English fallback).
 export function t(s, ...args) {
-  let v = dict[s] || s
+  let v = dict[s] || ENGINE_EN[s] || s
   for (let i = 0; i < args.length; i++) v = v.replaceAll('{' + i + '}', args[i])
+  if (args.length === 1 && args[0] && typeof args[0] === 'object') {
+    for (const [key, value] of Object.entries(args[0])) v = v.replaceAll('{' + key + '}', value)
+  }
   return v
 }
 

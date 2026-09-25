@@ -3,6 +3,8 @@
 import { isoOf, uid } from './format.js'
 import { starterRoutines } from './starter.js'
 import { modeOf } from './history.js'
+import { migrateProfileV1ToV2 } from '../../../api/migration/profile-migration.js'
+import { LIB_BY_ID } from '../../../api/coach/core/library.js'
 
 // Starting weight and weekly increment per exercise of the starter plan (kg).
 // Chest dips are body-weight only here, so they log reps at 0 added weight.
@@ -159,3 +161,6 @@ export function buildDemoState() {
     effort: 'rir'
   }
 }
+
+/** The seed as the app stores it: generated in the v1 shape, converted by the real migration. */
+export const buildDemoProfile = () => migrateProfileV1ToV2(buildDemoState(), LIB_BY_ID).profile

@@ -10,13 +10,13 @@ import {
   STRENGTH_FLOOR,
   STRENGTH_FULL_MS,
   STRENGTH_HALF_LIFE_MS,
-  detrainedMuscles,
-  fatiguedMuscles,
-  fatigueOf,
+  detrainedMuscles as canonicalDetrainedMuscles,
+  fatiguedMuscles as canonicalFatiguedMuscles,
+  fatigueOf as canonicalFatigueOf,
   halfLifeDecay,
-  strengthOf,
+  strengthOf as canonicalStrengthOf,
 } from './recovery.js'
-import { EXDB, registerCustom } from './exercises.js'
+import { EXDB, EXIDX, registerCustom } from './exercises.js'
 import { MUSCLES, exerciseMuscleSnapshot, musclesOf } from './muscles.js'
 import { fatigueStateOf } from './recovery-view.js'
 
@@ -24,19 +24,21 @@ const HOUR = 60 * 60 * 1000
 const DAY = 24 * HOUR
 const NOW = Date.UTC(2026, 0, 1, 12)
 
+// Loaded, non-bodyweight fixtures: a bodyweight movement adds body mass to its load. Weights come from the
+// resolved catalogue (EXIDX), the same source the model reads.
 // Keep fixtures tied to the shipped catalogue while making the expected stimulus explicit.
 const SINGLE = EXDB.find(ex => {
-  const weights = musclesOf(ex)
-  return ex.bp !== 'cardio' && Object.keys(weights).length === 1 && Object.values(weights)[0] === 1
+  const weights = musclesOf(EXIDX[ex.id])
+  return ex.bp !== 'cardio' && ex.eq !== 'body weight' && Object.keys(weights).length === 1 && Object.values(weights)[0] === 1
 })
 const WEIGHTED = EXDB.find(ex => {
-  const weights = musclesOf(ex)
-  return ex.bp !== 'cardio' && Object.values(weights).includes(0.4)
+  const weights = musclesOf(EXIDX[ex.id])
+  return ex.bp !== 'cardio' && ex.eq !== 'body weight' && Object.values(weights).includes(0.4)
 })
 if (!SINGLE || !WEIGHTED) throw new Error('recovery tests require single- and secondary-weight fixtures')
 
-const SINGLE_WEIGHTS = musclesOf(SINGLE)
-const WEIGHTED_WEIGHTS = musclesOf(WEIGHTED)
+const SINGLE_WEIGHTS = musclesOf(EXIDX[SINGLE.id])
+const WEIGHTED_WEIGHTS = musclesOf(EXIDX[WEIGHTED.id])
 const SINGLE_SLUG = Object.keys(SINGLE_WEIGHTS)[0]
 const WEIGHTED_PRIMARY_SLUG = Object.keys(WEIGHTED_WEIGHTS).find(slug => WEIGHTED_WEIGHTS[slug] === 1)
 const SECONDARY_SLUG = Object.keys(WEIGHTED_WEIGHTS).find(slug => WEIGHTED_WEIGHTS[slug] === 0.4)
@@ -51,6 +53,27 @@ const V = 640 * (30 / 38) ** 1.5  // intensity-weighted tonnage of one 80x8 fixt
 
 const doneWorkoutAt = (id, start, count = 1) =>
   workoutAt(id, start, Array.from({ length: count }, () => ({ done: true, w: 80, r: 8 })))
+const canonical = (profile, opts = {}) => {
+  if (!Array.isArray(profile)) return profile
+  const workouts = profile.map((workout, wi) => {
+    const exposures = (workout.entries || []).map((entry, ei) => {
+    const performance = row => ({
+      role: row.phase === 'warmup' || row.warmup ? 'warmup' : 'work',
+      status: row.done ? 'completed' : 'skipped',
+      observations: [row.r != null && { metric: 'repetitions', value: row.r }, row.sec != null && { metric: 'duration', value: row.sec }, row.min != null && { metric: 'duration', value: row.min * 60 }].filter(Boolean),
+      resistance: row.w > 0 ? { kind: 'external-load', value: row.w, unit: row.unit || workout.unit || opts.unit || 'kg' } : entry.target?.bodyweight || EXDB.find(ex => ex.id === entry.id)?.eq === 'body weight' ? { kind: 'bodyweight' } : { kind: 'none' },
+      segments: (row.drops || []).map(performance),
+    })
+    return { exerciseId: entry.id, muscleSnapshot: entry.muscleSnapshot, performance: { sets: (entry.sets || []).map(performance) } }
+    })
+    return { ...workout, exposures }
+  })
+  return { workouts }
+}
+const fatigueOf = (profile, now, opts) => canonicalFatigueOf(canonical(profile, opts), now, opts)
+const strengthOf = (profile, now, opts) => canonicalStrengthOf(canonical(profile, opts), now, opts)
+const fatiguedMuscles = (profile, now, opts) => canonicalFatiguedMuscles(canonical(profile, opts), now, opts)
+const detrainedMuscles = (profile, now, opts) => canonicalDetrainedMuscles(canonical(profile, opts), now, opts)
 const zeroFatigue = () => Object.fromEntries(MUSCLES.map(slug => [slug, 0]))
 const floorStrength = () => Object.fromEntries(MUSCLES.map(slug => [slug, STRENGTH_FLOOR]))
 
@@ -87,6 +110,18 @@ describe('recovery constants', () => {
 })
 
 describe('fatigueOf and strengthOf', () => {
+  it('counts snapshot-less canonical bodyweight observations', () => {
+    const profile = { workouts: [{ start: NOW, d: new Date(NOW).toISOString(), exposures: [{ kind: 'legacy', exerciseId: SINGLE.id, performance: { sets: [{ status: 'completed', observations: [{ metric: 'repetitions', value: 8 }], resistance: { kind: 'bodyweight' }, segments: [] }] } }] }] }
+    expect(canonicalFatigueOf(profile, NOW, { bodyweightKg: 80 })[SINGLE_SLUG]).toBeCloseTo(1 - Math.exp(-(80 * 8) / FATIGUE_REF_VOLUME), 10)
+  })
+  it('reads canonical exposures through the profile snapshot dictionary', () => {
+    const profile = {
+      workouts: [{ start: NOW, d: new Date(NOW).toISOString(), exposures: [{ exerciseId: SINGLE.id, performance: { sets: [{ role: 'work', status: 'completed', observations: [{ metric: 'repetitions', value: 8 }], resistance: { kind: 'external-load', value: 80, unit: 'kg' }, segments: [] }] } }] }],
+    }
+    expect(fatigueOf(profile, NOW)[SINGLE_SLUG]).toBeGreaterThan(0)
+    expect(strengthOf(profile, NOW)[SINGLE_SLUG]).toBe(1)
+  })
+
   it('returns every muscle, ready/floor defaults, and hook defaults for empty history', () => {
     const fatigue = fatigueOf([], NOW)
     const strength = strengthOf([], NOW)
@@ -106,7 +141,6 @@ describe('fatigueOf and strengthOf', () => {
     const workouts = [doneWorkoutAt(WEIGHTED.id, NOW)]
     const fatigue = fatigueOf(workouts, NOW)
     const strength = strengthOf(workouts, NOW)
-
     for (const slug of MUSCLES) {
       const weight = WEIGHTED_WEIGHTS[slug] || 0
       expect(fatigue[slug]).toBeCloseTo(1 - Math.exp(-V * weight / FATIGUE_REF_VOLUME), 10)
@@ -135,7 +169,7 @@ describe('fatigueOf and strengthOf', () => {
       entries: [{
         ...resolved.entries[0],
         id: 'deleted-weighted-exercise',
-        muscleSnapshot: exerciseMuscleSnapshot(WEIGHTED),
+        muscleSnapshot: exerciseMuscleSnapshot(EXIDX[WEIGHTED.id]),
       }],
     }
 
@@ -152,7 +186,7 @@ describe('fatigueOf and strengthOf', () => {
       entries: [{
         ...resolved.entries[0],
         id: 'deleted-weighted-exercise',
-        muscleSnapshot: exerciseMuscleSnapshot(WEIGHTED),
+        muscleSnapshot: exerciseMuscleSnapshot(EXIDX[WEIGHTED.id]),
       }],
     }
     const untouchedSlug = MUSCLES.find(slug => !WEIGHTED_WEIGHTS[slug])
@@ -533,12 +567,23 @@ describe('canonical loads and configured bodyweight', () => {
   })
 
   it('adds external load to bodyweight instead of replacing the body mass', () => {
-    const unloaded = stampedWorkout({ id: bodyweight.id, start: NOW, unit: 'kg', weight: 0, bw: 80 })
-    const loadedSet = { done: true, w: 10, r: 8 }
-    const added = { ...unloaded, entries: [{ ...unloaded.entries[0], sets: [loadedSet] }] }
+    // A weighted pull-up: every row is external-load (10 kg), yet the movement is bodyweight.
+    const unloaded = stampedWorkout({ id: bodyweight.id, start: NOW, unit: 'kg', weight: 0, bw: 80, target: { bodyweight: true } })
+    const added = { ...unloaded, entries: [{ ...unloaded.entries[0], sets: [{ done: true, w: 10, r: 8 }] }] }
 
     expect(fatigueOf([added], NOW, { unit: 'kg' })[bodyweightSlug])
       .toBeGreaterThan(fatigueOf([unloaded], NOW, { unit: 'kg' })[bodyweightSlug])
+  })
+
+  it('does not add body mass to a barbell lift because one row was left empty', () => {
+    // The adapter writes an empty (w = 0) row as kind 'bodyweight'; the exercise is still a loaded lift.
+    const lift = (weights, target) => ({
+      ...stampedWorkout({ id: loaded.id, start: NOW, unit: 'kg', weight: 0, bw: 80 }),
+      entries: [{ id: loaded.id, target, sets: weights.map(w => ({ done: true, w, r: 8 })) }],
+    })
+    // Same sets, but the empty row is a plain no-load row: body mass must not change the result.
+    expect(fatigueOf([lift([80, 0], { bodyweight: true })], NOW, { unit: 'kg' })[loadedSlug])
+      .toBeCloseTo(fatigueOf([lift([80, 0])], NOW, { unit: 'kg' })[loadedSlug], 10)
   })
 
   it('lets explicitly configured custom bodyweight work reset strength', () => {

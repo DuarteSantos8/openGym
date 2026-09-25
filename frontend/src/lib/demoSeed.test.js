@@ -2,15 +2,17 @@
 // exercise the stats it is there to show off — including the effort card, which renders as
 // dashes on a history that is rated too thinly or not at all.
 import { describe, it, expect } from 'vitest'
-import { buildDemoState } from './demoSeed.js'
+import { buildDemoProfile } from './demoSeed.js'
 import {
   effortSummary, effortWeeks, effortHistogram, hasEffort, displayScale, avgRir,
   rirOf, isHardSet, MIN_RATED, HARD_RIR
 } from './effort.js'
 import { effortOf, modeOf } from './history.js'
+import { validateCanonicalProfile } from '../../../api/migration/profile-migration.js'
+import { legacyEntriesOf } from './prescription/index.js'
 
-const S = buildDemoState()
-const eachSet = fn => S.workouts.forEach(w => w.entries.forEach(e => e.sets.forEach(s => fn(s, w, e))))
+const S = buildDemoProfile()
+const eachSet = fn => S.workouts.forEach(w => legacyEntriesOf(w, S.prescriptions).forEach(e => e.sets.forEach(s => fn(s, w, e))))
 const sum = effortSummary(S, 0)   // 0 = the whole history
 
 describe('demo seed — effort', () => {
@@ -45,7 +47,7 @@ describe('demo seed — effort', () => {
     // …while the rest carry enough rated sessions for a curve of their own (needs 3).
     ids.filter(id => id !== '0605').forEach(id => {
       const sessions = S.workouts.filter(w => {
-        const en = w.entries.find(e => e.id === id)
+        const en = legacyEntriesOf(w, S.prescriptions).find(e => e.id === id)
         return en && avgRir(en.sets.filter(s => s.done)) != null
       })
       expect(sessions.length).toBeGreaterThanOrEqual(3)
@@ -56,8 +58,12 @@ describe('demo seed — effort', () => {
     expect(effortOf(S)).toBe('rir')
     expect(displayScale(S)).toBe('rir')
     // The oldest block is written in RPE, as if imported — the stats have to average the mix.
+    // legacyEntriesOf always surfaces the derived `rir` alongside a set's own `rpe` (the engine's
+    // internal scale is RIR, per audit.js normalizeEffort), so a set entered in RPE carries both
+    // fields — check `rpe` first to bucket it as RPE-original, and only count a bare `rir` as a
+    // set that was genuinely logged on that scale.
     let rir = 0, rpe = 0
-    eachSet(s => { if (s.rir != null) rir++; else if (s.rpe != null) rpe++ })
+    eachSet(s => { if (s.rpe != null) rpe++; else if (s.rir != null) rir++ })
     expect(rir).toBeGreaterThan(0)
     expect(rpe).toBeGreaterThan(0)
   })
@@ -102,8 +108,15 @@ describe('demo seed — effort', () => {
   })
 
   it('is deterministic — two builds produce the same ratings', () => {
-    const b = buildDemoState()
-    const flat = st => st.workouts.map(w => w.entries.map(e => e.sets.map(s => `${s.w}x${s.r}/${s.rir ?? ''}/${s.rpe ?? ''}`).join(',')).join('|')).join(';')
+    const b = buildDemoProfile()
+    const flat = st => st.workouts.map(w => legacyEntriesOf(w, st.prescriptions).map(e => e.sets.map(s => `${s.w}x${s.r}/${s.rir ?? ''}/${s.rpe ?? ''}`).join(',')).join('|')).join(';')
     expect(flat(b)).toBe(flat(S))
+  })
+})
+
+describe('demo seed — engine shape', () => {
+  it('is a valid v2 profile', () => {
+    expect(S.engineSchemaVersion).toBe(2)
+    expect(validateCanonicalProfile(S)).toEqual({ ok: true, errors: [] })
   })
 })

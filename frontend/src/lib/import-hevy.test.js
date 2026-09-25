@@ -4,7 +4,9 @@ import {
   parseHevyRoutines, mergeHevyRoutines, localWhen, importHevyData, HevyApiError, HEVY_ID_MAP,
 } from './import-hevy.js'
 import { EXIDX } from './exercises.js'
+import { modeOf } from './history.js'
 import { mergeImport } from './import-csv.js'
+import { canonicalProfile } from './test-fixtures.js'
 
 const TEMPLATES = [
   {
@@ -176,6 +178,20 @@ describe('mergeImport with Hevy payloads', () => {
     expect(second.added).toBe(0)
     expect(S.workouts).toHaveLength(1)
   })
+
+  it('logs imported exposures with roles: visible in history, excluded from progression (A50)', () => {
+    const parsed = parseHevyWorkouts([WORKOUT], TEMPLATES, { unit: 'kg' })
+    const S = canonicalProfile({ workouts: [] })
+    mergeImport(S, parsed)
+    const x = S.workouts.at(-1).exposures[0]
+    expect(x).not.toHaveProperty('prescriptionId')
+    expect(x).not.toHaveProperty('audit')
+    expect(x.trackId).toBe('import:' + x.exerciseId)
+    expect(x.mode).toBe(modeOf({ id: x.exerciseId }))
+    expect(x.performance.sets.every(r => r.role === 'warmup' || r.role === 'work')).toBe(true)
+    expect(x.excludedFromProgression).toBe(true)
+    expect(x.performance.sets.length).toBeGreaterThan(0)
+  })
 })
 
 describe('localWhen', () => {
@@ -270,6 +286,14 @@ describe('parseHevyRoutines', () => {
     expect(row.id).toBe('0327')
     expect(pull.sg).toBeTruthy()
     expect(pull.sg).toBe(row.sg)
+  })
+
+  it('mergeHevyRoutines writes rule occurrences bound to their routine', () => {
+    const S = { routines: [], customEx: [], unit: 'kg' }
+    mergeHevyRoutines(S, parseHevyRoutines([ROUTINE], TEMPLATES, { unit: 'kg' }))
+    const r = S.routines[0]
+    expect(r.ex.length).toBeGreaterThan(0)
+    for (const o of r.ex) expect(o.rule).toMatchObject({ id: o.occurrenceId, routineId: r.id, exerciseId: o.exerciseId })
   })
 
   it('mergeHevyRoutines replaces a routine it imported before instead of duplicating it', () => {

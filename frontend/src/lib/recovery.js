@@ -67,6 +67,32 @@ function exerciseFor(entry) {
   return EXIDX[entry?.id] || entry
 }
 
+const observed = (row, metric) => row?.observations?.find(x => x.metric === metric)?.value
+const isBodyweightResistance = resistance => ['bodyweight', 'body-weight', 'body weight'].includes(resistance?.kind)
+const entriesFor = (profile, workout) => (workout?.exposures || []).map(exposure => {
+  const rowFor = row => ({
+    done: row.status === 'completed',
+    ...(row.role === 'warmup' ? { phase: 'warmup' } : {}),
+    ...(row.segments?.length ? { type: 'dropset' } : {}),
+    ...(observed(row, 'repetitions') != null ? { r: observed(row, 'repetitions') } : {}),
+    ...(observed(row, 'duration') != null ? { sec: observed(row, 'duration'), min: observed(row, 'duration') / 60 } : {}),
+    ...(row.resistance?.value != null ? { w: row.resistance.value, unit: row.resistance.unit } : {}),
+    ...(isBodyweightResistance(row.resistance) ? { bodyweight: true } : {}),
+    ...(row.segments?.length ? { drops: row.segments.map(rowFor) } : {}),
+  })
+  return {
+    id: exposure.exerciseId,
+    canonical: true,
+    muscleSnapshot: exposure.muscleSnapshot,
+    // The exercise decides: added load on a bodyweight movement is external-load on the row. Rows
+    // alone only settle it when every row is bodyweight (an unknown or custom exercise); one
+    // empty row on a barbell lift must not add body mass, so the answer is always explicit.
+    target: { bodyweight: EXIDX[exposure.exerciseId]?.eq === 'body weight'
+      || ((exposure.performance?.sets || []).length > 0 && exposure.performance.sets.every(row => isBodyweightResistance(row.resistance))) },
+    sets: (exposure.performance?.sets || []).map(rowFor),
+  }
+})
+
 // Epley one-rep-max estimate, matching onerm.js (REP_CAP included so high-rep sets do not
 // inflate the estimate). Used only to express a set's intensity relative to the lifter's own
 // capacity - the same formula the app already shows for estimated 1RM.
@@ -139,6 +165,8 @@ function hasUnitStamp(...records) {
 function bodyweightConfigured(ex, entry, set, workout, opts = {}) {
   const configured = bodyweightTarget(entry)
   if (configured !== null) return configured
+  if (set?.bodyweight === true) return true
+  if (entry?.canonical) return false
   // Before target.bodyweight was persisted, a positive `w` on a catalogue bodyweight exercise
   // already meant an explicitly entered load. Keep those rows compatible when no body-mass
   // context is available; a stamped workout or a profile bodyweight makes the intended total-load
@@ -164,9 +192,9 @@ function loadKgFor(ex, entry, set, workout, opts = {}) {
 // Best Epley estimate inside one session. Keeping intensity context on the session makes a
 // scored stimulus independent of later imports/deletes; unlike an all-history maximum, a
 // 90-day-old CSV row cannot retroactively reweight today's sets.
-function session1RMs(workout, opts = {}) {
+function session1RMs(profile, workout, opts = {}) {
   const best = new Map()
-  for (const entry of workout?.entries || []) {
+  for (const entry of entriesFor(profile, workout)) {
     const ex = exerciseFor(entry)
     for (const set of entry.sets || []) {
       const load = loadKgFor(ex, entry, set, workout, opts)
@@ -223,10 +251,10 @@ function setTonnage(ex, entry, set, workout, oneRm, opts = {}) {
 
 // One session's per-muscle stimulus, calculated only from that session. A completed zero-load
 // set gets the set-equivalent fallback instead of disappearing from fatigue.
-function sessionTonnages(workout, opts = {}) {
+function sessionTonnages(profile, workout, opts = {}) {
   const sums = emptyMuscleMap(0)
-  const oneRms = session1RMs(workout, opts)
-  for (const entry of workout?.entries || []) {
+  const oneRms = session1RMs(profile, workout, opts)
+  for (const entry of entriesFor(profile, workout)) {
     const ex = exerciseFor(entry)
     const weights = musclesOf(ex)
     for (const set of entry.sets || []) {
@@ -246,9 +274,9 @@ function sessionTonnages(workout, opts = {}) {
 // downward-only EWMA is deliberate: removing any earlier workout can only raise a later
 // denominator (and removes its own positive stimulus), so deletion can never increase fatigue.
 // Rebuilding from the bounded scan also makes imports older than the scan exactly irrelevant.
-function fatigueStimuli(workouts, current, opts = {}) {
+function fatigueStimuli(profile, current, opts = {}) {
   const cutoff = current - FATIGUE_SCAN_MS
-  const ordered = (workouts || [])
+  const ordered = (profile?.workouts || [])
     .map((workout, index) => ({ workout, index, timestamp: workoutTimestamp(workout) }))
     .filter(item => Number.isFinite(item.timestamp) && item.timestamp > cutoff)
     .sort((a, b) => a.timestamp - b.timestamp || a.index - b.index)
@@ -256,7 +284,7 @@ function fatigueStimuli(workouts, current, opts = {}) {
   const byMuscle = Object.fromEntries(MUSCLES.map(slug => [slug, []]))
 
   for (const { workout, timestamp } of ordered) {
-    const sums = sessionTonnages(workout, opts)
+    const sums = sessionTonnages(profile, workout, opts)
     for (const slug of MUSCLES) {
       const stimulus = sums[slug]
       if (!(stimulus > 0)) continue
@@ -304,11 +332,11 @@ function fatigueValue(events, now) {
  * @param {{unit?: string}} options Reserved profile-level options; unit is supplied at the UI boundary.
  * @returns {Record<string, number>} Fatigue values keyed by every drawable muscle slug.
  */
-export function fatigueOf(workouts, now, opts = {}) {
+export function fatigueOf(profile, now, opts = {}) {
   const current = Number(now)
   const result = emptyMuscleMap(0)
   if (!Number.isFinite(current)) return result
-  const byMuscle = fatigueStimuli(workouts, current, opts)
+  const byMuscle = fatigueStimuli(profile, current, opts)
   for (const slug of MUSCLES) result[slug] = fatigueValue(byMuscle[slug], current)
   return result
 }
@@ -325,13 +353,13 @@ export function fatigueOf(workouts, now, opts = {}) {
  * @param {number} now Current time in milliseconds; injected to keep this function deterministic.
  * @returns {Record<string, number>} Retained-strength values keyed by every drawable muscle slug.
  */
-export function strengthOf(workouts, now, opts = {}) {
+export function strengthOf(profile, now, opts = {}) {
   const current = Number(now)
   const latest = Object.fromEntries(MUSCLES.map(slug => [slug, -Infinity]))
-  for (const workout of workouts || []) {
+  for (const workout of profile?.workouts || []) {
     const timestamp = workoutTimestamp(workout)
     if (!Number.isFinite(timestamp)) continue
-    for (const entry of workout.entries || []) {
+    for (const entry of entriesFor(profile, workout)) {
       if (!(entry.sets || []).some(set => set?.done === true && !isWarmupRow(set))) continue
       for (const slug of Object.keys(musclesOf(exerciseFor(entry)))) {
         if (Object.prototype.hasOwnProperty.call(MUSCLES_BY_SLUG, slug) && timestamp > latest[slug]) {
@@ -369,8 +397,8 @@ export function strengthOf(workouts, now, opts = {}) {
  * @example
  * const avoid = fatiguedMuscles(workouts, now)
  */
-export function fatiguedMuscles(workouts, now, opts = {}) {
-  return Object.entries(fatigueOf(workouts, now, opts))
+export function fatiguedMuscles(profile, now, opts = {}) {
+  return Object.entries(fatigueOf(profile, now, opts))
     .filter(([, value]) => value > 0.5)
     .map(([slug]) => slug)
 }
@@ -385,8 +413,8 @@ export function fatiguedMuscles(workouts, now, opts = {}) {
  * @example
  * const targets = detrainedMuscles(workouts, now)
  */
-export function detrainedMuscles(workouts, now, opts = {}) {
-  return Object.entries(strengthOf(workouts, now, opts))
+export function detrainedMuscles(profile, now, opts = {}) {
+  return Object.entries(strengthOf(profile, now, opts))
     .filter(([, value]) => value < 1)
     .map(([slug]) => slug)
 }

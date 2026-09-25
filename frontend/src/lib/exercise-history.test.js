@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { exerciseHistory, HISTORY_SESSIONS } from './exercise-history.js'
+import { exerciseHistory as canonicalExerciseHistory, HISTORY_SESSIONS } from './exercise-history.js'
 import { estimate1RM } from './onerm.js'
 
 const DAY = 86400000
@@ -12,8 +12,34 @@ const session = (i, rows, extra = {}) => ({
 })
 const work = (w, r, done = true) => ({ w, r, done })
 const warm = (w, r) => ({ w, r, done: true, phase: 'warmup' })
+const canonical = S => {
+  if (S.prescriptions) return S
+  const prescriptions = {}
+  const workouts = (S.workouts || []).map(workout => {
+    const exposures = (workout.entries || []).map((entry, index) => {
+    const prescriptionId = `${workout.id}:${index}`
+    prescriptions[prescriptionId] = { rows: (entry.sets || []).map(row => ({ load: row.w > 0 ? { value: row.w } : null })), prefill: { reps: entry.target?.reps ?? entry.sets?.[0]?.r, ...(entry.target?.mode === 'time' ? { durationSeconds: entry.target.sec } : {}) } }
+    return { exerciseId: entry.id, mode: entry.target?.mode, prescriptionId, performance: { sets: (entry.sets || []).map(row => ({ role: row.phase === 'warmup' ? 'warmup' : 'work', status: row.done ? 'completed' : 'skipped', observations: [row.r != null && { metric: 'repetitions', value: row.r }, row.sec != null && { metric: 'duration', value: row.sec }, row.min != null && { metric: 'duration', value: row.min * 60 }].filter(Boolean), resistance: row.w > 0 ? { kind: 'external-load', value: row.w } : { kind: 'bodyweight' }, segments: [] })) } }
+    })
+    return { ...workout, exposures }
+  })
+  return { ...S, workouts, prescriptions }
+}
+const exerciseHistory = (S, ...args) => canonicalExerciseHistory(canonical(S), ...args)
 
 describe('exerciseHistory', () => {
+  it('keeps snapshot-less canonical legacy exposures in history', () => {
+    const S = { workouts: [{ id: 'legacy', d: iso(0), start: T0, exposures: [{ kind: 'legacy', exerciseId: 'bench', performance: { sets: [{ status: 'completed', observations: [{ metric: 'repetitions', value: 8 }], resistance: { kind: 'external-load', value: 50 }, segments: [] }] } }] }] }
+    expect(canonicalExerciseHistory(S, 'bench')).toMatchObject({ total: 1, mode: 'reps', best: 50 })
+  })
+  it('reads volume and targets from canonical exposures and their prescription', () => {
+    const S = {
+      prescriptions: { p: { rows: [{ load: { value: 60 } }], prefill: { reps: 5 } } },
+      workouts: [{ id: 'w', d: iso(0), start: T0, exposures: [{ exerciseId: 'bench', mode: 'reps', prescriptionId: 'p', performance: { sets: [{ role: 'work', status: 'completed', observations: [{ metric: 'repetitions', value: 5 }], resistance: { kind: 'external-load', value: 60 }, segments: [] }] } }] }],
+    }
+    expect(exerciseHistory(S, 'bench')).toMatchObject({ total: 1, best: 60, sessions: [{ target: { reps: 5, weight: 60 }, volume: 300 }] })
+  })
+
   it('is empty when the exercise was never logged', () => {
     const S = { workouts: [session(0, [work(60, 5)])] }
     expect(exerciseHistory(S, 'squat')).toMatchObject({ total: 0, best: 0, prId: null, sessions: [], points: [] })
@@ -28,7 +54,7 @@ describe('exerciseHistory', () => {
     expect(h.metric).toBe('weight')
     expect(h.total).toBe(2)
     expect(h.sessions.map(s => s.d)).toEqual([iso(2), iso(0)])
-    expect(h.sessions[0]).toMatchObject({ value: 65, volume: 65 * 9, target: { mode: 'reps' } })
+    expect(h.sessions[0]).toMatchObject({ value: 65, volume: 65 * 9, mode: 'reps', target: { reps: 5, weight: 65 } })
     expect(h.sessions[0].sets).toHaveLength(2)
     expect(h.sessions[1]).toMatchObject({ value: 60, volume: 600 })
     // the chart stays chronological

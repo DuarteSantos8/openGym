@@ -19,7 +19,7 @@ export default class ErrorBoundary extends Component {
 
   render() {
     if (!this.state.failed) return this.props.children
-    const active = useStore.getState().S.active
+    const active = useStore.getState().A
     return (
       <div className="narrow">
         <div className="empty" style={{ marginTop: '18vh' }}>
@@ -31,7 +31,7 @@ export default class ErrorBoundary extends Component {
         {active && <>
           <div style={{ height: 8 }} />
           <Button variant="danger" icon="trash" onClick={() => {
-            useStore.getState().update(s => { s.active = null })
+            useStore.getState().clearActive()
             location.reload()
           }}>{t('Discard the running workout')}</Button>
         </>}

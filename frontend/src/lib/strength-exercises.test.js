@@ -17,43 +17,34 @@ const CUSTOMS = [
 beforeEach(() => registerCustom(CUSTOMS))
 afterEach(() => registerCustom([]))
 
-function workout(dayAgo, entries) {
+function workout(dayAgo, exposures) {
   const d = new Date(NOW - dayAgo * DAY)
   const iso = d.toISOString().slice(0, 10)
-  return { id: 'x' + iso, d: iso, start: NOW - dayAgo * DAY, unit: 'kg', entries }
+  return { id: 'x' + iso, d: iso, start: NOW - dayAgo * DAY, unit: 'kg', exposures }
 }
 
-const bench = { id: 'bench', n: 'Bench Press', muscleWeights: { chest: 1, triceps: 0.4, deltoids: 0.4 }, sets: [
-  { phase: 'warmup', w: 40, r: 8, done: true, unit: 'kg' },
-  { phase: 'work', w: 80, r: 8, done: true, unit: 'kg' },
-  { phase: 'work', w: 85, r: 6, done: true, unit: 'kg' },
-] }
+const row = (setId, weight, reps, status = 'completed') => ({ setId, status, observations: [{ metric: 'repetitions', value: reps }], resistance: { kind: 'external-load', value: weight, unit: 'kg' }, segments: [] })
+const exposure = (exerciseId, sets, extra = {}) => ({ exerciseId, performance: { sets }, ...extra })
+const bench = exposure('bench', [row('warmup', 40, 8), row('work1', 80, 8), row('work2', 85, 6)], { muscleWeights: { chest: 1, triceps: 0.4, deltoids: 0.4 } })
 // est 85x6 -> 102.0 ; 80x8 -> 101.3 ; warmup 40x8 -> 50.7 (must never win)
 
-const squat = { id: 'squat', n: 'Squat', muscleWeights: { quadriceps: 1, glutes: 0.4 }, sets: [
-  { phase: 'work', w: 100, r: 5, done: true, unit: 'kg' },
-] }
+const squat = exposure('squat', [row('work', 100, 5)], { muscleWeights: { quadriceps: 1, glutes: 0.4 } })
 // est 100x5 -> 116.7 ; trained 30 days ago -> quadriceps decayed (30d - 14d = 16d / 28d half-life)
 
-const fly = { id: 'fly', n: 'Cable Crossovers', muscleWeights: { chest: 0.4, deltoids: 1 }, sets: [
-  { phase: 'work', w: 20, r: 12, done: true, unit: 'kg' },
-] }
+const fly = exposure('fly', [row('work', 20, 12)], { muscleWeights: { chest: 0.4, deltoids: 1 } })
 // est 20x12 -> 28 ; chest is SECONDARY here
 
-const pushdown = { id: 'pushdown', n: 'Triceps Pushdown', muscleWeights: { triceps: 1 }, sets: [
-  { phase: 'work', w: 30, r: 10, done: true, unit: 'kg' },
-] }
+const pushdown = exposure('pushdown', [row('work', 30, 10)], { muscleWeights: { triceps: 1 } })
 // est 30x10 -> 40
 
-const undone = { id: 'undone', n: 'Undone Lift', muscleWeights: { 'upper-back': 1 }, sets: [
-  { phase: 'work', w: 200, r: 5, done: false, unit: 'kg' },
-] }
+const undone = exposure('undone', [row('work', 200, 5, 'skipped')], { muscleWeights: { 'upper-back': 1 } })
 
-const noLoad = { id: 'stretch', n: 'Chest Stretch', muscleWeights: { chest: 0.4 }, sets: [
-  { phase: 'work', w: 0, r: 10, done: true },
-] }
+const noLoad = exposure('stretch', [{ setId: 'work', status: 'completed', observations: [{ metric: 'repetitions', value: 10 }], resistance: { kind: 'none' }, segments: [] }], { muscleWeights: { chest: 0.4 } })
 
-const unitState = (workouts) => ({ unit: 'kg', workouts })
+const unitState = workouts => ({
+  unit: 'kg',
+  workouts: workouts.map(workout => ({ ...workout, exposures: workout.exposures.map(item => ({ ...item, performance: { sets: item.performance.sets.map(row => ({ ...row, role: row.setId === 'warmup' ? 'warmup' : 'work' })) } })) })),
+})
 
 describe('strengthExerciseRows', () => {
   it('lists every exercise with an estimate, warm-ups excluded, sorted by expected current 1RM', () => {
@@ -83,7 +74,7 @@ describe('strengthExerciseRows', () => {
   it('resolves real exercise names from the catalogue even when entries lack a name snapshot', () => {
     // Imported history entries are { id, sets, topW } - no `n` snapshot. The catalogue
     // (or the registered custom) must supply the display name, not the raw id.
-    const nameless = { id: 'bench', sets: bench.sets } // no n, no muscleWeights
+    const nameless = exposure('bench', bench.performance.sets) // no name or muscle snapshot
     const S = unitState([workout(3, [nameless])])
     const rows = strengthExerciseRows(S, NOW)
     expect(rows).toHaveLength(1)
@@ -95,9 +86,9 @@ describe('strengthExerciseRows', () => {
 
   it('uses nested exercise snapshots for a deleted custom exercise', () => {
     const deleted = {
-      id: 'deleted-custom',
+      exerciseId: 'deleted-custom',
       muscleSnapshot: { n: 'Deleted custom', muscleWeights: { chest: 1 } },
-      sets: [{ phase: 'work', warmup: true, w: 80, r: 8, done: true, unit: 'kg' }],
+      performance: { sets: [row('work', 80, 8)] },
     }
     const S = unitState([workout(3, [deleted])])
     const rows = strengthExerciseRows(S, NOW)
@@ -167,7 +158,7 @@ describe('strengthExerciseRowsForMuscle', () => {
 
 describe('primaryMuscleOf', () => {
   it('prefers the catalogue, then the logged snapshot, and handles missing metadata', () => {
-    expect(primaryMuscleOf({ id: 'bench', muscleWeights: {} }).slug).toBe('chest') // catalogue wins
+    expect(primaryMuscleOf({ exerciseId: 'bench', muscleWeights: {} }).slug).toBe('chest') // catalogue wins
     expect(primaryMuscleOf({ muscleWeights: { chest: 1, triceps: 0.4 } }).slug).toBe('chest') // snapshot fallback
     expect(primaryMuscleOf({ tg: 'back', mg: 'biceps' }).slug).toBe('upper-back') // canonicalised
     expect(primaryMuscleOf({})).toBeNull()

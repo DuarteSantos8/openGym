@@ -20,6 +20,7 @@
 
 import { EXDB, EXIDX } from './exercises.js'
 import { uid } from './format.js'
+import { modeOf } from './history.js'
 import { isWarmupRow } from './workout-model.js'
 import { HEVY_TITLE_MAP } from './hevy-id-map.js'
 
@@ -588,7 +589,30 @@ export function parseImport(text, opts) {
 
 /* --------------------------------------------------------------- merge ---- */
 
-/** Merge into state. Existing days win — importing twice never duplicates a workout. */
+/** A row from parseWorkoutCSV/parseHevyWorkouts — still the legacy `{w,r,done,phase,rir,rpe}` /
+ *  `{min,speed,done,phase}` shape — becomes an unprescribed SetPerformance row, tagged with its
+ *  `role` so readers tell a warm-up from a work set without a prescription.
+ */
+function performanceRowOf(row, unit) {
+  const observations = []
+  if (row.r != null) observations.push({ metric: 'repetitions', unit: 'reps', value: row.r })
+  if (row.min != null) observations.push({ metric: 'duration', unit: 'min', value: row.min })
+  if (row.speed != null) observations.push({ metric: 'speed', unit: 'kmh', value: row.speed })
+  const resistance = row.w > 0 ? { kind: 'external-load', value: row.w, unit } : { kind: row.min != null ? 'none' : 'bodyweight' }
+  const effort = row.rir != null ? { kind: 'rir', value: row.rir } : row.rpe != null ? { kind: 'rpe', value: row.rpe } : null
+  return {
+    role: isWarmupRow(row) ? 'warmup' : 'work',
+    prescribed: false,
+    status: row.done ? 'completed' : observations.length ? 'partial' : 'skipped',
+    observations, resistance, segments: [],
+    ...(effort ? { effort } : {})
+  }
+}
+
+/** Merge into state. Existing days win — importing twice never duplicates a workout.
+ *  Each imported day becomes a canonical workout: one exposure per exercise with no
+ *  prescription (nothing was prescribed) and `excludedFromProgression: true` (an import is
+ *  history, never a track a progression decision can be made against). */
 export function mergeImport(S, parsed) {
   if (parsed.kind === 'bodyweight') {
     const have = new Set(S.bodyweight.map(b => b.d))
@@ -609,16 +633,30 @@ export function mergeImport(S, parsed) {
     const same = S.customEx.find(x => x.id !== c.id && nameKey(x.n) === nameKey(c.n))
     if (same) exIdMap[c.id] = same.id
   })
-  const fresh = parsed.workouts.filter(w => !have.has(w.d))
-    .map(w => ({ ...w, entries: w.entries.map(e => (exIdMap[e.id] ? { ...e, id: exIdMap[e.id] } : e)) }))
-  const used = new Set(fresh.flatMap(w => w.entries.map(e => e.id)))
+  const unit = S.unit || 'kg'
+  const built = parsed.workouts.filter(w => !have.has(w.d)).map(w => {
+    const entries = w.entries.map(e => (exIdMap[e.id] ? { ...e, id: exIdMap[e.id] } : e))
+    const exposures = entries.map(e => ({
+      exposureId: 'ie' + uid(),
+      exerciseId: e.id,
+      exerciseNameSnapshot: EXIDX[e.id]?.n || e.id,
+      mode: modeOf({ id: e.id, ...(e.sets?.some(s => s.sec != null && s.r == null) ? { mode: 'time' } : {}) }),
+      trackId: 'import:' + e.id,
+      excludedFromProgression: true,
+      performance: { sets: (e.sets || []).map(row => performanceRowOf(row, unit)) }
+    }))
+    const { entries: _entries, ...rest } = w
+    return { workout: { ...rest, exposures }, entries }
+  })
+  const fresh = built.map(b => b.workout)
+  const used = new Set(fresh.flatMap(w => w.exposures.map(x => x.exerciseId)))
   const customs = parsed.customEx.filter(c => used.has(c.id) && !EXIDX[c.id])
   S.customEx = [...S.customEx, ...customs]
   S.workouts = [...S.workouts, ...fresh].sort((a, b) => (a.d < b.d ? -1 : 1))
   // seed the weight suggestions from the newest imported set of each lift
-  fresh.forEach(w => w.entries.forEach(e => {
+  built.forEach(({ workout, entries }) => entries.forEach(e => {
     const mx = Math.max(0, ...e.sets.map(s => s.w || 0), e.topW || 0)
-    if (mx > 0) { const cur = S.exWeights[e.id]; if (!cur || w.d >= cur.d) S.exWeights[e.id] = { w: mx, d: w.d } }
+    if (mx > 0) { const cur = S.exWeights[e.id]; if (!cur || workout.d >= cur.d) S.exWeights[e.id] = { w: mx, d: workout.d } }
   }))
   return { added: fresh.length, skipped: parsed.workouts.length - fresh.length }
 }

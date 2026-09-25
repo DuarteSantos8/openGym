@@ -1006,7 +1006,7 @@ body.chips-dragging *{cursor:inherit}
 .cfgrow{gap:8px}
 .cfgrow>div{flex:1;min-width:0}
 .cfgrow .stp button{width:30px}
-.cfgrow .stp-l{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cfgrow .stp-l{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
 /* The double-progression row holds four (Step / Reps from / Reps up to / Deload 1RM). Each stepper
    already spends 64px on its two buttons, so four abreast left the input 1px at 320 and 13px at
    368 — "1.25" showed as "1.2", "90" as "9(". Below 480px the row wraps into two pairs instead;
@@ -1487,3 +1487,12 @@ body.chips-dragging *{cursor:inherit}
 .coach-cta-t b{font-size:17px;font-weight:600;letter-spacing:-.015em;color:var(--label)}
 .coach-cta-t span{font-size:13px;color:var(--label-2);line-height:1.35}
 .coach-cta-chev{color:var(--acc);font-size:15px;flex:none}
+
+/* --- exercise config: disclosure rows --- */
+.disc-body{padding:4px 16px 14px}
+.disc.open .lrow-c{transform:rotate(90deg)}
+
+/* range toggle: small button at the end of a from/to input row */
+.cfgrow>.rng-btn{flex:none;align-self:flex-end;width:36px;height:36px}
+.rng-btn[aria-pressed="true"]{color:var(--acc)}
+.cfgrow>.unit-btn{flex:none;align-self:flex-end;width:auto;min-width:36px;height:36px;padding:0 12px;border-radius:18px;font-size:13px;white-space:nowrap}

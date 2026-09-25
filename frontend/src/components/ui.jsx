@@ -320,6 +320,13 @@ export function SelectRow({ icon, iconTint, title, value, options, onChange, she
   )
 }
 
+// A compact button showing the current option's label; tapping opens the same picker sheet.
+export function SelectButton({ title, value, options, onChange, className = '' }) {
+  const cur = options.find(o => o.value === value)
+  const open = () => require_ui().openSheet(close => <SelectSheet title={title} value={value} options={options} onChange={onChange} close={close} />)
+  return <button type="button" className={'iconbtn ' + className} aria-label={title} onClick={open}>{cur ? cur.label : value}</button>
+}
+
 function SelectSheet({ title, value, options, onChange, search, close }) {
   const [query, setQuery] = useState('')
   const inputRef = useRef(null)

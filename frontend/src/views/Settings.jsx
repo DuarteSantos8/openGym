@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, forwardRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore, DEF, hasData } from '../store/useStore.js'
 import { workoutControls } from '../lib/workout-controls.js'
-import { convertStateUnit } from '../lib/units.js'
+import { convertStateUnit, convertActiveUnit } from '../lib/units.js'
 import { useUI } from '../store/useUI.js'
 import { ACCENTS, todayISO, localTZ, weekStartOf, MONDAY, SUNDAY } from '../lib/format.js'
 import { effortOf } from '../lib/history.js'
@@ -13,6 +13,8 @@ import { wakeLockSupported } from '../lib/wakelock.js'
 import { t, LANGS, INSTR_LANGS } from '../lib/i18n.js'
 import { DEMO, REPO } from '../lib/demo.js'
 import { MOBILE, isAndroid, shareExport, syncReminder } from '../lib/mobile.js'
+import { isLegacyProfile } from '../../../api/migration/profile-version.js'
+import { buildProfileBackup } from '../lib/export-profile.js'
 import { checkForUpdate, downloadAndInstall } from '../lib/update.js'
 import { forgetCoach } from '../lib/coach-api.js'
 import { ConnectSheet } from './MobileOnboarding.jsx'
@@ -25,7 +27,7 @@ export default function Settings() {
   const S = useStore(s => s.S)
   const user = useStore(s => s.user)
   const coachLocal = useStore(s => s.coachLocal)
-  const { update, replaceState, setUser, pullState, pushState, adoptProfile, signOut, signOutAll, resetDemo, disconnectServer } = useStore()
+  const { update, replaceState, setActive, setUser, pullState, pushState, adoptProfile, signOut, signOutAll, resetDemo, disconnectServer, importLegacyBackup } = useStore()
   const toast = useUI(s => s.toast)
   const fileRef = useRef(null)
   const importRef = useRef(null)
@@ -36,11 +38,15 @@ export default function Settings() {
   // under a kg label. Closing the sheet leaves the unit as it was.
   const switchUnit = v => {
     if (v === S.unit) return
+    const from = S.unit
     menuSheet({
       title: t('Convert to {0}?', v),
       subtitle: t('Every stored weight — logged sets, working weights, routine targets, body weight, bar weights — is in {0}. Convert the numbers, or keep them and only change the label?', S.unit),
       items: [
-        { icon: 'shuffle', label: t('Convert the numbers'), onClick: () => replaceState(convertStateUnit(useStore.getState().S, v)) },
+        { icon: 'shuffle', label: t('Convert the numbers'), onClick: () => {
+          replaceState(convertStateUnit(useStore.getState().S, v))
+          setActive(convertActiveUnit(useStore.getState().A, from, v))
+        } },
         { icon: 'pencil', label: t('Keep the numbers, change the label'), onClick: () => update(s => { s.unit = v }) },
       ],
     })
@@ -120,7 +126,7 @@ export default function Settings() {
   }
 
   const doExport = async () => {
-    const json = JSON.stringify(S, null, 2)
+    const json = JSON.stringify(buildProfileBackup(S), null, 2)
     const name = 'opengym-backup-' + todayISO() + '.json'
     // WKWebView can't download blob URLs — the native build hands the file to the share sheet.
     if (MOBILE) {
@@ -138,7 +144,11 @@ export default function Settings() {
       try {
         const data = JSON.parse(rd.result)
         if (!data.workouts || !data.routines) throw new Error('not an openGym backup')
-        confirmSheet({ title: t('Import backup?'), message: t('This replaces all current data with the backup file.'), confirmText: t('Import'), danger: true, onConfirm: () => { replaceState(Object.assign(JSON.parse(JSON.stringify(DEF)), data), true); toast(t('Backup imported')) } })
+        confirmSheet({ title: t('Import backup?'), message: t('This replaces all current data with the backup file.'), confirmText: t('Import'), danger: true, onConfirm: () => {
+          // A backup from before the v2 engine goes through the same upgrade screen as any v1 profile.
+          if (isLegacyProfile(data)) return importLegacyBackup(data, rd.result.length)
+          replaceState(Object.assign(JSON.parse(JSON.stringify(DEF)), data), true); toast(t('Backup imported'))
+        } })
       } catch (e) { toast(t('Import failed: {0}', e.message)) }
     }
     rd.readAsText(f)

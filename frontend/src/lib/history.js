@@ -17,6 +17,22 @@ const workRowsForMode = (entry = {}, mode = 'reps') => {
 // gets dragged along behind it.
 import { t } from './i18n-core.js'
 
+/** Total load × repetitions of the non-skipped rows, drop and rest-pause segments counted once. */
+export function volumeOf(performance) {
+  const rowVolume = row => {
+    const reps = row?.observations?.find(o => o.metric === 'repetitions')?.value
+    const load = row?.resistance?.kind === 'external-load' ? row.resistance.value : 0
+    return reps != null && load ? reps * load : 0
+  }
+  let total = 0
+  for (const row of performance?.sets || []) {
+    if (row.status === 'skipped') continue
+    total += rowVolume(row)
+    for (const seg of row.segments || []) total += rowVolume(seg)
+  }
+  return total
+}
+
 // How an exercise is logged (issue #16). This used to be derived from the body part alone,
 // which meant a plank or a farmer's carry could only be timed by filing it under cardio.
 // A routine entry can now say so explicitly:
@@ -234,23 +250,37 @@ export function entryExcluded(w, entry) {
 export function lastEntryFor(S, exId) {
   for (let i = S.workouts.length - 1; i >= 0; i--) {
     const w = S.workouts[i]
-    const en = w.entries.find(e => e.id === exId)
-    if (!en) continue
+    const exposure = (w.exposures || []).find(x => x.exerciseId === exId)
+    if (!exposure) continue
     // A session that does not count — a planned deload, or a rehab block merged into a real
     // session — is not "last time" for the next regular prescription: its reps and durations
     // must not seed the rows any more than its weight seeds the progression.
-    if (entryExcluded(w, en)) continue
+    if (exposure.excludedFromProgression) continue
     // Work sets only. Every caller asks the same question — "what did you actually lift last
     // time" — to seed the next session's rows, to size a freestyle config, and to print "Last
     // time" on the card. A warm-up answers none of them: seeding position 0 from a 50% ramp row
     // walks the working weight DOWN a little every session, and counting the ramp rows makes a
     // 3x5 come back as a 5-set exercise. Warm-ups are already excluded from volume, records and
     // progression; this is the same rule one level up.
-    const done = en.sets.filter(s => s.done && !isWarmupRow(s))
+    const done = (exposure.performance?.sets || []).flatMap(row => {
+      if (row.status !== 'completed' || row.role === 'warmup') return []
+      const observation = metric => row.observations?.find(x => x.metric === metric)?.value
+      const duration = observation('duration')
+      return [{
+        done: true,
+        ...(observation('repetitions') != null ? { r: observation('repetitions') } : {}),
+        ...(duration != null ? { sec: duration, ...(exposure.mode === 'cardio' ? { min: duration / 60, speed: observation('speed') } : {}) } : {}),
+        ...(row.resistance?.value != null ? { w: row.resistance.value } : row.resistance?.kind === 'bodyweight' ? { w: 0 } : {}),
+      }]
+    })
     // `target` is what the session prescribed; finished workouts carry it so labels and the
     // progression engine can read a session back the way it was logged. Older workouts have
     // none — modeOf() falls back to the body part for them, which is what they were.
-    if (done.length) return { d: w.d, sets: done, target: en.target || null }
+    if (done.length) {
+      const p = S.prescriptions?.[exposure.prescriptionId]
+      const target = { mode: exposure.mode, sets: p?.rows.length || done.length, ...(p ? { reps: p.prefill.reps } : {}), ...(p?.prefill.durationSeconds != null ? { sec: p.prefill.durationSeconds } : {}), ...(p?.rows[0]?.load ? { weight: p.rows[0].load.value } : {}) }
+      return { d: w.d, sets: done, target }
+    }
   }
   return null
 }
@@ -272,9 +302,9 @@ export const NOTE_MAX = 500
 export function pinnedNoteFor(S, exId) {
   const workouts = S?.workouts || []
   for (let i = workouts.length - 1; i >= 0; i--) {
-    const en = (workouts[i].entries || []).find(e => e.id === exId)
-    const note = (en?.note || '').trim()
-    if (note && en.notePin) return { note, d: workouts[i].d }
+    const exposure = (workouts[i].exposures || []).find(item => item.exerciseId === exId)
+    const note = (exposure?.note || '').trim()
+    if (note && exposure.notePin) return { note, d: workouts[i].d }
   }
   return null
 }
@@ -299,9 +329,13 @@ export function freestyleConfig(S, cfg) {
 export function bestWeightFor(S, exId) {
   // 0 means "nothing logged with a load yet" and must not win a min() for an assisted machine.
   let best = 0
-  S.workouts.forEach(w => w.entries.forEach(e => {
-    if (e.id !== exId) return
-    const entryBest = bestWeightForEntry(e)
+  ;(S.workouts || []).forEach(w => (w.exposures || []).forEach(exposure => {
+    if (exposure.exerciseId !== exId) return
+    const weights = (exposure.performance?.sets || [])
+      .filter(row => row.status === 'completed' && row.role !== 'warmup')
+      .map(row => row.resistance?.kind === 'external-load' ? Number(row.resistance.value) : 0)
+      .filter(weight => Number.isFinite(weight) && weight > 0)
+    const entryBest = weights.reduce((current, weight) => current > 0 ? betterWeight(exId, current, weight) : weight, 0)
     if (entryBest > 0) best = best > 0 ? betterWeight(exId, best, entryBest) : entryBest
   }))
   return best
@@ -442,7 +476,7 @@ function seedSideFromLast(row, prev) {
  * Stamp every work row with the exercise's planned intensifier and pre-fill its drops/clusters,
  * already computed and editable — the plan designs the set, not a button pressed mid-workout.
  *
- * Must run AFTER applyPrescription: a drop-set's chain of drops is a percentage of each row's
+ * Must run after prescription rows are built: a drop-set's chain is a percentage of each row's
  * own `w`, so it has to be computed from the final prescribed weight, not the pre-progression
  * one buildSets started from — otherwise a bumped working weight would leave stale, cheaper
  * drops sitting underneath it.
@@ -494,22 +528,11 @@ export function applyIntensifierPlan(sets, cfg) {
   }
   return [warmup, work]
 }
-export function workoutVolume(w) {
-  let v = 0
-  // Count each completed limb at its own load, including drops. A rest-pause side's r already
-  // includes its bursts. Unchecked limbs and warm-ups contribute no volume.
-  // Warm-ups are excluded here as everywhere else. The config sheet promises it in so many
-  // words ("left out of volume, records and progression") and every other consumer already
-  // does it; this line was the one that did not, which only stopped being harmless when a
-  // routine started planning warm-ups by default. The number is written into the saved
-  // workout, so an inflated one would stay wrong forever.
-  // A per-side row's mirror is `w = max(L, R), r = L + R` (workout-model syncSideAggregate) —
-  // right for a headline, wrong for a product: 14×10 left and 12.5×6 right is 215, not 14×16.
-  // Each side is its own weight × reps, with its own drops and bursts.
-  w.entries.forEach(e => e.sets.forEach(s => {
-    if (!isWarmupRow(s)) v += completedVolumeOf(s)
-  }))
-  return v
+// Warm-ups are excluded from volume by the role written on each row at finish: a warm-up the
+// user checks off is logged 'completed' just like a work set.
+export function workoutVolume(S, w) {
+  return (w.exposures || []).reduce((total, exposure) =>
+    total + volumeOf({ sets: (exposure.performance?.sets || []).filter(row => row.role !== 'warmup') }), 0)
 }
 // A unilateral row counts as two toward the "x / y sets" progress — one per side — since each
 // side is logged and ticked on its own (issue #60). Every other row counts as one.
@@ -519,10 +542,16 @@ export const doneUnits = s => (isSideSet(s) ? (s.sides.L.done ? 1 : 0) + (s.side
 // Total completion-units across a session's rows (both sides of every unilateral set counted).
 export const setUnitsTotal = entries => (entries || []).reduce((n, e) => n + (e.sets || []).reduce((m, s) => m + setUnits(s), 0), 0)
 
+// A canonical per-side row is a main row plus one completed segment (see the "per-side aggregate
+// stays readable by existing consumers" tests in history.test.js) — the same shape doneUnits
+// counted as 2 for the old L/R fields. Counting only the top-level row silently undercounts a
+// real unilateral workout's "x sets" tile, so each completed segment is its own unit too.
 export function setsDone(w) {
-  let n = 0
-  w.entries.forEach(e => e.sets.forEach(s => { n += doneUnits(s) }))
-  return n
+  return (w.exposures || []).reduce((total, exposure) => total + (exposure.performance?.sets || []).reduce((n, row) => {
+    const rowUnit = row.status === 'completed' ? 1 : 0
+    const segUnits = (row.segments || []).filter(seg => seg.status === 'completed').length
+    return n + rowUnit + segUnits
+  }, 0), 0)
 }
 export function setsDoneActive(A) {
   let n = 0
@@ -597,8 +626,7 @@ export function cascadeWeight(rows, from, value) {
  * Each added row halves what is left between the last warm-up and the first work set, so the
  * first one lands at half the working weight, a second at three quarters, and so on — and a
  * row you edited by hand is what the next one ramps from. `step` is the exercise's own loading
- * step (progression.js's defaultIncrement, passed in by the caller so this module keeps no
- * dependency on progression — that one already imports from here): a warm-up you cannot
+ * step (passed in by the caller so this module stays independent): a warm-up you cannot
  * actually load onto the bar is noise.
  *
  * The reference is the first WORK row, never `rows[at - 1]` alone: for the first warm-up
@@ -608,7 +636,7 @@ export function cascadeWeight(rows, from, value) {
 /**
  * Recompute the warm-up block so it ramps toward the weight the work rows ACTUALLY carry.
  *
- * buildSets prepends the warm-ups before a prescription is applied, and applyPrescription
+ * Session construction prepends warm-ups before applying prescribed work rows, and then
  * deliberately rewrites work rows only — so without this the ramp still aims at last
  * session's weight. On a deload that put the last warm-up above every work set, which is
  * the exact opposite of what a warm-up is for.
@@ -633,6 +661,34 @@ export function rerampWarmups(rows, step = 2.5) {
     from = w
   }
   return out
+}
+
+/**
+ * The first work weight moved: re-aim the generated warm-ups still waiting (incomplete rows with
+ * `autoWarmup`). Each keeps its share of the old work weight, rounded down to the step; one that
+ * would reach the new work weight or repeat the previous warm-up is dropped. Done, manual and
+ * hand-edited warm-ups are session facts and are never touched. The first work row is pinned to
+ * `to` — the caller (Workout.jsx `setField`) has usually already set it there itself, but pinning
+ * it here too keeps this function correct on its own, since it is the reference the ramp is built
+ * against; later work rows are left as the caller (`cascadeWeight`) already resolved them.
+ */
+export function rerampAutoWarmups(rows, from, to, step = 2.5) {
+  if (!(from > 0) || !(to > 0)) return rows
+  let prev = 0
+  let workSeen = false
+  return rows.flatMap(row => {
+    if (!isWarmupRow(row)) {
+      if (workSeen) return [row]
+      workSeen = true
+      return [{ ...row, w: to }]
+    }
+    if (!row.autoWarmup || row.done) { prev = row.w || 0; return [row] }
+    // ponytail: ratio of an already-rounded load drifts up to one step per edit; carry the recipe percent on the row if that ever matters
+    const w = Number((Math.floor(Number((row.w / from * to / step).toFixed(6))) * step).toFixed(6))
+    if (w <= 0 || w >= to || w === prev) return []
+    prev = w
+    return [{ ...row, w }]
+  })
 }
 
 export function insertWarmupRow(rows, mode, target, step = 2.5) {
@@ -682,11 +738,10 @@ export function removeRowAt(rows, i) {
   return next
 }
 
-/** Completed non-warm-up sets across a workout's entries. */
-export function workSetsDone(w) {
-  return (w?.entries || []).reduce(
-    (n, e) => n + (e.sets || []).filter(s => s.done && !isWarmupRow(s)).length, 0,
-  )
+/** Completed non-warm-up sets across a workout's exposures. */
+export function workSetsDone(S, w) {
+  return (w?.exposures || []).reduce((n, exposure) =>
+    n + (exposure.performance?.sets || []).filter(row => row.status === 'completed' && row.role !== 'warmup').length, 0)
 }
 
 const METRIC_MODES = ['reps', 'time', 'cardio']
