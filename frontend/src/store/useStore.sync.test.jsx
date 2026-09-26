@@ -25,18 +25,19 @@ const signedIn = (S, extra = {}) => useStore.setState({ S, user: { id: 'user-1' 
 beforeEach(() => {
   localStorage.clear()
   api.mockReset()
-  useStore.setState({ S: clone(DEF), user: null, ready: false })
+  useStore.setState({ S: clone(DEF), A: null, user: null, ready: false })
 })
 afterEach(() => {
   vi.useRealTimers()
   localStorage.clear()
-  useStore.setState({ S: clone(DEF), user: null, ready: false })
+  useStore.setState({ S: clone(DEF), A: null, user: null, ready: false })
 })
 
 describe('pull against a revisioned server', () => {
   it('adopts the server copy when only the server moved, and records its revision', async () => {
-    const local = { ...clone(DEF), _ts: 100, workouts: [workout('w1')], active: { id: 'running' } }
+    const local = { ...clone(DEF), _ts: 100, workouts: [workout('w1')] }
     signedIn(local)
+    useStore.getState().setActive({ id: 'running' })   // the in-progress session, entirely outside S/pullState
     localStorage.setItem('gym_sync', JSON.stringify({ rev: 1, ts: 100 }))
     api.mockResolvedValueOnce({ state: { ...clone(DEF), _ts: 200, workouts: [workout('w1'), workout('w2')], _rev: 2 }, rev: 2 })
 
@@ -45,7 +46,7 @@ describe('pull against a revisioned server', () => {
     expect(puts()).toHaveLength(0)
     expect(useStore.getState().S.workouts.map(w => w.id)).toEqual(['w1', 'w2'])
     expect(useStore.getState().S._ts).toBe(200)
-    expect(useStore.getState().S.active).toEqual({ id: 'running' })
+    expect(useStore.getState().A).toEqual({ id: 'running' })   // pullState never touches A
     expect(sync()).toEqual({ rev: 2, ts: 200 })
   })
 
@@ -210,6 +211,19 @@ describe('push against a revisioned server', () => {
     expect(puts()).toHaveLength(2)
     expect(puts()[1].state.restSec).toBe(30)
     expect(sync().rev).toBe(2)
+  })
+
+  it('pushes never carry the active session even while one is in progress', async () => {
+    signedIn({ ...clone(DEF), _ts: 100, workouts: [workout('w1')] })
+    localStorage.setItem('gym_sync', JSON.stringify({ rev: 1, ts: 100 }))
+    useStore.getState().setActive({ id: 'a1', d: '2026-09-22', start: 1, name: 'Push', cur: 0, entries: [] })
+    api.mockResolvedValueOnce({ ok: true, rev: 2 })
+
+    await useStore.getState().pushState()
+
+    expect(puts()).toHaveLength(1)
+    expect(puts()[0].state.active).toBeUndefined()
+    expect(JSON.stringify(puts()[0]).includes('"a1"')).toBe(false)
   })
 
   it('a server without revisions drops the marker', async () => {

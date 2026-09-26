@@ -6,6 +6,12 @@ import {
 import de from '../locales/de.js'
 
 describe('baseLang', () => {
+  it('uses English engine copy and interpolates named parameters', () => {
+    _setLangState('en', {}, null, null)
+    expect(t('preset.strength.linear.name')).toBe('Linear progression')
+    expect(t('engine.reason.linearAdvance', { from: 60, to: 62.5 })).toBe('Advance from 60 to 62.5.')
+  })
+
   it('maps a derived locale to the language whose packs it loads', () => {
     expect(baseLang('de-CH')).toBe('de')
   })

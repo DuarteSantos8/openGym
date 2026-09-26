@@ -75,6 +75,22 @@ function mergeExWeights(n = {}, o = {}) {
   return out
 }
 
+function mergeProgression(n = {}, o = {}, workouts = []) {
+  const out = { ...(o || {}), ...(n || {}) }
+  const byLogId = new Map()
+  const latest = new Map()
+  for (const states of [o, n]) for (const [trackId, state] of Object.entries(states || {})) {
+    if (state?.lastCompletedLogId) byLogId.set(state.lastCompletedLogId, [trackId, state])
+  }
+  for (const workout of workouts) for (const exposure of list(workout.exposures)) {
+    const state = byLogId.get(exposure.exposureId)
+    if (!state || (latest.get(state[0])?.completedAt || '') > (exposure.completedAt || '')) continue
+    latest.set(state[0], { state: state[1], completedAt: exposure.completedAt })
+  }
+  for (const [trackId, { state }] of latest) out[trackId] = state
+  return out
+}
+
 // `prefer` names the side whose settings, plan and per-exercise config win regardless of `_ts`:
 // on sign-in the server's profile is the truth and the device only contributes the entries it
 // logged while signed out. Without it the newer copy decides, as for a conflict between devices.
@@ -91,9 +107,13 @@ export function mergeStates(a, b, { prefer } = {}) {
   out.bodyweight = mergeBodyweight(n.bodyweight, o.bodyweight).map(clone)
   if (list(n.favEx).length || list(o.favEx).length) out.favEx = [...new Set([...list(n.favEx), ...list(o.favEx)])]
   out.exWeights = clone(mergeExWeights(n.exWeights, o.exWeights))
-  for (const f of ['exNotes', 'barWeights']) {
+  // prescriptions and oneRepMaxes are immutable and keyed
+  // by id, so a key union is lossless: a key exists on one side or both, never with two
+  // different bodies. Progression follows its latest completed log in the merged history.
+  for (const f of ['exNotes', 'barWeights', 'prescriptions', 'oneRepMaxes']) {
     if (n[f] || o[f]) out[f] = clone({ ...(o[f] || {}), ...(n[f] || {}) })
   }
+  if (n.progression || o.progression) out.progression = clone(mergeProgression(n.progression, o.progression, out.workouts))
   out._ts = Math.max(a._ts || 0, b._ts || 0)
   delete out._rev
   return out

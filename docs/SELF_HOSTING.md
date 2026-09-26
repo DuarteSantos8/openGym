@@ -307,6 +307,26 @@ docker compose up -d --build
 The app shell is versioned (`?v=N`) so clients pick up changes on next load. Your `./data` and the
 downloaded media are untouched.
 
+### Upgrading profiles to the v2 training engine
+
+After an update that ships the v2 engine, each person's data is converted the first time they open
+the app — only after they press **OK** on the "Your training data needs an upgrade" screen, never
+by a startup scan. Before converting, the server keeps the untouched file next to it as
+`data/state-<uid>.pre-engine-v1.json`; nothing ever overwrites or deletes that copy. To roll one
+profile back, stop the API and copy it over `data/state-<uid>.json`. A conversion that fails leaves
+the original file in place and appears in the activity log as "Training data upgrade failed".
+
+Data that never reaches the server goes through the same screen on the device. Guest mode keeps
+its untouched copy in the browser's `localStorage` under `gym_state_v1.pre-engine-v1`; the
+Android/iOS app writes `gym_state_v1.pre-engine-v1.json` next to its own data file. Restoring a
+JSON backup exported before the upgrade asks the same question before anything is imported.
+
+The conversion maps each exercise's old progression setting onto its closest rule (linear,
+Greyskull LP, double progression, time; a linear bodyweight exercise becomes the bodyweight
+ladder, anything else becomes manual) and a warm-up count onto a smart ramp of that length.
+Plan files shared from an older version are refused rather than imported empty — re-export
+them from an upgraded instance.
+
 ## Passkeys fail even though `RP_ID` looks right
 
 The most common support question, and the values are usually *nearly* correct. Work through

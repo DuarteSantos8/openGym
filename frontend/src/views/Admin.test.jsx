@@ -44,6 +44,10 @@ function render(el) {
 const settle = () => act(() => new Promise(r => setTimeout(r, 0)))
 
 const good = { id: 'w1', name: 'Push day', d: '2026-09-10', start: 1000, end: 61000, entries: [{ sets: [{ done: true }, { done: false }] }] }
+const goodV2 = { id: 'w2', name: 'Pull day', d: '2026-09-11', start: 1000, end: 61000, exposures: [{ exerciseId: '0025', performance: { sets: [
+  { role: 'work', status: 'completed', observations: [{ metric: 'repetitions', value: 5 }], resistance: { kind: 'external-load', value: 60 } },
+  { role: 'warmup', status: 'completed', observations: [{ metric: 'repetitions', value: 5 }], resistance: { kind: 'external-load', value: 20 } }
+] } }] }
 
 beforeEach(() => {
   document.body.innerHTML = ''
@@ -57,7 +61,7 @@ beforeEach(() => {
       unit: 'kg', lastSync: null, routines: [], bodyweight: [],
       // What GET /api/admin/user hands over for a document written before PUT /api/data dropped
       // such entries: a null, and a bare object without entries, next to a real session.
-      workouts: [null, good, {}]
+      workouts: [null, good, {}, goodV2]
     }
   }
 })
@@ -75,10 +79,12 @@ describe('Admin user drill-down', () => {
     await settle()
     const buttons = [...sheet.querySelectorAll('button')].map(b => b.textContent)
     expect(buttons).toContain('Disable account')
-    // The one real session is listed; the two shapeless entries are skipped, not drawn as blanks.
+    // The two real sessions are listed; the two shapeless entries are skipped, not drawn as blanks.
     const rows = [...sheet.querySelectorAll('.list > div')]
-    expect(rows.length).toBe(1)
+    expect(rows.length).toBe(2)
     expect(rows[0].textContent).toContain('Push day')
     expect(rows[0].textContent).toContain('1 sets')
+    expect(sheet.textContent).toContain('Pull day')
+    expect(rows[1].textContent).toContain('2 sets')
   })
 })

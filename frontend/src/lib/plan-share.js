@@ -8,15 +8,17 @@
 //  2. A clean, printable page (Save as PDF) where a single exercise never splits across
 //     a page break — each exercise, and each routine that fits, stays in one place.
 
-import { EXIDX, isBodyweightEq } from './exercises.js'
-import { modeOf, fmtSec, isBw, isPerSide, sideReps, MAX_PLANNED_WARMUPS } from './history.js'
+import { EXIDX } from './exercises.js'
+import { modeOf, fmtSec, isBw, isPerSide, sideReps } from './history.js'
 import { deriveSessionName } from './session-merge.js'
-import { uid, todayISO, DAYN, weekOrder, weekStartOf, fmtNum, exCount } from './format.js'
+import { uid, todayISO, DAYN, weekOrder, weekStartOf, fmtNum, exCount, weightDecimals } from './format.js'
 import { t, exerciseNameFor } from './i18n-core.js'
 import { convertWeight } from './units.js'
 import { MUSCLES, inMuscleOrder } from './muscles.js'
+import { migrateOccurrence, supports, validateIntensifier, validatePlanRule, validateWarmup } from './prescription/index.js'
+import { coachExOf } from '../../../api/coach/core/plan-view.js'
 
-const PLAN_FMT = 1
+const PLAN_FMT = 3
 const WEEK_DAYS = [1, 2, 3, 4, 5, 6, 0]   // every getDay() index; only the reader's own
                                           // screen puts them in an order (see weekOrder)
 const PLAN_UNITS = new Set(['kg', 'lb'])
@@ -59,79 +61,40 @@ function convertedBundle(bundle, destinationUnit) {
   }
 }
 
-// Keep only the meaningful config fields, so the file stays small and readable.
-function cleanEx(e) {
-  const o = { id: e.id, sets: e.sets }
-  const mode = modeOf(e)
-  if (mode === 'cardio') {
-    if (e.min != null) o.min = e.min
-    if (e.speed != null) o.speed = e.speed
-  } else if (mode === 'time') {
-    // Written out even though 'reps' is the fallback for a non-cardio id: a plan file that
-    // dropped the mode would turn a 45-second plank into a 45-rep one at the other end.
-    o.mode = 'time'
-    if (e.sec != null) o.sec = e.sec
-    if (e.weight) o.weight = e.weight
-  } else {
-    if (e.reps != null) o.reps = e.reps
-    if (e.weight) o.weight = e.weight
-  }
-  // How the exercise is logged travels too (issues #31/#32) — the bodyweight flag only when
-  // it disagrees with the catalogue, since agreeing is what the other end already assumes.
-  if (e.bodyweight != null && e.bodyweight !== isBodyweightEq(e.id)) o.bodyweight = e.bodyweight
-  // Only on reps work — `side` counts reps, and a timed hold has none to split.
-  if (e.side && mode !== 'time' && mode !== 'cardio') o.side = true
-  // Progression settings travel with the plan — a shared Greyskull routine that arrives
-  // without its rule is just a list of weights.
-  if (e.prog) o.prog = e.prog
-  if (e.inc > 0) o.inc = e.inc
-  // Epley deload factor is a per-occurrence progression setting. Omit the default so older
-  // exports remain compact and importing them preserves the default 90% behaviour.
-  if (e.deloadFactor != null && Number(e.deloadFactor) !== 0.9) o.deloadFactor = e.deloadFactor
-  if (e.repsMin != null) o.repsMin = e.repsMin
-  if (e.repsMax != null) o.repsMax = e.repsMax
-  // The exercise's own rest (issue #10) is part of how it is prescribed, so it travels too —
-  // only when set, so a plan that never asked for one leaves the recipient's own default
-  // timer in charge. parsePlan and mergePlan carry it through by spread.
-  if (e.restSec > 0) o.restSec = e.restSec
-  if (e.warmupRestSec > 0) o.warmupRestSec = e.warmupRestSec   // the ramp's own rest travels with the work rest
-  if (e.sg) o.sg = e.sg
-  if (e.note) o.note = e.note
-  const warm = cleanWarmupSets(e.warmupSets)
-  if (warm) o.warmupSets = warm
-  // Drop-sets and rest-pause are part of how the exercise is prescribed, not a logging detail.
-  // Without this a shared "3x5 with a double drop" arrived at the other end as a plain 3x5,
-  // silently — parsePlan's `dropped` counter only tracks exercises it cannot resolve at all.
-  const intens = cleanIntensifier(e.intensifier)
-  if (intens) o.intensifier = intens
-  return o
+// What a routine occurrence carries into a shared plan: the engine's own identity and
+// prescription (occurrenceId, exerciseId, rule) plus the handful of presentation fields
+// below — order, mode, laterality, superset tag, note, rest, warm-up recipe. This is the
+// authoritative list of what travels; every legacy per-mode field (sets, reps, weight,
+// intensifier, prog, inc, deloadFactor, side…) lived on the pre-engine exercise shape and no
+// longer exists on a canonical occurrence — the rule carries the prescription wholesale. The one
+// legacy exception is `warmupSets`, migrated to `warmup` by `migrateOccurrence` before this runs.
+function cleanOccurrence(o) {
+  const out = { occurrenceId: o.occurrenceId, exerciseId: o.exerciseId, order: o.order, mode: o.mode }
+  if (o.rule) out.rule = o.rule
+  if (o.laterality) out.laterality = o.laterality
+  if (o.sg) out.sg = o.sg
+  if (o.note) out.note = o.note
+  // A recipe the rule cannot use (timed, unloaded) is dropped rather than carried inert.
+  const can = o.rule && supports(o.rule)
+  if (o.warmup && can?.warmup) out.warmup = o.warmup
+  if (o.intensifier && can?.[o.intensifier.type]) out.intensifier = o.intensifier
+  const rest = cleanRestSec(o.restSec)
+  if (rest) out.restSec = rest
+  return out
 }
 
-/** Clamped the same way buildSets clamps it on the way out — the stepper showed a hand-edited
- *  plan file's "999" verbatim, because the clamp only happened when the rows were built. */
-function cleanWarmupSets(v) {
-  const n = Math.round(Number(v)) || 0
-  return n > 0 ? Math.min(MAX_PLANNED_WARMUPS, n) : 0
-}
-
-/** A positive whole number of seconds or nothing — the same gate cleanEx applies on the way
- *  out, so a hand-edited plan file can't hand the rest timer a string or a negative. */
+/** A positive whole number of seconds or nothing — a hand-edited plan file can't hand the rest
+ *  timer a string or a negative. */
 function cleanRestSec(v) {
   const n = Math.round(Number(v)) || 0
   return n > 0 ? n : 0
 }
 
-/** Keep the floors the config sheet and applyIntensifierPlan already enforce, and nothing else:
- *  a plan file is someone else's data, so anything unrecognised is dropped rather than trusted. */
-function cleanIntensifier(x) {
-  const type = x && x.type
-  if (type === 'dropset') {
-    return { type, count: Math.max(1, Math.round(Number(x.count)) || 1), pct: Math.max(5, Math.round(Number(x.pct)) || 20) }
-  }
-  if (type === 'restpause') {
-    return { type, totalReps: Math.max(1, Math.round(Number(x.totalReps)) || 1), restSec: Math.max(5, Math.round(Number(x.restSec)) || 15) }
-  }
-  return null
+/** A rule is the prescription itself — an unknown preset or an out-of-range parameter isn't
+ *  a field to drop quietly like an unrecognised legacy toggle, it's a bundle that doesn't parse. */
+function assertValidRule(rule) {
+  const { ok, errors } = validatePlanRule(rule)
+  if (!ok) throw new Error(errors.join('; '))
 }
 
 // The muscles the map can draw, plus the one label the form gives a cardio exercise.
@@ -160,17 +123,18 @@ function cleanCustom(c) {
   return o
 }
 
-/** Build the shareable bundle: every routine, the week schedule, referenced customs. */
+/** Build the shareable bundle: every routine, the week schedule, referenced customs, and
+ *  never the exporter's workout history, prescriptions or 1RMs (the recipient is prompted for
+ *  their own). */
 export function buildPlanBundle(S, name) {
   const unit = planUnit(S.unit == null ? 'kg' : S.unit)
   if (!unit) unitError()
   const routines = (S.routines || []).map(r => ({
     id: r.id, name: r.name, emoji: r.emoji,
-    ...(r.prog ? { prog: r.prog } : {}),
     ...(r.excludeFromProgression === true ? { excludeFromProgression: true } : {}),
-    ex: (r.ex || []).map(cleanEx)
+    ex: (r.ex || []).map(cleanOccurrence)
   }))
-  const usedIds = new Set(routines.flatMap(r => r.ex.map(e => e.id)))
+  const usedIds = new Set(routines.flatMap(r => r.ex.map(e => e.exerciseId)))
   const customEx = (S.customEx || [])
     .filter(c => usedIds.has(c.id))
     .map(cleanCustom)
@@ -194,7 +158,10 @@ export function buildPlanBundle(S, name) {
 export function parsePlan(raw, destinationUnit = 'kg') {
   const data = typeof raw === 'string' ? JSON.parse(raw) : raw
   const destination = planUnit(destinationUnit)
-  if (!data || typeof data !== 'object' || Array.isArray(data) || !data.opengym_plan || !Array.isArray(data.routines) || !destination) {
+  // PLAN_FMT 1 and 2 (per-mode fields, bindings) are refused outright rather than imported as
+  // an empty plan: their routines carry no rule, so silently accepting them would drop every
+  // exercise without saying why.
+  if (!data || typeof data !== 'object' || Array.isArray(data) || data.opengym_plan !== PLAN_FMT || !Array.isArray(data.routines) || !destination) {
     throw new Error(t('this isn’t an openGym plan file'))
   }
   const sourceUnit = declaredPlanUnit(data)
@@ -204,19 +171,16 @@ export function parsePlan(raw, destinationUnit = 'kg') {
   const routines = data.routines.filter(r => r && Array.isArray(r.ex)).map(r => ({
     ...r,
     ex: r.ex.filter(e => {
-      const ok = !!e && (known.has(e.id) || !!EXIDX[e.id])
-      if (!ok) dropped++
-      return ok
-    }).map(e => {
-      // The exercises pass through as written, so the fields that carry numbers into the
-      // planner get the same clamps on the way in that they get on the way out.
-      const warm = cleanWarmupSets(e.warmupSets)
-      const intens = cleanIntensifier(e.intensifier)
-      const rest = cleanRestSec(e.restSec)
-      const warmRest = cleanRestSec(e.warmupRestSec)
-      const { warmupSets, intensifier, restSec, warmupRestSec, ...passthrough } = e
-      return convertedExercise({ ...passthrough, ...(warm ? { warmupSets: warm } : {}), ...(intens ? { intensifier: intens } : {}), ...(rest ? { restSec: rest } : {}), ...(warmRest ? { warmupRestSec: warmRest } : {}) }, sourceUnit || destination, destination)
-    })
+      // An occurrence with no rule can't be started, so it is dropped like an unknown exercise.
+      const ok = !!e && !!e.occurrenceId && !!e.rule && (known.has(e.exerciseId) || !!EXIDX[e.exerciseId])
+      if (!ok) { dropped++; return false }
+      // A rule is validated before anything is imported: an unknown preset or an out-of-range
+      // parameter is a bundle that doesn't parse, not an exercise to drop quietly.
+      assertValidRule(e.rule)
+      if (e.rule.exerciseId !== e.exerciseId) throw new Error(t('this isn’t an openGym plan file'))
+      if (!validateWarmup(migrateOccurrence(e).warmup, weightDecimals()) || !validateIntensifier(e.intensifier)) throw new Error(t('this isn’t an openGym plan file'))
+      return true
+    }).map(e => cleanOccurrence(migrateOccurrence(e)))
   }))
   return {
     name: (data.name || '').trim(),
@@ -266,9 +230,21 @@ export function mergePlan(s, bundle, { schedule } = {}) {
       id: nid,
       name: r.name || t('Shared routine'),
       emoji: r.emoji,
-      ...(r.prog ? { prog: r.prog } : {}),
       ...(r.excludeFromProgression === true ? { excludeFromProgression: true } : {}),
-      ex: (r.ex || []).map(e => ({ ...e, id: exIdMap[e.id] || e.id }))
+      // Fresh occurrence and rule identity — a merged routine never shares live engine identity
+      // with the file it came from — but the prescription itself survives. Re-validated here too:
+      // mergePlan is a public entry point of its own, not only reached through parsePlan.
+      ex: (r.ex || []).map(e => {
+        assertValidRule(e.rule)
+        const occurrenceId = uid()
+        const exerciseId = exIdMap[e.exerciseId] || e.exerciseId
+        return {
+          ...e,
+          exerciseId,
+          occurrenceId,
+          rule: { ...e.rule, id: occurrenceId, revision: 1, routineId: nid, exerciseId }
+        }
+      })
     })
   })
   if (schedule) {
@@ -352,7 +328,7 @@ export function planPrintHTML(S, owner) {
   const unit = S.unit || 'kg'
   const routines = (S.routines || []).filter(r => r.ex && r.ex.length)
   const body = routines.length
-    ? routines.map(r => routineHTML(r, unit)).join('')
+    ? routines.map(r => routineHTML({ ...r, ex: r.ex.map(e => ({ ...coachExOf(e, EXIDX[e.exerciseId ?? e.id]), ...(e.note ? { note: e.note } : {}) })) }, unit)).join('')
     : `<p class="none">${esc(t('No routines yet.'))}</p>`
   const sub = [owner, todayISO()].filter(Boolean).map(esc).join(' · ')
   return `<!doctype html><html><head><meta charset="utf-8">

@@ -4,7 +4,6 @@
 import { describe, it, expect } from 'vitest'
 import { isAssisted, betterWeight, beatsWeight, EXIDX } from './exercises.js'
 import { bestWeightFor, bestWeightForEntry } from './history.js'
-import { readSession, nextPrescription } from './progression.js'
 import { bestSetOf, e1rmSeries, is1RMRecord } from './onerm.js'
 
 const ASSISTED = '0017'          // assisted pull-up, leverage machine
@@ -39,7 +38,7 @@ describe('which exercises count as assisted', () => {
 })
 
 describe('the record is the lightest assistance', () => {
-  const S = { unit: 'kg', workouts: [workout('2026-09-01', ASSISTED, [set(30, 8)]), workout('2026-09-08', ASSISTED, [set(20, 8)])] }
+  const S = { unit: 'kg', workouts: ['2026-09-01', '2026-09-08'].map((d, index) => ({ d, exposures: [{ exerciseId: ASSISTED, kind: 'legacy', performance: { sets: [{ status: 'completed', observations: [{ metric: 'repetitions', value: 8 }], resistance: { kind: 'external-load', value: index ? 20 : 30 }, segments: [] }] } }] })) }
 
   it('reports the smallest load as the best, across history and within a session', () => {
     expect(bestWeightFor(S, ASSISTED)).toBe(20)
@@ -52,43 +51,16 @@ describe('the record is the lightest assistance', () => {
   })
 })
 
-describe('progression asks for less help', () => {
-  const cfg = { id: ASSISTED, sets: 1, reps: 8, weight: 30, prog: 'linear', inc: 5 }
-  const hist = w => ({ unit: 'kg', workouts: [{ d: '2026-09-08', start: 1, entries: [{ id: ASSISTED, target: { ...cfg, weight: w }, sets: [set(w, 8)] }] }] })
-
-  it('takes assistance away after a clean session', () => {
-    const p = nextPrescription(hist(30), cfg)
-    expect(p.kind).toBe('up')
-    expect(p.weight).toBe(25)
-    expect(p.why.join(' ')).toMatch(/less help/)
-  })
-
-  it('never goes below no assistance at all', () => {
-    const p = nextPrescription(hist(5), { ...cfg, weight: 5 })
-    expect(p.weight).toBeGreaterThanOrEqual(0)
-  })
-
-  it('reads the lightest completed set as the session load', () => {
-    const read = readSession({ id: ASSISTED, target: { mode: 'reps', sets: 2, reps: 8 }, sets: [set(30, 8), set(20, 8)] })
-    expect(read.weight).toBe(20)
-  })
-
-  it('still adds weight on an ordinary lift', () => {
-    const plain = { id: PLAIN, sets: 1, reps: 8, weight: 60, prog: 'linear', inc: 5 }
-    const S = { unit: 'kg', workouts: [{ d: '2026-09-08', start: 1, entries: [{ id: PLAIN, target: plain, sets: [set(60, 8)] }] }] }
-    expect(nextPrescription(S, plain).weight).toBe(65)
-  })
-})
-
 describe('no one-rep max for an assistance machine', () => {
   it('leaves it out of the estimate, the curve and the record check', () => {
-    const entry = { id: ASSISTED, sets: [set(30, 8)] }
+    const exposure = id => ({ exerciseId: id, performance: { sets: [{ setId: 'work', status: 'completed', observations: [{ metric: 'repetitions', value: 8 }], resistance: { kind: 'external-load', value: 30 }, segments: [] }] } })
+    const entry = exposure(ASSISTED)
     expect(bestSetOf(entry)).toBe(null)
     const S = { unit: 'kg', workouts: [workout('2026-09-01', ASSISTED, [set(30, 8)])] }
     expect(e1rmSeries(S, ASSISTED)).toEqual([])
     expect(is1RMRecord(S, ASSISTED, entry)).toBe(null)
     // the ordinary lift still gets one
-    expect(bestSetOf({ id: PLAIN, sets: [set(100, 5)] })).not.toBe(null)
+    expect(bestSetOf({ exerciseId: PLAIN, performance: { sets: [{ setId: 'work', status: 'completed', observations: [{ metric: 'repetitions', value: 5 }], resistance: { kind: 'external-load', value: 100 }, segments: [] }] } })).not.toBe(null)
   })
 })
 

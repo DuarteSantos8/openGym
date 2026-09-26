@@ -32,13 +32,17 @@ afterEach(() => { act(() => root.unmount()); host.remove() })
 
 // Every weekday points at a routine and the weigh-in is off: today is always planned, and the
 // weigh-in sheet's own way through to the Start screen never opens.
-const setS = (over = {}) => useStore.setState(s => ({
-  S: {
-    ...s.S, routines, dayPlan: {}, workouts: [], active: null, weighIn: false,
-    week: { 0: ['r1'], 1: ['r1'], 2: ['r1'], 3: ['r1'], 4: ['r1'], 5: ['r1'], 6: ['r1'] }, ...over,
-  },
-  user: null,
-}))
+const setS = (over = {}) => {
+  const { active = null, ...rest } = over
+  useStore.setState(s => ({
+    S: {
+      ...s.S, routines, dayPlan: {}, workouts: [], weighIn: false,
+      week: { 0: ['r1'], 1: ['r1'], 2: ['r1'], 3: ['r1'], 4: ['r1'], 5: ['r1'], 6: ['r1'] }, ...rest,
+    },
+    A: active,
+    user: null,
+  }))
+}
 const mount = () => act(() => root.render(<Home />))
 const door = () => [...host.querySelectorAll('button')].find(b => b.textContent.includes('Choose a different workout'))
 

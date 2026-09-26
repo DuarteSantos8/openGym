@@ -6,13 +6,14 @@ import { swapActiveWorkoutExercise } from './sheets.jsx'
 import { EXDB } from './lib/exercises.js'
 import { DEF, useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
+import { occurrenceFor } from './lib/session-start.js'
 
 const clone = value => JSON.parse(JSON.stringify(value))
 const ids = EXDB.slice(0, 3).map(exercise => exercise.id)
 
-function entry(id, done = false) {
+function entry(id, done = false, index = 0) {
   return {
-    id,
+    id, exposureId: `exposure-${index}`,
     target: { mode: 'reps', sets: 1, reps: 5, weight: 40 },
     sets: [{ w: 40, r: 5, done }]
   }
@@ -20,12 +21,18 @@ function entry(id, done = false) {
 
 function installActive() {
   const S = clone(DEF)
-  S.active = {
+  Object.assign(S, { prescriptions: {}, oneRepMaxes: {}, progression: {} })
+  const A = {
     id: 'swap-test', d: '2026-08-27', start: Date.now(), routineId: null,
     name: 'Swap test', bw: null, cur: 1,
-    entries: [entry(ids[0]), entry(ids[0]), entry(ids[1])]
+    entries: [entry(ids[0], false, 0), entry(ids[0], false, 1), entry(ids[1], false, 2)],
+    exposures: [0, 1, 2].map(index => ({
+      exposureId: `exposure-${index}`,
+      exerciseId: index < 2 ? ids[0] : ids[1],
+      occurrenceId: `occurrence-${index}`,
+    })),
   }
-  useStore.setState({ S, user: null })
+  useStore.setState({ S, A, user: null })
 }
 
 function submitSwap(index, exercise, config) {
@@ -52,19 +59,37 @@ describe('active exercise swap sheet flow', () => {
     const callback = vi.fn()
     useUI.getState().startWork(5, 'Hold', callback)
 
-    submitSwap(1, EXDB[2], { mode: 'reps', sets: 2, reps: 8, weight: 30, note: 'New target' })
+    submitSwap(1, EXDB[2], { ...occurrenceFor(EXDB[2].id, { sets: 2, reps: 8, weight: 30 }, { id: 'replacement' }), note: 'New target' })
     vi.advanceTimersByTime(10_000)
 
-    const active = useStore.getState().S.active
+    const active = useStore.getState().A
     expect(useUI.getState().work).toBeNull()
     expect(callback).not.toHaveBeenCalled()
     expect(active.entries.map(value => value.id)).toEqual([ids[0], ids[2], ids[1]])
-    expect(active.entries[1].target).toMatchObject({ mode: 'reps', sets: 2, reps: 8, weight: 30, note: 'New target' })
+    expect(active.entries[1].target).toMatchObject({ sets: 2, reps: 8, weight: 30 })
+    expect(active.entries.map(value => value.exposureId)).toEqual(active.exposures.map(value => value.exposureId))
+    expect(prescriptionAt(active, 1).preset).toBe('manual')
     expect(active.entries[0].sets).toEqual([{ w: 40, r: 5, done: false }])
     expect(active.entries[2].sets).toEqual([{ w: 40, r: 5, done: false }])
     expect(active.cur).toBe(1)
   })
+
+  it('keeps logged work on its old exposure and inserts a fresh replacement pair', () => {
+    useStore.getState().updateActive(active => { active.entries[1].sets[0].done = true })
+    submitSwap(1, EXDB[2], occurrenceFor(EXDB[2].id, { sets: 1, reps: 8, weight: 30 }, { id: 'replacement' }))
+    const confirm = useUI.getState().sheets.at(-1)
+    act(() => { confirm.render(confirm.close).props.onConfirm() })
+
+    const active = useStore.getState().A
+    expect(active.entries.map(value => value.id)).toEqual([ids[0], ids[0], ids[2], ids[1]])
+    expect(active.entries.map(value => value.exposureId)).toEqual(active.exposures.map(value => value.exposureId))
+    expect(active.entries[1].sets[0].done).toBe(true)
+  })
 })
+
+function prescriptionAt(active, index) {
+  return useStore.getState().S.prescriptions[active.exposures[index].prescriptionId]
+}
 
 describe('active exercise swap locale coverage', () => {
   const required = [

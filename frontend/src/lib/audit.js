@@ -32,7 +32,10 @@ const LABELS = {
   'admin.invite.create': 'Created an invite code',
   'admin.invite.revoke': 'Revoked an invite code',
   'admin.audit.clear': 'Cleared the activity log',
-  'admin.denied': 'Blocked from the admin dashboard'
+  'admin.denied': 'Blocked from the admin dashboard',
+  // The per-profile v2 engine migration (POST /api/data/migrate-engine-v2).
+  'data.migrate.ok': 'Upgraded training data to the new engine',
+  'data.migrate.fail': 'Training data upgrade failed'
 }
 // An unknown event is shown raw rather than dropped or rendered as "undefined": a dashboard
 // that is one version behind the server should still say *something* truthful.

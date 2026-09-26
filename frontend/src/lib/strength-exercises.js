@@ -10,7 +10,6 @@ import { best1RM } from './onerm.js'
 import { STRENGTH_FULL_MS, STRENGTH_HALF_LIFE_MS, STRENGTH_FLOOR, halfLifeDecay } from './recovery.js'
 import { musclesOf } from './muscles.js'
 import { EXIDX } from './exercises.js'
-import { isWarmupRow } from './workout-model.js'
 import { exerciseNameFor } from './i18n-core.js'
 
 const round1 = value => Math.round(value * 10) / 10
@@ -29,26 +28,26 @@ function lastWorkSetAt(S, id) {
   for (const workout of S?.workouts || []) {
     const ts = workout.start || new Date(workout.d).getTime()
     if (!Number.isFinite(ts) || ts <= latest) continue
-    const entry = (workout.entries || []).find(e => e.id === id)
-    if (!entry) continue
-    if ((entry.sets || []).some(s => s.done === true && !isWarmupRow(s))) latest = ts
+    const exposure = (workout.exposures || []).find(e => e.exerciseId === id)
+    if (!exposure) continue
+    if ((exposure.performance?.sets || []).some(row => row.status === 'completed' && row.role !== 'warmup')) latest = ts
   }
   return Number.isFinite(latest) ? latest : null
 }
 
-function snapshotWeights(entry) {
-  const catalogue = entry && typeof entry === 'object' ? EXIDX[entry.id] : null
+function snapshotWeights(exposure) {
+  const catalogue = exposure && typeof exposure === 'object' ? EXIDX[exposure.exerciseId] : null
   if (catalogue) {
     const weights = musclesOf(catalogue)
     if (Object.keys(weights).length) return weights
   }
-  const direct = entry && typeof entry === 'object'
-    ? (entry.muscleWeights || entry.muscleSnapshot?.muscleWeights)
+  const direct = exposure && typeof exposure === 'object'
+    ? (exposure.muscleWeights || exposure.muscleSnapshot?.muscleWeights)
     : null
   if (direct && typeof direct === 'object' && !Array.isArray(direct) && Object.keys(direct).length) {
     return direct
   }
-  return musclesOf(entry)
+  return musclesOf(exposure)
 }
 
 // Highest-weight muscle of an exercise - used for the primary/secondary badge and the
@@ -62,19 +61,19 @@ export function primaryMuscleOf(entry) {
   return best
 }
 
-function resolvedExerciseName(entry) {
+function resolvedExerciseName(exposure) {
   // Imported history often has no name snapshot (entries are { id, sets, topW }) - the
   // catalogue (or the registered custom) is the canonical name source.
-  const ex = entry && typeof entry === 'object' ? EXIDX[entry.id] : null
+  const ex = exposure && typeof exposure === 'object' ? EXIDX[exposure.exerciseId] : null
   if (ex?.n) return exerciseNameFor(ex)
-  if (entry?.muscleSnapshot?.n) return entry.muscleSnapshot.n
-  return entry && typeof entry === 'object' && entry.n ? entry.n : null
+  if (exposure?.muscleSnapshot?.n) return exposure.muscleSnapshot.n
+  return exposure && typeof exposure === 'object' && exposure.exerciseNameSnapshot ? exposure.exerciseNameSnapshot : null
 }
 
-function firstEntryWithId(S, id) {
+function firstExposureWithId(S, id) {
   for (const workout of S?.workouts || []) {
-    const entry = (workout.entries || []).find(e => e.id === id)
-    if (entry) return entry
+    const exposure = (workout.exposures || []).find(e => e.exerciseId === id)
+    if (exposure) return exposure
   }
   return null
 }
@@ -88,20 +87,20 @@ function firstEntryWithId(S, id) {
  */
 export function strengthExerciseRows(S, now) {
   const workouts = S?.workouts || []
-  const ids = [...new Set(workouts.flatMap(w => (w.entries || []).map(e => e.id)))]
+  const ids = [...new Set(workouts.flatMap(w => (w.exposures || []).map(exposure => exposure.exerciseId)))]
   const rows = []
   for (const id of ids) {
     const best = best1RM(S, id)
     if (!best) continue
-    const entry = firstEntryWithId(S, id)
+    const exposure = firstExposureWithId(S, id)
     const lastAt = lastWorkSetAt(S, id)
     const decay = lastAt == null ? STRENGTH_FLOOR : strengthFromAge(Number(now) - lastAt)
     rows.push({
       id,
-      name: resolvedExerciseName(entry) || id,
+      name: resolvedExerciseName(exposure) || id,
       est: best.est,
       estDate: best.d,
-      primary: primaryMuscleOf(entry) ? primaryMuscleOf(entry).slug : null,
+      primary: primaryMuscleOf(exposure) ? primaryMuscleOf(exposure).slug : null,
       decay,
       current: round1(best.est * decay),
     })
@@ -118,19 +117,19 @@ export function strengthExerciseRowsForMuscle(S, now, slug) {
   const workouts = S?.workouts || []
   const seen = new Map()
   for (const workout of workouts) {
-    for (const entry of workout.entries || []) {
-      if (seen.has(entry.id)) continue
-      const weights = snapshotWeights(entry)
+    for (const exposure of workout.exposures || []) {
+      if (seen.has(exposure.exerciseId)) continue
+      const weights = snapshotWeights(exposure)
       const weight = weights[slug]
       if (!weight) continue
-      const best = best1RM(S, entry.id)
+      const best = best1RM(S, exposure.exerciseId)
       if (!best) continue
-      const lastAt = lastWorkSetAt(S, entry.id)
+      const lastAt = lastWorkSetAt(S, exposure.exerciseId)
       const decay = lastAt == null ? STRENGTH_FLOOR : strengthFromAge(Number(now) - lastAt)
-      const primary = primaryMuscleOf(entry)
-      seen.set(entry.id, {
-        id: entry.id,
-        name: resolvedExerciseName(entry) || entry.id,
+      const primary = primaryMuscleOf(exposure)
+      seen.set(exposure.exerciseId, {
+        id: exposure.exerciseId,
+        name: resolvedExerciseName(exposure) || exposure.exerciseId,
         weight,
         primary: primary ? primary.slug : null,
         est: best.est,

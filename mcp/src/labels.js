@@ -1,8 +1,7 @@
 // Formatting glue between lib helpers (which speak {0}/{1} templates) and the JSON returned
 // to the LLM.
 import { MUSCLE_NAME, MUSCLES } from '../../frontend/src/lib/muscles.js'
-import { modeOf, fmtSec, setLabel } from '../../frontend/src/lib/history.js'
-import { POLICY_NAME } from '../../frontend/src/lib/progression.js'
+import { setLabel } from '../../frontend/src/lib/history.js'
 import { fmtDate, fmtNum, fmtDur } from '../../frontend/src/lib/format.js'
 
 // Apply {0},{1},… substitutions to the template strings the lib returns.
@@ -14,21 +13,8 @@ export function fmt(template, args) {
 
 export { setLabel }
 
-export function exLine(cfg, unit) {
-  const mode = modeOf(cfg)
-  const n = cfg.sets || 1
-  const load = cfg.weight ? ' · ' + fmtNum(cfg.weight) + ' ' + unit : ''
-  if (mode === 'cardio') return `${n} × ${cfg.min || 20} min @ ${fmtNum(cfg.speed || 8)} km/h`
-  if (mode === 'time') return `${n} × ${fmtSec(cfg.sec || 45)}${load}`
-  return `${n} × ${cfg.reps}${load}`
-}
-
 export function muscleName(slug) {
   return MUSCLE_NAME[slug] || slug
-}
-
-export function policyName(policy) {
-  return POLICY_NAME[policy] || policy
 }
 
 export function friendlyDate(iso) {
@@ -45,3 +31,38 @@ export function ratio(done, total) {
 }
 
 export function muscleOrder() { return MUSCLES.slice() }
+
+// Human label per PlanRule preset id (api/engine/rules.js PRESETS). Add a new
+// preset's id here rather than inlining a name at a call site.
+export const PRESET_LABEL = {
+  manual: 'No automatic progression',
+  autoregulated: 'Autoregulated (RIR/RPE)',
+  linear: 'Linear progression',
+  greyskull: 'Greyskull LP',
+  double: 'Double progression',
+  triple: 'Triple progression',
+  duration: 'Duration',
+  hold_seconds: 'Timed hold progression',
+  bodyweight_ladder: 'Bodyweight ladder',
+  pyramid: 'Pyramid',
+  reverse_pyramid: 'Reverse pyramid',
+  five_three_one: '5/3/1'
+}
+export const presetLabel = id => PRESET_LABEL[id] || id || null
+
+// Human label per set role — what kind of set a prescribed/logged row is, for a coach reading get_workout/preview_session set-by-set.
+export const SET_ROLE_LABEL = {
+  warmup: 'Warm-up', work: 'Work set', top: 'Top set', anchor: 'Anchor set',
+  backoff: 'Back-off set', activation: 'Activation set', recovery: 'Recovery set', cooldown: 'Cool-down set'
+}
+export const setRoleLabel = role => SET_ROLE_LABEL[role] || role || null
+
+/** "3 × 5 · 60 kg", "3-5 × 8-12 · 70% 1RM", "3 × 8-12 · 60-80 kg", "3 × 30-60 s" — a plan rule in one line. */
+export function ruleSummary(rule) {
+  const p = rule.parameters
+  const span = r => (r.min === r.max ? `${r.min}` : `${r.min}-${r.max}`)
+  const upTo = v => (p.loadTo ? `-${fmtNum(v(p.loadTo))}` : '')
+  const load = p.load.mode === 'absolute' ? ` · ${fmtNum(p.load.value)}${upTo(l => l.value)} ${p.load.unit}`
+    : p.load.mode === 'percent_1rm' ? ` · ${fmtNum(p.load.percent)}${upTo(l => l.percent)}% 1RM` : ''
+  return `${span(p.sets)} × ${p.durationSeconds ? span(p.durationSeconds) + ' s' : span(p.reps)}${load}`
+}

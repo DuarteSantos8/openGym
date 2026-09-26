@@ -17,6 +17,9 @@ If you are using the standalone app on your mobile, you can use the demo for cre
 The demo stores all data in your browser, it is not public or shared in any way.
 
 Writing a json file yourself will be a bit of a complex task since the IDs of the exercises have to match the IDs in the database.  
+Every exercise also carries its full progression rule (`rule`), checked on import exactly as the
+exercise editor checks it — an invalid rule rejects the whole file. Plan files exported before the
+v2 training engine are refused: import them into an older version or rebuild the plan.  
 
 ## History
 

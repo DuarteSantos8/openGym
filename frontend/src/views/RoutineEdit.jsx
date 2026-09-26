@@ -6,17 +6,20 @@ import { exOr } from '../lib/exercises.js'
 import { activeProfile, exAvailable } from '../lib/equipment.js'
 import { uid } from '../lib/format.js'
 import { t, exerciseNameFor } from '../lib/i18n.js'
-import { supersetUnits, moveSupersetUnit, cleanupSg, exLine, defaultConfig } from '../lib/history.js'
+import { supersetUnits, moveSupersetUnit, cleanupSg } from '../lib/history.js'
 import { Thumb } from '../components/Media.jsx'
-import { glyphPicker, exercisePicker, exConfigSheet, confirmSheet } from '../sheets.jsx'
+import { glyphPicker, exercisePicker, exConfigSheet, confirmSheet, occurrenceSummary, quickOccurrence } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { glyphOf } from '../lib/glyphs.js'
-import { Button, Row, SelectRow, Switch } from '../components/ui.jsx'
+import { Button, Row, Switch } from '../components/ui.jsx'
 import SwipeToDelete from '../components/SwipeToDelete.jsx'
 import { copyRoutine } from '../lib/routines.js'
-import { POLICIES_FOR, POLICY_NAME, POLICY_DESC } from '../lib/progression.js'
 import BodyMap from '../components/BodyMap.jsx'
 import { loadOfRoutine, rankOf, MUSCLE_NAME } from '../lib/muscles.js'
+
+// The exercise a v2 occurrence points at. `exerciseId` is the canonical field (A57); `id` is
+// kept only as a fallback for pre-migration fixtures that never go through the sheet.
+const exIdOf = e => e.exerciseId ?? e.id
 
 export const ROUTINE_LONG_PRESS_MS = 380
 export const ROUTINE_DRAG_SLOP = 8
@@ -343,7 +346,7 @@ export default function RoutineEdit() {
   const unitFirst = new Set(units.filter(u => u.length > 1).map(u => u[0]))
   const inSS = new Set(units.filter(u => u.length > 1).flat())
   const profile = activeProfile(S)
-  const missingCount = profile ? r.ex.filter(e => !exAvailable(S, exOr(e.id))).length : 0
+  const missingCount = profile ? r.ex.filter(e => !exAvailable(S, exOr(e.exerciseId ?? e.id))).length : 0
 
   return <div className="narrow">
     <div className="hdr">
@@ -356,9 +359,6 @@ export default function RoutineEdit() {
     </div>
 
     <div className="sect-b" style={{ marginBottom: 16 }}>
-      <SelectRow icon="chartLine" title={t('Progression')} sheetTitle={t('Progression')}
-        value={r.prog || 'linear'} onChange={v => update(s => { s.routines.find(x => x.id === id).prog = v })}
-        options={POLICIES_FOR.reps.map(p => ({ value: p, label: t(POLICY_NAME[p]), subtitle: t(POLICY_DESC[p]) }))} />
       <Row icon="pause" iconTint="var(--orange)" title={t('Exclude from automatic progression')}
         subtitle={t('Use for planned deloads. Workouts stay in history and statistics.')}>
         <Switch checked={r.excludeFromProgression === true} onChange={v => update(s => {
@@ -368,11 +368,9 @@ export default function RoutineEdit() {
         })} />
       </Row>
     </div>
-    <div className="small dim" style={{ margin: '-10px 2px 16px' }}>
-      {r.excludeFromProgression
-        ? t('The next regular target continues from the last included workout.')
-        : t('Applies to every exercise in this routine that does not set its own rule.')}
-    </div>
+    {r.excludeFromProgression && <div className="small dim" style={{ margin: '-10px 2px 16px' }}>
+      {t('The next regular target continues from the last included workout.')}
+    </div>}
 
     {missingCount > 0 && <div className="card" style={{ marginBottom: 16, borderColor: 'var(--orange)' }}>
       <div className="row" style={{ gap: 8, alignItems: 'center' }}>
@@ -385,7 +383,7 @@ export default function RoutineEdit() {
       className={'list routine-list' + (reorder.drag ? ' is-reordering' : '')}>{r.ex.map((e, i) => {
       // An unresolvable id is shown rather than skipped — hiding it left an entry you
       // could neither see nor delete, but that still turned up in the workout.
-      const ex = exOr(e.id)
+      const ex = exOr(exIdOf(e))
       const noEquip = profile && !exAvailable(S, ex)
       const linkedPrev = i > 0 && e.sg && r.ex[i - 1].sg === e.sg
       const isDragging = reorder.drag && i >= reorder.drag.first && i <= reorder.drag.last
@@ -397,10 +395,10 @@ export default function RoutineEdit() {
           deleteLabel={t('Remove from routine')}
           onDelete={() => edit(x => { x.splice(i, 1); cleanupSg(x) })}
           onClick={() => {
-            exConfigSheet(ex, e, cfg => edit(x => { x[i] = { id: x[i].id, sg: x[i].sg, ...cfg } }), () => edit(x => { x.splice(i, 1); cleanupSg(x) }), r)
+            exConfigSheet(ex, e, cfg => edit(x => { x[i] = { ...cfg, sg: x[i].sg } }), () => edit(x => { x.splice(i, 1); cleanupSg(x) }), r)
           }}>
           <Thumb ex={ex} />
-          <div className="grow"><div className="tt capitalize">{exerciseNameFor(ex)}</div><div className="ss">{exLine(e, S.unit)}</div>
+          <div className="grow"><div className="tt capitalize">{exerciseNameFor(ex)}</div><div className="ss">{occurrenceSummary(e)}</div>
             {e.note && <div className="small dim" style={{ marginTop: 2 }}>{e.note}</div>}</div>
           {noEquip && <span className="tag" style={{ color: 'var(--orange)', borderColor: 'var(--orange)' }} title={t('Needs {0} — not in your active profile', t(ex.eq))}><Icon name="warning" /></span>}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 'none', alignItems: 'center' }}>
@@ -432,10 +430,10 @@ export default function RoutineEdit() {
     <div className="small dim row" style={{ margin: '10px 2px', gap: 5 }}><Icon name="link" style={{ fontSize: 13 }} />{t('Tap the link button on an exercise to superset it with the one above — you’ll do them back-to-back.')}</div>
     <Button variant="primary" onClick={() => exercisePicker((ex, quick) => {
       if (quick) {
-        edit(x => x.push({ id: ex.id, ...defaultConfig(ex.id) }))
+        edit(x => x.push(quickOccurrence(ex, r)))
         toast(t('“{0}” added to {1}', exerciseNameFor(ex), r.name))
       } else {
-        exConfigSheet(ex, null, cfg => edit(x => { x.push({ id: ex.id, ...cfg }) }), null, r)
+        exConfigSheet(ex, null, cfg => edit(x => { x.push({ ...cfg }) }), null, r)
       }
     })} icon="plus">{t('Add exercise')}</Button>
     <div style={{ height: 10 }} />

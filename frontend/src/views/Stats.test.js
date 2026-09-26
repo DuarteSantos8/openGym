@@ -7,6 +7,10 @@ const uiSource = readFileSync(new URL('../components/ui.jsx', import.meta.url), 
 const cssSource = readFileSync(new URL('../index.css', import.meta.url), 'utf8')
 
 describe('Stats mixed-entry metric contract', () => {
+  it('reads exercise history from canonical exposures, never workout entries', () => {
+    expect(source).toContain('w.exposures')
+    expect(source).not.toMatch(/w\.entries|workouts\[i\]\.entries/)
+  })
   it('selects authoritative reps rows before timed rows without stale topW', () => {
     const entry = { target: { mode: 'time', sec: 60 }, topW: 200, sets: [
       { phase: 'work', mode: 'reps', w: 100, r: 5, done: true },
@@ -25,11 +29,11 @@ describe('Stats mixed-entry metric contract', () => {
     expect(source).not.toContain('onExercise')
   })
 
-  it('uses the shared metric mode and row helpers rather than entryMode as a chart gate', () => {
-    expect(source).toContain('metricModeForEntry')
-    expect(source).toContain('metricRowsForEntry')
-    expect(source).toContain('bestWeightForEntry')
-    expect(source).not.toContain('const loggedMode = entryMode(en)')
+  it('uses canonical exposure helpers rather than entry mode helpers as a chart gate', () => {
+    expect(source).toContain('modeOfExposure')
+    expect(source).toContain('rowsOfExposure')
+    expect(source).toContain('bestWeightOfExposure')
+    expect(source).not.toContain('entryMode(en)')
     expect(source).not.toContain('(en.topW || 0)')
   })
 

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { parseWorkoutCSV, mergeImport } from './import-csv.js'
 import { workoutVolume } from './history.js'
+import { canonicalProfile } from './test-fixtures.js'
 
 const CSV = [
   'Date,Exercise,Weight,Reps,Set Type',
@@ -66,9 +67,28 @@ const HEVY_WARMUPS = [
 
 describe('imported volume', () => {
   it('stores the work-set volume, the same number workoutVolume computes', () => {
-    const [w] = parseWorkoutCSV(HEVY_WARMUPS, { unit: 'kg' }).workouts
+    const parsed = parseWorkoutCSV(HEVY_WARMUPS, { unit: 'kg' })
+    const S = canonicalProfile({ workouts: [] })
+    mergeImport(S, parsed)
+    const w = S.workouts.at(-1)
     expect(w.vol).toBe(1100)
-    expect(w.vol).toBe(workoutVolume(w))
+    expect(w.vol).toBe(workoutVolume(S, w))
+  })
+})
+
+describe('imported exposures', () => {
+  it('logs imported exposures with roles: visible in history, excluded from progression (A50)', () => {
+    const parsed = parseWorkoutCSV(HEVY_WARMUPS, { unit: 'kg' })
+    const S = canonicalProfile({ workouts: [] })
+    mergeImport(S, parsed)
+    const x = S.workouts.at(-1).exposures[0]
+    expect(x).not.toHaveProperty('prescriptionId')
+    expect(x).not.toHaveProperty('audit')
+    expect(x.trackId).toBe('import:' + x.exerciseId)
+    expect(x.mode).toBe('reps')
+    expect(x.performance.sets.every(r => r.role === 'warmup' || r.role === 'work')).toBe(true)
+    expect(x.excludedFromProgression).toBe(true)
+    expect(x.performance.sets.length).toBeGreaterThan(0)
   })
 })
 
@@ -93,7 +113,7 @@ describe('mergeImport and custom exercises', () => {
     expect(mergeImport(S, parseWorkoutCSV(EXPORT_B, { unit: 'kg' }))).toEqual({ added: 1, skipped: 1 })
     expect(S.customEx).toHaveLength(1)
     // The new day points at the existing exercise, so its history is one line, not two.
-    expect(S.workouts.map(w => w.entries[0].id)).toEqual([zorb.id, zorb.id])
+    expect(S.workouts.map(w => w.exposures[0].exerciseId)).toEqual([zorb.id, zorb.id])
     expect(S.exWeights[zorb.id]).toEqual({ w: 30, d: '2025-03-09' })
   })
 
@@ -102,6 +122,6 @@ describe('mergeImport and custom exercises', () => {
     S.customEx.push({ id: 'mine', n: 'Zorb  Roller ', bp: 'waist', custom: true })
     mergeImport(S, parseWorkoutCSV(EXPORT_A, { unit: 'kg' }))
     expect(S.customEx).toHaveLength(1)
-    expect(S.workouts[0].entries.map(e => e.id)).toEqual(['mine', '0025'])
+    expect(S.workouts[0].exposures.map(x => x.exerciseId)).toEqual(['mine', '0025'])
   })
 })

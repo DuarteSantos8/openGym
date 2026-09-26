@@ -1,6 +1,5 @@
-import { metricModeForEntry, metricRowsForEntry, bestWeightForEntry, modeOf } from './history.js'
-import { completedVolumeOf } from './workout-model.js'
 import { bestSetOf } from './onerm.js'
+import { volumeOf } from './history.js'
 
 // One exercise's past, read back for the history sheet (issue #43): a chart series and the
 // last few sessions, derived in a single pass over the log so the sheet can memoise the
@@ -24,7 +23,11 @@ const startOf = w => (Number.isFinite(w.start) ? w.start : new Date(w.d + 'T12:0
 
 // Volume of the exercise in one session: main set plus its drops/bursts, reps mode only —
 // there is no honest tonnage for a hold or a run.
-const entryVolume = rows => rows.reduce((v, s) => v + completedVolumeOf(s), 0)
+const observation = (row, metric) => row.observations?.find(x => x.metric === metric)?.value
+const modeOf = (exposure) => exposure.mode || 'reps'
+const rowsFor = exposure => (exposure.performance?.sets || []).filter(row => row.status === 'completed' && row.role !== 'warmup')
+const rowView = row => ({ done: true, ...(observation(row, 'repetitions') != null ? { r: observation(row, 'repetitions') } : {}), ...(observation(row, 'duration') != null ? { sec: observation(row, 'duration') } : {}), ...(row.resistance?.value != null ? { w: row.resistance.value } : {}) })
+const plannedTarget = p => (p ? { sets: p.rows.length, reps: p.prefill.reps, ...(p.prefill.durationSeconds != null ? { sec: p.prefill.durationSeconds } : {}), ...(p.rows[0]?.load ? { weight: p.rows[0].load.value } : {}) } : { sets: 0 })
 
 export function exerciseHistory(S, exId, { limit = HISTORY_SESSIONS } = {}) {
   const workouts = S?.workouts || []
@@ -32,34 +35,33 @@ export function exerciseHistory(S, exId, { limit = HISTORY_SESSIONS } = {}) {
   // inserted by date rather than appended.
   const logged = []
   workouts.forEach(w => {
-    const en = (w.entries || []).find(e => e.id === exId)
-    if (!en) return
-    const mode = metricModeForEntry(en)
-    if (!mode) return
-    const rows = metricRowsForEntry(en, mode)
-    if (rows.length) logged.push({ w, en, mode, rows })
+    const exposure = (w.exposures || []).find(x => x.exerciseId === exId)
+    if (!exposure) return
+    const mode = modeOf(exposure)
+    const rows = rowsFor(exposure)
+    if (rows.length) logged.push({ w, exposure, mode, rows })
   })
   logged.sort((a, b) => startOf(a.w) - startOf(b.w))
 
-  const empty = { mode: modeOf({ id: exId }), metric: 'weight', best: 0, prId: null, total: 0, sessions: [], points: [], e1rmPoints: [] }
+  const empty = { mode: 'reps', metric: 'weight', best: 0, prId: null, total: 0, sessions: [], points: [], e1rmPoints: [] }
   if (!logged.length) return empty
 
   const mode = logged[logged.length - 1].mode
-  const repsOnly = mode === 'reps' && !logged.some(l => l.mode === 'reps' && bestWeightForEntry(l.en) > 0)
+  const repsOnly = mode === 'reps' && !logged.some(l => l.mode === 'reps' && l.rows.some(row => row.resistance?.value > 0))
   const metric = mode === 'cardio' ? 'min' : mode === 'time' ? 'sec' : repsOnly ? 'reps' : 'weight'
-  const valueOf = ({ en, rows }) => {
-    if (metric === 'min') return rows.reduce((a, s) => a + (Number(s.min) || 0), 0)
-    if (metric === 'sec') return Math.max(0, ...rows.map(s => Number(s.sec) || 0))
-    if (metric === 'reps') return Math.max(0, ...rows.map(s => Number(s.r) || 0))
-    return bestWeightForEntry(en)
+  const valueOf = ({ rows }) => {
+    if (metric === 'min') return rows.reduce((a, row) => a + (Number(observation(row, 'duration')) || 0) / 60, 0)
+    if (metric === 'sec') return Math.max(0, ...rows.map(row => Number(observation(row, 'duration')) || 0))
+    if (metric === 'reps') return Math.max(0, ...rows.map(row => Number(observation(row, 'repetitions')) || 0))
+    return Math.max(0, ...rows.map(row => Number(row.resistance?.value) || 0))
   }
 
   let best = 0, prId = null
   const sessions = [], points = [], e1rmPoints = []
-  logged.forEach(({ w, en, mode: m, rows }) => {
+  logged.forEach(({ w, exposure, mode: m, rows }) => {
     const same = m === mode
-    const value = same ? valueOf({ en, rows }) : null
-    const e1rm = m === 'reps' ? (bestSetOf(en)?.est ?? null) : null
+    const value = same ? valueOf({ rows }) : null
+    const e1rm = m === 'reps' ? (bestSetOf(exposure)?.est ?? null) : null
     const t = startOf(w)
     // "PR" goes on the session that first reached the all-time best, not on every session
     // that later matched it — one marker says where the record was set.
@@ -67,8 +69,8 @@ export function exerciseHistory(S, exId, { limit = HISTORY_SESSIONS } = {}) {
     if (value != null && value > 0) points.push({ t, d: w.d, y: value, e1rm })
     if (e1rm != null) e1rmPoints.push({ t, d: w.d, y: e1rm })
     sessions.push({
-      id: w.id, d: w.d, t, mode: m, target: en.target || null, sets: rows, value, e1rm,
-      volume: m === 'reps' ? entryVolume(rows) : null,
+      id: w.id, d: w.d, t, mode: m, target: plannedTarget(S.prescriptions?.[exposure.prescriptionId]), sets: rows.map(rowView), value, e1rm,
+      volume: m === 'reps' ? volumeOf({ sets: rows }) : null,
     })
   })
   // The "first reached" rule only holds for records above zero: a bodyweight session with

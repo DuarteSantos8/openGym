@@ -151,3 +151,33 @@ describe('sign-in adoption helpers', () => {
     expect(mergeStates(server, local).unit).toBe('kg')   // without prefer the newer copy decides
   })
 })
+
+describe('prescription engine records', () => {
+  it('unions prescriptions and 1RMs, and keeps the newer device per progression track', () => {
+    const base = { workouts: [], bodyweight: [], exWeights: {} }
+    const a = { ...base, _ts: 1, prescriptions: { p1: { id: 'p1' } }, oneRepMaxes: { o1: { id: 'o1' } }, progression: { t1: { trackId: 't1', cyclesCompleted: 0 }, t2: { trackId: 't2', cyclesCompleted: 5 } } }
+    const b = { ...base, _ts: 2, prescriptions: { p2: { id: 'p2' } }, oneRepMaxes: { o2: { id: 'o2' } }, progression: { t1: { trackId: 't1', cyclesCompleted: 1 } } }
+    const out = mergeStates(a, b)
+    expect(Object.keys(out.prescriptions).sort()).toEqual(['p1', 'p2'])
+    expect(Object.keys(out.oneRepMaxes).sort()).toEqual(['o1', 'o2'])
+    expect(out.progression).toEqual({ t1: { trackId: 't1', cyclesCompleted: 1 }, t2: { trackId: 't2', cyclesCompleted: 5 } })
+  })
+
+  it('keeps the progression state for the latest merged completion on a shared track', () => {
+    const base = { bodyweight: [], exWeights: {} }
+    const aState = { trackId: 't1', cyclesCompleted: 1, lastCompletedLogId: 'log-a' }
+    const bState = { trackId: 't1', cyclesCompleted: 2, lastCompletedLogId: 'log-b' }
+    const a = { ...base, _ts: 2, workouts: [{ id: 'a', d: '2026-09-01', start: 9, exposures: [{ exposureId: 'log-a', trackId: 't1' }] }], progression: { t1: aState } }
+    const b = { ...base, _ts: 1, workouts: [{ id: 'b', d: '2026-09-01', start: 12, exposures: [{ exposureId: 'log-b', trackId: 't1' }] }], progression: { t1: bState } }
+    expect(mergeStates(a, b).progression.t1).toEqual(bState)
+  })
+
+  it('uses an exposure completion time over its session start time', () => {
+    const base = { bodyweight: [], exWeights: {} }
+    const aState = { trackId: 't1', lastCompletedLogId: 'log-a' }
+    const bState = { trackId: 't1', lastCompletedLogId: 'log-b' }
+    const a = { ...base, _ts: 2, workouts: [{ id: 'a', d: '2026-09-01', start: 9, exposures: [{ exposureId: 'log-a', completedAt: '2026-09-01T12:00:00.000Z' }] }], progression: { t1: aState } }
+    const b = { ...base, _ts: 1, workouts: [{ id: 'b', d: '2026-09-01', start: 10, exposures: [{ exposureId: 'log-b', completedAt: '2026-09-01T11:00:00.000Z' }] }], progression: { t1: bState } }
+    expect(mergeStates(a, b).progression.t1).toEqual(aState)
+  })
+})

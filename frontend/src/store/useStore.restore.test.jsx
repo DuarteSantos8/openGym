@@ -19,12 +19,12 @@ const httpError = status => Object.assign(new Error('HTTP ' + status), { status 
 beforeEach(() => {
   localStorage.clear()
   api.mockReset()
-  useStore.setState({ S: clone(DEF), user: null, ready: false })
+  useStore.setState({ S: clone(DEF), A: null, user: null, ready: false })
 })
 
 afterEach(() => {
   localStorage.clear()
-  useStore.setState({ S: clone(DEF), user: null, ready: false })
+  useStore.setState({ S: clone(DEF), A: null, user: null, ready: false })
 })
 
 describe('saved workout state sync and restore', () => {
@@ -36,28 +36,29 @@ describe('saved workout state sync and restore', () => {
     expect(restoredStateFor(local, { ...remote, _ts: 30 }, true)).toBeNull()
   })
 
-  it('overlays defaults and carries the device-local active workout', () => {
-    const active = { id: 'active-1', routineId: 'local', entries: [] }
-    const local = { ...clone(DEF), active }
+  it('overlays defaults onto a restored remote state', () => {
+    const local = { ...clone(DEF), _ts: 5 }
     const restored = restoredStateFor(local, { _ts: 20, routines: [routine('remote')] })
 
     expect(restored.routines.map(r => r.id)).toEqual(['remote'])
-    expect(restored.active).toEqual(active)
     expect(restored.restSec).toBe(90)
+    expect('active' in restored).toBe(false)   // the in-progress session is no longer part of S at all
   })
 
-  it('adopts a newer clean remote state while preserving a local active workout', async () => {
+  it('adopts a newer clean remote state while leaving the device-local active session (A) untouched', async () => {
     const active = { id: 'active-1', d: '2026-08-29', routineId: 'local', name: 'Local', entries: [] }
-    const local = { ...clone(DEF), _ts: 10, routines: [routine('local')], active }
-    const remote = { ...clone(DEF), _ts: 20, routines: [routine('remote')], active: null }
+    const local = { ...clone(DEF), _ts: 10, routines: [routine('local')] }
+    const remote = { ...clone(DEF), _ts: 20, routines: [routine('remote')] }
     useStore.setState({ S: local, user: { id: 'user-1' }, ready: true })
+    useStore.getState().setActive(active)   // the in-progress session, entirely outside S/pullState
     api.mockResolvedValue({ state: remote })
 
     await useStore.getState().pullState()
 
     expect(useStore.getState().S.routines.map(r => r.id)).toEqual(['remote'])
-    expect(useStore.getState().S.active).toEqual(active)
-    expect(JSON.parse(localStorage.getItem('gym_state_v1')).active).toEqual(active)
+    expect(useStore.getState().A).toEqual(active)   // pullState never touches A
+    expect(JSON.parse(localStorage.getItem('gym_active_v1'))).toEqual(active)
+    expect(JSON.parse(localStorage.getItem('gym_state_v1')).active).toBeUndefined()
     expect(api).toHaveBeenCalledTimes(1)
   })
 
@@ -169,7 +170,8 @@ describe('signing in as a different profile', () => {
   const active = { id: 'A-active', d: '2026-09-01', routineId: 'A', name: 'A', entries: [] }
   const signInAsAThenExpire = () => {
     useStore.getState().setUser({ id: 'A', name: 'A' })
-    useStore.getState().replaceState({ ...clone(DEF), _ts: 20, routines: [routine('A-routine')], bodyweight: [{ d: '2026-09-01', kg: 80 }], active })
+    useStore.getState().replaceState({ ...clone(DEF), _ts: 20, routines: [routine('A-routine')], bodyweight: [{ d: '2026-09-01', kg: 80 }] })
+    useStore.getState().setActive(active)
     useStore.getState().setUser(null)
     expect(hasData(useStore.getState().S)).toBe(true)
   }
@@ -184,7 +186,8 @@ describe('signing in as a different profile', () => {
     expect(api).toHaveBeenCalledTimes(1)   // the GET only — nothing was pushed under B
     expect(useStore.getState().S.routines).toEqual([])
     expect(useStore.getState().S.bodyweight).toEqual([])
-    expect(useStore.getState().S.active).toBeNull()
+    expect(useStore.getState().A).toBeNull()   // A's in-progress workout does not carry into B's account
+    expect(localStorage.getItem('gym_active_v1')).toBeNull()
     expect(JSON.parse(localStorage.getItem('gym_state_v1')).routines).toEqual([])
     expect(localStorage.getItem('gym_owner')).toBe('B')
   })
@@ -192,7 +195,7 @@ describe('signing in as a different profile', () => {
   it('adopts the new profile own state even when it is older or a push failed after expiry', async () => {
     signInAsAThenExpire()
     localStorage.setItem('gym_dirty', '1')   // a debounced push that hit the 401
-    const remoteB = { ...clone(DEF), _ts: 10, routines: [routine('B-routine')], active: null }
+    const remoteB = { ...clone(DEF), _ts: 10, routines: [routine('B-routine')] }
     api.mockResolvedValue({ state: remoteB })
 
     useStore.getState().setUser({ id: 'B', name: 'B' })
@@ -200,7 +203,7 @@ describe('signing in as a different profile', () => {
 
     expect(api).toHaveBeenCalledTimes(1)
     expect(useStore.getState().S.routines.map(r => r.id)).toEqual(['B-routine'])
-    expect(useStore.getState().S.active).toBeNull()   // A's in-progress workout is not carried over
+    expect(useStore.getState().A).toBeNull()   // A's in-progress workout is not carried over
     expect(localStorage.getItem('gym_dirty')).toBeNull()
   })
 
@@ -213,7 +216,7 @@ describe('signing in as a different profile', () => {
 
     expect(api).toHaveBeenCalledTimes(2)
     expect(JSON.parse(api.mock.calls[1][1].body).state.routines.map(r => r.id)).toEqual(['A-routine'])
-    expect(useStore.getState().S.active).toEqual(active)
+    expect(useStore.getState().A).toEqual(active)   // same owner: the owner-mismatch wipe never runs, A stays
   })
 
   // The check above runs in the tab that signs in. A second tab of the same browser still holding
@@ -222,18 +225,20 @@ describe('signing in as a different profile', () => {
     vi.useFakeTimers()
     try {
       useStore.getState().setUser({ id: 'A', name: 'A' })
-      useStore.getState().replaceState({ ...clone(DEF), _ts: 20, routines: [routine('A-routine')], active }, true)   // arms a push
+      useStore.getState().replaceState({ ...clone(DEF), _ts: 20, routines: [routine('A-routine')] }, true)   // arms a push
+      useStore.getState().setActive(active)
       api.mockResolvedValue({})
 
       // B's setUser in the other tab: it wiped the copy, wrote defaults, then recorded the owner.
       // B's own data only lands there after its pull — this tab never re-reads it.
       localStorage.setItem('gym_state_v1', JSON.stringify({ ...clone(DEF), _ts: 30 }))
+      localStorage.removeItem('gym_active_v1')
       localStorage.setItem('gym_owner', 'B')
       window.dispatchEvent(new StorageEvent('storage', { key: 'gym_owner', oldValue: 'A', newValue: 'B' }))
 
       expect(useStore.getState().user).toBeNull()
       expect(hasData(useStore.getState().S)).toBe(false)
-      expect(useStore.getState().S.active).toBeNull()
+      expect(useStore.getState().A).toBeNull()
 
       vi.advanceTimersByTime(3000)   // the push armed under A must not fire under B's cookie
       useStore.getState().update(s => { s.routines.push(routine('typed-after')) })
@@ -249,7 +254,8 @@ describe('signing in as a different profile', () => {
   // the owner go while gym_state_v1 still holds A's copy — it must not keep that copy either way.
   it('a tab still holding the previous profile drops its data when that profile signs out elsewhere', async () => {
     useStore.getState().setUser({ id: 'A', name: 'A' })
-    useStore.getState().replaceState({ ...clone(DEF), _ts: 20, routines: [routine('A-routine')], bodyweight: [{ d: '2026-09-01', kg: 80 }], active })
+    useStore.getState().replaceState({ ...clone(DEF), _ts: 20, routines: [routine('A-routine')], bodyweight: [{ d: '2026-09-01', kg: 80 }] })
+    useStore.getState().setActive(active)
     api.mockResolvedValue({ state: null })
 
     localStorage.removeItem('gym_owner')   // gym_state_v1 still holds A's copy at this instant
@@ -257,7 +263,7 @@ describe('signing in as a different profile', () => {
 
     expect(useStore.getState().user).toBeNull()
     expect(hasData(useStore.getState().S)).toBe(false)
-    expect(useStore.getState().S.active).toBeNull()
+    expect(useStore.getState().A).toBeNull()
 
     useStore.getState().setUser({ id: 'C', name: 'C' })
     await useStore.getState().pullState()
@@ -323,6 +329,14 @@ describe('signing in as a different profile', () => {
     expect(api).toHaveBeenCalledTimes(1)
     expect(api.mock.calls[0][1].method).toBe('PUT')
     expect(JSON.parse(api.mock.calls[0][1].body).state.routines.map(r => r.id)).toEqual(['guest'])
+  })
+})
+
+describe('warm-up migration on restore', () => {
+  it('converts a legacy occurrence arriving from the server', () => {
+    const remote = { _ts: 2, routines: [{ id: 'r', ex: [{ occurrenceId: 'o', warmupSets: 7 }] }], workouts: [{ id: 'w' }] }
+    const out = restoredStateFor({ _ts: 1, workouts: [], routines: [], bodyweight: [] }, remote)
+    expect(out.routines[0].ex[0]).toEqual({ occurrenceId: 'o', warmup: { mode: 'smart', count: 5 } })
   })
 })
 

@@ -19,6 +19,8 @@ import { startCadence } from './coach/cadence.js';
 import { startWarmup } from './coach/warmup.js';
 import { dayReminderPush, restTimerPush, testPush } from './push-messages.js';
 import { verifyError } from './verify-error.js';
+import { isLegacyProfile, migrateProfileV1ToV2, migrationStatus, validateCanonicalProfile } from './migration/profile-migration.js';
+import { LIB_BY_ID } from './coach/core/library.js';
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
@@ -681,6 +683,36 @@ if (AUDIT_ON) {
 }
 
 /* ---------- routes ---------- */
+const MIN_ENGINE_SCHEMA = 2;
+
+// The bytes on disk and what they say. A migration works from exactly what it read; a file that
+// does not parse, or declares a schema newer than this server, is closed until an admin repairs it.
+function readStateSource(uid) {
+  let text;
+  try { text = fs.readFileSync(stateFile(uid), 'utf8'); } catch { return { state: null }; }
+  try {
+    const state = JSON.parse(text);
+    return { text, state, status: migrationStatus(state, Buffer.byteLength(text)) };
+  } catch (e) {
+    return { error: e.message === 'unsupported-schema' ? 'unsupported-schema' : 'profile-unreadable' };
+  }
+}
+
+// A canonical profile is closed to older clients: they would read v2 records as empty and push the
+// result back over real data. A v1 profile is the mirror image: an old client keeps working on it,
+// while an engine-aware client is sent to POST /api/data/migrate-engine-v2 — it must never read v1
+// as v2, nor replace it with a v2 document that skipped the conversion. This stays confined to the
+// /api/data routes; reminder, admin and Coach readers deliberately keep their own access.
+function engineGate(req, res, uid) {
+  const source = readStateSource(uid);
+  if (source.error) { json(res, 409, { error: source.error }); return true; }
+  if (!source.state) return false;   // no profile yet: whoever writes first creates it
+  const aware = Number(req.headers['x-opengym-engine-schema']) >= MIN_ENGINE_SCHEMA;
+  if (source.status.required ? !aware : aware) return false;
+  json(res, 409, source.status.required ? { error: 'migration-required' } : { error: 'upgrade-required', minEngineSchema: MIN_ENGINE_SCHEMA });
+  return true;
+}
+
 const routes = {
   'GET /api/health': async (req, res) => json(res, 200, { ok: true, users: db.users.length }),
 
@@ -895,6 +927,7 @@ const routes = {
   'GET /api/data': async (req, res) => {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
+    if (engineGate(req, res, user.id)) return;
     const state = readState(user.id);
     json(res, 200, { state, rev: state?._rev || 0 });
   },
@@ -904,12 +937,67 @@ const routes = {
   'GET /api/data/rev': async (req, res) => {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
+    if (engineGate(req, res, user.id)) return;
     json(res, 200, { rev: readState(user.id)?._rev || 0 });
+  },
+
+  // Explicit, per-profile conversion to the v2 engine (spec "Server protocol"), run only after the
+  // owner pressed OK on the migration screen — never as a startup scan. Outside engineGate on
+  // purpose: these two routes are how a v1 profile stops being one.
+  'GET /api/data/migration-status': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const source = readStateSource(user.id);
+    if (source.error) return json(res, 409, { error: source.error });
+    if (!source.state) return json(res, 200, { required: false, schemaVersion: MIN_ENGINE_SCHEMA, revision: 0, summary: null });
+    json(res, 200, source.status);
+  },
+  'POST /api/data/migrate-engine-v2': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const body = await readBody(req);
+    if (!record(body) || Object.keys(body).sort().join() !== 'baseRev,confirmed' || body.confirmed !== true || !Number.isInteger(body.baseRev)) {
+      return json(res, 400, { error: 'invalid-migration-request' });
+    }
+    const fail = (status, reason) => {
+      audit(req, 'data.migrate.fail', { ok: false, user, msg: reason });
+      json(res, status, { error: status === 409 ? reason : 'migration-failed', reason });
+    };
+    // Synchronous from the read to the rename, like PUT /api/data: nothing else writes in between.
+    const source = readStateSource(user.id);
+    if (source.error) return fail(409, source.error);
+    if (!source.state) return json(res, 404, { error: 'no-profile' });
+    const { status } = source;
+    if (body.baseRev !== status.revision) return json(res, 409, { error: 'migration-state-changed', revision: status.revision });
+    if (!status.required) return json(res, 200, { migrated: false, revision: status.revision });
+    const file = stateFile(user.id);
+    const backup = file.replace(/\.json$/, '.pre-engine-v1.json');
+    let profile;
+    try {
+      // Written once, never replaced: an existing copy is an earlier attempt's evidence, and one
+      // that is not v1 means something is wrong enough to stop.
+      if (fs.existsSync(backup)) {
+        if (!isLegacyProfile(JSON.parse(fs.readFileSync(backup, 'utf8')))) throw new Error('backup-not-v1');
+      } else atomicWrite(backup, source.text);
+      ({ profile } = migrateProfileV1ToV2(source.state, LIB_BY_ID));
+      const check = validateCanonicalProfile(profile);
+      if (!check.ok) throw new Error('invalid-output: ' + check.errors[0]);
+    } catch (e) {
+      console.error('engine migration failed for', user.id, e.message);
+      return fail(500, String(e.message).split(':')[0].slice(0, 60));
+    }
+    profile._rev = status.revision + 1;
+    atomicWrite(file, JSON.stringify(profile));
+    stateCache.delete(user.id);
+    const summary = { ...status.summary, needsReview: profile.migrationAudit.unsupported.length };
+    audit(req, 'data.migrate.ok', { user, msg: `v1->v2 ${summary.bytes}B ${summary.routines} routines ${summary.workouts} workouts` });
+    json(res, 200, { migrated: true, revision: profile._rev, summary });
   },
 
   'PUT /api/data': async (req, res) => {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
+    if (engineGate(req, res, user.id)) return;
     const body = await readBody(req);
     if (!body.state || typeof body.state !== 'object') return json(res, 400, { error: 'state required' });
     // The reminder tick and the admin routes iterate these two on the server's side, so a truthy

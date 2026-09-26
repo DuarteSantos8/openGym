@@ -138,7 +138,24 @@ function exercisePickerWorkouts(now = BASE_NOW) {
 function resetFixture(workouts = lifecycleWorkouts()) {
   mocks.S.unit = 'kg'
   mocks.S.bodyweight = []
-  mocks.S.workouts = workouts
+  mocks.S.workouts = workouts.map((workout, wi) => {
+    const exposures = (workout.entries || []).map((legacy) => {
+    return {
+      exerciseId: legacy.id, muscleSnapshot: legacy.muscleSnapshot, mode: 'reps',
+      performance: { sets: (legacy.sets || []).map((row, i) => ({
+        role: 'work', status: row.done ? 'completed' : 'skipped',
+        observations: [row.r != null && { metric: 'repetitions', value: row.r }, row.rir != null && { metric: 'rir', value: row.rir }].filter(Boolean),
+        resistance: row.w > 0 ? { kind: 'external-load', value: row.w, unit: row.unit || workout.unit || 'kg' } : { kind: 'bodyweight' },
+        segments: [],
+        // The real engine shape (see lib/session-ui-adapter.js) carries effort as a row-level
+        // `rir` field, not an observation — legacyEntriesOf (used by the effort/muscle-balance
+        // readers this suite exercises) reads it from there.
+        ...(row.rir != null ? { rir: row.rir } : {}),
+      })) },
+    }
+    })
+    return { ...workout, exposures }
+  })
   mocks.maps.length = 0
   mocks.mapMounts = 0
   mocks.exerciseHistorySheet.mockClear()

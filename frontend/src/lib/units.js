@@ -52,29 +52,59 @@ const convEntry = (e, from, to) => {
   }
 }
 
+// A canonical performance row's load lives at `resistance.value` (only meaningful for an
+// external-load resistance — bodyweight/assistance/none carry no stored weight to convert), not
+// in the legacy `w`/`drops` fields convSet handles above. A row's segments (drop chain, or the
+// other side of a per-side set) carry their own resistance the same way, so they recurse too.
+const convPerfRow = (row, from, to) => {
+  if (!row || typeof row !== 'object') return row
+  const out = { ...row }
+  if (out.resistance?.kind === 'external-load' && out.resistance.value != null) {
+    out.resistance = { ...out.resistance, value: convertWeight(out.resistance.value, from, to) }
+  }
+  if (Array.isArray(out.segments) && out.segments.length) out.segments = out.segments.map(seg => convPerfRow(seg, from, to))
+  return out
+}
+const convExposure = (exposure, from, to) => {
+  if (!exposure || typeof exposure !== 'object' || !Array.isArray(exposure.performance?.sets)) return exposure
+  return { ...exposure, performance: { ...exposure.performance, sets: exposure.performance.sets.map(row => convPerfRow(row, from, to)) } }
+}
+
+// A session carries its body weight of the day and a cached total volume; History rows, the
+// detail header, the month calendar and the heatmap tooltips read those rather than summing
+// sets, so they must move with the sets or show kg totals under an lb label (QA C11). The
+// volume is re-added from the converted sets, so it agrees with the set list to the number.
+// Shared between a completed workout (convertStateUnit, below) and the in-progress session
+// (convertActiveUnit) — same shape, different store field since the storage split.
+// `profile` (only ever present for a completed workout under convertStateUnit — the in-progress
+// session has no cached `vol` to recompute, see convertActiveUnit below) is passed through to
+// workoutVolume. Each row carries its own role, so no profile lookup is needed for warm-ups.
+const convSession = (s, from, to, profile) => {
+  const out = { ...s, entries: (s.entries || []).map(e => convEntry(e, from, to)) }
+  if (out.bw != null) out.bw = convertBodyWeight(out.bw, from, to)
+  if (Array.isArray(out.exposures)) out.exposures = out.exposures.map(exposure => convExposure(exposure, from, to))
+  if (Number.isFinite(out.vol)) out.vol = workoutVolume(profile || out, out)
+  return out
+}
+
 /** A new state object with every weight expressed in `to`, and `unit` set to it. */
 export function convertStateUnit(S, to) {
   const from = S.unit || 'kg'
   if (from === to) return S
   const c = v => convertWeight(v, from, to)
   const bw = v => convertBodyWeight(v, from, to)
-  // A session carries its body weight of the day and a cached total volume; History rows, the
-  // detail header, the month calendar and the heatmap tooltips read those rather than summing
-  // sets, so they must move with the sets or show kg totals under an lb label (QA C11). The
-  // volume is re-added from the converted sets, so it agrees with the set list to the number.
-  const convSession = s => {
-    const out = { ...s, entries: (s.entries || []).map(e => convEntry(e, from, to)) }
-    if (out.bw != null) out.bw = bw(out.bw)
-    if (Number.isFinite(out.vol)) out.vol = workoutVolume({ entries: out.entries.filter(e => Array.isArray(e?.sets)) })
-    return out
-  }
   const out = { ...S, unit: to }
   if (Array.isArray(S.bodyweight)) out.bodyweight = S.bodyweight.map(b => ({ ...b, w: bw(b.w) }))
   if (S.targetW != null) out.targetW = bw(S.targetW)
   if (S.exWeights) out.exWeights = Object.fromEntries(Object.entries(S.exWeights).map(([k, v]) => [k, v && typeof v === 'object' ? { ...v, w: c(v.w) } : c(v)]))
   if (S.barWeights) out.barWeights = Object.fromEntries(Object.entries(S.barWeights).map(([k, v]) => [k, c(v)]))
   if (Array.isArray(S.routines)) out.routines = S.routines.map(r => ({ ...r, ex: (r.ex || []).map(cfg => convTarget(cfg, from, to)) }))
-  if (Array.isArray(S.workouts)) out.workouts = S.workouts.map(convSession)
-  if (S.active) out.active = convSession(S.active)
+  if (Array.isArray(S.workouts)) out.workouts = S.workouts.map(s => convSession(s, from, to, S))
   return out
+}
+
+/** The in-progress session converted to the new unit. The profile converter no longer sees it:
+ *  the session lives in its own store field since the storage split. */
+export function convertActiveUnit(A, from, to) {
+  return A ? convSession(A, from, to) : null
 }

@@ -19,6 +19,8 @@ import { best1RM } from './onerm.js'
 import { fmtNum } from './format.js'
 import { planHash } from './coach.js'
 import { t } from './i18n.js'
+import { coachRoutinesOf } from '../../../api/coach/core/plan-view.js'
+import { legacyEntriesOf } from './prescription/index.js'
 
 const DELAY = 2200      // long enough to see "the Coach is thinking…", short enough to forgive
 
@@ -29,13 +31,14 @@ let timer = null
 const iso = d => d.toISOString().slice(0, 10)
 
 /** A change-set that reads like a real one, aimed at whatever the demo profile actually has. */
-function buildReview(S) {
-  const routine = (S.routines || []).find(r => (r.ex || []).length >= 2)
+export function buildReview(S) {
+  const routines = coachRoutinesOf(S, id => EXIDX[id])
+  const routine = routines.find(r => (r.ex || []).length >= 2)
   if (!routine) return null
   const reps = (routine.ex || []).filter(e => modeOf(e) === 'reps')
   const first = reps[0] || routine.ex[0]
   const second = reps[1] || routine.ex[1]
-  const other = (S.routines || []).find(r => r.id !== routine.id)
+  const other = routines.find(r => r.id !== routine.id)
 
   // Something plausible that is *not* in this routine, from the same body part as the first
   // exercise — a swap the reader can believe rather than a random pick out of 1,324.
@@ -112,13 +115,14 @@ function buildPlan(S, intake) {
 }
 
 /** One session, read back with its own numbers — no plan changes, just what a coach would say after. */
-function buildDebrief(S, workoutId) {
+export function buildDebrief(S, workoutId) {
   const all = (S.workouts || []).filter(w => w && w.d)
   const w = all.find(x => x.id === workoutId) || all[all.length - 1]
   if (!w) return null
-  const done = (w.entries || []).reduce((n, en) => n + (en.sets || []).filter(s => s.done && !isWarmupRow(s)).length, 0)
-  const planned = (w.entries || []).reduce((n, en) => n + (en.sets || []).filter(s => !isWarmupRow(s)).length, 0)
-  const vol = Math.round(Number.isFinite(w.vol) ? w.vol : workoutVolume(w))
+  const entries = legacyEntriesOf(w, S.prescriptions)
+  const done = entries.reduce((n, en) => n + (en.sets || []).filter(s => s.done && !isWarmupRow(s)).length, 0)
+  const planned = entries.reduce((n, en) => n + (en.sets || []).filter(s => !isWarmupRow(s)).length, 0)
+  const vol = Math.round(Number.isFinite(w.vol) ? w.vol : workoutVolume(S, w))
   const prs = (w.prs || []).length
   const minutes = w.end && w.start ? Math.round((w.end - w.start) / 60000) : null
   const complete = planned > 0 && done >= planned
@@ -145,7 +149,7 @@ function buildDebrief(S, workoutId) {
 export function demoCohort(S) {
   const since = Date.now() - 56 * 864e5
   const you = Math.round((S.workouts || []).filter(w => (w.start || new Date(w.d).getTime()) > since).length / 8 * 10) / 10
-  const ids = [...new Set((S.routines || []).flatMap(r => (r.ex || []).map(e => e.id)))].slice(0, 5)
+  const ids = [...new Set(coachRoutinesOf(S, id => EXIDX[id]).flatMap(r => (r.ex || []).map(e => e.id)))].slice(0, 5)
   const exercises = ids.map(id => {
     const b = best1RM(S, id)
     const mine = b ? Math.round(b.est * 10) / 10 : null

@@ -12,21 +12,28 @@ import { registerCustom } from './exercises.js'
 // checked against the server's actual source rather than against a transcribed expectation.
 import * as serverPayload from '../../../api/coach/core/payload.js'
 import { hashPlan as serverHashPlan } from '../../../api/coach/core/plan-hash.js'
+import { canonicalProfile, ruleOccurrence, loggedExposure } from './test-fixtures.js'
+import { coachExOf } from '../../../api/coach/core/plan-view.js'
+import { occurrenceFor } from './session-start.js'
+import { validatePlanRule } from './prescription/index.js'
 
+const occ = (id, v, preset, routineId) => ({ ...occurrenceFor(id, v, { id: 'o-' + routineId + '-' + id, unit: 'kg', routineId, preset }), ...(v.mode ? { mode: v.mode } : {}) })
 const state = (over = {}) => ({
+  engineSchemaVersion: 2, prescriptions: {}, oneRepMaxes: {}, progression: {},
   unit: 'kg', lang: 'en', customEx: [], workouts: [], bodyweight: [], exWeights: {}, dayPlan: {},
   routines: [{
     id: 'r1', name: 'Full body A', emoji: '💪', prog: 'linear',
     ex: [
-      { id: '0001', sets: 3, reps: 10, mode: 'reps', weight: 20, prog: 'linear' },
-      { id: '0007', sets: 3, sec: 45, mode: 'time' },
-      { id: '0009', sets: 3, reps: 12, mode: 'reps' }
+      occ('0001', { sets: 3, reps: 10, weight: 20, mode: 'reps' }, 'linear', 'r1'),
+      occ('0007', { sets: 3, sec: 45, mode: 'time' }, 'duration', 'r1'),
+      occ('0009', { sets: 3, reps: 12, mode: 'reps' }, 'manual', 'r1')
     ]
-  }, { id: 'r2', name: 'Full body B', ex: [{ id: '0002', sets: 4, reps: 6, mode: 'reps' }] }],
+  }, { id: 'r2', name: 'Full body B', ex: [occ('0002', { sets: 4, reps: 6, mode: 'reps' }, 'manual', 'r2')] }],
   week: { 1: 'r1', 3: 'r2', 5: 'r1' },
   coach: { consent: { agreedAt: '2026-07-01T00:00:00Z', version: CONSENT_VERSION }, log: [], snapshots: [], cadence: 'off' },
   ...over
 })
+const view = (s, ri, i) => coachExOf(s.routines[ri].ex[i])
 
 const change = over => ({ id: 'c1', type: 'sets', target: { routineId: 'r1', exId: '0001' }, before: 3, after: 4, why: 'stalled twice', ...over })
 const proposal = (changes, over = {}) => ({ id: 'p1', kind: 'review', summary: 's', changes, ...over })
@@ -74,32 +81,34 @@ describe('plan fingerprint', () => {
     // A field the plan does not carry cannot move the hash.
     expect(planHash(state({ theme: 'light' }))).toBe(planHash(S))
     // Everything the Coach can change does.
-    const moved = state(); moved.routines[0].ex[0].sets = 4
+    const moved = state(); moved.routines[0].ex[0].rule.parameters.sets = { min: 4, max: 4 }
     expect(planHash(moved)).not.toBe(planHash(S))
     const week = state(); week.week[6] = 'r1'
     expect(planHash(week)).not.toBe(planHash(S))
   })
 
   it('cannot tell "no weight" from "0 kg" — both mean unloaded', () => {
-    const a = state(); delete a.routines[0].ex[2].weight
-    const b = state(); b.routines[0].ex[2].weight = 0
+    const a = state(); a.routines[0].ex[2].rule.parameters.load = { mode: 'empty' }
+    const b = state(); b.routines[0].ex[2].rule.parameters.load = { mode: 'absolute', value: 0, unit: 'kg' }
     expect(planHash(a)).toBe(planHash(b))
   })
 
-  it('moves for the rep ceiling and the two v1.2.4 flags', () => {
-    // These are plan fields a user can edit by hand, so a proposal computed before the edit
-    // has to read as stale afterwards. They were in canonicalPlan and not in the hash.
+  it('moves for the rep ceiling', () => {
+    // A plan field a user can edit by hand, so a proposal computed before the edit has to
+    // read as stale afterwards. It was in canonicalPlan and not in the hash.
+    //
+    // The two v1.2.4 flags (bodyweight/side) used to live here too, but a v2 occurrence
+    // carries neither: canonicalPlan now resolves them from the catalogue on read (Task 4),
+    // so there is nothing per-occurrence left to move the hash.
     const S = state()
-    for (const [field, value] of Object.entries({ repsMax: 20, bodyweight: false, side: true })) {
-      const edited = state(); edited.routines[0].ex[0][field] = value
-      expect(planHash(edited), field).not.toBe(planHash(S))
-    }
+    const edited = state(); edited.routines[0].ex[0].rule.parameters.reps = { min: 10, max: 20 }
+    expect(planHash(edited)).not.toBe(planHash(S))
   })
 
   it('agrees with the server, field for field', () => {
     const withFlags = state()
-    withFlags.routines[0].ex[0] = { ...withFlags.routines[0].ex[0], repsMin: 8, repsMax: 20, bodyweight: true }
-    withFlags.routines[1].ex[0] = { ...withFlags.routines[1].ex[0], side: true, reps: 16 }
+    withFlags.routines[0].ex[0].rule.parameters.reps = { min: 8, max: 20 }
+    withFlags.routines[1].ex[0].rule.parameters.reps = { min: 16, max: 16 }
     const combined = state({ week: { 1: ['r1', 'r2'], 3: 'r2', 5: [] } })
     for (const S of [state(), state({ week: {} }), state({ routines: [] }), withFlags, combined]) {
       expect(canonicalPlan(S)).toEqual(serverPayload.canonicalPlan(S))
@@ -132,18 +141,18 @@ describe('staleness', () => {
     const S = state()
     const p = { ...proposal([change()]), planHash: planHash(S) }
     expect(markStale(p, S).planMoved).toBe(false)
-    const edited = state(); edited.routines[0].ex[0].sets = 5
+    const edited = state(); edited.routines[0].ex[0].rule.parameters.sets = { min: 5, max: 5 }
     expect(markStale(p, edited).planMoved).toBe(true)
   })
 
   it('flags a change whose target is gone', () => {
-    const S = state(); S.routines[0].ex = S.routines[0].ex.filter(e => e.id !== '0001')
+    const S = state(); S.routines[0].ex = S.routines[0].ex.filter(e => e.exerciseId !== '0001')
     const [c] = markStale(proposal([change()]), S).changes
     expect(c.status).toBe('stale')
   })
 
   it('flags a change someone already made by hand, rather than overwriting them', () => {
-    const S = state(); S.routines[0].ex[0].sets = 5     // Coach saw 3, user has since set 5
+    const S = state(); S.routines[0].ex[0].rule.parameters.sets = { min: 5, max: 5 }     // Coach saw 3, user has since set 5
     const [c] = markStale(proposal([change()]), S).changes
     expect(c.status).toBe('stale')
     expect(applicable(markStale(proposal([change()]), S))).toHaveLength(0)
@@ -167,7 +176,7 @@ describe('staleness', () => {
 
   it('reads the current value for every scalar change type', () => {
     const S = state()
-    S.routines[0].ex[0].repsMax = 20
+    S.routines[0].ex[0].rule.parameters.reps = { min: 10, max: 20 }
     expect(currentValue(S, change({ type: 'sets' }))).toBe(3)
     expect(currentValue(S, change({ type: 'reps' }))).toBe(10)
     expect(currentValue(S, change({ type: 'repsMax' }))).toBe(20)
@@ -185,13 +194,20 @@ describe('applying changes', () => {
 
   it('sets, reps, rep floor, rep ceiling, hold time, load step and policies', () => {
     const S = state()
-    expect(apply(S, proposal([change({ type: 'sets', after: 4 })]), ['c1']).routines[0].ex[0].sets).toBe(4)
-    expect(apply(S, proposal([change({ type: 'reps', after: 12 })]), ['c1']).routines[0].ex[0].reps).toBe(12)
-    expect(apply(S, proposal([change({ type: 'repsMin', after: 8 })]), ['c1']).routines[0].ex[0].repsMin).toBe(8)
-    expect(apply(S, proposal([change({ type: 'repsMax', before: null, after: 20 })]), ['c1']).routines[0].ex[0].repsMax).toBe(20)
-    expect(apply(S, proposal([change({ type: 'sec', target: { routineId: 'r1', exId: '0007' }, before: 45, after: 60 })]), ['c1']).routines[0].ex[1].sec).toBe(60)
-    expect(apply(S, proposal([change({ type: 'inc', before: null, after: 5 })]), ['c1']).routines[0].ex[0].inc).toBe(5)
-    expect(apply(S, proposal([change({ type: 'exercise-prog', before: 'linear', after: 'double' })]), ['c1']).routines[0].ex[0].prog).toBe('double')
+    expect(view(apply(S, proposal([change({ type: 'sets', after: 4 })]), ['c1']), 0, 0).sets).toBe(4)
+    expect(view(apply(S, proposal([change({ type: 'reps', after: 12 })]), ['c1']), 0, 0).reps).toBe(12)
+    // repsMin/repsMax only take hold once the rep parameter is already a range — a fresh
+    // double-progression occurrence starts with one (8-12 by default); switching an existing
+    // fixed-reps exercise to that policy collapses to its old single rep count instead (the
+    // policy switch alone is exercised separately below).
+    const Sd = state()
+    Sd.routines[0].ex.push({ ...occurrenceFor('0025', { sets: 3 }, { id: 'o-r1-0025', unit: 'kg', routineId: 'r1', preset: 'double' }) })
+    const t025 = { routineId: 'r1', exId: '0025' }
+    expect(view(apply(Sd, proposal([change({ type: 'repsMin', after: 10, target: t025 })]), ['c1']), 0, 3).repsMin).toBe(10)
+    expect(view(apply(Sd, proposal([change({ type: 'repsMax', before: null, after: 15, target: t025 })]), ['c1']), 0, 3).repsMax).toBe(15)
+    expect(view(apply(S, proposal([change({ type: 'sec', target: { routineId: 'r1', exId: '0007' }, before: 45, after: 60 })]), ['c1']), 0, 1).sec).toBe(60)
+    expect(view(apply(S, proposal([change({ type: 'inc', before: null, after: 5 })]), ['c1']), 0, 0).inc).toBe(5)
+    expect(view(apply(S, proposal([change({ type: 'exercise-prog', before: 'linear', after: 'double' })]), ['c1']), 0, 0).prog).toBe('double')
     expect(apply(S, proposal([change({ type: 'routine-prog', target: { routineId: 'r1' }, before: 'linear', after: 'greyskull' })]), ['c1']).routines[0].prog).toBe('greyskull')
   })
 
@@ -200,54 +216,43 @@ describe('applying changes', () => {
       type: 'add-exercise', target: { routineId: 'r1' }, before: null,
       after: { id: '0002', sets: 3, reps: 8, mode: 'reps', position: 1 }
     })]), ['c1'])
-    expect(out.routines[0].ex.map(e => e.id)).toEqual(['0001', '0002', '0007', '0009'])
-    expect(out.routines[0].ex[1].sets).toBe(3)
+    expect(out.routines[0].ex.map(e => e.exerciseId)).toEqual(['0001', '0002', '0007', '0009'])
+    expect(view(out, 0, 1).sets).toBe(3)
   })
 
-  it('carries a rep ceiling and the two flags onto an added exercise, and only when set', () => {
-    const withFlags = apply(state(), proposal([change({
+  it('carries a rep ceiling onto an added exercise, and only when set', () => {
+    const withRange = apply(state(), proposal([change({
       type: 'add-exercise', target: { routineId: 'r1' }, before: null,
-      after: { id: '0002', sets: 3, reps: 16, mode: 'reps', repsMin: 10, repsMax: 24, bodyweight: true, side: true }
+      after: { id: '0002', sets: 3, reps: 16, mode: 'reps', repsMin: 10, repsMax: 24 }
     })]), ['c1']).routines[0].ex.at(-1)
-    expect(withFlags).toMatchObject({ repsMin: 10, repsMax: 24, bodyweight: true, side: true })
+    expect(coachExOf(withRange)).toMatchObject({ repsMin: 10, repsMax: 24 })
 
     const plain = apply(state(), proposal([change({
       type: 'add-exercise', target: { routineId: 'r1' }, before: null,
       after: { id: '0002', sets: 3, reps: 8, mode: 'reps' }
     })]), ['c1']).routines[0].ex.at(-1)
-    // Absent means "whatever the catalogue says". Writing a flag out would freeze today's
-    // dataset into the plan.
-    expect(plain.bodyweight).toBeUndefined()
-    expect(plain.side).toBeUndefined()
+    // The two v1.2.4 flags (bodyweight/side) have no field on the rule at all any more — they
+    // are resolved from the catalogue on read (Task 4) — so there is nothing to write out or
+    // leave absent here; only the rep ceiling is still a real, optional write.
+    expect(coachExOf(plain).repsMin).toBeUndefined()
   })
 
   it('drops an exercise without touching the rest', () => {
     const out = apply(state(), proposal([change({ type: 'remove-exercise' })]), ['c1'])
-    expect(out.routines[0].ex.map(e => e.id)).toEqual(['0007', '0009'])
+    expect(out.routines[0].ex.map(e => e.exerciseId)).toEqual(['0007', '0009'])
   })
 
   it('keeps the prescription when swapping the movement', () => {
     const out = apply(state(), proposal([change({ type: 'swap-exercise', after: { id: '0002' } })]), ['c1'])
-    const e = out.routines[0].ex[0]
-    expect(e.id).toBe('0002')
+    expect(out.routines[0].ex[0].exerciseId).toBe('0002')
+    const e = view(out, 0, 0)
     expect(e.sets).toBe(3)
     expect(e.reps).toBe(10)     // not silently reset — that would be a change nobody approved
   })
 
-  it('drops flags that described the old movement when swapping', () => {
-    const S = state()
-    S.routines[0].ex[0] = { ...S.routines[0].ex[0], side: true, reps: 16, bodyweight: true }
-    const e = apply(S, proposal([change({ type: 'swap-exercise', after: { id: '0002' } })]), ['c1']).routines[0].ex[0]
-    // A lunge's "per side" is not a leg press's. Carrying it over would have the app halve a
-    // rep count that was never per-side; the new exercise goes back to the catalogue.
-    expect(e.side).toBeUndefined()
-    expect(e.bodyweight).toBeUndefined()
-    expect(e.reps).toBe(16)     // the prescription itself still survives
-  })
-
   it('reorders only with a complete permutation', () => {
     const out = apply(state(), proposal([change({ type: 'reorder', target: { routineId: 'r1' }, after: ['0009', '0001', '0007'] })]), ['c1'])
-    expect(out.routines[0].ex.map(e => e.id)).toEqual(['0009', '0001', '0007'])
+    expect(out.routines[0].ex.map(e => e.exerciseId)).toEqual(['0009', '0001', '0007'])
     expect(() => apply(state(), proposal([change({ type: 'reorder', target: { routineId: 'r1' }, after: ['0009'] })]), ['c1'])).toThrow()
     // A repeated id counts right and resolves to the same object twice: the third exercise
     // disappears and the survivor is aliased into two slots. Both gates have to catch this,
@@ -269,8 +274,8 @@ describe('applying changes', () => {
   it('supersets by moving the partner adjacent and tagging both', () => {
     const out = apply(state(), proposal([change({ type: 'superset', after: { link: true, with: '0009' } })]), ['c1'])
     const ex = out.routines[0].ex
-    expect(ex[0].id).toBe('0001')
-    expect(ex[1].id).toBe('0009')
+    expect(ex[0].exerciseId).toBe('0001')
+    expect(ex[1].exerciseId).toBe('0009')
     expect(ex[0].sg).toBeTruthy()
     expect(ex[0].sg).toBe(ex[1].sg)
   })
@@ -345,8 +350,8 @@ describe('accepting a subset', () => {
     ])
     const res = applyChangeSet(s, p, ['c1'])
     expect(res).toMatchObject({ applied: 1, rejected: 1 })
-    expect(s.routines[0].ex[0].sets).toBe(4)
-    expect(s.routines[0].ex[0].reps).toBe(10)
+    expect(view(s, 0, 0).sets).toBe(4)
+    expect(view(s, 0, 0).reps).toBe(10)
     const decisions = s.coach.log.at(-1).decisions
     expect(decisions.find(d => d.id === 'c2').status).toBe('rejected')
   })
@@ -377,7 +382,7 @@ describe('snapshots and revert', () => {
     const s = JSON.parse(JSON.stringify(state({ workouts: [{ id: 'w1', d: '2026-07-20', entries: [] }] })))
     const original = JSON.stringify(s.routines)
     applyChangeSet(s, proposal([change({ type: 'sets', after: 4 })]), ['c1'])
-    expect(s.routines[0].ex[0].sets).toBe(4)
+    expect(view(s, 0, 0).sets).toBe(4)
     expect(canRevert(s)).toBe(true)
     expect(revertLast(s)).toBe(true)
     expect(JSON.stringify(s.routines)).toBe(original)
@@ -507,16 +512,18 @@ describe('created plans', () => {
     expect(s.routines[2].ex[0].name).toBeUndefined()
   })
 
-  it('carries the rep ceiling and the flags the validator let through', () => {
+  it('carries the rep ceiling the validator let through', () => {
     const s = JSON.parse(JSON.stringify(state()))
     applyCreatedPlan(s, {
       id: 'p1', kind: 'create',
       bundle: {
         ...bundle,
-        routines: [{ id: 'x1', name: 'A', ex: [{ id: '0001', sets: 3, reps: 12, mode: 'reps', repsMin: 8, repsMax: 20, bodyweight: true }] }]
+        routines: [{ id: 'x1', name: 'A', ex: [{ id: '0001', sets: 3, reps: 12, mode: 'reps', repsMin: 8, repsMax: 20 }] }]
       }
     }, {})
-    expect(s.routines[2].ex[0]).toMatchObject({ repsMin: 8, repsMax: 20, bodyweight: true })
+    // The two v1.2.4 flags (bodyweight/side) have no field on the rule any more — resolved
+    // from the catalogue on read instead (Task 4) — so only the rep ceiling still round-trips.
+    expect(coachExOf(s.routines[2].ex[0])).toMatchObject({ repsMin: 8, repsMax: 20 })
   })
 
   it('is revertible like any other change', () => {
@@ -535,7 +542,7 @@ describe('created plans', () => {
     }, {})
     expect(s.customEx).toHaveLength(1)
     registerCustom(s.customEx)
-    expect(s.routines[2].ex[0].id).toBe(s.customEx[0].id)
+    expect(s.routines[2].ex[0].exerciseId).toBe(s.customEx[0].id)
   })
 })
 
@@ -651,5 +658,117 @@ describe('what the log keeps, so a decision never makes a proposal vanish', () =
     expect(b.basedOn).toBeUndefined()
     expect(Object.keys(b.routines[0].ex[0])).not.toContain('secret')
     expect(lightBundle(null)).toBeNull()
+  })
+})
+
+describe('v2 profiles', () => {
+  const v2 = () => {
+    const S = canonicalProfile({ lang: 'en', effort: 'rir', dayPlan: {}, coach: state().coach })
+    S.routines[0].ex.push(ruleOccurrence('0009', { occurrenceId: 'occ2', preset: 'five_three_one' }))
+    S.workouts[0].d = new Date().toISOString().slice(0, 10)
+    S.workouts[0].exposures[0].performance.sets.unshift(loggedExposure('0025', [{ role: 'warmup', r: 5, w: 20 }]).performance.sets[0])
+    return S
+  }
+  it('reads an occurrence as the Coach exercise fields', () => {
+    const [bench, wendler] = v2().routines[0].ex
+    expect(coachExOf(bench)).toEqual({ id: '0025', mode: 'reps', sets: 3, reps: 5, weight: 60, inc: 2.5, prog: 'linear' })
+    expect(coachExOf(wendler)).toMatchObject({ id: '0009', prog: 'off', preset: 'five_three_one' })
+    const legacy = { id: '0001', sets: 3 }
+    expect(coachExOf(legacy)).toBe(legacy)
+  })
+  it('reads a hold_seconds occurrence as off with its preset named', () => {
+    const occ = ruleOccurrence('0009', { occurrenceId: 'occ3', preset: 'hold_seconds' })
+    expect(coachExOf(occ)).toMatchObject({ id: '0009', mode: 'time', sec: 20, prog: 'off', preset: 'hold_seconds' })
+  })
+  it('the review payload carries the plan and the logged sets', () => {
+    const p = serverPayload.build(v2(), { handle: 'h'.repeat(16), kind: 'review' })
+    expect(p.plan.routines[0].ex[0]).toMatchObject({ id: '0025', name: expect.any(String), sets: 3, reps: 5, prog: 'linear' })
+    expect(p.plan.routines[0].ex[1]).toMatchObject({ id: '0009', preset: 'five_three_one' })
+    expect(p.window.workouts.at(-1).entries[0].sets).toEqual([{ done: true, warmup: true, w: 20, r: 5 }, { done: true, w: 60, r: 5 }])
+    expect(serverPayload.workoutMeta(v2(), 'w0')).toMatchObject({ sets: 1 })
+  })
+  it('client and server fingerprint a v2 plan identically, and not as zeros', () => {
+    const S = v2()
+    expect(canonicalPlan(S)).toEqual(serverPayload.canonicalPlan(S))
+    expect(canonicalPlan(S).routines[0].ex[0]).toMatchObject({ id: '0025', sets: 3, reps: 5, weight: 60, prog: 'linear' })
+  })
+  it('staleness compares against the rule', () => {
+    const c = { id: 'c1', type: 'sets', target: { routineId: 'r1', exId: '0025' }, before: 3, after: 4 }
+    expect(currentValue(v2(), c)).toBe(3)
+    expect(markStale(proposal([c]), v2()).changes[0].status).toBe('proposed')
+  })
+})
+
+describe('changes edit the rule', () => {
+  const valid = o => expect(validatePlanRule(o.rule).ok, JSON.stringify(validatePlanRule(o.rule).errors)).toBe(true)
+  it('each scalar change yields a valid, newer rule', () => {
+    for (const [type, after, exId] of [['sets', 4, '0001'], ['reps', 12, '0001'], ['inc', 5, '0001'], ['sec', 60, '0007'], ['exercise-prog', 'double', '0001']]) {
+      const out = apply(state(), proposal([change({ type, after, before: null, target: { routineId: 'r1', exId } })]), ['c1'])
+      const o = out.routines[0].ex.find(e => e.exerciseId === exId)
+      valid(o)
+      expect(o.rule.revision).toBe(2)
+    }
+  })
+  it('exercise-prog double keeps sets, reps and load', () => {
+    const o = apply(state(), proposal([change({ type: 'exercise-prog', before: 'linear', after: 'double' })]), ['c1']).routines[0].ex[0]
+    expect(o.rule.preset).toBe('double')
+    expect(coachExOf(o)).toMatchObject({ sets: 3, weight: 20, prog: 'double' })
+  })
+  it('add-exercise and add-routine create occurrences with a rule', () => {
+    const out = apply(state(), proposal([
+      change({ id: 'c1', type: 'add-exercise', target: { routineId: 'r1' }, before: null, after: { id: '0025', sets: 3, reps: 8, mode: 'reps', weight: 40, prog: 'linear' } }),
+      change({ id: 'c2', type: 'add-routine', target: {}, before: null, after: { name: 'New', ex: [{ id: '0025', sets: 3, reps: 5 }] } })
+    ]), ['c1', 'c2'])
+    const added = out.routines[0].ex.at(-1)
+    expect(added).toMatchObject({ exerciseId: '0025', occurrenceId: expect.any(String) })
+    valid(added)
+    expect(coachExOf(added)).toMatchObject({ sets: 3, reps: 8, weight: 40, prog: 'linear' })
+    const r = out.routines.at(-1)
+    expect(r.ex[0]).toMatchObject({ exerciseId: '0025', rule: expect.any(Object) })
+    valid(r.ex[0])
+  })
+  it('adds a cardio exercise from minutes', () => {
+    const out = apply(state(), proposal([change({ type: 'add-exercise', target: { routineId: 'r1' }, before: null, after: { id: '0001', mode: 'cardio', sets: 1, min: 25 } })]), ['c1'])
+    const o = out.routines[0].ex.at(-1)
+    valid(o)
+    expect(o.rule.parameters.durationSeconds).toEqual({ min: 1500, max: 1500 })
+  })
+  it('a lb profile gets lb loads and increments', () => {
+    const out = apply(state({ unit: 'lb' }), proposal([change({ type: 'add-exercise', target: { routineId: 'r1' }, before: null, after: { id: '0025', sets: 3, reps: 5, weight: 135, inc: 5, prog: 'linear' } })]), ['c1'])
+    const { rule } = out.routines[0].ex.at(-1)
+    expect(rule.parameters.load).toEqual({ mode: 'absolute', value: 135, unit: 'lb' })
+    expect(rule.increment).toEqual({ type: 'absolute', value: 5, unit: 'lb' })
+  })
+  it('a sets change on 5/3/1 keeps the preset', () => {
+    const S = state()
+    S.routines[0].ex.push({ ...occurrenceFor('0025', {}, { id: 'o531', routineId: 'r1', preset: 'five_three_one' }) })
+    const o = apply(S, proposal([change({ type: 'sets', before: null, after: 3, target: { routineId: 'r1', exId: '0025' } })]), ['c1']).routines[0].ex.at(-1)
+    expect(o.rule.preset).toBe('five_three_one')
+    valid(o)
+  })
+  it('a sets change on a timed rule keeps its preset and its seconds window', () => {
+    const S = state()
+    S.routines[0].ex.push({ ...occurrenceFor('0025', {}, { id: 'o-hold', routineId: 'r1', preset: 'hold_seconds' }) })
+    const o = apply(S, proposal([change({ type: 'sets', before: null, after: 4, target: { routineId: 'r1', exId: '0025' } })]), ['c1']).routines[0].ex.at(-1)
+    expect(o.rule.preset).toBe('hold_seconds')
+    expect(o.rule.parameters.durationSeconds).toEqual({ min: 20, max: 30 })
+    expect(o.rule.parameters.sets).toEqual({ min: 4, max: 4 })
+    valid(o)
+  })
+  it('swap moves the rule to the new exercise, remove and reorder match by exerciseId', () => {
+    const swapped = apply(state(), proposal([change({ type: 'swap-exercise', before: null, after: { id: '0025' }, target: { routineId: 'r1', exId: '0001' } })]), ['c1']).routines[0].ex[0]
+    expect(swapped.exerciseId).toBe('0025')
+    expect(swapped.rule.exerciseId).toBe('0025')
+    const removed = apply(state(), proposal([change({ type: 'remove-exercise', before: null, after: null, target: { routineId: 'r1', exId: '0001' } })]), ['c1']).routines[0].ex
+    expect(removed.map(e => e.exerciseId)).toEqual(['0007', '0009'])
+    const reordered = apply(state(), proposal([change({ type: 'reorder', target: { routineId: 'r1' }, before: null, after: ['0009', '0001', '0007'] })]), ['c1']).routines[0].ex
+    expect(reordered.map(e => e.exerciseId)).toEqual(['0009', '0001', '0007'])
+  })
+  it('a created plan arrives as occurrences', () => {
+    const s = JSON.parse(JSON.stringify(state()))
+    applyCreatedPlan(s, { id: 'p1', kind: 'create', bundle: { opengym_plan: 1, routines: [{ id: 'n1', name: 'N', ex: [{ id: '0025', sets: 3, reps: 5, prog: 'linear' }] }], week: {}, customEx: [] } }, { schedule: false })
+    const o = s.routines.at(-1).ex[0]
+    expect(o).toMatchObject({ exerciseId: '0025', occurrenceId: expect.any(String) })
+    valid(o)
   })
 })

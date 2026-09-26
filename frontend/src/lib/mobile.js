@@ -12,6 +12,8 @@
 import { t } from './i18n-core.js'
 import { isoOf, todayISO } from './format.js'
 import { effectiveRoutineIds } from './history.js'
+import { buildProfileBackup } from './export-profile.js'
+import { isLegacyProfile } from '../../../api/migration/profile-version.js'
 
 export const MOBILE = import.meta.env.VITE_MOBILE === '1'
 
@@ -33,12 +35,33 @@ export async function isAndroid() {
 
 const FILE = 'opengym-state.json'
 
-export async function nativeLoad() {
+// The mirror as stored: the engine migration backs up these exact bytes, not a re-serialization.
+export async function nativeLoadText() {
   try {
     const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
-    const r = await Filesystem.readFile({ path: FILE, directory: Directory.Data, encoding: Encoding.UTF8 })
-    return JSON.parse(r.data)
+    return (await Filesystem.readFile({ path: FILE, directory: Directory.Data, encoding: Encoding.UTF8 })).data
   } catch (e) { return null }   // first launch, or unreadable — localStorage copy takes over
+}
+
+export async function nativeLoad() {
+  try { return JSON.parse(await nativeLoadText()) } catch (e) { return null }
+}
+
+// One immutable copy of a v1 mirror, written before the migration changes anything and read back
+// to prove it landed. An existing copy is an earlier attempt's evidence: kept, never replaced, and
+// refused outright if it is not v1 at all.
+export const NATIVE_BACKUP_FILE = 'gym_state_v1.pre-engine-v1.json'
+export async function nativeBackupOnce(text) {
+  const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
+  const at = { path: NATIVE_BACKUP_FILE, directory: Directory.Data, encoding: Encoding.UTF8 }
+  const read = () => Filesystem.readFile(at).then(r => r.data, () => null)
+  const existing = await read()
+  if (existing != null) {
+    if (!isLegacyProfile(JSON.parse(existing))) throw new Error('native-backup-not-v1')
+    return
+  }
+  await Filesystem.writeFile({ ...at, data: text })
+  if ((await read()) !== text) throw new Error('native-backup-mismatch')
 }
 
 export async function nativeSave(state) {
@@ -68,6 +91,18 @@ export async function writeJsonFile(name, data) {
     const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
     await Filesystem.writeFile({ path: name, directory: Directory.Data, data: JSON.stringify(data), encoding: Encoding.UTF8 })
   } catch (e) { /* not a Capacitor build, or the write failed — the caller's in-memory copy stands */ }
+}
+
+// The in-progress session's file mirror. Same reason as the profile's: WebView storage can be
+// evicted, and backgrounding is often the last thing before the OS kills the app.
+export const ACTIVE_FILE = 'gym_active_v1.json'
+
+export async function nativeActiveSave(A) {
+  await writeJsonFile(ACTIVE_FILE, A)
+}
+
+export async function nativeActiveLoad() {
+  return await readJsonFile(ACTIVE_FILE)
 }
 
 export async function loadRemoteFile() {
@@ -204,7 +239,7 @@ export async function writeAutoBackup(state) {
     await Filesystem.writeFile({
       path: `opengym-backup-${todayISO()}.json`,
       directory: Directory.Documents,
-      data: JSON.stringify(state),
+      data: JSON.stringify(buildProfileBackup(state)),
       encoding: Encoding.UTF8,
       recursive: true,
     })

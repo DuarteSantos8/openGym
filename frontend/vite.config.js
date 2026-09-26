@@ -57,8 +57,9 @@ export default defineConfig({
   base: './',
   server: {
     // The Coach's core (payload, validator, prompts, HTTP adapters) lives in ../api/coach/core
-    // and is imported by the phone build. vite build and vitest already reach it; the dev
-    // server needs to be told the workspace is wider than frontend/.
+    // and the training engine in ../api/engine; the phone build imports both. vite build and
+    // vitest already reach them; the dev server needs to be told the workspace is wider than
+    // frontend/.
     fs: { allow: ['..'] },
     proxy: {
       '/api': { target: backend, changeOrigin: true, headers: { Origin: apiOrigin } },

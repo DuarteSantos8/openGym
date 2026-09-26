@@ -34,7 +34,12 @@ export function appBase(loc = typeof location !== 'undefined' ? location : null)
 }
 
 export async function api(path, opts) {
-  const headers = Object.assign({ 'Content-Type': 'application/json' }, opts && opts.headers)
+  const headers = Object.assign({
+    'Content-Type': 'application/json',
+    // A server holding a canonical profile refuses /api/data* without this, so an old tab cannot
+    // read v2 records as empty and overwrite real data.
+    'X-OpenGym-Engine-Schema': '2',
+  }, opts && opts.headers)
   if (remoteToken) headers.Authorization = 'Bearer ' + remoteToken
   // A paired phone has an absolute base of its own; everyone else is relative to where the app
   // is served, so a subpath deployment reaches its own API instead of the proxy's root.

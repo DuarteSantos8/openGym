@@ -1,33 +1,40 @@
 import { describe, expect, it } from 'vitest'
-import { workoutVolume, insertWarmupRow, buildSets } from './history.js'
-import { applyPrescription } from './progression.js'
+import { workoutVolume, insertWarmupRow } from './history.js'
 
 // The config sheet tells users warm-ups are "left out of volume, records and progression",
 // and history.js repeats that as an invariant in a comment. Volume was the one place it
 // was false — harmless while warm-ups were hand-added and rare, wrong now that a routine
 // plans them by default and the number is written into the saved workout for good.
 describe('warm-ups and volume', () => {
+  // A warm-up the user actually checks off is logged with status 'completed', exactly like a
+  // work set — status alone cannot tell them apart. Finish writes each row's `role`
+  // (session-ui-adapter's performanceRow), and workoutVolume excludes rows whose role is
+  // 'warmup', the same filter workSetsDone uses, so these fixtures are 'completed' throughout
+  // and rely purely on the role to separate warm-up from work.
+  const perfRow = (setId, value) =>
+    ({ setId, role: setId.startsWith('w') ? 'warmup' : 'work', status: 'completed', observations: [{ metric: 'repetitions', value: 5 }], resistance: { kind: 'external-load', value }, segments: [] })
+  const S = {}
   const w = {
-    entries: [{
-      id: 'bench',
-      sets: [
-        { w: 50, r: 5, done: true, phase: 'warmup', warmup: true },
-        { w: 75, r: 5, done: true, phase: 'warmup', warmup: true },
-        { w: 87.5, r: 5, done: true, phase: 'warmup', warmup: true },
-        { w: 100, r: 5, done: true },
-        { w: 100, r: 5, done: true },
-        { w: 100, r: 5, done: true },
-      ],
+    exposures: [{
+      exerciseId: 'bench',
+      performance: { sets: [
+        perfRow('w1', 50),
+        perfRow('w2', 75),
+        perfRow('w3', 87.5),
+        perfRow('s1', 100),
+        perfRow('s2', 100),
+        perfRow('s3', 100),
+      ] },
     }],
   }
 
   it('counts only the work sets', () => {
-    expect(workoutVolume(w)).toBe(1500)
+    expect(workoutVolume(S, w)).toBe(1500)
   })
 
   it('a warm-up adds nothing, whatever it weighs', () => {
-    const heavy = { entries: [{ id: 'b', sets: [{ w: 200, r: 10, done: true, phase: 'warmup', warmup: true }] }] }
-    expect(workoutVolume(heavy)).toBe(0)
+    const heavy = { exposures: [{ exerciseId: 'b', performance: { sets: [perfRow('w1', 200)] } }] }
+    expect(workoutVolume(S, heavy)).toBe(0)
   })
 })
 
@@ -49,28 +56,5 @@ describe('a warm-up never outweighs the work set', () => {
     const rows = [{ warmup: true, phase: 'warmup', w: 50, r: 5 }, { w: 100, r: 5 }]
     const out = insertWarmupRow(rows, 'reps', { reps: 5 }, 2.5)
     expect(out.filter(r => r.phase === 'warmup').map(r => r.w)).toEqual([50, 75])
-  })
-})
-
-// buildSets prepends the warm-ups, then applyPrescription rewrites the WORK rows only — so a
-// ramp built against last session's weight is stale the moment progression moves. On a deload
-// that put the last warm-up above every work set.
-describe('the ramp follows the prescribed weight', () => {
-  const S = { workouts: [], exWeights: {}, routines: [] }
-  const cfg = { id: 'bench', sets: 3, reps: 5, weight: 100, warmupSets: 2 }
-
-  it('re-ramps after a deload instead of aiming at the old weight', () => {
-    const rows = applyPrescription(buildSets(S, cfg, { step: 2.5 }), { kind: 'deload', weight: 50 })
-    const warm = rows.filter(r => r.phase === 'warmup').map(r => r.w)
-    const work = rows.filter(r => r.phase !== 'warmup').map(r => r.w)
-    expect(work).toEqual([50, 50, 50])
-    for (const x of warm) expect(x).toBeLessThanOrEqual(50)
-    expect(warm).toEqual([25, 37.5])
-  })
-
-  it('re-ramps after a bump', () => {
-    const rows = applyPrescription(buildSets(S, cfg, { step: 2.5 }), { kind: 'up', weight: 150 })
-    expect(rows.filter(r => r.phase !== 'warmup').map(r => r.w)).toEqual([150, 150, 150])
-    expect(rows.filter(r => r.phase === 'warmup').map(r => r.w)).toEqual([75, 112.5])
   })
 })
