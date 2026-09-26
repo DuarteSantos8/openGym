@@ -103,7 +103,7 @@ as a home-screen app, passkey sign-in, offline support, sync across your phone a
 - 🌍 **14 languages** — full UI translation (EN, DE, ES, FR, IT, PT (Portugal), PT (Brazil), PL, TR, RU, ZH, KO, HI, TH, HU); exercise instructions localized in 12 of them and built-in exercise names shown bilingually in PT-BR and HU, all loaded on demand so the app stays fast
 - 📥 **Bring your history with you** — import from **FitNotes** (Android and iOS), **Strong** and **Hevy** (CSV or directly with a [Hevy Pro API key](https://hevy.com/settings?developer)), or body weight straight out of an **Apple Health** export. Exercise names are matched against the library and anything unrecognised becomes one of your own exercises, so nothing in the file is dropped
 - 📦 **Yours to keep** — one-tap JSON export/import, guest mode, **no telemetry**; switching kg ↔ lb offers to convert every stored number
-- 🤖 **Ask an AI about your training** (optional) — an [MCP server](mcp/README.md) lets a client like Claude Desktop or Cursor read your history in your own words: *"what did I bench last week?"*. Read-only, spawned locally by the client, nothing leaves your box. Not in the Docker build — if you don't use an AI assistant, it isn't there
+- 🤖 **Ask an AI about your training** (optional) — an [MCP server](mcp/README.md) lets a client read your history in your own words: *"what did I bench last week?"*. With a paired token it can also add routines and assign weekdays. It runs locally over stdio and is not in the Docker build
 - 🧠 **An AI coach that writes your plan** (optional, off by default) — answer a handful of questions and it designs a week of routines; later it reads what you actually logged and proposes changes, each one with the evidence behind it. You approve every change and can undo it. It runs on **your** server under **your** provider account — Anthropic, OpenAI, Gemini or any OpenAI-compatible endpoint (Ollama on your LAN counts) with a pasted API key on the default image, or the Claude Agent SDK / Codex CLI on a separate build. The phone app can use your instance or its own key. See [docs/AI_COACH.md](docs/AI_COACH.md)
 - 📱 **Standalone Android app** — the whole tracker as a sideloadable APK: no account, no server, data on the phone, native workout reminders, and an **in-app update check** that downloads the next signed APK and verifies its checksum ([download](https://opengym.duarte-santos.ch))
 
@@ -242,9 +242,9 @@ client only after you approve it. The core of it — `api/coach/core/` — has n
 so the phone app runs the same validator the server does. The in-container AI runtimes live in a
 separate Docker build target; the API-key providers need none. See [docs/AI_COACH.md](docs/AI_COACH.md).
 
-The same pure helpers power an optional MCP server (`mcp/`) that lets an LLM client like
-Claude Desktop read your data over stdio — see [mcp/README.md](mcp/README.md). Opt-in, not
-in the Docker build.
+The same pure helpers power an optional MCP server (`mcp/`) that lets an LLM client read your
+data over stdio and, with a paired token, create plans through the sync API. See
+[mcp/README.md](mcp/README.md). Opt-in, not in the Docker build.
 
 ## Community
 

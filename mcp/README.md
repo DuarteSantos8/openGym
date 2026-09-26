@@ -5,17 +5,17 @@ application (Claude Desktop, Cursor, Cline, Continue, etc.) read your openGym pr
 routines, workouts, body-weight log, estimated 1RMs, and muscle balance — directly from your
 self-hosted `./data` directory.
 
-It is read-only, runs locally as a stdio process spawned by the LLM client, adds no new
-container, and requires no extra authentication. The LLM never sees passkeys, VAPID keys, or
-session secrets — it can only read the same `state-<uid>.json` files the openGym api already
-writes.
+It runs locally as a stdio process, adds no new container, and reads the same
+`state-<uid>.json` files the openGym api already writes. Read tools require only filesystem
+access. Optional plan writing uses a paired OpenGym bearer token and the app's existing
+revision-checked API. The LLM never sees passkeys, VAPID keys, or session secrets.
 
 The numbers it answers with are computed by the **same pure functions the React UI uses**
 (`frontend/src/lib/*.js`) — `estimate1RM`, `loadOfWorkouts`, `effectiveRoutine`, etc. — so a
 "what's my bench 1RM?" answer matches the Stats screen exactly.
 
-> Phase 1 of a multi-phase plan. Read-only today; long-lived token auth + write tools are
-> planned but not shipped yet. See **Roadmap** below.
+> The MCP can create, edit, and delete routines when paired as a device, and assign new
+> routines to weekdays. It cannot log workouts or change bodyweight entries.
 
 ## Quick start
 
@@ -67,7 +67,7 @@ the server's stderr.
 
 ## Tools
 
-Nine read-only tools in v1:
+Eleven read tools and three write tools:
 
 | Tool | What it answers |
 |---|---|
@@ -80,6 +80,41 @@ Nine read-only tools in v1:
 | `get_bodyweight` | Weigh-ins with the latest weight, the goal line, and deltas vs goal. |
 | `estimate_1rm` | All-time best 1RM for an exercise + the trend, or a PR table across all exercises. |
 | `muscle_balance` | Which muscles I've trained this week/month/all-time, ranked + which I've neglected. |
+| `search_exercises` | Find exercise IDs, including custom exercises, for a proposed plan. |
+| `list_exercises` | Browse the full built-in and custom exercise catalogue in pages (default 100, maximum 200). Follow `next_offset` until null. |
+| `create_training_plan` | Add routines and optionally assign them to specific weekdays (requires a paired token). |
+| `edit_routine` | Edit a routine's name, icon, progression policy, or ordered exercise list by ID (requires a paired token). |
+| `delete_routine` | Delete a routine and clear its schedule assignments, preserving workout history (requires a paired token). |
+
+For edits, use `list_routines` / `get_routine` to find the routine ID. Omitted fields stay
+unchanged. Supplying `exercises` replaces the complete ordered list; settings on retained IDs
+are preserved except for supplied targets, and orphan superset links are cleared. Use
+`preview_session` afterwards because progression and history can override routine targets.
+Show the user the proposed changes before calling a write tool. Deletion follows the same
+behavior as the app: an emptied weekday assignment is removed, as is a date-specific override
+pointing at the deleted routine. An affected date then falls back to its weekday plan.
+The app's existing sync limitation still applies: a stale device merging during a conflict
+can restore a deleted routine, since routine deletions have no tombstones.
+
+### Pairing for routine writes
+
+In the signed-in openGym web app, go to Settings → Pair the mobile app. From the repository
+root, run the helper with the same data directory and profile as your MCP server:
+
+```bash
+OPENGYM_DATA=/path/to/openGym/data OPENGYM_UID=<your-uid> \
+  OPENGYM_API_URL=https://gym.example.com node mcp/scripts/pair-chatgpt.mjs
+```
+
+Enter the one-time code when prompted. The helper saves `OPENGYM_API_URL` and
+`OPENGYM_API_TOKEN` in the ignored `mcp/.private/tunnel.env` file without printing the token.
+Use HTTPS or a loopback HTTP URL. Omit `OPENGYM_UID` for a single-profile instance.
+
+Pass both settings to the MCP server through your client's `env` configuration or your
+service's environment file, then restart the client. The server does not load the env file
+automatically. Read tools need no token. Plan writes use the revision-checked API, so
+concurrent phone syncs cause retries instead of lost workouts. A token expires with its
+session and is revoked by **Sign out everywhere**; pair again when needed.
 
 `get_routine` and `preview_session` answer two different questions, and confusing them is the
 easiest way for a coach to give wrong advice. `get_routine` reports what the routine *stores*.
@@ -109,10 +144,10 @@ dependencies landed in `frontend/`, no public exports changed.
 - **One runtime dependency beyond the MCP SDK:** none. No database driver, no HTTP framework.
 - **No new container.** stdio transport is spawned by the LLM client; nothing to add to
   `docker-compose.yml`.
-- **No new auth.** The filesystem is the boundary — same as `docker compose` running on the
-  user's box. No passkey material, VAPID keys, or session secrets ever cross it.
-- **No telemetry, no network.** Reads `./data/*.json` and exits when the LLM client
-  disconnects.
+- **Read access uses the filesystem.** Plan writes use a paired OpenGym token and the existing
+  API. No passkey material, VAPID keys, or session secrets cross the MCP boundary.
+- **No telemetry.** Read tools use `./data/*.json`; the optional plan tool calls only the
+  configured OpenGym API.
 
 ## Tests
 
@@ -120,8 +155,9 @@ dependencies landed in `frontend/`, no public exports changed.
 cd mcp && npm test
 ```
 
-58 cases seeding state from `frontend/src/lib/demoSeed.js` (the same deterministic fixture
-the public demo runs on). Pins JSON shape and the user-facing edge cases: rest-day override,
+The suite covers read tools, plan writes, and revision conflicts. Read tests seed state from
+`frontend/src/lib/demoSeed.js` (the same deterministic fixture the public demo runs on). It
+pins JSON shape and the user-facing edge cases: rest-day override,
 missing routine, zero-workout history, no synced state, superset links, three 1RM formulas.
 "Today" is pinned via `vi.useFakeTimers({ now: ..., toFake: ['Date'] })` so date-dependent
 tools see consistent values regardless of when the suite runs. The pure lib functions have
@@ -132,10 +168,10 @@ their own 92 tests in `frontend/src/lib/*.test.js`.
 - **Done (Phase 1):** read-only stdio, 8 tools, direct `./data` access.
 - **Done (Phase 1.5):** `preview_session` — the policy's next prescription, the opening set
   rows it produces, and which of plan / confirmed weight / history each number came from.
-- **Phase 2:** read+write over stdio. Requires a long-lived token auth path minted from the
-  admin dashboard (new `./data/tokens.json`) and a write-lock against the web UI's read-modify-
-  write of `state-<uid>.json`. Tools: `log_workout`, `add_bodyweight`, `edit_routine`,
-  `assign_weekday`, `override_day`.
+- **Done (limited write):** create, edit, and delete routines through the revision-checked API
+  with a paired bearer token; create plans with weekday assignments.
+- **Future write tools:** logging workouts and bodyweight, and
+  date overrides.
 - **Phase 3:** Streamable HTTP transport, opt-in 4th container in `docker-compose.yml`. Same
   tool implementations, second transport — the MCP SDK supports both behind one tool registration.
 
