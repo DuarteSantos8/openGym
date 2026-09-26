@@ -1,4 +1,4 @@
-/* The eight read-only tools. Each handler returns JSON; labels.js pre-substitutes any
+/* The read-only tools. Each handler returns JSON; labels.js pre-substitutes any
    {0}/{1} template the lib returns so the LLM gets final text, not template strings.
    ISO dates are validated on the way in; the handlers never see 'yesterday'. */
 import { z } from 'zod'
@@ -7,7 +7,7 @@ import {
   fmt, setLabel, exLine, muscleName, policyName, friendlyDuration, ratio, muscleOrder
 } from './labels.js'
 import {
-  modeOf, workoutVolume, setsDone, effectiveRoutine, effectiveRoutineId, lastEntryFor
+  modeOf, workoutVolume, setsDone, effectiveRoutine, effectiveRoutineId, effectiveRoutineIds, effectiveRoutines, lastEntryFor
 } from '../../frontend/src/lib/history.js'
 import { exOr } from '../../frontend/src/lib/exercises.js'
 import { isWarmupRow } from '../../frontend/src/lib/workout-model.js'
@@ -156,7 +156,7 @@ export const getRoutine = {
 /** get_week_plan — what's scheduled each weekday + today. */
 export const getWeekPlan = {
   name: 'get_week_plan',
-  description: 'Show the user\'s weekly plan: which routine (if any) is assigned to each weekday, keyed by JS getDay() (Sunday=0, Monday=1, … Saturday=6 — the same convention the openGym state file uses). Also reports today\'s date and what routine applies today, accounting for one-off overrides the user may have set for a specific date (a "rest" override cancels the day).',
+  description: 'Show the user\'s weekly plan: which routines (if any) are assigned to each weekday, keyed by JS getDay() (Sunday=0, Monday=1, … Saturday=6). Also reports today\'s date and routines, accounting for one-off overrides (a "rest" override cancels the day).',
   schema: {},
   handler: () => {
     const S = getState()
@@ -167,22 +167,26 @@ export const getWeekPlan = {
     return {
       today: isoToday,
       weekdays: [0, 1, 2, 3, 4, 5, 6].map(d => {
-        const rid = S.week?.[d] || null
-        const r = rid ? (S.routines || []).find(x => x.id === rid) : null
+        const ids = [].concat(S.week?.[d] || []).filter(id => (S.routines || []).some(r => r.id === id))
+        const names = ids.map(id => S.routines.find(r => r.id === id).name)
         // Surface today's override only (not the whole dayPlan dict — usually empty, but might
         // have grown from repeated "move this day" actions).
         const overrideForToday = d === todayWd ? (S.dayPlan?.[isoToday] ?? null) : null
         return {
           weekday: d,
           weekday_name: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][d],
-          routine_id: rid,
-          routine_name: r?.name || null,
-          routine_emoji: r?.emoji || null,
+          routine_id: ids[0] || null,
+          routine_name: names[0] || null,
+          routine_emoji: S.routines.find(r => r.id === ids[0])?.emoji || null,
+          routine_ids: ids,
+          routine_names: names,
           override_for_today_or_null: overrideForToday
         }
       }),
       today_routine_id: effectiveRoutineId(S, isoToday),
-      today_routine_name: effectiveRoutine(S, isoToday)?.name || null
+      today_routine_name: effectiveRoutine(S, isoToday)?.name || null,
+      today_routine_ids: effectiveRoutineIds(S, isoToday),
+      today_routine_names: effectiveRoutines(S, isoToday).map(r => r.name)
     }
   }
 }

@@ -12,7 +12,7 @@ api/       backend — server.js (Node, no framework), one dependency (@simplewe
 web/       multi-stage Dockerfile (builds frontend → nginx) + nginx.conf (serves app, proxies /api).
 media/     exercise img/gif (gitignored, fetched at runtime).
 docs/      self-hosting guide.
-mcp/       optional Model Context Protocol server — read-only stdio bridge for LLM apps
+mcp/       optional Model Context Protocol server — stdio bridge with paired plan writes
            (Claude Desktop, Cursor, …) to query a user's workouts/1RM/muscle balance. Not in
            the Docker build; only runs when an LLM client spawns it. See mcp/README.md.
 ```

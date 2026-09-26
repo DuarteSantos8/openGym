@@ -235,6 +235,19 @@ describe('get_week_plan', () => {
     })
   })
 
+  test('a day with two routines reports both in order', () => {
+    const push = S.routines.find(r => r.name === 'Push Day')
+    const pull = S.routines.find(r => r.name === 'Pull Day')
+    S.week[1] = [push.id, pull.id]
+    const plan = call('get_week_plan')
+    expect(plan.weekdays[1]).toMatchObject({
+      routine_id: push.id, routine_ids: [push.id, pull.id],
+      routine_names: ['Push Day', 'Pull Day']
+    })
+    expect(plan.today_routine_ids).toEqual([push.id, pull.id])
+    expect(plan.today_routine_names).toEqual(['Push Day', 'Pull Day'])
+  })
+
   test('a "rest" override on today cancels the scheduled routine', () => {
     // Sanity check first — without the override, today has a routine.
     const before = call('get_week_plan')
