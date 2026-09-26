@@ -10,7 +10,7 @@
  * handle stands in), passkey and credential material, push subscriptions, invite data, theme
  * and appearance settings, and every other profile's everything.
  */
-import { LIBRARY, LIB_BY_ID, libraryHas, libraryName, librarySlice, MAX_LIBRARY } from './library.js';
+import { LIBRARY, LIB_BY_ID, libraryHas, libraryName, librarySlice, isStretch, MAX_LIBRARY } from './library.js';
 
 export const CONTRACT = 1;
 // Bounds from FR-22. A review reads a training block, not a training career: more history
@@ -153,7 +153,7 @@ export function cleanPlan(S) {
 }
 
 // The catalogue lives in library.js; re-exported so older imports keep resolving.
-export { LIBRARY, MAX_LIBRARY, libraryHas, libraryName, librarySlice };
+export { LIBRARY, MAX_LIBRARY, libraryHas, libraryName, librarySlice, isStretch };
 
 /* ---------- effort scale (mirrors history.js effortOf) ---------- */
 const effortOf = S => {

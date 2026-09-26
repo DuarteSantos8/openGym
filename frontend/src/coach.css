@@ -130,13 +130,13 @@
 .pcard-tabs{display:flex;gap:6px;overflow-x:auto;padding:12px 18px 4px;scrollbar-width:none}
 .pcard-tabs::-webkit-scrollbar{display:none}
 .pcard-tab{
-  flex:none;padding:8px 14px;border-radius:99px;background:var(--surface-2);color:var(--label-2);
+  flex:none;display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:99px;background:var(--surface-2);color:var(--label-2);
   font-size:14px;font-weight:500;transition:all var(--fast);white-space:nowrap
 }
 .pcard-tab.on{background:var(--label);color:var(--bg)}
 .pcard-rt{padding:10px 18px 4px}
 .pcard-rt-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
-.pcard-rt-h b{font-size:18px;font-weight:600;letter-spacing:-.015em}
+.pcard-rt-h b{display:inline-flex;align-items:center;gap:8px;font-size:18px;font-weight:600;letter-spacing:-.015em}
 .pcard-rt-h span{font-size:13px;color:var(--label-2);white-space:nowrap}
 .pcard-why{font-size:14px;color:var(--label-2);line-height:1.45;margin:4px 0 8px}
 .pcard-ex{padding:11px 0;border-top:var(--hair) solid var(--sep)}

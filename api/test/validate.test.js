@@ -55,6 +55,16 @@ test('a plan may reference a custom exercise it defines in the same answer', () 
   assert.equal(r.bundle.customEx[0].n, 'Sandbag carry');
 });
 
+test('a routine icon key survives whole, in a created plan and in an added routine', () => {
+  // Routines store icon keys; clamped to emoji length, 'figureStrength' reached the chat as 'figureSt'.
+  const plan = validatePlan({ routines: [{ id: 'r1', name: 'Chest', emoji: 'figureStrength', ex: [{ id: '0001', sets: 3, reps: 10 }] }] });
+  assert.equal(plan.ok, true);
+  assert.equal(plan.bundle.routines[0].emoji, 'figureStrength');
+  const added = review([change({ type: 'add-routine', target: {}, after: { name: 'C', emoji: 'figureStrength', ex: [{ id: '0001', sets: 3, reps: 10 }] } })]);
+  assert.equal(added.ok, true);
+  assert.equal(added.proposal.changes[0].after.emoji, 'figureStrength');
+});
+
 test('the week may only point at routines the plan actually defines', () => {
   const r = validatePlan({ routines: [{ id: 'r1', name: 'A', ex: [{ id: '0001', sets: 3, reps: 10 }] }], week: { 1: 'ghost' } });
   assert.equal(r.ok, false);

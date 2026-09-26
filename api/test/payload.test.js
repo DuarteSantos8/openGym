@@ -129,10 +129,9 @@ test('the library slice is capped, balanced across body parts, deterministic, an
   all.forEach(e => { byBp[e.bp] = (byBp[e.bp] || 0) + 1; });
   const parts = Object.keys(byBp).length;
   assert.ok(parts >= 8, `only ${parts} body parts represented`);
-  // Small groups (neck has two rows) run out early and their share flows to the rest, so the
-  // bound is "nobody dominates", not "everyone equal".
+  // Lanes are weighted, not equal, and a lane that runs out hands its share to the rest — so
+  // the bound is "nobody dominates", not "everyone equal".
   assert.ok(Math.max(...Object.values(byBp)) <= MAX_LIBRARY / 4, `one body part dominates: ${JSON.stringify(byBp)}`);
-  assert.equal(byBp.neck, LIBRARY.filter(e => e.bp === 'neck').length, 'a tiny group is present in full');
   assert.deepEqual(all.map(e => e.id), payload.librarySlice({}, []).map(e => e.id), 'same slice every time');
 
   // An exercise the user already trains rides along even when the filter would exclude it.
@@ -147,6 +146,52 @@ test('the library slice is capped, balanced across body parts, deterministic, an
   const p = payload.build(S, { handle: 'h'.repeat(16), kind: 'review' });
   assert.ok(planIds.every(id => p.library.some(e => e.id === id)), 'every plan exercise is in the slice');
   assert.ok(p.library.length <= MAX_LIBRARY + planIds.length);
+});
+
+test('the lanes are weighted by what a plan is actually built from', () => {
+  const byBp = {};
+  payload.librarySlice({}, []).forEach(e => { byBp[e.bp] = (byBp[e.bp] || 0) + 1; });
+  // The regression this encodes: at an equal share, "lower arms" (37 rows of wrist curls) took
+  // as many of the 160 slots as "chest", and "neck" (two rows) held a lane of its own.
+  for (const heavy of ['chest', 'back', 'upper legs']) {
+    for (const light of ['lower arms', 'lower legs', 'cardio']) {
+      assert.ok(byBp[heavy] > byBp[light],
+        `${heavy} (${byBp[heavy]}) should outweigh ${light} (${byBp[light]})`);
+    }
+  }
+  // Every lane that survives the stretch filter is still represented — weighting narrows the
+  // share, it does not evict a body part.
+  for (const bp of ['lower arms', 'lower legs', 'cardio', 'waist', 'shoulders', 'upper arms']) {
+    assert.ok(byBp[bp] > 0, `${bp} fell out of the slice entirely`);
+  }
+});
+
+test('stretches are dropped from the candidate pool but not from the catalogue', () => {
+  const { LIBRARY, librarySlice, isStretch } = payload;
+  assert.ok(LIBRARY.some(isStretch), 'the catalogue has stretches, or this test proves nothing');
+  assert.ok(!librarySlice({}, []).some(isStretch), 'a stretch reached the slice');
+  assert.ok(!librarySlice({}, ['body weight']).some(isStretch));
+
+  // "outstretched" is not "stretch" — dropping this one would be a silent data bug.
+  const bridge = LIBRARY.find(e => e.n === 'single leg bridge with outstretched leg');
+  assert.ok(bridge && !isStretch(bridge), 'a glute exercise was read as a stretch');
+
+  // One already in the plan or history is pinned, and still travels: a review has to be able
+  // to name what it is talking about.
+  const stretch = LIBRARY.find(isStretch);
+  const kept = librarySlice({}, [], { keep: [stretch.id] });
+  assert.equal(kept[0].id, stretch.id, 'a stretch the user trains was dropped');
+});
+
+test('a first plan for someone who stated no equipment reaches the staple lifts', () => {
+  // The bug: an even share in catalogue (alphabetical) order gave "upper legs" five stretches,
+  // a balance board and some band work — no squat, no hinge, no lunge in the lane at all.
+  const names = payload.librarySlice({}, []).map(e => e.n);
+  const has = re => names.some(n => re.test(n));
+  assert.ok(has(/squat/i), 'no squat of any kind');
+  assert.ok(has(/deadlift/i), 'no hinge of any kind');
+  assert.ok(has(/bench press/i), 'no horizontal press');
+  assert.ok(has(/\brow\b/i), 'no horizontal pull');
 });
 
 test('equipment nobody in the library has still yields a usable library', () => {
