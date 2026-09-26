@@ -11,8 +11,9 @@ frontend/  React + Vite app (src/views, src/components, src/store, src/lib). Bui
 api/       Backend: server.js on plain node:http, two dependencies (@simplewebauthn/server, web-push).
            coach/ is the optional AI coach; openapi.yaml documents every route.
 web/       Multi-stage Dockerfile (builds the frontend, serves it with nginx) and the nginx template.
-mcp/       Optional read-only MCP server for LLM clients (Claude Desktop, Cursor, ...). Not in the
-           Docker build; it only runs when a client spawns it. See mcp/README.md.
+mcp/       Optional stdio MCP server with paired routine writes for LLM clients (Claude Desktop,
+           Cursor, ...). Not in the Docker build; it only runs when a client spawns it.
+           See mcp/README.md.
 website/   The static project site at opengym.duarte-santos.ch.
 kubernetes/ Example manifests (docs/SELF_HOSTING_KUBERNETES.md).
 docs/      User and operator guides (index: docs/README.md); docs/dev/ has feature design notes.

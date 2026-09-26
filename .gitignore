@@ -7,6 +7,8 @@ data/
 
 # Local config
 .env
+mcp/.private/
+mcp/.local/
 
 # Build output / deps
 frontend/dist/
