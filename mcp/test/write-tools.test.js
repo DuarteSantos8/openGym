@@ -57,7 +57,7 @@ describe('MCP write tools', () => {
     expect(exercise.id).toBeTruthy()
     const routine = tools.upsertRoutine.handler({ expected_version: version, name: 'Push', exercises: [{ exercise_id: exercise.id, sets: 3, reps: 8, weight: 50 }] })
     version = routine.state_version
-    const planned = tools.setWeekPlan.handler({ expected_version: version, weekday: 1, routine_id: routine.routine_id })
+    const planned = tools.setWeekPlan.handler({ expected_version: version, weekday: 1, routine_ids: [routine.routine_id] })
     version = planned.state_version
     const workout = tools.logWorkout.handler({ expected_version: version, date: '2026-08-19', routine_id: routine.routine_id, duration_minutes: 45, entries: [{ exercise_id: exercise.id, sets: [{ weight: 50, reps: 8 }] }] })
     const deleted = tools.deleteWorkout.handler({ expected_version: workout.state_version, workout_id: workout.workout_id, confirm: true })
@@ -82,5 +82,53 @@ describe('MCP write tools', () => {
     const saved = JSON.parse(fs.readFileSync(path.join(root, `state-${uid}.json`)))
     expect(saved.dayPlan['2026-08-21']).toBe(routine.routine_id)
     expect(saved.workouts.find(workout => workout.id === logged.workout_id).name).toBe('Conditioning corrected')
+  })
+
+  describe('routines', () => {
+    const read = () => JSON.parse(fs.readFileSync(path.join(root, `state-${uid}.json`)))
+    const bench = () => tools.searchExercises.handler({ query: 'bench', limit: 2 }).exercises
+    const newRoutine = (name, exercises) => tools.upsertRoutine.handler({ expected_version: tools.getProfileState.handler({}).state_version, name, exercises })
+
+    it('plans several routines on one weekday, and an empty list clears it', () => {
+      const [a, b] = bench()
+      const upper = newRoutine('Upper', [{ exercise_id: a.id, sets: 3 }])
+      const lower = newRoutine('Lower', [{ exercise_id: b.id, sets: 3 }])
+      let version = tools.setWeekPlan.handler({ expected_version: lower.state_version, weekday: 3, routine_ids: [upper.routine_id, lower.routine_id] }).state_version
+      expect(read().week[3]).toEqual([upper.routine_id, lower.routine_id])
+      expect(() => tools.setWeekPlan.handler({ expected_version: version, weekday: 3, routine_ids: ['nope'] })).toThrow(/no routine/)
+      tools.setWeekPlan.handler({ expected_version: version, weekday: 3, routine_ids: [] })
+      expect(read().week).not.toHaveProperty('3')
+    })
+
+    it('deleting a routine takes it out of shared weekdays and date overrides', () => {
+      const [a, b] = bench()
+      const keep = newRoutine('Keep', [{ exercise_id: a.id, sets: 3 }])
+      const drop = newRoutine('Drop', [{ exercise_id: b.id, sets: 3 }])
+      let version = tools.setWeekPlan.handler({ expected_version: drop.state_version, weekday: 5, routine_ids: [keep.routine_id, drop.routine_id] }).state_version
+      version = tools.setWeekPlan.handler({ expected_version: version, weekday: 6, routine_ids: [drop.routine_id] }).state_version
+      version = tools.setDayOverride.handler({ expected_version: version, date: '2026-10-01', routine_id: drop.routine_id }).state_version
+      tools.deleteRoutine.handler({ expected_version: version, routine_id: drop.routine_id, confirm: true })
+      const state = read()
+      expect(state.week[5]).toEqual([keep.routine_id])
+      expect(state.week).not.toHaveProperty('6')
+      expect(state.dayPlan).not.toHaveProperty('2026-10-01')
+    })
+
+    it('editing keeps the settings of exercises it does not mention, and drops orphaned supersets', () => {
+      const [a, b] = bench()
+      const created = newRoutine('Push', [{ exercise_id: a.id, sets: 3, reps: 8, superset_group: 's1' }, { exercise_id: b.id, sets: 3, superset_group: 's1' }])
+      // Settings the tools do not expose, set in the app.
+      const stored = read()
+      const routine = stored.routines.find(r => r.id === created.routine_id)
+      Object.assign(routine.ex[0], { rest: 150, note: 'pause at the chest' })
+      routine.emoji = 'flame'
+      fs.writeFileSync(path.join(root, `state-${uid}.json`), JSON.stringify(stored))
+      tools.upsertRoutine.handler({ expected_version: stored._rev, routine_id: created.routine_id, name: 'Push', exercises: [{ exercise_id: a.id, sets: 4 }] })
+      const edited = read().routines.find(r => r.id === created.routine_id)
+      expect(edited.emoji).toBe('flame')
+      expect(edited.ex).toHaveLength(1)
+      expect(edited.ex[0]).toMatchObject({ id: a.id, sets: 4, reps: 8, rest: 150, note: 'pause at the chest' })
+      expect(edited.ex[0]).not.toHaveProperty('sg')
+    })
   })
 })

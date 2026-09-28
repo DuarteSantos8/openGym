@@ -2,6 +2,7 @@ import crypto from 'node:crypto'
 import { z } from 'zod'
 import { EXIDX, BODYPARTS } from '../../frontend/src/lib/exercises.js'
 import { cleanupSg } from '../../frontend/src/lib/history.js'
+import { deleteRoutine as removeRoutine } from '../../frontend/src/lib/routines.js'
 import { exerciseMuscleSnapshot } from '../../frontend/src/lib/muscles.js'
 import { isWarmupRow } from '../../frontend/src/lib/workout-model.js'
 import { todayISO } from '../../frontend/src/lib/format.js'
@@ -118,22 +119,57 @@ function validateExercises(state, exercises) {
   for (const exercise of exercises) if (['__proto__', 'prototype', 'constructor'].includes(exercise.exercise_id) || (!Object.hasOwn(EXIDX, exercise.exercise_id) && !custom.has(exercise.exercise_id))) throw Object.assign(new Error(`unknown exercise_id ${exercise.exercise_id}; use search_exercises first`), { code: 'EINVAL' })
 }
 
-function routineExercises(exercises) {
-  return exercises.map(ex => ({ id: ex.exercise_id, sets: ex.sets, ...(ex.reps == null ? {} : { reps: ex.reps }), ...(ex.weight == null ? {} : { weight: ex.weight }), ...(ex.seconds == null ? {} : { sec: ex.seconds }), ...(ex.minutes == null ? {} : { min: ex.minutes }), ...(ex.speed == null ? {} : { speed: ex.speed }), ...(ex.superset_group ? { sg: ex.superset_group } : {}), ...(ex.mode ? { mode: ex.mode } : {}), ...(ex.bodyweight == null ? {} : { bodyweight: ex.bodyweight }), ...(ex.per_side ? { side: true } : {}), ...(ex.increment == null ? {} : { inc: ex.increment }), ...(ex.progression ? { prog: ex.progression } : {}), ...(ex.reps_min == null ? {} : { repsMin: ex.reps_min }), ...(ex.reps_max == null ? {} : { repsMax: ex.reps_max }) }))
+// Tool field -> routine slot field. Only fields the caller supplied are written.
+const SLOT_FIELDS = {
+  sets: 'sets', reps: 'reps', weight: 'weight', seconds: 'sec', minutes: 'min', speed: 'speed',
+  superset_group: 'sg', mode: 'mode', bodyweight: 'bodyweight', per_side: 'side', increment: 'inc',
+  progression: 'prog', reps_min: 'repsMin', reps_max: 'repsMax'
+}
+function slotOf(ex) {
+  const slot = { id: ex.exercise_id }
+  for (const [field, key] of Object.entries(SLOT_FIELDS)) if (ex[field] != null) slot[key] = ex[field]
+  if (slot.sg === '') delete slot.sg
+  return slot
+}
+const routineExercises = exercises => exercises.map(slotOf)
+
+// Editing a routine keeps what the caller did not mention: each supplied exercise takes over the
+// existing slot for the same exercise (in order, so a lift listed twice keeps both), and that
+// slot's other settings — rest, warm-ups, note, deload and the like — carry over. An exercise
+// left out of the list is removed; superset links left with a single member are dropped, as the
+// routine editor does.
+function editedExercises(previous, exercises) {
+  const unused = [...previous]
+  const next = exercises.map(ex => {
+    const i = unused.findIndex(slot => slot.id === ex.exercise_id)
+    const old = i < 0 ? {} : unused.splice(i, 1)[0]
+    return { ...old, ...slotOf(ex) }
+  })
+  cleanupSg(next)
+  return next
 }
 
 export const upsertRoutine = {
   name: 'upsert_routine', write: true,
-  description: 'Create a routine or replace an existing routine definition. Use search_exercises first. Replacing requires the routine_id returned by list_routines.',
+  description: 'Create a routine, or edit one by routine_id (from list_routines). When editing, `exercises` is the new list in order: an exercise already in the routine keeps its other settings (rest, warm-ups, notes) and only the supplied fields change; an exercise left out is removed. Omitted name-level fields (icon, progression) are kept. Use search_exercises first.',
   schema: { expected_version: version, routine_id: z.string().min(1).optional(), name: z.string().min(1).max(100), icon: z.string().max(40).optional(), progression: z.enum(['off', 'linear', 'greyskull', 'double']).optional(), exercises: z.array(exerciseConfig).max(100) },
   handler: ({ expected_version, routine_id, name, icon, progression, exercises }) => {
-    let savedId = routine_id || id()
+    const savedId = routine_id || id()
     const result = mutateState(expected_version, state => {
       validateExercises(state, exercises)
-      const next = { id: savedId, name: name.trim(), emoji: icon || 'dumbbell', prog: progression || 'linear', ex: routineExercises(exercises) }
       const index = state.routines.findIndex(routine => routine.id === savedId)
       if (routine_id && index < 0) throw Object.assign(new Error(`no routine with id ${routine_id}`), { code: 'ENOENT' })
-      if (index < 0) state.routines.push(next); else state.routines[index] = { ...state.routines[index], ...next }
+      if (index < 0) {
+        const ex = routineExercises(exercises)
+        cleanupSg(ex)
+        state.routines.push({ id: savedId, name: name.trim(), emoji: icon || 'dumbbell', prog: progression || 'linear', ex })
+      } else {
+        const previous = state.routines[index]
+        state.routines[index] = {
+          ...previous, name: name.trim(), ex: editedExercises(previous.ex || [], exercises),
+          ...(icon ? { emoji: icon } : {}), ...(progression ? { prog: progression } : {})
+        }
+      }
     })
     return success({ ...result, routine_id: savedId }, 'Routine saved')
   }
@@ -141,11 +177,13 @@ export const upsertRoutine = {
 
 export const setWeekPlan = {
   name: 'set_week_plan', write: true,
-  description: 'Assign a routine or rest day to one weekday (Sunday=0 through Saturday=6). Use null to clear the assignment.',
-  schema: { expected_version: version, weekday: z.number().int().min(0).max(6), routine_id: z.string().min(1).nullable() },
-  handler: ({ expected_version, weekday, routine_id }) => success(mutateState(expected_version, state => {
-    if (routine_id && routine_id !== 'rest' && !state.routines.some(r => r.id === routine_id)) throw Object.assign(new Error(`no routine with id ${routine_id}`), { code: 'ENOENT' })
-    if (routine_id == null || routine_id === 'rest') delete state.week[weekday]; else state.week[weekday] = routine_id
+  description: 'Set the routines planned on one weekday (Sunday=0 through Saturday=6), in order. A day can hold several routines; an empty list makes it a rest day. This replaces the whole day, so pass every routine that should stay (get_week_plan shows the current ones).',
+  schema: { expected_version: version, weekday: z.number().int().min(0).max(6), routine_ids: z.array(z.string().min(1)).max(10) },
+  handler: ({ expected_version, weekday, routine_ids }) => success(mutateState(expected_version, state => {
+    const ids = [...new Set(routine_ids)]
+    const missing = ids.find(rid => !state.routines.some(r => r.id === rid))
+    if (missing) throw Object.assign(new Error(`no routine with id ${missing}`), { code: 'ENOENT' })
+    if (ids.length) state.week[weekday] = ids; else delete state.week[weekday]
   }), 'Weekly plan updated')
 }
 
@@ -275,11 +313,8 @@ export const deleteRoutine = {
   description: 'Permanently delete one routine and clear its weekly assignments. Logged workout history is retained. Requires confirm=true.',
   schema: { expected_version: version, routine_id: z.string().min(1), confirm: z.literal(true) },
   handler: ({ expected_version, routine_id }) => success(mutateState(expected_version, state => {
-    const before = state.routines.length
-    state.routines = state.routines.filter(routine => routine.id !== routine_id)
-    if (state.routines.length === before) throw Object.assign(new Error(`no routine with id ${routine_id}`), { code: 'ENOENT' })
-    for (const day of Object.keys(state.week)) if (state.week[day] === routine_id) delete state.week[day]
-    for (const date of Object.keys(state.dayPlan)) if (state.dayPlan[date] === routine_id) delete state.dayPlan[date]
+    if (!state.routines.some(routine => routine.id === routine_id)) throw Object.assign(new Error(`no routine with id ${routine_id}`), { code: 'ENOENT' })
+    removeRoutine(state, routine_id) // the app's own delete: weekday lists and date overrides too
   }), 'Routine deleted')
 }
 
