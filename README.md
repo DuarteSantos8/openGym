@@ -212,6 +212,7 @@ All via `.env` (see `.env.example`):
 | `AUDIT_DAYS`  | Days kept in the activity log; `0` to keep until `AUDIT_MAX` | `90`            |
 | `AUDIT_IP`    | Record the caller's address: `off`, `net` (network only) or `full` | `off`     |
 | `VAPID_SUBJECT` | Contact URL sent with push notifications           | your `ORIGIN`           |
+| `SKIP_ASSETS_DOWNLOAD` | Skip Assets update and download on a first start if set to `true`. For additional Assets options please refer to [`web\35-assets-download.sh`](web\35-assets-download.sh) | *(none)* |
 | `API_TARGET`  | Which API image to build: `default` (no AI runtime — API-key providers still work) or `coach` (adds the Claude Agent SDK + Codex CLI) | `default`   |
 | `COACH_DISABLED` | Set to `1` to force the AI Coach off instance-wide, whatever the admin toggled | *(unset)* |
 

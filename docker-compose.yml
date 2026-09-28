@@ -1,37 +1,6 @@
 name: opengym
 
 services:
-  # One-time: download the exercise images + GIFs into ./media (skipped if already there).
-  # ~140 MB, from github.com/hasaneyldrm/exercises-dataset. That dataset is MIT for the
-  # metadata and instruction text, but the images and GIFs are © Gym visual
-  # (https://gymvisual.com/) and are used under the dataset's terms — openGym neither
-  # redistributes nor relicenses them. See NOTICE.md.
-  media:
-    image: alpine/git
-    volumes:
-      - ./media/img:/out/img
-      - ./media/gif:/out/gif
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - |
-        if [ -z "$$(ls -A /out/img 2>/dev/null)" ]; then
-          echo "↓ Downloading exercise media (~140 MB, one time)…"
-          echo "  Source:  github.com/hasaneyldrm/exercises-dataset"
-          echo "  Metadata and instruction text: MIT."
-          echo "  Images and animations: © Gym visual — https://gymvisual.com/"
-          echo "  They are used under that dataset's terms, not openGym's AGPL, and are"
-          echo "  downloaded from upstream — openGym does not redistribute them."
-          echo "  Terms: https://gymvisual.com/content/3-terms-and-conditions-of-use"
-          echo "  Reusing this media yourself, commercially or not, needs your own licence"
-          echo "  from Gym visual. Details in NOTICE.md."
-          git clone --depth 1 https://github.com/hasaneyldrm/exercises-dataset /tmp/ds
-          cp /tmp/ds/images/*.jpg /out/img/ && cp /tmp/ds/videos/*.gif /out/gif/
-          echo "✓ Exercise media ready ($$(ls /out/img | wc -l) images)."
-        else
-          echo "✓ Exercise media already present — skipping download."
-        fi
-    restart: "no"
-
   # Passkey auth + per-user data (Node, no framework).
   # image: prebuilt (docker compose pull). build: from source (docker compose up --build).
   api:
@@ -72,8 +41,6 @@ services:
       dockerfile: web/Dockerfile
     restart: unless-stopped
     depends_on:
-      media:
-        condition: service_completed_successfully
       api:
         condition: service_started
     ports:
@@ -98,5 +65,5 @@ services:
       # MEDIA_VIDEO_MAX_MB (40 by default), which the api service reads from .env.
       - MEDIA_UPLOAD_MAX=${MEDIA_UPLOAD_MAX:-48m}
     volumes:
-      - ./media/img:/usr/share/nginx/html/img:ro
-      - ./media/gif:/usr/share/nginx/html/gif:ro
+      - ./media/img:/usr/share/nginx/html/img
+      - ./media/gif:/usr/share/nginx/html/gif
