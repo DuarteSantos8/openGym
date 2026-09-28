@@ -67,6 +67,26 @@ describe('readSession', () => {
     expect(s.best).toBe(50)
     expect(readSession({ id: LIFT, target: { sets: 2, sec: 45, mode: 'time' }, sets: [{ sec: 45, done: true }, { sec: 30, done: true }] }).ok).toBe(false)
   })
+
+  it('reads all of a per-side timed hold\'s doubled rows, not just the first pair', () => {
+    const T = { sets: 2, sec: 30, mode: 'time', side: true }
+    // 2 planned sets, per side, is 4 real rows (buildSets) — every one of them has to be read,
+    // or a miss on the second pair goes unnoticed and progression bumps the hold anyway.
+    const allHeld = readSession({ id: LIFT, target: T, sets: [
+      { sec: 30, done: true, side: 'L' }, { sec: 30, done: true, side: 'R' },
+      { sec: 30, done: true, side: 'L' }, { sec: 30, done: true, side: 'R' },
+    ] })
+    expect(allHeld.ok).toBe(true)
+    const secondPairShort = readSession({ id: LIFT, target: T, sets: [
+      { sec: 30, done: true, side: 'L' }, { sec: 30, done: true, side: 'R' },
+      { sec: 15, done: true, side: 'L' }, { sec: 30, done: true, side: 'R' },
+    ] })
+    expect(secondPairShort.ok).toBe(false)
+    // Fewer logged rows than the doubled count is short, same as any other mode.
+    expect(readSession({ id: LIFT, target: T, sets: [
+      { sec: 30, done: true, side: 'L' }, { sec: 30, done: true, side: 'R' },
+    ] }).ok).toBe(false)
+  })
 })
 
 describe('stallCount', () => {

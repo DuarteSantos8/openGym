@@ -262,7 +262,12 @@ export function readSession(entry, fallback) {
   // Warm-up rows are prep, not the session: one filtered read beats guarding every consumer
   // below (an undone warm-up otherwise poisons `ok` forever and its reps drag `low`/`count`).
   const logged = ((entry && entry.sets) || []).filter(s => !isWarmupRow(s))
-  const planned = target.sets || logged.length
+  // A timed per-side hold doubles its row count (buildWorkSets: one set on the plan becomes an
+  // L row and an R row) — `target.sets` is still the plan's pre-doubling number, so it has to
+  // double here too, or `sets` below stops after the first side's rows and the other side's
+  // holds never reach `ok`/`held`/`best`.
+  const plannedRows = target.sets || logged.length
+  const planned = mode === 'time' && isPerSide(target) ? plannedRows * 2 : plannedRows
   const enough = logged.length >= planned
   // Only the sets the plan asked for decide what happens next (issue #233). A set added on top
   // is extra work, and it used to be read as part of the prescription: one heavier bonus set

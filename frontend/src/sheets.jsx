@@ -1408,9 +1408,10 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     }
     // Written only when it differs from what the dataset already says, so a barbell config
     // stays exactly the shape it was before these flags existed.
-    // `bodyweight` is true of a hold as much as of a set of reps; `side` is not — it counts
-    // reps, and a timed hold has none. Switching an exercise to Time therefore drops it
-    // rather than carrying a flag nothing downstream can read.
+    // `bodyweight` is true of a hold as much as of a set of reps. `side` used to be dropped on
+    // switching to Time too — a timed hold has no rep count to split — but "per side" does not
+    // have to mean splitting: for a hold it means doing the whole thing once per side, so the
+    // flag now survives the switch and buildWorkSets doubles the planned sets instead.
     const flags = {}
     if (bw !== isBodyweightEq(ex.id)) flags.bodyweight = bw
     // Free text, e.g. a pyramid's per-set loading ("bar only, +1 plate/side each set") — the
@@ -1428,7 +1429,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     const restSec = Math.max(0, Math.round(c.restSec) || 0)
     const withRest = restSec ? { restSec } : {}
     if (cardio) onSave({ sets, min: Math.max(1, Math.round(c.min) || 20), speed: Math.max(0, c.speed || 8), ...withNote, ...withRest })
-    else if (mode === 'time') onSave({ sets, mode: 'time', sec: Math.max(1, Math.round(c.sec) || 45), weight: Math.max(0, c.weight || 0), ...flags, ...prog, ...withNote, ...withWarmups, ...withRest })
+    else if (mode === 'time') onSave({ sets, mode: 'time', sec: Math.max(1, Math.round(c.sec) || 45), weight: Math.max(0, c.weight || 0), ...flags, ...(perSide ? { side: true } : {}), ...prog, ...withNote, ...withWarmups, ...withRest })
     else {
       // A unilateral target is stored even: the split has to divide, and a typed 15 would
       // otherwise plan seven reps on one side and eight on the other, every session.
@@ -1529,11 +1530,17 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         subtitle={bw ? (mode === 'time' ? t('No weight to enter — just time the hold.') : t('No weight to enter — just log the reps.')) : t('Ask for a weight on every set.')}>
         <Switch checked={bw} onChange={v => setC(x => ({ ...x, bodyweight: v, weight: v ? 0 : x.weight }))} />
       </Row>
-      {mode === 'reps' && <Row icon="shuffle" iconTint="var(--blue)" title={t('Reps per side')}
-        subtitle={perSide ? t('You still log the total: {0} is {1} per side.', c.reps || 0, fmtNum(sideReps(c.reps))) : t('For lunges, single-arm rows and the like.')}>
-        {/* Turning it on rounds the target up to an even number, since half of an odd
-            total is a rep one side does not get. */}
+      {mode !== 'cardio' && <Row icon="shuffle" iconTint="var(--blue)" title={t('Per side')}
+        subtitle={mode === 'time'
+          ? (perSide
+            ? t('{0} sets become {1}: one on each side, {2}s held every time.', c.sets || 0, (c.sets || 0) * 2, c.sec || 0)
+            : t('For a side plank, single-arm hold and the like — trains each side on its own.'))
+          : (perSide ? t('You still log the total: {0} is {1} per side.', c.reps || 0, fmtNum(sideReps(c.reps))) : t('For lunges, single-arm rows and the like.'))}>
+        {/* Reps: turning it on rounds the target up to an even number, since half of an odd total
+            is a rep one side does not get. Time: nothing to round — a hold's whole duration
+            happens twice, so only the flag changes (buildWorkSets doubles the planned sets). */}
         <Switch checked={perSide} onChange={v => setC(x => {
+          if (mode === 'time') return { ...x, side: v || undefined }
           const next = { ...x, side: v || undefined, reps: v ? Math.ceil((x.reps || 0) / 2) * 2 : x.reps }
           return policyFor({ ...next, id: ex.id }, routine, 'reps') === 'double'
             ? { ...next, ...normalizeRepRange(next.reps, next.repsMin, v ? 2 : 1) }
