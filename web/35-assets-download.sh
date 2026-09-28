@@ -24,14 +24,6 @@ IMG_DIR="$WORKING_DIR/img"
 GIF_DIR="$WORKING_DIR/gif"
 LAST_UPDATE="$IMG_DIR/LAST_UPDATE"
 
-# Check whether the image directory is actually writable.
-# This catches read-only mounts as well as normal permission problems.
-WRITE_TEST=$(mktemp "$IMG_DIR/.write-test.XXXXXX") || {
-    echo "ERROR - can't write to the $IMG_DIR folder, check if your mount is write protected and permissions"
-    exit 0
-}
-rm -f "$WRITE_TEST"
-
 # Check if file exist - download happens at least once.
 if [ ! -f "$LAST_UPDATE" ]; then
     NEEDS_UPDATE=true
@@ -42,15 +34,23 @@ if [ "$(find $IMG_DIR/ -name "LAST_UPDATE" -type f -mtime +"$UPDATE_PERIOD" -pri
     NEEDS_UPDATE=true
 fi
 
-# Create temp dir
-TMP_DIR=$(mktemp -d)
-trap 'rm -rf "$TMP_DIR"' EXIT INT TERM
-
-# Ensure destination directories exist.
-mkdir -p "$IMG_DIR" "$GIF_DIR"
-
 # Perform assets update
 if [ "$NEEDS_UPDATE" = "true" ]; then
+    # Ensure destination directories exist.
+    mkdir -p "$IMG_DIR" "$GIF_DIR"
+
+    # Check whether the image directory is actually writable.
+    # This catches read-only mounts as well as normal permission problems.
+    WRITE_TEST=$(mktemp "$IMG_DIR/.write-test.XXXXXX") || {
+        echo "ERROR - can't write to the $IMG_DIR folder, check if your mount is write protected and permissions"
+        exit 0
+    }
+    rm -f "$WRITE_TEST"
+
+    # Create temp dir
+    TMP_DIR=$(mktemp -d)
+    trap 'rm -rf "$TMP_DIR"' EXIT INT TERM
+
     echo -e "↓ Downloading exercise media (~140 MB, one time)…
   Source: ${ASSETS_URL}
   Metadata and instruction text: MIT.
