@@ -315,17 +315,32 @@ export function sessionsFor(S, exId, fallback, rid) {
 function sessionsIn(S, exId, fallback, rid) {
   const out = []
   ;(S.workouts || []).forEach(w => {
-    const entry = (w.entries || []).find(e => e && e.id === exId && (!rid || entryRoutineId(w, e) === rid))
-    if (!entry) return
-    // A session that does not count for this exercise cannot become the baseline for its next
-    // prescription. Exclusion is per-entry now (ENG-11): a legacy whole-workout
-    // `excludeFromProgression` flag still excludes every entry; a merged rehab block excludes
-    // only its own. `noProg` is frozen onto the entry at build time, so later routine edits
-    // never rewrite it. This is the only progression-exclusion path in the file.
-    if (entryExcluded(w, entry)) return
-    if (!entry.sets.some(s => s.done && !isWarmupRow(s))) return
-    const slot = entryRoutineId(w, entry)
-    out.push({ d: w.d, ...(slot ? { rid: slot } : {}), ...(entry.planned ? { planned: entry.planned } : {}), ...readSession(entry, fallback) })
+    const groups = new Map()
+    for (const entry of (w.entries || []).filter(e => e && e.id === exId && (!rid || entryRoutineId(w, e) === rid))) {
+      // Preserve per-entry exclusion and targets, even when a history merge leaves
+      // several blocks of the same exercise in one workout.
+      if (entryExcluded(w, entry) || !entry.sets.some(s => s.done && !isWarmupRow(s))) continue
+      const slot = entryRoutineId(w, entry)
+      const session = { ...(slot ? { rid: slot } : {}), ...(entry.planned ? { planned: entry.planned } : {}), ...readSession(entry, fallback) }
+      const key = JSON.stringify([slot, session.mode, session.weight])
+      const previous = groups.get(key)
+      if (previous) {
+        // Two blocks at the same load are one exposure for stall detection. Each
+        // block is judged against its own target before their outcomes are combined.
+        session.ok = previous.ok && session.ok
+        if (session.mode === 'reps') {
+          session.low = Math.min(previous.low, session.low)
+          session.count += previous.count
+          session.reps = [...previous.reps, ...session.reps]
+        } else if (session.mode === 'time') {
+          session.held = [...previous.held, ...session.held]
+          session.best = Math.max(previous.best, session.best)
+        }
+      }
+      groups.delete(key) // The last block determines the next prescription's baseline.
+      groups.set(key, session)
+    }
+    for (const session of groups.values()) out.push({ d: w.d, ...session })
   })
   return out
 }

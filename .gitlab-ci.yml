@@ -162,6 +162,7 @@ test:frontend:
     # heavy one (@capacitor/assets → sharp, a 10 MB libvips download from GitHub) is only
     # used to draw app icons. That download timing out is what turned a release red.
     - npm ci --cache .npm --prefer-offline --ignore-scripts
+    - node ../scripts/build-history-assets.mjs --check
     # JUnit → the MR widget lists exactly which tests failed; cobertura → coverage on the
     # diff; text-summary → the number the coverage badge shows.
     - npx vitest run

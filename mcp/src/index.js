@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-/* openGym MCP server — stdio transport. The LLM client (Claude Desktop, Cursor, …) spawns
-   this process locally, talks JSON-RPC over stdin/stdout, tears it down when the session ends.
-   No extra container, no new outbound network — your data stays in a folder you control. */
+/* openGym MCP server — stdio transport. Local clients or Secure MCP Tunnel spawn this
+   process and talk JSON-RPC over stdin/stdout. Plan writes call the local OpenGym API. */
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { TOOLS } from './tools.js'
+import { WRITE_TOOLS } from './write-tools.js'
 import { init, getUser } from './state.js'
 
 const server = new McpServer({
@@ -25,14 +25,17 @@ try {
   // env and restarting.
 }
 
-for (const t of TOOLS) {
-  server.tool(
+for (const t of [...TOOLS, ...WRITE_TOOLS]) {
+  server.registerTool(
     t.name,
-    t.description,
-    t.schema,
+    {
+      description: t.description,
+      inputSchema: t.schema,
+      annotations: { readOnlyHint: t.name !== 'create_training_plan', destructiveHint: false, openWorldHint: false, ...t.annotations }
+    },
     async (params) => {
       try {
-        const result = t.handler(params || {})
+        const result = await t.handler(params || {})
         return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] }
       } catch (err) {
         const code = err.code || 'ERROR'

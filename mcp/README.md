@@ -5,17 +5,17 @@ application (Claude Desktop, Cursor, Cline, Continue, etc.) read your openGym pr
 routines, workouts, body-weight log, estimated 1RMs, and muscle balance — directly from your
 self-hosted `./data` directory.
 
-It is read-only, runs locally as a stdio process spawned by the LLM client, adds no new
-container, and requires no extra authentication. The LLM never sees passkeys, VAPID keys, or
-session secrets — it can only read the same `state-<uid>.json` files the openGym api already
-writes.
+It runs locally as a stdio process, adds no new container, and reads the same
+`state-<uid>.json` files the openGym api already writes. Read tools require only filesystem
+access. Optional routine and history writes use a paired OpenGym bearer token and the app's existing
+revision-checked API. The LLM never sees passkeys, VAPID keys, or session secrets.
 
 The numbers it answers with are computed by the **same pure functions the React UI uses**
 (`frontend/src/lib/*.js`) — `estimate1RM`, `loadOfWorkouts`, `effectiveRoutine`, etc. — so a
 "what's my bench 1RM?" answer matches the Stats screen exactly.
 
-> Phase 1 of a multi-phase plan. Read-only today; long-lived token auth + write tools are
-> planned but not shipped yet. See **Roadmap** below.
+> The MCP can create, edit, and delete routines when paired as a device, and assign new
+> routines to weekdays. It cannot log workouts or change bodyweight entries.
 
 ## Quick start
 
@@ -67,7 +67,7 @@ the server's stderr.
 
 ## Tools
 
-Nine read-only tools in v1:
+Twelve read tools and five write tools:
 
 | Tool | What it answers |
 |---|---|
@@ -80,6 +80,44 @@ Nine read-only tools in v1:
 | `get_bodyweight` | Weigh-ins with the latest weight, the goal line, and deltas vs goal. |
 | `estimate_1rm` | All-time best 1RM for an exercise + the trend, or a PR table across all exercises. |
 | `muscle_balance` | Which muscles I've trained this week/month/all-time, ranked + which I've neglected. |
+| `search_exercises` | Find exercise IDs, including custom exercises, for a proposed plan. |
+| `list_exercises` | Browse the full built-in and custom exercise catalogue in pages (default 100, maximum 200). Follow `next_offset` until null. |
+| `create_training_plan` | Add routines and optionally assign them to specific weekdays (requires a paired token). |
+| `edit_routine` | Edit a routine's name, icon, progression policy, or ordered exercise list by ID (requires a paired token). |
+| `delete_routine` | Delete a routine and clear its schedule assignments, preserving workout history (requires a paired token). |
+| `preview_exercise_history_merge` | Preview all-history migration counts, collisions and revision without writing (requires a paired token). |
+| `merge_exercise_history` | Move or merge exercise history after preview and confirmation, optionally replacing routine references. |
+| `undo_exercise_history_merge` | Undo a merge while its committed state remains current. |
+
+For edits, use `list_routines` / `get_routine` to find the routine ID. Omitted fields stay
+unchanged. Supplying `exercises` replaces the complete ordered list; settings on retained IDs
+are preserved except for supplied targets, and orphan superset links are cleared. Use
+`preview_session` afterwards because progression and history can override routine targets.
+Show the user the proposed changes before calling a write tool. Deletion follows the same
+behavior as the app: an emptied weekday assignment is removed, as is a date-specific override
+pointing at the deleted routine. An affected date then falls back to its weekday plan.
+The app's existing sync limitation still applies: a stale device merging during a conflict
+can restore a deleted routine, since routine deletions have no tombstones.
+
+### Pairing for routine writes
+
+In the signed-in openGym web app, go to Settings → Pair the mobile app. From the repository
+root, run the helper with the same data directory and profile as your MCP server:
+
+```bash
+OPENGYM_DATA=/path/to/openGym/data OPENGYM_UID=<your-uid> \
+  OPENGYM_API_URL=https://gym.example.com node mcp/scripts/pair-chatgpt.mjs
+```
+
+Enter the one-time code when prompted. The helper saves `OPENGYM_API_URL` and
+`OPENGYM_API_TOKEN` in the ignored `mcp/.private/tunnel.env` file without printing the token.
+Use HTTPS or a loopback HTTP URL. Omit `OPENGYM_UID` for a single-profile instance.
+
+Pass both settings to the MCP server through your client's `env` configuration or your
+service's environment file, then restart the client. The server does not load the env file
+automatically. Read tools need no token. Plan writes use the revision-checked API, so
+concurrent phone syncs cause retries instead of lost workouts. A token expires with its
+session and is revoked by **Sign out everywhere**; pair again when needed.
 
 `get_routine` and `preview_session` answer two different questions, and confusing them is the
 easiest way for a coach to give wrong advice. `get_routine` reports what the routine *stores*.
@@ -110,10 +148,10 @@ dependencies landed in `frontend/`, no public exports changed.
 - **One runtime dependency beyond the MCP SDK:** none. No database driver, no HTTP framework.
 - **No new container.** stdio transport is spawned by the LLM client; nothing to add to
   `docker-compose.yml`.
-- **No new auth.** The filesystem is the boundary — same as `docker compose` running on the
-  user's box. No passkey material, VAPID keys, or session secrets ever cross it.
-- **No telemetry, no network.** Reads `./data/*.json` and exits when the LLM client
-  disconnects.
+- **Read access uses the filesystem.** Routine and history writes use a paired OpenGym token and the existing
+  API. No passkey material, VAPID keys, or session secrets cross the MCP boundary.
+- **No telemetry.** Read tools use `./data/*.json`; write tools call only the
+  configured OpenGym API.
 
 ## Tests
 
@@ -121,8 +159,9 @@ dependencies landed in `frontend/`, no public exports changed.
 cd mcp && npm test
 ```
 
-58 cases seeding state from `frontend/src/lib/demoSeed.js` (the same deterministic fixture
-the public demo runs on). Pins JSON shape and the user-facing edge cases: rest-day override,
+The suite covers read tools, routine and history writes, and revision conflicts. Read tests seed state from
+`frontend/src/lib/demoSeed.js` (the same deterministic fixture the public demo runs on). It
+pins JSON shape and the user-facing edge cases: rest-day override,
 missing routine, zero-workout history, no synced state, superset links, three 1RM formulas.
 "Today" is pinned via `vi.useFakeTimers({ now: ..., toFake: ['Date'] })` so date-dependent
 tools see consistent values regardless of when the suite runs. The pure lib functions have
@@ -133,13 +172,54 @@ their own 92 tests in `frontend/src/lib/*.test.js`.
 - **Done (Phase 1):** read-only stdio, 8 tools, direct `./data` access.
 - **Done (Phase 1.5):** `preview_session` — the policy's next prescription, the opening set
   rows it produces, and which of plan / confirmed weight / history each number came from.
-- **Phase 2:** read+write over stdio. Requires a long-lived token auth path minted from the
-  admin dashboard (new `./data/tokens.json`) and a write-lock against the web UI's read-modify-
-  write of `state-<uid>.json`. Tools: `log_workout`, `add_bodyweight`, `edit_routine`,
-  `assign_weekday`, `override_day`.
+- **Done (limited write):** create, edit, and delete routines through the revision-checked API
+  with a paired bearer token; create plans with weekday assignments.
+- **Done (history migration):** preview, merge and revision-protected undo; optional routine replacement.
+- **Future write tools:** logging workouts and bodyweight, and
+  date overrides.
 - **Phase 3:** Streamable HTTP transport, opt-in 4th container in `docker-compose.yml`. Same
   tool implementations, second transport — the MCP SDK supports both behind one tool registration.
 
 ## License
 
 AGPL-3.0-or-later, same as openGym.
+
+### Move or merge exercise history
+
+Use `search_exercises` to find the source and target IDs, then
+`preview_exercise_history_merge({ source_exercise_id, target_exercise_id, update_routines? })`.
+The preview reads the authenticated server state and reports workout, entry and set counts,
+workouts containing both exercises, names and `rev`. It does not write anything.
+
+After the user confirms those names, counts and options, call
+`merge_exercise_history({ source_exercise_id, target_exercise_id, update_routines?, preview_revision: rev })`.
+A stale revision returns a conflict: preview again and obtain confirmation of the new result.
+Use `preview_session` afterwards for any changed routine.
+
+Every source entry moves, whether or not the target already has history. Entries in the same
+workout remain separate to retain their targets, notes, exclusions and set data. Dates, reps,
+weights, RPE/RIR, intensifiers and muscle snapshots are preserved. PR references/flags and
+confirmed best loads are rebuilt; 1RM, volume and progression are derived from the updated log.
+Routine replacement is optional and preserves each configuration. A routine already containing
+both exercises is refused when replacement is requested; edit its prescription explicitly or
+merge without changing routines.
+
+The result includes `undo_id` and `rev`. With user confirmation,
+`undo_exercise_history_merge({ undo_id, merge_revision: rev })` restores the pre-merge profile.
+Undo refuses if any later write occurred, including another sync, to protect subsequent data.
+Backups survive API restarts under `DATA_DIR/history-undo-<uid>-<uuid>.json` (mode 0600), outside
+client state; include them in normal backups. They are retained until the owner removes them or the profile is deleted.
+Merges and undo operations also emit `history.merge`/`history.undo` audit events when auditing
+is enabled.
+
+The same purpose-built HTTP API is available to authenticated clients:
+
+- `POST /api/history/merge`: source/target IDs, optional `update_routines`, and `dry_run: true`
+  for preview. To commit, omit `dry_run` and pass the preview's `rev` as `baseRev`.
+- `POST /api/history/undo`: `undo_id` and the merge's revision as `baseRev`.
+
+The scope is always all logged history. No generic workout editing is exposed to MCP.
+The committed API module is generated from the canonical pure frontend helper because the
+API Docker build context cannot import `frontend/`. After changing that helper or its
+metric/catalogue dependencies, run `node scripts/build-history-assets.mjs`; frontend CI checks
+that this artifact is current. Generation uses Vite's installed Rolldown, with no new dependency.

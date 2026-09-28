@@ -31,6 +31,7 @@ import {
 } from './passkeys-store.js';
 import { createDeviceLink, findDeviceLink, burnDeviceLink, dropDeviceLinks } from './device-link.js';
 import { createMediaStore, mediaLimits, mediaConfig, MediaError, HASH_RE } from './media.js';
+import { mergeExerciseHistory } from './history-migration.js';
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
@@ -2002,6 +2003,55 @@ const routes = {
     json(res, 200, { rev: readStateCached(user.id)?._rev || 0 });
   },
 
+  // Read/compare/write stays synchronous after parsing: no concurrent sync can slip in.
+  'POST /api/history/merge': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const body = await readBody(req);
+    const cur = readState(user.id);
+    if (!cur) return json(res, 404, { error: 'no synced state' });
+    if (body.scope != null && body.scope !== 'all') return json(res, 400, { error: 'only scope=all is supported' });
+    if (body.dry_run != null && typeof body.dry_run !== 'boolean') return json(res, 400, { error: 'dry_run must be a boolean' });
+    const rev = cur._rev || 0;
+    if (!body.dry_run && body.baseRev !== rev) return json(res, 409, { error: 'conflict; preview current revision first', rev });
+    let merged;
+    try { merged = mergeExerciseHistory(cur, body); }
+    catch (e) { return json(res, 400, { error: e.message }); }
+    if (body.dry_run) return json(res, 200, { ...merged.summary, dry_run: true, rev });
+    if (!merged.summary.workouts_updated && !merged.summary.routines_updated) return json(res, 200, { ...merged.summary, rev, undo_id: null });
+    const undoId = crypto.randomUUID();
+    const next = merged.state;
+    next._rev = rev + 1;
+    next._ts = Math.max(Date.now(), Number(cur._ts || 0) + 1);
+    // Backup precedes the state commit. A crash can leave an unused backup, never an
+    // irreversible merge. Kept outside client state so sync/export cannot erase it.
+    atomicWrite(path.join(DATA, 'history-undo-' + user.id.replace(/[^a-zA-Z0-9_-]/g, '') + '-' + undoId + '.json'), JSON.stringify({ before: cur, afterRev: next._rev, summary: merged.summary, created: Date.now(), afterHash: crypto.createHash('sha256').update(JSON.stringify(next)).digest('hex') }), 0o600);
+    atomicWrite(stateFile(user.id), JSON.stringify(next));
+    stateCache.delete(user.id);
+    audit(req, 'history.merge', { user, msg: undoId + ':' + body.source_exercise_id + '->' + body.target_exercise_id });
+    json(res, 200, { ...merged.summary, rev: next._rev, undo_id: undoId });
+  },
+  'POST /api/history/undo': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const body = await readBody(req);
+    if (typeof body.undo_id !== 'string' || !/^[a-f0-9-]{36}$/.test(body.undo_id)) return json(res, 400, { error: 'invalid undo_id' });
+    let saved;
+    try { saved = JSON.parse(fs.readFileSync(path.join(DATA, 'history-undo-' + user.id.replace(/[^a-zA-Z0-9_-]/g, '') + '-' + body.undo_id + '.json'), 'utf8')); }
+    catch { return json(res, 404, { error: 'undo not found' }); }
+    const cur = readState(user.id);
+    const rev = cur?._rev || 0;
+    // Whole-profile restore is safe only while no subsequent writes have occurred.
+    if (body.baseRev !== rev || saved.afterRev !== rev || saved.afterHash !== crypto.createHash('sha256').update(JSON.stringify(cur)).digest('hex')) return json(res, 409, { error: 'profile changed since merge; undo would overwrite later changes', rev });
+    const next = saved.before;
+    next._rev = rev + 1;
+    next._ts = Math.max(Date.now(), Number(cur._ts || 0) + 1);
+    atomicWrite(stateFile(user.id), JSON.stringify(next));
+    stateCache.delete(user.id);
+    audit(req, 'history.undo', { user, msg: body.undo_id });
+    json(res, 200, { ok: true, rev: next._rev });
+  },
+
   'PUT /api/data': async (req, res) => {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
@@ -2254,6 +2304,12 @@ const routes = {
     presence.delete(u.id);
     // The training history and any Coach credential of theirs, both outside db.json.
     try { fs.unlinkSync(stateFile(u.id)); } catch { /* already gone */ }
+    const undoPrefix = 'history-undo-' + u.id.replace(/[^a-zA-Z0-9_-]/g, '') + '-';
+    for (const file of fs.readdirSync(DATA)) {
+      if (file.startsWith(undoPrefix) && /^[a-f0-9-]{36}\.json(?:\.tmp)?$/.test(file.slice(undoPrefix.length))) {
+        try { fs.unlinkSync(path.join(DATA, file)); } catch { /* already gone */ }
+      }
+    }
     try { coachConfig.clearProfileAuth(u.id); } catch { /* nothing stored */ }
     // Their photos and videos — the one place a profile's folder under uploads/ is removed.
     try { MEDIA.removeUser(u.id); } catch (e) { console.error('media: could not remove uploads of', u.id, e.message); }
