@@ -284,11 +284,6 @@ export function entryRoutineId(w, en) {
   return [].concat(w?.routineIds ?? [])[0] ?? w?.routineId ?? null
 }
 
-// The entry for one exercise in one saved workout. With a routine id it is that routine's own
-// entry — a combined A+B day can hold the same exercise twice, and the second one is not the
-// first one's history. Without, the first one, as it always was.
-const entryIn = (w, exId, rid) => (w.entries || []).find(e => e && e.id === exId && (!rid || entryRoutineId(w, e) === rid))
-
 /**
  * The last counting session of an exercise: `{ d, sets, target, rid?, planned? }`, or null.
  *
@@ -309,25 +304,25 @@ function lastEntryIn(S, exId, rid) {
   const workouts = S.workouts || []
   for (let i = workouts.length - 1; i >= 0; i--) {
     const w = workouts[i]
-    const en = entryIn(w, exId, rid)
-    if (!en) continue
-    // A session that does not count — a planned deload, or a rehab block merged into a real
-    // session — is not "last time" for the next regular prescription: its reps and durations
-    // must not seed the rows any more than its weight seeds the progression.
-    if (entryExcluded(w, en)) continue
-    // Work sets only. Every caller asks the same question — "what did you actually lift last
-    // time" — to seed the next session's rows, to size a freestyle config, and to print "Last
-    // time" on the card. A warm-up answers none of them: seeding position 0 from a 50% ramp row
-    // walks the working weight DOWN a little every session, and counting the ramp rows makes a
-    // 3x5 come back as a 5-set exercise. Warm-ups are already excluded from volume, records and
-    // progression; this is the same rule one level up.
-    const done = en.sets.filter(s => s.done && !isWarmupRow(s))
-    // `target` is what the session prescribed; finished workouts carry it so labels and the
-    // progression engine can read a session back the way it was logged. Older workouts have
-    // none — modeOf() falls back to the body part for them, which is what they were.
-    if (done.length) {
-      const slot = entryRoutineId(w, en)
-      return { d: w.d, sets: done, target: en.target || null, ...(slot ? { rid: slot } : {}), ...(en.planned ? { planned: en.planned } : {}) }
+    for (const en of [...(w.entries || [])].reverse().filter(e => e && e.id === exId && (!rid || entryRoutineId(w, e) === rid))) {
+      // A session that does not count — a planned deload, or a rehab block merged into a real
+      // session — is not "last time" for the next regular prescription: its reps and durations
+      // must not seed the rows any more than its weight seeds the progression.
+      if (entryExcluded(w, en)) continue
+      // Work sets only. Every caller asks the same question — "what did you actually lift last
+      // time" — to seed the next session's rows, to size a freestyle config, and to print "Last
+      // time" on the card. A warm-up answers none of them: seeding position 0 from a 50% ramp row
+      // walks the working weight DOWN a little every session, and counting the ramp rows makes a
+      // 3x5 come back as a 5-set exercise. Warm-ups are already excluded from volume, records and
+      // progression; this is the same rule one level up.
+      const done = en.sets.filter(s => s.done && !isWarmupRow(s))
+      // `target` is what the session prescribed; finished workouts carry it so labels and the
+      // progression engine can read a session back the way it was logged. Older workouts have
+      // none — modeOf() falls back to the body part for them, which is what they were.
+      if (done.length) {
+        const slot = entryRoutineId(w, en)
+        return { d: w.d, sets: done, target: en.target || null, ...(slot ? { rid: slot } : {}), ...(en.planned ? { planned: en.planned } : {}) }
+      }
     }
   }
   return null
@@ -350,9 +345,10 @@ export const NOTE_MAX = 500
 export function pinnedNoteFor(S, exId) {
   const workouts = S?.workouts || []
   for (let i = workouts.length - 1; i >= 0; i--) {
-    const en = (workouts[i].entries || []).find(e => e.id === exId)
-    const note = (en?.note || '').trim()
-    if (note && en.notePin) return { note, d: workouts[i].d }
+    for (const en of [...(workouts[i].entries || [])].reverse().filter(e => e.id === exId)) {
+      const note = (en.note || '').trim()
+      if (note && en.notePin) return { note, d: workouts[i].d }
+    }
   }
   return null
 }

@@ -33,6 +33,7 @@ import { createDeviceLink, findDeviceLink, burnDeviceLink, dropDeviceLinks } fro
 import { createMediaStore, mediaLimits, mediaConfig, MediaError, HASH_RE } from './media.js';
 import { changeState } from './state-store.js';
 import { mutateRoutines } from './routine-mutations.js';
+import { mergeExerciseHistory } from './history-migration.js';
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
@@ -2041,6 +2042,63 @@ const routes = {
     json(res, 200, { ...result, rev: saved.version, ts: saved.state._ts });
   },
 
+  'POST /api/history/merge': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const body = await readBody(req);
+    const cur = readState(user.id);
+    if (!cur) return json(res, 404, { error: 'no synced state' });
+    if (body.scope != null && body.scope !== 'all') return json(res, 400, { error: 'only scope=all is supported' });
+    if (body.dry_run != null && typeof body.dry_run !== 'boolean') return json(res, 400, { error: 'dry_run must be a boolean' });
+    const rev = cur._rev || 0;
+    if (body.dry_run) {
+      try { return json(res, 200, { ...mergeExerciseHistory(cur, body).summary, dry_run: true, rev }); }
+      catch (e) { return json(res, 400, { error: e.message }); }
+    }
+    if (!Number.isSafeInteger(body.baseRev) || body.baseRev < 0) return json(res, 409, { error: 'preview current revision first', rev, state: cur });
+    const undoId = crypto.randomUUID();
+    let summary, saved;
+    try {
+      saved = commitProfile(user.id, body.baseRev, state => {
+        let merged;
+        try { merged = mergeExerciseHistory(state, body); }
+        catch (e) { e.code = 'EINVAL'; throw e; }
+        summary = merged.summary;
+        // A merge that moves nothing must not advance revision or create an undo backup.
+        return summary.workouts_updated || summary.routines_updated ? merged.state : state;
+      }, { stamp: true, skipUnchanged: true, beforeCommit: (next, previous) => {
+        // The exact final state (including common reset/active/revision rules) is hashed,
+        // while the profile lock is held. Backup failure prevents the profile commit.
+        atomicWrite(path.join(DATA, 'history-undo-' + user.id.replace(/[^a-zA-Z0-9_-]/g, '') + '-' + undoId + '.json'), JSON.stringify({ before: previous.state, afterRev: next._rev, summary, created: Date.now(), afterHash: crypto.createHash('sha256').update(JSON.stringify(next)).digest('hex') }), 0o600);
+      } });
+    } catch (e) { return mutationError(res, e); }
+    if (saved.committed) audit(req, 'history.merge', { user, msg: undoId + ':' + body.source_exercise_id + '->' + body.target_exercise_id });
+    json(res, 200, { ...summary, rev: saved.version, undo_id: saved.committed ? undoId : null });
+  },
+  'POST /api/history/undo': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const body = await readBody(req);
+    if (typeof body.undo_id !== 'string' || !/^[a-f0-9-]{36}$/.test(body.undo_id)) return json(res, 400, { error: 'invalid undo_id' });
+    let backup;
+    try { backup = JSON.parse(fs.readFileSync(path.join(DATA, 'history-undo-' + user.id.replace(/[^a-zA-Z0-9_-]/g, '') + '-' + body.undo_id + '.json'), 'utf8')); }
+    catch { return json(res, 404, { error: 'undo not found' }); }
+    if (!Number.isSafeInteger(body.baseRev) || body.baseRev < 0) return json(res, 409, { error: 'confirmed merge revision required', rev: readState(user.id)?._rev || 0 });
+    let saved;
+    try {
+      saved = commitProfile(user.id, body.baseRev, state => {
+        // This check belongs inside the same lock as every other writer. A later routine
+        // mutation or browser sync can never be overwritten by an old undo confirmation.
+        if (backup.afterRev !== state._rev || backup.afterHash !== crypto.createHash('sha256').update(JSON.stringify(state)).digest('hex')) {
+          throw Object.assign(new Error('profile changed since merge; undo would overwrite later changes'), { code: 'CONFLICT', version: state._rev || 0, state });
+        }
+        return backup.before;
+      }, { stamp: true });
+    } catch (e) { return mutationError(res, e); }
+    audit(req, 'history.undo', { user, msg: body.undo_id });
+    json(res, 200, { ok: true, rev: saved.version });
+  },
+
   'PUT /api/data': async (req, res) => {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
@@ -2260,6 +2318,12 @@ const routes = {
     presence.delete(u.id);
     // The training history and any Coach credential of theirs, both outside db.json.
     try { fs.unlinkSync(stateFile(u.id)); } catch { /* already gone */ }
+    const undoPrefix = 'history-undo-' + u.id.replace(/[^a-zA-Z0-9_-]/g, '') + '-';
+    for (const file of fs.readdirSync(DATA)) {
+      if (file.startsWith(undoPrefix) && /^[a-f0-9-]{36}\.json(?:\.tmp)?$/.test(file.slice(undoPrefix.length))) {
+        try { fs.unlinkSync(path.join(DATA, file)); } catch { /* already gone */ }
+      }
+    }
     try { coachConfig.clearProfileAuth(u.id); } catch { /* nothing stored */ }
     // Their photos and videos — the one place a profile's folder under uploads/ is removed.
     try { MEDIA.removeUser(u.id); } catch (e) { console.error('media: could not remove uploads of', u.id, e.message); }

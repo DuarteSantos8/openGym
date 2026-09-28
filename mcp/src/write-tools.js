@@ -154,4 +154,39 @@ export const deleteRoutine = {
   handler: async args => updateState('delete', args)
 }
 
-export const WRITE_TOOLS = [getProfileState, searchExercises, listExercises, createTrainingPlan, editRoutine, deleteRoutine]
+const historyMergeInput = {
+  source_exercise_id: z.string().min(1).max(100),
+  target_exercise_id: z.string().min(1).max(100),
+  update_routines: z.boolean().optional()
+}
+
+async function historyApi(path, body) {
+  await pairedProfile()
+  return api(path, { method: 'POST', body })
+}
+
+export const previewExerciseHistoryMerge = {
+  name: 'preview_exercise_history_merge',
+  description: 'Preview moving ALL logged exercise entries from source to target without changing data. Returns counts, overlap warnings and a revision for merge_exercise_history. Use search_exercises first. Show names, counts, routine changes and warnings to the user for confirmation.',
+  annotations: { readOnlyHint: true, destructiveHint: false },
+  schema: historyMergeInput,
+  handler: args => historyApi('/api/history/merge', { ...args, dry_run: true })
+}
+
+export const mergeExerciseHistory = {
+  name: 'merge_exercise_history',
+  description: 'Move ALL history from source to target, including when target already has history. Preserves original entries and sets; rebuilds PRs and best weights. Optional routine replacement preserves configuration but refuses duplicate target prescriptions. First call preview_exercise_history_merge and obtain user confirmation of its names, counts and options. Pass that preview revision; a stale preview is refused. Returns undo_id. Use preview_session afterwards.',
+  annotations: { readOnlyHint: false, destructiveHint: true },
+  schema: { ...historyMergeInput, preview_revision: z.number().int().min(0) },
+  handler: ({ preview_revision, ...args }) => historyApi('/api/history/merge', { ...args, baseRev: preview_revision })
+}
+
+export const undoExerciseHistoryMerge = {
+  name: 'undo_exercise_history_merge',
+  description: 'Undo a history merge using its undo_id. Restores the profile before that merge only if no later writes occurred; otherwise refuses to overwrite newer data. Confirm with the user before calling.',
+  annotations: { readOnlyHint: false, destructiveHint: true },
+  schema: { undo_id: z.string().uuid(), merge_revision: z.number().int().min(1) },
+  handler: ({ undo_id, merge_revision }) => historyApi('/api/history/undo', { undo_id, baseRev: merge_revision })
+}
+
+export const WRITE_TOOLS = [getProfileState, searchExercises, listExercises, createTrainingPlan, editRoutine, deleteRoutine, previewExerciseHistoryMerge, mergeExerciseHistory, undoExerciseHistoryMerge]

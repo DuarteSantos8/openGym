@@ -67,7 +67,7 @@ export function exerciseHistory(S, exId, { limit = HISTORY_SESSIONS } = {}) {
     const t = startOf(w)
     // "PR" goes on the session that first reached the all-time best, not on every session
     // that later matched it — one marker says where the record was set.
-    if (value != null && value > best) { best = value; prId = w.id }
+    if (value != null && (metric === 'weight' ? beatsWeight(exId, value, best) : value > best)) { best = value; prId = w.id }
     if (value != null && value > 0) points.push({ t, d: w.d, y: value, e1rm })
     if (e1rm != null) e1rmPoints.push({ t, d: w.d, y: e1rm })
     sessions.push({
