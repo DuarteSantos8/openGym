@@ -70,6 +70,14 @@ describe('workout keys (issue #133)', () => {
     expect(doneOf(0)).toEqual([true, true, true])
   })
 
+  it('Space and Enter tick Focus sets through the same handler', () => {
+    renderWorkout([entry('1001', [false, false])], 0, { workoutView: 'focus' })
+    expect(container.querySelector('[data-testid="focus-view"]')).toBeTruthy()
+    press(' ')
+    press('Enter')
+    expect(doneOf(0)).toEqual([true, true])
+  })
+
   it('once the exercise on screen is finished, a press brings up the next one and the next press ticks it', () => {
     renderWorkout([entry('1001', [true]), entry('1002', [false, false])])
     press(' ')

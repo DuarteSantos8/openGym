@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { exOr } from '../lib/exercises.js'
 import { exerciseNameFor, t } from '../lib/i18n.js'
-import { fmtDate, fmtNum } from '../lib/format.js'
+import { fmtDate, fmtNum, fmtPlate } from '../lib/format.js'
 import { EFFORT, effortOf, modeOf } from '../lib/history.js'
-import { lastEntryFor, pinnedNoteFor } from '../lib/history.js'
+import { lastEntryFor, pinnedNoteFor, setsRepsOf } from '../lib/history.js'
 import { effortColor, rirOf } from '../lib/effort.js'
 import { progressionGuidance } from '../lib/progression-copy.js'
 import {
@@ -13,7 +13,8 @@ import {
   setDropAt, setSideClusterAt, setSideDropAt, setSideField,
 } from '../lib/workout-model.js'
 import { weightIncrement, stepWeight } from '../lib/progression.js'
-import { effortPickerSheet, exerciseDetailSheet, exerciseHistorySheet, exerciseNoteSheet, menuSheet } from '../sheets.jsx'
+import { effortPickerSheet, exerciseDetailSheet, exerciseHistorySheet, exerciseNoteSheet, menuSheet, barWeightSheet } from '../sheets.jsx'
+import { baseWeightFor, inventoryFor, loadKindFor, rowLoad } from '../lib/plates.js'
 import Icon from '../components/Icon.jsx'
 import { Button, Stepper } from '../components/ui.jsx'
 import './FocusView.css'
@@ -73,10 +74,34 @@ function Prescription({ entry, setIdx, unit, fallbackRest }) {
   </div>
 }
 
+function PlanLine({ entry, mode }) {
+  const planned = entry.planned && mode !== 'cardio' ? entry.planned : null
+  if (!planned) return null
+  const today = entry.target || {}
+  const todaySets = today.sets || planned.sets || 1
+  const inPlan = mode === 'time'
+    ? today.sec == null || today.sec === planned.sec
+    : today.reps == null || (planned.repsMin > 0 ? today.reps >= planned.repsMin && today.reps <= planned.reps : today.reps === planned.reps)
+  const note = todaySets !== (planned.sets || 1) || !inPlan
+    ? t('today {0}', setsRepsOf({ mode, sets: todaySets, reps: today.reps, sec: today.sec }))
+    : entry.carried ? t('reps from your last session') : null
+  return <div className="small dim planline">{t('Plan: {0}', setsRepsOf({ ...planned, mode }))}{note ? ' · ' + note : ''}</div>
+}
+
+function PlateLine({ S, entry, set }) {
+  if (modeOf({ ...(entry.target || {}), id: entry.id }) !== 'reps') return null
+  const load = rowLoad(loadKindFor(S, { ...(entry.target || {}), id: entry.id }), set.w, baseWeightFor(S, entry.id), inventoryFor(S))
+  if (!load) return null
+  const stack = load.plates.map(fmtPlate).join(' + ')
+  const text = load.barOnly ? t('Bar only')
+    : load.kind === 'pairs' ? t('{0} per side', stack || '—') : t('Load {0}', stack || '—')
+  return <div className="plateline"><Icon name="plate" /><span>{text}{load.missing > 0 && <> · <span className="short">{t('{0} short', fmtPlate(load.missing) + ' ' + S.unit)}</span></>}</span></div>
+}
+
 export default function FocusView({
   entryIdx, unit, onToggle, onToggleSide, onField, onMutateSet, onStartTimed,
   onAddWarmup, onRemoveSetAt, onProgressionSettings, onSwap, onRemoveExercise,
-  busy, onSelectEntry, onAdvanceUnit, onPairPrev, onPairNext, onUnpair, pointerEpoch,
+  onNoProg, busy, onSelectEntry, onAdvanceUnit, onPairPrev, onPairNext, onUnpair, pointerEpoch,
 }) {
   const S = useStore(state => state.S)
   const entry = S.active.entries[entryIdx]
@@ -189,6 +214,8 @@ export default function FocusView({
       { icon: 'info', label: t('Details'), onClick: () => exerciseDetailSheet(exOr(entry.id)) },
       { icon: 'history', label: t('History'), onClick: () => exerciseHistorySheet(entry.id) },
       { icon: 'chartLine', label: t('Progression settings'), onClick: onProgressionSettings },
+      onNoProg && { icon: 'pause', label: t('Don’t count for progression'), sub: t('This exercise, this session only'), on: entry.noProg === true, onClick: () => onNoProg(entry.noProg !== true) },
+      mode === 'reps' && { icon: 'plate', label: t('Plate loading'), onClick: () => barWeightSheet(entry.id, { ...(entry.target || {}), id: entry.id }) },
       onPairPrev && { icon: 'link', label: t('Make superset with previous'), onClick: onPairPrev },
       onPairNext && { icon: 'link', label: t('Make superset with next'), onClick: onPairNext },
       { icon: 'shuffle', label: t('Swap exercise'), onClick: onSwap, disabled: busy },
@@ -201,7 +228,7 @@ export default function FocusView({
     items: [
       { icon: 'flame', label: isWarmupRow(set) ? t('Mark as work set') : t('Mark as warm-up'), onClick: () => onMutateSet(setIdx, toggleWarmup) },
       { icon: 'arrowDown', label: t('Add drop set'), onClick: () => onMutateSet(setIdx, row => addDropTo(row, entry.target)) },
-      { icon: 'bolt', label: t('Add burst'), onClick: () => onMutateSet(setIdx, row => addBurstTo(row, S.restPauseSec || 15)) },
+      { icon: 'bolt', label: t('Add burst'), onClick: () => onMutateSet(setIdx, row => addBurstTo(row, entry.target?.intensifier?.type === 'restpause' ? entry.target.intensifier.restSec : (S.restPauseSec || 15))) },
       { icon: 'trash', label: t('Delete set'), danger: true, disabled: entry.sets.length <= 1, onClick: () => onRemoveSetAt(setIdx) },
     ],
   })
@@ -238,6 +265,8 @@ export default function FocusView({
         {last && <div className="focus-last">{t('Last time')} · {fmtDate(last.d)}</div>}
         {guidance && <button className="focus-guidance" onClick={onProgressionSettings}><Icon name="lightbulb" />{t(guidance.policyLabel)}</button>}
       </div>
+      {entry.noProg === true && <div className="noprog"><Icon name="pause" /><span>{t('Not counted for progression')}</span>{onNoProg && <button type="button" className="chip" onClick={() => onNoProg(false)}>{t('Undo')}</button>}</div>}
+      <PlanLine entry={entry} mode={mode} />
       <Prescription entry={entry} setIdx={setIdx} unit={S.unit} fallbackRest={S.restSec} />
       {locked && <p className="focus-lock-note" role="status">{t('Complete set {0} to edit this one.', firstOpenSet + 1)}</p>}
 
@@ -280,6 +309,7 @@ export default function FocusView({
           style={effortTint ? { color: effortTint, borderColor: effortTint, background: `color-mix(in srgb, ${effortTint} 20%, var(--surface-2))` } : undefined}
           aria-label={t(EFFORT[effort].hd)} disabled={readOnly} onClick={openEffort}>{effortValue == null ? t(EFFORT[effort].hd) : fmtNum(effortValue)}</button>}
       </div>
+      <PlateLine S={S} entry={entry} set={set} />
 
       <Button variant="primary" icon="check" aria-label={t('Complete set')} onClick={complete}>{set.done ? t('Completed') : t('Complete')}</Button>
       <div className="focus-secondary">
