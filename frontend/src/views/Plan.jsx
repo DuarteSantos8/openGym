@@ -1,6 +1,8 @@
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
-import { DAYN, weekOrder, weekStartOf, uid, exCount, routineCount } from '../lib/format.js'
+import { DAYN, weekOrder, weekStartOf, uid, exCount, routineCount, fmtNum } from '../lib/format.js'
+import { MUSCLE_NAME, rankOf, weeklyPlanLoad } from '../lib/muscles.js'
 import { t } from '../lib/i18n.js'
 import { dayAssignSheet, dayAddRoutineSheet, starterPlanSheet, planToolsSheet, confirmSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
@@ -26,6 +28,13 @@ export default function Plan() {
      configured, and invisible. The same predicate every other Coach surface uses gates it, so
      an instance without the feature sees exactly the Plan screen it saw before. */
   const showCoach = coachAvailable(config, user, { demo: DEMO, mobile: MOBILE, coachMode })
+
+  // Effective sets the current weekly plan would produce, once, if every day is trained as
+  // scheduled — reuses the same load calculation Stats' Muscle balance shows for what was
+  // actually completed (#327), so the two numbers mean the same thing when compared by eye.
+  const weeklyLoad = useMemo(() => weeklyPlanLoad(S), [S.week, S.routines])
+  const { worked: weeklyWorked } = useMemo(() => rankOf(weeklyLoad), [weeklyLoad])
+  const weeklyMax = weeklyWorked.length ? weeklyLoad[weeklyWorked[0]] : 0
 
   // Swap with the neighbour, the way the routine editor moves an exercise. `S.routines` is the
   // one order the whole app reads, so this is all there is to it (#142).
@@ -101,6 +110,16 @@ export default function Plan() {
           </div>
         })}
       </div>
+      {weeklyWorked.length > 0 && <>
+        <h4 className="sec" style={{ marginTop: 22 }}>{t('Weekly muscle volume')}</h4>
+        <div className="list" style={{ display: 'flex', flexDirection: 'column' }}>
+          {weeklyWorked.map(m => <div key={m} className="mrow">
+            <span className="nm">{t(MUSCLE_NAME[m])}</span>
+            <span className="bar"><i style={{ width: Math.round(weeklyLoad[m] / weeklyMax * 100) + '%' }} /></span>
+            <span className="v">{t('{0} sets', fmtNum(Math.round(weeklyLoad[m] * 10) / 10))}</span>
+          </div>)}
+        </div>
+      </>}
     </div><div>
       <div className="row between" style={{ marginTop: 22, marginBottom: 10 }}>
         <h4 className="sec" style={{ margin: 0 }}>{t('Routines')}</h4>

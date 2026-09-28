@@ -287,6 +287,27 @@ export function muscleBalanceWindow(workouts, win, now = Date.now(), today = tod
 export const loadOfRoutine = routine =>
   loadOf((routine?.ex || []).map(c => ({ id: c.id, ex: c, sets: c.sets || 1 })))
 
+/**
+ * Load the current weekly plan (`S.week`) would produce if followed exactly once — one
+ * `loadOfRoutine` per day a routine is scheduled on, so a routine assigned to two days (or
+ * twice the same day) counts twice: that is two sessions' worth of sets, not one. A day
+ * pointing at a routine id that no longer exists in `S.routines` is skipped rather than
+ * thrown on, the same tolerance `history.js` already gives a stale `S.week` entry.
+ */
+export function weeklyPlanLoad(S) {
+  const routines = S?.routines || []
+  const load = {}
+  Object.values(S?.week || {}).forEach(ids => {
+    [].concat(ids || []).forEach(id => {
+      const routine = routines.find(r => r.id === id)
+      if (!routine) return
+      const routineLoad = loadOfRoutine(routine)
+      for (const slug in routineLoad) load[slug] = (load[slug] || 0) + routineLoad[slug]
+    })
+  })
+  return load
+}
+
 /** Load for a workout still in progress — the sets ticked so far. */
 export const loadOfActive = active =>
   loadOf((active?.entries || []).map(e => ({ id: e.id, ex: e.exercise || e, sets: (e.sets || []).filter(s => s.done && !isWarmupRow(s)).length })))

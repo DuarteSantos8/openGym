@@ -3,7 +3,8 @@ import { EXIDX, EXDB, smOf } from './exercises.js'
 import { LANGS, DERIVED_LOCALES } from './i18n-core.js'
 import {
   MUSCLE_NAME, exerciseMuscleSnapshot, hasExplicitMuscleMetadata, levelsOf, loadOf,
-  loadOfWorkouts, matchesMuscleGroups, muscleBalanceWindow, muscleGroupsOf, musclesOf, rankOf
+  loadOfWorkouts, matchesMuscleGroups, muscleBalanceWindow, muscleGroupsOf, musclesOf, rankOf,
+  weeklyPlanLoad
 } from './muscles.js'
 
 describe('multi-muscle exercise metadata', () => {
@@ -209,6 +210,36 @@ describe('muscle balance windows and ranking', () => {
     const deleted = { id: 'deleted', muscleSnapshot: { muscleWeights: { chest: 1 } }, sets: [{ done: true }] }
     expect(loadOfWorkouts([{ entries: [known] }])).toEqual({ chest: 1, triceps: 0.4, deltoids: 0.4, biceps: 0.4 })
     expect(loadOfWorkouts([{ entries: [deleted] }])).toEqual({ chest: 1 })
+  })
+})
+
+describe('weekly plan load', () => {
+  const legDay = { id: 'r1', name: 'Legs', ex: [{ id: 'sq', muscleWeights: { quadriceps: 1 }, sets: 3 }] }
+  const pushDay = { id: 'r2', name: 'Push', ex: [{ id: 'bp', muscleWeights: { chest: 1 }, sets: 4 }] }
+
+  it('sums every scheduled day, counting a routine once per day it is assigned to', () => {
+    // Leg day is trained twice this week (Monday and Friday); push day once (Wednesday).
+    const S = { routines: [legDay, pushDay], week: { 1: ['r1'], 3: ['r2'], 5: ['r1'] } }
+    expect(weeklyPlanLoad(S)).toEqual({ quadriceps: 6, chest: 4 })
+  })
+
+  it('adds every routine on a combined day', () => {
+    const S = { routines: [legDay, pushDay], week: { 1: ['r1', 'r2'] } }
+    expect(weeklyPlanLoad(S)).toEqual({ quadriceps: 3, chest: 4 })
+  })
+
+  it('skips a day pointing at a routine that no longer exists, rather than throwing', () => {
+    const S = { routines: [legDay], week: { 1: ['gone'] } }
+    expect(weeklyPlanLoad(S)).toEqual({})
+  })
+
+  it('is empty for a plan with no scheduled days', () => {
+    expect(weeklyPlanLoad({ routines: [legDay, pushDay], week: {} })).toEqual({})
+  })
+
+  it('tolerates a missing week or routines list', () => {
+    expect(weeklyPlanLoad({})).toEqual({})
+    expect(weeklyPlanLoad(undefined)).toEqual({})
   })
 })
 
