@@ -7,24 +7,49 @@ ASSETS_URL="${ASSETS_URL:-https://github.com/hasaneyldrm/exercises-dataset/archi
 ASSETS_FOLDER="${ASSETS_FOLDER:-exercises-dataset-main}"
 # Flag to force update the exercise media. If set to true, it will download the assets again even if they are already present.
 NEEDS_UPDATE="${NEEDS_UPDATE:-false}"
-# Working directory where the assets will be extracted. You can override it with your own path if you want.
+# Skip assets download regardless of status.
+SKIP_ASSETS_DOWNLOAD="${SKIP_ASSETS_DOWNLOAD:-false}"
+# Working directory where the assets will be extracted. You can override it with your own path if you want. It shall be matched with nginx configuration.
 WORKING_DIR="${WORKING_DIR:-/usr/share/nginx/html}"
+# How old shall be files so we start to perform update - in days.
+UPDATE_PERIOD="${UPDATE_PERIOD:-30}"
 
 # Skip download if SKIP_ASSETS_DOWNLOAD is 
 if [  "$SKIP_ASSETS_DOWNLOAD" = "true" ]; then
+    echo "✗ Skipping Assets download"
     exit 0
 fi
 
+IMG_DIR="$WORKING_DIR/img"
+GIF_DIR="$WORKING_DIR/gif"
+LAST_UPDATE="$IMG_DIR/LAST_UPDATE"
+
+# Check whether the image directory is actually writable.
+# This catches read-only mounts as well as normal permission problems.
+WRITE_TEST=$(mktemp "$IMG_DIR/.write-test.XXXXXX") || {
+    echo "ERROR - can't write to the $IMG_DIR folder, check if your mount is write protected and permissions"
+    exit 0
+}
+rm -f "$WRITE_TEST"
+
 # Check if file exist - download happens at least once.
-if [ ! -f "$WORKING_DIR/img/LAST_UPDATE" ]; then
+if [ ! -f "$LAST_UPDATE" ]; then
     NEEDS_UPDATE=true
 fi
 
-# Check if download was 30 days ago and force update
-if [ "$(find $WORKING_DIR/img/ -name "LAST_UPDATE" -type f -mtime +30 -print -quit)" ]; then
+# Check if download was X days ago and force update this time
+if [ "$(find $IMG_DIR/ -name "LAST_UPDATE" -type f -mtime +"$UPDATE_PERIOD" -print -quit)" ]; then
     NEEDS_UPDATE=true
 fi
 
+# Create temp dir
+TMP_DIR=$(mktemp -d)
+trap 'rm -rf "$TMP_DIR"' EXIT INT TERM
+
+# Ensure destination directories exist.
+mkdir -p "$IMG_DIR" "$GIF_DIR"
+
+# Perform assets update
 if [ "$NEEDS_UPDATE" = "true" ]; then
     echo -e "↓ Downloading exercise media (~140 MB, one time)…
   Source: ${ASSETS_URL}
@@ -36,18 +61,21 @@ if [ "$NEEDS_UPDATE" = "true" ]; then
   Reusing this media yourself, commercially or not, needs your own license
   from Gym visual. Details in NOTICE.md."
 
-    wget "$ASSETS_URL" -O /tmp/main.zip || { echo "✗ Failed to download exercise media." >&2 ; exit 1; }
-    unzip /tmp/main.zip -d /tmp -q || { echo "✗ Failed to extract exercise media." >&2 ; exit 1; }
+    echo "..downloading Assets"
+    wget "$ASSETS_URL" -O "$TMP_DIR/main.zip" || { echo "✗ Failed to download exercise media." >&2 ; exit 1; }
+    echo "..extracting Assets"
+    unzip "$TMP_DIR/main.zip" -d "$TMP_DIR" -q || { echo "✗ Failed to extract exercise media." >&2 ; exit 1; }
+    echo "..coping Assets in place"
     # CP -f Override, -u Copy only newer files
-    cp -fu /tmp/${ASSETS_FOLDER}/images/*.jpg $WORKING_DIR/img/ && echo "✓ Exercise images ready ($(ls $WORKING_DIR/img/ | wc -l) images)."
-    cp -fu /tmp/${ASSETS_FOLDER}/videos/*.gif $WORKING_DIR/gif/ && echo "✓ Exercise gif's ready ($(ls $WORKING_DIR/gif | wc -l) images)."
+    cp -fu "$TMP_DIR/${ASSETS_FOLDER}"/images/*.jpg "$IMG_DIR/" && echo "✓ Exercise images ready ($(find "$IMG_DIR" -type f -name '*.jpg' | wc -l) images)."
+    cp -fu "$TMP_DIR/${ASSETS_FOLDER}"/videos/*.gif "$GIF_DIR/" && echo "✓ Exercise gif's ready ($(find "$GIF_DIR" -type f -name '*.gif' | wc -l) images)."
 
     # Set last update date, will use for automatically update
-    date > $WORKING_DIR/img/LAST_UPDATE
+    date > "$LAST_UPDATE"
 
-    rm -r /tmp/${ASSETS_FOLDER} /tmp/main.zip && echo "Cleanup complete."
+    rm -r "$TMP_DIR/${ASSETS_FOLDER}" $TMP_DIR/main.zip && echo "✓ Cleanup complete."
 else
-    echo "✓ Exercise media already present — skipping download. Last update $(cat $WORKING_DIR/img/LAST_UPDATE)."
+    echo "✓ Exercise media already present — skipping download. Last update $(cat $LAST_UPDATE)."
 fi
 
 exit 0
