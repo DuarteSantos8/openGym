@@ -2683,6 +2683,10 @@ function doFinishWorkout() {
   })
   useStore.getState().autoBackupNow()
   useUI.getState().stopRest()
+  // A hold still counting (a plank left unchecked, then Finish early) goes with the workout, as
+  // on Discard: its bar is app-wide and would chime over the summary, and its callback writes
+  // into s.active, which is gone. What it held is not logged, like any set left unchecked.
+  useUI.getState().stopWork()
   beep(snd(), 880, 0.15); beep(snd(), 1100, 0.15, 0.18); beep(snd(), 1320, 0.3, 0.36)
   ui().openSheet(close => <FinishSummary w={shown} prs={prs} e1prs={e1prs} close={close} />, { kind: 'center', locked: true })
 }
