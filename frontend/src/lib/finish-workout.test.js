@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildCompletedWorkout } from './finish-workout.js'
+import { buildCompletedWorkout, sessionEnd, FORGOTTEN_GAP_MS } from './finish-workout.js'
 import { cascadeWeight } from './history.js'
 import { buildSessionEntries } from './session-start.js'
 import { makeSideSet, setSideField, toggleSide, WEIGHT_ORIGIN_MANUAL } from './workout-model.js'
@@ -259,5 +259,42 @@ describe('superset groups', () => {
     expect('sg' in w.entries[0]).toBe(false)
     // the running session is not the one tidied up
     expect(entries[0].sg).toBe('sg1')
+  })
+})
+
+describe('sessionEnd: a workout finished long after its last set', () => {
+  const MIN = 60 * 1000
+  const T0 = 1_000_000_000_000
+  const at = (...mins) => ({ entries: [{ id: 'x', sets: mins.map(m => ({ done: true, w: 50, r: 8, at: T0 + m * MIN })) }] })
+
+  it('keeps the Finish tap when it comes right after the last set', () => {
+    expect(sessionEnd(at(0, 15, 30, 45), T0 + 50 * MIN)).toBe(T0 + 50 * MIN)
+  })
+
+  it('ends at the last set when Finish is tapped the next day', () => {
+    expect(sessionEnd(at(0, 15, 30, 45), T0 + 30 * 60 * MIN)).toBe(T0 + 45 * MIN)
+  })
+
+  it('does not let a set ticked after a long break stretch the session', () => {
+    // 45 minutes of work, then one leftover set ticked the next morning just before Finish.
+    expect(sessionEnd(at(0, 15, 30, 45, 24 * 60), T0 + 24 * 60 * MIN + 1)).toBe(T0 + 45 * MIN)
+  })
+
+  it('ignores unticked sets and sets from builds that did not stamp them', () => {
+    const active = { entries: [{ id: 'x', sets: [
+      { done: true, w: 50, r: 8, at: T0 },
+      { done: false, w: 50, r: 8, at: T0 + 30 * MIN },
+      { done: true, w: 50, r: 8 },
+    ] }] }
+    expect(sessionEnd(active, T0 + 5 * 60 * MIN)).toBe(T0)
+    expect(sessionEnd({ entries: [{ id: 'x', sets: [{ done: true, w: 50, r: 8 }] }] }, 42)).toBe(42)
+  })
+
+  it('counts a per-side set once one side is done', () => {
+    const active = { entries: [{ id: 'x', sets: [{
+      w: 20, r: 8, done: false, at: T0,
+      sides: { L: { w: 20, r: 8, done: true }, R: { w: 20, r: 8, done: false } },
+    }] }] }
+    expect(sessionEnd(active, T0 + FORGOTTEN_GAP_MS + 1)).toBe(T0)
   })
 })
