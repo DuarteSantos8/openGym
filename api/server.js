@@ -31,6 +31,8 @@ import {
 } from './passkeys-store.js';
 import { createDeviceLink, findDeviceLink, burnDeviceLink, dropDeviceLinks } from './device-link.js';
 import { createMediaStore, mediaLimits, mediaConfig, MediaError, HASH_RE } from './media.js';
+import { changeState } from './state-store.js';
+import { proxyMcp, MCP_ENABLED } from './mcp-proxy.js';
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
@@ -2035,33 +2037,51 @@ const routes = {
     // push would silently drop that write. The current document travels back with the 409, so
     // the client can merge and try again without a second request. No `baseRev` (a client from
     // before revisions, or a deliberate replace such as a backup import) overwrites, as before.
-    // readState and atomicWrite are synchronous with nothing awaited between them, so the
-    // compare-and-write is atomic for this process.
-    const cur = readState(user.id);
-    const curRev = cur?._rev || 0;
-    if (body.baseRev != null && body.baseRev !== curRev) {
-      return json(res, 409, { error: 'conflict', rev: curRev, state: cur });
-    }
     delete body.state.active;              // in-progress workouts stay device-local
     // "Reset everything" stamps the profile (`resetAt`, with `resetIds`: what it wiped). The stamp
     // only moves forward: a write without it, or with an older one — a client from before it, a
     // backup restored over the profile — keeps the stored stamp. Otherwise every device that saw
     // the reset would take that copy for one older than the reset, and wipe it again on its next
     // merge (frontend/src/lib/sync-merge.js).
-    const storedReset = Number(cur?.resetAt) || 0;
-    if (storedReset > (Number(body.state.resetAt) || 0)) {
-      body.state.resetAt = cur.resetAt;
-      if (cur.resetIds && typeof cur.resetIds === 'object') body.state.resetIds = cur.resetIds;
-      else delete body.state.resetIds;
+    const keepReset = cur => {
+      const storedReset = Number(cur?.resetAt) || 0;
+      if (storedReset > (Number(body.state.resetAt) || 0)) {
+        body.state.resetAt = cur.resetAt;
+        if (cur.resetIds && typeof cur.resetIds === 'object') body.state.resetIds = cur.resetIds;
+        else delete body.state.resetIds;
+      }
+      return body.state;
+    };
+    if (MCP_ENABLED) {
+      // The optional remote MCP connector writes these files from its own process, so the
+      // compare-and-write goes through the lock the two share (state-store.js).
+      try {
+        changeState(stateFile(user.id), body.baseRev ?? undefined, keepReset, { corruptAsEmpty: true });
+      } catch (e) {
+        if (e.code === 'CONFLICT') return json(res, 409, { error: 'conflict', rev: e.version, state: e.state });
+        if (e.code === 'BUSY') return json(res, 503, { error: 'busy, retry' });
+        throw e;
+      }
+    } else {
+      // readState and atomicWrite are synchronous with nothing awaited between them, so the
+      // compare-and-write is atomic for this process — the only writer without the connector.
+      const cur = readState(user.id);
+      const curRev = cur?._rev || 0;
+      if (body.baseRev != null && body.baseRev !== curRev) {
+        return json(res, 409, { error: 'conflict', rev: curRev, state: cur });
+      }
+      keepReset(cur);
+      body.state._rev = curRev + 1;        // server-owned; whatever the client sent is ignored
+      atomicWrite(stateFile(user.id), JSON.stringify(body.state));
     }
-    body.state._rev = curRev + 1;          // server-owned; whatever the client sent is ignored
-    atomicWrite(stateFile(user.id), JSON.stringify(body.state));
     // The stat cache cannot see this write on its own: mtime granularity is 4 ms here (ext4 on
     // this kernel — 3901 of 3999 back-to-back same-size writes shared one timestamp), and a
     // `_rev` going from 7 to 8 does not change the file's size, so two writes inside one 4 ms
     // tick are the same (mtimeMs, size) key. A reader that sampled between them would then serve
-    // the old revision until some later write happened to land on a different tick. This is the
-    // only writer of a state file in the tree, so evicting here is the whole fix.
+    // the old revision until some later write happened to land on a different tick. Evicting here
+    // covers every write this process makes. The MCP connector's writes (another process) are
+    // seen through the stat key alone; missing one would take two of them inside one tick, and
+    // tool calls arrive seconds apart.
     stateCache.delete(user.id);
     // Starts (or stops) the grace clock of every stored file this write stopped (or started)
     // referencing. Bookkeeping only: the state is already saved, so nothing here may turn a
@@ -2413,7 +2433,9 @@ const server = http.createServer(async (req, res) => {
   // above stays a plain lookup, and so csrfOk and the catch-all see one name for every file.
   const mm = /^\/api\/media\/([0-9a-f]{64})$/.exec(url.pathname);
   if (mm) { key = req.method + ' /api/media/{hash}'; req.mediaHash = mm[1]; }
-  const handler = routes[key];
+  // /api/mcp/* is the Settings page talking to the optional MCP container (api/mcp-proxy.js),
+  // which answers 503 itself when the connector is not enabled.
+  const handler = url.pathname.startsWith('/api/mcp/') ? proxyMcp : routes[key];
   if (!handler) return json(res, 404, { error: 'not found' });
   if (!csrfOk(req, key)) {
     // Logged, not audited: this is reachable without a session, and an audit entry per attempt

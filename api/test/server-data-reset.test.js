@@ -23,7 +23,7 @@ function mintSession(uid, sv = 0) {
 }
 const headers = () => ({ Cookie: `gymsid=${mintSession(UID)}`, 'Content-Type': 'application/json' });
 
-async function startServer(t) {
+async function startServer(t, env = {}) {
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gym-reset-'));
   fs.writeFileSync(path.join(dataDir, 'secret'), SECRET, { mode: 0o600 });
   fs.writeFileSync(path.join(dataDir, 'db.json'), JSON.stringify({
@@ -31,7 +31,7 @@ async function startServer(t) {
   }));
   const child = spawn(process.execPath, ['server.js'], {
     cwd: API, stdio: ['ignore', 'pipe', 'pipe'],
-    env: { ...process.env, PORT: '0', DATA_DIR: dataDir, ORIGIN: 'http://localhost:8080', RP_ID: 'localhost' }
+    env: { ...process.env, MCP_INTERNAL_URL: '', PORT: '0', DATA_DIR: dataDir, ORIGIN: 'http://localhost:8080', RP_ID: 'localhost', ...env }
   });
   const h = { log: '', dataDir };
   child.stdout.on('data', d => h.log += d);
@@ -42,8 +42,10 @@ async function startServer(t) {
   return h;
 }
 
-test('PUT /api/data keeps the reset stamp when a write lacks it or carries an older one', async t => {
-  const h = await startServer(t);
+// Also with the MCP connector enabled, where PUT writes through the shared lock (state-store.js).
+for (const [label, env] of [['', {}], [' (MCP enabled)', { MCP_INTERNAL_URL: 'http://127.0.0.1:9' }]])
+test('PUT /api/data keeps the reset stamp when a write lacks it or carries an older one' + label, async t => {
+  const h = await startServer(t, env);
   const put = async body => {
     const r = await fetch(`${h.api}/api/data`, { method: 'PUT', headers: headers(), body: JSON.stringify(body) });
     return { status: r.status, body: await r.json() };

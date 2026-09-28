@@ -20,7 +20,7 @@ function mintSession(uid, sv = 0) {
 }
 const headers = uid => ({ Cookie: `gymsid=${mintSession(uid)}`, 'Content-Type': 'application/json' });
 
-async function startServer(t) {
+async function startServer(t, env = {}) {
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gym-rev-'));
   fs.writeFileSync(path.join(dataDir, 'secret'), SECRET, { mode: 0o600 });
   fs.writeFileSync(path.join(dataDir, 'db.json'), JSON.stringify({
@@ -28,7 +28,7 @@ async function startServer(t) {
   }));
   const child = spawn(process.execPath, ['server.js'], {
     cwd: API, stdio: ['ignore', 'pipe', 'pipe'],
-    env: { ...process.env, PORT: '0', DATA_DIR: dataDir, ORIGIN: 'http://localhost:8080', RP_ID: 'localhost' }
+    env: { ...process.env, MCP_INTERNAL_URL: '', PORT: '0', DATA_DIR: dataDir, ORIGIN: 'http://localhost:8080', RP_ID: 'localhost', ...env }
   });
   const h = { api: '', log: '', dataDir };
   child.stdout.on('data', d => h.log += d);
@@ -41,8 +41,12 @@ async function startServer(t) {
   return h;
 }
 
-test('GET/PUT /api/data: revisions, conditional writes and the legacy overwrite', async t => {
-  const h = await startServer(t);
+// The same contract twice: once as every instance runs, once with the optional MCP connector
+// enabled, where PUT goes through the lock it shares with the MCP container (state-store.js).
+// Nothing listens at the MCP URL — PUT never calls it, it only needs to know it exists.
+for (const [label, env] of [['', {}], [' (MCP enabled: shared lock)', { MCP_INTERNAL_URL: 'http://127.0.0.1:9' }]])
+test('GET/PUT /api/data: revisions, conditional writes and the legacy overwrite' + label, async t => {
+  const h = await startServer(t, env);
   const uid = 'u_rev_1';
   const get = async () => { const r = await fetch(`${h.api}/api/data`, { headers: headers(uid) }); return { status: r.status, body: await r.json() }; };
   const put = async body => { const r = await fetch(`${h.api}/api/data`, { method: 'PUT', headers: headers(uid), body: JSON.stringify(body) }); return { status: r.status, body: await r.json() }; };
@@ -134,4 +138,26 @@ test('PUT /api/data refuses an empty object, which would wipe the profile and ke
   // …and a document that carries one real key alongside them is a profile, and goes through.
   assert.equal((await put({ state: { _rev: 99, _ts: 1, routines: [] }, baseRev: 1 })).status, 200);
   assert.equal(await rev(), 2);
+});
+
+test('PUT /api/data with MCP enabled: a held lock answers busy and writes nothing', async t => {
+  const h = await startServer(t, { MCP_INTERNAL_URL: 'http://127.0.0.1:9' });
+  const uid = 'u_rev_1';
+  const file = path.join(h.dataDir, `state-${uid}.json`);
+  fs.writeFileSync(file, JSON.stringify({ _rev: 5, workouts: [], routines: [] }));
+  fs.writeFileSync(file + '.lock', String(Date.now()));
+  const r = await fetch(`${h.api}/api/data`, { method: 'PUT', headers: headers(uid), body: JSON.stringify({ state: { workouts: [], routines: [] }, baseRev: 5 }) });
+  assert.equal(r.status, 503);
+  assert.equal(JSON.parse(fs.readFileSync(file, 'utf8'))._rev, 5);
+  assert.ok(fs.existsSync(file + '.lock'), 'a lock it did not take is never removed');
+});
+
+test('PUT /api/data with MCP enabled: an unreadable file is overwritten, as without the lock', async t => {
+  const h = await startServer(t, { MCP_INTERNAL_URL: 'http://127.0.0.1:9' });
+  const uid = 'u_rev_1';
+  const file = path.join(h.dataDir, `state-${uid}.json`);
+  fs.writeFileSync(file, '{not json');
+  const r = await fetch(`${h.api}/api/data`, { method: 'PUT', headers: headers(uid), body: JSON.stringify({ state: { workouts: [], routines: [] }, baseRev: 0 }) });
+  assert.equal(r.status, 200);
+  assert.equal(JSON.parse(fs.readFileSync(file, 'utf8'))._rev, 1);
 });

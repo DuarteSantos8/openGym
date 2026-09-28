@@ -17,8 +17,9 @@ frontend/  React 19 + Vite app (src/views, src/components, src/store, src/lib). 
 api/       backend — server.js (Node, no framework), deps: @simplewebauthn/server, web-push.
 web/       multi-stage Dockerfile (builds frontend → nginx) + nginx.conf.template (serves app, proxies /api).
 mcp/       optional MCP server — read-only stdio bridge exposing a user's workouts/1RM/muscle
-           balance to LLM clients (Claude Desktop, Cursor…). Not part of the Docker build; only
-           runs when an LLM client spawns it.
+           balance to LLM clients (Claude Desktop, Cursor…), spawned by the client. Also an
+           opt-in remote mode (src/http.js, `mcp` compose profile) with OAuth and write tools —
+           docs/MCP_REMOTE.md.
 media/     exercise img/gif, gitignored, fetched at runtime by the `media` compose service.
 website/   static marketing site (plain HTML/CSS/JS), deployed separately by .gitlab-ci.yml.
 docs/      SELF_HOSTING.md, MOBILE.md.
