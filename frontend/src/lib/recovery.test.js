@@ -17,7 +17,7 @@ import {
   strengthOf,
 } from './recovery.js'
 import { EXDB, registerCustom } from './exercises.js'
-import { MUSCLES, musclesOf } from './muscles.js'
+import { MUSCLES, exerciseMuscleSnapshot, musclesOf } from './muscles.js'
 import { fatigueStateOf } from './recovery-view.js'
 
 const HOUR = 60 * 60 * 1000
@@ -126,6 +126,42 @@ describe('fatigueOf and strengthOf', () => {
       10,
     )
     expect(fatigueOf(highRep, NOW)[SINGLE_SLUG]).toBeGreaterThan(0.5)
+  })
+
+  it('uses a deleted exercise snapshot for the same bounded primary and secondary fatigue', () => {
+    const resolved = doneWorkoutAt(WEIGHTED.id, NOW)
+    const deleted = {
+      ...resolved,
+      entries: [{
+        ...resolved.entries[0],
+        id: 'deleted-weighted-exercise',
+        muscleSnapshot: exerciseMuscleSnapshot(WEIGHTED),
+      }],
+    }
+
+    expect(fatigueOf([deleted], NOW)).toEqual(fatigueOf([resolved], NOW))
+    expect(fatigueOf([deleted], NOW)[WEIGHTED_PRIMARY_SLUG]).toBeGreaterThan(0)
+    expect(fatigueOf([deleted], NOW)[SECONDARY_SLUG]).toBeGreaterThan(0)
+  })
+
+  it('uses a deleted exercise snapshot for strength without changing decay or floor semantics', () => {
+    const start = NOW - 15 * DAY
+    const resolved = doneWorkoutAt(WEIGHTED.id, start)
+    const deleted = {
+      ...resolved,
+      entries: [{
+        ...resolved.entries[0],
+        id: 'deleted-weighted-exercise',
+        muscleSnapshot: exerciseMuscleSnapshot(WEIGHTED),
+      }],
+    }
+    const untouchedSlug = MUSCLES.find(slug => !WEIGHTED_WEIGHTS[slug])
+    const strength = strengthOf([deleted], NOW)
+
+    expect(strength).toEqual(strengthOf([resolved], NOW))
+    expect(strength[WEIGHTED_PRIMARY_SLUG]).toBeCloseTo(0.5 ** (1 / 28), 10)
+    expect(strength[SECONDARY_SLUG]).toBeCloseTo(0.5 ** (1 / 28), 10)
+    expect(strength[untouchedSlug]).toBe(STRENGTH_FLOOR)
   })
 
   it('raises starting fatigue with volume, never pins, and fades without a cliff', () => {
@@ -400,6 +436,47 @@ describe('warm-up flag in strength and fatigue', () => {
     // but the warm-up still contributes to the fatigue stimulus (real mechanical work)
     const fatigue = fatigueOf(workouts, now)
     expect(fatigue.chest).toBeGreaterThan(0)
+  })
+})
+
+describe('drop-set drops add fatigue tonnage on top of the main set', () => {
+  // Same within-session Epley baseline setTonnage derives from the row's own w/r (8 reps,
+  // under REP_CAP), so a drop is weighted against the same 1RM as the main set.
+  const oneRm = 80 * (1 + 8 / 30)
+
+  it('a drop-set drop adds its own intensity-weighted tonnage', () => {
+    const dropRow = { done: true, type: 'dropset', w: 80, r: 8, drops: [{ w: 60, r: 6 }] }
+    const dropTonnage = 60 * 6 * Math.min(1, 60 / oneRm) ** 1.5
+    const expected = expectedFatigue([{ stimulus: V + dropTonnage }])
+
+    expect(fatigueOf([workoutAt(SINGLE.id, NOW, [dropRow])], NOW)[SINGLE_SLUG]).toBeCloseTo(expected, 8)
+    // strictly more than the plain 80x8 set alone — the drop is real extra work
+    expect(fatigueOf([workoutAt(SINGLE.id, NOW, [dropRow])], NOW)[SINGLE_SLUG])
+      .toBeGreaterThan(fatigueOf([doneWorkoutAt(SINGLE.id, NOW)], NOW)[SINGLE_SLUG])
+  })
+
+  it('leaves fatigue unchanged for a straight set with no drops', () => {
+    const plain = { done: true, w: 80, r: 8 }
+    expect(fatigueOf([workoutAt(SINGLE.id, NOW, [plain])], NOW)[SINGLE_SLUG])
+      .toBeCloseTo(expectedFatigue([{ stimulus: V }]), 8)
+  })
+})
+
+describe('a rest-pause row\'s clusters add no extra fatigue tonnage', () => {
+  // Its own r is already the total across every burst (see applyIntensifierPlan/history.js),
+  // so setTonnage's main w x r term already covers all of it — clusters are a breakdown only.
+  it('matches a plain set of the same w/r exactly, regardless of how the clusters break it down', () => {
+    const burstRow = { done: true, type: 'restpause', w: 80, r: 8, clusters: [{ r: 4, restSec: 15 }] }
+    const plainRow = { done: true, w: 80, r: 8 }
+    expect(fatigueOf([workoutAt(SINGLE.id, NOW, [burstRow])], NOW)[SINGLE_SLUG])
+      .toBeCloseTo(fatigueOf([workoutAt(SINGLE.id, NOW, [plainRow])], NOW)[SINGLE_SLUG], 10)
+  })
+
+  it('holds for a realistic planned total too — a full descending split adds nothing beyond the row\'s own r', () => {
+    const burstRow = { done: true, type: 'restpause', w: 80, r: 20, clusters: [{ r: 10, restSec: 15 }, { r: 5, restSec: 15 }, { r: 3, restSec: 15 }, { r: 1, restSec: 15 }, { r: 1, restSec: 15 }] }
+    const plainRow = { done: true, w: 80, r: 20 }
+    expect(fatigueOf([workoutAt(SINGLE.id, NOW, [burstRow])], NOW)[SINGLE_SLUG])
+      .toBeCloseTo(fatigueOf([workoutAt(SINGLE.id, NOW, [plainRow])], NOW)[SINGLE_SLUG], 10)
   })
 })
 

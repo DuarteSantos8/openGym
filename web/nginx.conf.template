@@ -5,30 +5,127 @@ server {
     root /usr/share/nginx/html;
     index index.html;
 
-    # API → backend container
-    location /api/ {
-        proxy_pass http://${BACKEND}:${PORT};
+    # Sent on every response below. NOTE: an `add_header` inside a location replaces the whole
+    # inherited set rather than adding to it, so the two locations further down that set their
+    # own Cache-Control have to repeat these three. Deliberately not a full Content-Security-
+    # Policy: only frame-ancestors, which no part of the app depends on. TLS, HSTS and any
+    # stricter policy stay the reverse proxy's job (see SECURITY.md).
+    add_header X-Frame-Options "DENY" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "same-origin" always;
+    add_header Content-Security-Policy "frame-ancestors 'none'" always;
+
+    # API → backend container.
+    # `^~` so this prefix beats the regex locations below: without it a request for a path such
+    # as /api/anything.json would be matched by the \.(js|css|json|html)$ block instead and be
+    # looked for on disk rather than proxied.
+    location ^~ ${BASE_PATH}/api/ {
+        # Match the API's own body limit (MAX_BODY in api/server.js): the whole workout history
+        # travels in one PUT /api/data, and nginx's 1 MiB default would answer 413 here before the
+        # API ever saw it — a sync that silently stops once the history grows past 1 MiB.
+        client_max_body_size 5m;
+        # Resolved per request through the container runtime's DNS, not once at start-up: nginx
+        # otherwise pins the api container's IP when it boots, and a recreated api (new IP) means
+        # 502 on every /api call until web is restarted too (issue #16). The variable is what makes
+        # nginx re-resolve; lowercase so the entrypoint's envsubst leaves it alone.
+        #
+        # RESOLVER defaults to Docker's embedded DNS, which is where this image usually runs.
+        # Nothing answers on that address outside Docker, and an unreachable resolver does not
+        # fail fast — every /api request hangs until it times out. Anywhere else, set RESOLVER to
+        # the DNS the platform actually provides: on Kubernetes that is the kube-dns/CoreDNS
+        # service address (`kubectl -n kube-system get svc kube-dns`, commonly 10.96.0.10).
+        resolver ${RESOLVER} valid=10s ipv6=off;
+        set $api_upstream http://${BACKEND}:${PORT};
+        proxy_pass $api_upstream;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        # $remote_addr, NOT $proxy_add_x_forwarded_for: the latter APPENDS to whatever the client
+        # sent, and the API reads the first entry — so a client could put any address it liked in
+        # front of its own and choose what the activity log recorded about it. Overwriting is what
+        # makes the header mean anything.
+        proxy_set_header X-Forwarded-For $remote_addr;
         proxy_set_header X-Forwarded-Proto $scheme;
+        # Same reasoning, and the API trusts this one FIRST. Empty by default, which drops the
+        # header entirely, so a direct client cannot forge it. Cloudflare users set
+        # CF_CONNECTING_IP=$http_cf_connecting_ip to let the real one through — correct only when
+        # Cloudflare is genuinely in front, because that is what overwrites a client-supplied one.
+        proxy_set_header CF-Connecting-IP "${CF_CONNECTING_IP}";
     }
 
-    # SPA fallback
-    location / {
-        try_files $uri $uri/ /index.html;
+    # Photos and videos of custom exercises (PUT and GET under api/media/). Nginx picks the
+    # longest matching prefix, so this block takes those requests from the one above wherever it
+    # sits. Same upstream, resolver and headers; what differs is the body. A video may be tens of
+    # MB, so the cap is MEDIA_UPLOAD_MAX (48m by default; keep it above MEDIA_VIDEO_MAX_MB)
+    # instead of 5m. The upload is passed to the API as it arrives rather than spooled to a temp
+    # file here first: the API checks size, hash and type while it streams and answers a refusal
+    # before the rest is sent, and spooling would double the disk writes and hide the progress.
+    # The two proxy timeouts are the gaps allowed between two reads or writes on the API side,
+    # generous for a slow uplink; a client that stops sending is still cut off by
+    # client_body_timeout (60 s between two reads), the same idle limit the API applies itself.
+    location ^~ ${BASE_PATH}/api/media/ {
+        client_max_body_size ${MEDIA_UPLOAD_MAX};
+        proxy_request_buffering off;
+        proxy_buffering off;
+        proxy_read_timeout 300s;
+        proxy_send_timeout 300s;
+        resolver ${RESOLVER} valid=10s ipv6=off;
+        set $api_upstream http://${BACKEND}:${PORT};
+        proxy_pass $api_upstream;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header CF-Connecting-IP "${CF_CONNECTING_IP}";
+    }
+
+    # The app routes behind the hash (/#/plan, /#/history …), so a path is never a screen, and the
+    # shell's asset URLs are relative (vite base './' — the Pages demo lives under /demo/). Serving
+    # index.html AT a deep path (/plan/r/x: a typo, a stale link) gave a page whose scripts resolved
+    # under that path and 404'd — blank, with a 200. Send the browser to the root instead. The
+    # query string travels along; the hash never reaches the server anyway. Relative Location so
+    # the redirect keeps the scheme and host the reverse proxy in front presented, not nginx's own.
+    #
+    # BASE_PATH (default empty) is for a reverse proxy that serves openGym under a subpath and
+    # passes that prefix through — "/gym", no trailing slash. A proxy that strips the prefix
+    # before the container sees it needs nothing set here: the app asks its own address for the
+    # API (lib/api.js appBase), so the call carries whatever prefix the browser is using.
+    location ${BASE_PATH}/ {
+        # `rewrite ... break` rather than `alias`: try_files inside an aliased prefix location is
+        # a long-standing nginx trap (it still resolves the untranslated URI). With BASE_PATH
+        # empty this rewrite is an identity and the block behaves exactly as it always has.
+        rewrite ^${BASE_PATH}/(.*)$ /$1 break;
+        try_files $uri $uri/ @root;
+    }
+    location @root {
+        absolute_redirect off;
+        return 302 ${BASE_PATH}/$is_args$args;
     }
 
     # App shell: always revalidate so updates show up immediately
     location ~* \.(js|css|json|html)$ {
+        # A regex location wins over the prefix block above, so it never saw its rewrite and
+        # looked for the file under the prefix on disk. Same identity-when-empty rewrite here.
+        rewrite ^${BASE_PATH}/(.*)$ /$1 break;
         add_header Cache-Control "no-cache, must-revalidate";
+        add_header X-Frame-Options "DENY" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Referrer-Policy "same-origin" always;
+        add_header Content-Security-Policy "frame-ancestors 'none'" always;
     }
 
     # Exercise images/GIFs never change → cache hard
     location ~* \.(png|jpg|jpeg|gif|ico|svg|woff|woff2|webp|avif)$ {
+        # A regex location wins over the prefix block above, so it never saw its rewrite and
+        # looked for the file under the prefix on disk. Same identity-when-empty rewrite here.
+        rewrite ^${BASE_PATH}/(.*)$ /$1 break;
         expires 30d;
         add_header Cache-Control "public, max-age=2592000, immutable";
+        add_header X-Frame-Options "DENY" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Referrer-Policy "same-origin" always;
+        add_header Content-Security-Policy "frame-ancestors 'none'" always;
     }
 
     gzip on;

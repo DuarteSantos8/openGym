@@ -20,7 +20,10 @@ export function exLine(cfg, unit) {
   const load = cfg.weight ? ' · ' + fmtNum(cfg.weight) + ' ' + unit : ''
   if (mode === 'cardio') return `${n} × ${cfg.min || 20} min @ ${fmtNum(cfg.speed || 8)} km/h`
   if (mode === 'time') return `${n} × ${fmtSec(cfg.sec || 45)}${load}`
-  return `${n} × ${cfg.reps}${load}`
+  // A double-progression range is stored as its top (`reps`) and bottom (`repsMin`); it reads
+  // as the range, the way the app's routine editor shows it ("3 × 8–12").
+  const reps = cfg.repsMin > 0 && cfg.repsMin < cfg.reps ? `${cfg.repsMin}–${cfg.reps}` : `${cfg.reps}`
+  return `${n} × ${reps}${load}`
 }
 
 export function muscleName(slug) {

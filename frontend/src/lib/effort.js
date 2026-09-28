@@ -7,7 +7,7 @@
 // RIR is the internal unit because it has a real zero — a set taken to failure — where RPE's
 // floor of 6 is only a convention about which sets are worth rating. RPE 8 == RIR 2.
 import { EFFORT, effortOf } from './history.js'
-import { weekKey } from './format.js'
+import { weekKey, weekStartOf, startOfWeek } from './format.js'
 import { isWarmupRow } from './workout-model.js'
 
 // At or below this a set is close enough to failure to be the kind that drives adaptation.
@@ -95,25 +95,19 @@ export function hasEffort(S) {
  * drawn — one tap should not become a peak in the curve.
  */
 export function effortWeeks(S, days) {
+  const ws = weekStartOf(S)
   const wk = new Map()
   eachDoneSet(S, (s, w) => {
     if (!inWindow(w, days)) return
-    const k = weekKey(w.d)
+    const k = weekKey(w.d, ws)
     let e = wk.get(k)
-    if (!e) wk.set(k, e = { k, t: mondayOf(w.d), sum: 0, n: 0, sets: 0 })
+    if (!e) wk.set(k, e = { k, t: startOfWeek(w.d, ws).getTime(), sum: 0, n: 0, sets: 0 })
     e.sets++
     const r = rirOf(s)
     if (r != null) { e.sum += r; e.n++ }
   })
   return [...wk.values()].filter(e => e.n >= 2).sort((a, b) => a.t - b.t)
     .map(e => ({ t: e.t, rir: e.sum / e.n, n: e.n, sets: e.sets }))
-}
-// The Monday of an ISO date, as ms — the x position a week's point sits at.
-function mondayOf(iso) {
-  const d = new Date(iso + 'T12:00:00')
-  d.setDate(d.getDate() - ((d.getDay() + 6) % 7))
-  d.setHours(12, 0, 0, 0)
-  return +d
 }
 
 /**
@@ -138,3 +132,43 @@ export function effortHistogram(S, days) {
 
 /** A set that counts as hard — the filter behind the muscle map's "hard sets" mode. */
 export const isHardSet = s => { const r = rirOf(s); return r != null && r <= HARD_RIR }
+
+// ---------------------------------------------------------------- colour bands --
+//
+// A set's effort read as a colour, so a glance down a workout tells you how hard it ran
+// without reading every number. Bands are defined once, in RIR (the internal scale), and
+// apply unchanged whether the profile logs RIR or RPE — RPE 8 and RIR 2 are the same set and
+// get the same colour. The scale runs from "nothing left" (purple, past red — the far end,
+// not just "very hard") through to "easy, warm-up range" (green).
+//
+// The named buckets are also the quick-pick presets: one tap logs the middle of a band. They
+// are deliberately coarse where estimation is coarse — nobody reliably tells 5 RIR from 7, so
+// everything from 4 up shares one bucket — and fine near failure, where the difference between
+// 0, 0.5 and 1 actually changes the training. A typed value between presets still colours by
+// the band it falls in, so the flexibility of a free number is never lost.
+export const EFFORT_BANDS = [
+  { rir: 0, max: 0.25, color: 'var(--purple)', feel: 'Nothing left — went to failure' },
+  { rir: 0.5, max: 0.75, color: 'var(--red)', feel: 'Maybe half a rep left' },
+  { rir: 1, max: 1.5, color: 'var(--orange)', feel: 'One more rep in the tank' },
+  { rir: 2, max: 2.5, color: 'var(--yellow)', feel: 'Two more reps' },
+  { rir: 3, max: 3.5, color: 'var(--green)', feel: 'Three more reps' },
+  { rir: 4, max: Infinity, color: 'var(--acc-2)', feel: 'Easy — warm-up territory' }
+]
+// The presets shown in the picker, hardest first — the order they read on the scale and the
+// order the colours run. `tail` is the collapsed top bucket ("4+"): its value is the floor it
+// stands for, so a tap logs a concrete 4, not a range nothing downstream could average.
+export const EFFORT_PRESETS = EFFORT_BANDS.map((b, i) => ({
+  rir: b.rir, color: b.color, feel: b.feel, tail: i === EFFORT_BANDS.length - 1
+}))
+
+/**
+ * The colour for one effort value, given in RIR (use rirOf to convert a set first). Picks the
+ * band the value falls into: an exact preset lands on its own band, a typed in-between value
+ * (RIR 1.5) takes the band it sits within so it is never left uncoloured. null (unrated) has
+ * no colour — the caller shows a neutral control, not a green one.
+ */
+export const effortColor = rir => {
+  if (rir == null) return null
+  for (const b of EFFORT_BANDS) if (rir <= b.max) return b.color
+  return EFFORT_BANDS[EFFORT_BANDS.length - 1].color
+}

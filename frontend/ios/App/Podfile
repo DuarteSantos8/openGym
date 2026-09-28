@@ -1,6 +1,6 @@
 require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'
 
-platform :ios, '14.0'
+platform :ios, '15.5'
 use_frameworks!
 
 # workaround to avoid Xcode caching of Pods that requires
@@ -11,6 +11,8 @@ install! 'cocoapods', :disable_input_output_paths => true
 def capacitor_pods
   pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
   pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
+  pod 'AparajitaCapacitorSecureStorage', :path => '../../node_modules/@aparajita/capacitor-secure-storage'
+  pod 'CapacitorMlkitBarcodeScanning', :path => '../../node_modules/@capacitor-mlkit/barcode-scanning'
   pod 'CapacitorApp', :path => '../../node_modules/@capacitor/app'
   pod 'CapacitorFilesystem', :path => '../../node_modules/@capacitor/filesystem'
   pod 'CapacitorLocalNotifications', :path => '../../node_modules/@capacitor/local-notifications'
@@ -24,4 +26,13 @@ end
 
 post_install do |installer|
   assertDeploymentTarget(installer)
+  # assertDeploymentTarget only lifts a pod to 14.0, below what current Xcode supports, so every
+  # build warned about the pods. Set them to the app's own target (the platform line above and
+  # IPHONEOS_DEPLOYMENT_TARGET in the project, both 15.5), not to some lower number: a pod built
+  # for an iOS the app does not run on buys nothing and keeps the two out of step.
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.5'
+    end
+  end
 end

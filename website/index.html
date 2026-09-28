@@ -2,19 +2,45 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>openGym — free, open-source gym &amp; body-weight tracker</title>
 <meta name="description" content="openGym is a free, open-source gym & body-weight tracker. Download the Android app or self-host it with Docker — no account, no cloud, no telemetry.">
-<meta name="theme-color" content="#0c0e12">
+<meta name="theme-color" content="#000000">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="preconnect" href="https://stats.duarte-santos.ch">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="openGym — your workouts, your weights, your data">
+<meta name="twitter:description" content="Free, open-source gym & body-weight tracker. Android APK or self-hosted with Docker. No account, no cloud, no telemetry.">
+<meta name="twitter:image" content="https://opengym.duarte-santos.ch/img/social.jpg">
 <meta property="og:title" content="openGym — your workouts, your weights, your data">
 <meta property="og:description" content="Free, open-source gym & body-weight tracker. Android APK or self-hosted with Docker. No account, no cloud, no telemetry.">
-<meta property="og:image" content="https://opengym.duarte-santos.ch/img/banner.png">
+<meta property="og:image" content="https://opengym.duarte-santos.ch/img/social.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="openGym — your training, your data, your server. Two phones showing the home and workout screens.">
 <meta property="og:url" content="https://opengym.duarte-santos.ch/">
+<link rel="canonical" href="https://opengym.duarte-santos.ch/">
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="openGym">
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 <link rel="icon" type="image/png" sizes="180x180" href="icon-180.png">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="styles.css?v=3">
+<link rel="preload" as="image" type="image/webp" imagesrcset="img/home-480.webp 480w, img/home-600.webp 600w, img/home-1170.webp 1170w" imagesizes="(max-width: 700px) 62vw, 300px" fetchpriority="high">
+<link rel="stylesheet" href="styles.css?v=19">
+<!-- Marks that JS is alive before first paint, so the scroll-reveal styles never
+     hide content from a browser that will not run them. -->
+<script>
+/* Before first paint: .js arms the scroll reveals, .intro plays the hero entrance once per
+   tab. Deferred scripts run too late for this — the hero would paint, then vanish and
+   animate back in. site.js takes .intro off again when the animation ends. */
+document.documentElement.className += ' js'
+try {
+  if (!sessionStorage.getItem('og-intro')) {
+    sessionStorage.setItem('og-intro', '1')
+    document.documentElement.className += ' intro'
+  }
+} catch (e) { document.documentElement.className += ' intro' }
+</script>
 <!-- Umami web analytics for opengym.duarte-santos.ch (self-hosted, cookieless). -->
 <script defer src="https://stats.duarte-santos.ch/script.js" data-website-id="db36019e-50f4-453c-9c56-d0588aefe233"></script>
 <script type="application/ld+json">
@@ -23,214 +49,517 @@
  "offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},
  "license":"https://www.gnu.org/licenses/agpl-3.0.html",
  "url":"https://opengym.duarte-santos.ch/",
+ "image":"https://opengym.duarte-santos.ch/img/social.jpg",
+ "screenshot":["https://opengym.duarte-santos.ch/img/home.png","https://opengym.duarte-santos.ch/img/workout.png","https://opengym.duarte-santos.ch/img/stats.png"],
+ "softwareVersion":"1.3.9","datePublished":"2026-07-18","dateModified":"2026-09-28","isAccessibleForFree":true,
+ "featureList":["Weekly plan with a routine per weekday","Guided workouts with rest timer, supersets, warm-up and timed sets","Progression rules: linear, Greyskull LP, double progression","Estimated 1RM, activity heatmap, muscle balance and fatigue maps","Body-weight tracking with a goal line","Import from Hevy, Strong, FitNotes and Apple Health","Passkey login and multi-device sync when self-hosted","Standalone Android APK with no account","17 languages, including Arabic right-to-left","Optional AI coach on your own API key"],
  "downloadUrl":"https://opengym.duarte-santos.ch/openGym.apk",
- "author":{"@type":"Person","name":"Duarte Santos","url":"https://duarte-santos.ch"}}
+ "author":{"@type":"Person","name":"Duarte Santos","url":"https://duarte-santos.ch"},
+ "sameAs":["https://github.com/DuarteSantos8/openGym","https://gitlab.com/DuarteSantos8/opengym","https://discord.gg/e62jY6fwVb"]}
 </script>
 </head>
-<body>
+<body class="topnav">
+<a class="skip" href="#main">Skip to content</a>
+
+<!-- Icon set: one sprite, referenced with <use>. Line icons at 24×24, stroke 1.7. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+  <symbol id="i-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10.2 8.6l5 3.4-5 3.4z"/></symbol>
+  <symbol id="i-body" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.3" r="2.3"/><path d="M12 6.6v7.2M12 8.4L7.5 11M12 8.4l4.5 2.6M12 13.8l-2.6 6.4M12 13.8l2.6 6.4"/></symbol>
+  <symbol id="i-trend" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 16.5l5-5 3.5 3.5 6-6.5"/><path d="M15 8h3.5v3.5"/></symbol>
+  <symbol id="i-library" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.2" y="4.5" width="17.6" height="15" rx="2.4"/><path d="M3.2 9.2h17.6M8.6 9.2v10.3"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24" fill="currentColor"><rect x="2.6" y="4.4" width="3.6" height="3.6" rx="1.1" opacity=".35"/><rect x="7.8" y="4.4" width="3.6" height="3.6" rx="1.1"/><rect x="13" y="4.4" width="3.6" height="3.6" rx="1.1" opacity=".35"/><rect x="18.2" y="4.4" width="3.6" height="3.6" rx="1.1" opacity=".7"/><rect x="2.6" y="10.2" width="3.6" height="3.6" rx="1.1"/><rect x="7.8" y="10.2" width="3.6" height="3.6" rx="1.1" opacity=".35"/><rect x="13" y="10.2" width="3.6" height="3.6" rx="1.1" opacity=".7"/><rect x="18.2" y="10.2" width="3.6" height="3.6" rx="1.1"/><rect x="2.6" y="16" width="3.6" height="3.6" rx="1.1" opacity=".7"/><rect x="7.8" y="16" width="3.6" height="3.6" rx="1.1"/><rect x="13" y="16" width="3.6" height="3.6" rx="1.1" opacity=".35"/><rect x="18.2" y="16" width="3.6" height="3.6" rx="1.1" opacity=".35"/></symbol>
+  <symbol id="i-scale" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.4 8.2l4 3.4 3.6-2.6 3.7 3 5.9-5.4"/><path d="M3.4 16.4h17.2" stroke-dasharray="2.6 2.6"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6.2" y="2.4" width="11.6" height="19.2" rx="3"/><path d="M10.6 5.2h2.8M12 18.4h.01"/></symbol>
+  <symbol id="i-server" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.2" width="18" height="6.2" rx="2"/><rect x="3" y="13.6" width="18" height="6.2" rx="2"/><path d="M6.8 7.3h.01M6.8 16.7h.01"/></symbol>
+  <symbol id="i-discord" viewBox="0 0 71 55"><path d="M60.1045 4.8978C55.5792 2.8214 50.7265 1.2916 45.6527 0.41542C45.5603 0.39851 45.468 0.440769 45.4204 0.525289C44.7963 1.6353 44.105 3.0834 43.6209 4.2216C38.1637 3.4046 32.7345 3.4046 27.3892 4.2216C26.905 3.0581 26.1886 1.6353 25.5617 0.525289C25.5141 0.443589 25.4218 0.40133 25.3294 0.41542C20.2584 1.2888 15.4057 2.8186 10.8776 4.8978C10.8384 4.9147 10.8048 4.9429 10.7825 4.9795C1.57795 18.7309 -0.943561 32.1443 0.293408 45.3914C0.299005 45.4562 0.335386 45.5182 0.385761 45.5576C6.45866 50.0174 12.3413 52.7249 18.1147 54.5195C18.2071 54.5477 18.305 54.5139 18.3638 54.4378C19.7295 52.5728 20.9469 50.6063 21.9907 48.5383C22.0523 48.4172 21.9935 48.2735 21.8676 48.2256C19.9366 47.4931 18.0979 46.6 16.3292 45.5858C16.1893 45.5041 16.1781 45.304 16.3068 45.2082C16.679 44.9293 17.0513 44.6391 17.4067 44.3461C17.4711 44.2926 17.5606 44.2813 17.6362 44.3151C29.2558 49.6217 41.8354 49.6217 53.3179 44.3151C53.3935 44.2785 53.483 44.2898 53.5502 44.3433C53.9057 44.6363 54.2779 44.9293 54.6529 45.2082C54.7816 45.304 54.7732 45.5041 54.6333 45.5858C52.8646 46.6197 51.0259 47.4931 49.0921 48.2228C48.9662 48.2707 48.9102 48.4172 48.9718 48.5383C50.038 50.6034 51.2554 52.5699 52.5959 54.435C52.6519 54.5139 52.7526 54.5477 52.845 54.5195C58.6464 52.7249 64.529 50.0174 70.6019 45.5576C70.6551 45.5182 70.6887 45.459 70.6943 45.3942C72.1747 30.0791 68.2147 16.7757 60.1968 4.9823C60.1772 4.9429 60.1437 4.9147 60.1045 4.8978ZM23.7259 37.3253C20.2276 37.3253 17.3451 34.1136 17.3451 30.1693C17.3451 26.225 20.1717 23.0133 23.7259 23.0133C27.308 23.0133 30.1626 26.2532 30.1066 30.1693C30.1066 34.1136 27.28 37.3253 23.7259 37.3253ZM47.3178 37.3253C43.8196 37.3253 40.9371 34.1136 40.9371 30.1693C40.9371 26.225 43.7636 23.0133 47.3178 23.0133C50.9 23.0133 53.7545 26.2532 53.6986 30.1693C53.6986 34.1136 50.9 37.3253 47.3178 37.3253Z"/></symbol>
+  <symbol id="i-gitlab" viewBox="0 0 24 24"><path d="m23.6004 9.5927-.0337-.0862L20.3.9814a.851.851 0 0 0-.3362-.405.8748.8748 0 0 0-.9997.0539.8748.8748 0 0 0-.29.4399l-2.2055 6.748H7.5375l-2.2057-6.748a.8573.8573 0 0 0-.29-.4412.8748.8748 0 0 0-.9997-.0537.8585.8585 0 0 0-.3362.4049L.4332 9.5015l-.0325.0862a6.0657 6.0657 0 0 0 2.0119 7.0105l.0113.0087.03.0213 4.976 3.7264 2.462 1.8633 1.4995 1.1321a1.0085 1.0085 0 0 0 1.2197 0l1.4995-1.1321 2.4619-1.8633 5.006-3.7489.0125-.01a6.0682 6.0682 0 0 0 2.0094-7.003z"/></symbol>
+  <symbol id="i-github" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></symbol>
+  <symbol id="i-bmc" viewBox="0 0 24 24"><path d="M20.216 6.415l-.132-.666c-.119-.598-.388-1.163-1.001-1.379-.197-.069-.42-.098-.57-.241-.152-.143-.196-.366-.231-.572-.065-.378-.125-.756-.192-1.133-.057-.325-.102-.69-.25-.987-.195-.4-.597-.634-.996-.788a5.723 5.723 0 00-.626-.194c-1-.263-2.05-.36-3.077-.416a25.834 25.834 0 00-3.7.062c-.915.083-1.88.184-2.75.5-.318.116-.646.256-.888.501-.297.302-.393.77-.177 1.146.154.267.415.456.692.58.36.162.737.284 1.123.366 1.075.238 2.189.331 3.287.37 1.218.05 2.437.01 3.65-.118.299-.033.598-.073.896-.119.352-.054.578-.513.474-.834-.124-.383-.457-.531-.834-.473-.466.074-.96.108-1.382.146-1.177.08-2.358.082-3.536.006a22.228 22.228 0 01-1.157-.107c-.086-.01-.18-.025-.258-.036-.243-.036-.484-.08-.724-.13-.111-.027-.111-.185 0-.212h.005c.277-.06.557-.108.838-.147h.002c.131-.009.263-.032.394-.048a25.076 25.076 0 013.426-.12c.674.019 1.347.067 2.017.144l.228.031c.267.04.533.088.798.145.392.085.895.113 1.07.542.055.137.08.288.111.431l.319 1.484a.237.237 0 01-.199.284h-.003c-.037.006-.075.01-.112.015a36.704 36.704 0 01-4.743.295 37.059 37.059 0 01-4.699-.304c-.14-.017-.293-.042-.417-.06-.326-.048-.649-.108-.973-.161-.393-.065-.768-.032-1.123.161-.29.16-.527.404-.675.701-.154.316-.199.66-.267 1-.069.34-.176.707-.135 1.056.087.753.613 1.365 1.37 1.502a39.69 39.69 0 0011.343.376.483.483 0 01.535.53l-.071.697-1.018 9.907c-.041.41-.047.832-.125 1.237-.122.637-.553 1.028-1.182 1.171-.577.131-1.165.2-1.756.205-.656.004-1.31-.025-1.966-.022-.699.004-1.556-.06-2.095-.58-.475-.458-.54-1.174-.605-1.793l-.731-7.013-.322-3.094c-.037-.351-.286-.695-.678-.678-.336.015-.718.3-.678.679l.228 2.185.949 9.112c.147 1.344 1.174 2.068 2.446 2.272.742.12 1.503.144 2.257.156.966.016 1.942.053 2.892-.122 1.408-.258 2.465-1.198 2.616-2.657.34-3.332.683-6.663 1.024-9.995l.215-2.087a.484.484 0 01.39-.426c.402-.078.787-.212 1.074-.518.455-.488.546-1.124.385-1.766zm-1.478.772c-.145.137-.363.201-.578.233-2.416.359-4.866.54-7.308.46-1.748-.06-3.477-.254-5.207-.498-.17-.024-.353-.055-.47-.18-.22-.236-.111-.71-.054-.995.052-.26.152-.609.463-.646.484-.057 1.046.148 1.526.22.577.088 1.156.159 1.737.212 2.48.226 5.002.19 7.472-.14.45-.06.899-.13 1.345-.21.399-.072.84-.206 1.08.206.166.281.188.657.162.974a.544.544 0 01-.169.364zm-6.159 3.9c-.862.37-1.84.788-3.109.788a5.884 5.884 0 01-1.569-.217l.877 9.004c.065.78.717 1.38 1.5 1.38 0 0 1.243.065 1.658.065.447 0 1.786-.065 1.786-.065.783 0 1.434-.6 1.499-1.38l.94-9.95a3.996 3.996 0 00-1.322-.238c-.826 0-1.491.284-2.26.613z"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.2" y="4.8" width="17.6" height="16" rx="2.4"/><path d="M3.2 9.6h17.6M8.4 3.2v3.2M15.6 3.2v3.2"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10.2 13.8a3.6 3.6 0 0 0 5.4.4l2.6-2.6a3.6 3.6 0 0 0-5.1-5.1l-1.5 1.5"/><path d="M13.8 10.2a3.6 3.6 0 0 0-5.4-.4l-2.6 2.6a3.6 3.6 0 0 0 5.1 5.1l1.5-1.5"/></symbol>
+  <symbol id="i-timer" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.4" r="7.6"/><path d="M12 9.4v4l2.6 1.6M9.4 2.6h5.2"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21.4c3.4 0 6-2.4 6-5.6 0-4-4.2-5.6-3.4-10.4-2 .6-3.6 2.6-3.6 4.8 0 1-.6 1.8-1.4 1.8-.9 0-1.4-.8-1.3-1.9C7 11.4 6 13.2 6 15.8c0 3.2 2.6 5.6 6 5.6z"/></symbol>
+  <symbol id="i-gauge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.2 17.4a8.6 8.6 0 1 1 15.6 0"/><path d="M12 14.6l3.8-3.8"/><circle cx="12" cy="16.2" r="1.4"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.6v11.2M8.4 7.2L12 3.6l3.6 3.6"/><path d="M5.4 13.2v5.4a1.8 1.8 0 0 0 1.8 1.8h9.6a1.8 1.8 0 0 0 1.8-1.8v-5.4"/></symbol>
+  <symbol id="i-import" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.6v11.2M8.4 11.2l3.6 3.6 3.6-3.6"/><path d="M5.4 15.6v3a1.8 1.8 0 0 0 1.8 1.8h9.6a1.8 1.8 0 0 0 1.8-1.8v-3"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.6"/><path d="M3.4 12h17.2"/><path d="M12 3.4c2.2 2.4 3.4 5.4 3.4 8.6s-1.2 6.2-3.4 8.6c-2.2-2.4-3.4-5.4-3.4-8.6S9.8 5.8 12 3.4z"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.6" cy="14.4" r="3.8"/><path d="M10.4 11.6l7.4-7.4M15.2 6.8l2.2 2.2M17.8 4.2l2.2 2.2"/></symbol>
+  <symbol id="i-palette" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.4a8.6 8.6 0 0 0 0 17.2c1 0 1.8-.8 1.8-1.8 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-1 .8-1.8 1.8-1.8h2.1a4 4 0 0 0 3.9-4c0-3.9-3.9-7.2-8.6-7.2z"/><circle cx="7.6" cy="11.6" r="1"/><circle cx="10.6" cy="7.4" r="1"/><circle cx="15.4" cy="8.4" r="1"/></symbol>
+  <symbol id="i-sparkle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2l1.9 4.9 4.9 1.9-4.9 1.9L12 16.8l-1.9-4.9-4.9-1.9 4.9-1.9z"/><path d="M18.6 15.4l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></symbol>
+  <symbol id="i-archive" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.2" y="4.4" width="17.6" height="4.4" rx="1.6"/><path d="M5 8.8v9.2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.8"/><path d="M9.8 12.6h4.4"/></symbol>
+</defs></svg>
 
 <nav><div class="wrap nav-in">
   <a class="brand" href="/">
-    <img src="icon-180.png" alt="" width="26" height="26" style="border-radius:6px">
+    <img src="icon-180.png" alt="" width="24" height="24">
     openGym
   </a>
-  <div class="nav-links">
-    <a href="#features" class="hide-s">Features</a>
-    <a href="#screens" class="hide-s">Screenshots</a>
-    <a href="#demo" class="hide-s">Demo</a>
-    <a href="docs.html">Docs</a>
-    <a href="about.html" class="hide-s">About</a>
-    <a href="https://gitea.com/DuarteSantos/openGym" rel="noopener"><span data-gh="stars">Gitea</span></a>
-    <a href="https://discord.gg/e62jY6fwVb" rel="noopener">Discord</a>
-    <a class="cta" href="#download">Download</a>
+  <div class="nav-quick">
+    <a class="ql site" href="/#features">Features</a>
+    <a class="ql site" href="/#screens">Screenshots</a>
+    <a class="ql site" href="/#demo">Demo</a>
+    <a class="ql site" href="/docs.html">Docs</a>
+    <a class="ql site" href="/api.html">API</a>
+    <a class="ql site" href="/about.html">About</a>
+    <a class="ql" href="https://github.com/DuarteSantos8/openGym" rel="noopener">GitHub <span data-gh="stars"></span></a>
+    <a class="ql" href="https://discord.gg/e62jY6fwVb" rel="noopener">Discord <span data-dc="members"></span></a>
+    <a class="ql coffee" href="https://buymeacoffee.com/duartesantos" rel="noopener" aria-label="Buy me a coffee"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.216 6.415l-.132-.666c-.119-.598-.388-1.163-1.001-1.379-.197-.069-.42-.098-.57-.241-.152-.143-.196-.366-.231-.572-.065-.378-.125-.756-.192-1.133-.057-.325-.102-.69-.25-.987-.195-.4-.597-.634-.996-.788a5.723 5.723 0 00-.626-.194c-1-.263-2.05-.36-3.077-.416a25.834 25.834 0 00-3.7.062c-.915.083-1.88.184-2.75.5-.318.116-.646.256-.888.501-.297.302-.393.77-.177 1.146.154.267.415.456.692.58.36.162.737.284 1.123.366 1.075.238 2.189.331 3.287.37 1.218.05 2.437.01 3.65-.118.299-.033.598-.073.896-.119.352-.054.578-.513.474-.834-.124-.383-.457-.531-.834-.473-.466.074-.96.108-1.382.146-1.177.08-2.358.082-3.536.006a22.228 22.228 0 01-1.157-.107c-.086-.01-.18-.025-.258-.036-.243-.036-.484-.08-.724-.13-.111-.027-.111-.185 0-.212h.005c.277-.06.557-.108.838-.147h.002c.131-.009.263-.032.394-.048a25.076 25.076 0 013.426-.12c.674.019 1.347.067 2.017.144l.228.031c.267.04.533.088.798.145.392.085.895.113 1.07.542.055.137.08.288.111.431l.319 1.484a.237.237 0 01-.199.284h-.003c-.037.006-.075.01-.112.015a36.704 36.704 0 01-4.743.295 37.059 37.059 0 01-4.699-.304c-.14-.017-.293-.042-.417-.06-.326-.048-.649-.108-.973-.161-.393-.065-.768-.032-1.123.161-.29.16-.527.404-.675.701-.154.316-.199.66-.267 1-.069.34-.176.707-.135 1.056.087.753.613 1.365 1.37 1.502a39.69 39.69 0 0011.343.376.483.483 0 01.535.53l-.071.697-1.018 9.907c-.041.41-.047.832-.125 1.237-.122.637-.553 1.028-1.182 1.171-.577.131-1.165.2-1.756.205-.656.004-1.31-.025-1.966-.022-.699.004-1.556-.06-2.095-.58-.475-.458-.54-1.174-.605-1.793l-.731-7.013-.322-3.094c-.037-.351-.286-.695-.678-.678-.336.015-.718.3-.678.679l.228 2.185.949 9.112c.147 1.344 1.174 2.068 2.446 2.272.742.12 1.503.144 2.257.156.966.016 1.942.053 2.892-.122 1.408-.258 2.465-1.198 2.616-2.657.34-3.332.683-6.663 1.024-9.995l.215-2.087a.484.484 0 01.39-.426c.402-.078.787-.212 1.074-.518.455-.488.546-1.124.385-1.766zm-1.478.772c-.145.137-.363.201-.578.233-2.416.359-4.866.54-7.308.46-1.748-.06-3.477-.254-5.207-.498-.17-.024-.353-.055-.47-.18-.22-.236-.111-.71-.054-.995.052-.26.152-.609.463-.646.484-.057 1.046.148 1.526.22.577.088 1.156.159 1.737.212 2.48.226 5.002.19 7.472-.14.45-.06.899-.13 1.345-.21.399-.072.84-.206 1.08.206.166.281.188.657.162.974a.544.544 0 01-.169.364zm-6.159 3.9c-.862.37-1.84.788-3.109.788a5.884 5.884 0 01-1.569-.217l.877 9.004c.065.78.717 1.38 1.5 1.38 0 0 1.243.065 1.658.065.447 0 1.786-.065 1.786-.065.783 0 1.434-.6 1.499-1.38l.94-9.95a3.996 3.996 0 00-1.322-.238c-.826 0-1.491.284-2.26.613z"/></svg><span>Buy me a coffee!</span></a>
+    <a class="cta" href="/#download">Download</a>
   </div>
+  <button class="nav-toggle" id="navtoggle" aria-expanded="false" aria-controls="sitemenu" aria-label="Menu">
+    <span></span><span></span>
+  </button>
 </div></nav>
 
-<!-- TEMPORARY: GitHub account suspended -> repo lives on gitea.com. Remove this block and
-     revert the links (+ site.js) to github.com once the account is restored. -->
-<div class="alert" role="alert"><div class="wrap">
-  <div class="alert-tag">⚠️ Important notice</div>
-  <h2>My GitHub account has been suspended — the openGym repo is gone with it</h2>
-  <p><b>github.com/DuarteSantos8/openGym is offline.</b> The repository, the releases and the
-     GitHub-Pages demo are all unreachable — not by choice. openGym itself is unaffected:
-     the app, the APK on this page and every self-hosted install keep working exactly as before.</p>
-  <p>Until I get the account back, the code lives here — and the Discord is where I will announce
-     the moment it is resolved:</p>
-  <div class="alert-actions">
-    <a class="btn alert-btn" href="https://gitea.com/DuarteSantos/openGym" rel="noopener">gitea.com/DuarteSantos/openGym</a>
-    <a class="btn dc-btn" href="https://discord.gg/e62jY6fwVb" rel="noopener">Join the Discord</a>
+<!-- The navigation sheet: the header's links again, for the widths where the bar has
+     room only for the brand and the download. Byte-identical on every page, like the
+     bar above it — nothing is ever dropped because of which page you are on. -->
+<div class="navsheet" id="sitemenu" role="navigation" aria-label="Site" aria-hidden="true">
+  <div class="nl-rows">
+    <a class="nl" href="/#features">Features</a>
+    <a class="nl" href="/#screens">Screenshots</a>
+    <a class="nl" href="/#demo">Demo</a>
+    <a class="nl" href="/docs.html">Docs</a>
+    <a class="nl" href="/api.html">API</a>
+    <a class="nl" href="/about.html">About</a>
+    <a class="nl" href="https://github.com/DuarteSantos8/openGym" rel="noopener">GitHub <span data-gh="stars"></span></a>
+    <a class="nl" href="https://discord.gg/e62jY6fwVb" rel="noopener">Discord <span data-dc="members"></span></a>
+    <a class="nl coffee" href="https://buymeacoffee.com/duartesantos" rel="noopener">Buy me a coffee! <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.216 6.415l-.132-.666c-.119-.598-.388-1.163-1.001-1.379-.197-.069-.42-.098-.57-.241-.152-.143-.196-.366-.231-.572-.065-.378-.125-.756-.192-1.133-.057-.325-.102-.69-.25-.987-.195-.4-.597-.634-.996-.788a5.723 5.723 0 00-.626-.194c-1-.263-2.05-.36-3.077-.416a25.834 25.834 0 00-3.7.062c-.915.083-1.88.184-2.75.5-.318.116-.646.256-.888.501-.297.302-.393.77-.177 1.146.154.267.415.456.692.58.36.162.737.284 1.123.366 1.075.238 2.189.331 3.287.37 1.218.05 2.437.01 3.65-.118.299-.033.598-.073.896-.119.352-.054.578-.513.474-.834-.124-.383-.457-.531-.834-.473-.466.074-.96.108-1.382.146-1.177.08-2.358.082-3.536.006a22.228 22.228 0 01-1.157-.107c-.086-.01-.18-.025-.258-.036-.243-.036-.484-.08-.724-.13-.111-.027-.111-.185 0-.212h.005c.277-.06.557-.108.838-.147h.002c.131-.009.263-.032.394-.048a25.076 25.076 0 013.426-.12c.674.019 1.347.067 2.017.144l.228.031c.267.04.533.088.798.145.392.085.895.113 1.07.542.055.137.08.288.111.431l.319 1.484a.237.237 0 01-.199.284h-.003c-.037.006-.075.01-.112.015a36.704 36.704 0 01-4.743.295 37.059 37.059 0 01-4.699-.304c-.14-.017-.293-.042-.417-.06-.326-.048-.649-.108-.973-.161-.393-.065-.768-.032-1.123.161-.29.16-.527.404-.675.701-.154.316-.199.66-.267 1-.069.34-.176.707-.135 1.056.087.753.613 1.365 1.37 1.502a39.69 39.69 0 0011.343.376.483.483 0 01.535.53l-.071.697-1.018 9.907c-.041.41-.047.832-.125 1.237-.122.637-.553 1.028-1.182 1.171-.577.131-1.165.2-1.756.205-.656.004-1.31-.025-1.966-.022-.699.004-1.556-.06-2.095-.58-.475-.458-.54-1.174-.605-1.793l-.731-7.013-.322-3.094c-.037-.351-.286-.695-.678-.678-.336.015-.718.3-.678.679l.228 2.185.949 9.112c.147 1.344 1.174 2.068 2.446 2.272.742.12 1.503.144 2.257.156.966.016 1.942.053 2.892-.122 1.408-.258 2.465-1.198 2.616-2.657.34-3.332.683-6.663 1.024-9.995l.215-2.087a.484.484 0 01.39-.426c.402-.078.787-.212 1.074-.518.455-.488.546-1.124.385-1.766zm-1.478.772c-.145.137-.363.201-.578.233-2.416.359-4.866.54-7.308.46-1.748-.06-3.477-.254-5.207-.498-.17-.024-.353-.055-.47-.18-.22-.236-.111-.71-.054-.995.052-.26.152-.609.463-.646.484-.057 1.046.148 1.526.22.577.088 1.156.159 1.737.212 2.48.226 5.002.19 7.472-.14.45-.06.899-.13 1.345-.21.399-.072.84-.206 1.08.206.166.281.188.657.162.974a.544.544 0 01-.169.364zm-6.159 3.9c-.862.37-1.84.788-3.109.788a5.884 5.884 0 01-1.569-.217l.877 9.004c.065.78.717 1.38 1.5 1.38 0 0 1.243.065 1.658.065.447 0 1.786-.065 1.786-.065.783 0 1.434-.6 1.499-1.38l.94-9.95a3.996 3.996 0 00-1.322-.238c-.826 0-1.491.284-2.26.613z"/></svg></a>
   </div>
-  <p class="alert-note">Every repository link on this site now points at that mirror — same code,
-     same AGPL-3.0 license, same history.</p>
-</div></div>
+</div>
 
+<!-- The one control that opens the contents, at every width. The drawer it opens is
+     closed in CSS, so it is shut on first paint whether or not the script runs. -->
+<button class="toc-btn" id="tocbtn" aria-expanded="false" aria-controls="menu">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M4 6.5h16M4 12h16M4 17.5h10"/></svg>
+  Contents
+</button>
 
-<header class="hero"><div class="wrap">
-  <div class="logo">
-    <img src="icon-512.png" alt="openGym icon" width="108" height="108" style="border-radius:26px">
+<!-- The contents drawer: one list, one way in, one way out. Closed by default at
+     every width, and no preference is remembered — see .side in styles.css. -->
+<aside class="side" id="menu" aria-label="Contents" aria-hidden="true">
+  <div class="side-top">
+    <p class="side-title">Contents</p>
+    <button class="rail-close" aria-label="Close contents"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
   </div>
-  <h1>openGym</h1>
-  <p class="tag">Your workouts. Your weights. Your data.</p>
-  <p class="sub">A free, open-source gym &amp; body-weight tracker.
-     No subscription, no account required, no telemetry — ever.</p>
-  <div class="hero-btns">
-    <a class="btn" href="#download">Get openGym</a>
-    <a class="btn ghost" href="#demo">Try the live demo</a>
-    <a class="btn ghost" href="https://gitea.com/DuarteSantos/openGym" rel="noopener">Gitea <span class="ct" data-gh="stars">★</span></a>
-  </div>
-</div></header>
+  <p class="side-label">On this page</p>
+  <a class="side-link" href="#features"><b>Features</b><span>Built on the gym floor</span></a>
+  <a class="side-link" href="#screens"><b>Screenshots</b><span>Five screens, that's the app</span></a>
+  <a class="side-link" href="#demo"><b>Live demo</b><span>The real app, in your browser</span></a>
+  <a class="side-link" href="#download"><b>Download</b><span>Android APK or self-hosted</span></a>
+  <a class="side-link" href="#story"><b>The story</b><span>One user, zero ambitions</span></a>
+  <a class="side-link" href="#opensource"><b>Open source</b><span>AGPL-3.0, and staying that way</span></a>
+  <a class="side-link" href="#elsewhere"><b>Elsewhere</b><span>GitHub, Discord, support</span></a>
+  <p class="side-label">More</p>
+  <a class="side-link" href="docs.html"><b>Docs</b><span>Install, self-host, import</span></a>
+  <a class="side-link" href="api.html"><b>API</b><span>Every route, as an OpenAPI spec</span></a>
+  <a class="side-link" href="about.html"><b>About</b><span>The story and the milestones</span></a>
+</aside>
 
-<div class="dc-wrap"><div class="wrap">
-  <div class="dc">
-    <div class="dc-icon"><svg viewBox="0 0 71 55" width="44" height="34" aria-hidden="true"><path d="M60.1045 4.8978C55.5792 2.8214 50.7265 1.2916 45.6527 0.41542C45.5603 0.39851 45.468 0.440769 45.4204 0.525289C44.7963 1.6353 44.105 3.0834 43.6209 4.2216C38.1637 3.4046 32.7345 3.4046 27.3892 4.2216C26.905 3.0581 26.1886 1.6353 25.5617 0.525289C25.5141 0.443589 25.4218 0.40133 25.3294 0.41542C20.2584 1.2888 15.4057 2.8186 10.8776 4.8978C10.8384 4.9147 10.8048 4.9429 10.7825 4.9795C1.57795 18.7309 -0.943561 32.1443 0.293408 45.3914C0.299005 45.4562 0.335386 45.5182 0.385761 45.5576C6.45866 50.0174 12.3413 52.7249 18.1147 54.5195C18.2071 54.5477 18.305 54.5139 18.3638 54.4378C19.7295 52.5728 20.9469 50.6063 21.9907 48.5383C22.0523 48.4172 21.9935 48.2735 21.8676 48.2256C19.9366 47.4931 18.0979 46.6 16.3292 45.5858C16.1893 45.5041 16.1781 45.304 16.3068 45.2082C16.679 44.9293 17.0513 44.6391 17.4067 44.3461C17.4711 44.2926 17.5606 44.2813 17.6362 44.3151C29.2558 49.6217 41.8354 49.6217 53.3179 44.3151C53.3935 44.2785 53.483 44.2898 53.5502 44.3433C53.9057 44.6363 54.2779 44.9293 54.6529 45.2082C54.7816 45.304 54.7732 45.5041 54.6333 45.5858C52.8646 46.6197 51.0259 47.4931 49.0921 48.2228C48.9662 48.2707 48.9102 48.4172 48.9718 48.5383C50.038 50.6034 51.2554 52.5699 52.5959 54.435C52.6519 54.5139 52.7526 54.5477 52.845 54.5195C58.6464 52.7249 64.529 50.0174 70.6019 45.5576C70.6551 45.5182 70.6887 45.459 70.6943 45.3942C72.1747 30.0791 68.2147 16.7757 60.1968 4.9823C60.1772 4.9429 60.1437 4.9147 60.1045 4.8978ZM23.7259 37.3253C20.2276 37.3253 17.3451 34.1136 17.3451 30.1693C17.3451 26.225 20.1717 23.0133 23.7259 23.0133C27.308 23.0133 30.1626 26.2532 30.1066 30.1693C30.1066 34.1136 27.28 37.3253 23.7259 37.3253ZM47.3178 37.3253C43.8196 37.3253 40.9371 34.1136 40.9371 30.1693C40.9371 26.225 43.7636 23.0133 47.3178 23.0133C50.9 23.0133 53.7545 26.2532 53.6986 30.1693C53.6986 34.1136 50.9 37.3253 47.3178 37.3253Z"/></svg></div>
-    <div class="dc-body">
-      <h3>Join the openGym Discord</h3>
-      <p>Release announcements, self-hosting help with Docker, reverse proxies and passkeys,
-         and somewhere to report a bug. It is where you will hear about a new version first.</p>
-    </div>
-    <a class="btn" href="https://discord.gg/e62jY6fwVb" rel="noopener">Join the Discord</a>
-  </div>
-</div></div>
-
-<section id="features"><div class="wrap">
-  <p class="kicker">Everything a training log needs</p>
-  <h2>Built in the gym, not in a boardroom</h2>
-  <p class="lead">Every feature exists because it was needed on the gym floor — nothing is
-     there to sell you anything.</p>
-  <div class="grid">
-    <div class="feat"><div class="ic">▶️</div><h3>Guided workouts</h3><p>Knows what day it is, starts today's session, pre-fills your weights from last time, times your rest, spots PRs.</p></div>
-    <div class="feat"><div class="ic">🏋️</div><h3>1,324 exercises</h3><p>Searchable library with animated demos, filterable by body part and the equipment you actually own — plus your own custom exercises.</p></div>
-    <div class="feat"><div class="ic">🗓️</div><h3>Weekly plan</h3><p>A routine per weekday, and any day can be rescheduled when life happens — without touching the plan.</p></div>
-    <div class="feat"><div class="ic">⚖️</div><h3>Body weight &amp; goal</h3><p>Interactive chart with your goal line; every change is colored by whether it moves toward it.</p></div>
-    <div class="feat"><div class="ic">💪</div><h3>Muscle map, three ways</h3><p>A body diagram read as <b>balance</b> (where the volume went, and which muscles got nothing), <b>fatigue</b> (what is still recovering, weighted by how hard each set was) or <b>strength</b> (how long since you trained it — and the exercises behind it, with their estimated 1RM).</p></div>
-    <div class="feat"><div class="ic">🟩</div><h3>Activity heatmap</h3><p>A GitHub-style year view of your training time. Streaks included.</p></div>
-    <div class="feat"><div class="ic">📈</div><h3>Progression that follows a rule</h3><p>Linear, Greyskull LP, double progression or added time — per routine, overridable per exercise. Your weights are already right when the session opens, and every target tells you why.</p></div>
-    <div class="feat"><div class="ic">⏱️</div><h3>Timed sets</h3><p>Planks, hangs and carries are logged by time, with a timer for the set itself. Stop early and it logs what you actually held.</p></div>
-    <div class="feat"><div class="ic">🧮</div><h3>Estimated 1RM</h3><p>Per exercise, from your best eligible set — and it names which one. Won't guess above 12 reps.</p></div>
-    <div class="feat"><div class="ic">🔗</div><h3>Supersets &amp; cardio</h3><p>Plan them, or pair two exercises mid-session and unpair them again. Work the group back-to-back with one rest per round — and log time + speed where weight × reps makes no sense.</p></div>
-    <div class="feat"><div class="ic">📤</div><h3>Share a plan</h3><p>Send someone your routines as a small file — no workouts, no weigh-ins — or print it as a clean PDF. Importing merges, never overwrites.</p></div>
-    <div class="feat"><div class="ic">🎯</div><h3>Effort per set</h3><p>Rate a set as RIR or RPE — whichever scale you already think in. Optional, and every set keeps the scale it was logged with.</p></div>
-    <div class="feat"><div class="ic">☀️</div><h3>Screen stays awake</h3><p>No unlocking the phone between sets. The screen stays lit while a workout runs, and lets go the moment you finish.</p></div>
-    <div class="feat"><div class="ic">📥</div><h3>Bring your history</h3><p>Import from FitNotes, Strong, Hevy — including the RPE they recorded — or body weight straight out of an Apple Health export.</p></div>
-    <div class="feat"><div class="ic">🌍</div><h3>12 languages</h3><p>Full UI translation, exercise instructions in 10 languages, loaded on demand.</p></div>
-    <div class="feat"><div class="ic">🔑</div><h3>Passkeys, not passwords</h3><p>Self-hosted profiles sign in with Face ID / fingerprint. Each person's data stays their own.</p></div>
-    <div class="feat"><div class="ic">🎨</div><h3>Designed, not assembled</h3><p>Light &amp; dark themes, 8 accent colors, a hand-drawn icon set. Looks the same on every phone.</p></div>
-    <div class="feat"><div class="ic">🔥</div><h3>Warm-up sets</h3><p>Mark the ramp-up rows as warm-ups and they stay out of your 1RM, your progression and the fatigue map — present in the session, absent from the numbers.</p></div>
-    <div class="feat"><div class="ic">🤖</div><h3>Ask an AI about your training</h3><p>An optional MCP server lets a client like Claude Desktop read your history in your own words — <i>"what did I bench last week?"</i>. Read-only, runs on your machine, not in the Docker build.</p></div>
-    <div class="feat"><div class="ic">📦</div><h3>Yours to keep</h3><p>One-tap JSON export and import. Your training log is a file you own, not a row in someone's cloud.</p></div>
-  </div>
-</div></section>
-
-<section id="screens"><div class="wrap">
-  <p class="kicker">Screenshots</p>
-  <h2>Five screens, zero clutter</h2>
-  <div class="shots">
-    <figure><img src="img/home.png" alt="openGym home screen with weekly overview and body-weight chart" loading="lazy" width="1170" height="2532"><figcaption>Home</figcaption></figure>
-    <figure><img src="img/workout.png" alt="Guided workout screen with sets, rest timer and pre-filled weights" loading="lazy" width="1170" height="2532"><figcaption>Workout</figcaption></figure>
-    <figure><img src="img/stats.png" alt="Stats screen with activity heatmap and charts" loading="lazy" width="1170" height="2532"><figcaption>Stats</figcaption></figure>
-    <figure><img src="img/plan.png" alt="Weekly plan screen with routines per weekday" loading="lazy" width="1170" height="2532"><figcaption>Plan</figcaption></figure>
-    <figure><img src="img/library.png" alt="Exercise library with search and filters" loading="lazy" width="1170" height="2532"><figcaption>Library</figcaption></figure>
-  </div>
-</div></section>
-
-<section id="demo"><div class="wrap">
-  <p class="kicker">Live demo</p>
-  <h2>Temporarily offline</h2>
-  <p class="lead">The in-browser demo ran on GitHub Pages, which went down with my suspended
-     GitHub account. It comes straight back once the account is restored.</p>
-  <div class="offline">
-    <span class="big">🚧</span>
-    <p><b>Want to try openGym in the meantime?</b> Install the Android app below — it needs no
-       account and no server — or run the self-hosted version with one <code>docker compose up</code>.</p>
-    <div class="hero-btns" style="margin-top:18px">
+<main id="main">
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">openGym</p>
+    <h1>Your workouts.<br>Your weights.<br><span>Your data.</span></h1>
+    <p class="lead">A free, open-source gym and body-weight tracker. No subscription, no
+       account required, and no telemetry — not now, not later.</p>
+    <div class="actions">
       <a class="btn" href="#download">Get openGym</a>
-      <a class="btn ghost" href="https://gitea.com/DuarteSantos/openGym" rel="noopener">Browse the code on Gitea</a>
+      <a class="link" href="#demo">Try the live demo</a>
     </div>
   </div>
-</div></section>
-
-<section id="download"><div class="wrap">
-  <p class="kicker">Get openGym</p>
-  <h2>One app, two flavors</h2>
-  <p class="lead">Same codebase, your choice of where the data lives: entirely on your phone,
-     or on a server you control.</p>
-  <div class="duo">
-    <div class="card hl">
-      <h3>📱 Mobile app</h3>
-      <p class="for">For anyone — install and you're done.</p>
-      <ul>
-        <li>Everything stays on your phone</li>
-        <li>No account, no server, no setup</li>
-        <li>Native workout-day reminders</li>
-        <li>Backups via the share sheet</li>
-        <li class="no">No cross-device sync</li>
-      </ul>
-      <a class="btn" href="openGym.apk" download>Download for Android</a>
-      <p class="meta">v1.2.8 · 4.3 MB · Android 6.0+ · signed APK, sideload (your browser will ask — that's normal outside the Play Store)</p>
-      <p class="meta"><b>iPhone?</b> Apple doesn't allow installs outside the App Store — use the
-         self-hosted version as a home-screen app instead, or see <a href="docs.html#iphone">the docs</a>.</p>
-    </div>
-    <div class="card">
-      <h3>🖥️ Self-hosted</h3>
-      <p class="for">For homelabbers — and their friends &amp; family.</p>
-      <ul>
-        <li>Sync across all your devices</li>
-        <li>Passkey profiles for multiple people</li>
-        <li>Your data readable on the desktop</li>
-        <li>Works as a home-screen app on iPhone &amp; Android</li>
-        <li>One <code>docker compose up</code></li>
-      </ul>
-      <a class="btn ghost" href="docs.html#selfhost">Self-hosting guide</a>
-      <p class="meta">AGPL-3.0 · prebuilt images for amd64 + arm64</p>
+  <div class="hero-stage">
+    <div class="device">
+      <picture>
+        <source type="image/webp" srcset="img/home-480.webp 480w, img/home-600.webp 600w, img/home-1170.webp 1170w" sizes="(max-width: 700px) 62vw, 300px">
+        <img src="img/home.png" alt="openGym home screen: the week at a glance, today's session and a body-weight chart"
+             width="1170" height="2532" fetchpriority="high" decoding="async">
+      </picture>
     </div>
   </div>
-</div></section>
+  <div class="hero-fade"></div>
+</header>
 
-<section id="story"><div class="wrap">
-  <div class="story">
-    <p class="kicker">Why openGym exists</p>
-    <blockquote>openGym started as <strong>a tiny app I built for myself</strong> — I just wanted to
-      log my workouts and weight without a subscription app claiming my training data.
-      Then friends wanted in, then it grew a mind of its own.</blockquote>
-    <p class="who">— Duarte Santos · <a href="about.html">read the whole story →</a></p>
-  </div>
-</div></section>
+<section id="features">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <p class="eyebrow">Features</p>
+      <h2>Built on the gym floor.</h2>
+      <p class="lead">Every feature here exists because something was awkward between two sets.
+         Nothing is here to sell you anything.</p>
+    </div>
 
-<section id="opensource"><div class="wrap">
-  <p class="kicker">Open source</p>
-  <h2>AGPL-licensed, forever</h2>
-  <p class="lead">The code is public, the license keeps every fork open, and there is no
-     commercial version waiting behind a curtain. If openGym is useful to you,
-     a ⭐ on Gitea helps more people find it.</p>
-  <p class="lead">There is a Discord for release announcements, self-hosting help and bug
-     reports. It is the fastest way to hear about a new version — and the fastest way
-     to get unstuck if a reverse proxy or a passkey is fighting you.</p>
-  <div class="os">
-    <div class="stat"><b data-gh="stars-n">–</b><span>Gitea stars</span></div>
-    <div class="stat"><b data-gh="forks-n">–</b><span>forks</span></div>
-    <div class="stat"><b data-gh="issues-n">–</b><span>open issues</span></div>
-    <div class="stat"><b>1,324</b><span>exercises</span></div>
-    <div class="stat"><b>12</b><span>languages</span></div>
+    <div class="bento">
+      <div class="tile wide rv">
+        <div class="ic"><svg><use href="#i-play"/></svg></div>
+        <h3>Guided workouts</h3>
+        <p>It already knows what day it is. Today's session opens with your weights from last
+           time filled in, rest timed between sets, and a PR called out the moment you beat one.</p>
+      </div>
+      <div class="tile wide rv">
+        <div class="ic"><svg><use href="#i-trend"/></svg></div>
+        <h3>Progression that follows a rule</h3>
+        <p>Linear, Greyskull LP, double progression or added time, set per routine and
+           overridable per exercise. The targets are right when the session opens, and each
+           one tells you where it came from.</p>
+      </div>
+
+      <div class="tile full rv">
+        <div class="ic"><svg><use href="#i-sparkle"/></svg></div>
+        <h3>An AI coach, if you want one</h3>
+        <p>Optional, off by default, and it runs on whatever AI you bring — an Anthropic, OpenAI
+           or Gemini key, any OpenAI-compatible endpoint such as Ollama on your own network, or a
+           Claude Code / Codex runtime in the container. Nothing it proposes is applied on its
+           own; every change carries its reason and can be undone.</p>
+        <div class="trio">
+          <div><b>Plan</b>A week of routines from a few questions: goal, days, session length, equipment, limits.</div>
+          <div><b>Review</b>Reads what you actually logged — stalls, effort, body weight — and proposes changes with the evidence.</div>
+          <div><b>Private</b>An allowlist under an opaque handle leaves your server. Keys stay encrypted; admins see counts, never questions.</div>
+        </div>
+      </div>
+
+      <div class="tile full rv">
+        <div class="ic"><svg><use href="#i-body"/></svg></div>
+        <h3>A muscle map that reads three ways</h3>
+        <p>The same body diagram, three questions.</p>
+        <div class="trio">
+          <div><b>Balance</b>Where the volume actually went, and which muscles got nothing.</div>
+          <div><b>Fatigue</b>What is still recovering, weighted by how hard each set was.</div>
+          <div><b>Strength</b>How long since you trained it, and the lifts behind it with their estimated 1RM.</div>
+        </div>
+      </div>
+
+      <div class="tile rv">
+        <div class="ic"><svg><use href="#i-library"/></svg></div>
+        <h3>1,324 exercises</h3>
+        <p>Animated demos, searchable, filtered by body part and by the equipment you actually
+           own. Add your own and they behave like the rest.</p>
+      </div>
+      <div class="tile rv">
+        <div class="ic"><svg><use href="#i-scale"/></svg></div>
+        <h3>Body weight, with a goal line</h3>
+        <p>An interactive chart with your target drawn across it. Every change is coloured by
+           whether it moved you toward it.</p>
+      </div>
+      <div class="tile rv">
+        <div class="ic"><svg><use href="#i-grid"/></svg></div>
+        <h3>A year of training, at a glance</h3>
+        <p>Every session as a square in a heatmap, shaded by how long you trained. Streaks
+           counted, quiet weeks impossible to miss.</p>
+      </div>
+    </div>
+
+    <div class="more rv">
+      <h3>And the rest of it</h3>
+      <p class="more-hint">Sixteen more things it does.</p>
+    </div>
   </div>
-  <div class="hero-btns" style="justify-content:flex-start;margin-top:24px">
-    <a class="btn ghost" href="https://gitea.com/DuarteSantos/openGym" rel="noopener">openGym on Gitea</a>
-    <a class="btn ghost" href="https://gitea.com/DuarteSantos/openGym/src/branch/main/CONTRIBUTING.md" rel="noopener">Contributing</a>
-    <a class="btn ghost" href="https://gitea.com/DuarteSantos/openGym/src/branch/main/CHANGELOG.md" rel="noopener">Changelog</a>
-    <a class="btn" href="https://discord.gg/e62jY6fwVb" rel="noopener">Join the Discord</a>
+
+  <!-- A rail rather than a wall of text: this is the "and also" list, so it should be
+       skimmable and skippable. Each card opens the full paragraph in a dialog, and a few
+       carry a link into the docs. Without JS the cards are plain, fully readable blocks. -->
+  <div class="bleed rv">
+    <div class="rail frail">
+      <article class="fcard">
+        <span class="fcard-ic"><svg aria-hidden="true"><use href="#i-calendar"/></svg></span>
+        <b class="fcard-t">Weekly plan</b>
+        <span class="fcard-b">A routine per weekday. Any single day can be moved when life happens, without editing the plan itself.</span>
+      </article>
+      <article class="fcard">
+        <span class="fcard-ic"><svg aria-hidden="true"><use href="#i-grid"/></svg></span>
+        <b class="fcard-t">Weeks start where you say</b>
+        <span class="fcard-b">Monday or Sunday. The plan, the day strip, the calendar and every “this week” total move with it, so the app reads like the calendar you already use.</span>
+      </article>
+      <article class="fcard">
+        <span class="fcard-ic"><svg aria-hidden="true"><use href="#i-link"/></svg></span>
+        <b class="fcard-t">Supersets and cardio</b>
+        <span class="fcard-b">Plan them, or pair two exercises mid-session and unpair them again. One rest per round, and time-plus-speed logging where weight times reps says nothing.</span>
+      </article>
+      <article class="fcard">
+        <span class="fcard-ic"><svg aria-hidden="true"><use href="#i-timer"/></svg></span>
+        <b class="fcard-t">Timed sets</b>
+        <span class="fcard-b">Planks, hangs and carries are logged by time, with a timer for the set itself. Stop early and it records what you actually held.</span>
+      </article>
+      <article class="fcard">
+        <span class="fcard-ic"><svg aria-hidden="true"><use href="#i-flame"/></svg></span>
+        <b class="fcard-t">Warm-up sets</b>
+        <span class="fcard-b">Mark the ramp-up rows and they stay out of your 1RM, your progression and the fatigue map. Present in the session, absent from the numbers.</span>
+      </article>
+      <article class="fcard">
+        <span class="fcard-ic"><svg aria-hidden="true"><use href="#i-scale"/></svg></span>
+        <b class="fcard-t">Plate math</b>
+        <span class="fcard-b">Barbell work shows what goes on each side — <i>Bar 20 kg · 30 kg per side</i> — from the bar weight for that exercise. You still log the total.</span>
+      </article>
+      <article class="fcard">
+        <span class="fcard-ic"><svg aria-hidden="true"><use href="#i-trend"/></svg></span>
+        <b class="fcard-t">Estimated 1RM</b>
+        <span class="fcard-b">Per exercise, from your best eligible set, naming which set it used. It will not guess above 12 reps.</span>
+      </article>
+      <article class="fcard">
+        <span class="fcard-ic"><svg aria-hidden="true"><use href="#i-gauge"/></svg></span>
+        <b class="fcard-t">Effort per set</b>
+        <span class="fcard-b">Rate a set as RIR or RPE, whichever scale you already think in. Optional, and each set keeps the scale it was logged with.</span>
+      </article>
+      <article class="fcard">
+        <span class="fcard-ic"><svg aria-hidden="true"><use href="#i-share"/></svg></span>
+        <b class="fcard-t">Share a plan</b>
+        <span class="fcard-b">Send someone your routines as a small file, or print them as a clean PDF. No workouts, no weigh-ins, and importing merges instead of overwriting.</span>
+      </article>
+      <article class="fcard">
+        <span class="fcard-ic"><svg aria-hidden="true"><use href="#i-import"/></svg></span>
+        <b class="fcard-t">Bring your history</b>
+        <span class="fcard-b">Import from FitNotes, Strong or Hevy, including the RPE they recorded, or body weight straight out of an Apple Health export.</span>
+        <a class="fcard-link" href="docs.html#import">How importing works →</a>
+      </article>
+      <article class="fcard">
+        <span class="fcard-ic"><svg aria-hidden="true"><use href="#i-phone"/></svg></span>
+        <b class="fcard-t">The screen stays awake</b>
+        <span class="fcard-b">No unlocking the phone between sets. The display stays lit while a workout runs and lets go the moment you finish.</span>
+      </article>
+      <article class="fcard">
+        <span class="fcard-ic"><svg aria-hidden="true"><use href="#i-globe"/></svg></span>
+        <b class="fcard-t">17 languages</b>
+        <span class="fcard-b">The full interface, Arabic right to left, exercise instructions in 12 languages and translated exercise names in seven, all loaded on demand.</span>
+      </article>
+      <article class="fcard">
+        <span class="fcard-ic"><svg aria-hidden="true"><use href="#i-key"/></svg></span>
+        <b class="fcard-t">Passkeys, not passwords</b>
+        <span class="fcard-b">Self-hosted profiles sign in with Face ID or a fingerprint, on as many devices as they like. A password is there if the instance switches it on. Everyone’s data stays their own.</span>
+        <a class="fcard-link" href="docs.html#selfhost">Self-hosting guide →</a>
+      </article>
+      <article class="fcard">
+        <span class="fcard-ic"><svg aria-hidden="true"><use href="#i-palette"/></svg></span>
+        <b class="fcard-t">Designed, not assembled</b>
+        <span class="fcard-b">Light and dark themes, eight accent colours, a hand-drawn icon set, and the same layout on every phone.</span>
+      </article>
+      <article class="fcard">
+        <span class="fcard-ic"><svg aria-hidden="true"><use href="#i-sparkle"/></svg></span>
+        <b class="fcard-t">Ask an AI about your training</b>
+        <span class="fcard-b">An optional MCP server lets a client like Claude Desktop read your history in plain language. Read-only, on your machine, and not part of the Docker build.</span>
+        <a class="fcard-link" href="docs.html#mcp">Set up the MCP server →</a>
+      </article>
+      <article class="fcard">
+        <span class="fcard-ic"><svg aria-hidden="true"><use href="#i-archive"/></svg></span>
+        <b class="fcard-t">Yours to keep</b>
+        <span class="fcard-b">One-tap JSON export and import. Your training log is a file you own, not a row in someone’s database.</span>
+        <a class="fcard-link" href="docs.html#backup">Backups →</a>
+      </article>
+    </div>
   </div>
-</div></section>
+  <div class="wrap">
+    <div class="frail-nav" hidden>
+      <button class="rnav" type="button" data-dir="-1" aria-label="Previous"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5L8 12l6.5 6.5"/></svg></button>
+      <button class="rnav" type="button" data-dir="1" aria-label="Next"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 5.5L16 12l-6.5 6.5"/></svg></button>
+    </div>
+  </div>
+</section>
+
+<section id="screens">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <p class="eyebrow">Screenshots</p>
+      <h2>Five screens, and that's the app.</h2>
+    </div>
+  </div>
+  <div class="bleed rv">
+    <div class="rail">
+      <figure><div class="device"><picture><source type="image/webp" srcset="img/home-480.webp 480w, img/home-600.webp 600w, img/home-1170.webp 1170w" sizes="(max-width: 700px) 60vw, 240px"><img src="img/home.png" alt="Home screen with the weekly overview and body-weight chart" loading="lazy" decoding="async" width="1170" height="2532"></picture></div><figcaption>Home</figcaption></figure>
+      <figure><div class="device"><picture><source type="image/webp" srcset="img/workout-480.webp 480w, img/workout-600.webp 600w, img/workout-1170.webp 1170w" sizes="(max-width: 700px) 60vw, 240px"><img src="img/workout.png" alt="Guided workout screen with sets, rest timer and pre-filled weights" loading="lazy" decoding="async" width="1170" height="2532"></picture></div><figcaption>Workout</figcaption></figure>
+      <figure><div class="device"><picture><source type="image/webp" srcset="img/stats-480.webp 480w, img/stats-600.webp 600w, img/stats-1170.webp 1170w" sizes="(max-width: 700px) 60vw, 240px"><img src="img/stats.png" alt="Stats screen with the activity heatmap and charts" loading="lazy" decoding="async" width="1170" height="2532"></picture></div><figcaption>Stats</figcaption></figure>
+      <figure><div class="device"><picture><source type="image/webp" srcset="img/plan-480.webp 480w, img/plan-600.webp 600w, img/plan-1170.webp 1170w" sizes="(max-width: 700px) 60vw, 240px"><img src="img/plan.png" alt="Weekly plan screen with a routine per weekday" loading="lazy" decoding="async" width="1170" height="2532"></picture></div><figcaption>Plan</figcaption></figure>
+      <figure><div class="device"><picture><source type="image/webp" srcset="img/library-480.webp 480w, img/library-600.webp 600w, img/library-1170.webp 1170w" sizes="(max-width: 700px) 60vw, 240px"><img src="img/library.png" alt="Exercise library with search and filters" loading="lazy" decoding="async" width="1170" height="2532"></picture></div><figcaption>Library</figcaption></figure>
+    </div>
+  </div>
+  <div class="wrap"><p class="rail-hint">Swipe through them.</p></div>
+</section>
+
+<section id="demo">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <p class="eyebrow">Live demo</p>
+      <h2>Try it right here.</h2>
+      <p class="lead">The real app with a seeded example history, running in your browser.
+         Start a workout, break something, change anything you like.</p>
+    </div>
+
+    <!-- The iframe is injected by site.js, and only on viewports wide enough to show the
+         frame. On a phone, a phone inside a phone is not worth the download. -->
+    <div class="demo-stage rv">
+      <div class="device"><div class="device-slot" data-demo="/demo/"></div></div>
+    </div>
+    <p class="demo-note">Demo data lives only in this browser and can be reset from its own
+       Settings. <a href="/demo/">Open it full-screen</a> if you would rather have the room.</p>
+
+    <div class="demo-card">
+      <p>The demo wants the whole screen to itself. Its data lives only in this browser and
+         can be reset from its own Settings.</p>
+      <a class="btn" href="/demo/">Open the live demo</a>
+    </div>
+  </div>
+</section>
+
+<section id="download">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <p class="eyebrow">Get openGym</p>
+      <h2>One app, two flavors.</h2>
+      <p class="lead">Same codebase. The choice is where your data lives: entirely on your
+         phone, or on a server you control.</p>
+    </div>
+    <div class="duo">
+      <div class="card hl rv">
+        <div class="ic"><svg><use href="#i-phone"/></svg></div>
+        <h3>Mobile app</h3>
+        <p class="for">For anyone. Install it and you are done.</p>
+        <ul>
+          <li>Everything stays on your phone</li>
+          <li>No account, no server, no setup</li>
+          <li>Native workout-day reminders</li>
+          <li>Backups through the share sheet</li>
+          <li class="no">No sync across devices</li>
+        </ul>
+        <div class="push">
+          <a class="btn" href="openGym.apk" download>Download for Android</a>
+          <p class="meta">v1.3.9 · 16.2 MB · Android 6.0+ · signed APK. Your browser will ask
+             before installing; that is normal outside the Play Store.</p>
+          <p class="meta">Every release is also built and signed by CI and attached to the
+             <a href="https://github.com/DuarteSantos8/openGym/releases" rel="noopener">GitHub
+             releases page</a>, checksums and all.</p>
+          <p class="meta"><b>On iPhone?</b> Apple does not allow installs outside the App Store.
+             Use the self-hosted version as a home-screen app instead, or see
+             <a href="docs.html#iphone">the docs</a>.</p>
+        </div>
+      </div>
+      <div class="card rv">
+        <div class="ic"><svg><use href="#i-server"/></svg></div>
+        <h3>Self-hosted</h3>
+        <p class="for">For homelabbers, and the people they train with.</p>
+        <ul>
+          <li>Sync across all your devices</li>
+          <li>Passkey profiles for several people</li>
+          <li>Your data readable on the desktop</li>
+          <li>A home-screen app on iPhone and Android</li>
+          <li>One <code>docker compose up</code></li>
+        </ul>
+        <div class="push">
+          <a class="btn ghost" href="docs.html#selfhost">Self-hosting guide</a>
+          <p class="meta">AGPL-3.0 · prebuilt images for amd64 and arm64</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="story">
+  <div class="wrap story rv">
+    <blockquote>openGym started as <b>a tiny app I built for myself.</b> I wanted to log my
+      workouts and my weight without a subscription app claiming my training data. Then
+      friends wanted in, and it grew a mind of its own.</blockquote>
+    <p class="who">Duarte Santos · <a href="about.html">read the whole story</a></p>
+  </div>
+</section>
+
+<section id="opensource">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <p class="eyebrow">Open source</p>
+      <h2>AGPL-licensed, and staying that way.</h2>
+      <p class="lead">The code is public, the license keeps every fork open, and there is no
+         commercial edition waiting behind a curtain.</p>
+    </div>
+
+    <div class="specs rv">
+      <div class="spec-head">
+        <span>openGym in numbers</span>
+        <span class="live">counts are live</span>
+      </div>
+      <div class="spec-cells">
+        <div><b data-gh="stars-n">–</b><span>stars</span></div>
+        <div><b data-gh="forks-n">–</b><span>forks</span></div>
+        <div><b data-gh="issues-n">–</b><span>open issues</span></div>
+        <div><b data-dc="members-n">–</b><span>on Discord</span></div>
+        <div><b>1,324</b><span>exercises</span></div>
+        <div><b>17</b><span>languages</span></div>
+      </div>
+    </div>
+
+    <div class="actions rv" style="margin-top:28px">
+      <a class="btn ghost" href="https://github.com/DuarteSantos8/openGym" rel="noopener">openGym on GitHub <span class="ct" data-gh="stars">★</span></a>
+      <a class="link" href="https://github.com/DuarteSantos8/openGym/blob/main/CONTRIBUTING.md" rel="noopener">Contributing</a>
+      <a class="link" href="https://github.com/DuarteSantos8/openGym/blob/main/CHANGELOG.md" rel="noopener">Changelog</a>
+    </div>
+
+  </div>
+</section>
+
+<section id="elsewhere">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <p class="eyebrow">Elsewhere</p>
+      <h2>Where openGym lives.</h2>
+    </div>
+
+    <div class="quad rv">
+      <a class="pad github" href="https://github.com/DuarteSantos8/openGym" rel="noopener">
+        <span class="pad-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-github"/></svg></span>
+        <span class="pad-body">
+          <b>GitHub</b>
+          <span>The code, the issues, the pull requests and the releases.</span>
+          <span class="rest">Home of the project; every release is published here with its APK and checksum.</span>
+        </span>
+        <span class="pad-go">Open the repo</span>
+      </a>
+
+      <a class="pad gitlab" href="https://gitlab.com/DuarteSantos8/opengym" rel="noopener">
+        <span class="pad-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-gitlab"/></svg></span>
+        <span class="pad-body">
+          <b>GitLab mirror</b>
+          <span>The same repository, kept in sync automatically.</span>
+          <span class="rest">Its CI builds the container images and signs every APK — nothing is merged here.</span>
+        </span>
+        <span class="pad-go">Open the mirror</span>
+      </a>
+
+
+      <a class="pad bmc" href="https://buymeacoffee.com/duartesantos" rel="noopener">
+        <span class="pad-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-bmc"/></svg></span>
+        <span class="pad-body">
+          <b>Buy me a coffee</b>
+          <span>openGym is free, and stays free.</span>
+          <span class="rest">If it saved you a subscription, this is the one place to say thanks.</span>
+        </span>
+        <span class="pad-go">Support the project</span>
+      </a>
+
+      <a class="pad discord" href="https://discord.gg/e62jY6fwVb" rel="noopener">
+        <span class="pad-ic"><svg viewBox="0 0 71 55" aria-hidden="true"><use href="#i-discord"/></svg></span>
+        <span class="pad-body">
+          <b>Discord</b>
+          <span>Releases, self-hosting help, and somewhere to report a bug.</span>
+          <span class="rest">Docker, reverse proxies and passkeys — new versions land here first.</span>
+        </span>
+        <span class="pad-go">Join the server</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+
+
+</main>
 
 <footer><div class="wrap foot">
-  <span>openGym · AGPL-3.0 · © 2026 <a href="https://duarte-santos.ch" rel="noopener">Duarte Santos</a></span>
+  <span class="c">openGym · AGPL-3.0 · © 2026 <a href="https://duarte-santos.ch" rel="noopener">Duarte Santos</a></span>
   <div class="links">
     <a href="docs.html">Docs</a>
-    <a href="about.html" class="hide-s">About</a>
-    <a href="https://gitea.com/DuarteSantos/openGym" rel="noopener">Gitea</a>
+    <a href="about.html">About</a>
+    <a href="https://github.com/DuarteSantos8/openGym" rel="noopener">GitHub</a>
+    <a href="https://gitlab.com/DuarteSantos8/opengym" rel="noopener">GitLab mirror</a>
     <a href="https://discord.gg/e62jY6fwVb" rel="noopener">Discord</a>
-    <a href="/#download">Download</a>
+    <a href="#download">Download</a>
   </div>
 </div></footer>
 
-<script src="site.js" defer></script>
+<script src="site.js?v=19" defer></script>
 </body>
 </html>

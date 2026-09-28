@@ -1,7 +1,8 @@
 // Pure helpers over the state object S (ported 1:1 from the vanilla app).
-import { todayISO, isoOf, weekKey, fmtNum } from './format.js'
-import { isCardio, isBodyweightEq } from './exercises.js'
-import { phaseForSet, modeForSet, modeForEntry, isWarmupRow, normalizeMode } from './workout-model.js'
+import { todayISO, isoOf, weekKey, weekStartOf, fmtNum } from './format.js'
+import { fmtSpeed } from './speed.js'
+import { isCardio, isBodyweightEq, isAssisted, betterWeight } from './exercises.js'
+import { phaseForSet, modeForSet, modeForEntry, isWarmupRow, normalizeMode, completedVolumeOf, hasCompletedWork, nextDropWeight, splitBurstReps, makeSideSet, isSideSet, syncSideAggregate, WEIGHT_ORIGIN_MANUAL, dropsOf, clustersOf } from './workout-model.js'
 const objectOf = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {}
 // Completed-state-independent work rows whose authoritative mode matches the requested mode.
 const workRowsForMode = (entry = {}, mode = 'reps') => {
@@ -105,21 +106,56 @@ const effortTail = s => {
 
 // One-line summary of a logged set. `cfg` carries the mode when the caller has it (a routine
 // entry or a workout entry); passing an id alone keeps the old body-part behaviour.
-export function setLabel(id, s, cfg) {
-  const c = cfg || { id }
-  const mode = modeOf(c)
-  if (mode === 'cardio') return `${s.min || 0} min @ ${fmtNum(s.speed || 0)} km/h`
+// `speedUnit` is the profile's (lib/speed.js speedUnitOf); without one a cardio set reads km/h.
+export function setLabel(id, s, cfg, speedUnit) {
+  // The id is the caller's when the config does not carry one: a freestyle target is built
+  // without it, and modeOf would then fall back to 'reps' and print a run as "0×0".
+  const c = cfg ? { ...cfg, id: cfg.id ?? id } : { id }
+  let mode = modeOf(c)
+  // A set saved by an older build carries no target with it; the set's own fields still say what
+  // it was — seconds for a timed set, minutes for cardio — so those are not read back as "0 reps".
+  if (!cfg && !(s.r > 0)) { if (s.min > 0 || s.speed > 0) mode = 'cardio'; else if (s.sec > 0) mode = 'time' }
+  if (mode === 'cardio') return `${s.min || 0} min @ ${fmtSpeed(s.speed || 0, speedUnit)}`
   if (mode === 'time') return fmtSec(s.sec) + (s.w > 0 ? ` · ${fmtNum(s.w)}` : '')
+  const bw = isBw(c)
+  const load = (w, reps) => (bw ? (w > 0 ? `+${fmtNum(w)} × ` : '') + reps : `${fmtNum(w || 0)}×${reps}`)
+  // A rest-pause set's reps read as its bursts, "60×10+4+2", the way the protocol is written
+  // down. The row's own `r` is the total either way; a planned set's bursts already add up to it
+  // (applyIntensifierPlan), while bursts added live sit on top of the activation set, which is
+  // then whatever the total leaves over. Bursts that do not fit the total are not shown.
+  // A planned set has no activation set in front of its bursts, so when its total was raised by
+  // hand the leftover is not one: "60×2+6+3+2+1" read as a two-rep set nobody did. Which burst
+  // the extra reps belong to is not known, so such a set reads as its plain total. The target
+  // says whether the exercise plans rest-pause; a row added to it and given bursts live can only
+  // be told apart by that, and reads as its plain total too, which is still what was lifted.
+  const planned = c.intensifier?.type === 'restpause'
+  const repsOf = side => {
+    const reps = side.r || 0
+    const bursts = clustersOf(side).map(b => Number(b?.r) || 0).filter(r => r > 0)
+    const sum = bursts.reduce((a, b) => a + b, 0)
+    if (!bursts.length || sum > reps || (planned && sum !== reps)) return reps
+    return (reps > sum ? [reps - sum, ...bursts] : bursts).join('+')
+  }
+  // One side's "weight×reps" (or bodyweight "reps" / "+belt × reps"), the same shape a whole
+  // straight set reads as — reused for each side of a unilateral set below. A drop-set's drops
+  // follow it ("100×8 ↘ 80×6"): the volume of the workout counts them, so the list has to show
+  // them, or the total includes weight nobody can see where it came from.
+  const oneSide = side => {
+    const drops = dropsOf(side).filter(d => (Number(d?.r) || 0) > 0)
+    return load(side.w, repsOf(side)) + drops.map(d => ' ↘ ' + load(Number(d.w) || 0, Number(d.r))).join('')
+  }
+  // A unilateral set logged per side (issue #60) reads "L 15×8 · R 15×7" — the asymmetry is the
+  // whole point, so both sides are shown rather than a single combined total.
+  if (isSideSet(s)) {
+    const partial = s.sides.L.done !== s.sides.R.done
+    return ['L', 'R'].map(key => {
+      const side = s.sides[key]
+      return `${t(key)} ${partial && !side.done ? '—' : oneSide(side) + effortTail(side)}`
+    }).join(' · ')
+  }
   // Bodyweight reads as what you did — "12", or "+10 × 12" once there is a belt involved —
   // rather than "0×12", which says a set was performed with no weight and means nothing.
-  // A per-side set needs no mark here: the number logged is the total, the same as every
-  // other set in the app.
-  const reps = s.r || 0
-  if (isBw({ ...c, id: c.id ?? id })) {
-    const load = s.w > 0 ? `+${fmtNum(s.w)} × ` : ''
-    return `${load}${reps}` + effortTail(s)
-  }
-  return `${fmtNum(s.w || 0)}×${reps}` + effortTail(s)
+  return oneSide(s) + effortTail(s)
 }
 // Default config for a freshly added exercise.
 export function defaultConfig(id, mode) {
@@ -131,18 +167,33 @@ export function defaultConfig(id, mode) {
   if (m === 'time') return { sets: 3, sec: 45, weight: 0, mode: 'time', ...bw }
   return { sets: 3, reps: 10, weight: 0, mode: 'reps', ...bw }
 }
+// A double-progression range is stored as its top (`reps`) and its bottom (`repsMin`), and
+// reads as the range it is: "8–12". Printing the top alone made "Reps from 10, up to 15" read
+// as "2 × 15" in the plan and then open at 10. `fmt` formats each bound (a per-side split).
+const hasRange = cfg => cfg.repsMin > 0 && cfg.repsMin < cfg.reps
+const repsOf = (cfg, fmt = v => String(v)) => (hasRange(cfg) ? `${fmt(cfg.repsMin)}–${fmt(cfg.reps)}` : fmt(cfg.reps))
+
+/** "2 × 10", "3 × 8–12", "2 × 0:45": what a plan asks for per set, without its load. */
+export function setsRepsOf(cfg) {
+  const mode = modeOf(cfg)
+  const n = cfg.sets || 1
+  if (mode === 'cardio') return `${n} × ${cfg.min || 20} min`
+  if (mode === 'time') return `${n} × ${fmtSec(cfg.sec || 45)}`
+  return `${n} × ${repsOf(cfg)}`
+}
+
 // One-line summary of a planned exercise ("3 × 10 · 60 kg"), shared by the routine editor
-// and the plan export so a mode is described the same way everywhere.
-export function exLine(cfg, unit) {
+// and the plan export so a mode is described the same way everywhere. `speedUnit` as setLabel.
+export function exLine(cfg, unit, speedUnit) {
   const mode = modeOf(cfg)
   const n = cfg.sets || 1
   // Added weight reads as added: "+10 kg" on a dip belt, "60 kg" on a barbell.
   const load = cfg.weight ? ' · ' + (isBw(cfg) ? '+' : '') + fmtNum(cfg.weight) + ' ' + unit : ''
-  if (mode === 'cardio') return `${n} × ${cfg.min || 20} min @ ${fmtNum(cfg.speed || 8)} km/h`
-  if (mode === 'time') return `${n} × ${fmtSec(cfg.sec || 45)}${load}`
+  if (mode === 'cardio') return `${n} × ${cfg.min || 20} min @ ${fmtSpeed(cfg.speed || 8, speedUnit)}`
+  if (mode === 'time') return `${setsRepsOf(cfg)}${load}`
   // This is the line with room for it, so the split is spelled out: "3 × 16 · 8/side".
-  const split = isPerSide(cfg) ? ' · ' + t('{0}/side', fmtNum(sideReps(cfg.reps))) : ''
-  return `${n} × ${cfg.reps}${load}${split}`
+  const split = isPerSide(cfg) ? ' · ' + t('{0}/side', repsOf(cfg, v => fmtNum(sideReps(v)))) : ''
+  return `${setsRepsOf(cfg)}${load}${split}`
 }
 
 // Drop superset ids that no longer have an adjacent partner (after unlink/reorder/remove).
@@ -206,16 +257,108 @@ export function unpairSuperset(items, idx) {
   return next
 }
 
-export function lastEntryFor(S, exId) {
-  for (let i = S.workouts.length - 1; i >= 0; i--) {
-    const en = S.workouts[i].entries.find(e => e.id === exId)
+/**
+ * Is this completed entry excluded from progression / session read-back?
+ *
+ * "Excluded" moved from a whole-workout flag to a per-entry one (ENG-11): a rehab routine
+ * combined with real work excludes only its own exercises. A legacy workout carries the
+ * whole-workout flag and no per-entry field, so every one of its entries reads as excluded.
+ * `noProg` is frozen onto the entry from its source routine's `excludeFromProgression` at
+ * build time — editing the routine flag later never rewrites a saved session.
+ */
+export function entryExcluded(w, entry) {
+  return w?.excludeFromProgression === true || entry?.noProg === true
+}
+
+/**
+ * Which routine a saved entry was planned by — the "slot" its numbers belong to (issue #216).
+ *
+ * Every entry of a session started since combined days carries its own `rid`. A session saved
+ * before that has none, and there the workout's routine stands in for all of its entries. The one
+ * exception is a newer session in which some entries carry a `rid` and this one does not: that is
+ * an exercise added to a freestyle session, and it belongs to no routine at all.
+ */
+export function entryRoutineId(w, en) {
+  if (en?.rid) return en.rid
+  if ((w?.entries || []).some(e => e && e.rid)) return null
+  return [].concat(w?.routineIds ?? [])[0] ?? w?.routineId ?? null
+}
+
+// The entry for one exercise in one saved workout. With a routine id it is that routine's own
+// entry — a combined A+B day can hold the same exercise twice, and the second one is not the
+// first one's history. Without, the first one, as it always was.
+const entryIn = (w, exId, rid) => (w.entries || []).find(e => e && e.id === exId && (!rid || entryRoutineId(w, e) === rid))
+
+/**
+ * The last counting session of an exercise: `{ d, sets, target, rid?, planned? }`, or null.
+ *
+ * Given a routine id, the routine's own last session of it (issue #216): the same bench press in
+ * a heavy day and a light day is two lines of progress, not one that zigzags between them. A
+ * routine that has never trained the exercise falls back to its last session anywhere, so a new
+ * or copied routine starts from what you actually lift rather than from nothing.
+ */
+export function lastEntryFor(S, exId, rid) {
+  if (rid) {
+    const own = lastEntryIn(S, exId, rid)
+    if (own) return own
+  }
+  return lastEntryIn(S, exId, null)
+}
+
+function lastEntryIn(S, exId, rid) {
+  const workouts = S.workouts || []
+  for (let i = workouts.length - 1; i >= 0; i--) {
+    const w = workouts[i]
+    const en = entryIn(w, exId, rid)
+    if (!en) continue
+    // A session that does not count — a planned deload, or a rehab block merged into a real
+    // session — is not "last time" for the next regular prescription: its reps and durations
+    // must not seed the rows any more than its weight seeds the progression.
+    if (entryExcluded(w, en)) continue
+    // Work sets only. Every caller asks the same question — "what did you actually lift last
+    // time" — to seed the next session's rows, to size a freestyle config, and to print "Last
+    // time" on the card. A warm-up answers none of them: seeding position 0 from a 50% ramp row
+    // walks the working weight DOWN a little every session, and counting the ramp rows makes a
+    // 3x5 come back as a 5-set exercise. Warm-ups are already excluded from volume, records and
+    // progression; this is the same rule one level up.
+    const done = en.sets.filter(s => s.done && !isWarmupRow(s))
     // `target` is what the session prescribed; finished workouts carry it so labels and the
     // progression engine can read a session back the way it was logged. Older workouts have
     // none — modeOf() falls back to the body part for them, which is what they were.
-    if (en && en.sets.some(s => s.done)) return { d: S.workouts[i].d, sets: en.sets.filter(s => s.done), target: en.target || null }
+    if (done.length) {
+      const slot = entryRoutineId(w, en)
+      return { d: w.d, sets: done, target: en.target || null, ...(slot ? { rid: slot } : {}), ...(en.planned ? { planned: en.planned } : {}) }
+    }
   }
   return null
 }
+
+/** How long any single note may get. Long enough for a paragraph, short enough to stay a note. */
+export const NOTE_MAX = 500
+
+/**
+ * The most recent session note the user pinned for this exercise, or null.
+ *
+ * A note written mid-session is about that session — "shoulder twinged today". Some of them are
+ * about the NEXT one instead: "go a notch narrower". The pin is how the user says which, at the
+ * moment of writing, when they are the only one who knows. Pinned notes surface again the next
+ * time the exercise comes up; unpinned ones stay in that day's history.
+ *
+ * Only the newest pinned note is returned: a pin is a message to your next self, and a stack of
+ * them from six sessions ago is noise, not context.
+ */
+export function pinnedNoteFor(S, exId) {
+  const workouts = S?.workouts || []
+  for (let i = workouts.length - 1; i >= 0; i--) {
+    const en = (workouts[i].entries || []).find(e => e.id === exId)
+    const note = (en?.note || '').trim()
+    if (note && en.notePin) return { note, d: workouts[i].d }
+  }
+  return null
+}
+
+/** The standing note for an exercise — the one that is true every session. */
+export const exNoteFor = (S, exId) => ((S?.exNotes || {})[exId] || '').trim() || null
 
 // A freestyle exercise starts with the last target the user actually trained, rather than the
 // generic config sheet defaults used when there is no history. The set rows themselves are still
@@ -232,31 +375,105 @@ export function freestyleConfig(S, cfg) {
   }
 }
 export function bestWeightFor(S, exId) {
+  // 0 means "nothing logged with a load yet" and must not win a min() for an assisted machine.
   let best = 0
   S.workouts.forEach(w => w.entries.forEach(e => {
-    if (e.id === exId) best = Math.max(best, bestWeightForEntry(e))
+    if (e.id !== exId) return
+    const entryBest = bestWeightForEntry(e)
+    if (entryBest > 0) best = best > 0 ? betterWeight(exId, best, entryBest) : entryBest
   }))
   return best
 }
-export function effectiveRoutineId(S, iso) {
+/**
+ * The routines planned for a date, in merge order. Plural is the primary form now that a
+ * weekday can hold several routines (`S.week[wd]` is `string[]`); the singular helpers below
+ * are thin wrappers. `[]` — a stray empty array, or a key that is absent — all mean rest, so
+ * "is this a rest day?" is `effectiveRoutineIds(S, iso).length === 0`.
+ *
+ * `S.dayPlan[iso]` stays scalar (a routine id, the `'rest'` sentinel, or undefined): the
+ * per-date override and Start-time are single-pick. All array-tolerance is on `S.week`.
+ */
+export function effectiveRoutineIds(S, iso) {
   const ov = S.dayPlan[iso]
-  if (ov === 'rest') return null
-  if (ov && S.routines.some(r => r.id === ov)) return ov
+  if (ov === 'rest') return []
+  if (ov && S.routines.some(r => r.id === ov)) return [ov]
   const wd = new Date(iso + 'T12:00:00').getDay()
-  return S.week[wd] || null
+  return [].concat(S.week[wd] || []).filter(id => S.routines.some(r => r.id === id))
 }
-export function effectiveRoutine(S, iso) {
-  const id = effectiveRoutineId(S, iso)
-  return id ? S.routines.find(r => r.id === id) || null : null
+export function effectiveRoutines(S, iso) {
+  return effectiveRoutineIds(S, iso).map(id => S.routines.find(r => r.id === id)).filter(Boolean)
 }
+export const effectiveRoutineId = (S, iso) => effectiveRoutineIds(S, iso)[0] ?? null
+export const effectiveRoutine = (S, iso) => effectiveRoutines(S, iso)[0] ?? null
+
+/**
+ * The next day that actually has something to train, looking forward from `iso` (exclusive).
+ *
+ * Takes a date string rather than reading the clock so callers and tests agree on "today".
+ * A routine with no exercises does not count: starting one lands you in an empty session, so
+ * it is not an answer to "what is next" (the same guard TabBar applies before starting). On a
+ * combined day, any one routine with exercises makes the day trainable.
+ * Returns null when the whole week is rest.
+ *
+ * Return shape carries `routines` (the whole day) plus `routine` = `routines[0]` for the
+ * "what's next" label.
+ */
+export function nextTrainingDay(S, iso) {
+  for (let i = 1; i <= 7; i++) {
+    const d = new Date(iso + 'T12:00:00')
+    d.setDate(d.getDate() + i)
+    const nextIso = isoOf(d)
+    const routines = effectiveRoutines(S, nextIso)
+    if (routines.some(r => (r.ex || []).length)) {
+      return { iso: nextIso, weekday: d.getDay(), routines, routine: routines[0] }
+    }
+  }
+  return null
+}
+/**
+ * Build the rows a planned exercise starts a session with: its work sets, preceded by however
+ * many warm-up sets the routine asks for (`cfg.warmupSets`, 0 by default so an existing plan
+ * behaves exactly as before).
+ *
+ * The warm-ups are stacked with insertWarmupRow, one call each, so the ramp is the same one
+ * the in-session "Add warm-up set" button produces: each row halves the gap left to the work
+ * weight, giving 50% / 75% / 87.5% for three. `options.step` is the exercise's loading step,
+ * passed in by the caller (see insertWarmupRow for why this module cannot read it itself).
+ */
 export function buildSets(S, cfg, options = {}) {
-  const last = lastEntryFor(S, cfg.id)
+  const rows = buildWorkSets(S, cfg, options)
+  const warm = Math.max(0, Math.min(MAX_PLANNED_WARMUPS, Math.round(cfg.warmupSets) || 0))
+  if (!warm) return rows
+  const mode = modeOf(cfg)
+  let out = rows
+  for (let i = 0; i < warm; i++) out = insertWarmupRow(out, mode, cfg, options.step)
+  return out
+}
+
+/** Beyond this a "warm-up" is its own workout; the config stepper stops here too. */
+export const MAX_PLANNED_WARMUPS = 5
+
+function buildWorkSets(S, cfg, options = {}) {
+  const preferLast = !!options.preferLast
+  const useTarget = !!options.useTarget
+  // `lastEntryFor` now skips any entry that does not count — a planned deload, or a rehab
+  // block merged into a real session (entryExcluded) — so the rows seed from the last
+  // *counting* session without this function pre-filtering the history itself. `options.rid`
+  // is the routine the rows are for: its own last session of the exercise comes first (#216).
+  const last = lastEntryFor(S, cfg.id, options.rid)
   const n = Math.max(1, cfg.sets || 1)
   const mode = modeOf(cfg)
-  const preferLast = !!options.preferLast
   const sets = []
-  // Last time's set at the same position, falling back to its final set when the plan grew.
-  const prevAt = i => (last ? (last.sets[i] || last.sets[last.sets.length - 1]) : null)
+  // A deload routine must use its own prescription instead of carrying regular-session values
+  // into the workout. Other planned sessions read the weight from history (and the reps too,
+  // unless the plan owns them — see planReps below).
+  const prevAt = i => (!useTarget && last ? (last.sets[i] || last.sets[last.sets.length - 1]) : null)
+  // `options.planReps`: a planned session opens at the routine's own reps, and history only
+  // decides the weight (Settings → "Planned sessions start from", lib/session-start.js). Without
+  // it every row copied last session's reps, so a plan edited from 15 to 10 — or trained at 15
+  // once — kept opening at 15 while the routine still read "2 × 10" (#275). Freestyle has no
+  // plan to own anything and keeps reproducing what you did (preferLast).
+  const planReps = !!options.planReps && !preferLast && cfg.reps > 0
 
   if (mode === 'cardio') {
     for (let i = 0; i < n; i++) {
@@ -275,32 +492,163 @@ export function buildSets(S, cfg, options = {}) {
     }
     return sets
   }
-  const conf = S.exWeights[cfg.id]
+  const conf = (S.exWeights || {})[cfg.id]
   for (let i = 0; i < n; i++) {
     const prev = prevAt(i)
     const usable = prev && prev.r > 0 ? prev : null
-    // Planned sessions may use the confirmed working weight, while freestyle should reproduce
-    // the load of each matching set when that option is requested.
-    const w = preferLast && usable ? usable.w : (conf && conf.w > 0 ? conf.w : (usable ? usable.w : cfg.weight))
-    sets.push({ w, r: usable ? usable.r : cfg.reps, done: false })
+    // The weight comes from the last session this routine trained (or any, for a routine that
+    // never has). The confirmed working weight is keyed by exercise alone, so it is only the
+    // fallback once there is no session to read: taken first, it handed a light day the heavy
+    // day's number (#216). A progression policy overwrites this anyway (applyPrescription).
+    // A deload uses the routine's target weight; a routine that never set one (weight 0) falls
+    // back to the last regular load rather than prescribing an empty bar.
+    const lastRegular = last ? (last.sets[i] || last.sets[last.sets.length - 1]) : null
+    const w = useTarget
+      ? (cfg.weight > 0 ? cfg.weight : (lastRegular && lastRegular.r > 0 ? lastRegular.w : cfg.weight))
+      : usable ? usable.w : (conf && conf.w > 0 ? conf.w : cfg.weight)
+    const row = { w, r: planReps || !usable ? cfg.reps : usable.r, done: false }
+    // A unilateral exercise logs each side on its own (issue #60): the row splits into L/R,
+    // each seeded with half the total reps at the same weight. When "last time" was itself a
+    // per-side set, carry its two sides over so an asymmetry you logged persists — both sides'
+    // weights always, their reps only when the plan does not own them.
+    if (isPerSide(cfg)) sets.push(usable && isSideSet(usable) ? seedSideFromLast(row, usable, planReps) : makeSideSet(row))
+    else sets.push(row)
   }
   return sets
 }
+
+// Seed a fresh per-side row from a previous per-side set: same reps/weight each side, nothing
+// done, no effort carried (that is logged afresh each session). Falls back to an even split if
+// the previous row was not actually per-side. With `planReps` the reps are the row's own —
+// the plan's total, split the way makeSideSet splits it — and only the weights carry over.
+function seedSideFromLast(row, prev, planReps) {
+  const base = makeSideSet(row)
+  if (!isSideSet(prev)) return base
+  const carry = (s, key) => ({ w: Number(s?.w) || 0, r: planReps ? base.sides[key].r : Number(s?.r) || 0, done: false })
+  return syncSideAggregate({ ...base, sides: { L: carry(prev.sides.L, 'L'), R: carry(prev.sides.R, 'R') } })
+}
+
+/**
+ * Stamp every work row with the exercise's planned intensifier and pre-fill its drops/clusters,
+ * already computed and editable — the plan designs the set, not a button pressed mid-workout.
+ *
+ * Must run AFTER applyPrescription: a drop-set's chain of drops is a percentage of each row's
+ * own `w`, so it has to be computed from the final prescribed weight, not the pre-progression
+ * one buildSets started from — otherwise a bumped working weight would leave stale, cheaper
+ * drops sitting underneath it. `grid` puts each drop on a loadable weight (nextDropWeight).
+ */
+export function applyIntensifierPlan(sets, cfg, grid) {
+  const kind = cfg && cfg.intensifier && cfg.intensifier.type
+  if (kind !== 'dropset' && kind !== 'restpause') return sets
+  if (kind === 'dropset') {
+    const count = Math.max(1, Math.round(cfg.intensifier.count) || 1)
+    const pct = cfg.intensifier.pct
+    // Stamp a descending chain of drops onto a row (or one side of a per-side row): each drop is
+    // pct% lighter than the last, at that row/side's own rep count.
+    const withDrops = row => {
+      const drops = []
+      let w = row.w || 0
+      for (let k = 0; k < count; k++) { w = nextDropWeight(w, pct, grid); drops.push({ w, r: row.r }) }
+      return { ...row, type: 'dropset', drops }
+    }
+    return sets.map(s => {
+      if (isWarmupRow(s)) return s
+      // A unilateral set drops per side (issue #60): stamp each side, then resync the aggregate.
+      if (isSideSet(s)) return syncSideAggregate({ ...s, sides: { L: withDrops(s.sides.L), R: withDrops(s.sides.R) } })
+      return withDrops(s)
+    })
+  }
+  // Rest-pause trains as exactly two sets, not one per configured `sets` count: a warm-up at
+  // the exercise's own configured reps, then a single rest-pause work set. Doing the full
+  // activation+bursts protocol several times over isn't how rest-pause is actually trained, so
+  // planning it replaces whatever buildSets built rather than stamping each of those rows.
+  // The work row's own reps are the total — not "the total minus what the bursts carry" — and
+  // the bursts are the full breakdown of that same total, down to the last one. See
+  // extraVolumeOf/setTonnage: a rest-pause row's `clusters` are read-only display of how `r`
+  // breaks down, not extra volume on top of it, precisely so this doesn't double-count.
+  const restSec = Math.max(5, cfg.intensifier.restSec || 15)
+  const totalReps = Math.max(1, Math.round(cfg.intensifier.totalReps) || 1)
+  const w = (sets.find(s => !isWarmupRow(s)) || sets[0] || {}).w || 0
+  const warmup = { w, r: Math.max(1, Math.round(cfg.reps) || 1), done: false, phase: 'warmup' }
+  const work = { w, r: totalReps, done: false, type: 'restpause', clusters: splitBurstReps(totalReps).map(r => ({ r, restSec })) }
+  if (isPerSide(cfg)) {
+    const source = sets.find(s => !isWarmupRow(s))
+    // The configured total covers both limbs; preserve it even for an odd total.
+    const side = (key, reps) => ({
+      w: source?.sides?.[key]?.w ?? w, r: reps, done: false, type: 'restpause',
+      clusters: splitBurstReps(reps).map(r => ({ r, restSec })),
+    })
+    return [warmup, syncSideAggregate({ ...work, sides: {
+      L: side('L', Math.ceil(totalReps / 2)), R: side('R', Math.floor(totalReps / 2)),
+    } })]
+  }
+  return [warmup, work]
+}
 export function workoutVolume(w) {
   let v = 0
-  // No special case for unilateral work: a per-side set logs its total, so both sides are
-  // already in the rep count that arrives here.
-  w.entries.forEach(e => e.sets.forEach(s => { if (s.done) v += (s.w || 0) * (s.r || 0) }))
+  // Count each completed limb at its own load, including drops. A rest-pause side's r already
+  // includes its bursts. Unchecked limbs and warm-ups contribute no volume.
+  // Warm-ups are excluded here as everywhere else. The config sheet promises it in so many
+  // words ("left out of volume, records and progression") and every other consumer already
+  // does it; this line was the one that did not, which only stopped being harmless when a
+  // routine started planning warm-ups by default. The number is written into the saved
+  // workout, so an inflated one would stay wrong forever.
+  // A per-side row's mirror is `w = max(L, R), r = L + R` (workout-model syncSideAggregate) —
+  // right for a headline, wrong for a product: 14×10 left and 12.5×6 right is 215, not 14×16.
+  // Each side is its own weight × reps, with its own drops and bursts.
+  ;(Array.isArray(w?.entries) ? w.entries : []).forEach(e => (Array.isArray(e?.sets) ? e.sets : []).forEach(s => {
+    if (!isWarmupRow(s)) v += completedVolumeOf(s)
+  }))
   return v
 }
+// Finished sessions carry their canonical local calendar day in `d`. Keep it aligned with
+// History/calendar readers, and use the local start timestamp only for older records whose date
+// is missing or malformed. Invalid records stay out of the activity map.
+const timestampOf = value => {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null
+  if (typeof value === 'string' && value.trim()) {
+    const n = Number(value)
+    return Number.isFinite(n) ? n : null
+  }
+  return null
+}
+export function workoutDay(w) {
+  const day = String(w?.d || '')
+  if (/^\d{4}-\d{2}-\d{2}$/.test(day)) {
+    const date = new Date(day + 'T12:00:00')
+    if (isoOf(date) === day) return day
+  }
+  const start = timestampOf(w?.start)
+  if (start !== null) {
+    const date = new Date(start)
+    if (!Number.isNaN(date.getTime())) return isoOf(date)
+  }
+  return null
+}
+
+// Duration is derived from the completed session timestamps rather than a cached display value.
+export function workoutDuration(w) {
+  const start = timestampOf(w?.start)
+  const end = timestampOf(w?.end)
+  return start !== null && end !== null ? Math.max(0, end - start) : 0
+}
+
+// A unilateral row counts as two toward the "x / y sets" progress — one per side — since each
+// side is logged and ticked on its own (issue #60). Every other row counts as one.
+export const setUnits = s => (isSideSet(s) ? 2 : 1)
+// How many of a row's units are done: both sides independently for a per-side row, else 0/1.
+export const doneUnits = s => (isSideSet(s) ? (s.sides.L.done ? 1 : 0) + (s.sides.R.done ? 1 : 0) : (s.done ? 1 : 0))
+// Total completion-units across a session's rows (both sides of every unilateral set counted).
+export const setUnitsTotal = entries => (entries || []).reduce((n, e) => n + (e.sets || []).reduce((m, s) => m + setUnits(s), 0), 0)
+
 export function setsDone(w) {
   let n = 0
-  w.entries.forEach(e => e.sets.forEach(s => { if (s.done) n++ }))
+  w.entries.forEach(e => e.sets.forEach(s => { n += doneUnits(s) }))
   return n
 }
 export function setsDoneActive(A) {
   let n = 0
-  if (A) A.entries.forEach(e => e.sets.forEach(s => { if (s.done) n++ }))
+  if (A) A.entries.forEach(e => e.sets.forEach(s => { n += doneUnits(s) }))
   return n
 }
 export const lastBW = S => (S.bodyweight.length ? S.bodyweight[S.bodyweight.length - 1] : null)
@@ -316,15 +664,52 @@ export function supersetUnits(items) {
   })
   return units
 }
+
+// A saved session's entries in the sections its detail sheet shows: one per routine (by `rid`, in
+// the order each first appears), the entries with no routine together, and inside each section its
+// superset units. Indexes point into `entries`. A superset never spans two sections — in a combined
+// session the last exercise of one routine can be paired with the first of the next, and they are
+// read back apart, each under its own routine. The detail sheet and "Copy as text" both group a
+// workout through this, so the text never shows a superset the sheet does not.
+export function sessionSections(entries) {
+  const list = Array.isArray(entries) ? entries : []
+  const sections = []
+  list.forEach((e, i) => {
+    const rid = e?.rid || null
+    let section = sections.find(x => x.rid === rid)
+    if (!section) { section = { rid, items: [] }; sections.push(section) }
+    section.items.push(i)
+  })
+  return sections.map(({ rid, items }) => ({
+    rid, items, units: supersetUnits(items.map(i => list[i])).map(unit => unit.map(k => items[k])),
+  }))
+}
+
+// Move the selected occurrence's complete display unit by one neighbouring unit. Returning a
+// new array keeps this helper pure; the caller decides how to persist it. Index identity matters
+// here because the same exercise id may appear more than once with different setup.
+export function moveSupersetUnit(items, index, direction) {
+  if (!Array.isArray(items) || (direction !== -1 && direction !== 1)) return null
+  const units = supersetUnits(items)
+  const source = units.findIndex(unit => unit.includes(index))
+  const target = source + direction
+  if (source < 0 || target < 0 || target >= units.length) return null
+  const reordered = [...units]
+  const selected = reordered[source]
+  reordered[source] = reordered[target]
+  reordered[target] = selected
+  return reordered.flat().map(i => items[i])
+}
 export function unitOf(units, idx) { return units.find(u => u.includes(idx)) || [idx] }
 
 export function streakWeeks(S) {
   if (!S.workouts.length) return 0
-  const weeks = new Set(S.workouts.map(w => weekKey(w.d)))
+  const ws = weekStartOf(S)
+  const weeks = new Set(S.workouts.map(w => weekKey(w.d, ws)))
   let streak = 0
   const cur = new Date()
   for (let i = 0; i < 520; i++) {
-    const wk = weekKey(isoOf(cur))
+    const wk = weekKey(isoOf(cur), ws)
     if (weeks.has(wk)) streak++
     else if (i > 0) break
     cur.setDate(cur.getDate() - 7)
@@ -333,31 +718,125 @@ export function streakWeeks(S) {
 }
 
 /**
- * Cascade a weight change forward: following sets of the same warm-up flag that are still
- * undone take the new value (null deletes the key). Done sets are never rewritten.
+ * Cascade an explicit load edit through later inherited rows in the same phase.
+ *
+ * Missing `weightOrigin` is inherited for compatibility with existing sessions. A row or side
+ * marked `manual` is an explicit exception, so it stays put even when it is heavier or lighter.
+ * `side` narrows a per-side edit to one limb; without it both limbs are eligible independently.
+ * Completed rows (and completed limbs) never get rewritten. Clearing an inherited load removes
+ * its `w` key just like a direct edit.
  */
-export function cascadeWeight(rows, from, value) {
-  const warm = isWarmupRow(rows[from])
+export function cascadeWeight(rows, from, value, side) {
+  const source = rows[from]
+  if (!source) return rows.slice()
+  const warm = isWarmupRow(source)
+  const sides = isSideSet(source) ? (side ? [side] : ['L', 'R']) : null
   const next = rows.slice()
+  const setWeight = row => {
+    const out = { ...row }
+    if (value == null) delete out.w
+    else out.w = value
+    return out
+  }
+  const setSideWeight = (row, key) => {
+    const current = row.sides?.[key]
+    if (!current || current.done === true || current.weightOrigin === WEIGHT_ORIGIN_MANUAL) return row
+    const nextSide = setWeight(current)
+    return syncSideAggregate({ ...row, sides: { ...row.sides, [key]: nextSide } })
+  }
   for (let j = from + 1; j < next.length; j++) {
-    if (isWarmupRow(next[j]) === warm && !next[j].done) {
-      if (value == null) delete next[j].w
-      else next[j].w = value
+    const row = next[j]
+    if (isWarmupRow(row) !== warm) continue
+    if (sides) {
+      if (!isSideSet(row)) continue
+      let out = row
+      for (const key of sides) out = setSideWeight(out, key)
+      next[j] = out
+    } else if (!isSideSet(row) && !row.done && row.weightOrigin !== WEIGHT_ORIGIN_MANUAL) {
+      next[j] = setWeight(row)
     }
   }
   return next
 }
 
-/** Insert a warm-up row before the first work row, copying the preceding warm-up's values. */
-export function insertWarmupRow(rows, mode, target) {
+/**
+ * Insert a warm-up row at the end of the warm-up block, ramping toward the working weight.
+ *
+ * Each added row halves what is left between the last warm-up and the first work set, so the
+ * first one lands at half the working weight, a second at three quarters, and so on — and a
+ * row you edited by hand is what the next one ramps from. `step` is the exercise's own loading
+ * step (progression.js's defaultIncrement, passed in by the caller so this module keeps no
+ * dependency on progression — that one already imports from here): a warm-up you cannot
+ * actually load onto the bar is noise.
+ *
+ * The reference is the first WORK row, never `rows[at - 1]` alone: for the first warm-up
+ * `at` is 0, and reading `rows[-1]` used to fall through to the *last* row — the heaviest
+ * work set — so "add warm-up set" handed you a full-weight set to correct by hand.
+ */
+/**
+ * Recompute the warm-up block so it ramps toward the weight the work rows ACTUALLY carry.
+ *
+ * buildSets prepends the warm-ups before a prescription is applied, and applyPrescription
+ * deliberately rewrites work rows only — so without this the ramp still aims at last
+ * session's weight. On a deload that put the last warm-up above every work set, which is
+ * the exact opposite of what a warm-up is for.
+ *
+ * A warm-up already logged keeps its weight and becomes what the next one ramps from: it
+ * happened, and rewriting performed work is data loss. Entries with nothing to ramp toward
+ * — cardio, bodyweight, an unloaded hold — are returned untouched.
+ */
+export function rerampWarmups(rows, step = 2.5) {
+  const firstWork = rows.findIndex(x => !isWarmupRow(x))
+  if (firstWork <= 0) return rows
+  const target = rows[firstWork].w || 0
+  if (!(target > 0)) return rows
+  const out = rows.slice()
+  let from = 0
+  for (let i = 0; i < firstWork; i++) {
+    if (out[i].done) { from = out[i].w || 0; continue }
+    const w = target > from
+      ? Math.max(0, Math.min(target, Math.floor((from + (target - from) / 2) / step) * step))
+      : target
+    out[i] = { ...out[i], w }
+    from = w
+  }
+  return out
+}
+
+export function insertWarmupRow(rows, mode, target, step = 2.5) {
   const firstWork = rows.findIndex(x => !isWarmupRow(x))
   const at = firstWork === -1 ? rows.length : firstWork
-  const l = rows[at - 1] || rows[rows.length - 1]
+  const prev = at > 0 ? rows[at - 1] : null            // the warm-up this one ramps from
+  const work = firstWork === -1 ? null : rows[firstWork]
+  const rampTo = to => {
+    const from = prev ? (prev.w || 0) : 0
+    // Nothing to ramp toward: bodyweight, cardio, a timed hold with no load.
+    if (!(to > 0)) return 0
+    // Already at or past the work weight — which happens when a warm-up was edited by hand
+    // above it. Returning `from` here handed the next warm-up that same too-heavy number and
+    // let it propagate down the block. A warm-up is never heavier than the set it warms up for.
+    if (to <= from) return to
+    // Rounded DOWN to the step: a warm-up that lands a notch light costs nothing, one that
+    // lands a notch heavy is a set you have to strip plates off before you can use it.
+    return Math.max(0, Math.min(to, Math.floor((from + (to - from) / 2) / step) * step))
+  }
   const warm = mode === 'cardio'
-    ? { min: l ? l.min : (target.min || 20), speed: l ? l.speed : (target.speed || 8), done: false, phase: 'warmup', warmup: true }
+    ? {
+      min: prev ? prev.min : (work ? work.min : (target.min || 20)),
+      speed: prev ? prev.speed : (work ? work.speed : (target.speed || 8)),
+      done: false, phase: 'warmup', warmup: true,
+    }
     : mode === 'time'
-      ? { sec: l ? l.sec : (target.sec || 45), w: l ? (l.w || 0) : (target.weight || 0), done: false, phase: 'warmup', warmup: true }
-      : { w: l ? l.w : 0, r: l ? l.r : target.reps, done: false, phase: 'warmup', warmup: true }
+      ? {
+        sec: prev ? prev.sec : (work ? work.sec : (target.sec || 45)),
+        w: rampTo(work ? (work.w || 0) : (target.weight || 0)),
+        done: false, phase: 'warmup', warmup: true,
+      }
+      : {
+        w: rampTo(work ? (work.w || 0) : (target.weight || 0)),
+        r: work ? work.r : (prev ? prev.r : target.reps),
+        done: false, phase: 'warmup', warmup: true,
+      }
   const next = rows.slice()
   next.splice(at, 0, warm)
   return next
@@ -371,15 +850,17 @@ export function removeRowAt(rows, i) {
   return next
 }
 
-/** Completed non-warm-up sets across a workout's entries. */
+/** Completed non-warm-up sets across a workout's entries, counted the way setsDone counts them —
+ *  each side of a unilateral row on its own — so "22 sets · 19 work" never reads as three
+ *  warm-ups on a workout that had none. */
 export function workSetsDone(w) {
   return (w?.entries || []).reduce(
-    (n, e) => n + (e.sets || []).filter(s => s.done && !isWarmupRow(s)).length, 0,
+    (n, e) => n + (e.sets || []).reduce((m, s) => m + (isWarmupRow(s) ? 0 : doneUnits(s)), 0), 0,
   )
 }
 
 const METRIC_MODES = ['reps', 'time', 'cardio']
-const completedRowsForMode = (entry, mode) => workRowsForMode(entry, mode).filter(s => s.done === true && !isWarmupRow(s))
+const completedRowsForMode = (entry, mode) => workRowsForMode(entry, mode).filter(s => hasCompletedWork(s) && !isWarmupRow(s))
 
 export function metricRowsForEntry(entry, mode) {
   const requested = typeof mode === 'string' ? mode.trim().toLowerCase() : ''
@@ -396,6 +877,30 @@ export function metricModeForEntry(entry, fallback = null) {
   return modeForEntry(entry, fallback)
 }
 
+/** Every saved occurrence of an exercise in one workout, in its stored order. */
+export function entriesForExercise(workout, exId) {
+  if (exId == null || exId === '') return []
+  return (workout?.entries || []).filter(entry => entry?.id === exId)
+}
+
+/** Metric data for every occurrence in one workout, including legacy reps topW-only records. */
+export function metricEntriesForExercise(workout, exId) {
+  return entriesForExercise(workout, exId)
+    .map(entry => ({ entry, mode: metricModeForEntry(entry) }))
+    .map(({ entry, mode }) => ({ entry, mode, rows: mode ? metricRowsForEntry(entry, mode) : [] }))
+    .filter(item => item.rows.length || (item.mode === 'reps' && bestWeightForEntry(item.entry) > 0))
+}
+
+/** Total reps from one completed row, counting only completed limbs of a per-side row. */
+export function completedRepsOf(set = {}) {
+  if (isSideSet(set)) {
+    return [set.sides.L, set.sides.R]
+      .filter(side => side?.done === true)
+      .reduce((total, side) => total + Math.max(0, Number(side.r) || 0), 0)
+  }
+  return set?.done === true ? Math.max(0, Number(set.r) || 0) : 0
+}
+
 /** Best load from completed work rows, with a guarded reps-only legacy topW fallback. */
 
 export function bestWeightForEntry(entry = {}) {
@@ -404,19 +909,36 @@ export function bestWeightForEntry(entry = {}) {
     ? entry.sets.filter(s => phaseForSet(s) === 'work')
     : []
   const repsRows = metricRowsForEntry(entry, 'reps')
-  if (!repsRows.length) {
-    return workRows.reduce((best, set) => {
-      if (set?.done !== true || isWarmupRow(set)) return best
-      const weight = Number(set.w)
-      return Number.isFinite(weight) && weight > best ? weight : best
-    }, 0)
-  }
-
+  // Reps rows are the authoritative load metric for a mixed entry. Otherwise use every
+  // completed work row (timed holds can carry an added load too).
+  const completedRows = repsRows.length
+    ? repsRows
+    : workRows.filter(set => hasCompletedWork(set) && !isWarmupRow(set))
+  // On an assistance machine the smallest load is the best set, so "best" folds the other way
+  // (issue #232). Everything below still returns a plain number — the caller does not branch.
+  const assisted = isAssisted(entry.id ? { id: entry.id } : entry)
   let best = 0
-  repsRows.forEach(set => {
-    const weight = Number(set?.w)
-    if (Number.isFinite(weight) && weight > best) best = weight
+  let hasUsableWeight = false
+  completedRows.forEach(set => {
+    const completedSets = isSideSet(set)
+      ? [set.sides.L, set.sides.R].filter(side => side?.done === true)
+      : [set]
+    completedSets.forEach(completedSet => {
+      const weight = Number(completedSet?.w)
+      if (!Number.isFinite(weight)) return
+      // A 0 on an assistance machine is a row with no load entered, not a set done with no help
+      // at all — folding it in as "the least assistance ever" would invent a record nobody did
+      // and then ask for negative help next time. Anyone truly needing none has left the machine
+      // behind and should log the unassisted exercise instead.
+      if (assisted && !(weight > 0)) return
+      best = hasUsableWeight ? betterWeight(entry.id, best, weight) : weight
+      hasUsableWeight = true
+    })
   })
+
+  // A real completed row, including an explicit zero for an unloaded bodyweight set, always
+  // wins. A manual topW is only useful for old records whose rows did not carry a usable load.
+  if (hasUsableWeight) return best
 
   const parentMode = modeForSet({}, target)
   const hasNonRepsWorkRow = workRows.some(set => modeForSet(set, target) !== 'reps')
@@ -424,7 +946,7 @@ export function bestWeightForEntry(entry = {}) {
   const topWeight = Number(entry.topW)
   // topW predates phase-tagged warm-ups. It remains a fallback for legacy all-work records,
   // but cannot override resolved work rows once any warm-up marker exists.
-  if (parentMode === 'reps' && !hasNonRepsWorkRow && !hasWarmupRow
-    && Number.isFinite(topWeight) && topWeight > best) best = topWeight
+  if (parentMode === 'reps' && !hasNonRepsWorkRow && !hasWarmupRow && Number.isFinite(topWeight)
+    && (best <= 0 || (assisted ? topWeight > 0 && topWeight < best : topWeight > best))) best = topWeight
   return best
 }

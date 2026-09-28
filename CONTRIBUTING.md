@@ -37,11 +37,31 @@ cd frontend && npm test
   State lives in the Zustand store (`src/store`); pure helpers in `src/lib`.
 - **Don't commit** the exercise media (`media/`) or `data/` — they're gitignored.
 - **Test the flow** you touched — click through the affected screens (and the workout flow) in a
-  browser before opening a PR.
+  browser before opening a merge request.
 - **Training logic gets a unit test.** Anything deciding what you lift next, or reading a logged
   session back, belongs in a pure helper in `src/lib` with tests beside it (`npm test`). These
   rules are easy to get subtly wrong and nearly impossible to verify by clicking — the
   progression engine grew two real bugs that only a test pinned down.
+
+## What CI does with your pull request
+
+A pull request runs the three test suites (frontend, MCP, api) through GitHub Actions and
+builds and boots both api image targets. The APK and the published images come from the CI
+on the GitLab mirror, which builds them from `main` after the merge; if your change needs an
+APK to be judged, say so in the PR and a maintainer runs that build.
+
+Merge requests that are still open on the GitLab mirror keep working as before. Every MR runs the three test suites (frontend, MCP, api), with the results and the coverage
+of your diff shown in the MR itself, plus a build of the web image and the api image when you
+touched their inputs. The frontend job also prints how much your change adds to the gzipped
+bundle compared with main. The APK and the published images are manual jobs there (on
+`main` both build on every push).
+
+One gitlab.com quirk: an MR from a fork runs its pipeline in *your* fork, which usually has
+no runners enabled — so it would show "no pipeline" forever. For that reason the project
+starts the pipeline on its own runners for you: automatically if you have had an MR merged
+here before, otherwise a maintainer presses "Run pipeline" after a first look at the diff
+(the MR gets the `ci-approval-needed` label until then). Changes to `.gitlab-ci.yml` or
+`scripts/ci/` always go through that manual step.
 
 ## Good first issues
 
@@ -55,14 +75,17 @@ cd frontend && npm test
 
 | You have | Goes to |
 | --- | --- |
-| A question, or self-hosting that won't behave | [An issue labelled `question`](https://gitea.com/DuarteSantos/openGym/issues) |
-| An idea you're not sure about yet | [An issue labelled `idea`](https://gitea.com/DuarteSantos/openGym/issues) |
-| A reproducible bug | [Issues](https://gitea.com/DuarteSantos/openGym/issues) |
-| A change you've already built | A pull request |
+| A quick question, or you'd rather just chat | [The Discord](https://discord.gg/e62jY6fwVb) |
+| A question, or self-hosting that won't behave | [An issue labelled `question`](https://github.com/DuarteSantos8/openGym/issues) |
+| An idea you're not sure about yet | [An issue labelled `idea`](https://github.com/DuarteSantos8/openGym/issues) |
+| A reproducible bug | [Issues](https://github.com/DuarteSantos8/openGym/issues) |
+| A change you've already built | [A pull request](https://github.com/DuarteSantos8/openGym/pulls) |
 
-gitea.com has no Discussions, so questions and ideas are issues too — just labelled, so nobody
+Questions and ideas are issues too (one tracker is enough) — just labelled, so nobody
 mistakes a question for agreed-on work. An answered question is worth more than the same answer
 in a chat log: the next person searching "passkey login fails behind my reverse proxy" finds it.
+That is the one thing the Discord can't do, so if an answer there turns out to be worth keeping,
+it belongs in an issue afterwards.
 
 ## Reporting bugs
 

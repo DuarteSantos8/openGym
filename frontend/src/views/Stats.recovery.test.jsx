@@ -1,19 +1,27 @@
+// @vitest-environment happy-dom
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Window } from 'happy-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { EXIDX } from '../lib/exercises.js'
 import { MUSCLES, levelsOf } from '../lib/muscles.js'
 import { FATIGUE_STATES, STRENGTH_FLOOR } from '../lib/recovery.js'
 import { fatigueStateOf } from '../lib/recovery-view.js'
 import Stats from './Stats.jsx'
+import Modals from '../components/Modals.jsx'
+import { bindUI } from '../components/ui.jsx'
+import { useUI } from '../store/useUI.js'
 
 const DAY = 86400000
 const HOUR = 3600000
 const BASE_NOW = Date.UTC(2026, 0, 22, 12)
+const LEGACY_SNAPSHOT_ID = 'legacy-snapshot-only'
 
 const mocks = vi.hoisted(() => ({
   maps: [],
+  charts: [],
   mapMounts: 0,
+  exerciseHistorySheet: vi.fn(),
   S: {
     unit: 'kg', body: 'male', effort: 'rir', targetW: null,
     bodyweight: [], routines: [], workouts: [],
@@ -26,9 +34,13 @@ vi.mock('../store/useStore.js', () => ({
 vi.mock('react-router-dom', () => ({ useNavigate: () => () => {} }))
 vi.mock('../sheets.jsx', () => ({
   bwSheet: () => {}, goalSheet: () => {}, calendarSheet: () => {}, workoutDetailSheet: () => {},
-  WorkoutRow: () => React.createElement('div'), bwDeltaColor: () => 'inherit',
+  exerciseHistorySheet: mocks.exerciseHistorySheet,
+  WorkoutRow: () => React.createElement('div'), bwDeltaColor: () => 'inherit', weighInsSheet: () => {},
 }))
-vi.mock('../components/LineChart.jsx', () => ({ default: () => React.createElement('div') }))
+vi.mock('../components/LineChart.jsx', () => ({ default: props => {
+  mocks.charts.push(props)
+  return React.createElement('div')
+} }))
 vi.mock('../components/Heatmap.jsx', () => ({ default: () => React.createElement('div') }))
 vi.mock('../components/Icon.jsx', () => ({ default: props => React.createElement('span', props) }))
 vi.mock('../components/BodyMap.jsx', () => ({
@@ -49,6 +61,8 @@ vi.mock('../components/BodyMap.jsx', () => ({
   },
   BodyMapLegend: () => React.createElement('div', { 'data-balance-legend': true }),
 }))
+
+bindUI(useUI)
 
 let dom
 let root
@@ -105,19 +119,45 @@ function allSubfullWorkout(now = BASE_NOW) {
   return workout('all-subfull', now - 15 * DAY, [entry('1254', [set(true)])])
 }
 
+function exercisePickerWorkouts(now = BASE_NOW) {
+  return [
+    workout('bench', now, [entry('0025', [set(true, { w: 80 })])]),
+    workout('squat', now - DAY, [entry('0043', [set(true, { w: 60 })])]),
+    workout('legacy', now - 2 * DAY, [
+      {
+        id: LEGACY_SNAPSHOT_ID,
+        muscleSnapshot: {
+          n: 'Legacy shoulder press',
+          bp: 'shoulders',
+          primaries: ['deltoids'],
+          secondaries: ['triceps'],
+          muscleGroups: ['deltoids', 'triceps'],
+        },
+        sets: [set(true, { w: 50 })],
+      },
+    ]),
+  ]
+}
+
 function resetFixture(workouts = lifecycleWorkouts()) {
   mocks.S.unit = 'kg'
   mocks.S.bodyweight = []
   mocks.S.workouts = workouts
   mocks.maps.length = 0
+  mocks.charts.length = 0
   mocks.mapMounts = 0
+  mocks.exerciseHistorySheet.mockClear()
+  useUI.setState({ sheets: [] })
 }
 
 function installDom() {
   dom = new Window({ url: 'http://localhost/' })
+  dom.scrollTo = vi.fn()
   globalThis.window = dom
   globalThis.document = dom.document
   Object.defineProperty(globalThis, 'navigator', { configurable: true, value: dom.navigator })
+  Object.defineProperty(globalThis, 'location', { configurable: true, value: dom.location })
+  Object.defineProperty(globalThis, 'history', { configurable: true, value: dom.history })
   for (const key of ['HTMLElement', 'HTMLIFrameElement', 'Node', 'Element', 'Event', 'MouseEvent']) {
     globalThis[key] = dom[key]
   }
@@ -129,7 +169,7 @@ function installDom() {
 
 async function mountStats() {
   installDom()
-  await act(async () => { root.render(React.createElement(Stats)) })
+  await act(async () => { root.render(React.createElement(React.Fragment, null, React.createElement(Stats), React.createElement(Modals))) })
 }
 
 async function unmountStats() {
@@ -179,6 +219,7 @@ beforeEach(() => {
 
 afterEach(async () => {
   await unmountStats()
+  useUI.setState({ sheets: [] })
   vi.useRealTimers()
   vi.restoreAllMocks()
 })
@@ -270,5 +311,197 @@ describe('Stats muscle recovery view runtime', () => {
     expect(Object.values(strengthMap.load).every(value => value < 1)).toBe(true)
     expect(Math.min(...Object.values(strengthMap.load))).toBe(STRENGTH_FLOOR)
     expect(strengthMap.thresholds.at(-1)).toEqual({ at: 1, level: 4 })
+  })
+})
+
+describe('Stats strength exercise rows', () => {
+  // The rows under "Exercises · <muscle>" are presented as buttons (role, tabIndex, pointer
+  // cursor) but for a year called a handler that never existed, so every tap threw
+  // "onExercise is not defined" and opened nothing (QA C13). A tap now opens the exercise's
+  // history sheet — the one place that already draws the Est. 1RM curve the row quotes.
+  it('opens the exercise history sheet when a row is tapped instead of throwing', async () => {
+    resetFixture(exercisePickerWorkouts())
+    await mountStats()
+    const thrown = []
+    dom.addEventListener('error', e => { thrown.push(e.error || e.message); e.preventDefault() })
+
+    await click(viewButton('Strength'))
+    await click(muscleCard().querySelector('[data-muscle="chest"]'))
+    expect(muscleCard().textContent).toContain('Exercises · Chest')
+    const row = [...muscleCard().querySelectorAll('.mrow[role="button"]')].find(el => el.textContent.includes('Est. 1RM'))
+    expect(row, 'expected a tappable exercise row for the chest').toBeTruthy()
+    expect(row.textContent).toContain('barbell bench press')
+
+    await click(row)
+    expect(thrown).toEqual([])
+    expect(mocks.exerciseHistorySheet).toHaveBeenCalledTimes(1)
+    expect(mocks.exerciseHistorySheet).toHaveBeenCalledWith('0025')
+
+    // The keyboard path of tappable() must land in the same place.
+    await act(async () => { row.dispatchEvent(new dom.KeyboardEvent('keydown', { key: 'Enter', bubbles: true })) })
+    expect(thrown).toEqual([])
+    expect(mocks.exerciseHistorySheet).toHaveBeenCalledTimes(2)
+  })
+
+  // The retained-strength bar used a 'to right' gradient, which fills from the left in Arabic too.
+  // A width fills from the inline start, the way the detrained rows' bars already did.
+  it('fills the retained-strength bar by width, so it follows the text direction', async () => {
+    resetFixture([workout('bench-old', BASE_NOW - 20 * DAY, [entry('0025', [set(true, { w: 80 })])])])
+    await mountStats()
+    await click(viewButton('Strength'))
+    await click(muscleCard().querySelector('[data-muscle="chest"]'))
+    const row = [...muscleCard().querySelectorAll('.mrow[role="button"]')].find(el => el.textContent.includes('Est. 1RM'))
+    expect(row).toBeTruthy()
+    const pct = row.querySelector('.v').textContent.match(/(\d+)%/)[1]
+    expect(Number(pct)).toBeLessThan(100)
+    const fill = row.querySelector('.bar i')
+    expect(fill.style.width).toBe(pct + '%')
+    expect(fill.getAttribute('style')).not.toMatch(/to right|gradient/)
+  })
+})
+
+describe('Stats exercise progress picker', () => {
+  it('keeps a legacy reps record whose load is stored only in topW', async () => {
+    resetFixture([workout('legacy-topw', BASE_NOW, [
+      { id: '0025', target: { mode: 'reps' }, topW: 70, sets: [] },
+    ])])
+    await mountStats()
+
+    const card = [...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')
+    expect(card.textContent).toContain('70 kg')
+    const progressChart = mocks.charts.find(chart => chart.points?.some(point => point.y === 70))
+    expect(progressChart?.points).toHaveLength(1)
+    expect(progressChart.points[0].y).toBe(70)
+  })
+
+  it('keeps the strongest topW across repeated legacy records', async () => {
+    resetFixture([workout('legacy-topw-duplicates', BASE_NOW, [
+      { id: '0025', target: { mode: 'reps' }, topW: 70, sets: [] },
+      { id: '0025', target: { mode: 'reps' }, topW: 60, sets: [] },
+    ])])
+    await mountStats()
+
+    const card = [...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')
+    expect(card.textContent).toContain('70 kg')
+    const progressChart = mocks.charts.find(chart => chart.points?.some(point => point.y === 70))
+    expect(progressChart?.points).toHaveLength(1)
+    expect(progressChart.points[0].y).toBe(70)
+  })
+
+  it('keeps a legacy topW when a modern occurrence shares the workout', async () => {
+    resetFixture([workout('modern-and-legacy', BASE_NOW, [
+      entry('0025', [set(true, { w: 50, r: 5 })]),
+      { id: '0025', target: { mode: 'reps' }, topW: 70, sets: [] },
+    ])])
+    await mountStats()
+
+    const card = [...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')
+    expect(card.textContent).toContain('70 kg')
+    const progressChart = mocks.charts.find(chart => chart.points?.some(point => point.y === 70))
+    expect(progressChart?.points).toHaveLength(1)
+    expect(progressChart.points[0].y).toBe(70)
+  })
+
+  it('aggregates duplicate exercise occurrences into one progress point', async () => {
+    resetFixture([workout('duplicate', BASE_NOW, [
+      entry('0025', [set(true, { w: 60, r: 5 })]),
+      entry('0025', [set(true, { w: 80, r: 5 })]),
+    ])])
+    await mountStats()
+
+    const card = [...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')
+    expect(card.textContent).toContain('80 kg')
+    const progressChart = mocks.charts.find(chart => chart.points?.some(point => point.y === 80))
+    expect(progressChart?.points).toHaveLength(1)
+    expect(progressChart.points[0].y).toBe(80)
+    expect(card.textContent).toContain('60×5  80×5')
+  })
+
+  it('aggregates repeated assisted occurrences by the lightest load', async () => {
+    resetFixture([workout('assisted-duplicate', BASE_NOW, [
+      entry('0017', [set(true, { w: 30, r: 8 })]),
+      entry('0017', [set(true, { w: 20, r: 8 })]),
+    ])])
+    await mountStats()
+
+    const card = [...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')
+    expect(card.textContent).toContain('20 kg')
+    const progressChart = mocks.charts.find(chart => chart.points?.some(point => point.y === 20))
+    expect(progressChart?.points).toHaveLength(1)
+    expect(progressChart.points[0].y).toBe(20)
+  })
+
+  it('filters with the shared exercise matcher and still selects from the mounted sheet', async () => {
+    resetFixture(exercisePickerWorkouts())
+    await mountStats()
+    expect(EXIDX[LEGACY_SNAPSHOT_ID]).toBeUndefined()
+
+    const card = [...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')
+    const selector = [...card.querySelectorAll('button')].find(button => button.querySelector('.lrow-t')?.textContent.trim() === 'Exercise')
+    await click(selector)
+
+    const modal = document.querySelector('#modal-root')
+    const input = modal.querySelector('input')
+    expect(input).toBeTruthy()
+    expect(input.getAttribute('aria-label')).toBe('Search…')
+    expect(input.getAttribute('placeholder')).toBe('Search…')
+    expect(modal.querySelector('.picker-search')).toBeTruthy()
+    const optionButtons = () => [...modal.querySelectorAll('.sect-b button')]
+    const initialOptionCount = optionButtons().length
+    expect(initialOptionCount).toBe(3)
+    expect(modal.textContent).toContain('Legacy shoulder press')
+    expect(input.compareDocumentPosition(optionButtons()[0]) & globalThis.Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+
+    const setter = Object.getOwnPropertyDescriptor(input.constructor.prototype, 'value').set
+    const setSearch = async value => act(async () => {
+      setter.call(input, value)
+      input.dispatchEvent(new Event('input', { bubbles: true }))
+      input.dispatchEvent(new Event('change', { bubbles: true }))
+    })
+
+    // A focused search can leave a newly narrowed result below the visual viewport. The
+    // correction must advance the sheet's own scroll position, not the page behind it.
+    const sheet = modal.querySelector('.sheet')
+    const firstOption = optionButtons()[0]
+    Object.defineProperties(sheet, {
+      clientHeight: { configurable: true, value: 400 },
+      scrollHeight: { configurable: true, value: 1000 },
+    })
+    vi.spyOn(sheet, 'getBoundingClientRect').mockReturnValue({ bottom: 600 })
+    vi.spyOn(firstOption, 'getBoundingClientRect').mockReturnValue({ bottom: 500 })
+    Object.defineProperty(window, 'visualViewport', { configurable: true, value: { height: 300 } })
+    input.focus()
+    expect(sheet.style.getPropertyValue('--picker-visual-height')).toBe('300px')
+    expect(sheet.style.getPropertyValue('--picker-keyboard-bottom')).toBe(`${Math.max(0, window.innerHeight - 300)}px`)
+    await setSearch('bench')
+    await tick(100)
+    expect(sheet.scrollTop).toBeGreaterThan(0)
+
+    await setSearch('no such historical exercise')
+    expect(modal.textContent).toContain('No match')
+    expect(optionButtons()).toHaveLength(0)
+
+    await click(modal.querySelector('button[aria-label="Clear"]'))
+    expect(input.value).toBe('')
+    expect(optionButtons()).toHaveLength(initialOptionCount)
+    expect(modal.textContent).toContain('Legacy shoulder press')
+
+    await setSearch('legacy shoulder press shoulders deltoids triceps')
+    expect(optionButtons()).toHaveLength(1)
+    expect(optionButtons()[0].textContent).toContain('Legacy shoulder press')
+
+    await click(modal.querySelector('button[aria-label="Clear"]'))
+    await setSearch('squat full bárbell')
+
+    // A catalogue name is title-cased like it is in every list (exerciseNameText); the legacy
+    // snapshot above keeps the name as it was typed.
+    expect(modal.textContent).toContain('Barbell Full Squat')
+    expect(modal.textContent).not.toContain('Barbell Bench Press')
+
+    const matching = [...modal.querySelectorAll('button')].find(button => button.textContent.includes('Barbell Full Squat'))
+    await click(matching)
+
+    expect(useUI.getState().sheets).toHaveLength(0)
+    expect(card.querySelector('.lrow-v').textContent).toContain('Barbell Full Squat')
   })
 })

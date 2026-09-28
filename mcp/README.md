@@ -67,18 +67,27 @@ the server's stderr.
 
 ## Tools
 
-Eight read-only tools in v1:
+Nine read-only tools in v1:
 
 | Tool | What it answers |
 |---|---|
 | `list_routines` | What routines are saved in my profile? (names + exercise counts) |
-| `get_routine` | What does the Push Day routine prescribe? (sets/reps/weight per exercise) |
+| `get_routine` | What does the Push Day routine prescribe? (sets/reps/weight and rest per exercise) |
+| `preview_session` | What will the app actually put on screen when I start this routine — after the progression policy and my history have overridden the plan? |
 | `get_week_plan` | What's on my plan this week, including today with any date-specific override? |
 | `list_workouts` | Recent sessions — newest first, with dates, sets done/planned, volume, duration, PRs. |
 | `get_workout` | Full set-by-set breakdown of one session, by `workout_id` or by date. On a day with two sessions the date alone returns both ids to pick from rather than guessing at one. |
 | `get_bodyweight` | Weigh-ins with the latest weight, the goal line, and deltas vs goal. |
 | `estimate_1rm` | All-time best 1RM for an exercise + the trend, or a PR table across all exercises. |
 | `muscle_balance` | Which muscles I've trained this week/month/all-time, ranked + which I've neglected. |
+
+`get_routine` and `preview_session` answer two different questions, and confusing them is the
+easiest way for a coach to give wrong advice. `get_routine` reports what the routine *stores*.
+`preview_session` reports what the athlete will actually *see*: a routine holding "squat 3×8 @
+60 kg" opens at 75 kg if the policy progressed or deloaded from that routine's last logged
+session. The routine's own weight is the last fallback the session builder consults, not the
+first; its reps hold unless a policy that moves reps moved them, or the profile starts planned
+sessions from the last session (`starts_from`). Ask `preview_session` before naming a weight.
 
 Each tool returns JSON the LLM can format as it likes; structured fields (sets, dates, levels)
 are pre-formatted into human-readable labels in `src/labels.js` so the LLM doesn't need to
@@ -112,7 +121,7 @@ dependencies landed in `frontend/`, no public exports changed.
 cd mcp && npm test
 ```
 
-32 cases seeding state from `frontend/src/lib/demoSeed.js` (the same deterministic fixture
+58 cases seeding state from `frontend/src/lib/demoSeed.js` (the same deterministic fixture
 the public demo runs on). Pins JSON shape and the user-facing edge cases: rest-day override,
 missing routine, zero-workout history, no synced state, superset links, three 1RM formulas.
 "Today" is pinned via `vi.useFakeTimers({ now: ..., toFake: ['Date'] })` so date-dependent
@@ -122,8 +131,8 @@ their own 92 tests in `frontend/src/lib/*.test.js`.
 ## Roadmap
 
 - **Done (Phase 1):** read-only stdio, 8 tools, direct `./data` access.
-- **Phase 1.5:** a `progression_next` tool (what does the policy prescribe next?). No new
-  deps; small surface area.
+- **Done (Phase 1.5):** `preview_session` — the policy's next prescription, the opening set
+  rows it produces, and which of plan / confirmed weight / history each number came from.
 - **Phase 2:** read+write over stdio. Requires a long-lived token auth path minted from the
   admin dashboard (new `./data/tokens.json`) and a write-lock against the web UI's read-modify-
   write of `state-<uid>.json`. Tools: `log_workout`, `add_bodyweight`, `edit_routine`,

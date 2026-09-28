@@ -1,6 +1,6 @@
 import { EXIDX } from './exercises.js'
 import { MUSCLES, musclesOf } from './muscles.js'
-import { isWarmupRow } from './workout-model.js'
+import { isWarmupRow, dropsOf } from './workout-model.js'
 
 // A "normal" hard session for one muscle, in primary-set equivalents. The saturation curve
 // 1 - exp(-stimulus / REF) maps any session size onto [0,1) so volume raises the starting
@@ -59,6 +59,12 @@ function workoutTimestamp(workout) {
 
 function emptyMuscleMap(value) {
   return Object.fromEntries(MUSCLES.map(slug => [slug, value]))
+}
+
+// Current catalogue metadata stays authoritative. Finished entries retain a nested muscle
+// snapshot specifically so deleted custom exercises can still contribute to recovery maps.
+function exerciseFor(entry) {
+  return EXIDX[entry?.id] || entry
 }
 
 // Epley one-rep-max estimate, matching onerm.js (REP_CAP included so high-rep sets do not
@@ -161,7 +167,7 @@ function loadKgFor(ex, entry, set, workout, opts = {}) {
 function session1RMs(workout, opts = {}) {
   const best = new Map()
   for (const entry of workout?.entries || []) {
-    const ex = EXIDX[entry.id]
+    const ex = exerciseFor(entry)
     for (const set of entry.sets || []) {
       const load = loadKgFor(ex, entry, set, workout, opts)
       if (set?.done !== true || !(load > 0) || !(set.r > 0)) continue
@@ -170,6 +176,25 @@ function session1RMs(workout, opts = {}) {
     }
   }
   return best
+}
+
+// Extra tonnage from a drop-set's drops, weighted the same way as the row's own main set — a
+// drop taken near failure counts the same as any other hard rep for fatigue purposes, it just
+// carries its own (usually lighter) load.
+//
+// A rest-pause row's `clusters` are NOT extra here: the row's own `r` already is the total reps
+// across every burst (see applyIntensifierPlan/history.js), so the main tonnage term below
+// already covers it — adding clusters on top would double-count the same reps.
+function extraTonnage(ex, entry, set, workout, oneRm, opts = {}) {
+  const drops = dropsOf(set)
+  if (!drops.length) return 0
+  const isBwEx = bodyweightConfigured(ex, entry, set, workout, opts)
+  const weigh = (load, reps) => {
+    if (!(load > 0) || !(reps > 0)) return 0
+    const raw = load * reps
+    return isBwEx || !(oneRm > 0) ? raw : raw * Math.min(1, load / oneRm) ** 1.5
+  }
+  return drops.reduce((sum, d) => sum + weigh(loadKgFor(ex, entry, d, workout, opts), Number(d?.r) || 0), 0)
 }
 
 // Intensity-weighted tonnage for one completed set: load x reps x (load / exercise 1RM)^1.5.
@@ -186,13 +211,14 @@ function setTonnage(ex, entry, set, workout, oneRm, opts = {}) {
   const reps = set?.r || 1
   const load = loadKgFor(ex, entry, set, workout, opts)
   const raw = load * reps
+  const extra = extraTonnage(ex, entry, set, workout, oneRm, opts)
   // A bodyweight target is already an external-load-normalised total (body mass + any added
   // load). It has no meaningful barbell-style 1RM intensity ratio in the legacy data model, so
   // retain the monotonic total-load stimulus instead of letting a newly created low 1RM shrink
   // a weighted bodyweight set below the unloaded version.
-  if (bodyweightConfigured(ex, entry, set, workout, opts)) return raw
-  if (!(oneRm > 0) || !(load > 0)) return raw
-  return raw * Math.min(1, load / oneRm) ** 1.5
+  if (bodyweightConfigured(ex, entry, set, workout, opts)) return raw + extra
+  if (!(oneRm > 0) || !(load > 0)) return raw + extra
+  return raw * Math.min(1, load / oneRm) ** 1.5 + extra
 }
 
 // One session's per-muscle stimulus, calculated only from that session. A completed zero-load
@@ -201,10 +227,11 @@ function sessionTonnages(workout, opts = {}) {
   const sums = emptyMuscleMap(0)
   const oneRms = session1RMs(workout, opts)
   for (const entry of workout?.entries || []) {
-    const weights = musclesOf(EXIDX[entry.id])
+    const ex = exerciseFor(entry)
+    const weights = musclesOf(ex)
     for (const set of entry.sets || []) {
       if (set?.done !== true) continue
-      const measured = setTonnage(EXIDX[entry.id], entry, set, workout, oneRms.get(entry.id), opts)
+      const measured = setTonnage(ex, entry, set, workout, oneRms.get(entry.id), opts)
       const tonnage = Number.isFinite(measured) && measured > 0 ? measured : ZERO_LOAD_SET_STIMULUS
       for (const [slug, weight] of Object.entries(weights)) {
         if (Object.prototype.hasOwnProperty.call(MUSCLES_BY_SLUG, slug)) sums[slug] += tonnage * weight
@@ -306,7 +333,7 @@ export function strengthOf(workouts, now, opts = {}) {
     if (!Number.isFinite(timestamp)) continue
     for (const entry of workout.entries || []) {
       if (!(entry.sets || []).some(set => set?.done === true && !isWarmupRow(set))) continue
-      for (const slug of Object.keys(musclesOf(EXIDX[entry.id]))) {
+      for (const slug of Object.keys(musclesOf(exerciseFor(entry)))) {
         if (Object.prototype.hasOwnProperty.call(MUSCLES_BY_SLUG, slug) && timestamp > latest[slug]) {
           latest[slug] = timestamp
         }
