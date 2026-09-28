@@ -167,8 +167,10 @@ export const getWeekPlan = {
     return {
       today: isoToday,
       weekdays: [0, 1, 2, 3, 4, 5, 6].map(d => {
-        const rid = S.week?.[d] || null
-        const r = rid ? (S.routines || []).find(x => x.id === rid) : null
+        // A weekday holds a list of routine ids (older files: a single id).
+        const planned = [].concat(S.week?.[d] || []).map(id => (S.routines || []).find(x => x.id === id)).filter(Boolean)
+        const r = planned[0] || null
+        const rid = r?.id || null
         // Surface today's override only (not the whole dayPlan dict — usually empty, but might
         // have grown from repeated "move this day" actions).
         const overrideForToday = d === todayWd ? (S.dayPlan?.[isoToday] ?? null) : null
@@ -178,6 +180,7 @@ export const getWeekPlan = {
           routine_id: rid,
           routine_name: r?.name || null,
           routine_emoji: r?.emoji || null,
+          routines: planned.map(x => ({ routine_id: x.id, name: x.name })),
           override_for_today_or_null: overrideForToday
         }
       }),

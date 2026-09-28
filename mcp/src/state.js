@@ -1,8 +1,10 @@
-/* opengym-mcp state — reads ./data/state-<uid>.json + db.json (read-only). Cached with an
-   fs.watch + mtime fallback so a session the api server just wrote is visible on the next
-   tool call without a restart. */
+/* opengym-mcp state — reads ./data/state-<uid>.json + db.json. Cached with an fs.watch + mtime
+   fallback so a session the api server just wrote is visible on the next tool call without a
+   restart. The only writer is mutateState(), used by the remote server's write tools. */
 import fs from 'node:fs'
 import path from 'node:path'
+import { AsyncLocalStorage } from 'node:async_hooks'
+import { changeState } from '../../api/state-store.js'
 
 const DATA_DIR = process.env.OPENGYM_DATA || path.join(process.cwd(), 'data')
 
@@ -84,8 +86,20 @@ export function init() {
   } catch { /* fs.watch unsupported on this platform; tools will re-read on mtime change */ }
 }
 
+// The remote server (http.js) answers many users from one process, so each request runs inside
+// withProfile() with the uid its OAuth grant belongs to, and reads that user's file directly —
+// the cache below is for the one profile a stdio process serves.
+const requestUid = new AsyncLocalStorage()
+
+export function withProfile(uid, fn) { return requestUid.run(uid, fn) }
+
 // Returns the state object, or null for a fresh account that never signed in on a device.
 export function getState() {
+  const uid = requestUid.getStore()
+  if (uid) {
+    const state = readJsonOrNull(stateFile(uid))
+    return state ? Object.assign({}, defaultsShape(), state) : null
+  }
   init()
   const file = stateFile(_uid)
   // Re-read if the file's mtime changed since our last load — covers watcher omissions and
@@ -110,12 +124,29 @@ export function getState() {
 
 // Returns the user record (id + name). No passkey material, no VAPID keys, no push subs.
 export function getUser() {
-  init()
-  const u = _db.users.find(x => x.id === _uid) || { id: _uid, name: 'Profile', created: null }
+  const uid = requestUid.getStore()
+  if (uid) reloadDb(); else init()
+  const u = _db.users.find(x => x.id === (uid || _uid)) || { id: uid || _uid, name: 'Profile', created: null }
   return { id: u.id, name: u.name, created: u.created || null }
 }
 
 export const dataDir = () => DATA_DIR
+
+// `_rev` is the revision the api keeps for PUT /api/data (`baseRev`). Write tools pass back the
+// one they read, and changeState refuses the write if the browser — or another tool call — has
+// written since.
+export const getStateVersion = () => Number(getState()?._rev) || 0
+
+export function mutateState(expectedVersion, producer) {
+  const uid = requestUid.getStore() || (init(), _uid)
+  const { version } = changeState(stateFile(uid), expectedVersion, stored => {
+    const next = Object.assign({}, defaultsShape(), stored)
+    producer(next)
+    return next
+  })
+  if (uid === _uid) { _state = undefined; _loadedMtime = 0 }
+  return { state_version: version }
+}
 
 // Test-only: work against a passed-in state, not the disk.
 export function _seedStateForTests(state) {
