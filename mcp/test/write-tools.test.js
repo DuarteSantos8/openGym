@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { z } from 'zod'
 import { _seedStateForTests } from '../src/state.js'
-import { createTrainingPlan, searchExercises, listExercises, editRoutine, deleteRoutine } from '../src/write-tools.js'
+import { createTrainingPlan, searchExercises, listExercises, editRoutine, deleteRoutine, previewExerciseHistoryMerge, mergeExerciseHistory, undoExerciseHistoryMerge } from '../src/write-tools.js'
 import { allExercises } from '../../frontend/src/lib/exercises.js'
 
 const existing = () => ({
@@ -177,5 +177,35 @@ describe('ChatGPT plan tools', () => {
     const result = await createTrainingPlan.handler(input)
     expect(puts).toBe(2)
     expect(result.rev).toBe(6)
+  })
+})
+
+describe('history migration tools', () => {
+  test('preview and commit call the dedicated API with the confirmed revision', async () => {
+    const calls = vi.fn(async (url, options) => String(url).endsWith('/api/me')
+      ? json({ user: { id: 'test-uid' } }) : json({ rev: 5, undo_id: 'id', workouts_updated: 1 }))
+    vi.stubGlobal('fetch', calls)
+    const args = { source_exercise_id: '0001', target_exercise_id: '0027', update_routines: true }
+    await previewExerciseHistoryMerge.handler(args)
+    expect(JSON.parse(calls.mock.calls[1][1].body)).toEqual({ ...args, dry_run: true })
+    await mergeExerciseHistory.handler({ ...args, preview_revision: 4 })
+    expect(String(calls.mock.calls[3][0])).toMatch(/api\/history\/merge$/)
+    expect(JSON.parse(calls.mock.calls[3][1].body)).toEqual({ ...args, baseRev: 4 })
+    await undoExerciseHistoryMerge.handler({ undo_id: 'id', merge_revision: 5 })
+    expect(JSON.parse(calls.mock.calls[5][1].body)).toEqual({ undo_id: 'id', baseRev: 5 })
+  })
+  test('missing preview revision is invalid and stale preview is not retried', async () => {
+    expect(() => z.object(mergeExerciseHistory.schema).parse({ source_exercise_id: '0001', target_exercise_id: '0027' })).toThrow()
+    const calls = vi.fn(async url => String(url).endsWith('/api/me')
+      ? json({ user: { id: 'test-uid' } }) : json({ error: 'conflict' }, 409))
+    vi.stubGlobal('fetch', calls)
+    await expect(mergeExerciseHistory.handler({ source_exercise_id: '0001', target_exercise_id: '0027', preview_revision: 4 })).rejects.toMatchObject({ code: 'ECONFLICT' })
+    expect(calls).toHaveBeenCalledTimes(2)
+  })
+  test('history calls refuse tokens belonging to another profile', async () => {
+    const calls = vi.fn(async () => json({ user: { id: 'someone-else' } }))
+    vi.stubGlobal('fetch', calls)
+    await expect(previewExerciseHistoryMerge.handler({ source_exercise_id: '0001', target_exercise_id: '0027' })).rejects.toMatchObject({ code: 'EAUTH' })
+    expect(calls).toHaveBeenCalledTimes(1)
   })
 })

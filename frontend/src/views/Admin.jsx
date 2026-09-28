@@ -228,7 +228,7 @@ function AuditCard({ tick }) {
         + (meta.ip_mode === 'off' ? ', without IP addresses' : '') + '.' : ''}
     </div>
     <div className="chips" style={{ marginBottom: 10 }}>
-      {[['', 'All'], ['auth', 'Sign-ins'], ['admin', 'Admin'], ['fail', 'Failed']].map(([v, l]) =>
+      {[['', 'All'], ['auth', 'Sign-ins'], ['admin', 'Admin'], ['history', 'History'], ['fail', 'Failed']].map(([v, l]) =>
         <button key={v} className={'chip' + (cat === v ? ' on' : '')} onClick={() => pick(v)}>{l}</button>)}
     </div>
     {rows.map(e => {

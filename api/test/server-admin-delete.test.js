@@ -60,8 +60,15 @@ async function startServer(t, { twoAdmins = false } = {}) {
 test('removes the account and everything attached to it', async t => {
   const h = await startServer(t);
   assert.ok(fs.existsSync(path.join(h.dataDir, `state-${VICTIM}.json`)));
+  const ownUndo = `history-undo-${VICTIM}-${crypto.randomUUID()}.json`;
+  const otherUndo = `history-undo-${ADMIN}-${crypto.randomUUID()}.json`;
+  const similarUndo = `history-undo-${VICTIM}-other-${crypto.randomUUID()}.json`;
+  for (const file of [ownUndo, otherUndo, similarUndo]) fs.writeFileSync(path.join(h.dataDir, file), '{}');
   const res = await h.del(VICTIM);
   assert.equal(res.status, 200);
+  assert.equal(fs.existsSync(path.join(h.dataDir, ownUndo)), false);
+  assert.equal(fs.existsSync(path.join(h.dataDir, otherUndo)), true);
+  assert.equal(fs.existsSync(path.join(h.dataDir, similarUndo)), true);
 
   const db = h.db();
   assert.deepEqual(db.users.map(u => u.id), [ADMIN], 'the user is gone');
