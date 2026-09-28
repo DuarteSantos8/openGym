@@ -1381,6 +1381,106 @@ paths:
               example: { error: "credential already registered", code: "credential-exists" }
         '429': { $ref: '#/components/responses/TooManyRequests' }
 
+  /api/history/merge:
+    post:
+      tags: [data]
+      operationId: mergeExerciseHistory
+      summary: Preview or commit an exercise history migration
+      description: |
+        Moves all logged entries from the source exercise to the target, preserving
+        separate blocks, sets, targets, notes, exclusions and muscle snapshots. Rebuilds
+        PRs and confirmed best loads. Both exercise IDs must exist in the account's catalogue.
+        Optional routine replacement refuses a routine already containing both exercises.
+
+        With `dry_run: true`, returns names, counts, overlaps and `rev` without writing.
+        After confirming that preview, omit `dry_run` (or pass false) and send its exact
+        revision as `baseRev`. A stale revision is refused. A changing commit returns
+        `undo_id` and a new revision; a no-op returns `undo_id: null` and keeps the revision.
+        The private undo backup is written before the state commit and survives restarts.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [source_exercise_id, target_exercise_id]
+              properties:
+                source_exercise_id: { type: string }
+                target_exercise_id: { type: string }
+                update_routines: { type: boolean, default: false }
+                scope: { type: string, enum: [all], default: all }
+                dry_run: { type: boolean, default: false }
+                baseRev: { type: integer, minimum: 0, description: Required for commit; the exact revision returned by preview. }
+      responses:
+        '200':
+          description: Preview, committed migration, or no-op result.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HistoryMergeResult' }
+        '400':
+          description: Invalid IDs/options, equal IDs, or colliding routine prescriptions.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: The account has no synced state.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '409':
+          description: Missing or stale commit revision; preview and confirm the current state again.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/history/undo:
+    post:
+      tags: [data]
+      operationId: undoExerciseHistoryMerge
+      summary: Undo an exercise history migration
+      description: |
+        Restores the profile before a merge using its private backup. Confirm with the user
+        and send the merge result's `undo_id` and revision as `baseRev`. Both the current
+        revision and state hash must match the committed merge: any later write makes undo
+        refuse rather than overwrite new data. A successful undo advances the revision.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [undo_id, baseRev]
+              properties:
+                undo_id: { type: string, format: uuid }
+                baseRev: { type: integer, minimum: 1 }
+      responses:
+        '200':
+          description: Profile restored and revision advanced.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  rev: { type: integer }
+        '400':
+          description: Invalid undo identifier.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: No undo backup for this account and identifier.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '409':
+          description: Missing/stale revision or the profile has changed since the merge.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
   /api/data:
     get:
       tags: [data]
@@ -3218,6 +3318,24 @@ components:
       additionalProperties: true
 
     # ------------------------------------------------------------------ state sync
+    HistoryMergeResult:
+      type: object
+      properties:
+        source_exercise_id: { type: string }
+        target_exercise_id: { type: string }
+        source_exercise: { type: string, description: Source exercise name. }
+        target_exercise: { type: string, description: Target exercise name. }
+        workouts_updated: { type: integer }
+        entries_moved: { type: integer }
+        sets_moved: { type: integer }
+        routines_updated: { type: integer }
+        overlapping_workouts: { type: integer }
+        rev: { type: integer }
+        dry_run: { type: boolean, description: Present and true on a preview. }
+        undo_id:
+          type: [string, 'null']
+          description: Present after commit; null for a no-op.
+
     State:
       type: object
       description: |
