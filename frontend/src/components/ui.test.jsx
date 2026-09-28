@@ -225,3 +225,40 @@ describe('NumberField fit', () => {
     expect(host.querySelector('input').style.width).toBe('')
   })
 })
+
+describe('NumberField select on tap', () => {
+  // In WebKit the release of the tap that focused the field moves the caret and drops the
+  // focus-time selection, so typing 65 over 62.5 read 6265.5. happy-dom cannot move a caret;
+  // what it can show is that the release of that first tap is kept from doing so.
+  const mouseup = el => {
+    const e = new MouseEvent('mouseup', { bubbles: true, cancelable: true })
+    act(() => el.dispatchEvent(e))
+    return e
+  }
+  const mount = () => {
+    act(() => root.render(<NumberField value={62.5} onChange={() => {}} />))
+    return host.querySelector('input')
+  }
+
+  it('keeps the selection through the release of the tap that focused it', () => {
+    const input = mount()
+    act(() => input.focus())
+    expect(input.selectionStart).toBe(0)
+    expect(input.selectionEnd).toBe(4)
+    expect(mouseup(input).defaultPrevented).toBe(true)
+  })
+
+  it('lets a later tap on the focused field place the caret', () => {
+    const input = mount()
+    act(() => input.focus())
+    mouseup(input)
+    expect(mouseup(input).defaultPrevented).toBe(false)
+  })
+
+  it('forgets the focus once the field is left', () => {
+    const input = mount()
+    act(() => input.focus())
+    act(() => input.blur())
+    expect(mouseup(input).defaultPrevented).toBe(false)
+  })
+})
