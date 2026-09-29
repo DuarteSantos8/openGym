@@ -1254,7 +1254,7 @@ function ActiveWorkout() {
       <button className="iconbtn" aria-label={t(editing ? 'Close editor' : 'Discard')} onClick={() => editing ? exitWorkoutEdit() : confirmSheet({ title: t('Discard workout?'), message: t('The sets you logged in this session will be lost.'), confirmText: t('Discard'), danger: true, onConfirm: () => { update(s => { s.active = null }); stopRest(); stopWork(); nav('/home') } })}><Icon name="xmark" /></button>
       <div style={{ textAlign: 'center' }}><div style={{ fontWeight: 600 }}>{A.name}</div><div className="sub">{(A.backfill || editing) ? fmtDate(A.d, true) : <Elapsed start={A.start} />} · {t('{0} sets', done + '/' + total)}</div></div>
       <div className="row" style={{ gap: 4, flex: 'none' }}>
-        <button className="iconbtn" aria-label={t('Workout view')} title={t('Workout view')} onClick={openViewMenu}><Icon name="more" /></button>
+        <button className="iconbtn" aria-label={t('Workout options')} title={t('Workout options')} onClick={openViewMenu}><Icon name="more" /></button>
         <button className="iconbtn" style={{ color: 'var(--acc)' }} aria-label={t(editing ? 'Save changes' : 'Finish')} onClick={finishWorkout}><Icon name="check" /></button>
       </div>
     </div>

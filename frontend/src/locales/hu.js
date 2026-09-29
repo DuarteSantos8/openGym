@@ -562,6 +562,7 @@ export default {
   'Minimize': 'Kicsinyítés',
   'Expand': 'Kibontás',
   'Exercise animations': 'Gyakorlat-animációk',
+  'Workout options': 'Edzés beállításai',
   'Workout view': 'Edzésnézet',
   'Cards': 'Kártyák',
   'List': 'Lista',

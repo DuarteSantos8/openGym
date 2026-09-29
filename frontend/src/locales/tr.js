@@ -558,6 +558,7 @@ export default {
   'Minimize': 'Küçült',
   'Expand': 'Büyüt',
   'Exercise animations': 'Egzersiz animasyonları',
+  'Workout options': 'Antrenman seçenekleri',
   'Workout view': 'Antrenman görünümü',
   'Cards': 'Kartlar',
   'List': 'Liste',

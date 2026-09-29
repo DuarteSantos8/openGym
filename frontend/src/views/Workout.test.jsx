@@ -1661,7 +1661,7 @@ describe('the plan line', () => {
 
 describe('workout view header menu', () => {
   const openMenu = async () => {
-    const btn = container.querySelector('button[aria-label="Workout view"]')
+    const btn = container.querySelector('button[aria-label="Workout options"]')
     expect(btn).toBeTruthy()
     await act(async () => { btn.dispatchEvent(new dom.Event('click', { bubbles: true })) })
     return mocks.menuSheet.mock.calls.at(-1)[0]
@@ -2026,7 +2026,7 @@ describe('the reference line: last time or best set', () => {
 // #284: logging a past workout that went as planned takes one tap, not one per set.
 describe('mark all sets done while logging a past workout', () => {
   const openMenu = async () => {
-    const btn = container.querySelector('button[aria-label="Workout view"]')
+    const btn = container.querySelector('button[aria-label="Workout options"]')
     await act(async () => { btn.dispatchEvent(new dom.Event('click', { bubbles: true })) })
     return mocks.menuSheet.mock.calls.at(-1)[0]
   }

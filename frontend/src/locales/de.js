@@ -577,6 +577,7 @@ export default {
   'Minimize': 'Verkleinern',
   'Expand': 'Vergrößern',
   'Exercise animations': 'Übungs-Animationen',
+  'Workout options': 'Workout-Optionen',
   'Workout view': 'Trainingsansicht',
   'Cards': 'Karten',
   'List': 'Liste',

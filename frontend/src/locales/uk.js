@@ -392,6 +392,7 @@ export default {
   'Minimize': 'Згорнути',
   'Expand': 'Розгорнути',
   'Exercise animations': 'Анімації вправ',
+  'Workout options': 'Параметри тренування',
   'Full': 'Повна',
   'Small': 'Мала',
   'Hidden': 'Приховано',

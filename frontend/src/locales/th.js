@@ -562,6 +562,7 @@ export default {
   'Minimize': 'ย่อ',
   'Expand': 'ขยาย',
   'Exercise animations': 'ภาพเคลื่อนไหวท่าออกกำลังกาย',
+  'Workout options': 'ตัวเลือกการเทรน',
   'Workout view': 'มุมมองการฝึก',
   'Cards': 'การ์ด',
   'List': 'รายการ',

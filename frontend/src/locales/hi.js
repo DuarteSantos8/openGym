@@ -558,6 +558,7 @@ export default {
   'Minimize': 'छोटा करें',
   'Expand': 'बड़ा करें',
   'Exercise animations': 'व्यायाम एनिमेशन',
+  'Workout options': 'वर्कआउट विकल्प',
   'Workout view': 'वर्कआउट दृश्य',
   'Cards': 'कार्ड',
   'List': 'सूची',

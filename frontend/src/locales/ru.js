@@ -558,6 +558,7 @@ export default {
   'Minimize': 'Свернуть',
   'Expand': 'Развернуть',
   'Exercise animations': 'Анимации упражнений',
+  'Workout options': 'Параметры тренировки',
   'Workout view': 'Вид тренировки',
   'Cards': 'Карточки',
   'List': 'Список',

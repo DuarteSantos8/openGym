@@ -558,6 +558,7 @@ export default {
   'Minimize': 'Minimizar',
   'Expand': 'Ampliar',
   'Exercise animations': 'Animaciones de los ejercicios',
+  'Workout options': 'Opciones del entrenamiento',
   'Workout view': 'Vista del entrenamiento',
   'Cards': 'Tarjetas',
   'List': 'Lista',

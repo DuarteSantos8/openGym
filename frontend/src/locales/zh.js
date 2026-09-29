@@ -558,6 +558,7 @@ export default {
   'Minimize': '缩小',
   'Expand': '放大',
   'Exercise animations': '动作动画',
+  'Workout options': '训练选项',
   'Workout view': '训练视图',
   'Cards': '卡片',
   'List': '列表',

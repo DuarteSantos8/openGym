@@ -71,7 +71,7 @@ function renderTopSheet() {
   return sheetContainer
 }
 const openHeaderMenu = () => {
-  const more = container.querySelector('button[aria-label="Workout view"]')
+  const more = container.querySelector('button[aria-label="Workout options"]')
   expect(more).toBeTruthy()
   act(() => more.click())
   return renderTopSheet()

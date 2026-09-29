@@ -783,6 +783,7 @@ export default {
   'Next session: {0}, {1}': 'الجلسة القادمة: {0}، {1}',
   'Week starts on': 'بداية الأسبوع',
   'Exercise animations': 'رسوم التمارين المتحركة',
+  'Workout options': 'خيارات التمرين',
   'Full': 'كاملة',
   'Small': 'صغيرة',
   'Hidden': 'مخفية',
