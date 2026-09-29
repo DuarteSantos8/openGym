@@ -322,11 +322,13 @@ export const useUI = create((set, get) => ({
   // now. The Skip button and −15 s past zero come here; everything else that ends a rest (a new
   // rest, a hold starting, an exercise removed, the workout discarded) uses stopRest. Dismiss on
   // Ready comes here too, with nothing left to hand over: the end already did that.
-  skipRest() {
+  // `seen` is false for the Android notification's own Skip: the screen moves on for when the
+  // app is opened, like a rest that ran out in a pocket, but no hold starts that nobody watched.
+  skipRest(seen = true) {
     const done = restDone
     const at = get().timer?.forIdx
     get().stopRest()
-    if (done) done(at, true)             // you are looking at it — you tapped Skip
+    if (done) done(at, seen)
   },
   // Sounds or the volume changed in Settings while a timer runs: the countdown for this timer
   // was queued at its loudness, seconds ago, so re-queue it at the new one. Without this a
@@ -447,11 +449,12 @@ export const useUI = create((set, get) => ({
 }))
 
 // Buttons on the rest notification (pause, ±15s, skip) change the countdown in the
-// service first, then mirror that into the in-app timer. skip ends it. Seconds round up, as the
-// notification's clock does, so a pause in the last half second still holds a second here.
+// service first, then mirror that into the in-app timer. skip ends it and hands over, unseen (see
+// skipRest). Seconds round up, as the notification's clock does, so a pause in the last half
+// second still holds a second here.
 bindNativeRest(ev => {
   if (!ev) return
-  if (ev.type === 'skip') { useUI.getState().stopRest(); return }
+  if (ev.type === 'skip') { useUI.getState().skipRest(false); return }
   const left = Math.ceil((ev.leftMs || 0) / 1000)
   if (!(left > 0)) return
   const total = Math.max(left, Math.round((ev.totalMs || 0) / 1000))
