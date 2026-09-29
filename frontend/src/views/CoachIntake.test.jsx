@@ -48,6 +48,7 @@ vi.mock('react-router-dom', () => ({
 vi.mock('../lib/coach-api.js', () => ({
   requestPlan: vi.fn(() => Promise.resolve({})),
   disclosure: vi.fn(() => Promise.resolve(null)),
+  JOB_ERRORS: { busy: 'the app’s busy line' },
 }))
 vi.mock('../coach.css', () => ({}))
 
@@ -372,6 +373,14 @@ describe('CoachIntake — building the plan', () => {
     // be guarded by `editing`, so a first-time retry opened the thread with the questionnaire twice.
     expect(mocks.S.coach.chat).toHaveLength(1)
     expect(mocks.S.coach.chat[0]).toMatchObject({ role: 'user', kind: 'intake' })
+  })
+
+  // The server's refusal is English; the class beside it picks the app's own, translated line.
+  it('a refusal the server names a class for says the app\'s line for it, not the server\'s English', async () => {
+    vi.mocked(requestPlan).mockRejectedValueOnce(Object.assign(new Error('the Coach is already thinking about your training'), { status: 409, data: { error: 'the Coach is already thinking about your training', code: 'busy' } }))
+    mount(); walkTo('Almost there')
+    cont(); await settle()
+    expect(mocks.toast).toHaveBeenCalledWith('the app’s busy line')
   })
 
   it('falls back to a generic message when the failure carries none', async () => {

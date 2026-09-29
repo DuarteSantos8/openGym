@@ -1008,6 +1008,19 @@ export const PT_BR_OVERRIDES = {
   'Teal': 'Turquesa',
   'Yellow': 'Amarelo',
   'Enter how long it took — at least 1 minute.': 'Informe quanto tempo levou — pelo menos 1 minuto.',
+  // --- AI Coach: why a job failed or was refused (lib/coach-api.js JOB_ERRORS, BYOK_ERRORS) ---
+  'The Coach is resting — try again tomorrow.': 'O Treinador está descansando — tente de novo amanhã.',
+  'The Coach took too long and gave up.': 'O Treinador demorou demais e desistiu.',
+  'The Coach couldn’t sign in to its provider — the instance owner needs to check its setup.': 'O Treinador não conseguiu fazer login no provedor — o proprietário da instância precisa verificar a configuração.',
+  'The Coach couldn’t run — the instance owner needs to check its setup.': 'O Treinador não conseguiu rodar — o proprietário da instância precisa verificar a configuração.',
+  'The Coach answered with something the app couldn’t use.': 'O Treinador respondeu com algo que o app não consegue usar.',
+  'The server restarted while the Coach was thinking.': 'O servidor reiniciou enquanto o Treinador estava pensando.',
+  'The Coach couldn’t read your training data.': 'O Treinador não conseguiu ler seus dados de treino.',
+  'Something went wrong on the server.': 'Algo deu errado no servidor.',
+  'Your AI provider rejected the key on this phone — check it under Settings → AI Coach.': 'Seu provedor de IA rejeitou a chave deste celular — verifique em Configurações → Treinador IA.',
+  'The Coach isn’t set up on this phone — check Settings → AI Coach.': 'O Treinador não está configurado neste celular — verifique Configurações → Treinador IA.',
+  'Your AI provider couldn’t answer.': 'Seu provedor de IA não conseguiu responder.',
+  'Something went wrong on this phone.': 'Algo deu errado neste celular.',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

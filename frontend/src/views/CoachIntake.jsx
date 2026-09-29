@@ -16,7 +16,7 @@ import { t } from '../lib/i18n.js'
 import { DAYN } from '../lib/format.js'
 import { EXDB } from '../lib/exercises.js'
 import { emptyCoach, coachAvailable, hasConsent, CONSENT_VERSION, CATEGORY_TEXT, appendChat } from '../lib/coach.js'
-import { requestPlan, disclosure } from '../lib/coach-api.js'
+import { requestPlan, disclosure, JOB_ERRORS } from '../lib/coach-api.js'
 import { DEMO } from '../lib/demo.js'
 import { MOBILE } from '../lib/mobile.js'
 import Icon from '../components/Icon.jsx'
@@ -102,7 +102,10 @@ export default function CoachIntake() {
     try {
       await requestPlan(profile)
       nav('/coach', { replace: true })
-    } catch (e) { toast(e.message || t('Could not ask the Coach')); setBusy(false) }
+    } catch (e) {
+      // The server's refusal is English with its class beside it; the class picks the line.
+      toast(JOB_ERRORS[e.data?.code] || e.message || t('Could not ask the Coach')); setBusy(false)
+    }
   }
 
   const toggleDay = d => set({

@@ -142,31 +142,38 @@ export function useCoachStatus(active = true) {
 
 // Server failure classes, in the app's voice. The provider's own words go to the admin card;
 // what a lifter needs is what it means for them and whether trying again will help.
+//
+// Each line is a getter, so it is translated when it is read, not when this module loads: the
+// module loads once, in English, before any locale pack has arrived, and a language picked later
+// would otherwise never reach these lines. The lookup is still JOB_ERRORS[cls].
 export const JOB_ERRORS = {
-  off: 'The Coach isn’t set up on this instance.',
-  busy: 'The Coach is already thinking about your training.',
-  cap: 'The Coach is resting — try again tomorrow.',
-  consent: 'The Coach needs your go-ahead first.',
-  timeout: 'The Coach took too long and gave up.',
-  auth: 'The Coach couldn’t sign in to its provider — the instance owner needs to check its setup.',
-  missing: 'The Coach isn’t installed properly on this instance.',
-  provider: 'The Coach couldn’t run — the instance owner needs to check its setup.',
-  unusable: 'The Coach answered with something the app couldn’t use.',
-  restart: 'The server restarted while the Coach was thinking.',
-  nostate: 'The Coach couldn’t read your training data.',
-  noworkout: 'There is no workout to look at yet — log one first.',
-  internal: 'Something went wrong on the server.'
+  get off() { return t('The Coach isn’t set up on this instance.') },
+  get busy() { return t('The Coach is already thinking about your training.') },
+  get cap() { return t('The Coach is resting — try again tomorrow.') },
+  get consent() { return t('The Coach needs your go-ahead first.') },
+  get timeout() { return t('The Coach took too long and gave up.') },
+  get auth() { return t('The Coach couldn’t sign in to its provider — the instance owner needs to check its setup.') },
+  get missing() { return t('The Coach isn’t installed properly on this instance.') },
+  get provider() { return t('The Coach couldn’t run — the instance owner needs to check its setup.') },
+  get unusable() { return t('The Coach answered with something the app couldn’t use.') },
+  get restart() { return t('The server restarted while the Coach was thinking.') },
+  get nostate() { return t('The Coach couldn’t read your training data.') },
+  get noworkout() { return t('There is no workout to look at yet — log one first.') },
+  // The refusal at enqueue when the process cannot drop privileges (api/coach/jobs.js). The same
+  // words as api/coach/routes.js USER_ERROR.unprivileged; what to fix goes to the admin card.
+  get unprivileged() { return t('The Coach is switched off on this instance for safety reasons.') },
+  get internal() { return t('Something went wrong on the server.') }
 }
 
 // The same failures on a phone that brought its own key: there is no instance owner to
 // check anything, the person reading this is the operator, and the provider's own words
 // are the only thing that lets them fix it (a spent quota, a wrong model, a rejected key).
 export const BYOK_ERRORS = {
-  auth: 'Your AI provider rejected the key on this phone — check it under Settings → AI Coach.',
-  missing: 'The Coach isn’t set up on this phone — check Settings → AI Coach.',
-  provider: 'Your AI provider couldn’t answer.',
-  unusable: 'The Coach answered with something the app couldn’t use.',
-  internal: 'Something went wrong on this phone.'
+  get auth() { return t('Your AI provider rejected the key on this phone — check it under Settings → AI Coach.') },
+  get missing() { return t('The Coach isn’t set up on this phone — check Settings → AI Coach.') },
+  get provider() { return t('Your AI provider couldn’t answer.') },
+  get unusable() { return t('The Coach answered with something the app couldn’t use.') },
+  get internal() { return t('Something went wrong on this phone.') }
 }
 
 /** The line the person sees for a failed job — with the reason attached where they can act on it. */
