@@ -270,7 +270,12 @@ export function readSession(entry, fallback) {
   // whole session as missed. Extra sets still count everywhere else — volume, PRs, history —
   // they just do not move the plan. The plan's own sets are the ones it laid out first, so the
   // read stops at that many; a session with fewer than planned is short either way (`enough`).
-  const sets = logged.slice(0, Math.max(1, planned))
+  // Only a plan the session itself carried may decide where that line falls. `target` above
+  // falls back to the exercise's CURRENT config (sessionsFor hands it in), and a Hevy or CSV
+  // import, or anything logged before v1.2.2, has no target of its own: slicing those to
+  // today's set count reads the working weight off the warm-up end of a session nobody planned
+  // that way, and the next prescription then starts again from there.
+  const sets = entry && entry.target ? logged.slice(0, Math.max(1, planned)) : logged
 
   if (mode === 'time') {
     const goal = target.sec || 0

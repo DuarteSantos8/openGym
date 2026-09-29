@@ -157,7 +157,10 @@ function readSession(entry, fallback) {
   // app and a miss here — and stallCount, reading only this copy, reported a stall the athlete
   // never had. `count` below stays the real total: extra sets are exactly how bodyweight work
   // is meant to grow (#33), they just do not decide whether the prescription was met.
-  const sets = logged.slice(0, Math.max(1, planned));
+  // Only a plan the session itself carried may decide where that line falls, as on the
+  // frontend: a Hevy or CSV import has no target of its own, and slicing it to the `fallback`
+  // config's set count would grade the warm-up end of a session nobody planned that way.
+  const sets = entry && entry.target ? logged.slice(0, Math.max(1, planned)) : logged;
   if (mode === 'time') {
     const goal = target.sec || 0;
     const held = sets.map(s => (s.done ? (s.sec || 0) : 0));

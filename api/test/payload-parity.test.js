@@ -85,3 +85,16 @@ test('readSession agrees with the frontend on a bonus set logged beyond the plan
   assert.equal(frontendReadSession(tooFew, PLAN).ok, false);
   assert.equal(exOf(reviewFor([passing, passing, tooFew])).lastOk, false);
 });
+
+// An entry with no target of its own (a Hevy or CSV import, anything logged before v1.2.2) is
+// never sliced on either side: grading it against the routine's set count TODAY would read the
+// warm-up end of a session nobody planned that way. Here the fourth set falls short, and with
+// no plan to say it was extra, it counts.
+test('readSession agrees with the frontend on an imported session with no plan of its own', () => {
+  const passing = entry([set(10), set(10), set(10)]);
+  const imported = { id: EX_ID, sets: [set(10), set(10), set(10), set(5)] };
+
+  assert.equal(frontendReadSession(imported, PLAN).ok, false, 'the frontend reads all four sets');
+  assert.equal(exOf(reviewFor([passing, passing, imported])).lastOk, false, 'and so does the payload');
+  assert.equal(exOf(reviewFor([passing, passing, imported])).stalls, 1);
+});
