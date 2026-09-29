@@ -284,8 +284,25 @@ export function muscleBalanceWindow(workouts, win, now = Date.now(), today = tod
 }
 
 /** Load a routine *would* produce, from its planned set counts. */
-export const loadOfRoutine = routine =>
-  loadOf((routine?.ex || []).map(c => ({ id: c.id, ex: c, sets: c.sets || 1 })))
+export const loadOfRoutine = (routine, exercises = {}) =>
+  loadOf((routine?.ex || []).map(c => ({ id: c.id, ex: exercises[c.id] || c, sets: c.sets || 1 })))
+
+/** Effective sets programmed by the live recurring week; overrides and history are not plans. */
+export function loadOfWeeklyPlan(S) {
+  const routines = new Map((S?.routines || []).map(routine => [routine.id, routine]))
+  const exercises = Object.fromEntries((S?.customEx || []).map(exercise => [exercise.id, exercise]))
+  const load = {}
+  for (const value of Object.values(S?.week || {})) {
+    for (const id of [].concat(value || [])) {
+      const routine = routines.get(id)
+      if (!routine) continue
+      for (const [slug, sets] of Object.entries(loadOfRoutine(routine, exercises))) {
+        load[slug] = (load[slug] || 0) + sets
+      }
+    }
+  }
+  return load
+}
 
 /** Load for a workout still in progress — the sets ticked so far. */
 export const loadOfActive = active =>

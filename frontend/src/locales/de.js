@@ -104,6 +104,7 @@ export default {
   'No favourites here — tap the star on an exercise to add it.': 'Keine Favoriten hier — tippe bei einer Übung auf den Stern.',
   'No match': 'Kein Treffer',
   'Show more': 'Mehr anzeigen',
+  'Show less': 'Weniger anzeigen',
   'Intervals': 'Intervalle',
   'Minutes': 'Minuten',
   'Speed (km/h)': 'Tempo (km/h)',
@@ -140,6 +141,7 @@ export default {
   'No workouts this month': 'Keine Trainings in diesem Monat',
   'Trained': 'Trainiert',
   'Planned': 'Geplant',
+  'Completed': 'Abgeschlossen',
   'Rescheduled': 'Verschoben',
   'Tap a trained day for details · tap any other day to plan a session': 'Tippe auf einen trainierten Tag für Details · tippe auf jeden anderen Tag, um zu planen',
   // --- workout lifecycle ---
@@ -593,6 +595,8 @@ export default {
   'Admin dashboard': 'Admin-Dashboard',
   // --- muscle map ---
   'Muscle balance': 'Muskelbalance',
+  'Weekly muscle volume': 'Wöchentliches Muskelvolumen',
+  'No muscle volume planned.': 'Kein Muskelvolumen geplant.',
   'Fatigue': 'Ermüdung',
   'Ready': 'Bereit',
   'Recovering': 'In Erholung',

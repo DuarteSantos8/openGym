@@ -3,7 +3,7 @@ import { EXIDX, EXDB, smOf } from './exercises.js'
 import { LANGS, DERIVED_LOCALES } from './i18n-core.js'
 import {
   MUSCLE_NAME, exerciseMuscleSnapshot, hasExplicitMuscleMetadata, levelsOf, loadOf,
-  loadOfWorkouts, matchesMuscleGroups, muscleBalanceWindow, muscleGroupsOf, musclesOf, rankOf
+  loadOfWorkouts, loadOfWeeklyPlan, matchesMuscleGroups, muscleBalanceWindow, muscleGroupsOf, musclesOf, rankOf
 } from './muscles.js'
 
 describe('multi-muscle exercise metadata', () => {
@@ -144,6 +144,37 @@ describe('map load with warm-up phases', () => {
     }
     const load = loadOfWorkouts([w], null)
     expect(load.chest).toBe(1)
+  })
+})
+
+describe('planned weekly muscle volume', () => {
+  const state = {
+    customEx: [
+      { id: 'press', primaries: ['chest'], secondaries: ['triceps'] },
+      { id: 'curl', primaries: ['biceps'], secondaries: [] },
+    ],
+    routines: [
+      { id: 'push', ex: [{ id: 'press', sets: 2 }] },
+      { id: 'arms', ex: [{ id: 'curl', sets: 3 }] },
+    ],
+    week: { 0: 'arms', 1: ['push', 'missing'], 3: ['push'] },
+    dayPlan: { '2026-08-18': 'arms' },
+    workouts: [{ entries: [{ id: 'snapshot-only', muscleSnapshot: { muscleWeights: { quadriceps: 1 } } }] }],
+  }
+
+  it('aggregates arrays and legacy scalar assignments, including routines repeated in the week', () => {
+    expect(loadOfWeeklyPlan(state)).toEqual({ chest: 4, triceps: 1.6, biceps: 3 })
+  })
+
+  it('ignores stale routine ids, date overrides, and completed-workout snapshots', () => {
+    const load = loadOfWeeklyPlan(state)
+    expect(load).not.toHaveProperty('quadriceps')
+    expect(load.biceps).toBe(3)
+  })
+
+  it('returns an empty projection for missing or empty plans', () => {
+    expect(loadOfWeeklyPlan()).toEqual({})
+    expect(loadOfWeeklyPlan({ routines: [], week: { 1: ['missing'] } })).toEqual({})
   })
 })
 
