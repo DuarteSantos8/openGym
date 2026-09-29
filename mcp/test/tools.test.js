@@ -322,6 +322,26 @@ describe('list_workouts', () => {
     expect(r.returned_count).toBeLessThanOrEqual(3)
     expect(r.total_count).toBeGreaterThanOrEqual(r.returned_count)
   })
+
+  test('"how many did I do in March" is answerable: matching_count and truncated', () => {
+    const wk = (id, d) => ({
+      id, d, start: Date.parse(d + 'T10:00:00'), end: Date.parse(d + 'T11:00:00'), name: 'S', routineId: S.routines[0].id,
+      entries: [{ id: '0025', target: { sets: 1, reps: 5, weight: 100 }, sets: [{ done: true, w: 100, r: 5 }] }]
+    })
+    S.workouts = []
+    for (let i = 1; i <= 40; i++) S.workouts.push(wk('mar' + i, '2026-03-' + String((i % 28) + 1).padStart(2, '0')))
+    for (let i = 1; i <= 300; i++) S.workouts.push(wk('jan' + i, '2026-01-' + String((i % 28) + 1).padStart(2, '0')))
+    _seedStateForTests(S)
+    const r = call('list_workouts', { from: '2026-03-01', to: '2026-03-31' })
+    expect(r.total_count).toBe(340)          // unchanged meaning: all-time, before the filter
+    expect(r.matching_count).toBe(40)        // in the range asked for
+    expect(r.returned_count).toBe(25)        // and how many came back
+    expect(r.truncated).toBe(true)
+    expect(r.workouts.every(w => w.date.startsWith('2026-03'))).toBe(true)
+    const whole = call('list_workouts', { from: '2026-03-01', to: '2026-03-31', limit: 200 })
+    expect(whole.returned_count).toBe(40)
+    expect(whole.truncated).toBe(false)
+  })
 })
 
 /* ---------- get_workout ---------- */
@@ -492,6 +512,45 @@ describe('estimate_1rm', () => {
     expect(epley.best.est).not.toBeCloseTo(brz.best.est, 1)
   })
 
+  // Both halves of this tool are one reading of one history. A unilateral set is a single row
+  // carrying both sides, so the row's own `r` is L+R and goes over the rep cap while each side's
+  // reps do not; before the PR table asked bestSetOf() the same way the per-exercise answer does,
+  // the exercise had a 1RM and no line in the table at the same time.
+  test('the PR table and the per-exercise best agree on a per-side exercise', () => {
+    const CURL = '0294'
+    const side = (w, r, rDone, lDone = true) => ({
+      w, r: r * 2, done: lDone && rDone,
+      sides: { L: { w, r, done: lDone }, R: { w, r, done: rDone } }
+    })
+    S.workouts = [{
+      id: 'w1', d: '2026-07-06', start: Date.parse('2026-07-06T10:00:00'), end: Date.parse('2026-07-06T11:00:00'), name: 'S',
+      entries: [{ id: CURL, target: { sets: 3, reps: 8, weight: 20, perSide: true }, sets: [side(20, 8, true), side(20, 8, true), side(22, 8, false)] }]
+    }]
+    _seedStateForTests(S)
+    const one = call('estimate_1rm', { exercise_id: CURL })
+    const row = call('estimate_1rm', {}).pr_table.find(p => p.exId === CURL)
+    expect(one.best).toBeTruthy()
+    expect(row).toBeTruthy()
+    expect(row.est).toBeCloseTo(one.best.est, 3)
+    expect(row.w).toBe(one.best.w)
+    expect(row.r).toBe(one.best.r)
+  })
+
+  // The app keeps an assistance machine out of the estimate, the curve and the strength list
+  // (bestSetOf, issue #232): the load is the help you were given, so Epley on it would rise as
+  // you got weaker and call that a record. The PR table scanned the rows itself and listed it.
+  test('an assistance machine is not in the PR table, the same as in the app', () => {
+    const ASSISTED_PULL_UP = '0017'
+    S.workouts = [{
+      id: 'w1', d: '2026-07-06', start: Date.parse('2026-07-06T10:00:00'), end: Date.parse('2026-07-06T11:00:00'), name: 'S',
+      entries: [{ id: ASSISTED_PULL_UP, target: { sets: 2, reps: 8, weight: 30 }, sets: [{ done: true, w: 30, r: 8 }, { done: true, w: 25, r: 8 }] }]
+    }]
+    _seedStateForTests(S)
+    expect(bestSetOf(S.workouts[0].entries[0])).toBeNull()
+    expect(call('estimate_1rm', {}).pr_table.find(p => p.exId === ASSISTED_PULL_UP)).toBeUndefined()
+    expect(call('estimate_1rm', { exercise_id: ASSISTED_PULL_UP }).best).toBeNull()
+  })
+
   test('exercises with no reps-mode history get null best + empty trend (not a 0 estimate)', () => {
     S.workouts = []
     _seedStateForTests(S)
@@ -500,6 +559,39 @@ describe('estimate_1rm', () => {
     expect(r.trend).toEqual([])
     const table = call('estimate_1rm', {}).pr_table
     expect(table).toEqual([])
+  })
+
+  test('an id that does not exist says so, and is not confused with "never trained"', () => {
+    const r = call('estimate_1rm', { exercise_id: 'not-an-exercise-at-all' })
+    expect(r.best).toBeNull()
+    expect(r.exercise.unknown).toBe(true)
+    expect(r.no_estimate_reason).toMatch(/No exercise with id "not-an-exercise-at-all" exists/)
+    expect(r.no_estimate_reason).not.toMatch(/No completed sets logged/)
+    // a real exercise with no history keeps the answer about the training, not about the id
+    S.workouts = []
+    _seedStateForTests(S)
+    const real = call('estimate_1rm', { exercise_id: LEG_PRESS_ID })
+    expect(real.exercise.unknown).toBeUndefined()
+    expect(real.no_estimate_reason).toBe('No completed sets logged for this exercise.')
+  })
+
+  test('an empty exercise_id is a validation error, not the whole PR table', async () => {
+    const { McpServer } = await import('@modelcontextprotocol/sdk/server/mcp.js')
+    const { Client } = await import('@modelcontextprotocol/sdk/client/index.js')
+    const { InMemoryTransport } = await import('@modelcontextprotocol/sdk/inMemory.js')
+    const t = TOOLS.find(x => x.name === 'estimate_1rm')
+    const server = new McpServer({ name: 'opengym', version: '0.1.0' })
+    server.tool(t.name, t.description, t.schema, async p => ({ content: [{ type: 'text', text: JSON.stringify(t.handler(p || {})) }] }))
+    const client = new Client({ name: 'tools-test', version: '1' })
+    const [ct, st] = InMemoryTransport.createLinkedPair()
+    await Promise.all([server.connect(st), client.connect(ct)])
+    const r = await client.callTool({ name: 'estimate_1rm', arguments: { exercise_id: '' } }).then(
+      x => ({ ok: !x.isError, text: x.content?.[0]?.text || '' }),
+      e => ({ code: e.code, text: String(e.message) })
+    )
+    expect(r.ok).not.toBe(true)
+    expect(String(r.code ?? r.text)).toContain('-32602')
+    expect(r.text).not.toContain('pr_table')
   })
 
   test('a heavy warm-up is never a PR — the table matches the app, which excludes warm-ups', () => {
@@ -641,6 +733,51 @@ describe('muscle_balance', () => {
     const week = call('muscle_balance', { period: 'week' }).workouts_in_period
     expect(week).toBeLessThanOrEqual(month)
     expect(month).toBeLessThanOrEqual(all)
+  })
+
+  test('"last 7 days" is 7 calendar dates, including for workouts that carry no clock', () => {
+    // Imported or hand-added sessions have no w.start and fall back to their date at local noon.
+    // Against an instant 7x24h back, noon on the 7th day ago is still inside the window, so the
+    // week spanned 8 dates.
+    const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
+    S.workouts = Array.from({ length: 40 }, (_, i) => ({
+      id: 'd' + i, d: iso(new Date(Date.now() - i * 86400000)),
+      entries: [{ id: '0025', sets: [{ done: true, w: 100, r: 5 }] }]
+    }))
+    _seedStateForTests(S)
+    expect(call('muscle_balance', { period: 'week' }).workouts_in_period).toBe(7)
+    expect(call('muscle_balance', { period: 'month' }).workouts_in_period).toBe(30)
+    // and the reported cutoff is the oldest date in the window
+    expect(call('muscle_balance', { period: 'week' }).cutoff_iso).toBe(iso(new Date(Date.now() - 6 * 86400000)))
+  })
+
+  // TZ east of Greenwich: there the UTC date of the cutoff instant is a day behind the local one,
+  // which is the bug. Node re-reads process.env.TZ, so this block owns its own zone and clock.
+  describe('the reported cutoff is a local date, like every other date in this API', () => {
+    const TZ = process.env.TZ
+    beforeAll(() => { process.env.TZ = 'Asia/Tokyo'; vi.setSystemTime(new Date('2026-07-27T08:00:00')) })
+    afterAll(() => { process.env.TZ = TZ; vi.setSystemTime(new Date(FAKE_TODAY_ISO + 'T12:00:00Z')) })
+
+    // Workouts imported without a clock (no w.start) fall back to their date at local noon, so
+    // they are the probe for which calendar dates the window really accepts.
+    const dated = (id, iso) => ({ id, d: iso, entries: [{ id: '0025', sets: [{ done: true, w: 100, r: 5 }] }] })
+    const dayBefore = iso => {
+      const [y, m, d] = iso.split('-').map(Number)
+      const p = new Date(y, m - 1, d - 1)
+      return p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')
+    }
+
+    for (const period of ['week', 'month']) {
+      test(`${period}: cutoff_iso is the first date the filter accepts`, () => {
+        const iso = call('muscle_balance', { period }).cutoff_iso
+        expect(iso).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+        S.workouts = [dated('on-the-cutoff', iso), dated('the-day-before', dayBefore(iso))]
+        _seedStateForTests(S)
+        const r = call('muscle_balance', { period })
+        expect(r.cutoff_iso).toBe(iso)
+        expect(r.workouts_in_period).toBe(1)   // the reported day counts; the one before it does not
+      })
+    }
   })
 
   test('zero-workout state still returns all 18 muscles as neglected (not empty)', () => {
@@ -923,6 +1060,88 @@ describe('workout photos and videos never leave through MCP', () => {
     for (const a of answers) {
       const json = JSON.stringify(a)
       for (const leak of [HASH, POSTER, '"media"', '"poster"', 'video/mp4']) expect(json).not.toContain(leak)
+    }
+  })
+})
+
+/* ---------- the documented `to` default ---------- */
+
+describe('`to` defaults to today, as documented', () => {
+  test('a workout and a weigh-in dated in the future are not "the most recent"', () => {
+    // Another device with a wrong clock writes a 2099 row. Both tools document `to` as
+    // "Defaults to today" and had no default at all, so that row was listed first and read as
+    // the latest weight.
+    S.workouts.push({ id: 'w-future', d: '2099-01-01', name: 'Time Machine', routineId: S.routines[0].id, start: 1, end: 2, entries: [] })
+    S.bodyweight.push({ d: '2099-01-01', w: 1 })
+    _seedStateForTests(S)
+    const lw = call('list_workouts')
+    expect(lw.workouts.map(w => w.date)).not.toContain('2099-01-01')
+    expect(lw.workouts[0].date).toBe(NEWEST_WORKOUT.date)
+    const bw = call('get_bodyweight')
+    expect(bw.entries.map(e => e.date)).not.toContain('2099-01-01')
+    expect(bw.latest.date).toBe(LATEST_BW.date)
+    expect(bw.latest.weight).toBe(LATEST_BW.weight)
+    // …and asking for them explicitly still works
+    expect(call('list_workouts', { to: '2099-12-31' }).workouts[0].date).toBe('2099-01-01')
+    expect(call('get_bodyweight', { to: '2099-12-31' }).latest.date).toBe('2099-01-01')
+  })
+})
+
+/* ---------- argument validation at the real SDK boundary ---------- */
+
+// Driven through McpServer + an in-memory transport with the registration loop from src/index.js,
+// because the thing under test is what zod does to the arguments BEFORE a handler ever runs.
+describe('date arguments must be dates the calendar has', () => {
+  let client
+
+  beforeAll(async () => {
+    const { McpServer } = await import('@modelcontextprotocol/sdk/server/mcp.js')
+    const { Client } = await import('@modelcontextprotocol/sdk/client/index.js')
+    const { InMemoryTransport } = await import('@modelcontextprotocol/sdk/inMemory.js')
+    const server = new McpServer({ name: 'opengym', version: '0.1.0' })
+    for (const t of TOOLS) {
+      server.tool(t.name, t.description, t.schema, async (params) => {
+        try {
+          return { content: [{ type: 'text', text: JSON.stringify(t.handler(params || {}), null, 2) }] }
+        } catch (err) {
+          return { isError: true, content: [{ type: 'text', text: `${err.code || 'ERROR'}: ${err.message}` }] }
+        }
+      })
+    }
+    client = new Client({ name: 'tools-test', version: '1' })
+    const [ct, st] = InMemoryTransport.createLinkedPair()
+    await Promise.all([server.connect(st), client.connect(ct)])
+  })
+
+  const shot = (name, args) => client.callTool({ name, arguments: args }).then(
+    r => ({ ok: !r.isError, text: r.content?.[0]?.text || '' }),
+    e => ({ rejected: true, code: e.code, message: String(e.message) })
+  )
+
+  test('February 30th is refused, not answered for March 2nd', async () => {
+    for (const [tool, args] of [
+      ['preview_session', { date: '2026-02-30' }],
+      ['get_workout', { date: '2026-02-30' }],
+      ['list_workouts', { from: '2026-13-45' }],
+      ['list_workouts', { to: '0000-00-00' }],
+      ['get_bodyweight', { to: '2026-02-30' }],
+      ['get_bodyweight', { from: '2025-02-29' }]      // 2024 had one, 2025 did not
+    ]) {
+      const r = await shot(tool, args)
+      const where = `${tool} ${JSON.stringify(args)}`
+      // The SDK answers an invalid-params rejection either as a throw or as an error result
+      // carrying the same code; both are the -32602 the client sees, neither runs the handler.
+      expect(r.ok, `${where} must be refused`).not.toBe(true)
+      expect(String(r.code ?? r.text), where).toContain('-32602')
+      expect(String(r.message ?? r.text), where).toMatch(/not a date the calendar has|must be YYYY-MM-DD/)
+    }
+  })
+
+  test('real dates, including a leap day, still get through', async () => {
+    for (const args of [{ from: '2026-02-28', to: '2026-07-27' }, { from: '2024-02-29' }]) {
+      const r = await shot('list_workouts', args)
+      expect(r.rejected).toBeUndefined()
+      expect(r.ok).toBe(true)
     }
   })
 })

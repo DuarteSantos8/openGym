@@ -12,13 +12,25 @@ import {
 import { exOr } from '../../frontend/src/lib/exercises.js'
 import { isWarmupRow } from '../../frontend/src/lib/workout-model.js'
 import {
-  estimate1RM, best1RM, e1rmSeries, DEFAULT_FORMULA, REP_CAP
+  bestSetOf, best1RM, e1rmSeries, DEFAULT_FORMULA, REP_CAP
 } from '../../frontend/src/lib/onerm.js'
 import { loadOfWorkouts, rankOf, levelsOf } from '../../frontend/src/lib/muscles.js'
 import { policyFor } from '../../frontend/src/lib/progression.js'
 import { buildSessionEntries, startsFromLast } from '../../frontend/src/lib/session-start.js'
 
 /* ---------- helpers ---------- */
+
+// A 'YYYY-MM-DD' the calendar actually has. The regex alone let 2026-02-30 through, and
+// new Date('2026-02-30T12:00:00') rolls over to March 2 — so preview_session answered for
+// March 2 while echoing February 30 back as the date it had answered for. Round-trip the string
+// through the same local-noon construction the handlers use and insist it comes back unchanged;
+// as a zod refine that is a -32602 at the SDK boundary instead of a confident wrong answer.
+const localIso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
+const todayIso = () => localIso(new Date())
+const isoDate = () => z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'must be YYYY-MM-DD').refine(
+  v => { const d = new Date(v + 'T12:00:00'); return !Number.isNaN(d.getTime()) && localIso(d) === v },
+  { message: 'not a date the calendar has (YYYY-MM-DD)' }
+)
 
 // A custom exercise lives in S.customEx and is merged into EXIDX by registerCustom() at
 // store load (useStore.js:54). The MCP server deliberately never calls it: http.js serves
@@ -55,23 +67,26 @@ function entryView(e, S) {
 }
 
 // Best estimate per exercise, mirroring the UI's PR table: every eligible set across history, biggest wins.
+// It asks bestSetOf() rather than scanning the rows here, so this table and the per-exercise answer of
+// estimate_1rm are the same reading of the same history. They were not while this scanned: a unilateral
+// set is one row carrying both sides, so the row's `r` is L+R and went over the rep cap while bestSetOf
+// read each side's own reps, and a row with one side still unchecked is not `done` here but is completed
+// work for the limb that finished it. The exercise then had a 1RM and no line in the PR table at once.
+// An assistance machine is left out the same way (issue #232): the load is the help you were given.
 // Warm-ups are skipped for the same reason bestSetOf() skips them (onerm.js): a heavy ramp row is not a
 // record. Without this the coach's PR and the athlete's PR silently disagree for the same exercise.
 function prTable(S, formula) {
   const byId = new Map()
   for (const w of (S.workouts || [])) {
     for (const e of (w.entries || [])) {
-      const ex = exerciseOf(e.id, S)
-      for (const s of (e.sets || [])) {
-        if (!s.done || isWarmupRow(s)) continue
-        const est = estimate1RM(s.w, s.r, formula)
-        if (est == null) continue
-        const prev = byId.get(e.id)
-        if (!prev || est > prev.est) {
-          // exId as well as exName: the consumer needs an id, not a name — exOr() treats any
-          // string as both, so passing exName where exId belongs would silently "work" wrong.
-          byId.set(e.id, { exId: e.id, exName: ex.n, bp: ex.bp || null, est, w: Number(s.w), r: Math.round(Number(s.r)), date: w.d })
-        }
+      const best = bestSetOf(e, formula)
+      if (!best) continue
+      const prev = byId.get(e.id)
+      if (!prev || best.est > prev.est) {
+        const ex = exerciseOf(e.id, S)
+        // exId as well as exName: the consumer needs an id, not a name — exOr() treats any
+        // string as both, so passing exName where exId belongs would silently "work" wrong.
+        byId.set(e.id, { exId: e.id, exName: ex.n, bp: ex.bp || null, est: best.est, w: best.w, r: best.r, date: w.d })
       }
     }
   }
@@ -192,24 +207,34 @@ export const listWorkouts = {
   name: 'list_workouts',
   description: 'List recent finished workouts, newest first. Each item summarises the date, exercise count, sets done / planned, total volume (in the user\'s unit), duration and whether PRs were set. Use this before drilling into a specific date with get_workout.',
   schema: {
-    from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().describe('Inclusive start date YYYY-MM-DD. Defaults to no lower bound (list most recent).'),
-    to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().describe('Inclusive end date YYYY-MM-DD. Defaults to today.'),
+    from: isoDate().optional().describe('Inclusive start date YYYY-MM-DD. Defaults to no lower bound (list most recent).'),
+    to: isoDate().optional().describe('Inclusive end date YYYY-MM-DD. Defaults to today.'),
     limit: z.number().int().min(1).max(200).optional().describe('Max items to return. Defaults to 25.')
   },
   handler: ({ from, to, limit }) => {
     const S = getState()
     if (!S) return noState()
     const lim = Math.min(Math.max(limit || 25, 1), 200)
+    // `to` is documented as defaulting to today, and had no default at all. A row dated in the
+    // future — another device with a wrong clock — was listed first as the most recent session.
+    const hi = to || todayIso()
     const all = (S.workouts || []).slice().sort((a, b) => (b.d || '').localeCompare(a.d || ''))
-    const filtered = all.filter(w => {
+    const matching = all.filter(w => {
       if (from && w.d < from) return false
-      if (to && w.d > to) return false
+      if (w.d > hi) return false
       return true
-    }).slice(0, lim)
+    })
+    const filtered = matching.slice(0, lim)
     return {
       unit: S.unit || 'kg',
+      // total_count is all-time and predates the filter — kept as it is, since callers read it
+      // that way. matching_count is how many are in the from/to range, and truncated says the
+      // limit cut the list: without them "how many sessions did I do in March" was unanswerable,
+      // because 25 rows and a total of 340 say nothing about the 40 in March.
       total_count: all.length,
+      matching_count: matching.length,
       returned_count: filtered.length,
+      truncated: filtered.length < matching.length,
       workouts: filtered.map(w => ({
         // The only thing that identifies a session uniquely. Two workouts on one day is
         // ordinary — a lifting session and an evening run — and without an id here the second
@@ -243,7 +268,7 @@ export const getWorkout = {
   name: 'get_workout',
   description: 'Get the full breakdown of one workout: every exercise, its mode (reps/time/cardio), the target, and per-set labels (e.g. "5 @ 60 kg", "1:30 · 20 kg"). Identify it by workout_id (from list_workouts) or by date. Use list_workouts first if you don\'t know either.',
   schema: {
-    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().describe('The workout date as YYYY-MM-DD. If two sessions share that date, the answer lists them instead and asks for a workout_id.'),
+    date: isoDate().optional().describe('The workout date as YYYY-MM-DD. If two sessions share that date, the answer lists them instead and asks for a workout_id.'),
     workout_id: z.string().min(1).optional().describe('The id from list_workouts. Preferred: it names one session even on a day with two.')
   },
   handler: ({ date, workout_id }) => {
@@ -302,16 +327,18 @@ export const getBodyweight = {
   name: 'get_bodyweight',
   description: 'Get the body-weight log: chronological weigh-ins with weights, current goal, deltas vs goal (signed positive = above goal), and a latest summary. Useful for "am I trending toward my weight goal?" questions.',
   schema: {
-    from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().describe('Inclusive start date YYYY-MM-DD.'),
-    to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().describe('Inclusive end date YYYY-MM-DD. Defaults to today.')
+    from: isoDate().optional().describe('Inclusive start date YYYY-MM-DD.'),
+    to: isoDate().optional().describe('Inclusive end date YYYY-MM-DD. Defaults to today.')
   },
   handler: ({ from, to }) => {
     const S = getState()
     if (!S) return noState()
     const goal = S.targetW || null
+    // Same documented default as list_workouts: a future-dated weigh-in is not "latest".
+    const hi = to || todayIso()
     const bw = (S.bodyweight || []).filter(b => {
       if (from && b.d < from) return false
-      if (to && b.d > to) return false
+      if (b.d > hi) return false
       return true
     }).sort((a, b) => (a.d || '').localeCompare(b.d || ''))
     const latest = bw.length ? bw[bw.length - 1] : null
@@ -334,7 +361,9 @@ export const estimate1rm = {
   name: 'estimate_1rm',
   description: `Estimate one-rep max using Epley, Brzycki or Lombardi formulas. If an exercise_id is given, returns the all-time best estimate for that exercise with the source set (weight × reps + date) and the trend across history. If no exercise_id is given, returns a PR table across all reps-mode exercises (sorted highest first). Refuses to guess above ${REP_CAP} reps — above that, formulas diverge past 10% and "work capacity" is read instead of "maximal strength".`,
   schema: {
-    exercise_id: z.string().optional().describe('An exercise id from list_routines or get_workout entries. If omitted, returns a full PR table.'),
+    // .min(1): an empty string is falsy, so it used to fall through to "no exercise_id given" and
+    // answer a question about one exercise with the whole PR table.
+    exercise_id: z.string().min(1).optional().describe('An exercise id from list_routines or get_workout entries. If omitted, returns a full PR table.'),
     formula: z.enum(['epley', 'brzycki', 'lombardi']).optional().describe(`Formula to use. Defaults to ${DEFAULT_FORMULA}.`)
   },
   handler: ({ exercise_id, formula }) => {
@@ -350,16 +379,23 @@ export const estimate1rm = {
       // records for calf raise" — a confident statement about the opposite of the truth.
       const trainedAtAll = (S.workouts || []).some(w =>
         (w.entries || []).some(e => e.id === exercise_id && (e.sets || []).some(s => s.done)))
+      // exOr's miss is a placeholder named "Unknown exercise", not null. A typo'd or made-up id
+      // therefore came back as "No completed sets logged for this exercise" — a statement about
+      // the athlete's training, when the truth is that no such exercise exists. A deleted custom
+      // is unknown to the catalogue too, but it has logged sets, so it keeps the real answer.
+      const unknown = !!ex.missing && !trainedAtAll
       // w/r (not weight/reps) matches pr_table and entry-view — every set in the API surface uses the same couple.
       return {
-        exercise: { id: exercise_id, name: ex.n, body_part: ex.bp || null },
+        exercise: { id: exercise_id, name: ex.n, body_part: ex.bp || null, ...(unknown ? { unknown: true } : {}) },
         formula: f,
         formula_note: `Estimates use the ${f} formula. Cap at ${REP_CAP} reps applies; r=1 is treated as the measurement, not an estimate.`,
         best: best ? { est: best.est, w: best.w, r: best.r, date: best.d } : null,
         no_estimate_reason: best ? null
           : trainedAtAll
             ? `This exercise has logged sets, but none of them qualify: every set was above the ${REP_CAP}-rep cap, or carried no weight. That is not the same as never having trained it.`
-            : 'No completed sets logged for this exercise.',
+            : unknown
+              ? `No exercise with id ${JSON.stringify(exercise_id)} exists — not in the catalogue, not among this profile's custom exercises, and nothing is logged against it. Check the id against list_routines or a get_workout entry.`
+              : 'No completed sets logged for this exercise.',
         trend: series.map(p => ({ date: p.d, est: p.y, w: p.w, r: p.r }))
       }
     }
@@ -381,9 +417,14 @@ export const muscleBalance = {
   handler: ({ period }) => {
     const S = getState()
     if (!S) return noState()
-    const now = Date.now()
-    const cutoff = period === 'week' ? now - 7 * 86400000
-      : period === 'month' ? now - 30 * 86400000
+    // Whole local days, counting today: a week is the 7 dates ending today, a month the 30. The
+    // cutoff used to be an instant 7 x 24h back, which for the workouts that carry no clock — an
+    // import, a hand-added session; they fall back to their date at local noon — pulled in an
+    // EIGHTH calendar date, the one 7 days ago. "Last 7 days" listing 8 of them.
+    const now = new Date()
+    const midnightDaysBack = n => new Date(now.getFullYear(), now.getMonth(), now.getDate() - n).getTime()
+    const cutoff = period === 'week' ? midnightDaysBack(6)
+      : period === 'month' ? midnightDaysBack(29)
         : Number.NEGATIVE_INFINITY
     const workouts = (S.workouts || []).filter(w => (w.start || new Date(w.d + 'T12:00:00').getTime()) >= cutoff)
     // loadOf() resolves each entry through EXIDX, which holds the catalogue only, so a
@@ -403,7 +444,10 @@ export const muscleBalance = {
     const levels = levelsOf(load)
     return {
       period,
-      cutoff_iso: period === 'all' ? null : new Date(cutoff).toISOString().slice(0, 10),
+      // Local, like every other date this API reports (get_week_plan.today, every workout date).
+      // toISOString() reads UTC, so late in the evening west of Greenwich the reported cutoff was
+      // the day AFTER the one the filter used, and east of Greenwich the day before.
+      cutoff_iso: period === 'all' ? null : localIso(new Date(cutoff)),
       workouts_in_period: workouts.length,
       worked: worked.map(slug => ({ slug, name: muscleName(slug), level: levels[slug], effective_sets: Math.round((load[slug] || 0) * 10) / 10 })),
       neglected: missed.map(slug => ({ slug, name: muscleName(slug) })),
@@ -450,7 +494,7 @@ export const previewSession = {
     'Preview the session a routine will actually open with — the numbers the user will see after the progression policy and their training history have overridden the routine\'s own targets. This is NOT the same as get_routine: a routine storing "squat 3x8 @ 60kg" can open at 75kg because the policy progressed or deloaded from that routine\'s last logged session. The reps are the routine\'s own unless a policy that moves reps moved them, or the profile starts planned sessions from the last session (starts_from). Always call this (not get_routine) before telling someone what weight they are about to lift, or before judging whether an edit to a routine had any effect. Returns, per exercise, the planned target, the policy\'s decision and its stated reason, the opening set rows, and where each number came from. Defaults to today\'s scheduled routine.',
   schema: {
     routine_id: z.string().min(1).optional().describe('Routine to preview. Defaults to the routine scheduled for `date`.'),
-    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().describe('Date the session would be started on, YYYY-MM-DD. Affects which routine is scheduled and any one-off day override. Defaults to today.')
+    date: isoDate().optional().describe('Date the session would be started on, YYYY-MM-DD. Affects which routine is scheduled and any one-off day override. Defaults to today.')
   },
   handler: ({ routine_id, date }) => {
     const S = getState()
