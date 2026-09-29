@@ -24,7 +24,9 @@ import { limitsFrom, fmtMB, MB } from '../lib/media-limits.js'
 import { setRestAccent } from '../lib/rest-alert.js'
 import { checkForUpdate, downloadAndInstall } from '../lib/update.js'
 import { forgetCoach } from '../lib/coach-api.js'
-import { starterPlanSheet, confirmSheet, importFromApp, importFromHevy, equipmentProfileSheet, plateInventorySheet, menuSheet } from '../sheets.jsx'
+import { ConnectSheet } from './MobileOnboarding.jsx'
+import { starterPlanSheet, confirmSheet, importFromApp, importFromHevy, equipmentProfileSheet, plateInventorySheet, menuSheet, askAddDeviceData } from '../sheets.jsx'
+import { EXDB } from '../lib/exercises.js'
 import Icon from '../components/Icon.jsx'
 import { ServerSyncSection, KeptChangesRows, leaveServer, connectServer, passkeySignIn } from '../components/ServerSync.jsx'
 import { passwordOn, PasswordRow, openPasswordSignIn, openPasswordRegister } from '../components/PasswordAuth.jsx'
@@ -560,6 +562,9 @@ export default function Settings() {
         subtitle={t('Saves a dated copy to Documents/openGym after finishing a workout or editing a routine, and keeps the newest {0} — point a sync app at that folder, or copy it out by hand.', 14)}>
         <Switch checked={!!S.autoBackup} onChange={v => update(s => { s.autoBackup = v })} />
       </Row>}
+      {(S.deletedEx?.length > 0) && <Row icon="reset" iconTint="var(--grey)" title={t('Manage hidden exercises')}
+        subtitle={t(S.deletedEx.length === 1 ? '{0} built-in exercise hidden — restore it any time.' : '{0} built-in exercises hidden — restore them any time.', S.deletedEx.length)}
+        accessory="chevron" onClick={hiddenExercisesSheet} />}
       <Row icon="trash" iconTint="var(--red)" title={t('Reset everything')} danger onClick={resetEverything} />
     </Section>
     <input ref={fileRef} type="file" accept=".json,.zip,application/json,application/zip" style={{ display: 'none' }} onChange={doImport} />
@@ -672,6 +677,42 @@ const DownloadProgress = forwardRef(function DownloadProgress(_, ref) {
     </div>
   )
 })
+
+// Settings → Data → "Manage hidden exercises" (issue #199). Lists every id in S.deletedEx,
+// resolved against the pristine EXDB (not effectiveCatalogue/allExercises, which filter hidden
+// ids out) so a hidden name still shows correctly; a stale id absent from EXDB falls back to
+// showing the raw id so the row is never blank. Reads S itself (rather than taking it as a
+// prop) so it re-renders as items are restored instead of needing to be closed and reopened.
+function HiddenExercisesSheet({ close }) {
+  const S = useStore(s => s.S)
+  const { update } = useStore()
+  const ids = S.deletedEx || []
+  const restore = id => update(s => { s.deletedEx = (s.deletedEx || []).filter(x => x !== id) })
+  const restoreAll = () => update(s => { s.deletedEx = [] })
+  return <>
+    <h3>{t('Manage hidden exercises')}</h3>
+    <div className="muted small" style={{ marginBottom: 12 }}>
+      {t('Built-in exercises hidden from the library and picker. Restoring one brings it back everywhere.')}
+    </div>
+    {ids.length === 0 ? <div className="dim small">{t('Nothing hidden.')}</div> : <>
+      <div className="list" style={{ marginBottom: 8 }}>
+        {ids.map(id => {
+          const ex = EXDB.find(e => e.id === id)
+          return (
+            <div key={id} className="item">
+              <span className="grow">{ex ? ex.n : id}</span>
+              <Button size="sm" onClick={() => restore(id)}>{t('Restore')}</Button>
+            </div>
+          )
+        })}
+      </div>
+      <Button onClick={restoreAll}>{t('Restore all')}</Button>
+    </>}
+  </>
+}
+function hiddenExercisesSheet() {
+  useUI.getState().openSheet(close => <HiddenExercisesSheet close={close} />)
+}
 
 function effortHelpSheet() {
   useUI.getState().openSheet(close => <>

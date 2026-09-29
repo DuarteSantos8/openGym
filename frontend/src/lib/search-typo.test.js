@@ -60,7 +60,9 @@ it('searchExercises takes a word literally when it hits anything exactly, and on
 })
 
 it('searchExercises over the real catalogue returns only exact hits for correctly spelled words', () => {
-  const plain = (e, q) => normalizeStr([e.n, e.tg, e.eq, e.bp, ...(e.sm || [])].join(' ')).includes(q)
+  // Search now indexes steps and description too (issue #199, exercise parity), so the exact-hit
+  // corpus here has to match searchExercises' own corpus or this over-counts as a false failure.
+  const plain = (e, q) => normalizeStr([e.n, e.tg, e.eq, e.bp, ...(e.sm || []), e.desc || '', ...(e.st || [])].join(' ')).includes(q)
   for (const q of ['wrist', 'power', 'slide', 'thigh', 'squat', 'clean']) {
     const got = searchExercises(EXDB, q)
     expect(got.length, q).toBe(EXDB.filter(e => plain(e, q)).length)

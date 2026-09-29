@@ -75,13 +75,22 @@ export function t(s, ...args) {
 }
 
 // Instructions for an exercise in the current language (English steps as fallback).
-export const instrFor = ex => (instr && instr[ex.id]) || ex.st || []
+// A user's own edit to a built-in's steps (ex._ov.st, set by effectiveCatalogue when
+// exOverrides has an entry for this id) is more specific/intentional than the generic
+// translation pack, so it wins outright — the pack only applies to exercises nobody has
+// touched, where ex.st is just the pristine (always English) catalogue value.
+export const instrFor = ex => (ex?._ov?.st) || (instr && instr[ex.id]) || ex.st || []
 
 // Built-in catalogue names are bilingual when a translated name pack is active. A pack need not
 // be complete: German covers the equipment exercises and not the body-weight ones, and an
 // exercise the pack has no entry for keeps its English title, one exercise at a time.
 // User-created exercises have no entry in the pack and keep their exact chosen name.
 export const exerciseNameFor = ex => {
+  // Same reasoning as instrFor: an override to a built-in's name is the resolved, intentional
+  // value — show it as-is rather than letting the pack (or the loanword parenthetical logic
+  // below, which exists only to compare a pack translation against the pristine English name)
+  // second-guess it.
+  if (ex?._ov?.n) return ex._ov.n
   // A language that chose "English names only" sees the canonical catalogue title, not the
   // translation — and never the parenthetical either. Custom exercises keep their exact name.
   if (enOnly) return ex?.n || ''

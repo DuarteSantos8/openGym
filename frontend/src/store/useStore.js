@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { api, setRemoteAuth } from '../lib/api.js'
 import { localTZ } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
-import { registerCustom } from '../lib/exercises.js'
+import { registerExerciseState } from '../lib/exercises.js'
 import { DEMO, DEMO_SEEDED } from '../lib/demo.js'
 import { rememberDefaultLang } from '../lib/default-lang.js'
 import { guestAllowed } from '../lib/guest.js'
@@ -75,7 +75,7 @@ export const DEF = {
   unit: 'kg', restSec: 90, restPauseSec: 15, sound: true, soundOnSilent: false, timerFlash: false, timedSetOvertime: false, keepAwake: true, lang: 'en',
   theme: 'dark', accent: 'lime', body: 'male', targetW: null,
   bodyweight: [], routines: [], week: {}, dayPlan: {},
-  exWeights: {}, workouts: [], active: null, customEx: [], gifSize: 'full',
+  exWeights: {}, workouts: [], active: null, customEx: [], exOverrides: {}, deletedEx: [], gifSize: 'full',
   // Stats activity heatmap metric. Profiles without this key continue to open on time.
   heatmapMetric: 'time',
   // How the active workout is laid out — 'cards' (one exercise at a time with Prev/Next),
@@ -398,7 +398,7 @@ export const useStore = create((set, get) => {
   const persist = (S, push = true, stamp = true) => {
     const { base, owed } = metaOf()   // the copy being replaced; the new one stands where it stood
     if (stamp) S._ts = Math.max(Date.now(), (base?.ts || 0) + 1)
-    registerCustom(S.customEx)
+    registerExerciseState(S)
     // A refused write used to take the change with it — Finish looked like it simply did
     // nothing. The copy is kept in memory either way and marked as owed to the server, so a
     // signed-in device still gets it there; and it is said out loud once, because a change that
@@ -913,7 +913,7 @@ export const useStore = create((set, get) => {
   }
 
   const S0 = loadState()
-  registerCustom(S0.customEx)
+  registerExerciseState(S0)
   // Which photos and videos are still waiting for the server, known before the first sign-out
   // check has to ask (lib/media-owed.js). A copy without any leaves the media store unopened.
   if (referencedHashes(S0).size) loadPending()
