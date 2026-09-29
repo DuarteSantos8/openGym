@@ -2,6 +2,7 @@
 // Builds website/api.html — the static API reference — from api/openapi.yaml.
 //
 //   node scripts/build-api-docs.mjs
+//   node scripts/build-api-docs.mjs --check   # fail if stale, never write (CI)
 //
 // Deterministic: the same spec always produces byte-identical output (no
 // timestamps), so re-running it only dirties the file when the spec changed.
@@ -18,6 +19,7 @@ import yaml from 'js-yaml'
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
 const specPath = path.join(root, 'api', 'openapi.yaml')
 const outPath = path.join(root, 'website', 'api.html')
+const check = process.argv.includes('--check')
 const spec = yaml.load(fs.readFileSync(specPath, 'utf8'))
 
 /* ------------------------------------------------------------------ helpers */
@@ -627,5 +629,21 @@ ${schemaCards}
 </html>
 `
 
-fs.writeFileSync(outPath, html)
-console.log(`wrote ${path.relative(root, outPath)} — ${ops.length} endpoints, ${Object.keys(spec.components.schemas).length} schemas, ${(html.length / 1024).toFixed(1)} KB`)
+const rel = path.relative(root, outPath)
+const summary = `${ops.length} endpoints, ${Object.keys(spec.components.schemas).length} schemas, ${(html.length / 1024).toFixed(1)} KB`
+// --check is what build-coach-assets.mjs has had all along, for the same reason: the page is
+// generated and committed, so a spec change that forgets to regenerate it ships a reference
+// that describes the previous version of the API. It also catches the other direction — an
+// edit made to the page by hand, which the next regeneration would silently undo.
+if (check) {
+  let current = null
+  try { current = fs.readFileSync(outPath, 'utf8') } catch { /* missing counts as stale */ }
+  if (current !== html) {
+    console.error(`${rel} is out of date — run: node scripts/build-api-docs.mjs`)
+    process.exit(1)
+  }
+  console.log(`${rel} in sync — ${summary}`)
+} else {
+  fs.writeFileSync(outPath, html)
+  console.log(`wrote ${rel} — ${summary}`)
+}
