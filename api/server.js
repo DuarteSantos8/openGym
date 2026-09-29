@@ -2090,6 +2090,9 @@ const routes = {
     // instance lost — pruned after a dead send, a rebuilt db.json — comes back without anyone
     // touching Settings. The same endpoint sent again keeps its original `created`.
     const prev = db.subs.find(s => s.endpoint === sub.endpoint);
+    // No usable id in the request (none, or not a short token) leaves the id the row already
+    // has: the request is a re-send, not a request to forget which device the row is.
+    const storedDevice = deviceId || prev?.deviceId;
     db.subs = db.subs.filter(s => s.endpoint !== sub.endpoint);
     // A browser holds one subscription per device, so this cap is far above real use. Without
     // it a single account could pile up endpoints without limit — every one of them a target
@@ -2099,7 +2102,7 @@ const routes = {
       const drop = new Set(mine.slice(0, mine.length - MAX_SUBS_PER_USER + 1).map(s => s.endpoint));
       db.subs = db.subs.filter(s => !drop.has(s.endpoint));
     }
-    db.subs.push({ userId: user.id, endpoint: sub.endpoint, keys, ...(deviceId ? { deviceId } : {}), created: prev?.created || new Date().toISOString() });
+    db.subs.push({ userId: user.id, endpoint: sub.endpoint, keys, ...(storedDevice ? { deviceId: storedDevice } : {}), created: prev?.created || new Date().toISOString() });
     saveDb();
     json(res, 200, { ok: true });
   },
@@ -2107,11 +2110,16 @@ const routes = {
   // Whether this instance still holds the caller's subscription for `endpoint`. The browser's
   // side (PushManager.getSubscription) says nothing about ours — a row pruned after a dead send
   // leaves the browser subscribed to nowhere — so Settings asks here before it shows "on".
+  // A stored row also says which device it is filed under, `null` for none: a row from before
+  // device ids, or one the worker re-sent without its id, sends that device's rest-timer alert
+  // to every device of the account (sendPush), and the client re-sends its subscription with its
+  // id when this is not its own.
   'GET /api/push/status': async (req, res) => {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
     const endpoint = new URL(req.url, 'http://x').searchParams.get('endpoint') || '';
-    json(res, 200, { subscribed: db.subs.some(s => s.userId === user.id && s.endpoint === endpoint) });
+    const row = db.subs.find(s => s.userId === user.id && s.endpoint === endpoint);
+    json(res, 200, row ? { subscribed: true, deviceId: row.deviceId || null } : { subscribed: false });
   },
 
   'POST /api/push/unsubscribe': async (req, res) => {

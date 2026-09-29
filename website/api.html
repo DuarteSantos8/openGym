@@ -1597,7 +1597,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow">
     <span class="p-name">deviceId</span>
     <span class="p-type">string</span>
-    <span class="p-desc">A token the browser made up for itself (stored in its localStorage), so rest-timer pushes can be aimed at the device that started the rest. Optional; anything that is not a short token is ignored.</span>
+    <span class="p-desc">A token the browser made up for itself (stored in its localStorage), so rest-timer pushes can be aimed at the device that started the rest. Optional; anything that is not a short token is ignored, and a re-send of an endpoint without one keeps the id its row already has.</span>
   </div>
 </div>
     <p class="ep-h">Responses</p>
@@ -1626,7 +1626,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Does the server hold this subscription?</span>
   </summary>
   <div class="ep-body">
-<p>Whether the caller's account has a stored subscription with exactly this <code>endpoint</code>. The browser's <code>PushManager.getSubscription()</code> says nothing about the server's side — a row pruned after a dead send (404/410/403) leaves the browser subscribed to nowhere — so the client asks here before showing the notifications switch as on, and re-registers when the answer is no.</p>
+<p>Whether the caller's account has a stored subscription with exactly this <code>endpoint</code>. The browser's <code>PushManager.getSubscription()</code> says nothing about the server's side — a row pruned after a dead send (404/410/403) leaves the browser subscribed to nowhere — so the client asks here before showing the notifications switch as on, and re-registers when the answer is no. A stored subscription also names the <code>deviceId</code> it is stored with, and the client re-registers when that is not its own: a row stored without one (from before device ids) sends that device's rest-timer alerts to every subscription of the account.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
 <p class="ep-h">Query parameters</p><div class="ptab">
   <div class="prow">
@@ -1640,7 +1640,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <div class="ptab">
   <div class="prow rrow">
     <span class="r-code s2">200</span>
-    <span class="p-desc">The answer.<span class="r-sig">{ subscribed: boolean }</span></span>
+    <span class="p-desc">The answer.<span class="r-sig">{ subscribed: boolean, deviceId: string | null }</span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>

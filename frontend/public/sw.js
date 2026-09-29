@@ -5,6 +5,11 @@
    every deploy is a new worker with its own cache and the previous build's files are dropped on
    activate; the media cache (`MEDIA`) is kept across builds. */
 const CACHE = 'opengym-rt-__BUILD__'
+// Where the page leaves this browser's push device id (lib/push.js shareDeviceId) for the
+// pushsubscriptionchange handler below, which has no localStorage to read it from. Not a build
+// cache, so activate's sweep leaves it alone.
+const DEVICE_CACHE = 'opengym-device'
+const DEVICE_URL = '/opengym-device-id'
 
 /* Exercise media (img/, gif/) lives in a cache of its own that outlives builds (#281). It used to
    share the build's cache, so every update swept every animation along with the old bundle, and
@@ -79,7 +84,9 @@ self.addEventListener('activate', e => {
     // next load with a network.
     const c = await caches.open(CACHE)
     if (await c.match('index.html')) {
-      const old = (await caches.keys()).filter(k => k !== CACHE && k !== MEDIA)
+      // DEVICE_CACHE holds this browser's device id (the push re-register below needs it): not a
+      // build, so an update never sweeps it.
+      const old = (await caches.keys()).filter(k => k !== CACHE && k !== MEDIA && k !== DEVICE_CACHE)
       // A build from before MEDIA existed kept its media in its own cache: move it across first,
       // so the first update to this worker does not cost what the device already had offline.
       await Promise.all(old.map(k => adoptMedia(k).catch(() => {})))
@@ -179,14 +186,17 @@ self.addEventListener('notificationclick', e => {
   }))
 })
 // The push service rotated the subscription (key change, expiry): subscribe again with the same
-// server key and tell the server, so the row it holds keeps pointing at this browser.
+// server key and tell the server, so the row it holds keeps pointing at this browser. With the
+// device id the page registers with: without one, this browser's rest-timer alert goes to every
+// device of the account until the page's next boot sync sees the missing id and sends it again.
 self.addEventListener('pushsubscriptionchange', e => {
   e.waitUntil((async () => {
     const old = e.oldSubscription || (await self.registration.pushManager.getSubscription())
     const key = e.newSubscription?.options?.applicationServerKey || old?.options?.applicationServerKey
     if (!key) return
     const sub = e.newSubscription || await self.registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key })
-    await fetch('api/push/subscribe', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ subscription: sub.toJSON() }) }).catch(() => {})
+    const deviceId = await caches.open(DEVICE_CACHE).then(c => c.match(DEVICE_URL)).then(r => r ? r.text() : undefined).catch(() => undefined)
+    await fetch('api/push/subscribe', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ subscription: sub.toJSON(), deviceId }) }).catch(() => {})
   })())
 })
 

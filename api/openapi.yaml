@@ -1809,7 +1809,8 @@ paths:
                   description: >-
                     A token the browser made up for itself (stored in its localStorage),
                     so rest-timer pushes can be aimed at the device that started the
-                    rest. Optional; anything that is not a short token is ignored.
+                    rest. Optional; anything that is not a short token is ignored, and a
+                    re-send of an endpoint without one keeps the id its row already has.
       responses:
         '200':
           description: Stored.
@@ -1836,7 +1837,11 @@ paths:
         `endpoint`. The browser's `PushManager.getSubscription()` says nothing about
         the server's side — a row pruned after a dead send (404/410/403) leaves the
         browser subscribed to nowhere — so the client asks here before showing the
-        notifications switch as on, and re-registers when the answer is no.
+        notifications switch as on, and re-registers when the answer is no. A stored
+        subscription also names the `deviceId` it is stored with, and the client
+        re-registers when that is not its own: a row stored without one (from before
+        device ids) sends that device's rest-timer alerts to every subscription of the
+        account.
       parameters:
         - in: query
           name: endpoint
@@ -1849,8 +1854,18 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [subscribed]
                 properties:
                   subscribed: { type: boolean }
+                  deviceId:
+                    type: ['string', 'null']
+                    description: >-
+                      Present when `subscribed` is true: the device id the subscription is
+                      stored with, `null` when it has none.
+              examples:
+                stored: { value: { subscribed: true, deviceId: "3f9c1d2e7b0a4c6d9e8f1a2b3c4d5e6f" } }
+                storedWithoutDevice: { value: { subscribed: true, deviceId: null } }
+                notStored: { value: { subscribed: false } }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
   /api/push/unsubscribe:
