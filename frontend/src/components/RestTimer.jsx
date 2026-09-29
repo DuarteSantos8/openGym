@@ -97,7 +97,7 @@ export default function RestTimer() {
         {!timer.ready && <Button size="sm" className="pause" icon={timer.paused ? 'play' : 'pause'}
           aria-label={t(timer.paused ? 'Resume' : 'Pause')} aria-pressed={!!timer.paused}
           onClick={timer.paused ? resumeRest : pauseRest} />}
-        <Button size="sm" variant="primary" className="skip" onClick={skipRest}>{t(timer.ready ? 'Dismiss' : 'Skip')}</Button>
+        <Button size="sm" variant="primary" className="skip" onClick={() => skipRest()}>{t(timer.ready ? 'Dismiss' : 'Skip')}</Button>
       </div>
     </div>
   )

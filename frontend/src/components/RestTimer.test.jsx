@@ -125,6 +125,8 @@ describe('rest timer bar: what it is timing', () => {
     act(() => { skip.click() })
     expect(useUI.getState().timer).toBe(null)
     expect(done).toHaveBeenCalledTimes(1)
+    // Tapped on screen, so seen: true itself, not the click event standing in for it.
+    expect(done).toHaveBeenCalledWith(0, true)
   })
 
   it('renders nothing and drops the resting class when no timer runs', () => {
