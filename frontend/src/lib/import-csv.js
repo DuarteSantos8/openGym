@@ -301,13 +301,16 @@ export const bpFromName = name => {
 }
 
 // Categories the exporters use -> the dataset's body parts, for exercises we invent.
-const CATEGORY_BP = {
+// Indexed straight from a cell of the file, so it has no prototype: a plain object answers
+// "constructor" and "__proto__" with Object's own machinery, and a function or Object.prototype
+// would then ride into the store as an exercise's body part.
+const CATEGORY_BP = Object.assign(Object.create(null), {
   chest: 'chest', back: 'back', lats: 'back', shoulders: 'shoulders', delts: 'shoulders',
   legs: 'upper legs', quads: 'upper legs', hamstrings: 'upper legs', glutes: 'upper legs',
   calves: 'lower legs', abs: 'waist', core: 'waist', obliques: 'waist',
   arms: 'upper arms', biceps: 'upper arms', triceps: 'upper arms', forearms: 'lower arms',
   cardio: 'cardio', 'full body': 'upper legs', olympic: 'upper legs', neck: 'neck',
-}
+})
 
 /* ----------------------------------------------------------- conversion --- */
 
@@ -392,7 +395,8 @@ function toMinutes(v) {
   if (m || mm) return (m ? +m[1] * 60 : 0) + (mm ? +mm[1] : 0)
   return Math.round(num(s) * 10) / 10
 }
-const KM = { m: 0.001, km: 1, cm: 0.00001, in: 0.0000254, ft: 0.0003048, yd: 0.0009144, mi: 1.609344 }
+// No prototype for the same reason as CATEGORY_BP: the key is a cell from the file.
+const KM = Object.assign(Object.create(null), { m: 0.001, km: 1, cm: 0.00001, in: 0.0000254, ft: 0.0003048, yd: 0.0009144, mi: 1.609344 })
 const toKm = (v, unit) => num(v) * (KM[String(unit || 'km').toLowerCase().trim()] ?? 1)
 
 /* --------------------------------------------------------------- parse ---- */
@@ -616,7 +620,11 @@ export function parseBodyweight(text, { unit = 'kg' } = {}) {
       const when = parseWhen(dt[1])
       if (!when) continue
       if (u) fileUnit = /lb/i.test(u[1]) ? 'lb' : 'kg'
-      out.set(when.d, { w: parseFloat(val[1]), t: new Date(dt[1]).getTime() || null })
+      // `[\d.]+` lets a bare "." through, which parseFloat reads as NaN, and a zeroed record is
+      // no weigh-in either — the same gate the CSV branch below applies with `!w`.
+      const w = parseFloat(val[1])
+      if (!isFinite(w) || !w) continue
+      out.set(when.d, { w, t: new Date(dt[1]).getTime() || null })
     }
   } else {
     const rows = parseCSV(s)
