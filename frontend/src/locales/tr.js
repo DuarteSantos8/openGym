@@ -1322,6 +1322,7 @@ export default {
   'Import a photo of your membership card or scan it with the camera. No extra app needed at the gym — just open this screen.': 'Üyelik kartının fotoğrafını içe aktar ya da kamerayla tara. Salonda ekstra bir uygulamaya gerek yok — sadece bu ekranı aç.',
   'Long-press a card to reorder': 'Sırayı değiştirmek için karta uzun bas',
   'Card updated': 'Kart güncellendi',
+  'That card was removed on another device': 'Bu kart başka bir cihazda kaldırıldı',
   'Scan or import a code first': 'Önce bir kod tara ya da içe aktar',
   'Card added': 'Kart eklendi',
   'Nothing to save yet': 'Henüz kaydedilecek bir şey yok',

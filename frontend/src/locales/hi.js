@@ -1322,6 +1322,7 @@ export default {
   'Import a photo of your membership card or scan it with the camera. No extra app needed at the gym — just open this screen.': 'अपने मेंबरशिप कार्ड की फ़ोटो इम्पोर्ट करें या कैमरे से स्कैन करें। जिम में किसी और ऐप की ज़रूरत नहीं — बस यह स्क्रीन खोलें।',
   'Long-press a card to reorder': 'क्रम बदलने के लिए कार्ड को देर तक दबाएँ',
   'Card updated': 'कार्ड अपडेट हुआ',
+  'That card was removed on another device': 'वह कार्ड किसी दूसरे डिवाइस पर हटा दिया गया',
   'Scan or import a code first': 'पहले कोई कोड स्कैन या इम्पोर्ट करें',
   'Card added': 'कार्ड जोड़ा गया',
   'Nothing to save yet': 'अभी सहेजने के लिए कुछ नहीं',

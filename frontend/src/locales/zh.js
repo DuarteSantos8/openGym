@@ -1322,6 +1322,7 @@ export default {
   'Import a photo of your membership card or scan it with the camera. No extra app needed at the gym — just open this screen.': '导入会员卡照片，或用相机扫描。在健身房无需额外应用——打开此界面即可。',
   'Long-press a card to reorder': '长按卡片可重新排序',
   'Card updated': '卡片已更新',
+  'That card was removed on another device': '该卡片已在其他设备上移除',
   'Scan or import a code first': '请先扫描或导入代码',
   'Card added': '已添加卡片',
   'Nothing to save yet': '暂无可保存的内容',

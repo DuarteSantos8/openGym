@@ -983,6 +983,7 @@ export default {
   'Import a photo of your membership card or scan it with the camera. No extra app needed at the gym — just open this screen.': 'Importálj egy fotót a tagsági kártyádról, vagy olvasd be a kamerával. Nincs szükség külön alkalmazásra a teremben — csak nyisd meg ezt a képernyőt.',
   'Long-press a card to reorder': 'Tartsd nyomva a kártyát az átrendezéshez',
   'Card updated': 'Kártya frissítve',
+  'That card was removed on another device': 'Ezt a kártyát egy másik eszközön eltávolították',
   'Scan or import a code first': 'Előbb olvass be vagy importálj egy kódot',
   'Card added': 'Kártya hozzáadva',
   'Nothing to save yet': 'Még nincs mit menteni',

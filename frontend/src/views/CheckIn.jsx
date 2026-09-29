@@ -165,6 +165,14 @@ function CardSheet({ close, card }) {
     if (!trimmed) { toast(t('Scan or import a code first')); return }
     const update = useStore.getState().update
     if (editing) {
+      // The card can be removed on another device while this sheet is open. Checking inside the
+      // mutator returned from the MUTATOR, not from here, so the sheet still said "Card updated",
+      // closed, and pushed a write that changed nothing. Look first, and say what happened.
+      if (!(useStore.getState().S.gymCards || []).some(x => x.id === card.id)) {
+        toast(t('That card was removed on another device'))
+        close()
+        return
+      }
       update(s => {
         const c = (s.gymCards || []).find(x => x.id === card.id)
         if (!c) return

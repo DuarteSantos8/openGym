@@ -1322,6 +1322,7 @@ export default {
   'Import a photo of your membership card or scan it with the camera. No extra app needed at the gym — just open this screen.': 'Импортируйте фото клубной карты или отсканируйте её камерой. В зале не нужно отдельное приложение — просто откройте этот экран.',
   'Long-press a card to reorder': 'Удерживайте карту, чтобы изменить порядок',
   'Card updated': 'Карта обновлена',
+  'That card was removed on another device': 'Эта карта была удалена на другом устройстве',
   'Scan or import a code first': 'Сначала отсканируйте или импортируйте код',
   'Card added': 'Карта добавлена',
   'Nothing to save yet': 'Пока нечего сохранять',

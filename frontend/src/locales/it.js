@@ -1322,6 +1322,7 @@ export default {
   'Import a photo of your membership card or scan it with the camera. No extra app needed at the gym — just open this screen.': 'Importa una foto della tua tessera o scansionala con la fotocamera. Nessuna app extra in palestra — apri semplicemente questa schermata.',
   'Long-press a card to reorder': 'Tieni premuta una tessera per riordinarla',
   'Card updated': 'Tessera aggiornata',
+  'That card was removed on another device': 'Quella tessera è stata rimossa da un altro dispositivo',
   'Scan or import a code first': 'Prima scansiona o importa un codice',
   'Card added': 'Tessera aggiunta',
   'Nothing to save yet': 'Ancora niente da salvare',

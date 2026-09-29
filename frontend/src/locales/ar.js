@@ -1235,6 +1235,7 @@ export default {
   'Import a photo of your membership card or scan it with the camera. No extra app needed at the gym — just open this screen.': 'استورد صورة بطاقة عضويتك أو امسحها بالكاميرا. لا حاجة لتطبيق إضافي في الجيم — افتح هذه الشاشة فقط.',
   'Long-press a card to reorder': 'اضغط مطولًا على بطاقة لإعادة ترتيبها',
   'Card updated': 'تم تحديث البطاقة',
+  'That card was removed on another device': 'تمت إزالة هذه البطاقة على جهاز آخر',
   'Scan or import a code first': 'امسح رمزًا أو استورده أولًا',
   'Add note': 'إضافة ملاحظة',
   'Edit note': 'تعديل الملاحظة',

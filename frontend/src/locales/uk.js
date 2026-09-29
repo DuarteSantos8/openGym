@@ -1187,6 +1187,7 @@ export default {
   "Import a photo of your membership card or scan it with the camera. No extra app needed at the gym — just open this screen.": "Імпортуй фото клубної картки або відскануй її камерою. У залі не потрібен окремий застосунок — просто відкрий цей екран.",
   "Long-press a card to reorder": "Утримуй картку, щоб змінити порядок",
   "Card updated": "Картку оновлено",
+  "That card was removed on another device": "Картку видалено на іншому пристрої",
   "Scan or import a code first": "Спочатку відскануй або імпортуй код",
   "Add note": "Додати нотатку",
   "Edit note": "Змінити нотатку",

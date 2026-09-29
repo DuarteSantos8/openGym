@@ -991,6 +991,7 @@ export default {
   'Import a photo of your membership card or scan it with the camera. No extra app needed at the gym — just open this screen.': 'นำเข้ารูปถ่ายบัตรสมาชิกหรือสแกนด้วยกล้อง ไม่ต้องใช้แอปอื่นที่ยิม — แค่เปิดหน้าจอนี้',
   'Long-press a card to reorder': 'กดบัตรค้างไว้เพื่อจัดลำดับใหม่',
   'Card updated': 'อัปเดตบัตรแล้ว',
+  'That card was removed on another device': 'บัตรนั้นถูกลบออกจากอุปกรณ์อื่นแล้ว',
   'Scan or import a code first': 'สแกนหรือนำเข้ารหัสก่อน',
   'Card added': 'เพิ่มบัตรแล้ว',
   'Nothing to save yet': 'ยังไม่มีอะไรให้บันทึก',

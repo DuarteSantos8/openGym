@@ -1322,6 +1322,7 @@ export default {
   'Import a photo of your membership card or scan it with the camera. No extra app needed at the gym — just open this screen.': '회원 카드 사진을 가져오거나 카메라로 스캔하세요. 헬스장에서 다른 앱은 필요 없어요 — 이 화면만 열면 됩니다.',
   'Long-press a card to reorder': '순서를 바꾸려면 카드를 길게 누르세요',
   'Card updated': '카드가 업데이트됨',
+  'That card was removed on another device': '그 카드는 다른 기기에서 삭제되었습니다',
   'Scan or import a code first': '먼저 코드를 스캔하거나 가져오세요',
   'Card added': '카드가 추가되었습니다',
   'Nothing to save yet': '아직 저장할 내용이 없습니다',

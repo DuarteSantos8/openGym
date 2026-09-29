@@ -1322,6 +1322,7 @@ export default {
   'Import a photo of your membership card or scan it with the camera. No extra app needed at the gym — just open this screen.': 'Importa uma foto do teu cartão de sócio ou digitaliza-o com a câmara. Não é preciso outra app no ginásio — basta abrir este ecrã.',
   'Long-press a card to reorder': 'Mantém premido um cartão para reordenar',
   'Card updated': 'Cartão atualizado',
+  'That card was removed on another device': 'Esse cartão foi removido noutro dispositivo',
   'Scan or import a code first': 'Primeiro digitaliza ou importa um código',
   'Card added': 'Cartão adicionado',
   'Nothing to save yet': 'Ainda não há nada para guardar',
