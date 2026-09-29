@@ -16,6 +16,7 @@ import { api, beacon } from '../lib/api.js'
 import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor } from '../lib/supersetFlow.js'
 import Media from '../components/Media.jsx'
 import { startFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, finishWorkout, exitWorkoutEdit, workoutCompleteSheet, confirmSheet, exerciseNoteSheet, sessionNoteSheet, renameWorkoutSheet, swapActiveWorkoutExercise, barWeightSheet, menuSheet, effortPickerSheet, exerciseHistorySheet, addRoutineToSessionSheet } from '../sheets.jsx'
+import { afterScrollRestore, scrollRestorePending } from '../components/Modals.jsx'
 import { effortColor } from '../lib/effort.js'
 import Icon from '../components/Icon.jsx'
 import { Button, Check, NumberField } from '../components/ui.jsx'
@@ -648,6 +649,35 @@ export function removeActiveExercise(idx) {
   }, true)
 }
 
+// Whether a set row sits wholly between the fixed bars at the top and at the bottom: the status bar
+// and the connection bar above, the tab bar and the rest or hold bar below. The Cards header
+// scrolls with the page, so it takes nothing off the top, and a row is short enough to be all in
+// or all out.
+const rowOnScreen = el => {
+  if (typeof window === 'undefined' || typeof el.getBoundingClientRect !== 'function') return false
+  const r = el.getBoundingClientRect()
+  let bottom = window.innerHeight
+  for (const id of ['timer', 'tabbar']) {
+    const bar = document.getElementById(id)
+    const top = bar && typeof bar.getBoundingClientRect === 'function' ? bar.getBoundingClientRect().top : null
+    if (top != null && top < bottom) bottom = top
+  }
+  return r.bottom <= bottom && r.top >= coveredTop()
+}
+// How much of the top of the screen the fixed bars cover. The installed app draws the page under
+// the translucent status bar (viewport-fit=cover), and the connection bar (SyncBanner) sits below
+// it while there is no server to reach. index.css keeps the two as --sat and --conn, but --sat is
+// a max() of env() and --native-sat, and a custom property's computed value is the expression as
+// text ("max(0px,47px)"), not a length. So it is measured off an element that is that tall.
+const coveredTop = () => {
+  const probe = document.createElement('div')
+  probe.style.cssText = 'position:fixed;top:0;left:0;width:0;height:calc(var(--sat) + var(--conn));visibility:hidden;pointer-events:none'
+  document.body.appendChild(probe)
+  const inset = probe.offsetHeight || 0
+  probe.remove()
+  return inset
+}
+
 function ActiveWorkout() {
   const nav = useNavigate()
   const S = useStore(s => s.S)
@@ -715,13 +745,49 @@ function ActiveWorkout() {
       if (!liveEntries.has(entry)) setRefs.current.delete(entry)
     }
   })
+  // What this render shows, for a scroll that may run after it (below): the store clones the
+  // whole state on every write and the ref maps above are keyed by entry object, so an entry
+  // kept from an earlier render can be a key nothing is under any more.
+  const shown = useRef(null)
+  shown.current = { entries: A.entries, cur }
+  // The marker's index when the effect below last ran. The effect also runs on mount, when two
+  // exercises are paired, on List → Cards and when a unit is moved up or down. Each of those used
+  // to ask for the same scroll, and a sheet closing in the same tap (the weigh-in sheet a session
+  // starts through, the exercise ⋯ menu, the Layout menu) undid it on the spot. Once the scroll
+  // waits for that restore they would land, and a session started through the weigh-in sheet
+  // would open with its header off screen. So a run the marker did not cause scrolls only a row
+  // that is off screen, and never while a sheet is still putting the page back. Coming back to
+  // the session with the row below the fold still brings it back, as it always did.
+  const lastCur = useRef(null)
   useEffect(() => {
+    // Judged by index alone. A unit moved up or down carries the marker's index with it, and
+    // moveUnitAt records the new index here itself before this runs, so that reads as no move;
+    // a superset of two rows of the same exercise still reads the tick from one to the other as
+    // a move.
+    const was = lastCur.current
+    lastCur.current = cur
+    const moved = was != null && was !== cur
     if (!isSuperset || listMode) return
-    const entry = A.entries[cur]
-    const firstIncomplete = entry?.sets.findIndex(s => !s.done) ?? -1
-    const setIdx = firstIncomplete >= 0 ? firstIncomplete : (entry?.sets.length ?? 0) - 1
-    const el = (setIdx >= 0 && setRefs.current.get(entry)?.get(setIdx)) || exRefs.current.get(entry)
-    if (el && typeof el.scrollIntoView === 'function') el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    // A run the marker did not cause, with a sheet closing in the same tap, never scrolled: the
+    // restore undid it. Keep that by not asking at all. Asking after the restore and then judging
+    // the row would centre a first row that a tall first block (a note, "Last time", the
+    // progression line) pushes partly under the tab bar, and scroll the header away.
+    if (!moved && scrollRestorePending()) return
+    // Rating the set (RIR or RPE, one picker) closes the sheet and ticks the set in one tap, and
+    // the sheet's un-pin puts the page back where it stood, now and once more a frame later
+    // (components/Modals.jsx). A scroll asked for in this same commit was undone a few ms later,
+    // every time, and the partner's row stayed below the fold. With no sheet closing in the last
+    // third of a second, afterScrollRestore runs this at once, as the tick always did.
+    return afterScrollRestore(() => {
+      const { entries, cur: at } = shown.current
+      const entry = entries[at]
+      const firstIncomplete = entry?.sets.findIndex(s => !s.done) ?? -1
+      const setIdx = firstIncomplete >= 0 ? firstIncomplete : (entry?.sets.length ?? 0) - 1
+      const el = (setIdx >= 0 && setRefs.current.get(entry)?.get(setIdx)) || exRefs.current.get(entry)
+      if (!el || typeof el.scrollIntoView !== 'function') return
+      if (!moved && rowOnScreen(el)) return
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    })
   }, [cur, isSuperset, listMode, A.entries.length])
   // The list opens at the exercise you are on, not at the top of the session (issue #224): you
   // switch to it mid-workout to look at what comes before and after. Only on the way in — once
@@ -820,6 +886,8 @@ function ActiveWorkout() {
     update(s => {
       const moved = moveActiveWorkoutUnit(s.active, at, direction)
       if (!moved) return
+      // The marker follows its unit: the superset card's scroll must not read that as a move.
+      lastCur.current = s.active.cur
       progressHighWater.current = moved.indices.map(index => progressHighWater.current[index])
       const rest = useUI.getState().timer
       if (rest && rest.forIdx != null) {
