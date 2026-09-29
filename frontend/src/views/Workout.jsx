@@ -22,6 +22,7 @@ import { Button, Check, NumberField } from '../components/ui.jsx'
 import { defaultIncrement, weightIncrement, stepWeight } from '../lib/progression.js'
 import { progressionGuidance } from '../lib/progression-copy.js'
 import { buildPlannedEntry, plannedConfigOf, builtOutOfProgression } from '../lib/session-start.js'
+import { routineChangesFromEntry, updateRoutineFromEntry } from '../lib/routines.js'
 import { sessionNoProg, setSessionNoProg, setEntryNoProg, joinSessionNoProg } from '../lib/session-noprog.js'
 import { glyphOf } from '../lib/glyphs.js'
 import { markAllSetsDone, sessionHistory } from '../lib/backfill.js'
@@ -92,7 +93,7 @@ const RTL_LETTER = /[֐-ࣿיִ-﷿ﹰ-﻿]/
 // "last time" recap and the progression line — leaving the name, the ⋯ menu, the one-line plan
 // the rows are measured against, and the sets.
 // Nothing dropped is lost: it is all still on the ⋯ menu, or one ⋮ switch back to list/cards.
-function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSide, onField, onAddSet, onRemoveSet, onAddWarmup, onRemoveSetAt, onStartTimed, onPairPrev, onPairNext, onSetRowRef, onProgressionSettings, onNoProg, onSwap, onMoveUp, onMoveDown, canMoveUp, canMoveDown, onRemoveExercise, busy }) {
+function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSide, onField, onAddSet, onRemoveSet, onAddWarmup, onRemoveSetAt, onStartTimed, onPairPrev, onPairNext, onSetRowRef, onProgressionSettings, onNoProg, routineUpdate, onSwap, onMoveUp, onMoveDown, canMoveUp, canMoveDown, onRemoveExercise, busy }) {
   const S = useStore(s => s.S)
   const update = useStore(s => s.update)
   const working = useUI(s => s.work)
@@ -353,6 +354,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
       onNoProg && { icon: 'pause', label: t('Don’t count for progression'), sub: t('This exercise, this session only'), on: entry.noProg === true, onClick: () => onNoProg(entry.noProg !== true) },
       plateLoading && { icon: 'plate', label: t('Plate loading'), sub: loadSummary, onClick: () => barWeightSheet(entry.id, cfg) },
       { icon: 'flame', label: t('Add warm-up set'), onClick: onAddWarmup },
+      routineUpdate && { icon: 'upload', label: t('Update routine'), sub: routineUpdate.sub, onClick: routineUpdate.run },
       onPairPrev && { icon: 'link', label: t('Make superset with previous'), onClick: onPairPrev },
       onPairNext && { icon: 'link', label: t('Make superset with next'), onClick: onPairNext },
       onSwap && { icon: 'shuffle', label: t('Swap exercise'), onClick: onSwap, disabled: busy },
@@ -848,6 +850,38 @@ function ActiveWorkout() {
   // for the switch to change. Off counts them all again, apart from those.
   const noProgSwitchable = !A.entries.length || A.entries.some(e => !routineKeepsOut(e))
   const toggleSessionNoProg = () => update(s => setSessionNoProg(s.active, !sessionNoProg(s.active), routineKeepsOut))
+  // Warm-ups added in the session, and the rest or note edited on the exercise's settings sheet
+  // from inside it, belong to this session only: the routine is the plan, and finishing never
+  // edits it (lib/session-routines.js). This is the explicit way to keep them — an item in the
+  // exercise's ⋯ menu, there only while the routine's slot says something else than the session
+  // did. Sets, reps and weight are not part of it (routineChangesFromEntry).
+  const routineUpdateFor = idx => {
+    const entry = A.entries[idx]
+    const routine = !editing && entry?.rid ? S.routines.find(r => r.id === entry.rid) : null
+    const found = routine ? routineChangesFromEntry(routine, A.entries, idx) : null
+    if (!found) return null
+    const activeId = A.id
+    const entryId = entry.id
+    return {
+      sub: found.changes.map(c => c.key === 'note' ? t('Note')
+        : (c.key === 'warmupSets' ? t('Warm-up sets') : t('Rest (s)')) + ' ' + c.from + ' → ' + c.to).join(' · '),
+      run: () => confirmSheet({
+        title: t('Update “{0}”?', routine.name),
+        message: t('Copy this exercise’s warm-up sets, rest and note from this session into the routine. Your workout history is kept.'),
+        confirmText: t('Update routine'),
+        onConfirm: () => {
+          let applied = null
+          update(s => {
+            // The sheet can outlive the workout, or the exercise at this index: fail closed.
+            const target = s.routines.find(r => r.id === routine.id)
+            if (!target || s.active?.id !== activeId || s.active.entries?.[idx]?.id !== entryId) return
+            applied = updateRoutineFromEntry(target, s.active.entries, idx)
+          })
+          if (applied) useUI.getState().toast(t('Routine updated'))
+        },
+      }),
+    }
+  }
 
   // One prop object per entry so the card and list layouts share the exact same wiring. The
   // exercise-level actions (swap, move, remove) address the entry itself, so the "more" menu of
@@ -871,6 +905,7 @@ function ActiveWorkout() {
     onStartTimed: i => startTimed(idx, i),
     onProgressionSettings: editing ? null : () => openProgressionSettings(idx),
     onNoProg: routineKeepsOut(A.entries[idx]) ? null : on => setNoProg(idx, on),
+    routineUpdate: routineUpdateFor(idx),
   })
   const navigateUnit = direction => {
     const targetFor = active => {

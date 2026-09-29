@@ -1716,4 +1716,9 @@ export default {
   'Teal': 'أزرق مخضر',
   'Yellow': 'أصفر',
   'Enter how long it took — at least 1 minute.': 'أدخل المدة التي استغرقها — دقيقة واحدة على الأقل.',
+  // --- update a routine from a running workout ---
+  'Update routine': 'تحديث الروتين',
+  'Update “{0}”?': 'تحديث «{0}»؟',
+  'Copy this exercise’s warm-up sets, rest and note from this session into the routine. Your workout history is kept.': 'انسخ مجموعات الإحماء والراحة والملاحظة الخاصة بهذا التمرين من هذه الجلسة إلى الروتين. يبقى سجل تمارينك كما هو.',
+  'Routine updated': 'تم تحديث الروتين',
 }

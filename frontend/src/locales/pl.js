@@ -1663,4 +1663,9 @@ export default {
   'Teal': 'Turkusowy',
   'Yellow': 'Żółty',
   'Enter how long it took — at least 1 minute.': 'Wpisz, ile to trwało — co najmniej 1 minutę.',
+  // --- update a routine from a running workout ---
+  'Update routine': 'Zaktualizuj plan',
+  'Update “{0}”?': 'Zaktualizować plan „{0}”?',
+  'Copy this exercise’s warm-up sets, rest and note from this session into the routine. Your workout history is kept.': 'Kopiuje serie rozgrzewkowe, przerwę i notatkę tego ćwiczenia z tej sesji do planu. Twoja historia treningów zostaje bez zmian.',
+  'Routine updated': 'Plan zaktualizowany',
 }

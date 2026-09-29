@@ -1008,6 +1008,11 @@ export const PT_BR_OVERRIDES = {
   'Teal': 'Turquesa',
   'Yellow': 'Amarelo',
   'Enter how long it took — at least 1 minute.': 'Informe quanto tempo levou — pelo menos 1 minuto.',
+  // --- update a routine from a running workout ---
+  'Update routine': 'Atualizar rotina',
+  'Update “{0}”?': 'Atualizar “{0}”?',
+  'Copy this exercise’s warm-up sets, rest and note from this session into the routine. Your workout history is kept.': 'Copia as séries de aquecimento, o descanso e a anotação deste exercício desta sessão para a rotina. Seu histórico de treinos é mantido.',
+  'Routine updated': 'Rotina atualizada',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

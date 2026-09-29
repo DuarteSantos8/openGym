@@ -1663,4 +1663,9 @@ export default {
   'Teal': 'Turkuaz',
   'Yellow': 'Sarı',
   'Enter how long it took — at least 1 minute.': 'Ne kadar sürdüğünü gir — en az 1 dakika.',
+  // --- update a routine from a running workout ---
+  'Update routine': 'Rutini güncelle',
+  'Update “{0}”?': '“{0}” rutini güncellensin mi?',
+  'Copy this exercise’s warm-up sets, rest and note from this session into the routine. Your workout history is kept.': 'Bu egzersizin ısınma setlerini, dinlenme süresini ve notunu bu antrenmandan rutine kopyalar. Antrenman geçmişin korunur.',
+  'Routine updated': 'Rutin güncellendi',
 }

@@ -1660,4 +1660,9 @@ export default {
   'Teal': 'Бірюзовий',
   'Yellow': 'Жовтий',
   'Enter how long it took — at least 1 minute.': 'Вкажи, скільки це тривало — щонайменше 1 хвилину.',
+  // --- update a routine from a running workout ---
+  'Update routine': 'Оновити програму',
+  'Update “{0}”?': 'Оновити програму «{0}»?',
+  'Copy this exercise’s warm-up sets, rest and note from this session into the routine. Your workout history is kept.': 'Копіює розминкові підходи, відпочинок і нотатку цієї вправи з цього тренування до програми. Історія тренувань зберігається.',
+  'Routine updated': 'Програму оновлено',
 }

@@ -1666,4 +1666,9 @@ export default {
   'Teal': 'Türkiz',
   'Yellow': 'Sárga',
   'Enter how long it took — at least 1 minute.': 'Add meg, meddig tartott — legalább 1 perc.',
+  // --- update a routine from a running workout ---
+  'Update routine': 'Rutin frissítése',
+  'Update “{0}”?': 'Frissíted a(z) „{0}” rutint?',
+  'Copy this exercise’s warm-up sets, rest and note from this session into the routine. Your workout history is kept.': 'A gyakorlat bemelegítő sorozatait, pihenőjét és jegyzetét átmásolja ebből az edzésből a rutinba. Az edzéselőzményeid megmaradnak.',
+  'Routine updated': 'Rutin frissítve',
 }

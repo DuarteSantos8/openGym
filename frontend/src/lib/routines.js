@@ -1,7 +1,8 @@
 import { uid } from './format.js'
-import { defaultConfig, isBw, modeOf } from './history.js'
+import { defaultConfig, isBw, modeOf, MAX_PLANNED_WARMUPS, NOTE_MAX } from './history.js'
 import { isAssisted, isBodyweightEq, isCardio } from './exercises.js'
 import { sessionsFor } from './progression.js'
+import { isWarmupRow } from './workout-model.js'
 
 /**
  * Create a deep copy of a routine with a new id and a "(Copy)" suffix.
@@ -98,4 +99,81 @@ export function replaceSlotExercise(slot, id, S, rid) {
   const last = S ? sessionsFor(S, id, out, rid).filter(s => s.mode === mode).at(-1) : null
   if (last) out.weight = last.planned?.weight ?? last.weight ?? 0
   return out
+}
+
+/**
+ * Where a running session's exercise sits in the routine it was built from, as an index into
+ * `routine.ex`, or -1 when it does not sit anywhere: a freestyle exercise, one added from
+ * another routine, one swapped for something the routine never had.
+ *
+ * A session entry keeps the routine it came from (`rid`), and a combined day can hold the same
+ * exercise twice, so the match is by position among the twins: the second bench press of that
+ * routine in the session is the routine's second bench press.
+ */
+export function routineSlotIndex(routine, entries, idx) {
+  const entry = entries?.[idx]
+  if (!entry || !routine || !Array.isArray(routine.ex) || entry.rid !== routine.id) return -1
+  const twinsBefore = entries.slice(0, idx).filter(e => e && e.rid === routine.id && e.id === entry.id).length
+  let seen = 0
+  for (let i = 0; i < routine.ex.length; i++) {
+    if (routine.ex[i]?.id === entry.id && seen++ === twinsBefore) return i
+  }
+  return -1
+}
+
+// What the exercise config sheet writes into a routine slot that a session can also change: the
+// warm-ups added or removed on the exercise, and the rest and the note its settings sheet edits.
+// A key that does not apply to the exercise is left out, so it can never overwrite the slot's own:
+// a cardio interval has no warm-ups, and rest-pause builds its own warm-up row (ExConfig hides
+// the stepper for both).
+function setupOf(entry) {
+  const target = entry.target || {}
+  const out = {
+    restSec: Math.max(0, Math.round(Number(target.restSec)) || 0),
+    note: String(target.note || '').trim().slice(0, NOTE_MAX),
+  }
+  if (!isCardio(entry.id) && target.intensifier?.type !== 'restpause') {
+    out.warmupSets = Math.min(MAX_PLANNED_WARMUPS, (entry.sets || []).filter(isWarmupRow).length)
+  }
+  return out
+}
+
+/**
+ * What a running session's exercise would change in its routine, or null when there is nothing
+ * to change: the exercise has no routine slot, or the slot already says what the session did.
+ * `changes` are `{ key, from, to }` for `warmupSets`, `restSec` and `note`.
+ *
+ * Warm-ups added in a session used to last that session only, and so did anything edited on the
+ * exercise's settings sheet from inside it (Progression settings opens the same sheet the routine
+ * editor does). Sets, reps and weight are not offered: the progression engine moves those every
+ * session, and the routine is the plan it reads them against.
+ */
+export function routineChangesFromEntry(routine, entries, idx) {
+  const at = routineSlotIndex(routine, entries, idx)
+  if (at < 0) return null
+  const slot = routine.ex[at]
+  const now = setupOf(entries[idx])
+  const changes = []
+  for (const key of ['warmupSets', 'restSec', 'note']) {
+    if (now[key] === undefined) continue
+    const from = key === 'note' ? String(slot.note || '').trim() : Math.max(0, Math.round(Number(slot[key])) || 0)
+    if (from !== now[key]) changes.push({ key, from, to: now[key] })
+  }
+  return changes.length ? { at, changes } : null
+}
+
+/**
+ * Write those changes into the routine, in place on a store draft, the way the config sheet
+ * does: a key is only stored when it has a value, so "no warm-ups" removes it instead of leaving
+ * a 0 that no plan file ever had. Returns the changes it applied, or null.
+ */
+export function updateRoutineFromEntry(routine, entries, idx) {
+  const found = routineChangesFromEntry(routine, entries, idx)
+  if (!found) return null
+  const slot = routine.ex[found.at]
+  for (const { key, to } of found.changes) {
+    if (to) slot[key] = to
+    else delete slot[key]
+  }
+  return found.changes
 }

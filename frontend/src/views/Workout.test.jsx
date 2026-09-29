@@ -2050,3 +2050,77 @@ describe('mark all sets done while logging a past workout', () => {
     expect(labels(await openMenu())).not.toContain('Mark all sets done')
   })
 })
+
+describe('Update routine, from the More menu of an exercise', () => {
+  const lastMenu = () => mocks.menuSheet.mock.calls.at(-1)[0]
+  const item = label => lastMenu().items.filter(Boolean).find(it => it.label === label)
+  const openMore = async () => {
+    await act(async () => { container.querySelector('button[aria-label="More"]').dispatchEvent(new dom.Event('click', { bubbles: true })) })
+  }
+  const routine = (slot = {}) => ({ id: 'A', name: 'Push', ex: [{ id: 'plain-bench', sets: 1, mode: 'reps', reps: 5, weight: 60, ...slot }] })
+  const ownEntry = (extra = {}) => exercise('plain-bench', [false], { rid: 'A', ...extra })
+
+  it('is not offered while the routine already says what the session does', async () => {
+    await mount([ownEntry()], 0, { routines: [routine()] })
+    await openMore()
+    expect(item('Update routine')).toBeUndefined()
+  })
+
+  it('is offered once a warm-up is added, and saves it into the routine after confirming', async () => {
+    await mount([ownEntry()], 0, { routines: [routine()] })
+    await openMore()
+    await act(async () => { item('Add warm-up set').onClick() })
+    await rerender()
+    await openMore()
+
+    const update = item('Update routine')
+    expect(update).toBeTruthy()
+    expect(update.sub).toBe('Warm-up sets 0 → 1')
+
+    // Nothing is written until the confirmation is accepted.
+    update.onClick()
+    expect(mocks.confirmSheet).toHaveBeenCalledOnce()
+    expect(mocks.S.routines[0].ex[0].warmupSets).toBeUndefined()
+
+    mocks.confirmSheet.mock.calls[0][0].onConfirm()
+    expect(mocks.S.routines[0].ex[0].warmupSets).toBe(1)
+    // The rest of the slot is exactly what it was.
+    expect(mocks.S.routines[0].ex[0]).toEqual({ id: 'plain-bench', sets: 1, mode: 'reps', reps: 5, weight: 60, warmupSets: 1 })
+    expect(mocks.toast).toHaveBeenCalledWith('Routine updated')
+  })
+
+  it('names the rest and note edited on the settings sheet mid-session', async () => {
+    await mount([ownEntry({ target: { mode: 'reps', reps: 5, weight: 60, restSec: 150, note: 'pause on the chest' } })], 0, { routines: [routine({ restSec: 90 })] })
+    await openMore()
+    expect(item('Update routine').sub).toBe('Rest (s) 90 → 150 · Note')
+    item('Update routine').onClick()
+    mocks.confirmSheet.mock.calls[0][0].onConfirm()
+    expect(mocks.S.routines[0].ex[0]).toMatchObject({ restSec: 150, note: 'pause on the chest' })
+  })
+
+  it('does not write into a workout that changed while the confirmation was open', async () => {
+    await mount([ownEntry({ target: { mode: 'reps', reps: 5, weight: 60, restSec: 150 } })], 0, { routines: [routine()] })
+    await openMore()
+    item('Update routine').onClick()
+    mocks.S.active = { ...mocks.S.active, id: 'another-workout' }
+    mocks.confirmSheet.mock.calls[0][0].onConfirm()
+    expect(mocks.S.routines[0].ex[0].restSec).toBeUndefined()
+    expect(mocks.toast).not.toHaveBeenCalled()
+  })
+
+  it('is not offered for a freestyle exercise, one the routine never had, or a saved workout being edited', async () => {
+    await mount([exercise('plain-bench', [false], { target: { mode: 'reps', reps: 5, weight: 60, restSec: 150 } })], 0, { routines: [routine()] })
+    await openMore()
+    expect(item('Update routine')).toBeUndefined()
+    await unmount()
+
+    await mount([ownEntry({ id: 'plain-row', target: { mode: 'reps', reps: 5, weight: 60, restSec: 150 } })], 0, { routines: [routine()] })
+    await openMore()
+    expect(item('Update routine')).toBeUndefined()
+    await unmount()
+
+    await mount([ownEntry({ target: { mode: 'reps', reps: 5, weight: 60, restSec: 150 } })], 0, { routines: [routine()], active: { editingWorkoutId: 'saved' } })
+    await openMore()
+    expect(item('Update routine')).toBeUndefined()
+  })
+})

@@ -1663,4 +1663,9 @@ export default {
   'Teal': 'फ़िरोज़ी',
   'Yellow': 'पीला',
   'Enter how long it took — at least 1 minute.': 'बताएँ कि इसमें कितना समय लगा — कम से कम 1 मिनट।',
+  // --- update a routine from a running workout ---
+  'Update routine': 'रूटीन अपडेट करें',
+  'Update “{0}”?': 'रूटीन “{0}” अपडेट करें?',
+  'Copy this exercise’s warm-up sets, rest and note from this session into the routine. Your workout history is kept.': 'इस सत्र से इस एक्सरसाइज़ के वार्म-अप सेट, आराम और नोट को रूटीन में कॉपी करें। आपका वर्कआउट इतिहास सुरक्षित रहता है।',
+  'Routine updated': 'रूटीन अपडेट हो गया',
 }

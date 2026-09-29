@@ -1674,4 +1674,9 @@ export default {
   'Teal': 'เขียวน้ำทะเล',
   'Yellow': 'เหลือง',
   'Enter how long it took — at least 1 minute.': 'ใส่ระยะเวลาที่ใช้ — อย่างน้อย 1 นาที',
+  // --- update a routine from a running workout ---
+  'Update routine': 'อัปเดตรูทีน',
+  'Update “{0}”?': 'อัปเดตรูทีน “{0}” ไหม?',
+  'Copy this exercise’s warm-up sets, rest and note from this session into the routine. Your workout history is kept.': 'คัดลอกเซ็ตวอร์มอัพ เวลาพัก และโน้ตของท่านี้จากเซสชันนี้ไปยังรูทีน ประวัติการออกกำลังกายของคุณจะยังอยู่ครบ',
+  'Routine updated': 'อัปเดตรูทีนแล้ว',
 }
