@@ -3,6 +3,10 @@ import { createRoot } from 'react-dom/client'
 import { parseHTML } from 'linkedom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import CoachChat from './CoachChat.jsx'
+// coach-api.js loads the demo lazily (`await import('./coach-demo.js')`), and a first dynamic
+// import settles on the IO queue, not the microtask queue. Importing it here puts the module in
+// the registry before the chat asks for it, so the refresh below is a cache hit.
+import '../lib/coach-demo.js'
 
 // The demo Coach's failure state, end to end. Every other CoachChat test mocks lib/coach-api.js;
 // this one runs the real thing with DEMO forced on, so the chain under test is exactly what the
@@ -62,8 +66,13 @@ async function click(el) {
   expect(el).toBeTruthy()
   await act(async () => { el.dispatchEvent(new dom.Event('click', { bubbles: true })); await flush() })
 }
-// Microtasks only: the dynamic import of coach-demo.js and the status refresh both settle here.
-const flush = async () => { for (let i = 0; i < 20; i++) await Promise.resolve() }
+// Microtasks AND real macrotask turns. The status refresh is an await chain over a dynamic
+// import, and under load (another suite running at the same time) twenty microtask ticks can run
+// out before the poll has read the ended job. setImmediate is not faked, so each turn yields to
+// the real event loop without moving the clock.
+const flush = async () => {
+  for (let i = 0; i < 20; i++) { await Promise.resolve(); await new Promise(r => setImmediate(r)) }
+}
 const settle = async () => { await act(async () => { await flush() }) }
 const elapse = async ms => { await act(async () => { await vi.advanceTimersByTimeAsync(ms); await flush() }) }
 
