@@ -45,6 +45,10 @@ LABEL maintainer="Duarte Santos https://gitlab.com/DuarteSantos8" \
     org.opencontainers.image.created=$BUILD_DATE
 
 COPY web/nginx.conf.template /etc/nginx/templates/default.conf.template
+# Stops the container at start-up on a BASE_PATH the config cannot serve ("/gym/", "gym"), instead
+# of a server that 404s under the prefix. nginx's entrypoint runs these scripts in order; 05 is
+# before the template rendering at 20.
+COPY --chmod=755 web/05-check-base-path.sh /docker-entrypoint.d/
 COPY --from=build /app/frontend/dist /usr/share/nginx/html
 # exercise media (img/gif) is mounted at runtime from the media volume
 
