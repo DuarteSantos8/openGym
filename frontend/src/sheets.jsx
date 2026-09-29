@@ -682,10 +682,22 @@ function BarWeightEditor({ ex, cfg, extra }) {
   const noBar = bar && isNoBar(st, ex.id)
   const def = defaultBarWeight(ex.eq, st.unit)
   const base = baseWeightFor(st, ex)
+  // The kinds a pick would only be restating. With a `cfg` there is one: the same default the
+  // rows derive. Without one the equipment decides — and for body-weight equipment that answer
+  // ('single', the load being whatever you hang on) is not the one a routine logging the total
+  // derives ('none', bodyweight: false), so the segment sits lit on a kind the rows do not use
+  // and the pick that would fix it is the only way to say so: both readings are consulted, and
+  // it is stored unless it is the default under either. Everything else keeps the plain rule —
+  // a dumbbell's cfg-less 'none' is what a dumbbell row derives, and storing it would freeze
+  // 'none' onto the exercise everywhere, override the 'single' an added-weight entry derives,
+  // and leave no pick that takes the key off again.
+  const defaults = cfg ? [loadKindFor(null, ctx)]
+    : isBodyweightEq(ex.id) ? [true, false].map(b => loadKindFor(null, { id: ex.id, bodyweight: b }))
+    : [loadKindFor(null, ctx)]
   // Picking what the equipment already implies puts the exercise back on it (a stamped null,
   // lib/plates.js), so a later change of the equipment's own default still reaches it.
   const setKind = k => update(s => {
-    s.loadKind = withLoadKind(s.loadKind, ex.id, k === loadKindFor(null, ctx) ? null : k)
+    s.loadKind = withLoadKind(s.loadKind, ex.id, defaults.every(d => d === k) ? null : k)
   })
   const setBar = v => update(s => {
     s.barWeights = s.barWeights || {}
