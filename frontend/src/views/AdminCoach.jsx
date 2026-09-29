@@ -4,6 +4,7 @@ import { useStore } from '../store/useStore.js'
 import { api } from '../lib/api.js'
 import Icon from '../components/Icon.jsx'
 import { Button, Switch, TextField } from '../components/ui.jsx'
+import { confirmSheet } from '../sheets.jsx'
 
 /* The operator's side of the Coach, laid out as a guided setup: one master switch, numbered
    steps that each say what they are for, and everything an owner rarely needs folded away
@@ -76,6 +77,14 @@ export default function AdminCoach() {
     } catch (e) { setTestResult({ ok: false, error: e.message }); toast(e.message) }
     setBusy(false)
   }
+  // A number input hands back "" for anything it cannot parse, and +"" is 0, which the hint on
+  // this card calls "no limit". So an admin who cleared the box to retype and clicked elsewhere
+  // had just uncapped daily spend on their API key, silently. An empty box is no change now: the
+  // stored value goes back into it and nothing is written. Removing the cap takes typing a 0.
+  const capBlur = key => e => {
+    if (e.target.value.trim() === '') { e.target.value = d.caps[key]; return }
+    if (+e.target.value !== d.caps[key]) patch({ caps: { ...d.caps, [key]: +e.target.value } })
+  }
   const disconnect = async () => {
     setBusy(true)
     try { await api('/api/admin/coach/disconnect', { method: 'POST', body: JSON.stringify({ provider: d.provider }) }); toast('Credential removed'); await load() }
@@ -112,6 +121,10 @@ export default function AdminCoach() {
   ]
 
   const hasCredentialStep = !!(meta.setupToken || meta.apiKey)
+  // The model this provider was explicitly GIVEN — as opposed to `d.model`, which falls back to
+  // the provider's own default. Both halves of the Model step (the dropdown and the free-text
+  // box) read this one value, so they cannot disagree about what is configured.
+  const chosenModel = d.models?.[d.provider] || ''
   const step1Done = !!d.provider
   const step2Done = hasEndpoint
   const step3Done = authed
@@ -194,7 +207,14 @@ export default function AdminCoach() {
           <div className="adm-actions">
             {meta.apiKey && <Button size="sm" variant="tinted" icon="lock" disabled={busy}
               onClick={() => openSheet(close => <ApiKeySheet close={close} onDone={load} label={meta.label} placeholder={meta.keyPlaceholder} optional={meta.keyOptional} />)}>Replace key</Button>}
-            <Button size="sm" danger disabled={busy} onClick={disconnect}>Remove</Button>
+            {/* The key is encrypted at rest and never shown again, so this is the one action on the
+                card that cannot be walked back. Every other irreversible action in the app asks first;
+                until 2026-09-22 this one did not. */}
+            <Button size="sm" danger disabled={busy} onClick={() => confirmSheet({
+              title: 'Remove this credential?',
+              message: 'The Coach stops working for everyone on this instance until a new key is added. The stored key cannot be recovered.',
+              confirmText: 'Remove', danger: true, onConfirm: disconnect,
+            })}>Remove</Button>
           </div>
         </> : <>
           {authState === 'unreadable' && <div className="adm-hint" style={{ color: 'var(--red)' }}>
@@ -222,13 +242,13 @@ export default function AdminCoach() {
         <div className="adm-field">
           <label>Model</label>
           {models && models.length
-            ? <select className="adm-select" value={models.includes(d.model) ? d.model : ''} disabled={busy} onChange={e => patch({ model: e.target.value })}>
+            ? <select className="adm-select" value={chosenModel} disabled={busy} onChange={e => patch({ model: e.target.value })}>
               <option value="">{meta.defaultModel ? `Default (${meta.defaultModel})` : 'Pick a model…'}</option>
-              {d.model && !models.includes(d.model) && <option value={d.model}>{d.model} (not in the list)</option>}
+              {chosenModel && !models.includes(chosenModel) && <option value={chosenModel}>{chosenModel} (not in the list)</option>}
               {models.map(m => <option key={m} value={m}>{m}</option>)}
             </select>
-            : <TextField key={d.provider} defaultValue={d.models?.[d.provider] || ''} placeholder={meta.defaultModel ? `Default: ${meta.defaultModel}` : needsEndpoint ? 'e.g. qwen2.5:3b — or press "List models"' : '(runtime default)'}
-              onBlur={e => e.target.value !== (d.models?.[d.provider] || '') && patch({ model: e.target.value })} />}
+            : <TextField key={d.provider} defaultValue={chosenModel} placeholder={meta.defaultModel ? `Default: ${meta.defaultModel}` : needsEndpoint ? 'e.g. qwen2.5:3b — or press "List models"' : '(runtime default)'}
+              onBlur={e => e.target.value !== chosenModel && patch({ model: e.target.value })} />}
         </div>
         {meta.http && <div className="adm-actions">
           <Button size="sm" variant="tinted" icon="reset" disabled={busy} onClick={loadModels}>{models ? 'Refresh list' : 'List models'}</Button>
@@ -264,10 +284,10 @@ export default function AdminCoach() {
           <div className="adm-hint">How many Coach runs are allowed per day. Every run is one request on the provider account above. 0 means no limit.</div>
           <div className="adm-kv"><span className="k">Per user, per day</span>
             <span className="v"><input className="num" type="number" min="0" max="200" defaultValue={d.caps.perProfileDaily} disabled={busy}
-              onBlur={e => +e.target.value !== d.caps.perProfileDaily && patch({ caps: { ...d.caps, perProfileDaily: +e.target.value } })} /></span></div>
+              onBlur={capBlur('perProfileDaily')} /></span></div>
           <div className="adm-kv"><span className="k">Whole instance, per day</span>
             <span className="v"><input className="num" type="number" min="0" max="5000" defaultValue={d.caps.instanceDaily} disabled={busy}
-              onBlur={e => +e.target.value !== d.caps.instanceDaily && patch({ caps: { ...d.caps, instanceDaily: +e.target.value } })} /></span></div>
+              onBlur={capBlur('instanceDaily')} /></span></div>
           <div className="adm-hint" style={{ marginTop: 10 }}>How long a chat message, refinement or review note can be. The chat composer and the server both enforce this.</div>
           <div className="adm-kv"><span className="k">Max message length</span>
             <span className="v"><input className="num" type="number" min="200" max="4000" defaultValue={d.maxMessageLen} disabled={busy}
