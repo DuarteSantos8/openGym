@@ -14,7 +14,7 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
-        if [ -z "$$(ls -A /out/img 2>/dev/null)" ]; then
+        if [ -z "$(ls -A /out/img 2>/dev/null)" ]; then
           echo "↓ Downloading exercise media (~140 MB, one time)…"
           echo "  Source:  github.com/hasaneyldrm/exercises-dataset"
           echo "  Metadata and instruction text: MIT."
