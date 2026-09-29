@@ -14,10 +14,17 @@ import assert from 'node:assert/strict';
 import { tempData, sampleState } from './helpers.mjs';
 import { isWarmupRow } from '../../frontend/src/lib/workout-model.js';
 import { readSession as frontendReadSession } from '../../frontend/src/lib/progression.js';
+import { NOTE_MAX as frontendNoteMax } from '../../frontend/src/lib/history.js';
 
 tempData();
 const payload = await import('../coach/core/payload.js');
 const { handleFor } = await import('../coach/handle.js');
+
+/* The payload bounds a session note at the app's own cap, so a note the app let the athlete write
+   is never cut on its way to the model. */
+test('the payload\'s NOTE_MAX is the app\'s NOTE_MAX', () => {
+  assert.equal(payload.NOTE_MAX, frontendNoteMax);
+});
 
 test('isWarmupSet agrees with the frontend isWarmupRow', () => {
   const cases = [

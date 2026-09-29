@@ -18,6 +18,11 @@ export const CONTRACT = 1;
 // makes the payload bigger and the reading vaguer, not better.
 export const MAX_WEEKS = 12;
 export const MAX_SESSIONS = 60;
+// The most a session note can be: the app's own cap (frontend/src/lib/history.js NOTE_MAX, pinned
+// by api/test/payload-parity.test.js), so a note the athlete wrote arrives whole and the bound only
+// holds for a document edited outside the app. It was 300 here, and a 500-character note reached
+// the model cut off mid-sentence.
+export const NOTE_MAX = 500;
 // Last-resort ceiling for a free-text note/refine (issue #267). The real limit is the admin's
 // `maxMessageLen`, enforced in jobs.js before a message ever reaches this module — this module
 // stays a pure allowlist with no config import of its own, so it keeps its own constant instead.
@@ -389,7 +394,7 @@ function cleanWorkout(w) {
     name: word(w.name, NAME_MAX),
     minutes: w.end && w.start ? Math.round((w.end - w.start) / 60000) : null,
     ...(w.rating ? { rating: typeof w.rating === 'number' ? w.rating : text(String(w.rating), 20) } : {}),
-    ...(w.note ? { note: String(w.note).slice(0, 300) } : {}),
+    ...(w.note ? { note: String(w.note).slice(0, NOTE_MAX) } : {}),
     prs: list(w.prs).length,
     entries: entriesOf(w).map(en => ({
       id: ident(en.id),

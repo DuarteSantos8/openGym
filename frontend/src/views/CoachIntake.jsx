@@ -59,7 +59,11 @@ export default function CoachIntake() {
   const update = useStore(s => s.update)
   const toast = useUI(s => s.toast)
   const [needConsent] = useState(() => !editing && !hasConsent(S))
-  const STEPS = [...(needConsent ? ['consent'] : []), 'goal', 'experience', 'days', 'length', 'equipment', 'limits', 'extras']
+  // An athlete who already answered the intake and only lacks the CURRENT consent (the wording
+  // changed and CONSENT_VERSION moved) reads the new terms and goes back to the Coach. Without
+  // this the redirect from the chat replayed all seven questions and ended in a new plan request.
+  const [reconsentOnly] = useState(() => !editing && !hasConsent(S) && !!S.coach?.profile)
+  const STEPS = reconsentOnly ? ['consent'] : [...(needConsent ? ['consent'] : []), 'goal', 'experience', 'days', 'length', 'equipment', 'limits', 'extras']
   const [step, setStep] = useState(0)
   const [busy, setBusy] = useState(false)
   const [p, setP] = useState(() => ({
@@ -81,7 +85,8 @@ export default function CoachIntake() {
 
   const agree = () => {
     update(s => { s.coach = { ...(s.coach || emptyCoach()), consent: { agreedAt: new Date().toISOString(), version: CONSENT_VERSION } } })
-    setStep(step + 1)
+    if (reconsentOnly) nav('/coach', { replace: true })
+    else setStep(step + 1)
   }
 
   const finish = async () => {

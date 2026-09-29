@@ -147,6 +147,28 @@ describe('CoachIntake — the consent screen', () => {
     expect(mocks.nav).toHaveBeenCalledWith('/plan')
   })
 
+  it('a returning athlete whose consent is out of date reads the new terms only, then goes back to the Coach', () => {
+    // CONSENT_VERSION moved (the training line now names the session notes). The chat's redirect
+    // used to replay all seven questions and end in a new plan request.
+    mocks.S.coach = { consent: { agreedAt: '2026-09-01T00:00:00Z', version: CONSENT_VERSION - 1 }, profile: { goal: 'strength', experience: 'intermediate', daysPerWeek: 3 }, chat: [] }
+    mount()
+    expect(eyebrow()).toBe('Before we start')
+    expect(all('.ob-dot')).toHaveLength(0)
+    tap('button', 'I understand')
+    expect(mocks.S.coach.consent.version).toBe(CONSENT_VERSION)
+    expect(mocks.S.coach.profile.goal).toBe('strength')            // the answers stay as they were
+    expect(mocks.nav).toHaveBeenCalledWith('/coach', { replace: true })
+    expect(vi.mocked(requestPlan)).not.toHaveBeenCalled()
+  })
+
+  it('the training line names the session notes, which the Coach reads', () => {
+    // api/coach/core/payload.js sends each recent session's note (cleanWorkout). The consent
+    // screen listed weights, reps, times, effort and durations, and never said so.
+    mount()
+    const training = all('.ob-consent-row').find(r => r.querySelector('b').textContent === 'Your logged training')
+    expect(training.textContent).toContain('your session notes')
+  })
+
   it('lists the built-in categories first, then whatever the server says actually goes', async () => {
     vi.mocked(disclosure).mockResolvedValue({ categories: ['plan', 'prefs'], providerLabel: 'Anthropic', payer: 'you', host: 'api.anthropic.com' })
     mount()

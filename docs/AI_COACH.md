@@ -236,7 +236,7 @@ renders from, so the screen cannot drift from the payload — are:
 | Category | What it covers |
 | --- | --- |
 | `plan` | routines, exercises, sets/reps, schedule, progression settings |
-| `training` | logged sets, targets, effort ratings, durations, PRs in the review window |
+| `training` | logged sets, targets, effort ratings, durations, PRs and session notes in the review window |
 | `bodyweight` | weigh-ins in the window and your goal weight |
 | `profile` | the intake answers you gave the Coach, including any limitations |
 | `cohort` (optional) | only with comparison on and your own opt-in: anonymous medians from the other people sharing — never their data, and never yours to them beyond the same medians |
