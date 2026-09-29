@@ -147,15 +147,10 @@ button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp butto
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 
 /* ------------------------------------------------------------ type scale -- */
-.t-large  {font-size:34px;line-height:1.06;font-weight:700;letter-spacing:-.028em}
-.t-title  {font-size:28px;line-height:1.12;font-weight:700;letter-spacing:-.024em}
-.t-title2 {font-size:22px;line-height:1.18;font-weight:700;letter-spacing:-.021em}
-.t-head   {font-size:17px;line-height:1.29;font-weight:600;letter-spacing:-.012em}
-.t-body   {font-size:17px;line-height:1.29;font-weight:400;letter-spacing:-.012em}
-.t-callout{font-size:16px;line-height:1.31;font-weight:400;letter-spacing:-.009em}
-.t-sub    {font-size:15px;line-height:1.33;font-weight:400;letter-spacing:-.006em}
-.t-foot   {font-size:13px;line-height:1.38;font-weight:400;letter-spacing:-.001em}
-.t-cap    {font-size:12px;line-height:1.33;font-weight:400;letter-spacing:0}
+/* The nine .t-* classes that used to live here emitted from no JSX in the app, while the views
+   typed their numbers inline (Home.jsx:223 is .t-title2 with a different weight). Deleted
+   2026-09-22 rather than adopted, because adopting a scale means changing what four screens
+   render, which is a design call and not a cleanup. `git log -- src/index.css` has them. */
 
 .muted{color:var(--label-2)} .dim{color:var(--label-3)}
 .small{font-size:13px;line-height:1.38}
@@ -262,7 +257,6 @@ h4.sec{
   text-transform:none;margin:0 0 12px;
 }
 .divider{height:var(--hair);background:var(--sep);margin:14px 0;border:0}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .row{display:flex;align-items:center;gap:12px}
 .row.between{justify-content:space-between}
 /* The body-weight card header (Home and Stats): title on the left, Goal + Log on the right. In
@@ -1340,12 +1334,6 @@ body.chips-dragging *{cursor:inherit}
   font-variant-numeric:tabular-nums;text-align:center;cursor:text;
   -moz-appearance:textfield;appearance:textfield;
 }
-.bwin{display:flex;align-items:baseline;justify-content:center;gap:7px;margin:16px 0}
-.bwin input{
-  width:150px;background:none;border:none;outline:none;text-align: end;
-  font-size:52px;font-weight:600;letter-spacing:-.035em;color:var(--label);
-}
-.bwin span{color:var(--label-2);font-size:19px}
 
 /* --------------------------------------------------------------- charts -- */
 .chart{width:100%;overflow:hidden}
