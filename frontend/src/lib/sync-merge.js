@@ -65,7 +65,7 @@
  * would close it.
  */
 import { beatsWeight } from './exercises.js'
-import { bestWeightForEntry } from './history.js'
+import { workLoadOf } from './finish-session.js'
 import { convertStateUnit, convertBodyWeight } from './units.js'
 
 const clone = o => JSON.parse(JSON.stringify(o))
@@ -149,6 +149,22 @@ function mergeExWeights(n = {}, o = {}) {
   return out
 }
 
+function mergeProgression(n = {}, o = {}, workouts = []) {
+  const out = { ...(o || {}), ...(n || {}) }
+  const byLogId = new Map()
+  const latest = new Map()
+  for (const states of [o, n]) for (const [trackId, state] of Object.entries(states || {})) {
+    if (state?.lastCompletedLogId) byLogId.set(state.lastCompletedLogId, [trackId, state])
+  }
+  for (const workout of workouts) for (const exposure of list(workout.exposures)) {
+    const state = byLogId.get(exposure.exposureId)
+    if (!state || (latest.get(state[0])?.completedAt || '') > (exposure.completedAt || '')) continue
+    latest.set(state[0], { state: state[1], completedAt: exposure.completedAt })
+  }
+  for (const [trackId, { state }] of latest) out[trackId] = state
+  return out
+}
+
 // The kept load of an exercise that a kept workout edit touched (see mergeStates): the best set in
 // the merged history, or the editing copy's own kept load when that is better still — the other
 // copy's may be the very typo the edit corrected. `sources` are the exWeights of each copy whose
@@ -157,7 +173,7 @@ function correctedExWeight(id, workouts, sources) {
   let best = null
   const consider = c => { if (c && c.w > 0 && (!best || beatsWeight(id, c.w, best.w))) best = c }
   for (const w of workouts) {
-    for (const e of list(w?.entries)) if (e?.id === id) consider({ w: bestWeightForEntry(e), d: w.d })
+    for (const x of list(w?.exposures)) if (x?.exerciseId === id) consider({ w: workLoadOf(x), d: w.d })
   }
   for (const src of sources) consider(src?.[id])
   return best
@@ -282,10 +298,10 @@ export function sinceReset(S, at, ids) {
   }
   const ex = {}
   for (const w of out.workouts) {
-    for (const e of list(w.entries)) {
-      if (e?.id == null) continue
-      const wt = bestWeightForEntry(e)
-      if (wt > 0 && (!ex[e.id] || beatsWeight(e.id, wt, ex[e.id].w))) ex[e.id] = { w: wt, d: w.d }
+    for (const x of list(w.exposures)) {
+      if (x?.exerciseId == null) continue
+      const wt = workLoadOf(x)
+      if (wt > 0 && (!ex[x.exerciseId] || beatsWeight(x.exerciseId, wt, ex[x.exerciseId].w))) ex[x.exerciseId] = { w: wt, d: w.d }
     }
   }
   out.exWeights = ex
@@ -337,11 +353,11 @@ export function mergeStates(a0, b0, { prefer } = {}) {
       const alt = mine.has(key) ? other.get(key) : null
       if (!alt) return w
       const [kept, lost, by] = (alt._ts || 0) > (w._ts || 0) ? [clone(alt), w, o] : [w, alt, n]
-      if ((kept._ts || 0) > (lost._ts || 0) && JSON.stringify(kept.entries) !== JSON.stringify(lost.entries)) {
-        for (const e of [...list(kept.entries), ...list(lost.entries)]) {
-          if (e?.id == null) continue
-          if (!editedBy.has(e.id)) editedBy.set(e.id, new Set())
-          editedBy.get(e.id).add(by.exWeights)
+      if ((kept._ts || 0) > (lost._ts || 0) && JSON.stringify(kept.exposures) !== JSON.stringify(lost.exposures)) {
+        for (const e of [...list(kept.exposures), ...list(lost.exposures)]) {
+          if (e?.exerciseId == null) continue
+          if (!editedBy.has(e.exerciseId)) editedBy.set(e.exerciseId, new Set())
+          editedBy.get(e.exerciseId).add(by.exWeights)
         }
       }
       return kept
@@ -393,9 +409,13 @@ export function mergeStates(a0, b0, { prefer } = {}) {
     if (kept) out.exWeights[id] = clone(kept)
     else delete out.exWeights[id]
   }
-  for (const f of ['exNotes', 'barWeights']) {
+  // prescriptions and oneRepMaxes are immutable and keyed
+  // by id, so a key union is lossless: a key exists on one side or both, never with two
+  // different bodies. Progression follows its latest completed log in the merged history.
+  for (const f of ['exNotes', 'barWeights', 'prescriptions', 'oneRepMaxes']) {
     if (n[f] || o[f]) out[f] = clone({ ...(o[f] || {}), ...(n[f] || {}) })
   }
+  if (n.progression || o.progression) out.progression = clone(mergeProgression(n.progression, o.progression, out.workouts))
   // The plate-loading choices (lib/plates.js) are stamped the same way: an exercise's loading and
   // a unit's plate inventory are each one choice, made on one device, that a later set logged on
   // the other must not undo.

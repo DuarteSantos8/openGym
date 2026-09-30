@@ -40,7 +40,8 @@ describe('exercise note sheet', () => {
     globalThis.IS_REACT_ACT_ENVIRONMENT = true
     useUI.setState({ sheets: [] })
     useStore.setState(s => ({
-      S: { ...s.S, exNotes: {}, active: activeWith({ id: 'bench', sets: [] }) },
+      S: { ...s.S, exNotes: {} },
+      A: activeWith({ id: 'bench', sets: [] }),
     }))
     document.body.innerHTML = ''
   })
@@ -66,23 +67,24 @@ describe('exercise note sheet', () => {
     act(() => { save.click() })
 
     const S = useStore.getState().S
-    expect(S.active.entries[0].note).toBe('shoulder twinged')
-    expect(S.active.entries[0].notePin).toBe(true)
+    const A = useStore.getState().A
+    expect(A.entries[0].note).toBe('shoulder twinged')
+    expect(A.entries[0].notePin).toBe(true)
     // The standing note belongs to the exercise, not to today's entry.
     expect(S.exNotes.bench).toBe('seat at 4')
     expect(useUI.getState().sheets).toHaveLength(0)
   })
 
   it('clearing the session note drops the pin with it', () => {
-    useStore.setState(s => ({
-      S: { ...s.S, active: activeWith({ id: 'bench', sets: [], note: 'old', notePin: true }) },
-    }))
+    useStore.setState({
+      A: activeWith({ id: 'bench', sets: [], note: 'old', notePin: true }),
+    })
     const host = renderSheet()
     const [today] = host.querySelectorAll('textarea')
     act(() => { type(today, '') })
     const save = [...host.querySelectorAll('button')].find(b => /save/i.test(b.textContent))
     act(() => { save.click() })
-    const e = useStore.getState().S.active.entries[0]
+    const e = useStore.getState().A.entries[0]
     expect(e.note).toBeUndefined()
     expect(e.notePin).toBeUndefined()
   })

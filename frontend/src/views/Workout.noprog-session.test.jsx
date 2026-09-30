@@ -11,8 +11,10 @@ import Workout from './Workout.jsx'
 import { DEF, useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { editCompletedSession } from '../lib/session-edit.js'
+import { exposuresWithPerformance } from '../lib/session-ui-adapter.js'
 import { lastEntryFor } from '../lib/history.js'
 import { EXDB } from '../lib/exercises.js'
+import { ruleOccurrence } from '../lib/test-fixtures.js'
 
 vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), unlock: vi.fn() }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})), appBase: () => '/' }))
@@ -22,12 +24,13 @@ const clone = value => JSON.parse(JSON.stringify(value))
 const BENCH = '0025'
 const ROW = '0027'
 const SQUAT = '0043'
+const slot = (id, rid) => ruleOccurrence(id, { routineId: rid })
 const routines = [
-  { id: 'main', name: 'Main', ex: [{ id: BENCH, sets: 1, reps: 5, weight: 100 }, { id: ROW, sets: 1, reps: 8, weight: 60 }] },
-  { id: 'legs', name: 'Legs', ex: [{ id: SQUAT, sets: 1, reps: 5, weight: 80 }] },
-  { id: 'deload', name: 'Deload', excludeFromProgression: true, ex: [{ id: ROW, sets: 1, reps: 8, weight: 40 }] },
+  { id: 'main', name: 'Main', ex: [slot(BENCH, 'main'), slot(ROW, 'main')] },
+  { id: 'legs', name: 'Legs', ex: [slot(SQUAT, 'legs')] },
+  { id: 'deload', name: 'Deload', excludeFromProgression: true, ex: [slot(ROW, 'deload')] },
 ]
-const entry = (id, rid, w, extra = {}) => ({ id, rid, target: { sets: 1, reps: 5, weight: w }, sets: [{ w, r: 5, done: false }], ...extra })
+const entry = (id, rid, w, extra = {}) => ({ id, rid, exposureId: 'x-' + id, target: { sets: 1, reps: 5, weight: w }, sets: [{ w, r: 5, done: false }], ...extra })
 const HEADER_SUB = 'Every exercise in this workout'
 
 let root
@@ -35,8 +38,8 @@ let container
 let sheetRoot
 let sheetContainer
 
-function mount(S) {
-  useStore.setState({ S, user: null })
+function mount(S, A) {
+  useStore.setState({ S, A, user: null })
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)
@@ -47,16 +50,16 @@ function renderWorkout(entries, { workouts = [] } = {}) {
   S.routines = clone(routines)
   S.workouts = clone(workouts)
   // List view: every exercise's card is on screen at once.
-  S.active = { id: 'session', d: '2026-09-24', start: Date.now(), routineIds: ['main'], routineId: 'main', name: 'Main', bw: null, cur: 0, workoutView: 'list', entries }
-  mount(S)
+  const A = { id: 'session', d: '2026-09-24', start: Date.now(), routineIds: ['main'], routineId: 'main', name: 'Main', bw: null, cur: 0, workoutView: 'list', entries,
+    exposures: entries.map(e => ({ exposureId: e.exposureId, exerciseId: e.id, routineId: e.rid, trackId: 'occ-' + e.id, excludedFromProgression: !!e.noProg })) }
+  mount(S, A)
 }
 function renderEditor(saved) {
   const S = clone(DEF)
   S.routines = clone(routines)
   S.workouts = [clone(saved)]
   S.workoutView = 'list'
-  editCompletedSession(S, saved.id)
-  mount(S)
+  mount(S, editCompletedSession({ ...S, active: null }, saved.id))
 }
 
 function renderTopSheet() {
@@ -87,7 +90,7 @@ const tapHeaderItem = () => {
 }
 const isOn = item => !!item.querySelector('.menu-on.is-on')
 const markers = () => [...container.querySelectorAll('.noprog')]
-const active = () => useStore.getState().S.active
+const active = () => useStore.getState().A
 
 beforeEach(() => {
   vi.useFakeTimers()
@@ -187,10 +190,12 @@ describe('don’t count the whole workout for progression', () => {
 
 // The #203 editor is the same screen on a copy of the saved workout.
 describe('the whole-workout switch in the saved-workout editor', () => {
-  const done = (id, w) => ({ id, rid: 'main', target: { sets: 1, reps: 5, weight: w }, sets: [{ w, r: 5, done: true }] })
-  const counting = { id: 'saved', d: '2026-09-22', start: 1000, end: 2000, routineIds: ['main'], name: 'Main', entries: [done(BENCH, 100), done(ROW, 60)] }
-  const excluded = { ...counting, excludeFromProgression: true, entries: counting.entries.map(e => ({ ...e, noProg: true })) }
-  const earlier = { id: 'earlier', d: '2026-09-20', start: 0, end: 1, routineIds: ['main'], name: 'Main', entries: [done(BENCH, 90)] }
+  // Saved exposures, written by the live finish's own writer.
+  const done = (lifts, out = false) => exposuresWithPerformance(lifts.map(([id]) => ({ exposureId: 'x-' + id, exerciseId: id, routineId: 'main', excludedFromProgression: out })),
+    lifts.map(([id, w]) => ({ exposureId: 'x-' + id, target: { mode: 'reps' }, sets: [{ w, r: 5, done: true }] })), 'kg')
+  const counting = { id: 'saved', d: '2026-09-22', start: 1000, end: 2000, routineIds: ['main'], name: 'Main', exposures: done([[BENCH, 100], [ROW, 60]]) }
+  const excluded = { ...counting, exposures: done([[BENCH, 100], [ROW, 60]], true) }
+  const earlier = { id: 'earlier', d: '2026-09-20', start: 0, end: 1, routineIds: ['main'], name: 'Main', exposures: done([[BENCH, 90]]) }
   const saveButton = () => container.querySelector('button[aria-label="Save changes"]')
   const saved = () => useStore.getState().S.workouts.find(w => w.id === 'saved')
 
@@ -204,8 +209,7 @@ describe('the whole-workout switch in the saved-workout editor', () => {
     act(() => saveButton().click())
 
     expect(active()).toBeNull()
-    expect(saved()).not.toHaveProperty('excludeFromProgression')
-    expect(saved().entries.some(e => 'noProg' in e)).toBe(false)
+    expect(saved().exposures.some(x => x.excludedFromProgression)).toBe(false)
     expect(lastEntryFor(useStore.getState().S, BENCH, 'main').d).toBe('2026-09-22')
   })
 
@@ -216,8 +220,7 @@ describe('the whole-workout switch in the saved-workout editor', () => {
     expect(markers()).toHaveLength(2)
     act(() => saveButton().click())
 
-    expect(saved().excludeFromProgression).toBe(true)
-    expect(saved().entries.every(e => e.noProg === true)).toBe(true)
+    expect(saved().exposures.every(x => x.excludedFromProgression)).toBe(true)
     expect(saved()).not.toHaveProperty('noProg')
     expect(lastEntryFor(useStore.getState().S, BENCH, 'main').d).toBe('2026-09-20')
   })

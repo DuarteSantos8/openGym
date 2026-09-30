@@ -16,6 +16,8 @@ import { t, LANGS, INSTR_LANGS, EXERCISE_NAME_LANGS, baseLang } from '../lib/i18
 import { effectiveLang } from '../lib/default-lang.js'
 import { DEMO, REPO } from '../lib/demo.js'
 import { MOBILE, isAndroid, shareExport, shareExportBlob, syncReminder } from '../lib/mobile.js'
+import { isLegacyProfile } from '../../../api/migration/profile-version.js'
+import { buildProfileBackup } from '../lib/export-profile.js'
 import { referencedFiles } from '../lib/media-refs.js'
 import { mediaStore } from '../lib/media-store.js'
 import { syncMedia, fetchToStore } from '../lib/media-sync.js'
@@ -47,7 +49,7 @@ export default function Settings() {
   const passkeys = usePasskeys(!!user && !MOBILE && !DEMO)
   const [credsV, setCredsV] = useState(0)
   const credsChanged = () => { passkeys.load(); setCredsV(v => v + 1) }
-  const { update, importConflict, importBackup, setUnit, resetEverything: resetAll, setUser, pullState, pushState, resetDemo } = useStore()
+  const { update, importConflict, importBackup, importLegacyBackup, setUnit, resetEverything: resetAll, setUser, pullState, pushState, adoptProfile, signOut, signOutAll, resetDemo, disconnectServer } = useStore()
   const toast = useUI(s => s.toast)
   const fileRef = useRef(null)
   const importRef = useRef(null)
@@ -58,6 +60,7 @@ export default function Settings() {
   // under a kg label. Closing the sheet leaves the unit as it was.
   const switchUnit = v => {
     if (v === S.unit) return
+    const from = S.unit
     menuSheet({
       title: t('Convert to {0}?', v),
       subtitle: t('Every stored weight — logged sets, working weights, routine targets, body weight, bar weights — is in {0}. Convert the numbers, or keep them and only change the label?', S.unit),
@@ -144,7 +147,7 @@ export default function Settings() {
   // Reads the store at the moment of the tap: the sheet that asks before a sign-out offers it too,
   // and the copy it exports is the one that has not reached the server.
   const doExport = async () => {
-    const json = JSON.stringify(useStore.getState().S, null, 2)
+    const json = JSON.stringify(buildProfileBackup(useStore.getState().S), null, 2)
     const name = 'opengym-backup-' + todayISO() + '.json'
     // WKWebView can't download blob URLs — the native build hands the file to the share sheet.
     if (MOBILE) {
@@ -191,6 +194,8 @@ export default function Settings() {
         const { storeBackupMedia } = await import('../lib/backup-media.js')
         await storeBackupMedia(read.files, { limits: limitsFrom(useStore.getState().config) })
       }
+      // A backup from before the v2 engine goes through the same upgrade screen as any v1 profile.
+      if (isLegacyProfile(read.state)) return importLegacyBackup(read.state, f.size)
       importBackup(read.state, { mergeWith })
       toast(t('Backup imported'))
     }

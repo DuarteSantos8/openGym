@@ -55,7 +55,7 @@ describe('the tab bar across a store write', () => {
     expect(tabs()[1].className).toBe('')
     expect(tabs()[2].className).toBe('start')
 
-    act(() => { useStore.getState().update(s => { s.active = { id: 'a', entries: [], cur: 0 } }, false) })
+    act(() => { useStore.getState().setActive({ id: 'a', entries: [], cur: 0 }) })
     expect(tabs()[2].className).toBe('start rec')
     expect(tabs()[0].className).toBe('on')
   })

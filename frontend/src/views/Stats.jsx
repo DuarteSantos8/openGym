@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { EXIDX, matchExercise, betterWeight } from '../lib/exercises.js'
-import { lastBW, streakWeeks, setLabel, modeOf, effortOf, entriesForExercise, metricEntriesForExercise, metricModeForEntry, bestWeightForEntry, completedRepsOf, workoutDay } from '../lib/history.js'
+import { lastBW, streakWeeks, setLabel, modeOf, effortOf, workoutDay } from '../lib/history.js'
 import { fmtNum, fmtDate, fmtVol, todayISO, weekStartOf, exerciseNameText } from '../lib/format.js'
 import { speedUnitOf, speedLabel, toSpeed } from '../lib/speed.js'
 import { t, exerciseNameFor, exerciseNameClass, getLang } from '../lib/i18n.js'
@@ -22,18 +22,30 @@ import {
 } from '../lib/effort.js'
 import { Button, Segmented, SelectRow } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
-import { isWarmupRow } from '../lib/workout-model.js'
+
+const observation = (row, metric) => row.observations?.find(x => x.metric === metric)?.value
+const modeOfExposure = exposure => exposure.mode || 'reps'
+const rowsOfExposure = exposure => (exposure.performance?.sets || []).filter(row => row.status === 'completed' && row.role !== 'warmup').map(row => ({
+  done: true, r: observation(row, 'repetitions'), sec: observation(row, 'duration'), speed: observation(row, 'speed'),
+  ...(exposure.mode === 'cardio' && observation(row, 'duration') != null ? { min: observation(row, 'duration') / 60 } : {}),
+  rir: observation(row, 'rir'), w: row.resistance?.kind === 'external-load' ? row.resistance.value : 0,
+}))
+const targetOfExposure = (S, exposure) => {
+  const p = S.prescriptions?.[exposure.prescriptionId]
+  return { mode: modeOfExposure(exposure), reps: p?.prefill.reps, sec: p?.prefill.durationSeconds }
+}
+const bestWeightOfExposure = exposure => Math.max(0, ...rowsOfExposure(exposure).map(row => Number(row.w) || 0))
 
 // Which muscles the training in a window actually hit — and, the point of the card,
 // which ones it keeps missing. Shading is relative within the window (lib/muscles.js).
-function latestMuscleTraining(workouts) {
+function latestMuscleTraining(S) {
   const latest = {}
-  for (const workout of workouts || []) {
+  for (const workout of S.workouts || []) {
     const timestamp = Number(workout?.start || new Date(workout?.d).getTime())
     if (!Number.isFinite(timestamp)) continue
-    for (const entry of workout.entries || []) {
-      if (!(entry.sets || []).some(set => set?.done === true && !isWarmupRow(set))) continue
-      const exercise = EXIDX[entry.id] || entry.exercise || entry
+    for (const exposure of workout.exposures || []) {
+      if (!rowsOfExposure(exposure).length) continue
+      const exercise = EXIDX[exposure.exerciseId] || exposure.muscleSnapshot || exposure
       for (const slug of Object.keys(musclesOf(exercise))) {
         if (latest[slug] == null || timestamp > latest[slug]) latest[slug] = timestamp
       }
@@ -114,10 +126,10 @@ function MuscleBalance({ S }) {
     if (!last || !(last.w > 0)) return null
     return S.unit === 'lb' ? last.w * LB_TO_KG : last.w
   }, [S.bodyweight, S.unit])
-  const fatigue = useMemo(() => fatigueOf(workouts, now, { bodyweightKg, unit: S.unit }), [workouts, now, bodyweightKg, S.unit])
-  const strength = useMemo(() => strengthOf(workouts, now, { bodyweightKg, unit: S.unit }), [workouts, now, bodyweightKg, S.unit])
+  const fatigue = useMemo(() => fatigueOf(S, now, { bodyweightKg, unit: S.unit }), [S, now, bodyweightKg, S.unit])
+  const strength = useMemo(() => strengthOf(S, now, { bodyweightKg, unit: S.unit }), [S, now, bodyweightKg, S.unit])
   const muscleExercises = useMemo(() => (sel ? strengthExerciseRowsForMuscle(S, now, sel) : []), [S, now, sel, lang])
-  const lastTrained = useMemo(() => latestMuscleTraining(workouts), [workouts])
+  const lastTrained = useMemo(() => latestMuscleTraining(S), [S])
   const strengthHint = slug => {
     if (lastTrained[slug] == null) return t('not trained')
     const weeks = weeksSinceTraining(now, lastTrained[slug])
@@ -129,7 +141,7 @@ function MuscleBalance({ S }) {
   // into "where did the stimulus go" — a muscle can lead on sets and still never be trained
   // hard. Offered only when the window holds ratings at all, since with none the hard map
   // would just be empty and read as "you trained nothing".
-  const rated = inWin.some(w => w.entries.some(e => e.sets.some(s => s.done && isHardSet(s))))
+  const rated = inWin.some(w => (w.exposures || []).some(exposure => rowsOfExposure(exposure).some(isHardSet)))
   const on = hard && rated
   const load = loadOfWorkouts(inWin, on ? isHardSet : null)
   const volWin = S.workouts.filter(w => (w.start || new Date(w.d).getTime()) > now - 90 * 86400000)
@@ -304,18 +316,20 @@ export default function Stats() {
   const workouts = S.workouts
   const monthW = workouts.filter(w => workoutDay(w)?.slice(0, 7) === todayISO().slice(0, 7)).length
 
+  // One workout's occurrences of an exercise (a combined session can hold it twice) read as one: the
+  // mode of the latest that logged work, every occurrence of that mode pooled, and the best load.
   const metricDataOf = (workout, id) => {
-    const entries = metricEntriesForExercise(workout, id)
-    const mode = entries.at(-1)?.mode || null
-    const sameMode = entries.filter(item => item.mode === mode)
-    const best = mode === 'reps' ? sameMode.reduce((value, item) => {
-      const candidate = bestWeightForEntry(item.entry)
+    const exposures = (workout.exposures || []).filter(x => x.exerciseId === id && rowsOfExposure(x).length)
+    const mode = exposures.length ? modeOfExposure(exposures.at(-1)) : null
+    const sameMode = exposures.filter(x => modeOfExposure(x) === mode)
+    const best = mode === 'reps' ? sameMode.reduce((value, x) => {
+      const candidate = bestWeightOfExposure(x)
       if (!(candidate > 0)) return value
       return value > 0 ? betterWeight(id, value, candidate) : candidate
     }, 0) : 0
-    return { mode, entries: sameMode, rows: sameMode.flatMap(item => item.rows), best }
+    return { mode, exposures: sameMode, rows: sameMode.flatMap(rowsOfExposure), best }
   }
-  const entryOf = id => workouts.flatMap(w => w.entries).find(e => e.id === id)
+  const entryOf = id => workouts.flatMap(w => w.exposures || []).find(exposure => exposure.exerciseId === id)
   const listOf = value => Array.isArray(value) ? value : value == null || value === '' ? [] : [value]
   const firstAvailable = (...values) => {
     for (const value of values) {
@@ -326,25 +340,25 @@ export default function Stats() {
   }
   const nameOf = id => {
     if (EXIDX[id]) return exerciseNameFor(EXIDX[id])
-    const entry = entryOf(id)
-    return entry?.muscleSnapshot?.n || entry?.n || id
+    const exposure = entryOf(id)
+    return exposure?.exerciseNameSnapshot || exposure?.muscleSnapshot?.n || id
   }
   const matcherOf = id => {
     if (EXIDX[id]) return EXIDX[id]
-    const entry = entryOf(id)
-    const snapshot = entry?.muscleSnapshot || {}
-    const primaries = firstAvailable(snapshot.primaries, entry?.primaries)
+    const exposure = entryOf(id)
+    const snapshot = exposure?.muscleSnapshot || {}
+    const primaries = firstAvailable(snapshot.primaries, exposure?.primaries)
     const secondaries = firstAvailable(
       snapshot.sm, snapshot.secondaries, snapshot.muscleGroups,
-      entry?.sm, entry?.secondaries, entry?.muscleGroups,
+      exposure?.sm, exposure?.secondaries, exposure?.muscleGroups,
     )
     return {
-      n: snapshot.n || entry?.n || id,
-      bp: snapshot.bp || entry?.bp || '',
-      tg: primaries[0] || snapshot.tg || entry?.tg || '',
+      n: snapshot.n || exposure?.exerciseNameSnapshot || id,
+      bp: snapshot.bp || exposure?.bp || '',
+      tg: primaries[0] || snapshot.tg || exposure?.tg || '',
       sm: secondaries,
-      eq: snapshot.eq || entry?.eq || '',
-      desc: snapshot.desc || entry?.desc || '',
+      eq: snapshot.eq || exposure?.eq || '',
+      desc: snapshot.desc || exposure?.desc || '',
     }
   }
   // Cardio is charted and ranked in the profile's speed unit; the sets keep km/h (lib/speed.js).
@@ -362,13 +376,13 @@ export default function Stats() {
       // Unloaded reps work still has a current figure — its rep count. Without this the whole
       // picker label went blank and the exercise sorted to the bottom as if it had no history.
       if (mode === 'reps') {
-        const reps = Math.max(0, ...rows.map(completedRepsOf))
+        const reps = Math.max(0, ...rows.map(s => Number(s.r) || 0))
         if (reps > 0) return { mx: reps, unit: t('reps') }
       }
     }
     return { mx: 0, unit: S.unit }
   }
-  const exHist = [...new Set(workouts.flatMap(w => w.entries.map(e => e.id)))].filter(id => EXIDX[id] || nameOf(id) !== id)
+  const exHist = [...new Set(workouts.flatMap(w => (w.exposures || []).map(exposure => exposure.exerciseId)))].filter(id => EXIDX[id] || nameOf(id) !== id)
   const exCurrent = Object.fromEntries(exHist.map(id => [id, currentOf(id)]))
   exHist.sort((a, b) => exCurrent[b].mx - exCurrent[a].mx || nameOf(a).localeCompare(nameOf(b)))
   const curEx = exId && exHist.includes(exId) ? exId : exHist[0] || null
@@ -378,9 +392,9 @@ export default function Stats() {
     for (let i = workouts.length - 1; i >= 0; i--) {
       const data = metricDataOf(workouts[i], curEx)
       if (data.mode) return data.mode
-      const entries = entriesForExercise(workouts[i], curEx)
-      for (let j = entries.length - 1; j >= 0; j--) {
-        const mode = metricModeForEntry(entries[j])
+      const exposure = (workouts[i].exposures || []).filter(x => x.exerciseId === curEx).at(-1)
+      if (exposure) {
+        const mode = modeOfExposure(exposure)
         if (mode) return mode
       }
     }
@@ -394,7 +408,7 @@ export default function Stats() {
   // the rep count, so plot that. Add a weighted set later and it switches back to weight on
   // its own, which is also the honest reading: that is when load became the thing improving.
   const repsOnly = curEx && curMode === 'reps' && !workouts.some(w =>
-    entriesForExercise(w, curEx).some(en => bestWeightForEntry(en) > 0))
+    (w.exposures || []).some(x => x.exerciseId === curEx && bestWeightOfExposure(x) > 0))
   const metric = s => curCardio ? toSpeed(s.speed || 0, speedUnit) : curTimed ? (s.sec || 0) : (s.w || 0)
   const exUnit = curCardio ? speedLabel(speedUnit) : curTimed ? 's' : repsOnly ? t('reps') : S.unit
   let exPts = [], exList = [], exBest = 0
@@ -403,12 +417,12 @@ export default function Stats() {
       const data = metricDataOf(w, curEx)
       if (data.mode === curMode) {
         const doneSets = data.rows
-        const representative = data.entries.at(-1)?.entry
+        const representative = data.exposures.at(-1)
         const mx = curMode === 'reps'
-          ? (repsOnly ? Math.max(0, ...doneSets.map(completedRepsOf)) : data.best)
+          ? (repsOnly ? Math.max(0, ...doneSets.map(s => Number(s.r) || 0)) : data.best)
           : Math.max(0, ...doneSets.map(metric))
         if (mx > 0) {
-          exPts.push({ t: w.start, y: mx, d: w.d, sets: doneSets, target: representative?.target })
+          exPts.push({ t: w.start, y: mx, d: w.d, sets: doneSets, target: representative ? targetOfExposure(S, representative) : undefined })
           // Weighted work on an assistance machine reads the other way: the smallest load is the
           // best (issue #232). Reps, duration and speed are always "more is better".
           const better = curMode === 'reps' && !repsOnly ? betterWeight(curEx, exBest || mx, mx) : Math.max(exBest, mx)

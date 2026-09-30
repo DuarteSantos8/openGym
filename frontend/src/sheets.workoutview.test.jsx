@@ -30,28 +30,29 @@ describe('workout view is snapshot onto the active session', () => {
   beforeEach(() => {
     globalThis.IS_REACT_ACT_ENVIRONMENT = true
     useUI.setState({ sheets: [], toasts: [] })
-    useStore.setState(s => ({ S: { ...s.S, active: null, routines: [], workouts: [], workoutView: 'cards' } }))
+    useStore.setState(s => ({ S: { ...s.S, routines: [], workouts: [], workoutView: 'cards' }, A: null }))
     document.body.innerHTML = ''
   })
   afterEach(() => { act(() => { mounted.splice(0).forEach(root => root.unmount()) }) })
 
-  it('beginWorkout copies the current default onto s.active', () => {
+  it('beginWorkout copies the current default onto A', () => {
     useStore.setState(s => ({ S: { ...s.S, workoutView: 'compact' } }))
     act(() => beginWorkout(null, null))
-    expect(useStore.getState().S.active.workoutView).toBe('compact')
+    expect(useStore.getState().A.workoutView).toBe('compact')
+    expect(useStore.getState().A.status).toBe('in-progress')
   })
 
   it('beginWorkout falls back to cards when the default is unset', () => {
     useStore.setState(s => { const S = { ...s.S }; delete S.workoutView; return { S } })
     act(() => beginWorkout(null, null))
-    expect(useStore.getState().S.active.workoutView).toBe('cards')
+    expect(useStore.getState().A.workoutView).toBe('cards')
   })
 
   it('later changes to the default leave the running session alone', () => {
     act(() => beginWorkout(null, null))
-    expect(useStore.getState().S.active.workoutView).toBe('cards')
+    expect(useStore.getState().A.workoutView).toBe('cards')
     useStore.setState(s => ({ S: { ...s.S, workoutView: 'list' } }))
-    expect(useStore.getState().S.active.workoutView).toBe('cards')
+    expect(useStore.getState().A.workoutView).toBe('cards')
   })
 
   it('a backfilled session snapshots it too', () => {
@@ -60,6 +61,6 @@ describe('workout view is snapshot onto the active session', () => {
     const host = mountTopSheet()
     act(() => { type(host.querySelector('input[type=date]'), '2020-01-02') })
     act(() => { button(host, 'Continue').click() })
-    expect(useStore.getState().S.active.workoutView).toBe('list')
+    expect(useStore.getState().A.workoutView).toBe('list')
   })
 })

@@ -6,9 +6,9 @@ import { registerCustom } from '../lib/exercises.js'
 import { DEMO, DEMO_SEEDED } from '../lib/demo.js'
 import { rememberDefaultLang } from '../lib/default-lang.js'
 import { guestAllowed } from '../lib/guest.js'
-import { MOBILE, initReminderSync, nativeLoad, nativeSave, onAppActive, readJsonFile, syncReminder, writeAutoBackup, writeJsonFile } from '../lib/mobile.js'
+import { MOBILE, initReminderSync, nativeLoad, nativeLoadText, nativeBackupOnce, nativeSave, nativeActiveSave, nativeActiveLoad, onAppActive, readJsonFile, syncReminder, writeAutoBackup, writeJsonFile } from '../lib/mobile.js'
 import { mergeStates, localExtras, stampRoutines, stampCustomEx, inUnitOf, keepReset, resetIdsOf, mergeResetIds, entryKey } from '../lib/sync-merge.js'
-import { convertStateUnit } from '../lib/units.js'
+import { convertStateUnit, convertActiveUnit } from '../lib/units.js'
 import { pendingRefCount, settleMedia, loadPending } from '../lib/media-owed.js'
 import { referencedHashes } from '../lib/media-refs.js'
 import { mediaStore, mediaStoreInUse } from '../lib/media-store.js'
@@ -20,6 +20,8 @@ import { loadRemote, chooseLocal, forgetRemote, connect, normalizeServerUrl, ren
 import { loadCoachDevice, saveCoachDevice, coachDeviceSettings } from '../lib/coach-device.js'
 import { RTL_LANGS } from '../lib/i18n-core.js'
 import { DEFAULT_TEMPLATE_ID } from '../lib/structuralBalanceTemplates.js'
+import { migrateWarmups } from '../lib/prescription/index.js'
+import { isLegacyProfile, migrationStatus } from '../../../api/migration/profile-version.js'
 
 import { WC_DEFAULT } from '../lib/workout-controls.js'
 
@@ -30,6 +32,12 @@ const KEY = 'gym_state_v1'
 // `ts` tells a pull whether anything changed here since. Each tab keeps its own in memory (`meta`
 // in the store); this marker is written beside the saved copy for whichever tab loads it next.
 // See pushState/pullState.
+// The in-progress session. Its own key, never synced, never part of `S`. It was always
+// local-only in practice — mergeInto, restoredStateFor and adoptProfile each overwrote it with
+// the local copy, and the API deletes it on every write (api/server.js `delete
+// body.state.active`) — but it lived inside the synced document, so logging one set cloned,
+// serialized and uploaded the whole profile. Splitting the key is what removes that cost.
+const ACTIVE_KEY = 'gym_active_v1'
 const SYNC_KEY = 'gym_sync'
 const DIRTY_KEY = 'gym_dirty'          // the saved copy owes the server a change
 const SYNCED_AT_KEY = 'gym_synced_at'  // when this device and the server last held the same copy
@@ -61,6 +69,9 @@ function logoutOwed(on) {
 // Mobile build: whose copy the file mirror (lib/mobile.js, opengym-state.json) holds, and which
 // one — { owner, ts }, written after it (saveMirror). A device fact, so never inside S.
 const MIRROR_OWNER_FILE = 'opengym-state-owner.json'
+// The untouched v1 string, kept once before the engine migration converts this browser's copy.
+// Never replaced, never removed.
+const LOCAL_BACKUP_KEY = 'gym_state_v1.pre-engine-v1'
 const CHECK_MIN_MS = 3000    // rev checks closer together than this are the same event (focus + visibility)
 const POLL_MS = 30000        // while the app is open and signed in, ask the server for its revision this often
 const AUTO_BACKUP_SOON_MS = 2000   // several photos picked at once make one backup
@@ -72,10 +83,11 @@ const gainedWorkoutMedia = (prev, next) => {
   return workoutMediaHashes(next).some(h => !had.has(h))
 }
 export const DEF = {
+  engineSchemaVersion: 2, prescriptions: {}, oneRepMaxes: {}, progression: {},
   unit: 'kg', restSec: 90, restPauseSec: 15, sound: true, soundOnSilent: false, timerFlash: false, timedSetOvertime: false, keepAwake: true, lang: 'en',
   theme: 'dark', accent: 'lime', body: 'male', targetW: null,
   bodyweight: [], routines: [], week: {}, dayPlan: {},
-  exWeights: {}, workouts: [], active: null, customEx: [], gifSize: 'full',
+  exWeights: {}, workouts: [], customEx: [], gifSize: 'full',
   // Stats activity heatmap metric. Profiles without this key continue to open on time.
   heatmapMetric: 'time',
   // How the active workout is laid out — 'cards' (one exercise at a time with Prev/Next),
@@ -207,14 +219,62 @@ function loadState() {
   try {
     const raw = localStorage.getItem(KEY)
     if (raw) {
-      const saved = JSON.parse(raw)
-      const s = Object.assign(clone(DEF), saved)
-      if (!saved.lang) s.lang = detectedLang()
-      return s
+      const stored = JSON.parse(raw)
+      // A v1 copy waits, untouched, for the migration screen: overlaying it on DEF would label it
+      // engineSchemaVersion 2 without converting anything.
+      if (isLegacyProfile(stored)) return clone(DEF)
+      const parsed = Object.assign(clone(DEF), stored)
+      if (!stored.lang) parsed.lang = detectedLang()
+      const S = migrateWarmups(parsed)
+      // Written once, here, before the store is exposed; the next load finds nothing to do.
+      if (S !== parsed) localStorage.setItem(KEY, JSON.stringify(S))
+      return S
     }
   } catch (e) { /* ignore */ }
   return freshState()
 }
+
+function loadActive() {
+  try {
+    const raw = localStorage.getItem(ACTIVE_KEY)
+    if (raw) return JSON.parse(raw)
+  } catch (e) { /* ignore */ }
+  return null
+}
+
+// A v1 copy this device holds, read raw: the backup must be the exact string that was stored.
+function localLegacy() {
+  try {
+    const raw = localStorage.getItem(KEY)
+    const parsed = raw && JSON.parse(raw)
+    return isLegacyProfile(parsed) ? { raw, parsed } : null
+  } catch { return null }
+}
+async function nativeLegacy() {
+  const raw = await nativeLoadText()
+  try {
+    const parsed = raw && JSON.parse(raw)
+    return isLegacyProfile(parsed) ? { raw, parsed } : null
+  } catch { return null }
+}
+
+// A profile written before the split still carries the session inside it. Move it once, then
+// drop the field. One-way and idempotent: a session already in ACTIVE_KEY wins, because it is
+// by definition the newer of the two.
+function splitActiveOut() {
+  try {
+    const raw = localStorage.getItem(KEY)
+    if (!raw) return
+    const S = JSON.parse(raw)
+    if (!S) return
+    if (isLegacyProfile(S)) return   // the engine migration converts a v1 in-progress workout itself
+    if (!('active' in S)) { localStorage.setItem(KEY, JSON.stringify(S)); return }
+    if (S.active && !localStorage.getItem(ACTIVE_KEY)) localStorage.setItem(ACTIVE_KEY, JSON.stringify(S.active))
+    delete S.active
+    localStorage.setItem(KEY, JSON.stringify(S))
+  } catch (e) { /* ignore */ }
+}
+splitActiveOut()
 
 // Whether a copy holds anything of its own worth keeping over another: workouts, routines,
 // weigh-ins and custom exercises. A custom exercise is all a new guest may have made — with its
@@ -222,14 +282,12 @@ function loadState() {
 // so a profile created from such a copy takes it at once, like one holding a workout.
 const hasData = st => !!((st.workouts || []).length || (st.routines || []).length || (st.bodyweight || []).length || (st.customEx || []).length)
 
-// Decide whether a pulled account state may replace the local saved state. A local active workout
-// is deliberately carried forward: the server stores completed/saved state, while the in-progress
-// session belongs to the device that is currently running it.
+// Decide whether a pulled account state may replace the local saved state. The in-progress
+// session is no longer part of this document at all — it lives in its own key (ACTIVE_KEY) and
+// is untouched by any profile path — so there is nothing left to carry forward here.
 export function restoredStateFor(local, remote, dirty = false) {
   if (!remote || (hasData(local) && (dirty || (remote._ts || 0) < (local._ts || 0)))) return null
-  const next = Object.assign(clone(DEF), remote)
-  if (local.active) next.active = local.active
-  return next
+  return migrateWarmups(Object.assign(clone(DEF), remote))
 }
 
 export const useStore = create((set, get) => {
@@ -254,6 +312,9 @@ export const useStore = create((set, get) => {
   let fpOf = null          // the copy the stored fingerprint was last taken of (confirmed)
   let keeping = null       // phone: the file write of what keepForPrevious set aside, until it lands
   let mirrorQ = Promise.resolve()   // phone: the file mirror's writes, one after the other (saveMirror)
+  let releasing = false   // the migration handed over to boot(): sync and writes run again
+  // Behind the migration screen nothing may pull, push or overwrite the copy it is about to convert.
+  const gated = () => !!get().migration && !releasing
 
   const readAdopt = () => { try { return JSON.parse(localStorage.getItem(ADOPT_KEY)) || null } catch { return null } }
   const writeAdopt = v => { try { if (v) localStorage.setItem(ADOPT_KEY, JSON.stringify(v)); else localStorage.removeItem(ADOPT_KEY) } catch { /* the hold in memory still stands */ } }
@@ -388,6 +449,23 @@ export const useStore = create((set, get) => {
     return null
   }
 
+  // Mobile mirror for the active session — filled in with the rest of the native persistence.
+  // Same 800 ms debounce as the profile mirror — deliberately NOT the push debounce, and
+  // deliberately not changed by this release.
+  let activeSaveTm = null
+  const nativeActivePersist = () => {
+    clearTimeout(activeSaveTm)
+    activeSaveTm = setTimeout(() => { activeSaveTm = null; nativeActiveSave(get().A) }, 800)
+  }
+
+  // Synchronous and immediate — a ~5 KB object, not a profile. No debounce, no flush hook, and
+  // therefore no window in which a logged set is not yet durable.
+  const persistActive = A => {
+    if (A) localStorage.setItem(ACTIVE_KEY, JSON.stringify(A))
+    else localStorage.removeItem(ACTIVE_KEY)
+    if (MOBILE) nativeActivePersist()
+  }
+
   // `_ts` is when this device last changed the data — it decides which copy wins on the next
   // pull (restoredStateFor). A copy merely adopted from the server or the file mirror keeps the
   // stamp it came with: re-stamping a read would make an unchanged copy look newer than a real
@@ -396,6 +474,7 @@ export const useStore = create((set, get) => {
   // it, and with this clock behind, the change looked older than its own base — unchanged — and
   // a pull replaced it with the server's copy.
   const persist = (S, push = true, stamp = true) => {
+    if (gated()) return
     const { base, owed } = metaOf()   // the copy being replaced; the new one stands where it stood
     if (stamp) S._ts = Math.max(Date.now(), (base?.ts || 0) + 1)
     registerCustom(S.customEx)
@@ -450,7 +529,7 @@ export const useStore = create((set, get) => {
   // server is pushed on the same occasion. A phone that sat in a pocket all afternoon and a
   // desktop tab left open all week used to show, and then push, whatever they last had.
   const checkRev = async (force = false) => {
-    if (!get().user || !get().ready || document.visibilityState === 'hidden') return
+    if (gated() || !get().user || !get().ready || document.visibilityState === 'hidden') return
     if (!force && Date.now() - lastCheck < CHECK_MIN_MS) return
     lastCheck = Date.now()
     // A sign-in still deciding what becomes of this copy: no check of its own. One whose adoption
@@ -486,21 +565,29 @@ export const useStore = create((set, get) => {
   // real change this device now holds — while `ts` in the base stays old, so a pull that
   // happens before the push lands still sees it as unsent.
   const mergeInto = (local, remote, rev) => {
+    // Only two canonical profiles are ever merged.
+    if (isLegacyProfile(local) || isLegacyProfile(remote)) throw new Error('ENGINE_MIXED_MERGE')
     const ts = metaOf().base?.ts || 0
     const merged = Object.assign(clone(DEF), mergeStates(local, remote))
-    merged.active = carryActive(local, merged)
+    carryActiveUnit(local?.unit, merged)
     persist(merged, false)
     if (rev == null) dropSync()
     else writeSync(rev, ts)
   }
-  // The workout running on this device, carried from its copy into the one replacing it — in that
-  // copy's unit: a merge or a pull can bring the other device's switch to lb along, and a session
-  // left in kg would then log kg numbers under an lb label. A switch that only changed the label
-  // (`unitSet.convert === false`) relabels the session as it relabels the history (inUnitOf).
-  const carryActive = (from, to) => {
-    const a = from?.active || null
-    const fu = from?.unit || 'kg', tu = to?.unit || 'kg'
-    return !a || fu === tu ? a : inUnitOf({ unit: fu, active: a }, to).active
+  // The workout running on this device, converted into the profile's new unit — in place, in
+  // storage — when a merge or a pull carries the other device's switch to lb along and a session
+  // logged in kg would otherwise log kg numbers under an lb label. It is its own key now (`A`),
+  // never replaced by a merge or a pull, so nothing here loses or overwrites it — only its numbers
+  // may need relabelling. A switch that only changed the label (`unitSet.convert === false`)
+  // relabels the session as it relabels the history (inUnitOf).
+  const carryActiveUnit = (fromUnit, to) => {
+    const A = get().A
+    const fu = fromUnit || 'kg', tu = to?.unit || 'kg'
+    if (!A || fu === tu) return
+    // A switch that only changed the label (`unitSet.convert === false`) relabels the session as it
+    // relabels the history: its numbers stay.
+    if (to?.unitSet?.convert === false) return
+    get().setActive(convertActiveUnit(A, fu, tu))
   }
   // Take the server's copy as this device's own, timestamp and all (see persist).
   const adopt = (next, rev) => { persist(next, false, false); writeSync(rev, next._ts); markOwed(false) }
@@ -531,11 +618,13 @@ export const useStore = create((set, get) => {
         import('./useUI.js').then(({ useUI }) => useUI.getState().toast(t('Back online — synced with the server.'))).catch(() => {})
       }
     } catch (e) {
+      // The server still holds v1: it has to be migrated before anything is written over it.
+      if (e.data?.error === 'migration-required') { localStorage.setItem('gym_dirty', '1'); get().openMigration(); return }
       if (e.status === 409 && e.data && attempt < 2) {
         // Another device wrote since this one last read. The server sent its document along;
         // merge and push once more against that revision. A second refusal in a row leaves the
         // copy owed and the next resume pull takes it from there.
-        mergeInto(get().S, e.data.state, e.data.rev || 0)
+        mergeInto(get().S, migrateWarmups(e.data.state), e.data.rev || 0)
         return doPush(attempt + 1)
       }
       // Whatever went wrong — no network, a refused token, a phone without a pairing, a server
@@ -562,6 +651,11 @@ export const useStore = create((set, get) => {
   // kills the app.
   const flush = () => {
     if (MOBILE && saveTm) nativePersist(true)
+    if (MOBILE && activeSaveTm) {
+      clearTimeout(activeSaveTm)
+      activeSaveTm = null
+      nativeActiveSave(get().A)
+    }
     if (pushTm) {
       clearTimeout(pushTm)
       pushTm = null
@@ -586,7 +680,7 @@ export const useStore = create((set, get) => {
     pushTm = null
     const S = e.newValue ? loadState() : freshState()
     meta.set(S, e.newValue ? { base: readStoredSync(), owed: storedOwed() } : { base: null, owed: false })
-    set({ user: null, S })
+    set({ user: null, S, A: e.newValue ? loadActive() : null })
   })
   // Another tab of this browser synced — its marker moved to a revision this tab's copy does not
   // descend from. Rather than take that tab's saved copy (storage holds the copy and its marker
@@ -633,6 +727,8 @@ export const useStore = create((set, get) => {
     forgetSync()
     releaseAdopt()   // the copy it was about is gone
     localStorage.removeItem(KEY)
+    set({ A: null })
+    persistActive(null)
     // Signed out, this device is nobody's: the sign-in screen is in the instance's language.
     persist(freshState(), false)
     localStorage.removeItem('gym_owner_name')
@@ -691,6 +787,8 @@ export const useStore = create((set, get) => {
   // pairing waits for it (`keeping`) before it goes on.
   // Photos or videos that never reached that account's server count as owed on their own, even on
   // a copy with no workouts or routines yet — the custom exercise they belong to is all there is.
+  // The in-progress session (`A`) is its own key now, so it is stashed beside `state` rather than
+  // inside it (see carryActiveUnit / ACTIVE_KEY).
   const keepForPrevious = uid => {
     const S = get().S
     if (!(owes() && hasData(S)) && !pendingRefCount(S)) return
@@ -698,14 +796,14 @@ export const useStore = create((set, get) => {
     const key = stashKey(server, uid)
     let all = {}
     try { all = JSON.parse(localStorage.getItem(STASH_KEY)) || {} } catch { /* none */ }
-    const prev = all[key]?.state
-    const state = prev ? mergeStates(S, prev) : clone(S)
-    state.active = S.active || prev?.active || null
+    const prev = all[key]
+    const state = prev?.state ? mergeStates(S, prev.state) : clone(S)
+    const active = get().A || prev?.active || null
     // The name comes from beside the owner when the account is no longer signed in here (its
     // session ended), so the screens say whose changes these are rather than an id.
     let name = get().user?.id === uid ? get().user.name || '' : ''
     if (!name) { try { name = localStorage.getItem('gym_owner_name') || '' } catch { /* the id then */ } }
-    const entry = { server: server || null, uid, name, at: Date.now(), state }
+    const entry = { server: server || null, uid, name, at: Date.now(), state, active }
     all[key] = entry
     // A second full copy beside the first may not fit (a profile near the size limit): the copy
     // in storage is wiped next anyway, so it makes the room.
@@ -726,10 +824,10 @@ export const useStore = create((set, get) => {
     const all = await readStashes()
     const server = serverBase()
     const key = stashKey(server, user.id)
-    const prev = all[key]?.state
-    const state = prev ? mergeStates(get().S, prev) : clone(get().S)
-    state.active = get().S.active || prev?.active || null
-    all[key] = { server: server || null, uid: user.id, name: user.name || '', at: Date.now(), state }
+    const prev = all[key]
+    const state = prev?.state ? mergeStates(get().S, prev.state) : clone(get().S)
+    const active = get().A || prev?.active || null
+    all[key] = { server: server || null, uid: user.id, name: user.name || '', at: Date.now(), state, active }
     return writeStashes(all)
   }
   // Back on the server and account a forced sign-out or disconnect left: the kept changes are
@@ -746,7 +844,10 @@ export const useStore = create((set, get) => {
     let merged = S
     for (const k of keys) merged = mergeStates(merged, all[k].state)
     merged = Object.assign(clone(DEF), merged)
-    merged.active = S.active || keys.map(k => all[k].state?.active).find(Boolean) || null
+    if (!get().A) {
+      const stashedActive = keys.map(k => all[k].active).find(Boolean) || null
+      if (stashedActive) get().setActive(stashedActive)
+    }
     persist(merged, false)
     markOwed(true)
     if (MOBILE) await nativePersist(true)   // the durable copy holds it before the stash goes
@@ -767,6 +868,8 @@ export const useStore = create((set, get) => {
     let res
     try { res = await api('/api/data') }
     catch (e) {
+      // The server still holds v1: it has to be migrated before anything is written over it.
+      if (e.data?.error === 'migration-required') { if (!owedMark) releaseAdopt(); await get().openMigration(); return { adopted: false, added: false } }
       failed(e)
       // Nothing decided: with a sign-in that marked it, sync stays held and the next check asks
       // again (checkRev); a bare call has nothing to hold for.
@@ -789,8 +892,8 @@ export const useStore = create((set, get) => {
       try { const r = await api('/api/data'); if (r && r.state) ({ state, rev } = r) } catch { /* the first read */ }
     }
     const takeServer = () => {
-      const copy = Object.assign(clone(DEF), state)
-      copy.active = carryActive(get().S, copy)
+      const copy = Object.assign(clone(DEF), migrateWarmups(state))
+      carryActiveUnit(get().S?.unit, copy)
       if (rev != null) adopt(copy, rev)
       else { dropSync(); persist(copy, false, false); markOwed(false) }
       confirmed(get().S)
@@ -826,7 +929,7 @@ export const useStore = create((set, get) => {
         await applyStash()
         return { adopted: true, added: false, merged: false }
       }
-      mergeInto(S, state, rev)
+      mergeInto(S, migrateWarmups(state), rev)
       await get().pushState()
       await applyStash()
       return { adopted: true, added: false, merged: true }
@@ -841,8 +944,8 @@ export const useStore = create((set, get) => {
     releaseAdopt()
     if (keep) {
       const S = get().S
-      const merged = Object.assign(clone(DEF), mergeStates(state, S, { prefer: 'a' }))
-      merged.active = carryActive(S, merged)
+      const merged = Object.assign(clone(DEF), mergeStates(migrateWarmups(state), S, { prefer: 'a' }))
+      carryActiveUnit(S?.unit, merged)
       persist(merged, false)
       if (rev != null) writeSync(rev, 0)
       else dropSync()
@@ -855,7 +958,6 @@ export const useStore = create((set, get) => {
     if (later) {
       const S = get().S
       const merged = Object.assign(clone(DEF), mergeStates(S, later, { prefer: 'a' }))
-      merged.active = S.active || null
       persist(merged, false)
       if (rev != null) writeSync(rev, 0)
       else dropSync()
@@ -912,8 +1014,40 @@ export const useStore = create((set, get) => {
     markOwed(true)
   }
 
+  // Out from behind the screen: reload what the migration wrote and run boot again, so the
+  // canonical copy goes through exactly the sync every other start goes through.
+  const releaseMigration = async () => {
+    releasing = true
+    try {
+      const S = loadState()
+      registerCustom(S.customEx)
+      set({ S, A: loadActive() })
+      await get().boot()
+    } finally {
+      releasing = false
+      set({ migration: null })
+    }
+    const review = get().S.migrationAudit?.unsupported?.length
+    if (review) import('./useUI.js').then(({ useUI }) => useUI.getState().toast(t('Training data upgraded — {0} settings need review', review))).catch(() => {})
+  }
+  // A v1 backup file (Settings → Import): converted in memory — the file itself is the backup —
+  // then imported exactly as a v2 file would be.
+  const finishImport = async (data, { migrateProfileV1ToV2, validateCanonicalProfile }, stage) => {
+    stage('convert')
+    const { profile, activeSession } = migrateProfileV1ToV2(data)
+    stage('check')
+    const check = validateCanonicalProfile(profile)
+    if (!check.ok) throw new Error(check.errors[0])
+    stage('load')
+    set({ migration: null })
+    get().replaceState(Object.assign(clone(DEF), profile), true)
+    if (activeSession && !get().A) get().setActive(activeSession)
+    import('./useUI.js').then(({ useUI }) => useUI.getState().toast(t('Backup imported'))).catch(() => {})
+  }
+
   const S0 = loadState()
   registerCustom(S0.customEx)
+  const A0 = loadActive()
   // Which photos and videos are still waiting for the server, known before the first sign-out
   // check has to ask (lib/media-owed.js). A copy without any leaves the media store unopened.
   if (referencedHashes(S0).size) loadPending()
@@ -925,8 +1059,13 @@ export const useStore = create((set, get) => {
 
   return {
     S: S0,
+    A: A0,
     user: user0,
     ready: false,
+    // The engine migration screen (views/MigrationGate.jsx). null, or { phase: 'checking' |
+    // 'confirm' | 'working' | 'error', stage, summary, serverRev, importData }. While set, persist,
+    // pull and push are all off (gated) — see openMigration / confirmMigration.
+    migration: localLegacy() ? { phase: 'checking' } : null,
     // The connection as the screens show it — see statusOf above for every field.
     sync: sync0,
     /* Instance capabilities from GET /api/config. `config.coach` is present only when the owner
@@ -968,14 +1107,19 @@ export const useStore = create((set, get) => {
     // is written, and the editor stays open with the edits.
     saveHistoryEdit() {
       let saved = null
-      get().update(S => { saved = saveWorkoutEdit(S) })
+      const A = get().A
+      // lib/session-edit.js reads the draft as `state.active`; it never reaches the stored copy.
+      get().update(S => { S.active = A; saved = saveWorkoutEdit(S); delete S.active })
+      get().clearActive()
       return saved
     },
-    discardHistoryEdit() { get().update(S => { S.active = null }) },
+    discardHistoryEdit() { get().clearActive() },
     // An edit that took out every set deletes the workout rather than saving it empty.
     deleteHistoryEdit() {
       let removed = false
-      get().update(S => { removed = deleteEditedWorkout(S) })
+      const A = get().A
+      get().update(S => { S.active = A; removed = deleteEditedWorkout(S); delete S.active })
+      get().clearActive()
       return removed
     },
     // Settings → unit. `convert` walks every stored weight into the new unit (lib/units.js); off,
@@ -990,6 +1134,8 @@ export const useStore = create((set, get) => {
       const S = clone(convert ? convertStateUnit(S0, to) : { ...S0, unit: to })
       S.unitSet = { at: Date.now(), convert }
       persist(S, true)
+      // The workout running now is in the old unit too (its own key, `A`).
+      if (convert && get().A) get().setActive(convertActiveUnit(get().A, S0.unit || 'kg', to))
       return convert && get().ready ? get().pushState() : null
     },
     // Settings → Reset everything: the empty copy, stamped with when (`resetAt`). Pushed as a
@@ -1044,17 +1190,45 @@ export const useStore = create((set, get) => {
     // workout logged meanwhile elsewhere, or here, is not lost either.
     importBackup(backup, { mergeWith } = {}) {
       const next = Object.assign(clone(DEF), backup)
+      // An old-format backup may still carry the in-progress workout embedded (`active`, from
+      // before the split) — that one goes into A, not S, and only when nothing is running already.
+      if (next.active && !get().A) get().setActive(next.active)
+      delete next.active
       if (!mergeWith?.state || !get().user) { get().replaceState(next, !!get().user); return }
       const others = mergeWith.local ? mergeStates(get().S, mergeWith.state) : mergeWith.state
       const merged = keepReset(get().S, Object.assign(clone(DEF), mergeStates(next, others, { prefer: 'a' })))
-      merged.active = next.active || null
       persist(merged, true)
       if (mergeWith.rev != null) writeSync(mergeWith.rev, 0)
     },
     // A replace that is meant to reach the server (backup import, reset) is a deliberate
     // overwrite, not a change to merge: the push it arms goes without a baseRev. It never takes
     // the reset stamp back (keepReset).
-    replaceState(S, push = false) { if (push) forceNext = true; persist(keepReset(get().S, clone(S)), push) },
+    replaceState(S, push = false) {
+      if (push) forceNext = true
+      const next = keepReset(get().S, clone(S))
+      persist(next, push, JSON.stringify(next) !== JSON.stringify(get().S))
+    },
+
+    // The in-progress session, and nothing else. No `_ts` stamp, no registerCustom, no write to
+    // gym_state_v1, no push. A set-log is one clone and one JSON.stringify of a ~5 KB object.
+    updateActive(mut) {
+      const A = get().A
+      if (!A) return
+      const next = clone(A)
+      mut(next)
+      set({ A: next })
+      persistActive(next)
+    },
+    setActive(session) {
+      const A = session ? clone(session) : null
+      set({ A })
+      persistActive(A)
+    },
+    // Discard, and the second half of finish. Touches `S` not at all.
+    clearActive() {
+      set({ A: null })
+      persistActive(null)
+    },
 
     // Fires after the moments where losing local data would actually hurt — a workout just
     // logged, a routine just edited — not on every keystroke. No-op off mobile or with the
@@ -1124,6 +1298,8 @@ export const useStore = create((set, get) => {
           keepForPrevious(owner)
           forgetSync()
           localStorage.removeItem(KEY)
+          set({ A: null })
+          persistActive(null)
           persist(clone(DEF), false)
           setSync({ pending: false, lastSynced: 0, lastError: null })
         }
@@ -1167,6 +1343,7 @@ export const useStore = create((set, get) => {
     // in the debounce goes first — the server's answer is then the one that already includes it,
     // and the push itself is what catches a conflict.
     async pullState() {
+      if (gated()) return
       if (adoptHold) return   // as pushState: adoptProfile reads the server itself
       if (pulling) return pulling
       pulling = (async () => {
@@ -1193,7 +1370,7 @@ export const useStore = create((set, get) => {
           // revisions. The newer copy wins as before, except that a copy still owed to the
           // server (dirty) is merged instead of pushed over whatever is there.
           if (!base) {
-            if (dirty && state) { mergeInto(S, state, rev); pushPending = false; await get().pushState(); return }
+            if (dirty && state) { mergeInto(S, migrateWarmups(state), rev); pushPending = false; await get().pushState(); return }
             const restored = restoredStateFor(S, state, false)
             if (restored) { adopt(restored, rev); confirmed(get().S) }
             else if (hasData(S)) { writeSync(rev, 0); await get().pushState() }
@@ -1204,11 +1381,18 @@ export const useStore = create((set, get) => {
           const changed = dirty || localChanged(S)
           if (!serverMoved) { if (changed) await get().pushState(); else confirmed(S); return }
           if (!state) { writeSync(rev, 0); if (hasData(S)) await get().pushState(); return }
-          if (!changed) { const next = Object.assign(clone(DEF), state); next.active = carryActive(S, next); adopt(next, rev); confirmed(get().S); return }
-          mergeInto(S, state, rev)
+          if (!changed) {
+            const next = Object.assign(clone(DEF), migrateWarmups(state))
+            carryActiveUnit(S?.unit, next)
+            adopt(next, rev); confirmed(get().S); return
+          }
+          mergeInto(S, migrateWarmups(state), rev)
           pushPending = false
           await get().pushState()
-        } catch (e) { failed(e) /* keep local; the poll retries */ }
+        } catch (e) {
+          if (e.data?.error === 'migration-required') await get().openMigration()
+          else failed(e)   /* keep local; the poll retries */
+        }
         finally { pulling = null }
       })()
       return pulling
@@ -1278,6 +1462,7 @@ export const useStore = create((set, get) => {
     // question closes, not as it was when it opened — another device may have written meanwhile.
     // Calls made while one is running get that one.
     adoptProfile(ask, opts = {}) {
+      if (gated()) return Promise.resolve({ adopted: false, added: false })
       if (adopting) return adopting
       setHold(true)
       // Whatever throws on the way (the server, the question itself): a sign-in that marked it
@@ -1301,6 +1486,88 @@ export const useStore = create((set, get) => {
         if (MOBILE) { await nativePersist(true); if (get().needsMobileOnboarding) set({ needsMobileOnboarding: false }) }
         return r
       } catch { return null }
+    },
+
+    // Show the migration screen when any copy this device can reach is still v1: the server's
+    // (asked, never assumed), this browser's, or the phone's file mirror. Only looks — nothing is
+    // converted or written until confirmMigration. True when the screen stays up.
+    async openMigration() {
+      set({ migration: { phase: 'checking' } })
+      try {
+        const server = get().user ? await api('/api/data/migration-status') : null
+        const local = localLegacy() || (MOBILE ? await nativeLegacy() : null)
+        if (!server?.required && !local) { set({ migration: null }); return false }
+        set({ migration: {
+          phase: 'confirm',
+          serverRev: server?.required ? server.revision : null,
+          summary: server?.summary || migrationStatus(local.parsed, local.raw.length).summary
+        } })
+      } catch (e) {
+        set({ migration: { phase: 'error' } })
+      }
+      return true
+    },
+
+    // The one OK: back up and convert this device's
+    // v1 copies, then have the server convert its own at the revision the screen showed, then load
+    // the canonical profile through the normal sync. A failure leaves the screen up in its error
+    // state; nothing already backed up or converted is undone, and nothing is pushed.
+    async confirmMigration() {
+      const m = get().migration
+      if (m?.phase !== 'confirm') return
+      const stage = s => set({ migration: { ...get().migration, phase: 'working', stage: s } })
+      try {
+        stage('backup')
+        // Same catalogue the server passes (api/server.js), so both convert a profile identically.
+        const [mod, { LIB_BY_ID }] = await Promise.all([
+          import('../../../api/migration/profile-migration.js'),
+          import('../../../api/coach/core/library.js')
+        ])
+        const lib = { ...mod, migrateProfileV1ToV2: state => mod.migrateProfileV1ToV2(state, LIB_BY_ID) }
+        if (m.importData) return await finishImport(m.importData, lib, stage)
+        const local = localLegacy()
+        const native = MOBILE ? await nativeLegacy() : null
+        if (local && localStorage.getItem(LOCAL_BACKUP_KEY) == null) localStorage.setItem(LOCAL_BACKUP_KEY, local.raw)
+        if (native) await nativeBackupOnce(native.raw)
+        stage('convert')
+        const [fromLocal, fromNative] = [local, native].map(c => c && lib.migrateProfileV1ToV2(c.parsed))
+        stage('check')
+        for (const c of [fromLocal, fromNative]) {
+          if (!c) continue
+          const check = lib.validateCanonicalProfile(c.profile)
+          if (!check.ok) throw new Error(check.errors[0])
+        }
+        if (fromLocal) {
+          localStorage.setItem(KEY, JSON.stringify(fromLocal.profile))
+          if (fromLocal.activeSession && !localStorage.getItem(ACTIVE_KEY)) localStorage.setItem(ACTIVE_KEY, JSON.stringify(fromLocal.activeSession))
+        }
+        if (fromNative) {
+          await nativeSave(fromNative.profile)
+          if (fromNative.activeSession && !(await nativeActiveLoad())) await nativeActiveSave(fromNative.activeSession)
+        }
+        if (m.serverRev != null) {
+          try { await api('/api/data/migrate-engine-v2', { method: 'POST', body: JSON.stringify({ confirmed: true, baseRev: m.serverRev }) }) }
+          catch (e) {
+            // Written between the status and the OK: start over from a fresh status, never a stale snapshot.
+            if (e.data?.error !== 'migration-state-changed') throw e
+            await get().openMigration()
+            return
+          }
+        }
+        stage('load')
+        await releaseMigration()
+      } catch (e) {
+        set({ migration: { ...get().migration, phase: 'error' } })
+      }
+    },
+
+    // "Try again": a fresh status; nothing left to convert anywhere means the app opens.
+    async retryMigration() {
+      if (!(await get().openMigration())) await releaseMigration()
+    },
+
+    importLegacyBackup(data, bytes) {
+      set({ migration: { phase: 'confirm', serverRev: null, importData: data, summary: migrationStatus(data, bytes).summary } })
     },
 
     /* Signing out wipes this device's copy — never while it holds changes the server has not
@@ -1378,9 +1645,9 @@ export const useStore = create((set, get) => {
     // Demo build only: drop the seeded example profile back in (Settings → "Reset demo data").
     // Dynamic import so the generator never ships in a self-hosted bundle.
     async resetDemo() {
-      const { buildDemoState } = await import('../lib/demoSeed.js')
+      const { buildDemoProfile } = await import('../lib/demoSeed.js')
       markOwed(false)
-      persist(Object.assign(clone(DEF), buildDemoState()), false)
+      persist(Object.assign(clone(DEF), buildDemoProfile()), false)
       // The demo's photos and videos were only ever in this browser, and the reset takes them too.
       await mediaStore.clearAll().catch(() => {})
     },
@@ -1422,6 +1689,7 @@ export const useStore = create((set, get) => {
             }
             await get().pullState()
             if (!get().sync.lastError) await applyStash()   // only once the server really answered
+            if (get().migration?.phase === 'checking') await get().openMigration()
           } catch (e) {
             // Whatever the answer — no network, a server error, a token the server no longer
             // accepts — the pairing, this copy and the account all stay, and what is owed stays
@@ -1437,11 +1705,22 @@ export const useStore = create((set, get) => {
           return
         }
         const saved = await nativeLoad()
+        if (gated() || isLegacyProfile(saved)) {
+          // A v1 copy here or in the file mirror: nothing is adopted or mirrored until OK.
+          get().setGuest(true)
+          await get().openMigration()
+          finishBoot()
+          return
+        }
         const S = get().S
         if (saved && (!hasData(S) || (saved._ts || 0) >= (S._ts || 0))) {
           persist(Object.assign(clone(DEF), saved), false, false)
         } else if (hasData(S)) {
           nativePersist(true)   // first run after an update from a file-less version: seed the mirror
+        }
+        if (!get().A) {
+          const savedActive = await nativeActiveLoad()
+          if (savedActive) get().setActive(savedActive)
         }
         if (get().user) {
           // A phone that lost its pairing to a refused token under an earlier version: that boot
@@ -1525,6 +1804,8 @@ export const useStore = create((set, get) => {
         // first screen, not only after the first failed push.
         else if (get().user) failed(e, { pending: owes() })
       }
+      // A v1 copy on this device: now that boot knows who is signed in, the screen can ask the server too.
+      if (get().migration?.phase === 'checking') await get().openMigration()
       finishBoot()
     }
   }

@@ -5,7 +5,9 @@ import { convertBodyWeight, convertStateUnit, convertWeight } from './units.js'
 import { retimeWorkout } from './workout-date.js'
 import { inventoryFor, loadKindFor, withLoadKind, withPlatePairs, withStandardPlates } from './plates.js'
 
-const workout = (id, d = '2026-09-01', start = 1) => ({ id, d, start, entries: [] })
+// A saved workout of the generic engine: exposures carrying the rows performed.
+const ex = (id, w, r = 5) => ({ exerciseId: id, performance: { sets: [{ role: 'work', status: 'completed', observations: [{ metric: 'repetitions', value: r }], resistance: { kind: 'external-load', value: w } }] } })
+const workout = (id, d = '2026-09-01', start = 1) => ({ id, d, start, exposures: [] })
 const routine = (id, name = id) => ({ id, name, ex: [] })
 const base = (over = {}) => ({
   unit: 'kg', restSec: 90, lang: 'en', week: { 1: ['r1'] }, dayPlan: {},
@@ -88,15 +90,15 @@ describe('mergeStates', () => {
   // Whichever copy is newer as a whole, the edited version replaces the old one by id, and the
   // old one can no longer come back over it.
   describe('a workout edited after it was logged', () => {
-    const set = (w, id = 'sq') => ({ id, target: { mode: 'reps' }, sets: [{ w, r: 5, done: true }] })
-    const logged = (entries, over = {}) => ({ ...workout('w1'), entries, ...over })
+    const set = (w, id = 'sq') => ex(id, w)
+    const logged = (exposures, over = {}) => ({ ...workout('w1'), exposures, ...over })
 
     it('keeps the edit when the other copy is newer as a whole but still has the old version', () => {
       const edited = base({ _ts: 100, workouts: [stampWorkout(logged([set(80)]), 100)] })
       const stale = base({ _ts: 200, workouts: [logged([set(100)])], bodyweight: [{ d: '2026-09-02', w: 80, t: 200 }] })
       for (const m of [mergeStates(edited, stale), mergeStates(stale, edited)]) {
         expect(m.workouts).toHaveLength(1)
-        expect(m.workouts[0].entries[0].sets[0].w).toBe(80)
+        expect(m.workouts[0].exposures[0].performance.sets[0].resistance.value).toBe(80)
         expect(m.bodyweight).toHaveLength(1)   // the newer copy's own change is kept too
       }
     })
@@ -104,10 +106,10 @@ describe('mergeStates', () => {
     it('keeps the later of two edits of the same workout, the newer copy\'s on a tie', () => {
       const a = base({ _ts: 300, workouts: [stampWorkout(logged([set(80)]), 150)] })
       const b = base({ _ts: 100, workouts: [stampWorkout(logged([set(90)]), 250)] })
-      expect(mergeStates(a, b).workouts[0].entries[0].sets[0].w).toBe(90)
-      expect(mergeStates(b, a).workouts[0].entries[0].sets[0].w).toBe(90)
+      expect(mergeStates(a, b).workouts[0].exposures[0].performance.sets[0].resistance.value).toBe(90)
+      expect(mergeStates(b, a).workouts[0].exposures[0].performance.sets[0].resistance.value).toBe(90)
       const tie = base({ _ts: 100, workouts: [stampWorkout(logged([set(70)]), 250)] })
-      expect(mergeStates(b, { ...tie, _ts: 50 }).workouts[0].entries[0].sets[0].w).toBe(90)
+      expect(mergeStates(b, { ...tie, _ts: 50 }).workouts[0].exposures[0].performance.sets[0].resistance.value).toBe(90)
     })
 
     it('a date move replaces the other copy by id too', () => {
@@ -121,13 +123,13 @@ describe('mergeStates', () => {
     it('an edit of a workout the other copy deleted brings it back, edited', () => {
       const edited = base({ _ts: 100, workouts: [stampWorkout(logged([set(80)]), 100)] })
       const deleted = base({ _ts: 200, workouts: [] })
-      expect(mergeStates(deleted, edited).workouts.map(w => w.entries[0].sets[0].w)).toEqual([80])
+      expect(mergeStates(deleted, edited).workouts.map(w => w.exposures[0].performance.sets[0].resistance.value)).toEqual([80])
     })
 
     it('sign-in keeps the preferred side\'s version as it is', () => {
       const server = base({ _ts: 100, workouts: [logged([set(100)])] })
       const device = base({ _ts: 50, workouts: [stampWorkout(logged([set(80)]), 300)] })
-      expect(mergeStates(server, device, { prefer: 'a' }).workouts[0].entries[0].sets[0].w).toBe(100)
+      expect(mergeStates(server, device, { prefer: 'a' }).workouts[0].exposures[0].performance.sets[0].resistance.value).toBe(100)
     })
 
     // The kept load may be the typo the edit corrected: the other copy's must not bring it back.
@@ -140,7 +142,7 @@ describe('mergeStates', () => {
 
     it('keeps a heavier set the other copy logged since, and its own kept load when that is better', () => {
       const edited = base({ _ts: 100, workouts: [stampWorkout(logged([set(80)]), 100)], exWeights: { sq: { w: 85, d: '2026-08-01' } } })
-      const other = base({ _ts: 200, workouts: [logged([set(1000)]), { ...workout('w2', '2026-09-03'), entries: [set(90)] }], exWeights: { sq: { w: 1000, d: '2026-09-01' } } })
+      const other = base({ _ts: 200, workouts: [logged([set(1000)]), { ...workout('w2', '2026-09-03'), exposures: [set(90)] }], exWeights: { sq: { w: 1000, d: '2026-09-01' } } })
       expect(mergeStates(other, edited).exWeights.sq).toEqual({ w: 90, d: '2026-09-03' })
       const noLater = base({ _ts: 200, workouts: [logged([set(1000)])], exWeights: { sq: { w: 1000, d: '2026-09-01' } } })
       expect(mergeStates(noLater, edited).exWeights.sq).toEqual({ w: 85, d: '2026-08-01' })
@@ -179,8 +181,8 @@ describe('mergeStates', () => {
     expect('_rev' in m).toBe(false)
     expect(a).toEqual(A())
     expect(b).toEqual(B())
-    m.workouts[0].entries.push('x')
-    expect(a.workouts[0].entries).toEqual([])
+    m.workouts[0].exposures.push('x')
+    expect(a.workouts[0].exposures).toEqual([])
   })
 
   it('tolerates a missing side and missing lists', () => {
@@ -193,8 +195,8 @@ describe('mergeStates', () => {
   })
 
   it('a workout without an id is kept once by day and start', () => {
-    const legacy = { d: '2026-09-01', start: 5, entries: [] }
-    const m = mergeStates({ _ts: 2, workouts: [legacy] }, { _ts: 1, workouts: [{ ...legacy }, { d: '2026-09-01', start: 6, entries: [] }] })
+    const legacy = { d: '2026-09-01', start: 5, exposures: [] }
+    const m = mergeStates({ _ts: 2, workouts: [legacy] }, { _ts: 1, workouts: [{ ...legacy }, { d: '2026-09-01', start: 6, exposures: [] }] })
     expect(m.workouts).toHaveLength(2)
   })
 
@@ -202,7 +204,7 @@ describe('mergeStates', () => {
   // device's untouched copy has to be recognised as the same record. retimeWorkout freezes the
   // old day-and-start as the id, which is what makes that hold.
   it('a legacy workout moved to another day replaces its untouched copy', () => {
-    const legacy = { d: '2026-09-01', start: 5, entries: [], prs: [] }
+    const legacy = { d: '2026-09-01', start: 5, exposures: [], prs: [] }
     const moved = retimeWorkout(legacy, '2026-08-20', '07:00')
     const m = mergeStates({ _ts: 2, workouts: [moved] }, { _ts: 1, workouts: [{ ...legacy }] })
     expect(m.workouts).toHaveLength(1)
@@ -212,7 +214,7 @@ describe('mergeStates', () => {
   // Why the id is the old key rather than a fresh one: a new id shares nothing with the copy
   // on the other device, so the union keeps both and the workout comes back twice.
   it('a fresh id on the same edit would have duplicated it', () => {
-    const legacy = { d: '2026-09-01', start: 5, entries: [], prs: [] }
+    const legacy = { d: '2026-09-01', start: 5, exposures: [], prs: [] }
     const renamed = { ...legacy, id: 'brand-new', d: '2026-08-20' }
     const m = mergeStates({ _ts: 2, workouts: [renamed] }, { _ts: 1, workouts: [{ ...legacy }] })
     expect(m.workouts).toHaveLength(2)
@@ -251,6 +253,36 @@ describe('sign-in adoption helpers', () => {
     // in the profile's unit (79 kg)
     expect(m.bodyweight.find(e => e.d === '2026-09-01').w).toBe(174.2)
     expect(mergeStates(server, local).unit).toBe('kg')   // without prefer the newer copy decides
+  })
+})
+
+describe('prescription engine records', () => {
+  it('unions prescriptions and 1RMs, and keeps the newer device per progression track', () => {
+    const base = { workouts: [], bodyweight: [], exWeights: {} }
+    const a = { ...base, _ts: 1, prescriptions: { p1: { id: 'p1' } }, oneRepMaxes: { o1: { id: 'o1' } }, progression: { t1: { trackId: 't1', cyclesCompleted: 0 }, t2: { trackId: 't2', cyclesCompleted: 5 } } }
+    const b = { ...base, _ts: 2, prescriptions: { p2: { id: 'p2' } }, oneRepMaxes: { o2: { id: 'o2' } }, progression: { t1: { trackId: 't1', cyclesCompleted: 1 } } }
+    const out = mergeStates(a, b)
+    expect(Object.keys(out.prescriptions).sort()).toEqual(['p1', 'p2'])
+    expect(Object.keys(out.oneRepMaxes).sort()).toEqual(['o1', 'o2'])
+    expect(out.progression).toEqual({ t1: { trackId: 't1', cyclesCompleted: 1 }, t2: { trackId: 't2', cyclesCompleted: 5 } })
+  })
+
+  it('keeps the progression state for the latest merged completion on a shared track', () => {
+    const base = { bodyweight: [], exWeights: {} }
+    const aState = { trackId: 't1', cyclesCompleted: 1, lastCompletedLogId: 'log-a' }
+    const bState = { trackId: 't1', cyclesCompleted: 2, lastCompletedLogId: 'log-b' }
+    const a = { ...base, _ts: 2, workouts: [{ id: 'a', d: '2026-09-01', start: 9, exposures: [{ exposureId: 'log-a', trackId: 't1' }] }], progression: { t1: aState } }
+    const b = { ...base, _ts: 1, workouts: [{ id: 'b', d: '2026-09-01', start: 12, exposures: [{ exposureId: 'log-b', trackId: 't1' }] }], progression: { t1: bState } }
+    expect(mergeStates(a, b).progression.t1).toEqual(bState)
+  })
+
+  it('uses an exposure completion time over its session start time', () => {
+    const base = { bodyweight: [], exWeights: {} }
+    const aState = { trackId: 't1', lastCompletedLogId: 'log-a' }
+    const bState = { trackId: 't1', lastCompletedLogId: 'log-b' }
+    const a = { ...base, _ts: 2, workouts: [{ id: 'a', d: '2026-09-01', start: 9, exposures: [{ exposureId: 'log-a', completedAt: '2026-09-01T12:00:00.000Z' }] }], progression: { t1: aState } }
+    const b = { ...base, _ts: 1, workouts: [{ id: 'b', d: '2026-09-01', start: 10, exposures: [{ exposureId: 'log-b', completedAt: '2026-09-01T11:00:00.000Z' }] }], progression: { t1: bState } }
+    expect(mergeStates(a, b).progression.t1).toEqual(aState)
   })
 })
 
@@ -465,7 +497,7 @@ describe('custom exercises keep the version edited last', () => {
 // QA, v1.3.9 (t9): a copy converted to lb met the other device's kg copy, and the merge compared
 // the numbers as they were — the server ended in kg with lb numbers in it.
 describe('two copies in different units', () => {
-  const lifted = (id, w) => ({ id, d: '2026-09-20', start: 1, end: 2, entries: [{ id: '0025', sets: [{ w, r: 5, done: true }] }] })
+  const lifted = (id, w) => ({ id, d: '2026-09-20', start: 1, end: 2, exposures: [ex('0025', w)] })
   const kg = base({ _ts: 300, workouts: [lifted('w1', 60), lifted('w-kg', 70)], bodyweight: [{ d: '2026-09-27', w: 81, t: 300 }], exWeights: { '0025': { w: 55, d: '2026-09-20' } } })
   const lb = { ...convertStateUnit(base({ _ts: 200, workouts: [lifted('w1', 60)], exWeights: { '0025': { w: 55, d: '2026-09-20' } } }), 'lb'), unitSet: { at: 200, convert: true } }
 
@@ -473,8 +505,8 @@ describe('two copies in different units', () => {
     for (const m of [mergeStates(kg, lb), mergeStates(lb, kg)]) {
       expect(m.unit).toBe('lb')
       expect(m.unitSet).toEqual({ at: 200, convert: true })
-      expect(m.workouts.find(w => w.id === 'w-kg').entries[0].sets[0].w).toBe(convertWeight(70, 'kg', 'lb'))
-      expect(m.workouts.find(w => w.id === 'w1').entries[0].sets[0].w).toBe(convertWeight(60, 'kg', 'lb'))
+      expect(m.workouts.find(w => w.id === 'w-kg').exposures[0].performance.sets[0].resistance.value).toBe(convertWeight(70, 'kg', 'lb'))
+      expect(m.workouts.find(w => w.id === 'w1').exposures[0].performance.sets[0].resistance.value).toBe(convertWeight(60, 'kg', 'lb'))
       expect(m.bodyweight[0].w).toBe(convertBodyWeight(81, 'kg', 'lb'))
       // the kept load is compared in one unit: 70 kg lifted since beats the 55 kg in both copies
       expect(m.exWeights['0025'].w).toBe(convertWeight(55, 'kg', 'lb'))
@@ -485,21 +517,21 @@ describe('two copies in different units', () => {
     const old = { ...convertStateUnit(base({ _ts: 100, workouts: [lifted('w1', 60)] }), 'lb') }
     const m = mergeStates(old, kg)
     expect(m.unit).toBe('kg')
-    expect(m.workouts.find(w => w.id === 'w1').entries[0].sets[0].w).toBe(60)
+    expect(m.workouts.find(w => w.id === 'w1').exposures[0].performance.sets[0].resistance.value).toBe(60)
   })
 
   it('a label-only switch relabels the other copy instead of converting it', () => {
     const relabelled = { ...base({ _ts: 200 }), unit: 'lb', unitSet: { at: 200, convert: false } }
     const m = mergeStates(kg, relabelled)
     expect(m.unit).toBe('lb')
-    expect(m.workouts.find(w => w.id === 'w-kg').entries[0].sets[0].w).toBe(70)
+    expect(m.workouts.find(w => w.id === 'w-kg').exposures[0].performance.sets[0].resistance.value).toBe(70)
     expect(m.bodyweight[0].w).toBe(81)
   })
 
   it('with prefer (sign-in), the preferred side\'s unit stays', () => {
     const m = mergeStates(lb, kg, { prefer: 'a' })
     expect(m.unit).toBe('lb')
-    expect(m.workouts.find(w => w.id === 'w-kg').entries[0].sets[0].w).toBe(convertWeight(70, 'kg', 'lb'))
+    expect(m.workouts.find(w => w.id === 'w-kg').exposures[0].performance.sets[0].resistance.value).toBe(convertWeight(70, 'kg', 'lb'))
   })
 })
 
@@ -508,7 +540,7 @@ describe('two copies in different units', () => {
 describe('a reset holds against a copy that has not seen it', () => {
   const R = 5000
   const reset = base({ _ts: R, resetAt: R, restSec: 90 })
-  const w = (id, end, extra = {}) => ({ id, d: '2026-09-01', start: end - 10, end, entries: [{ id: '0025', sets: [{ w: 100, r: 5, done: true }] }], ...extra })
+  const w = (id, end, extra = {}) => ({ id, d: '2026-09-01', start: end - 10, end, exposures: [ex('0025', 100)], ...extra })
   const stale = base({
     _ts: 6000, restSec: 45,
     workouts: [w('old', 1000), w('new', 5500), w('old-edited', 1000, { _ts: 5600 }), w('backfilled', 1000, { _ts: 5700 })],
@@ -548,7 +580,7 @@ describe('a reset holds against a copy that has not seen it', () => {
     expect(mergeStates({ ...stale, resetAt: R }, later).workouts).toEqual([])
   })
 
-  it('not on sign-in: the device\'s own entries are not a copy of the account\'s history', () => {
+  it('not on sign-in: the device\'s own exposures are not a copy of the account\'s history', () => {
     const m = mergeStates(reset, stale, { prefer: 'a' })
     expect(ids(m.workouts)).toHaveLength(4)
   })
@@ -567,7 +599,7 @@ describe('a reset holds against a copy that has not seen it', () => {
 describe('a reset names what it wiped', () => {
   const clone = v => JSON.parse(JSON.stringify(v))
   const R = Date.now()
-  const w = (id, end, extra = {}) => ({ id, d: '2026-09-01', start: end - 10, end, entries: [{ id: '0025', sets: [{ w: 100, r: 5, done: true }] }], ...extra })
+  const w = (id, end, extra = {}) => ({ id, d: '2026-09-01', start: end - 10, end, exposures: [ex('0025', 100)], ...extra })
   // what the profile held when it was reset — on the resetting device and on the stale one alike
   const before = base({
     _ts: R - 1000,
@@ -578,7 +610,7 @@ describe('a reset names what it wiped', () => {
   })
   const reset = base({ _ts: R, resetAt: R, resetIds: resetIdsOf(before) })
 
-  it('drops exactly the wiped entries of a copy that has not seen the reset', () => {
+  it('drops exactly the wiped exposures of a copy that has not seen the reset', () => {
     const stale = clone(before)
     stale._ts = R + 10
     for (const m of [mergeStates(reset, stale), mergeStates(stale, reset)]) {
@@ -597,7 +629,7 @@ describe('a reset names what it wiped', () => {
 
   it('keeps a CSV import of old sessions and an old weigh-in history made on that device', () => {
     const stale = clone(before)
-    mergeImport(stale, { kind: 'workouts', customEx: [], workouts: [{ ...w('iw1', Date.parse('2024-03-01')), d: '2024-03-01' }] })
+    mergeImport(stale, { kind: 'workouts', customEx: [], workouts: [{ id: 'iw1', d: '2024-03-01', start: Date.parse('2024-03-01') - 10, end: Date.parse('2024-03-01'), entries: [{ id: '0025', target: { mode: 'reps' }, sets: [{ w: 100, r: 5, done: true }] }] }] })
     mergeImport(stale, { kind: 'bodyweight', bodyweight: [{ d: '2024-03-01', w: 80, t: Date.parse('2024-03-01') }] })
     const m = mergeStates(stale, reset)
     expect(ids(m.workouts)).toEqual(['iw1'])
@@ -609,8 +641,8 @@ describe('a reset names what it wiped', () => {
     expect(ids(mergeStates(stale, reset).workouts)).toEqual(['after-but-skewed'])
   })
 
-  it('keeps entries with no date or stamp at all', () => {
-    const stale = { ...clone(before), workouts: [{ id: 'undated', entries: [] }], routines: [{ id: 'r-unstamped', name: 'x', ex: [] }], customEx: [{ id: 'c-unstamped', n: 'x' }] }
+  it('keeps exposures with no date or stamp at all', () => {
+    const stale = { ...clone(before), workouts: [{ id: 'undated', exposures: [] }], routines: [{ id: 'r-unstamped', name: 'x', ex: [] }], customEx: [{ id: 'c-unstamped', n: 'x' }] }
     const m = mergeStates(reset, stale)
     expect(ids(m.workouts)).toEqual(['undated'])
     expect(ids(m.routines)).toEqual(['r-unstamped'])

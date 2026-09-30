@@ -45,7 +45,12 @@ export async function api(path, opts) {
   // there and the change was marked as synced while the server never saw it. status 0, not
   // undefined: this is not "offline", and the store must not show it as such.
   if (MOBILE && !remoteBase) throw failure(t('This phone is not connected to a server.'), 'not-paired', 0)
-  const headers = Object.assign({ 'Content-Type': 'application/json' }, init.headers)
+  const headers = Object.assign({
+    'Content-Type': 'application/json',
+    // A server holding a canonical profile refuses /api/data* without this, so an old tab cannot
+    // read v2 records as empty and overwrite real data.
+    'X-OpenGym-Engine-Schema': '2',
+  }, init.headers)
   if (remoteToken) headers.Authorization = 'Bearer ' + remoteToken
   // A paired phone has an absolute base of its own; everyone else is relative to where the app
   // is served, so a subpath deployment reaches its own API instead of the proxy's root.

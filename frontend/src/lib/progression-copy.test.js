@@ -1,30 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { progressionGuidance } from './progression-copy.js'
+import { findingText } from './progression-copy.js'
 
-describe('policy-labelled progression guidance', () => {
-  it('keeps the calculated outcome and identifies the policy that produced it', () => {
-    const why = ['Every rep last time — {0} {1} more.', 2.5, 'kg']
-
-    expect(progressionGuidance({ policy: 'linear', kind: 'up', weight: 62.5, why }))
-      .toEqual({ policyLabel: 'Linear progression', why })
-  })
-
-  it('labels hold and deload outcomes without changing their calculated reasons', () => {
-    const hold = ['Missed reps last time — same weight again ({0} of {1} to go).', 2, 3]
-    const deload = ['Missed reps — reset to {0} {1} and work back up.', 55, 'kg']
-
-    expect(progressionGuidance({ policy: 'double', kind: 'hold', why: hold }))
-      .toEqual({ policyLabel: 'Double progression', why: hold })
-    expect(progressionGuidance({ policy: 'greyskull', kind: 'deload', why: deload }))
-      .toEqual({ policyLabel: 'Greyskull LP', why: deload })
-  })
-
-  it('labels a baseline outcome and omits policies with no visible outcome', () => {
-    const baseline = ['Nothing logged yet — this session sets the baseline.']
-    expect(progressionGuidance({ policy: 'linear', kind: 'first', why: baseline }))
-      .toEqual({ policyLabel: 'Linear progression', why: baseline })
-    expect(progressionGuidance({ policy: 'off', kind: 'off' })).toBeNull()
-    expect(progressionGuidance({ policy: 'linear', kind: 'first' })).toBeNull()
-    expect(progressionGuidance(null)).toBeNull()
+describe('findingText', () => {
+  it('names the field and direction of each finding', () => {
+    expect(findingText({ code: 'below_range', field: 'reps' })).toBe('reps below plan')
+    expect(findingText({ code: 'above_range', field: 'load' })).toBe('weight above plan')
+    expect(findingText({ code: 'above_cap', field: 'load' })).toBe('Above the target cap')
+    expect(findingText({ code: 'missing_reference', field: 'load' })).toBe('Entered without a 1RM')
+    expect(findingText({ code: 'completed_track', field: 'track' })).toBe('Progression completed')
   })
 })

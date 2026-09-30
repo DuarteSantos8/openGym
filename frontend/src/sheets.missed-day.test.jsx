@@ -10,11 +10,16 @@ import { useUI } from './store/useUI.js'
 import { dayOverrideSheet, logPastWorkoutSheet, finishWorkout } from './sheets.jsx'
 import { markAllSetsDone } from './lib/backfill.js'
 import { EXDB } from './lib/exercises-data.js'
+import { ruleOccurrence } from './lib/test-fixtures.js'
+import { workLoadOf } from './lib/finish-session.js'
 
 const BENCH = '0025'
 const ROW = EXDB.find(e => e.id !== BENCH && e.bp === 'back' && e.eq === 'barbell').id
 const clone = v => JSON.parse(JSON.stringify(v))
 const S = () => useStore.getState().S
+const A = () => useStore.getState().A
+// A plan slot: a rule of `sets` × `reps` at `weight`.
+const slot = (id, routineId, sets, reps, weight) => ruleOccurrence(id, { routineId, patch: r => ({ ...r, parameters: { ...r.parameters, sets: { min: sets, max: sets }, reps: { min: reps, max: reps }, load: { mode: 'absolute', value: weight, unit: 'kg' } } }) })
 const mounted = []
 
 function mountTopSheet() {
@@ -38,13 +43,13 @@ function install(extra = {}) {
   const st = clone(DEF)
   Object.assign(st, {
     routines: [
-      { id: 'A', name: 'Push', emoji: 'dumbbell', ex: [{ id: BENCH, sets: 2, reps: 10, weight: 50, mode: 'reps' }] },
-      { id: 'B', name: 'Pull', emoji: 'dumbbell', ex: [{ id: ROW, sets: 3, reps: 8, weight: 40, mode: 'reps' }] },
+      { id: 'A', name: 'Push', emoji: 'dumbbell', ex: [slot(BENCH, 'A', 2, 10, 50)] },
+      { id: 'B', name: 'Pull', emoji: 'dumbbell', ex: [slot(ROW, 'B', 3, 8, 40)] },
     ],
     // Monday trains both routines as one session, Friday just the first.
-    week: { 1: ['A', 'B'], 5: ['A'] }, dayPlan: {}, active: null, workouts: [], weighIn: false,
+    week: { 1: ['A', 'B'], 5: ['A'] }, dayPlan: {}, workouts: [], weighIn: false,
   }, extra)
-  useStore.setState({ S: st, user: null })
+  useStore.setState({ S: st, A: null, user: null })
 }
 
 beforeEach(() => {
@@ -90,50 +95,50 @@ describe('logging a missed planned day', () => {
     expect(host.textContent).toContain('Push + Pull')
     act(() => { button(host, 'Continue').click() })
 
-    const A = S().active
-    expect(A).toMatchObject({ d: '2026-09-14', name: 'Push + Pull', routineIds: ['A', 'B'], backfill: { durationMin: 60, replaceId: null } })
+    const active = A()
+    expect(active).toMatchObject({ d: '2026-09-14', name: 'Push + Pull', routineIds: ['A', 'B'], backfill: { durationMin: 60, replaceId: null } })
     // built the way a live session of that plan is: each entry stamped with its routine and plan
-    expect(A.entries.map(e => [e.id, e.rid, e.planned?.sets, e.planned?.reps])).toEqual([[BENCH, 'A', 2, 10], [ROW, 'B', 3, 8]])
+    expect(active.entries.map(e => [e.id, e.rid, e.sets.filter(s => s.phase !== 'warmup').length])).toEqual([[BENCH, 'A', 2], [ROW, 'B', 3]])
   })
 
   it('offers a single planned routine as the routine itself', () => {
     dayOverrideSheet('2026-09-11')
     tapInTopSheet('Log this workout')
     tapInTopSheet('Continue')
-    expect(S().active).toMatchObject({ d: '2026-09-11', name: 'Push', routineIds: ['A'] })
+    expect(A()).toMatchObject({ d: '2026-09-11', name: 'Push', routineIds: ['A'] })
   })
 
   it('files a completed workout on that date once its sets are marked done', () => {
     dayOverrideSheet('2026-09-14')
     tapInTopSheet('Log this workout')
     tapInTopSheet('Continue')
-    act(() => { useStore.getState().update(s => { s.active.entries = markAllSetsDone(s.active.entries) }) })
+    act(() => { useStore.getState().updateActive(a => { a.entries = markAllSetsDone(a.entries) }) })
     act(() => finishWorkout())
-    expect(S().active).toBeNull()
+    expect(A()).toBeNull()
     const [w] = S().workouts
     expect(w).toMatchObject({ d: '2026-09-14', routineIds: ['A', 'B'] })
     // Nothing logged before it: every loaded lift in it leads, and gets its badge the way Save in
     // the editor would give it one (QA 1.3.9 — a backfilled finish used to award none).
-    expect(w.prs).toEqual(w.entries.filter(e => e.sets.some(x => x.w > 0)).map(e => e.id))
+    expect(w.prs).toEqual(w.exposures.filter(x => workLoadOf(x) > 0).map(x => x.exerciseId))
     expect(new Date(w.start).getHours()).toBe(18)
-    expect(w.entries.map(e => [e.rid, e.sets.every(s => s.done)])).toEqual([['A', true], ['B', true]])
-    expect(w.entries[0].planned).toMatchObject({ sets: 2, reps: 10 })
+    expect(w.exposures.map(x => [x.routineId, x.performance.sets.filter(s => s.role !== 'warmup').every(s => s.status === 'completed')])).toEqual([['A', true], ['B', true]])
   })
 
   // Review of #284: Monday missed, the routine trained again on Tuesday, Monday logged on
   // Wednesday. Built from the whole log, Monday opened at the weight Tuesday had progressed to and
   // was saved with it, filed ahead of Tuesday: a spike on the chart and a best set dated a day early.
   it('builds a missed day from the sessions before it, not from one logged after it', () => {
-    const pushed = (id, d, w) => ({
-      id, d, start: new Date(d + 'T18:00:00').getTime(), end: new Date(d + 'T19:00:00').getTime(), name: 'Push',
-      routineIds: ['A'], prs: [], entries: [{ id: BENCH, rid: 'A', target: { sets: 2, reps: 10, weight: w, mode: 'reps' },
-        planned: { sets: 2, reps: 10, weight: 50 }, sets: [{ w, r: 10, done: true }, { w, r: 10, done: true }] }],
-    })
-    install({ workouts: [pushed('fri', '2026-09-11', 50), pushed('tue', '2026-09-15', 52.5)] })
-    dayOverrideSheet('2026-09-14')
-    tapInTopSheet('Log this workout')
-    tapInTopSheet('Continue')
-    const bench = S().active.entries.find(e => e.id === BENCH)
+    install({ week: { 1: ['A'], 2: ['A'], 5: ['A'] } })
+    const open = iso => { useUI.setState({ sheets: [] }); dayOverrideSheet(iso); tapInTopSheet('Log this workout'); tapInTopSheet('Continue') }
+    const log = (iso, w) => {
+      open(iso)
+      act(() => { useStore.getState().updateActive(a => { a.entries = markAllSetsDone(a.entries.map(e => ({ ...e, sets: e.sets.map(s => (s.phase === 'warmup' || w == null ? s : { ...s, w })) }))) }) })
+      act(() => finishWorkout())
+    }
+    log('2026-09-11')        // Friday at the plan's 50, every rep: the step to 52.5 is earned
+    log('2026-09-15', 60)    // Tuesday, heavier by hand
+    open('2026-09-14')
+    const bench = A().entries.find(e => e.id === BENCH)
     expect(bench.sets.filter(s => s.phase !== 'warmup').map(s => s.w)).toEqual([52.5, 52.5])
     expect(bench.target.weight).toBe(52.5)
   })
@@ -141,7 +146,8 @@ describe('logging a missed planned day', () => {
   it('still refuses while a workout is running', () => {
     const toast = vi.fn()
     useUI.setState({ toast })
-    install({ active: { id: 'live', entries: [] } })
+    install()
+    useStore.getState().setActive({ id: 'live', entries: [] })
     dayOverrideSheet('2026-09-14')
     tapInTopSheet('Log this workout')
     expect(toast).toHaveBeenCalledWith('Finish the current workout first.')
@@ -162,16 +168,15 @@ describe('logging a missed planned day', () => {
 describe('badges on a workout logged into the past', () => {
   const pushed = (id, d, w, prs = []) => ({
     id, d, start: new Date(d + 'T18:00:00').getTime(), end: new Date(d + 'T19:00:00').getTime(), name: 'Push',
-    routineIds: ['A'], prs, entries: [{ id: BENCH, rid: 'A', target: { sets: 1, reps: 10, weight: w, mode: 'reps' },
-      sets: [{ w, r: 10, done: true }] }],
+    routineIds: ['A'], prs, exposures: [{ exerciseId: BENCH, routineId: 'A', mode: 'reps', performance: { sets: [{ role: 'work', status: 'completed', observations: [{ metric: 'repetitions', value: 10 }], resistance: { kind: 'external-load', value: w } }] } }],
   })
   it('awards what the day leads with and takes the badge from a later session it outdoes', () => {
     install({ workouts: [pushed('fri', '2026-09-11', 50, [BENCH]), pushed('tue', '2026-09-15', 52.5, [BENCH])] })
     dayOverrideSheet('2026-09-14')
     tapInTopSheet('Log this workout')
     tapInTopSheet('Continue')
-    act(() => { useStore.getState().update(s => {
-      s.active.entries = markAllSetsDone(s.active.entries).map(e => e.id === BENCH
+    act(() => { useStore.getState().updateActive(a => {
+      a.entries = markAllSetsDone(a.entries).map(e => e.id === BENCH
         ? { ...e, sets: e.sets.map(x => (x.phase === 'warmup' ? x : { ...x, w: 60 })) }
         : e)
     }) })

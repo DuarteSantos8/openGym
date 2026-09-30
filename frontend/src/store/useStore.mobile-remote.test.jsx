@@ -71,7 +71,7 @@ function installFetch() {
 const refusing = () => json(401, { error: 'not signed in' })
 // The paired server, as api/server.js answers: a revision per document, 409 on a stale baseRev.
 function serverWith(doc) {
-  const srv = { doc: clone(doc), puts: [] }
+  const srv = { doc: clone({ engineSchemaVersion: 2, ...doc }), puts: [] }
   srv.handle = (path, method, init) => {
     if (path === '/api/me') return json(200, { user: USER })
     if (path === '/api/config') return json(200, { invite_only: false, allow_guest: true })
@@ -100,7 +100,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms))
 const ids = xs => (xs || []).map(x => x.id)
 
 // Server rev 5 holds w1 and the push-day routine at 10 reps; the phone is paired and in step.
-const SERVER_STATE = { _ts: 1000, _rev: 5, unit: 'kg', restSec: 90, workouts: [workout('w1', '2026-09-10')], routines: [routine('push', 10)], bodyweight: [] }
+const SERVER_STATE = { engineSchemaVersion: 2, _ts: 1000, _rev: 5, unit: 'kg', restSec: 90, workouts: [workout('w1', '2026-09-10')], routines: [routine('push', 10)], bodyweight: [] }
 let DEF
 beforeAll(async () => { DEF = (await import('./useStore.js')).DEF })
 // `synced`: it last agreed with the server under this version, so it knows what that copy was.

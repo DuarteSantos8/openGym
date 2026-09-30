@@ -6,23 +6,26 @@ import { EXDB } from './lib/exercises.js'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { exConfigSheet } from './sheets.jsx'
+import { ruleOccurrence } from './lib/test-fixtures.js'
 
 // The exercise settings' number fields with a floor (a drop-set's drops and weight drop, a
 // rest-pause's reps and rest) or a range (the Epley deload) were clamped on every keystroke, like
 // the workout duration was: an emptied field snapped back to its minimum and the digits typed next
 // landed after it, so a weight drop retyped as 20 read 520 and a deload typed as 80 read 95.
-const ex = EXDB.find(e => e.id === '0009')   // a weighted machine exercise: Epley deload applies
+const ex = EXDB.find(e => e.id === '0009')   // a weighted machine exercise
 const mounted = []
 
 function renderConfig(cfg) {
   const onSave = vi.fn()
-  exConfigSheet(ex, { sets: 3, reps: 10, weight: 40, mode: 'reps', ...cfg }, onSave)
+  exConfigSheet(ex, { ...ruleOccurrence(ex.id), ...cfg }, onSave)
   const sheet = useUI.getState().sheets.at(-1)
   const host = document.createElement('div')
   document.body.appendChild(host)
   const root = createRoot(host)
   mounted.push(root)
   act(() => root.render(sheet.render(() => useUI.getState().closeSheet(sheet.id))))
+  // The intensifier fields sit in a disclosure that starts shut.
+  act(() => [...host.querySelectorAll('.disc .lrow, .disc button, .disc [role=button]')].find(e => e.textContent.startsWith('Intensifier'))?.click())
   return { host, onSave }
 }
 // The last field so labelled: "Rest (s)" is also the exercise's own rest, further up the sheet.
@@ -69,31 +72,10 @@ describe('exercise settings: typing into a field with a minimum', () => {
     act(() => save(host))
     expect(onSave.mock.calls[0][0].intensifier).toEqual({ type: 'restpause', totalReps: 1, restSec: 5 })
   })
-
-  it('lets the deload percentage be retyped, held to 50–95 on leaving the field', () => {
-    const { host, onSave } = renderConfig({ prog: 'linear' })
-    const deload = field(host, 'Deload 1RM (%)')
-    expect(deload.value).toBe('90')
-    act(() => type(deload, ''))
-    expect(deload.value).toBe('')
-    act(() => type(deload, '8'))
-    expect(deload.value).toBe('8')
-    act(() => type(deload, '80'))
-    expect(deload.value).toBe('80')
-    act(() => leave(deload))
-    expect(deload.value).toBe('80')
-    act(() => type(deload, '99'))
-    act(() => leave(deload))
-    expect(deload.value).toBe('95')
-    act(() => type(deload, '85'))
-    act(() => save(host))
-    expect(onSave.mock.calls[0][0].deloadFactor).toBe(0.85)
-  })
 })
 
-// QA 1.3.9: a timed bodyweight hold showed "Weight (kg)" and "Added (kg)", two fields bound to
-// the same value, under a Bodyweight row that said to "just log the reps".
-describe('exercise settings: a timed bodyweight hold', () => {
+// Issue #60 on the engine: "Reps per side" is saved on the occurrence and rounds the reps up to even.
+describe('exercise settings: reps per side', () => {
   beforeEach(() => {
     globalThis.IS_REACT_ACT_ENVIRONMENT = true
     useUI.setState({ sheets: [] })
@@ -101,19 +83,57 @@ describe('exercise settings: a timed bodyweight hold', () => {
     document.body.innerHTML = ''
   })
   afterEach(() => { act(() => { mounted.splice(0).forEach(root => root.unmount()) }) })
-  const labels = host => [...host.querySelectorAll('.stp-l')].map(l => l.textContent)
 
-  it('has one weight field, the added load, and talks about the hold', () => {
-    const { host } = renderConfig({ mode: 'time', sec: 45, weight: 0, bodyweight: true })
-    expect(labels(host)).not.toContain('Weight (kg)')
-    expect(labels(host).filter(l => l === 'Added (kg)')).toHaveLength(1)
-    expect(host.textContent).toContain('No weight to enter — just time the hold.')
-    expect(host.textContent).not.toContain('just log the reps')
+  it('saves the flag and an even rep target, and drops it again when switched off', () => {
+    const base = ruleOccurrence(ex.id)
+    const { host, onSave } = renderConfig({ rule: { ...base.rule, parameters: { ...base.rule.parameters, reps: { min: 9, max: 9 } } } })
+    const toggle = () => [...host.querySelectorAll('.lrow')].find(r => r.textContent.includes('Reps per side')).querySelector('[role=switch]').click()
+    act(toggle)
+    act(() => save(host))
+    expect(onSave.mock.calls[0][0]).toMatchObject({ side: true, rule: { parameters: { reps: { min: 10, max: 10 } } } })
+    const again = renderConfig({ side: true })
+    act(() => [...again.host.querySelectorAll('.lrow')].find(r => r.textContent.includes('Reps per side')).querySelector('[role=switch]').click())
+    act(() => save(again.host))
+    expect('side' in again.onSave.mock.calls[0][0]).toBe(false)
+  })
+})
+
+// Main's Bodyweight switch and Plate loading section, on the engine's occurrence.
+describe('exercise settings: bodyweight and plate loading', () => {
+  beforeEach(() => {
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true
+    useUI.setState({ sheets: [] })
+    useStore.setState(s => ({ S: { ...s.S, unit: 'kg', loadKind: {}, barWeights: {} } }))
+    document.body.innerHTML = ''
+  })
+  afterEach(() => { act(() => { mounted.splice(0).forEach(root => root.unmount()) }) })
+  const bwSwitch = host => [...host.querySelectorAll('.lrow')].find(r => r.textContent.includes('Bodyweight')).querySelector('[role=switch]')
+
+  it('saves the override, drops the load where the preset runs without one, and keeps it where it steps it', () => {
+    const manual = ruleOccurrence(ex.id, { preset: 'manual', patch: r => ({ ...r, parameters: { ...r.parameters, load: { mode: 'absolute', value: 40, unit: 'kg' } } }) })
+    const one = renderConfig(manual)
+    expect(bwSwitch(one.host).getAttribute('aria-checked')).toBe('false')
+    act(() => bwSwitch(one.host).click())
+    act(() => save(one.host))
+    expect(one.onSave.mock.calls[0][0]).toMatchObject({ bodyweight: true, rule: { parameters: { load: { mode: 'empty' } } } })
+
+    const two = renderConfig({})   // linear: the load is what it steps, so it stays as added weight
+    act(() => bwSwitch(two.host).click())
+    act(() => save(two.host))
+    expect(two.onSave.mock.calls[0][0]).toMatchObject({ bodyweight: true, rule: { parameters: { load: { mode: 'absolute' } } } })
+
+    const three = renderConfig({ bodyweight: true })   // switched back to what the catalogue says: no override
+    act(() => bwSwitch(three.host).click())
+    act(() => save(three.host))
+    expect('bodyweight' in three.onSave.mock.calls[0][0]).toBe(false)
   })
 
-  it('keeps the one weight field on a loaded hold', () => {
-    const { host } = renderConfig({ mode: 'time', sec: 45, weight: 10, bodyweight: false })
-    expect(labels(host)).toContain('Weight (kg)')
-    expect(labels(host)).not.toContain('Added (kg)')
+  it('sets how the exercise is loaded, for every plan it is in', () => {
+    const { host } = renderConfig({})
+    const plates = [...host.querySelectorAll('.disc .lrow, .disc button, .disc [role=button]')].find(e => e.textContent.startsWith('Plate loading'))
+    expect(plates.textContent).toContain('Off')   // a leverage machine has no plate math by default
+    act(() => plates.click())
+    act(() => [...host.querySelectorAll('button')].find(b => b.textContent.trim() === 'Per side').click())
+    expect(useStore.getState().S.loadKind[ex.id]).toMatchObject({ kind: 'pairs' })
   })
 })

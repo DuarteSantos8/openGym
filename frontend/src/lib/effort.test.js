@@ -5,6 +5,7 @@ import {
   effortColor, EFFORT_BANDS, EFFORT_PRESETS
 } from './effort.js'
 import { isoOf } from './format.js'
+import { loggedExposure } from './test-fixtures.js'
 
 const daysAgo = n => { const d = new Date(); d.setDate(d.getDate() - n); return d }
 // One workout on a day, with the sets given. Everything here is a finished set unless a set
@@ -246,6 +247,17 @@ describe('effortColor', () => {
     expect(effortColor(rirOf({ rir: 0 }))).toBe(effortColor(rirOf({ rpe: 10 })))
     expect(effortColor(rirOf({ rir: 2 }))).toBe(effortColor(rirOf({ rpe: 8 })))
     expect(effortColor(rirOf({ rir: 0.5 }))).toBe(effortColor(rirOf({ rpe: 9.5 })))
+  })
+})
+
+describe('v2 workouts', () => {
+  it('reads rated work sets out of exposures and skips warm-ups', () => {
+    const w = { id: 'v2', d: isoOf(daysAgo(1)), start: +daysAgo(1), exposures: [loggedExposure('0025', [
+      { role: 'warmup', r: 5, w: 20, rir: 5 }, ...Array.from({ length: 5 }, () => ({ r: 5, w: 60, rir: 2 }))
+    ])] }
+    const sum = effortSummary(S(w), 0)
+    expect(hasEffort(S(w))).toBe(true)
+    expect(sum).toMatchObject({ done: 5, rated: 5, hard: 5, avg: 2 })
   })
 })
 
