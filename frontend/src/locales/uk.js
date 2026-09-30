@@ -1660,4 +1660,12 @@ export default {
   'Teal': 'Бірюзовий',
   'Yellow': 'Жовтий',
   'Enter how long it took — at least 1 minute.': 'Вкажи, скільки це тривало — щонайменше 1 хвилину.',
+  // --- coach week (Home progress row, components/QueueRow.jsx; day sheet, sheets.jsx) ---
+  'Next: {0}, today': 'Далі: {0}, сьогодні',
+  'Next: {0}': 'Далі: {0}',
+  'Next week starts {0}': 'Наступний тиждень починається {0}',
+  'Week complete, ask the coach': 'Тиждень завершено, звернися до тренера',
+  'Up next': 'Далі',
+  'Later': 'Пізніше',
+  'Coach week': 'Тиждень тренера',
 }

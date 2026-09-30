@@ -1008,6 +1008,14 @@ export const PT_BR_OVERRIDES = {
   'Teal': 'Turquesa',
   'Yellow': 'Amarelo',
   'Enter how long it took — at least 1 minute.': 'Informe quanto tempo levou — pelo menos 1 minuto.',
+  // --- coach week (Home progress row, components/QueueRow.jsx; day sheet, sheets.jsx) ---
+  'Next: {0}, today': 'Próximo: {0}, hoje',
+  'Next: {0}': 'Próximo: {0}',
+  'Next week starts {0}': 'A próxima semana começa em {0}',
+  'Week complete, ask the coach': 'Semana concluída, pergunte ao Coach',
+  'Up next': 'Próximo',
+  'Later': 'Depois',
+  'Coach week': 'Semana do Coach',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

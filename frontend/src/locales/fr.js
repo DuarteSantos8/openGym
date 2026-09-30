@@ -1379,6 +1379,13 @@ export default {
   '{0} %': '{0} %',
   '{0} MB': '{0} Mo',
   'Checksum not available — not installing': 'Somme de contrôle indisponible — installation annulée',
+  // --- coach week (Home progress row, components/QueueRow.jsx; day sheet, sheets.jsx) ---
+  'Next: {0}, today': 'À suivre : {0}, aujourd’hui',
+  'Next: {0}': 'À suivre : {0}',
+  'Next week starts {0}': 'La semaine prochaine commence le {0}',
+  'Week complete, ask the coach': 'Semaine terminée, demande au coach',
+  'Up next': 'À suivre',
+  'Later': 'Plus tard',
   // --- combine routines / layout / deload (v1.3.6) ---
   'Add routine': 'Ajouter une routine',
   'Bring another routine into this session': 'Ajouter une autre routine à cette séance',
@@ -1663,4 +1670,5 @@ export default {
   'Teal': 'Turquoise',
   'Yellow': 'Jaune',
   'Enter how long it took — at least 1 minute.': 'Indique combien de temps ça a duré — au moins 1 minute.',
+  'Coach week': 'Semaine du coach',
 }

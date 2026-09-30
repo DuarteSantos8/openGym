@@ -1716,4 +1716,12 @@ export default {
   'Teal': 'أزرق مخضر',
   'Yellow': 'أصفر',
   'Enter how long it took — at least 1 minute.': 'أدخل المدة التي استغرقها — دقيقة واحدة على الأقل.',
+  // --- coach week (Home progress row, components/QueueRow.jsx; day sheet, sheets.jsx) ---
+  'Next: {0}, today': 'التالي: {0}، اليوم',
+  'Next: {0}': 'التالي: {0}',
+  'Next week starts {0}': 'يبدأ الأسبوع التالي {0}',
+  'Week complete, ask the coach': 'اكتمل الأسبوع، اسأل المدرب',
+  'Up next': 'التالي',
+  'Later': 'لاحقًا',
+  'Coach week': 'أسبوع المدرب',
 }

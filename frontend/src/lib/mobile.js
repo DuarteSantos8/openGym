@@ -108,8 +108,10 @@ export function buildReminderNotifications(S, now = new Date()) {
     day.setDate(date.getDate() + offset)
     const iso = isoOf(day)
     if (completed.has(iso)) continue
-    // A weekday can hold several routines; name them all, or fall back to a count.
-    const dayRoutines = effectiveRoutineIds(state, iso).map(id => routines.find(x => x.id === id)).filter(Boolean)
+    // A weekday can hold several routines; name them all, or fall back to a count. Each day is
+    // asked as if it were today: a coach week's next session is due every day until it is done,
+    // so it is reminded every day (the app re-syncs these after every workout and on open).
+    const dayRoutines = effectiveRoutineIds(state, iso, iso).map(id => routines.find(x => x.id === id)).filter(Boolean)
     if (!dayRoutines.length) continue
     const label = dayRoutines.length <= 2 ? dayRoutines.map(r => r.name).join(' + ') : t('{0} routines', dayRoutines.length)
     const at = new Date(day)
