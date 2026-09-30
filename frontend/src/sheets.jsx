@@ -2188,6 +2188,7 @@ export function beginWorkout(routineIds, bw) {
       workoutView: st.workoutView || 'cards',
     }
   })
+  useUI.getState().stopWork()   // a hold from the previous session must not log into this one
   useUI.getState().stopRest()
   nav('/workout')
 }
@@ -2290,6 +2291,7 @@ function beginBackfill({ iso, time, durationMin, routineIds, replaceId }) {
       workoutView: st.workoutView || 'cards',
     }
   })
+  useUI.getState().stopWork()   // a hold from the previous session must not log into this one
   useUI.getState().stopRest()
   nav('/workout')
 }
@@ -2682,6 +2684,9 @@ function doFinishWorkout() {
     s.active = null
   })
   useStore.getState().autoBackupNow()
+  // Nothing of the finished workout may keep counting: a hold that outlived it would log its
+  // set into whatever is active next.
+  useUI.getState().stopWork()
   useUI.getState().stopRest()
   beep(snd(), 880, 0.15); beep(snd(), 1100, 0.15, 0.18); beep(snd(), 1320, 0.3, 0.36)
   ui().openSheet(close => <FinishSummary w={shown} prs={prs} e1prs={e1prs} close={close} />, { kind: 'center', locked: true })

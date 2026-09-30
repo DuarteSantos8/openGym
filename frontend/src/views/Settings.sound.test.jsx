@@ -3,10 +3,12 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import Settings from './Settings.jsx'
-import { unlock } from '../lib/sound.js'
+import { beep, setVolume, unlock, VOLUMES } from '../lib/sound.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
+// A timer already counting picks up a sound change straight away (store/useUI.js).
+const ui = vi.hoisted(() => ({ restartCountdown: vi.fn() }))
 const mocks = vi.hoisted(() => {
   const state = { S: null }
   state.snapshot = () => ({
@@ -28,7 +30,7 @@ vi.mock('../store/useStore.js', () => {
   return { useStore, DEF: { reminder: { time: '17:30' } }, hasData: () => false }
 })
 vi.mock('../store/useUI.js', () => {
-  const snap = () => ({ toast: vi.fn(), openSheet: vi.fn() })
+  const snap = () => ({ toast: vi.fn(), openSheet: vi.fn(), restartCountdown: ui.restartCountdown })
   const useUI = selector => selector ? selector(snap()) : snap()
   useUI.getState = snap
   return { useUI }
@@ -45,11 +47,12 @@ vi.mock('../sheets.jsx', () => ({
   starterPlanSheet: vi.fn(), confirmSheet: vi.fn(), importFromApp: vi.fn(),
   importFromHevy: vi.fn(), equipmentProfileSheet: vi.fn(),
 }))
-// The real module decides "supported" from navigator.audioSession, which each test sets up;
-// unlock is spied on so the Sounds switch can be checked for its tap-time side effect.
+// The real module decides "supported" from navigator.audioSession, which each test sets up.
+// The three things the rows do from the tap — unlock the audio context, set the level, play a
+// tone at it — are spied on instead of being made audible.
 vi.mock('../lib/sound.js', async importOriginal => {
   const real = await importOriginal()
-  return { ...real, unlock: vi.fn() }
+  return { ...real, unlock: vi.fn(), beep: vi.fn(), setVolume: vi.fn() }
 })
 
 globalThis.__APP_VERSION__ ??= 'test'
@@ -63,7 +66,7 @@ beforeEach(() => {
   }
   setAudioSession({ type: 'auto' })
   Object.defineProperty(navigator, 'userAgent', { value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148', configurable: true })
-  unlock.mockClear()
+  unlock.mockClear(); beep.mockClear(); setVolume.mockClear(); ui.restartCountdown.mockClear()
   host = document.createElement('div')
   document.body.appendChild(host)
   root = createRoot(host)
@@ -113,6 +116,53 @@ describe('Settings — play sounds when the phone is on silent', () => {
     expect(sw).toBeTruthy()
     act(() => { sw.click() })
     expect(mocks.S.soundOnSilent).toBe(true)
+  })
+})
+
+// "Very low" was the one hard-coded level (lib/sound.js VOLUMES.low). The control exists because
+// how loud a gym is is not something the app can know.
+describe('Settings — sound volume', () => {
+  const levelsIn = row => [...row.querySelectorAll('.seg button')]
+  const on = row => levelsIn(row).find(b => b.getAttribute('aria-pressed') === 'true')
+
+  it('offers three levels and starts on the loudest, for settings saved before it existed', () => {
+    mount()
+    const row = rowTitled('Sound volume')
+    expect(levelsIn(row).map(b => b.textContent)).toEqual(['Low', 'Medium', 'Loud'])
+    expect(on(row).textContent).toBe('Loud')
+  })
+
+  it('writes the level, sets it, and plays a tone so you hear what you picked', () => {
+    mount()
+    act(() => { levelsIn(rowTitled('Sound volume'))[0].click() })
+    expect(mocks.S.soundVol).toBe('low')
+    expect(setVolume).toHaveBeenCalledWith('low')
+    expect(beep).toHaveBeenCalled()
+    expect(unlock).toHaveBeenCalledWith(true)
+  })
+
+  it('a timer already counting picks the new level up straight away', () => {
+    mount()
+    act(() => { levelsIn(rowTitled('Sound volume'))[1].click() })
+    expect(ui.restartCountdown).toHaveBeenCalled()
+  })
+
+  it('shows the saved level, and reads one this build does not know as loud', () => {
+    mocks.S.soundVol = 'medium'
+    mount()
+    expect(on(rowTitled('Sound volume')).textContent).toBe('Medium')
+    act(() => root.unmount())
+    root = createRoot(host)
+    mocks.S.soundVol = 'deafening'
+    mount()
+    expect(on(rowTitled('Sound volume')).textContent).toBe('Loud')
+    expect(VOLUMES.deafening).toBeUndefined()
+  })
+
+  it('is not offered while Sounds is off', () => {
+    mocks.S.sound = false
+    mount()
+    expect(rowTitled('Sound volume')).toBeUndefined()
   })
 })
 

@@ -4,8 +4,8 @@
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({ ok: true })) }))
-const { beep, chime } = vi.hoisted(() => ({ beep: vi.fn(), chime: vi.fn() }))
-vi.mock('../lib/sound.js', () => ({ beep, chime, vibrate: vi.fn() }))
+const { beep, chime, restOver } = vi.hoisted(() => ({ beep: vi.fn(), chime: vi.fn(), restOver: vi.fn() }))
+vi.mock('../lib/sound.js', () => ({ beep, chime, restOver, vibrate: vi.fn(), countdown: vi.fn(), hush: vi.fn(), holdSession: vi.fn() }))
 
 import { api } from '../lib/api.js'
 import { useUI } from './useUI.js'
@@ -23,6 +23,7 @@ describe('pausing the rest timer', () => {
     api.mockClear()
     beep.mockClear()
     chime.mockClear()
+    restOver.mockClear()
   })
   afterEach(() => {
     useUI.getState().stopRest()
@@ -41,7 +42,7 @@ describe('pausing the rest timer', () => {
     expect(useUI.getState().timer).toMatchObject({ left: 60, paused: true })
     expect(useUI.getState().timer.ready).toBeUndefined()
     expect(beep).not.toHaveBeenCalled()
-    expect(chime).not.toHaveBeenCalled()
+    expect(restOver).not.toHaveBeenCalled()
     expect(useUI.getState().toastMsg).toBe('')
 
     useUI.getState().resumeRest()
@@ -51,7 +52,7 @@ describe('pausing the rest timer', () => {
     vi.advanceTimersByTime(1000)
     expect(useUI.getState().timer).toMatchObject({ left: 0, ready: true, forIdx: 1 })
     expect(useUI.getState().timerFlashId).toBe(1)   // ended on screen: the usual alert
-    expect(chime).toHaveBeenCalledTimes(1)
+    expect(restOver).toHaveBeenCalledTimes(1)
   })
 
   it('cancels the push booked for the old end and books it again on resume', () => {
