@@ -102,6 +102,7 @@ export default {
   'No favourites here — tap the star on an exercise to add it.': 'ยังไม่มีรายการโปรดที่นี่ — แตะดาวที่ท่าออกกำลังกายเพื่อเพิ่ม',
   'No match': 'ไม่พบผลลัพธ์',
   'Show more': 'แสดงเพิ่ม',
+  'Show less': 'แสดงน้อยลง',
   'Intervals': 'อินเทอร์วัล',
   'Minutes': 'นาที',
   'Speed (km/h)': 'ความเร็ว (กม./ชม.)',
@@ -132,6 +133,7 @@ export default {
   'No workouts this month': 'ไม่มีการออกกำลังกายในเดือนนี้',
   'Trained': 'ออกกำลังกายแล้ว',
   'Planned': 'วางแผนไว้',
+  'Completed': 'ทำเสร็จแล้ว',
   'Rescheduled': 'เลื่อนแล้ว',
   'Tap a trained day for details · tap any other day to plan a session': 'แตะวันที่ออกกำลังกายแล้วเพื่อดูรายละเอียด · แตะวันอื่นเพื่อวางแผน',
   // --- workout lifecycle ---
@@ -578,6 +580,8 @@ export default {
   'Admin dashboard': 'แดชบอร์ดผู้ดูแลระบบ',
   // --- muscle map ---
   'Muscle balance': 'ความสมดุลของกล้ามเนื้อ',
+  'Weekly muscle volume': 'ปริมาณการฝึกกล้ามเนื้อรายสัปดาห์',
+  'No muscle volume planned.': 'ไม่มีปริมาณการฝึกกล้ามเนื้อที่วางแผนไว้',
   'Fatigue': 'ความล้า',
   'Ready': 'พร้อม',
   'Recovering': 'กำลังฟื้นตัว',

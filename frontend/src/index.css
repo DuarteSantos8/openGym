@@ -370,6 +370,9 @@ h4.sec{
 .btn.sm .icn{font-size:16px}
 .btn.xs{padding:5px 10px;width:auto;font-size:13px;border-radius:7px;gap:4px}
 .btn:disabled{opacity:.32;pointer-events:none}
+.weekly-volume-toggle{padding-block:0}
+.weekly-volume-toggle .icn{transition:transform var(--fast) var(--ease)}
+.weekly-volume-toggle[aria-expanded="true"] .icn{transform:rotate(180deg)}
 
 /* ----------------------------------------------------------- tab bar ----- */
 /* Nearly opaque, and deliberately so. At the old 72% the page read straight through the bar

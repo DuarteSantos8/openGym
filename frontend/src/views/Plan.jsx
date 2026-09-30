@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
-import { DAYN, weekOrder, weekStartOf, uid, exCount, routineCount } from '../lib/format.js'
+import { DAYN, weekOrder, weekStartOf, uid, exCount, routineCount, fmtNum } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
 import { dayAssignSheet, dayAddRoutineSheet, starterPlanSheet, planToolsSheet, confirmSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
@@ -12,6 +12,7 @@ import { glyphOf, DEFAULT_GLYPH } from '../lib/glyphs.js'
 import { DEMO } from '../lib/demo.js'
 import { MOBILE } from '../lib/mobile.js'
 import { coachAvailable } from '../lib/coach.js'
+import { loadOfWeeklyPlan, MUSCLE_NAME, rankOf } from '../lib/muscles.js'
 
 export default function Plan() {
   const nav = useNavigate()
@@ -20,6 +21,8 @@ export default function Plan() {
   const config = useStore(s => s.config)
   const coachMode = useStore(s => s.coachLocal?.mode)
   const user = useStore(s => s.user)
+  const weeklyLoad = loadOfWeeklyPlan(S)
+  const weeklyMuscles = rankOf(weeklyLoad).worked
 
   /* The Coach's only entry point in the app. Its screens have existed since the UI landed and
      nothing linked to them, so the feature was reachable only by typing the URL — enabled,
@@ -100,6 +103,13 @@ export default function Plan() {
             </div>)}
           </div>
         })}
+      </div>
+      <div className="card" data-weekly-muscle-volume style={{ marginTop: 12 }}>
+        <h2>{t('Weekly muscle volume')}</h2>
+        {weeklyMuscles.length ? weeklyMuscles.map(muscle => <div className="mrow" key={muscle}>
+          <span className="nm">{t(MUSCLE_NAME[muscle])}</span>
+          <span className="v">{t('{0} sets', fmtNum(Math.round(weeklyLoad[muscle] * 10) / 10))}</span>
+        </div>) : <div className="muted small">{t('No muscle volume planned.')}</div>}
       </div>
     </div><div>
       <div className="row between" style={{ marginTop: 22, marginBottom: 10 }}>

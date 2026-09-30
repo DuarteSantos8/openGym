@@ -102,6 +102,7 @@ export default {
   'No favourites here — tap the star on an exercise to add it.': 'Itt nincs kedvenc — koppints egy gyakorlat csillagára.',
   'No match': 'Nincs találat',
   'Show more': 'Több megjelenítése',
+  'Show less': 'Kevesebb megjelenítése',
   'Intervals': 'Intervallumok',
   'Minutes': 'Perc',
   'Speed (km/h)': 'Sebesség (km/h)',
@@ -132,6 +133,7 @@ export default {
   'No workouts this month': 'Nincs edzés ebben a hónapban',
   'Trained': 'Edzett',
   'Planned': 'Tervezett',
+  'Completed': 'Teljesítve',
   'Rescheduled': 'Áthelyezve',
   'Tap a trained day for details · tap any other day to plan a session': 'Koppints egy edzett napra a részletekért · koppints bármely másik napra egy edzés tervezéséhez',
   // --- workout lifecycle ---
@@ -578,6 +580,8 @@ export default {
   'Admin dashboard': 'Admin irányítópult',
   // --- muscle map ---
   'Muscle balance': 'Izomegyensúly',
+  'Weekly muscle volume': 'Heti izomvolumen',
+  'No muscle volume planned.': 'Nincs tervezett izomvolumen.',
   'Fatigue': 'Fáradtság',
   'Ready': 'Kész',
   'Recovering': 'Regenerálódik',
