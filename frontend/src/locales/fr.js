@@ -445,7 +445,7 @@ export default {
   'Rest timer': 'Minuteur de repos',
   'Sounds': 'Sons',
   'Sound volume': 'Volume sonore',
-  'Loudest also means highest. Your phone’s own volume is the master — press volume up while a rest is counting down, when the buttons control the timer rather than the ringer.': 'Plus fort veut aussi dire plus aigu. Le volume du téléphone commande — montez le volume pendant qu\'un repos s\'écoule : les boutons pilotent alors le minuteur, pas la sonnerie.',
+  'Loudest also means highest. Your phone’s own volume is the master — press volume up while a rest is counting down, when the buttons control the timer rather than the ringer.': 'Plus fort veut aussi dire plus aigu. Le volume du téléphone commande — monte le volume pendant qu\'un repos s\'écoule : les boutons pilotent alors le minuteur, pas la sonnerie.',
   'Low': 'Faible',
   'Medium': 'Moyen',
   'Loud': 'Fort',
