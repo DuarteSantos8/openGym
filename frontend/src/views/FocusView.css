@@ -20,8 +20,13 @@
 .focus-guidance{display:flex;align-items:center;gap:5px;width:max-content;text-align:left;color:var(--acc);font-weight:600}
 .focus-guidance .icn{font-size:13px}
 .focus-prescription{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:14px 0}
-.focus-progress{border-radius:99px;white-space:nowrap}
-.focus-progress{padding:6px 12px;background:var(--acc);color:var(--on-acc);font-weight:600}
+.focus-badge{display:inline-flex;align-items:center;gap:5px;max-width:100%;min-height:30px;padding:6px 11px;border-radius:99px;background:var(--surface-2);color:var(--label);font-size:14px;font-weight:500;line-height:1.2;white-space:nowrap}
+.focus-badge .icn{font-size:13px;flex:none}
+.focus-progress{padding-inline:12px;background:var(--acc);color:var(--on-acc);font-weight:600}
+.focus-badge.plan{background:var(--acc-soft);color:var(--acc);white-space:normal}
+.focus-badge.warning{background:color-mix(in srgb,var(--orange) 14%,transparent);color:var(--orange);white-space:normal}
+.focus-badge .short{color:var(--orange)}
+.focus-badge-action{margin-inline-start:2px;color:inherit;font-size:13px;font-weight:700;text-decoration:underline;text-underline-offset:2px}
 .focus-set>.stp-w,.focus-side>.stp-w{margin-top:12px}
 .focus-set.complete .stp .num:disabled,.focus-set.locked .stp .num:disabled,.focus-set.complete .focus-timed strong,.focus-set.locked .focus-timed strong{color:color-mix(in srgb,var(--label) 48%,var(--surface))!important;-webkit-text-fill-color:color-mix(in srgb,var(--label) 48%,var(--surface))!important;opacity:1}
 .focus-lock-note{margin:-4px 2px 2px;color:var(--label-2);font-size:12px;line-height:1.35}
