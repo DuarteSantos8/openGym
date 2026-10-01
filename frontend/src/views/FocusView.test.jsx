@@ -54,7 +54,7 @@ afterEach(() => {
 })
 
 describe('Focus workout view', () => {
-  it('keeps the plan and plate guidance visible', () => {
+  it('omits a plan that repeats the prescription and keeps plate guidance in the badge row', () => {
     mount({
       id: SQUAT,
       target: { sets: 1, reps: 5, weight: 95 },
@@ -63,8 +63,29 @@ describe('Focus workout view', () => {
       sets: [{ w: 95, r: 5, done: false }],
     })
 
-    expect(container.textContent).toContain('Plan: 1 × 5')
-    expect(container.querySelector('.plateline')?.textContent).toContain('25 per side')
+    const summary = container.querySelector('.focus-prescription')
+    expect(summary.textContent).not.toContain('Plan:')
+    const plate = summary.querySelector('.focus-badge.plate')
+    expect(plate).toBeTruthy()
+    expect(plate.textContent).toContain('25 per side')
+    expect(container.querySelector('.plateline')).toBeNull()
+  })
+
+  it('shows only a changed plan as a badge because the prescription already shows today', () => {
+    mount({
+      id: SQUAT,
+      target: { sets: 4, reps: 8, weight: 95 },
+      planned: { sets: 3, reps: 5, weight: 95 },
+      plan: { kind: 'up' },
+      sets: Array.from({ length: 4 }, () => ({ w: 95, r: 8, done: false })),
+    })
+
+    const summary = container.querySelector('.focus-prescription')
+    const plan = summary.querySelector('.focus-badge.plan')
+    expect(plan).toBeTruthy()
+    expect(plan.textContent).toBe('Plan: 3 × 5')
+    expect(summary.textContent).toContain('8 Reps')
+    expect(summary.textContent).not.toContain('today')
   })
 
   it('offers the per-exercise progression switch and marks the current exercise', () => {
@@ -76,7 +97,10 @@ describe('Focus workout view', () => {
     act(() => item.click())
 
     expect(useStore.getState().S.active.entries[0].noProg).toBe(true)
-    expect(container.querySelector('.noprog')?.textContent).toContain('Not counted for progression')
+    const status = container.querySelector('.focus-prescription .focus-badge.warning')
+    expect(status).toBeTruthy()
+    expect(status.textContent).toContain('Not counted for progression')
+    expect(container.querySelector('.noprog')).toBeNull()
   })
 
   it('uses the exercise rest-pause duration for a new burst', () => {

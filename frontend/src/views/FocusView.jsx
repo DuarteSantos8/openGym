@@ -56,7 +56,7 @@ const addBurstTo = (row, restSec) => {
   return { ...addCluster(row, { r: reps, restSec }), r: (row.r || 0) + reps }
 }
 
-function Prescription({ entry, setIdx, unit, fallbackRest }) {
+function Prescription({ entry, setIdx, unit, fallbackRest, children }) {
   const target = entry.target || {}
   const reps = target.repsMin > 0 ? `${target.repsMin}–${target.reps}` : target.reps > 0 ? String(target.reps) : ''
   const load = target.weight > 0
@@ -69,12 +69,13 @@ function Prescription({ entry, setIdx, unit, fallbackRest }) {
   const badges = [reps && `${reps} Reps`, load, rpe, rest, target.tempo].filter(Boolean)
 
   return <div className="focus-prescription">
-    <span className="focus-progress">{setIdx + 1}/{entry.sets.length}</span>
-    {badges.map(label => <span className="tag nocap" key={label}>{label}</span>)}
+    <span className="focus-badge focus-progress">{setIdx + 1}/{entry.sets.length}</span>
+    {badges.map(label => <span className="focus-badge" key={label}>{label}</span>)}
+    {children}
   </div>
 }
 
-function PlanLine({ entry, mode }) {
+function PlanBadge({ entry, mode }) {
   const planned = entry.planned && mode !== 'cardio' ? entry.planned : null
   if (!planned) return null
   const today = entry.target || {}
@@ -82,20 +83,19 @@ function PlanLine({ entry, mode }) {
   const inPlan = mode === 'time'
     ? today.sec == null || today.sec === planned.sec
     : today.reps == null || (planned.repsMin > 0 ? today.reps >= planned.repsMin && today.reps <= planned.reps : today.reps === planned.reps)
-  const note = todaySets !== (planned.sets || 1) || !inPlan
-    ? t('today {0}', setsRepsOf({ mode, sets: todaySets, reps: today.reps, sec: today.sec }))
-    : entry.carried ? t('reps from your last session') : null
-  return <div className="small dim planline">{t('Plan: {0}', setsRepsOf({ ...planned, mode }))}{note ? ' · ' + note : ''}</div>
+  if (todaySets === (planned.sets || 1) && inPlan)
+    return entry.carried ? <span className="focus-badge plan">{t('reps from your last session')}</span> : null
+  return <span className="focus-badge plan">{t('Plan: {0}', setsRepsOf({ ...planned, mode }))}</span>
 }
 
-function PlateLine({ S, entry, set }) {
+function PlateBadge({ S, entry, set }) {
   if (modeOf({ ...(entry.target || {}), id: entry.id }) !== 'reps') return null
   const load = rowLoad(loadKindFor(S, { ...(entry.target || {}), id: entry.id }), set.w, baseWeightFor(S, entry.id), inventoryFor(S))
   if (!load) return null
   const stack = load.plates.map(fmtPlate).join(' + ')
   const text = load.barOnly ? t('Bar only')
     : load.kind === 'pairs' ? t('{0} per side', stack || '—') : t('Load {0}', stack || '—')
-  return <div className="plateline"><Icon name="plate" /><span>{text}{load.missing > 0 && <> · <span className="short">{t('{0} short', fmtPlate(load.missing) + ' ' + S.unit)}</span></>}</span></div>
+  return <span className="focus-badge plate"><Icon name="plate" />{text}{load.missing > 0 && <> · <span className="short">{t('{0} short', fmtPlate(load.missing) + ' ' + S.unit)}</span></>}</span>
 }
 
 export default function FocusView({
@@ -265,9 +265,11 @@ export default function FocusView({
         {last && <div className="focus-last">{t('Last time')} · {fmtDate(last.d)}</div>}
         {guidance && <button className="focus-guidance" onClick={onProgressionSettings}><Icon name="lightbulb" />{t(guidance.policyLabel)}</button>}
       </div>
-      {entry.noProg === true && <div className="noprog"><Icon name="pause" /><span>{t('Not counted for progression')}</span>{onNoProg && <button type="button" className="chip" onClick={() => onNoProg(false)}>{t('Undo')}</button>}</div>}
-      <PlanLine entry={entry} mode={mode} />
-      <Prescription entry={entry} setIdx={setIdx} unit={S.unit} fallbackRest={S.restSec} />
+      <Prescription entry={entry} setIdx={setIdx} unit={S.unit} fallbackRest={S.restSec}>
+        <PlanBadge entry={entry} mode={mode} />
+        <PlateBadge S={S} entry={entry} set={set} />
+        {entry.noProg === true && <span className="focus-badge warning"><Icon name="pause" />{t('Not counted for progression')}{onNoProg && <button type="button" className="focus-badge-action" onClick={() => onNoProg(false)}>{t('Undo')}</button>}</span>}
+      </Prescription>
       {locked && <p className="focus-lock-note" role="status">{t('Complete set {0} to edit this one.', firstOpenSet + 1)}</p>}
 
       <div data-testid="focus-set" className={(set.done ? 'complete ' : '') + (locked ? 'locked' : '')}>
@@ -309,8 +311,6 @@ export default function FocusView({
           style={effortTint ? { color: effortTint, borderColor: effortTint, background: `color-mix(in srgb, ${effortTint} 20%, var(--surface-2))` } : undefined}
           aria-label={t(EFFORT[effort].hd)} disabled={readOnly} onClick={openEffort}>{effortValue == null ? t(EFFORT[effort].hd) : fmtNum(effortValue)}</button>}
       </div>
-      <PlateLine S={S} entry={entry} set={set} />
-
       <Button variant="primary" icon="check" aria-label={t('Complete set')} onClick={complete}>{set.done ? t('Completed') : t('Complete')}</Button>
       <div className="focus-secondary">
         <button className="focus-skip" aria-label={t('Skip set')} disabled={setIdx >= entry.sets.length - 1} onClick={() => selectSet(setIdx + 1)}>
