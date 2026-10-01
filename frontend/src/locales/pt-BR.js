@@ -1008,6 +1008,10 @@ export const PT_BR_OVERRIDES = {
   'Teal': 'Turquesa',
   'Yellow': 'Amarelo',
   'Enter how long it took — at least 1 minute.': 'Informe quanto tempo levou — pelo menos 1 minuto.',
+  'A different rep target for each set, e.g. 12 · 8 · 6 · Max · 12.': 'Uma meta de repetições diferente para cada série, ex.: 12 · 8 · 6 · Máx · 12.',
+  'Max: as many reps as you can': 'Máx: o máximo de repetições que você conseguir',
+  'Weight is up to you: pyramid sets are not progressed automatically.': 'Você escolhe o peso: as séries em pirâmide não progridem automaticamente.',
+  'Most reps in a Max set per workout': 'Mais repetições em uma série Máx por treino',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

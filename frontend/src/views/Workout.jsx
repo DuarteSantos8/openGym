@@ -13,6 +13,7 @@ import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
 import { beep, vibrate, unlock } from '../lib/sound.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { api, beacon } from '../lib/api.js'
+import { pyramidRestFor, maxRecordAt } from '../lib/pyramid.js'
 import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor } from '../lib/supersetFlow.js'
 import Media from '../components/Media.jsx'
 import { startFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, finishWorkout, exitWorkoutEdit, workoutCompleteSheet, confirmSheet, exerciseNoteSheet, sessionNoteSheet, renameWorkoutSheet, swapActiveWorkoutExercise, barWeightSheet, menuSheet, effortPickerSheet, exerciseHistorySheet, addRoutineToSessionSheet } from '../sheets.jsx'
@@ -563,6 +564,13 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
         return <div key={i}>
           {isFirstWarmup && <div className="setph">{t('Warm-up')}</div>}
           {!warm && warmBefore && <div className="setsep" />}
+          {/* A pyramid's Max set: the reps are what you managed, not a number to hit. */}
+          {/* With the record to beat at this set's weight or heavier, from before this session. */}
+          {!warm && s.max && <div className="setph">{t('Max: as many reps as you can')}{(() => {
+            const rec = maxRecordAt(H.workouts, entry.id, s.w)
+            if (!rec) return null
+            return ' · ' + (rec.w > 0 ? t('Record: {0} reps at {1}', rec.r, fmtNum(rec.w) + ' ' + S.unit) : t('Record: {0} reps', rec.r))
+          })()}</div>}
           {perSide && !warm && isSideSet(s) ? (
             // Unilateral work set: the number sits beside a two-row L/R stack, each side logged
             // and ticked on its own (issue #60).
@@ -783,7 +791,8 @@ function ActiveWorkout() {
     if (m === 'cardio') e.sets.push({ min: l ? l.min : (e.target.min || 20), speed: l ? l.speed : (e.target.speed || 8), done: false })
     else if (m === 'time') e.sets.push({ sec: l ? l.sec : (e.target.sec || 45), w: l ? (l.w || 0) : (e.target.weight || 0), done: false })
     else {
-      const row = { w: l ? l.w : 0, r: l ? l.r : e.target.reps, done: false }
+      // An extra set past a pyramid copies the last one's target, Max included.
+      const row = { w: l ? l.w : 0, r: l ? l.r : e.target.reps, done: false, ...(l && l.max ? { max: true } : {}) }
       // A unilateral exercise keeps adding per-side rows (issue #60): seed each side from the
       // previous set's own side when it had one, else split the row's total evenly.
       e.sets.push(isPerSide({ ...(e.target || {}), id: e.id })
@@ -1120,7 +1129,9 @@ function ActiveWorkout() {
       // The rest this set has earned: the exercise's own restSec when it set one, the global
       // timer when it did not, and the longest of the group's across a superset (issue #10).
       // Resolved once here so every branch below times the same break.
-      const restSec = restSecFor(fresh.entries, freshUnit || [idx], S.restSec)
+      // A pyramid set may carry its own rest, standing in for the exercise's (pyramidRestFor).
+      const setRest = { idx, sec: pyramidRestFor(fresh.entries[idx].target, fresh.entries[idx].sets, i) }
+      const restSec = restSecFor(fresh.entries, freshUnit || [idx], S.restSec, setRest)
       // A warm-up ramp set may rest shorter than a work set (the exercise's warmupRestSec); the
       // last ramp set, into the first work set, still gets the working rest.
       const restAfter = warmupRestSecFor(fresh.entries[idx], i, restSec)

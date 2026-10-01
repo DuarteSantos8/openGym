@@ -12,6 +12,7 @@ import { EXIDX, isBodyweightEq } from './exercises.js'
 import { cleanUrl } from './media-refs.js'
 import { modeOf, exLine, MAX_PLANNED_WARMUPS } from './history.js'
 import { deriveSessionName } from './session-merge.js'
+import { isPyramid, normalizePyramid, normalizePyramidRest } from './pyramid.js'
 import { uid, todayISO, DAYN, weekOrder, weekStartOf, exCount } from './format.js'
 import { t, exerciseNameFor, exerciseNameClass, getLang, RTL_LANGS } from './i18n-core.js'
 import { convertWeight } from './units.js'
@@ -77,6 +78,12 @@ function cleanEx(e) {
   } else {
     if (e.reps != null) o.reps = e.reps
     if (e.weight) o.weight = e.weight
+    // Pyramid sets are the prescription itself; without them a "12 · 8 · 6 · Max · 12" arrives as 5 × 12.
+    if (isPyramid(e)) {
+      o.pyramid = normalizePyramid(e.pyramid)
+      const rest = normalizePyramidRest(e.pyramidRest, o.pyramid.length)
+      if (rest.length) o.pyramidRest = rest
+    }
   }
   // How the exercise is logged travels too (issues #31/#32) — the bodyweight flag only when
   // it disagrees with the catalogue, since agreeing is what the other end already assumes.
@@ -221,8 +228,10 @@ export function parsePlan(raw, destinationUnit = 'kg') {
       const intens = cleanIntensifier(e.intensifier)
       const rest = cleanRestSec(e.restSec)
       const warmRest = cleanRestSec(e.warmupRestSec)
-      const { warmupSets, intensifier, restSec, warmupRestSec, ...passthrough } = e
-      return convertedExercise({ ...passthrough, ...(warm ? { warmupSets: warm } : {}), ...(intens ? { intensifier: intens } : {}), ...(rest ? { restSec: rest } : {}), ...(warmRest ? { warmupRestSec: warmRest } : {}) }, sourceUnit || destination, destination)
+      const pyramid = normalizePyramid(e.pyramid)
+      const pyramidRest = pyramid.length ? normalizePyramidRest(e.pyramidRest, pyramid.length) : []
+      const { warmupSets, intensifier, restSec, warmupRestSec, pyramid: _pyramid, pyramidRest: _pyramidRest, ...passthrough } = e
+      return convertedExercise({ ...passthrough, ...(pyramid.length ? { pyramid } : {}), ...(pyramidRest.length ? { pyramidRest } : {}), ...(warm ? { warmupSets: warm } : {}), ...(intens ? { intensifier: intens } : {}), ...(rest ? { restSec: rest } : {}), ...(warmRest ? { warmupRestSec: warmRest } : {}) }, sourceUnit || destination, destination)
     })
   }))
   return {

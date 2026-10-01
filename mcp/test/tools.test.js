@@ -135,6 +135,14 @@ describe('get_routine', () => {
     expect(r.exercises[0].summary).toBe('3 × 8–12 · 40 kg')
   })
 
+  test('reports pyramid sets as the per-set targets, not as sets × reps', () => {
+    const cfg = S.routines[0].ex[0]
+    Object.assign(cfg, { mode: 'reps', sets: 5, reps: 12, weight: 0, pyramid: [12, 8, 6, 'max', 12] })
+    delete cfg.repsMin
+    const r = call('get_routine', { routine_id: S.routines[0].id })
+    expect(r.exercises[0]).toMatchObject({ pyramid: [12, 8, 6, 'max', 12], policy: 'off', summary: '12 · 8 · 6 · Max · 12' })
+  })
+
   test('reports an exercise\'s own rest, and leaves it out when it inherits the timer', () => {
     S.routines[0].ex[0].restSec = 180
     delete S.routines[0].ex[1]?.restSec

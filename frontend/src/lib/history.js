@@ -17,6 +17,7 @@ const workRowsForMode = (entry = {}, mode = 'reps') => {
 // for the hook — and it re-exports this very `t` from core, so nothing changes here except what
 // gets dragged along behind it.
 import { t } from './i18n-core.js'
+import { isPyramid, pyramidLabel, pyramidTargetAt, PYRAMID_MAX } from './pyramid.js'
 
 // How an exercise is logged (issue #16). This used to be derived from the body part alone,
 // which meant a plank or a farmer's carry could only be timed by filing it under cardio.
@@ -179,6 +180,7 @@ export function setsRepsOf(cfg) {
   const n = cfg.sets || 1
   if (mode === 'cardio') return `${n} × ${cfg.min || 20} min`
   if (mode === 'time') return `${n} × ${fmtSec(cfg.sec || 45)}`
+  if (isPyramid(cfg)) return pyramidLabel(cfg.pyramid)
   return `${n} × ${repsOf(cfg)}`
 }
 
@@ -507,6 +509,16 @@ function buildWorkSets(S, cfg, options = {}) {
       ? (cfg.weight > 0 ? cfg.weight : (lastRegular && lastRegular.r > 0 ? lastRegular.w : cfg.weight))
       : usable ? usable.w : (conf && conf.w > 0 ? conf.w : cfg.weight)
     const row = { w, r: planReps || !usable ? cfg.reps : usable.r, done: false }
+    // Pyramid sets: the plan owns each set's own target; a max set opens at what you managed
+    // in that same set last time, so the number to beat is already there.
+    if (isPyramid(cfg)) {
+      const target = pyramidTargetAt(cfg.pyramid, i)
+      // A pyramid is never progressed, so a planned session builds it with `useTarget` and
+      // `usable` is null there: the max set reads the same set last time directly.
+      const seed = usable || (lastRegular && lastRegular.r > 0 ? lastRegular : null)
+      if (target === PYRAMID_MAX) { row.r = seed ? seed.r : 0; row.max = true }
+      else row.r = target
+    }
     // A unilateral exercise logs each side on its own (issue #60): the row splits into L/R,
     // each seeded with half the total reps at the same weight. When "last time" was itself a
     // per-side set, carry its two sides over so an asymmetry you logged persists — both sides'

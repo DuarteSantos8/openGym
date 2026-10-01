@@ -20,6 +20,7 @@ import { modeOf, repStep, rerampWarmups, isBw, isPerSide, entryExcluded, entryRo
 import { EXIDX, isAssisted, isLoadedEq } from './exercises.js'
 import { isWarmupRow, isSideSet, syncSideAggregate, makeSideSet } from './workout-model.js'
 import { normalizeRepRange } from './rep-range.js'
+import { isPyramid } from './pyramid.js'
 
 export const POLICIES = ['off', 'linear', 'greyskull', 'double', 'time']
 
@@ -99,6 +100,8 @@ export const MAX_BW_SETS = 6
 // The policy in force for one exercise: its own override, else the routine's default, else
 // the mode's default. Reps keeps behaving the way the app always did (all reps → add a step).
 export function policyFor(cfg, routine, mode) {
+  // Pyramid sets are never progressed: the lifter picks every set's weight (CONTEXT.md).
+  if (isPyramid(cfg)) return 'off'
   const m = mode || modeOf(cfg || {})
   const allowed = POLICIES_FOR[m] || ['off']
   const pick = (cfg && cfg.prog) || (routine && routine.prog) || (m === 'reps' ? 'linear' : 'off')
