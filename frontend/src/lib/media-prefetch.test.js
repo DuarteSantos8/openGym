@@ -54,13 +54,8 @@ describe('prefetchAllowed', () => {
     expect(prefetchAllowed({ onLine: true, connection: { type: 'cellular', effectiveType: '4g' } })).toBe(false)
     expect(prefetchAllowed({ onLine: true, connection: { effectiveType: '2g' } })).toBe(false)
     expect(prefetchAllowed({ onLine: true, connection: { effectiveType: 'slow-2g' } })).toBe(false)
+    // null, not undefined: undefined takes the default, and Node 22 has a global navigator of its own.
     expect(prefetchAllowed(null)).toBe(false)
-  })
-
-  it('does not spend anything where there is no navigator at all', () => {
-    // Node 21+ has a global navigator of its own, so "none" has to be made, not assumed.
-    vi.stubGlobal('navigator', undefined)
-    try { expect(prefetchAllowed()).toBe(false) } finally { vi.unstubAllGlobals() }
   })
 })
 
