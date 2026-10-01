@@ -1,6 +1,7 @@
 import { EXIDX } from './exercises.js'
 import { MUSCLES, musclesOf } from './muscles.js'
 import { isWarmupRow, dropsOf } from './workout-model.js'
+import { weightedEstimate, WEIGHTED_REP_CAP } from './onerm.js'
 
 // A "normal" hard session for one muscle, in primary-set equivalents. The saturation curve
 // 1 - exp(-stimulus / REF) maps any session size onto [0,1) so volume raises the starting
@@ -67,12 +68,10 @@ function exerciseFor(entry) {
   return EXIDX[entry?.id] || entry
 }
 
-// Epley one-rep-max estimate, matching onerm.js (REP_CAP included so high-rep sets do not
-// inflate the estimate). Used only to express a set's intensity relative to the lifter's own
-// capacity - the same formula the app already shows for estimated 1RM.
-const REP_CAP = 12
-const epley1RM = (load, reps) => load * (1 + Math.min(reps || 1, REP_CAP) / 30)
-
+// Weighted one-rep-max anchor from onerm.js — the blend of all seven formulas (and the %1RM
+// map), the same estimate the app shows for estimated 1RM. Used only to express a set's
+// intensity relative to the lifter's own capacity. Session-local on purpose: a 90-day-old CSV
+// row cannot retroactively reweight today's sets.
 export const LB_TO_KG = 0.45359237
 
 function numeric(value) {
@@ -171,7 +170,9 @@ function session1RMs(workout, opts = {}) {
     for (const set of entry.sets || []) {
       const load = loadKgFor(ex, entry, set, workout, opts)
       if (set?.done !== true || !(load > 0) || !(set.r > 0)) continue
-      const est = epley1RM(load, set.r)
+      // Weighted blend of onerm's formulas (unrounded). Beyond the rep ceiling the ensemble
+      // refuses to guess — that set then drops out of the session anchor, like any high-rep set.
+      const est = set.r > WEIGHTED_REP_CAP ? null : weightedEstimate(load, set.r)
       if (!best.has(entry.id) || est > best.get(entry.id)) best.set(entry.id, est)
     }
   }

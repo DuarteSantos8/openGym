@@ -378,10 +378,15 @@ for (const [label, stored] of [['current', () => pwHash], ['older parameters', (
     const next = 'a much better passphrase';
     const attempts = [];
     let change;
+    let changed = false;
     for (let i = 0; i < 30; i++) {
       attempts.push(login(h, 'Ana', GOOD, `198.51.100.${10 + i}`));
-      if (i === 3) change = h.req('POST', '/api/account/password', { body: { next, current: GOOD }, cookie: owner, ip: '203.0.113.200' });
+      if (i === 3) change = h.req('POST', '/api/account/password', { body: { next, current: GOOD }, cookie: owner, ip: '203.0.113.200' }).then(r => { changed = true; return r; });
       await new Promise(r => setTimeout(r, 20));
+      // The ones under test are those already running when the password changes. One that starts
+      // after it is simply a wrong password, and five of those pause the account for a minute —
+      // how many fit in before the loop ends depends on how fast this machine hashes.
+      if (changed) break;
     }
     const done = await change;
     assert.equal(done.status, 200, JSON.stringify(done.body));
