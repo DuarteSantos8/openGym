@@ -74,6 +74,46 @@ export function t(s, ...args) {
   return v
 }
 
+/* ------------------------------------------------------------------ plurals --
+   English has two forms and the source strings are the keys, so a count used to be
+   written `t(n === 1 ? '{0} set' : '{0} sets', n)` and every pack inherited that
+   two-way split. Russian, Ukrainian and Polish have three (1 подход, 2 подхода,
+   5 подходов) and Arabic six, so those packs could only pick the least wrong of two
+   — "2 подходов" — or dodge the grammar entirely, which is why the Russian pack
+   reads "Упражнений: {0}" where a person would say "2 упражнения".
+
+   The rule itself comes from the platform, the same way fmtAgo takes relative time
+   from Intl.RelativeTimeFormat: no pack carries a rule, only its own forms. A pack
+   answers a plural key with either a plain string (unchanged, still correct for every
+   two-form language) or an object keyed by CLDR category:
+
+     '{0} sets': { one: '{0} подход', few: '{0} подхода', many: '{0} подходов' }
+
+   Keys stay the English plural, so a pack that says nothing new behaves as before. */
+const pluralCategory = n => {
+  try { return new Intl.PluralRules(dateLocale()).select(n) }
+  catch { return n === 1 ? 'one' : 'other' }
+}
+
+/**
+ * A translated count. `one` and `other` are the English source strings, as written at
+ * the call site today; `n` picks the form. A pack entry that is an object supplies the
+ * forms of the target language, falling back through `other` to the English pair.
+ */
+export function tn(one, other, n, ...rest) {
+  const forms = dict[other]
+  if (forms && typeof forms === 'object') {
+    const form = forms[pluralCategory(n)] || forms.other || forms.many || forms.one
+    if (form) {
+      let v = form
+      const args = [n, ...rest]
+      for (let i = 0; i < args.length; i++) v = v.replaceAll('{' + i + '}', args[i])
+      return v
+    }
+  }
+  return t(n === 1 ? one : other, n, ...rest)
+}
+
 // Instructions for an exercise in the current language (English steps as fallback).
 export const instrFor = ex => (instr && instr[ex.id]) || ex.st || []
 

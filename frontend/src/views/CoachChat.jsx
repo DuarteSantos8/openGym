@@ -16,7 +16,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
-import { t } from '../lib/i18n.js'
+import { t, tn } from '../lib/i18n.js'
 import { fmtDate, fmtNum, DAYS, weekOrder, weekStartOf } from '../lib/format.js'
 import { exLine } from '../lib/history.js'
 import { speedUnitOf } from '../lib/speed.js'
@@ -140,7 +140,7 @@ export default function CoachChat() {
   const pickRoutine = () => openSheet(close => <div className="chat-menu">
     <h3>{t('Improve which routine?')}</h3>
     <div className="sect-b">
-      {(S.routines || []).map(r => <Row key={r.id} icon={glyphOf(r.emoji)} iconTint="var(--acc)" title={r.name} subtitle={t('{0} exercises', (r.ex || []).length)} accessory="chevron" onClick={() => { close(); askImprove(r) }} />)}
+      {(S.routines || []).map(r => <Row key={r.id} icon={glyphOf(r.emoji)} iconTint="var(--acc)" title={r.name} subtitle={tn('{0} exercise', '{0} exercises', (r.ex || []).length)} accessory="chevron" onClick={() => { close(); askImprove(r) }} />)}
       {!(S.routines || []).length && <div className="chat-empty">{t('You have no routines yet — ask the Coach for a plan first.')}</div>}
     </div>
     <div style={{ height: 10 }} />
@@ -362,7 +362,7 @@ const WeekStrip = ({ days, ws }) => <div className="pcard-week">
 </div>
 
 const RoutineBlock = ({ r, unit, speedUnit }) => <div className="pcard-rt">
-  <div className="pcard-rt-h"><b><Icon name={glyphOf(r.emoji)} />{r.name}</b><span>{t('{0} exercises', r.ex.length)}</span></div>
+  <div className="pcard-rt-h"><b><Icon name={glyphOf(r.emoji)} />{r.name}</b><span>{tn('{0} exercise', '{0} exercises', r.ex.length)}</span></div>
   {!!r.why && <div className="pcard-why">{r.why}</div>}
   {r.ex.map((e, i) => <div key={i} className="pcard-ex">
     <div className="pcard-ex-r"><span className="pcard-ex-n">{exName(e.id)}</span><span className="pcard-ex-l">{exLine(e, unit, speedUnit)}</span></div>
@@ -384,10 +384,10 @@ function ReviewCard({ p, S, update, toast, refresh }) {
     try {
       update(s => {
         const res = applyChangeSet(s, marked, ids)
-        appendChat(s, { role: 'coach', kind: 'applied', ref: res.logId, text: t(ids.length === 1 ? 'Applied {0} change to your plan.' : 'Applied {0} changes to your plan.', ids.length) })
+        appendChat(s, { role: 'coach', kind: 'applied', ref: res.logId, text: tn('Applied {0} change to your plan.', 'Applied {0} changes to your plan.', ids.length) })
       })
       resolvePending({ accepted: ids, rejected: marked.changes.filter(c => !ids.includes(c.id)).map(c => c.id) }).catch(() => {})
-      toast(t(ids.length === 1 ? '{0} change applied' : '{0} changes applied', ids.length))
+      toast(tn('{0} change applied', '{0} changes applied', ids.length))
       refresh()
     } catch (e) { toast(e.message || t('Could not apply those changes')) }
   }
@@ -405,7 +405,7 @@ function ReviewCard({ p, S, update, toast, refresh }) {
     <div className="pcard">
       <div className="pcard-hd">
         <div className="pcard-eyebrow">{t('Suggestions')}</div>
-        <h2 className="pcard-h">{t(marked.changes.length === 1 ? '{0} suggestion' : '{0} suggestions', marked.changes.length)}</h2>
+        <h2 className="pcard-h">{tn('{0} suggestion', '{0} suggestions', marked.changes.length)}</h2>
         {!!marked.summary && <p className="pcard-sum">{marked.summary}</p>}
         {!!marked.evidence?.sessions && <p className="pcard-sum" style={{ fontSize: 13 }}>
           {t('Based on your last {0} sessions', marked.evidence.sessions)}{marked.evidence.from ? ` · ${fmtDate(marked.evidence.from)} – ${fmtDate(marked.evidence.to)}` : ''}
@@ -429,7 +429,7 @@ function ReviewCard({ p, S, update, toast, refresh }) {
       <div className="pcard-note">{t('The Coach is not a doctor or a physiotherapist. If something hurts, ask a professional.')}</div>
       <div className="pcard-ft">
         <Button variant="primary" icon="check" onClick={apply}>
-          {accepted.size ? t(accepted.size === 1 ? 'Apply {0} change' : 'Apply {0} changes', accepted.size) : t('Apply nothing')}
+          {accepted.size ? tn('Apply {0} change', 'Apply {0} changes', accepted.size) : t('Apply nothing')}
         </Button>
         <Button onClick={discard}>{t('Dismiss all')}</Button>
       </div>
@@ -593,7 +593,7 @@ function Recap({ entry, S, openSheet }) {
         : rej ? { cls: 'mix', text: t('{0} accepted · {1} declined', acc, rej) } : { cls: 'yes', text: t('{0} accepted', acc) }
   const title = kind === 'create' ? (entry.bundle?.name || t('Coach plan'))
     : kind === 'debrief' ? (entry.workout?.name || t('Workout')) + (entry.score != null ? ` · ${entry.score}/10` : '')
-      : t(decisions.length === 1 ? '{0} suggestion' : '{0} suggestions', decisions.length)
+      : tn('{0} suggestion', '{0} suggestions', decisions.length)
   return <button className="recap" onClick={open}>
     <div className="recap-top">
       <span className="pcard-eyebrow">{eyebrow}</span>
@@ -619,7 +619,7 @@ function ProposalDetail({ entry, S }) {
   return <div className="pdetail">
     <div className="pcard-hd" style={{ paddingInline: 0 }}>
       <div className="pcard-eyebrow">{kind === 'create' ? t('Plan') : kind === 'debrief' ? t('Workout debrief') : t('Suggestions')} · {fmtDate(new Date(entry.at).toISOString().slice(0, 10))}</div>
-      <h2 className="pcard-h">{kind === 'create' ? (b?.name || t('Coach plan')) : kind === 'debrief' ? (entry.workout?.name || t('Workout')) : t(entry.decisions?.length === 1 ? '{0} suggestion' : '{0} suggestions', entry.decisions?.length || 0)}</h2>
+      <h2 className="pcard-h">{kind === 'create' ? (b?.name || t('Coach plan')) : kind === 'debrief' ? (entry.workout?.name || t('Workout')) : tn('{0} suggestion', '{0} suggestions', entry.decisions?.length || 0)}</h2>
       {!!entry.summary && <p className="pcard-sum">{entry.summary}</p>}
       {entry.dismissed && <p className="pcard-sum" style={{ color: 'var(--red)' }}>{t('You declined this.')}</p>}
       {!!entry.evidence?.sessions && <p className="pcard-sum" style={{ fontSize: 13 }}>
@@ -665,7 +665,7 @@ function HistorySheet({ S, close, openSheet }) {
         const title = e.kind === 'create' ? (e.bundle?.name || t('Coach plan')) + (e.iteration > 1 ? ` · ${t('Revision {0}', e.iteration)}` : '')
           : e.kind === 'debrief' ? t('Debrief: {0}', e.workout?.name || t('Workout')) + (e.score != null ? ` · ${e.score}/10` : '')
             : e.kind === 'revert' ? t('Reverted the last Coach changes.')
-              : t(n === 1 ? '{0} suggestion' : '{0} suggestions', n)
+              : tn('{0} suggestion', '{0} suggestions', n)
         const sub = fmtDate(new Date(e.at).toISOString().slice(0, 10)) + ' · ' + (e.kind === 'debrief' ? String(e.summary || '').slice(0, 60)
           : e.dismissed ? t('Declined') : e.kind === 'create' ? t('Imported') : e.kind === 'revert' ? '' : t('{0} accepted · {1} declined', acc, n - acc))
         return <Row key={e.id} icon={ic} iconTint={tint} title={title} subtitle={sub} accessory="chevron"
@@ -772,7 +772,7 @@ function CadenceSheet({ update }) {
       {mode === 'every' && <SelectRow icon="dumbbell" iconTint="var(--teal)" title={t('After how many workouts')}
         value={cadence.everyWorkouts || 4}
         onChange={v => patch(c => { c.cadence = { everyWorkouts: v } })}
-        options={[3, 4, 5, 6, 8, 10].map(n => ({ value: n, label: t('{0} workouts', n) }))} />}
+        options={[3, 4, 5, 6, 8, 10].map(n => ({ value: n, label: tn('{0} workout', '{0} workouts', n) }))} />}
     </Section>
   </>
 }

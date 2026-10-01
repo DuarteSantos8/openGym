@@ -5,7 +5,7 @@
 import { useEffect, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
-import { t } from '../lib/i18n.js'
+import { t, tn } from '../lib/i18n.js'
 import { fmtAgo, changeCount } from '../lib/format.js'
 import { passkeyLogin, webauthnOK } from '../lib/api.js'
 import { MOBILE } from '../lib/mobile.js'
@@ -207,7 +207,7 @@ export function OwedSheet({ kind, count: count0, media: media0 = 0, exportBackup
     {(count !== 0 || !media) && <div style={{ marginBottom: 6, fontWeight: 600 }}>
       {count > 0 ? t('Not on your server yet: {0}', changeCount(count)) : t('Some changes on this device have not reached your server.')}
     </div>}
-    {media > 0 && <div style={{ marginBottom: 6, fontWeight: 600 }}>{t(media === 1 ? '{0} photo or video has not reached your server yet.' : '{0} photos or videos have not reached your server yet.', media)}</div>}
+    {media > 0 && <div style={{ marginBottom: 6, fontWeight: 600 }}>{tn('{0} photo or video has not reached your server yet.', '{0} photos or videos have not reached your server yet.', media)}</div>}
     {(tried || refused) && view && <div className="small" style={{ color: 'var(--red)', marginBottom: 6 }}>{view.line}</div>}
     {/* It names the button below it: Try again, or Pair again / Sign in where the server refuses. */}
     <div className="muted small" style={{ marginBottom: 18, lineHeight: 1.5 }}>

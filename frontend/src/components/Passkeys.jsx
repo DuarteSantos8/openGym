@@ -6,7 +6,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
-import { t } from '../lib/i18n.js'
+import { t, tn } from '../lib/i18n.js'
 import { dateLocale } from '../lib/i18n-core.js'
 import { api, webauthnOK, createPasskey } from '../lib/api.js'
 import { copyText } from '../lib/clipboard.js'
@@ -74,7 +74,7 @@ export function PasskeysRow({ state, changed }) {
   if (!state) return null
   const n = state.passkeys.length
   return <Row icon="lock" iconTint="var(--acc)" title={t('Passkeys')} accessory="chevron"
-    subtitle={n === 0 ? t('None yet — add one to sign in without your password.') : n === 1 ? t('1 passkey') : t('{0} passkeys', n)}
+    subtitle={n === 0 ? t('None yet — add one to sign in without your password.') : tn('1 passkey', '{0} passkeys', n)}
     onClick={() => ui().openSheet(close => <PasskeysSheet close={close} changed={changed} />)} />
 }
 

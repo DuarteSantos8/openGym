@@ -18,7 +18,7 @@ import { uid, todayISO, DAYN } from './format.js'
 import { mergePlan } from './plan-share.js'
 import { deleteRoutine } from './routines.js'
 import { POLICIES } from './progression.js'
-import { t } from './i18n.js'
+import { t, tn } from './i18n.js'
 
 // Bumping this re-prompts everyone: it means what we share, or who we share it with, changed.
 export const CONSENT_VERSION = 1
@@ -370,7 +370,7 @@ export function profileLines(p) {
   const lines = []
   if (goal) lines.push(t(goal))
   if (exp) lines.push(t(exp))
-  if (p.daysPerWeek) lines.push(p.daysPerWeek === 1 ? t('1 day a week') : t('{0} days a week', p.daysPerWeek))
+  if (p.daysPerWeek) lines.push(tn('1 day a week', '{0} days a week', p.daysPerWeek))
   if (p.sessionMin) lines.push(t('{0} min per session', p.sessionMin))
   if (p.equipment?.length) lines.push(p.equipment.join(', '))
   if (p.limitations) lines.push(t('Limits: {0}', p.limitations))
