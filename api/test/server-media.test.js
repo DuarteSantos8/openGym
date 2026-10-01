@@ -385,6 +385,9 @@ test('PUT /api/data still answers 200 when the media bookkeeping fails', async t
   const r = await h.pushState(refState());
   assert.equal(r.status, 200);
   assert.equal((await r.json()).ok, true);
+  // The line goes to stderr before the reply, but the test hears the two on separate pipes: on a
+  // busy machine the reply can be read first.
+  for (let i = 0; i < 100 && !/media noteState/.test(h.log); i++) await new Promise(res => setTimeout(res, 20));
   assert.match(h.log, /media noteState/);
   const saved = JSON.parse(fs.readFileSync(path.join(h.dataDir, `state-${U1}.json`), 'utf8'));
   assert.equal(saved._rev, 1, 'the state itself was saved');

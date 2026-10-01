@@ -97,6 +97,9 @@ describe('the demo Coach failing inside its timer', () => {
     installDom()
     await act(async () => { root.render(React.createElement(CoachChat)) })
     await settle()
+    // coach-api imports the demo on first use; a cold load is file I/O, which twenty microtasks
+    // do not wait for, so the request would still be in flight when the first line is read.
+    await import('../lib/coach-demo.js')
 
     await click(chip(/Last workout/))
     expect(mocks.toast).not.toHaveBeenCalled()                       // the request was accepted
