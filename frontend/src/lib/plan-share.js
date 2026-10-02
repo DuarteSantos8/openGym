@@ -64,6 +64,7 @@ function convertedBundle(bundle, destinationUnit) {
 // Keep only the meaningful config fields, so the file stays small and readable.
 function cleanEx(e) {
   const o = { id: e.id, sets: e.sets }
+  if (typeof e.assisted === 'boolean') o.assisted = e.assisted
   const mode = modeOf(e)
   if (mode === 'cardio') {
     if (e.min != null) o.min = e.min
@@ -149,6 +150,7 @@ const muscleList = v => inMuscleOrder([...new Set((Array.isArray(v) ? v : []).fi
  *  that are empty stay absent, so a file written before this change reads the same as one after. */
 function cleanCustom(c) {
   const o = { id: c.id, n: c.n, bp: c.bp }
+  if (typeof c.assisted === 'boolean') o.assisted = c.assisted
   if (c.desc) o.desc = c.desc
   // The link to a video or guide travels with a shared plan (#246), cleaned both ways like any
   // other field of someone else's file; the exercise's own photo or video never does — it is a

@@ -17,7 +17,7 @@ export function sharedPlan(value, { includeNotes = true } = {}) {
     return { ...scalars(r, ['id', 'name', 'emoji', 'prog', 'excludeFromProgression']), ex: r.ex.map(e => {
       if (!validId(e?.id)) throw new Error('Invalid exercise in the shared plan')
       const out = scalars(e, ['id', 'sets', 'min', 'speed', 'mode', 'sec', 'weight', 'reps', 'bodyweight',
-        'side', 'prog', 'inc', 'deloadFactor', 'repsMin', 'repsMax', 'restSec', 'warmupRestSec', 'sg', 'note', 'warmupSets'])
+        'side', 'assisted', 'prog', 'inc', 'deloadFactor', 'repsMin', 'repsMax', 'restSec', 'warmupRestSec', 'sg', 'note', 'warmupSets'])
       if (!includeNotes) delete out.note
       if (['dropset', 'restpause'].includes(e.intensifier?.type)) {
         out.intensifier = scalars(e.intensifier, ['type', 'count', 'pct', 'totalReps', 'restSec'])
@@ -36,7 +36,7 @@ export function sharedPlan(value, { includeNotes = true } = {}) {
   const customEx = (Array.isArray(value.customEx) ? value.customEx : [])
     .filter(e => used.has(e?.id) && typeof e.n === 'string').slice(0, 1000)
     .map(e => {
-      const out = scalars(e, ['id', 'n', 'bp', 'desc', 'eq', 'tg'])
+      const out = scalars(e, ['id', 'n', 'bp', 'desc', 'eq', 'tg', 'assisted'])
       for (const key of ['primaries', 'secondaries', 'muscleGroups']) {
         if (Array.isArray(e[key])) out[key] = e[key].filter(v => typeof v === 'string').slice(0, 19).map(v => v.slice(0, 40))
       }

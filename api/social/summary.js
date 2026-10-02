@@ -1,5 +1,9 @@
-import { metricModeForEntry, metricRowsForEntry, bestWeightForEntry, weekOf, weekStreak } from '../training/history-metrics.js'
+import { metricModeForEntry, metricRowsForEntry, bestWeightForEntry, completedRepsOf, weekOf, weekStreak } from '../training/history-metrics.js'
 
+import { completedSetsForRow, isAssistedShape } from '../training/set-semantics.js'
+import { EXERCISES } from '../coach/core/library-data.js'
+
+const catalogue = new Map(EXERCISES.map(ex => [ex.id, ex]))
 const array = value => Array.isArray(value) ? value : []
 const number = value => Number.isFinite(Number(value)) ? Number(value) : 0
 const scalar = (value, fields) => Object.fromEntries(fields
@@ -13,25 +17,36 @@ export function socialSummary(state, today, { recordLimit = 12 } = {}) {
     .slice().sort((a, b) => a.d.localeCompare(b.d) || number(a.start) - number(b.start))
   const weekStart = S.weekStart === 0 ? 0 : 1
   const groups = new Map()
+  const custom = new Map(array(S.customEx).map(ex => [ex?.id, ex]))
+  const assistedFor = id => isAssistedShape(custom.get(id) || catalogue.get(id))
   for (const w of workouts) {
-    const seen = new Set()
+    const occurrences = new Map()
     for (const entry of array(w.entries)) {
-      if (typeof entry?.id !== 'string' || seen.has(entry.id)) continue
-      seen.add(entry.id)
+      if (typeof entry?.id !== 'string') continue
       const clean = { ...entry, sets: array(entry.sets).filter(row => row && typeof row === 'object' && !Array.isArray(row)) }
       const mode = metricModeForEntry(clean)
       const rows = metricRowsForEntry(clean, mode)
-      if (!mode || !rows.length) continue
-      const logged = groups.get(entry.id) || []
-      const weight = bestWeightForEntry(clean)
-      // Repetitions must come from the set that lifted this load, not a lighter set
-      const weightReps = mode === 'reps' ? rows.filter(s => Number(s.w) === weight && number(s.r) > 0)
-        .reduce((n, s) => Math.max(n, number(s.r)), 0) : 0
+      if (!mode || (!rows.length && !bestWeightForEntry(clean, assistedFor(entry.id)))) continue
+      const entries = occurrences.get(entry.id) || []
+      entries.push({ entry: clean, mode, rows })
+      occurrences.set(entry.id, entries)
+    }
+    for (const [id, entries] of occurrences) {
+      const mode = entries.at(-1).mode
+      const matching = entries.filter(item => item.mode === mode)
+      const rows = matching.flatMap(item => item.rows)
+      const clean = { ...matching.at(-1).entry, sets: rows }
+      const logged = groups.get(id) || []
+      const weight = bestWeightForEntry(clean, assistedFor(id))
+      // Match the load to the completed limb that lifted it, never its aggregate row
+      const weightReps = mode === 'reps' ? rows.flatMap(completedSetsForRow)
+        .filter(row => Number(row.w) === weight && number(row.r) > 0)
+        .reduce((n, row) => Math.max(n, number(row.r)), 0) : 0
       logged.push({ date: w.d, mode, weight, weightReps,
-        reps: rows.reduce((n, s) => Math.max(n, number(s.r)), 0),
-        sec: rows.reduce((n, s) => Math.max(n, number(s.sec)), 0),
-        min: rows.reduce((n, s) => n + number(s.min), 0) })
-      groups.set(entry.id, logged)
+        reps: rows.reduce((n, row) => Math.max(n, completedRepsOf(row)), 0),
+        sec: rows.reduce((n, row) => Math.max(n, number(row.sec)), 0),
+        min: rows.reduce((n, row) => n + number(row.min), 0) })
+      groups.set(id, logged)
     }
   }
   const names = new Map(array(S.customEx).filter(e => e?.id && typeof e.n === 'string').map(e => [e.id, e.n.slice(0, 160)]))
@@ -42,7 +57,10 @@ export function socialSummary(state, today, { recordLimit = 12 } = {}) {
       : logged.some(row => row.mode === 'reps' && row.weight > 0) ? 'weight' : 'reps'
     let best = null
     for (const row of logged) {
-      if (row.mode === mode && row[metric] > (best?.[metric] || 0)) best = row
+      if (row.mode !== mode || !(row[metric] > 0)) continue
+      const improves = best == null || (metric === 'weight' && assistedFor(exerciseId)
+        ? row[metric] < best[metric] : row[metric] > best[metric])
+      if (improves) best = row
     }
     if (best) records.push({ exerciseId, name: names.get(exerciseId) || null, metric, value: best[metric], date: best.date,
       ...(metric === 'weight' && best.weightReps > 0 ? { reps: best.weightReps } : {}) })
@@ -85,7 +103,7 @@ export function socialProfile(state, today, { shareBodyWeight = true } = {}) {
       ...scalar(r, ['id', 'name', 'emoji']),
       ex: array(r.ex).filter(e => typeof e?.id === 'string').slice(0, 100).map(e => {
         const target = scalar(e, ['id', 'sets', 'min', 'speed', 'mode', 'sec', 'weight', 'reps', 'bodyweight', 'side',
-          'repsMin', 'repsMax', 'restSec', 'sg', 'warmupSets'])
+          'repsMin', 'repsMax', 'restSec', 'sg', 'warmupSets', 'assisted'])
         if (!target.mode && customCardio.has(e.id)) target.mode = 'cardio'
         return target
       })

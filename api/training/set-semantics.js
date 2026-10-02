@@ -69,3 +69,17 @@ export function modeForEntry(entry, fallback = null) {
   if (targetMode) return targetMode
   return fallback == null ? modeForSet(source, target) : normalizeMode(fallback)
 }
+
+export function isSideSet(set) {
+  const s = objectOf(set)
+  return !!(s.sides && typeof s.sides === 'object' && s.sides.L && s.sides.R)
+}
+
+export const completedSetsForRow = set => isSideSet(set)
+  ? [set.sides.L, set.sides.R].filter(side => side?.done === true)
+  : set?.done === true ? [set] : []
+
+export const hasCompletedWork = set => completedSetsForRow(set).length > 0
+
+export const isAssistedShape = ex => typeof ex?.assisted === 'boolean' ? ex.assisted
+  : ex?.eq === 'leverage machine' && /\bassist(ed)?\b/i.test(String(ex?.n || ''))

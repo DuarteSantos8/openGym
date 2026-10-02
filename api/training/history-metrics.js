@@ -1,4 +1,4 @@
-import { phaseForSet, isWarmupRow, normalizeMode, modeForSet, modeForEntry } from './set-semantics.js'
+import { phaseForSet, normalizeMode, modeForSet, modeForEntry, isWarmupRow, hasCompletedWork, completedSetsForRow } from './set-semantics.js'
 
 export function weekOf(date, weekStart = 1) {
   const day = new Date(date + 'T12:00:00Z')
@@ -29,7 +29,7 @@ const workRowsForMode = (entry = {}, mode = 'reps') => {
     .filter(set => phaseForSet(set) === 'work' && modeForSet(set, target) === expectedMode)
 }
 const METRIC_MODES = ['reps', 'time', 'cardio']
-const completedRowsForMode = (entry, mode) => workRowsForMode(entry, mode).filter(s => s.done === true && !isWarmupRow(s))
+const completedRowsForMode = (entry, mode) => workRowsForMode(entry, mode).filter(s => hasCompletedWork(s) && !isWarmupRow(s))
 
 export function metricRowsForEntry(entry, mode) {
   const requested = typeof mode === 'string' ? mode.trim().toLowerCase() : ''
@@ -48,7 +48,7 @@ export function metricModeForEntry(entry, fallback = null) {
 
 /** Best load from completed work rows, with a guarded reps-only legacy topW fallback. */
 
-export function bestWeightForEntry(entry = {}) {
+export function bestWeightForEntry(entry = {}, assisted = false) {
   const target = entry.target || entry
   const workRows = Array.isArray(entry.sets)
     ? entry.sets.filter(s => phaseForSet(s) === 'work')
@@ -58,14 +58,24 @@ export function bestWeightForEntry(entry = {}) {
   // completed work row (timed holds can carry an added load too).
   const completedRows = repsRows.length
     ? repsRows
-    : workRows.filter(set => set?.done === true && !isWarmupRow(set))
+    : workRows.filter(set => hasCompletedWork(set) && !isWarmupRow(set))
+  // On an assistance machine the smallest load is the best set, so "best" folds the other way
+  // (issue #232). Everything below still returns a plain number — the caller does not branch.
   let best = 0
   let hasUsableWeight = false
   completedRows.forEach(set => {
-    const weight = Number(set?.w)
-    if (!Number.isFinite(weight)) return
-    hasUsableWeight = true
-    if (weight > best) best = weight
+    const completedSets = completedSetsForRow(set)
+    completedSets.forEach(completedSet => {
+      const weight = Number(completedSet?.w)
+      if (!Number.isFinite(weight)) return
+      // A 0 on an assistance machine is a row with no load entered, not a set done with no help
+      // at all — folding it in as "the least assistance ever" would invent a record nobody did
+      // and then ask for negative help next time. Anyone truly needing none has left the machine
+      // behind and should log the unassisted exercise instead.
+      if (assisted && !(weight > 0)) return
+      best = hasUsableWeight ? (assisted ? Math.min(best, weight) : Math.max(best, weight)) : weight
+      hasUsableWeight = true
+    })
   })
 
   // A real completed row, including an explicit zero for an unloaded bodyweight set, always
@@ -78,7 +88,10 @@ export function bestWeightForEntry(entry = {}) {
   const topWeight = Number(entry.topW)
   // topW predates phase-tagged warm-ups. It remains a fallback for legacy all-work records,
   // but cannot override resolved work rows once any warm-up marker exists.
-  if (parentMode === 'reps' && !hasNonRepsWorkRow && !hasWarmupRow
-    && Number.isFinite(topWeight) && topWeight > best) best = topWeight
+  if (parentMode === 'reps' && !hasNonRepsWorkRow && !hasWarmupRow && Number.isFinite(topWeight)
+    && (best <= 0 || (assisted ? topWeight > 0 && topWeight < best : topWeight > best))) best = topWeight
   return best
 }
+
+export const completedRepsOf = set => completedSetsForRow(set)
+  .reduce((total, row) => total + Math.max(0, Number(row.r) || 0), 0)

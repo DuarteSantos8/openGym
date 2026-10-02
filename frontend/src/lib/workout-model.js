@@ -1,8 +1,8 @@
 // Focused workout semantics shared by session, history, and strength views.
 // Legacy records have no explicit phase or mode, so the defaults preserve main's work/reps shape.
 
-import { phaseForSet, isWarmupRow, normalizeMode, modeForSet, modeForEntry } from '../../../api/training/set-semantics.js'
-export { phaseForSet, isWarmupRow, normalizeMode, modeForSet, modeForEntry }
+import { phaseForSet, isWarmupRow, normalizeMode, modeForSet, modeForEntry, isSideSet, hasCompletedWork } from '../../../api/training/set-semantics.js'
+export { phaseForSet, isWarmupRow, normalizeMode, modeForSet, modeForEntry, isSideSet, hasCompletedWork }
 
 const objectOf = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {}
 
@@ -150,20 +150,11 @@ export function splitBurstReps(total) {
 //   done  = L.done && R.done  (a set counts done only once both sides are)
 //   effort= the harder side's rating (lower RIR / higher RPE), for the history tail only
 // `syncSideAggregate` recomputes those scalars from `sides` after any per-side edit.
-export function isSideSet(set) {
-  const s = objectOf(set)
-  return !!(s.sides && typeof s.sides === 'object' && s.sides.L && s.sides.R)
-}
-
 // A load explicitly changed by the user is protected from a later cascade. Missing provenance
 // means the row was inherited from the preceding load, including rows written before this field
 // existed. The marker is deliberately tiny and preserved on a side through aggregate resync.
 export const WEIGHT_ORIGIN_MANUAL = 'manual'
 
-/** Includes a completed limb even when its partner is still unchecked. */
-export const hasCompletedWork = set => isSideSet(set)
-  ? set.sides.L.done === true || set.sides.R.done === true
-  : set?.done === true
 
 /** Actual completed load x reps; the scalar maximum weight is only a summary. */
 export function completedVolumeOf(set) {

@@ -1,18 +1,9 @@
 // Pure helpers over the state object S (ported 1:1 from the vanilla app).
 import { todayISO, isoOf, weekKey, weekStartOf, fmtNum } from './format.js'
 import { fmtSpeed } from './speed.js'
-import { weekStreak } from '../../../api/training/history-metrics.js'
+import { weekStreak, metricRowsForEntry, metricModeForEntry, completedRepsOf, bestWeightForEntry as bestEntryWeight } from '../../../api/training/history-metrics.js'
 import { isCardio, isBodyweightEq, isAssisted, betterWeight } from './exercises.js'
-import { phaseForSet, modeForSet, modeForEntry, isWarmupRow, normalizeMode, completedVolumeOf, hasCompletedWork, nextDropWeight, splitBurstReps, makeSideSet, isSideSet, syncSideAggregate, WEIGHT_ORIGIN_MANUAL, dropsOf, clustersOf } from './workout-model.js'
-const objectOf = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {}
-// Completed-state-independent work rows whose authoritative mode matches the requested mode.
-const workRowsForMode = (entry = {}, mode = 'reps') => {
-  const source = objectOf(entry)
-  const target = objectOf(source.target || source)
-  const expectedMode = normalizeMode(mode, 'reps')
-  return (Array.isArray(source.sets) ? source.sets : [])
-    .filter(set => phaseForSet(set) === 'work' && modeForSet(set, target) === expectedMode)
-}
+import { isWarmupRow, completedVolumeOf, nextDropWeight, splitBurstReps, makeSideSet, isSideSet, syncSideAggregate, WEIGHT_ORIGIN_MANUAL, dropsOf, clustersOf } from './workout-model.js'
 // i18n-core, not i18n: this file is imported by mcp/, which is plain Node with no Vite and no
 // React. i18n.js is the Vite half — import.meta.glob over the locale packs, useSyncExternalStore
 // for the hook — and it re-exports this very `t` from core, so nothing changes here except what
@@ -849,23 +840,7 @@ export function workSetsDone(w) {
   )
 }
 
-const METRIC_MODES = ['reps', 'time', 'cardio']
-const completedRowsForMode = (entry, mode) => workRowsForMode(entry, mode).filter(s => hasCompletedWork(s) && !isWarmupRow(s))
-
-export function metricRowsForEntry(entry, mode) {
-  const requested = typeof mode === 'string' ? mode.trim().toLowerCase() : ''
-  const resolved = METRIC_MODES.includes(requested) ? requested : metricModeForEntry(entry)
-  return resolved ? completedRowsForMode(entry, resolved) : []
-}
-
-/** The authoritative metric for an entry; reps rows take precedence over timed/cardio rows. */
-
-export function metricModeForEntry(entry, fallback = null) {
-  for (const mode of METRIC_MODES) {
-    if (completedRowsForMode(entry, mode).length) return mode
-  }
-  return modeForEntry(entry, fallback)
-}
+export { metricRowsForEntry, metricModeForEntry, completedRepsOf }
 
 /** Every saved occurrence of an exercise in one workout, in its stored order. */
 export function entriesForExercise(workout, exId) {
@@ -881,62 +856,7 @@ export function metricEntriesForExercise(workout, exId) {
     .filter(item => item.rows.length || (item.mode === 'reps' && bestWeightForEntry(item.entry) > 0))
 }
 
-/** Total reps from one completed row, counting only completed limbs of a per-side row. */
-export function completedRepsOf(set = {}) {
-  if (isSideSet(set)) {
-    return [set.sides.L, set.sides.R]
-      .filter(side => side?.done === true)
-      .reduce((total, side) => total + Math.max(0, Number(side.r) || 0), 0)
-  }
-  return set?.done === true ? Math.max(0, Number(set.r) || 0) : 0
-}
-
-/** Best load from completed work rows, with a guarded reps-only legacy topW fallback. */
-
+// Catalogue lookup stays on the client; row semantics are shared with the API
 export function bestWeightForEntry(entry = {}) {
-  const target = entry.target || entry
-  const workRows = Array.isArray(entry.sets)
-    ? entry.sets.filter(s => phaseForSet(s) === 'work')
-    : []
-  const repsRows = metricRowsForEntry(entry, 'reps')
-  // Reps rows are the authoritative load metric for a mixed entry. Otherwise use every
-  // completed work row (timed holds can carry an added load too).
-  const completedRows = repsRows.length
-    ? repsRows
-    : workRows.filter(set => hasCompletedWork(set) && !isWarmupRow(set))
-  // On an assistance machine the smallest load is the best set, so "best" folds the other way
-  // (issue #232). Everything below still returns a plain number — the caller does not branch.
-  const assisted = isAssisted(entry.id ? { id: entry.id } : entry)
-  let best = 0
-  let hasUsableWeight = false
-  completedRows.forEach(set => {
-    const completedSets = isSideSet(set)
-      ? [set.sides.L, set.sides.R].filter(side => side?.done === true)
-      : [set]
-    completedSets.forEach(completedSet => {
-      const weight = Number(completedSet?.w)
-      if (!Number.isFinite(weight)) return
-      // A 0 on an assistance machine is a row with no load entered, not a set done with no help
-      // at all — folding it in as "the least assistance ever" would invent a record nobody did
-      // and then ask for negative help next time. Anyone truly needing none has left the machine
-      // behind and should log the unassisted exercise instead.
-      if (assisted && !(weight > 0)) return
-      best = hasUsableWeight ? betterWeight(entry.id, best, weight) : weight
-      hasUsableWeight = true
-    })
-  })
-
-  // A real completed row, including an explicit zero for an unloaded bodyweight set, always
-  // wins. A manual topW is only useful for old records whose rows did not carry a usable load.
-  if (hasUsableWeight) return best
-
-  const parentMode = modeForSet({}, target)
-  const hasNonRepsWorkRow = workRows.some(set => modeForSet(set, target) !== 'reps')
-  const hasWarmupRow = Array.isArray(entry.sets) && entry.sets.some(isWarmupRow)
-  const topWeight = Number(entry.topW)
-  // topW predates phase-tagged warm-ups. It remains a fallback for legacy all-work records,
-  // but cannot override resolved work rows once any warm-up marker exists.
-  if (parentMode === 'reps' && !hasNonRepsWorkRow && !hasWarmupRow && Number.isFinite(topWeight)
-    && (best <= 0 || (assisted ? topWeight > 0 && topWeight < best : topWeight > best))) best = topWeight
-  return best
+  return bestEntryWeight(entry, isAssisted(entry.id ? { id: entry.id } : entry))
 }

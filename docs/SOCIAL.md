@@ -30,9 +30,10 @@ Open a friend to see their full training profile:
 - Their weekly schedule and routines, including exercise targets. Private routine
   notes are not included.
 - One personal record for every exercise they have logged. Records follow exercise
-  history: heaviest load, highest reps for an unloaded exercise, longest timed
+  history: heaviest load (least assistance on an assistance machine), highest reps for an unloaded exercise, longest timed
   hold, or most cardio minutes in one session. Completed work sets count; warm-ups
-  and unfinished sets do not. The most recently logged exercise mode determines
+  and unfinished sets do not. Completed limbs of per-side rows count independently;
+  repeated occurrences of an exercise are combined within a session. The most recently logged exercise mode determines
   which metric is shown. Load records also show the repetitions from the set that
   first achieved that load, when that set is available. Repetitions from a lighter
   set are never attached to a heavier record.

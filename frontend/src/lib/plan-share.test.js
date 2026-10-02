@@ -20,6 +20,18 @@ describe('plans shared with friends', () => {
     expect(bundle.routines[0].ex[0].weight).toBe(100)
   })
 
+  it('preserves assistance overrides when a Social plan is previewed and imported', () => {
+    const source = { unit: 'kg', week: {}, customEx: [{ id: 'custom-machine', n: 'Machine', bp: 'back', assisted: true }],
+      routines: [{ id: 'r1', name: 'Back', ex: [{ id: 'custom-machine', sets: 3, reps: 8, weight: 20, assisted: false }] }] }
+    const sent = sharedPlan(buildSocialPlanBundle(source, 'Back day', { routineIds: ['r1'] }))
+    expect(sent.customEx[0].assisted).toBe(true)
+    expect(sent.routines[0].ex[0].assisted).toBe(false)
+    const target = { unit: 'kg', routines: [], customEx: [], week: {} }
+    mergePlan(target, parsePlan(sent, 'kg'))
+    expect(target.customEx[0].assisted).toBe(true)
+    expect(target.routines[0].ex[0].assisted).toBe(false)
+  })
+
   it('keeps upstream custom exercise metadata through Social without sharing media files', () => {
     const source = stateWith({ id: 'custom' })
     source.customEx = [{ id: 'custom', n: 'Custom press', bp: 'chest', eq: 'dumbbell', tg: 'chest',

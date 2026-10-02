@@ -41,7 +41,9 @@ cd frontend && npm test
 - **Training logic gets a unit test.** Anything deciding what you lift next, or reading a logged
   session back, belongs in a pure helper in `src/lib` with tests beside it (`npm test`). These
   rules are easy to get subtly wrong and nearly impossible to verify by clicking — the
-  progression engine grew two real bugs that only a test pinned down.
+  progression engine grew two real bugs that only a test pinned down. Framework-free primitives
+  used by both the frontend and API live in `api/training/`; keep the client catalogue lookup in
+  `src/lib` and test the shared semantics alongside those client helpers.
 
 ## What CI does with your pull request
 

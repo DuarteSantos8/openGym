@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
+import { useVisibleRefresh } from '../lib/use-visible-refresh.js'
 import { api } from '../lib/api.js'
 import { DAYN, fmtDate, weekOrder } from '../lib/format.js'
 import { buildSocialPlanBundle, parsePlan } from '../lib/plan-share.js'
@@ -145,7 +146,7 @@ export default function Social({ embedded = false }) {
   const setSocialCount = useUI(s => s.setSocialCount)
   const nav = useNavigate()
   const [data, setData] = useState(null)
-  const [revision, setRevision] = useState(0)
+  const [revision, refresh] = useVisibleRefresh(user?.id)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -166,15 +167,6 @@ export default function Social({ embedded = false }) {
     return () => abort.abort()
   }, [user?.id, revision, setSocialCount])
 
-  useEffect(() => {
-    if (!user) return
-    const refresh = () => { if (!document.hidden) setRevision(n => n + 1) }
-    const timer = setInterval(refresh, 60000)
-    window.addEventListener('focus', refresh)
-    document.addEventListener('visibilitychange', refresh)
-    return () => { clearInterval(timer); window.removeEventListener('focus', refresh); document.removeEventListener('visibilitychange', refresh) }
-  }, [user?.id])
-
   const send = async (path, body, message, inline = false) => {
     if (sending.current) return false
     sending.current = true
@@ -182,7 +174,7 @@ export default function Social({ embedded = false }) {
     try {
       await api('/api/social/' + path, { method: 'POST', body: JSON.stringify(body) })
       if (message) toast(message)
-      setRevision(n => n + 1)
+      refresh()
       return true
     } catch (e) { if (inline) throw e; setError(e.message); return false }
     finally { sending.current = false; setBusy(false) }
@@ -210,7 +202,7 @@ export default function Social({ embedded = false }) {
       const { plan } = await api('/api/social/plan?id=' + encodeURIComponent(item.id))
       planImportSheet(parsePlan(plan, useStore.getState().S.unit || 'kg'), () => {
         api('/api/social/plan/dismiss', { method: 'POST', body: JSON.stringify({ id: item.id }) })
-          .then(() => setRevision(n => n + 1))
+          .then(() => refresh())
           .catch(() => toast(t('Plan imported. Dismiss the shared copy from Social when you are back online.')))
       }, item.id)
     } catch (e) { setError(e.message) }
@@ -226,7 +218,7 @@ export default function Social({ embedded = false }) {
       <Button variant="primary" onClick={() => nav('/settings')}>{t('Settings')}</Button>
     </div> : <>
       {error && <div className="card social-error" role="alert">{error}
-        <Button size="sm" disabled={loading || busy} onClick={() => setRevision(n => n + 1)}>{t('Try again')}</Button></div>}
+        <Button size="sm" disabled={loading || busy} onClick={() => refresh()}>{t('Try again')}</Button></div>}
       {!data && loading && <p role="status" className="muted">{t('Loading friends…')}</p>}
       {data && <>
         <section className="card social-identity">
@@ -267,7 +259,7 @@ export default function Social({ embedded = false }) {
         <div className="social-section-heading">
           <div><h2>{t('Friends')}</h2><p>{t('{0} connected', data.friends.length)}</p></div>
           <div className="row social-heading-actions">
-            <button className="iconbtn" disabled={loading || busy} onClick={() => setRevision(n => n + 1)} aria-label={t('Refresh')}><Icon name="reset" /></button>
+            <button className="iconbtn" disabled={loading || busy} onClick={() => refresh()} aria-label={t('Refresh')}><Icon name="reset" /></button>
             <Button size="sm" variant="tinted" icon="plus" disabled={busy} onClick={openPeople}>{t('Add friend')}</Button>
           </div>
         </div>

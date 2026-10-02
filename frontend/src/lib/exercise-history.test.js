@@ -51,6 +51,38 @@ describe('friend progress summaries', () => {
     expect(socialSummary(legacy, '2026-01-11').records[0].reps).toBeUndefined()
   })
 
+  it('includes repeated occurrences of an exercise and completed limbs only', () => {
+    const perSide = { w: 200, r: 25, done: false,
+      sides: { L: { w: 60, r: 5, done: true }, R: { w: 200, r: 20, done: false } } }
+    const state = { workouts: [{ id: 'w1', d: iso(0), entries: [
+      { id: 'bench', sets: [warm(300, 10)] },
+      { id: 'bench', sets: [perSide] }
+    ] }] }
+    const record = socialSummary(state, '2026-01-11').records[0]
+    expect(record).toMatchObject({ value: 60, reps: 5 })
+    expect(record.value).toBe(exerciseHistory(state, 'bench').best)
+    perSide.sides.R = { w: 40, r: 20, done: true }
+    expect(socialSummary(state, '2026-01-11').records[0]).toMatchObject({ value: 60, reps: 5 })
+    state.workouts[0].entries = [
+      { id: 'run', target: { mode: 'cardio' }, sets: [{ min: 10, done: true }] },
+      { id: 'run', target: { mode: 'cardio' }, sets: [{ min: 15, done: true }] }
+    ]
+    expect(socialSummary(state, '2026-01-11').records[0]).toMatchObject({ metric: 'min', value: 25 })
+  })
+
+  it('uses the least assistance for machine and custom exercise records', () => {
+    const assisted = EXDB.find(ex => ex.eq === 'leverage machine' && /assist(ed)?/i.test(ex.n))
+    const workouts = [
+      { id: 'w1', d: iso(0), entries: [{ id: assisted.id, sets: [work(40, 8), work(30, 6)] }] },
+      { id: 'w2', d: iso(1), entries: [{ id: assisted.id, sets: [work(20, 5), work(40, 12), work(0, 20)] }] }
+    ]
+    expect(socialSummary({ workouts }, '2026-01-11').records[0]).toMatchObject({ value: 20, reps: 5, date: iso(1) })
+    const customEx = [{ id: assisted.id, n: 'My assistance machine', assisted: false }]
+    expect(socialSummary({ workouts, customEx }, '2026-01-11').records[0]).toMatchObject({ value: 40, reps: 8, date: iso(0) })
+    customEx[0].assisted = true
+    expect(socialSummary({ workouts, customEx }, '2026-01-11').records[0].value).toBe(20)
+  })
+
   it('preserves custom cardio mode without disclosing exercise notes or descriptions', () => {
     const state = { customEx: [{ id: 'run', n: 'My treadmill', bp: 'cardio', desc: 'private description' }],
       routines: [{ id: 'r1', name: 'Cardio', ex: [

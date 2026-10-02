@@ -17,7 +17,7 @@ export default function StatsPage() {
     {socialCount > 0 && <b aria-label={t('{0} pending items', socialCount)}>{socialCount > 99 ? '99+' : socialCount}</b>}</span>
 
   return <>
-    <div className="hdr"><div><h1>{t('Stats')}</h1><div className="sub">{t('Progress & history')}</div></div>
+    <div className="hdr"><div><h1>{view === 'social' ? t('Social') : t('Stats')}</h1><div className="sub">{view === 'social' ? t('Keep up with your training friends') : t('Progress & history')}</div></div>
       <button className="iconbtn" onClick={() => nav('/history')} aria-label={t('History')}><Icon name="history" /></button></div>
     <div className="stats-tabs-shell">
       <Segmented className="stats-tabs" value={view} onChange={next => nav(next === 'social' ? '/stats?view=social' : '/stats', { replace: true })}

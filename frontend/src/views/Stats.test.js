@@ -129,6 +129,7 @@ describe('Social interactions', () => {
     expect(api).not.toHaveBeenCalled()
     await click(tabs()[1])
     expect(host.querySelector('#stats-social')).toBeTruthy()
+    expect(host.querySelector('h1').textContent).toBe('Social')
     expect(host.textContent).toContain('Bob')
     await click(tabs()[0])
     expect(host.querySelector('#stats-progress')).toBeTruthy()
@@ -182,6 +183,23 @@ describe('Social interactions', () => {
     await click(button('Try again'))
     expect(host.querySelector('[role="alert"]')).toBeNull()
     expect(host.textContent).toContain('Bob')
+  })
+
+  it('refreshes while visible and stops polling when the Social view unmounts', async () => {
+    vi.useFakeTimers()
+    try {
+      await mount()
+      api.mockClear()
+      await act(async () => vi.advanceTimersByTime(60000))
+      expect(api).toHaveBeenCalledTimes(1)
+      vi.spyOn(document, 'hidden', 'get').mockReturnValue(true)
+      await act(async () => vi.advanceTimersByTime(60000))
+      expect(api).toHaveBeenCalledTimes(1)
+      await act(async () => root.unmount())
+      root = null
+      await act(async () => vi.advanceTimersByTime(60000))
+      expect(api).toHaveBeenCalledTimes(1)
+    } finally { vi.useRealTimers() }
   })
 
   it('shows privacy before a request and keeps request errors inside the people sheet', async () => {

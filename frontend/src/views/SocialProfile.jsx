@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useVisibleRefresh } from '../lib/use-visible-refresh.js'
 import { api } from '../lib/api.js'
 import { EXIDX } from '../lib/exercises.js'
 import { DAYN, exCount, fmtDate, fmtNum, weekOrder } from '../lib/format.js'
@@ -24,20 +25,12 @@ export default function SocialProfile() {
   const nav = useNavigate()
   const [profile, setProfile] = useState(null)
   const [error, setError] = useState('')
-  const [revision, setRevision] = useState(0)
   const [loading, setLoading] = useState(false)
   const userId = useStore(s => s.user?.id)
   const speedUnit = useStore(s => speedUnitOf(s.S))
+  const [revision, refresh] = useVisibleRefresh(userId && id)
 
   useEffect(() => { setProfile(null); setError('') }, [id, userId])
-  useEffect(() => {
-    const refresh = () => { if (!document.hidden) setRevision(n => n + 1) }
-    const timer = setInterval(refresh, 60000)
-    window.addEventListener('focus', refresh)
-    document.addEventListener('visibilitychange', refresh)
-    return () => { clearInterval(timer); window.removeEventListener('focus', refresh); document.removeEventListener('visibilitychange', refresh) }
-  }, [id, userId])
-
   useEffect(() => {
     const abort = new AbortController()
     setLoading(true)
@@ -52,7 +45,7 @@ export default function SocialProfile() {
     return () => abort.abort()
   }, [id, userId, revision])
 
-  const retry = <Button size="sm" disabled={loading} onClick={() => setRevision(n => n + 1)}>{t('Try again')}</Button>
+  const retry = <Button size="sm" disabled={loading} onClick={() => refresh()}>{t('Try again')}</Button>
 
   if (error && !profile) return <div className="social social-profile">
     <div className="friend-profile-nav"><button className="iconbtn" onClick={() => nav('/stats?view=social')} aria-label={t('Social')}><Icon name="chevronLeft" /></button>
@@ -70,7 +63,7 @@ export default function SocialProfile() {
   return <div className="social social-profile">
     <div className="friend-profile-nav"><button className="iconbtn" onClick={() => nav('/stats?view=social')} aria-label={t('Social')}><Icon name="chevronLeft" /></button>
       <span>{t('Friend profile')}</span>
-      <button className="iconbtn" disabled={loading} onClick={() => setRevision(n => n + 1)} aria-label={t('Refresh')}><Icon name="reset" /></button></div>
+      <button className="iconbtn" disabled={loading} onClick={() => refresh()} aria-label={t('Refresh')}><Icon name="reset" /></button></div>
     {error && <div className="card social-error" role="alert">{error}{retry}</div>}
 
     <section className="card profile-identity friend-profile-identity">
