@@ -2,10 +2,10 @@
 
 ## Unreleased
 
-- **Social sharing and recovery:** choose routines, schedule and optional notes before previewing a shared plan; remember imported snapshots to prevent duplicates; block and unblock profiles; show privacy before requests, preserve loaded data on refresh failures, refresh open friend profiles, and pair load records with repetitions from the actual record set. New interface strings are translated in all 14 locale packs.
-- **Profile, Stats and Social:** a Profile destination keeps identity, Stats and Social together with a persistent profile header and a Stats/Social switch. Edit your display name and a metadata-free profile photo stored on your openGym server; Settings, History and friend profiles stay under Profile.
-- **Social starts with what needs attention:** friend requests and shared plans come first, friends are compact profile links, server discovery opens from Add friend, and destructive actions moved behind the ellipsis. Profile photos stay between accepted friends, and body-weight sharing is now explicit and starts off for new accounts.
-- **Plans from friends:** share a snapshot of your routines and weekly schedule directly, preview the exercises, then import as new routines. Applying the schedule is optional; new exports carry kg/lb so weights convert on import. Workout notes and weigh-in history are excluded.
+- **Social inside Stats:** add a Stats/Social switch while keeping the existing Stats bottom tab, `/stats` links, History access and Home Settings shortcut. Social has profile editing, a server-local photo and explicit body-weight privacy controls.
+- **Friends and progress:** discover registered profiles on the same server, send and accept requests, and view accepted friends' training profiles. Incoming decisions and shared plans come first; sent requests have their own section. Friend cards label their metrics and expose plan sharing; removal and blocking stay in the action menu.
+- **Shared plans:** choose routines, schedule and optional notes, preview before sending, and review before importing. Imports add routines, convert kg/lb, and apply the sender's schedule only when requested. Snapshots have persistent import receipts to prevent duplicates across devices.
+- **Privacy and recovery:** training data and photos require accepted friendship; new accounts start with body-weight sharing off. Private workout notes and weigh-in history are excluded. Block/unblock controls, retry actions and refresh preserve useful loaded data. Custom cardio displays its mode and the viewer's speed unit. New strings are available in all 16 locale packs.
 
 ## v1.3.9 — 2026-09-28
 

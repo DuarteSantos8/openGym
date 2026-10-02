@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../lib/api.js'
 import { EXIDX } from '../lib/exercises.js'
 import { DAYN, exCount, fmtDate, fmtNum, weekOrder } from '../lib/format.js'
+import { speedUnitOf } from '../lib/speed.js'
 import { exLine, fmtSec } from '../lib/history.js'
 import { exerciseNameFor, t } from '../lib/i18n.js'
 import Icon from '../components/Icon.jsx'
@@ -26,6 +27,7 @@ export default function SocialProfile() {
   const [revision, setRevision] = useState(0)
   const [loading, setLoading] = useState(false)
   const userId = useStore(s => s.user?.id)
+  const speedUnit = useStore(s => speedUnitOf(s.S))
 
   useEffect(() => { setProfile(null); setError('') }, [id, userId])
   useEffect(() => {
@@ -53,7 +55,7 @@ export default function SocialProfile() {
   const retry = <Button size="sm" disabled={loading} onClick={() => setRevision(n => n + 1)}>{t('Try again')}</Button>
 
   if (error && !profile) return <div className="social social-profile">
-    <div className="friend-profile-nav"><button className="iconbtn" onClick={() => nav('/profile?view=social')} aria-label={t('Social')}><Icon name="chevronLeft" /></button>
+    <div className="friend-profile-nav"><button className="iconbtn" onClick={() => nav('/stats?view=social')} aria-label={t('Social')}><Icon name="chevronLeft" /></button>
       <span>{t('Friend profile')}</span></div>
     <div className="card social-error" role="alert">{error}{retry}</div>
   </div>
@@ -66,7 +68,7 @@ export default function SocialProfile() {
   const bodyWeight = profile.bodyWeight
 
   return <div className="social social-profile">
-    <div className="friend-profile-nav"><button className="iconbtn" onClick={() => nav('/profile?view=social')} aria-label={t('Social')}><Icon name="chevronLeft" /></button>
+    <div className="friend-profile-nav"><button className="iconbtn" onClick={() => nav('/stats?view=social')} aria-label={t('Social')}><Icon name="chevronLeft" /></button>
       <span>{t('Friend profile')}</span>
       <button className="iconbtn" disabled={loading} onClick={() => setRevision(n => n + 1)} aria-label={t('Refresh')}><Icon name="reset" /></button></div>
     {error && <div className="card social-error" role="alert">{error}{retry}</div>}
@@ -98,7 +100,7 @@ export default function SocialProfile() {
       <summary><span className="social-plan-icon"><Icon name="clipboard" /></span><span className="grow"><b>{routine.name}</b>
         <small>{exCount(routine.ex.length)}</small></span><Icon name="chevronRight" className="chev" /></summary>
       <div className="social-exercises">{routine.ex.map((exercise, index) => <div key={`${exercise.id}-${index}`}>
-        <span>{nameOf(exercise)}</span><small>{exLine(exercise, profile.unit)}</small></div>)}</div>
+        <span>{nameOf(exercise)}</span><small>{exLine(exercise, profile.unit, speedUnit)}</small></div>)}</div>
     </details>)}</div> : <div className="card small muted">{t('No routines yet.')}</div>}
 
     <h4 className="sec">{t('Personal records')} · {profile.recordCount}</h4>

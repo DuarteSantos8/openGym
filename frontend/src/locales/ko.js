@@ -1750,4 +1750,10 @@ export default {
   'Teal': '청록',
   'Yellow': '노랑',
   'Enter how long it took — at least 1 minute.': '걸린 시간을 입력하세요 — 최소 1분.',
+  "Connect with people on this server to follow their progress and share plans.": "이 서버의 사람들과 연결하여 진행 상황을 확인하고 계획을 공유하세요.",
+  "Workout notes and weigh-in history stay private.": "운동 메모와 체중 측정 기록은 비공개로 유지됩니다.",
+  "Sent requests": "보낸 요청",
+  "Waiting for your friends to accept": "친구의 수락을 기다리는 중",
+  "Review a plan before importing. Your existing routines stay, and replacing your weekly schedule is optional.": "가져오기 전에 계획을 확인하세요. 기존 루틴은 유지되며 주간 일정 교체는 선택 사항입니다.",
+  "Add a routine with exercises to share your plan.": "계획을 공유하려면 운동이 포함된 루틴을 추가하세요.",
 }

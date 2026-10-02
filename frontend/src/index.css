@@ -666,9 +666,6 @@ body.chips-dragging *{cursor:inherit}
 .seg-range{margin-bottom:10px}
 .seg-inline button{padding:5px 10px;font-size:13px;min-height:28px}
 .seg-inline button .icn{font-size:14px}
-.profile-section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 12px}
-.profile-section-heading h2{font-size:22px;line-height:1.18;font-weight:700;letter-spacing:-.021em;margin:0}
-.profile-section-heading p{font-size:14px;color:var(--label-2);margin:3px 0 0}
 
 /* native time input, restyled to sit in a row like a value label */
 .timef{

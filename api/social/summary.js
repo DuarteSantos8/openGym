@@ -79,12 +79,16 @@ export function socialProfile(state, today, { shareBodyWeight = true } = {}) {
     change30d: recentWeights.length > 1 ? latest.value - recentWeights[0].value : null
   } : null
 
+  const customCardio = new Set(array(S.customEx).filter(e => e?.bp === 'cardio').map(e => e.id))
   const routines = array(S.routines).filter(r => typeof r?.id === 'string' && typeof r.name === 'string')
     .slice(0, 100).map(r => ({
       ...scalar(r, ['id', 'name', 'emoji']),
-      ex: array(r.ex).filter(e => typeof e?.id === 'string').slice(0, 100).map(e => scalar(e,
-        ['id', 'sets', 'min', 'speed', 'mode', 'sec', 'weight', 'reps', 'bodyweight', 'side',
-          'repsMin', 'repsMax', 'restSec', 'sg', 'warmupSets']))
+      ex: array(r.ex).filter(e => typeof e?.id === 'string').slice(0, 100).map(e => {
+        const target = scalar(e, ['id', 'sets', 'min', 'speed', 'mode', 'sec', 'weight', 'reps', 'bodyweight', 'side',
+          'repsMin', 'repsMax', 'restSec', 'sg', 'warmupSets'])
+        if (!target.mode && customCardio.has(e.id)) target.mode = 'cardio'
+        return target
+      })
     }))
   const routineIds = new Set(routines.map(r => r.id))
   const week = {}

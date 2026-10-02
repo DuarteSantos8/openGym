@@ -1744,4 +1744,10 @@ export default {
   "Include weekly schedule": "Додати тижневий розклад",
   "Preview": "Попередній перегляд",
   "Unblock": "Розблокувати",
+  "Connect with people on this server to follow their progress and share plans.": "Додавайте людей із цього сервера в друзі, щоб стежити за їхнім прогресом і ділитися планами.",
+  "Workout notes and weigh-in history stay private.": "Нотатки про тренування та історія зважувань залишаються приватними.",
+  "Sent requests": "Надіслані запити",
+  "Waiting for your friends to accept": "Очікування підтвердження від друзів",
+  "Review a plan before importing. Your existing routines stay, and replacing your weekly schedule is optional.": "Перегляньте план перед імпортом. Ваші поточні програми збережуться, а заміна тижневого розкладу необов’язкова.",
+  "Add a routine with exercises to share your plan.": "Додайте програму з вправами, щоб поділитися планом.",
 }

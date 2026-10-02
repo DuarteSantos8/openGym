@@ -1800,4 +1800,10 @@ export default {
   "Include weekly schedule": "تضمين الجدول الأسبوعي",
   "Preview": "معاينة",
   "Unblock": "إلغاء الحظر",
+  "Connect with people on this server to follow their progress and share plans.": "تواصل مع الأشخاص على هذا الخادم لمتابعة تقدمهم ومشاركة الخطط.",
+  "Workout notes and weigh-in history stay private.": "تبقى ملاحظات التمارين وسجل قياسات الوزن خاصة.",
+  "Sent requests": "الطلبات المرسلة",
+  "Waiting for your friends to accept": "بانتظار قبول أصدقائك",
+  "Review a plan before importing. Your existing routines stay, and replacing your weekly schedule is optional.": "راجع الخطة قبل استيرادها. ستبقى برامجك الحالية، واستبدال جدولك الأسبوعي اختياري.",
+  "Add a routine with exercises to share your plan.": "أضف برنامجًا يتضمن تمارين لمشاركة خطتك.",
 }

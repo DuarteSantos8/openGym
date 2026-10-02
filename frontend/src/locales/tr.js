@@ -1750,4 +1750,10 @@ export default {
   'Teal': 'Turkuaz',
   'Yellow': 'Sarı',
   'Enter how long it took — at least 1 minute.': 'Ne kadar sürdüğünü gir — en az 1 dakika.',
+  "Connect with people on this server to follow their progress and share plans.": "İlerlemelerini takip etmek ve plan paylaşmak için bu sunucudaki kişilerle bağlantı kur.",
+  "Workout notes and weigh-in history stay private.": "Antrenman notları ve tartılma geçmişi gizli kalır.",
+  "Sent requests": "Gönderilen istekler",
+  "Waiting for your friends to accept": "Arkadaşlarının kabul etmesi bekleniyor",
+  "Review a plan before importing. Your existing routines stay, and replacing your weekly schedule is optional.": "İçe aktarmadan önce planı incele. Mevcut rutinlerin korunur ve haftalık programını değiştirmek isteğe bağlıdır.",
+  "Add a routine with exercises to share your plan.": "Planını paylaşmak için egzersiz içeren bir rutin ekle.",
 }

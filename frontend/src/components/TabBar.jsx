@@ -15,7 +15,7 @@ import Icon from './Icon.jsx'
 function Tab({ active, icon, label, onClick, badge = 0 }) {
   return (
     <button className={active ? 'on' : ''} onClick={onClick}>
-      <span className="tab-icon"><Icon name={icon} />{badge > 0 && <b>{badge > 99 ? '99+' : badge}</b>}</span><span>{label}</span>
+      <span className="tab-icon"><Icon name={icon} />{badge > 0 && <b aria-label={t('{0} pending items', badge)}>{badge > 99 ? '99+' : badge}</b>}</span><span>{label}</span>
     </button>
   )
 }
@@ -41,8 +41,7 @@ export default function TabBar({ onStart }) {
   }, [user?.id, setSocialCount])
   if (!user && !isGuest) return null
   const cur = loc.pathname.split('/')[1] || 'home'
-  const on = k => cur === k || (k === 'profile' && ['history', 'settings', 'structural-balance'].includes(cur))
-    || (cur === 'muscles' && k === 'library')
+  const on = k => cur === k || (cur === 'history' && k === 'stats') || (cur === 'settings' && k === 'home') || (cur === 'muscles' && k === 'library') || (cur === 'structural-balance' && k === 'stats')
 
   const startWorkout = () => {
     if (!S.active) {
@@ -64,7 +63,7 @@ export default function TabBar({ onStart }) {
         <span className="cir"><Icon name={S.active ? (cur === 'workout' ? 'dumbbell' : 'play') : 'dumbbell'} /></span>
         <span>{S.active ? (cur === 'workout' ? t('Workout') : S.active.editingWorkoutId ? t('Edit workout') : t('Resume')) : t('Start')}</span>
       </button>
-      <Tab active={on('profile')} icon="personCircle" label={t('Profile')} badge={socialCount} onClick={() => nav('/profile')} />
+      <Tab active={on('stats')} icon="chart" label={t('Stats')} badge={socialCount} onClick={() => nav('/stats')} />
       <Tab active={on('library')} icon="list" label={t('Exercises')} onClick={() => nav('/library')} />
     </nav>
   )

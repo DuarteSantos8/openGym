@@ -4,6 +4,13 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  "Connect with people on this server to follow their progress and share plans.": "Conecte-se com pessoas neste servidor para acompanhar o progresso delas e compartilhar planos.",
+  "Workout notes and weigh-in history stay private.": "As notas dos treinos e o histórico de pesagens permanecem privados.",
+  "Sent requests": "Solicitações enviadas",
+  "Waiting for your friends to accept": "Aguardando seus amigos aceitarem",
+  "Review a plan before importing. Your existing routines stay, and replacing your weekly schedule is optional.": "Revise um plano antes de importar. Suas rotinas atuais são mantidas, e substituir a programação semanal é opcional.",
+  "Add a routine with exercises to share your plan.": "Adicione uma rotina com exercícios para compartilhar seu plano.",
+
   '{0} workouts and {1} weigh-ins were logged on this device while signed out. Add them to your profile, or keep the profile exactly as it is on the server.': '{0} treinos e {1} pesagens foram registrados neste dispositivo sem login. Adicione-os ao seu perfil ou mantenha o perfil exatamente como está no servidor.',
   '{0} workout and {1} weigh-in were logged on this device while signed out. Add them to your profile, or keep the profile exactly as it is on the server.': '{0} treino e {1} pesagem foram registrados neste dispositivo sem login. Adicione-os ao seu perfil ou mantenha o perfil exatamente como está no servidor.',
   '{0} workout and {1} weigh-ins were logged on this device while signed out. Add them to your profile, or keep the profile exactly as it is on the server.': '{0} treino e {1} pesagens foram registrados neste dispositivo sem login. Adicione-os ao seu perfil ou mantenha o perfil exatamente como está no servidor.',

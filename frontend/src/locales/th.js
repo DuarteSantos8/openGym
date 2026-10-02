@@ -1761,4 +1761,10 @@ export default {
   'Teal': 'เขียวน้ำทะเล',
   'Yellow': 'เหลือง',
   'Enter how long it took — at least 1 minute.': 'ใส่ระยะเวลาที่ใช้ — อย่างน้อย 1 นาที',
+  "Connect with people on this server to follow their progress and share plans.": "เชื่อมต่อกับผู้คนบนเซิร์ฟเวอร์นี้เพื่อติดตามความก้าวหน้าและแชร์แผน",
+  "Workout notes and weigh-in history stay private.": "บันทึกการออกกำลังกายและประวัติการชั่งน้ำหนักยังคงเป็นข้อมูลส่วนตัว",
+  "Sent requests": "คำขอที่ส่งแล้ว",
+  "Waiting for your friends to accept": "กำลังรอเพื่อนยอมรับ",
+  "Review a plan before importing. Your existing routines stay, and replacing your weekly schedule is optional.": "ตรวจสอบแผนก่อนนำเข้า กิจวัตรเดิมของคุณจะยังอยู่ และคุณเลือกได้ว่าจะเปลี่ยนตารางรายสัปดาห์หรือไม่",
+  "Add a routine with exercises to share your plan.": "เพิ่มกิจวัตรที่มีท่าออกกำลังกายเพื่อแชร์แผนของคุณ",
 }

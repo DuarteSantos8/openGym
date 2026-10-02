@@ -11,6 +11,8 @@ import Icon from '../components/Icon.jsx'
 import ProfileAvatar from '../components/ProfileAvatar.jsx'
 import { Button, SearchField } from '../components/ui.jsx'
 import { EXIDX } from '../lib/exercises.js'
+import EditProfile from '../components/EditProfile.jsx'
+import { speedUnitOf } from '../lib/speed.js'
 import { exLine } from '../lib/history.js'
 import '../social.css'
 
@@ -18,22 +20,28 @@ function FriendCard({ friend, busy, hasPlan, open, share, remove, block }) {
   const actions = () => menuSheet({
     title: friend.name,
     items: [
-      { icon: 'upload', label: t('Share my plan'), disabled: busy || !hasPlan, onClick: () => share(friend) },
       { icon: 'trash', label: t('Remove friend'), danger: true, disabled: busy, onClick: () => remove(friend) },
       { icon: 'lock', label: t('Block'), danger: true, disabled: busy, onClick: () => block(friend) }
     ]
   })
   return <article className="card social-friend">
     <div className="social-friend-head">
-      <button className="row social-person social-person-button" onClick={() => open(friend)}>
+      <button className="row social-person social-person-button" onClick={() => open(friend)} aria-label={`${t('Friend profile')}: ${friend.name}`}>
         <ProfileAvatar name={friend.name} avatar={friend.avatar} size="sm" />
         <div className="grow"><h2>{friend.name}</h2><div className="small muted">{friend.lastWorkout
           ? t('Last workout: {0}', fmtDate(friend.lastWorkout, false, true)) : t('No workouts logged yet')}</div>
-          <div className="small social-friend-summary"><Icon name="flame" /> {t('{0} week streak', friend.weekStreak)}
-            <span>·</span>{t('{0} this week', friend.thisWeek)}<span>·</span>{t('{0} records', friend.recordCount)}</div></div>
+</div>
         <Icon name="chevronRight" className="chev" />
       </button>
       <button className="iconbtn social-friend-more" onClick={actions} aria-label={t('Actions for {0}', friend.name)}><Icon name="more" /></button>
+    </div>
+    <dl className="social-friend-metrics">
+      <div><dt>{t('This week')}</dt><dd>{friend.thisWeek}</dd></div>
+      <div><dt>{t('Week streak')}</dt><dd><Icon name="flame" />{friend.weekStreak}</dd></div>
+      <div><dt>{t('Personal records')}</dt><dd>{friend.recordCount}</dd></div>
+    </dl>
+    <div className="social-friend-footer">
+      <Button size="sm" variant="tinted" icon="upload" disabled={busy || !hasPlan} onClick={() => share(friend)}>{t('Share my plan')}</Button>
     </div>
   </article>
 }
@@ -57,7 +65,7 @@ function PeopleSheet({ people, request, close, user }) {
     <p className="small muted social-sheet-copy">{t('Choose a registered profile on this server. They decide whether to accept your request.')}</p>
     <FriendPrivacy user={user} />
     {error && <p role="alert" className="social-error">{error}</p>}
-    {(people.length > 4 || query) && <SearchField value={query} onChange={event => setQuery(event.target.value)}
+    {!!people.length && <SearchField value={query} onChange={event => setQuery(event.target.value)}
       onClear={() => setQuery('')} placeholder={t('Search people…')} aria-label={t('Search people…')} />}
     {shown.length ? <div className="social-people">{shown.map(person => <div className="social-request" key={person.id}>
       <ProfileAvatar name={person.name} size="sm" /><b className="grow">{person.name}</b>
@@ -115,7 +123,7 @@ function SharePlanSheet({ friend, state, user, send, close }) {
         <b>{r.name}</b>
         {r.ex.map((e, index) => <div className="small" key={index}>
           {exerciseNameFor(EXIDX[e.id] || plan.customEx.find(c => c.id === e.id)) || t('Exercise')}
-          <div className="muted">{exLine(e, plan.unit)}</div>
+          <div className="muted">{exLine(e, plan.unit, speedUnitOf(state))}</div>
           {e.note && <p>{e.note}</p>}
         </div>)}
       </div>)}
@@ -221,8 +229,18 @@ export default function Social({ embedded = false }) {
         <Button size="sm" disabled={loading || busy} onClick={() => setRevision(n => n + 1)}>{t('Try again')}</Button></div>}
       {!data && loading && <p role="status" className="muted">{t('Loading friends…')}</p>}
       {data && <>
-        {!!(data.incoming.length || data.outgoing.length) && <div className="card">
-          <h2>{t('Friend requests')}</h2>
+        <section className="card social-identity">
+          <ProfileAvatar name={user.name} avatar={user.avatar} size="md" />
+          <div className="grow"><h2>{user.name}</h2><p className="small muted">{t('Connect with people on this server to follow their progress and share plans.')}</p></div>
+          <Button size="sm" variant="ghost" icon="pencil" onClick={() => openSheet(close => <EditProfile user={user} close={close} />)}>{t('Edit profile')}</Button>
+          <details className="social-privacy">
+            <summary><Icon name="lock" />{t('Privacy')}<Icon name="chevronRight" className="chev" /></summary>
+            <FriendPrivacy user={user} />
+            <p className="small muted">{t('Workout notes and weigh-in history stay private.')}</p>
+          </details>
+        </section>
+        {!!data.incoming.length && <div className="card">
+          <h2>{t('Friend requests')} · {data.incoming.length}</h2>
           {!!data.incoming.length && <FriendPrivacy user={user} />}
           {data.incoming.map(person => <div className="social-request" key={person.id}>
             <ProfileAvatar name={person.name} size="sm" /><b className="grow">{person.name}</b><div className="social-actions">
@@ -230,14 +248,11 @@ export default function Social({ embedded = false }) {
               <Button size="sm" disabled={busy} onClick={() => send('remove', { userId: person.id })}>{t('Decline')}</Button>
               <Button size="sm" disabled={busy} onClick={() => block(person)}>{t('Block')}</Button>
             </div></div>)}
-          {data.outgoing.map(person => <div className="social-request" key={person.id}>
-            <ProfileAvatar name={person.name} size="sm" /><div className="grow"><b>{person.name}</b><div className="small muted">{t('Request pending')}</div></div>
-            <Button size="sm" disabled={busy} onClick={() => send('remove', { userId: person.id })}>{t('Cancel request')}</Button>
-          </div>)}
         </div>}
 
         {!!data.plans.length && <div className="card">
-          <h2>{t('Plans from friends')}</h2>
+          <h2>{t('Plans from friends')} · {data.plans.length}</h2>
+          <p className="small muted">{t('Review a plan before importing. Your existing routines stay, and replacing your weekly schedule is optional.')}</p>
           {data.plans.map(item => <div className="social-request" key={item.id}>
             <ProfileAvatar name={item.from.name} avatar={item.from.avatar} size="sm" />
             <div className="grow"><b>{item.name || t('Shared plan')}</b>
@@ -256,14 +271,23 @@ export default function Social({ embedded = false }) {
             <Button size="sm" variant="tinted" icon="plus" disabled={busy} onClick={openPeople}>{t('Add friend')}</Button>
           </div>
         </div>
+        {!!data.friends.length && !hasPlan && <p className="small muted social-plan-hint">{t('Add a routine with exercises to share your plan.')}
+          <Button size="sm" variant="ghost" onClick={() => nav('/plan')}>{t('Plan')}</Button></p>}
         {data.friends.length ? <div className="social-grid">{data.friends.map(friend =>
           <FriendCard key={friend.id} friend={friend} busy={busy} hasPlan={hasPlan}
-            open={friend => nav('/profile/friends/' + friend.id)} share={share} remove={remove} block={block} />)}</div>
+            open={friend => nav('/stats/friends/' + friend.id)} share={share} remove={remove} block={block} />)}</div>
           : <div className="card social-empty social-friends-empty"><Icon name="people" />
-            <h2>{t('Your friends will appear here')}</h2>
+            <h2>{data.outgoing.length ? t('Waiting for your friends to accept') : t('Your friends will appear here')}</h2>
             <p className="small muted">{t('Add someone from this server, then wait for them to accept your request.')}</p>
             <Button size="sm" variant="tinted" icon="plus" onClick={openPeople}>{t('Add friend')}</Button>
           </div>}
+        {!!data.outgoing.length && <div className="card">
+          <h2>{t('Sent requests')} · {data.outgoing.length}</h2>
+          {data.outgoing.map(person => <div className="social-request" key={person.id}>
+            <ProfileAvatar name={person.name} size="sm" /><div className="grow"><b>{person.name}</b><div className="small muted">{t('Request pending')}</div></div>
+            <Button size="sm" disabled={busy} onClick={() => send('remove', { userId: person.id })}>{t('Cancel request')}</Button>
+          </div>)}
+        </div>}
         {!!data.blocks?.length && <div className="card">
           <h2>{t('Blocked profiles')}</h2>
           {data.blocks.map(person => <div className="social-request" key={person.id}>

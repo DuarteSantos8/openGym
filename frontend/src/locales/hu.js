@@ -1753,4 +1753,10 @@ export default {
   'Teal': 'Türkiz',
   'Yellow': 'Sárga',
   'Enter how long it took — at least 1 minute.': 'Add meg, meddig tartott — legalább 1 perc.',
+  "Connect with people on this server to follow their progress and share plans.": "Kapcsolódj a szerveren lévő emberekhez, hogy követhesd a fejlődésüket és terveket oszthassatok meg.",
+  "Workout notes and weigh-in history stay private.": "Az edzésjegyzetek és a testsúlymérések előzményei privátak maradnak.",
+  "Sent requests": "Elküldött kérelmek",
+  "Waiting for your friends to accept": "Várakozás a barátaid jóváhagyására",
+  "Review a plan before importing. Your existing routines stay, and replacing your weekly schedule is optional.": "Importálás előtt nézd át a tervet. A meglévő rutinjaid megmaradnak, a heti beosztás lecserélése pedig választható.",
+  "Add a routine with exercises to share your plan.": "Adj hozzá egy gyakorlatokat tartalmazó rutint a terved megosztásához.",
 }

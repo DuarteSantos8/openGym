@@ -1750,4 +1750,10 @@ export default {
   'Teal': 'Бирюзовый',
   'Yellow': 'Жёлтый',
   'Enter how long it took — at least 1 minute.': 'Укажите, сколько это длилось — не меньше 1 минуты.',
+  "Connect with people on this server to follow their progress and share plans.": "Добавляйте людей с этого сервера в друзья, чтобы следить за их прогрессом и делиться планами.",
+  "Workout notes and weigh-in history stay private.": "Заметки о тренировках и история взвешиваний остаются приватными.",
+  "Sent requests": "Отправленные запросы",
+  "Waiting for your friends to accept": "Ожидание подтверждения от друзей",
+  "Review a plan before importing. Your existing routines stay, and replacing your weekly schedule is optional.": "Просмотрите план перед импортом. Ваши текущие программы сохранятся, а замена недельного расписания необязательна.",
+  "Add a routine with exercises to share your plan.": "Добавьте программу с упражнениями, чтобы поделиться планом.",
 }

@@ -4,7 +4,7 @@ import { EXDB } from './exercises-data.js'
 import { estimate1RM, e1rmSeries } from './onerm.js'
 import { lastEntryFor } from './history.js'
 import { nextPrescription } from './progression.js'
-import { socialSummary } from '../../../api/social/summary.js'
+import { socialSummary, socialProfile } from '../../../api/social/summary.js'
 import { weekStreak } from '../../../api/training/history-metrics.js'
 import { streakWeeks } from './history.js'
 
@@ -49,6 +49,19 @@ describe('friend progress summaries', () => {
     expect(socialSummary(state, '2026-01-11').records[0]).toMatchObject({ value: 100, reps: 5, date: iso(0) })
     const legacy = { workouts: [session(0, [{ r: 8, done: true }], { topW: 90 })] }
     expect(socialSummary(legacy, '2026-01-11').records[0].reps).toBeUndefined()
+  })
+
+  it('preserves custom cardio mode without disclosing exercise notes or descriptions', () => {
+    const state = { customEx: [{ id: 'run', n: 'My treadmill', bp: 'cardio', desc: 'private description' }],
+      routines: [{ id: 'r1', name: 'Cardio', ex: [
+        { id: 'run', sets: 2, min: 25, speed: 9, note: 'private note' },
+        { id: 'run', mode: 'time', sec: 45 },
+        { id: 'run', mode: 'reps', reps: 10 }
+      ] }] }
+    const profile = socialProfile(state, '2026-10-02')
+    expect(profile.plan.routines[0].ex.map(e => e.mode)).toEqual(['cardio', 'time', 'reps'])
+    expect(JSON.stringify(profile)).not.toContain('private')
+    expect(state.routines[0].ex[0].mode).toBeUndefined()
   })
 
   it('counts weekly streaks with the same unfinished-week grace as Home', () => {

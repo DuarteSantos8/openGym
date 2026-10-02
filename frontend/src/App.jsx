@@ -38,7 +38,7 @@ import StructuralBalance from './views/StructuralBalance.jsx'
 import Settings from './views/Settings.jsx'
 import Admin from './views/Admin.jsx'
 import SocialProfile from './views/SocialProfile.jsx'
-import Profile from './views/Profile.jsx'
+import StatsPage from './views/StatsPage.jsx'
 import CoachChat from './views/CoachChat.jsx'
 import CoachIntake from './views/CoachIntake.jsx'
 import CoachSetup from './views/CoachSetup.jsx'
@@ -183,8 +183,8 @@ function Shell() {
               <Route path="/plan" element={<Plan />} />
               <Route path="/plan/r/:id" element={<RoutineEdit />} />
               <Route path="/workout" element={<Workout />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/profile/friends/:id" element={<SocialProfile />} />
+              <Route path="/stats" element={<StatsPage />} />
+              <Route path="/stats/friends/:id" element={<SocialProfile />} />
               <Route path="/history" element={<History />} />
               <Route path="/library" element={<Library />} />
               <Route path="/muscles" element={<Muscles />} />

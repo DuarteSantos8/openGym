@@ -1750,4 +1750,10 @@ export default {
   'Teal': 'फ़िरोज़ी',
   'Yellow': 'पीला',
   'Enter how long it took — at least 1 minute.': 'बताएँ कि इसमें कितना समय लगा — कम से कम 1 मिनट।',
+  "Connect with people on this server to follow their progress and share plans.": "इस सर्वर के लोगों से जुड़ें, उनकी प्रगति देखें और योजनाएँ साझा करें।",
+  "Workout notes and weigh-in history stay private.": "वर्कआउट के नोट्स और वजन मापने का इतिहास निजी रहते हैं।",
+  "Sent requests": "भेजे गए अनुरोध",
+  "Waiting for your friends to accept": "आपके दोस्तों की स्वीकृति की प्रतीक्षा है",
+  "Review a plan before importing. Your existing routines stay, and replacing your weekly schedule is optional.": "आयात करने से पहले योजना देखें। आपकी मौजूदा दिनचर्याएँ बनी रहेंगी और साप्ताहिक शेड्यूल बदलना वैकल्पिक है।",
+  "Add a routine with exercises to share your plan.": "अपनी योजना साझा करने के लिए व्यायाम वाली दिनचर्या जोड़ें।",
 }

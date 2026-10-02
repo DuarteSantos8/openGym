@@ -1,18 +1,12 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useRef, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { api } from '../lib/api.js'
-import { streakWeeks } from '../lib/history.js'
 import { t } from '../lib/i18n.js'
-import Icon from '../components/Icon.jsx'
-import ProfileAvatar from '../components/ProfileAvatar.jsx'
-import { Button, Row, Section, Segmented, Switch, TextField } from '../components/ui.jsx'
-import Stats from './Stats.jsx'
-import Social from './Social.jsx'
+import ProfileAvatar from './ProfileAvatar.jsx'
+import { Button, Row, Section, Switch, TextField } from './ui.jsx'
 import '../profile.css'
 
-const VIEW_KEY = 'opengym_profile_view'
 const AVATAR_BYTES = 128 * 1024
 
 const dataBytes = value => Math.ceil((value.length - value.indexOf(',') - 1) * 3 / 4)
@@ -47,7 +41,7 @@ async function prepareAvatar(file) {
   throw new Error(t('This photo could not be made small enough.'))
 }
 
-function EditProfileSheet({ user, close }) {
+export default function EditProfile({ user, close }) {
   const setUser = useStore(s => s.setUser)
   const toast = useUI(s => s.toast)
   const [name, setName] = useState(user.name)
@@ -103,73 +97,3 @@ function EditProfileSheet({ user, close }) {
   </>
 }
 
-function savedView() {
-  try {
-    const value = localStorage.getItem(VIEW_KEY)
-    return value === 'social' ? 'social' : 'stats'
-  } catch { return 'stats' }
-}
-
-export default function Profile() {
-  const nav = useNavigate()
-  const loc = useLocation()
-  const user = useStore(s => s.user)
-  const S = useStore(s => s.S)
-  const openSheet = useUI(s => s.openSheet)
-  const socialCount = useUI(s => s.socialCount)
-  const requested = new URLSearchParams(loc.search).get('view')
-  const view = requested === 'stats' || requested === 'social' ? requested : savedView()
-  const positions = useRef({ stats: 0, social: 0 })
-  const pendingScroll = useRef(null)
-
-  useEffect(() => {
-    try { localStorage.setItem(VIEW_KEY, view) } catch { /* private browsing can refuse storage */ }
-  }, [view])
-  useLayoutEffect(() => {
-    if (pendingScroll.current !== view) return
-    const frame = requestAnimationFrame(() => window.scrollTo(0, positions.current[view] || 0))
-    pendingScroll.current = null
-    return () => cancelAnimationFrame(frame)
-  }, [view])
-
-  const chooseView = next => {
-    if (next === view) return
-    positions.current[view] = window.scrollY
-    pendingScroll.current = next
-    nav(`/profile?view=${next}`, { replace: true })
-  }
-  const name = user?.name || t('Local profile')
-  const summary = [
-    t(S.workouts.length === 1 ? '{0} workout total' : '{0} workouts total', S.workouts.length),
-    t('{0} week streak', streakWeeks(S))
-  ].join(' · ')
-  const edit = () => openSheet(close => <EditProfileSheet user={user} close={close} />)
-  const socialLabel = <span className="profile-tab-label">{t('Social')}
-    {socialCount > 0 && <b aria-label={t('{0} pending items', socialCount)}>{socialCount > 99 ? '99+' : socialCount}</b>}</span>
-
-  return <div className="profile-page">
-    <div className="hdr"><div><h1>{t('Profile')}</h1><div className="sub">{t('Your training identity')}</div></div>
-      <button className="iconbtn" onClick={() => nav('/settings')} aria-label={t('Settings')}><Icon name="gear" /></button></div>
-
-    <section className="card profile-identity">
-      <ProfileAvatar name={name} avatar={user?.avatar} size="xl" editable={!!user} onClick={user ? edit : undefined}
-        label={t('Edit profile photo')} />
-      <div className="profile-identity-copy">
-        <h2>{name}</h2>
-        <p>{summary}</p>
-        {user ? <Button size="sm" variant="tinted" icon="pencil" onClick={edit}>{t('Edit profile')}</Button>
-          : <span className="small muted">{t('Stored only on this device')}</span>}
-      </div>
-    </section>
-
-    <div className="profile-tabs-shell">
-      <Segmented className="profile-tabs" value={view} onChange={chooseView} tablist ariaLabel={t('Profile sections')}
-        options={[{ value: 'stats', label: t('Stats'), controls: 'profile-stats' },
-          { value: 'social', label: socialLabel, controls: 'profile-social' }]} />
-    </div>
-
-    <section key={view} id={`profile-${view}`} className="profile-panel" role="tabpanel">
-      {view === 'stats' ? <Stats embedded /> : <Social embedded />}
-    </section>
-  </div>
-}

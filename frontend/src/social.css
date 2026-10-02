@@ -17,9 +17,6 @@
 .social-person-button:active .profile-avatar{transform:scale(.96)}
 .social-person-button .chev{color:var(--label-3);font-size:14px}
 .social-friend-more{width:34px;height:34px;font-size:17px;background:transparent}
-.social-friend-summary{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:6px;color:var(--label-2)}
-.social-friend-summary .icn{color:var(--orange);font-size:13px}
-.social-friend-summary>span{color:var(--label-3)}
 .social-people{margin-top:12px}
 .social-people .social-request:first-child{border-top:0}
 .social-sheet-copy{line-height:1.5;margin:0 0 14px}
@@ -66,6 +63,29 @@
 @media(min-width:760px){.social-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:420px){
   .social-section-heading{align-items:center}
-  .social-heading-actions .iconbtn{display:none}
   .social-request>.social-actions{width:100%;justify-content:flex-end}
 }
+
+.social-identity{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.social .social-identity h2{margin:0 0 4px;font-size:18px;text-transform:none;letter-spacing:-.018em;color:var(--label)}
+.social-identity p{margin:0;line-height:1.45}
+.social-identity>.grow{min-width:160px}
+.social-identity>.btn{width:auto}
+.social-privacy{width:100%;border-top:var(--hair) solid var(--sep);padding-top:12px}
+.social-privacy summary{display:flex;align-items:center;gap:8px;min-height:32px;cursor:pointer;list-style:none;font-size:13px;font-weight:600}
+.social-privacy summary::-webkit-details-marker{display:none}
+.social-privacy summary .chev{margin-inline-start:auto;color:var(--label-3)}
+.social-privacy[open] summary .chev{transform:rotate(90deg)}
+.social-privacy .social-sheet-copy{margin:10px 0}
+.social-privacy p+p{margin-top:8px}
+.social-friend-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:16px 0}
+.social-friend-metrics>div{display:flex;flex-direction:column;border-inline-start:var(--hair) solid var(--sep);padding-inline-start:10px}
+.social-friend-metrics>div:first-child{border:0;padding:0}
+.social-friend-metrics dt{flex:1;font-size:12px;color:var(--label-2);line-height:1.3}
+.social-friend-metrics dd{display:flex;align-items:center;gap:5px;margin:6px 0 0;font-size:22px;font-weight:600;color:var(--label);line-height:1}
+.social-friend-metrics dd .icn{font-size:17px;color:var(--orange)}
+.social-friend-footer{display:flex;justify-content:flex-end;border-top:var(--hair) solid var(--sep);padding-top:10px}
+.social-friend-footer .btn{width:auto}
+.social-plan-hint{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 4px 12px}
+.social-plan-hint .btn{width:auto}
+.social-friend-more,.social-heading-actions .iconbtn{min-width:44px;min-height:44px}

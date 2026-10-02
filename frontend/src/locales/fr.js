@@ -1750,4 +1750,10 @@ export default {
   'Teal': 'Turquoise',
   'Yellow': 'Jaune',
   'Enter how long it took — at least 1 minute.': 'Indique combien de temps ça a duré — au moins 1 minute.',
+  "Connect with people on this server to follow their progress and share plans.": "Connectez-vous aux personnes de ce serveur pour suivre leurs progrès et partager des programmes.",
+  "Workout notes and weigh-in history stay private.": "Les notes d’entraînement et l’historique des pesées restent privés.",
+  "Sent requests": "Demandes envoyées",
+  "Waiting for your friends to accept": "En attente de l’acceptation de vos amis",
+  "Review a plan before importing. Your existing routines stay, and replacing your weekly schedule is optional.": "Vérifiez un programme avant de l’importer. Vos routines actuelles sont conservées et remplacer votre planning hebdomadaire est facultatif.",
+  "Add a routine with exercises to share your plan.": "Ajoutez une routine avec des exercices pour partager votre programme.",
 }

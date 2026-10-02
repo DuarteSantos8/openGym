@@ -1750,4 +1750,10 @@ export default {
   'Teal': '青色',
   'Yellow': '黄色',
   'Enter how long it took — at least 1 minute.': '请输入用时 — 至少 1 分钟。',
+  "Connect with people on this server to follow their progress and share plans.": "与此服务器上的用户成为好友，关注他们的进步并分享计划。",
+  "Workout notes and weigh-in history stay private.": "训练备注和称重历史保持私密。",
+  "Sent requests": "已发送的请求",
+  "Waiting for your friends to accept": "等待好友接受",
+  "Review a plan before importing. Your existing routines stay, and replacing your weekly schedule is optional.": "导入前请查看计划。你现有的训练安排会保留，是否替换每周日程由你决定。",
+  "Add a routine with exercises to share your plan.": "添加包含动作的训练安排后即可分享计划。",
 }

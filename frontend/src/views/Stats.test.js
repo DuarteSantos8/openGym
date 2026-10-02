@@ -4,6 +4,8 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import Social from './Social.jsx'
+import StatsPage from './StatsPage.jsx'
+import { socialProfile } from '../../../api/social/summary.js'
 import SocialProfile from './SocialProfile.jsx'
 import { DEF, useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
@@ -15,7 +17,7 @@ import { URL as FileURL } from 'node:url'
 import { bestWeightForEntry, metricModeForEntry, metricRowsForEntry } from '../lib/history.js'
 
 const source = readFileSync(new FileURL('./Stats.jsx', import.meta.url), 'utf8')
-const profileSource = readFileSync(new FileURL('./Profile.jsx', import.meta.url), 'utf8')
+const statsPageSource = readFileSync(new FileURL('./StatsPage.jsx', import.meta.url), 'utf8')
 const socialSource = readFileSync(new FileURL('./Social.jsx', import.meta.url), 'utf8')
 const appSource = readFileSync(new FileURL('../App.jsx', import.meta.url), 'utf8')
 const tabBarSource = readFileSync(new FileURL('../components/TabBar.jsx', import.meta.url), 'utf8')
@@ -61,31 +63,25 @@ describe('Stats mixed-entry metric contract', () => {
   })
 })
 
-describe('Profile navigation contract', () => {
-  it('merges Stats and Social into one persistent Profile destination', () => {
-    expect(tabBarSource).toContain("active={on('profile')}")
-    expect(tabBarSource).not.toContain("active={on('stats')}")
-    expect(tabBarSource).not.toContain("active={on('social')}")
-    expect(appSource).toContain('<Route path="/profile" element={<Profile />} />')
-    expect(appSource).not.toContain('<Route path="/stats"')
-    expect(appSource).not.toContain('<Route path="/social"')
+describe('Social navigation contract', () => {
+  it('preserves upstream Stats routes, bottom navigation and the Home Settings shortcut', () => {
+    expect(tabBarSource).toContain("active={on('stats')}")
+    expect(tabBarSource).toContain("icon=\"chart\" label={t('Stats')}")
+    expect(tabBarSource).not.toContain("active={on('profile')}")
+    expect(appSource).toContain('<Route path="/stats" element={<StatsPage />} />')
+    expect(appSource).not.toContain('<Route path="/profile"')
+    const homeSource = readFileSync(new FileURL('./Home.jsx', import.meta.url), 'utf8')
+    expect(homeSource).toContain("nav('/settings')")
+    expect(tabBarSource).toContain("cur === 'settings' && k === 'home'")
   })
 
-  it('keeps the identity header mounted while switching embedded content', () => {
-    expect(profileSource).toContain("new URLSearchParams(loc.search).get('view')")
-    expect(profileSource).toContain("view === 'stats' ? <Stats embedded /> : <Social embedded />")
-    expect(source).toContain('export default function Stats({ embedded = false })')
-    expect(socialSource).toContain('export default function Social({ embedded = false })')
-  })
-
-  it('gives the segmented profile sections tab semantics', () => {
-    expect(profileSource).toContain('tablist ariaLabel={t(\'Profile sections\')}')
+  it('gives the Stats and Social switch tab semantics', () => {
+    expect(statsPageSource).toContain('tablist ariaLabel=')
     expect(uiSource).toContain("role={tablist ? 'tablist' : undefined}")
     expect(uiSource).toContain("role={tablist ? 'tab' : undefined}")
     expect(uiSource).toContain('aria-selected={tablist ? o.value === value : undefined}')
   })
 })
-
 
 describe('Social interactions', () => {
   let root, host
@@ -98,12 +94,12 @@ describe('Social interactions', () => {
     const sheets = useUI(s => s.sheets)
     return sheets.map(sheet => h('div', { role: 'dialog', key: sheet.id }, sheet.render(() => useUI.getState().closeSheet(sheet.id))))
   }
-  async function mount(profile = false) {
+  async function mount(profile = false, statsPage = false) {
     host = document.createElement('div')
     document.body.appendChild(host)
     root = createRoot(host)
-    await act(async () => root.render(h(MemoryRouter, { initialEntries: [profile ? '/profile/friends/bob' : '/profile'] },
-      h(Routes, null, h(Route, { path: profile ? '/profile/friends/:id' : '/profile', element: h(profile ? SocialProfile : Social) })), h(Sheets))))
+    await act(async () => root.render(h(MemoryRouter, { initialEntries: [profile ? '/stats/friends/bob' : '/stats'] },
+      h(Routes, null, h(Route, { path: profile ? '/stats/friends/:id' : '/stats', element: h(profile ? SocialProfile : statsPage ? StatsPage : Social) })), h(Sheets))))
   }
   const button = name => [...host.querySelectorAll('button')].find(b => b.textContent === name || b.getAttribute('aria-label') === name)
   const click = async element => { expect(element).toBeTruthy(); await act(async () => element.click()) }
@@ -123,6 +119,58 @@ describe('Social interactions', () => {
     host?.remove(); root = null
     useUI.setState({ sheets: [] })
     vi.restoreAllMocks()
+  })
+
+  it('opens existing Stats links at the charts and switches to Social explicitly', async () => {
+    localStorage.setItem('opengym_profile_view', 'social')
+    await mount(false, true)
+    const tabs = () => [...host.querySelectorAll('[role="tab"]')]
+    expect(tabs()[0].getAttribute('aria-selected')).toBe('true')
+    expect(api).not.toHaveBeenCalled()
+    await click(tabs()[1])
+    expect(host.querySelector('#stats-social')).toBeTruthy()
+    expect(host.textContent).toContain('Bob')
+    await click(tabs()[0])
+    expect(host.querySelector('#stats-progress')).toBeTruthy()
+    expect(tabs()[0].getAttribute('aria-selected')).toBe('true')
+    localStorage.removeItem('opengym_profile_view')
+  })
+
+  it('separates incoming decisions from requests waiting for acceptance', async () => {
+    const data = overview()
+    data.friends = []
+    data.incoming = [{ id: 'eve', name: 'Eve' }]
+    data.outgoing = [{ id: 'bob', name: 'Bob' }]
+    api.mockResolvedValue(data)
+    await mount()
+    expect(host.textContent).toContain('Waiting for your friends to accept')
+    expect(host.textContent).toContain('Sent requests')
+    expect(button('Accept').closest('.card').textContent).toContain('Eve')
+    expect(button('Accept').closest('.card').textContent).not.toContain('Bob')
+    await click(button('Cancel request'))
+    expect(api).toHaveBeenCalledWith('/api/social/remove', expect.objectContaining({ body: JSON.stringify({ userId: 'bob' }) }))
+  })
+
+  it('explains how to enable sharing when no routine has exercises', async () => {
+    useStore.setState({ S: { ...useStore.getState().S, routines: [] } })
+    await mount()
+    expect(button('Share my plan').disabled).toBe(true)
+    expect(host.textContent).toContain('Add a routine with exercises to share your plan.')
+    const metrics = host.querySelector('.social-friend-metrics')
+    expect(metrics.textContent).toContain('This week2')
+    expect(metrics.textContent).toContain('Week streak1')
+  })
+
+  it('renders a friend’s custom cardio with its mode and the viewer’s speed unit', async () => {
+    const detail = socialProfile({ unit: 'kg', routines: [{ id: 'run', name: 'Run',
+      ex: [{ id: 'friend-run', sets: 2, min: 25, speed: 9 }] }],
+      customEx: [{ id: 'friend-run', n: 'My treadmill', bp: 'cardio' }] }, '2026-10-02')
+    api.mockResolvedValue({ ...detail, id: 'bob', name: 'Bob' })
+    useStore.setState({ S: { ...useStore.getState().S, speedUnit: 'mph' } })
+    await mount(true)
+    expect(host.textContent).toContain('My treadmill')
+    expect(host.textContent).toContain('2 × 25 min @ 5.6 mph')
+    expect(host.textContent).not.toContain('undefined')
   })
 
   it('keeps loaded friends after a refresh error and provides a working retry', async () => {
@@ -150,8 +198,7 @@ describe('Social interactions', () => {
 
   it('previews a selected plan without notes before sending it', async () => {
     await mount()
-    await click(button('Actions for Bob'))
-    await click([...host.querySelectorAll('.menu-item')].find(e => e.textContent.includes('Share my plan')))
+    await click(button('Share my plan'))
     const checkboxes = host.querySelectorAll('input[type="checkbox"]')
     expect(checkboxes).toHaveLength(4)
     expect(checkboxes[3].checked).toBe(false)

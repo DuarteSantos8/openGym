@@ -1,15 +1,17 @@
 # Friends and shared plans
 
-Open **Profile → Social** to see friends and pending items. **Add friend** opens the
+Open **Stats → Social** to see friends and pending items. **Add friend** opens the
 registered profiles on the same openGym server; the other person must accept before
 either of you can open the other's training profile or send a plan. Guests and
 standalone mobile profiles must sign in or connect to their server first. Both the
 sender and recipient see the sharing disclosure and their current body-weight
 sharing setting before sending or accepting a request.
 
-Profile keeps **Stats** and **Social** one tap apart through a segmented control while
-the identity header stays in place. History, Settings and friend profiles all remain
-within the Profile section of the bottom navigation.
+The existing **Stats** bottom tab and `/stats` links still open your progress charts.
+The **Stats / Social** switch opens Social explicitly, at `/stats?view=social`.
+History and friend profiles remain within Stats; the Settings shortcut stays on Home.
+Social includes your name, photo, **Edit profile**, and an expandable **Privacy**
+disclosure with your current body-weight sharing choice.
 
 The Social overview keeps each friend card compact:
 
@@ -35,16 +37,20 @@ Open a friend to see their full training profile:
   first achieved that load, when that set is available. Repetitions from a lighter
   set are never attached to a heavier record.
 
-Requests and shared plans appear before the friends list. General server discovery
+Incoming requests and shared plans appear before the friends list. Sent requests
+have their own section, and an empty friends list explains when acceptance is pending. General server discovery
 uses initials; profile photos are visible only to the owner and accepted friends.
-Friend actions such as sharing a plan or removing the connection live in the card's
-ellipsis menu.
+Each friend card labels workouts this week, week streak and personal-record count.
+**Share my plan** is visible on the card; removal and blocking stay in its ellipsis
+menu. If you have no routine with exercises, Social explains why sharing is disabled
+and links to Plan. Custom cardio targets include their mode and are displayed in
+your preferred speed unit without adding the friend's exercises to your catalogue.
 
 Summaries and open friend profiles refresh when opened, when the window regains
 focus or becomes visible, every minute while visible, or when **Refresh** is pressed.
 A failed refresh keeps previously loaded data with an error and a retry action.
 A profile is cleared when the server reports that access is no longer allowed.
-A lightweight count also keeps the Profile navigation badge current. Summaries reflect synced, saved workouts.
+A lightweight count also keeps the Stats navigation badge current. Summaries reflect synced, saved workouts.
 The Social API returns these derived profiles, not the friend's full workout state,
 body-weight log, private workout or routine notes, gym cards, or live location.
 
