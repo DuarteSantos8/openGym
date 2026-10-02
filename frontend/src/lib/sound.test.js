@@ -289,6 +289,41 @@ describe('the chime at the end of a rest or a hold', () => {
   })
 })
 
+// Settings → "Classic timer sound": the exact three beeps this replaced, picked back with a
+// second argument rather than reviving the old inline beep() calls at the call sites.
+describe('chime(enabled, classic) — the original three beeps', () => {
+  it('makes no sound with sounds off, classic or not', () => {
+    sound.chime(false, true)
+    expect(FakeCtx.instances).toHaveLength(0)
+  })
+
+  it('is the same three tones and timing as the original beep() calls: 880, 880, 1320 Hz', () => {
+    sound.chime(true, true)
+    const tones = ctx().tones
+    expect(tones.map(tn => tn.freq)).toEqual([880, 880, 1320])
+    expect(tones.map(tn => tn.at)).toEqual([0, 0.25, 0.5])
+  })
+
+  it('peaks at a plain beep\'s level, not the louder chime\'s', () => {
+    sound.chime(true, true)
+    const peakOf = events => Math.max(...events.map(([, v]) => v))
+    for (const gain of ctx().gains) expect(peakOf(gain)).toBe(0.35)
+  })
+
+  it('fades from the start instead of holding its peak', () => {
+    sound.chime(true, true)
+    const first = ctx().gains[0]
+    const held = first.find(([kind, v, at]) => kind === 'set' && v === 0.35 && at > 0.05)
+    expect(held).toBeFalsy()
+  })
+
+  it('is a plain sine, not the brighter periodic wave', () => {
+    sound.chime(true, true)
+    expect(ctx().waves).toBe(0)
+    expect(ctx().oscs.every(o => o.type === 'sine' && o.wave === null)).toBe(true)
+  })
+})
+
 // Discord (asierlama): vibration on or off on its own, the way sound is.
 describe('vibrate switch', () => {
   let calls

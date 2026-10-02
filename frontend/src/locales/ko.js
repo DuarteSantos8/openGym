@@ -451,6 +451,8 @@ export default {
   'No entries yet — log your weight to start the curve.': '아직 기록이 없어요 — 체중을 기록해 그래프를 시작하세요.',
   'Play sounds when the phone is on silent': '무음 모드에서도 소리 재생',
   'Music playing on this phone stops during a workout and does not resume by itself.': '운동 중에는 이 휴대폰에서 재생 중인 음악이 멈추며, 자동으로 다시 재생되지 않습니다.',
+  'Classic timer sound': '클래식 타이머 소리',
+  'The quieter three-beep sound from before 1.3.9, instead of the louder chime.': '더 큰 차임벨 대신 1.3.9 이전의 더 조용한 세 번의 비프음을 사용합니다.',
   'Data': '데이터',
   'Export backup (JSON)': '백업 내보내기 (JSON)',
   'Import backup': '백업 가져오기',

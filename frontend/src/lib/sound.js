@@ -96,11 +96,21 @@ export function beep(enabled, freq, dur, when) {
 //    ticks before it (660 Hz), a set tick (1040 Hz) nor the rising finish fanfare has.
 // It does not turn other apps down. A web page cannot duck another app's audio: Android only
 // grants audio focus to native code, and on iOS the 'playback' session pauses the music (1. above).
+//
+// Some people preferred the original under music — quieter is not a defect for everyone, e.g.
+// headphones at the gym rather than a phone speaker next to a stereo. Settings → "Classic timer
+// sound" (S.classicChime) picks between the two without reviving the three separate beep() calls
+// this replaced: CLASSIC is the exact same three tones, just driven through the same tone() path
+// as the chime below, so both share one gating/try-catch and one sleepAfter bookkeeping.
 export const CHIME_PEAK = 0.9
 const CHIME = [[1319, 0.16, 0], [988, 0.16, 0.22], [1319, 0.5, 0.44]]
-export function chime(enabled) {
+const CLASSIC = [[880, 0.15, 0], [880, 0.15, 0.25], [1320, 0.4, 0.5]]
+export function chime(enabled, classic) {
   if (!enabled) return
-  try { CHIME.forEach(([freq, dur, when]) => tone(freq, dur, when, { peak: CHIME_PEAK, hold: 0.6, bright: true })) } catch (e) { /* */ }
+  try {
+    if (classic) CLASSIC.forEach(([freq, dur, when]) => tone(freq, dur, when))
+    else CHIME.forEach(([freq, dur, when]) => tone(freq, dur, when, { peak: CHIME_PEAK, hold: 0.6, bright: true }))
+  } catch (e) { /* */ }
 }
 
 // Call from inside a tap. Gets the context created and running while the browser still counts

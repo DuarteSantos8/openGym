@@ -451,6 +451,8 @@ export default {
   'No entries yet — log your weight to start the curve.': 'Henüz kayıt yok — eğriyi başlatmak için kilonu gir.',
   'Play sounds when the phone is on silent': 'Telefon sessizdeyken de sesleri çal',
   'Music playing on this phone stops during a workout and does not resume by itself.': 'Bu telefonda çalan müzik antrenman sırasında durur ve kendiliğinden devam etmez.',
+  'Classic timer sound': 'Klasik zamanlayıcı sesi',
+  'The quieter three-beep sound from before 1.3.9, instead of the louder chime.': '1.3.9 öncesindeki daha sessiz üçlü bip sesi, daha yüksek çalan sesi yerine.',
   'Data': 'Veriler',
   'Export backup (JSON)': 'Yedeği dışa aktar (JSON)',
   'Import backup': 'Yedeği içe aktar',

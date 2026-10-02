@@ -881,6 +881,8 @@ export default {
   'No entries yet — log your weight to start the curve.': 'Még nincs bejegyzés — rögzítsd a súlyodat a görbe elindításához.',
   'Play sounds when the phone is on silent': 'Hangok lejátszása akkor is, ha a telefon némítva van',
   'Music playing on this phone stops during a workout and does not resume by itself.': 'A telefonon szóló zene edzés közben leáll, és nem indul újra magától.',
+  'Classic timer sound': 'Klasszikus időzítő hang',
+  'The quieter three-beep sound from before 1.3.9, instead of the louder chime.': 'Az 1.3.9 előtti halkabb, három sípolásból álló hang a hangosabb csengés helyett.',
   'Import from Hevy': 'Importálás a Hevyből',
   'Pull your history with a Hevy Pro API key': 'Előzmények letöltése Hevy Pro API-kulccsal',
   'Pull your history with a Hevy Pro API key. The key is only used for this import and is not saved.': 'Előzmények letöltése Hevy Pro API-kulccsal. A kulcs csak ehhez az importhoz kell, nem mentjük el.',

@@ -451,6 +451,8 @@ export default {
   'No entries yet — log your weight to start the curve.': '还没有记录——记录体重以开始曲线。',
   'Play sounds when the phone is on silent': '手机静音时也播放提示音',
   'Music playing on this phone stops during a workout and does not resume by itself.': '锻炼期间，这部手机正在播放的音乐会停止，且不会自动恢复。',
+  'Classic timer sound': '经典计时提示音',
+  'The quieter three-beep sound from before 1.3.9, instead of the louder chime.': '使用 1.3.9 版本之前更轻柔的三声提示音，而不是更响亮的铃声。',
   'Data': '数据',
   'Export backup (JSON)': '导出备份（JSON）',
   'Import backup': '导入备份',

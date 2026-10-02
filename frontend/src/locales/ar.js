@@ -1289,6 +1289,8 @@ export default {
   'No entries yet — log your weight to start the curve.': 'لا توجد إدخالات بعد — سجّل وزنك لبدء المنحنى.',
   'Play sounds when the phone is on silent': 'تشغيل الأصوات عندما يكون الهاتف صامتًا',
   'Music playing on this phone stops during a workout and does not resume by itself.': 'الموسيقى التي تعمل على هذا الهاتف تتوقف أثناء التمرين ولا تستأنف من تلقاء نفسها.',
+  'Classic timer sound': 'صوت المؤقت الكلاسيكي',
+  'The quieter three-beep sound from before 1.3.9, instead of the louder chime.': 'الصوت الأكثر هدوءًا المكوّن من ثلاث نغمات من قبل الإصدار 1.3.9، بدلاً من الرنين الأعلى صوتًا.',
   'Add this device\'s workouts to your profile?': 'إضافة تدريبات هذا الجهاز إلى ملفك؟',
   '{0} workouts and {1} weigh-ins were logged on this device while signed out. Add them to your profile, or keep the profile exactly as it is on the server.': 'سُجلت {0} تدريبات و{1} قياسات وزن على هذا الجهاز أثناء تسجيل الخروج. أضفها إلى ملفك، أو أبقِ الملف كما هو على الخادم.',
   '{0} workout and {1} weigh-in were logged on this device while signed out. Add them to your profile, or keep the profile exactly as it is on the server.': 'سُجل {0} تدريب و{1} قياس وزن على هذا الجهاز أثناء تسجيل الخروج. أضفهما إلى ملفك، أو أبقِ الملف كما هو على الخادم.',

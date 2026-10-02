@@ -93,12 +93,12 @@ const runRest = (set, get) => {
     const seenLive = !document.hidden && pageHiddenAt === null
     if (!document.hidden) pageHiddenAt = null
     if (left === tm.left) return
-    const snd = useStore.getState().S.sound
+    const { sound: snd, classicChime } = useStore.getState().S
     if (left <= 0) {
       if (seenLive) {
         // The Android alarm for this end stays quiet while the app is on screen, so this chime is
         // the only one. Locked, this branch never runs and the alarm's tone does.
-        chime(snd)
+        chime(snd, classicChime)
         vibrate([200, 100, 200]); get().flashTimer()
       }
       // The toast stays even when the rest ran out while the app was hidden: a guest, or anyone
@@ -276,10 +276,10 @@ export const useUI = create((set, get) => ({
       const seenLive = !document.hidden && pageHiddenAt === null
       if (!document.hidden) pageHiddenAt = null
       if (left === wk.left) return
-      const snd = useStore.getState().S.sound
+      const { sound: snd, classicChime } = useStore.getState().S
       if (left <= 0) {
         if (seenLive && !wk.alerted) {
-          chime(snd)
+          chime(snd, classicChime)
           vibrate([200, 100, 200]); get().flashTimer()
         }
         if (wk.overtime && left > -MAX_WORK_OVERTIME_SEC) { set({ work: { ...wk, left, alerted: true } }); return }

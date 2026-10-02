@@ -476,6 +476,16 @@ export default function Settings() {
           <Switch checked={!!S.soundOnSilent} onChange={v => update(s => { s.soundOnSilent = v })} />
         </Row>
       )}
+      {/* The chime that replaced the original three beeps (Discord: "too quiet under music") is
+          not an improvement for everyone — louder is a cost with headphones or in a quiet room.
+          Off by default so a fresh profile keeps the current sound; on brings the original back
+          unchanged (lib/sound.js's CLASSIC). */}
+      {S.sound && (
+        <Row icon="bell" iconTint="var(--teal)" title={t('Classic timer sound')}
+          subtitle={t('The quieter three-beep sound from before 1.3.9, instead of the louder chime.')}>
+          <Switch checked={!!S.classicChime} onChange={v => update(s => { s.classicChime = v })} />
+        </Row>
+      )}
       {/* The buzz at the end of a rest or a hold and on a set tick, on its own switch like the
           sound (Discord, asierlama). Not offered where there is nothing to buzz: iOS has no
           navigator.vibrate. */}

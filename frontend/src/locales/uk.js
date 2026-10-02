@@ -1156,6 +1156,8 @@ export default {
   "No entries yet — log your weight to start the curve.": "Записів поки немає — внеси вагу, щоб почати криву.",
   "Play sounds when the phone is on silent": "Відтворювати звуки в беззвучному режимі",
   "Music playing on this phone stops during a workout and does not resume by itself.": "Музика, що грає на цьому телефоні, зупиняється під час тренування і сама не відновлюється.",
+  'Classic timer sound': 'Класичний звук таймера',
+  'The quieter three-beep sound from before 1.3.9, instead of the louder chime.': 'Тихіший звук із трьох сигналів, як до версії 1.3.9, замість гучнішого дзвону.',
   'Deletes your plan, workouts, body weight, photos and videos from your profile on this server and on every signed-in device. This cannot be undone.': 'Видаляє план, тренування, вагу тіла, фото й відео з профілю на цьому сервері й на всіх пристроях, де виконано вхід. Скасувати неможливо.',
   "Sync failed: the server refused the upload as too large. Your changes have not reached the server.": "Синхронізація не вдалася: сервер відхилив завантаження як завелике. Твої зміни не дійшли до сервера.",
   "Workout view": "Вигляд тренування",

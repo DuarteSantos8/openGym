@@ -466,6 +466,8 @@ export default {
   'No entries yet — log your weight to start the curve.': 'Noch keine Einträge — trag dein Gewicht ein, um die Kurve zu starten.',
   'Play sounds when the phone is on silent': 'Töne auch bei stummgeschaltetem Telefon abspielen',
   'Music playing on this phone stops during a workout and does not resume by itself.': 'Musik, die auf diesem Telefon läuft, stoppt während eines Trainings und setzt nicht von selbst wieder ein.',
+  'Classic timer sound': 'Klassischer Timer-Sound',
+  'The quieter three-beep sound from before 1.3.9, instead of the louder chime.': 'Der leisere Dreifach-Piepton aus der Zeit vor 1.3.9 statt des lauteren Klingeltons.',
   'Data': 'Daten',
   'Export backup (JSON)': 'Backup exportieren (JSON)',
   'Import backup': 'Backup importieren',

@@ -451,6 +451,8 @@ export default {
   'No entries yet — log your weight to start the curve.': 'Записей пока нет — внеси вес, чтобы начать кривую.',
   'Play sounds when the phone is on silent': 'Воспроизводить звуки при беззвучном режиме',
   'Music playing on this phone stops during a workout and does not resume by itself.': 'Музыка, играющая на этом телефоне, останавливается во время тренировки и сама не возобновляется.',
+  'Classic timer sound': 'Классический звук таймера',
+  'The quieter three-beep sound from before 1.3.9, instead of the louder chime.': 'Более тихий звук из трёх сигналов, как до версии 1.3.9, вместо более громкого перезвона.',
   'Data': 'Данные',
   'Export backup (JSON)': 'Экспорт резервной копии (JSON)',
   'Import backup': 'Импорт резервной копии',
