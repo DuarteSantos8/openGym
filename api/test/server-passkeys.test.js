@@ -500,7 +500,7 @@ test('a device link: made with proof, kept only as a hash, redeemed once by a ne
     body: { code, cid: opt.body.cid, credential: phone.attestation(opt.body.options.challenge), name: 'Phone' }, ip: '198.51.100.41'
   });
   assert.equal(done.status, 200, JSON.stringify(done.body));
-  assert.deepEqual(done.body.user, { id: 'u1', name: 'Ana', admin: false });
+  assert.deepEqual(done.body.user, { id: 'u1', name: 'Ana', admin: false, avatar: null, shareBodyWeight: true });
   assert.ok(done.cookie);
   assert.equal((await h.req('GET', '/api/me', { cookie: done.cookie })).body.user.id, 'u1');
   const row = h.db().creds.find(c => c.id === phone.id);

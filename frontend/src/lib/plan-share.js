@@ -64,6 +64,7 @@ function convertedBundle(bundle, destinationUnit) {
 // Keep only the meaningful config fields, so the file stays small and readable.
 function cleanEx(e) {
   const o = { id: e.id, sets: e.sets }
+  if (typeof e.assisted === 'boolean') o.assisted = e.assisted
   const mode = modeOf(e)
   if (mode === 'cardio') {
     if (e.min != null) o.min = e.min
@@ -149,6 +150,7 @@ const muscleList = v => inMuscleOrder([...new Set((Array.isArray(v) ? v : []).fi
  *  that are empty stay absent, so a file written before this change reads the same as one after. */
 function cleanCustom(c) {
   const o = { id: c.id, n: c.n, bp: c.bp }
+  if (typeof c.assisted === 'boolean') o.assisted = c.assisted
   if (c.desc) o.desc = c.desc
   // The link to a video or guide travels with a shared plan (#246), cleaned both ways like any
   // other field of someone else's file; the exercise's own photo or video never does — it is a
@@ -187,6 +189,18 @@ export function buildPlanBundle(S, name) {
   const week = {}
   WEEK_DAYS.forEach(d => { if (S.week?.[d]?.length) week[d] = [].concat(S.week[d]) })
   return { opengym_plan: PLAN_FMT, exported: todayISO(), name: name || '', unit, week, routines, customEx }
+}
+
+export function buildSocialPlanBundle(S, name, { routineIds, includeSchedule = true, includeNotes = false }) {
+  const selected = new Set(routineIds)
+  const week = {}
+  if (includeSchedule) WEEK_DAYS.forEach(day => {
+    const ids = [].concat(S.week?.[day] || []).filter(id => selected.has(id))
+    if (ids.length) week[day] = ids
+  })
+  const bundle = buildPlanBundle({ ...S, week, routines: S.routines.filter(r => selected.has(r.id)) }, name)
+  if (!includeNotes) bundle.routines.forEach(r => r.ex.forEach(e => { delete e.note }))
+  return bundle
 }
 
 /**
@@ -249,16 +263,17 @@ export function parsePlan(raw, destinationUnit = 'kg') {
  *  - schedule: optional; when on, the shared week REPLACES yours (days the shared plan
  *    leaves empty become rest days — a half-overwritten week would silently mix two plans)
  */
-export function mergePlan(s, bundle, { schedule } = {}) {
+export function mergePlan(s, bundle, { schedule, socialPlanId } = {}) {
+  if (socialPlanId && s.importedSocialPlans?.includes(socialPlanId)) return { routines: 0, alreadyImported: true }
   const destination = planUnit(s.unit == null ? 'kg' : s.unit)
   if (!destination) unitError()
   const source = convertedBundle(bundle, destination)
   s.customEx = s.customEx || []
   const exIdMap = {}
-  ;(source.customEx || []).forEach(c => {
+  ;(source.customEx || []).forEach((c, index) => {
     const same = s.customEx.find(x => (x.n || '').toLowerCase() === (c.n || '').toLowerCase() && x.bp === c.bp)
     if (same) { exIdMap[c.id] = same.id; return }
-    const nid = uid()
+    const nid = socialPlanId ? `social-${socialPlanId}-ex-${index}` : uid()
     exIdMap[c.id] = nid
     // Stored exactly as the form would have created it — `custom: true` is what lets the recipient
     // edit or delete it, and `sm` mirrors the secondaries the way the form writes them.
@@ -266,8 +281,9 @@ export function mergePlan(s, bundle, { schedule } = {}) {
     s.customEx.push({ ...clean, id: nid, ...(clean.secondaries ? { sm: clean.secondaries } : {}), custom: true })
   })
   const ridMap = {}
-  source.routines.forEach(r => {
-    const nid = uid()
+  source.routines.forEach((r, index) => {
+    // Two devices importing the same snapshot must merge into the same routines
+    const nid = socialPlanId ? `social-${socialPlanId}-routine-${index}` : uid()
     ridMap[r.id] = nid
     s.routines.push({
       id: nid,
@@ -288,6 +304,7 @@ export function mergePlan(s, bundle, { schedule } = {}) {
       if (ids.length) s.week[d] = ids
     })
   }
+  if (socialPlanId) s.importedSocialPlans = [...(s.importedSocialPlans || []), socialPlanId]
   return { routines: source.routines.length }
 }
 

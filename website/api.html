@@ -218,6 +218,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <a class="side-link" href="#data"><b>Data</b><span>State sync</span></a>
   <a class="side-link" href="#push"><b>Push</b><span>Notifications &amp; rest timer</span></a>
   <a class="side-link" href="#activity"><b>Activity</b><span>Live presence</span></a>
+  <a class="side-link" href="#social"><b>Social</b><span>Friends, profiles &amp; shared plans</span></a>
   <a class="side-link" href="#media"><b>Media</b><span>Photos &amp; videos of your exercises &amp; workouts</span></a>
   <a class="side-link" href="#coach"><b>AI Coach</b><span>Plans, reviews, debriefs</span></a>
   <a class="side-link" href="#admin"><b>Admin</b><span>Users, invites, audit log, Coach</span></a>
@@ -243,7 +244,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.3.9</span>
-    <span>69 endpoints</span>
+    <span>81 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -365,6 +366,52 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s2">200</span>
     <span class="p-desc">A valid session.<span class="r-sig">{ user: <a href="#schema-SessionUser">SessionUser</a>, token: string }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-updateProfile">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/profile</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Update the signed-in profile</span>
+  </summary>
+  <div class="ep-body">
+<p>Updates the display name, optional avatar and body-weight sharing preference. Avatars must be client-cropped JPEG or WebP data URLs no larger than 128 KiB. At least one field is required; omitted fields remain unchanged.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">name</span>
+    <span class="p-type">string <span class="p-hint">(&le; 40 chars)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">avatar</span>
+    <span class="p-type">string | null <span class="p-hint">(data-url)</span></span>
+    <span class="p-desc">A JPEG or WebP data URL, or null to remove the current avatar.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">shareBodyWeight</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc">Whether accepted friends may see the latest weight and 30-day change.</span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Updated profile identity.<span class="r-sig">{ user: <a href="#schema-SessionUser">SessionUser</a> }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">No changes, an empty name, or an invalid/oversized avatar.</span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>
@@ -1865,6 +1912,403 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
 </section>
 
+<section class="api-sec" id="social">
+  <h2>Social</h2>
+  <p class="sub">Friend requests, progress summaries and shared plan snapshots</p>
+  <div class="eps">
+
+<details class="ep" id="op-socialOverview">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/social</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">List friends, requests and shared plans</span>
+  </summary>
+  <div class="ep-body">
+<p>Only accepted, enabled friends have progress summaries. Pending requests include identity only. Other enabled accounts are returned as suggestions. Streaks use the friend’s week-start setting and saved time zone (UTC if absent); personal records follow exercise history. No full workout state or body-weight log is returned.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Suggested profiles, requests, friend summaries and plan inbox.<span class="r-sig"><a href="#schema-SocialOverview">SocialOverview</a></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-socialCounts">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/social/counts</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Count actionable Social items</span>
+  </summary>
+  <div class="ep-body">
+<p>Returns incoming friend requests and valid shared plans for navigation badges.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Current badge counts.<span class="r-sig">{ incoming: integer, plans: integer, total: integer }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-socialRequest">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/social/request</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Send a friend request</span>
+  </summary>
+  <div class="ep-body">
+<p>The target must be an enabled profile registered on this server. Accepting the request is required before either user can access the other's training profile.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">userId<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Action completed.<span class="r-sig"><a href="#schema-Ok">Ok</a></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">The target is the caller's own profile.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Connection unavailable because either participant has blocked it.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">No enabled account matches userId.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">Already connected, a request is pending, or either account has 100 connections.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-socialProfile">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/social/profile</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Read an accepted friend's training profile</span>
+  </summary>
+  <div class="ep-body">
+<p>Returns derived workout stats, the latest body weight when that profile allows it, a sanitized read-only plan and every personal record. Full workout and weigh-in history, workout and routine notes, gym cards and account settings are not returned.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+<p class="ep-h">Query parameters</p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">id<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The accepted friend's training profile.<span class="r-sig"><a href="#schema-SocialProfile">SocialProfile</a></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">The profile is missing, disabled or not an accepted friend.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-socialAccept">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/social/accept</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Accept an incoming friend request</span>
+  </summary>
+  <div class="ep-body">
+<p>Only the recipient can accept a pending request. Progress becomes visible in both directions.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">userId<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Action completed.<span class="r-sig"><a href="#schema-Ok">Ok</a></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">No incoming request from an enabled account matches userId.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-socialRemove">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/social/remove</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Decline, cancel or remove a connection</span>
+  </summary>
+  <div class="ep-body">
+<p>Either participant may remove a connection. Pending plan snapshots between the two accounts are deleted. Previously imported routines remain. Repeating this action succeeds.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">userId<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Action completed.<span class="r-sig"><a href="#schema-Ok">Ok</a></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-socialBlock">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/social/block</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Block a profile and revoke the connection</span>
+  </summary>
+  <div class="ep-body">
+<p>Removes the connection and pending plans and prevents discovery, requests and friend access in both directions. Repeating the action succeeds.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">userId<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Profile blocked.<span class="r-sig"><a href="#schema-Ok">Ok</a></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">Missing, disabled or own profile.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-socialUnblock">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/social/unblock</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Remove a block created by the caller</span>
+  </summary>
+  <div class="ep-body">
+<p>Does not remove the other participant's block or restore a friendship or shared plans. Repeating the action succeeds.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">userId<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Caller's block removed.<span class="r-sig"><a href="#schema-Ok">Ok</a></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-socialSharePlan">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/social/plan</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Send a plan snapshot to a friend</span>
+  </summary>
+  <div class="ep-body">
+<p>Only accepted, enabled friends can receive a plan. Replaces the caller’s previous pending snapshot for this recipient. Stores only plan fields; maximum 256 KB, 100 routines, 100 exercises per routine. Exercise notes are stripped unless includeNotes is explicitly true.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">userId<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">includeNotes</span>
+    <span class="p-type">boolean <span class="p-hint">(default false)</span></span>
+    <span class="p-desc">Explicit permission to include exercise notes in this snapshot.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">plan<em class="p-req" title="required">required</em></span>
+    <span class="p-type"><a href="#schema-SocialPlan">SocialPlan</a></span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Action completed.<span class="r-sig"><a href="#schema-Ok">Ok</a></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">Invalid, empty or oversized plan.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">The target is not an accepted, enabled friend.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-socialReadPlan">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/social/plan</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Read a received plan for review</span>
+  </summary>
+  <div class="ep-body">
+<p>Only the intended recipient can read a snapshot, while the sender remains an enabled friend. Loading a plan does not import or dismiss it.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+<p class="ep-h">Query parameters</p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">id<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The plan snapshot.<span class="r-sig">{ plan: <a href="#schema-SocialPlan">SocialPlan</a> }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">Snapshot missing, dismissed, replaced, or inaccessible.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-socialDismissPlan">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/social/plan/dismiss</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Dismiss a received plan</span>
+  </summary>
+  <div class="ep-body">
+<p>Only removes snapshots belonging to the caller’s inbox; does not change routines or the friend connection. The client also calls this after a successful import.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">id<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Action completed.<span class="r-sig"><a href="#schema-Ok">Ok</a></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+  </div>
+</section>
+
 <section class="api-sec" id="media">
   <h2>Media</h2>
   <p class="sub">The photo, GIF or video of a user's own custom exercise, and the photos and videos attached to a logged workout. Stored per profile (one quota for both) and named by the SHA-256 of its bytes; the state only carries a <code>MediaRef</code>. Every route here is a 404 when the instance runs with <code>MEDIA_UPLOADS=0</code>.</p>
@@ -3289,6 +3733,16 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow">
     <span class="p-name">admin</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">avatar</span>
+    <span class="p-type">string | null <span class="p-hint">(data-url)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">shareBodyWeight</span>
     <span class="p-type">boolean</span>
     <span class="p-desc"></span>
   </div>
@@ -5054,6 +5508,297 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow">
     <span class="p-name">recent[].ms</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+  </div>
+</details>
+
+<details class="ep sch" id="schema-SocialUser">
+  <summary>
+    <span class="sch-name"><code>SocialUser</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum"></span>
+  </summary>
+  <div class="ep-body">
+
+<div class="ptab">
+  <div class="prow">
+    <span class="p-name">id<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">name<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">avatar</span>
+    <span class="p-type">string <span class="p-hint">(data-url)</span></span>
+    <span class="p-desc">Present only for the caller or an accepted friend, never server discovery.</span>
+  </div>
+</div>
+  </div>
+</details>
+
+<details class="ep sch" id="schema-SocialRecord">
+  <summary>
+    <span class="sch-name"><code>SocialRecord</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum"></span>
+  </summary>
+  <div class="ep-body">
+
+<div class="ptab">
+  <div class="prow">
+    <span class="p-name">exerciseId<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">name<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string | null</span>
+    <span class="p-desc">Custom exercise name, or null for a built-in catalogue exercise.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">metric<em class="p-req" title="required">required</em></span>
+    <span class="p-type">&quot;weight&quot; | &quot;reps&quot; | &quot;sec&quot; | &quot;min&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">value<em class="p-req" title="required">required</em></span>
+    <span class="p-type">number</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">reps</span>
+    <span class="p-type">number</span>
+    <span class="p-desc">Repetitions from the completed set that first achieved the load record. Omitted when unavailable or the metric is not weight.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">date<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string <span class="p-hint">(date)</span></span>
+    <span class="p-desc">First date the current record was reached.</span>
+  </div>
+</div>
+  </div>
+</details>
+
+<details class="ep sch" id="schema-SocialFriend">
+  <summary>
+    <span class="sch-name"><code>SocialFriend</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum"></span>
+  </summary>
+  <div class="ep-body">
+
+<p class="p-desc">Free-form object.</p>
+  </div>
+</details>
+
+<details class="ep sch" id="schema-SocialProfile">
+  <summary>
+    <span class="sch-name"><code>SocialProfile</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum"></span>
+  </summary>
+  <div class="ep-body">
+
+<p class="p-desc">Free-form object.</p>
+  </div>
+</details>
+
+<details class="ep sch" id="schema-SocialPlan">
+  <summary>
+    <span class="sch-name"><code>SocialPlan</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The existing plan-file format.</span>
+  </summary>
+  <div class="ep-body">
+<p>Contains routines, schedule and referenced custom exercises. No workout history, weigh-ins or account settings.</p>
+<div class="ptab">
+  <div class="prow">
+    <span class="p-name">opengym_plan<em class="p-req" title="required">required</em></span>
+    <span class="p-type">always 1</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">name</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">exported</span>
+    <span class="p-type">string <span class="p-hint">(date)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">unit</span>
+    <span class="p-type">&quot;kg&quot; | &quot;lb&quot;</span>
+    <span class="p-desc">Source weight unit; the client converts loads when importing into a different unit.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">routines<em class="p-req" title="required">required</em></span>
+    <span class="p-type">object[]</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">routines[].id<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">routines[].name<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">routines[].emoji</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">routines[].prog</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">routines[].excludeFromProgression</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">routines[].ex<em class="p-req" title="required">required</em></span>
+    <span class="p-type">object[]</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">week</span>
+    <span class="p-type">object</span>
+    <span class="p-desc">Weekday index 0–6 mapped to routine-ID arrays.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">customEx</span>
+    <span class="p-type">object[]</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">customEx[].id</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">customEx[].n</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">customEx[].bp</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">customEx[].desc</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">customEx[].eq</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">customEx[].tg</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">customEx[].primaries</span>
+    <span class="p-type">string[]</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">customEx[].secondaries</span>
+    <span class="p-type">string[]</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">customEx[].muscleGroups</span>
+    <span class="p-type">string[]</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">customEx[].url</span>
+    <span class="p-type">string <span class="p-hint">(uri)</span></span>
+    <span class="p-desc">HTTP or HTTPS guide link; exercise media files are excluded.</span>
+  </div>
+</div>
+  </div>
+</details>
+
+<details class="ep sch" id="schema-SocialOverview">
+  <summary>
+    <span class="sch-name"><code>SocialOverview</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum"></span>
+  </summary>
+  <div class="ep-body">
+
+<div class="ptab">
+  <div class="prow">
+    <span class="p-name">blocks<em class="p-req" title="required">required</em></span>
+    <span class="p-type"><a href="#schema-SocialUser">SocialUser</a>[]</span>
+    <span class="p-desc">Enabled profiles blocked by the caller. Blocks created by other accounts are never listed.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">friends<em class="p-req" title="required">required</em></span>
+    <span class="p-type"><a href="#schema-SocialFriend">SocialFriend</a>[]</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">incoming<em class="p-req" title="required">required</em></span>
+    <span class="p-type"><a href="#schema-SocialUser">SocialUser</a>[]</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">outgoing<em class="p-req" title="required">required</em></span>
+    <span class="p-type"><a href="#schema-SocialUser">SocialUser</a>[]</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">suggestions<em class="p-req" title="required">required</em></span>
+    <span class="p-type"><a href="#schema-SocialUser">SocialUser</a>[]</span>
+    <span class="p-desc">Enabled profiles not already connected to the caller or blocked in either direction.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">plans<em class="p-req" title="required">required</em></span>
+    <span class="p-type">object[]</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">plans[].id</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">plans[].from</span>
+    <span class="p-type"><a href="#schema-SocialUser">SocialUser</a></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">plans[].name</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">plans[].created</span>
+    <span class="p-type">string <span class="p-hint">(date-time)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">plans[].routines</span>
     <span class="p-type">integer</span>
     <span class="p-desc"></span>
   </div>
