@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { verifyError } from './verify-error.js';
+import { verifyError } from '../verify-error.js';
 
 const cfg = { rpId: 'gym.example.com', origin: 'https://gym.example.com' };
 

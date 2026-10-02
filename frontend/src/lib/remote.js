@@ -36,6 +36,15 @@ export async function forgetRemote() {
   setRemoteAuth('', null)
 }
 
+// The server renewed the token (GET /api/me hands one out once the old is past half its life):
+// every request from now on carries it, and the pairing file keeps it for the next start. The
+// old one stays valid until its own expiry, so a write that fails here costs nothing but a
+// renewal on a later start.
+export async function renewToken(remote, token) {
+  setRemoteAuth(remote.base, token)
+  await saveRemoteFile({ ...remote, token })
+}
+
 // Redeems the pairing code, wires api.js at the resolved base, and persists the connection so
 // boot() can restore it on the next launch.
 export async function connect(rawUrl, code) {

@@ -1,0 +1,82 @@
+{
+  "0295": {
+    "bp": "full body",
+    "primaries": ["quadriceps", "gluteal", "hamstring", "trapezius"],
+    "secondaries": ["calves", "forearm", "deltoids", "lower-back", "abs", "obliques"]
+  },
+  "0518": {
+    "bp": "full body",
+    "primaries": ["quadriceps", "gluteal", "hamstring", "trapezius"],
+    "secondaries": ["calves", "forearm", "deltoids", "lower-back", "abs", "obliques"]
+  },
+  "0525": {
+    "bp": "full body",
+    "primaries": ["quadriceps", "gluteal", "hamstring", "trapezius"],
+    "secondaries": ["calves", "forearm", "deltoids", "lower-back", "abs", "obliques"]
+  },
+  "0526": {
+    "bp": "full body",
+    "primaries": ["quadriceps", "gluteal", "hamstring", "trapezius"],
+    "secondaries": ["calves", "forearm", "deltoids", "lower-back", "abs", "obliques"]
+  },
+  "0535": {
+    "bp": "full body",
+    "primaries": ["quadriceps", "gluteal", "hamstring", "trapezius"],
+    "secondaries": ["calves", "forearm", "deltoids", "lower-back", "abs", "obliques"]
+  },
+  "0552": {
+    "bp": "full body",
+    "primaries": ["quadriceps", "gluteal", "hamstring", "trapezius"],
+    "secondaries": ["calves", "forearm", "deltoids", "lower-back", "abs", "obliques"]
+  },
+  "0648": {
+    "bp": "full body",
+    "primaries": ["quadriceps", "gluteal", "hamstring", "trapezius"],
+    "secondaries": ["calves", "forearm", "deltoids", "lower-back", "abs", "obliques"]
+  },
+  "0067": {
+    "bp": "full body",
+    "primaries": ["quadriceps", "gluteal", "hamstring", "trapezius", "deltoids"],
+    "secondaries": ["calves", "forearm", "triceps", "lower-back", "abs", "obliques"]
+  },
+  "3888": {
+    "bp": "full body",
+    "primaries": ["quadriceps", "gluteal", "hamstring", "trapezius", "deltoids"],
+    "secondaries": ["calves", "forearm", "triceps", "lower-back", "abs", "obliques"]
+  },
+  "0529": {
+    "bp": "full body",
+    "primaries": ["quadriceps", "gluteal", "hamstring", "trapezius", "deltoids"],
+    "secondaries": ["calves", "forearm", "triceps", "lower-back", "abs", "obliques"]
+  },
+  "0542": {
+    "bp": "full body",
+    "primaries": ["quadriceps", "gluteal", "hamstring", "trapezius", "deltoids"],
+    "secondaries": ["calves", "forearm", "triceps", "lower-back", "abs", "obliques"]
+  },
+  "0028": {
+    "bp": "full body",
+    "primaries": ["quadriceps", "gluteal", "hamstring", "trapezius", "deltoids", "triceps"],
+    "secondaries": ["calves", "forearm", "lower-back", "abs", "obliques"]
+  },
+  "0537": {
+    "bp": "full body",
+    "primaries": ["quadriceps", "gluteal", "hamstring", "trapezius", "deltoids", "triceps"],
+    "secondaries": ["calves", "forearm", "lower-back", "abs", "obliques"]
+  },
+  "0527": {
+    "bp": "full body",
+    "primaries": ["quadriceps", "gluteal", "deltoids", "triceps"],
+    "secondaries": ["hamstring", "calves", "trapezius", "forearm", "lower-back", "abs", "obliques"]
+  },
+  "0538": {
+    "bp": "full body",
+    "primaries": ["quadriceps", "gluteal", "deltoids", "triceps"],
+    "secondaries": ["hamstring", "calves", "trapezius", "forearm", "lower-back", "abs", "obliques"]
+  },
+  "0776": {
+    "bp": "full body",
+    "primaries": ["quadriceps", "gluteal", "hamstring", "trapezius"],
+    "secondaries": ["calves", "forearm", "deltoids", "lower-back", "abs", "obliques"]
+  }
+}

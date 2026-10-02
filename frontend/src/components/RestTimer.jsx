@@ -12,7 +12,7 @@ const clock = sec => Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '
 export default function RestTimer() {
   const timer = useUI(s => s.timer)
   const work = useUI(s => s.work)
-  const { addRest, stopRest, finishWorkEarly, stopWork } = useUI()
+  const { addRest, stopRest, pauseRest, resumeRest, finishWorkEarly, stopWork } = useUI()
   const on = work || timer
   // The bar is fixed above the tab bar and floats over whatever is beneath it — during a
   // rest that was the next set's row. Extra bottom padding lets the page scroll clear.
@@ -21,11 +21,11 @@ export default function RestTimer() {
     return () => document.body.classList.remove('resting')
   }, [!!on])
   if (!on) return null
-  const pct = (on.left / on.total) * 100
+  const pct = Math.max(0, Math.min(100, (on.left / on.total) * 100))
 
   if (work) return (
     <div id="timer" className="working">
-      <div className="t">{clock(work.left)}</div>
+      <div className="t">{work.left <= 0 && work.overtime ? '+' + clock(-work.left) : clock(work.left)}</div>
       <div className="grow">
         {work.label && <div className="lbl">{work.label}</div>}
         <div className="bar"><i style={{ width: pct + '%' }} /></div>
@@ -38,16 +38,21 @@ export default function RestTimer() {
   // with about 30px and stops saying anything. So the rest variant stacks: clock and bar
   // read at a glance, controls get their own row. −15 and +15 sit together in number-line
   // order; Skip is pushed to the far edge, away from the button you tap to buy more time.
+  // Pause sits between them as an icon (#193): it holds the time, it neither adds nor ends it.
+  // A rest that is over has nothing left to hold, so Ready offers no pause.
   return (
-    <div id="timer" className="rest">
+    <div id="timer" className={'rest' + (timer.paused ? ' paused' : '')}>
       <div className="head">
-        <div className="t">{clock(timer.left)}</div>
+        <div className="t" role={timer.ready ? 'status' : undefined}>{timer.ready ? t('Ready') : clock(timer.left)}</div>
         <div className="bar"><i style={{ width: pct + '%' }} /></div>
       </div>
       <div className="acts">
         <Button size="sm" icon="minus" onClick={() => addRest(-15)}>15s</Button>
         <Button size="sm" icon="plus" onClick={() => addRest(15)}>15s</Button>
-        <Button size="sm" variant="primary" className="skip" onClick={stopRest}>{t('Skip')}</Button>
+        {!timer.ready && <Button size="sm" className="pause" icon={timer.paused ? 'play' : 'pause'}
+          aria-label={t(timer.paused ? 'Resume' : 'Pause')} aria-pressed={!!timer.paused}
+          onClick={timer.paused ? resumeRest : pauseRest} />}
+        <Button size="sm" variant="primary" className="skip" onClick={stopRest}>{t(timer.ready ? 'Dismiss' : 'Skip')}</Button>
       </div>
     </div>
   )

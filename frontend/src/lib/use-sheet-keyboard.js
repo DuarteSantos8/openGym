@@ -1,12 +1,28 @@
 import { useCallback, useEffect } from 'react'
+import { nativeKeyboardHeight, NATIVE_KEYBOARD_EVENT } from './native-keyboard.js'
+
+/* How far the keyboard reaches up the layout viewport, and the height left above it. */
+export function sheetKeyboardInsets(win) {
+  const viewport = win.visualViewport
+  const native = nativeKeyboardHeight(win.document)
+  const vh = Math.max(0, viewport?.height || win.innerHeight)
+  const visualBottom = (viewport?.offsetTop || 0) + vh
+  const bottomInset = Math.max(0, win.innerHeight - visualBottom, native)
+  const visualHeight = Math.max(0, Math.min(vh, win.innerHeight - native))
+  return { bottomInset, visualHeight }
+}
 
 /* Keyboard-aware sheets. When the mobile keyboard comes up the layout viewport keeps its
    size, only the visual viewport shrinks — so a bottom sheet with a text input near its
    foot ends up half under the keys. index.css reads two custom properties on the sheet
    (--picker-keyboard-bottom / --picker-visual-height) to lift and cap it. SelectSheet in
-   components/ui.jsx does exactly this sync inline; the exercise picker, the custom-exercise
-   form and the note sheets need the same thing, hence this hook. The logic is deliberately
-   duplicated rather than imported so ui.jsx keeps no public surface for it.
+   components/ui.jsx does the same sync inline; the exercise picker, the custom-exercise
+   form and the note sheets need it too, hence this hook. Both measure with
+   sheetKeyboardInsets below.
+
+   On Android 15 the visual viewport does not shrink either (the app is edge to edge, so
+   adjustResize has no effect); there the app passes the keyboard as --native-kb
+   (lib/native-keyboard.js) and the larger of the two wins.
 
    `inputRef` points at the text input (or textarea) whose closest `.sheet` gets the vars.
    `enabled` lets a caller switch the sync off (e.g. a picker without a search box). */
@@ -16,9 +32,7 @@ export function useSheetKeyboard(inputRef, enabled = true) {
     const sheet = input?.closest?.('.sheet')
     const viewport = typeof window !== 'undefined' ? window.visualViewport : null
     if (!sheet || !viewport) return
-    const visualHeight = Math.max(0, viewport.height || window.innerHeight)
-    const visualBottom = (viewport.offsetTop || 0) + visualHeight
-    const bottomInset = Math.max(0, window.innerHeight - visualBottom)
+    const { bottomInset, visualHeight } = sheetKeyboardInsets(window)
     sheet.style.setProperty('--picker-keyboard-bottom', `${bottomInset}px`)
     sheet.style.setProperty('--picker-visual-height', `${visualHeight}px`)
   }, [inputRef])
@@ -30,9 +44,11 @@ export function useSheetKeyboard(inputRef, enabled = true) {
     sync()
     viewport.addEventListener('resize', sync)
     viewport.addEventListener('scroll', sync)
+    window.addEventListener(NATIVE_KEYBOARD_EVENT, sync)
     return () => {
       viewport.removeEventListener('resize', sync)
       viewport.removeEventListener('scroll', sync)
+      window.removeEventListener(NATIVE_KEYBOARD_EVENT, sync)
       // The sheet element outlives this input when the sheet swaps content, so leave it
       // the way we found it rather than pinning a stale keyboard inset on it.
       const sheet = inputRef.current?.closest?.('.sheet')

@@ -15,7 +15,7 @@
  */
 import * as cfgStore from './config.js';
 import { readState, listUserIds, isSharing } from './jobs.js';
-import { libraryName } from './core/library.js';
+import { libraryHas, libraryName } from './core/library.js';
 
 export const MIN_PEOPLE = 3;
 export const MAX_EXERCISES = 12;
@@ -40,7 +40,13 @@ const median = arr => {
 };
 const isoDaysAgo = days => { const d = new Date(); d.setDate(d.getDate() - days); return d.toISOString().slice(0, 10); };
 
-/** One participant, reduced to what the cohort reads: kg throughout. */
+/** One participant, reduced to what the cohort reads: kg throughout.
+ *
+ * Catalogue exercises only. An entry's id is whatever that person's client wrote, and the ids
+ * that enough people share are put, as they are, into every other sharing person's review and
+ * debrief prompt — so three accounts that log the same made-up id could write into a stranger's
+ * prompt. A custom exercise's id is minted per person and never means the same lift on two
+ * accounts anyway, so nothing a real comparison needs is lost. */
 function participant(S) {
   const since = isoDaysAgo(WEEKS_STRENGTH * 7);
   const sinceFreq = isoDaysAgo(WEEKS_FREQUENCY * 7);
@@ -48,11 +54,14 @@ function participant(S) {
   const workouts = (S.workouts || []).filter(w => w && w.d && w.d >= since);
   if (!workouts.length) return null;
   const best = {};
-  workouts.forEach(w => (w.entries || []).forEach(en => (en.sets || []).forEach(s => {
-    if (!s.done || isWarmup(s) || !(s.w > 0) || !(s.r > 0)) return;
-    const est = epley(s.w * toKg, s.r);
-    if (est > (best[en.id] || 0)) best[en.id] = est;
-  })));
+  workouts.forEach(w => (w.entries || []).forEach(en => {
+    if (!libraryHas(en?.id)) return;
+    (en.sets || []).forEach(s => {
+      if (!s.done || isWarmup(s) || !(s.w > 0) || !(s.r > 0)) return;
+      const est = epley(s.w * toKg, s.r);
+      if (est > (best[en.id] || 0)) best[en.id] = est;
+    });
+  }));
   const recent = workouts.filter(w => w.d >= sinceFreq).length;
   return { sessionsPerWeek: round1(recent / WEEKS_FREQUENCY), best };
 }
@@ -95,7 +104,7 @@ export function computeCohort(uid) {
   }
   const exercises = [...byEx.entries()]
     .filter(([, list]) => list.length >= MIN_PEOPLE)
-    .map(([id, list]) => ({ id, name: libraryName(id) || id, people: list.length, medianKg: median(list), youKg: me?.best[id] ?? null, list }))
+    .map(([id, list]) => ({ id, name: libraryName(id), people: list.length, medianKg: median(list), youKg: me?.best[id] ?? null, list }))
     .sort((a, b) => b.people - a.people || a.name.localeCompare(b.name))
     .slice(0, MAX_EXERCISES);
 
@@ -131,7 +140,7 @@ export function cohortForPayload(uid) {
     }
     const exercises = [...byEx.entries()]
       .filter(([, list]) => list.length >= MIN_PEOPLE)
-      .map(([id, list]) => ({ id, name: libraryName(id) || id, median: round1(median(list)), you: me?.best[id] != null ? round1(me.best[id]) : null }))
+      .map(([id, list]) => ({ id, name: libraryName(id), median: round1(median(list)), you: me?.best[id] != null ? round1(me.best[id]) : null }))
       .sort((a, b) => (b.you != null) - (a.you != null) || a.name.localeCompare(b.name))
       .slice(0, MAX_EXERCISES);
     return {

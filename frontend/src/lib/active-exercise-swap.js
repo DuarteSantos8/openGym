@@ -20,7 +20,7 @@ export function swapActiveExercise(active, index, replacement, {
   const current = active.entries[index]
   if (!hasLoggedSet(current)) {
     const metadata = Object.fromEntries(Object.entries(current).filter(([key]) => (
-      !['id', 'target', 'plan', 'sets', 'sg'].includes(key)
+      !['id', 'target', 'plan', 'planned', 'carried', 'sets', 'sg'].includes(key)
     )))
     active.entries[index] = { ...metadata, ...replacement, ...(current.sg ? { sg: current.sg } : {}) }
     active.cur = index

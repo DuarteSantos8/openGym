@@ -19,7 +19,9 @@ const LEGACY_SNAPSHOT_ID = 'legacy-snapshot-only'
 
 const mocks = vi.hoisted(() => ({
   maps: [],
+  charts: [],
   mapMounts: 0,
+  exerciseHistorySheet: vi.fn(),
   S: {
     unit: 'kg', body: 'male', effort: 'rir', targetW: null,
     bodyweight: [], routines: [], workouts: [],
@@ -32,9 +34,13 @@ vi.mock('../store/useStore.js', () => ({
 vi.mock('react-router-dom', () => ({ useNavigate: () => () => {} }))
 vi.mock('../sheets.jsx', () => ({
   bwSheet: () => {}, goalSheet: () => {}, calendarSheet: () => {}, workoutDetailSheet: () => {},
-  WorkoutRow: () => React.createElement('div'), bwDeltaColor: () => 'inherit',
+  exerciseHistorySheet: mocks.exerciseHistorySheet,
+  WorkoutRow: () => React.createElement('div'), bwDeltaColor: () => 'inherit', weighInsSheet: () => {},
 }))
-vi.mock('../components/LineChart.jsx', () => ({ default: () => React.createElement('div') }))
+vi.mock('../components/LineChart.jsx', () => ({ default: props => {
+  mocks.charts.push(props)
+  return React.createElement('div')
+} }))
 vi.mock('../components/Heatmap.jsx', () => ({ default: () => React.createElement('div') }))
 vi.mock('../components/Icon.jsx', () => ({ default: props => React.createElement('span', props) }))
 vi.mock('../components/BodyMap.jsx', () => ({
@@ -138,7 +144,9 @@ function resetFixture(workouts = lifecycleWorkouts()) {
   mocks.S.bodyweight = []
   mocks.S.workouts = workouts
   mocks.maps.length = 0
+  mocks.charts.length = 0
   mocks.mapMounts = 0
+  mocks.exerciseHistorySheet.mockClear()
   useUI.setState({ sheets: [] })
 }
 
@@ -306,7 +314,123 @@ describe('Stats muscle recovery view runtime', () => {
   })
 })
 
+describe('Stats strength exercise rows', () => {
+  // The rows under "Exercises · <muscle>" are presented as buttons (role, tabIndex, pointer
+  // cursor) but for a year called a handler that never existed, so every tap threw
+  // "onExercise is not defined" and opened nothing (QA C13). A tap now opens the exercise's
+  // history sheet — the one place that already draws the Est. 1RM curve the row quotes.
+  it('opens the exercise history sheet when a row is tapped instead of throwing', async () => {
+    resetFixture(exercisePickerWorkouts())
+    await mountStats()
+    const thrown = []
+    dom.addEventListener('error', e => { thrown.push(e.error || e.message); e.preventDefault() })
+
+    await click(viewButton('Strength'))
+    await click(muscleCard().querySelector('[data-muscle="chest"]'))
+    expect(muscleCard().textContent).toContain('Exercises · Chest')
+    const row = [...muscleCard().querySelectorAll('.mrow[role="button"]')].find(el => el.textContent.includes('Est. 1RM'))
+    expect(row, 'expected a tappable exercise row for the chest').toBeTruthy()
+    expect(row.textContent).toContain('barbell bench press')
+
+    await click(row)
+    expect(thrown).toEqual([])
+    expect(mocks.exerciseHistorySheet).toHaveBeenCalledTimes(1)
+    expect(mocks.exerciseHistorySheet).toHaveBeenCalledWith('0025')
+
+    // The keyboard path of tappable() must land in the same place.
+    await act(async () => { row.dispatchEvent(new dom.KeyboardEvent('keydown', { key: 'Enter', bubbles: true })) })
+    expect(thrown).toEqual([])
+    expect(mocks.exerciseHistorySheet).toHaveBeenCalledTimes(2)
+  })
+
+  // The retained-strength bar used a 'to right' gradient, which fills from the left in Arabic too.
+  // A width fills from the inline start, the way the detrained rows' bars already did.
+  it('fills the retained-strength bar by width, so it follows the text direction', async () => {
+    resetFixture([workout('bench-old', BASE_NOW - 20 * DAY, [entry('0025', [set(true, { w: 80 })])])])
+    await mountStats()
+    await click(viewButton('Strength'))
+    await click(muscleCard().querySelector('[data-muscle="chest"]'))
+    const row = [...muscleCard().querySelectorAll('.mrow[role="button"]')].find(el => el.textContent.includes('Est. 1RM'))
+    expect(row).toBeTruthy()
+    const pct = row.querySelector('.v').textContent.match(/(\d+)%/)[1]
+    expect(Number(pct)).toBeLessThan(100)
+    const fill = row.querySelector('.bar i')
+    expect(fill.style.width).toBe(pct + '%')
+    expect(fill.getAttribute('style')).not.toMatch(/to right|gradient/)
+  })
+})
+
 describe('Stats exercise progress picker', () => {
+  it('keeps a legacy reps record whose load is stored only in topW', async () => {
+    resetFixture([workout('legacy-topw', BASE_NOW, [
+      { id: '0025', target: { mode: 'reps' }, topW: 70, sets: [] },
+    ])])
+    await mountStats()
+
+    const card = [...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')
+    expect(card.textContent).toContain('70 kg')
+    const progressChart = mocks.charts.find(chart => chart.points?.some(point => point.y === 70))
+    expect(progressChart?.points).toHaveLength(1)
+    expect(progressChart.points[0].y).toBe(70)
+  })
+
+  it('keeps the strongest topW across repeated legacy records', async () => {
+    resetFixture([workout('legacy-topw-duplicates', BASE_NOW, [
+      { id: '0025', target: { mode: 'reps' }, topW: 70, sets: [] },
+      { id: '0025', target: { mode: 'reps' }, topW: 60, sets: [] },
+    ])])
+    await mountStats()
+
+    const card = [...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')
+    expect(card.textContent).toContain('70 kg')
+    const progressChart = mocks.charts.find(chart => chart.points?.some(point => point.y === 70))
+    expect(progressChart?.points).toHaveLength(1)
+    expect(progressChart.points[0].y).toBe(70)
+  })
+
+  it('keeps a legacy topW when a modern occurrence shares the workout', async () => {
+    resetFixture([workout('modern-and-legacy', BASE_NOW, [
+      entry('0025', [set(true, { w: 50, r: 5 })]),
+      { id: '0025', target: { mode: 'reps' }, topW: 70, sets: [] },
+    ])])
+    await mountStats()
+
+    const card = [...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')
+    expect(card.textContent).toContain('70 kg')
+    const progressChart = mocks.charts.find(chart => chart.points?.some(point => point.y === 70))
+    expect(progressChart?.points).toHaveLength(1)
+    expect(progressChart.points[0].y).toBe(70)
+  })
+
+  it('aggregates duplicate exercise occurrences into one progress point', async () => {
+    resetFixture([workout('duplicate', BASE_NOW, [
+      entry('0025', [set(true, { w: 60, r: 5 })]),
+      entry('0025', [set(true, { w: 80, r: 5 })]),
+    ])])
+    await mountStats()
+
+    const card = [...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')
+    expect(card.textContent).toContain('80 kg')
+    const progressChart = mocks.charts.find(chart => chart.points?.some(point => point.y === 80))
+    expect(progressChart?.points).toHaveLength(1)
+    expect(progressChart.points[0].y).toBe(80)
+    expect(card.textContent).toContain('60×5  80×5')
+  })
+
+  it('aggregates repeated assisted occurrences by the lightest load', async () => {
+    resetFixture([workout('assisted-duplicate', BASE_NOW, [
+      entry('0017', [set(true, { w: 30, r: 8 })]),
+      entry('0017', [set(true, { w: 20, r: 8 })]),
+    ])])
+    await mountStats()
+
+    const card = [...container.querySelectorAll('.card')].find(el => el.querySelector('h2')?.textContent.trim() === 'Exercise progress')
+    expect(card.textContent).toContain('20 kg')
+    const progressChart = mocks.charts.find(chart => chart.points?.some(point => point.y === 20))
+    expect(progressChart?.points).toHaveLength(1)
+    expect(progressChart.points[0].y).toBe(20)
+  })
+
   it('filters with the shared exercise matcher and still selects from the mounted sheet', async () => {
     resetFixture(exercisePickerWorkouts())
     await mountStats()
@@ -369,13 +493,15 @@ describe('Stats exercise progress picker', () => {
     await click(modal.querySelector('button[aria-label="Clear"]'))
     await setSearch('squat full bárbell')
 
-    expect(modal.textContent).toContain('barbell full squat')
-    expect(modal.textContent).not.toContain('barbell bench press')
+    // A catalogue name is title-cased like it is in every list (exerciseNameText); the legacy
+    // snapshot above keeps the name as it was typed.
+    expect(modal.textContent).toContain('Barbell Full Squat')
+    expect(modal.textContent).not.toContain('Barbell Bench Press')
 
-    const matching = [...modal.querySelectorAll('button')].find(button => button.textContent.includes('barbell full squat'))
+    const matching = [...modal.querySelectorAll('button')].find(button => button.textContent.includes('Barbell Full Squat'))
     await click(matching)
 
     expect(useUI.getState().sheets).toHaveLength(0)
-    expect(card.querySelector('.lrow-v').textContent).toContain('barbell full squat')
+    expect(card.querySelector('.lrow-v').textContent).toContain('Barbell Full Squat')
   })
 })

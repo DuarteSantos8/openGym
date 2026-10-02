@@ -34,6 +34,47 @@ describe('server config', () => {
     expect(api).toHaveBeenCalledTimes(2)
   })
 
+  it('a sign-in re-asks only when the held copy was fetched without a session', async () => {
+    // GET /api/config carries a `coach` key only for a session — the block, or null on an
+    // instance with no Coach (api/server.js). So no key means the copy came back
+    // unauthenticated, and coachAvailable() hangs every Coach entry point off that block.
+    localStorage.clear()
+    api.mockResolvedValueOnce({ invite_only: false, allow_guest: true })
+    await useStore.getState().loadConfig()
+    expect(useStore.getState().config.coach).toBeUndefined()
+
+    api.mockResolvedValueOnce({ invite_only: false, allow_guest: true, coach: { enabled: true, provider: 'compatible' } })
+    useStore.getState().setUser({ id: 'u1', name: 'A' })
+    await vi.waitFor(() => expect(useStore.getState().config.coach.enabled).toBe(true))
+    expect(api).toHaveBeenCalledTimes(2)
+
+    // A copy that carries the key was made for a session and is already the right answer.
+    useStore.getState().setUser({ id: 'u1', name: 'A' })
+    expect(api).toHaveBeenCalledTimes(2)
+
+    // Including on an instance with no Coach at all, where the key is null — this is the case
+    // that used to re-ask on every sign-in, and on every boot of a signed-in browser.
+    useStore.setState({ config: { invite_only: false, allow_guest: true, coach: null } })
+    useStore.getState().setUser({ id: 'u1', name: 'A' })
+    expect(api).toHaveBeenCalledTimes(2)
+    useStore.setState({ user: null })
+    localStorage.clear()
+  })
+
+  it('two callers asking at once make one request', async () => {
+    // Signing in re-asks and the pairing flow awaits a refresh of its own right after it, so
+    // both used to go out. It is one answer.
+    api.mockResolvedValue({ invite_only: false, allow_guest: true, coach: null })
+    const [a, b] = await Promise.all([useStore.getState().refreshConfig(), useStore.getState().refreshConfig()])
+    expect(api).toHaveBeenCalledTimes(1)
+    expect(a).toEqual(b)
+
+    // Not a cache, though: the next caller gets a fresh answer, which is the whole point of
+    // refreshConfig — an admin can switch the Coach on while a phone sits on the setup screen.
+    await useStore.getState().refreshConfig()
+    expect(api).toHaveBeenCalledTimes(2)
+  })
+
   it('an unreachable server leaves the cached config alone', async () => {
     useStore.setState({ config: { coach: { enabled: true } } })
     api.mockRejectedValueOnce(new Error('offline'))

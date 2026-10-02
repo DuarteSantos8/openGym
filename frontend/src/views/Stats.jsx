@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
-import { EXIDX, matchExercise } from '../lib/exercises.js'
-import { lastBW, streakWeeks, setLabel, modeOf, effortOf, metricModeForEntry, metricRowsForEntry, bestWeightForEntry } from '../lib/history.js'
-import { fmtNum, fmtDate, fmtVol, todayISO, weekStartOf } from '../lib/format.js'
-import { t, exerciseNameFor, getLang } from '../lib/i18n.js'
-import { bwSheet, goalSheet, calendarSheet, workoutDetailSheet, WorkoutRow, bwDeltaColor } from '../sheets.jsx'
+import { EXIDX, matchExercise, betterWeight } from '../lib/exercises.js'
+import { lastBW, streakWeeks, setLabel, modeOf, effortOf, entriesForExercise, metricEntriesForExercise, metricModeForEntry, bestWeightForEntry, completedRepsOf, workoutDay } from '../lib/history.js'
+import { fmtNum, fmtDate, fmtVol, todayISO, weekStartOf, exerciseNameText } from '../lib/format.js'
+import { speedUnitOf, speedLabel, toSpeed } from '../lib/speed.js'
+import { t, exerciseNameFor, exerciseNameClass, getLang } from '../lib/i18n.js'
+import { bwSheet, goalSheet, calendarSheet, workoutDetailSheet, exerciseHistorySheet, WorkoutRow, bwDeltaColor, weighInsSheet } from '../sheets.jsx'
 import LineChart from '../components/LineChart.jsx'
 import Heatmap from '../components/Heatmap.jsx'
 import Icon from '../components/Icon.jsx'
@@ -189,18 +190,22 @@ function MuscleBalance({ S }) {
       <div className="muted small" style={{ marginTop: 10 }}>{t('Strength shows retained muscle strength. Train again to reset it.')}</div>
       {sel && <>
         <h4 className="sec" style={{ marginTop: 14 }}>{t('Exercises')} · {t(MUSCLE_NAME[sel])}</h4>
+        {/* A row quotes the exercise's estimated 1RM, so a tap opens the exercise history
+            sheet — the curve behind that number plus the last sessions set by set. */}
         {muscleExercises.length ? muscleExercises.map(row => (
-          <div key={row.id} className="mrow" style={{ minHeight: 48, alignItems: 'stretch', cursor: 'pointer' }} {...tappable(() => onExercise && onExercise(row.id))}>
+          <div key={row.id} className="mrow" style={{ minHeight: 48, alignItems: 'stretch', cursor: 'pointer' }} {...tappable(() => exerciseHistorySheet(row.id))}>
             <span className="nm" style={{ whiteSpace: 'normal', lineHeight: 1.35, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {row.name}
+                <span className={EXIDX[row.id] ? exerciseNameClass(EXIDX[row.id]) : undefined}>{row.name}</span>
                 {row.primary === sel
-                  ? <span className="dim" style={{ fontSize: 11, marginLeft: 6 }}>{t('primary')}</span>
-                  : <span className="dim" style={{ fontSize: 11, marginLeft: 6 }}>{t('secondary')}</span>}
+                  ? <span className="dim" style={{ fontSize: 11, marginInlineStart: 6 }}>{t('primary')}</span>
+                  : <span className="dim" style={{ fontSize: 11, marginInlineStart: 6 }}>{t('secondary')}</span>}
               </span>
               <span className="small dim" style={{ display: 'block', fontWeight: 400 }}>{t('Est. 1RM')}: {fmtNum(row.est)} {S.unit} · {fmtDate(row.estDate, true)}</span>
             </span>
-            <span className="bar" style={{ alignSelf: 'center' }}><i style={{ width: '100%', background: 'linear-gradient(to right, var(--acc) ' + Math.round(row.decay * 100) + '%, var(--surface-2) ' + Math.round(row.decay * 100) + '%)' }} /></span>
+            {/* Filled by width, like the bars around it, rather than a 'to right' gradient: a block
+                starts at the inline start, so in right-to-left it fills from the right. */}
+            <span className="bar" style={{ alignSelf: 'center' }}><i style={{ width: Math.round(row.decay * 100) + '%' }} /></span>
             <span className="v" style={{ alignSelf: 'center' }}>{fmtNum(row.current)} {S.unit}<span className="dim"> · {Math.round(row.decay * 100)}%</span></span>
           </div>
         )) : <div className="muted small">{t('No exercises with an estimated 1RM yet.')}</div>}
@@ -215,7 +220,7 @@ function MuscleBalance({ S }) {
         return <div key={slug} className="mrow">
           <span className="nm">{t(MUSCLE_NAME[slug])}</span>
           <span className="bar"><i style={{ width: Math.round(strength[slug] * 100) + '%' }} /></span>
-          <span className="v" style={{ textAlign: 'right' }}>
+          <span className="v" style={{ textAlign: 'end' }}>
             {sets90 ? t('{0} sets', fmtNum(sets90)) : strengthHint(slug)}
             {sets90 ? <span className="dim small" style={{ display: 'block', fontWeight: 400 }}>{strengthHint(slug)}</span> : null}
           </span>
@@ -255,7 +260,7 @@ function EffortCard({ S }) {
           <div className="stat-v">{sum.avg == null ? '—' : fmtNum(toScale(kind, sum.avg)) + ' ' + hd}</div>
           <div className="small dim">{t('average effort')}</div>
         </div>
-        <div style={{ textAlign: 'right' }}>
+        <div style={{ textAlign: 'end' }}>
           <div className="stat-v" style={{ color: 'var(--yellow)' }}>{sum.hardPct == null ? '—' : Math.round(sum.hardPct * 100) + '%'}</div>
           <div className="small dim">{t('at {0} {1} or harder', hd, fmtNum(toScale(kind, HARD_RIR)))}</div>
         </div>
@@ -297,8 +302,19 @@ export default function Stats({ embedded = false }) {
   const bw30 = S.bodyweight.filter(b => (b.t || new Date(b.d).getTime()) > now - 30 * 86400000)
   const bwDelta30 = bw30.length > 1 ? bw30[bw30.length - 1].w - bw30[0].w : null
   const workouts = S.workouts
-  const monthW = workouts.filter(w => String(w.d || '').slice(0, 7) === todayISO().slice(0, 7)).length
+  const monthW = workouts.filter(w => workoutDay(w)?.slice(0, 7) === todayISO().slice(0, 7)).length
 
+  const metricDataOf = (workout, id) => {
+    const entries = metricEntriesForExercise(workout, id)
+    const mode = entries.at(-1)?.mode || null
+    const sameMode = entries.filter(item => item.mode === mode)
+    const best = mode === 'reps' ? sameMode.reduce((value, item) => {
+      const candidate = bestWeightForEntry(item.entry)
+      if (!(candidate > 0)) return value
+      return value > 0 ? betterWeight(id, value, candidate) : candidate
+    }, 0) : 0
+    return { mode, entries: sameMode, rows: sameMode.flatMap(item => item.rows), best }
+  }
   const entryOf = id => workouts.flatMap(w => w.entries).find(e => e.id === id)
   const listOf = value => Array.isArray(value) ? value : value == null || value === '' ? [] : [value]
   const firstAvailable = (...values) => {
@@ -331,18 +347,22 @@ export default function Stats({ embedded = false }) {
       desc: snapshot.desc || entry?.desc || '',
     }
   }
+  // Cardio is charted and ranked in the profile's speed unit; the sets keep km/h (lib/speed.js).
+  const speedUnit = speedUnitOf(S)
   const currentOf = id => {
     for (let i = workouts.length - 1; i >= 0; i--) {
-      const en = workouts[i].entries.find(e => e.id === id)
-      if (!en) continue
-      const mode = metricModeForEntry(en) || modeOf({ id })
-      const rows = metricRowsForEntry(en, mode)
-      const mx = mode === 'reps' ? bestWeightForEntry(en) : Math.max(0, ...rows.map(s => mode === 'cardio' ? (s.speed || 0) : mode === 'time' ? (s.sec || 0) : (s.w || 0)))
-      if (mx > 0) return { mx, unit: mode === 'cardio' ? 'km/h' : mode === 'time' ? 's' : S.unit }
+      const data = metricDataOf(workouts[i], id)
+      if (!data.mode) continue
+      const mode = data.mode
+      const rows = data.rows
+      const mx = mode === 'reps'
+        ? data.best
+        : Math.max(0, ...rows.map(s => mode === 'cardio' ? toSpeed(s.speed || 0, speedUnit) : mode === 'time' ? (s.sec || 0) : (s.w || 0)))
+      if (mx > 0) return { mx, unit: mode === 'cardio' ? speedLabel(speedUnit) : mode === 'time' ? 's' : S.unit }
       // Unloaded reps work still has a current figure — its rep count. Without this the whole
       // picker label went blank and the exercise sorted to the bottom as if it had no history.
       if (mode === 'reps') {
-        const reps = Math.max(0, ...rows.map(s => Number(s.r) || 0))
+        const reps = Math.max(0, ...rows.map(completedRepsOf))
         if (reps > 0) return { mx: reps, unit: t('reps') }
       }
     }
@@ -356,9 +376,11 @@ export default function Stats({ embedded = false }) {
   // target also contains timed/cardio work. Entries without reps rows use their selected mode.
   const curMode = curEx ? (() => {
     for (let i = workouts.length - 1; i >= 0; i--) {
-      const en = workouts[i].entries.find(e => e.id === curEx)
-      if (en) {
-        const mode = metricModeForEntry(en)
+      const data = metricDataOf(workouts[i], curEx)
+      if (data.mode) return data.mode
+      const entries = entriesForExercise(workouts[i], curEx)
+      for (let j = entries.length - 1; j >= 0; j--) {
+        const mode = metricModeForEntry(entries[j])
         if (mode) return mode
       }
     }
@@ -371,27 +393,26 @@ export default function Stats({ embedded = false }) {
   // them (issue #5). When nothing in an exercise's history was ever loaded, the progress IS
   // the rep count, so plot that. Add a weighted set later and it switches back to weight on
   // its own, which is also the honest reading: that is when load became the thing improving.
-  const repsOnly = curEx && curMode === 'reps' && !workouts.some(w => {
-    const en = w.entries.find(e => e.id === curEx)
-    return en && bestWeightForEntry(en) > 0
-  })
-  const bestRepsOf = en => Math.max(0, ...metricRowsForEntry(en, 'reps').map(s => Number(s.r) || 0))
-  const metric = s => curCardio ? (s.speed || 0) : curTimed ? (s.sec || 0) : (s.w || 0)
-  const exUnit = curCardio ? 'km/h' : curTimed ? 's' : repsOnly ? t('reps') : S.unit
+  const repsOnly = curEx && curMode === 'reps' && !workouts.some(w =>
+    entriesForExercise(w, curEx).some(en => bestWeightForEntry(en) > 0))
+  const metric = s => curCardio ? toSpeed(s.speed || 0, speedUnit) : curTimed ? (s.sec || 0) : (s.w || 0)
+  const exUnit = curCardio ? speedLabel(speedUnit) : curTimed ? 's' : repsOnly ? t('reps') : S.unit
   let exPts = [], exList = [], exBest = 0
   if (curEx) {
     workouts.forEach(w => {
-      const en = w.entries.find(e => e.id === curEx)
-      if (en) {
-        const loggedMode = metricModeForEntry(en)
-        if (loggedMode !== curMode) return
-        const doneSets = metricRowsForEntry(en, curMode)
+      const data = metricDataOf(w, curEx)
+      if (data.mode === curMode) {
+        const doneSets = data.rows
+        const representative = data.entries.at(-1)?.entry
         const mx = curMode === 'reps'
-          ? (repsOnly ? bestRepsOf(en) : bestWeightForEntry(en))
+          ? (repsOnly ? Math.max(0, ...doneSets.map(completedRepsOf)) : data.best)
           : Math.max(0, ...doneSets.map(metric))
         if (mx > 0) {
-          exPts.push({ t: w.start, y: mx, d: w.d, sets: doneSets, target: en.target })
-          if (mx > exBest) exBest = mx
+          exPts.push({ t: w.start, y: mx, d: w.d, sets: doneSets, target: representative?.target })
+          // Weighted work on an assistance machine reads the other way: the smallest load is the
+          // best (issue #232). Reps, duration and speed are always "more is better".
+          const better = curMode === 'reps' && !repsOnly ? betterWeight(curEx, exBest || mx, mx) : Math.max(exBest, mx)
+          exBest = exBest > 0 ? better : mx
         }
       }
     })
@@ -445,16 +466,26 @@ export default function Stats({ embedded = false }) {
     </div>
 
     <div className="card">
-      <h2>{t('Activity — last 12 months')} <span className="dim" style={{ textTransform: 'none', letterSpacing: 0 }}>· {t('by time trained')}</span></h2>
-      <Heatmap S={S} onDay={iso => { const ws = workouts.filter(w => w.d === iso); if (ws.length === 1) workoutDetailSheet(ws[0]); else if (ws.length) calendarSheet(iso) }} />
+      <h2>{t('Activity — last 12 months')}</h2>
+      <Heatmap
+        S={S}
+        metric={S.heatmapMetric === 'vol' ? 'vol' : 'time'}
+        onMetricChange={metric => useStore.getState().update(s => { s.heatmapMetric = metric })}
+        onDay={iso => { const ws = workouts.filter(w => workoutDay(w) === iso); if (ws.length === 1) workoutDetailSheet(ws[0]); else if (ws.length) calendarSheet(iso) }}
+      />
     </div>
 
     {workouts.length > 0 && <MuscleBalance S={S} />}
+    {workouts.length > 0 && <div className="card row between" style={{ alignItems: 'center', gap: 12 }}>
+      <div style={{ minWidth: 0 }}><h2 style={{ margin: 0 }}>{t('Structural balance')}</h2>
+        <div className="muted small" style={{ marginTop: 4 }}>{t('See which lift is holding back the rest.')}</div></div>
+      <Button size="sm" variant="tinted" trailingIcon="chevronRight" style={{ flexShrink: 0 }} onClick={() => nav('/structural-balance')}>{t('Open')}</Button>
+    </div>}
     {hasEffort(S) && <EffortCard S={S} />}
 
     <div className="cols">
       <div className="card">
-        <div className="row between" style={{ marginBottom: 8 }}>
+        <div className="row between bw-head" style={{ marginBottom: 8 }}>
           <h2 style={{ margin: 0 }}>{t('Body weight')}</h2>
           <div className="row" style={{ gap: 8 }}>
             <Button size="sm" icon="target" style={S.targetW ? { color: 'var(--yellow)' } : undefined} onClick={goalSheet}>{S.targetW ? fmtNum(S.targetW) : t('Goal')}</Button>
@@ -464,6 +495,10 @@ export default function Stats({ embedded = false }) {
         <Segmented className="seg-range" value={range} onChange={setRange}
           options={[{ value: 30, label: '1M' }, { value: 90, label: '3M' }, { value: 365, label: '1Y' }, { value: 0, label: t('All') }]} />
         <div className="chart"><LineChart points={bwPts} h={160} unit={S.unit} goal={S.targetW} /></div>
+        {/* every weigh-in, week by week with its average (Discord 'Weight') */}
+        {S.bodyweight.length > 0 && <div className="row" style={{ justifyContent: 'flex-end', marginTop: 4 }}>
+          <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={weighInsSheet}>{t('All weigh-ins')}</Button>
+        </div>}
       </div>
 
       <div className="card">
@@ -471,7 +506,7 @@ export default function Stats({ embedded = false }) {
         {exHist.length ? <>
           <div className="sect-b" style={{ marginBottom: 10 }}>
             <SelectRow title={t('Exercise')} sheetTitle={t('Exercise progress')} value={curEx} onChange={setExId} stackedValue
-              options={exHist.map(id => ({ value: id, label: nameOf(id) + (exCurrent[id].mx ? ' ' + '—' + ' ' + fmtNum(exCurrent[id].mx) + ' ' + exCurrent[id].unit : '') }))}
+              options={exHist.map(id => ({ value: id, label: (EXIDX[id] ? exerciseNameText(EXIDX[id]) : nameOf(id)) + (exCurrent[id].mx ? ' ' + '—' + ' ' + fmtNum(exCurrent[id].mx) + ' ' + exCurrent[id].unit : '') }))}
               search={{
                 placeholder: t('Search…'),
                 label: t('Search…'),
@@ -486,7 +521,7 @@ export default function Stats({ embedded = false }) {
               : <LineChart points={onE1 ? e1ChartPts : topPts} h={150} unit={exUnit} color="var(--blue)" />}
           </div>
           <div style={{ marginTop: 8 }}>{exList.map((p, i) => <div key={i} className="row between small" style={{ padding: '6px 0', borderBottom: 'var(--hair) solid var(--sep)' }}>
-            <span className="muted">{fmtDate(p.d, true)}</span><span>{p.sets.map(s => setLabel(curEx, s, p.target)).join('  ')}</span></div>)}</div>
+            <span className="muted">{fmtDate(p.d, true)}</span><span>{p.sets.map(s => setLabel(curEx, s, p.target, speedUnit)).join('  ')}</span></div>)}</div>
           <div className="small dim" style={{ marginTop: 8 }}>
             {onEff ? t('Average effort per workout') : onE1 ? t('Estimated 1RM per workout') : curCardio ? t('Top speed per workout') : curTimed ? t('Longest hold per workout') : repsOnly ? t('Most reps in a set per workout') : t('Best set weight per workout')}
             {onEff ? '' : <> · {t('Best:')}{' '}<b className="accent">{fmtNum(onE1 ? e1Best.est : exBest)} {onE1 ? S.unit : exUnit}</b></>}

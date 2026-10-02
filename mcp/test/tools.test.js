@@ -129,6 +129,12 @@ describe('get_routine', () => {
     expect(r.exercises[0]).toMatchObject({ reps: 8, reps_min: 8, reps_max: 12 })
   })
 
+  test('summarises a double-progression range as the range, not as its top', () => {
+    Object.assign(S.routines[0].ex[0], { mode: 'reps', sets: 3, reps: 12, repsMin: 8, weight: 40 })
+    const r = call('get_routine', { routine_id: S.routines[0].id })
+    expect(r.exercises[0].summary).toBe('3 × 8–12 · 40 kg')
+  })
+
   test('reports an exercise\'s own rest, and leaves it out when it inherits the timer', () => {
     S.routines[0].ex[0].restSec = 180
     delete S.routines[0].ex[1]?.restSec
@@ -754,21 +760,67 @@ describe('preview_session', () => {
     expect(out.overridden[0].reason).toMatch(/Every rep last time/)
   })
 
-  test('reps carry from the last session even when the routine asks for something else', () => {
-    only({ id: '0025', sets: 2, reps: 12, weight: 60 }, {
+  const fiveLastTime = [{
+    id: 'w1', d: '2026-07-20', routineId: 'r-preview', name: 'Preview',
+    entries: [{
+      id: '0025',
+      target: { id: '0025', sets: 2, reps: 5, weight: 60 },
+      sets: [{ w: 60, r: 5, done: true }, { w: 60, r: 5, done: true }]
+    }]
+  }]
+
+  test('reps are the routine\'s own by default, whatever was logged last time', () => {
+    only({ id: '0025', sets: 2, reps: 12, weight: 60 }, { workouts: fiveLastTime })
+    const out = call('preview_session')
+    const e = out.exercises[0]
+    expect(out.starts_from).toBe('plan')
+    expect(e.opening_sets.map(s => s.r)).toEqual([12, 12])
+    expect(e.reps_source).toBe('routine_plan')
+    expect(e.changed).not.toContain('reps')
+  })
+
+  test('reps carry from the last session when the profile starts planned sessions from it', () => {
+    only({ id: '0025', sets: 2, reps: 12, weight: 60 }, { workouts: fiveLastTime })
+    S.startFrom = 'last'
+    _seedStateForTests(S)
+    const out = call('preview_session')
+    const e = out.exercises[0]
+    expect(out.starts_from).toBe('last_session')
+    expect(e.opening_sets.map(s => s.r)).toEqual([5, 5])   // not the 12 the routine stores
+    expect(e.reps_source).toBe('last_session')
+    expect(e.changed).toContain('reps')
+  })
+
+  test('the weight comes from this routine\'s own last session, not another routine\'s (#216)', () => {
+    only({ id: '0025', sets: 2, reps: 10, weight: 60 }, {
+      workouts: [
+        { id: 'w1', d: '2026-07-20', routineIds: ['r-preview'], name: 'Preview', entries: [{ id: '0025', rid: 'r-preview', target: { sets: 2, reps: 10, weight: 60 }, sets: [{ w: 60, r: 10, done: true }, { w: 60, r: 10, done: true }] }] },
+        { id: 'w2', d: '2026-07-22', routineIds: ['r-light'], name: 'Light', entries: [{ id: '0025', rid: 'r-light', target: { sets: 2, reps: 15, weight: 40 }, sets: [{ w: 40, r: 15, done: true }, { w: 40, r: 15, done: true }] }] },
+      ]
+    })
+    const e = call('preview_session').exercises[0]
+    expect(e.opening_sets.map(s => [s.w, s.r])).toEqual([[62.5, 10], [62.5, 10]])
+    expect(e.weight_source).toBe('progression')
+  })
+
+  test('an edited routine restarts from its new reps, and says why (#275)', () => {
+    only({ id: '0025', sets: 2, reps: 10, weight: 60 }, {
       workouts: [{
-        id: 'w1', d: '2026-07-20', routineId: 'r-preview', name: 'Preview',
+        id: 'w1', d: '2026-07-20', routineIds: ['r-preview'], name: 'Preview',
         entries: [{
-          id: '0025',
-          target: { id: '0025', sets: 2, reps: 5, weight: 60 },
-          sets: [{ w: 60, r: 5, done: true }, { w: 60, r: 5, done: true }]
+          id: '0025', rid: 'r-preview',
+          planned: { sets: 2, reps: 15, weight: 60 },
+          target: { sets: 2, reps: 15, weight: 60 },
+          sets: [{ w: 60, r: 15, done: true }, { w: 60, r: 15, done: true }]
         }]
       }]
     })
     const e = call('preview_session').exercises[0]
-    expect(e.opening_sets.map(s => s.r)).toEqual([5, 5])   // not the 12 the routine stores
-    expect(e.reps_source).toBe('last_session')
-    expect(e.changed).toContain('reps')
+    expect(e.prescription.kind).toBe('hold')
+    expect(e.prescription.why).toBe('Plan changed — starting from your new target.')
+    expect(e.opening_sets.map(s => [s.w, s.r])).toEqual([[60, 10], [60, 10]])
+    expect(e.reps_source).toBe('routine_plan')
+    expect(e.differs_from_plan).toBe(false)
   })
 
   test('planned drop sets show up on the opening rows', () => {
@@ -846,5 +898,31 @@ describe('preview_session', () => {
   test('an unknown routine_id is an error, not an empty session', () => {
     only({ id: '0025', sets: 3, reps: 8, weight: 50 })
     expect(() => call('preview_session', { routine_id: 'nope' })).toThrow(/no routine with id/)
+  })
+})
+
+/* ---------- a workout's photos and videos ---------- */
+
+// workouts[].media — progress photos and form-check clips — are the owner's own files. The MCP
+// bridge answers from the same state file, so it must not pass on a single hash, poster or even
+// the key: an LLM client has nothing to do with them.
+describe('workout photos and videos never leave through MCP', () => {
+  const HASH = 'a1'.repeat(32), POSTER = 'b2'.repeat(32)
+  test('no tool answer carries them', () => {
+    for (const w of S.workouts) {
+      w.media = [{ kind: 'video', hash: HASH, mime: 'video/mp4', size: 900000, width: 720, height: 1280, dur: 9, codec: 'avc1', poster: { hash: POSTER, mime: 'image/webp', size: 9000, width: 270, height: 480 }, at: 1 }]
+    }
+    _seedStateForTests(S)
+    const newest = call('list_workouts', {}).workouts[0]
+    const answers = [
+      call('list_workouts', {}),
+      call('get_workout', newest.id ? { workout_id: newest.id } : { date: newest.date }),
+      call('muscle_balance', { period: 'all' }),
+      call('muscle_balance', { period: 'month' }),
+    ]
+    for (const a of answers) {
+      const json = JSON.stringify(a)
+      for (const leak of [HASH, POSTER, '"media"', '"poster"', 'video/mp4']) expect(json).not.toContain(leak)
+    }
   })
 })

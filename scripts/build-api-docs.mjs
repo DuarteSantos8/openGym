@@ -123,10 +123,17 @@ const TAGS = {
   meta: { title: 'Meta', side: 'Health &amp; public config' },
   auth: { title: 'Auth', side: 'Passkeys &amp; sessions' },
   pairing: { title: 'Pairing', side: 'Connect the mobile app' },
+  password: { title: 'Password', side: 'Optional name &amp; password (PASSWORD_LOGIN)' },
+  passkeys: { title: 'Passkeys', side: 'More passkeys &amp; device links' },
   data: { title: 'Data', side: 'State sync' },
   push: { title: 'Push', side: 'Notifications &amp; rest timer' },
   activity: { title: 'Activity', side: 'Live presence' },
-  admin: { title: 'Admin', side: 'Users, invites, audit log' }
+  social: { title: 'Social', side: 'Friends, profiles &amp; shared plans' },
+  media: { title: 'Media', side: 'Photos &amp; videos of your exercises &amp; workouts' },
+  // A tag missing from this map renders nowhere at all, silently — so every tag in the
+  // spec needs a line here.
+  coach: { title: 'AI Coach', side: 'Plans, reviews, debriefs' },
+  admin: { title: 'Admin', side: 'Users, invites, audit log, Coach' }
 }
 
 // "Admin: list all users" → "List all users": the section heading and the ADMIN

@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useUI } from '../store/useUI.js'
+import { keyboardOpen } from '../lib/viewport-guard.js'
 
 // One bottom sheet (or centered dialog) with swipe-to-dismiss.
 function Sheet({ sheet }) {
@@ -79,6 +80,10 @@ function Sheet({ sheet }) {
   }, [])
 
   const close = () => closeSheet(sheet.id)
+  // Full screen, on black: a photo or video opened from a workout (WorkoutMedia.jsx). No
+  // backdrop to tap, no drag to dismiss — the viewer has its own close button, and back closes
+  // it like any sheet.
+  if (sheet.kind === 'viewer') return <div>{sheet.render(close)}</div>
   if (sheet.kind === 'center') {
     return (
       <div>
@@ -162,7 +167,11 @@ export default function Modals() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [sheets.length])
-  useEffect(() => {
+  // A layout effect, not a passive one: the pin and, above all, the un-pin plus the scroll
+  // restore have to land in the same frame as the sheet's own mount/unmount. Run after paint,
+  // iOS showed a frame with the body un-pinned at scroll 0 — the page "jumped down and back" on
+  // every RIR pick, which closes the sheet and starts a rest in one tap (2026-09-18).
+  useLayoutEffect(() => {
     if (!sheets.length) return
     // A text field on the page behind (a set's weight, the Library search) keeps focus when a
     // button opens a sheet — WebKit does not blur on button taps — and its keyboard then
@@ -176,10 +185,19 @@ export default function Modals() {
     return () => {
       b.position = b.top = b.left = b.right = b.width = ''
       window.scrollTo(0, y)
+      // iOS scrolls asynchronously; a restore issued in the same task as the un-pin can be applied
+      // a frame late or against the still-short layout. Say it once more on the next frame.
+      if (typeof window.requestAnimationFrame === 'function') window.requestAnimationFrame(() => { if (document.body.style.position !== 'fixed') window.scrollTo(0, y) })
       // If the sheet closed with the keyboard still up (tap "+" in the picker, then finish),
       // iOS scrolls the page again while the keyboard dismisses — after the line above ran.
       // Ask once more when that animation is over. The window-level guard in
       // lib/viewport-guard.js covers the keyboard closing while a sheet stays open.
+      // Only with the keyboard up, though: without one there is nothing to undo, and a late
+      // restore would overwrite a scroll the page behind made on purpose because the sheet
+      // closed — the workout list going to the current exercise after ⋯ → Layout → List
+      // (issue #224). At this point the sheet's field is already out of the DOM but the
+      // keyboard has not started to go, so the visual viewport still tells the truth.
+      if (!keyboardOpen()) return
       window.setTimeout(() => { if (document.body.style.position !== 'fixed') window.scrollTo(0, y) }, 350)
     }
   }, [sheets.length > 0])

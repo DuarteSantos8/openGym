@@ -122,6 +122,27 @@ describe('e1rmSeries / best1RM', () => {
     expect(best1RM({ workouts: [] }, 'bench')).toBeNull()
     expect(best1RM({}, 'bench')).toBeNull()
   })
+
+  it('takes the strongest duplicate occurrence once per dated workout', () => {
+    const workouts = [{ d: '2026-02-01', start: 1, entries: [
+      { id: 'bench', sets: [{ w: 60, r: 5, done: true }] },
+      { id: 'bench', sets: [{ w: 100, r: 5, done: true }] },
+    ] }]
+    expect(e1rmSeries({ workouts }, 'bench')).toEqual([{ t: 1, d: '2026-02-01', y: 116.7, w: 100, r: 5 }])
+    expect(best1RM({ workouts }, 'bench')).toMatchObject({ est: 116.7, w: 100, r: 5, d: '2026-02-01' })
+  })
+
+  it('estimates each completed per-side limb and leaves timed/cardio rows out', () => {
+    const sides = { id: 'bench', target: { mode: 'reps', side: true }, sets: [{ w: 100, r: 10, done: false,
+      sides: { L: { w: 100, r: 5, done: true }, R: { w: 90, r: 5, done: false } } }] }
+    expect(bestSetOf(sides)).toEqual({ est: 116.7, w: 100, r: 5 })
+    expect(e1rmSeries({ workouts: [{ start: 1, d: '2026-02-01', entries: [sides] }] }, 'bench'))
+      .toEqual([{ t: 1, d: '2026-02-01', y: 116.7, w: 100, r: 5 }])
+    expect(e1rmSeries({ workouts: [{ start: 1, d: '2026-02-01', entries: [
+      { id: 'hold', target: { mode: 'time' }, sets: [{ sec: 60, w: 200, r: 5, done: true }] },
+      { id: 'run', target: { mode: 'cardio' }, sets: [{ min: 20, speed: 9, r: 5, done: true }] },
+    ] }] }, 'hold')).toEqual([])
+  })
 })
 
 describe('is1RMRecord', () => {

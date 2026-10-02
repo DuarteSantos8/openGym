@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { copyRoutine } from './routines.js'
+import { copyRoutine, deleteRoutine } from './routines.js'
 
 const routine = {
   id: 'r1',
@@ -86,5 +86,36 @@ describe('copyRoutine of a copy', () => {
     expect(second.name).toBe('Push (Copy 2)')
     expect(copyRoutine(second).name).toBe('Push (Copy 3)')
     expect(copyRoutine({ id: 'r', name: 'Push (Kopie)', ex: [] }, 'Kopie').name).toBe('Push (Kopie 2)')
+  })
+})
+
+describe('deleteRoutine', () => {
+  const store = () => ({
+    routines: [{ id: 'r1', name: 'Push', ex: [] }, { id: 'r2', name: 'Pull', ex: [] }],
+    // Monday combines both, Wednesday is Pull alone, Friday a legacy scalar day.
+    week: { 1: ['r1', 'r2'], 3: ['r2'], 5: 'r1' },
+    dayPlan: { '2099-01-01': 'r2', '2099-01-02': 'r1', '2099-01-03': 'rest' }
+  })
+
+  it('removes the routine and pulls it from every day, dropping a day it leaves empty', () => {
+    const s = store()
+    deleteRoutine(s, 'r2')
+    expect(s.routines.map(r => r.id)).toEqual(['r1'])
+    expect(s.week[1]).toEqual(['r1'])
+    expect(s.week[3]).toBeUndefined()
+    expect(s.week[5]).toBe('r1')   // a day that never named it is left as it was
+  })
+
+  it('drops the reschedules naming it and returns them, leaving every other one', () => {
+    const s = store()
+    expect(deleteRoutine(s, 'r2')).toEqual({ '2099-01-01': 'r2' })
+    expect(s.dayPlan).toEqual({ '2099-01-02': 'r1', '2099-01-03': 'rest' })
+  })
+
+  it('reads a legacy scalar day as a list of one', () => {
+    const s = store()
+    deleteRoutine(s, 'r1')
+    expect(s.week[5]).toBeUndefined()
+    expect(s.week[1]).toEqual(['r2'])
   })
 })

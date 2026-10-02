@@ -119,3 +119,20 @@ describe('matchExercise', () => {
     expect(matchExercise(benchPress, 'bench')).toBe(true)
   })
 })
+
+// Four sled press names came in from the dataset with the degree sign's UTF-8 bytes read as
+// cp1251 ("45в°"): they showed that way everywhere, and a search for 45° missed them.
+describe('the exercise dataset', () => {
+  it('has no names garbled by a wrong text encoding', async () => {
+    const { EXDB } = await import('./exercises-data.js')
+    const garbled = EXDB.filter(e => /в°|Ã|Â|â€/.test(e.n)).map(e => e.id + ' ' + e.n)
+    expect(garbled).toEqual([])
+    expect(EXDB.find(e => e.id === '0739').n).toBe('sled 45° leg press')
+  })
+
+  it('finds the sled presses by their angle', async () => {
+    const { EXDB } = await import('./exercises-data.js')
+    const found = EXDB.filter(e => matchExercise(e, '45° leg press')).map(e => e.id)
+    expect(found).toEqual(expect.arrayContaining(['0739', '1464', '0740']))
+  })
+})

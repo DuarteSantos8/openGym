@@ -85,8 +85,16 @@ const DEFAULTS = {
   // Anonymous medians across profiles that opt in ("compare with others"). Off by default: it
   // is the one feature where one person's numbers feed into what another person sees.
   community: false,
+  // How long a chat/refine message or review note can be. Was a bare 1000 literal in three
+  // different files (routes.js, jobs.js, payload.js) before this was configurable — see issue
+  // #267. The admin route clamps a write to [MAX_MESSAGE_LEN_FLOOR, MAX_MESSAGE_LEN_CEILING];
+  // payload.js's own MAX_NOTE_CHARS ceiling has to stay at or above the latter, or a raised
+  // limit here would still get clipped back down at build().
+  maxMessageLen: 1000,
   log: []
 };
+export const MAX_MESSAGE_LEN_FLOOR = 200;
+export const MAX_MESSAGE_LEN_CEILING = 4000;
 const PER_PROVIDER = ['auth', 'models', 'providerOptions', 'boundUid'];
 const isPlainObj = v => !!v && typeof v === 'object' && !Array.isArray(v);
 const LOG_MAX = 100;

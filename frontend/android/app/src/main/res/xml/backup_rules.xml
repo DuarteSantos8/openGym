@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android Auto Backup up to Android 11 (API 30): what the cloud backup takes of the app.
+     Everything, as before, except the local copies of the photos and videos of custom exercises
+     (src/lib/media-store-fs.js, Directory.Library, which is the files directory). Auto Backup
+     skips an app's WHOLE backup once it passes 25 MB, and a few videos would take the state
+     mirror (opengym-state.json) down with them. A paired phone gets the files back from its
+     server; a phone in local mode keeps them in the zip export. -->
+<full-backup-content>
+    <exclude domain="file" path="opengym-media/" />
+</full-backup-content>

@@ -4,6 +4,9 @@ import { parseHTML } from 'linkedom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import Workout from './Workout.jsx'
 import { nextPrescription } from '../lib/progression.js'
+import { buildCombinedEntries } from '../lib/session-merge.js'
+import { buildCompletedWorkout } from '../lib/finish-workout.js'
+import { isWarmupRow } from '../lib/workout-model.js'
 
 const mocks = vi.hoisted(() => {
   const state = {
@@ -11,6 +14,7 @@ const mocks = vi.hoisted(() => {
     timer: null,
     work: null,
     startRest: vi.fn(),
+    startWork: vi.fn(),
     stopRest: null,
     stopWork: null,
     confirmSheet: vi.fn(),
@@ -20,10 +24,12 @@ const mocks = vi.hoisted(() => {
     exConfigSheet: vi.fn(),
     toast: vi.fn(),
     scrollCalls: [],
+    headerHeight: 0,
     swapActiveWorkoutExercise: vi.fn(),
     menuSheet: vi.fn(),
     effortPickerSheet: vi.fn(),
     exerciseHistorySheet: vi.fn(),
+    renameWorkoutSheet: vi.fn(),
   }
   state.stopRest = vi.fn(() => { state.timer = null })
   state.stopWork = vi.fn(() => { state.work = null })
@@ -43,7 +49,7 @@ const mocks = vi.hoisted(() => {
     stopRest: state.stopRest,
     stopWork: state.stopWork,
     shiftRestOwner: vi.fn(),
-    startWork: vi.fn(),
+    startWork: state.startWork,
     toast: state.toast,
   })
   return state
@@ -67,6 +73,7 @@ vi.mock('../sheets.jsx', () => ({
   exerciseDetailSheet: vi.fn(),
   topWeightSheet: mocks.topWeightSheet,
   finishWorkout: vi.fn(),
+  exitWorkoutEdit: vi.fn(),
   workoutCompleteSheet: mocks.workoutCompleteSheet,
   confirmSheet: mocks.confirmSheet,
   swapActiveWorkoutExercise: mocks.swapActiveWorkoutExercise,
@@ -76,6 +83,7 @@ vi.mock('../sheets.jsx', () => ({
   // sessionNoteSheet during render, so a missing export is a render crash, not a no-op.
   exerciseNoteSheet: vi.fn(),
   sessionNoteSheet: vi.fn(),
+  renameWorkoutSheet: mocks.renameWorkoutSheet,
   effortPickerSheet: mocks.effortPickerSheet,
   exerciseHistorySheet: mocks.exerciseHistorySheet,
   addRoutineToSessionSheet: vi.fn(),
@@ -111,6 +119,8 @@ function workout(entries, cur = 0, overrides = {}) {
   }
 }
 
+const frames = []
+
 function installDom() {
   const parsed = parseHTML('<!doctype html><html><body><div id="root"></div></body></html>')
   dom = parsed.window
@@ -120,6 +130,13 @@ function installDom() {
   for (const key of ['HTMLElement', 'Node', 'Element', 'Event', 'Blob']) globalThis[key] = dom[key]
   dom.Element.prototype.scrollIntoView = vi.fn(function (options) {
     mocks.scrollCalls.push({ node: this, options })
+  })
+  frames.length = 0
+  dom.requestAnimationFrame = cb => frames.push(cb)
+  dom.cancelAnimationFrame = id => { const i = frames.indexOf(id); if (i >= 0) frames.splice(i, 1) }
+  // linkedom has no layout; the sticky workout header reports the height a test gives it.
+  Object.defineProperty(dom.HTMLElement.prototype, 'offsetHeight', {
+    configurable: true, get() { return this.classList.contains('whdr') ? mocks.headerHeight : 0 },
   })
   globalThis.IS_REACT_ACT_ENVIRONMENT = true
   container = document.getElementById('root')
@@ -185,6 +202,14 @@ async function addExerciseThroughSheets(ex = { id: 'added-exercise' }, cfg = { m
   await act(async () => { configCall[2](cfg) })
 }
 
+// The list's scroll-to-current waits for the next frame. linkedom has no requestAnimationFrame,
+// and leaning on the component's 0 ms fallback made this race under a loaded full-suite run — so
+// the DOM gets a frame queue the test drains itself, which is also the path a browser takes.
+async function flushFrame() {
+  const due = frames.splice(0)
+  await act(async () => { due.forEach(cb => cb(0)) })
+}
+
 async function rerenderAt(cur) {
   mocks.S.active.cur = cur
   await act(async () => { root.render(React.createElement(Workout)) })
@@ -195,6 +220,25 @@ beforeEach(() => {
   mocks.timer = null
   mocks.work = null
   mocks.scrollCalls.length = 0
+  mocks.headerHeight = 0
+})
+
+it('edits a saved set without running live completion, rest or success feedback', async () => {
+  await mount([exercise('plain-bench', [false], {
+    plan: { policy: 'linear', kind: 'first', why: ['Nothing logged yet — this session sets the baseline.'] },
+  })], 0, {
+    active: { editingWorkoutId: 'saved' },
+  })
+  await toggleSet(0)
+  expect(mocks.S.active.entries[0].sets[0].done).toBe(true)
+  expect(mocks.startRest).not.toHaveBeenCalled()
+  expect(mocks.workoutCompleteSheet).not.toHaveBeenCalled()
+  expect(mocks.toast).not.toHaveBeenCalled()
+  expect(container.textContent).toContain('Editing a saved workout')
+  expect(container.querySelector('.progline')).toBeNull()
+  const more = container.querySelector('button[aria-label="More"]')
+  await act(async () => { more.dispatchEvent(new dom.Event('click', { bubbles: true })) })
+  expect(mocks.menuSheet.mock.calls.at(-1)[0].items.filter(Boolean).map(item => item.label)).not.toContain('Progression settings')
 })
 
 afterEach(async () => {
@@ -361,6 +405,30 @@ describe('Workout set completion flow', () => {
     expect(mocks.startRest).not.toHaveBeenCalled()
   })
 
+  // A rest that ran out stays on screen as Ready (#204) until it is dismissed. It is not a rest
+  // counting down, so re-checking a finished set still owes the rest it always did (issue #3).
+  it('starts the rest a re-check owes while the last one only shows Ready', async () => {
+    await mount([exercise('current', [true, false, false])])
+    mocks.timer = { left: 0, total: 90, endsAt: Date.now() - 1000, forIdx: 0, ready: true }
+
+    await toggleSet(0)
+    await rerender()
+    await toggleSet(0)
+
+    expect(mocks.startRest).toHaveBeenCalledWith(90, 0)
+  })
+
+  it('leaves a rest that is still counting down alone on a re-check', async () => {
+    await mount([exercise('current', [true, false, false])])
+    mocks.timer = { left: 40, total: 90, endsAt: Date.now() + 40000, forIdx: 0 }
+
+    await toggleSet(0)
+    await rerender()
+    await toggleSet(0)
+
+    expect(mocks.startRest).not.toHaveBeenCalled()
+  })
+
   it('leaves a completed superset selected without opening a top-weight sheet', async () => {
     const group = 'superset-1'
     await mount([
@@ -477,6 +545,59 @@ describe('Workout add exercise flow', () => {
       'current-group', 'current-group',
     ])
     expect(mocks.S.active.cur).toBe(2)
+    // The confirm says where the exercise goes: this workout, not the routine (QA 1.3.9).
+    expect(mocks.exConfigSheet.mock.calls.at(-1)[7]).toBe('Add to this workout')
+  })
+})
+
+// An exercise added to the block of a routine kept out of progression (a rehab or deload
+// routine) belongs to that block: its routine's own numbers, and no count toward progression.
+describe('adding an exercise to a block kept out of progression', () => {
+  const BENCH = '0025'
+  const history = [{
+    d: '2026-08-27', routineIds: ['main'],
+    entries: [{ id: BENCH, rid: 'main', target: { sets: 1, reps: 5, weight: 100 }, sets: [{ w: 100, r: 5, done: true }] }],
+  }]
+  const routines = [{ id: 'rehab', name: 'Rehab', excludeFromProgression: true, ex: [] }, { id: 'main', name: 'Main', ex: [] }]
+
+  it('is kept out too, at the numbers typed for it', async () => {
+    await mount([exercise('band-pull', [false], { rid: 'rehab', noProg: true })], 0, { routines, workouts: history })
+    await addExerciseThroughSheets({ id: BENCH }, { mode: 'reps', sets: 1, reps: 12, weight: 40 })
+    const added = mocks.S.active.entries[1]
+    expect(added).toMatchObject({ id: BENCH, rid: 'rehab', noProg: true })
+    expect(added.plan.kind).toBe('off')
+    expect(added.sets.map(s => [s.w, s.r])).toEqual([[40, 12]])
+  })
+
+  it('still progresses when the block is a regular routine\'s', async () => {
+    await mount([exercise('row', [false], { rid: 'main' })], 0, { routines, workouts: history })
+    await addExerciseThroughSheets({ id: BENCH }, { mode: 'reps', sets: 1, reps: 5, weight: 40 })
+    const added = mocks.S.active.entries[1]
+    expect(added.noProg).toBeUndefined()
+    expect(added.plan.kind).toBe('up')
+    expect(added.sets.map(s => s.w)).toEqual([102.5])
+  })
+
+  // #284 review: an exercise added to a workout logged into the past is built from what came
+  // before that day, like the rest of it, not from a session logged after it.
+  it('builds an exercise added to a workout logged into the past from the history before its day', async () => {
+    const later = [...history, {
+      d: '2026-08-31', routineIds: ['main'],
+      entries: [{ id: BENCH, rid: 'main', target: { sets: 1, reps: 5, weight: 102.5 }, sets: [{ w: 102.5, r: 5, done: true }] }],
+    }]
+    const past = { d: '2026-08-29', start: Date.parse('2026-08-29T18:00:00'), backfill: { durationMin: 60, replaceId: null } }
+    await mount([exercise('row', [false], { rid: 'main' })], 0, { routines, workouts: later, active: past })
+    await addExerciseThroughSheets({ id: BENCH }, { mode: 'reps', sets: 1, reps: 5, weight: 40 })
+    expect(mocks.S.active.entries[1].sets.map(s => s.w)).toEqual([102.5])
+  })
+
+  it('does not pass on an exercise kept out by hand for today (its ⋯ menu)', async () => {
+    await mount([exercise('row', [false], { rid: 'main', noProg: true })], 0, { routines, workouts: history })
+    await addExerciseThroughSheets({ id: BENCH }, { mode: 'reps', sets: 1, reps: 5, weight: 40 })
+    const added = mocks.S.active.entries[1]
+    expect(added.noProg).toBeUndefined()
+    expect(added.plan.kind).toBe('up')
+    expect(added.sets.map(s => s.w)).toEqual([102.5])
   })
 })
 
@@ -540,6 +661,116 @@ describe('active workout weight controls', () => {
     expect(mocks.S.active.entries[0].sets[0].sec).toBe(35)
     await press('Increase', '.setrow .stp.r')
     expect(mocks.S.active.entries[0].sets[0].w).toBe(62.5)
+  })
+})
+
+// A rest that starts while a hold is running takes the hold down (useUI: the two must never run
+// together), so the hold hands back what it held on the way out and its own row keeps it. It is
+// explicitly not a finish: the row stays unticked and starts no rest of its own, because the rest
+// that displaced it is the one counting down. And `sec` on a timed row is both the plan and the
+// log, so a part-held set must not become the next hold's target.
+describe('a hold a rest displaced', () => {
+  const timed = (sec = 30) => exercise('timed-plank', [false, false], {
+    target: { mode: 'time', sec, weight: 0, bodyweight: true },
+    sets: [{ sec, w: 0, done: false }, { sec, w: 0, done: false }],
+  })
+  const pressStart = async (index = 0) => {
+    const button = container.querySelectorAll('button.setgo')[index]
+    expect(button).toBeTruthy()
+    await act(async () => { button.dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    await rerender()
+  }
+  // What useUI.abandonWork hands the owner: the seconds held, and "this was not a finish".
+  const handBack = async (elapsed, call = 0) => {
+    await act(async () => { mocks.startWork.mock.calls[call][2](elapsed, { abandoned: true }) })
+    await rerender()
+  }
+
+  it('keeps its seconds, stays unticked and starts no rest', async () => {
+    await mount([timed()])
+    await pressStart(0)
+    mocks.startRest.mockClear()
+
+    await handBack(18)
+
+    expect(mocks.S.active.entries[0].sets[0]).toMatchObject({ sec: 18, done: false })
+    expect(mocks.startRest).not.toHaveBeenCalled()
+  })
+
+  it('shows what it held without becoming the next hold\'s target', async () => {
+    await mount([timed(30)])
+    await pressStart(0)
+    expect(mocks.startWork.mock.calls[0][0]).toBe(30)
+
+    await handBack(3)
+    expect(mocks.S.active.entries[0].sets[0]).toMatchObject({ sec: 3, planSec: 30, done: false })
+
+    await pressStart(0)                                          // hold it again
+    expect(mocks.startWork.mock.calls[1][0]).toBe(30)            // the plan, not the 3 s it managed
+  })
+
+  it('a plan you edited yourself survives the same way', async () => {
+    await mount([timed(55)])
+    await pressStart(0)
+    expect(mocks.startWork.mock.calls[0][0]).toBe(55)
+    await handBack(4)
+    await pressStart(0)
+    expect(mocks.startWork.mock.calls[1][0]).toBe(55)
+  })
+
+  it('and typing a duration is the new plan, so the plan it kept aside goes', async () => {
+    await mount([timed(30)])
+    await pressStart(0)
+    await handBack(3)
+    expect(mocks.S.active.entries[0].sets[0].planSec).toBe(30)
+
+    // The seconds stepper on a timed row is the '.stp.w' one (the first column).
+    const button = container.querySelector('.setrow .stp.w button[aria-label="Increase"]')
+    expect(button).toBeTruthy()
+    await act(async () => { button.dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    await rerender()
+
+    expect(mocks.S.active.entries[0].sets[0].planSec).toBeUndefined()
+    const typed = mocks.S.active.entries[0].sets[0].sec
+    await pressStart(0)
+    expect(mocks.startWork.mock.calls[1][0]).toBe(typed)         // what the field says, not the old plan
+  })
+
+  it('and once the row is ticked, the plan it kept aside goes', async () => {
+    await mount([timed(30)])
+    await pressStart(0)
+    await handBack(3)
+    expect(mocks.S.active.entries[0].sets[0].planSec).toBe(30)
+
+    await toggleSet(0)                                           // ticked by hand
+    expect(mocks.S.active.entries[0].sets[0].planSec).toBeUndefined()
+    expect(mocks.S.active.entries[0].sets[0].done).toBe(true)
+  })
+
+  // Ticking the held row's own Check is the same mechanism from the other side: the tick starts
+  // the rest, the rest displaces the hold, and the hand-back lands on the row the tick just
+  // ticked. So the row logs what was actually held rather than its target, and keeps no plan.
+  it('ticking the held row by hand logs what was held, not the target', async () => {
+    await mount([timed(30)])
+    await pressStart(0)
+    mocks.work = { left: 12, total: 30, endsAt: Date.now() + 12_000, label: 'timed-plank' }
+    await rerender()
+
+    await toggleSet(0)
+    await handBack(18)               // what useUI.abandonWork hands back under that tick
+
+    expect(mocks.S.active.entries[0].sets[0]).toMatchObject({ sec: 18, done: true })
+    expect(mocks.S.active.entries[0].sets[0].planSec).toBeUndefined()
+  })
+
+  it('a hold held to the end still logs and ticks, and keeps no plan behind', async () => {
+    await mount([timed(30)])
+    await pressStart(0)
+    await act(async () => { mocks.startWork.mock.calls[0][2](30) })   // no abandoned flag: a finish
+    await rerender()
+
+    expect(mocks.S.active.entries[0].sets[0]).toMatchObject({ sec: 30, done: true })
+    expect(mocks.S.active.entries[0].sets[0].planSec).toBeUndefined()
   })
 })
 
@@ -610,7 +841,8 @@ describe('progression guidance', () => {
     expect(button.getAttribute('type')).toBe('button')
     expect(button.getAttribute('aria-label')).toBe('Open progression settings')
     expect(mocks.exConfigSheet).toHaveBeenCalledOnce()
-    expect(mocks.exConfigSheet.mock.calls[0][1]).toBe(second.target)
+    // An entry with no stamped plan opens at its target.
+    expect(mocks.exConfigSheet.mock.calls[0][1]).toEqual(second.target)
     expect(mocks.exConfigSheet.mock.calls[0][4]).toBe(mocks.S.routines[0])
 
     mocks.exConfigSheet.mock.calls[0][2]({ ...second.target, prog: 'double', repsMin: 6 })
@@ -715,6 +947,134 @@ describe('progression guidance', () => {
     await act(async () => { root.render(React.createElement(Workout)) })
     expect(container.querySelector('.progline')?.textContent)
       .toContain('Double progression · Top of the rep range in every set — 2.5 kg more, back to 3 reps.')
+  })
+})
+
+// Editing an exercise mid-session rebuilds its open rows the way the session start builds them:
+// the same reps source and the same stamped target, so saving "2 × 10" over a session carried at
+// 15 opens 10s, and the target the session is judged by says what the rows say.
+describe('progression settings rebuild the rows like a session start', () => {
+  const history = [{
+    d: '2026-08-27',
+    entries: [{ id: 'plain-bench', target: { sets: 2, reps: 15, weight: 40 }, sets: [{ w: 40, r: 15, done: true }, { w: 40, r: 15, done: true }] }],
+  }]
+  const plan = { policy: 'linear', kind: 'up', weight: 42.5, why: ['Every rep last time — {0} {1} more.', 2.5, 'kg'] }
+  const saveTen = async state => {
+    await mount([exercise('plain-bench', [false, false], { plan, target: { mode: 'reps', sets: 2, reps: 15, weight: 40 } })], 0, state)
+    await pressProgression()
+    const save = mocks.exConfigSheet.mock.calls.at(-1)[2]
+    await act(async () => { save({ mode: 'reps', sets: 2, reps: 10, weight: 40, prog: 'linear' }) })
+    return mocks.S.active.entries[0]
+  }
+
+  it('opens the plan\'s reps and stamps the prescription into the target', async () => {
+    const saved = await saveTen({ workouts: history })
+    expect(saved.sets.map(s => [s.w, s.r])).toEqual([[42.5, 10], [42.5, 10]])
+    expect(saved.target).toMatchObject({ id: 'plain-bench', sets: 2, reps: 10, weight: 42.5 })
+    expect(saved.plan.kind).toBe('up')
+    // The plan this session now follows, so the next one can tell it apart from the routine's.
+    expect(saved.planned).toEqual({ sets: 2, reps: 10, weight: 40 })
+  })
+
+  it('carries last session\'s reps when the profile starts from the last session', async () => {
+    const saved = await saveTen({ workouts: history, startFrom: 'last' })
+    expect(saved.sets.map(s => s.r)).toEqual([15, 15])
+    expect(saved.target.reps).toBe(10)
+  })
+})
+
+// The settings sheet edits the plan, so it opens at the plan's sets and reps, not at today's
+// prescription. Opened at today's numbers, a save that changed nothing stamped a double
+// progression's raised session, or a bodyweight climb, as the plan: "Plan changed", the raise
+// undone within the session, the climb started again at the next one (#275).
+describe('saving progression settings unchanged', () => {
+  const BENCH = '0025'    // barbell bench press
+  const PUSHUP = '0662'   // push-up
+  const rows = entry => entry.sets.filter(s => !isWarmupRow(s)).map(s => [s.w, s.r])
+  // Start the routine for real, tick every row and log it the way finishing a workout does.
+  let day = 1
+  const trainOnce = st => {
+    const entries = buildCombinedEntries(st, ['A']).entries.map(e => ({ ...e, sets: e.sets.map(x => ({ ...x, done: true })) }))
+    const active = { id: 'w' + day, d: `2026-08-${String(day).padStart(2, '0')}`, start: day * 1000, routineIds: ['A'], name: 'A', entries }
+    day++
+    st.workouts.push(buildCompletedWorkout(active, { end: active.start + 1 }))
+  }
+  const history = (cfg, sessions) => {
+    const st = { unit: 'kg', exWeights: {}, routines: [{ id: 'A', name: 'A', ex: [cfg] }], workouts: [] }
+    for (let i = 0; i < sessions; i++) trainOnce(st)
+    return st
+  }
+  // What the sheet hands back when it is saved as it opened: its own fields, nothing else.
+  const unchanged = opened => {
+    const { sets, mode, reps, repsMin, weight, prog, repsMax } = opened
+    return JSON.parse(JSON.stringify({ sets, mode: mode || 'reps', reps, repsMin, weight, prog, repsMax }))
+  }
+  const saveUnchanged = async st => {
+    const built = buildCombinedEntries(st, ['A']).entries
+    await mount(built, 0, { routines: st.routines, workouts: st.workouts })
+    const before = structuredClone(mocks.S.active.entries[0])
+    await pressProgression()
+    const [, opened, save] = mocks.exConfigSheet.mock.calls.at(-1)
+    await act(async () => { save(unchanged(opened)) })
+    return { before, opened, after: mocks.S.active.entries[0] }
+  }
+  // Finish the session in front of you and build the next one from the same routine.
+  const next = st => {
+    const active = structuredClone(mocks.S.active)
+    active.entries.forEach(e => e.sets.forEach(x => { x.done = true }))
+    st.workouts.push(buildCompletedWorkout({ ...active, d: '2026-09-01', routineIds: ['A'] }, { end: Date.now() }))
+    return buildCombinedEntries(st, ['A']).entries[0]
+  }
+
+  it('keeps a double-progression raise in place, and the next session builds on it', async () => {
+    const st = history({ id: BENCH, sets: 3, reps: 12, repsMin: 8, weight: 40, prog: 'double' }, 1)
+    const { before, opened, after } = await saveUnchanged(st)
+    expect(before.plan.kind).toBe('up')
+    expect(opened).toMatchObject({ sets: 3, reps: 12, repsMin: 8 })
+    expect(rows(after)).toEqual([[42.5, 8], [42.5, 8], [42.5, 8]])
+    expect(after.plan.kind).toBe('up')
+    expect(after.planned).toEqual(before.planned)
+    expect(after.target).toMatchObject({ weight: 42.5, reps: 8, repsMin: 8 })
+    expect(container.querySelector('.planline')?.textContent).toBe('Plan: 3 × 8–12')
+    const following = next(st)
+    expect(following.plan.why[0]).not.toBe('Plan changed — starting from your new target.')
+    expect(rows(following)).toEqual([[42.5, 9], [42.5, 9], [42.5, 9]])
+  })
+
+  it('keeps a bodyweight climb, and the next session climbs on from it', async () => {
+    const st = history({ id: PUSHUP, sets: 2, reps: 10, weight: 0, bodyweight: true }, 3)
+    const { before, opened, after } = await saveUnchanged(st)
+    expect(rows(before)).toEqual([[0, 13], [0, 13]])
+    expect(opened).toMatchObject({ sets: 2, reps: 10 })
+    expect(rows(after)).toEqual([[0, 13], [0, 13]])
+    expect(after.planned).toEqual(before.planned)
+    const following = next(st)
+    expect(following.plan.kind).toBe('up')
+    expect(rows(following)).toEqual([[0, 14], [0, 14]])
+  })
+
+  it('keeps a set the rep ceiling added, and the plan line still reads the plan', async () => {
+    const st = history({ id: PUSHUP, sets: 2, reps: 10, repsMax: 11, weight: 0, bodyweight: true }, 2)
+    const { before, opened, after } = await saveUnchanged(st)
+    expect(rows(before)).toEqual([[0, 10], [0, 10], [0, 10]])
+    expect(opened.sets).toBe(2)
+    expect(rows(after)).toEqual([[0, 10], [0, 10], [0, 10]])
+    expect(after.planned).toEqual(before.planned)
+    expect(container.querySelector('.planline')?.textContent).toBe('Plan: 2 × 10 · today 3 × 10')
+    expect(rows(next(st))).toEqual([[0, 11], [0, 11], [0, 11]])
+  })
+
+  it('keeps the plan\'s weight when only the reps are edited, so the restart holds what was lifted', async () => {
+    const st = history({ id: BENCH, sets: 3, reps: 12, repsMin: 8, weight: 40, prog: 'double' }, 1)
+    await mount(buildCombinedEntries(st, ['A']).entries, 0, { routines: st.routines, workouts: st.workouts })
+    await pressProgression()
+    const [, opened, save] = mocks.exConfigSheet.mock.calls.at(-1)
+    expect(opened.weight).toBe(42.5)          // today's, the one on the bar
+    await act(async () => { save({ ...unchanged(opened), reps: 10 }) })
+    const after = mocks.S.active.entries[0]
+    expect(after.planned).toEqual({ sets: 3, reps: 10, repsMin: 8, weight: 40 })
+    expect(after.plan.why[0]).toBe('Plan changed — starting from your new target.')
+    expect(rows(after).map(r => r[0])).toEqual([40, 40, 40])
   })
 })
 
@@ -1012,6 +1372,41 @@ describe('workout list view', () => {
   const units = () => [...container.querySelectorAll('.wl-unit')]
   const focusButton = unit => [...unit.querySelectorAll('button')].find(b => b.textContent.trim() === 'Set current')
 
+  it('opens at the current exercise instead of the top of the session (#224)', async () => {
+    await mount([exercise('plain-bench', [true]), exercise('plain-row', [true]), exercise('plain-curl', [false])], 2, { workoutView: 'list' })
+    // Not in the mount's own effect pass: App restores the route's scroll position in a frame
+    // of its own, so the list scrolls in the frame after it, or the restore would win.
+    expect(mocks.scrollCalls.length).toBe(0)
+    await flushFrame()
+    expect(mocks.scrollCalls.length).toBe(1)
+    expect(mocks.scrollCalls[0].node).toBe(units()[2])
+    expect(mocks.scrollCalls[0].node.classList.contains('cur')).toBe(true)
+  })
+
+  it('clears the sticky header at its measured height, not a one-line guess (QA C27)', async () => {
+    mocks.headerHeight = 143   // a routine name that wraps to three lines at 368 px
+    await mount([exercise('plain-bench', [true]), exercise('plain-row', [true]), exercise('plain-curl', [false])], 2, { workoutView: 'list' })
+    await flushFrame()
+    expect(mocks.scrollCalls.length).toBe(1)
+    expect(container.querySelector('.workout-list').style.getPropertyValue('--whdr-h')).toBe('143px')
+  })
+
+  it('re-anchors on the current exercise when the layout changes between list and compact (QA C1)', async () => {
+    await mount([exercise('plain-bench', [true]), exercise('plain-row', [true]), exercise('plain-curl', [false])], 2, { workoutView: 'list' })
+    await flushFrame()
+    mocks.scrollCalls.length = 0
+    mocks.S.active.workoutView = 'compact'
+    await rerender()
+    await flushFrame()
+    expect(mocks.scrollCalls.length).toBe(1)
+    expect(mocks.scrollCalls[0].node.classList.contains('cur')).toBe(true)
+    // ...but not when "current" merely moves inside the open list (that was #224's rule).
+    mocks.scrollCalls.length = 0
+    await rerenderAt(1)
+    await flushFrame()
+    expect(mocks.scrollCalls.length).toBe(0)
+  })
+
   it('stacks every exercise, labels each unit, and hides card navigation', async () => {
     await mount([exercise('plain-bench', [false, false]), exercise('plain-row', [false])], 0, { workoutView: 'list' })
 
@@ -1036,10 +1431,36 @@ describe('workout list view', () => {
     await act(async () => { focusButton(units()[1]).dispatchEvent(new dom.Event('click', { bubbles: true })) })
     expect(mocks.S.active.cur).toBe(1)
 
+    // The list is the saved default here, so the tap only moves the mark and the list stays.
     await rerender()
+    expect(mocks.S.active.workoutView).toBeUndefined()
     expect(units()[0].textContent).not.toContain('Current')
     expect(units()[1].textContent).toContain('Current')
     expect(focusButton(units()[0])).toBeTruthy()
+  })
+
+  it('goes back to cards on Set current when the list was only opened for this session (#260)', async () => {
+    await mount([exercise('plain-bench', [false]), exercise('plain-row', [false])], 0, {
+      workoutView: 'cards', active: { workoutView: 'list' },
+    })
+
+    await act(async () => { focusButton(units()[1]).dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    // Picking the exercise to look at next is all the tap is for, and cards are where one
+    // exercise is front and centre, so it does not take a second trip through the ⋮ menu.
+    expect(mocks.S.active.cur).toBe(1)
+    expect(mocks.S.active.workoutView).toBe('cards')
+  })
+
+  it('stays in the list on Set current when the exercise buttons act on the current exercise', async () => {
+    await mount([exercise('plain-bench', [false]), exercise('plain-row', [false])], 0, {
+      workoutView: 'cards', wc: { exerciseButtons: true }, active: { workoutView: 'list' },
+    })
+
+    await act(async () => { focusButton(units()[1]).dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    // Move/Swap/Remove below the list act on the exercise marked Current, so the tap picks their
+    // target and jumping away to cards would take the buttons out from under the athlete.
+    expect(mocks.S.active.cur).toBe(1)
+    expect(mocks.S.active.workoutView).toBe('list')
   })
 
   // Since !92 finishing an exercise no longer moves the current marker on its own (cards use
@@ -1106,6 +1527,27 @@ describe('workout list view', () => {
   })
 })
 
+// The card slid in during a swipe is the card that lands (renderPreview). Rendered without the
+// progression line, it grew by that line the moment it snapped into place.
+it('shows the progression line on the card a swipe slides in, as the card itself will', async () => {
+  const planned = id => exercise(id, [false], {
+    plan: { policy: 'linear', kind: 'up', weight: 62.5, why: ['Every rep last time — {0} {1} more.', 2.5, 'kg'] },
+  })
+  await mount([planned('plain-bench'), planned('plain-row')])
+  const surface = container.querySelector('[data-testid="workout-swipe-surface"]')
+  const pointer = (type, x) => {
+    const event = new dom.Event(type, { bubbles: true })
+    Object.assign(event, { pointerId: 1, pointerType: 'touch', clientX: x, clientY: 20 })
+    return act(async () => { surface.dispatchEvent(event) })
+  }
+  await pointer('pointerdown', 250)
+  await pointer('pointermove', 150)
+  const preview = container.querySelector('.workout-swipe-preview')
+  expect(preview).toBeTruthy()
+  expect(preview.querySelector('.progline')).toBeTruthy()
+  await pointer('pointercancel', 150)
+})
+
 describe('workout compact view', () => {
   const units = () => [...container.querySelectorAll('.wl-unit')]
   const withExtras = done => exercise('plain-bench', done, {
@@ -1168,6 +1610,55 @@ describe('workout compact view', () => {
   })
 })
 
+// Issue #275: the card says what the routine planned, in every view, and when the rows opened
+// somewhere else — progression moved them, or they carry last session's reps.
+describe('the plan line', () => {
+  const planned = (extra = {}) => exercise('plain-bench', [false, false], {
+    planned: { sets: 2, reps: 10, weight: 60 },
+    target: { mode: 'reps', sets: 2, reps: 10, weight: 62.5, bodyweight: false },
+    ...extra,
+  })
+  const line = () => container.querySelector('.planline')?.textContent
+
+  it('shows the plan quietly when the rows are the plan', async () => {
+    await mount([planned()])
+    expect(line()).toBe('Plan: 2 × 10')
+  })
+
+  it('says when progression moved the sets or reps', async () => {
+    await mount([planned({ target: { mode: 'reps', sets: 3, reps: 10, weight: 0, bodyweight: true } })])
+    expect(line()).toBe('Plan: 2 × 10 · today 3 × 10')
+  })
+
+  it('says when the reps were carried over from the last session', async () => {
+    await mount([planned({ carried: true, sets: [{ w: 62.5, r: 15, done: false }, { w: 62.5, r: 15, done: false }] })])
+    expect(line()).toBe('Plan: 2 × 10 · reps from your last session')
+  })
+
+  it('reads a double-progression aim inside the range as the plan', async () => {
+    await mount([planned({ planned: { sets: 3, reps: 12, repsMin: 8, weight: 40 }, target: { mode: 'reps', sets: 3, reps: 11, repsMin: 8, weight: 40 } })])
+    expect(line()).toBe('Plan: 3 × 8–12')
+  })
+
+  it('stays in compact view, where the last-time recap and progression line go', async () => {
+    await mount([planned()], 0, { workoutView: 'compact' })
+    expect(line()).toBe('Plan: 2 × 10')
+    expect(container.textContent).not.toContain('Last time')
+  })
+
+  it('sits next to a "Last time" that reads this routine\'s own last session (#216)', async () => {
+    const session = (d, rid, w, r) => ({ d, routineIds: [rid], entries: [{ id: 'plain-bench', rid, target: { reps: r, weight: w }, sets: [{ w, r, done: true }] }] })
+    await mount([planned({ rid: 'A' })], 0, { workouts: [session('2026-08-24', 'A', 60, 10), session('2026-08-26', 'B', 40, 15)] })
+    expect(container.textContent).toContain('60×10')
+    expect(container.textContent).not.toContain('40×15')
+  })
+
+  it('is not there for an entry with no plan (freestyle, or started before plans were kept)', async () => {
+    await mount([exercise('plain-bench', [false])])
+    expect(container.querySelector('.planline')).toBeNull()
+  })
+})
+
 describe('workout view header menu', () => {
   const openMenu = async () => {
     const btn = container.querySelector('button[aria-label="Workout view"]')
@@ -1183,12 +1674,16 @@ describe('workout view header menu', () => {
     return mocks.menuSheet.mock.calls.at(-1)[0]
   }
 
-  it('leads with Add routine, then a Layout sheet with the three layouts marked current', async () => {
+  it('includes Rename workout, Add routine and the whole-workout progression switch, then a Layout sheet with the three layouts marked current', async () => {
     await mount([exercise('plain-bench', [false])], 0, { active: { workoutView: 'list', routineIds: [] } })
 
     const menu = await openMenu()
-    expect(menu.items.filter(Boolean).map(it => it.label)).toEqual(['Add routine', 'Layout'])
+    expect(menu.items.filter(Boolean).map(it => it.label)).toEqual(['Rename workout', 'Add routine', 'Don’t count for progression', 'Layout'])
+    expect(item(menu, 'Don’t count for progression')).toMatchObject({ sub: 'Every exercise in this workout', on: false })
     expect(item(menu, 'Layout').sub).toBe('List')
+
+    await act(async () => { item(menu, 'Rename workout').onClick() })
+    expect(mocks.renameWorkoutSheet).toHaveBeenCalled()
 
     const layout = await openLayout(menu)
     expect(layout.items.filter(Boolean).map(it => it.label)).toEqual(['Cards', 'List', 'Compact'])
@@ -1360,5 +1855,198 @@ describe('per-side effort completion', () => {
     await act(async () => { rightPick(1) })
     expect(set.sides.R.done).toBe(true)
     expect(mocks.startRest).toHaveBeenCalledTimes(calls)
+  })
+})
+
+// QA C9: custom exercises store their target as a muscle-map id ("gluteal"); the tag under the
+// exercise name has to show the same label the detail sheet does (Glutes), not the raw id.
+describe('Workout exercise tags', () => {
+  it('names a custom exercise\'s target muscle by its display name', async () => {
+    const { registerCustom } = await import('../lib/exercises.js')
+    registerCustom([{ id: 'cqa1', n: 'QA Custom Thrust', bp: 'upper legs', eq: 'barbell', custom: true, tg: 'gluteal', sm: [], primaries: ['gluteal'], secondaries: [], muscleGroups: ['gluteal'] }])
+    try {
+      await mount([exercise('cqa1', [false])])
+      const tags = [...container.querySelectorAll('.tag')].map(tag => tag.textContent.trim())
+      expect(tags).toContain('Glutes')
+      expect(tags).not.toContain('gluteal')
+    } finally { registerCustom([]) }
+  })
+
+  // The cardio target "cardiovascular system" is a translated key of its own; mapping it through
+  // MUSCLE_NAME must not turn "Herz-Kreislauf" back into English for every built-in cardio exercise.
+  it('keeps the cardio target translated (burpee, de)', async () => {
+    const { _setLangState } = await import('../lib/i18n-core.js')
+    const { default: de } = await import('../locales/de.js')
+    _setLangState('de', de, null, null)
+    try {
+      await mount([exercise('1160', [false])])
+      const tags = [...container.querySelectorAll('.tag')].map(tag => tag.textContent.trim())
+      expect(tags).toContain('Herz-Kreislauf')
+      expect(tags).not.toContain('Cardiovascular system')
+    } finally { _setLangState('en', null, null, null) }
+  })
+})
+
+describe('set-row column header', () => {
+  // The L/R rows carry a badge in front of the weight cell that a straight row does not have, so
+  // the shared header needs to know it is sitting over per-side rows to offset its columns (QA C5).
+  it('marks the header of a per-side exercise so the CSS can offset it by the L/R badge', async () => {
+    const side = () => ({ w: 20, r: 8, done: false })
+    await mount([
+      exercise('plain-bench', [false]),
+      exercise('side-curl', [false], {
+        target: { mode: 'reps', side: true, reps: 16, weight: 20, bodyweight: false },
+        sets: [{ w: 20, r: 16, done: false, sides: { L: side(), R: side() } }],
+      }),
+    ], 0, { active: { workoutView: 'list' } })
+    const heads = container.querySelectorAll('.sethead')
+    expect(heads.length).toBe(2)
+    expect(heads[0].classList.contains('per-side')).toBe(false)
+    expect(heads[1].classList.contains('per-side')).toBe(true)
+    expect(container.querySelector('.setrow-side .sidetag')).toBeTruthy()
+  })
+
+  // A weighted hold's row has the play button in front of the tick, so its cells get less room than
+  // a straight row's and the CSS sizes them (and the header over them) by the `timed` marker.
+  it('marks a timed hold\'s rows and header, and neither on a rep set', async () => {
+    await mount([
+      exercise('timed-plank', [false], {
+        target: { mode: 'time', sec: 30, weight: 60, bodyweight: false },
+        sets: [{ sec: 30, w: 60, done: false }],
+      }),
+      exercise('plain-bench', [false]),
+    ], 0, { active: { workoutView: 'list' } })
+    const heads = container.querySelectorAll('.sethead')
+    expect(heads[0].classList.contains('timed')).toBe(true)
+    expect(container.querySelector('.setrow.timed .setgo')).toBeTruthy()
+    expect(heads[1].classList.contains('timed')).toBe(false)
+    expect(container.querySelectorAll('.setrow.timed').length).toBe(1)
+  })
+
+  // With the +/- buttons switched off the cells' floors are the bare numbers; the header must
+  // freeze its columns the same way or the labels drift, so it carries the cells' `plain`.
+  it('carries `plain` on the header when the steppers are off', async () => {
+    await mount([exercise('plain-bench', [false])], 0, { wc: { steppers: false } })
+    expect(container.querySelector('.sethead').classList.contains('plain')).toBe(true)
+    expect(container.querySelector('.setrow .stp.w').classList.contains('plain')).toBe(true)
+  })
+})
+
+// #173: the line under an exercise holds the rows against the last time in this routine, or
+// against the best set of the exercise; tapping the line switches, for every exercise.
+describe('the reference line: last time or best set', () => {
+  const session = (d, rid, w, r) => ({ d, start: Date.parse(d + 'T18:00:00'), routineIds: [rid], entries: [{ id: 'plain-bench', rid, target: { reps: r, weight: w }, sets: [{ w, r, done: true }] }] })
+  const history = [session('2026-08-10', 'B', 80, 5), session('2026-08-24', 'A', 60, 10), session('2026-08-26', 'A', 55, 8)]
+  const line = () => container.querySelector('.refline')
+
+  it('reads last time in this routine by default, and the best set once switched', async () => {
+    await mount([exercise('plain-bench', [false], { rid: 'A' })], 0, { workouts: history })
+    expect(line().textContent).toMatch(/^Last time \(.+\): 55×8$/)
+    await act(async () => { line().dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    expect(mocks.S.logRef).toBe('best')
+    await rerender()
+    // the heaviest set of the exercise from any routine, not just this one
+    expect(line().textContent).toMatch(/^Best set \(.+\): 80×5$/)
+    await act(async () => { line().dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    expect(mocks.S.logRef).toBe('last')
+  })
+
+  it('is not there before the exercise was ever logged', async () => {
+    await mount([exercise('plain-bench', [false])], 0, { logRef: 'best' })
+    expect(line()).toBeNull()
+  })
+
+  // Logged before only as a hold, today as reps: there is a last time but no best set in this
+  // mode. The line used to vanish, and the switch back to "Last time" with it.
+  it('stays on the card when there is no best set in this mode yet, and still switches back', async () => {
+    const hold = { d: '2026-08-26', start: Date.parse('2026-08-26T18:00:00'), routineIds: ['A'],
+      entries: [{ id: 'plain-bench', rid: 'A', target: { mode: 'time', sec: 30 }, sets: [{ sec: 30, w: 0, done: true }] }] }
+    await mount([exercise('plain-bench', [false], { rid: 'A' })], 0, { workouts: [hold], logRef: 'best' })
+    expect(line().textContent).toBe('Best set: nothing logged this way yet')
+    await act(async () => { line().dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    expect(mocks.S.logRef).toBe('last')
+    await rerender()
+    expect(line().textContent).toMatch(/^Last time \(.+\): 0:30$/)
+  })
+
+  // #284 review: a workout logged into the past is held against what came before its day, the
+  // history its rows were built from, not against a session logged after it.
+  it('reads the history before the day of a workout logged into the past', async () => {
+    const later = [...history, session('2026-08-28', 'A', 90, 3)]
+    const past = { d: '2026-08-25', start: Date.parse('2026-08-25T18:00:00'), backfill: { durationMin: 60, replaceId: null } }
+    await mount([exercise('plain-bench', [false], { rid: 'A' })], 0, { workouts: later, active: past })
+    expect(line().textContent).toMatch(/^Last time \(.+\): 60×10$/)
+    await act(async () => { line().dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    await rerender()
+    expect(line().textContent).toMatch(/^Best set \(.+\): 80×5$/)
+    expect(container.textContent).toContain('Best: 80 kg')
+  })
+
+  // Arabic: a set right after the label took the label's direction and read 8×60, while the
+  // sets after a Latin "RIR" read 60×8. Each set is its own left-to-right island.
+  it('isolates every set from the text around it', async () => {
+    const two = [{ d: '2026-08-26', start: Date.parse('2026-08-26T18:00:00'), routineIds: ['A'],
+      entries: [{ id: 'plain-bench', rid: 'A', target: { reps: 8, weight: 60 }, sets: [{ w: 60, r: 8, rir: 3, done: true }, { w: 60, r: 8, rir: 2, done: true }] }] }]
+    await mount([exercise('plain-bench', [false], { rid: 'A' })], 0, { workouts: two })
+    const sets = [...line().querySelectorAll('bdi')]
+    expect(sets.map(b => [b.getAttribute('dir'), b.textContent])).toEqual([['ltr', '60×8 (RIR 3)'], ['ltr', '60×8 (RIR 2)']])
+    expect(line().textContent).toMatch(/^Last time \(.+\): 60×8 \(RIR 3\), 60×8 \(RIR 2\)$/)
+  })
+
+  // A per-side set in Arabic carries its side words ("يسار 15×8 · يمين 15×7"). Forced left to
+  // right, each word stood on the wrong side of its numbers and the numbers after it turned
+  // round; isolated in its own direction it reads as before, next to sets that are forced.
+  it('leaves a set with right-to-left words in its own direction', async () => {
+    const { _setLangState } = await import('../lib/i18n-core.js')
+    const { default: ar } = await import('../locales/ar.js')
+    const side = r => ({ w: 15, r, done: true })
+    const sided = [{ d: '2026-08-26', start: Date.parse('2026-08-26T18:00:00'), routineIds: ['A'],
+      entries: [{ id: 'plain-bench', rid: 'A', target: { mode: 'reps', side: true, reps: 16, weight: 15, bodyweight: false },
+        sets: [{ w: 15, r: 15, done: true, sides: { L: side(8), R: side(7) } }] }] }]
+    _setLangState('ar', ar, null, null)
+    try {
+      await mount([exercise('plain-bench', [false], { rid: 'A' })], 0, { workouts: sided })
+      const sets = [...line().querySelectorAll('bdi')]
+      expect(sets.map(b => [b.getAttribute('dir'), b.textContent])).toEqual([['auto', `${ar.L} 15×8 · ${ar.R} 15×7`]])
+    } finally { _setLangState('en', null, null, null) }
+    await mount([exercise('plain-bench', [false], { rid: 'A' })], 0, { workouts: sided })
+    expect([...line().querySelectorAll('bdi')].map(b => [b.getAttribute('dir'), b.textContent])).toEqual([['ltr', 'L 15×8 · R 15×7']])
+  })
+
+  // The text is the reference; the name also says what a tap does, after the text it shows.
+  it('names the switch a tap makes', async () => {
+    await mount([exercise('plain-bench', [false], { rid: 'A' })], 0, { workouts: history })
+    expect(line().getAttribute('aria-label')).toMatch(/^Last time \(.+\): 55×8\. Show your best set instead$/)
+    await act(async () => { line().dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    await rerender()
+    expect(line().getAttribute('aria-label')).toMatch(/^Best set \(.+\): 80×5\. Show last time instead$/)
+  })
+})
+
+// #284: logging a past workout that went as planned takes one tap, not one per set.
+describe('mark all sets done while logging a past workout', () => {
+  const openMenu = async () => {
+    const btn = container.querySelector('button[aria-label="Workout view"]')
+    await act(async () => { btn.dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    return mocks.menuSheet.mock.calls.at(-1)[0]
+  }
+  const labels = menu => menu.items.filter(Boolean).map(it => it.label)
+
+  it('ticks every set, stamps the top weight and offers the finish', async () => {
+    await mount([
+      exercise('plain-bench', [false, true]),
+      exercise('plain-row', [false], { sets: [{ w: 40, r: 8, done: false, phase: 'warmup' }, { w: 70, r: 8, done: false }] }),
+    ], 0, { active: { backfill: { durationMin: 60, replaceId: null }, routineIds: [] } })
+    const menu = await openMenu()
+    expect(labels(menu)[0]).toBe('Mark all sets done')
+    await act(async () => { menu.items.filter(Boolean)[0].onClick() })
+    expect(mocks.S.active.entries.every(e => e.sets.every(s => s.done))).toBe(true)
+    expect(mocks.S.active.entries.map(e => e.topW)).toEqual([60, 70])
+    expect(mocks.workoutCompleteSheet).toHaveBeenCalledTimes(1)
+  })
+
+  it('is only there for a past workout', async () => {
+    await mount([exercise('plain-bench', [false])], 0, { active: { routineIds: [] } })
+    expect(labels(await openMenu())).not.toContain('Mark all sets done')
   })
 })

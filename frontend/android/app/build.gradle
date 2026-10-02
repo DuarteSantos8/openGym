@@ -7,8 +7,8 @@ android {
         applicationId "ch.duartesantos.opengym"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 21
-        versionName "1.3.7"
+        versionCode 23
+        versionName "1.3.9"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -20,6 +20,13 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            // The barcode scanner's ML Kit library ships a native build for four CPU families.
+            // Phones are ARM; the two x86 builds only serve emulators and a few Chromebooks, which
+            // run ARM code through translation anyway. Leaving them out takes about 12 MB off
+            // the APK. Release only: the debug build keeps x86_64 for the emulator test rig.
+            ndk {
+                abiFilters 'arm64-v8a', 'armeabi-v7a'
+            }
         }
         debug {
             // Test build installs side-by-side with the real app: its own applicationId, so both

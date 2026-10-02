@@ -200,7 +200,7 @@ export default function Social({ embedded = false }) {
     setBusy(true); setError('')
     try {
       const { plan } = await api('/api/social/plan?id=' + encodeURIComponent(item.id))
-      planImportSheet(parsePlan(plan), () => {
+      planImportSheet(parsePlan(plan, useStore.getState().S.unit || 'kg'), () => {
         api('/api/social/plan/dismiss', { method: 'POST', body: JSON.stringify({ id: item.id }) })
           .then(() => setRevision(n => n + 1))
           .catch(() => toast(t('Plan imported. Dismiss the shared copy from Social when you are back online.')))

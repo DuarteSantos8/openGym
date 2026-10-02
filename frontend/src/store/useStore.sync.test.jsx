@@ -12,6 +12,7 @@ vi.mock('./useUI.js', () => ({ useUI: { getState: () => ({ toast }) } }))
 
 import { api } from '../lib/api.js'
 import { DEF, useStore } from './useStore.js'
+import { editCompletedSession } from '../lib/session-edit.js'
 
 const clone = value => JSON.parse(JSON.stringify(value))
 const routine = id => ({ id, name: id, ex: [] })
@@ -129,6 +130,7 @@ describe('pull against a revisioned server', () => {
     expect(useStore.getState().S.workouts.map(w => w.id)).toEqual(['w1'])
     expect(sync()).toEqual({ rev: 1, ts: 100 })
     expect(localStorage.getItem('gym_dirty')).toBeNull()
+    expect(useStore.getState().sync).toMatchObject({ status: 'auth', auth: true, lastError: { status: 401 } })
   })
 })
 
@@ -322,5 +324,102 @@ describe('ordering', () => {
     window.dispatchEvent(new Event('focus'))
     await vi.advanceTimersByTimeAsync(10)
     expect(gets()).toHaveLength(3)
+  })
+})
+
+/* A workout edited after it was logged (lib/session-edit.js), on its way between devices. The
+   edit is an ordinary change of the copy — owed, pushed, merged on a 409 — and carries the time
+   of the edit, so the merge keeps it over the old version by id, whichever copy is newer as a
+   whole (lib/sync-merge.js). */
+describe('an edited workout between devices', () => {
+  const lift = w => ({ id: 'sq', target: { mode: 'reps' }, sets: [{ w, r: 5, done: true }] })
+  const logged = (w = 40) => ({ ...workout('w1'), end: 2, entries: [lift(w)], prs: [] })
+  const weightsIn = state => state.workouts.map(x => [x.id, x.entries[0]?.sets[0]?.w])
+  const edit = w => {
+    useStore.getState().update(s => { editCompletedSession(s, 'w1') })
+    useStore.getState().update(s => { s.active.entries[0].sets[0].w = w })
+    return useStore.getState().saveHistoryEdit()
+  }
+
+  it('an edit saved offline reaches the server with the next push, over a server that moved meanwhile', async () => {
+    vi.useFakeTimers()
+    signedIn({ ...clone(DEF), _ts: 100, workouts: [logged()] })
+    localStorage.setItem('gym_sync', JSON.stringify({ rev: 1, ts: 100 }))
+    api.mockRejectedValueOnce(new TypeError('Failed to fetch'))
+
+    edit(50)
+    await useStore.getState().pushState()
+    expect(localStorage.getItem('gym_dirty')).toBe('1')
+    expect(useStore.getState().S.active).toBeNull()
+
+    // Meanwhile a phone logged another workout. Its copy is newer as a whole and still holds
+    // the workout as it was before the edit.
+    const phone = { ...clone(DEF), _ts: Date.now() + 60000, workouts: [logged(), { ...workout('w2', '2026-09-02'), entries: [lift(45)] }], _rev: 2 }
+    api.mockRejectedValueOnce(httpError(409, { error: 'conflict', rev: 2, state: phone }))
+    api.mockResolvedValueOnce({ ok: true, rev: 3 })
+    await useStore.getState().pushState()
+
+    expect(weightsIn(puts().at(-1).state)).toEqual([['w1', 50], ['w2', 45]])
+    expect(puts().at(-1).baseRev).toBe(2)
+    expect(weightsIn(useStore.getState().S)).toEqual([['w1', 50], ['w2', 45]])
+    expect(localStorage.getItem('gym_dirty')).toBeNull()
+  })
+
+  it('edited on one device while another still holds the old copy: the edit replaces it there too', async () => {
+    // The other device: the old copy, and a setting changed after the edit was made elsewhere.
+    signedIn({ ...clone(DEF), _ts: Date.now() + 60000, workouts: [logged()], restSec: 75 })
+    localStorage.setItem('gym_sync', JSON.stringify({ rev: 1, ts: 100 }))
+    const edited = { ...logged(50), _ts: Date.now() }
+    const server = { ...clone(DEF), _ts: Date.now(), workouts: [edited], _rev: 2 }
+
+    // Its push meets the edit on the server.
+    api.mockRejectedValueOnce(httpError(409, { error: 'conflict', rev: 2, state: server }))
+    api.mockResolvedValueOnce({ ok: true, rev: 3 })
+    await useStore.getState().pushState()
+    expect(weightsIn(puts().at(-1).state)).toEqual([['w1', 50]])
+    expect(puts().at(-1).state.restSec).toBe(75)
+
+    // And a pull that finds both sides changed merges the same way.
+    useStore.getState().update(s => { s.workouts = [logged()]; s.restSec = 60 }, false)
+    api.mockResolvedValueOnce({ state: { ...server, _rev: 4 }, rev: 4 })
+    api.mockResolvedValueOnce({ ok: true, rev: 5 })
+    await useStore.getState().pullState()
+    expect(weightsIn(useStore.getState().S)).toEqual([['w1', 50]])
+    expect(useStore.getState().S.restSec).toBe(60)
+  })
+
+  it('an edit of a workout another device deleted: kept as a draft when the deletion arrived first', async () => {
+    vi.useFakeTimers()
+    signedIn({ ...clone(DEF), _ts: 100, workouts: [logged()] })
+    localStorage.setItem('gym_sync', JSON.stringify({ rev: 1, ts: 100 }))
+    api.mockResolvedValueOnce({ ok: true, rev: 2 })
+    useStore.getState().update(s => { editCompletedSession(s, 'w1') })
+    useStore.getState().update(s => { s.active.entries[0].sets[0].w = 50 })
+    await useStore.getState().pushState()   // the draft is where the server has it: nothing owed
+
+    // The phone deletes the workout; this device learns of it while its editor is open.
+    api.mockResolvedValueOnce({ state: { ...clone(DEF), _ts: Date.now() + 60000, workouts: [], _rev: 3 }, rev: 3 })
+    await useStore.getState().pullState()
+    expect(useStore.getState().S.workouts).toEqual([])
+
+    expect(() => useStore.getState().saveHistoryEdit()).toThrow('deleted on another device')
+    expect(useStore.getState().S.active.entries[0].sets[0].w).toBe(50)
+    expect(useStore.getState().S.workouts).toEqual([])
+    useStore.getState().discardHistoryEdit()
+    expect(useStore.getState().S.active).toBeNull()
+  })
+
+  it('an edit of a workout another device deleted: saved first, it comes back edited rather than lost', async () => {
+    vi.useFakeTimers()
+    signedIn({ ...clone(DEF), _ts: 100, workouts: [logged()] })
+    localStorage.setItem('gym_sync', JSON.stringify({ rev: 1, ts: 100 }))
+    edit(50)
+    api.mockRejectedValueOnce(httpError(409, { error: 'conflict', rev: 2, state: { ...clone(DEF), _ts: Date.now() + 60000, workouts: [], _rev: 2 } }))
+    api.mockResolvedValueOnce({ ok: true, rev: 3 })
+
+    await useStore.getState().pushState()
+
+    expect(weightsIn(puts().at(-1).state)).toEqual([['w1', 50]])
+    expect(weightsIn(useStore.getState().S)).toEqual([['w1', 50]])
   })
 })

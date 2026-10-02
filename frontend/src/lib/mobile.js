@@ -182,6 +182,24 @@ export async function shareExport(json, filename) {
   await Share.share({ title: filename, url: w.uri })
 }
 
+// The same for a binary export — the backup with photos and videos (lib/backup-media.js). The
+// file crosses the native bridge as base64 in 3 MB pieces, never as one string the size of the
+// whole zip, which could be a few hundred MB.
+export async function shareExportBlob(blob, filename) {
+  const { Filesystem, Directory } = await import('@capacitor/filesystem')
+  const { Share } = await import('@capacitor/share')
+  const { toBase64 } = await import('./media-store-fs.js')
+  const CHUNK = 3 * 1024 * 1024
+  for (let o = 0; o < blob.size || o === 0; o += CHUNK) {
+    const data = toBase64(new Uint8Array(await blob.slice(o, o + CHUNK).arrayBuffer()))
+    if (o === 0) await Filesystem.writeFile({ path: filename, directory: Directory.Cache, data })
+    else await Filesystem.appendFile({ path: filename, directory: Directory.Cache, data })
+    if (!blob.size) break
+  }
+  const { uri } = await Filesystem.getUri({ path: filename, directory: Directory.Cache })
+  await Share.share({ title: filename, url: uri })
+}
+
 // Hand a self-contained HTML document (lib/plan-share.js planPrintHTML) to the OS print flow.
 // Android routes it through the system PrintManager — "Save as PDF", "Save to Drive", a real
 // printer; iOS through the print sheet — "Save to Files" (as PDF), share, print. Either way the
@@ -194,19 +212,62 @@ export async function printHtml(html, name) {
   await Print.printHtml({ html, name })
 }
 
-// "Auto-backup on changes" (Settings): a dated snapshot dropped into the Documents folder —
+// "Auto-backup on changes" (Settings): a dated snapshot dropped into Documents/openGym/ —
 // visible in Files (iOS) / a file manager (Android), unlike the private mirror nativeSave keeps
 // — so whatever the user points at that folder (a sync app, a manual copy) always has something
 // recent. One file per day; later triggers the same day just overwrite it.
+//
+// The folder is ours alone (#161): until v1.3.9 the files landed in the Documents root, so a
+// sync app pointed at them had to carry the whole Documents folder along, and a year of daily
+// copies piled up there. Now each write keeps only the newest AUTO_BACKUP_KEEP in the folder.
+// The root is never pruned: a manual export saved there carries the same name, and nothing
+// tells it apart from an old automatic copy, so those stay for the person to clear (Import
+// backup still reads either kind).
+export const AUTO_BACKUP_DIR = 'openGym'
+export const AUTO_BACKUP_KEEP = 14
+// Only the exact names writeAutoBackup gives its files are ever pruned; anything else someone
+// keeps in the folder is theirs.
+const AUTO_BACKUP_NAME = /^opengym-backup-\d{4}-\d{2}-\d{2}(-2)?\.json$/
+
+// Android's scoped storage lets an install write over, list and delete only the files it wrote
+// itself. After a reinstall, or with the test build beside the real one, today's name can belong
+// to the other install: writing it fails with EACCES, and that day went without a copy, silently.
+// The copy then goes under the day's second name, which this install owns after its first write.
+// The other install's files stay where they are; this one cannot see them to prune them.
 export async function writeAutoBackup(state) {
-  try {
-    const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
-    await Filesystem.writeFile({
-      path: `opengym-backup-${todayISO()}.json`,
-      directory: Directory.Documents,
-      data: JSON.stringify(state),
-      encoding: Encoding.UTF8,
-      recursive: true,
-    })
-  } catch (e) { /* best effort — the private mirror in Directory.Data still has the data */ }
+  const day = todayISO()
+  let fs
+  try { fs = await import('@capacitor/filesystem') } catch (e) { return }
+  const write = name => fs.Filesystem.writeFile({
+    path: `${AUTO_BACKUP_DIR}/${name}`,
+    directory: fs.Directory.Documents,
+    data: JSON.stringify(state),
+    encoding: fs.Encoding.UTF8,
+    recursive: true,
+  })
+  let name = `opengym-backup-${day}.json`
+  try { await write(name) } catch (e) {
+    name = `opengym-backup-${day}-2.json`
+    try { await write(name) } catch (e2) { return }   // best effort — the private mirror in Directory.Data still has the data
+  }
+  // Pruning waits for a successful write: a full disk must never cost the copies already there.
+  await pruneAutoBackups(fs, name)
+}
+
+async function pruneAutoBackups({ Filesystem, Directory }, written) {
+  let files
+  try { files = (await Filesystem.readdir({ path: AUTO_BACKUP_DIR, directory: Directory.Documents })).files || [] } catch (e) { return }
+  const older = files
+    // Capacitor before 4 listed bare names; since then an object that also says what it is.
+    .filter(f => typeof f === 'string' || f?.type !== 'directory')
+    .map(f => (typeof f === 'string' ? f : f?.name))
+    // The copy just written is never a candidate, even if a clock set back makes it sort
+    // below the others: it is one of the AUTO_BACKUP_KEEP whatever its date says.
+    .filter(n => AUTO_BACKUP_NAME.test(n || '') && n !== written)
+    // Newest first by the date in the name, which a sync app or a copy cannot disturb the way
+    // it can a modification time.
+    .sort().reverse()
+  for (const n of older.slice(AUTO_BACKUP_KEEP - 1)) {
+    try { await Filesystem.deleteFile({ path: `${AUTO_BACKUP_DIR}/${n}`, directory: Directory.Documents }) } catch (e) { /* one stuck file does not stop the rest */ }
+  }
 }

@@ -84,9 +84,10 @@ Nine read-only tools in v1:
 `get_routine` and `preview_session` answer two different questions, and confusing them is the
 easiest way for a coach to give wrong advice. `get_routine` reports what the routine *stores*.
 `preview_session` reports what the athlete will actually *see*: a routine holding "squat 3×8 @
-60 kg" opens at 75 kg if the policy deloaded from the last logged session, and the rep counts
-come from history, not the plan. The routine's own numbers are the last fallback the session
-builder consults, not the first. Ask `preview_session` before naming a weight.
+60 kg" opens at 75 kg if the policy progressed or deloaded from that routine's last logged
+session. The routine's own weight is the last fallback the session builder consults, not the
+first; its reps hold unless a policy that moves reps moved them, or the profile starts planned
+sessions from the last session (`starts_from`). Ask `preview_session` before naming a weight.
 
 Each tool returns JSON the LLM can format as it likes; structured fields (sets, dates, levels)
 are pre-formatted into human-readable labels in `src/labels.js` so the LLM doesn't need to

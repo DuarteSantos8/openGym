@@ -15,15 +15,24 @@
 
 import { useRef, useState, useEffect, useCallback, forwardRef } from 'react'
 import Icon from './Icon.jsx'
+import { sheetKeyboardInsets } from '../lib/use-sheet-keyboard.js'
+import { NATIVE_KEYBOARD_EVENT } from '../lib/native-keyboard.js'
+import { t } from '../lib/i18n.js'
 
 /* ============================ text ============================ */
+
+// Width of a numeric string in `ch`, for a field sized to its own digits (NumberField's
+// `fit`): with tabular numerals every digit is exactly one ch, a decimal point roughly half.
+export const numWidthCh = s => Math.max(1, [...s].reduce((n, c) => n + (c === '.' ? 0.5 : 1), 0))
 
 // Numeric input accepting "," as decimal separator — iOS decimal keypads in many
 // locales only offer a comma, and type="number" reports "" for it (value snaps to
 // 0). Keeps a local string draft while focused so partial input like "33," survives.
 // `nullable` is for fields where "nothing entered" and 0 mean different things (RIR: a
 // logged 0 is a set taken to failure). Those clear back to null instead of snapping to 0.
-export function NumberField({ value, onChange, decimal = true, nullable = false, className = '', ...rest }) {
+// `fit` sizes the field to the digits on screen instead of filling its cell — for the big
+// weight read-out, where the unit sits right beside the number.
+export function NumberField({ value, onChange, decimal = true, nullable = false, fit = false, className = '', ...rest }) {
   const [draft, setDraft] = useState(null)
   const committed = useRef(null)
   // null and undefined are the same "empty" here — a nullable field's key is dropped once cleared.
@@ -37,12 +46,16 @@ export function NumberField({ value, onChange, decimal = true, nullable = false,
     setDraft(s)
     onChange(n)
   }
+  const shown = draft ?? (value ?? '')
   return (
     <input
       type="text"
       inputMode={decimal ? 'decimal' : 'numeric'}
       className={'num ' + className}
-      value={draft ?? (value ?? '')}
+      value={shown}
+      // `fit` hugs the digits on screen — a big read-out with its unit sitting right beside
+      // it — where the default fills whatever cell the field is in.
+      style={fit ? { width: numWidthCh(String(shown)) + 'ch' } : undefined}
       onFocus={e => e.target.select()}
       onChange={e => commit(e.target.value)}
       onBlur={() => { setDraft(null); committed.current = null }}
@@ -66,7 +79,7 @@ export const SearchField = forwardRef(function SearchField({ value, onChange, on
       <Icon name="magnifier" className="lead" />
       <input ref={ref} className="field" value={value} onChange={onChange} {...rest} />
       {!!value && (
-        <button className="clear" onClick={onClear} aria-label="Clear">
+        <button className="clear" onClick={onClear} aria-label={t('Clear')}>
           <Icon name="xmark" />
         </button>
       )}
@@ -76,9 +89,10 @@ export const SearchField = forwardRef(function SearchField({ value, onChange, on
 
 /* ============================ switch ============================ */
 
-export function Switch({ checked, onChange, disabled }) {
+export function Switch({ checked, onChange, disabled, ...accessibility }) {
   return (
     <button
+      {...accessibility}
       role="switch"
       aria-checked={!!checked}
       disabled={disabled}
@@ -119,8 +133,12 @@ export function Segmented({ options, value, onChange, className = '', tablist = 
 
 /* ============================ stepper ============================ */
 
-export function Stepper({ value, step = 1, onChange, decimal = true, className = '', label, unit, invalid = false }) {
-  const set = v => onChange(Math.max(0, Math.round((v || 0) * 100) / 100))
+// `min` and `max` hold for the buttons at once, but for typing only once the field is left:
+// clamped on every keystroke, a field emptied to type a new number snapped to the minimum, and
+// the digits typed next landed after it (a 48 retyped as 75 saved 175).
+export function Stepper({ value, step = 1, min = 0, max = Infinity, onChange, decimal = true, className = '', label, unit, invalid = false }) {
+  const clamp = v => Math.min(max, Math.max(min, v))
+  const set = v => onChange(clamp(Math.round((v || 0) * 100) / 100))
   // Holding a button repeats the step; the latest value/step live in a ref so
   // the interval doesn't keep stepping from the value it was started with.
   const live = useRef({ value, step, set })
@@ -159,12 +177,12 @@ export function Stepper({ value, step = 1, onChange, decimal = true, className =
   })
   const inner = (
     <div className={'stp ' + className}>
-      <button {...holdProps(-1)} aria-label="Decrease"><Icon name="minus" /></button>
-      <span className="val">
+      <button {...holdProps(-1)} aria-label={t('Decrease')}><Icon name="minus" /></button>
+      <span className="val" onBlur={() => { const v = +value || 0; if (clamp(v) !== v) onChange(clamp(v)) }}>
         <NumberField value={value} decimal={decimal} onChange={onChange} aria-invalid={invalid ? 'true' : undefined} />
         {unit && <i>{unit}</i>}
       </span>
-      <button {...holdProps(1)} aria-label="Increase"><Icon name="plus" /></button>
+      <button {...holdProps(1)} aria-label={t('Increase')}><Icon name="plus" /></button>
     </div>
   )
   if (!label) return inner
@@ -189,7 +207,10 @@ export function Slider({ value, min = 0, max = 100, step = 1, onChange, classNam
     const el = ref.current
     if (!el) return value
     const r = el.getBoundingClientRect()
-    const f = Math.min(1, Math.max(0, (clientX - r.left) / r.width))
+    // The fraction is read from the physical left edge, then mirrored in RTL where the
+    // minimum sits at the inline-start (right) end of the track.
+    let f = Math.min(1, Math.max(0, (clientX - r.left) / r.width))
+    if (document.documentElement.dir === 'rtl') f = 1 - f
     const raw = min + f * (max - min)
     const snapped = Math.round(raw / step) * step
     // step can be fractional (0.1) — round away binary noise
@@ -214,8 +235,11 @@ export function Slider({ value, min = 0, max = 100, step = 1, onChange, classNam
   }, [drag, onChange, posToValue])
 
   const key = e => {
-    const d = e.key === 'ArrowRight' || e.key === 'ArrowUp' ? step
-      : e.key === 'ArrowLeft' || e.key === 'ArrowDown' ? -step : 0
+    // The arrow pointing at the inline-end (max) end still increases; in RTL that is Left.
+    const inc = document.documentElement.dir === 'rtl' ? 'ArrowLeft' : 'ArrowRight'
+    const dec = document.documentElement.dir === 'rtl' ? 'ArrowRight' : 'ArrowLeft'
+    const d = e.key === inc || e.key === 'ArrowUp' ? step
+      : e.key === dec || e.key === 'ArrowDown' ? -step : 0
     if (!d) return
     e.preventDefault()
     onChange(Math.min(max, Math.max(min, Math.round((value + d) * 1000) / 1000)))
@@ -233,7 +257,10 @@ export function Slider({ value, min = 0, max = 100, step = 1, onChange, classNam
       onPointerDown={e => {
         e.currentTarget.setPointerCapture?.(e.pointerId)
         const r = e.currentTarget.getBoundingClientRect()
-        const knobX = r.left + (pct / 100) * r.width
+        // The knob is measured from inline-start: left in LTR, right in RTL.
+        const knobX = document.documentElement.dir === 'rtl'
+          ? r.right - (pct / 100) * r.width
+          : r.left + (pct / 100) * r.width
         const d = e.clientX - knobX
         offset.current = Math.abs(d) <= SLIDER_GRAB_PX ? d : 0
         setDrag(true)
@@ -241,7 +268,7 @@ export function Slider({ value, min = 0, max = 100, step = 1, onChange, classNam
       }}
     >
       <span className="sld-track"><span className="sld-fill" style={{ width: pct + '%' }} /></span>
-      <span className="sld-knob" style={{ left: pct + '%' }} />
+      <span className="sld-knob" style={{ insetInlineStart: pct + '%' }} />
     </div>
   )
 }
@@ -323,9 +350,8 @@ function SelectSheet({ title, value, options, onChange, search, close }) {
     const sheet = input?.closest('.sheet')
     const viewport = window.visualViewport
     if (!sheet || !viewport) return
-    const visualHeight = Math.max(0, viewport.height || window.innerHeight)
-    const visualBottom = (viewport.offsetTop || 0) + visualHeight
-    const bottomInset = Math.max(0, window.innerHeight - visualBottom)
+    // the visual viewport, or on Android 15 the keyboard the app passes (lib/native-keyboard.js)
+    const { bottomInset, visualHeight } = sheetKeyboardInsets(window)
     sheet.style.setProperty('--picker-keyboard-bottom', `${bottomInset}px`)
     sheet.style.setProperty('--picker-visual-height', `${visualHeight}px`)
   }, [])
@@ -340,9 +366,11 @@ function SelectSheet({ title, value, options, onChange, search, close }) {
     sync()
     viewport.addEventListener('resize', sync)
     viewport.addEventListener('scroll', sync)
+    window.addEventListener(NATIVE_KEYBOARD_EVENT, sync)
     return () => {
       viewport.removeEventListener('resize', sync)
       viewport.removeEventListener('scroll', sync)
+      window.removeEventListener(NATIVE_KEYBOARD_EVENT, sync)
       const sheet = inputRef.current?.closest('.sheet')
       sheet?.style.removeProperty('--picker-keyboard-bottom')
       sheet?.style.removeProperty('--picker-visual-height')

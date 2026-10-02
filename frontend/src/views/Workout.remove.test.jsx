@@ -214,6 +214,7 @@ describe('remove-exercise locale coverage', () => {
 
   it('defines every new prompt in every non-English locale pack', () => {
     expect(Object.keys(packs)).toHaveLength(nonEnglishLangCount)
+    expect(Object.keys(packs).some(p => p.endsWith('/ar.js'))).toBe(true)
     Object.entries(packs).forEach(([path, pack]) => {
       required.forEach(key => expect(pack, `${path} is missing ${key}`).toHaveProperty(key))
     })

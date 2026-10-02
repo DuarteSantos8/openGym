@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { renderQrToCanvas } from '../lib/qr.js'
+import { t } from '../lib/i18n.js'
 
 // Renders a gym check-in code as a QR image on a <canvas>. lean-qr draws one module per pixel;
 // CSS (.qr-canvas) scales it up with image-rendering: pixelated so it stays razor-sharp at any
@@ -27,7 +28,7 @@ export default function QrCanvas({ value, size = 240, className = '' }) {
       ref={ref}
       className={'qr-canvas ' + className}
       style={{ width: size, height: size, opacity: ok ? 1 : 0 }}
-      aria-label="QR code"
+      aria-label={t('QR code')}
     />
   )
 }

@@ -4,8 +4,8 @@ import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { exOr } from '../lib/exercises.js'
 import { activeProfile, exAvailable } from '../lib/equipment.js'
-import { uid } from '../lib/format.js'
-import { t, exerciseNameFor } from '../lib/i18n.js'
+import { uid, exerciseNameText } from '../lib/format.js'
+import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { supersetUnits, moveSupersetUnit, cleanupSg, exLine, defaultConfig } from '../lib/history.js'
 import { Thumb } from '../components/Media.jsx'
 import { glyphPicker, exercisePicker, exConfigSheet, confirmSheet } from '../sheets.jsx'
@@ -13,7 +13,10 @@ import Icon from '../components/Icon.jsx'
 import { glyphOf } from '../lib/glyphs.js'
 import { Button, Row, SelectRow, Switch } from '../components/ui.jsx'
 import SwipeToDelete from '../components/SwipeToDelete.jsx'
-import { copyRoutine } from '../lib/routines.js'
+import { copyRoutine, deleteRoutine, replaceSlotExercise } from '../lib/routines.js'
+import { planPrintHTML, printPlan } from '../lib/plan-share.js'
+import { MOBILE, printHtml } from '../lib/mobile.js'
+import { speedUnitOf } from '../lib/speed.js'
 import { POLICIES_FOR, POLICY_NAME, POLICY_DESC } from '../lib/progression.js'
 import BodyMap from '../components/BodyMap.jsx'
 import { loadOfRoutine, rankOf, MUSCLE_NAME } from '../lib/muscles.js'
@@ -221,8 +224,17 @@ function useRoutineReorder(routineIdentity, exercises, onDrop) {
         listIdentity: exercisesRef.current,
         snapshot: JSON.stringify(exercisesRef.current), active: false, timer: null,
       }
-      gesture.timer = window.setTimeout(() => lift(gesture), ROUTINE_LONG_PRESS_MS)
       gestureRef.current = gesture
+      // The grip, pressed with a mouse, picks the row up at once (#277): the hold exists so a
+      // finger can still scroll the list, and a mouse scrolls with its wheel. preventDefault
+      // keeps the press from starting a text selection or the row's swipe-to-delete, which
+      // listen to the mouse events a pointerdown would otherwise go on to fire.
+      if (event.pointerType === 'mouse' && target.closest('[data-drag-handle]')) {
+        event.preventDefault()
+        lift(gesture)
+        return
+      }
+      gesture.timer = window.setTimeout(() => lift(gesture), ROUTINE_LONG_PRESS_MS)
     }
     const onPointerMove = event => {
       const gesture = gestureRef.current
@@ -330,6 +342,43 @@ export default function RoutineEdit() {
       cleanupSg(ex)
     })
   }
+  // Replace (#110): the picker chooses what goes into slot `i`, and the slot keeps its sets, reps,
+  // weight and the rest (lib/routines.js replaceSlotExercise). "+" on a picker row replaces at
+  // once; tapping the row opens the new exercise's settings at those numbers first, the way the
+  // add flow does. One pick and the picker closes — it is a chooser here, not a stack you keep
+  // adding from. A slot that is no longer the exercise the sheet was opened on is left alone.
+  const replace = i => {
+    const openedOn = r.ex[i]?.id
+    const commit = (ex, fn) => {
+      picker.close()
+      let done = false
+      edit(x => { if (x[i] && x[i].id === openedOn) { x[i] = fn(x[i]); done = true } })
+      if (done) toast(t('Replaced with “{0}”', exerciseNameText(ex)))
+    }
+    const picker = exercisePicker((ex, quick) => {
+      // The slot and the history as they are now, not as this render saw them: a sync can land
+      // while the picker is open, and the new exercise's weight comes from its own sessions.
+      const live = useStore.getState().S
+      const slot = live.routines.find(x => x.id === id)?.ex[i]
+      if (!slot || slot.id !== openedOn) { picker.close(); return }
+      // "+" on the exercise that is already in the slot: nothing to replace, and no toast that
+      // says something was.
+      if (quick && ex.id === openedOn) { picker.close(); return }
+      if (quick) { commit(ex, current => replaceSlotExercise(current, ex.id, live, id)); return }
+      const next = replaceSlotExercise(slot, ex.id, live, id)
+      exConfigSheet(ex, next, cfg => commit(ex, current => ({ id: ex.id, sg: current.sg, ...cfg })), null, r, null, null, t('Replace'))
+    }, { title: t('Replace exercise') })
+  }
+  // This routine on paper (#282): the weekly printout's page for one session, through the same
+  // two print paths — the browser's print dialog (→ Save as PDF) on the web, the native Print
+  // plugin in the app, where the WebView has no window.print().
+  const printRoutine = () => {
+    const owner = useStore.getState().user?.name || ''
+    // Android's print manager refuses a job without a name. The editor never leaves a name blank,
+    // but a routine that arrived from an import or another client may have none.
+    if (MOBILE) printHtml(planPrintHTML(S, owner, { routineId: id }), r.name || t('Routine')).catch(() => { /* dismissed */ })
+    else printPlan(S, owner, { routineId: id })
+  }
   const toggleLink = i => edit(ex => {
     if (i < 1) return
     const cur = ex[i], prev = ex[i - 1]
@@ -359,8 +408,13 @@ export default function RoutineEdit() {
       <SelectRow icon="chartLine" title={t('Progression')} sheetTitle={t('Progression')}
         value={r.prog || 'linear'} onChange={v => update(s => { s.routines.find(x => x.id === id).prog = v })}
         options={POLICIES_FOR.reps.map(p => ({ value: p, label: t(POLICY_NAME[p]), subtitle: t(POLICY_DESC[p]) }))} />
-      <Row icon="pause" iconTint="var(--orange)" title={t('Exclude from automatic progression')}
-        subtitle={t('Use for planned deloads. Workouts stay in history and statistics.')}>
+      {/* Two controls that read alike and are not (issue #294). Progression picks how this
+          routine's own targets move, and "No automatic progression" keeps them where they are.
+          This switch decides whether the routine's workouts count at all: a deload routine's
+          sessions open at its own numbers and are never the baseline the next regular session
+          progresses from (session-start.js, history.js entryExcluded). */}
+      <Row icon="pause" iconTint="var(--orange)" title={t('Deload routine')}
+        subtitle={t('Its workouts do not count toward progression. They still show in history and statistics.')}>
         <Switch checked={r.excludeFromProgression === true} onChange={v => update(s => {
           const routine = s.routines.find(x => x.id === id)
           if (v) routine.excludeFromProgression = true
@@ -370,8 +424,8 @@ export default function RoutineEdit() {
     </div>
     <div className="small dim" style={{ margin: '-10px 2px 16px' }}>
       {r.excludeFromProgression
-        ? t('The next regular target continues from the last included workout.')
-        : t('Applies to every exercise in this routine that does not set its own rule.')}
+        ? t('A deload routine opens at the numbers set here, so the progression above does not apply to it.') + ' ' + t('The next regular target continues from the last included workout.')
+        : t(POLICY_DESC[r.prog || 'linear'] || POLICY_DESC.linear) + ' ' + t('Applies to every exercise in this routine that does not set its own rule.')}
     </div>
 
     {missingCount > 0 && <div className="card" style={{ marginBottom: 16, borderColor: 'var(--orange)' }}>
@@ -397,10 +451,13 @@ export default function RoutineEdit() {
           deleteLabel={t('Remove from routine')}
           onDelete={() => edit(x => { x.splice(i, 1); cleanupSg(x) })}
           onClick={() => {
-            exConfigSheet(ex, e, cfg => edit(x => { x[i] = { id: x[i].id, sg: x[i].sg, ...cfg } }), () => edit(x => { x.splice(i, 1); cleanupSg(x) }), r)
+            exConfigSheet(ex, e, cfg => edit(x => { x[i] = { id: x[i].id, sg: x[i].sg, ...cfg } }), () => edit(x => { x.splice(i, 1); cleanupSg(x) }), r, null, () => replace(i))
           }}>
+          {/* Shown on pointer devices only (index.css .routine-grip); the Move buttons and the
+              long press stay the way in for a keyboard and a finger. */}
+          <span className="routine-grip" data-drag-handle aria-hidden="true" title={t('Reorder exercises')}><Icon name="grip" /></span>
           <Thumb ex={ex} />
-          <div className="grow"><div className="tt capitalize">{exerciseNameFor(ex)}</div><div className="ss">{exLine(e, S.unit)}</div>
+          <div className="grow"><div className={`tt ${exerciseNameClass(ex)}`}>{exerciseNameFor(ex)}</div><div className="ss">{exLine(e, S.unit, speedUnitOf(S))}</div>
             {e.note && <div className="small dim" style={{ marginTop: 2 }}>{e.note}</div>}</div>
           {noEquip && <span className="tag" style={{ color: 'var(--orange)', borderColor: 'var(--orange)' }} title={t('Needs {0} — not in your active profile', t(ex.eq))}><Icon name="warning" /></span>}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 'none', alignItems: 'center' }}>
@@ -433,7 +490,7 @@ export default function RoutineEdit() {
     <Button variant="primary" onClick={() => exercisePicker((ex, quick) => {
       if (quick) {
         edit(x => x.push({ id: ex.id, ...defaultConfig(ex.id) }))
-        toast(t('“{0}” added to {1}', exerciseNameFor(ex), r.name))
+        toast(t('“{0}” added to {1}', exerciseNameText(ex), r.name))
       } else {
         exConfigSheet(ex, null, cfg => edit(x => { x.push({ id: ex.id, ...cfg }) }), null, r)
       }
@@ -445,19 +502,12 @@ export default function RoutineEdit() {
       nav('/plan/r/' + copy.id)
     }}>{t('Copy routine')}</Button>
     <div style={{ height: 10 }} />
+    <Button disabled={!r.ex.length} onClick={printRoutine}>{t('Print / Save as PDF')}</Button>
+    <div style={{ height: 10 }} />
     <Button variant="danger" onClick={() => confirmSheet({
       title: t('Delete routine?'), message: t('“{0}” and its exercises will be removed.', r.name), confirmText: t('Delete'), danger: true,
       onConfirm: () => {
-        update(s => {
-          s.routines = s.routines.filter(x => x.id !== id)
-          // A weekday holds a routine-id list: pull the deleted id from each day, drop the
-          // key when it empties (never store []). dayPlan stays scalar.
-          Object.keys(s.week).forEach(k => {
-            const next = [].concat(s.week[k]).filter(rid => rid !== id)
-            if (next.length) s.week[k] = next; else delete s.week[k]
-          })
-          Object.keys(s.dayPlan).forEach(k => { if (s.dayPlan[k] === id) delete s.dayPlan[k] })
-        })
+        update(s => { deleteRoutine(s, id) })
         nav('/plan')
       }
     })}>{t('Delete routine')}</Button>

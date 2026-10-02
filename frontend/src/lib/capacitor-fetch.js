@@ -20,12 +20,17 @@ export async function nativeFetch(url, init = {}) {
   let data = init.body
   if (typeof data === 'string') { try { data = JSON.parse(data) } catch { /* send as-is */ } }
 
+  const readTimeout = 40 * 60000
+  // Capacitor iOS maps connectTimeout to URLRequest.timeoutInterval and ignores readTimeout
+  // whenever both are present. Give that single timer the full transport budget; Android keeps
+  // the two phases separate and can still fail a dead connection quickly.
+  const connectTimeout = cap.Capacitor.getPlatform() === 'ios' ? readTimeout : 30000
   const request = cap.CapacitorHttp.request({
     url, method: init.method || 'GET', headers, data,
     // The read timeout is not the job timeout: that is the AbortSignal's job (see abortOf),
     // and coach-local.js derives it from the provider. This only has to be longer than any
     // job may legitimately run, so a local model on a laptop is never cut off by the transport.
-    responseType: 'text', connectTimeout: 30000, readTimeout: 40 * 60000
+    responseType: 'text', connectTimeout, readTimeout
   })
   const res = init.signal ? await Promise.race([request, abortOf(init.signal)]) : await request
   const text = typeof res.data === 'string' ? res.data : res.data == null ? '' : JSON.stringify(res.data)

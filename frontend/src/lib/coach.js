@@ -16,6 +16,7 @@ import { EXIDX } from './exercises.js'
 import { modeOf, isBw, isPerSide, cleanupSg } from './history.js'
 import { uid, todayISO, DAYN } from './format.js'
 import { mergePlan } from './plan-share.js'
+import { deleteRoutine } from './routines.js'
 import { POLICIES } from './progression.js'
 import { t } from './i18n.js'
 
@@ -133,6 +134,13 @@ export const planHash = S => hashPlan(canonicalPlan(S))
 const findRoutine = (S, id) => (S.routines || []).find(r => r.id === id) || null
 const findEx = (routine, id) => (routine?.ex || []).find(e => e.id === id) || null
 
+// The Coach reads a routine's name cut at 80 characters (NAME_MAX in api/coach/core/payload.js),
+// and the server copies that cut name into a rename's `before`. Compared whole, a longer name
+// never matched, and every rename of it was shown as already overtaken by an edit. Not imported
+// from payload.js, which would pull the exercise catalogue into the main bundle; coach.test.js
+// pins the two together.
+export const ROUTINE_NAME_SEEN = 80
+
 /** The plan's current value for whatever a change is about — what `before` is checked against. */
 export function currentValue(S, change) {
   const r = findRoutine(S, change.target?.routineId)
@@ -146,7 +154,7 @@ export function currentValue(S, change) {
     case 'inc': return e?.inc ?? null
     case 'exercise-prog': return e?.prog ?? null
     case 'routine-prog': return r?.prog ?? null
-    case 'rename-routine': return r?.name ?? null
+    case 'rename-routine': return r?.name == null ? null : String(r.name).slice(0, ROUTINE_NAME_SEEN)
     case 'week': return [].concat(S.week?.[change.target?.weekday] ?? [])   // routine-id list; [] = rest
     default: return undefined            // structural changes have no single scalar to compare
   }
@@ -384,9 +392,13 @@ export function applyCreatedPlan(s, proposal, { schedule } = {}) {
   pushSnapshot(s, proposal.id, t('Before the Coach’s plan'))
   const bundle = proposal.bundle
   // The Coach's `why` texts are for the review screen; they have no place in the routine data.
+  // A link is never the Coach's to write: validatePlan already drops one from the model's plan,
+  // and this drops it again on the way into mergePlan, which would otherwise carry a `url` on a
+  // plan's own exercises through to the profile (cleanCustom keeps links for shared plans).
   const stripped = {
     ...bundle,
-    routines: bundle.routines.map(r => ({ ...r, why: undefined, ex: r.ex.map(e => ({ ...e, why: undefined, name: undefined })) }))
+    routines: bundle.routines.map(r => ({ ...r, why: undefined, ex: r.ex.map(e => ({ ...e, why: undefined, name: undefined })) })),
+    customEx: (bundle.customEx || []).map(c => { const { url, media, ...rest } = c || {}; return rest })
   }
   const res = mergePlan(s, stripped, { schedule })
   // Only when the week actually moved — with the switch off the old schedule still stands, and
@@ -502,18 +514,10 @@ const CHANGE_APPLY = {
     })
   },
   'remove-routine': (s, c) => {
-    const id = c.target.routineId
-    s.routines = s.routines.filter(r => r.id !== id)
-    // A week pointing at a routine that no longer exists reads as a rest day anyway; clearing
-    // it keeps the plan honest rather than merely harmless.
-    Object.keys(s.week || {}).forEach(d => { if (s.week[d] === id) delete s.week[d] })
-    // RoutineEdit does the same on a hand-deleted routine. A pointer left behind here is not
-    // merely inert: the day still counts as overridden, so it wears a "rescheduled" badge for good.
-    const dropped = {}
-    Object.keys(s.dayPlan || {}).forEach(iso => {
-      if (s.dayPlan[iso] === id) { dropped[iso] = id; delete s.dayPlan[iso] }
-    })
-    recordDayPlanDrops(s, dropped)
+    // The same delete as Plan and RoutineEdit. It used to compare each weekday with ===, which
+    // missed a combined day (a list) and left the deleted id on it. The week comes back from the
+    // snapshot on a revert; the dropped reschedules are not in the snapshot, so they are recorded.
+    recordDayPlanDrops(s, deleteRoutine(s, c.target.routineId))
   },
   'rename-routine': (s, c) => { need(findRoutine(s, c.target.routineId)).name = c.after },
   week: (s, c) => {

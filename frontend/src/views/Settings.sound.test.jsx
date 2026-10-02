@@ -130,3 +130,57 @@ describe('Settings — Sounds switch unlocks audio from the tap', () => {
     expect(unlock).not.toHaveBeenCalled()
   })
 })
+
+describe('Settings — optional timed-set overtime', () => {
+  it('offers the opt-in beside the timer alerts and writes the preference', () => {
+    mount()
+    const row = rowTitled('Keep timing after target')
+    expect(row).toBeTruthy()
+    expect(row.querySelector('.lrow-s').textContent).toBe('Timed sets continue up to 15 extra minutes. Tap Done to log the actual duration.')
+    const sw = switchIn(row)
+    expect(sw.getAttribute('aria-label')).toBe('Keep timing after target')
+    act(() => { sw.click() })
+    expect(mocks.S.timedSetOvertime).toBe(true)
+  })
+})
+
+// Discord (asierlama): the buzz on or off on its own, the way the sound is.
+describe('Settings — vibrate', () => {
+  const setVibrateApi = value => Object.defineProperty(navigator, 'vibrate', { value, configurable: true, writable: true })
+  afterEach(() => { delete navigator.vibrate })
+
+  it('is offered where the browser can vibrate, on by default, below the sound rows', () => {
+    setVibrateApi(() => true)
+    mount()
+    const row = rowTitled('Vibrate')
+    expect(row).toBeTruthy()
+    expect(switchIn(row).getAttribute('aria-checked')).toBe('true')
+    const rows = [...host.querySelectorAll('.lrow')]
+    expect(rows.indexOf(row)).toBeGreaterThan(rows.indexOf(rowTitled('Sounds')))
+    expect(rows.indexOf(row)).toBeLessThan(rows.indexOf(rowTitled('Flash screen when timer ends')))
+  })
+
+  it('stays on offer with Sounds off: the buzz does not depend on the sound', () => {
+    setVibrateApi(() => true)
+    mocks.S.sound = false
+    mount()
+    expect(rowTitled('Vibrate')).toBeTruthy()
+  })
+
+  it('writes vibrate to the store, off and back on', () => {
+    setVibrateApi(() => true)
+    mount()
+    act(() => { switchIn(rowTitled('Vibrate')).click() })
+    expect(mocks.S.vibrate).toBe(false)
+    mount()
+    expect(switchIn(rowTitled('Vibrate')).getAttribute('aria-checked')).toBe('false')
+    act(() => { switchIn(rowTitled('Vibrate')).click() })
+    expect(mocks.S.vibrate).toBe(true)
+  })
+
+  it('is not offered where there is nothing to buzz (iOS has no navigator.vibrate)', () => {
+    setVibrateApi(undefined)
+    mount()
+    expect(rowTitled('Vibrate')).toBeUndefined()
+  })
+})

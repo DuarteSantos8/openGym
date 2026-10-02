@@ -422,10 +422,10 @@
   <ul>
     <li><b>Light/dark themes and 8 accent colors</b>, saved to your profile, over a
         hand-drawn icon set instead of emoji — it looks the same on every phone.</li>
-    <li><b>14 languages</b> — EN, DE, ES, FR, IT, PT (Portugal), PT (Brazil), PL, TR, RU,
-        ZH, KO, HI, TH, HU. Exercise instructions are localized in 12 of them, and built-in
-        exercise names show bilingually in PT-BR and HU. Translations load on demand, so the
-        app stays fast.</li>
+    <li><b>17 languages</b> — EN, DE, ES, FR, IT, PT (Portugal), PT (Brazil), PL, TR, RU,
+        UK, ZH, KO, HI, TH, HU, AR, with Arabic laid out right to left. Exercise instructions
+        are localized in 12 of them, and built-in exercise names are translated in seven
+        (PT-BR, HU, DE, ES, RU, IT, FR). Translations load on demand, so the app stays fast.</li>
     <li><b>kg or lb</b> — pick your unit; imports convert.</li>
     <li><b>Workout-day reminder:</b> an optional notification on days you have a workout
         planned but haven't logged one. It fires at <i>your</i> local time — each device
@@ -649,8 +649,8 @@ ALLOW_GUEST=0              # remove "Continue without account"</code></pre>
   </ol>
 
   <h3 id="coach-providers">Providers</h3>
-  <p>It is <b>off by default</b>. An admin turns it on in <b>Settings → Admin → AI Coach</b> and
-     picks who answers:</p>
+  <p>It is <b>off by default</b>. An admin turns it on in <b>Settings → Admin dashboard</b>,
+     on the <b>AI Coach</b> card, and picks who answers:</p>
   <table class="cfg">
     <tr><td><b>Anthropic, OpenAI, Google&nbsp;Gemini</b></td><td>Paste an API key from the provider's console. Plain HTTPS from the api process — runs on the default image.</td></tr>
     <tr><td><b>OpenAI-compatible endpoint</b></td><td>Any server that speaks the Chat Completions API: <b>Ollama</b>, <b>LM Studio</b>, <b>vLLM</b>, <b>OpenRouter</b>, a gateway of your own. A key only if the endpoint wants one. Also the default image.</td></tr>
@@ -671,7 +671,7 @@ ALLOW_GUEST=0              # remove "Continue without account"</code></pre>
       - OLLAMA_NUM_PARALLEL=1
     mem_limit: 4g</code></pre>
   <pre><code>docker exec -it &lt;ollama container&gt; ollama pull qwen2.5:3b</code></pre>
-  <p>Then in <b>Settings → Admin → AI Coach</b>: provider <b>OpenAI-compatible endpoint</b> →
+  <p>Then on the <b>AI Coach</b> card (<b>Settings → Admin dashboard</b>): provider <b>OpenAI-compatible endpoint</b> →
      Base URL <code>http://ollama:11434</code> → <b>List models</b> → pick the model →
      <b>Test the Coach</b>. That's the whole setup.</p>
   <p><b>Any model you can pull, you can use.</b> <code>ollama pull</code> whatever you like and

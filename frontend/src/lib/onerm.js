@@ -1,4 +1,6 @@
-import { isWarmupRow } from './workout-model.js'
+import { isAssisted } from './exercises.js'
+import { isSideSet } from './workout-model.js'
+import { entriesForExercise, metricRowsForEntry } from './history.js'
 // Estimated one-rep max (issue #18).
 //
 // Deliberately knows nothing about the exercise database: an estimate needs a weight AND a
@@ -43,23 +45,39 @@ export function estimate1RM(w, r, formula = DEFAULT_FORMULA) {
 // `topW` is ignored on purpose: it records the working weight a user confirmed after the
 // exercise, with no rep count attached, so it cannot produce an estimate.
 export function bestSetOf(entry, formula = DEFAULT_FORMULA) {
+  // An assistance machine has no one-rep max to estimate: the load is the help you were given,
+  // so Epley on it would rise as you got weaker and call that a record (issue #232). These
+  // exercises stay out of the estimate, the curve and the strength list entirely.
+  if (isAssisted(entry?.id ? { id: entry.id } : entry)) return null
   let best = null
-  ;(entry?.sets || []).forEach(s => {
-    if (!s.done || isWarmupRow(s)) return
-    const est = estimate1RM(s.w, s.r, formula)
-    if (est !== null && (!best || est > best.est)) best = { est, w: Number(s.w), r: Math.round(Number(s.r)) }
+  metricRowsForEntry(entry, 'reps').forEach(s => {
+    const sets = isSideSet(s)
+      ? [s.sides.L, s.sides.R].filter(side => side?.done === true)
+      : [s]
+    sets.forEach(set => {
+      const est = estimate1RM(set.w, set.r, formula)
+      if (est !== null && (!best || est > best.est)) best = { est, w: Number(set.w), r: Math.round(Number(set.r)) }
+    })
   })
+  return best
+}
+
+function bestSetOfEntries(entries, formula = DEFAULT_FORMULA) {
+  let best = null
+  for (const entry of entries || []) {
+    const candidate = bestSetOf(entry, formula)
+    if (candidate && (!best || candidate.est > best.est)) best = candidate
+  }
   return best
 }
 
 // One point per workout in which the exercise produced an estimate — feeds the trend chart.
 // Chronological, matching the order workouts are appended in.
 export function e1rmSeries(S, exId, formula = DEFAULT_FORMULA) {
+  if (isAssisted(exId)) return []
   const pts = []
   ;(S.workouts || []).forEach(w => {
-    const entry = w.entries.find(e => e.id === exId)
-    if (!entry) return
-    const best = bestSetOf(entry, formula)
+    const best = bestSetOfEntries(entriesForExercise(w, exId), formula)
     if (best) pts.push({ t: w.start, d: w.d, y: best.est, w: best.w, r: best.r })
   })
   return pts

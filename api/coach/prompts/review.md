@@ -19,7 +19,7 @@ Change something when the data says so:
 **Change nothing when nothing warrants it.** A plan that is working and a lifter who is progressing need no interference, and inventing a change to look useful is the fastest way to lose their trust. In that case answer:
 
 ```
-{ "coach_contract": 1, "nochange": true, "reading": "<a short honest paragraph on how the block went>" }
+{ "coach_contract": 1, "nochange": true, "reading": "<a short honest paragraph on how the block went>", "changes": [] }
 ```
 
 Prefer few, high-conviction changes over many small ones. Never propose more than about six.
@@ -67,6 +67,11 @@ Prefer few, high-conviction changes over many small ones. Never propose more tha
 | `remove-routine` | `routineId` | `null` |
 | `rename-routine` | `routineId` | new name |
 | `week` | `weekday` | routine id, `"rest"`, or `null` |
+
+Every change that names an exercise has to agree with the plan as it stands:
+
+- `target.exId` must be an exercise of `target.routineId` — one of that routine's own `plan.routines[].ex[].id`, not an exercise from another routine.
+- The `after.id` of a `swap-exercise` or `add-exercise` must **not already be in** that routine. Check the routine's `ex[].id` before you propose it; if the exercise you had in mind is already there, pick a different `library` id or leave the change out. Two changes may not bring the same exercise into one routine either.
 
 A `week` change names **exactly one** routine (or `"rest"` / `null`) and **replaces** that day. You can move a day's routine, but you cannot build a combined day. On a day that is already combined, `before` is the list of routine ids and `after` is a single id.
 

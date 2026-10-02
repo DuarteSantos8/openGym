@@ -1,0 +1,130 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: opengym
+  name: opengym
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: opengym
+  template:
+    metadata:
+      labels:
+        app: opengym
+    spec:
+      initContainers:
+        # The exercise images and GIFs, one time (~140 MB) — the same download as the media
+        # service in docker-compose.yml. They are © Gym visual (https://gymvisual.com/), used
+        # under the exercises-dataset's terms and fetched from upstream, not redistributed by
+        # openGym; see NOTICE.md.
+        - name: media-download
+          image: alpine/git:2.52.0
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              mkdir -p /out/img /out/gif
+              if [ -z "$(ls -A /out/img 2>/dev/null)" ]; then
+                git clone --depth 1 https://github.com/hasaneyldrm/exercises-dataset /tmp/ds
+                cp /tmp/ds/images/*.jpg /out/img/ && cp /tmp/ds/videos/*.gif /out/gif/
+              fi
+          volumeMounts:
+            - name: opengym-media
+              mountPath: /out
+          resources:
+            requests:
+              memory: 128Mi
+            limits:
+              memory: 256Mi
+      containers:
+        - name: api
+          # Pin both images to one release and move them together: a tag names what you run and
+          # what you roll back to, where :latest changes under a pod whenever it is rescheduled.
+          # The API and the web image of one version belong together. The published tags are
+          # the version (1.3.9) and its minor line (1.3); see the release notes before a bump.
+          image: ghcr.io/duartesantos8/opengym-api:1.3.9
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: PORT
+              value: "3000"
+            - name: DATA_DIR
+              value: /data
+            - name: RP_ID
+              value: opengym.example.com
+            - name: ORIGIN
+              value: https://opengym.example.com
+            # Everything else in .env.example (INVITE_ONLY, ADMIN_UIDS, ALLOW_GUEST,
+            # DEFAULT_LANG, PASSWORD_LOGIN, the push keys, ...) goes here the same way.
+            # TRUST_PROXY is left off on purpose: the web container overwrites X-Forwarded-For
+            # with the address it was reached from, which here is the gateway's pod, so turning
+            # it on changes nothing for the sign-in throttle — while any pod in the cluster that
+            # talks to port 3000 directly could then choose its own address. See
+            # docs/SELF_HOSTING_KUBERNETES.md.
+          ports:
+            - containerPort: 3000
+              name: http
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+          volumeMounts:
+            - name: opengym-data
+              mountPath: /data
+          resources:
+            requests:
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+        - name: web
+          image: ghcr.io/duartesantos8/opengym-web:1.3.9   # same version as the api container
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: NGINX_PORT
+              value: "80"
+            # Both containers share the pod's network, so the API is on localhost. An IP here
+            # also means nginx never needs RESOLVER (Docker's DNS by default) to find it.
+            - name: BACKEND
+              value: 127.0.0.1
+            - name: PORT
+              value: "3000"
+          ports:
+            - containerPort: 80
+              name: web
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 30
+          volumeMounts:
+            - name: opengym-media
+              mountPath: /usr/share/nginx/html/img
+              subPath: img
+            - name: opengym-media
+              mountPath: /usr/share/nginx/html/gif
+              subPath: gif
+          resources:
+            requests:
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+      volumes:
+        - name: opengym-data
+          persistentVolumeClaim:
+            claimName: opengym-data
+        - name: opengym-media
+          persistentVolumeClaim:
+            claimName: opengym-media

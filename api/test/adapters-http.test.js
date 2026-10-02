@@ -269,6 +269,18 @@ test('check(): without a key the runtime is ready and the key is what is missing
   assert.equal(noBase.ok, false);
 });
 
+test('check(): the Runtime line names the scheme the endpoint is really called with', async () => {
+  const lan = await compatible.check(cfgCompat, env, { fetch: fakeFetch([ok({ data: [{ id: 'llama' }] })]) });
+  assert.equal(lan.ok, true);
+  assert.match(lan.version, /^HTTP · ollama\.lan:11434 · 1 models$/);
+  const lanNoKey = await compatible.check(cfgCompat, {}, { fetch: fakeFetch([ok({ data: [] })]) });
+  assert.match(lanNoKey.version, /^HTTP · /);
+  const cloud = await anthropic.check({}, env, { fetch: fakeFetch([ok({ data: [{ id: 'claude-a' }] })]) });
+  assert.match(cloud.version, /^HTTPS · api\.anthropic\.com/);
+  const cloudNoKey = await openai.check({}, {}, { fetch: fakeFetch([]) });
+  assert.match(cloudNoKey.version, /^HTTPS · api\.openai\.com$/);
+});
+
 test('validateBaseUrl: http(s) only, no credentials, no query, trailing slash dropped', () => {
   assert.deepEqual(validateBaseUrl('http://ollama.lan:11434/'), { ok: true, value: 'http://ollama.lan:11434' });
   assert.deepEqual(validateBaseUrl('  '), { ok: true, value: null });

@@ -16,7 +16,7 @@ import {
 } from '../../frontend/src/lib/onerm.js'
 import { loadOfWorkouts, rankOf, levelsOf } from '../../frontend/src/lib/muscles.js'
 import { policyFor } from '../../frontend/src/lib/progression.js'
-import { buildSessionEntries } from '../../frontend/src/lib/session-start.js'
+import { buildSessionEntries, startsFromLast } from '../../frontend/src/lib/session-start.js'
 
 /* ---------- helpers ---------- */
 
@@ -414,28 +414,32 @@ export const muscleBalance = {
 
 /* ---------- preview_session ---------- */
 
-// Where a number on the session screen actually came from. A routine's own sets/reps/weight
-// are the LAST fallback, not the first: buildSets() prefers the confirmed working weight and
-// the previous session's reps, and applyPrescription() then overwrites the weight with
-// whatever the progression policy decided. Reporting the winner is the whole point of this
-// tool — "the plan says 60" is not an answer to "what will the app show me".
-function sourceOf(S, cfg, plan, field) {
+// Where a number on the session screen actually came from. A routine's own weight is the LAST
+// fallback, not the first: buildSets() takes the weight of this routine's last session of the
+// exercise (any routine's, when this one never trained it), then the confirmed working weight,
+// and applyPrescription() then overwrites it with whatever the progression policy decided. The
+// reps are the routine's own unless the profile starts planned sessions from the last session
+// (startFrom 'last'), or a policy that moves reps moved them. Reporting the winner is the whole
+// point of this tool — "the plan says 60" is not an answer to "what will the app show me".
+function sourceOf(S, cfg, plan, field, routine) {
   // Progression off (or a deload routine): the session is built from the routine's own target,
   // exactly as session-start.js does with useTarget — history and the confirmed weight are ignored.
   if (!plan || plan.kind === 'off') return 'routine_plan'
   const decided = plan.kind !== 'first' && plan[field] != null
-  if (decided) return 'progression'
-  if (field === 'weight') {
-    const conf = (S.exWeights || {})[cfg.id]
-    if (conf && conf.w > 0) return 'confirmed_weight'
-  }
-  return lastEntryFor(S, cfg.id) ? 'last_session' : 'routine_plan'
+  // A policy that settles on the routine's own reps or hold — a restart after the plan was
+  // edited, a bodyweight hold at the plan's count — is the plan speaking, not an override.
+  if (decided) return field !== 'weight' && plan[field] === cfg[field] ? 'routine_plan' : 'progression'
+  const last = lastEntryFor(S, cfg.id, routine && routine.id)
+  if (field === 'reps') return startsFromLast(S) && last ? 'last_session' : 'routine_plan'
+  if (last) return 'last_session'
+  const conf = (S.exWeights || {})[cfg.id]
+  return conf && conf.w > 0 ? 'confirmed_weight' : 'routine_plan'
 }
 
 const SOURCE_TEXT = {
   progression: 'the progression policy overrode the routine',
   confirmed_weight: 'your confirmed working weight for this exercise',
-  last_session: 'carried over from the last time you did this exercise',
+  last_session: 'carried over from the last time this routine had this exercise (or any routine, if this one never has)',
   routine_plan: "the routine's own target"
 }
 
@@ -443,7 +447,7 @@ const SOURCE_TEXT = {
 export const previewSession = {
   name: 'preview_session',
   description:
-    'Preview the session a routine will actually open with — the numbers the user will see after the progression policy and their training history have overridden the routine\'s own targets. This is NOT the same as get_routine: a routine storing "squat 3x8 @ 60kg" can open at 75kg because the policy deloaded from the last logged session, and reps carry from history rather than from the plan. Always call this (not get_routine) before telling someone what weight they are about to lift, or before judging whether an edit to a routine had any effect. Returns, per exercise, the planned target, the policy\'s decision and its stated reason, the opening set rows, and where each number came from. Defaults to today\'s scheduled routine.',
+    'Preview the session a routine will actually open with — the numbers the user will see after the progression policy and their training history have overridden the routine\'s own targets. This is NOT the same as get_routine: a routine storing "squat 3x8 @ 60kg" can open at 75kg because the policy progressed or deloaded from that routine\'s last logged session. The reps are the routine\'s own unless a policy that moves reps moved them, or the profile starts planned sessions from the last session (starts_from). Always call this (not get_routine) before telling someone what weight they are about to lift, or before judging whether an edit to a routine had any effect. Returns, per exercise, the planned target, the policy\'s decision and its stated reason, the opening set rows, and where each number came from. Defaults to today\'s scheduled routine.',
   schema: {
     routine_id: z.string().min(1).optional().describe('Routine to preview. Defaults to the routine scheduled for `date`.'),
     date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().describe('Date the session would be started on, YYYY-MM-DD. Affects which routine is scheduled and any one-off day override. Defaults to today.')
@@ -478,8 +482,8 @@ export const previewSession = {
       const openR = work.length ? (work[0].r || 0) : 0
       const openSec = work.length ? (work[0].sec || 0) : 0
       const openMin = work.length ? (work[0].min || 0) : 0
-      const wSrc = sourceOf(S, cfg, plan, 'weight')
-      const rSrc = sourceOf(S, cfg, plan, 'reps')
+      const wSrc = sourceOf(S, cfg, plan, 'weight', r)
+      const rSrc = sourceOf(S, cfg, plan, 'reps', r)
       return {
         position: i + 1,
         id: cfg.id,
@@ -540,6 +544,9 @@ export const previewSession = {
       routine_id: r.id,
       routine_name: r.name,
       unit,
+      // The profile's "Planned sessions start from" setting: 'plan' opens at the routine's own
+      // reps, 'last_session' carries them over from the last time.
+      starts_from: startsFromLast(S) ? 'last_session' : 'plan',
       policy: policyFor(null, r, 'reps'),
       policy_name: policyName(policyFor(null, r, 'reps')),
       exercises,

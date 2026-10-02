@@ -66,6 +66,39 @@ describe('active exercise swap sheet flow', () => {
   })
 })
 
+// A slot of a routine kept out of progression (rehab, deload) stays out when it is swapped,
+// whether the replacement takes its place or, beside logged sets, goes in after it.
+describe('swapping an exercise kept out of progression', () => {
+  const install = done => {
+    const S = clone(DEF)
+    S.routines = [{ id: 'rehab', name: 'Rehab', excludeFromProgression: true, ex: [] }]
+    S.active = {
+      id: 'swap-noprog', d: '2026-08-27', start: Date.now(), routineIds: ['rehab'], name: 'Rehab', bw: null, cur: 0,
+      entries: [{ ...entry(ids[0], done), rid: 'rehab', noProg: true }],
+    }
+    useStore.setState({ S, user: null })
+  }
+
+  it('keeps it out when the replacement takes the slot', () => {
+    install(false)
+    submitSwap(0, EXDB[2], { mode: 'reps', sets: 1, reps: 12, weight: 10 })
+    const [swapped] = useStore.getState().S.active.entries
+    expect(swapped).toMatchObject({ id: ids[2], rid: 'rehab', noProg: true })
+    expect(swapped.plan.kind).toBe('off')
+  })
+
+  it('keeps it out when the replacement goes in after logged sets', () => {
+    install(true)
+    submitSwap(0, EXDB[2], { mode: 'reps', sets: 1, reps: 12, weight: 10 })
+    const confirm = useUI.getState().sheets.at(-1)
+    act(() => confirm.render(confirm.close).props.onConfirm())
+    const entries = useStore.getState().S.active.entries
+    expect(entries.map(e => e.id)).toEqual([ids[0], ids[2]])
+    expect(entries[1]).toMatchObject({ rid: 'rehab', noProg: true })
+    expect(entries[1].plan.kind).toBe('off')
+  })
+})
+
 describe('active exercise swap locale coverage', () => {
   const required = [
     'Swap exercise',
@@ -85,5 +118,20 @@ describe('active exercise swap locale coverage', () => {
     Object.entries(packs).forEach(([path, pack]) => {
       required.forEach(key => expect(pack, `${path} is missing ${key}`).toHaveProperty(key))
     })
+  })
+})
+
+// QA 1.3.9: the swap borrowed the routine editor's words — "Add exercise" over the picker and
+// "Add to routine" on the confirm — while it changes only today's session.
+describe('swap wording', () => {
+  it('titles the picker as a swap and confirms into this workout', () => {
+    swapActiveWorkoutExercise(1)
+    const picker = useUI.getState().sheets.at(-1)
+    const pickerView = picker.render(picker.close)
+    expect(pickerView.props.title).toBe('Swap exercise')
+    act(() => pickerView.props.onPick(EXDB[2]))
+    const configSheet = useUI.getState().sheets.at(-1)
+    const configView = configSheet.render(configSheet.close)
+    expect(configView.props.saveLabel).toBe('Use in this workout')
   })
 })

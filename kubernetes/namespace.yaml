@@ -1,0 +1,6 @@
+# The namespace everything below lives in (kustomization.yaml sets it on each resource), created
+# here so `kubectl apply -k kubernetes/` works on a fresh cluster. Renaming it means changing both.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: fitness

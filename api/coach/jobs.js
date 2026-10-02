@@ -178,6 +178,19 @@ class CoachError extends Error {
 export { CoachError };
 
 /**
+ * Clamp a free-text note/refine message to the admin's configured `maxMessageLen` (issue #267).
+ * The one place this is enforced — `routes.js` only applies a generous sanity ceiling before a
+ * string reaches here, and `payload.js`'s own bound exists purely so a caller that skips this
+ * module (coach-local.js's in-process pipeline) still has a limit. Exported so the clamp itself
+ * is directly testable without walking the whole enqueue → execute pipeline.
+ */
+export function clampMessage(text) {
+  if (!text) return null;
+  const max = cfgStore.load().maxMessageLen || 1000;
+  return String(text).slice(0, max);
+}
+
+/**
  * Enqueue a job. Throws CoachError with a code the routes layer maps to an HTTP status:
  * `off`, `busy`, `cap`, `consent`.
  */
@@ -230,8 +243,9 @@ export function enqueue(uid, opts) {
     trigger: opts.trigger || 'manual',                // 'manual' | 'scheduled'
     workoutId: opts.workoutId ? String(opts.workoutId).slice(0, 40) : null,
     intake: opts.intake || null,
-    note: opts.note || null,
-    refine: opts.refine || null,
+    note: clampMessage(opts.note),
+    refine: clampMessage(opts.refine),
+    lang: payloadLib.langTag(opts.lang),              // the language the app was showing (#303)
     state: 'queued',
     startedAt: Date.now()
   };
@@ -316,10 +330,20 @@ async function execute(job) {
     refine: job.refine,
     previous: pendingCreate?.bundle || null,
     workoutId: job.workoutId,
+    // The app says which language it is in. A scheduled review has no app behind it: a profile
+    // that never picked a language then gets the instance's DEFAULT_LANG, like its screens do.
+    lang: job.lang || (S.langAuto === true ? payloadLib.langTag(process.env.DEFAULT_LANG) : null),
     // The room's medians ride along on a review or a debrief when the admin allows it and
     // this person opted in; null otherwise, and the payload then carries no `cohort` at all.
     cohort: (job.kind === 'review' || job.kind === 'debrief') ? cohortForPayload(job.uid) : null
   });
+  // The payload is paid for with the instance's key, and it is built from state the client
+  // wrote. The builder bounds each field; a payload that is still bigger than any real training
+  // history makes is refused here, before a provider is called, rather than sent and billed.
+  const size = JSON.stringify(payload).length;
+  if (size > payloadLib.MAX_PAYLOAD_CHARS) {
+    return finish(job, { outcome: 'failed', errorClass: 'toolarge', detail: `payload of ${Math.round(size / 1000)}k characters` });
+  }
 
   // An HTTPS provider has no child process, so no directory for one to live in either.
   const jobDir = adapter.spawns === false ? null : fs.mkdtempSync(path.join(os.tmpdir(), 'coach-'));

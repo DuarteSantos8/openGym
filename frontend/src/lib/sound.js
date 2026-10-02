@@ -47,20 +47,60 @@ const sleepAfter = endSec => {
   }, at - Date.now())
 }
 
+// A timbre brighter than a sine: the fundamental plus three falling harmonics. It carries over
+// music and through a phone speaker's weak low end without a square wave's buzz. The browser
+// normalises a periodic wave to a peak of 1, so the gain alone decides how loud it gets. Built
+// once per context; a browser without createPeriodicWave gets the nearest built-in shape.
+let brightWave = null
+let brightCtx = null
+const setBright = (ctx, o) => {
+  if (typeof ctx.createPeriodicWave !== 'function') { o.type = 'triangle'; return }
+  if (brightCtx !== ctx) {
+    brightCtx = ctx
+    brightWave = ctx.createPeriodicWave(new Float32Array([0, 0, 0, 0, 0]), new Float32Array([0, 1, 0.6, 0.35, 0.2]))
+  }
+  o.setPeriodicWave(brightWave)
+}
+
+// One tone. The defaults are every beep the app has always made: a sine that reaches 0.35 and
+// fades from there at once. `peak`, `hold` (the share of the tone kept at its peak before the
+// fade) and `bright` exist for the timer chime below.
+const tone = (freq, dur, when, { peak = 0.35, hold = 0, bright = false } = {}) => {
+  const ctx = wake()
+  const o = ctx.createOscillator(), g = ctx.createGain()
+  o.connect(g); g.connect(ctx.destination)
+  o.frequency.value = freq
+  if (bright) setBright(ctx, o); else o.type = 'sine'
+  const t0 = ctx.currentTime + when
+  g.gain.setValueAtTime(0.001, t0)
+  g.gain.exponentialRampToValueAtTime(peak, t0 + 0.02)
+  if (hold > 0) g.gain.setValueAtTime(peak, t0 + dur * hold)
+  g.gain.exponentialRampToValueAtTime(0.001, t0 + dur)
+  o.start(t0); o.stop(t0 + dur + 0.05)
+  sleepAfter(when + dur + 0.05)
+}
+
 export function beep(enabled, freq, dur, when) {
   if (!enabled) return
-  try {
-    const ctx = wake()
-    const o = ctx.createOscillator(), g = ctx.createGain()
-    o.connect(g); g.connect(ctx.destination)
-    o.frequency.value = freq || 880; o.type = 'sine'
-    const t0 = ctx.currentTime + (when || 0)
-    g.gain.setValueAtTime(0.001, t0)
-    g.gain.exponentialRampToValueAtTime(0.35, t0 + 0.02)
-    g.gain.exponentialRampToValueAtTime(0.001, t0 + (dur || 0.18))
-    o.start(t0); o.stop(t0 + (dur || 0.18) + 0.05)
-    sleepAfter((when || 0) + (dur || 0.18) + 0.05)
-  } catch (e) { /* */ }
+  try { tone(freq || 880, dur || 0.18, when || 0) } catch (e) { /* */ }
+}
+
+// The end of a rest or a hold (store/useUI.js). It used to be three of the beeps above and went
+// unheard under music (Discord: "Rest Timer Sound Notification too Quiet"): an exponential fade
+// from 0.35 is down to a tenth of that before the tone is half over. So this one
+//  - peaks at CHIME_PEAK instead of 0.35. The output clips above 1, and the notes are spaced so
+//    that each has stopped before the next starts, so they never add up past the peak;
+//  - holds that peak for most of each note instead of fading from the first millisecond;
+//  - uses the brighter timbre;
+//  - has a shape of its own, high, low, then high and long (E6 B5 E6), that neither the 3-2-1
+//    ticks before it (660 Hz), a set tick (1040 Hz) nor the rising finish fanfare has.
+// It does not turn other apps down. A web page cannot duck another app's audio: Android only
+// grants audio focus to native code, and on iOS the 'playback' session pauses the music (1. above).
+export const CHIME_PEAK = 0.9
+const CHIME = [[1319, 0.16, 0], [988, 0.16, 0.22], [1319, 0.5, 0.44]]
+export function chime(enabled) {
+  if (!enabled) return
+  try { CHIME.forEach(([freq, dur, when]) => tone(freq, dur, when, { peak: CHIME_PEAK, hold: 0.6, bright: true })) } catch (e) { /* */ }
 }
 
 // Call from inside a tap. Gets the context created and running while the browser still counts
@@ -86,5 +126,15 @@ export function setPlayOnSilent(on) {
   try { navigator.audioSession.type = on ? 'playback' : 'auto' } catch (e) { /* */ }
 }
 
-
-export function vibrate(p) { try { navigator.vibrate && navigator.vibrate(p) } catch (e) { /* */ } }
+// Settings → "Vibrate" (Discord, asierlama): the buzz at the end of a rest or a hold and on a set
+// tick, switched on its own the way Sounds is. A page-level switch like setPlayOnSilent, applied
+// by App.jsx, so the places that buzz do not each have to read the profile. On by default.
+let buzz = true
+export function setVibrate(on) { buzz = on !== false }
+// Offered where the browser can buzz at all: iOS has no navigator.vibrate. The Android app needs
+// android.permission.VIBRATE in its manifest, without which the WebView drops every call.
+export const vibrateSupported = () => typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function'
+export function vibrate(p) {
+  if (!buzz) return
+  try { navigator.vibrate && navigator.vibrate(p) } catch (e) { /* */ }
+}

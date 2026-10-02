@@ -6,15 +6,17 @@
 export const LANGS = {
   en: 'English', de: 'Deutsch', 'de-CH': 'Deutsch (Schweiz)', es: 'Español', fr: 'Français',
   it: 'Italiano', pt: 'Português (Portugal)', 'pt-BR': 'Português (Brasil)', pl: 'Polski',
-  tr: 'Türkçe', ru: 'Русский', zh: '中文',
-  ko: '한국어', hi: 'हिन्दी', th: 'ไทย', hu: 'Magyar'
+  tr: 'Türkçe', ru: 'Русский', uk: 'Українська', zh: '中文',
+  ko: '한국어', hi: 'हिन्दी', th: 'ไทย', hu: 'Magyar', ar: 'العربية'
 }
-export const INSTR_LANGS = ['en', 'es', 'fr', 'it', 'tr', 'ru', 'zh', 'hi', 'pl', 'ko', 'pt-BR', 'hu']
-export const EXERCISE_NAME_LANGS = ['pt-BR', 'hu']
+export const INSTR_LANGS = ['en', 'es', 'fr', 'it', 'tr', 'ru', 'zh', 'hi', 'pl', 'ko', 'pt-BR', 'hu', 'ar']
+export const EXERCISE_NAME_LANGS = ['pt-BR', 'hu', 'de', 'es', 'ru', 'it', 'fr']
+// Languages rendered right-to-left; i18n.js setLang applies the direction from this.
+export const RTL_LANGS = new Set(['ar'])
 export const DATE_LOCALES = {
   en: 'en-GB', de: 'de-DE', 'de-CH': 'de-CH', es: 'es-ES', fr: 'fr-FR', it: 'it-IT',
   pt: 'pt-PT', 'pt-BR': 'pt-BR',
-  pl: 'pl-PL', tr: 'tr-TR', ru: 'ru-RU', zh: 'zh-CN', ko: 'ko-KR', hi: 'hi-IN', th: 'th-TH', hu: 'hu-HU'
+  pl: 'pl-PL', tr: 'tr-TR', ru: 'ru-RU', uk: 'uk-UA', zh: 'zh-CN', ko: 'ko-KR', hi: 'hi-IN', th: 'th-TH', hu: 'hu-HU', ar: 'ar-u-nu-latn'
 }
 
 // Locales derived from another language by a pure text transform rather than carried as their
@@ -57,6 +59,8 @@ let lang = 'en'                 // set only by _setLangState, called from i18n.j
 let dict = {}                   // current locale pack (empty = English fallback)
 let instr = null                // { exId: [steps] } for the current language, null = English
 let exerciseNames = null        // { exId: translated name }, null = original catalogue name
+let enParens = true               // whether translated names show the English original in parentheses
+let enOnly = false                // whether translated names are replaced entirely by the English original
 let version = 0                 // bumped on every setLang; drives the React subscription selector
 
 export const getLang = () => lang
@@ -73,9 +77,14 @@ export function t(s, ...args) {
 // Instructions for an exercise in the current language (English steps as fallback).
 export const instrFor = ex => (instr && instr[ex.id]) || ex.st || []
 
-// Built-in catalogue names are bilingual when a complete translated name pack is active.
+// Built-in catalogue names are bilingual when a translated name pack is active. A pack need not
+// be complete: German covers the equipment exercises and not the body-weight ones, and an
+// exercise the pack has no entry for keeps its English title, one exercise at a time.
 // User-created exercises have no entry in the pack and keep their exact chosen name.
 export const exerciseNameFor = ex => {
+  // A language that chose "English names only" sees the canonical catalogue title, not the
+  // translation — and never the parenthetical either. Custom exercises keep their exact name.
+  if (enOnly) return ex?.n || ''
   const translated = exerciseNames && ex && exerciseNames[ex.id]
   if (!translated) return ex?.n || ''
   // Some names (Burpee, Pilates, brand/model terms) are the established term in the target
@@ -84,9 +93,31 @@ export const exerciseNameFor = ex => {
   // this only ever differs from ordinary casing for languages with locale-specific rules
   // (e.g. Turkish dotless i), which does not include any language shipped here today.
   return translated.toLocaleLowerCase(lang) === ex.n.toLocaleLowerCase('en')
+      || !enParens
     ? translated
     : `${translated} (${ex.n})`
 }
+
+// Exercise-name packs written in the language's own casing. German capitalises its nouns and
+// lower-cases the adjectives in front of them ("Assistiertes hängendes Knieheben"), which
+// title-casing on top would undo. Every other pack is stored lower-case, the way EXDB stores
+// the English names ("supino com barra"). Left without the title-casing English gets, those
+// read all lower-case in every list, card and history row. A new pack goes here only when it
+// carries real casing; i18n-core.test.js checks this list against the packs themselves.
+export const CASED_NAME_LANGS = ['de']
+
+// EXDB stores English names lower-case and the UI title-cases them with CSS. A pack in
+// CASED_NAME_LANGS carries its own casing and must not be cased again on top, so the class that
+// does the title-casing stays off its translated names. A lower-case pack is title-cased like
+// English. That is decided per exercise, not only per language: German covers only part of the
+// catalogue, and an exercise it has no entry for shows its lower-case English title, which still
+// needs the casing ("push-up" would otherwise sit between "Bankdrücken" and "Kniebeuge"). A custom
+// exercise has no pack entry either and keeps the casing it always had, and so does every
+// exercise while "English names only" is on, since exerciseNameFor then shows the English title.
+// Callers spread this onto the element that holds exerciseNameFor(ex)'s output, nothing else —
+// muscle and equipment labels next to it are t() strings and keep their own capitalize.
+export const exerciseNameClass = ex => (!enOnly && exerciseNames && ex && exerciseNames[ex.id]
+  && CASED_NAME_LANGS.includes(baseLang(lang)) ? '' : 'capitalize')
 
 // Search both the localized and canonical English title without changing persisted data.
 export const exerciseNameSearchText = ex => {
@@ -97,13 +128,15 @@ export const exerciseNameSearchText = ex => {
 // Called by i18n.js's setLang once the locale pack has been loaded — kept here rather than
 // exported as setLang because loading packs requires import.meta.glob, which is Vite-only.
 // `dict`, `instr` and `exerciseNames` may be null to reset to their English fallbacks.
-export function _setLangState(newLang, newDict, newInstr, newExerciseNames) {
+export function _setLangState(newLang, newDict, newInstr, newExerciseNames, showEn = true, enOnlyFlag = false) {
   lang = LANGS[newLang] ? newLang : 'en'
   dict = lang === 'en' ? {} : (newDict || {})
   instr = lang === 'en' || !INSTR_LANGS.includes(baseLang(lang)) ? null : (newInstr || null)
   exerciseNames = lang === 'en' || !EXERCISE_NAME_LANGS.includes(baseLang(lang))
     ? null
     : (newExerciseNames || null)
+  enParens = !!showEn
+  enOnly = !!enOnlyFlag
   version++
   return version
 }

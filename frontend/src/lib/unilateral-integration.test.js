@@ -42,11 +42,12 @@ describe('unilateral sets across session boundaries', () => {
 
   it('uses progressed side weights when building a routine session and its planned drops', () => {
     const cfg = { id: '0025', mode: 'reps', side: true, bodyweight: false, sets: 1, reps: 16, weight: 20, policy: 'linear', inc: 2.5, intensifier: { type: 'dropset', count: 1, pct: 20 } }
-    const S = { unit: 'kg', exWeights: {}, workouts: [{ id: 'w', d: '2026-09-01', entries: [{ ...entry(done(row())), target: cfg }] }] }
+    const S = { unit: 'kg', exWeights: {}, workouts: [{ id: 'w', d: '2026-09-01', routineIds: ['r'], entries: [{ ...entry(done(row())), target: cfg }] }] }
     const [built] = buildSessionEntries(S, { id: 'r', policy: 'linear', ex: [cfg] })
     expect(built.plan.kind).toBe('up')
     expect(built.sets[0].sides.L.w).toBe(built.plan.weight)
-    expect(built.sets[0].sides.L.drops[0].w).toBe(18)
+    // 20% off 22.5 is 18, which a 2.5 kg step cannot load: the drop lands on 17.5.
+    expect(built.sets[0].sides.L.drops[0].w).toBe(17.5)
   })
 
   it('converts both limbs and their drops in history and the active session', () => {
@@ -78,7 +79,8 @@ describe('unilateral sets across session boundaries', () => {
     expect(completed.entries[0].sets[0]).toEqual(s)
     expect(setsDone(completed)).toBe(1)
     expect(workoutVolume(completed)).toBe(20 * 8 + 16 * 8)
-    expect(setLabel('0025', s, entry(s).target)).toBe('L 20×8 · R —')
+    // the drop the volume counts is on the label too (Discord: drop-sets missing from history)
+    expect(setLabel('0025', s, entry(s).target)).toBe('L 20×8 ↘ 16×8 · R —')
     expect(workoutVolume({ entries: [entry({ ...s, phase: 'warmup' })] })).toBe(0)
   })
 

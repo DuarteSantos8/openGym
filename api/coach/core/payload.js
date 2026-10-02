@@ -10,13 +10,97 @@
  * handle stands in), passkey and credential material, push subscriptions, invite data, theme
  * and appearance settings, and every other profile's everything.
  */
-import { LIBRARY, LIB_BY_ID, libraryHas, libraryName, librarySlice, MAX_LIBRARY } from './library.js';
+import { glyphStr } from './glyphs.js';
+import { LIBRARY, LIB_BY_ID, libraryHas, libraryName, librarySlice, isStretch, MAX_LIBRARY } from './library.js';
 
 export const CONTRACT = 1;
 // Bounds from FR-22. A review reads a training block, not a training career: more history
 // makes the payload bigger and the reading vaguer, not better.
 export const MAX_WEEKS = 12;
 export const MAX_SESSIONS = 60;
+// Last-resort ceiling for a free-text note/refine (issue #267). The real limit is the admin's
+// `maxMessageLen`, enforced in jobs.js before a message ever reaches this module — this module
+// stays a pure allowlist with no config import of its own, so it keeps its own constant instead.
+// It has to stay >= config.js's MAX_MESSAGE_LEN_CEILING, or a raised admin limit would still get
+// clipped back down here.
+export const MAX_NOTE_CHARS = 4000;
+// The ceiling on a whole payload, as JSON characters, which the server checks before a job
+// leaves (jobs.js). Every field below is bounded on its own; this is the backstop for how many
+// of them there are, and for a field added later that nobody bounded. A deliberately extreme
+// history (30 routines of 12 exercises, 200 custom exercises, 60 twelve-exercise sessions in
+// the review window) builds a review of about 240k; ordinary ones stay under 50k.
+export const MAX_PAYLOAD_CHARS = 300_000;
+
+/* ---------- what a person typed, bounded ----------
+   Every free-text field below rides into the prompt, and the prompt is paid for by whoever runs
+   the instance: the Coach spends one instance-wide key. The intake screen caps what it lets you
+   type, but this module never sees that screen. It reads the profile from a POST body or from
+   the synced state, and a client can fill either with megabytes (the only server limit is the
+   5 MB body cap). So the text is cut here, the one place both the server and the phone build a
+   payload, to the limits the intake screen shows (CoachIntake.jsx). The system prompt already
+   reads this text as data rather than instruction (common rule 3); the bound is about size.
+   A field of the wrong type reads as absent rather than as "[object Object]". */
+export const PROFILE_TEXT_MAX = { limitations: 600, likes: 300, dislikes: 300, notes: 600 };
+// Goal and experience are enum words today (strength, returning, ...); 40 leaves room for new
+// ones without letting either carry a paragraph.
+export const PROFILE_WORD_MAX = 40;
+// The equipment taxonomy has 28 values, the longest 20 characters.
+export const PROFILE_EQUIPMENT_MAX = 40;
+// Routine, workout and custom-exercise names have no length limit in the app. The Coach writes
+// its own names at 40 (validate.js); twice that keeps any name a person would really type.
+export const NAME_MAX = 80;
+const text = (v, n) => (typeof v === 'string' ? v.slice(0, n) : '');
+const word = (v, n) => (typeof v === 'string' && v ? v.slice(0, n) : null);
+
+/** A language tag's shape ('de', 'pt-BR', 'zh_Hant'), or null — for a language that arrives with
+ *  a request or from the environment rather than from the state (#303). */
+export const langTag = v => (typeof v === 'string' && /^[A-Za-z]{2,3}([-_][A-Za-z0-9]{2,8})?$/.test(v.trim()) ? v.trim() : null);
+// Zero reads as absent, as `|| null` always made it; anything else is clamped into range.
+const count = (v, lo, hi) => {
+  const n = typeof v === 'number' || typeof v === 'string' ? Number(v) : NaN;
+  return Number.isFinite(n) && n ? Math.min(hi, Math.max(lo, Math.round(n))) : null;
+};
+// A weekday is 0-6, as a number or a one-digit string; null must not turn into Sunday.
+const weekday = d => (typeof d === 'number' ? d : typeof d === 'string' && /^\d$/.test(d) ? Number(d) : NaN);
+
+/* ---------- what the plan and the log hold, bounded by type ----------
+   The plan, the logged sets, the body-weight series and the exercise ids come from the same
+   client-written state as the profile, and PUT /api/data checks no more than that workouts and
+   routines are arrays. A field copied as it came is a field that can carry a megabyte of text
+   into the prompt, so each one is read by what it is meant to be. Anything else reads as
+   absent, as a wrong-typed profile field does. */
+// The app's own ids are uid() (13 characters) or a four-digit catalogue number; 64 is room for
+// any id an import or an older build ever wrote, and no room for a paragraph.
+export const ID_MAX = 64;
+// The progression engine's policies (frontend/src/lib/progression.js POLICIES, validate.js).
+const POLICIES = ['off', 'linear', 'greyskull', 'double', 'time'];
+const ident = v => (typeof v === 'string' ? v.slice(0, ID_MAX) : typeof v === 'number' && Number.isFinite(v) ? v : null);
+const policy = v => (POLICIES.includes(v) ? v : null);
+// A finite number, or a number written as a short string (the app writes numbers, but a
+// hand-made import may not, and the model reads "20" as well as 20). Kept as given rather than
+// converted, so a Coach change's `before` still equals what the plan holds.
+const NUMERIC = /^-?\d{1,9}(\.\d{1,6})?$/;
+const num = v => ((typeof v === 'number' && Number.isFinite(v)) || (typeof v === 'string' && NUMERIC.test(v)) ? v : undefined);
+// A date is the ISO day every screen writes; anything else is not a date.
+const day = v => (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}/.test(v) ? v.slice(0, 10) : null);
+const list = v => (Array.isArray(v) ? v : []);
+function cleanProfile(profile) {
+  const days = Array.isArray(profile.preferredDays) ? profile.preferredDays : [];
+  const equipment = Array.isArray(profile.equipment) ? profile.equipment : [];
+  return {
+    goal: word(profile.goal, PROFILE_WORD_MAX),
+    experience: word(profile.experience, PROFILE_WORD_MAX),
+    daysPerWeek: count(profile.daysPerWeek, 1, 7),
+    // Weekdays 0-6, each once: seven entries is the whole week, so anything past that is noise.
+    preferredDays: [...new Set(days.map(weekday).filter(d => Number.isInteger(d) && d >= 0 && d <= 6))],
+    sessionMin: count(profile.sessionMin, 1, 24 * 60),
+    equipment: equipment.filter(e => typeof e === 'string' && e).slice(0, PROFILE_EQUIPMENT_MAX).map(e => e.slice(0, PROFILE_WORD_MAX)),
+    limitations: text(profile.limitations, PROFILE_TEXT_MAX.limitations),
+    likes: text(profile.likes, PROFILE_TEXT_MAX.likes),
+    dislikes: text(profile.dislikes, PROFILE_TEXT_MAX.dislikes),
+    notes: text(profile.notes, PROFILE_TEXT_MAX.notes)
+  };
+}
 
 /* ---------- the data categories the consent screen names (FR-09/10) ----------
    Kept here, next to the code that acts on it, and rendered by the consent UI from the same
@@ -26,9 +110,13 @@ export { DATA_CATEGORIES } from './categories.js';
 /* ---------- reading a session the way the engine reads it ----------
    Duplicated from frontend/src/lib/history.js rather than shared: the two runtimes have no
    build step in common, and this is the same trade-off server.js already made for
-   effectiveRoutineId. coach-parity.test.js pins these against the frontend's own copies over
-   a shared table of configs, so the duplicate cannot drift silently — which it otherwise
-   would have, quietly, when v1.2.4 taught the app about bodyweight work. */
+   effectiveRoutineId. frontend/src/lib/coach-parity.test.js pins modeOf, isBw and isPerSide
+   against the frontend's own copies over a shared table of configs, so the duplicate cannot
+   drift silently — which it otherwise would have, quietly, when v1.2.4 taught the app about
+   bodyweight work. isWarmupSet and readSession are duplicated the same way but were pinned by
+   nothing; api/test/payload-parity.test.js pins them now. It has to be a separate file: that
+   test imports the frontend's own readSession, and a vitest test cannot import into a
+   node:test file or back. */
 export const modeOf = (cfg, ex) => {
   const m = cfg && cfg.mode;
   if (m === 'reps' || m === 'time' || m === 'cardio') return m;
@@ -60,9 +148,16 @@ function readSession(entry, fallback) {
   const ex = LIB_BY_ID.get(entry?.id);
   const mode = modeOf(target, ex);
   const bw = isBw(target, ex);
-  const sets = ((entry && entry.sets) || []).filter(s => !isWarmupSet(s));
-  const planned = target.sets || sets.length;
-  const enough = sets.length >= planned;
+  const logged = ((entry && entry.sets) || []).filter(s => !isWarmupSet(s));
+  const planned = target.sets || logged.length;
+  const enough = logged.length >= planned;
+  // Only the sets the plan asked for decide whether the session was hit, exactly as
+  // frontend/src/lib/progression.js readSession has done since issue #233. This copy graded
+  // every logged set, so a fourth set taken short of the goal on a clean 3x10 was a hit in the
+  // app and a miss here — and stallCount, reading only this copy, reported a stall the athlete
+  // never had. `count` below stays the real total: extra sets are exactly how bodyweight work
+  // is meant to grow (#33), they just do not decide whether the prescription was met.
+  const sets = logged.slice(0, Math.max(1, planned));
   if (mode === 'time') {
     const goal = target.sec || 0;
     const held = sets.map(s => (s.done ? (s.sec || 0) : 0));
@@ -72,7 +167,7 @@ function readSession(entry, fallback) {
   const reps = sets.map(s => (s.done ? (s.r || 0) : 0));
   // Set count is the dimension bodyweight work grows once reps hit their ceiling (upstream
   // #33), so it travels alongside the reps rather than being inferred from them downstream.
-  const done = sets.filter(s => s.done).length;
+  const done = logged.filter(s => s.done).length;
   return { mode, bw, goal, count: done, ok: goal > 0 && enough && reps.length > 0 && reps.every(r => r >= goal) };
 }
 /** Consecutive misses counting back from the most recent session. */
@@ -84,23 +179,25 @@ export function stallCount(sessions) {
 
 /* ---------- plan cleaning (mirrors plan-share.js cleanEx) ---------- */
 function cleanEx(e) {
-  const o = { id: e.id, name: LIB_BY_ID.get(e.id)?.n || null, sets: e.sets };
+  const o = { id: ident(e.id), name: LIB_BY_ID.get(e.id)?.n || null, sets: num(e.sets) };
   const mode = modeOf(e, LIB_BY_ID.get(e.id));
   o.mode = mode;
-  if (mode === 'cardio') { if (e.min != null) o.min = e.min; if (e.speed != null) o.speed = e.speed; }
-  else if (mode === 'time') { if (e.sec != null) o.sec = e.sec; if (e.weight) o.weight = e.weight; }
-  else { if (e.reps != null) o.reps = e.reps; if (e.weight) o.weight = e.weight; }
-  if (e.prog) o.prog = e.prog;
-  if (e.inc > 0) o.inc = e.inc;
-  if (e.repsMin != null) o.repsMin = e.repsMin;
+  const put = (k, v) => { if (num(v) !== undefined) o[k] = v; };
+  if (mode === 'cardio') { put('min', e.min); put('speed', e.speed); }
+  else if (mode === 'time') { put('sec', e.sec); if (e.weight) put('weight', e.weight); }
+  else { put('reps', e.reps); if (e.weight) put('weight', e.weight); }
+  if (policy(e.prog)) o.prog = e.prog;
+  if (e.inc > 0) put('inc', e.inc);
+  put('repsMin', e.repsMin);
   // repsMax is the ceiling that turns "+1 rep forever" into "add a set and start over"; without
   // it the Coach cannot see, or propose, how a bodyweight exercise is meant to progress.
-  if (e.repsMax != null) o.repsMax = e.repsMax;
+  put('repsMax', e.repsMax);
   // Written out only when they disagree with the catalogue, matching plan-share.js — an
   // absent flag has always meant "whatever the exercise says", and still does.
   if (e.bodyweight != null) o.bodyweight = !!e.bodyweight;
   if (e.side) o.side = true;
-  if (e.sg) o.sg = e.sg;
+  // A superset tag is an id the app mints (sg-0-1, hs + uid()), so it is bounded like one.
+  if (e.sg) o.sg = ident(e.sg);
   return o;
 }
 /**
@@ -144,16 +241,23 @@ export function canonicalPlan(S) {
 }
 
 export function cleanPlan(S) {
-  const routines = (S.routines || []).map(r => ({
-    id: r.id, name: r.name, emoji: r.emoji, ...(r.prog ? { prog: r.prog } : {}), ex: (r.ex || []).map(cleanEx)
+  // Names are typed by the person, so they are cut like the profile's text. The icon is held to
+  // what the validator lets a plan carry (an icon key or a legacy emoji, core/glyphs.js): it is
+  // the client's state, and free text in it would ride into every prompt.
+  const routines = list(S.routines).filter(r => r && typeof r === 'object').map(r => ({
+    id: ident(r.id), name: r.name == null ? r.name : text(String(r.name), NAME_MAX),
+    emoji: r.emoji == null ? r.emoji : glyphStr(String(r.emoji)),
+    ...(policy(r.prog) ? { prog: r.prog } : {}),
+    ex: list(r.ex).filter(e => e && typeof e === 'object').map(cleanEx)
   }));
+  // A weekday holds routine ids, so each entry is bounded like one.
   const week = {};
-  [1, 2, 3, 4, 5, 6, 0].forEach(d => { if (S.week?.[d]?.length) week[d] = [].concat(S.week[d]); });
+  [1, 2, 3, 4, 5, 6, 0].forEach(d => { if (S.week?.[d]?.length) week[d] = [].concat(S.week[d]).map(ident); });
   return { routines, week };
 }
 
 // The catalogue lives in library.js; re-exported so older imports keep resolving.
-export { LIBRARY, MAX_LIBRARY, libraryHas, libraryName, librarySlice };
+export { LIBRARY, MAX_LIBRARY, libraryHas, libraryName, librarySlice, isStretch };
 
 /* ---------- effort scale (mirrors history.js effortOf) ---------- */
 const effortOf = S => {
@@ -186,7 +290,7 @@ function aggregates(S, workouts) {
   for (const [id, sessions] of byEx) {
     const stalls = stallCount(sessions);
     if (stalls > 0 || sessions.length >= 3) {
-      exercises.push({ id, name: libraryName(id), sessions: sessions.length, stalls, lastOk: !!sessions[sessions.length - 1]?.ok });
+      exercises.push({ id: ident(id), name: libraryName(id), sessions: sessions.length, stalls, lastOk: !!sessions[sessions.length - 1]?.ok });
     }
   }
 
@@ -238,26 +342,40 @@ const fmtSet = s => {
   return (s.w != null ? s.w + 'x' : '') + (s.r != null ? s.r : '?') + eff;
 };
 
+/** One logged set, its numbers only. */
+function cleanSet(s) {
+  const o = { done: !!s.done };
+  if (isWarmupSet(s)) o.warmup = true;
+  for (const k of ['w', 'r', 'sec', 'min', 'speed', 'rir', 'rpe']) if (num(s[k]) !== undefined) o[k] = s[k];
+  return o;
+}
+const entriesOf = w => list(w.entries).filter(en => en && typeof en === 'object');
+const setsOf = en => list(en.sets).filter(s => s && typeof s === 'object');
+const targetOf = en => (en.target && typeof en.target === 'object'
+  ? { sets: num(en.target.sets), reps: num(en.target.reps), sec: num(en.target.sec), weight: num(en.target.weight) }
+  : null);
+
 /** One older workout as a summary: what was done, the top set, whether targets were hit. */
 function compactWorkout(w) {
   return {
-    d: w.d,
-    name: w.name || null,
+    d: day(w.d),
+    name: word(w.name, NAME_MAX),
     minutes: w.end && w.start ? Math.round((w.end - w.start) / 60000) : null,
-    prs: (w.prs || []).length,
+    prs: list(w.prs).length,
     compact: true,
-    entries: (w.entries || []).map(en => {
-      const sets = (en.sets || []).filter(s => !isWarmupSet(s));
+    entries: entriesOf(w).map(en => {
+      const sets = setsOf(en).filter(s => !isWarmupSet(s)).map(cleanSet);
       const done = sets.filter(s => s.done);
       let top = null;
       done.forEach(s => {
         if (!top || (s.w || 0) * (s.r || 0) + (s.sec || 0) > (top.w || 0) * (top.r || 0) + (top.sec || 0)) top = s;
       });
+      const target = targetOf(en);
       return {
-        id: en.id,
+        id: ident(en.id),
         name: libraryName(en.id),
         done: done.length + '/' + sets.length,
-        ...(en.target ? { target: fmtSet({ w: en.target.weight, r: en.target.reps, sec: en.target.sec }) } : {}),
+        ...(target ? { target: fmtSet({ w: target.weight, r: target.reps, sec: target.sec }) } : {}),
         ...(top ? { top: fmtSet(top) } : {})
       };
     })
@@ -267,28 +385,40 @@ function compactWorkout(w) {
 /** One workout, reduced to what a coach reads. */
 function cleanWorkout(w) {
   return {
-    d: w.d,
-    name: w.name || null,
+    d: day(w.d),
+    name: word(w.name, NAME_MAX),
     minutes: w.end && w.start ? Math.round((w.end - w.start) / 60000) : null,
-    ...(w.rating ? { rating: w.rating } : {}),
+    ...(w.rating ? { rating: typeof w.rating === 'number' ? w.rating : text(String(w.rating), 20) } : {}),
     ...(w.note ? { note: String(w.note).slice(0, 300) } : {}),
-    prs: (w.prs || []).length,
-    entries: (w.entries || []).map(en => ({
-      id: en.id,
+    prs: list(w.prs).length,
+    entries: entriesOf(w).map(en => ({
+      id: ident(en.id),
       name: libraryName(en.id),
-      target: en.target ? { sets: en.target.sets, reps: en.target.reps, sec: en.target.sec, weight: en.target.weight } : null,
-      sets: (en.sets || []).map(s => {
-        const o = { done: !!s.done };
-        if (isWarmupSet(s)) o.warmup = true;
-        if (s.w != null) o.w = s.w;
-        if (s.r != null) o.r = s.r;
-        if (s.sec != null) o.sec = s.sec;
-        if (s.min != null) o.min = s.min;
-        if (s.speed != null) o.speed = s.speed;
-        if (s.rir != null) o.rir = s.rir;
-        if (s.rpe != null) o.rpe = s.rpe;
-        return o;
-      })
+      target: targetOf(en),
+      sets: setsOf(en).map(cleanSet)
+    }))
+  };
+}
+
+/** The body-weight series between two days, each weigh-in a date and a number. */
+function weighIns(S, from, to) {
+  return list(S.bodyweight)
+    .map(b => ({ d: day(b?.d), w: num(b?.w) }))
+    .filter(b => b.d && b.w !== undefined && (!from || b.d >= from) && (!to || b.d <= to));
+}
+
+/* The room's medians are computed on this server, but from other people's synced workouts —
+   state their own clients wrote. cohort.js keeps only catalogue exercises; this copy bounds
+   every field again, so what reaches one person's prompt never depends on that filter alone. */
+function cleanCohort(c) {
+  if (!c || typeof c !== 'object') return null;
+  const spw = c.sessionsPerWeek && typeof c.sessionsPerWeek === 'object' ? c.sessionsPerWeek : {};
+  return {
+    unit: word(c.unit, 8),
+    people: num(c.people) ?? null,
+    sessionsPerWeek: { median: num(spw.median) ?? null, you: num(spw.you) ?? null },
+    exercises: list(c.exercises).filter(x => x && typeof x === 'object').map(x => ({
+      id: ident(x.id), name: word(x.name, NAME_MAX), median: num(x.median) ?? null, you: num(x.you) ?? null
     }))
   };
 }
@@ -321,7 +451,7 @@ export function workoutMeta(S, workoutId) {
  * Build a job payload.
  *
  * @param {object} S      the profile's synced state
- * @param {object} opts   { handle, kind, intake?, note?, refine?, previous?, workoutId?, cohort? }
+ * @param {object} opts   { handle, kind, intake?, note?, refine?, previous?, workoutId?, cohort?, lang? }
  *
  * `handle` is the opaque per-profile pseudonym the payload carries instead of a uid. It is
  * supplied rather than derived because the two runtimes mint it differently: the server keys
@@ -337,30 +467,24 @@ export function build(S, opts = {}) {
     task: opts.kind === 'review' ? 'review' : opts.kind === 'debrief' ? 'debrief' : 'create',
     meta: {
       profile: opts.handle,
-      lang: S.lang || 'en',
-      unit: S.unit || 'kg',
+      // Both are short codes in any real state; cut anyway, since the state is the client's.
+      // `opts.lang` is the language the app is showing when it asked: a profile that never
+      // picked one has it worked out per device and never stored (#303).
+      lang: langTag(opts.lang) || word(S.lang, 16) || 'en',
+      unit: word(S.unit, 8) || 'kg',
       effortScale: effortOf(S),
       today: iso(new Date())
     },
-    coachProfile: profile ? {
-      goal: profile.goal || null,
-      experience: profile.experience || null,
-      daysPerWeek: profile.daysPerWeek || null,
-      preferredDays: profile.preferredDays || [],
-      sessionMin: profile.sessionMin || null,
-      equipment: profile.equipment || [],
-      limitations: profile.limitations || '',
-      likes: profile.likes || '',
-      dislikes: profile.dislikes || '',
-      notes: profile.notes || ''
-    } : null,
+    coachProfile: profile && typeof profile === 'object' ? cleanProfile(profile) : null,
     plan: cleanPlan(S)
   };
 
   // What the user already turned down, so the Coach does not re-propose it without new
   // evidence (FR-26). Summaries only — the log's full before/after stays on the device.
   const declined = (coach.log || [])
-    .flatMap(e => (e.decisions || []).filter(d => d.status === 'rejected').map(d => ({ type: d.type, why: d.why })))
+    // `why` was the Coach's own sentence, but it comes back from the synced state, which the
+    // client writes; it is cut at the length the intake allows a note.
+    .flatMap(e => (e.decisions || []).filter(d => d.status === 'rejected').map(d => ({ type: word(d.type, PROFILE_WORD_MAX), why: text(d.why, PROFILE_TEXT_MAX.notes) })))
     .slice(-15);
   if (declined.length) p.previouslyDeclined = declined;
 
@@ -373,38 +497,39 @@ export function build(S, opts = {}) {
       const all = (S.workouts || []).filter(x => x && x.d);
       const idx = all.indexOf(w);
       const previous = all.slice(0, idx).filter(x => x.name && x.name === w.name).slice(-3);
-      p.session = { id: w.id || null, ...cleanWorkout(w) };
+      p.session = { id: ident(w.id) || null, ...cleanWorkout(w) };
       p.previous = previous.map(cleanWorkout);
-      const inSession = new Set((w.entries || []).map(en => en.id));
+      const inSession = new Set(entriesOf(w).map(en => ident(en.id)));
       const agg = aggregates(S, [w]);
       p.aggregates = { ...agg, exercises: agg.exercises.filter(e => inSession.has(e.id)) };
-      const since = new Date(w.d + 'T12:00:00'); since.setDate(since.getDate() - 28);
-      const from = iso(since);
-      p.bodyweight = { goal: S.targetW ?? null, series: (S.bodyweight || []).filter(b => b.d >= from && b.d <= w.d).map(b => ({ d: b.d, w: b.w })) };
+      // The four weeks before the session. A session whose date does not parse has no "before",
+      // and used to throw here instead.
+      const on = day(w.d);
+      const since = new Date(on + 'T12:00:00');
+      since.setDate(since.getDate() - 28);
+      const dated = !!on && Number.isFinite(since.getTime());
+      p.bodyweight = { goal: num(S.targetW) ?? null, series: dated ? weighIns(S, iso(since), on) : [] };
     } else {
       p.session = null;
       p.previous = [];
     }
-    if (opts.cohort) p.cohort = opts.cohort;
+    if (opts.cohort) p.cohort = cleanCohort(opts.cohort);
   } else if (opts.kind === 'review') {
     const workouts = reviewWindow(S, coach.lastReview?.at ? String(coach.lastReview.at).slice(0, 10) : null);
     const detailFrom = Math.max(0, workouts.length - FULL_DETAIL_SESSIONS);
     p.window = {
-      from: workouts[0]?.d || null,
-      to: workouts[workouts.length - 1]?.d || null,
+      from: day(workouts[0]?.d),
+      to: day(workouts[workouts.length - 1]?.d),
       workouts: workouts.map((w, i) => (i >= detailFrom ? cleanWorkout(w) : compactWorkout(w)))
     };
     p.aggregates = aggregates(S, workouts);
-    p.bodyweight = {
-      goal: S.targetW ?? null,
-      series: (S.bodyweight || []).filter(b => !p.window.from || b.d >= p.window.from).map(b => ({ d: b.d, w: b.w }))
-    };
-    if (opts.note) p.userNote = String(opts.note).slice(0, 1000);
-    if (opts.cohort) p.cohort = opts.cohort;
+    p.bodyweight = { goal: num(S.targetW) ?? null, series: weighIns(S, p.window.from, null) };
+    if (opts.note) p.userNote = String(opts.note).slice(0, MAX_NOTE_CHARS);
+    if (opts.cohort) p.cohort = cleanCohort(opts.cohort);
     // A review names mostly what is already trained; 60 candidates is plenty for a swap.
-    p.library = librarySlice(S, profile?.equipment, { keep: trainedIds(S, workouts), max: 60 });
+    p.library = librarySlice(S, p.coachProfile?.equipment, { keep: trainedIds(S, workouts), max: 60 });
   } else {
-    p.library = librarySlice(S, profile?.equipment, { keep: trainedIds(S, S.workouts || []) });
+    p.library = librarySlice(S, p.coachProfile?.equipment, { keep: trainedIds(S, S.workouts || []) });
     // Creation for a returning user: what they have actually handled, so proposed baselines
     // start from evidence rather than optimism (B2/FR-20).
     const best = {};
@@ -414,17 +539,17 @@ export function build(S, opts = {}) {
     if (Object.keys(best).length) {
       p.history = {
         sessions: (S.workouts || []).length,
-        since: (S.workouts || [])[0]?.d || null,
-        workingWeights: Object.entries(best).map(([id, w]) => ({ id, name: libraryName(id), best: w }))
+        since: day((S.workouts || [])[0]?.d),
+        workingWeights: Object.entries(best).map(([id, w]) => ({ id: ident(id), name: libraryName(id), best: w }))
       };
     }
     if (opts.refine && opts.previous) {
-      p.refine = { text: String(opts.refine).slice(0, 1000), previous: opts.previous };
+      p.refine = { text: String(opts.refine).slice(0, MAX_NOTE_CHARS), previous: opts.previous };
     } else if (opts.refine) {
       // "Refine" with nothing to refine: the first plan failed, or was dismissed, and the
       // person typed what they want instead. That is a fresh plan with a note, not a
       // revision of a plan that does not exist — refine.md would be reading `previous: null`.
-      p.userNote = String(opts.refine).slice(0, 1000);
+      p.userNote = String(opts.refine).slice(0, MAX_NOTE_CHARS);
     }
   }
   if (opts.kind !== 'debrief') {

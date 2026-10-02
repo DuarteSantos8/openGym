@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Issue #213: a self-hosted server behind a private CA (Caddy "tls internal", a home PKI).
+     Since API 24 an app trusts system CAs only, so the WebView refused the handshake while
+     Chrome on the same phone, which honours user-installed CAs, opened the server fine.
+     Trust both. A user CA is something the owner of the phone installed on purpose, behind a
+     system warning; this is the same trust the browser already gives it. Cleartext is left at
+     the platform default (off). -->
+<network-security-config>
+    <base-config>
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

@@ -7,10 +7,11 @@
 // catalogue-first (EXIDX), exactly like the fatigue/strength maps, falling back to the
 // logged snapshot (muscleWeights) for exercises no longer in the catalogue.
 import { best1RM } from './onerm.js'
+import { entriesForExercise } from './history.js'
 import { STRENGTH_FULL_MS, STRENGTH_HALF_LIFE_MS, STRENGTH_FLOOR, halfLifeDecay } from './recovery.js'
 import { musclesOf } from './muscles.js'
 import { EXIDX } from './exercises.js'
-import { isWarmupRow } from './workout-model.js'
+import { hasCompletedWork, isWarmupRow } from './workout-model.js'
 import { exerciseNameFor } from './i18n-core.js'
 
 const round1 = value => Math.round(value * 10) / 10
@@ -29,9 +30,8 @@ function lastWorkSetAt(S, id) {
   for (const workout of S?.workouts || []) {
     const ts = workout.start || new Date(workout.d).getTime()
     if (!Number.isFinite(ts) || ts <= latest) continue
-    const entry = (workout.entries || []).find(e => e.id === id)
-    if (!entry) continue
-    if ((entry.sets || []).some(s => s.done === true && !isWarmupRow(s))) latest = ts
+    const entries = entriesForExercise(workout, id)
+    if (entries.some(entry => (entry.sets || []).some(s => hasCompletedWork(s) && !isWarmupRow(s)))) latest = ts
   }
   return Number.isFinite(latest) ? latest : null
 }
@@ -71,12 +71,52 @@ function resolvedExerciseName(entry) {
   return entry && typeof entry === 'object' && entry.n ? entry.n : null
 }
 
-function firstEntryWithId(S, id) {
-  for (const workout of S?.workouts || []) {
-    const entry = (workout.entries || []).find(e => e.id === id)
-    if (entry) return entry
+function workoutDay(workout) {
+  const day = workout?.d
+  return typeof day === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(day) ? day : null
+}
+
+function workoutTimestamp(workout) {
+  if (Number.isFinite(workout?.start)) return workout.start
+  const day = workoutDay(workout)
+  const timestamp = day ? new Date(day + 'T12:00:00').getTime() : NaN
+  return Number.isFinite(timestamp) ? timestamp : -Infinity
+}
+
+function entriesWithId(S, id) {
+  let order = 0
+  return (S?.workouts || []).flatMap(workout => entriesForExercise(workout, id).map(entry => ({
+    entry,
+    day: workoutDay(workout),
+    timestamp: workoutTimestamp(workout),
+    order: order++,
+  })))
+}
+
+const hasSavedMetadata = entry => Boolean(
+  entry?.n
+  || (entry?.muscleWeights && Object.keys(entry.muscleWeights).length)
+  || (entry?.muscleSnapshot && Object.keys(entry.muscleSnapshot).length),
+)
+
+function isNewerOccurrence(a, b) {
+  if (!b) return true
+  if (a.day && b.day && a.day !== b.day) return a.day > b.day
+  if (a.day !== b.day) return !!a.day
+  if (a.timestamp !== b.timestamp) return a.timestamp > b.timestamp
+  return a.order > b.order
+}
+
+// Use the latest dated occurrence that carries a snapshot for display metadata, while keeping
+// the latest dated occurrence as a fallback for old history. The catalogue still wins for built-ins.
+function representativeEntry(occurrences) {
+  let fallback = null
+  let withMetadata = null
+  for (const occurrence of occurrences) {
+    if (isNewerOccurrence(occurrence, fallback)) fallback = occurrence
+    if (hasSavedMetadata(occurrence.entry) && isNewerOccurrence(occurrence, withMetadata)) withMetadata = occurrence
   }
-  return null
+  return (withMetadata || fallback)?.entry || null
 }
 
 /**
@@ -93,7 +133,7 @@ export function strengthExerciseRows(S, now) {
   for (const id of ids) {
     const best = best1RM(S, id)
     if (!best) continue
-    const entry = firstEntryWithId(S, id)
+    const entry = representativeEntry(entriesWithId(S, id))
     const lastAt = lastWorkSetAt(S, id)
     const decay = lastAt == null ? STRENGTH_FLOOR : strengthFromAge(Number(now) - lastAt)
     rows.push({
@@ -115,30 +155,25 @@ export function strengthExerciseRows(S, now) {
  * tapped muscle filters the list, the row still speaks for the exercise.
  */
 export function strengthExerciseRowsForMuscle(S, now, slug) {
-  const workouts = S?.workouts || []
   const seen = new Map()
-  for (const workout of workouts) {
-    for (const entry of workout.entries || []) {
-      if (seen.has(entry.id)) continue
-      const weights = snapshotWeights(entry)
-      const weight = weights[slug]
-      if (!weight) continue
-      const best = best1RM(S, entry.id)
-      if (!best) continue
-      const lastAt = lastWorkSetAt(S, entry.id)
-      const decay = lastAt == null ? STRENGTH_FLOOR : strengthFromAge(Number(now) - lastAt)
-      const primary = primaryMuscleOf(entry)
-      seen.set(entry.id, {
-        id: entry.id,
-        name: resolvedExerciseName(entry) || entry.id,
-        weight,
-        primary: primary ? primary.slug : null,
-        est: best.est,
-        estDate: best.d,
-        decay,
-        current: round1(best.est * decay),
-      })
-    }
+  for (const metric of strengthExerciseRows(S, now)) {
+    const entries = entriesWithId(S, metric.id)
+    const entry = representativeEntry(entries)
+    // A deleted custom exercise may have snapshots on more than one occurrence. The latest
+    // metadata-bearing snapshot answers the muscle filter, without mutating either record.
+    const weight = snapshotWeights(entry)[slug]
+    if (!weight) continue
+    const primary = primaryMuscleOf(entry)
+    seen.set(metric.id, {
+      id: metric.id,
+      name: resolvedExerciseName(entry) || metric.id,
+      weight,
+      primary: primary ? primary.slug : null,
+      est: metric.est,
+      estDate: metric.estDate,
+      decay: metric.decay,
+      current: metric.current,
+    })
   }
   return [...seen.values()].sort((a, b) => b.current - a.current || String(a.name).localeCompare(String(b.name)))
 }

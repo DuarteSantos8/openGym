@@ -1,6 +1,9 @@
 import { describe, it, expect, vi } from 'vitest'
-import { exerciseHistory, HISTORY_SESSIONS } from './exercise-history.js'
-import { estimate1RM } from './onerm.js'
+import { exerciseHistory, HISTORY_SESSIONS, bestSetFor } from './exercise-history.js'
+import { EXDB } from './exercises-data.js'
+import { estimate1RM, e1rmSeries } from './onerm.js'
+import { lastEntryFor } from './history.js'
+import { nextPrescription } from './progression.js'
 import { socialSummary } from '../../../api/social/summary.js'
 import { weekStreak } from '../../../api/training/history-metrics.js'
 import { streakWeeks } from './history.js'
@@ -170,5 +173,120 @@ describe('exerciseHistory', () => {
     expect(h.mode).toBe('reps')
     expect(h.points).toHaveLength(1)
     expect(h.sessions.map(s => [s.id, s.value])).toEqual([['b', 20], ['a', null]])
+  })
+
+  it('aggregates duplicate occurrences into one dated snapshot and keeps only completed work', () => {
+    const first = { id: 'bench', target: { mode: 'reps' }, sets: [warm(120, 5), work(60, 5)] }
+    const later = { id: 'bench', target: { mode: 'reps' }, sets: [work(80, 5), work(200, 5, false)] }
+    const S = { workouts: [{ id: 'combined', d: iso(4), start: T0 + 4 * DAY, entries: [first, later] }] }
+    const before = structuredClone(S)
+    const h = exerciseHistory(S, 'bench')
+    expect(h).toMatchObject({ total: 1, best: 80, prId: 'combined' })
+    expect(h.sessions[0]).toMatchObject({ id: 'combined', d: iso(4), value: 80, volume: 700 })
+    expect(h.sessions[0].sets).toEqual([work(60, 5), work(80, 5)])
+    expect(h.sessions[0].e1rm).toBe(estimate1RM(80, 5))
+    expect(S).toEqual(before)
+  })
+
+  it('uses completed per-side limbs from duplicate occurrences without combining modes', () => {
+    const partialSide = {
+      id: 'bench', target: { mode: 'reps', side: true }, sets: [{ phase: 'work', w: 100, r: 10, done: false,
+        sides: { L: { w: 100, r: 5, done: true }, R: { w: 200, r: 5, done: false } } }],
+    }
+    const timed = { id: 'bench', target: { mode: 'time' }, sets: [{ sec: 60, done: true }] }
+    const S = { workouts: [{ id: 'sides', d: iso(5), start: T0 + 5 * DAY, entries: [timed, partialSide] }] }
+    const h = exerciseHistory(S, 'bench')
+    expect(h).toMatchObject({ total: 1, mode: 'reps', metric: 'weight', best: 100 })
+    expect(h.sessions[0]).toMatchObject({ value: 100, volume: 500, e1rm: estimate1RM(100, 5) })
+    expect(h.sessions[0].sets).toHaveLength(1)
+    expect(h.sessions[0].sets[0]).toBe(partialSide.sets[0])
+  })
+
+  it('aggregates timed and cardio duplicates by their own metric', () => {
+    const hold = { id: 'hold', d: iso(6), start: T0 + 6 * DAY, entries: [
+      { id: 'plank', target: { mode: 'time' }, sets: [{ sec: 30, done: true }] },
+      { id: 'plank', target: { mode: 'time' }, sets: [{ sec: 45, done: true }] },
+    ] }
+    const run = { id: 'run', d: iso(7), start: T0 + 7 * DAY, entries: [
+      { id: 'run', target: { mode: 'cardio' }, sets: [{ min: 20, speed: 9, done: true }] },
+      { id: 'run', target: { mode: 'cardio' }, sets: [{ min: 5, speed: 10, done: true }] },
+    ] }
+    expect(exerciseHistory({ workouts: [hold] }, 'plank').sessions[0]).toMatchObject({ value: 45, volume: null })
+    expect(exerciseHistory({ workouts: [run] }, 'run').sessions[0]).toMatchObject({ value: 25, volume: null })
+  })
+
+  // The history sheet and Stats speak for the exercise, so a combined day that trains it in two
+  // routines is one session with both occurrences. What the next session opens at is per routine
+  // slot (#216): each routine reads its own occurrence of that day, never the other one's or the
+  // two folded together.
+  it('reads both routines\' occurrences of a combined day, while each routine progresses from its own', () => {
+    const heavy = { id: 'bench', rid: 'A', target: { mode: 'reps', sets: 2, reps: 5 }, planned: { sets: 2, reps: 5 }, sets: [work(100, 5), work(100, 5)] }
+    const light = { id: 'bench', rid: 'B', target: { mode: 'reps', sets: 2, reps: 12 }, planned: { sets: 2, reps: 12 }, sets: [work(60, 12), work(60, 12)] }
+    const S = {
+      unit: 'kg', exWeights: {},
+      routines: [{ id: 'A', ex: [{ id: 'bench', sets: 2, reps: 5 }] }, { id: 'B', ex: [{ id: 'bench', sets: 2, reps: 12 }] }],
+      workouts: [{ id: 'ab', d: iso(3), start: T0 + 3 * DAY, routineIds: ['A', 'B'], entries: [heavy, light] }],
+    }
+    const h = exerciseHistory(S, 'bench')
+    expect(h).toMatchObject({ total: 1, best: 100 })
+    expect(h.sessions[0].sets).toEqual([...heavy.sets, ...light.sets])
+    expect(e1rmSeries(S, 'bench')).toHaveLength(1)
+
+    expect(lastEntryFor(S, 'bench', 'A').sets).toEqual(heavy.sets)
+    expect(lastEntryFor(S, 'bench', 'B').sets).toEqual(light.sets)
+    expect(nextPrescription(S, S.routines[0].ex[0], S.routines[0]).weight).toBe(102.5)
+    expect(nextPrescription(S, S.routines[1].ex[0], S.routines[1]).weight).toBe(62.5)
+  })
+})
+
+// #173: the workout card can hold today's rows against your best set instead of last time.
+describe('bestSetFor', () => {
+  it('is the heaviest work set, the most reps of equally heavy ones, first time reached', () => {
+    const S = { workouts: [
+      session(0, [warm(120, 1), work(100, 5), work(100, 6)]),
+      session(2, [work(100, 6), work(90, 12)]),
+      session(4, [work(95, 8), work(110, 3, false)]),
+    ] }
+    const best = bestSetFor(S, 'bench', 'reps')
+    expect(best).toMatchObject({ d: iso(0), set: { w: 100, r: 6 }, target: { mode: 'reps' } })
+  })
+
+  it('looks across every routine and ignores the order workouts are stored in', () => {
+    const later = { ...session(3, [work(80, 5)]), entries: [{ id: 'bench', rid: 'b', target: { mode: 'reps' }, sets: [work(80, 5)] }] }
+    const earlier = { ...session(1, [work(80, 5)]), entries: [{ id: 'bench', rid: 'a', target: { mode: 'reps' }, sets: [work(80, 5)] }] }
+    expect(bestSetFor({ workouts: [later, earlier] }, 'bench', 'reps').d).toBe(iso(1))
+  })
+
+  it('compares holds by their length and cardio by its minutes, never across modes', () => {
+    const hold = (i, sec, w = 0) => ({ id: 'h' + i, d: iso(i), start: T0 + i * DAY, entries: [{ id: 'plank', target: { mode: 'time' }, sets: [{ sec, w, done: true }] }] })
+    const S = { workouts: [hold(0, 60), hold(1, 90), hold(2, 90, 10), session(3, [work(20, 5)])] }
+    expect(bestSetFor(S, 'plank', 'time')).toMatchObject({ d: iso(2), set: { sec: 90, w: 10 } })
+    // the rep sets of another exercise, and a mode the exercise was never logged in, give nothing
+    expect(bestSetFor(S, 'plank', 'reps')).toBeNull()
+    const run = (i, min, speed) => ({ id: 'r' + i, d: iso(i), start: T0 + i * DAY, entries: [{ id: 'run', target: { mode: 'cardio' }, sets: [{ min, speed, done: true }] }] })
+    expect(bestSetFor({ workouts: [run(0, 30, 9), run(1, 30, 10), run(2, 25, 12)] }, 'run', 'cardio').set).toMatchObject({ min: 30, speed: 10 })
+  })
+
+  // Asked on every render of every card while the line shows the best set, and each stepper tap
+  // re-renders them all: copying and sorting a long history each time was the cost of a tap.
+  it('settles a tie by start time in one pass, without sorting the history', () => {
+    const at = (i, rid) => ({ ...session(i, [work(80, 5)]), entries: [{ id: 'bench', rid, target: { mode: 'reps' }, sets: [work(80, 5)] }] })
+    const workouts = [at(5, 'c'), at(3, 'b'), at(1, 'a'), session(4, [work(70, 10)])]
+    const sort = vi.spyOn(Array.prototype, 'sort')
+    try {
+      expect(bestSetFor({ workouts }, 'bench', 'reps')).toMatchObject({ d: iso(1), target: { mode: 'reps' } })
+      expect(sort).not.toHaveBeenCalled()
+    } finally { sort.mockRestore() }
+    // a heavier set later on still beats an earlier tie
+    expect(bestSetFor({ workouts: [...workouts, session(6, [work(85, 1)])] }, 'bench', 'reps')).toMatchObject({ d: iso(6), set: { w: 85, r: 1 } })
+  })
+
+  it('takes the least help on an assistance machine, and nothing when nothing was logged', () => {
+    const id = EXDB.find(e => e.eq === 'leverage machine' && /assist/i.test(e.n)).id
+    const S = { workouts: [0, 1, 2].map(i => ({ id: 'a' + i, d: iso(i), start: T0 + i * DAY,
+      entries: [{ id, target: { mode: 'reps' }, sets: [work([30, 20, 0][i], 8)] }] })) }
+    expect(bestSetFor(S, id, 'reps').set).toMatchObject({ w: 20, r: 8 })
+    expect(bestSetFor({ workouts: [] }, 'bench', 'reps')).toBeNull()
+    expect(bestSetFor({}, 'bench')).toBeNull()
   })
 })

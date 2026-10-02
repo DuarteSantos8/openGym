@@ -11,16 +11,33 @@ class FakeCtx {
     this.tones = []
     this.resumes = 0
     this.suspends = 0
+    this.gains = []
+    this.oscs = []
+    this.waves = 0
     FakeCtx.instances.push(this)
   }
   resume() { this.resumes++; this.state = 'running'; return Promise.resolve() }
   suspend() { this.suspends++; this.state = 'suspended'; return Promise.resolve() }
-  createGain() { return { connect() {}, gain: { setValueAtTime() {}, exponentialRampToValueAtTime() {} } } }
+  // Each gain remembers what it was asked to do, so the chime's loudness can be read back.
+  createGain() {
+    const events = []
+    this.gains.push(events)
+    return { connect() {}, gain: {
+      setValueAtTime(v, at) { events.push(['set', v, at]) },
+      exponentialRampToValueAtTime(v, at) { events.push(['ramp', v, at]) },
+    } }
+  }
   createOscillator() {
     const ctx = this
-    const o = { frequency: { value: 0 }, type: '', connect() {}, start(at) { ctx.tones.push({ freq: o.frequency.value, at }) }, stop() {} }
+    const o = {
+      frequency: { value: 0 }, type: '', wave: null, connect() {},
+      setPeriodicWave(w) { o.wave = w },
+      start(at) { ctx.tones.push({ freq: o.frequency.value, at }); ctx.oscs.push(o); o.at = at },
+      stop(at) { o.until = at },
+    }
     return o
   }
+  createPeriodicWave(real, imag) { this.waves++; return { real: [...real], imag: [...imag] } }
 }
 FakeCtx.instances = []
 
@@ -194,5 +211,119 @@ describe('play on silent (Settings switch, WebKit only)', () => {
   it('survives a browser that rejects the type', () => {
     Object.defineProperty(navigator, 'audioSession', { value: Object.freeze({ type: 'auto' }), configurable: true, writable: true })
     expect(() => sound.setPlayOnSilent(true)).not.toThrow()
+  })
+})
+
+// Discord, "Rest Timer Sound Notification too Quiet": the end of a rest has to carry over music.
+describe('the chime at the end of a rest or a hold', () => {
+  const peakOf = events => Math.max(...events.map(([, v]) => v))
+
+  it('makes no sound and no context with sounds off', () => {
+    sound.chime(false)
+    expect(FakeCtx.instances).toHaveLength(0)
+  })
+
+  it('is high, low, high: none of the pitches of the countdown, a set tick or the finish fanfare', () => {
+    sound.chime(true)
+    const freqs = ctx().tones.map(tn => tn.freq)
+    expect(freqs).toHaveLength(3)
+    expect(freqs[0]).toBeGreaterThan(freqs[1])
+    expect(freqs[2]).toBe(freqs[0])
+    for (const other of [660, 1040, 880, 1100, 1320]) expect(freqs).not.toContain(other)
+  })
+
+  it('peaks well above a beep and below the point where the output clips', () => {
+    sound.beep(true, 660, 0.1)
+    const beepPeak = peakOf(ctx().gains[0])
+    sound.chime(true)
+    const chimePeaks = ctx().gains.slice(1).map(peakOf)
+    expect(beepPeak).toBe(0.35)
+    for (const p of chimePeaks) {
+      expect(p).toBe(sound.CHIME_PEAK)
+      expect(p).toBeGreaterThan(beepPeak * 2)
+      expect(p).toBeLessThanOrEqual(1)
+    }
+  })
+
+  it('never has two notes sounding at once, so they cannot add up past the peak', () => {
+    sound.chime(true)
+    const notes = ctx().oscs
+    for (let i = 1; i < notes.length; i++) expect(notes[i].at).toBeGreaterThanOrEqual(notes[i - 1].until)
+  })
+
+  it('holds its peak for most of each note instead of fading from the start', () => {
+    sound.chime(true)
+    const first = ctx().gains[0]
+    const held = first.find(([kind, v, at]) => kind === 'set' && v === sound.CHIME_PEAK && at > 0.05)
+    expect(held).toBeTruthy()
+  })
+
+  it('uses one brighter periodic wave for all its notes', () => {
+    sound.chime(true)
+    expect(ctx().waves).toBe(1)
+    expect(ctx().oscs.every(o => o.wave && o.wave.imag.filter(Boolean).length > 1)).toBe(true)
+  })
+
+  it('falls back to a triangle wave without createPeriodicWave', async () => {
+    class NoWaveCtx extends FakeCtx {}
+    NoWaveCtx.prototype.createPeriodicWave = undefined
+    window.AudioContext = NoWaveCtx
+    vi.resetModules()
+    sound = await import('./sound.js')
+    sound.chime(true)
+    expect(ctx().oscs.map(o => o.type)).toEqual(['triangle', 'triangle', 'triangle'])
+  })
+
+  it('leaves the plain beeps a sine at their old level', () => {
+    sound.beep(true, 1040, 0.12)
+    expect(ctx().oscs[0].type).toBe('sine')
+    expect(ctx().oscs[0].wave).toBeNull()
+  })
+
+  it('lets the context sleep once its last note is over', () => {
+    sound.chime(true)          // the last note ends at 0.44 + 0.5 + 0.05 = 0.99s
+    vi.advanceTimersByTime(1900)
+    expect(ctx().state).toBe('running')
+    vi.advanceTimersByTime(200)
+    expect(ctx().state).toBe('suspended')
+  })
+})
+
+// Discord (asierlama): vibration on or off on its own, the way sound is.
+describe('vibrate switch', () => {
+  let calls
+  beforeEach(() => {
+    calls = []
+    Object.defineProperty(navigator, 'vibrate', { value: p => { calls.push(p); return true }, configurable: true, writable: true })
+  })
+  afterEach(() => { delete navigator.vibrate })
+
+  it('buzzes by default', () => {
+    sound.vibrate([200, 100, 200])
+    expect(calls).toEqual([[200, 100, 200]])
+  })
+
+  it('stays still once switched off, and buzzes again once switched back on', () => {
+    sound.setVibrate(false)
+    sound.vibrate(30)
+    expect(calls).toEqual([])
+    sound.setVibrate(true)
+    sound.vibrate(30)
+    expect(calls).toEqual([30])
+  })
+
+  it('reads a profile that never chose as on', () => {
+    sound.setVibrate(false)
+    sound.setVibrate(undefined)
+    sound.vibrate(30)
+    expect(calls).toEqual([30])
+  })
+
+  it('is offered only where the browser can vibrate', () => {
+    expect(sound.vibrateSupported()).toBe(true)
+    delete navigator.vibrate
+    Object.defineProperty(navigator, 'vibrate', { value: undefined, configurable: true, writable: true })
+    expect(sound.vibrateSupported()).toBe(false)
+    expect(() => sound.vibrate(30)).not.toThrow()
   })
 })

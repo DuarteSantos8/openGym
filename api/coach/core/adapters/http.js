@@ -35,6 +35,10 @@ const sleep = (ms, signal) => new Promise(resolve => {
 });
 
 const hostOf = url => { try { return new URL(url).host; } catch { return url; } };
+// What the admin card's Runtime line names: the scheme the endpoint is actually called with. An
+// OpenAI-compatible model on the LAN is usually plain http://, and calling that "HTTPS" told the
+// owner the traffic was encrypted when it was not.
+const schemeOf = url => { try { return new URL(url).protocol === 'http:' ? 'HTTP' : 'HTTPS'; } catch { return 'HTTPS'; } };
 const trim = (s, n = 300) => String(s == null ? '' : s).slice(0, n);
 
 /** A fetch, bounded by AbortController. Never throws for HTTP status; throws for transport. */
@@ -83,10 +87,10 @@ export function httpAdapter(spec) {
     async check(cfg, env, opts = {}) {
       const base = adapter.baseUrl(cfg);
       if (!base) return { ok: false, error: 'no endpoint configured' };
-      if (!keyOf(env) && !meta.keyOptional) return { ok: true, version: `HTTPS · ${hostOf(base)}`, needsKey: true };
+      if (!keyOf(env) && !meta.keyOptional) return { ok: true, version: `${schemeOf(base)} · ${hostOf(base)}`, needsKey: true };
       const r = await adapter.models(cfg, env, opts);
       if (!r.ok) return { ok: false, error: r.error };
-      return { ok: true, version: `HTTPS · ${hostOf(base)} · ${r.models.length} models`, models: r.models };
+      return { ok: true, version: `${schemeOf(base)} · ${hostOf(base)} · ${r.models.length} models`, models: r.models };
     },
 
     /** The models this endpoint serves, so a UI can offer a list instead of a text field. */

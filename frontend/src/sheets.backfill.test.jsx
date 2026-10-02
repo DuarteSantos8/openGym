@@ -1,5 +1,7 @@
 // @vitest-environment happy-dom
 import React, { act } from 'react'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createRoot } from 'react-dom/client'
 import { useStore } from './store/useStore.js'
@@ -22,6 +24,7 @@ function mountTopSheet() {
   return host
 }
 const button = (host, text) => [...host.querySelectorAll('button')].find(b => b.textContent.trim() === text)
+const cssSource = readFileSync(resolve(process.cwd(), 'src/index.css'), 'utf8')
 
 describe('log a past workout', () => {
   beforeEach(() => {
@@ -53,6 +56,41 @@ describe('log a past workout', () => {
     expect(useStore.getState().S.active).toBeNull()
   })
 
+  it('a workout with photos or videos says Replace moves them to the new one', () => {
+    const ref = n => ({ kind: 'image', hash: String(n).repeat(64), mime: 'image/webp', size: 10, width: 8, height: 6, at: 1 })
+    logPastWorkoutSheet()
+    let host = mountTopSheet()
+    act(() => { type(host.querySelector('input[type=date]'), todayISO()) })
+    act(() => { button(host, 'Continue').click() })
+    expect(mountTopSheet().textContent).not.toContain('new workout.')
+    useStore.setState(s => ({ S: { ...s.S, workouts: [{ ...s.S.workouts[0], media: [ref(1), ref(2)] }] } }))
+    logPastWorkoutSheet()
+    host = mountTopSheet()
+    act(() => { type(host.querySelector('input[type=date]'), todayISO()) })
+    act(() => { button(host, 'Continue').click() })
+    expect(mountTopSheet().textContent).toContain('Its 2 photos or videos move to the new workout.')
+  })
+
+  // The Date and Start-time rows are the only .lrow rows in the app that pair a title with a
+  // fixed-width field and nothing that can give way. A pixel floor under the title column therefore
+  // comes straight out of the field: 104px pushed the date input 23px off a 320px screen, calendar
+  // picker and all, so there was no way to open the picker on a small phone. The floor has to be the
+  // row's own longest word (min-width:auto), which these short titles barely ask for.
+  it('gives the date and time fields a title column that can shrink', () => {
+    logPastWorkoutSheet()
+    const host = mountTopSheet()
+    const fields = [...host.querySelectorAll('.lrow input.timef')]
+    expect(fields.map(i => i.type)).toEqual(['date', 'time'])
+    for (const field of fields) expect(field.closest('.lrow').querySelectorAll('.lrow-v')).toHaveLength(0)
+    const rule = cssSource.match(/^\.lrow-m\{([^}]*)\}/m)
+    expect(rule?.[1]).toContain('min-width:auto')
+    expect(rule[1]).not.toMatch(/min-width:\s*[\d.]/)
+    // and where even the longest word leaves no room for the field (Polish "Godzina rozpoczęcia"
+    // at 320px), the field drops onto its own line rather than over the edge of the card.
+    expect(cssSource).toContain('.lrow:has(.timef){flex-wrap:wrap}')
+    expect(cssSource).toContain('.lrow>.timef{margin-inline-start:auto}')
+  })
+
   it('starts a backfilled session straight away on a free day', () => {
     logPastWorkoutSheet()
     const host = mountTopSheet()
@@ -62,5 +100,33 @@ describe('log a past workout', () => {
     expect(A.d).toBe('2020-01-02')
     expect(new Date(A.start).getHours()).toBe(18)
     expect(A.backfill).toEqual({ durationMin: 60, replaceId: null })
+  })
+
+  // The same keystroke clamp as the saved workout's duration: a 60 emptied to type 45 read 145.
+  it('lets the duration be emptied and retyped, and never starts a session of no length', () => {
+    logPastWorkoutSheet()
+    const host = mountTopSheet()
+    act(() => { type(host.querySelector('input[type=date]'), '2020-01-02') })
+    const field = host.querySelector('input.num')
+    act(() => { type(field, '') })
+    expect(field.value).toBe('')
+    act(() => { type(field, '45') })
+    act(() => { button(host, 'Continue').click() })
+    expect(useStore.getState().S.active.backfill.durationMin).toBe(45)
+  })
+
+  // An emptied duration is neither the default hour nor a silent minute (QA 1.3.9): nothing
+  // starts until a length is typed, and the sheet says so.
+  it('an emptied duration starts nothing and asks for a length', () => {
+    logPastWorkoutSheet()
+    const host = mountTopSheet()
+    act(() => { type(host.querySelector('input[type=date]'), '2020-01-02') })
+    act(() => { type(host.querySelector('input.num'), '') })
+    expect(host.textContent).toContain('Enter how long it took — at least 1 minute.')
+    act(() => { button(host, 'Continue').click() })
+    expect(useStore.getState().S.active).toBeFalsy()
+    act(() => { type(host.querySelector('input.num'), '1') })
+    act(() => { button(host, 'Continue').click() })
+    expect(useStore.getState().S.active.backfill.durationMin).toBe(1)
   })
 })

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useUI } from '../store/useUI.js'
+import { useStore } from '../store/useStore.js'
 import { api } from '../lib/api.js'
 import Icon from '../components/Icon.jsx'
 import { Button, Switch, TextField } from '../components/ui.jsx'
@@ -42,7 +43,11 @@ export default function AdminCoach() {
   // toast that is gone before anyone has read the provider's reason.
   const [testResult, setTestResult] = useState(null)
 
-  const load = () => api('/api/admin/coach').then(r => { setD(r); setModels(r.knownModels || null) }).catch(e => toast(e.message || 'Failed to load'))
+  // Every change on this card ends in load(), so load() also re-reads /api/config. The app reads
+  // that once per boot, and the Plan tab's Coach card hangs off it: without the re-read, an admin
+  // who has just switched the Coach on and connected it finds no Coach anywhere until a reload,
+  // which reads as a setup that failed (Discord #install-help, 2026-09-19).
+  const load = () => api('/api/admin/coach').then(r => { setD(r); setModels(r.knownModels || null); useStore.getState().refreshConfig() }).catch(e => toast(e.message || 'Failed to load'))
   useEffect(() => { load() }, [])
 
   const patch = async body => {
@@ -62,7 +67,9 @@ export default function AdminCoach() {
   const test = async () => {
     setBusy(true); setTestResult({ pending: true })
     try {
-      const r = await api('/api/admin/coach/test', { method: 'POST', body: '{}' })
+      // The server gives the provider up to 90 s for this round-trip (api/coach/jobs.js testRun),
+      // longer than api()'s default for a request; a slow local model must still get its answer.
+      const r = await api('/api/admin/coach/test', { method: 'POST', body: '{}', timeout: 150000 })
       setTestResult(r)
       toast(r.ok ? 'Coach test passed ✅' : 'Test failed')
       await load()
@@ -261,6 +268,10 @@ export default function AdminCoach() {
           <div className="adm-kv"><span className="k">Whole instance, per day</span>
             <span className="v"><input className="num" type="number" min="0" max="5000" defaultValue={d.caps.instanceDaily} disabled={busy}
               onBlur={e => +e.target.value !== d.caps.instanceDaily && patch({ caps: { ...d.caps, instanceDaily: +e.target.value } })} /></span></div>
+          <div className="adm-hint" style={{ marginTop: 10 }}>How long a chat message, refinement or review note can be. The chat composer and the server both enforce this.</div>
+          <div className="adm-kv"><span className="k">Max message length</span>
+            <span className="v"><input className="num" type="number" min="200" max="4000" defaultValue={d.maxMessageLen} disabled={busy}
+              onBlur={e => +e.target.value !== d.maxMessageLen && patch({ maxMessageLen: +e.target.value })} /></span></div>
 
           <div className="adm-group-t" style={{ marginTop: 14 }}>Compare with others</div>
           <div className="row between" style={{ gap: 12, alignItems: 'flex-start' }}>
@@ -294,7 +305,7 @@ export default function AdminCoach() {
       <details className="adm-fold">
         <summary>Activity <Icon name="chevronRight" className="chev" /></summary>
         <div className="adm-fold-b">
-          <div className="tiles" style={{ textAlign: 'left', marginBottom: 10 }}>
+          <div className="tiles" style={{ textAlign: 'start', marginBottom: 10 }}>
             <div className="tile"><div className="l">Jobs today</div><div className="v" style={{ fontSize: '1.1rem' }}>{d.jobsToday}</div></div>
             <div className="tile"><div className="l">Last success</div><div className="v" style={{ fontSize: '.85rem' }}>{rel(d.lastSuccess?.at)}</div></div>
           </div>
@@ -366,6 +377,7 @@ const failureTitle = cls => ({
   restart: 'The server restarted while a job was running',
   nostate: 'The user\'s training data could not be read',
   off: 'The Coach was off when the job ran',
+  toolarge: 'The user\'s training data made a request too large to send, so no provider was called',
   internal: 'Something went wrong on the server'
 }[cls] || cls || 'Failed')
 

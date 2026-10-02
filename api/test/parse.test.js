@@ -28,5 +28,7 @@ test('an answer with no JSON in it fails rather than being guessed at', () => {
 test('an answer may omit the contract version, but may not claim a different one', () => {
   assert.equal(contractOK({ ok: true }), true);
   assert.equal(contractOK({ coach_contract: 1 }), true);
+  assert.equal(contractOK({ coach_contract: 0 }), false);
   assert.equal(contractOK({ coach_contract: 2 }), false);
+  assert.equal(contractOK({ coach_contract: null }), false);
 });

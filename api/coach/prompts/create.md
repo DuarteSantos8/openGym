@@ -24,7 +24,7 @@ Design a complete plan from `coachProfile` (their intake answers) and, if presen
     {
       "id": "r1",
       "name": "<routine name>",
-      "emoji": "<one emoji>",
+      "emoji": "<one icon: figureStrength, arm, abs, legs, pullup, dumbbell, barbell, kettlebell, plate, machine, figureRun, bike, swim, boxing, timer, stretch, moon, heart, flame or bolt>",
       "prog": "linear",
       "why": "<1-2 sentences: what this day is for>",
       "ex": [

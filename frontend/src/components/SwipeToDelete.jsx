@@ -25,18 +25,47 @@ import { t } from '../lib/i18n.js'
 // The row keeps its own opaque background rather than trusting whatever sits behind it in the
 // DOM (a `.card`'s fill, usually) — without it the red button peeks out at the row's edge even
 // at rest, since a transparent row lets an absolutely-positioned sibling show straight through.
+//
+// A swipe is a pointer gesture, so the keyboard needs its own way through. role, tabIndex and
+// onKeyDown (what tappable() hands a row) land on the row itself, so a row that was reachable
+// with Tab and opened with Enter or Space before it learned to swipe still is. The delete
+// button sits in the tab order right before its row but under it on screen, so focusing it
+// slides the row open the way a swipe would, and moving focus on closes it again: otherwise
+// Tab would land on a button nobody can see.
+//
+// The red button is transparent while the row is shut. Both are clipped by the same rounded
+// corners, and anti-aliasing at a curve lets some of what is underneath through: in dark mode a
+// red hairline traced every corner of every row at rest (QA 1.3.9). It shows as soon as the row
+// moves, and goes once the row has slid shut again.
+//
+// The button sits at the row's inline end: the right in a left-to-right language, the left in
+// Arabic. Offsets below are kept in that logical sense (negative = towards the start, opening)
+// and turned into pixels only in setX, so one gesture reads the same in both directions.
 const REVEAL = 76
-export default function SwipeToDelete({ children, onDelete, deleteLabel, className, onClick }) {
+const endSide = () => (document.documentElement.dir === 'rtl' ? -1 : 1)
+export default function SwipeToDelete({ children, onDelete, deleteLabel, className, onClick, role, tabIndex, onKeyDown }) {
   const outerRef = useRef(null)
   const rowRef = useRef(null)
+  const btnRef = useRef(null)
+  const hideTimer = useRef(null)
   const drag = useRef({ startX: null, startY: null, delta: 0, open: false, axis: null })
+  // Set while the row is open only because the delete button has focus, so a blur closes what
+  // the focus opened and leaves a row the finger swiped open alone.
+  const focusOpened = useRef(false)
 
   const setX = (x, animate) => {
     const el = rowRef.current
     if (!el) return
     el.style.transition = animate ? 'transform .18s ease-out' : 'none'
-    el.style.transform = `translateX(${x}px)`
+    el.style.transform = `translateX(${x * endSide()}px)`
+    const btn = btnRef.current
+    if (!btn) return
+    window.clearTimeout(hideTimer.current)
+    if (x !== 0) btn.style.opacity = '1'
+    else if (!animate) btn.style.opacity = '0'
+    else hideTimer.current = window.setTimeout(() => { if (!drag.current.open) btn.style.opacity = '0' }, 200)
   }
+  useEffect(() => () => window.clearTimeout(hideTimer.current), [])
   const start = (x, y) => { drag.current = { startX: x, startY: y, delta: 0, open: drag.current.open, axis: null } }
   const move = (x, y, ev) => {
     const d = drag.current
@@ -48,7 +77,7 @@ export default function SwipeToDelete({ children, onDelete, deleteLabel, classNa
     }
     if (d.axis === 'y') return
     ev?.preventDefault?.()
-    d.delta = dx
+    d.delta = dx * endSide()
     const base = d.open ? -REVEAL : 0
     setX(Math.max(-REVEAL - 12, Math.min(0, base + dx)), false)
   }
@@ -78,10 +107,12 @@ export default function SwipeToDelete({ children, onDelete, deleteLabel, classNa
       onMouseMove={e => { if (drag.current.startX !== null && e.buttons === 1) move(e.clientX, e.clientY) }}
       onMouseUp={end}
       onMouseLeave={() => { if (drag.current.startX !== null) end() }}>
-      <button className="swipe-del" aria-label={deleteLabel || t('Delete')}
-        style={{ position: 'absolute', inset: '0 0 0 auto', width: REVEAL, background: 'var(--red)', color: '#fff', fontSize: 12, fontWeight: 600 }}
+      <button ref={btnRef} className="swipe-del" aria-label={deleteLabel || t('Delete')}
+        style={{ position: 'absolute', top: 0, bottom: 0, insetInlineEnd: 0, width: REVEAL, background: 'var(--red)', color: '#fff', fontSize: 12, fontWeight: 600, opacity: 0 }}
+        onFocus={() => { if (drag.current.open) return; focusOpened.current = true; drag.current.open = true; setX(-REVEAL, true) }}
+        onBlur={() => { if (!focusOpened.current) return; focusOpened.current = false; drag.current.open = false; setX(0, true) }}
         onClick={() => { setX(0, true); drag.current.open = false; onDelete() }}>{t('Delete')}</button>
-      <div ref={rowRef} className={className}
+      <div ref={rowRef} className={className} role={role} tabIndex={tabIndex} onKeyDown={onKeyDown}
         onClick={e => { if (drag.current.open) { e.stopPropagation(); setX(0, true); drag.current.open = false; return } onClick && onClick(e) }}
         style={{ background: 'var(--surface)', position: 'relative' }}>
         {children}

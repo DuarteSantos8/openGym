@@ -26,7 +26,7 @@ export function cleanAvatar(value) {
   return `data:image/${match[1]};base64,${bytes.toString('base64')}`;
 }
 
-export function profileRoutes({ json, readBody, readSession, save, isAdmin }) {
+export function profileRoutes({ json, readBody, readSession, save, isAdmin, nameTaken }) {
   return {
     'POST /api/profile': async (req, res) => {
       const user = readSession(req);
@@ -40,6 +40,7 @@ export function profileRoutes({ json, readBody, readSession, save, isAdmin }) {
       if (owns(body, 'name')) {
         name = typeof body.name === 'string' ? body.name.trim().slice(0, 40) : '';
         if (!name) return json(res, 400, { error: 'name required' });
+        if (nameTaken?.(name, user.id)) return json(res, 409, { error: 'another profile already signs in with this name', code: 'name-taken' });
       }
       if (owns(body, 'avatar')) {
         try { avatar = cleanAvatar(body.avatar); }

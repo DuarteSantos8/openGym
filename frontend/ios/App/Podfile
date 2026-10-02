@@ -26,4 +26,13 @@ end
 
 post_install do |installer|
   assertDeploymentTarget(installer)
+  # assertDeploymentTarget only lifts a pod to 14.0, below what current Xcode supports, so every
+  # build warned about the pods. Set them to the app's own target (the platform line above and
+  # IPHONEOS_DEPLOYMENT_TARGET in the project, both 15.5), not to some lower number: a pod built
+  # for an iOS the app does not run on buys nothing and keeps the two out of step.
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.5'
+    end
+  end
 end

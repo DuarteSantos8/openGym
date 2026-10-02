@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { buildCombinedEntries, deriveSessionName } from './session-merge.js'
 import { buildSessionEntries } from './session-start.js'
+import { buildCompletedWorkout } from './finish-workout.js'
+import { isWarmupRow } from './workout-model.js'
 
 const st = {
   unit: 'kg', workouts: [], exWeights: {},
@@ -39,6 +41,26 @@ describe('buildCombinedEntries', () => {
     const { entries } = buildCombinedEntries(st, ['r1', 'rehab'])
     expect(entries.find(e => e.id === '0050')).toMatchObject({ rid: 'rehab', noProg: true })
     expect(entries.find(e => e.id === '0025').noProg).toBeUndefined()
+  })
+})
+
+// A combined day that holds the same exercise twice — a heavy block and a light block — saves
+// two entries for it. Each routine's next session reads its own one (#216); it used to read only
+// the first, so the light block came back at the heavy block's numbers.
+describe('the same exercise in two routines of one combined day', () => {
+  const work = e => e.sets.filter(s => !isWarmupRow(s))
+  const A = { id: 'A', name: 'Heavy', ex: [{ id: '0025', sets: 2, reps: 10, weight: 60 }] }
+  const B = { id: 'B', name: 'Light', ex: [{ id: '0025', sets: 2, reps: 15, weight: 40 }] }
+
+  it('opens each routine from its own entry of the saved workout', () => {
+    const state = { unit: 'kg', exWeights: {}, routines: [A, B], workouts: [] }
+    const { entries, routineIds } = buildCombinedEntries(state, ['A', 'B'])
+    const active = { id: 'w1', d: '2026-08-01', start: 1, routineIds, name: 'Heavy + Light', entries: entries.map(e => ({ ...e, sets: e.sets.map(s => ({ ...s, done: true })) })) }
+    state.workouts.push(buildCompletedWorkout(active, { end: 2 }))
+
+    const next = buildCombinedEntries(state, ['A', 'B']).entries
+    expect(work(next[0]).map(s => [s.w, s.r])).toEqual([[62.5, 10], [62.5, 10]])
+    expect(work(next[1]).map(s => [s.w, s.r])).toEqual([[42.5, 15], [42.5, 15]])
   })
 })
 

@@ -43,18 +43,31 @@ describe('viewport guard', () => {
     expect(realign(fakeWindow({ offsetTop: 190, vvHeight: 480 }))).toBe(false)  // keyboard still up
   })
 
-  it('lets go of a text field that kept focus after the keyboard closed, then realigns', () => {
-    // WebKit: tapping the set's tick does not blur the weight field. With the keyboard down
-    // and the page displaced, that focus is what keeps iOS from putting the viewports back.
+  it('stands down while a text field has focus, however displaced the page looks (issue #242)', () => {
+    // `keyboardOpen` is unreliable while the keyboard animates in — the browser chrome collapses
+    // at the same time, so `innerHeight` falls with the visual viewport and the difference dips
+    // back under the threshold. A displaced page plus a focused field is therefore "somebody is
+    // typing", not "the keyboard has gone": it used to blur the field and throw the keyboard out.
     const active = { tagName: 'INPUT', blur: vi.fn() }
     const w = fakeWindow({ offsetTop: 190, active })
-    expect(realign(w)).toBe(true)
-    expect(active.blur).toHaveBeenCalledTimes(1)
-    expect(w.scrollTo).toHaveBeenCalledWith(0, 0)
+    expect(realign(w)).toBe(false)
+    expect(active.blur).not.toHaveBeenCalled()
+    expect(w.scrollTo).not.toHaveBeenCalled()
+    // the same while a sheet has the body pinned: no unpin/repin under the keyboard either
+    const pinned = fakeWindow({ offsetTop: 190, active: { tagName: 'TEXTAREA', blur: vi.fn() }, bodyStyle: { position: 'fixed', top: '-120px' } })
+    expect(realign(pinned)).toBe(false)
+    expect(pinned.scrollTo).not.toHaveBeenCalled()
     // an aligned page is left alone, focus included (a desktop browser mid-typing)
     const typing = { tagName: 'INPUT', blur: vi.fn() }
     expect(realign(fakeWindow({ active: typing }))).toBe(false)
     expect(typing.blur).not.toHaveBeenCalled()
+  })
+
+  it('still realigns a displaced page once focus has left the field', () => {
+    // The correction that used to ride on the blur now happens on `focusout`, when iOS needs it.
+    const w = fakeWindow({ offsetTop: 190, active: { tagName: 'BUTTON' } })
+    expect(realign(w)).toBe(true)
+    expect(w.scrollTo).toHaveBeenCalledWith(0, 0)
   })
 
   it('unpins the body for one scroll when a sheet has it fixed, and pins it back where it was', () => {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
-  canonicalPlan, planHash, hashPlan, markStale, applicable, currentValue,
+  canonicalPlan, planHash, hashPlan, markStale, applicable, currentValue, ROUTINE_NAME_SEEN,
   pushSnapshot, revertLast, canRevert, appendLog, applyChangeSet, applyCreatedPlan,
   recordDismissal, validateProposal, coachAvailable, hasConsent,
   recordDebrief, logEntry, lightBundle, changeValues,
@@ -163,6 +163,22 @@ describe('staleness', () => {
     expect(markStale(wk(1, 'r1'), state({ week: { 1: ['r1'] } })).changes[0].status).toBe('proposed')
     // the day gained a routine since → stale
     expect(markStale(wk(1, ['r1', 'r2']), state({ week: { 1: ['r1', 'r2', 'r3'] } })).changes[0].status).toBe('stale')
+  })
+
+  it('a rename of a routine whose name is longer than the Coach reads is not shown as stale', async () => {
+    const { validateReview } = await import('../../../api/coach/core/validate.js')
+    const S = state()
+    S.routines[0].name = 'Upper body, heavy day — '.repeat(6)
+    // The real path: the server's payload cuts the name, and the validator copies what the
+    // payload held into `before`.
+    const checked = validateReview({ coach_contract: 1, summary: 's', changes: [{ type: 'rename-routine', target: { routineId: 'r1' }, after: 'Upper', why: 'shorter' }] }, serverPayload.cleanPlan(S))
+    const [c] = checked.proposal.changes
+    expect(c.before.length).toBeLessThan(S.routines[0].name.length)
+    expect(markStale(proposal([c]), S).changes[0].status).toBe('proposed')
+    // A name edited since the Coach read it is still caught.
+    S.routines[0].name = 'Lower ' + S.routines[0].name
+    expect(markStale(proposal([c]), S).changes[0].status).toBe('stale')
+    expect(ROUTINE_NAME_SEEN).toBe(serverPayload.NAME_MAX)
   })
 
   it('reads the current value for every scalar change type', () => {
@@ -482,6 +498,23 @@ describe('created plans', () => {
     customEx: []
   }
 
+  // A link is never the Coach's to write, and a file ref never travels in a plan: validatePlan
+  // drops both from the model's answer, and applying the plan drops them again, since mergePlan
+  // keeps a link on a plan's own exercises for a plan shared by a person.
+  it('never writes a link or a media ref onto the exercises it creates', () => {
+    const s = JSON.parse(JSON.stringify(state()))
+    const withLink = {
+      ...bundle,
+      routines: [...bundle.routines, { id: 'x3', name: 'C', ex: [{ id: 'cx1', sets: 3, reps: 8, mode: 'reps' }] }],
+      customEx: [{ id: 'cx1', n: 'Sled drag', bp: 'legs', url: 'https://evil.example/phish', media: { kind: 'image', hash: 'a'.repeat(64), mime: 'image/webp', size: 1, width: 1, height: 1, at: 1 } }]
+    }
+    applyCreatedPlan(s, { id: 'p1', kind: 'create', bundle: withLink }, { schedule: false })
+    const made = s.customEx.find(c => c.n === 'Sled drag')
+    expect(made).toBeTruthy()
+    expect(made.url).toBeUndefined()
+    expect(made.media).toBeUndefined()
+  })
+
   it('adds routines as new ones and never modifies what was already there', () => {
     const s = JSON.parse(JSON.stringify(state()))
     applyCreatedPlan(s, { id: 'p1', kind: 'create', bundle }, { schedule: false })
@@ -596,6 +629,16 @@ describe('removing a routine takes its per-date reschedules with it', () => {
     const s = apply(S, proposal([c]), ['c1'])
     expect(revertLast(s)).toBe(true)
     expect(s.dayPlan['2099-01-01']).toBe('r2')
+  })
+
+  it('pulls it from a combined day too, and a revert puts the day back whole', () => {
+    // The Coach compared each weekday with ===, so a combined day (a list) kept the deleted id.
+    const S = state({ week: { 1: ['r1', 'r2'], 3: ['r2'] } })
+    const s = apply(S, proposal([c]), ['c1'])
+    expect(s.week[1]).toEqual(['r1'])
+    expect(s.week[3]).toBeUndefined()
+    expect(revertLast(s)).toBe(true)
+    expect(s.week[1]).toEqual(['r1', 'r2'])
   })
 })
 

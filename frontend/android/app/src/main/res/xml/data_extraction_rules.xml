@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12 (API 31) and later: the same rule as backup_rules.xml for the cloud backup, where
+     the 25 MB cap applies. A device-to-device transfer has no such cap, and a phone moved to a
+     new one should arrive with its photos and videos, so that section is left out: without one,
+     a transfer takes everything, as before. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="file" path="opengym-media/" />
+    </cloud-backup>
+</data-extraction-rules>

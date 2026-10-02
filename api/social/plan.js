@@ -35,7 +35,19 @@ export function sharedPlan(value, { includeNotes = true } = {}) {
   const used = new Set(routines.flatMap(r => r.ex.map(e => e.id)))
   const customEx = (Array.isArray(value.customEx) ? value.customEx : [])
     .filter(e => used.has(e?.id) && typeof e.n === 'string').slice(0, 1000)
-    .map(e => scalars(e, ['id', 'n', 'bp', 'desc']))
+    .map(e => {
+      const out = scalars(e, ['id', 'n', 'bp', 'desc', 'eq', 'tg'])
+      for (const key of ['primaries', 'secondaries', 'muscleGroups']) {
+        if (Array.isArray(e[key])) out[key] = e[key].filter(v => typeof v === 'string').slice(0, 19).map(v => v.slice(0, 40))
+      }
+      if (typeof e.url === 'string' && e.url.length <= 2048) {
+        try {
+          const url = new URL(e.url)
+          if (['http:', 'https:'].includes(url.protocol) && !url.username && !url.password) out.url = url.href
+        } catch { /* an invalid link is omitted */ }
+      }
+      return out
+    })
   return { opengym_plan: 1, name: typeof value.name === 'string' ? value.name.slice(0, 160) : '', ...scalars(value, ['exported']),
     ...(value.unit === 'kg' || value.unit === 'lb' ? { unit: value.unit } : {}), routines, week, customEx }
 }

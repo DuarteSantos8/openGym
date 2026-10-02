@@ -1,4 +1,5 @@
 import batch from './exercise-muscle-batch-1.json' with { type: 'json' }
+import olympic from './exercise-muscle-olympic.json' with { type: 'json' }
 import { MACHINE_BATCH_2 } from './exercise-muscle-batch-2.js'
 
 /**
@@ -6,6 +7,7 @@ import { MACHINE_BATCH_2 } from './exercise-muscle-batch-2.js'
  * untouched; exercises.js applies this layer to the runtime index.
  */
 export const COMPOUND_LIFT_BATCH_1 = Object.freeze(batch)
+export const OLYMPIC_LIFT_METADATA = Object.freeze(olympic)
 
 // Keep the phase-2 artifact in its own module for auditing while preserving the phase-1 resolver
 // interface consumed by exercises.js and downstream muscle helpers.
@@ -22,6 +24,7 @@ export function exerciseMuscleMetadataFor(id) {
   return {
     ...(COMPOUND_LIFT_BATCH_1[id] || {}),
     ...(MACHINE_BATCH_2[id] || {}),
+    ...(OLYMPIC_LIFT_METADATA[id] || {}),
     ...(USER_EXERCISE_MUSCLE_OVERRIDES[id] || {})
   }
 }

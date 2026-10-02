@@ -17,8 +17,9 @@ import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
-import { fmtDate, fmtNum, DAYS } from '../lib/format.js'
+import { fmtDate, fmtNum, DAYS, weekOrder, weekStartOf } from '../lib/format.js'
 import { exLine } from '../lib/history.js'
+import { speedUnitOf } from '../lib/speed.js'
 import { DEMO } from '../lib/demo.js'
 import { MOBILE } from '../lib/mobile.js'
 import {
@@ -27,9 +28,10 @@ import {
   changeTitle, changeValues, exName, canRevert, revertLast
 } from '../lib/coach.js'
 import { insightsFor, sessionInsights } from '../lib/coach-insights.js'
-import { useCoachStatus, requestReview, requestDebrief, requestPlan, refinePlan, resolvePending, cohortStats, setCohortShare, jobErrorText } from '../lib/coach-api.js'
+import { useCoachStatus, requestReview, requestDebrief, requestPlan, refinePlan, resolvePending, cohortStats, setCohortShare, jobErrorText, awaitedJob, settleAwaited } from '../lib/coach-api.js'
 import { confirmSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
+import { glyphOf } from '../lib/glyphs.js'
 import LineChart from '../components/LineChart.jsx'
 import { Button, Check, Switch, Section, Row, SelectRow } from '../components/ui.jsx'
 import '../coach.css'
@@ -44,7 +46,7 @@ export default function CoachChat() {
   const storeReady = useStore(s => s.ready)
   const toast = useUI(s => s.toast)
   const openSheet = useUI(s => s.openSheet)
-  const { job, pending, cap, loading, lastError, last, refresh } = useCoachStatus(true)
+  const { job, pending, cap, loading, lastError, last, refresh, maxMessageLen } = useCoachStatus(true)
   const [text, setText] = useState('')
   const [busy, setBusy] = useState(false)
   const endRef = useRef(null)
@@ -63,15 +65,23 @@ export default function CoachChat() {
 
   // A job that ends is either a proposal, "nothing to change", or a failure. The server tells
   // the client none of that directly — the job simply stops appearing — so the transition is
-  // read here, once, and written into the thread as the Coach's reply.
+  // read here, once, and written into the thread as the Coach's reply. Two ways to see it end:
+  // the job was seen running and is now gone, or the run this app started (its id came back
+  // from the start request) is already the server's last outcome — a provider that refuses the
+  // connection fails the run before the first status poll, and it is never seen running at all.
   useEffect(() => {
     if (loading) return
     const was = prevJob.current
     prevJob.current = job
-    if (!was || job) return
-    const ms = was.startedAt ? Date.now() - was.startedAt : 0
+    if (job) return
+    const mine = awaitedJob()
+    const endedUnseen = !was && !!mine && last?.id === mine
+    if (!was && !endedUnseen) return
+    settleAwaited(was ? was.id : mine)
+    const ms = was?.startedAt ? Date.now() - was.startedAt : 0
     update(s => {
-      recordTiming(s, ms)
+      // A run that ended unseen has no duration worth learning from.
+      if (was) recordTiming(s, ms)
       if (!pending) {
         const cls = lastError?.errorClass || (last?.outcome === 'failed' ? (last.errorClass || 'internal') : null)
         appendChat(s, cls
@@ -81,7 +91,7 @@ export default function CoachChat() {
             : t('I looked through everything and there is nothing I would change right now. Keep going — ask me again after a few more sessions.') })
       }
     })
-  }, [job, pending, loading])
+  }, [job, pending, loading, last?.id])
 
   useEffect(() => { if (typeof endRef.current?.scrollIntoView === 'function') endRef.current.scrollIntoView({ block: 'end' }) }, [S.coach?.chat?.length, !!job, !!pending])
 
@@ -130,7 +140,7 @@ export default function CoachChat() {
   const pickRoutine = () => openSheet(close => <div className="chat-menu">
     <h3>{t('Improve which routine?')}</h3>
     <div className="sect-b">
-      {(S.routines || []).map(r => <Row key={r.id} icon="dumbbell" iconTint="var(--acc)" title={`${r.emoji || ''} ${r.name}`.trim()} subtitle={t('{0} exercises', (r.ex || []).length)} accessory="chevron" onClick={() => { close(); askImprove(r) }} />)}
+      {(S.routines || []).map(r => <Row key={r.id} icon={glyphOf(r.emoji)} iconTint="var(--acc)" title={r.name} subtitle={t('{0} exercises', (r.ex || []).length)} accessory="chevron" onClick={() => { close(); askImprove(r) }} />)}
       {!(S.routines || []).length && <div className="chat-empty">{t('You have no routines yet — ask the Coach for a plan first.')}</div>}
     </div>
     <div style={{ height: 10 }} />
@@ -207,7 +217,7 @@ export default function CoachChat() {
         {community && <button className="qchip" onClick={showCohort}><Icon name="person" />{t('Compare')}</button>}
       </div>}
       <div className="composer-in">
-        <textarea rows={1} value={text} maxLength={1000} placeholder={placeholder} disabled={!!job}
+        <textarea rows={1} value={text} maxLength={maxMessageLen || 1000} placeholder={placeholder} disabled={!!job}
           onChange={e => setText(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }} />
         <button className="send" onClick={send} disabled={!text.trim() || busy || !!job} aria-label={t('Send')}><Icon name="arrowUp" /></button>
@@ -324,13 +334,13 @@ function PlanCard({ p, S, update, toast, nav, refresh }) {
         {!!b.basedOn && <p className="pcard-sum" style={{ fontSize: 13 }}>{b.basedOn}</p>}
       </div>
 
-      <WeekStrip days={weekDays} />
+      <WeekStrip days={weekDays} ws={weekStartOf(S)} />
 
       {b.routines.length > 1 && <div className="pcard-tabs">
-        {b.routines.map((x, i) => <button key={x.id || i} className={'pcard-tab' + (i === tab ? ' on' : '')} onClick={() => setTab(i)}>{x.emoji} {x.name}</button>)}
+        {b.routines.map((x, i) => <button key={x.id || i} className={'pcard-tab' + (i === tab ? ' on' : '')} onClick={() => setTab(i)}><Icon name={glyphOf(x.emoji)} />{x.name}</button>)}
       </div>}
 
-      {r && <RoutineBlock r={r} unit={S.unit} />}
+      {r && <RoutineBlock r={r} unit={S.unit} speedUnit={speedUnitOf(S)} />}
 
       <div className="pcard-row">
         <span className="lrow-m"><span className="lrow-t">{t('Use this weekly schedule')}</span><span className="lrow-s">{t('Replaces your current week. Days this plan leaves empty become rest days.')}</span></span>
@@ -346,15 +356,16 @@ function PlanCard({ p, S, update, toast, nav, refresh }) {
   </div>
 }
 
-const WeekStrip = ({ days }) => <div className="pcard-week">
-  {[1, 2, 3, 4, 5, 6, 0].map(d => <div key={d} className={'pcard-wd' + (days.has(d) ? ' on' : '')}>{t(DAYS[d])}</div>)}
+// In the order the week is set to start on (Settings), like the Plan's own week.
+const WeekStrip = ({ days, ws }) => <div className="pcard-week">
+  {weekOrder(ws).map(d => <div key={d} className={'pcard-wd' + (days.has(d) ? ' on' : '')}>{t(DAYS[d])}</div>)}
 </div>
 
-const RoutineBlock = ({ r, unit }) => <div className="pcard-rt">
-  <div className="pcard-rt-h"><b>{r.emoji} {r.name}</b><span>{t('{0} exercises', r.ex.length)}</span></div>
+const RoutineBlock = ({ r, unit, speedUnit }) => <div className="pcard-rt">
+  <div className="pcard-rt-h"><b><Icon name={glyphOf(r.emoji)} />{r.name}</b><span>{t('{0} exercises', r.ex.length)}</span></div>
   {!!r.why && <div className="pcard-why">{r.why}</div>}
   {r.ex.map((e, i) => <div key={i} className="pcard-ex">
-    <div className="pcard-ex-r"><span className="pcard-ex-n">{exName(e.id)}</span><span className="pcard-ex-l">{exLine(e, unit)}</span></div>
+    <div className="pcard-ex-r"><span className="pcard-ex-n">{exName(e.id)}</span><span className="pcard-ex-l">{exLine(e, unit, speedUnit)}</span></div>
     {!!e.why && <div className="pcard-ex-w">{e.why}</div>}
   </div>)}
 </div>
@@ -606,7 +617,7 @@ function ProposalDetail({ entry, S }) {
   const r = b?.routines?.[Math.min(tab, (b?.routines?.length || 1) - 1)]
   const weekDays = useMemo(() => new Set(Object.keys(b?.week || {}).map(Number)), [b])
   return <div className="pdetail">
-    <div className="pcard-hd" style={{ paddingLeft: 0, paddingRight: 0 }}>
+    <div className="pcard-hd" style={{ paddingInline: 0 }}>
       <div className="pcard-eyebrow">{kind === 'create' ? t('Plan') : kind === 'debrief' ? t('Workout debrief') : t('Suggestions')} · {fmtDate(new Date(entry.at).toISOString().slice(0, 10))}</div>
       <h2 className="pcard-h">{kind === 'create' ? (b?.name || t('Coach plan')) : kind === 'debrief' ? (entry.workout?.name || t('Workout')) : t(entry.decisions?.length === 1 ? '{0} suggestion' : '{0} suggestions', entry.decisions?.length || 0)}</h2>
       {!!entry.summary && <p className="pcard-sum">{entry.summary}</p>}
@@ -624,11 +635,11 @@ function ProposalDetail({ entry, S }) {
     </>}
 
     {kind === 'create' && b && <>
-      <WeekStrip days={weekDays} />
-      {b.routines.length > 1 && <div className="pcard-tabs" style={{ paddingLeft: 0, paddingRight: 0 }}>
-        {b.routines.map((x, i) => <button key={x.id || i} className={'pcard-tab' + (i === tab ? ' on' : '')} onClick={() => setTab(i)}>{x.emoji} {x.name}</button>)}
+      <WeekStrip days={weekDays} ws={weekStartOf(S)} />
+      {b.routines.length > 1 && <div className="pcard-tabs" style={{ paddingInline: 0 }}>
+        {b.routines.map((x, i) => <button key={x.id || i} className={'pcard-tab' + (i === tab ? ' on' : '')} onClick={() => setTab(i)}><Icon name={glyphOf(x.emoji)} />{x.name}</button>)}
       </div>}
-      {r && <RoutineBlock r={r} unit={S.unit} />}
+      {r && <RoutineBlock r={r} unit={S.unit} speedUnit={speedUnitOf(S)} />}
       <p className="pcard-sum" style={{ fontSize: 13 }}>{entry.scheduled ? t('Your week was set to this schedule.') : t('Imported without changing your week.')}</p>
     </>}
     {kind === 'create' && !b && <p className="pcard-sum">{t('This plan was imported before the app kept proposals; only its summary is left.')}</p>}

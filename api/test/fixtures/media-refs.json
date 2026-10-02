@@ -1,0 +1,874 @@
+{
+  "about": "Which blob hashes a state references. api/media.js referencedHashes() and frontend/src/lib/media-refs.js referencedHashes() must both give `expect` (compared as sorted lists) for every `state` here: the server keeps and the client keeps exactly this set. Each of customEx[].media.hash, customEx[].media.poster.hash and the same two of every entry of workouts[].media counts on its own when it matches /^[0-9a-f]{64}$/ — deliberately looser than normalizeMediaRef, because this set decides what is kept.",
+  "referencedHashes": [
+    {
+      "name": "no state at all",
+      "state": null,
+      "expect": []
+    },
+    {
+      "name": "a state without customEx",
+      "state": {
+        "unit": "kg"
+      },
+      "expect": []
+    },
+    {
+      "name": "customEx that is not a list",
+      "state": {
+        "customEx": {
+          "x": {
+            "id": "cx1",
+            "n": "Sandbag carry cx1",
+            "bp": "back",
+            "custom": true,
+            "media": {
+              "kind": "image",
+              "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "mime": "image/webp",
+              "size": 1000,
+              "width": 800,
+              "height": 600,
+              "at": 1
+            }
+          }
+        }
+      },
+      "expect": []
+    },
+    {
+      "name": "entries that are not exercises are skipped",
+      "state": {
+        "customEx": [
+          null,
+          3,
+          "cx",
+          [],
+          {
+            "id": "cx1",
+            "n": "Sandbag carry cx1",
+            "bp": "back",
+            "custom": true,
+            "media": {
+              "kind": "image",
+              "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "mime": "image/webp",
+              "size": 1000,
+              "width": 800,
+              "height": 600,
+              "at": 1
+            }
+          }
+        ]
+      },
+      "expect": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ]
+    },
+    {
+      "name": "an exercise without media",
+      "state": {
+        "customEx": [
+          {
+            "id": "cx1",
+            "n": "Sandbag carry cx1",
+            "bp": "back",
+            "custom": true
+          }
+        ]
+      },
+      "expect": []
+    },
+    {
+      "name": "a photo and its poster",
+      "state": {
+        "customEx": [
+          {
+            "id": "cx1",
+            "n": "Sandbag carry cx1",
+            "bp": "back",
+            "custom": true,
+            "media": {
+              "kind": "image",
+              "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "mime": "image/webp",
+              "size": 1000,
+              "width": 800,
+              "height": 600,
+              "poster": {
+                "hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "mime": "image/webp",
+                "size": 200,
+                "width": 480,
+                "height": 360
+              },
+              "at": 1
+            }
+          }
+        ]
+      },
+      "expect": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      ]
+    },
+    {
+      "name": "a video without a poster",
+      "state": {
+        "customEx": [
+          {
+            "id": "cx1",
+            "n": "Sandbag carry cx1",
+            "bp": "back",
+            "custom": true,
+            "media": {
+              "kind": "video",
+              "hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+              "mime": "video/mp4",
+              "size": 5000000,
+              "width": 1920,
+              "height": 1080,
+              "dur": 12.4,
+              "codec": "avc1",
+              "at": 1
+            }
+          }
+        ]
+      },
+      "expect": [
+        "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      ]
+    },
+    {
+      "name": "the same file on two exercises counts once",
+      "state": {
+        "customEx": [
+          {
+            "id": "cx1",
+            "n": "Sandbag carry cx1",
+            "bp": "back",
+            "custom": true,
+            "media": {
+              "kind": "image",
+              "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "mime": "image/webp",
+              "size": 1000,
+              "width": 800,
+              "height": 600,
+              "poster": {
+                "hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "mime": "image/webp",
+                "size": 200,
+                "width": 480,
+                "height": 360
+              },
+              "at": 1
+            }
+          },
+          {
+            "id": "cx2",
+            "n": "Sandbag carry cx2",
+            "bp": "back",
+            "custom": true,
+            "media": {
+              "kind": "image",
+              "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "mime": "image/webp",
+              "size": 1000,
+              "width": 800,
+              "height": 600,
+              "poster": {
+                "hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "mime": "image/webp",
+                "size": 200,
+                "width": 480,
+                "height": 360
+              },
+              "at": 1
+            }
+          }
+        ]
+      },
+      "expect": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      ]
+    },
+    {
+      "name": "an upper-case hash is not a hash",
+      "state": {
+        "customEx": [
+          {
+            "id": "cx1",
+            "n": "Sandbag carry cx1",
+            "bp": "back",
+            "custom": true,
+            "media": {
+              "kind": "image",
+              "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "mime": "image/webp",
+              "size": 1000,
+              "width": 800,
+              "height": 600,
+              "at": 1
+            }
+          }
+        ]
+      },
+      "expect": []
+    },
+    {
+      "name": "a hash one character short is not a hash",
+      "state": {
+        "customEx": [
+          {
+            "id": "cx1",
+            "n": "Sandbag carry cx1",
+            "bp": "back",
+            "custom": true,
+            "media": {
+              "kind": "image",
+              "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "mime": "image/webp",
+              "size": 1000,
+              "width": 800,
+              "height": 600,
+              "at": 1
+            }
+          }
+        ]
+      },
+      "expect": []
+    },
+    {
+      "name": "a hash with a path in it is not a hash",
+      "state": {
+        "customEx": [
+          {
+            "id": "cx1",
+            "n": "Sandbag carry cx1",
+            "bp": "back",
+            "custom": true,
+            "media": {
+              "kind": "image",
+              "hash": "../aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "mime": "image/webp",
+              "size": 1000,
+              "width": 800,
+              "height": 600,
+              "at": 1
+            }
+          }
+        ]
+      },
+      "expect": []
+    },
+    {
+      "name": "a hash that is not a string",
+      "state": {
+        "customEx": [
+          {
+            "id": "cx1",
+            "n": "Sandbag carry cx1",
+            "bp": "back",
+            "custom": true,
+            "media": {
+              "kind": "image",
+              "hash": 12345,
+              "mime": "image/webp",
+              "size": 1000,
+              "width": 800,
+              "height": 600,
+              "at": 1
+            }
+          }
+        ]
+      },
+      "expect": []
+    },
+    {
+      "name": "media that is not an object",
+      "state": {
+        "customEx": [
+          {
+            "id": "cx1",
+            "n": "Sandbag carry cx1",
+            "bp": "back",
+            "custom": true,
+            "media": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          },
+          {
+            "id": "cx2",
+            "n": "Sandbag carry cx2",
+            "bp": "back",
+            "custom": true,
+            "media": [
+              "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            ]
+          }
+        ]
+      },
+      "expect": []
+    },
+    {
+      "name": "each field counts on its own: a good poster under a malformed main hash is kept",
+      "state": {
+        "customEx": [
+          {
+            "id": "cx1",
+            "n": "Sandbag carry cx1",
+            "bp": "back",
+            "custom": true,
+            "media": {
+              "kind": "image",
+              "hash": "nope",
+              "mime": "image/webp",
+              "size": 1000,
+              "width": 800,
+              "height": 600,
+              "poster": {
+                "hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "mime": "image/webp",
+                "size": 200,
+                "width": 480,
+                "height": 360
+              },
+              "at": 1
+            }
+          }
+        ]
+      },
+      "expect": [
+        "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      ]
+    },
+    {
+      "name": "a ref the client would not render (unknown mime) still keeps its file",
+      "state": {
+        "customEx": [
+          {
+            "id": "cx1",
+            "n": "Sandbag carry cx1",
+            "bp": "back",
+            "custom": true,
+            "media": {
+              "kind": "image",
+              "hash": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+              "mime": "image/svg+xml",
+              "size": 1000,
+              "width": 800,
+              "height": 600,
+              "at": 1
+            }
+          }
+        ]
+      },
+      "expect": [
+        "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+      ]
+    },
+    {
+      "name": "stray img/gif fields from a fork build are not references",
+      "state": {
+        "customEx": [
+          {
+            "id": "cx1",
+            "n": "Sandbag carry cx1",
+            "bp": "back",
+            "custom": true,
+            "img": "http://x/y.jpg",
+            "gif": "data:image/gif;base64,R0lG"
+          }
+        ]
+      },
+      "expect": []
+    },
+    {
+      "name": "customEx[].media and workouts[].media are the only sources: media-like fields elsewhere (a routine's exercise, a workout entry) do not count",
+      "state": {
+        "routines": [
+          {
+            "id": "r1",
+            "ex": [
+              {
+                "id": "cx1",
+                "media": {
+                  "kind": "image",
+                  "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "mime": "image/webp",
+                  "size": 1000,
+                  "width": 800,
+                  "height": 600,
+                  "at": 1
+                }
+              }
+            ]
+          }
+        ],
+        "workouts": [
+          {
+            "entries": [
+              {
+                "media": {
+                  "kind": "image",
+                  "hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                  "mime": "image/webp",
+                  "size": 1000,
+                  "width": 800,
+                  "height": 600,
+                  "at": 1
+                }
+              }
+            ]
+          }
+        ],
+        "customEx": []
+      },
+      "expect": [],
+      "about": "A workout entry's own `media` is not a place media live; only the workout's `media` list is."
+    },
+    {
+      "name": "a workout's photo and video with their posters",
+      "state": {
+        "workouts": [
+          {
+            "id": "w1",
+            "d": "2026-09-20",
+            "start": 1,
+            "end": 2,
+            "entries": [],
+            "media": [
+              {
+                "kind": "image",
+                "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "mime": "image/webp",
+                "size": 1000,
+                "width": 800,
+                "height": 600,
+                "at": 1,
+                "poster": {
+                  "hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                  "mime": "image/webp",
+                  "size": 100,
+                  "width": 480,
+                  "height": 360
+                }
+              },
+              {
+                "kind": "video",
+                "hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "mime": "video/mp4",
+                "size": 500000,
+                "width": 1280,
+                "height": 720,
+                "dur": 8.2,
+                "codec": "avc1",
+                "at": 2,
+                "poster": {
+                  "hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+                  "mime": "image/webp",
+                  "size": 100,
+                  "width": 480,
+                  "height": 270
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      ]
+    },
+    {
+      "name": "a blob referenced only by a workout is kept (no customEx at all)",
+      "state": {
+        "unit": "kg",
+        "workouts": [
+          {
+            "id": "w1",
+            "d": "2026-09-20",
+            "start": 1,
+            "end": 2,
+            "entries": [],
+            "media": [
+              {
+                "kind": "video",
+                "hash": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+                "mime": "video/mp4",
+                "size": 500000,
+                "width": 1280,
+                "height": 720,
+                "dur": 8.2,
+                "codec": "avc1",
+                "at": 2
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+      ]
+    },
+    {
+      "name": "workouts that is not a list",
+      "state": {
+        "workouts": {
+          "w1": {
+            "id": "w1",
+            "d": "2026-09-20",
+            "start": 1,
+            "end": 2,
+            "entries": [],
+            "media": [
+              {
+                "kind": "image",
+                "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "mime": "image/webp",
+                "size": 1000,
+                "width": 800,
+                "height": 600,
+                "at": 1
+              }
+            ]
+          }
+        }
+      },
+      "expect": []
+    },
+    {
+      "name": "workout entries that are not workouts are skipped",
+      "state": {
+        "workouts": [
+          null,
+          3,
+          "w",
+          [],
+          {
+            "id": "w1",
+            "d": "2026-09-20",
+            "start": 1,
+            "end": 2,
+            "entries": [],
+            "media": [
+              {
+                "kind": "image",
+                "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "mime": "image/webp",
+                "size": 1000,
+                "width": 800,
+                "height": 600,
+                "at": 1
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ]
+    },
+    {
+      "name": "a workout media field that is not a list does not count",
+      "state": {
+        "workouts": [
+          {
+            "id": "w1",
+            "d": "2026-09-20",
+            "start": 1,
+            "end": 2,
+            "entries": [],
+            "media": {
+              "kind": "image",
+              "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "mime": "image/webp",
+              "size": 1000,
+              "width": 800,
+              "height": 600,
+              "at": 1
+            }
+          },
+          {
+            "id": "w2",
+            "d": "2026-09-20",
+            "start": 1,
+            "end": 2,
+            "entries": [],
+            "media": "x"
+          },
+          {
+            "id": "w3",
+            "d": "2026-09-20",
+            "start": 1,
+            "end": 2,
+            "entries": [],
+            "media": null
+          }
+        ]
+      },
+      "expect": []
+    },
+    {
+      "name": "workout media items that are not refs are skipped, the others count",
+      "state": {
+        "workouts": [
+          {
+            "id": "w1",
+            "d": "2026-09-20",
+            "start": 1,
+            "end": 2,
+            "entries": [],
+            "media": [
+              null,
+              1,
+              "x",
+              [
+                {
+                  "kind": "image",
+                  "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "mime": "image/webp",
+                  "size": 1000,
+                  "width": 800,
+                  "height": 600,
+                  "at": 1
+                }
+              ],
+              {
+                "hash": "nope"
+              },
+              {
+                "kind": "image",
+                "hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "mime": "image/webp",
+                "size": 1000,
+                "width": 800,
+                "height": 600,
+                "at": 1,
+                "poster": {
+                  "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                  "mime": "image/webp",
+                  "size": 100,
+                  "width": 480,
+                  "height": 360
+                }
+              },
+              {
+                "poster": {
+                  "hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      ]
+    },
+    {
+      "name": "a workout's list counts past the app's cap of six",
+      "state": {
+        "workouts": [
+          {
+            "id": "w1",
+            "d": "2026-09-20",
+            "start": 1,
+            "end": 2,
+            "entries": [],
+            "media": [
+              {
+                "kind": "image",
+                "hash": "0000000000000000000000000000000000000000000000000000000000000000",
+                "mime": "image/webp",
+                "size": 1000,
+                "width": 800,
+                "height": 600,
+                "at": 1
+              },
+              {
+                "kind": "image",
+                "hash": "1111111111111111111111111111111111111111111111111111111111111111",
+                "mime": "image/webp",
+                "size": 1000,
+                "width": 800,
+                "height": 600,
+                "at": 1
+              },
+              {
+                "kind": "image",
+                "hash": "2222222222222222222222222222222222222222222222222222222222222222",
+                "mime": "image/webp",
+                "size": 1000,
+                "width": 800,
+                "height": 600,
+                "at": 1
+              },
+              {
+                "kind": "image",
+                "hash": "3333333333333333333333333333333333333333333333333333333333333333",
+                "mime": "image/webp",
+                "size": 1000,
+                "width": 800,
+                "height": 600,
+                "at": 1
+              },
+              {
+                "kind": "image",
+                "hash": "4444444444444444444444444444444444444444444444444444444444444444",
+                "mime": "image/webp",
+                "size": 1000,
+                "width": 800,
+                "height": 600,
+                "at": 1
+              },
+              {
+                "kind": "image",
+                "hash": "5555555555555555555555555555555555555555555555555555555555555555",
+                "mime": "image/webp",
+                "size": 1000,
+                "width": 800,
+                "height": 600,
+                "at": 1
+              },
+              {
+                "kind": "image",
+                "hash": "6666666666666666666666666666666666666666666666666666666666666666",
+                "mime": "image/webp",
+                "size": 1000,
+                "width": 800,
+                "height": 600,
+                "at": 1
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        "0000000000000000000000000000000000000000000000000000000000000000",
+        "1111111111111111111111111111111111111111111111111111111111111111",
+        "2222222222222222222222222222222222222222222222222222222222222222",
+        "3333333333333333333333333333333333333333333333333333333333333333",
+        "4444444444444444444444444444444444444444444444444444444444444444",
+        "5555555555555555555555555555555555555555555555555555555555555555",
+        "6666666666666666666666666666666666666666666666666666666666666666"
+      ]
+    },
+    {
+      "name": "the same file on an exercise and on two workouts counts once",
+      "state": {
+        "customEx": [
+          {
+            "id": "cx1",
+            "n": "Sandbag carry cx1",
+            "bp": "back",
+            "custom": true,
+            "media": {
+              "kind": "image",
+              "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "mime": "image/webp",
+              "size": 1000,
+              "width": 800,
+              "height": 600,
+              "at": 1,
+              "poster": {
+                "hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "mime": "image/webp",
+                "size": 100,
+                "width": 480,
+                "height": 360
+              }
+            }
+          }
+        ],
+        "workouts": [
+          {
+            "id": "w1",
+            "d": "2026-09-20",
+            "start": 1,
+            "end": 2,
+            "entries": [],
+            "media": [
+              {
+                "kind": "image",
+                "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "mime": "image/webp",
+                "size": 1000,
+                "width": 800,
+                "height": 600,
+                "at": 1,
+                "poster": {
+                  "hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                  "mime": "image/webp",
+                  "size": 100,
+                  "width": 480,
+                  "height": 360
+                }
+              }
+            ]
+          },
+          {
+            "id": "w2",
+            "d": "2026-09-20",
+            "start": 1,
+            "end": 2,
+            "entries": [],
+            "media": [
+              {
+                "kind": "image",
+                "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "mime": "image/webp",
+                "size": 1000,
+                "width": 800,
+                "height": 600,
+                "at": 1
+              },
+              {
+                "kind": "video",
+                "hash": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                "mime": "video/mp4",
+                "size": 500000,
+                "width": 1280,
+                "height": 720,
+                "dur": 8.2,
+                "codec": "avc1",
+                "at": 2
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+      ]
+    },
+    {
+      "name": "the session in progress is not a source (the server never stores it)",
+      "state": {
+        "active": {
+          "id": "w9",
+          "entries": [],
+          "media": [
+            {
+              "kind": "image",
+              "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "mime": "image/webp",
+              "size": 1000,
+              "width": 800,
+              "height": 600,
+              "at": 1
+            }
+          ]
+        },
+        "workouts": []
+      },
+      "expect": []
+    }
+  ]
+}

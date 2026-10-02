@@ -9,7 +9,7 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { api } from './api.js'
 import { DEMO } from './demo.js'
 import { MOBILE } from './mobile.js'
-import { t } from './i18n.js'
+import { t, getLang } from './i18n.js'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 
@@ -23,6 +23,9 @@ const IDLE_MS = 60000       // a Coach screen is open but nothing is running
 let demoMod = null
 const demo = async () => (demoMod = demoMod || await import('./coach-demo.js'))
 const S = () => useStore.getState().S
+// Each request says which language the app is in: a profile that never picked one has no stored
+// `lang` worth trusting — it is worked out per device (#303, lib/default-lang.js) — and the
+// Coach should answer in what the person is reading.
 
 // The mobile build's third answer: a phone that brought its own API key runs the Coach itself
 // (lib/coach-local.js — the same core the server runs, imported lazily so the catalogue and the
@@ -43,11 +46,28 @@ const local = async () => {
   return localMod
 }
 
+// The job this app last started and has not written a reply for yet. A run that fails before
+// the first status poll — a provider refusing the connection answers in milliseconds — is never
+// seen running, so "running, then gone" cannot be the only way the chat learns a run ended: it
+// also compares the server's last outcome with the id the start request returned. Kept here,
+// at module level, because the plan the intake asks for is started on another screen.
+let awaited = null
+const track = r => {
+  if (r?.job?.id) awaited = r.job.id
+  return r
+}
+export const awaitedJob = () => awaited
+export const settleAwaited = id => { if (!id || awaited === id) awaited = null }
+
 export const coachStatus = async () => DEMO ? (await demo()).demoStatus() : LOCAL() ? (await local()).localStatus() : api('/api/coach/status')
-export const requestReview = async note => DEMO ? (await demo()).demoReview(S()) : LOCAL() ? (await local()).localReview(S(), note) : api('/api/coach/review', { method: 'POST', body: JSON.stringify({ note: note || '' }) })
-export const requestPlan = async intake => DEMO ? (await demo()).demoPlan(S(), intake) : LOCAL() ? (await local()).localPlan(S(), intake) : api('/api/coach/plan', { method: 'POST', body: JSON.stringify({ intake }) })
-export const refinePlan = async text => DEMO ? (await demo()).demoRefine(S()) : LOCAL() ? (await local()).localRefine(S(), text) : api('/api/coach/plan', { method: 'POST', body: JSON.stringify({ refine: text }) })
-export const requestDebrief = async workoutId => DEMO ? (await demo()).demoDebrief(S(), workoutId) : LOCAL() ? (await local()).localDebrief(S(), workoutId) : api('/api/coach/debrief', { method: 'POST', body: JSON.stringify({ workoutId: workoutId || null }) })
+const _requestReview = async note => DEMO ? (await demo()).demoReview(S()) : LOCAL() ? (await local()).localReview(S(), note) : api('/api/coach/review', { method: 'POST', body: JSON.stringify({ note: note || '', lang: getLang() }) })
+export const requestReview = (...a) => _requestReview(...a).then(track)
+const _requestPlan = async intake => DEMO ? (await demo()).demoPlan(S(), intake) : LOCAL() ? (await local()).localPlan(S(), intake) : api('/api/coach/plan', { method: 'POST', body: JSON.stringify({ intake, lang: getLang() }) })
+export const requestPlan = (...a) => _requestPlan(...a).then(track)
+const _refinePlan = async text => DEMO ? (await demo()).demoRefine(S()) : LOCAL() ? (await local()).localRefine(S(), text) : api('/api/coach/plan', { method: 'POST', body: JSON.stringify({ refine: text, lang: getLang() }) })
+export const refinePlan = (...a) => _refinePlan(...a).then(track)
+const _requestDebrief = async workoutId => DEMO ? (await demo()).demoDebrief(S(), workoutId) : LOCAL() ? (await local()).localDebrief(S(), workoutId) : api('/api/coach/debrief', { method: 'POST', body: JSON.stringify({ workoutId: workoutId || null, lang: getLang() }) })
+export const requestDebrief = (...a) => _requestDebrief(...a).then(track)
 // The room: anonymous medians across the profiles on this instance that opted in. Only a
 // server has a room; a phone with its own key and the demo both answer locally.
 export const cohortStats = async () => DEMO ? (await demo()).demoCohort(S()) : LOCAL() ? { ok: false, enabled: false } : api('/api/coach/cohort')
@@ -81,10 +101,16 @@ export function useCoachStatus(active = true) {
   const [state, setState] = useState({ job: null, pending: null, cap: null, loading: true })
   const timer = useRef(null)
   const loop = useRef(null)   // the running poll loop's `tick`, so a manual refresh can re-pace it
+  const seq = useRef(0)       // which status request is the newest one
 
   const refresh = useCallback(async () => {
+    const mine = ++seq.current
     try {
       const s = await coachStatus()
+      // An answer that arrives after a newer request was sent is older than what that request
+      // will bring: the idle poll in flight when a run is started must not land after the
+      // refresh that follows the start, putting back the run count and last outcome from before.
+      if (mine !== seq.current) return s
       setState({ ...s, loading: false })
       // A refresh that finds a job in flight — the one the caller just started — must not leave
       // the loop asleep on its idle cadence: without this the card shows up to a minute after
@@ -92,7 +118,7 @@ export function useCoachStatus(active = true) {
       if (s?.job && loop.current) { clearTimeout(timer.current); timer.current = setTimeout(loop.current, POLL_MS) }
       return s
     } catch {
-      setState(s => ({ ...s, loading: false }))
+      if (mine === seq.current) setState(s => ({ ...s, loading: false }))
       return null
     }
   }, [])
