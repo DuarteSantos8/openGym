@@ -120,6 +120,47 @@ video autoplays muted in the Android WebView; a long video seeks from its `_capa
 URL on both platforms; an iPhone photo arrives as JPEG and an iPhone video (HEVC or H.264 MOV)
 plays; the zip export opens the share sheet.
 
+### Health Connect (Android)
+
+Settings → **Health Connect** writes finished workouts and weigh-ins to Health Connect, Android's
+on-device store for health data, where other apps (Google Fit, Samsung Health, a smartwatch app…)
+can read them. It is off until the user turns it on, and nothing is asked of Health Connect before
+that.
+
+- **What is written:** each finished workout as an exercise session — its start and end, its name
+  as the title, the exercises and sets as "Copy as text" writes them as the notes, and a type
+  (strength training as soon as one exercise is not cardio; walking, running, stationary bike,
+  elliptical or stair machine for a cardio-only workout on a catalogue machine; "other" otherwise).
+  Each weigh-in as a weight record, in kilograms. A workout without a real start and end is left
+  out rather than given made-up times. `src/lib/health-connect.js` works this out; its tests
+  pin it.
+- **Write-only.** The manifest declares `WRITE_EXERCISE` and `WRITE_WEIGHT` and nothing else, and
+  openGym reads nothing back.
+- **No duplicates.** Every record carries openGym's own id as its `clientRecordId`
+  (`opengym-w-<workout id>`, `opengym-bw-<day>`), so writing it again replaces it. An edited workout
+  or weigh-in is written again; a deleted one is removed from Health Connect.
+- **This phone only.** Whether it is on, and a fingerprint of each record already written, live in
+  `opengym-health.json` in the app's data directory, never in the synced state: it does not travel
+  to a server, into a backup export, or to a second phone. It works the same in local mode and
+  paired with a server, because the writing happens on the phone.
+- **When it writes:** after each save (finishing a workout, a weigh-in, an edit), when the app comes
+  back to the foreground, and once at launch. While it is off, a save costs nothing: the file is
+  read once at launch and kept in memory.
+- **Turning it off** asks whether to keep what openGym wrote in Health Connect, as the user's own
+  data, or to remove exactly those records.
+- **Where it shows:** Android 14 and later have Health Connect built in. On Android 9–13 it is an
+  app of its own, and the card offers its store page until it is installed. Below Android 9 (the
+  app supports Android 6) Health Connect does not exist and the card is not shown.
+- **The library:** `androidx.health.connect:connect-client` 1.1.0-alpha12, called from Java
+  (`HealthConnectPlugin.java`) through `runBlocking` on a worker thread, so the Android project stays
+  Java-only. 1.1.0 stable needs compileSdk 36 and AGP 8.9.1, a toolchain bump left for its own
+  change. The library asks for minSdk 26; `tools:overrideLibrary` keeps the app at 23 and the plugin
+  checks the version before touching it.
+
+Worth checking on a real device after changes here: turning it on shows Health Connect's own
+permission screen; a finished workout appears in Health Connect within a few seconds; deleting it
+in openGym removes it there; turning it off with "remove" leaves no openGym record behind.
+
 ## Prerequisites
 
 - Node 20+

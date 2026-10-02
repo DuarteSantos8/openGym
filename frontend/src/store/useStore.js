@@ -7,6 +7,7 @@ import { DEMO, DEMO_SEEDED } from '../lib/demo.js'
 import { rememberDefaultLang } from '../lib/default-lang.js'
 import { guestAllowed } from '../lib/guest.js'
 import { MOBILE, initReminderSync, nativeLoad, nativeSave, onAppActive, readJsonFile, syncReminder, writeAutoBackup, writeJsonFile } from '../lib/mobile.js'
+import { initHealthSync, syncHealth } from '../lib/health-sync.js'
 import { mergeStates, localExtras, stampRoutines, stampCustomEx, inUnitOf, keepReset, resetIdsOf, mergeResetIds, entryKey } from '../lib/sync-merge.js'
 import { convertStateUnit } from '../lib/units.js'
 import { pendingRefCount, settleMedia, loadPending } from '../lib/media-owed.js'
@@ -363,6 +364,7 @@ export const useStore = create((set, get) => {
   }
 
   initReminderSync(() => get().S)
+  initHealthSync(() => get().S)
 
   // Mobile build: the file mirror, and beside it whose copy it is and which one (its `_ts`) —
   // restoreFromMirror takes the file back only for that account, and only while the two agree,
@@ -377,12 +379,13 @@ export const useStore = create((set, get) => {
     await writeJsonFile(MIRROR_OWNER_FILE, { owner, ts: S._ts || 0 })
   }).catch(() => {}))
   // Mobile build: mirror the state into a file in the app's data directory (survives WebView
-  // storage eviction) and keep the native reminder schedule in step with the weekly plan.
+  // storage eviction), keep the native reminder schedule in step with the weekly plan, and
+  // Health Connect with the log where the user turned that on (lib/health-sync.js).
   // `now` skips the wait and returns the write, for a copy that replaced the last one wholesale.
   const nativePersist = (now = false) => {
     clearTimeout(saveTm)
     saveTm = null
-    const write = () => { saveTm = null; syncReminder(get().S); return saveMirror() }
+    const write = () => { saveTm = null; syncReminder(get().S); syncHealth(get().S).catch(() => {}); return saveMirror() }
     if (now) return write()
     saveTm = setTimeout(write, 800)
     return null

@@ -1008,6 +1008,23 @@ export const PT_BR_OVERRIDES = {
   'Teal': 'Turquesa',
   'Yellow': 'Amarelo',
   'Enter how long it took — at least 1 minute.': 'Informe quanto tempo levou — pelo menos 1 minuto.',
+  // Health Connect on the Android app (#200); "Conexão Saúde" is its name on Brazilian Android.
+  'Health Connect': 'Conexão Saúde',
+  'Write to Health Connect': 'Gravar no Conexão Saúde',
+  'Finished workouts and weigh-ins, from this phone only.': 'Treinos concluídos e pesagens, só deste celular.',
+  'Open Health Connect': 'Abrir o Conexão Saúde',
+  'Install Health Connect to share workouts and weigh-ins with other apps.': 'Instale o Conexão Saúde para compartilhar treinos e pesagens com outros apps.',
+  'Update Health Connect to share workouts and weigh-ins with other apps.': 'Atualize o Conexão Saúde para compartilhar treinos e pesagens com outros apps.',
+  'Permission withdrawn — tap to allow again': 'Permissão retirada — toque para conceder de novo',
+  'Workouts and weigh-ins go to Health Connect when you finish or change them. openGym reads nothing back.': 'Treinos e pesagens vão para o Conexão Saúde quando você os conclui ou altera. O openGym não lê nada de volta.',
+  'Health Connect permission not granted': 'Permissão do Conexão Saúde não concedida',
+  'Could not write to Health Connect': 'Não foi possível gravar no Conexão Saúde',
+  'Writing to Health Connect': 'Gravando no Conexão Saúde',
+  'Stop writing to Health Connect?': 'Parar de gravar no Conexão Saúde?',
+  'What openGym already wrote can stay in Health Connect as your data, or be removed from it.': 'O que o openGym já gravou pode ficar no Conexão Saúde como seus dados, ou ser removido de lá.',
+  'Stop, keep what it wrote': 'Parar e manter o que gravou',
+  'Stop and remove what it wrote': 'Parar e remover o que gravou',
+  'Could not remove it from Health Connect': 'Não foi possível remover do Conexão Saúde',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
