@@ -1,6 +1,4 @@
-// Audit of the v1 → v2 migration (see REPORT.md). Tests marked `todo` assert the CORRECT behaviour
-// of a confirmed bug: they currently fail, node:test reports them as "todo" and the suite stays
-// green. When a bug is fixed, drop its `todo` flag. The unflagged tests pin behaviour that holds.
+// Audit of the v1 → v2 migration (see REPORT.md): every confirmed bug is now a plain test.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { generatePrescription, resolveProgressionContext, planFingerprint } from '../engine/index.js';
@@ -124,7 +122,7 @@ test('M10: routineIds [] with a scalar routineId keeps the routine association',
 
 // ---- M5: size ----
 
-test('M5: a 1000-session × 6-exercise history (2.5 MB in v1) still fits the 16 MB sync cap after migration', { todo: 'v2 is ~7× the v1 size (17 MB): server answers profile-too-large, the user stays on the gate' }, () => {
+test('M5: a 1000-session × 6-exercise history (2.5 MB in v1) still fits the 16 MB sync cap after migration', () => {
   const ids = [BENCH, SQUAT, '0285', '0584', '0027', '0293'];
   const ex = ids.map(id => ({ id, sets: 4, reps: 8, weight: 60, prog: 'linear', warmupSets: 2 }));
   const workouts = Array.from({ length: 1000 }, (_, i) => wk(`w${i}`, new Date(Date.UTC(2020, 0, 1) + i * 86400000).toISOString().slice(0, 10),
