@@ -16,9 +16,10 @@
  * catalogue; the engine stays catalogue-free.
  */
 import { ENGINE_SCHEMA, migrationStatus } from './profile-version.js';
+import { validateCanonicalProfile } from './profile-validation.js';
 import {
   INCREMENTING_GATES, PRESETS, advanceProgression, currentOneRm, defaultPlanRule, estimate1RM,
-  generatePrescription, isValidDeloadFactor, migrateOccurrence, normalizeEffort, planFingerprint, presetForPolicy, summarizeActual, validateIntensifier, validatePlanRule, validateWarmup
+  generatePrescription, isValidDeloadFactor, migrateOccurrence, normalizeEffort, planFingerprint, presetForPolicy, ruleOfPrescription, summarizeActual, validateIntensifier, validatePlanRule, validateWarmup
 } from '../engine/index.js';
 
 export { ENGINE_SCHEMA, isLegacyProfile, migrationStatus } from './profile-version.js';
@@ -37,11 +38,12 @@ const clone = v => JSON.parse(JSON.stringify(v));
 const idOf = (v, fallback) => (v != null && v !== '' ? String(v) : fallback);
 const iso = ms => new Date(ms).toISOString();
 const whenOf = w => num(w?.start) ?? (Date.parse(`${w?.d}T00:00:00Z`) || 0);
+const dayOf = w => Number.isFinite(Date.parse(w?.d)) ? Date.parse(w.d) : Math.floor(whenOf(w) / 86400000) * 86400000;
 
 /** `base`, then `base~2`, `base~3`… in call order. */
 function uniqueIds() {
-  const seen = new Map();
-  return base => { const n = (seen.get(base) || 0) + 1; seen.set(base, n); return n === 1 ? base : `${base}~${n}`; };
+  const seen = new Set();
+  return base => { let id = base, n = 2; while (seen.has(id)) id = `${base}~${n++}`; seen.add(id); return id; };
 }
 
 /* ---------- what the catalogue says about an exercise ----------
@@ -100,24 +102,25 @@ function doubleRange(v) {
 
 /** A canonical rule from plain v1 numbers — a routine entry, or that entry with a logged target
  *  over it. `reps`: the exact rep window, for a logged day whose window is not the plan's. */
-function ruleFrom(v, { id, routineId, exerciseId, preset, unit, mode, step, rest, inc, reps: window }) {
+function ruleFrom(v, { id, routineId, exerciseId, preset, unit, mode, step, rest, inc, reps: window, loadedPreset, unloadedLadder }) {
   const rule = defaultPlanRule(preset, { id, exerciseId, routineId, unit });
+  if (preset === 'bodyweight_ladder' && loadedPreset) rule.special = { ...rule.special, loadedPreset };
+  if (unloadedLadder) rule.special = { ...rule.special, unloadedLadder: true, repCeiling: whole(v.repsMax) ?? 20 };
   const p = rule.parameters;
-  const sets = whole(v.sets);
-  if (sets) p.sets = fixed(sets);
+  p.sets = fixed(whole(v.sets) ?? 1);
   if (mode === 'reps') {
     const reps = whole(v.reps);
     if (preset === 'double') p.reps = doubleRange(v);
     else if (reps) p.reps = fixed(reps);
     // A bodyweight climb's ceiling (`repsMax`): reps climb to it, then a set is added, up to six.
-    const ceiling = whole(v.repsMax);
-    if (preset === 'bodyweight_ladder' && ceiling && ceiling > p.reps.min) {
-      p.reps = { min: p.reps.min, max: ceiling };
+    const ceiling = whole(v.repsMax) ?? 20;
+    if (preset === 'bodyweight_ladder') {
+      p.reps = { min: p.reps.min, max: Math.max(p.reps.min, ceiling) };
       p.sets = { min: p.sets.min, max: Math.max(p.sets.min, MAX_BW_SETS) };
     }
     if (window) p.reps = window;
   } else {
-    const seconds = mode === 'cardio' ? (num(v.min) > 0 ? num(v.min) * 60 : 20 * 60) : (num(v.sec) > 0 ? num(v.sec) : 30);
+    const seconds = mode === 'cardio' ? (num(v.min) > 0 ? num(v.min) * 60 : 20 * 60) : (num(v.sec) > 0 ? num(v.sec) : 45);
     Object.assign(p, { reps: fixed(1), durationSeconds: fixed(seconds) });
     // The interval's target speed (km/h); a cardio row with none opened at 8 in v1.
     if (mode === 'cardio') p.speed = num(v.speed) > 0 ? num(v.speed) : 8;
@@ -159,7 +162,8 @@ const samePlanV1 = (a, b) => PLAN_KEYS.every(k => (a[k] ?? null) === (b[k] ?? nu
 // one thing left over here — `deloadFactor` and cardio `speed` now have rule fields of their own.
 function noteUnsupported(d, out) {
   const at = { routineId: d.routineId, occurrenceId: d.occurrenceId, exerciseId: d.exerciseId };
-  if (d.preset === 'manual' && typeof d.cfg.prog === 'string' && d.cfg.prog && d.cfg.prog !== 'off') out.push({ ...at, field: 'prog', value: d.cfg.prog });
+  if (d.preset === 'manual' && typeof d.policy === 'string' && d.policy && d.policy !== 'off'
+    && (d.cfg.prog || !['linear', 'greyskull', 'double', 'time'].includes(d.policy))) out.push({ ...at, field: 'prog', value: d.policy });
 }
 
 // v1 progression.js policyFor: the exercise's own rule, else its routine's, else linear on reps. A
@@ -181,7 +185,7 @@ function draftRoutines(state, ctx) {
         routineId: id, occurrenceId: `${id}:o${j}`, exerciseId, cfg, info, mode,
         // An assistance machine's load is the help given (v1 issue #232); a routine entry can override the catalogue.
         assisted: typeof cfg.assisted === 'boolean' ? cfg.assisted : isAssisted(info),
-        preset: presetForPolicy(policyOf(cfg, routine, mode), mode, isBodyweight(cfg, info)),
+        policy: policyOf(cfg, routine, mode), preset: presetForPolicy(policyOf(cfg, routine, mode), mode, isBodyweight(cfg, info)),
         excluded: routine.excludeFromProgression === true || cfg.excludeFromProgression === true,
         links: []
       };
@@ -195,6 +199,7 @@ function draftRoutines(state, ctx) {
 
 const occurrenceOf = d => ({
   occurrenceId: d.occurrenceId, exerciseId: d.exerciseId, mode: d.mode, rule: d.rule,
+  ...(d.cfg.restSec == null && d.cfg.rest == null ? { restFromProfile: true } : {}),
   ...(d.warmup ? { warmup: d.warmup } : {}),
   ...(d.cfg.sg ? { sg: d.cfg.sg } : {}),
   ...(d.cfg.note ? { note: String(d.cfg.note) } : {}),
@@ -204,7 +209,7 @@ const occurrenceOf = d => ({
   ...(typeof d.cfg.assisted === 'boolean' ? { assisted: d.cfg.assisted } : {}),
   ...(d.cfg.side === true && d.mode === 'reps' ? { side: true } : {}),
   // Only where it overrides the catalogue, the way v1 wrote it.
-  ...(d.mode !== 'cardio' && d.cfg.bodyweight != null && !!d.cfg.bodyweight !== BODYWEIGHT_EQ.has(d.info?.eq) ? { bodyweight: !!d.cfg.bodyweight } : {}),
+  ...(d.mode !== 'cardio' && d.cfg.bodyweight != null ? { bodyweight: !!d.cfg.bodyweight } : {}),
   ...(d.intensifier ? { intensifier: d.intensifier } : {}),
   // What the cardio sheet edits (sheets.jsx): the rule holds the same numbers for the engine.
   ...(d.mode === 'cardio' ? { cardio: { sets: d.rule.parameters.sets.min, min: d.rule.parameters.durationSeconds.min / 60, speed: d.rule.parameters.speed } } : {})
@@ -213,6 +218,11 @@ const occurrenceOf = d => ({
 /* ---------- history ---------- */
 const TARGET = ['sets', 'reps', 'repsMin', 'repsMax', 'weight', 'sec', 'min', 'speed'];
 const targetValues = t => Object.fromEntries(TARGET.filter(k => t?.[k] != null).map(k => [k, t[k]]));
+
+// v1 never saved an entry with no completed work set: it is converted but excluded, never a miss.
+const hasDoneWork = entry => list(entry.sets).some(row => isObj(row) && row.done && !isWarmupRow(row));
+// The target values of the newest link that was actually worked.
+const lastWorked = d => d.links.findLast(l => !l.skipped)?.values;
 
 /** The one occurrence a logged entry was prescribed from, or null when that is not certain. */
 function linkOf(w, entry, byRoutine) {
@@ -234,10 +244,12 @@ function finalizeDraft(d, ctx) {
   d.step = stepFor(loads, d.mode === 'reps' ? d.inc : null, ctx.unit);
   // v1 climbed reps, not load, where nothing is loaded and the equipment is no load of its own — or
   // the machine only takes load off you, and no help left is where its progression leads.
-  if (d.preset === 'linear' && !loads.length && (d.assisted || !LOADED_EQ.has(d.info?.eq))) d.preset = 'bodyweight_ladder';
+  d.preset = presetForPolicy(d.policy, d.mode, false);
+  if (d.mode === 'reps' && ['linear', 'double', 'greyskull'].includes(d.policy) && !(num(lastWorked(d)?.weight ?? d.cfg.weight) > 0) && (d.assisted || isBodyweight(d.cfg, d.info) || !LOADED_EQ.has(d.info?.eq))) d.preset = 'bodyweight_ladder';
   d.ruleFor = (values, step = d.step, reps) => ruleFrom({ ...d.cfg, ...values }, {
     id: `rule:${d.occurrenceId}`, routineId: d.routineId, exerciseId: d.exerciseId,
-    preset: d.preset, unit: ctx.unit, mode: d.mode, step, rest: ctx.rest, inc: d.inc, reps
+    preset: d.mode === 'reps' && ['linear', 'double', 'greyskull'].includes(d.policy) && (d.assisted || isBodyweight(d.cfg, d.info) || !LOADED_EQ.has(d.info?.eq))
+      ? num(values.weight ?? d.cfg.weight) > 0 ? presetForPolicy(d.policy, d.mode, false) : 'bodyweight_ladder' : d.preset, unit: ctx.unit, mode: d.mode, step, rest: ctx.rest, inc: d.inc, reps, loadedPreset: d.policy, unloadedLadder: d.mode === 'reps' && ['linear', 'double', 'greyskull'].includes(d.policy) && (d.assisted || isBodyweight(d.cfg, d.info) || !LOADED_EQ.has(d.info?.eq))
   });
   // What a logged double-progression day asked for: the climb's aim (target.reps) up to the plan's
   // top of range, so the "top of the range in every set" gate of advance.js reads it as v1 did.
@@ -257,14 +269,14 @@ function finalizeDraft(d, ctx) {
       const fingerprint = !link.planned ? null
         : unedited ? planFingerprint(d.ruleFor({}))
         : planFingerprint(d.ruleFor({ repsMin: null, repsMax: null, ...link.planned }));
-      link.prescription = generatePrescription({ id: `${link.workoutId}:p${link.j}`, now: link.at, trackId: d.occurrenceId, rule: d.ruleFor(link.values, d.step, dayWindow(link)), fingerprint, assisted: d.assisted });
+      link.prescription = generatePrescription({ id: ctx.prescriptionId(`${link.workoutId}:p${link.j}`), now: link.at, trackId: d.occurrenceId, rule: d.ruleFor(link.values, d.step, dayWindow(link)), fingerprint, assisted: typeof link.assisted === 'boolean' ? link.assisted : d.assisted, restPause: (link.intensifier ?? d.cfg.intensifier)?.type === 'restpause', restPauseReps: (link.intensifier ?? d.cfg.intensifier)?.totalReps });
       return true;
     } catch { return false; }   // a target the engine cannot express stays readable legacy history
   });
-  const last = d.links.at(-1)?.values;
+  const last = lastWorked(d);
   d.rule = d.ruleFor({
     ...(last?.weight != null ? { weight: last.weight } : {}),
-    ...(d.preset === 'hold_seconds' && last?.sec != null ? { sec: last.sec } : {})
+    // Duration stays the plan identity; the last prescription carries the earned duration.
   });
   const check = validatePlanRule(d.rule);
   if (!check.ok) throw new Error(`invalid-rule ${d.occurrenceId}: ${check.errors[0]}`);
@@ -301,7 +313,8 @@ function performanceRow(row, unit, mode) {
   if (mode === 'cardio' && num(row.speed) != null) observations.push({ metric: 'speed', unit: 'kmh', value: num(row.speed) });
   const effort = normalizeEffort({ rir: num(row.rir), rpeEntered: num(row.rpe) });
   const out = {
-    prescribed: false,
+    prescribed: row.setId != null,
+    ...(row.setId != null ? { setId: row.setId } : {}),
     role: isWarmupRow(row) ? 'warmup' : 'work',
     status: row.done ? 'completed' : 'skipped',
     observations,
@@ -317,20 +330,37 @@ function performanceRow(row, unit, mode) {
 }
 
 /** Completed work rows as the engine's per-set actuals (lib/session-ui-adapter.js actualOfRow). */
-const performedOf = (rows, unit) => rows.filter(row => !isWarmupRow(row)).flatMap((row, k) => (row.done ? [{
-  row: k,
-  reps: num(row.sec) != null ? null : num(row.r),
-  load: num(row.w) > 0 ? { value: num(row.w), unit } : null,
-  durationSeconds: num(row.sec),
-  rir: num(row.rir),
-  rpeEntered: num(row.rpe)
-}] : []));
+const performedOf = (rows, unit, assisted = false) => rows.filter(row => !isWarmupRow(row)).flatMap((row, k) => {
+  const sides = isObj(row.sides?.L) && isObj(row.sides?.R) ? [row.sides.L, row.sides.R] : null;
+  if (!row.done || sides?.some(side => !side.done)) return [];
+  const least = key => sides ? sides.every(side => num(side[key]) != null) ? Math.min(...sides.map(side => num(side[key]))) : null : num(row[key]);
+  const load = sides ? sides.every(side => num(side.w) != null) ? (assisted ? Math.max : Math.min)(...sides.map(side => num(side.w))) : null : num(row.w);
+  return [{
+    row: k,
+    ...(sides ? { sideReps: sides.map(side => num(side.r)), sideLoads: sides.map(side => num(side.w)) } : {}),
+    reps: num(row.sec) != null ? null : sides ? least('r') == null ? null : sides.reduce((n, side) => n + num(side.r), 0) : num(row.r),
+    load: load != null && load >= 0 ? { value: load, unit } : null,
+    durationSeconds: least('sec'),
+    rir: num(row.rir),
+    rpeEntered: num(row.rpe)
+  }];
+});
 
 const repsOf = row => row.observations.find(o => o.metric === 'repetitions')?.value;
 const rowVolume = row => (row.resistance.kind === 'external-load' && repsOf(row) != null ? repsOf(row) * row.resistance.value : 0);
 const volumeOf = exposures => exposures.reduce((total, x) => total + x.performance.sets
   .filter(row => row.role !== 'warmup' && row.status !== 'skipped')
   .reduce((n, row) => n + rowVolume(row) + row.segments.reduce((m, s) => m + rowVolume(s), 0), 0), 0);
+
+function executionOf(entry, d) {
+  const target = isObj(entry.target) ? entry.target : {};
+  const out = {};
+  for (const key of ['side', 'bodyweight', 'assisted', 'intensifier', 'warmupRestSec']) {
+    const value = target[key] ?? entry[key] ?? d?.cfg[key];
+    if (value != null) out[key] = clone(value);
+  }
+  return out;
+}
 
 function migrateWorkout(w, i, ctx) {
   const id = ctx.workoutIds[i];
@@ -344,32 +374,42 @@ function migrateWorkout(w, i, ctx) {
     const logged = list(entry.sets).filter(isObj);
     const rows = logged.length || !(num(entry.topW) > 0) ? logged : [{ w: num(entry.topW), done: true }];
     const link = ctx.linked.get(`${i}:${j}`);
+    let workIndex = 0;
+    const performanceRows = rows.map(row => {
+      if (isWarmupRow(row)) return row;
+      const index = workIndex++;
+      return link && index < link.prescription.rows.length ? { ...row, setId: `r${index}` } : row;
+    });
     const mode = link ? link.d.mode : entryMode(entry, info, rows);
     const note = typeof entry.note === 'string' ? entry.note.trim() : '';
     const exposure = {
       exposureId: `${id}:x${j}`, exerciseId, mode,
+      ...executionOf(entry, link?.d),
       routineId: link ? link.d.routineId : idOf(entry.rid, null),
       // Canonical legacy history: visible to every reader, never an engine success or failure.
       ...(link
-        ? { occurrenceId: link.d.occurrenceId, trackId: link.d.occurrenceId, prescriptionId: link.prescription.id, excludedFromProgression: false }
+        ? { occurrenceId: link.d.occurrenceId, trackId: link.d.occurrenceId, prescriptionId: link.prescription.id, excludedFromProgression: !!link.skipped }
         // What v1 prescribed for the entry stays with it, verbatim: no prescription can hold it,
         // and the readers of the v1 entry shape (performance.js legacyEntriesOf) take it from here.
         : {
           kind: 'legacy', trackId: null, prescriptionId: null, excludedFromProgression: true,
+          ...(entry.noProg === true || w.excludeFromProgression === true || (ctx.byRoutine.get(String(entry.rid ?? w.routineId)) || []).some(d => d.exerciseId === exerciseId && d.excluded) ? { progressionExclusion: 'explicit' } : {}),
           ...(isObj(entry.target) ? { legacyTarget: clone(entry.target) } : {}),
           ...(isObj(entry.planned) ? { legacyPlanned: clone(entry.planned) } : {})
         }),
       ...(entry.sg ? { sg: entry.sg } : {}),
       ...(isObj(entry.muscleSnapshot) ? { muscleSnapshot: clone(entry.muscleSnapshot) } : {}),
       performance: {
-        sets: rows.map(row => performanceRow(row, ctx.unit, mode)),
+        sets: performanceRows.flatMap(row => isObj(row.sides?.L) && isObj(row.sides?.R)
+          ? ['L', 'R'].map(side => ({ ...performanceRow({ rir: row.rir, rpe: row.rpe, ...row.sides[side], setId: row.setId, phase: row.phase, warmup: row.warmup }, ctx.unit, mode), side }))
+          : [performanceRow(row, ctx.unit, mode)]),
         ...(note ? { note, ...(entry.notePin ? { notePin: true } : {}) } : {})
       },
       completedAt
     };
     if (link) {
       ctx.prescriptions[link.prescription.id] = link.prescription;
-      exposure.actual = summarizeActual(link.prescription, performedOf(rows, ctx.unit));
+      exposure.actual = summarizeActual(link.prescription, performedOf(rows, ctx.unit, link.prescription.assisted));
       exposure.audit = [];
     }
     return [exposure];
@@ -392,6 +432,7 @@ function seedProgression(state, drafts, workouts) {
     let track = null;
     let before = null;
     for (const link of d.links) {
+      if (link.skipped) continue;
       const x = workouts[link.i].exposures.find(e => e.exposureId === `${link.workoutId}:x${link.j}`);
       const p = link.prescription;
       if (before?.planFingerprint && p.planFingerprint && before.planFingerprint !== p.planFingerprint) track = null;
@@ -409,7 +450,7 @@ function oneRepMaxesOf(ctx, workouts, unit) {
   const best = new Map();
   for (const w of workouts) for (const x of w.exposures) {
     // An assistance machine has no 1RM: the load is the help you were given (issue #232).
-    if (x.mode !== 'reps' || isAssisted(exerciseOf(ctx, x.exerciseId))) continue;
+    if (x.mode !== 'reps' || (typeof x.assisted === 'boolean' ? x.assisted : ctx.prescriptions[x.prescriptionId]?.assisted ?? isAssisted(exerciseOf(ctx, x.exerciseId)))) continue;
     for (const row of x.performance.sets) {
       if (row.status !== 'completed' || row.role === 'warmup' || row.resistance.kind !== 'external-load') continue;
       const value = estimate1RM(row.resistance.value, repsOf(row));
@@ -432,14 +473,16 @@ function migrateActive(active, ctx) {
   const now = iso(whenOf(active));
   const exposures = [];
   const entries = [];
+  const retained = [];
   list(active.entries).forEach((entry, j) => {
     if (!isObj(entry) || entry.id == null || entry.id === '') return;
+    retained.push(j);
     const exerciseId = String(entry.id);
     const info = exerciseOf(ctx, exerciseId);
     const rows = list(entry.sets).filter(isObj);
     const work = rows.filter(row => !isWarmupRow(row));
     const target = isObj(entry.target) ? entry.target
-      : { mode: entryMode(entry, info, rows), sets: work.length || 1, reps: work[0]?.r, weight: work[0]?.w, sec: work[0]?.sec, min: work[0]?.min };
+      : { mode: entryMode(entry, info, rows), sets: work.length || 1, reps: work[0]?.r, weight: work[0]?.w, sec: work[0]?.sec, min: work[0]?.min, speed: work[0]?.speed };
     const d = linkOf(active, { ...entry, target }, ctx.byRoutine);
     const values = targetValues(target);
     const w = num(values.weight);
@@ -449,23 +492,35 @@ function migrateActive(active, ctx) {
       mode: modeOf(target, info), step: fit(STEPS[ctx.unit][0]), rest: ctx.rest
     });
     const trackId = d ? d.occurrenceId : `${id}:t${j}`;
-    const prescription = generatePrescription({ id: `${id}:p${j}`, now, trackId, rule, assisted: d ? d.assisted : isAssisted(info) });
+    const base = `${id}:active:p${j}`;
+    let prescriptionId = base, suffix = 2;
+    while (ctx.prescriptions[prescriptionId]) prescriptionId = `${base}~${suffix++}`;
+    const prescription = generatePrescription({ id: prescriptionId, now, trackId, rule, assisted: typeof target.assisted === 'boolean' ? target.assisted : d ? d.assisted : isAssisted(info), restPause: (target.intensifier ?? d?.cfg.intensifier)?.type === 'restpause', restPauseReps: (target.intensifier ?? d?.cfg.intensifier)?.totalReps });
     ctx.prescriptions[prescription.id] = prescription;
-    const exposureId = `${id}:x${j}`;
+    const exposureId = ctx.exposureId(`${id}:active:x${j}`);
     exposures.push({
-      exposureId, exerciseId, exerciseNameSnapshot: info?.n || exerciseId,
+      exposureId, exerciseId, ...executionOf({ ...entry, target }, d), mode: modeOf(target, info), exerciseNameSnapshot: info?.n || exerciseId,
+      ...(target.side === true || d?.cfg.side === true ? { side: true } : {}),
+      ...(d?.warmup ? { warmup: clone(d.warmup) } : {}),
       routineId: d ? d.routineId : idOf(entry.rid, null), ...(d ? { occurrenceId: d.occurrenceId } : {}), trackId,
       excludedFromProgression: !d, prescriptionId: prescription.id, ...(entry.sg ? { sg: entry.sg } : {}),
       performance: { sets: [] }
     });
     let k = 0;
     entries.push({
-      ...clone(entry), exposureId, ...(d ? {} : { noProg: true }),
-      sets: rows.map(row => (isWarmupRow(row) || row.setId || k >= prescription.rows.length ? clone(row) : { ...clone(row), setId: `r${k++}` }))
+      ...clone(entry), target: { ...clone(target), mode: modeOf(target, info), ...(modeOf(target, info) === 'time' && num(target.sec) == null ? { sec: 45 } : {}) }, exposureId, ...(d ? {} : { noProg: true }),
+      sets: rows.map(row => {
+        // ponytail: v1 kept no warm-up edit provenance; unfinished configured ramps become
+        // automatic, and the next hand edit clears the marker as on a newly generated session.
+        if (isWarmupRow(row)) return { ...clone(row), ...(d?.warmup && !row.done && row.autoWarmup == null ? { autoWarmup: true } : {}) };
+        const index = k++;
+        return row.setId || index >= prescription.rows.length ? clone(row) : { ...clone(row), setId: `r${index}` };
+      })
     });
   });
   const { entries: legacy, ...rest } = active;
-  return { ...clone(rest), id, exposures, entries };
+  const before = retained.filter(index => index < (whole(active.cur, 0) ?? 0)).length;
+  return { ...clone(rest), id, cur: Math.min(before, Math.max(0, entries.length - 1)), exposures, entries };
 }
 
 /* ---------- public ---------- */
@@ -475,6 +530,12 @@ export function migrateProfileV1ToV2(state, catalogue) {
   if (typeof catalogue?.get !== 'function') throw new Error('migration-needs-catalogue');
   if (!migrationStatus(state).required) return { profile: state, activeSession: null };
   const unit = state.unit === 'lb' ? 'lb' : 'kg';
+  const checkDates = (w, path) => {
+    for (const key of ['start', 'end']) if (w[key] != null && (num(w[key]) == null || !Number.isFinite(new Date(num(w[key])).getTime()))) throw new Error(`invalid-date ${path}.${key}`);
+    if (w.d != null && !Number.isFinite(Date.parse(`${w.d}T00:00:00Z`))) throw new Error(`invalid-date ${path}.d`);
+  };
+  list(state.workouts).forEach((w, i) => { if (isObj(w)) checkDates(w, `workouts[${i}]`); });
+  if (isObj(state.active)) checkDates(state.active, 'active');
   const workouts = records(state.workouts);
   const workoutId = uniqueIds();
   const ctx = {
@@ -482,78 +543,80 @@ export function migrateProfileV1ToV2(state, catalogue) {
     prescriptions: isObj(state.prescriptions) ? clone(state.prescriptions) : {},
     workoutIds: workouts.map((w, i) => workoutId(idOf(w.id, `m1-w${i}`)))
   };
+  ctx.prescriptionId = uniqueIds();
+  Object.keys(ctx.prescriptions).forEach(id => ctx.prescriptionId(id));
+  ctx.exposureId = uniqueIds();
+  workouts.forEach((w, i) => list(w.entries).forEach((_, j) => ctx.exposureId(`${ctx.workoutIds[i]}:x${j}`)));
   const routines = draftRoutines(state, ctx);
   const drafts = routines.flatMap(r => r.drafts);
   // Which logged entries belong, beyond doubt, to which occurrence — oldest first.
-  const oldestFirst = workouts.map((_, i) => i).sort((a, b) => whenOf(workouts[a]) - whenOf(workouts[b]) || a - b);
+  const oldestFirst = workouts.map((_, i) => i).sort((a, b) => dayOf(workouts[a]) - dayOf(workouts[b]) || whenOf(workouts[a]) - whenOf(workouts[b]) || ctx.workoutIds[a].localeCompare(ctx.workoutIds[b]) || a - b);
   for (const i of oldestFirst) list(workouts[i].entries).forEach((entry, j) => {
     const d = isObj(entry) ? linkOf(workouts[i], entry, ctx.byRoutine) : null;
-    if (d) d.links.push({ i, j, workoutId: ctx.workoutIds[i], at: iso(whenOf(workouts[i])), values: targetValues(entry.target), planned: isObj(entry.planned) ? entry.planned : null });
+    if (d) d.links.push({ i, j, workoutId: ctx.workoutIds[i], at: iso(whenOf(workouts[i])), values: targetValues(entry.target), planned: isObj(entry.planned) ? entry.planned : null, intensifier: entry.target?.intensifier ?? entry.intensifier, assisted: entry.target?.assisted ?? entry.assisted, skipped: !hasDoneWork(entry) });
   });
   for (const d of drafts) finalizeDraft(d, ctx);
-  for (const d of drafts) for (const link of d.links) ctx.linked.set(`${link.i}:${link.j}`, { d, prescription: link.prescription });
+  for (const d of drafts) for (const link of d.links) ctx.linked.set(`${link.i}:${link.j}`, { d, prescription: link.prescription, skipped: link.skipped });
   const outWorkouts = workouts.map((w, i) => migrateWorkout(w, i, ctx));
   const activeSession = isObj(state.active) ? migrateActive(state.active, ctx) : null;
   const { active, ...rest } = state;
+  // Unreadable records cannot become exercises, but their original bytes remain recoverable.
+  const discarded = [];
+  const auditList = (items, path, needsId = false) => {
+    if (items != null && !Array.isArray(items)) { discarded.push({ path, value: clone(items) }); return; }
+    list(items).forEach((value, i) => {
+    const at = `${path}[${i}]`;
+    if (!isObj(value) || (needsId && (value.id == null || value.id === ''))) discarded.push({ path: at, value: clone(value) });
+    else {
+      if ('ex' in value) auditList(value.ex, `${at}.ex`, true);
+      if ('entries' in value) auditList(value.entries, `${at}.entries`, true);
+      if ('sets' in value && /entries\[\d+\]$/.test(at)) auditList(value.sets, `${at}.sets`);
+    }
+    });
+  };
+  auditList(state.routines, 'routines');
+  auditList(state.workouts, 'workouts');
+  if (isObj(active)) auditList(active.entries, 'active.entries', true);
+  list(state.coach?.snapshots).forEach((snap, i) => { if (isObj(snap)) auditList(snap.routines, `coach.snapshots[${i}].routines`); });
   const profile = {
     ...clone(rest),
     engineSchemaVersion: ENGINE_SCHEMA,
     routines: routines.map(({ routine, id, drafts: ds }) => ({ ...clone(routine), id, ex: ds.map(occurrenceOf) })),
-    workouts: outWorkouts,
+    workouts: oldestFirst.map(i => outWorkouts[i]),
     prescriptions: ctx.prescriptions,
     oneRepMaxes: oneRepMaxesOf(ctx, outWorkouts, unit),
     progression: seedProgression(state, drafts, outWorkouts),
-    migrationAudit: { fromSchema: 1, unsupported: ctx.unsupported }
+    migrationAudit: { fromSchema: 1, unsupported: ctx.unsupported, ...(discarded.length ? { discarded } : {}) }
   };
+  // A pre-upgrade Coach revert must restore canonical occurrences too. No history is replayed:
+  // a snapshot is the old plan, not another copy of the athlete's logged sessions.
+  if (Array.isArray(profile.coach?.snapshots)) profile.coach.snapshots = profile.coach.snapshots.map(snap => {
+    if (!isObj(snap) || !('routines' in snap) || (Array.isArray(snap.routines) && snap.routines.every(r => isObj(r) && Array.isArray(r.ex) && r.ex.every(o => o?.exerciseId && o?.occurrenceId)))) return snap;
+    const converted = migrateProfileV1ToV2({ unit, restSec: state.restSec, customEx: state.customEx, routines: snap.routines, workouts: [] }, catalogue).profile;
+    return { ...snap, routines: converted.routines, migrationAudit: converted.migrationAudit };
+  });
+  const activeCheck = validateCanonicalActive(profile, activeSession);
+  if (!activeCheck.ok) throw new Error(`invalid-active ${activeCheck.errors[0]}`);
   return { profile, activeSession };
 }
 
-/** Structural check of a canonical profile; every migration output passes it before it is stored. */
-export function validateCanonicalProfile(state) {
-  if (!isObj(state)) return { ok: false, errors: ['profile must be an object'] };
-  const errors = [];
-  if (state.engineSchemaVersion !== ENGINE_SCHEMA) errors.push('engineSchemaVersion must be 2');
-  if ('active' in state) errors.push('active must not be part of the synced profile');
-  for (const k of ['prescriptions', 'oneRepMaxes', 'progression']) if (!isObj(state[k])) errors.push(`${k} must be an object`);
-  for (const k of ['routines', 'workouts']) if (!Array.isArray(state[k])) errors.push(`${k} must be a list`);
-  const occurrences = new Set();
-  records(state.routines).forEach((r, i) => {
-    const at = `routines[${i}]`;
-    if (typeof r.id !== 'string' || !r.id) errors.push(`${at}.id is required`);
-    if (!Array.isArray(r.ex)) return errors.push(`${at}.ex must be a list`);
-    r.ex.forEach((o, j) => {
-      const oat = `${at}.ex[${j}]`;
-      if (!isObj(o) || typeof o.occurrenceId !== 'string' || typeof o.exerciseId !== 'string') return errors.push(`${oat} needs occurrenceId and exerciseId`);
-      if (occurrences.has(o.occurrenceId)) errors.push(`${oat}.occurrenceId is duplicated`);
-      occurrences.add(o.occurrenceId);
-      if ('warmupSets' in o) errors.push(`${oat} still carries warmupSets`);
-      if (o.rule !== undefined) { const check = validatePlanRule(o.rule); if (!check.ok) errors.push(`${oat}.rule: ${check.errors[0]}`); }
-      if (!validateWarmup(o.warmup)) errors.push(`${oat}.warmup is invalid`);
-    });
-  });
-  const prescriptions = isObj(state.prescriptions) ? state.prescriptions : {};
-  const exposures = new Set();
-  records(state.workouts).forEach((w, i) => {
-    const at = `workouts[${i}]`;
-    if (w.id == null) errors.push(`${at}.id is required`);
-    if ('entries' in w) errors.push(`${at} still carries legacy entries`);
-    if (!Array.isArray(w.exposures)) return errors.push(`${at}.exposures must be a list`);
-    w.exposures.forEach((x, j) => {
-      const xat = `${at}.exposures[${j}]`;
-      if (!isObj(x) || typeof x.exerciseId !== 'string') return errors.push(`${xat}.exerciseId is required`);
-      if (x.exposureId != null) {
-        if (exposures.has(x.exposureId)) errors.push(`${xat}.exposureId is duplicated`);
-        exposures.add(x.exposureId);
-      }
-      if (x.prescriptionId != null && !isObj(prescriptions[x.prescriptionId])) errors.push(`${xat}.prescriptionId does not resolve`);
-      const rows = x.performance?.sets;
-      if (!Array.isArray(rows)) return errors.push(`${xat}.performance.sets must be a list`);
-      rows.forEach((row, k) => {
-        if (!isObj(row) || !['work', 'warmup'].includes(row.role) || !Array.isArray(row.observations) || !isObj(row.resistance)) {
-          errors.push(`${xat}.performance.sets[${k}] is not a performance row`);
-        }
-      });
-    });
+/** Validate editable entries together with the frozen prescription dictionary they refer to. */
+export function validateCanonicalActive(profile, active) {
+  if (active == null) return { ok: true, errors: [] };
+  if (!isObj(active) || !Array.isArray(active.entries) || !Array.isArray(active.exposures)) return { ok: false, errors: ['active entries and exposures must be lists'] };
+  const ids = new Set(list(profile.workouts).map(w => w.id));
+  let validationId = 'active-validation';
+  while (ids.has(validationId)) validationId += '~';
+  const check = validateCanonicalProfile({ ...profile, workouts: [...list(profile.workouts), { id: validationId, exposures: active.exposures }] });
+  const errors = [...check.errors];
+  if (!Number.isInteger(active.cur) || active.cur < 0 || active.cur >= Math.max(1, active.entries.length)) errors.push('active.cur is invalid');
+  if (active.entries.length !== active.exposures.length) errors.push('active entries and exposures do not match');
+  active.entries.forEach((entry, i) => {
+    const exposure = active.exposures[i];
+    if (!isObj(entry) || !isObj(entry.target) || !Array.isArray(entry.sets) || entry.sets.some(row => !isObj(row))) { errors.push(`active.entries[${i}] is invalid`); return; }
+    if (entry.exposureId !== exposure?.exposureId || String(entry.id) !== exposure?.exerciseId || entry.target.mode !== exposure?.mode) errors.push(`active.entries[${i}] does not match its exposure`);
   });
   return { ok: errors.length === 0, errors };
 }
+
+export { validateCanonicalProfile } from './profile-validation.js';

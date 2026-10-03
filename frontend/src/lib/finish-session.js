@@ -3,8 +3,8 @@
 import { advanceProgression, auditExecution, currentOneRm, summarizeActual } from './prescription/index.js'
 import { actualOfRow, exposuresWithPerformance } from './session-ui-adapter.js'
 import { isWarmupRow } from './workout-model.js'
-import { isAssisted, betterWeight, beatsWeight } from './exercises.js'
-import { estimate1RM, is1RMRecord } from './onerm.js'
+import { betterWeight, beatsWeight } from './exercises.js'
+import { bestSetOf, is1RMRecord } from './onerm.js'
 import { workoutVolume, bestWeightFor } from './history.js'
 
 export function buildCompletedSession(active, profile, { end, newId, unit }) {
@@ -16,18 +16,19 @@ export function buildCompletedSession(active, profile, { end, newId, unit }) {
     const p = profile.prescriptions?.[exposure.prescriptionId]
     if (!p) return exposure
     const state = profile.progression?.[exposure.trackId] || null
-    const performed = (entries.get(exposure.exposureId)?.sets || []).filter(row => row.done && !isWarmupRow(row)).map(row => actualOfRow(row, unit))
+    const performed = (entries.get(exposure.exposureId)?.sets || []).filter(row => row.done && !isWarmupRow(row)).map(row => actualOfRow(row, unit, p.assisted))
     const actual = summarizeActual(p, performed)
     const audit = [...performed.flatMap(set => auditExecution(p, set, state)), ...auditExecution(p, { sets: actual.sets }, state)]
-    if (!exposure.excludedFromProgression) {
+    const worked = performed.length > 0   // v1 never saved an entry with no completed set (finish-workout.js)
+    if (!exposure.excludedFromProgression && worked) {
       progression[exposure.trackId] = advanceProgression({ state, prescription: p, log: { id: exposure.exposureId, actual }, now: completedAt })
     }
     // An assistance machine has no 1RM: the load is the help you were given (issue #232).
-    const best = isAssisted(exposure.exerciseId) ? 0 : Math.max(0, ...performed.map(s => estimate1RM(s.load?.value, s.reps) ?? 0))
+    const best = bestSetOf({ ...exposure, assisted: p.assisted ?? exposure.assisted })?.est ?? 0
     if (best > (currentOneRm(profile.oneRepMaxes, exposure.exerciseId)?.value || 0)) {
       oneRepMaxes.push({ id: newId(`one-rep-max:${exposure.exposureId}`), exerciseId: exposure.exerciseId, value: best, unit, source: 'estimated', capturedAt: completedAt, sourceRecordId: exposure.exposureId })
     }
-    return { ...exposure, completedAt, actual, audit, sourceAudit: { ...p.provenance } }
+    return { ...exposure, completedAt, actual, audit, sourceAudit: { ...p.provenance }, ...(worked ? {} : { excludedFromProgression: true }) }
   })
   const routineIds = [].concat(active.routineIds ?? (active.routineId ? [active.routineId] : []))
   return {

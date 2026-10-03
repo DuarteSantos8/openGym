@@ -8,7 +8,7 @@ This note describes, field by field:
    progress) are converted, in one pass, on the first launch of the updated app.
 
 Every case where information can be lost, changed or left in an unexpected state is marked
-**ATTENTION** and collected, with a stable id (A1…A20), in [section 8](#8-attention-index).
+**ATTENTION** and collected, with a stable id (A1…A55), in [section 8](#8-attention-index).
 
 Source of truth (read these when the note and the code disagree — the code wins):
 
@@ -109,7 +109,8 @@ so any key may be absent.
 | `_ts`, `_rev`, `resetAt`, `resetIds` | numbers/object | Sync bookkeeping (last-edit stamp; server write counter; reset markers) |
 
 The migration keeps **every one of these root fields verbatim** (`...clone(rest)`), except
-`active` (moved out, section 4.6) and the fields it rewrites: `routines`, `workouts`. It adds the
+`active` (moved out, section 4.6) and the fields it rewrites: `routines`, `workouts`, and legacy
+`coach.snapshots[].routines`. It adds the
 v2 root fields of section 3.2.
 
 ### 2.3 v1 routine
@@ -246,8 +247,8 @@ Its entries have the same shape as saved entries (`id`, `sets`, `target`, `plann
   nothing is ever re-derived from a live rule or a live 1RM.
 * **Progression is stored per track.** A *track* is one routine slot (`trackId` = `occurrenceId`).
   The state is what its logs leave it, advanced one session at a time (`advanceProgression`).
-* **1RMs are append-only.** A new estimate adds a record; an embedded snapshot in an older
-  prescription can never be rewritten.
+* **1RM snapshots are immutable.** New estimates add records; history edits/deletions and merges
+  reconcile source-linked derived records without changing typed 1RMs or frozen snapshots (**A54**).
 * **The workout in progress is not part of the synced profile.**
 
 ### 3.2 The v2 profile root
@@ -260,20 +261,23 @@ Everything in section 2.2 stays (same names, same meaning) **except**:
 | `prescriptions` | **added**: `{ [prescriptionId]: Prescription }` (section 3.6) |
 | `progression` | **added**: `{ [trackId]: ProgressionState }` (section 3.7) |
 | `oneRepMaxes` | **added**: `{ [id]: OneRepMax }` (section 3.9) |
-| `migrationAudit` | **added by the migration only**: `{ fromSchema: 1, unsupported: [{ routineId, occurrenceId, exerciseId, field, value }] }` (section 3.11) |
+| `migrationAudit` | **added by the migration**: `{ fromSchema: 1, unsupported: [{ routineId, occurrenceId, exerciseId, field, value }], discarded?: [{ path, value }] }` (section 3.11) |
 | `active` | **removed** from the document (section 3.10) |
 | `routines[].ex[]` | now **occurrences** (section 3.3) |
 | `workouts[]` | now carry `exposures[]` instead of `entries[]` (section 3.8) |
 | `exWeights` | kept verbatim; **no v2 reader consults it** |
 
-`validateCanonicalProfile` (run on every migration output before it is stored) enforces:
+`validateCanonicalProfile` (run on every migration output and canonical `PUT /api/data` before
+it is stored) enforces:
 `engineSchemaVersion === 2`; no `active` key; `prescriptions`/`oneRepMaxes`/`progression` are
 objects; `routines`/`workouts` are lists; every routine has a string `id` and a list `ex`; every
 occurrence has string `occurrenceId` and `exerciseId`, unique across the profile, no leftover
 `warmupSets`, a valid `rule` and a valid `warmup`; every workout has an `id`, no leftover
 `entries`, a list `exposures`; every exposure has a string `exerciseId`, a unique `exposureId`, a
-`prescriptionId` that resolves, and `performance.sets` rows of shape `{ role: 'work'|'warmup',
+`prescriptionId` that resolves to the same exercise, and `performance.sets` rows of shape `{ role: 'work'|'warmup',
 observations[], resistance{} }`.
+Malformed list members are rejected, not silently filtered. Prescription dictionary keys must
+match their ids, and each prescription must contain rows and a reconstructible valid rule.
 
 ### 3.3 v2 routine and occurrence
 
@@ -292,6 +296,7 @@ Occurrence (`routine.ex[j]`):
 | `warmup?` | `{ mode:'off' }` \| `{ mode:'smart', count:1–5 }` \| `{ mode:'template', steps:[{ percent, reps }] (1–5) }` |
 | `sg?`, `note?` | Superset group; plan note |
 | `restSec?` | The v1 rest override, kept beside the rule's `parameters.restSeconds` |
+| `restFromProfile?` | Migrated slot without its own rest override; new prescriptions inherit current global rest |
 | `warmupRestSec?` | Rest after a warm-up row |
 | `excludeFromProgression?` | `true`: never counts |
 | `assisted?` | Explicit override of the catalogue's "assistance machine" flag |
@@ -440,13 +445,13 @@ Exposure (`workout.exposures[j]`):
 | `rir?`, `rpeEntered?` | Effort (RPE is derived to RIR = 10 − RPE) |
 | `segments[]` | Drop chain: one nested row per drop |
 | `clusters?[]` | Rest-pause bursts `{ r, restSec }` (how `r` breaks down; not extra volume) |
-| `sides?` | `{ L: row, R: row }` (migrated unilateral row); live sessions save one row per limb tagged `side: 'L'\|'R'` instead |
-| `side?` | `'L'`\|`'R'` (live per-limb rows) |
+| `side?` | `'L'`\|`'R'` (migrated and live unilateral rows are saved per limb, with independent completion) |
 
 ### 3.9 `OneRepMax` (`oneRepMaxes[id]`)
 
 `{ id, exerciseId, value, unit, source:'estimated'|'manual', capturedAt, sourceRecordId }`. Append-only;
-the current 1RM of an exercise is the record with the newest `capturedAt`. The estimate is Epley
+the current 1RM of an exercise is the record with the newest `capturedAt`. Source-linked
+estimates are reconciled after history changes; typed records and frozen snapshots survive. The estimate is Epley
 (`w·(1+r/30)`), rounded to 0.1, not computed above 12 reps, and never for an assistance machine.
 
 ### 3.10 Active session (v2)
@@ -460,17 +465,18 @@ synced. `{ id, d, start, routineId(s), name, bw?, cur, entries[], exposures[], n
 
 ### 3.11 `migrationAudit`
 
-`{ fromSchema: 1, unsupported: [{ routineId, occurrenceId, exerciseId, field, value }] }`. Only three
-kinds of v1 data can be left here (the rest is either converted or kept elsewhere):
+`{ fromSchema: 1, unsupported: [{ routineId, occurrenceId, exerciseId, field, value }],
+discarded?: [{ path, value }] }`. Unsupported settings are recorded as follows:
 
 | `field` | When | What to do |
 |---|---|---|
-| `prog` | The exercise's `prog` is a policy the engine does not know | Rule migrated as `manual`; choose a preset in the exercise sheet |
+| `prog` | An incompatible own policy or an unknown own/inherited policy | Rule migrated as `manual`; choose a preset in the exercise sheet |
 | `deloadFactor` | The factor was set on an exercise whose rule cannot deload (no progression, a ladder) | Nothing to act on; kept for reference |
 | `intensifier` | The intensifier is one the rule cannot run (a preset that shapes its own rows, a timed or unloaded rule) | Dropped from the live plan; re-add if you switch preset |
 
-The count is shown once as a toast ("Training data upgraded — {0} settings need review"); the
-list itself is not shown in any screen (**ATTENTION** (A12)).
+The count is shown once as a toast ("Training data upgraded — {0} settings need review").
+Settings → Data → **Training data upgrade review** shows the list and malformed records retained
+in `discarded`, with their original paths and values (**ATTENTION** (A12)).
 
 ### 3.12 Engine semantics that changed the *meaning* of a stored number
 
@@ -523,9 +529,10 @@ list itself is not shown in any screen (**ATTENTION** (A12)).
    replaced); on a phone `nativeBackupOnce` writes `gym_state_v1.pre-engine-v1.json`.
 2. **convert** — this browser's copy and the phone's copy are each converted in memory with
    `migrateProfileV1ToV2(state, LIB_BY_ID)`.
-3. **check** — `validateCanonicalProfile` on every output; any error aborts before anything is written.
-4. **write** — `gym_state_v1` (and `gym_active_v1` if none exists yet) / `nativeSave` +
-   `nativeActiveSave`.
+3. **check** — `validateCanonicalProfile` plus active/dictionary validation and expanded sync-body size checks; errors abort before primary replacement.
+4. **write** — `gym_state_v1` and its converted `gym_active_v1` / strict `nativeSave` +
+   `nativeActiveSave`; exact read-back verifies durability. A pending journal retains the original
+   source strings until both writes and references validate, so retry/restart resumes partial writes (**A28**).
 5. **server** — if the server holds v1: `POST /api/data/migrate-engine-v2 { confirmed: true,
    baseRev }`. `baseRev` is the revision the screen showed; if the file changed meanwhile the
    server answers `409 migration-state-changed` and the screen restarts from a fresh status.
@@ -545,8 +552,8 @@ undone, and nothing is pushed.
 2. Read the file; `baseRev` must equal `_rev` (else `409 migration-state-changed`); already v2 →
    `200 { migrated: false }`.
 3. Write `data/state-<uid>.pre-engine-v1.json` **once** (atomic). If it exists it must itself be
-   v1 (`backup-not-v1` otherwise) — an existing copy is an earlier attempt's evidence and is
-   never replaced.
+   v1 (`backup-not-v1` otherwise) and byte-identical to the current source
+   (`backup-source-mismatch` otherwise). Earlier copies are never replaced (**A30**).
 4. `migrateProfileV1ToV2(source.state, LIB_BY_ID)` then `validateCanonicalProfile`
    (`invalid-output: …` aborts).
 5. `_rev = old _rev + 1`, atomic write, cache drop, audit-log `data.migrate.ok`
@@ -574,15 +581,17 @@ data locally, and how it merges back is the ordinary sync merge — check before
   that had already diverged in v1 stay divergent and merge as any two profiles do.
 * **ATTENTION** (A10) — a signed-in device that is **offline at its first launch after the
   upgrade** cannot ask `migration-status`; the gate shows its error state ("Try again") until the
-  server is reachable. Nothing is converted or lost meanwhile.
+  server is reachable. The error explicitly asks the user to reconnect; nothing is converted or
+  lost meanwhile. A `404` instead explains that API and web must be updated together (**A13**).
 
 ### 4.5 A v1 backup file (Settings → Import)
 
 `importLegacyBackup` opens the same screen (`phase: 'confirm'`, `importData`); the file is
-converted in memory (**the file itself is the backup**), validated, and loaded with
-`replaceState(profile, true)`; a v1 in-progress workout inside the file becomes the active
-session if none is running. **ATTENTION** (A14) — that import is a *forced* replace-and-push (as
-any backup restore is): it overwrites the server's current profile with the file's content.
+converted in memory (**the file itself is the backup**), validated, and passed to the ordinary
+backup import preserving the user's merge or replace choice; a v1 in-progress workout inside
+the file becomes the active session if none is running. Retry keeps the file and
+merge/replace choice; Cancel closes only a pending file import (**A29**). **ATTENTION** (A14) — replacement
+intentionally overwrites the current profile; merging keeps the destination's records.
 
 ### 4.6 Determinism, ids and idempotence
 
@@ -597,15 +606,18 @@ The function is pure (no clock, no random). Ids:
 | Exposure | `${workoutId}:x${j}` (`j` = position in `entries`) |
 | Prescription of a linked exposure | `${workoutId}:p${j}` |
 | Migrated 1RM | `one-rep-max:migrated:${exerciseId}` |
-| Active session | its own `id`, else `m1-active`; its prescriptions `${id}:p${j}`, exposures `${id}:x${j}`, unlinked tracks `${id}:t${j}` |
+| Active session | its own `id`, else `m1-active`; prescriptions `${id}:active:p${j}` (collision suffixes if needed), exposures `${id}:active:x${j}`, unlinked tracks `${id}:t${j}` |
 
 Calling it on a profile that is already v2 returns it unchanged (`{ profile: state, activeSession: null }`).
-A crash mid-way is safe: the server's write is a single rename, and the retry after a crash
-produces the identical document.
+Server replacement uses a single rename; local/native profile and active writes use a resumable
+pending journal. Existing emitted ids are reserved before suffix allocation; collision suffixes
+also protect saved/active namespaces (**A32**). Divergent-copy merges remap conflicting frozen
+record ids with their references and reconcile derived data (**A25**, **A46**).
 
 **ATTENTION** (A21) — malformed records are **dropped, not repaired**: a non-object in `routines`/
 `workouts`, a routine exercise or a workout entry with no `id`. (They cannot be produced by the
-app; they can be produced by hand-edited files. They remain in the `.pre-engine-v1` backup.)
+app; they can be produced by hand-edited files. Their paths and original values remain in
+`migrationAudit.discarded` and the `.pre-engine-v1` backup.)
 
 ---
 
@@ -615,7 +627,7 @@ app; they can be produced by hand-edited files. They remain in the `.pre-engine-
 
 | v1 | v2 |
 |---|---|
-| Every root field of section 2.2 | **kept verbatim** (deep clone): settings, `bodyweight`, `week`, `dayPlan`, `customEx`, `exNotes`, `favEx`, `barWeights`, `plates`, `loadKind`, `gymCards`, `equipProfiles`…, `coach`, `resetAt`/`resetIds`/`_ts`/`_rev` |
+| Every root field of section 2.2 | **kept verbatim** (deep clone): settings, `bodyweight`, `week`, `dayPlan`, `customEx`, `exNotes`, `favEx`, `barWeights`, `plates`, `loadKind`, `gymCards`, `equipProfiles`…, `resetAt`/`resetIds`/`_ts`/`_rev`; Coach metadata stays, but legacy snapshot routines are converted |
 | `routines` | rewritten (5.2) |
 | `workouts` | rewritten (5.4–5.6) |
 | `active` | removed; converted apart (5.8) |
@@ -636,26 +648,26 @@ app; they can be produced by hand-edited files. They remain in the `.pre-engine-
 
 | Mode | Policy | Preset |
 |---|---|---|
-| reps | `linear` on a **bodyweight** exercise (`cfg.bodyweight`, else catalogue equipment `body weight`/`band`/`resistance band`) | `bodyweight_ladder` |
-| reps | `linear` with **no load anywhere** (no `cfg.weight`, no logged target weight) on an assisted machine or on equipment that is no load of its own | `bodyweight_ladder` (v1 climbed reps there; an assisted machine's "no help left" is where its progression leads) |
+| reps | eligible **unloaded** bodyweight/assisted/non-loaded equipment with `linear`, `double` or `greyskull` | `bodyweight_ladder`; remembers the load policy for a later added-load transition (**A38**) |
+| reps | bodyweight work with **added load**, or assisted work with remaining assistance | its declared load policy; assistance progresses downward until zero (**A38**) |
 | reps | `linear` | `linear` |
 | reps | `greyskull` / `double` | `greyskull` / `double` |
 | time | `time` ("Add time") | **`hold_seconds`** (**A18**) |
-| any | `off`, cardio, a policy the mode does not accept, an unknown string | `manual` — an *own* `cfg.prog` that is not `off` is also written to `migrationAudit` as field `prog` |
+| any | `off`, cardio, a policy the mode does not accept, an unknown string | `manual` — an incompatible own policy or unknown own/inherited policy is also written to `migrationAudit` as field `prog` |
 
 **Rule parameters** (`ruleFrom`), per field:
 
 | v1 | v2 | Notes |
 |---|---|---|
-| `sets` | `parameters.sets = {n,n}` | **ATTENTION** (A22) a config with no `sets` migrates as the preset default, **3** (v1 read a missing count as 1); the app always writes `sets`, so only hand-edited plans are affected |
+| `sets` | `parameters.sets = {n,n}` | **ATTENTION** (A22) missing `sets` becomes **1**, preserving the v1 default |
 | `reps` | `parameters.reps = {n,n}` | preset default when missing |
 | `repsMin` / `reps` (double) | `parameters.reps = { min: repsMin, max: reps }` | top = `reps`, else `repsMax`, else 10; bottom = `repsMin`, else top−2; stride 2 for `side`; a bottom ≥ top widens to `top+stride` |
 | `repsMax` (bodyweight ladder) | `parameters.reps.max = repsMax`, `parameters.sets.max = max(sets, 6)` | v1's ceiling: reps climb to it, then a set is added, up to 6 |
-| `sec` (time) | `durationSeconds = {sec,sec}`, `reps = {1,1}` | default 30 |
+| `sec` (time) | `durationSeconds = {sec,sec}`, `reps = {1,1}` | v1 default **45** seconds (**A53**) |
 | `min` (cardio) | `durationSeconds = {min·60}`, `reps = {1,1}` | default 20 min |
 | `speed` (cardio) | `parameters.speed` | default **8** km/h (what a v1 cardio row opened at) |
 | `weight` | `parameters.load = { absolute, value, unit }` | a loaded preset with no weight starts at `0`; an unloaded one is `{ mode:'empty' }`; the newest linked session's weight replaces it (5.6) |
-| `restSec` | `parameters.restSeconds` (and `occurrence.restSec`) | else the profile's global `restSec` (**A8**), else preset default |
+| `restSec` | `parameters.restSeconds` (and `occurrence.restSec`) | else the profile's global `restSec` (**A8**), else preset default; `restFromProfile` keeps new prescriptions linked to the global setting until explicitly edited |
 | `inc` | `increment = { absolute, inc, unit }` — for `hold_seconds` `{ seconds, inc }` | v1 default when unset: 2.5 kg / 5 lb, **5 kg / 10 lb** for upper legs, lower legs, back, hips, glutes; 5 s for a hold; none for cardio. Kept only where the rule steps by itself or the value was typed |
 | `deloadFactor` | `rule.deload.factor` | linear/double only, if within 0.5–0.95 (v1 fell back to 0.9 outside it too). A factor on a rule that cannot deload → `migrationAudit` `deloadFactor` |
 | (rule default) | `rule.deload = { after: 3\|1\|3\|3, factor: 0.9 }` | linear/greyskull/double/hold_seconds; the same thresholds v1 used |
@@ -665,7 +677,7 @@ app; they can be produced by hand-edited files. They remain in the `.pre-engine-
 | `warmupRestSec` | `occurrence.warmupRestSec` | |
 | `intensifier` | `occurrence.intensifier` | numbers held to the engine bounds (drop-set `count` 1–5, `pct` in (0,100) else 20; rest-pause `totalReps` 1–100, `restSec` 5–120); one the rule cannot run → `migrationAudit` `intensifier` |
 | `side` | `occurrence.side` | reps mode only |
-| `bodyweight` | `occurrence.bodyweight` | only where it differs from the catalogue |
+| `bodyweight` | `occurrence.bodyweight` | explicit true and false overrides are retained |
 | `assisted` | `occurrence.assisted` and the rule/prescription direction | else the catalogue's flag (`leverage machine` + "assist" in the name, or an explicit flag) |
 | `sg`, `note` | `occurrence.sg`, `occurrence.note` | |
 | `excludeFromProgression` (cfg or routine) | `occurrence.excludeFromProgression` | its history is never linked (5.4) |
@@ -704,6 +716,8 @@ the entry stays as readable legacy history (5.4).
   entry's `target.mode`.
 
 Workouts are walked **oldest first** (`start`, else `d`, ties by position).
+
+A linked entry with no completed work row (warm-ups don't count) is converted but **excluded from progression** (`excludedFromProgression: true`), as v1 ignored it: it never advances the track and is never the base of the next prescription. The live engine marks a skipped exercise the same way.
 
 | | Linked | Legacy (everything else) |
 |---|---|---|
@@ -745,7 +759,7 @@ recomputed from the rows (external-load reps × load, work rows only, drops incl
 
 | v1 row | v2 row |
 |---|---|
-| — | `prescribed: false` (no prescribed-row index is known for history) |
+| — | Linked required work receives stable `setId`/`prescribed` identity; extra and warm-up rows remain outside progression (**A41**) |
 | `phase` (else legacy `warmup: true`) | `role: 'warmup'` \| `'work'` (`phase` wins when present) |
 | `done` | `status: 'completed'` \| `'skipped'` |
 | `r` | observation `{ repetitions, reps }` (not for cardio) |
@@ -757,7 +771,7 @@ recomputed from the rows (external-load reps × load, work rows only, drops incl
 | `rir` / `rpe` | `rir` / `rpeEntered` (an RPE derives RIR = 10 − RPE) |
 | `type:'dropset'`, `drops[{w,r}]` | `segments[]`: one nested row per drop, same `done`/`phase` |
 | `type:'restpause'`, `clusters[{r,restSec}]` | `clusters[]` (kept beside the row; not extra volume) |
-| `sides: { L, R }` | `sides: { L: row, R: row }` |
+| `sides: { L, R }` | Separate rows tagged `side: 'L'` and `side: 'R'`, preserving each limb's completion |
 | `planSec`, `weightOrigin`, `autoWarmup`, `setId` | not present in saved history (stripped by v1 at finish) |
 
 Nothing is rounded or clamped: values are copied exactly as logged.
@@ -767,7 +781,8 @@ Nothing is rounded or clamped: values are copied exactly as logged.
 v1 had no stored state, so the migration reconstructs it:
 
 1. Each occurrence's **live rule** starts from where its newest linked log left off: the load of
-   the newest linked target (`weight`), and for `hold_seconds` its `sec` (the window start).
+   the newest linked target (`weight`). For holds, the declared duration retains the original
+   plan identity, while the frozen last prescription carries the earned duration window (**A40**).
 2. For every occurrence, its linked logs are replayed **oldest → newest** through
    `advanceProgression` with the prescription each was logged against. The newest log's gate
    decides one earned increment (`readyToIncrement`); the run of misses at one load that v1
@@ -785,10 +800,9 @@ reps mode (assistance machines skipped; more than 12 reps gives no estimate) bec
 `oneRepMaxes["one-rep-max:migrated:<exerciseId>"] = { value, unit, source:'estimated', capturedAt:
 <that exposure's completedAt>, sourceRecordId: <exposure id> }`, unless a record with that id
 already exists or the exercise already has a higher one. Drop-set segments and rest-pause clusters
-do not contribute. **ATTENTION** (A7) — on a unilateral (`side`) row the row's `r` is the two
-limbs' total, so its estimate is **overstated** (measured: 26.7 vs 23.3 for the same sets). Only
-rules that need a 1RM (percent-of-1RM loads, 5/3/1) read it; a migrated rule is `absolute`, so
-nothing changes until such a preset is chosen.
+do not contribute. **ATTENTION** (A7) — unilateral estimates use individual completed limbs,
+not combined repetitions (20 kg × 5 per limb yields 23.3, not 26.7). Finishing a migrated active
+workout uses the same per-limb selection.
 
 ### 5.8 The workout in progress
 
@@ -801,15 +815,19 @@ nothing changes until such a preset is chosen.
   gets a `manual` rule (`rule:${id}:${j}`, `routineId: null`), a track `${id}:t${j}`, and
   `noProg: true` (`excludedFromProgression`).
 * The load grid is widened only when the entry's load is off the rule's grid.
-* Every v1 entry field is kept (`clone(entry)`), plus `exposureId`. Work rows without a `setId`
+* Every v1 entry field is kept (`clone(entry)`), plus `exposureId`; missing inferred
+  `target`/`mode` is materialised in both entry and frozen stub (**A51**). Work rows without a `setId`
   get `r0, r1, …` up to the prescription's row count; **warm-up rows, rows past the prescription,
   and rows that already have a `setId` are left as they are** (past-the-prescription rows stay
   "unprescribed").
-* Every other v1 active field is kept (`cur`, `note`, `workoutView`, `groupMeta`, `backfill`,
-  `editingWorkoutId`, `editBase`, `noProg`, …); `exposures[]` holds the stubs (`performance:
-  { sets: [] }`, no `mode`).
-* **Where it goes**: browser `gym_active_v1` and phone `gym_active_v1.json`, only if none exists
-  already. **ATTENTION** (A20) — the **server never receives or converts `active`** (the API
+* Other v1 active fields are kept (`note`, `workoutView`, `groupMeta`, `backfill`,
+  `editingWorkoutId`, `editBase`, `noProg`, …); `cur` is remapped/clamped after
+  filtering invalid entries (**A52**). `exposures[]` holds the stubs (`performance:
+  { sets: [] }`, with `mode`). Configured unfinished warm-up ramps regain `autoWarmup: true`,
+  so work-load edits re-aim them. Completed ramps and explicit manual flags stay unchanged;
+  v1 did not record manual-edit provenance, so missing flags on unfinished ramps are inferred.
+* **Where it goes**: browser `gym_active_v1` and phone `gym_active_v1.json`, with separate legacy active keys converted too; the separate key takes precedence
+  over an embedded v1 session (**A28**, **A51**). **ATTENTION** (A20) — the **server never receives or converts `active`** (the API
   has always deleted `active` on every write; it was local-only in practice), so an in-progress
   workout on device A is never visible on device B.
 
@@ -818,13 +836,13 @@ nothing changes until such a preset is chosen.
 | v1 data | v2 |
 |---|---|
 | `routine.prog` | kept, unread (baked into rules) |
-| `cfg.prog` unknown | `manual` + `migrationAudit.prog` |
+| Own or inherited policy unknown | `manual` + `migrationAudit.unsupported` entry with field `prog` |
 | `deloadFactor` with no deloading rule | `migrationAudit.deloadFactor` |
 | `intensifier` the rule cannot run | dropped from the plan + `migrationAudit.intensifier` |
 | `exWeights` | kept, unread (**A15**) |
 | whole-workout `excludeFromProgression` | per-entry link decision; the flag itself is dropped |
 | `entry.topW` when sets exist | dropped (recomputable) |
-| Entries/exercises without an `id` | dropped (**A21**) |
+| Entries/exercises without an `id` | omitted from live data; retained in `migrationAudit.discarded` (**A21**) |
 
 Everything else in the v1 file is in the untouched backup.
 
@@ -856,65 +874,5 @@ Also seeded in A: `oneRepMaxes["one-rep-max:migrated:0025"] = { value: 93.3, sou
 | Coach payload/cohort, admin, effort and muscle stats, workout text export | Read exposures back into the v1 entry shape with `legacyEntriesOf(workout, prescriptions)` (`api/engine/performance.js`): `id`, `rid`, `target`, `sets[{ w, r, sec, min, speed, rir, rpe, warmup, type, drops, clusters, done }]`, `muscleSnapshot`, `note`/`notePin`. `target` comes from the exposure's prescription (`sets`, `reps`, `weight`, `sec`, or cardio `min`/`speed`) — for a legacy exposure from its `legacyTarget`. A workout that was never migrated (a v1 state file on the server) comes back as is |
 | MCP server (`mcp/`) | Reads `DATA_DIR` directly, never through the gate: a v1 profile is **refused explicitly** (`engineUnsupported`) rather than reported as empty |
 | Reminder tick, admin lists | Read the file directly; unaffected by the schema |
-| Plan share / import | Plan files carry each exercise's `rule`, validated on import; `PLAN_FMT` 1 files are refused (**A11**) |
+| Plan share / import | Plan files carry each exercise's `rule`, validated on import; `PLAN_FMT` 1 files are converted with the shared migration, including units, custom exercises and schedule (**A11**); retired format 2 remains refused |
 | History import (CSV, Strong, Hevy) | Written as v2 exposures with `exposureId: 'ie…'`, `trackId: 'import:<exerciseId>'`, `excludedFromProgression: true`, no prescription — the same *legacy-like* shape a migrated unlinked entry has, disconnected from routines (see `DATA_IMPORTS.md`) |
-
----
-
-## 8. ATTENTION index
-
-Every row is an **ATTENTION** case. Ids are stable; sections above refer to them. "Not changed" means this note documents the
-behaviour; it is not a defect fixed by the migration.
-
-| Id | Case | What happens | What to do |
-|---|---|---|---|
-| **ATTENTION** A1 | Catalogue mismatch | The conversion needs `LIB_BY_ID`; a different catalogue on a phone would convert the same profile into a different document | `api` and the frontend must ship the same `api/coach/core/library.js`; the function throws `migration-needs-catalogue` without it |
-| **ATTENTION** A2 | Rollback | Restoring `state-<uid>.pre-engine-v1.json` drops whatever the server received in v2 since | Prefer roll-forward; if you must roll back, see 4.3 |
-| **ATTENTION** A3 | Legacy (unlinked) history | Entries that cannot be tied to exactly one occurrence become `kind: 'legacy'`, `excludedFromProgression: true`, no prescription, no `actual`; their v1 `target`/`planned` are kept in `legacyTarget`/`legacyPlanned`. They show everywhere except as a progression signal | Nothing is lost; the first linked session after the upgrade re-establishes the track |
-| **ATTENTION** A4 | Open **history-edit draft** at upgrade time | The draft (`editingWorkoutId`) reuses the saved workout's id, so its prescription ids `<id>:p<j>` collide with that workout's own: the draft's prescription **overwrites** the saved one in `prescriptions{}`. Harmless if the draft is byte-identical; if entries were reordered/added/removed, the saved exposure can point at another exercise's prescription (observed: a bench exposure reading a 40 kg row). **Not changed** | Finish or discard any open workout edit **before** upgrading |
-| **ATTENTION** A5 | **Pre-upgrade stash** (`gym_stash` / `opengym-stash.json`, kept by a forced sign-out or disconnect) | After the upgrade `applyStash` merges a v1-shaped copy: the merge keeps the newer v1 routines/workouts wholesale and `Object.assign(clone(DEF), merged)` stamps the result schema 2 with no prescriptions. **Not changed** | Sign in and let the old version sync **before** upgrading; if a stash exists, restore it from a JSON backup instead |
-| **ATTENTION** A6 | **Coach "Revert"** of a change made before the upgrade | Coach snapshots (`coach.snapshots[].routines`) are v1-shaped and `revertLast` copies them verbatim into `routines`, so the slots have no `rule`/`occurrenceId`. **Not changed** | Do not revert pre-upgrade Coach changes; edit the routine instead |
-| **ATTENTION** A7 | Unilateral (`side`) 1RM | The row's `r` is both limbs' total, so the seeded 1RM is overstated (26.7 vs 23.3 in a probe). Only percent-of-1RM/5-3-1 rules read it. **Not changed** | Enter a manual 1RM (`source: 'manual'`, newer `capturedAt` wins) before using such a preset |
-| **ATTENTION** A8 | Global rest | The profile's `restSec` is baked into each rule at conversion (`parameters.restSeconds`, unless the exercise had its own `restSec`); changing the global default later no longer changes existing plans | Edit rest per exercise |
-| **ATTENTION** A9 | First-session numbers | Progression is *reconstructed* by replay (5.6), not lived: see section 6 for what to expect (a clean linked session earns one step; a missing/edited plan holds or restarts; misses count toward a deload) | — |
-| **ATTENTION** A10 | Offline at first launch | A signed-in device cannot ask the server's status and stays on the gate's error state until it can | Reconnect and press **Try again** |
-| **ATTENTION** A11 | v1 plan files | Plan files exported before v2 (`PLAN_FMT` 1) are **refused**, not imported empty | Re-export from an upgraded instance |
-| **ATTENTION** A12 | `migrationAudit` visibility | The list (`prog`, `deloadFactor`, `intensifier` entries) is stored in the profile but shown only as a count in one toast | Read `migrationAudit.unsupported` in the profile/backup; the untouched v1 file holds the originals |
-| **ATTENTION** A13 | Deploy order | Once the server file is v2, a client without `X-OpenGym-Engine-Schema` gets `409 upgrade-required` (stale cached app shell, old APK); a new web client on an API that predates the gate cannot ask `migration-status` and stays on the error gate | Ship `api` and `web` together; reload stale tabs; update the Android/iOS app |
-| **ATTENTION** A14 | Restoring a v1 **backup file** | Converted in memory, then a *forced* replace-and-push like any backup restore: the server's profile is overwritten | Restore only when that is the intent |
-| **ATTENTION** A15 | `exWeights` | Carried verbatim; no v2 reader consults it (the working weight is the rule's load and the track) | — |
-| **ATTENTION** A16 | Migrated **active** session quirks | Its exposure stubs carry no `mode` (set at finish from the entry's target), and its warm-up rows lack `autoWarmup` (v1 never wrote it), so a work-weight edit does not re-aim them | Cosmetic; finish the workout normally |
-| **ATTENTION** A17 | Server-side validation | Only migration output is checked with `validateCanonicalProfile`; `PUT /api/data` of a v2 document from an aware client is not re-validated | — |
-| **ATTENTION** A18 | Timed "Add time" | Now `hold_seconds` (window slides up by `inc` seconds after a clean session, default 5, deloading after 3 misses); earlier drafts of `SELF_HOSTING.md` said "time". A timed exercise with policy `off` becomes `manual` | — |
-| **ATTENTION** A19 | Unknown policy | An own `cfg.prog` the engine does not know (or one the mode does not accept) becomes `manual` and is listed in `migrationAudit` field `prog` | Pick a preset in the exercise sheet |
-| **ATTENTION** A20 | Active session scope | The server never receives or converts `active`; it exists only on the device that started it (`gym_active_v1`) | Finish a workout on the device that started it |
-| **ATTENTION** A21 | Malformed records | Non-object list members and exercises/entries with no `id` are dropped by the conversion | They stay in the `.pre-engine-v1` backup |
-| **ATTENTION** A22 | `sets` missing | A routine config with no `sets` becomes the preset default (3); v1 read it as 1 | Only hand-edited plans; set the count |
-
----
-
-## 9. Operator and user runbook
-
-**Before upgrading (users)**: finish or discard the workout in progress and any open history edit
-(**A4**); let every device sync on the old version (**A5**); optionally export a JSON backup.
-
-**Verifying a conversion (operators)**
-
-* `data/state-<uid>.pre-engine-v1.json` exists and has no `engineSchemaVersion` (or `1`).
-* `data/state-<uid>.json` has `engineSchemaVersion: 2`, `prescriptions`, `progression`,
-  `oneRepMaxes`, and `_rev` one higher than the backup's.
-* `data/audit.log` has `data.migrate.ok` (`v1->v2 <bytes>B <n> routines <m> workouts`); a failure
-  logs `data.migrate.fail` and "Training data upgrade failed" and leaves the original file alone.
-* `GET /api/data/migration-status` → `{ required, schemaVersion, revision, summary }`.
-
-**Where the backups are**: server `data/state-<uid>.pre-engine-v1.json`; guest browser
-`localStorage["gym_state_v1.pre-engine-v1"]`; phone `gym_state_v1.pre-engine-v1.json` beside the
-data file; a v1 JSON backup file is its own backup. None is ever overwritten or deleted by the app.
-
-**Rolling back one profile**: stop the API, copy the `.pre-engine-v1.json` over the state file,
-start the API (**A2**).
-
-**Re-running the conversion**: not needed. The function is pure: the same v1 input always gives
-the same v2 output; to test a conversion offline, call `migrateProfileV1ToV2(state, LIB_BY_ID)` on
-the backup and compare (`api/test/profile-migration.test.js` covers the cases above).
-
