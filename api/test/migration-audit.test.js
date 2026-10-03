@@ -44,17 +44,17 @@ test('no logged row is lost: every v1 row (warm-up, drops, sides, cardio) has a 
 
 // ---- M1/M2/M8: the rounding grid chosen by the migration changes the loads v1 would have prescribed ----
 
-test('M1: a 1.25 kg step on v1 one-decimal loads (21.3 = 21.25) stays on the 1.25 grid like v1 (22.5)', { todo: 'rounding step falls to 0.1 → 22.6' }, () => {
+test('M1: a 1.25 kg step on v1 one-decimal loads (21.3 = 21.25) stays on the 1.25 grid like v1 (22.5)', () => {
   const s = v1([{ id: BENCH, sets: 3, reps: 5, weight: 20, inc: 1.25, prog: 'linear' }], [wk('w1', '2026-01-01', [entry(BENCH, { sets: 3, reps: 5, weight: 21.3 }, [row(5, 21.3), row(5, 21.3), row(5, 21.3)], { sets: 3, reps: 5, weight: 20 })])]);
   assert.equal(loadOf(nextPrescription(migrate(s).profile)), 22.5);
 });
 
-test('M2: a load off the increment grid (52 kg, +2.5) goes to 54.5 like v1, not 55', { todo: 'step 1 snaps 54.5 → 55' }, () => {
+test('M2: a load off the increment grid (52 kg, +2.5) goes to 54.5 like v1, not 55', () => {
   const s = v1([{ id: BENCH, sets: 3, reps: 5, weight: 52, prog: 'linear' }], [wk('w1', '2026-01-01', [entry(BENCH, { sets: 3, reps: 5, weight: 52 }, [row(5, 52), row(5, 52), row(5, 52)], { sets: 3, reps: 5, weight: 52 })])]);
   assert.equal(loadOf(nextPrescription(migrate(s).profile)), 54.5);
 });
 
-test('M4: the weight last lifted in a routine-less (legacy) log is held exactly (52.5), not snapped to the plan grid', { todo: 'held load re-rounded to step 5 → 55 (heavier than anything lifted)' }, () => {
+test('M4: the weight last lifted in a routine-less (legacy) log is held exactly (52.5), not snapped to the plan grid', () => {
   const legacy = wk('w1', '2026-01-01', [{ id: SQUAT, sets: [row(5, 52.5), row(5, 52.5), row(5, 52.5)] }], { routineIds: [], routineId: null });
   const p = nextPrescription(migrate(v1([{ id: SQUAT, sets: 3, reps: 5, weight: 50, prog: 'linear' }], [legacy])).profile);
   assert.equal(loadOf(p), 52.5);
@@ -62,7 +62,7 @@ test('M4: the weight last lifted in a routine-less (legacy) log is held exactly 
 
 // ---- M3: assistance/bodyweight ladder restarts once it reaches zero help ----
 
-test('M3: an assisted exercise that reaches 0 kg of help keeps climbing reps (v1: 14) instead of restarting at the plan', { todo: 'ladder fingerprint ≠ cfg-derived fingerprint → plan_changed reset' }, () => {
+test('M3: an assisted exercise that reaches 0 kg of help keeps climbing reps (v1: 14) instead of restarting at the plan', () => {
   const h = [[12, 7.5], [13, 2.5], [13, 0]].map(([r, w], i) => wk(`w${i}`, `2026-01-0${i + 1}`, [entry(DIP, { sets: 1, reps: 13, weight: w }, [row(r, w)], { sets: 1, reps: 13, weight: 7.5 })]));
   const m = migrate(v1([{ id: DIP, sets: 1, reps: 13, weight: 7.5, inc: 5, prog: 'linear' }], h)).profile;
   const occ = m.routines[0].ex[0];
@@ -72,12 +72,12 @@ test('M3: an assisted exercise that reaches 0 kg of help keeps climbing reps (v1
 
 // ---- M6: robustness ----
 
-test('M6: one workout with an unparseable date must not block the whole migration', { todo: 'throws invalid-date workouts[i].d' }, () => {
+test('M6: one workout with an unparseable date must not block the whole migration', () => {
   const s = v1([], [{ id: 'w1', d: '2026-1-5', start: 1000, entries: [] }, wk('w2', '2026-01-06', [])]);
   assert.doesNotThrow(() => migrate(s));
 });
 
-test('M7: a migrated cardio log is not flagged `incomplete` and keeps its duration/speed summary', { todo: 'performedOf reads row.sec, cardio rows carry min → incomplete:true' }, () => {
+test('M7: a migrated cardio log is not flagged `incomplete` and keeps its duration/speed summary', () => {
   const s = v1([{ id: CARDIO, mode: 'cardio', sets: 1, min: 20, speed: 8 }], [wk('w1', '2026-01-01', [{ id: CARDIO, rid: 'r1', target: { mode: 'cardio', sets: 1, min: 20, speed: 8 }, sets: [{ min: 20, speed: 9, done: true }] }])]);
   const { actual } = migrate(s).profile.workouts[0].exposures[0];
   assert.notEqual(actual.incomplete, true);
@@ -95,10 +95,31 @@ test('P1 (migration): a linked entry with no completed work row is converted but
   assert.equal(loadOf(nextPrescription(profile)), 60);
 });
 
-test('M8: an absurd `sets` value cannot make the migration emit more than the sync cap', { todo: 'sets:1e6 → 59 MB profile (8 s); sets:1e9 exhausts the heap' }, () => {
+test('M8: an absurd `sets` value cannot make the migration emit more than the sync cap', () => {
   const s = v1([{ id: BENCH, sets: 1e6, reps: 5, weight: 60, prog: 'linear' }], [wk('w1', '2026-01-01', [entry(BENCH, { sets: 1e6, reps: 5, weight: 60 }, [row(5, 60)])])]);
   const { profile } = migrate(s);
   assertSyncSize(profile);
+});
+
+test('M2 (lb): the step also divides the increment in pounds (+5 lb on 135 lb stays on 140)', () => {
+  const s = v1([{ id: BENCH, sets: 3, reps: 5, weight: 135, prog: 'linear' }], [wk('w1', '2026-01-01', [entry(BENCH, { sets: 3, reps: 5, weight: 135 }, [row(5, 135), row(5, 135), row(5, 135)], { sets: 3, reps: 5, weight: 135 })])], { unit: 'lb' });
+  assert.equal(loadOf(nextPrescription(migrate(s).profile)), 140);
+});
+
+test('M6 (no fallback date): a workout with an empty d and no start still migrates and is audited', () => {
+  const { profile } = migrate(v1([], [{ id: 'w1', d: '', entries: [] }, wk('w2', '2026-01-06', [])]));
+  assert.equal(profile.workouts.length, 2);
+  assert.ok(profile.migrationAudit.unsupported.some(u => u.field === 'date' && u.path === 'workouts[0].d'));
+});
+
+test('M13: an invalid root unit ("lbs") migrates as kg and the profile says kg', () => {
+  const { profile } = migrate(v1([], [], { unit: 'lbs' }));
+  assert.equal(profile.unit, 'kg');
+});
+
+test('M10: routineIds [] with a scalar routineId keeps the routine association', () => {
+  const s = v1([{ id: BENCH, sets: 3, reps: 5, weight: 60, prog: 'linear' }], [wk('w1', '2026-01-01', [entry(BENCH, { sets: 3, reps: 5, weight: 60 }, [row(5, 60), row(5, 60), row(5, 60)], { sets: 3, reps: 5, weight: 60 })], { routineIds: [] })]);
+  assert.deepEqual(migrate(s).profile.workouts[0].routineIds, ['r1']);
 });
 
 // ---- M5: size ----

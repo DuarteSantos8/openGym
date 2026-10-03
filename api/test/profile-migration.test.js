@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { generatePrescription, planFingerprint } from '../engine/index.js';
-import { isLegacyProfile, migrateProfileV1ToV2, migrationStatus, validateCanonicalProfile } from '../migration/profile-migration.js';
+import { isLegacyProfile, migrateProfileV1ToV2, migrationStatus, validateCanonicalActive, validateCanonicalProfile } from '../migration/profile-migration.js';
 import { LIB_BY_ID } from '../coach/core/library.js';
 
 const migrate = state => migrateProfileV1ToV2(state, LIB_BY_ID);
@@ -28,6 +28,89 @@ const nextFor = (profile, trackId, rule) => {
   return generatePrescription({ id: 'next', now: '2026-01-08T00:00:00.000Z', trackId, rule, state,
     lastPrescription: profile.prescriptions[state.lastPrescriptionId], lastLog: { ...x, id: x.exposureId } });
 };
+
+test('A4: an edited draft cannot overwrite a saved workout prescription', () => {
+  const input = v1();
+  input.active = { ...input.workouts[0], editingWorkoutId: 'w1', entries: [
+    { id: SITUP, target: { sets: 1, reps: 10, weight: 40 }, sets: [row(10, 40)] },
+    ...input.workouts[0].entries
+  ] };
+  const { profile, activeSession } = migrate(input);
+  const saved = profile.workouts[0].exposures[0];
+  assert.equal(profile.prescriptions[saved.prescriptionId].exerciseId, BENCH);
+  assert.equal(profile.prescriptions[saved.prescriptionId].rows[0].load.value, 62.5);
+  assert.notEqual(saved.prescriptionId, activeSession.exposures[0].prescriptionId);
+  assert.notEqual(saved.exposureId, activeSession.exposures[0].exposureId);
+  assert.equal(activeSession.editingWorkoutId, 'w1');
+});
+
+test('A6: Coach snapshots are converted without changing their plan numbers', () => {
+  const input = v1({ coach: { snapshots: [{ proposalId: 'p1', week: { 1: 'r1' }, routines: [
+    { id: 'r1', ex: [{ id: BENCH, sets: 2, reps: 8, weight: 40, prog: 'double', repsMin: 6 }] }
+  ] }] } });
+  const snapshot = migrate(input).profile.coach.snapshots[0];
+  assert.deepEqual(snapshot.week, { 1: 'r1' });
+  assert.equal(snapshot.routines[0].ex[0].occurrenceId, 'r1:o0');
+  assert.equal(snapshot.routines[0].ex[0].rule.parameters.load.value, 40);
+  assert.equal(snapshot.routines[0].ex[0].rule.preset, 'double');
+});
+
+test('A7: unilateral migration estimates each completed limb, including half-done rows', () => {
+  const input = v1({ workouts: [{ id: 'w1', start: 1, entries: [{ id: BENCH, sets: [
+    { w: 20, r: 10, done: true, sides: { L: row(5, 20), R: row(5, 20) } },
+    { w: 30, r: 10, done: false, sides: { L: row(5, 30), R: row(5, 30, { done: false }) } }
+  ] }] }] });
+  const { profile } = migrate(input);
+  assert.equal(Object.values(profile.oneRepMaxes)[0].value, 35);
+  assert.equal(profile.workouts[0].vol, 350);
+});
+
+test('A16: active exposures retain mode and unfinished generated warmups can be re-aimed', () => {
+  const input = v1({ active: { id: 'a', start: 1, routineIds: ['r1'], entries: [{ id: BENCH, rid: 'r1',
+    target: { mode: 'reps', sets: 3, reps: 5, weight: 60 }, sets: [
+      row(8, 20, { phase: 'warmup', done: false }), row(5, 60)
+    ] }] } });
+  const { activeSession } = migrate(input);
+  assert.equal(activeSession.exposures[0].mode, 'reps');
+  assert.equal(activeSession.entries[0].sets[0].autoWarmup, true);
+});
+
+test('A21: malformed records remain recoverable in the migration audit', () => {
+  const { profile } = migrate(v1({ routines: [null, { id: 'r', ex: [false, { sets: 3 }] }], workouts: [] }));
+  assert.deepEqual(profile.migrationAudit.discarded, [
+    { path: 'routines[0]', value: null },
+    { path: 'routines[1].ex[0]', value: false },
+    { path: 'routines[1].ex[1]', value: { sets: 3 } }
+  ]);
+  assert.equal(validateCanonicalProfile(profile).ok, true);
+});
+
+test('A22: an omitted set count retains v1\'s one-set default', () => {
+  const { profile } = migrate(v1({ routines: [{ id: 'r', ex: [{ id: BENCH, reps: 5, weight: 60 }] }], workouts: [] }));
+  assert.deepEqual(profile.routines[0].ex[0].rule.parameters.sets, { min: 1, max: 1 });
+});
+
+test('A17: canonical validation rejects malformed members and mismatched prescriptions', () => {
+  const original = migrate(v1()).profile;
+  for (const breakProfile of [
+    p => { p.routines.push(null); },
+    p => { delete p.routines[0].ex[0].rule; },
+    p => { p.routines[0].ex[0].rule.exerciseId = SITUP; },
+    p => { p.workouts.push(false); },
+    p => { p.prescriptions.extra = {}; },
+    p => { p.prescriptions[p.workouts[0].exposures[0].prescriptionId].exerciseId = SITUP; }
+  ]) {
+    const p = structuredClone(original);
+    breakProfile(p);
+    assert.equal(validateCanonicalProfile(p).ok, false);
+  }
+});
+
+test('A19: unknown inherited policies are audited as well as exercise overrides', () => {
+  const { profile } = migrate(v1({ routines: [{ id: 'r', prog: 'wave', ex: [{ id: BENCH, sets: 1, reps: 5 }] }], workouts: [] }));
+  assert.equal(profile.routines[0].ex[0].rule.preset, 'manual');
+  assert.equal(profile.migrationAudit.unsupported[0].value, 'wave');
+});
 
 test('engineSchemaVersion alone decides; a future schema is refused', () => {
   for (const v of [undefined, null, '2', 1, 1.5]) assert.equal(migrationStatus({ engineSchemaVersion: v }).required, true, String(v));
@@ -126,10 +209,10 @@ test('a record holding only its confirmed weight (topW) keeps that load, with no
   assert.deepEqual(validateCanonicalProfile(profile), { ok: true, errors: [] });
 });
 
-test('a bodyweight override is carried where it differs from the catalogue', () => {
+test('explicit bodyweight settings survive regardless of the catalogue', () => {
   const ex = [{ id: BENCH, sets: 3, reps: 8, bodyweight: true }, { id: SITUP, sets: 3, reps: 12, bodyweight: false }, { id: SITUP, sets: 3, reps: 12, bodyweight: true }, { id: BENCH, sets: 3, reps: 8 }];
   const { profile } = migrate(v1({ routines: [{ id: 'r1', name: 'Bw', ex }], workouts: [] }));
-  assert.deepEqual(profile.routines[0].ex.map(o => o.bodyweight), [true, false, undefined, undefined]);
+  assert.deepEqual(profile.routines[0].ex.map(o => o.bodyweight), [true, false, true, undefined]);
   assert.deepEqual(validateCanonicalProfile(profile), { ok: true, errors: [] });
 });
 
@@ -214,11 +297,11 @@ test('rows keep warm-up role, effort, drops, sides, rest-pause clusters and card
   ] }] });
   const [lift, cardio] = migrate(s).profile.workouts[0].exposures;
   const rows = lift.performance.sets;
-  assert.deepEqual(rows.map(r => [r.role, r.status]), [['warmup', 'completed'], ['work', 'completed'], ['work', 'completed'], ['work', 'completed'], ['work', 'skipped']]);
+  assert.deepEqual(rows.map(r => [r.role, r.status]), [['warmup', 'completed'], ['work', 'completed'], ['work', 'completed'], ['work', 'skipped'], ['work', 'completed'], ['work', 'skipped']]);
   assert.deepEqual([rows[1].rir, rows[1].rpeEntered], [2, 8]);
   assert.deepEqual(rows[1].segments.map(x => x.resistance.value), [40]);
-  assert.deepEqual([rows[2].sides.L.status, rows[2].sides.R.status], ['completed', 'skipped']);
-  assert.deepEqual(rows[3].clusters, [5, 2, 2]);
+  assert.deepEqual([rows[2].side, rows[3].side], ['L', 'R']);
+  assert.deepEqual(rows[4].clusters, [5, 2, 2]);
   assert.equal(cardio.mode, 'cardio');
   assert.deepEqual(cardio.performance.sets[0].observations, [{ metric: 'duration', unit: 's', value: 1200 }, { metric: 'speed', unit: 'kmh', value: 9.5 }]);
   assert.equal(cardio.performance.sets[0].resistance.kind, 'none');
@@ -389,7 +472,7 @@ test('a bodyweight climb keeps its ceiling: reps up to it, then sets up to v1\'s
   const { profile } = migrate(v1({ routines: [{ id: 'r1', name: 'Bw', ex }], workouts: [] }));
   const [capped, open] = profile.routines[0].ex.map(o => o.rule.parameters);
   assert.deepEqual([capped.reps, capped.sets], [{ min: 10, max: 20 }, { min: 3, max: 6 }]);
-  assert.deepEqual([open.reps, open.sets], [{ min: 10, max: 10 }, { min: 3, max: 3 }]);
+  assert.deepEqual([open.reps, open.sets], [{ min: 10, max: 20 }, { min: 3, max: 6 }]);
   assert.deepEqual(validateCanonicalProfile(profile), { ok: true, errors: [] });
 });
 
@@ -445,7 +528,7 @@ test('a timed hold resumes where v1\'s target left it: one step up after a clean
       entries: [{ id: SITUP, rid: 'r1', target: { mode: 'time', sets: 2, sec: 60 }, sets: [{ sec: 60, w: 0, done: true }, { sec: 62, w: 0, done: true }] }] }]
   });
   const { profile } = migrate(state);
-  assert.deepEqual(profile.routines[0].ex[0].rule.parameters.durationSeconds, { min: 60, max: 60 });
+  assert.deepEqual(profile.routines[0].ex[0].rule.parameters.durationSeconds, { min: 45, max: 45 });
   assert.equal(profile.progression['r1:o0'].position, 1);
   const x = profile.workouts[0].exposures[0];
   const next = generatePrescription({ id: 'n', now: '2026-01-08T00:00:00.000Z', trackId: 'r1:o0', rule: profile.routines[0].ex[0].rule, state: profile.progression['r1:o0'],
@@ -553,7 +636,7 @@ test('a routine entry can say a machine is, or is not, assisted, whatever the ca
   assert.deepEqual(profile.routines[0].ex.map(o => o.assisted), [true, false, undefined]);
   // Nothing to freeze without a session, but the exercise that is a plain lift stays one.
   const custom = migrate(assistedHistory([[20, 8]], { sets: 3, reps: 8, weight: 20, prog: 'linear', assisted: false })).profile;
-  assert.equal(custom.prescriptions[custom.workouts[0].exposures[0].prescriptionId].assisted, undefined);
+  assert.equal(custom.prescriptions[custom.workouts[0].exposures[0].prescriptionId].assisted, false);
   const forced = migrate(assistedHistory([[20, 8]], { sets: 3, reps: 8, weight: 20, prog: 'linear', assisted: true }, BENCH)).profile;
   assert.equal(forced.prescriptions[forced.workouts[0].exposures[0].prescriptionId].assisted, true);
 });
@@ -568,4 +651,134 @@ test('an in-progress session on an assistance machine freezes as one', () => {
   const active = { id: 'a1', d: '2026-01-08', start: Date.UTC(2026, 0, 8, 18), routineIds: ['r1'], entries: [{ id: DIP, rid: 'r1', target: { sets: 3, reps: 8, weight: 35 }, sets: [row(8, 35)] }] };
   const { profile, activeSession } = migrate({ ...assistedHistory([[40, 8]]), active });
   assert.equal(profile.prescriptions[activeSession.exposures[0].prescriptionId].assisted, true);
+});
+
+test('A32: suffixes and saved/active namespaces cannot collide', () => {
+  const input = v1({ routines: ['r', 'r~2', 'r'].map(id => ({ id, ex: [{ id: BENCH }] })),
+    workouts: ['a:active', 'w~2', 'w', 'w'].map(id => ({ id, start: 1, entries: [{ id: BENCH, sets: [row(5, 20)] }] })),
+    active: { id: 'a', start: 1, entries: [{ id: BENCH, sets: [row(5, 20)] }] } });
+  const { profile, activeSession } = migrate(input);
+  assert.equal(validateCanonicalProfile(profile).ok, true);
+  const ids = [...profile.workouts.flatMap(w => w.exposures.map(x => x.exposureId)), ...activeSession.exposures.map(x => x.exposureId)];
+  assert.equal(new Set(ids).size, ids.length);
+});
+
+test('A34: malformed nested containers are audited including active and snapshots', () => {
+  const { profile } = migrate(v1({ routines: [{ id: 'r', ex: {} }], workouts: [{ id: 'w', entries: {} }],
+    active: { entries: [{ id: BENCH, sets: {} }] }, coach: { snapshots: [{ routines: [{ id: 's', ex: {} }] }] } }));
+  for (const path of ['routines[0].ex', 'workouts[0].entries', 'active.entries[0].sets', 'coach.snapshots[0].routines[0].ex']) {
+    assert.ok(profile.migrationAudit.discarded.some(d => d.path === path), path);
+  }
+});
+
+test('A35: unrepresentable dates are repaired and audited with an exact path, never blocking; absent dates remain deterministic', () => {
+  const dates = profile => profile.migrationAudit.unsupported.filter(u => u.field === 'date').map(u => u.path);
+  for (const field of ['start', 'end']) assert.deepEqual(dates(migrate(v1({ workouts: [{ id: 'w', [field]: 1e300 }] })).profile), [`workouts[0].${field}`]);
+  assert.deepEqual(dates(migrate(v1({ active: { start: 1e300 } })).profile), ['active.start']);
+  assert.deepEqual(dates(migrate(v1({ workouts: [{ d: 'invalid' }] })).profile), ['workouts[0].d']);
+  assert.doesNotThrow(() => migrate(v1({ workouts: [{ id: 'w' }], active: {} })));
+});
+
+test('A48/A50: assistance overrides, execution flags and parent effort survive history migration', () => {
+  const input = v1();
+  Object.assign(input.routines[0].ex[0], { assisted: true, side: true, bodyweight: true });
+  Object.assign(input.workouts[0].entries[0].target, { assisted: true, side: true, bodyweight: true });
+  input.workouts[0].entries[0].sets = [{ ...row(10, 60, { rpe: 8 }), sides: { L: row(5, 60), R: row(5, 60) } }];
+  const { profile } = migrate(input);
+  const x = profile.workouts[0].exposures[0];
+  assert.equal(x.assisted, true); assert.equal(x.side, true); assert.equal(x.bodyweight, true);
+  assert.equal(x.performance.sets[0].rpeEntered, 8);
+  assert.equal(Object.values(profile.oneRepMaxes).length, 0);
+});
+
+test('A51/A52/A53: inferred timed active targets and cursor survive discarded entries', () => {
+  const { profile, activeSession } = migrate(v1({ routines: [{ id: 'r', ex: [{ id: BENCH, mode: 'time', prog: 'time' }] }], workouts: [],
+    active: { id: 'a', cur: 1, entries: [null, { id: BENCH, sets: [{ sec: 60, done: false }] }] } }));
+  assert.equal(profile.routines[0].ex[0].rule.parameters.durationSeconds.min, 45);
+  assert.equal(activeSession.cur, 0);
+  assert.equal(activeSession.entries[0].target.mode, 'time');
+  assert.equal(activeSession.entries[0].target.sec, 60);
+});
+
+test('A38/A40/A44/A45: load policy, planned hold baseline, exclusions and history order are retained', () => {
+  const { profile } = migrate(v1({ routines: [{ id: 'r', ex: [
+    { id: SITUP, weight: 20, sets: 3, reps: 10, prog: 'linear' },
+    { id: BENCH, mode: 'time', sec: 45, prog: 'time' }
+  ] }], workouts: [
+    { id: 'new', start: 2, routineId: 'r', entries: [{ id: BENCH, planned: { sets: 1, sec: 45 }, target: { mode: 'time', sets: 1, sec: 60 }, sets: [{ sec: 60, done: true }] }] },
+    { id: 'old', start: 1, entries: [{ id: SITUP, noProg: true, sets: [row(10, 10)] }] }
+  ] }));
+  assert.equal(profile.routines[0].ex[0].rule.preset, 'linear');
+  assert.equal(profile.routines[0].ex[1].rule.parameters.durationSeconds.min, 45);
+  assert.deepEqual(profile.workouts.map(w => w.id), ['old', 'new']);
+  assert.equal(profile.workouts[0].exposures[0].progressionExclusion, 'explicit');
+});
+
+test('A41/A42: skipped prescribed work and incomplete metrics never earn progress; bonuses remain extra', () => {
+  for (const sets of [
+    [row(5, 60), row(5, 60), row(5, 60), row(1, 60)],
+    [row(5, 60), row(5, 60), row(5, 60, { done: false }), row(5, 60)],
+    [row(5, 60), row(5, 60), row(undefined, 60)],
+    [row(5, 60), row(5, 60), row(5, undefined)]
+  ]) {
+    const input = v1(); input.workouts[0].entries[0].target.weight = 60; input.workouts[0].entries[0].sets = sets;
+    const { profile } = migrate(input); const x = profile.workouts[0].exposures[0];
+    assert.equal(profile.progression['r1:o0'].readyToIncrement, sets[3]?.r === 1);
+    assert.equal(x.performance.sets[0].prescribed, true);
+    if (sets[3]) assert.equal(x.performance.sets[3].prescribed, false);
+  }
+});
+
+test('A43: a migrated rest-pause block freezes one deciding row and its full repetition target', () => {
+  const input = v1(); input.routines[0].ex[0].intensifier = { type: 'restpause', totalReps: 12, restSec: 15 };
+  input.workouts[0].entries[0].sets = [row(12, 62.5, { type: 'restpause', clusters: [6, 4, 2] })];
+  const { profile } = migrate(input); const x = profile.workouts[0].exposures[0]; const p = profile.prescriptions[x.prescriptionId];
+  assert.equal(p.rows.length, 1); assert.equal(p.rows[0].reps.min, 12);
+  assert.equal(profile.progression['r1:o0'].readyToIncrement, true);
+  assert.deepEqual(x.performance.sets[0].clusters, [6, 4, 2]);
+});
+
+test('A48: explicit false assistance overrides the catalogue for estimates', () => {
+  const { profile } = migrate(v1({ workouts: [{ id: 'w', start: 1, entries: [{ id: DIP, target: { assisted: false }, sets: [row(5, 60)] }] }] }));
+  assert.equal(Object.values(profile.oneRepMaxes)[0].value, 70);
+});
+
+test('A52: active cursors remap before, at and after filtered entries and empty sessions', () => {
+  for (const [entries, cur, expected] of [
+    [[null, { id: BENCH }, { id: SITUP }], 2, 1],
+    [[{ id: BENCH }, null, { id: SITUP }], 1, 1],
+    [[{ id: BENCH }, null], 0, 0], [[null], 0, 0]
+  ]) assert.equal(migrate(v1({ active: { entries, cur } })).activeSession.cur, expected);
+});
+
+
+test('A34: valid routine set counts are not discarded containers', () => {
+  assert.equal(migrate(v1()).profile.migrationAudit.discarded, undefined);
+});
+
+test('A51: active validation resolves frozen prescriptions and entry modes together', () => {
+  const { profile, activeSession } = migrate(v1({ active: { id: 'active', entries: [{ id: BENCH, sets: [{ sec: 60 }] }] } }));
+  assert.equal(validateCanonicalActive(profile, activeSession).ok, true);
+  activeSession.entries[0].target.mode = 'reps';
+  assert.equal(validateCanonicalActive(profile, activeSession).ok, false);
+  activeSession.entries[0].target.mode = 'time';
+  delete profile.prescriptions[activeSession.exposures[0].prescriptionId];
+  assert.equal(validateCanonicalActive(profile, activeSession).ok, false);
+});
+
+test('A37: an omitted bodyweight ceiling retains v1 rep and six-set defaults', () => {
+  const { profile } = migrate(v1({ routines: [{ id: 'r1', ex: [{ id: SITUP, sets: 3, reps: 10, prog: 'linear' }] }], workouts: [{ id: 'w1', start: 1, entries: [{ id: SITUP, rid: 'r1', target: { sets: 3, reps: 10, weight: 0 }, sets: [row(10, 0), row(10, 0), row(10, 0)] }] }] }));
+  const occurrence = profile.routines[0].ex[0];
+  assert.equal(occurrence.rule.parameters.reps.max, 20);
+  assert.equal(occurrence.rule.parameters.sets.max, 6);
+  assert.equal(nextFor(profile, occurrence.occurrenceId, occurrence.rule).prefill.reps, 11);
+});
+
+test('A41/A42: unilateral deciding work retains odd totals and checks both limbs', () => {
+  const input = v1({ routines: [{ id: 'r1', ex: [{ id: BENCH, side: true, sets: 1, reps: 5, weight: 60, prog: 'linear' }] }], workouts: [{ id: 'w1', start: 1, entries: [{ id: BENCH, rid: 'r1', target: { sets: 1, reps: 5, weight: 60, side: true }, sets: [{ done: true, r: 5, w: 60, sides: { L: row(3, 60), R: row(2, 60) } }] }] }] });
+  const { profile } = migrate(input);
+  assert.equal(profile.workouts[0].exposures[0].actual.reps, 5);
+  assert.equal(profile.progression['r1:o0'].readyToIncrement, true);
+  input.workouts[0].entries[0].sets[0].sides.R.r = 1;
+  assert.equal(migrate(input).profile.progression['r1:o0'].readyToIncrement, false);
 });

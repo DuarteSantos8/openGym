@@ -11,14 +11,18 @@ const size = bytes => (bytes >= 1048576 ? `${(bytes / 1048576).toFixed(1)} MB` :
 const wrap = { display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '78vh', textAlign: 'center' }
 
 export default function MigrationGate() {
-  const { migration, confirmMigration, retryMigration } = useStore()
-  const { phase, stage, summary } = migration
+  const { migration, confirmMigration, retryMigration, cancelMigrationImport } = useStore()
+  const { phase, stage, summary, reason } = migration
   return (
     <div className="narrow" style={wrap} role="dialog" aria-modal="true" aria-labelledby="migration-title">
       <div style={{ fontSize: 54, display: 'flex', justifyContent: 'center', color: 'var(--acc)' }}><Icon name="dumbbell" /></div>
       <h1 id="migration-title" style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-.02em', margin: '10px 0 12px' }}>{t('Your training data needs an upgrade')}</h1>
       {phase === 'error' ? <>
-        <div className="muted" style={{ marginBottom: 26 }}>{t('The upgrade did not finish. No original server file was overwritten. Please contact the administrator of this openGym instance.')}</div>
+        <div className="muted" style={{ marginBottom: 26 }}>{t(reason === 'offline'
+          ? 'Connect to your server, then try again. Your original training data is unchanged.'
+          : reason === 'api-outdated'
+            ? 'Update the API and web app together, then try again. This server does not support the training data upgrade yet.'
+            : 'The upgrade did not finish. No original server file was overwritten. Please contact the administrator of this openGym instance.')}</div>
         <Button variant="primary" onClick={() => retryMigration()}>{t('Try again')}</Button>
       </> : phase === 'confirm' ? <>
         <div className="muted" style={{ marginBottom: 14 }}>{t('openGym is updating how your progression and warm-ups are stored. A backup of your current data is created first. With a long training history this can take a few moments.')}</div>
@@ -27,6 +31,7 @@ export default function MigrationGate() {
       </> : (
         <div className="muted" role="status" aria-live="polite">{phase === 'working' ? t(STAGES[stage]) : ''}</div>
       )}
+      {migration.importData && ['confirm', 'error'].includes(phase) && <Button onClick={() => cancelMigrationImport()}>{t('Cancel')}</Button>}
     </div>
   )
 }

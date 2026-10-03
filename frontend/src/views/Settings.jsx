@@ -195,7 +195,7 @@ export default function Settings() {
         await storeBackupMedia(read.files, { limits: limitsFrom(useStore.getState().config) })
       }
       // A backup from before the v2 engine goes through the same upgrade screen as any v1 profile.
-      if (isLegacyProfile(read.state)) return importLegacyBackup(read.state, f.size)
+      if (isLegacyProfile(read.state)) return importLegacyBackup(read.state, f.size, { mergeWith })
       importBackup(read.state, { mergeWith })
       toast(t('Backup imported'))
     }
@@ -548,6 +548,19 @@ export default function Settings() {
 
     {/* ---------- data: fill it, bring things over, back it up, wipe it ---------- */}
     <Section title={t('Data')}>
+      {(S.migrationAudit?.unsupported?.length > 0 || S.migrationAudit?.discarded?.length > 0) && <details className="lrow" style={{ display: 'block' }}>
+        <summary>{t('Training data upgrade review')}</summary>
+        <div className="muted small" style={{ marginTop: 12 }}>{t('These settings could not be converted. Review the affected exercises before training.')}</div>
+        <ul>
+          {(S.migrationAudit.unsupported || []).map((item, i) => <li key={i}>
+            {item.field === 'date' ? item.path : `${S.routines.find(r => r.id === item.routineId)?.name || item.routineId} · ${item.exerciseId} · ${item.field}`}: {JSON.stringify(item.value)}
+          </li>)}
+        </ul>
+        {S.migrationAudit.discarded?.length > 0 && <>
+          <div className="muted small">{t('Malformed records were preserved below and in the original backup.')}</div>
+          <pre style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{JSON.stringify(S.migrationAudit.discarded, null, 2)}</pre>
+        </>}
+      </details>}
       <Row icon="sparkles" iconTint="var(--acc)" title={t('Load starter plan')} accessory="chevron" onClick={starterPlanSheet} />
       <Row icon="shuffle" iconTint="var(--teal)" title={t('Import from another app')}
         subtitle={t('FitNotes, Strong, Hevy — or body weight from Apple Health')}

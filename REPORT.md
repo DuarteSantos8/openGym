@@ -35,6 +35,8 @@ prescription for a recognisable group · **S3** = minor / edge.
 
 ## 2. Bugs in the v1 → v2 migration
 
+> **Resolved** (`report-corrections` Task 2): M1, M2, M3, M4, M6, M7, M8, M10, M13. Accepted, documented differences: M9, M11, M12 (see `docs/MIGRATION_TO_ENGINE_NOTE.md` §3.12).
+
 ### M5 — the migrated profile exceeds the sync cap for heavy users (S1)
 
 *Repro* (`api/test/migration-audit.test.js` → M5): 1000 sessions × 6 exercises × (2 warm-up + 4 work rows),

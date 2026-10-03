@@ -490,6 +490,12 @@ in `discarded`, with their original paths and values (**ATTENTION** (A12)).
   `{ min, speed }`; `actualOfRow` converts minutes to seconds.
 * **Rounding** — every absolute load is snapped to `rounding.step`. The migration chooses the
   step so every logged load stays exactly on the grid (section 5.2).
+  A load within 0.1 of the grid counts as on it (v1's one-decimal storage), and the step must divide
+  the increment. Every lifted load, not only logged targets, is considered.
+* **Dates** — an unparseable `d`/`start`/`end` is dropped, repaired from its sibling field and listed
+  in `migrationAudit.unsupported` (`field: 'date'`, `path`); it never blocks the upgrade.
+* **Accepted differences** — M9 (a typed `rir` is kept beside `rpe`), M11 (a combined session
+  without `rid` is not linked), M12 (the back-off run of a timed hold).
 
 ---
 

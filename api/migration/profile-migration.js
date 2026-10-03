@@ -70,9 +70,12 @@ const entryMode = (entry, ex, rows) => (MODES.includes(entry.target?.mode) ? ent
 // resolveLoad rounds every absolute load, so the step must leave each recorded load exactly as it
 // was: the lifter's own increment when it fits, else the coarsest plate step that does.
 const STEPS = { kg: [2.5, 1.25, 1, 0.5, 0.25, 0.1, 0.05, 0.01, 0.001], lb: [5, 2.5, 1, 0.5, 0.25, 0.1, 0.01, 0.001] };
-const onGrid = (v, step) => Math.abs(v / step - Math.round(v / step)) < 1e-6;
+// v1 addStep treats a load within 0.1 of the grid as on it (one-decimal storage: 21.25 → 21.3)
+const near = (v, step) => Math.abs(v - Math.round(v / step) * step) <= 0.1 + 1e-9;
+// A step must also divide the increment, or load + inc is rounded off the load v1 prescribed.
+const divides = (step, inc) => !(inc > 0) || Math.abs(inc / step - Math.round(inc / step)) < 1e-6;
 function stepFor(loads, inc, unit) {
-  return [...(inc > 0 ? [inc] : []), ...STEPS[unit]].find(step => loads.every(v => onGrid(v, step))) ?? 0.001;
+  return [...(inc > 0 ? [inc] : []), ...STEPS[unit]].find(step => divides(step, inc) && loads.every(v => near(v, step))) ?? 0.001;
 }
 
 // v1 progression.js defaultIncrement/weightIncrement: an exercise's own `inc`, else its body part's
@@ -88,6 +91,7 @@ function incrementOf(cfg, info, mode, unit) {
 
 // v1 progression.js MAX_BW_SETS: where a bodyweight climb stops adding sets.
 const MAX_BW_SETS = 6;
+const MAX_SETS = 50;
 
 /** v1's double-progression window (rep-range.js normalizeRepRange): `reps` is the top of it and
  *  `repsMin` the bottom. `repsMax` never bounded it — it only capped a bodyweight climb — but a
@@ -107,7 +111,7 @@ function ruleFrom(v, { id, routineId, exerciseId, preset, unit, mode, step, rest
   if (preset === 'bodyweight_ladder' && loadedPreset) rule.special = { ...rule.special, loadedPreset };
   if (unloadedLadder) rule.special = { ...rule.special, unloadedLadder: true, repCeiling: whole(v.repsMax) ?? 20 };
   const p = rule.parameters;
-  p.sets = fixed(whole(v.sets) ?? 1);
+  p.sets = fixed(Math.min(MAX_SETS, whole(v.sets) ?? 1));
   if (mode === 'reps') {
     const reps = whole(v.reps);
     if (preset === 'double') p.reps = doubleRange(v);
@@ -224,10 +228,12 @@ const hasDoneWork = entry => list(entry.sets).some(row => isObj(row) && row.done
 // The target values of the newest link that was actually worked.
 const lastWorked = d => d.links.findLast(l => !l.skipped)?.values;
 
+const routineIdsOf = w => (Array.isArray(w.routineIds) && w.routineIds.length ? w.routineIds : w.routineId != null ? [w.routineId] : []);
+
 /** The one occurrence a logged entry was prescribed from, or null when that is not certain. */
 function linkOf(w, entry, byRoutine) {
   if (!isObj(entry.target) || entry.noProg === true || w.excludeFromProgression === true) return null;
-  const routineIds = Array.isArray(w.routineIds) ? w.routineIds : w.routineId != null ? [w.routineId] : [];
+  const routineIds = routineIdsOf(w);
   const rid = idOf(entry.rid ?? (routineIds.length === 1 ? routineIds[0] : null), null);
   if (rid == null) return null;
   const matches = (byRoutine.get(rid) || []).filter(d => d.exerciseId === String(entry.id));
@@ -238,7 +244,7 @@ function linkOf(w, entry, byRoutine) {
 // Each linked entry gets the frozen prescription its target describes; the occurrence's own rule
 // starts where the newest of them left off.
 function finalizeDraft(d, ctx) {
-  const loads = [d.cfg.weight, ...d.links.map(l => l.values.weight)].map(num).filter(v => v > 0);
+  const loads = [d.cfg.weight, ...d.links.map(l => l.values.weight), ...(ctx.liftedLoads.get(d.exerciseId) || [])].map(num).filter(v => v > 0);
   d.inc = incrementOf(d.cfg, d.info, d.mode, ctx.unit);
   // The rounding step is a load step; a timed hold's `inc` is seconds.
   d.step = stepFor(loads, d.mode === 'reps' ? d.inc : null, ctx.unit);
@@ -258,6 +264,10 @@ function finalizeDraft(d, ctx) {
     return aim ? { min: aim, max: Math.max(aim, doubleRange(d.cfg).max) } : undefined;
   };
   d.dayWindow = dayWindow;
+  // The fingerprint every unedited log is stamped with is the one the live rule will have — the ladder
+  // once the last load is 0 — or the first session after the reach-zero log reads as `plan_changed`.
+  const lastValues = lastWorked(d);
+  const liveFingerprint = planFingerprint(d.ruleFor(lastValues?.weight != null ? { weight: lastValues.weight } : {}));
   d.links = d.links.filter(link => {
     try {
       // The plan the session was built from (v1 `planned`), never the progressed target: an
@@ -267,7 +277,7 @@ function finalizeDraft(d, ctx) {
       // stands in for it instead -- only a genuine edit falls back to rebuilding from the stamp.
       const unedited = link.planned && samePlanV1(link.planned, v1PlannedOf(d.cfg, d.mode));
       const fingerprint = !link.planned ? null
-        : unedited ? planFingerprint(d.ruleFor({}))
+        : unedited ? liveFingerprint
         : planFingerprint(d.ruleFor({ repsMin: null, repsMax: null, ...link.planned }));
       link.prescription = generatePrescription({ id: ctx.prescriptionId(`${link.workoutId}:p${link.j}`), now: link.at, trackId: d.occurrenceId, rule: d.ruleFor(link.values, d.step, dayWindow(link)), fingerprint, assisted: typeof link.assisted === 'boolean' ? link.assisted : d.assisted, restPause: (link.intensifier ?? d.cfg.intensifier)?.type === 'restpause', restPauseReps: (link.intensifier ?? d.cfg.intensifier)?.totalReps });
       return true;
@@ -338,9 +348,9 @@ const performedOf = (rows, unit, assisted = false) => rows.filter(row => !isWarm
   return [{
     row: k,
     ...(sides ? { sideReps: sides.map(side => num(side.r)), sideLoads: sides.map(side => num(side.w)) } : {}),
-    reps: num(row.sec) != null ? null : sides ? least('r') == null ? null : sides.reduce((n, side) => n + num(side.r), 0) : num(row.r),
+    reps: num(row.sec) != null || num(row.min) != null ? null : sides ? least('r') == null ? null : sides.reduce((n, side) => n + num(side.r), 0) : num(row.r),
     load: load != null && load >= 0 ? { value: load, unit } : null,
-    durationSeconds: least('sec'),
+    durationSeconds: least('sec') ?? (least('min') != null ? least('min') * 60 : null),
     rir: num(row.rir),
     rpeEntered: num(row.rpe)
   }];
@@ -417,7 +427,7 @@ function migrateWorkout(w, i, ctx) {
   const { entries, routineId, excludeFromProgression, ...rest } = w;
   return {
     ...clone(rest), id, status: 'completed',
-    routineIds: Array.isArray(w.routineIds) ? clone(w.routineIds) : routineId != null ? [routineId] : [],
+    routineIds: clone(routineIdsOf(w)),
     exposures, vol: num(w.vol) ?? volumeOf(exposures)
   };
 }
@@ -486,7 +496,7 @@ function migrateActive(active, ctx) {
     const d = linkOf(active, { ...entry, target }, ctx.byRoutine);
     const values = targetValues(target);
     const w = num(values.weight);
-    const fit = step => (w > 0 && !onGrid(w, step) ? stepFor([w], null, ctx.unit) : step);
+    const fit = step => (w > 0 && !near(w, step) ? stepFor([w], null, ctx.unit) : step);
     const rule = d ? d.ruleFor(values, fit(d.step), d.dayWindow({ values })) : ruleFrom(values, {
       id: `rule:${id}:${j}`, routineId: null, exerciseId, preset: 'manual', unit: ctx.unit,
       mode: modeOf(target, info), step: fit(STEPS[ctx.unit][0]), rest: ctx.rest
@@ -530,12 +540,17 @@ export function migrateProfileV1ToV2(state, catalogue) {
   if (typeof catalogue?.get !== 'function') throw new Error('migration-needs-catalogue');
   if (!migrationStatus(state).required) return { profile: state, activeSession: null };
   const unit = state.unit === 'lb' ? 'lb' : 'kg';
-  const checkDates = (w, path) => {
-    for (const key of ['start', 'end']) if (w[key] != null && (num(w[key]) == null || !Number.isFinite(new Date(num(w[key])).getTime()))) throw new Error(`invalid-date ${path}.${key}`);
-    if (w.d != null && !Number.isFinite(Date.parse(`${w.d}T00:00:00Z`))) throw new Error(`invalid-date ${path}.d`);
+  const dateFixes = [];
+  const badMs = v => num(v) == null || !Number.isFinite(new Date(num(v)).getTime());
+  // v1 data we cannot date is repaired from its sibling field and audited, never allowed to block the upgrade.
+  const fixDates = (w, path) => {
+    const out = { ...w };
+    for (const key of ['start', 'end']) if (out[key] != null && badMs(out[key])) { dateFixes.push({ field: 'date', path: `${path}.${key}`, value: clone(out[key]) }); delete out[key]; }
+    if (out.d != null && !Number.isFinite(Date.parse(`${out.d}T00:00:00Z`))) { dateFixes.push({ field: 'date', path: `${path}.d`, value: clone(out.d) }); delete out.d; }
+    return out;
   };
-  list(state.workouts).forEach((w, i) => { if (isObj(w)) checkDates(w, `workouts[${i}]`); });
-  if (isObj(state.active)) checkDates(state.active, 'active');
+  state = { ...state, workouts: Array.isArray(state.workouts) ? state.workouts.map((w, i) => (isObj(w) ? fixDates(w, `workouts[${i}]`) : w)) : state.workouts };
+  if (isObj(state.active)) state = { ...state, active: fixDates(state.active, 'active') };
   const workouts = records(state.workouts);
   const workoutId = uniqueIds();
   const ctx = {
@@ -543,6 +558,10 @@ export function migrateProfileV1ToV2(state, catalogue) {
     prescriptions: isObj(state.prescriptions) ? clone(state.prescriptions) : {},
     workoutIds: workouts.map((w, i) => workoutId(idOf(w.id, `m1-w${i}`)))
   };
+  ctx.liftedLoads = new Map();
+  for (const w of workouts) for (const entry of list(w.entries)) if (isObj(entry)) for (const row of list(entry.sets)) {
+    if (isObj(row) && row.done && !isWarmupRow(row) && num(row.w) > 0) ctx.liftedLoads.set(String(entry.id), [...(ctx.liftedLoads.get(String(entry.id)) || []), num(row.w)]);
+  }
   ctx.prescriptionId = uniqueIds();
   Object.keys(ctx.prescriptions).forEach(id => ctx.prescriptionId(id));
   ctx.exposureId = uniqueIds();
@@ -580,13 +599,14 @@ export function migrateProfileV1ToV2(state, catalogue) {
   list(state.coach?.snapshots).forEach((snap, i) => { if (isObj(snap)) auditList(snap.routines, `coach.snapshots[${i}].routines`); });
   const profile = {
     ...clone(rest),
+    unit,
     engineSchemaVersion: ENGINE_SCHEMA,
     routines: routines.map(({ routine, id, drafts: ds }) => ({ ...clone(routine), id, ex: ds.map(occurrenceOf) })),
     workouts: oldestFirst.map(i => outWorkouts[i]),
     prescriptions: ctx.prescriptions,
     oneRepMaxes: oneRepMaxesOf(ctx, outWorkouts, unit),
     progression: seedProgression(state, drafts, outWorkouts),
-    migrationAudit: { fromSchema: 1, unsupported: ctx.unsupported, ...(discarded.length ? { discarded } : {}) }
+    migrationAudit: { fromSchema: 1, unsupported: [...ctx.unsupported, ...dateFixes], ...(discarded.length ? { discarded } : {}) }
   };
   // A pre-upgrade Coach revert must restore canonical occurrences too. No history is replayed:
   // a snapshot is the old plan, not another copy of the athlete's logged sessions.
