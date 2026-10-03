@@ -112,12 +112,12 @@ it('A42 a completed timed row without its duration cannot earn a step', () => {
   delete performed[1].durationSeconds
   expect(advanceProgression({ prescription: p, log: { id: 'x', actual: summarizeActual(p, performed) } }).position).toBe(0)
 })
-it('A36 unilateral progression uses a two-repetition stride and holds after a miss', () => {
+it('A36 unilateral progression uses a two-repetition stride, from the last result after a miss too (v1: low + step)', () => {
   const rule = make('double'), p = gen(rule), actual = summarizeActual(p, rows(p, 10))
   const state = advanceProgression({ prescription: p, log: { id: 'x', actual } })
   expect(gen(rule, { perSide: true, state, lastPrescription: p, lastLog: { actual } }).prefill.reps).toBe(12)
   const short = summarizeActual(p, rows(p, 7)), missed = advanceProgression({ prescription: p, log: { id: 'x', actual: short } })
-  expect(gen(rule, { perSide: true, state: missed, lastPrescription: p, lastLog: { actual: short } }).prefill.reps).toBe(7)
+  expect(gen(rule, { perSide: true, state: missed, lastPrescription: p, lastLog: { actual: short } }).prefill.reps).toBe(9)
 })
 it('A43 unilateral rest-pause counts one full block and rejects a short limb', () => {
   const rule = make('linear'), profile = { prescriptions: {}, workouts: [] }

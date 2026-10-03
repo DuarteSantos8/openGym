@@ -627,7 +627,7 @@ test('the help logged on a session is judged by its weakest set: the one with th
   const { profile } = migrate(state);
   const x = profile.workouts[0].exposures[0];
   assert.equal(x.actual.load.value, 45);
-  assert.equal(profile.progression['r1:o0'].readyToIncrement, false);   // 45 is more help than the 40 prescribed
+  assert.equal(profile.progression['r1:o0'].readyToIncrement, true);    // v1 judged reps, not the help: every rep was done
 });
 
 test('a routine entry can say a machine is, or is not, assisted, whatever the catalogue says', () => {

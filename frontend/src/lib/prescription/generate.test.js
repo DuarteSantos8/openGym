@@ -70,14 +70,14 @@ describe('generatePrescription', () => {
     const finding = { code: 'above_range', field: 'load', expected: { min: 20, max: 20 }, actual: 22.5, severity: 'warning', row: 0 }
     const next = gen(rule('double'), { id: 'p2', state: active({ readyToIncrement: false }), lastPrescription: first, lastLog: logOf({ sets: 3, reps: 10, load: kg(22.5) }, [finding]) })
     expect(next.parameters.load.resolved).toEqual(kg(20))
-    expect(next.prefill).toEqual({ sets: 3, reps: 10, load: kg(22.5) })
+    expect(next.prefill).toEqual({ sets: 3, reps: 11, load: kg(22.5) })   // v1: the aim is the last result + 1
     expect(next.provenance).toEqual({ derivedFromOutOfPlan: true, sourceLogId: 'log1' })
   })
 
-  it('keeps rows on the plan while the prefill follows the log on a hold', () => {
+  it('keeps rows and sets on the plan while the reps follow the log on a hold (extra sets never move the plan, v1 #233)', () => {
     const first = gen(rule('double'))
     const next = gen(rule('double'), { id: 'p2', state: active({ readyToIncrement: false }), lastPrescription: first, lastLog: logOf({ sets: 5, reps: 10, load: kg(20) }) })
-    expect(next.prefill.sets).toBe(5)
+    expect(next.prefill.sets).toBe(3)
     expect(next.rows).toHaveLength(3)
   })
 

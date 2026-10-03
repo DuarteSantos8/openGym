@@ -206,6 +206,8 @@ exposure excluded — when no work row is completed.
 
 ### P2 — bodyweight ladder (S2)
 
+> **Resolved** (`report-corrections` Task 5): v1 semantics restored in the engine and proven on migrated history (`api/test/migration-audit.test.js` parity tests, expected values taken from v1's own `nextPrescription`).
+
 `prefill.sets = last.sets` and `prefill.reps = last.reps` come from the **summary of what was
 completed**, not what was prescribed (`generate.js:155–166`, `fromLast` is on for the `rung` gate):
 
@@ -219,6 +221,8 @@ session was clean.
 
 ### P3 — double progression (S2)
 
+> **Resolved** (`report-corrections` Task 5): v1 semantics restored in the engine and proven on migrated history (`api/test/migration-audit.test.js` parity tests, expected values taken from v1's own `nextPrescription`).
+
 * v1 `stallCount` (PR !93): at one weight, a session that **beats the best of the run** is progress,
   not a stall. v2 has no equivalent (`advance.js` counts any `!hit`). Lows of 5, 6, 7 against an aim of 8
   deload on the 3rd session in v2 (50 → 42.5); v1 holds. In the fuzz run this is the dominant source of
@@ -231,6 +235,8 @@ Repro: P3 ×2. *Fix*: carry a per-weight "best low" in the progression state and
 a hold (not a stall); keep `+1` after a miss.
 
 ### P4 — the lifter's own load is not the baseline (S2)
+
+> **Resolved** (`report-corrections` Task 5): v1 semantics restored in the engine and proven on migrated history (`api/test/migration-audit.test.js` parity tests, expected values taken from v1's own `nextPrescription`).
 
 v1 built the next load from the heaviest load actually lifted (`readSession.weight`) and judged
 sessions by reps only. v2 increments `lastPrescription.parameters.load.expression` and judges by
@@ -284,11 +290,11 @@ journal/resume), `sync-merge` with two diverged v1 copies, the Capacitor file mi
 
 | File | Runner | What |
 |---|---|---|
-| `api/test/migration-audit.test.js` | `cd api && node --test test/migration-audit.test.js` | 2 passing characterisation tests, 8 `todo` tests (M1–M8) that assert the **correct** behaviour and currently fail |
-| `frontend/src/lib/engine-audit.test.js` | `cd frontend && npx vitest run src/lib/engine-audit.test.js` | 7 `it.fails` tests (P1–P4); each was checked to fail on the intended assertion |
+| `api/test/migration-audit.test.js` | `cd api && node --test test/migration-audit.test.js` | Every finding (M1–M8, M10, M13, P1) and the v1-parity cases (P2–P4, values taken from v1's own `nextPrescription`) as plain passing tests |
+| `frontend/src/lib/engine-audit.test.js` | `cd frontend && npx vitest run src/lib/engine-audit.test.js` | The live-engine counterparts of P1–P4, all plain passing tests |
 
-Both keep the suites green (api: 575 pass / 8 todo; frontend: 3294 pass / 7 expected-fail). When a bug is
-fixed, remove the `todo` flag / change `it.fails` to `it`.
+Both are green (api: 605 pass; frontend: 3305 pass).
+
 
 The differential and fuzz harnesses (`diff.mjs`, `garbage.mjs`, `size.mjs`, `leaf.mjs`) are in the session
 scratchpad, not in the repo: they import `main`'s `progression.js` from a `git archive`, which the repo

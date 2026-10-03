@@ -130,3 +130,56 @@ test('M5: a 1000-session × 6-exercise history (2.5 MB in v1) still fits the 16 
   const { profile } = migrate(v1(ex, workouts));
   assertSyncSize(profile);
 });
+
+// ---- P2–P4: the first session after the upgrade matches v1 ----
+// Expected values come from v1's own nextPrescription (git archive main), not from the v2 engine.
+
+const LIN = { id: BENCH, sets: 3, reps: 5, weight: 60, prog: 'linear' };
+const T60 = { sets: 3, reps: 5, weight: 60 };
+const linear1 = (sets) => nextPrescription(migrate(v1([LIN], [wk('w1', '2026-01-01', [entry(BENCH, T60, sets, T60)])])).profile);
+
+test('parity: lifted 70 × 5 clean against a target of 60 continues from 70 (v1: 72.5)', () => {
+  assert.equal(loadOf(linear1([row(5, 70), row(5, 70), row(5, 70)])), 72.5);
+});
+
+test('parity: lifted 50 × 5 clean against a target of 60 is no stall and continues from 50 (v1: 52.5)', () => {
+  const profile = migrate(v1([LIN], [wk('w1', '2026-01-01', [entry(BENCH, T60, [row(5, 50), row(5, 50), row(5, 50)], T60)])]));
+  assert.equal(profile.profile.progression['r1:o0'].stalls, 0);
+  assert.equal(loadOf(nextPrescription(profile.profile)), 52.5);
+});
+
+test('parity: sets of 60, 60, 50 in one session continue from the heaviest (v1: 62.5)', () => {
+  assert.equal(loadOf(linear1([row(5, 60), row(5, 60), row(5, 50)])), 62.5);
+});
+
+const LADDER = { id: PULLUP, sets: 3, reps: 10, repsMax: 12, prog: 'linear' };
+const TL = { sets: 3, reps: 10 };
+const ladder1 = sets => nextPrescription(migrate(v1([LADDER], [wk('w1', '2026-01-01', [entry(PULLUP, TL, sets, TL)])])).profile);
+
+test('parity: a ladder whose last set was not done asks for the same 3 sets again (v1)', () => {
+  const p = ladder1([row(10, 0), row(10, 0), row(10, 0, { done: false })]);
+  assert.equal(p.rows.length, 3);
+});
+
+test('parity: a ladder of 10, 10, 4 asks for 10 again (v1: same target)', () => {
+  assert.equal(ladder1([row(10, 0), row(10, 0), row(4, 0)]).prefill.reps, 10);
+});
+
+const DOUBLE = { id: BENCH, sets: 3, reps: 10, repsMin: 8, weight: 50, prog: 'double' };
+const PD = { sets: 3, reps: 10, repsMin: 8, weight: 50 };
+const doubles = lows => nextPrescription(migrate(v1([DOUBLE], lows.map(([low, aim], i) =>
+  wk(`w${i}`, `2026-01-0${i + 1}`, [entry(BENCH, { sets: 3, reps: aim, weight: 50 }, [row(low, 50), row(low, 50), row(low, 50)], PD)])))).profile);
+
+test('parity: a double at 50 kg improving 5, 6, 7 against an aim of 8 keeps 50 kg and aim 8 (v1: no deload)', () => {
+  const p = doubles([[5, 8], [6, 8], [7, 8]]);
+  assert.equal(loadOf(p), 50);
+  assert.equal(p.prefill.reps, 8);
+});
+
+test('parity: a double stagnating at 5, 5, 5 still deloads (v1: 45)', () => {
+  assert.equal(loadOf(doubles([[5, 8], [5, 8], [5, 8]])), 45);
+});
+
+test('parity: a double with a minimum of 9 on an aim of 10 aims at 10 again (v1)', () => {
+  assert.equal(doubles([[9, 10]]).prefill.reps, 10);
+});

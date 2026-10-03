@@ -1,3 +1,5 @@
+import { chronologicalWorkouts } from './context.js'
+
 // Historical 1RMs are append-only: entering or estimating a new one adds a record, so an embedded
 // Snapshot1RM in an older prescription can never be rewritten by a later value.
 
@@ -44,4 +46,25 @@ export function estimate1RM(w, r, formula = DEFAULT_FORMULA) {
   const est = reps === 1 ? weight : fn(weight, Math.round(reps))
   if (!isFinite(est) || est <= 0) return null
   return Math.round(est * 10) / 10
+}
+
+/** Rebuild source-linked estimates after history edits/merges; typed records and frozen snapshots stay intact. */
+export function reconcileDerivedOneRms(profile) {
+  const kept = Object.fromEntries(Object.entries(profile.oneRepMaxes || {}).filter(([, r]) => !(r.source === 'estimated' && r.sourceRecordId)))
+  const best = new Map()
+  for (const w of chronologicalWorkouts(profile.workouts)) for (const x of w.exposures || []) {
+    const p = profile.prescriptions?.[x.prescriptionId]
+    if (p?.assisted ?? x.assisted) continue
+    for (const row of x.performance?.sets || []) {
+      if (row.status !== 'completed' || row.role === 'warmup') continue
+      const reps = row.observations?.find(o => o.metric === 'repetitions')?.value
+      const load = row.resistance
+      const estimate = load?.kind === 'external-load' ? estimate1RM(load.value, reps) : null
+      if (estimate == null || estimate <= (best.get(x.exerciseId)?.value ?? 0)) continue
+      best.set(x.exerciseId, { id: `one-rep-max:derived:${x.exposureId}`, exerciseId: x.exerciseId, value: estimate, unit: load.unit, source: 'estimated', capturedAt: x.completedAt ?? new Date(w.end ?? w.start).toISOString(), sourceRecordId: x.exposureId })
+    }
+  }
+  for (const r of best.values()) kept[r.id] = r
+  profile.oneRepMaxes = kept
+  return kept
 }

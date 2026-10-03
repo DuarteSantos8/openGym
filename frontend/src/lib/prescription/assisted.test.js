@@ -43,16 +43,15 @@ describe('the load steps', () => {
 })
 
 describe('judging a session', () => {
-  it('more help than prescribed is not a hit, less is, and no help at all is the best set there is', () => {
+  it('the help given does not decide a hit — sets and reps do, as in v1', () => {
     const p = generatePrescription({ id: 'p', now: NOW, trackId: 't', rule: help(40), assisted: true })
     const earned = actual => advanceProgression({ state: null, prescription: p, log: { id: 'l', actual }, now: NOW }).readyToIncrement
     expect(earned(clean(40))).toBe(true)
     expect(earned(clean(35))).toBe(true)       // less help: harder, still a clean session
     expect(earned({ sets: 3, reps: 5, load: null })).toBe(true)   // no help logged
-    expect(earned(clean(45))).toBe(false)      // more help than the plan asked
-    // The same numbers on a normal lift read the other way round.
+    expect(earned(clean(45))).toBe(true)       // more help, every rep done: still a clean session
     const plain = generatePrescription({ id: 'p', now: NOW, trackId: 't', rule: help(40) })
-    expect(advanceProgression({ state: null, prescription: plain, log: { id: 'l', actual: clean(35) }, now: NOW }).readyToIncrement).toBe(false)
+    expect(advanceProgression({ state: null, prescription: plain, log: { id: 'l', actual: clean(35) }, now: NOW }).readyToIncrement).toBe(true)
   })
   it('the session\'s load is its weakest set: the one with the most help', () => {
     const p = generatePrescription({ id: 'p', now: NOW, trackId: 't', rule: help(40), assisted: true })

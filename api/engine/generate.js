@@ -7,7 +7,7 @@ import { applyIncrement, resolveLoad, roundLoad } from './load.js'
 import { deloadPercent, deloadedLoad, deloadedPosition } from './deload.js'
 import { DELOAD_GATES, INCREMENTING_GATES, PRESETS, needsOneRm, validatePlanRule } from './rules.js'
 import { planWarmupRows } from './warmup.js'
-import { planFingerprint } from './context.js'
+import { bestLoad, planFingerprint } from './context.js'
 
 const copy = v => (v === undefined ? undefined : JSON.parse(JSON.stringify(v)))
 const same = (a, b) => canonicalJSON(a ?? null) === canonicalJSON(b ?? null)
@@ -60,7 +60,25 @@ function rowsFor(rule, { load, loadTo, trainingMax, position, count }) {
  * @param {boolean} [input.restPause]            rest-pause rows: a deload takes the plain factor, not a rep trade
  * @param {boolean} [input.assisted]             an assistance machine: the load is the help given, so every automated step runs the other way (issue #232)
  */
-export function generatePrescription({ id, now, trackId, rule, state = null, lastPrescription = null, lastLog = null, oneRm = null, warmup = null, equipment = null, reset = null, heldLoad = null, startFrom = 'plan', fingerprint, perSide = false, restPause = false, assisted = false }) {
+export function generatePrescription({ id, now, trackId, rule, state = null, lastPrescription = null, lastLog = null, oneRm = null, warmup = null, equipment = null, reset = null, heldLoad = null, startFrom = 'plan', fingerprint, perSide = false, restPause = false, restPauseReps = null, assisted = undefined }) {
+  // Migrated unloaded work climbs repetitions; adding load restores its original policy.
+  const declaredLoad = rule.parameters.load.mode === 'absolute' ? rule.parameters.load.value : 0
+  const loadEdited = !!lastPrescription && !same(lastPrescription.basis, rule.parameters.load)
+  const effectiveLoad = loadEdited ? declaredLoad : lastLog?.actual?.load?.value ?? declaredLoad
+  const loadTransition = rule.preset === 'bodyweight_ladder' && rule.special.loadedPreset && effectiveLoad > 0
+  const unloadedTransition = rule.special.unloadedLadder && rule.preset !== 'bodyweight_ladder' && effectiveLoad === 0
+  if ((loadTransition || unloadedTransition) && fingerprint === undefined) fingerprint = planFingerprint(rule)
+  if (loadTransition) {
+    const preset = rule.special.loadedPreset
+    rule = { ...rule, preset, parameters: { ...rule.parameters, sets: { min: rule.parameters.sets.min, max: rule.parameters.sets.min }, reps: preset === 'double' ? rule.special.loadedReps ?? rule.parameters.reps : { min: lastLog?.actual?.reps ?? rule.parameters.reps.min, max: lastLog?.actual?.reps ?? rule.parameters.reps.min }, load: { mode: 'absolute', value: effectiveLoad, unit: lastLog?.actual?.load?.unit ?? rule.increment.unit } }, completion: [], target: { mode: 'none' } }
+    if (lastPrescription) lastPrescription = { ...lastPrescription, basis: rule.parameters.load, parameters: { ...lastPrescription.parameters, load: { expression: rule.parameters.load } } }
+    if (state) state = { ...state, readyToIncrement: !!state.clean && lastLog?.actual?.load?.value === effectiveLoad && (preset !== 'double' || lastLog?.actual?.reps >= rule.parameters.reps.max) }
+  } else if (unloadedTransition) {
+    rule = { ...rule, preset: 'bodyweight_ladder', parameters: { ...rule.parameters, sets: { min: rule.parameters.sets.min, max: 6 }, reps: { min: rule.parameters.reps.min, max: Math.max(rule.parameters.reps.min, rule.special.repCeiling ?? 20) }, load: { mode: 'empty' } }, special: { ...rule.special, rungs: [], loadedPreset: rule.preset }, completion: [], target: { mode: 'none' } }
+    delete rule.deload
+    if (lastPrescription) lastPrescription = { ...lastPrescription, basis: rule.parameters.load }
+    if (state) state = { ...state, readyToIncrement: false }
+  }
   const check = validatePlanRule(rule)
   if (!check.ok) throw new Error(`invalid plan rule ${rule?.id}: ${check.errors.join('; ')}`)
   // A restarted plan is a fresh track: no earned step, no rung or week, no completed status.
@@ -85,7 +103,12 @@ export function generatePrescription({ id, now, trackId, rule, state = null, las
   const hold = !!reset && !!heldLoad && p.load.mode === 'absolute' && (!lastPrescription || same(lastPrescription.basis, p.load))
   let expression = hold ? { mode: 'absolute', value: heldLoad.value, unit: heldLoad.unit }
     : (!reset && carry) ? copy(lastPrescription.parameters.load.expression) : copy(p.load)
-  if (increments) expression = applyIncrement(expression, rule.increment, { snapshot1RM, resolvedTarget: target.resolved?.value ?? null, assisted })
+  if (increments) {
+    // v1 readSession.weight: the next load is built from what was lifted, not from what was prescribed.
+    const lifted = bestLoad(lastLog, assisted)
+    if (expression.mode === 'absolute' && lifted > 0) expression = { ...expression, value: lifted }
+    expression = applyIncrement(expression, { ...rule.increment, value: rule.increment.value * (state?.incrementMultiplier ?? 1) }, { snapshot1RM, resolvedTarget: target.resolved?.value ?? null, assisted })
+  }
 
   // A stalled track backs off (v1 deload, deload.js): the load for a loaded preset, the sliding
   // window for a timed hold. Only a carried track can — a restart already holds what was lifted.
@@ -111,18 +134,21 @@ export function generatePrescription({ id, now, trackId, rule, state = null, las
   // always the rule's own expression.
   const loadTo = p.loadTo ? { expression: copy(p.loadTo), resolved: resolve(p.loadTo) } : null
 
+  const durationOrigin = carry && (!lastPrescription.planFingerprint || lastPrescription.planFingerprint === (fingerprint === undefined ? planFingerprint(rule) : fingerprint)) && lastPrescription.parameters.durationSeconds && rule.increment.type === 'seconds'
+    ? { min: lastPrescription.parameters.durationSeconds.min - rule.increment.value * lastPrescription.position, max: lastPrescription.parameters.durationSeconds.max - rule.increment.value * lastPrescription.position } : p.durationSeconds
   let position = state?.position ?? 0
   if (backsOff && gate === 'seconds' && p.durationSeconds && rule.increment.type === 'seconds') {
-    const back = deloadedPosition({ startSeconds: p.durationSeconds.min, step: rule.increment.value, position, factor: rule.deload.factor })
+    const back = deloadedPosition({ startSeconds: durationOrigin.min, step: rule.increment.value, position, factor: rule.deload.factor })
     if (back < position) {
-      const at = pos => p.durationSeconds.min + rule.increment.value * pos
+      const at = pos => durationOrigin.min + rule.increment.value * pos
       deload = { stalls: state.stalls, from: at(position), to: at(back), method: 'seconds' }
       position = back
     }
   }
   // hold_seconds: the declared window slides up by the increment for every step earned.
+
   const duration = p.durationSeconds && rule.increment.type === 'seconds'
-    ? { min: p.durationSeconds.min + rule.increment.value * position, max: p.durationSeconds.max + rule.increment.value * position }
+    ? { min: durationOrigin.min + rule.increment.value * position, max: durationOrigin.max + rule.increment.value * position }
     : p.durationSeconds
   const tmCarry = !!lastPrescription && same(lastPrescription.special.trainingMax, rule.special.trainingMax)
   const trainingMax = rule.preset !== 'five_three_one' ? null
@@ -133,10 +159,19 @@ export function generatePrescription({ id, now, trackId, rule, state = null, las
   // session or the preset climbs them. History decides the weight.
   const fromLast = !fresh && (startFrom === 'last' || CLIMBING_GATES.includes(PRESETS[rule.preset].gate))
   const last = lastLog?.actual || {}
+  const unnamedLadder = rule.preset === 'bodyweight_ladder' && !rule.special.rungs?.length
+  // A double climbs from its last result after any session (v1: low + 1); a ladder only after a clean one.
+  const climb = !reset && carry && !deload && !increments && !!state && (rule.preset === 'double' || (unnamedLadder && state.clean))
+  let climbedReps = Math.max(p.reps.min, Math.min(p.reps.max, (last.reps ?? p.reps.min) + (perSide ? 2 : 1)))
+  let climbedSets = Math.min(p.sets.max, last.sets || p.sets.min)
+  if (climb && unnamedLadder && last.reps >= p.reps.max && climbedSets < p.sets.max) { climbedSets++; climbedReps = p.reps.min }
+  // An unclean ladder session asks for the same thing again (v1 `reached`): sets and reps are what was
+  // prescribed, not the weakest set that was managed. The athlete's own `startFrom: 'last'` still wins.
+  const asked = rule.preset === 'bodyweight_ladder' && fromLast && !climb && startFrom !== 'last' ? lastPrescription?.prefill : null
   const prefill = {
-    sets: fromLast ? (last.sets || p.sets.min) : p.sets.min,
+    sets: climb ? climbedSets : asked?.sets ?? (fromLast ? (last.sets || p.sets.min) : p.sets.min),
     // A deload under a rep window may trade reps for load (deload.js): those reps open the session.
-    reps: deload?.reps ?? (fromLast ? (last.reps ?? p.reps.min) : p.reps.min),
+    reps: climb ? climbedReps : deload?.reps ?? asked?.reps ?? (fromLast ? (last.reps ?? p.reps.min) : p.reps.min),
     ...(duration ? { durationSeconds: fromLast ? (last.durationSeconds ?? duration.min) : duration.min } : {}),
     ...(p.speed ? { speed: fromLast ? (last.speed ?? p.speed) : p.speed } : {}),
     ...(!fresh && last.rir != null ? { rir: last.rir } : {}),
@@ -145,7 +180,10 @@ export function generatePrescription({ id, now, trackId, rule, state = null, las
   // Rows open at last session's reps rather than the plan's: the workout card says so.
   if (startFrom === 'last' && fromLast && prefill.reps !== p.reps.min) prefill.carried = true
 
-  const rows = rowsFor(rule, { load: load.resolved, loadTo, trainingMax, position, count: p.sets.min })
+  if (restPause) { prefill.sets = 1; prefill.reps = restPauseReps ?? prefill.reps }
+  const rows = rowsFor(rule, { load: load.resolved, loadTo, trainingMax, position, count: unnamedLadder ? prefill.sets : restPause ? 1 : p.sets.min })
+  if (restPause) rows.forEach(row => { row.reps = { min: prefill.reps, max: prefill.reps } })
+  if (climb) rows.forEach(row => { row.reps = { min: prefill.reps, max: p.reps.max } })
   // A timed hold logs seconds, not reps: a rep ramp in front of it has nothing to count.
   const warmupRows = duration ? [] : planWarmupRows({ rows, warmup, eq: equipment, rounding: rule.rounding })
 
@@ -154,11 +192,11 @@ export function generatePrescription({ id, now, trackId, rule, state = null, las
     planFingerprint: fingerprint === undefined ? planFingerprint(rule) : fingerprint,
     exerciseId: rule.exerciseId, trackId, preset: rule.preset,
     // Frozen with the prescription: finishing it (advance.js, audit.js) reads the load the same way.
-    ...(assisted ? { assisted: true } : {}),
+    ...(typeof assisted === 'boolean' ? { assisted } : {}),
     statusAtGeneration: status,
     snapshot1RM,
     parameters: {
-      sets: copy(p.sets), reps: copy(p.reps),
+      sets: restPause ? { min: 1, max: 1 } : copy(p.sets), reps: restPause ? { min: prefill.reps, max: prefill.reps } : copy(p.reps),
       ...(duration ? { durationSeconds: copy(duration) } : {}),
       ...(p.speed ? { speed: p.speed } : {}),
       load,
@@ -185,10 +223,12 @@ export function ruleOfPrescription(prescription, routineId = null) {
   const { sets, reps, durationSeconds, speed, loadTo, rir, restSeconds } = prescription.parameters
   // A hold_seconds window is stored already slid; the rule declares where it started.
   const slide = prescription.increment.type === 'seconds' ? prescription.increment.value * prescription.position : 0
+  let declaredDuration = null
+  try { declaredDuration = JSON.parse(prescription.planFingerprint)?.durationSeconds ?? null } catch {}
   return copy({
     id: prescription.planRuleId, revision: prescription.planRuleRevision, routineId,
     exerciseId: prescription.exerciseId, preset: prescription.preset,
-    parameters: { sets, reps, ...(durationSeconds ? { durationSeconds: { min: durationSeconds.min - slide, max: durationSeconds.max - slide } } : {}), ...(speed ? { speed } : {}), load: prescription.basis, ...(loadTo ? { loadTo: loadTo.expression } : {}), ...(rir ? { rir } : {}), restSeconds },
+    parameters: { sets, reps, ...(durationSeconds ? { durationSeconds: declaredDuration ?? { min: durationSeconds.min - slide, max: durationSeconds.max - slide } } : {}), ...(speed ? { speed } : {}), load: prescription.basis, ...(loadTo ? { loadTo: loadTo.expression } : {}), ...(rir ? { rir } : {}), restSeconds },
     target: prescription.target.expression || { mode: 'none' },
     increment: prescription.increment, completion: prescription.completion, rounding: prescription.rounding, special: prescription.special,
     ...(prescription.deload ? { deload: prescription.deload } : {})

@@ -9,7 +9,7 @@ export function initialProgressionState(trackId) {
     lastPrescriptionId: null, lastCompletedLogId: null, lastActual: null,
     terminalTarget: null, completedAt: null,
     planRuleRevision: null, readyToIncrement: false, position: 0, trainingMax: null,
-    stalls: 0, stallLoad: null, readyToDeload: false
+    stalls: 0, stallLoad: null, stallBest: null, readyToDeload: false
   }
 }
 
@@ -22,16 +22,13 @@ const targetMax = (p, a) => {
   return actual != null && actual >= range.max
 }
 
-// At least what was prescribed, on the rows that decide. On an assistance machine the load is the
-// help given, so "at least" runs the other way: no more help than prescribed, and no help logged
-// at all is the best a set can be.
+// At least what was prescribed, on the rows that decide: sets and reps (or seconds), as v1 judged a
+// session. The load lifted is not part of it — generate.js builds the next load from what was lifted.
 function hit(p, a) {
   const rows = decidingRows(p)
   const actual = targetActual(p, a)
-  if (!(a.sets >= p.parameters.sets.min) || actual == null || actual < Math.min(...rows.map(r => targetRange(p, r).min))) return false
-  const loads = rows.map(r => r.load?.value).filter(Number.isFinite)
-  if (!loads.length) return true
-  return p.assisted ? (a.load?.value ?? 0) <= Math.max(...loads) : (a.load?.value ?? -Infinity) >= Math.min(...loads)
+  if (a.incomplete) return false
+  return a.sets >= Math.max(p.parameters.sets.min, p.rows.length) && actual != null && actual >= Math.min(...rows.map(r => targetRange(p, r).min))
 }
 
 const GATES = {
@@ -72,6 +69,8 @@ export function advanceProgression({ state, prescription: p, log, now }) {
 
   const gate = PRESETS[p.preset].gate
   const earned = gate ? GATES[gate](p, log.actual) && effortOk(p, log.actual) : false
+  next.clean = hit(p, log.actual) && effortOk(p, log.actual)
+  next.incrementMultiplier = p.preset === 'greyskull' && next.clean && log.actual.amrapReps >= 2 * p.parameters.reps.min ? 2 : 1
   next.readyToIncrement = earned && INCREMENTING_GATES.includes(gate)
   if (gate === 'rung' && earned && p.position < (p.special.rungs?.length ?? 0) - 1) next.position = p.position + 1
   // The prescription's own position, not the old state's: a deloaded hold was generated further back.
@@ -85,8 +84,13 @@ export function advanceProgression({ state, prescription: p, log, now }) {
     // What the run is at: the load lifted, or a hold's window — v1 kept counting misses across a
     // hold's back-off and deloaded it again straight away; a new window is a new run here.
     const at = gate === 'seconds' ? p.parameters.durationSeconds?.min ?? null : log.actual.load?.value ?? p.parameters.load.resolved?.value ?? null
-    next.stalls = missed ? (base.stalls > 0 && base.stallLoad === at ? base.stalls + 1 : 1) : 0
+    const got = targetActual(p, log.actual)
+    const sameRun = missed && base.stalls > 0 && base.stallLoad === at
+    // v1 stallCount (!93): at one weight, beating the best of the run is progress, not a stall.
+    const improved = p.preset === 'double' && sameRun && got != null && got > (base.stallBest ?? Infinity)
+    next.stalls = !missed ? 0 : sameRun ? base.stalls + (improved ? 0 : 1) : 1
     next.stallLoad = missed ? at : null
+    next.stallBest = missed ? (sameRun ? Math.max(base.stallBest ?? 0, got ?? 0) : got ?? null) : null
     next.readyToDeload = missed && !!p.deload && next.stalls >= p.deload.after
   }
   if (p.preset === 'five_three_one') {

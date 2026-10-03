@@ -5,10 +5,8 @@ import { buildCompletedSession } from './finish-session.js'
 import { ruleOccurrence } from './test-fixtures.js'
 import { defaultPlanRule } from './prescription/index.js'
 
-// Audit of the v2 progression engine against what v1 (progression.js, main) did. Each `it.fails`
-// pins a CONFIRMED divergence/bug: the test states the correct behaviour and currently fails, so
-// the suite stays green. When the bug is fixed, vitest reports the `it.fails` as failing — flip it
-// to a plain `it`. See REPORT.md for the finding ids (P1…).
+// Audit of the v2 progression engine against what v1 (progression.js, main) did: each test states
+// the v1 behaviour a confirmed divergence (REPORT.md P1…P4) used to break.
 const DAY = 24 * 3600 * 1000
 const T0 = Date.UTC(2026, 8, 1)
 const profile = () => ({ unit: 'kg', workouts: [], prescriptions: {}, oneRepMaxes: {}, progression: {} })
@@ -44,13 +42,13 @@ describe('P1 — an exercise left untouched in a finished session', () => {
 })
 
 describe('P2 — bodyweight ladder', () => {
-  it.fails('a set left unchecked does not shrink the next session', () => {
+  it('a set left unchecked does not shrink the next session', () => {
     const S = profile(), occ = ladder()
     const a1 = start(S, occ, 0)
     finish(S, a1, 0, rows => { rows.forEach((s, i) => { s.done = i < 2 }) })   // 3 prescribed, 2 done
     expect(prescriptionOf(S, start(S, occ, 1)).rows.length).toBe(3)
   })
-  it.fails('one weak set does not drag the next target below the plan (v1: "same target again")', () => {
+  it('one weak set does not drag the next target below the plan (v1: "same target again")', () => {
     const S = profile(), occ = ladder()
     const a1 = start(S, occ, 0)
     finish(S, a1, 0, rows => { rows.forEach((s, i) => { s.done = true; s.r = i === 2 ? 4 : 10 }) })
@@ -60,13 +58,13 @@ describe('P2 — bodyweight ladder', () => {
 
 describe('P3 — double progression', () => {
   // v1 stallCount (PR !93): at one weight, a session that beats the best of the run is progress, not a stall.
-  it.fails('improving but short sessions at one weight do not deload', () => {
+  it('improving but short sessions at one weight do not deload', () => {
     const S = profile(), occ = double(50)
     // lows 5, 6, 7 reps against an aim of 8: always short, always better than before
     for (const [day, low] of [[0, 5], [1, 6], [2, 7]]) finish(S, start(S, occ, day), day, rows => { doAll(rows); rows.forEach(s => { s.r = low }) })
     expect(prescriptionOf(S, start(S, occ, 3)).parameters.load.resolved.value).toBe(50)
   })
-  it.fails('after a session short of the aim, the next aim is low + 1 (v1), not the same reps again', () => {
+  it('after a session short of the aim, the next aim is low + 1 (v1), not the same reps again', () => {
     const S = profile(), occ = double(50)
     finish(S, start(S, occ, 0), 0, rows => { doAll(rows); rows.forEach(s => { s.r = 9 }) })    // aim 8 → clean, climbs to 10
     const a2 = start(S, occ, 1)
@@ -76,17 +74,33 @@ describe('P3 — double progression', () => {
   })
 })
 
+describe('P3 — a stagnating double still deloads', () => {
+  it('three sessions at the same short reps deload', () => {
+    const S = profile(), occ = double(50)
+    for (const day of [0, 1, 2]) finish(S, start(S, occ, day), day, rows => { doAll(rows); rows.forEach(s => { s.r = 5 }) })
+    expect(prescriptionOf(S, start(S, occ, 3)).parameters.load.resolved.value).toBeLessThan(50)
+  })
+})
+
 describe('P4 — the lifter overrides the prescribed load', () => {
   // v1 judged a session by reps only and built the next load from the heaviest load lifted
   // (readSession.weight); v2 increments the *prescribed* load, so the lifter's own jump is ignored.
-  it.fails('lifting 70 against a prescribed 60, every rep clean, continues from 70', () => {
+  it('lifting 70 against a prescribed 60, every rep clean, continues from 70', () => {
     const S = profile(), occ = linear(60)
     finish(S, start(S, occ, 0), 0, rows => { doAll(rows); rows.forEach(s => { s.w = 70 }) })
     expect(prescriptionOf(S, start(S, occ, 1)).parameters.load.resolved.value).toBe(72.5)
   })
-  it.fails('lifting 50 against a prescribed 60, every rep clean, is not read as a miss (v1: 52.5)', () => {
+  it('lifting 50 against a prescribed 60, every rep clean, is not read as a miss (v1: 52.5)', () => {
     const S = profile(), occ = linear(60)
     finish(S, start(S, occ, 0), 0, rows => { doAll(rows); rows.forEach(s => { s.w = 50 }) })
     expect(S.progression['occ-0025'].stalls).toBe(0)
+  })
+})
+
+describe('P4 — mixed loads in one session', () => {
+  it('60, 60, 50 continues from the heaviest set (v1: 62.5)', () => {
+    const S = profile(), occ = linear(60)
+    finish(S, start(S, occ, 0), 0, rows => { doAll(rows); rows.forEach((s, i) => { s.w = i === 2 ? 50 : 60 }) })
+    expect(prescriptionOf(S, start(S, occ, 1)).parameters.load.resolved.value).toBe(62.5)
   })
 })

@@ -12,6 +12,12 @@ export function planFingerprint(rule) {
 
 const isWork = row => row.status === 'completed' && row.role !== 'warmup'
 
+/** The heaviest completed work load of a log (the lightest, on an assistance machine): v1's readSession.weight. */
+export function bestLoad(x, assisted) {
+  const loads = (x?.performance?.sets || []).filter(r => isWork(r) && r.resistance?.kind === 'external-load').map(r => r.resistance.value)
+  return loads.length ? (assisted ? Math.min(...loads) : Math.max(...loads)) : x?.actual?.load?.value ?? null
+}
+
 /**
  * The weakest completed working load of a log — the lightest, or on an assistance machine the one
  * with the most help: its summary, else its rows (legacy and imported history).
@@ -24,7 +30,13 @@ function liftedLoad(x, assisted) {
   return { value: weakest.value, unit: weakest.unit }
 }
 
+export function chronologicalWorkouts(workouts = []) {
+  const day = w => Number.isFinite(Date.parse(w.d)) ? Date.parse(w.d) : Math.floor((w.start ?? 0) / 86400000) * 86400000
+  return [...workouts].sort((a, b) => day(a) - day(b) || (a.start ?? 0) - (b.start ?? 0) || String(a.id ?? '').localeCompare(String(b.id ?? '')))
+}
+
 function newest(workouts, match) {
+  workouts = chronologicalWorkouts(workouts)
   for (let i = workouts.length - 1; i >= 0; i--) {
     const exposures = workouts[i].exposures || []
     for (let j = exposures.length - 1; j >= 0; j--) if (match(exposures[j])) return exposures[j]
@@ -38,9 +50,14 @@ function newest(workouts, match) {
  */
 export function replayProgression({ workouts = [], trackId, prescriptions = {}, upTo = null }) {
   let state = null
-  for (const w of workouts) for (const x of w.exposures || []) {
+  let previous = null
+  for (const w of chronologicalWorkouts(workouts)) for (const x of w.exposures || []) {
     const p = x.trackId === trackId && x.prescriptionId && !x.excludedFromProgression && x.actual ? prescriptions[x.prescriptionId] : null
-    if (p) state = advanceProgression({ state, prescription: p, log: { id: x.exposureId, actual: x.actual }, now: x.completedAt ?? null })
+    if (p) {
+      if (previous?.planFingerprint && p.planFingerprint && previous.planFingerprint !== p.planFingerprint) state = null
+      state = advanceProgression({ state, prescription: p, log: { id: x.exposureId, actual: x.actual }, now: x.completedAt ?? null })
+      previous = p
+    }
     if (x === upTo) return state
   }
   return state
@@ -50,8 +67,7 @@ export function replayProgression({ workouts = [], trackId, prescriptions = {}, 
  * The occurrence's own newest counted log comes first (#216). Only when it has none, the
  * exercise's newest log anywhere: a prescription-less one is imported or legacy history, never
  * counted on a track but still what was last lifted.
- * ponytail: a v1 deload entry migrated unlinked is prescription-less too, so it reads as fallback
- * history; mark it at migration if that bites.
+ * Explicitly excluded work never supplies that fallback; ordinary unlinked history still does.
  *
  * A reset (#275): the baseline's recorded plan differs from this rule's, or the baseline was
  * borrowed and records no plan. An own log with no recorded plan never resets.
@@ -59,6 +75,7 @@ export function replayProgression({ workouts = [], trackId, prescriptions = {}, 
 export function resolveProgressionContext({ trackId, exerciseId, rule, workouts = [], prescriptions = {}, progression = {}, assisted = false }) {
   const own = newest(workouts, x => x.trackId === trackId && x.prescriptionId && !x.excludedFromProgression)
   const borrowed = own ? null : newest(workouts, x => x.exerciseId === exerciseId
+    && x.progressionExclusion !== 'explicit'
     && (!x.prescriptionId || !x.excludedFromProgression) && (x.performance?.sets || []).some(isWork))
   const baseline = own || borrowed
   const source = own ? 'slot' : borrowed ? 'exercise' : null

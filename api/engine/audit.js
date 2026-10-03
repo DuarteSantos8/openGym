@@ -61,7 +61,9 @@ export function auditExecution(prescription, actual, state = null) {
  */
 export function summarizeActual(prescription, performed) {
   const anchors = prescription.rows.flatMap((r, i) => (r.anchor ? [i] : []))
-  const deciding = anchors.length ? performed.filter(s => anchors.includes(s.row)) : performed
+  const required = performed.filter(s => s.row == null || (s.row >= 0 && s.row < prescription.rows.length))
+  const deciding = anchors.length ? required.filter(s => anchors.includes(s.row)) : required
+  const incomplete = deciding.some(s => !Number.isFinite(prescription.parameters.durationSeconds ? s.durationSeconds : s.reps) || (prescription.rows[s.row]?.load?.value > 0 && (!Number.isFinite(s.load?.value) || s.sideLoads?.some(v => !Number.isFinite(v)))) || s.sideReps?.some((v, i) => !Number.isFinite(v) || v < (i ? Math.floor : Math.ceil)((prescription.rows[s.row]?.reps.min ?? 0) / 2)))
   const least = values => { const vs = values.filter(Number.isFinite); return vs.length ? Math.min(...vs) : null }
   const loads = deciding.map(s => s.load).filter(l => Number.isFinite(l?.value))
   const durationSeconds = least(deciding.map(s => s.durationSeconds))
@@ -69,7 +71,9 @@ export function summarizeActual(prescription, performed) {
   const rir = least(deciding.map(s => normalizeEffort(s).rir))
   const rpes = deciding.map(s => s.rpeEntered).filter(Number.isFinite)
   return {
-    sets: performed.length,
+    sets: new Set(required.map((s, i) => s.row ?? i)).size,
+    ...(incomplete ? { incomplete: true } : {}),
+    ...(deciding.some(s => prescription.rows[s.row]?.amrap) ? { amrapReps: least(deciding.filter(s => prescription.rows[s.row]?.amrap).map(s => s.reps)) } : {}),
     reps: least(deciding.map(s => s.reps)),
     load: loads.length ? { ...loads.reduce((a, b) => ((prescription.assisted ? b.value > a.value : b.value < a.value) ? b : a)) } : null,
     ...(durationSeconds != null ? { durationSeconds } : {}),

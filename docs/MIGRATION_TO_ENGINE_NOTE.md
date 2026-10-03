@@ -405,6 +405,7 @@ same thresholds as v1 — with `factor: 0.9`.
 | `trainingMax` | 5/3/1 |
 | `stalls` | Sessions in a row **short of the minimum prescribed** at one load (a hold: at one window) |
 | `stallLoad` | The load (or window) the run of misses is at |
+| `stallBest` | Double progression only: the best result of the current run of misses; beating it at the same load is progress, not a stall (v1 `stallCount`) |
 | `readyToDeload` | `stalls ≥ rule.deload.after` — the next prescription backs off |
 
 ### 3.8 Workout and exposure
@@ -871,6 +872,13 @@ barbell bench press, `linear`, `3×5 @ 80 kg`, `inc 2.5`, one v1 workout with `3
 | C | as A, but the routine was edited afterwards to `reps: 8` | yes | `readyToIncrement: true`, fingerprint differs | **3×8 @ 80** — v1's "plan changed": restart from what was lifted, the new plan's reps |
 | D | as A, no `planned` stamp | yes (fingerprint `null`) | `readyToIncrement: true` | **3×5 @ 82.5** — an own log with no recorded plan never resets |
 | E | as A, but the sets were `5, 4, 3` reps | yes | `stalls: 1`, `readyToIncrement: false` | **3×5 @ 80** — a miss holds the load; three misses in a row at one load will deload (linear `after: 3`) |
+
+| F | as A, but the lifter lifted `5 × 70` (clean) | yes | `readyToIncrement: true` | **3×5 @ 72.5** — the next load starts from what was lifted (the heaviest set; the lightest help on an assistance machine), as v1 `readSession.weight` |
+| G | as A, but the sets were `60, 60, 50` | yes | `readyToIncrement: true` | **3×5 @ 62.5** — from the heaviest set |
+
+A session is judged by sets and reps only, never by the load lifted (v1). A double progression opens at the
+last result + 1 rep after any session; three sessions at one weight that never beat the best of the run
+still deload. A ladder session that was not clean asks for the same sets and reps again.
 
 Also seeded in A: `oneRepMaxes["one-rep-max:migrated:0025"] = { value: 93.3, source: 'estimated' }`
 (80 × (1 + 5/30)), and the saved exposure `w1:x0` carries `prescriptionId: 'w1:p0'`,

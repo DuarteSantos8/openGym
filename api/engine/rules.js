@@ -172,6 +172,10 @@ function checkRounding(errors, r) {
 
 function checkSpecial(errors, rule) {
   const s = rule.special || {}
+  if (s.loadedPreset !== undefined && !['linear', 'double', 'greyskull'].includes(s.loadedPreset)) errors.push('special.loadedPreset must name a load policy')
+  if (s.loadedReps !== undefined) checkRange(errors, 'special.loadedReps', s.loadedReps, { min: 1, integer: true })
+  if (s.unloadedLadder !== undefined && typeof s.unloadedLadder !== 'boolean') errors.push('special.unloadedLadder must be boolean')
+  if (s.repCeiling !== undefined && !(Number.isInteger(s.repCeiling) && s.repCeiling >= 1)) errors.push('special.repCeiling must be a positive integer')
   if (rule.preset === 'pyramid' || rule.preset === 'reverse_pyramid') {
     const percents = Array.isArray(s.offsets) ? s.offsets.map(o => o?.percentOfAnchor) : []
     if (!percents.length || !percents.every(v => finite(v) && v > 0 && v <= 100)) {

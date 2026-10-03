@@ -1,3 +1,5 @@
+import { ruleOfPrescription } from './generate.js'
+
 // A finished workout read back in the v1 entry shape ({ id, target, sets: [{ w, r, … }] }) for the
 // readers that still speak it: the Coach payload and cohort, effort and muscle stats, admin.
 // Read-only. A workout that was never migrated (a v1 state file on the server) comes back as is.
@@ -28,9 +30,16 @@ function targetOf(exposure, p) {
     : exposure.mode === 'cardio' ? { min: p.prefill.durationSeconds / 60, ...(p.prefill.speed != null ? { speed: p.prefill.speed } : {}) }
       : { sec: p.prefill.durationSeconds }
   return {
-    mode: exposure.mode || 'reps', sets: p.rows.length, reps: p.prefill.reps, ...duration,
+    mode: exposure.mode || 'reps',
+    ...Object.fromEntries(['side', 'bodyweight', 'assisted', 'intensifier', 'warmupRestSec'].filter(k => exposure[k] != null).map(k => [k, exposure[k]])), sets: p.rows.length, reps: p.prefill.reps, ...duration,
     ...(p.parameters.load.resolved ? { weight: p.parameters.load.resolved.value } : {})
   }
+}
+
+function plannedOf(p) {
+  const { sets, reps, durationSeconds } = ruleOfPrescription(p).parameters
+  return durationSeconds ? { sets: sets.min, sec: durationSeconds.min }
+    : { sets: sets.min, reps: reps.max, ...(reps.min !== reps.max ? { repsMin: reps.min } : {}) }
 }
 
 export function legacyEntriesOf(workout, prescriptions = {}) {
@@ -38,6 +47,7 @@ export function legacyEntriesOf(workout, prescriptions = {}) {
   return workout.exposures.map(x => ({
     id: x.exerciseId, rid: x.routineId ?? null,
     target: targetOf(x, prescriptions?.[x.prescriptionId]),
+    ...(prescriptions?.[x.prescriptionId] ? { planned: plannedOf(prescriptions[x.prescriptionId]) } : x.legacyPlanned ? { planned: x.legacyPlanned } : {}),
     ...(x.muscleSnapshot ? { muscleSnapshot: x.muscleSnapshot } : {}),
     ...(x.performance?.note ? { note: x.performance.note, ...(x.performance.notePin ? { notePin: true } : {}) } : {}),
     sets: (x.performance?.sets || []).map(row => legacySet(row, x.mode))

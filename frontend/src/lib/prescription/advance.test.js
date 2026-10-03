@@ -17,7 +17,8 @@ describe('the increment gate', () => {
     expect(finish(p, { sets: 3, reps: 5, load: kg(20) }).readyToIncrement).toBe(true)
     expect(finish(p, { sets: 3, reps: 4, load: kg(20) }).readyToIncrement).toBe(false)
     expect(finish(p, { sets: 2, reps: 5, load: kg(20) }).readyToIncrement).toBe(false)
-    expect(finish(p, { sets: 3, reps: 5, load: kg(17.5) }).readyToIncrement).toBe(false)
+    // The load lifted is not part of the verdict (v1 judged sets and reps); the next load starts from it.
+    expect(finish(p, { sets: 3, reps: 5, load: kg(17.5) }).readyToIncrement).toBe(true)
   })
 
   it('linear uses seconds instead of repetitions for a timed rule', () => {
