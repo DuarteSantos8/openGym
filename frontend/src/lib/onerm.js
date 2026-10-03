@@ -23,7 +23,7 @@ export function bestSetOf(exposure, formula = DEFAULT_FORMULA) {
   // An assistance machine has no one-rep max to estimate: the load is the help you were given,
   // so Epley on it would rise as you got weaker and call that a record (issue #232). These
   // exercises stay out of the estimate, the curve and the strength list entirely.
-  if (isAssisted(exposure?.exerciseId)) return null
+  if (typeof exposure?.assisted === 'boolean' ? exposure.assisted : isAssisted(exposure?.exerciseId)) return null
   let best = null
   ;(exposure?.performance?.sets || []).forEach(row => {
     if (row.status !== 'completed' || row.role === 'warmup') return
@@ -47,7 +47,6 @@ function bestSetOfEntries(entries, formula = DEFAULT_FORMULA) {
 // One point per workout in which the exercise produced an estimate — feeds the trend chart.
 // Chronological, matching the order workouts are appended in.
 export function e1rmSeries(S, exId, formula = DEFAULT_FORMULA) {
-  if (isAssisted(exId)) return []
   const pts = []
   ;(S.workouts || []).forEach(w => {
     // A combined session can hold the exercise twice: one point, from its strongest occurrence.

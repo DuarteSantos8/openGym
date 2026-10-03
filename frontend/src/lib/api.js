@@ -2,6 +2,7 @@
 import { t } from './i18n-core.js'
 import { MOBILE } from './mobile.js'
 import { appBase } from './app-base.js'
+import { unpackProfile } from '../../../api/migration/profile-pack.js'
 
 export const IS_APPLE = /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent)
 export const IS_ANDROID = /Android/.test(navigator.userAgent)
@@ -84,7 +85,9 @@ async function exchange(url, init) {
   let data
   let parsed = true
   try { data = await r.json() } catch { parsed = false }
-  const body = parsed && data && typeof data === 'object' ? data : null
+  // /api/data answers the compact form (api/migration/profile-pack.js); callers get the canonical profile.
+  const open = b => (b && b.state ? { ...b, state: unpackProfile(b.state) } : b)
+  const body = parsed && data && typeof data === 'object' ? open(data) : null
   // The body rides along on the error: a 409 from /api/data carries the server's document.
   if (!r.ok) { const e = new Error((body && body.error) || ('HTTP ' + r.status)); e.status = r.status; e.data = body || {}; throw e }
   if (!body) throw failure(t('The server answered with something other than openGym data.'), 'bad-response', r.status)

@@ -44,7 +44,7 @@ import { isFav, toggleFav, sortFavouritesFirst } from './lib/favourites.js'
 import { buildSessionExposures, missingOneRms, occurrenceFor } from './lib/session-start.js'
 import { buildCombinedExposures, deriveSessionName } from './lib/session-merge.js'
 import { entriesForExposures, planSummary } from './lib/session-ui-adapter.js'
-import { editCompletedSession, editChangesNothing, editLeftEmpty, editedRecord } from './lib/session-edit.js'
+import { reconcileSessionHistory, editCompletedSession, editChangesNothing, editLeftEmpty, editedRecord } from './lib/session-edit.js'
 import { workoutsOn, backfillStart, backfillEnd, completeBackfill, historyAsOf, sessionHistory } from './lib/backfill.js'
 import { legacyEntriesOf, appendOneRm, canonicalJSON, cardioParameters, defaultPlanRule, planWarmupRows, supports, validatePlanRule, validateWarmup, warmupMaxCount, warmupSteps } from './lib/prescription/index.js'
 import RuleEditor, { Disclosure, PRESET_LABEL } from './components/RuleEditor.jsx'
@@ -1364,7 +1364,11 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, s
   const st = useStore(s => s.S)
   const cardio = isCardio(ex.id)
   const [occurrenceId] = useState(() => existing?.occurrenceId || uid())
-  const [rule, setRule] = useState(() => (existing?.rule ? cloneJSON(existing.rule) : defaultRuleFor(ex, routine, st.unit)))
+  const [rule, setRule] = useState(() => {
+    const initial = existing?.rule ? cloneJSON(existing.rule) : defaultRuleFor(ex, routine, st.unit)
+    if (existing?.restFromProfile) initial.parameters.restSeconds = st.restSec
+    return initial
+  })
   const [note, setNote] = useState(() => existing?.note || '')
   const speedUnit = speedUnitOf(st)
   // The load of an assistance machine is the help given: the rule steps it down (issue #232).
@@ -1404,6 +1408,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, s
     onSave({
       ...kept,
       occurrenceId, exerciseId: ex.id, rule: { ...planned, revision },
+      ...(existing?.restFromProfile && planned.parameters.restSeconds === st.restSec ? { restFromProfile: true } : {}),
       ...(cardio ? { mode: 'cardio', cardio: cardioPlan } : {}),
       ...(!cardio && warmup.mode !== 'off' ? { warmup } : {}),
       ...(!cardio && intensifier?.type ? { intensifier: intensifierToSave(intensifier) } : {}),
@@ -2026,7 +2031,7 @@ function WorkoutDetail({ w, close }) {
     <div style={{ height: 10 }} />
     {/* Matched the way the edits above are, not by id: a workout from before ids has none, and
         filtering on `x.id !== undefined` took every other one of them with it. */}
-    <Button variant="danger" onClick={() => confirmSheet({ title: t('Delete workout?'), message: t('This removes it from your history for good.') + mediaGoesToo(S().workouts.find(x => sameWorkout(x, w))), confirmText: t('Delete'), danger: true, onConfirm: () => { update(s => { s.workouts = s.workouts.filter(x => !sameWorkout(x, w)) }); close(); toast(t('Workout deleted')) } })}>{t('Delete workout')}</Button>
+    <Button variant="danger" onClick={() => confirmSheet({ title: t('Delete workout?'), message: t('This removes it from your history for good.') + mediaGoesToo(S().workouts.find(x => sameWorkout(x, w))), confirmText: t('Delete'), danger: true, onConfirm: () => { update(s => { s.workouts = s.workouts.filter(x => !sameWorkout(x, w)); reconcileSessionHistory(s) }); close(); toast(t('Workout deleted')) } })}>{t('Delete workout')}</Button>
   </>
 }
 // The sentence a workout's Delete adds when its photos and videos go with it — every file the

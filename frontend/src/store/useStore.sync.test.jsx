@@ -4,6 +4,7 @@
    (409 with the current copy), the store merges and pushes again; a pull adopts, pushes or
    merges by comparing the server revision and its own marker; nothing pushes before boot has
    pulled; coming back to the tab pulls. */
+import { unpackProfile } from '../../../api/migration/profile-pack.js'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('../lib/api.js', () => ({ api: vi.fn() }))
@@ -19,7 +20,8 @@ const routine = id => ({ id, name: id, ex: [] })
 const workout = (id, d = '2026-09-01') => ({ id, d, start: 1, entries: [] })
 const httpError = (status, data) => Object.assign(new Error(data?.error || 'HTTP ' + status), { status, data })
 const sync = () => JSON.parse(localStorage.getItem('gym_sync'))
-const puts = () => api.mock.calls.filter(([, o]) => o?.method === 'PUT').map(([, o]) => JSON.parse(o.body))
+// The body carries the compact wire form; the tests read the canonical profile.
+const puts = () => api.mock.calls.filter(([, o]) => o?.method === 'PUT').map(([, o]) => { const b = JSON.parse(o.body); return { ...b, state: unpackProfile(b.state) } })
 const gets = () => api.mock.calls.filter(([, o]) => !o)
 const signedIn = (S, extra = {}) => useStore.setState({ S, user: { id: 'user-1' }, ready: true, ...extra })
 

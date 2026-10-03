@@ -87,8 +87,8 @@ gym.example.com {
 
 Route `gym.example.com` (HTTPS) → `web:80` (or `<docker-host>:8080`). Any reverse proxy works —
 openGym only needs the browser to reach it over `https://gym.example.com`. If that proxy caps
-request bodies (nginx does, at 1 MiB by default), allow at least 5 MiB on `/api/` — the app syncs
-its whole history in one PUT; the bundled web image already allows 5 MiB, matching the API. The
+request bodies (nginx does, at 1 MiB by default), allow at least 16 MiB on `/api/` — the app syncs
+its whole history in one PUT; the bundled web image already allows 16 MiB, matching the API. The
 photos and videos people attach to their own exercises need more room and more time on
 `/api/media/` — see [Photos and videos of custom exercises](#photos-and-videos-of-custom-exercises).
 
@@ -564,6 +564,10 @@ Data that never reaches the server goes through the same screen on the device. G
 its untouched copy in the browser's `localStorage` under `gym_state_v1.pre-engine-v1`; the
 Android/iOS app writes `gym_state_v1.pre-engine-v1.json` next to its own data file. Restoring a
 JSON backup exported before the upgrade asks the same question before anything is imported.
+
+Once converted, `data/state-<uid>.json` (and the device copy) is written in a compact, lossless form
+(`"packed": 1`; roughly half the size). The app, the API and the MCP server read it transparently, and a
+copy written before this change still loads. Exported backups stay in the plain, portable form.
 
 The conversion maps each exercise's old progression setting onto its closest rule (linear,
 Greyskull LP, double progression, "Add time" as the timed-hold rule; a linear bodyweight

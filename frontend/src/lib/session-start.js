@@ -49,7 +49,9 @@ export function buildSessionExposures(profile, routine, ctx) {
     const prescription = generatePrescription({
       id: ctx.newId(`prescription:${routine.id}:${occ.occurrenceId}:${ctx.now}:${i}`),
       now: new Date(ctx.now).toISOString(),
-      trackId, rule: occ.rule, state: context.state, lastPrescription: context.lastPrescription,
+      trackId, rule: occ.restFromProfile && Number.isFinite(profile.restSec)
+        ? { ...occ.rule, parameters: { ...occ.rule.parameters, restSeconds: profile.restSec } } : occ.rule,
+      state: context.state, lastPrescription: context.lastPrescription,
       // The engine reads a log's id; a saved exposure carries it as exposureId.
       lastLog: context.baseline && { ...context.baseline, id: context.baseline.exposureId },
       reset: context.reset, heldLoad: context.heldLoad, startFrom: profile.startFrom,
@@ -58,7 +60,7 @@ export function buildSessionExposures(profile, routine, ctx) {
       warmup: assisted ? null : occ.warmup ?? null,
       equipment: EXIDX[occ.exerciseId]?.eq ?? null, assisted,
       // What a deload needs to know about the movement (deload.js).
-      perSide: occ.side === true, restPause: occ.intensifier?.type === 'restpause'
+      perSide: occ.side === true, restPause: occ.intensifier?.type === 'restpause', restPauseReps: occ.intensifier?.totalReps
     })
     profile.prescriptions[prescription.id] = prescription
     return {
@@ -69,6 +71,7 @@ export function buildSessionExposures(profile, routine, ctx) {
       prescriptionId: prescription.id,
       ...(occ.sg ? { sg: occ.sg } : {}),
       ...(occ.side ? { side: true } : {}),
+      assisted,
       ...(occ.warmupRestSec > 0 ? { warmupRestSec: occ.warmupRestSec } : {}),
       ...(occ.bodyweight != null ? { bodyweight: occ.bodyweight } : {}),
       ...(occ.intensifier && supports(occ.rule)[occ.intensifier.type] ? { intensifier: occ.intensifier } : {}),

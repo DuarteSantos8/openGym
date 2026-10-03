@@ -14,7 +14,9 @@ import { modeOf, fmtSec, isBw, isPerSide, sideReps, exLine, MAX_PLANNED_WARMUPS 
 import { deriveSessionName } from './session-merge.js'
 import { uid, todayISO, DAYN, weekOrder, weekStartOf, fmtNum, exCount, weightDecimals } from './format.js'
 import { t, exerciseNameFor, exerciseNameClass, getLang, RTL_LANGS } from './i18n-core.js'
-import { convertWeight } from './units.js'
+import { convertStateUnit } from './units.js'
+import { migrateProfileV1ToV2 } from '../../../api/migration/profile-migration.js'
+import { LIB_BY_ID } from '../../../api/coach/core/library.js'
 import { fmtSpeed, speedUnitOf } from './speed.js'
 import { MUSCLES, inMuscleOrder } from './muscles.js'
 import { migrateOccurrence, supports, validateIntensifier, validatePlanRule, validateWarmup } from './prescription/index.js'
@@ -41,26 +43,10 @@ function declaredPlanUnit(data) {
   return declared
 }
 
-function convertedExercise(e, sourceUnit, destinationUnit) {
-  if (!sourceUnit || sourceUnit === destinationUnit) return e
-  const out = { ...e }
-  if (out.weight != null) out.weight = convertWeight(out.weight, sourceUnit, destinationUnit)
-  // A timed increment is seconds, not a load. Rep-mode increments are load overrides.
-  if (modeOf(out) === 'reps' && out.inc > 0) out.inc = convertWeight(out.inc, sourceUnit, destinationUnit)
-  return out
-}
-
 function convertedBundle(bundle, destinationUnit) {
   const sourceUnit = declaredPlanUnit(bundle)
   if (!sourceUnit || sourceUnit === destinationUnit) return bundle
-  return {
-    ...bundle,
-    unit: destinationUnit,
-    routines: (bundle.routines || []).map(r => ({
-      ...r,
-      ex: (r.ex || []).map(e => convertedExercise(e, sourceUnit, destinationUnit))
-    }))
-  }
+  return convertStateUnit({ ...bundle, unit: sourceUnit }, destinationUnit)
 }
 
 // What a routine occurrence carries into a shared plan: the engine's own identity and
@@ -73,9 +59,13 @@ function convertedBundle(bundle, destinationUnit) {
 function cleanOccurrence(o) {
   const out = { occurrenceId: o.occurrenceId, exerciseId: o.exerciseId, order: o.order, mode: o.mode }
   if (o.rule) out.rule = o.rule
+  for (const key of ['side', 'bodyweight', 'assisted', 'excludeFromProgression']) if (typeof o[key] === 'boolean') out[key] = o[key]
+  const warmupRest = cleanRestSec(o.warmupRestSec)
+  if (warmupRest) out.warmupRestSec = warmupRest
   if (o.laterality) out.laterality = o.laterality
   if (o.sg) out.sg = o.sg
   if (o.note) out.note = o.note
+  if (o.restFromProfile) out.restFromProfile = true
   // A recipe the rule cannot use (timed, unloaded) is dropped rather than carried inert.
   const can = o.rule && supports(o.rule)
   if (o.warmup && can?.warmup) out.warmup = o.warmup
@@ -163,11 +153,15 @@ export function buildPlanBundle(S, name) {
  * is trained.
  */
 export function parsePlan(raw, destinationUnit = 'kg') {
-  const data = typeof raw === 'string' ? JSON.parse(raw) : raw
+  let data = typeof raw === 'string' ? JSON.parse(raw) : raw
   const destination = planUnit(destinationUnit)
-  // PLAN_FMT 1 and 2 (per-mode fields, bindings) are refused outright rather than imported as
-  // an empty plan: their routines carry no rule, so silently accepting them would drop every
-  // exercise without saying why.
+  // v1 shared plans use the same converter and catalogue as profiles. Format 2's retired
+  // bindings are still refused: they are not v1 exercise configs.
+  if (data?.opengym_plan === 1 && Array.isArray(data.routines) && destination) {
+    const unit = declaredPlanUnit(data) || destination
+    const { profile } = migrateProfileV1ToV2({ unit, restSec: data.restSec, routines: data.routines, customEx: data.customEx, workouts: [] }, LIB_BY_ID)
+    data = { ...data, opengym_plan: PLAN_FMT, routines: profile.routines, migrationAudit: profile.migrationAudit }
+  }
   if (!data || typeof data !== 'object' || Array.isArray(data) || data.opengym_plan !== PLAN_FMT || !Array.isArray(data.routines) || !destination) {
     throw new Error(t('this isn’t an openGym plan file'))
   }
@@ -175,7 +169,7 @@ export function parsePlan(raw, destinationUnit = 'kg') {
   const customEx = (Array.isArray(data.customEx) ? data.customEx : []).filter(c => c && c.id)
   const known = new Set(customEx.map(c => c.id))
   let dropped = 0
-  const routines = data.routines.filter(r => r && Array.isArray(r.ex)).map(r => ({
+  let routines = data.routines.filter(r => r && Array.isArray(r.ex)).map(r => ({
     ...r,
     ex: r.ex.filter(e => {
       // An occurrence with no rule can't be started, so it is dropped like an unknown exercise.
@@ -189,6 +183,7 @@ export function parsePlan(raw, destinationUnit = 'kg') {
       return true
     }).map(e => cleanOccurrence(migrateOccurrence(e)))
   }))
+  if (sourceUnit && sourceUnit !== destination) routines = convertStateUnit({ unit: sourceUnit, routines }, destination).routines
   return {
     name: (data.name || '').trim(),
     routines,
@@ -202,7 +197,8 @@ export function parsePlan(raw, destinationUnit = 'kg') {
     // that absence means its numbers were intentionally treated as already in `destination`.
     unit: destination,
     sourceUnit: sourceUnit || null,
-    destinationUnit: destination
+    destinationUnit: destination,
+    ...(data.migrationAudit ? { migrationAudit: data.migrationAudit } : {})
   }
 }
 
@@ -229,7 +225,7 @@ export function mergePlan(s, bundle, { schedule } = {}) {
     const clean = cleanCustom(c)
     s.customEx.push({ ...clean, id: nid, ...(clean.secondaries ? { sm: clean.secondaries } : {}), custom: true })
   })
-  const ridMap = {}
+  const ridMap = {}, occurrenceMap = {}
   source.routines.forEach(r => {
     const nid = uid()
     ridMap[r.id] = nid
@@ -244,6 +240,7 @@ export function mergePlan(s, bundle, { schedule } = {}) {
       ex: (r.ex || []).map(e => {
         assertValidRule(e.rule)
         const occurrenceId = uid()
+        occurrenceMap[e.occurrenceId] = occurrenceId
         const exerciseId = exIdMap[e.exerciseId] || e.exerciseId
         return {
           ...e,
@@ -254,6 +251,13 @@ export function mergePlan(s, bundle, { schedule } = {}) {
       })
     })
   })
+  if (source.migrationAudit) {
+    const audit = source.migrationAudit
+    s.migrationAudit = { ...s.migrationAudit, fromSchema: 1,
+      unsupported: [...(s.migrationAudit?.unsupported || []), ...(audit.unsupported || []).map(a => ({ ...a,
+        routineId: ridMap[a.routineId] || a.routineId, occurrenceId: occurrenceMap[a.occurrenceId] || a.occurrenceId, exerciseId: exIdMap[a.exerciseId] || a.exerciseId }))],
+      discarded: [...(s.migrationAudit?.discarded || []), ...(audit.discarded || [])] }
+  }
   if (schedule) {
     WEEK_DAYS.forEach(d => { delete s.week[d] })
     Object.entries(source.week || {}).forEach(([d, val]) => {

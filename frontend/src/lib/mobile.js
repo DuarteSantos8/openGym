@@ -14,6 +14,7 @@ import { isoOf, todayISO } from './format.js'
 import { effectiveRoutineIds } from './history.js'
 import { buildProfileBackup } from './export-profile.js'
 import { isLegacyProfile } from '../../../api/migration/profile-version.js'
+import { parseState, stringifyState } from './state-codec.js'
 
 export const MOBILE = import.meta.env.VITE_MOBILE === '1'
 
@@ -36,39 +37,47 @@ export async function isAndroid() {
 const FILE = 'opengym-state.json'
 
 // The mirror as stored: the engine migration backs up these exact bytes, not a re-serialization.
-export async function nativeLoadText() {
+export async function nativeLoadText(file = FILE) {
   try {
     const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
-    return (await Filesystem.readFile({ path: FILE, directory: Directory.Data, encoding: Encoding.UTF8 })).data
-  } catch (e) { return null }   // first launch, or unreadable — localStorage copy takes over
+    return (await Filesystem.readFile({ path: file, directory: Directory.Data, encoding: Encoding.UTF8 })).data
+  } catch (e) {
+    if (e?.code === 'ENOENT' || e?.code === 'OS-PLUG-FILE-0008' || /not exist|not found/i.test(e?.message || '')) return null
+    throw e
+  }
 }
 
 export async function nativeLoad() {
-  try { return JSON.parse(await nativeLoadText()) } catch (e) { return null }
+  try { return parseState(await nativeLoadText()) } catch (e) { return null }
 }
 
 // One immutable copy of a v1 mirror, written before the migration changes anything and read back
 // to prove it landed. An existing copy is an earlier attempt's evidence: kept, never replaced, and
 // refused outright if it is not v1 at all.
 export const NATIVE_BACKUP_FILE = 'gym_state_v1.pre-engine-v1.json'
-export async function nativeBackupOnce(text) {
+export async function nativeBackupOnce(text, file = NATIVE_BACKUP_FILE) {
   const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
-  const at = { path: NATIVE_BACKUP_FILE, directory: Directory.Data, encoding: Encoding.UTF8 }
-  const read = () => Filesystem.readFile(at).then(r => r.data, () => null)
+  const at = { path: file, directory: Directory.Data, encoding: Encoding.UTF8 }
+  const read = () => Filesystem.readFile(at).then(r => r.data, e => {
+    if (e?.code === 'ENOENT' || e?.code === 'OS-PLUG-FILE-0008' || /not exist|not found/i.test(e?.message || '')) return null
+    throw e
+  })
   const existing = await read()
   if (existing != null) {
     if (!isLegacyProfile(JSON.parse(existing))) throw new Error('native-backup-not-v1')
+    if (existing !== text) throw new Error('native-backup-source-mismatch')
     return
   }
   await Filesystem.writeFile({ ...at, data: text })
   if ((await read()) !== text) throw new Error('native-backup-mismatch')
 }
 
-export async function nativeSave(state) {
+export async function nativeSave(state, strict = false) {
   try {
     const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
-    await Filesystem.writeFile({ path: FILE, directory: Directory.Data, data: JSON.stringify(state), encoding: Encoding.UTF8 })
-  } catch (e) { /* keep the localStorage copy */ }
+    await Filesystem.writeFile({ path: FILE, directory: Directory.Data, data: stringifyState(state), encoding: Encoding.UTF8 })
+  } catch (e) { if (strict) throw e; return false }
+  return true
 }
 
 // "Connect to my server" mode (lib/remote.js): which of local-only / a paired remote account this
@@ -86,19 +95,21 @@ export async function readJsonFile(name) {
     return JSON.parse(r.data)
   } catch (e) { return null }
 }
-export async function writeJsonFile(name, data) {
+export async function writeJsonFile(name, data, strict = false) {
   try {
     const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
     await Filesystem.writeFile({ path: name, directory: Directory.Data, data: JSON.stringify(data), encoding: Encoding.UTF8 })
-  } catch (e) { /* not a Capacitor build, or the write failed — the caller's in-memory copy stands */ }
+    if (strict && JSON.stringify(await readJsonFile(name)) !== JSON.stringify(data)) throw new Error('native-write-mismatch')
+  } catch (e) { if (strict) throw e; return false }
+  return true
 }
 
 // The in-progress session's file mirror. Same reason as the profile's: WebView storage can be
 // evicted, and backgrounding is often the last thing before the OS kills the app.
 export const ACTIVE_FILE = 'gym_active_v1.json'
 
-export async function nativeActiveSave(A) {
-  await writeJsonFile(ACTIVE_FILE, A)
+export async function nativeActiveSave(A, strict = false) {
+  return await writeJsonFile(ACTIVE_FILE, A, strict)
 }
 
 export async function nativeActiveLoad() {

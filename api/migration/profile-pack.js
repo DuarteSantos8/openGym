@@ -92,7 +92,7 @@ export function unpackProfile(doc) {
   const unit = rest.unit === 'lb' ? 'lb' : 'kg';
   const prescriptions = Object.fromEntries(Object.entries(rest.prescriptions || {}).map(([id, p]) => {
     const { _t, ...own } = rename(p, LONG, false);
-    return [id, { ...templates[_t], ...own }];
+    return [id, { ...templates?.[_t], ...own }];
   }));
   return { ...rest, prescriptions, workouts: mapRows((rest.workouts || []).map(w => (Array.isArray(w.exposures) ? { ...w, exposures: rename(w.exposures, LONG, false) } : w)), fatRow, unit) };
 }

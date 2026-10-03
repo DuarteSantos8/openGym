@@ -39,6 +39,8 @@ prescription for a recognisable group · **S3** = minor / edge.
 
 ### M5 — the migrated profile exceeds the sync cap for heavy users (S1)
 
+> **Resolved for sync** (`report-corrections` Tasks 3–4): the profile is stored and sent in a lossless compact form (`api/migration/profile-pack.js`: short keys, derivable row fields dropped, the invariant part of each track's prescriptions written once). The 1000 × 6 fixture is 8.5 MB on the wire instead of 16.1 MB (canonical, as measured now); the ceiling moves from ≈ 950 to ≈ 1,800 sessions × 6 exercises. No row, prescription, `actual` or `audit` is dropped. **Still open:** the `localStorage` quota (~5 MB) of web guests — 8.5 MB for 1000 sessions still exceeds it (from ≈ 550 sessions). Signed-in users have the server copy, Capacitor guests the native file; closing it for web guests needs gzip (`CompressionStream`) or IndexedDB, as separate work.
+
 *Repro* (`api/test/migration-audit.test.js` → M5): 1000 sessions × 6 exercises × (2 warm-up + 4 work rows),
 linear, all linked.
 

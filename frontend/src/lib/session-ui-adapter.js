@@ -58,7 +58,7 @@ function intensified(p, exposure) {
   // A unilateral exercise logs each work row per limb (issue #60), reps split evenly.
   const work = p.rows.map((_, i) => (exposure.side ? makeSideSet(rowFor(p, i, exposure.mode)) : rowFor(p, i, exposure.mode)))
   if (!exposure.intensifier) return work
-  const out = applyIntensifierPlan(work, { intensifier: exposure.intensifier, reps: p.prefill.reps })
+  const out = applyIntensifierPlan(work, { intensifier: exposure.intensifier, reps: p.prefill.reps, side: exposure.side })
   if (exposure.intensifier.type !== 'restpause') return out
   const [warmup, row] = out
   return [...(p.warmupRows?.length ? [] : [warmup]), { ...row, setId: 'r0' }]
@@ -73,7 +73,7 @@ export function entriesForExposures(exposures, prescriptions) {
       ...(exposure.routineId ? { rid: exposure.routineId } : {}),
       ...(exposure.excludedFromProgression ? { noProg: true } : {}),
       ...(exposure.sg ? { sg: exposure.sg } : {}),
-      target: { ...targetFor(p, exposure.mode), ...(exposure.side ? { side: true } : {}), ...(exposure.warmupRestSec > 0 ? { warmupRestSec: exposure.warmupRestSec } : {}), ...(exposure.bodyweight != null ? { bodyweight: exposure.bodyweight } : {}), ...(exposure.intensifier ? { intensifier: exposure.intensifier } : {}) },
+      target: { ...targetFor(p, exposure.mode), ...(typeof exposure.assisted === 'boolean' ? { assisted: exposure.assisted } : {}), ...(exposure.side ? { side: true } : {}), ...(exposure.warmupRestSec > 0 ? { warmupRestSec: exposure.warmupRestSec } : {}), ...(exposure.bodyweight != null ? { bodyweight: exposure.bodyweight } : {}), ...(exposure.intensifier ? { intensifier: exposure.intensifier } : {}) },
       planned: plannedOf(p),
       ...(p.prefill.carried ? { carried: true } : {}),
       sets: [...(p.warmupRows || []).map(warmupRowFor), ...intensified(p, exposure)]
@@ -85,10 +85,11 @@ export function entriesForExposures(exposures, prescriptions) {
 export const rowIndexOf = row => (/^r\d+$/.test(row?.setId || '') ? Number(row.setId.slice(1)) : null)
 
 /** One UI row as the engine's per-set actual. Exact values; nothing clamped or rounded. */
-export const actualOfRow = (row, unit) => ({
+export const actualOfRow = (row, unit, assisted = false) => ({
+  ...(isSideSet(row) ? { sideReps: [row.sides.L.r, row.sides.R.r], sideLoads: [row.sides.L.w, row.sides.R.w] } : {}),
   row: rowIndexOf(row) ?? Infinity,
   reps: row.sec != null ? null : row.r ?? null,
-  load: row.w > 0 ? { value: row.w, unit } : null,
+  load: isSideSet(row) ? { value: (assisted ? Math.max : Math.min)(row.sides.L.w, row.sides.R.w), unit } : Number.isFinite(row.w) ? { value: row.w, unit } : null,
   // A cardio row is minutes, a hold's is seconds: the engine reads both as a duration.
   durationSeconds: row.sec ?? (row.min != null ? row.min * 60 : null),
   speed: row.speed ?? null,
@@ -125,7 +126,7 @@ const performanceRow = (row, unit) => {
 // (volume, set counts, best weight, 1RM) then counts each limb as the set it was, a half-done row
 // included. Each limb carries its own drops and bursts.
 const performanceRows = (row, unit) => (isSideSet(row)
-  ? ['L', 'R'].map(side => ({ ...performanceRow({ ...row.sides[side], setId: row.setId, phase: row.phase, warmup: row.warmup }, unit), side }))
+  ? ['L', 'R'].map(side => ({ ...performanceRow({ ...row.sides[side], setId: row.setId, phase: row.phase, warmup: row.warmup, rir: row.sides[side].rir ?? row.rir, rpe: row.sides[side].rpe ?? row.rpe }, unit), side }))
   : [performanceRow(row, unit)])
 
 export function exposuresWithPerformance(exposures, entries, unit) {
@@ -134,7 +135,7 @@ export function exposuresWithPerformance(exposures, entries, unit) {
     const entry = byExposure.get(exposure.exposureId)
     return {
       ...exposure,
-      mode: modeOf({ ...(entry?.target || {}), id: exposure.exerciseId }),
+      mode: modeOf({ mode: exposure.mode, ...(entry?.target || {}), id: exposure.exerciseId }),
       performance: {
         sets: (entry?.sets || []).flatMap(row => performanceRows(row, unit)),
         ...(entry?.note?.trim() ? { note: entry.note.trim() } : {}),
@@ -171,8 +172,8 @@ export function rowsOfPerformance(sets, mode) {
     const row = sets[i], next = sets[i + 1]
     const pair = row.sides ? [row.sides.L, row.sides.R] : row.side === 'L' && next?.side === 'R' ? [row, sets[++i]] : null
     if (!pair) { out.push(rowOfPerformance(row, mode)); continue }
-    const [L, R] = pair.map(limb => rowOfPerformance(limb, mode))
-    out.push(syncSideAggregate({ ...(row.setId ? { setId: row.setId } : {}), ...(row.role === 'warmup' ? { phase: 'warmup' } : {}), sides: { L, R } }))
+    const [L, R] = pair.map(limb => rowOfPerformance({ ...limb, rir: limb.rir ?? row.rir, rpeEntered: limb.rpeEntered ?? row.rpeEntered }, mode))
+    out.push(syncSideAggregate({ ...(row.rpeEntered != null ? { rpe: row.rpeEntered } : row.rir != null ? { rir: row.rir } : {}), ...(row.setId ? { setId: row.setId } : {}), ...(row.role === 'warmup' ? { phase: 'warmup' } : {}), sides: { L, R } }))
   }
   return out
 }

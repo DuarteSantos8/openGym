@@ -32,6 +32,8 @@ import {
 import { createDeviceLink, findDeviceLink, burnDeviceLink, dropDeviceLinks } from './device-link.js';
 import { createMediaStore, mediaLimits, mediaConfig, MediaError, HASH_RE } from './media.js';
 import { isLegacyProfile, migrateProfileV1ToV2, migrationStatus, validateCanonicalProfile } from './migration/profile-migration.js';
+import { MAX_SYNC_BODY, assertSyncSize } from './migration/profile-size.js';
+import { packProfile, unpackProfile } from './migration/profile-pack.js';
 import { LIB_BY_ID } from './coach/core/library.js';
 
 const PORT = +(process.env.PORT || 3000);
@@ -72,7 +74,7 @@ const TRUST_PROXY = /^(1|true|yes|on)$/i.test(process.env.TRUST_PROXY || '');
 // internet don't want the same number. Only affects cookies minted from now on — the expiry is
 // baked into each cookie when it's issued, so lowering this never cuts an existing session short.
 const SESSION_DAYS = Math.max(1, +(process.env.SESSION_DAYS || 90) || 90);
-const MAX_BODY = 5 * 1024 * 1024;
+const MAX_BODY = MAX_SYNC_BODY;
 // Secure cookies require HTTPS; over plain http://localhost the flag would drop the cookie
 const SECURE = /^https:/i.test(ORIGIN) ? ' Secure;' : '';
 
@@ -125,7 +127,7 @@ function notePull(user, now = Date.now()) {
 // The later of the last push and the last pull.
 const lastSyncOf = (u, S) => Math.max(S?._ts || 0, u?.lastPull || 0) || null;
 function readState(uid) {
-  try { return JSON.parse(fs.readFileSync(stateFile(uid), 'utf8')); } catch { return null; }
+  try { return unpackProfile(JSON.parse(fs.readFileSync(stateFile(uid), 'utf8'))); } catch { return null; }
 }
 // An entry is an object a reader can dereference, and `records` is every entry of a stored
 // list. PUT /api/data drops the rest on the way in — a null workout, a routine that is a
@@ -1739,7 +1741,7 @@ function readStateSource(uid) {
   let text;
   try { text = fs.readFileSync(stateFile(uid), 'utf8'); } catch { return { state: null }; }
   try {
-    const state = JSON.parse(text);
+    const state = unpackProfile(JSON.parse(text));
     return { text, state, status: migrationStatus(state, Buffer.byteLength(text)) };
   } catch (e) {
     return { error: e.message === 'unsupported-schema' ? 'unsupported-schema' : 'profile-unreadable' };
@@ -2021,7 +2023,7 @@ const routes = {
     if (engineGate(req, res, user.id)) return;
     const state = readState(user.id);
     notePull(user);
-    json(res, 200, { state, rev: state?._rev || 0 });
+    json(res, 200, { state: packProfile(state), rev: state?._rev || 0 });
   },
   // Just the revision: the client asks this every half minute while it is open and on every
   // return to the foreground, and fetches the document only when the number moved — a signed-in
@@ -2072,17 +2074,20 @@ const routes = {
       // Written once, never replaced: an existing copy is an earlier attempt's evidence, and one
       // that is not v1 means something is wrong enough to stop.
       if (fs.existsSync(backup)) {
-        if (!isLegacyProfile(JSON.parse(fs.readFileSync(backup, 'utf8')))) throw new Error('backup-not-v1');
+        const saved = fs.readFileSync(backup, 'utf8');
+        if (!isLegacyProfile(JSON.parse(saved))) throw new Error('backup-not-v1');
+        if (saved !== source.text) throw new Error('backup-source-mismatch');
       } else atomicWrite(backup, source.text);
       ({ profile } = migrateProfileV1ToV2(source.state, LIB_BY_ID));
       const check = validateCanonicalProfile(profile);
       if (!check.ok) throw new Error('invalid-output: ' + check.errors[0]);
+      profile._rev = status.revision + 1;
+      assertSyncSize(profile);
+      atomicWrite(file, JSON.stringify(packProfile(profile)));
     } catch (e) {
       console.error('engine migration failed for', user.id, e.message);
       return fail(500, String(e.message).split(':')[0].slice(0, 60));
     }
-    profile._rev = status.revision + 1;
-    atomicWrite(file, JSON.stringify(profile));
     stateCache.delete(user.id);
     const summary = { ...status.summary, needsReview: profile.migrationAudit.unsupported.length };
     audit(req, 'data.migrate.ok', { user, msg: `v1->v2 ${summary.bytes}B ${summary.routines} routines ${summary.workouts} workouts` });
@@ -2094,7 +2099,10 @@ const routes = {
     if (!user) return json(res, 401, { error: 'not signed in' });
     if (engineGate(req, res, user.id)) return;
     const body = await readBody(req);
+    if (engineGate(req, res, user.id)) return;
     if (!body.state || typeof body.state !== 'object') return json(res, 400, { error: 'state required' });
+    // The wire form is compact; everything below works on the canonical profile.
+    try { body.state = unpackProfile(body.state); } catch { return json(res, 400, { error: 'invalid state' }); }
     // An object with nothing of the profile in it empties the document with the counter left
     // intact: what lands on disk is `{"_rev":n+1}`, every routine, workout and weigh-in gone, and
     // the next poll reports a revision the client accepts as its own. `_rev` and `_ts` do not
@@ -2117,7 +2125,8 @@ const routes = {
     // (`records` above), but nothing should be storing one. Dropped, not refused:
     // such an entry carries nothing worth keeping, whereas a 400 would strand a client whose own
     // copy is already malformed — it keeps re-sending the same document and never syncs again.
-    for (const k of ['workouts', 'routines']) if (Array.isArray(body.state[k])) body.state[k] = records(body.state[k]);
+    const canonical = body.state.engineSchemaVersion === 2 || Number(req.headers['x-opengym-engine-schema']) >= 2;
+    if (!canonical) for (const k of ['workouts', 'routines']) if (Array.isArray(body.state[k])) body.state[k] = records(body.state[k]);
     // Conditional write: a `baseRev` that is not the current revision means this client last
     // read an older document — another device has written since — and the copy it is about to
     // push would silently drop that write. The current document travels back with the 409, so
@@ -2128,9 +2137,13 @@ const routes = {
     const cur = readState(user.id);
     const curRev = cur?._rev || 0;
     if (body.baseRev != null && body.baseRev !== curRev) {
-      return json(res, 409, { error: 'conflict', rev: curRev, state: cur });
+      return json(res, 409, { error: 'conflict', rev: curRev, state: packProfile(cur) });
     }
     delete body.state.active;              // in-progress workouts stay device-local
+    if (canonical) {
+      const check = validateCanonicalProfile(body.state);
+      if (!check.ok) return json(res, 400, { error: 'invalid state', details: check.errors });
+    }
     // "Reset everything" stamps the profile (`resetAt`, with `resetIds`: what it wiped). The stamp
     // only moves forward: a write without it, or with an older one — a client from before it, a
     // backup restored over the profile — keeps the stored stamp. Otherwise every device that saw
@@ -2143,7 +2156,7 @@ const routes = {
       else delete body.state.resetIds;
     }
     body.state._rev = curRev + 1;          // server-owned; whatever the client sent is ignored
-    atomicWrite(stateFile(user.id), JSON.stringify(body.state));
+    atomicWrite(stateFile(user.id), JSON.stringify(packProfile(body.state)));
     // The stat cache cannot see this write on its own: mtime granularity is 4 ms here (ext4 on
     // this kernel — 3901 of 3999 back-to-back same-size writes shared one timestamp), and a
     // `_rev` going from 7 to 8 does not change the file's size, so two writes inside one 4 ms

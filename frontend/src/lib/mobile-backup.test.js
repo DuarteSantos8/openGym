@@ -4,7 +4,7 @@ const { files } = vi.hoisted(() => ({ files: new Map() }))
 vi.mock('@capacitor/filesystem', () => ({
   Directory: { Data: 'DATA' }, Encoding: { UTF8: 'utf8' },
   Filesystem: {
-    readFile: async ({ path }) => { if (!files.has(path)) throw new Error('missing'); return { data: files.get(path) } },
+    readFile: async ({ path }) => { if (!files.has(path)) throw Object.assign(new Error('missing'), { code: 'ENOENT' }); return { data: files.get(path) } },
     writeFile: async ({ path, data }) => { files.set(path, data) }
   }
 }))
@@ -17,7 +17,8 @@ describe('nativeBackupOnce', () => {
   it('writes the exact text once, and never replaces it', async () => {
     await nativeBackupOnce('{"routines":[]}')
     expect(files.get(NATIVE_BACKUP_FILE)).toBe('{"routines":[]}')
-    await nativeBackupOnce('{"routines":[],"later":1}')
+    await nativeBackupOnce('{"routines":[]}')
+    await expect(nativeBackupOnce('{"routines":[],"later":1}')).rejects.toThrow('native-backup-source-mismatch')
     expect(files.get(NATIVE_BACKUP_FILE)).toBe('{"routines":[]}')
   })
 

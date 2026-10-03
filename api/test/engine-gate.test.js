@@ -1,18 +1,22 @@
 import test from 'node:test';
+import http from 'node:http';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
-import net from 'node:net';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { boundPort } from './helpers.mjs';
+import { migrateProfileV1ToV2 } from '../migration/profile-migration.js';
+import { packProfile, unpackProfile } from '../migration/profile-pack.js';
+import { LIB_BY_ID } from '../coach/core/library.js';
 
 const API = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SECRET = crypto.randomBytes(32).toString('hex');
 const uid = 'u_engine_1';
 const V1 = { workouts: [], routines: [], _ts: 1 };
-const V2 = { ...V1, engineSchemaVersion: 2 };
+const V2 = { ...V1, engineSchemaVersion: 2, prescriptions: {}, progression: {}, oneRepMaxes: {} };
 const ENGINE = { 'X-OpenGym-Engine-Schema': '2' };
 const V1_PROFILE = {
   unit: 'kg', _rev: 4, _ts: 1,
@@ -22,31 +26,25 @@ const V1_PROFILE = {
 };
 const primaryFile = dir => path.join(dir, `state-${uid}.json`);
 const backupFile = dir => path.join(dir, `state-${uid}.pre-engine-v1.json`);
-const freePort = () => new Promise(resolve => {
-  const server = net.createServer();
-  server.listen(0, '127.0.0.1', () => { const { port } = server.address(); server.close(() => resolve(port)); });
-});
 
 const cookie = () => {
   const payload = `${uid}:${Date.now() + 86400000}:0`;
   return `gymsid=${payload}.${crypto.createHmac('sha256', SECRET).update(payload).digest('base64url')}`;
 };
 
-async function harness(t) {
+async function harness(t, preload) {
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gym-engine-'));
   fs.writeFileSync(path.join(dataDir, 'secret'), SECRET, { mode: 0o600 });
   fs.writeFileSync(path.join(dataDir, 'db.json'), JSON.stringify({ users: [{ id: uid, name: 'One', created: new Date().toISOString() }], creds: [], subs: [], invites: [] }));
-  const port = await freePort();
-  const child = spawn(process.execPath, ['server.js'], {
+  const child = spawn(process.execPath, [...(preload ? ['--import', preload] : []), 'server.js'], {
     cwd: API, stdio: ['ignore', 'pipe', 'pipe'],
-    env: { ...process.env, PORT: String(port), DATA_DIR: dataDir, ORIGIN: 'http://localhost:8080', RP_ID: 'localhost', ADMIN_UIDS: uid }
+    env: { ...process.env, PORT: '0', DATA_DIR: dataDir, ORIGIN: 'http://localhost:8080', RP_ID: 'localhost', ADMIN_UIDS: uid }
   });
-  const api = `http://127.0.0.1:${port}`;
   t.after(() => { child.kill('SIGKILL'); fs.rmSync(dataDir, { recursive: true, force: true }); });
-  for (let i = 0; i < 100; i++) {
-    try { if ((await fetch(`${api}/api/health`)).ok) break; } catch { /* starting */ }
-    await new Promise(resolve => setTimeout(resolve, 20));
-  }
+  let log = '';
+  child.stdout.on('data', d => { log += d; });
+  child.stderr.on('data', d => { log += d; });
+  const api = `http://127.0.0.1:${await boundPort(child, () => log)}`;
   const call = async (route, { method = 'GET', body, headers = {} } = {}) => {
     const response = await fetch(api + route, {
       method,
@@ -56,7 +54,7 @@ async function harness(t) {
     return { status: response.status, body: await response.json() };
   };
   return {
-    dataDir,
+    dataDir, api,
     put: (state, headers = {}) => call('/api/data', { method: 'PUT', body: { state }, headers }),
     get: (headers = {}) => call('/api/data', { headers }),
     getRev: (headers = {}) => call('/api/data/rev', { headers }),
@@ -82,6 +80,19 @@ test('v2 data is readable and writable only by engine-aware clients (A47)', asyn
   assert.equal((await get({ 'X-OpenGym-Engine-Schema': '2' })).status, 200);
   assert.equal((await get({ 'X-OpenGym-Engine-Schema': '3' })).status, 200);
   assert.equal((await get({ 'X-OpenGym-Engine-Schema': 'nonsense' })).status, 409);
+});
+
+test('A17: invalid canonical writes leave the stored profile and revision untouched', async t => {
+  const { put, get, dataDir } = await harness(t);
+  const good = { ...V2, prescriptions: {}, progression: {}, oneRepMaxes: {} };
+  assert.equal((await put(good, ENGINE)).status, 200);
+  const before = fs.readFileSync(primaryFile(dataDir), 'utf8');
+  const bad = { ...good, routines: [{ id: 'r', ex: [{ id: '0025', sets: 3 }] }] };
+  assert.equal((await put(bad, ENGINE)).status, 400);
+  assert.equal((await put({ ...good, prescriptions: [] }, ENGINE)).status, 400);
+  assert.equal((await put({ ...V1 }, ENGINE)).status, 400);
+  assert.equal(fs.readFileSync(primaryFile(dataDir), 'utf8'), before);
+  assert.equal((await get(ENGINE)).body.rev, 1);
 });
 
 test('a v1 profile stays with old clients and sends engine-aware clients to the migration', async t => {
@@ -138,7 +149,7 @@ test('a crash-left v1 backup is reused; a backup that is not v1 fails closed', a
   const { plant, migrate, get, dataDir } = await harness(t);
   const text = JSON.stringify(V1_PROFILE);
   plant(text);
-  const earlier = JSON.stringify({ ...V1_PROFILE, _ts: 0 });   // left by an attempt that died before replacing the primary
+  const earlier = text;   // left by an attempt that died before replacing the primary
   fs.writeFileSync(backupFile(dataDir), earlier);
   assert.equal((await migrate({ confirmed: true, baseRev: 4 })).status, 200);
   assert.equal(fs.readFileSync(backupFile(dataDir), 'utf8'), earlier);
@@ -169,4 +180,100 @@ test('admin and Coach routes bypass the data gate (A48)', async t => {
   await put(V2, { 'X-OpenGym-Engine-Schema': '2' });
   assert.equal((await adminUsers()).status, 200);
   assert.notEqual((await coachStatus()).status, 409);
+});
+
+
+test('A26: a streamed old-client PUT cannot undo a completed migration', async t => {
+  const { plant, migrate, dataDir, api } = await harness(t);
+  const text = JSON.stringify(V1_PROFILE);
+  plant(text);
+  const bytes = JSON.stringify({ state: V1_PROFILE });
+  let finish;
+  const pending = new Promise((resolve, reject) => {
+    const req = http.request(api + '/api/data', { method: 'PUT', headers: { Cookie: cookie(), 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(bytes) } }, res => {
+      let body = ''; res.on('data', d => { body += d; }); res.on('end', () => resolve({ status: res.statusCode, body: JSON.parse(body) }));
+    });
+    req.on('error', reject); req.write(bytes.slice(0, 1)); finish = () => req.end(bytes.slice(1));
+  });
+  await new Promise(resolve => setTimeout(resolve, 60));
+  assert.equal((await migrate({ confirmed: true, baseRev: 4 })).status, 200);
+  const after = fs.readFileSync(primaryFile(dataDir), 'utf8');
+  finish();
+  assert.equal((await pending).body.error, 'upgrade-required');
+  assert.equal(fs.readFileSync(primaryFile(dataDir), 'utf8'), after);
+});
+
+test('A30: a stale backup is immutable and cannot protect a different source', async t => {
+  const { plant, migrate, dataDir } = await harness(t);
+  const text = JSON.stringify(V1_PROFILE);
+  const earlier = JSON.stringify({ ...V1_PROFILE, _ts: 0 });
+  plant(text); fs.writeFileSync(backupFile(dataDir), earlier);
+  const result = await migrate({ confirmed: true, baseRev: 4 });
+  assert.equal(result.body.reason, 'backup-source-mismatch');
+  assert.equal(fs.readFileSync(primaryFile(dataDir), 'utf8'), text);
+  assert.equal(fs.readFileSync(backupFile(dataDir), 'utf8'), earlier);
+});
+
+for (const fault of ['backup-write', 'primary-write', 'primary-rename']) test('A55: filesystem fault ' + fault + ' preserves source/revision and reports migration failure', async t => {
+  const moduleFile = path.join(os.tmpdir(), `gym-fault-${crypto.randomUUID()}.mjs`);
+  fs.writeFileSync(moduleFile, `import fs from 'node:fs';
+const write = fs.writeFileSync, rename = fs.renameSync;
+fs.writeFileSync = function(file, ...args) {
+  if (String(file).endsWith('${fault === 'backup-write' ? '.pre-engine-v1.json.tmp' : `state-${uid}.json.tmp`}') && '${fault}' !== 'primary-rename') throw new Error('injected-write');
+  return write.call(this, file, ...args);
+};
+fs.renameSync = function(from, to) {
+  if (String(to).endsWith('state-${uid}.json') && '${fault}' === 'primary-rename') throw new Error('injected-rename');
+  return rename.call(this, from, to);
+};`);
+  t.after(() => fs.rmSync(moduleFile, { force: true }));
+  const { plant, migrate, dataDir } = await harness(t, moduleFile);
+  const text = JSON.stringify(V1_PROFILE); plant(text);
+  const result = await migrate({ confirmed: true, baseRev: 4 });
+  assert.deepEqual([result.status, result.body.error], [500, 'migration-failed']);
+  assert.equal(fs.readFileSync(primaryFile(dataDir), 'utf8'), text);
+  assert.equal(JSON.parse(fs.readFileSync(primaryFile(dataDir)))._rev, 4);
+  if (fault !== 'backup-write') assert.equal(fs.readFileSync(backupFile(dataDir), 'utf8'), text);
+  else assert.equal(fs.existsSync(backupFile(dataDir)), false);
+  const audit = fs.readFileSync(path.join(dataDir, 'audit.log'), 'utf8');
+  assert.match(audit, /data\.migrate\.fail/);
+  assert.doesNotMatch(audit, /data\.migrate\.ok/);
+});
+
+
+test('A31: a 3000-workout migration remains writable through ordinary sync', async t => {
+  const { plant, migrate, dataDir, api } = await harness(t);
+  const workout = { ...V1_PROFILE.workouts[0], entries: [{ ...V1_PROFILE.workouts[0].entries[0], sets: Array.from({ length: 3 }, () => ({ r: 5, w: 60, done: true })) }] };
+  const profile = { ...V1_PROFILE, workouts: Array.from({ length: 3000 }, (_, i) => ({ ...workout, id: 'w' + i, start: i + 1 })) };
+  plant(JSON.stringify(profile));
+  assert.equal((await migrate({ confirmed: true, baseRev: 4 })).status, 200);
+  const state = unpackProfile(JSON.parse(fs.readFileSync(primaryFile(dataDir), 'utf8')));   // the canonical form: the largest body a client can still send
+  const body = JSON.stringify({ state, baseRev: 5 });
+  assert.ok(Buffer.byteLength(body) > 5 * 1024 * 1024);
+  const response = await fetch(api + '/api/data', { method: 'PUT', headers: { Cookie: cookie(), ...ENGINE, 'Content-Type': 'application/json' }, body });
+  assert.equal(response.status, 200);
+});
+
+test('A31: oversized canonical conversion refuses success and preserves source', async t => {
+  const { plant, migrate, dataDir } = await harness(t);
+  const text = JSON.stringify({ ...V1_PROFILE, padding: 'x'.repeat(16 * 1024 * 1024) });
+  plant(text);
+  const result = await migrate({ confirmed: true, baseRev: 4 });
+  assert.equal(result.body.reason, 'profile-too-large');
+  assert.equal(fs.readFileSync(primaryFile(dataDir), 'utf8'), text);
+  assert.equal(fs.readFileSync(backupFile(dataDir), 'utf8'), text);
+});
+
+test('M5: the profile is stored and sent in its compact form, and read back canonical', async t => {
+  const { put, get, dataDir } = await harness(t);
+  const canonical = migrateProfileV1ToV2(JSON.parse(JSON.stringify(V1_PROFILE)), LIB_BY_ID).profile;
+  assert.equal((await put(canonical, ENGINE)).status, 200);                       // canonical push still works
+  const onDisk = JSON.parse(fs.readFileSync(primaryFile(dataDir), 'utf8'));
+  assert.equal(onDisk.packed, 1);
+  const wire = (await get(ENGINE)).body.state;
+  assert.equal(wire.packed, 1);
+  assert.deepEqual({ ...unpackProfile(wire), _rev: undefined, _ts: undefined }, { ...canonical, _rev: undefined, _ts: undefined });
+  assert.equal((await put(packProfile(canonical), ENGINE)).status, 200);          // and so does a packed one
+  assert.equal(JSON.parse(fs.readFileSync(primaryFile(dataDir), 'utf8')).packed, 1);
+  assert.equal((await put({ packed: 1, engineSchemaVersion: 2, workouts: [null], prescriptions: { a: { _t: 'x' } } }, ENGINE)).status, 400);   // hostile packed doc: refused, not a 500
 });

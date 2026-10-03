@@ -2,7 +2,7 @@
 
 /* A v1 profile — on this device or on the server — sits behind the migration screen, untouched,
    until OK; then it is backed up, converted, and loaded through the normal sync path. */
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 
@@ -36,7 +36,22 @@ const guest = () => localStorage.setItem('gym_guest', '1')
 const signedIn = () => { localStorage.setItem('gym_user', JSON.stringify({ id: 'u1' })); localStorage.setItem('gym_owner', 'u1') }
 const status = (revision, required = true) => ({ required, schemaVersion: required ? 1 : 2, revision, summary: required ? { routines: 1, workouts: 1, bytes: 10 } : null })
 
-beforeEach(() => { localStorage.clear(); apiMock.mockReset(); toast.mockReset() })
+let listeners
+beforeEach(() => {
+  localStorage.clear(); apiMock.mockReset(); toast.mockReset()
+  listeners = []
+  for (const target of [window, document]) {
+    const add = target.addEventListener.bind(target)
+    vi.spyOn(target, 'addEventListener').mockImplementation((type, listener, options) => {
+      listeners.push([target, type, listener, options])
+      add(type, listener, options)
+    })
+  }
+})
+afterEach(() => {
+  for (const [target, type, listener, options] of listeners) target.removeEventListener(type, listener, options)
+  vi.restoreAllMocks()
+})
 
 describe('a v1 copy on this device', () => {
   it('is held untouched behind the gate until OK', async () => {
@@ -62,11 +77,13 @@ describe('a v1 copy on this device', () => {
     await useStore.getState().confirmMigration()
     expect(localStorage.getItem(BACKUP)).toBe(raw)
     const stored = JSON.parse(localStorage.getItem(KEY))
+    expect(stored.packed).toBe(1)   // stored compact (M5), canonical in memory
     expect(stored.engineSchemaVersion).toBe(2)
     expect(stored.routines[0].ex[0]).toMatchObject({ occurrenceId: 'r1:o0', warmup: { mode: 'smart', count: 2 } })
     const { migration, S, A } = useStore.getState()
     expect(migration).toBeNull()
     expect(S.workouts[0].exposures).toHaveLength(1)
+    expect(S.packed).toBeUndefined()
     expect(S.prescriptions[A.exposures[0].prescriptionId]).toBeTruthy()
   })
 
@@ -81,6 +98,50 @@ describe('a v1 copy on this device', () => {
 })
 
 describe('a v1 profile on the server', () => {
+  it.each([
+    [new TypeError('Failed to fetch'), 'offline'],
+    [refused(404, 'not found'), 'api-outdated']
+  ])('A10/A13: identifies a migration-status failure as %s', async (error, reason) => {
+    signedIn(); localStorage.setItem(KEY, raw)
+    const useStore = await fresh()
+    byPath({ '/api/config': {}, '/api/me': { user: { id: 'u1' } }, '/api/data/migration-status': error })
+    await useStore.getState().boot()
+    expect(useStore.getState().migration).toMatchObject({ phase: 'error', reason })
+    expect(localStorage.getItem(KEY)).toBe(raw)
+    expect(localStorage.getItem(BACKUP)).toBeNull()
+    expect(puts()).toEqual([])
+  })
+  it('A5: restores a pre-upgrade stash only after converting it, keeping an untouched backup', async () => {
+    signedIn()
+    const stash = JSON.stringify({ '|u1': { uid: 'u1', state: V1 } })
+    localStorage.setItem('gym_stash', stash)
+    const useStore = await fresh()
+    byPath({
+      '/api/config': {}, '/api/me': { user: { id: 'u1' } },
+      '/api/data': opts => opts?.method === 'PUT' ? { ok: true, rev: 9 } : canonical(8)
+    })
+    await useStore.getState().boot()
+    const S = useStore.getState().S
+    expect(S.routines[0].ex[0].rule.preset).toBe('linear')
+    expect(S.workouts[0].exposures[0].prescriptionId).toBeTruthy()
+    expect(S.prescriptions[S.workouts[0].exposures[0].prescriptionId]).toBeTruthy()
+    expect(useStore.getState().A.exposures).toHaveLength(1)
+    expect(localStorage.getItem('gym_stash.pre-engine-v1')).toBe(stash)
+  })
+
+  it('A14: the merge choice survives conversion of a v1 backup', async () => {
+    signedIn()
+    const useStore = await fresh()
+    const server = canonical(8)
+    server.state.workouts = [{ id: 'elsewhere', d: '2026-01-07', start: 3, exposures: [] }]
+    useStore.setState({ user: { id: 'u1' }, ready: true })
+    byPath({ '/api/data': opts => opts?.method === 'PUT' ? { ok: true, rev: 9 } : server })
+    useStore.getState().importLegacyBackup(V1, raw.length, { mergeWith: { state: server.state, rev: 8 } })
+    await useStore.getState().confirmMigration()
+    await useStore.getState().pushState()
+    expect(puts().at(-1).baseRev).toBe(8)
+    expect(puts().at(-1).state.workouts.map(w => w.id)).toEqual(['w1', 'elsewhere'])
+  })
   it('opens the gate; OK migrates it at the status revision and then syncs', async () => {
     signedIn()
     const useStore = await fresh()
@@ -197,4 +258,172 @@ describe('MigrationGate', () => {
     expect([...host.querySelectorAll('button')].map(b => b.textContent.trim())).toEqual(['Try again'])
     act(() => root.unmount())
   })
+})
+
+
+describe('storage migration regressions', () => {
+  it.each(['{bad', JSON.stringify({ routines: 'bad', workouts: [] }), JSON.stringify({ engineSchemaVersion: 3 })])('A27: blocks unreadable/unsupported bytes %s', async text => {
+    localStorage.setItem(KEY, text); guest()
+    const store = await fresh()
+    byPath({ '/api/config': {}, '/api/me': refused(401, 'not signed in') })
+    await store.getState().boot()
+    store.getState().update(s => { s.unit = 'lb' })
+    expect(store.getState().migration?.phase).toBe('error')
+    expect(localStorage.getItem(KEY)).toBe(text)
+  })
+  it('A28: retries an active-key quota failure after restart without losing the session', async () => {
+    localStorage.setItem(KEY, raw); guest()
+    let store = await fresh()
+    byPath({ '/api/config': {}, '/api/me': refused(401, 'not signed in') })
+    await store.getState().boot()
+    const write = localStorage.setItem.bind(localStorage)
+    const fail = vi.spyOn(localStorage, 'setItem').mockImplementation((key, value) => {
+      if (key === 'gym_active_v1') throw new Error('quota')
+      return write(key, value)
+    })
+    await store.getState().confirmMigration()
+    expect(store.getState().migration.phase).toBe('error')
+    fail.mockRestore()
+    store = await fresh()
+    await store.getState().boot()
+    expect(store.getState().migration?.phase).toBe('confirm')
+    await store.getState().confirmMigration()
+    expect(store.getState().migration).toBeNull()
+    expect(store.getState().A?.id).toBe('a1')
+  })
+  it('A29: retry keeps the failed file import and merge choice', async () => {
+    const store = await fresh()
+    const data = V1
+    const mod = await import('../../../api/migration/profile-migration.js')
+    const conversion = vi.spyOn(mod, 'migrateProfileV1ToV2').mockImplementationOnce(() => { throw new Error('conversion-failed') })
+    const mergeWith = { state: canonical(7).state, rev: 7 }
+    store.getState().importLegacyBackup(data, raw.length, { mergeWith })
+    await store.getState().confirmMigration()
+    expect(store.getState().migration.phase).toBe('error')
+    await store.getState().retryMigration()
+    expect(store.getState().migration).toMatchObject({ phase: 'confirm', importData: data, mergeWith })
+    conversion.mockRestore()
+    await store.getState().confirmMigration()
+    expect(store.getState().migration).toBeNull()
+    expect(store.getState().S.workouts.map(w => w.id)).toContain('w1')
+  })
+  it.each(['{bad', JSON.stringify({ ...V1, _ts: 49 })])('A30: refuses an unreadable or stale backup %s', async backup => {
+    localStorage.setItem(KEY, raw); localStorage.setItem(BACKUP, backup); guest()
+    const store = await fresh()
+    byPath({ '/api/config': {}, '/api/me': refused(401, 'not signed in') })
+    await store.getState().boot(); await store.getState().confirmMigration()
+    expect(store.getState().migration.phase).toBe('error')
+    expect(localStorage.getItem(KEY)).toBe(raw)
+    expect(localStorage.getItem(BACKUP)).toBe(backup)
+  })
+})
+
+
+it.each([BACKUP, 'gym_engine_migration_pending', KEY])('A28/A31: quota at %s preserves recoverable source and retry', async key => {
+  localStorage.setItem(KEY, raw); guest()
+  let store = await fresh()
+  byPath({ '/api/config': {}, '/api/me': refused(401, 'not signed in') })
+  await store.getState().boot()
+  const write = localStorage.setItem.bind(localStorage)
+  const fail = vi.spyOn(localStorage, 'setItem').mockImplementation((name, value) => {
+    if (name === key) throw new Error('quota')
+    return write(name, value)
+  })
+  await store.getState().confirmMigration()
+  expect(store.getState().migration?.phase).toBe('error')
+  expect(localStorage.getItem(KEY)).toBe(raw)
+  fail.mockRestore()
+  store = await fresh(); await store.getState().boot(); await store.getState().confirmMigration()
+  expect(store.getState().migration).toBeNull()
+  expect(store.getState().A?.id).toBe('a1')
+})
+
+
+it.each([false, true])('A28/A51: converts a separate v1 active key with canonical primary=%s', async canonicalPrimary => {
+  const text = canonicalPrimary ? JSON.stringify(canonical(0).state) : raw
+  const active = JSON.stringify({ ...V1.active, id: 'separate-active' })
+  localStorage.setItem(KEY, text); localStorage.setItem('gym_active_v1', active); guest()
+  const store = await fresh()
+  byPath({ '/api/config': {}, '/api/me': refused(401, 'not signed in') })
+  await store.getState().boot(); expect(store.getState().migration?.phase).toBe('confirm')
+  await store.getState().confirmMigration()
+  expect(store.getState().migration).toBeNull()
+  expect(localStorage.getItem('gym_active_v1.pre-engine-v1')).toBe(active)
+  const { A, S } = store.getState()
+  expect(A.id).toBe('separate-active')
+  expect(A.entries[0].exposureId).toBe(A.exposures[0].exposureId)
+  expect(S.prescriptions[A.exposures[0].prescriptionId]).toBeTruthy()
+})
+
+
+it('A29: cancelling a failed file import leaves the profile and active session untouched', async () => {
+  localStorage.setItem(KEY, JSON.stringify(canonical(0).state)); guest()
+  const store = await fresh()
+  const state = store.getState().S
+  const bytes = localStorage.getItem(KEY)
+  const mod = await import('../../../api/migration/profile-migration.js')
+  const conversion = vi.spyOn(mod, 'migrateProfileV1ToV2').mockImplementationOnce(() => { throw new Error('conversion-failed') })
+  store.getState().importLegacyBackup(V1, raw.length)
+  await store.getState().confirmMigration()
+  expect(store.getState().migration.phase).toBe('error')
+  expect(store.getState().cancelMigrationImport()).toBe(true)
+  expect(store.getState().migration).toBeNull()
+  expect(store.getState().S).toBe(state)
+  expect(store.getState().A).toBeNull()
+  expect(localStorage.getItem(KEY)).toBe(bytes)
+  conversion.mockRestore()
+})
+
+
+it('A29: the file-import gate exposes Cancel while confirmation or retry is pending', async () => {
+  const store = await fresh()
+  const { default: MigrationGate } = await import('../views/MigrationGate.jsx')
+  function Gate() { return store(s => s.migration) ? <MigrationGate /> : <span>closed</span> }
+  const host = document.createElement('div'); document.body.appendChild(host)
+  const root = createRoot(host)
+  act(() => { store.getState().importLegacyBackup(V1, raw.length); root.render(<Gate />) })
+  expect([...host.querySelectorAll('button')].map(b => b.textContent.trim())).toEqual(['OK', 'Cancel'])
+  act(() => store.setState({ migration: { ...store.getState().migration, phase: 'error' } }))
+  expect([...host.querySelectorAll('button')].map(b => b.textContent.trim())).toEqual(['Try again', 'Cancel'])
+  act(() => host.querySelectorAll('button')[1].click())
+  expect(host.textContent).toBe('closed')
+  act(() => root.unmount()); host.remove()
+})
+
+it('A33: malformed canonical backup imports leave profile and active bytes untouched', async () => {
+  const useStore = await fresh()
+  const before = JSON.stringify(useStore.getState().S)
+  const active = useStore.getState().A
+  const bad = { ...useStore.getState().S, engineSchemaVersion: 2, routines: [], workouts: [], prescriptions: {}, progression: { bad: null }, oneRepMaxes: {} }
+  expect(() => useStore.getState().importBackup(bad)).toThrow()
+  expect(JSON.stringify(useStore.getState().S)).toBe(before)
+  expect(useStore.getState().A).toBe(active)
+})
+
+it('A29/A31: a file import that cannot persist retains its retry context', async () => {
+  const store = await fresh()
+  const before = store.getState().S
+  store.getState().importLegacyBackup(V1, raw.length)
+  const write = localStorage.setItem.bind(localStorage)
+  const failure = vi.spyOn(localStorage, 'setItem').mockImplementation((key, value) => {
+    if (key === KEY) throw new Error('quota')
+    return write(key, value)
+  })
+  await store.getState().confirmMigration()
+  expect(store.getState().migration).toMatchObject({ phase: 'error', importData: V1 })
+  expect(store.getState().S).toBe(before)
+  expect(store.getState().A).toBeNull()
+  failure.mockRestore()
+  await store.getState().retryMigration()
+  await store.getState().confirmMigration()
+  expect(store.getState().migration).toBeNull()
+  expect(store.getState().A?.id).toBe('a1')
+})
+
+it('A33: a malformed canonical active backup is rejected before replacement', async () => {
+  const store = await fresh()
+  const before = store.getState().S
+  expect(() => store.getState().importBackup({ ...before, active: { entries: 'bad' } })).toThrow()
+  expect(store.getState().S).toBe(before)
+  expect(store.getState().A).toBeNull()
 })

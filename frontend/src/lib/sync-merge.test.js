@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import { migrateProfileV1ToV2 } from '../../../api/migration/profile-migration.js'
+import { LIB_BY_ID } from '../../../api/coach/core/library.js'
 import { keepReset, localExtras, mergeBodyweight, mergeResetIds, mergeStampedMap, mergeStates, newerOf, resetIdsOf, RESET_ID_MAX, sinceReset, stampCustomEx, stampRoutines, stampWorkout, unionById } from './sync-merge.js'
 import { mergeImport } from './import-csv.js'
 import { convertBodyWeight, convertStateUnit, convertWeight } from './units.js'
@@ -257,32 +259,26 @@ describe('sign-in adoption helpers', () => {
 })
 
 describe('prescription engine records', () => {
-  it('unions prescriptions and 1RMs, and keeps the newer device per progression track', () => {
-    const base = { workouts: [], bodyweight: [], exWeights: {} }
-    const a = { ...base, _ts: 1, prescriptions: { p1: { id: 'p1' } }, oneRepMaxes: { o1: { id: 'o1' } }, progression: { t1: { trackId: 't1', cyclesCompleted: 0 }, t2: { trackId: 't2', cyclesCompleted: 5 } } }
-    const b = { ...base, _ts: 2, prescriptions: { p2: { id: 'p2' } }, oneRepMaxes: { o2: { id: 'o2' } }, progression: { t1: { trackId: 't1', cyclesCompleted: 1 } } }
+  const copy = (id, start, end, reps = 5) => migrateProfileV1ToV2({ unit: 'kg', routines: [{ id: 'r', ex: [{ id: '0025', sets: 1, reps: 5, weight: 60, prog: 'linear' }] }], workouts: [{ id, d: '2026-09-01', start, end, entries: [{ id: '0025', rid: 'r', target: { sets: 1, reps: 5, weight: 60 }, sets: [{ done: true, w: 60, r: reps }] }] }] }, LIB_BY_ID).profile
+  it('unions frozen records and removes progression with no retained source logs', () => {
+    const a = { workouts: [], _ts: 1, prescriptions: { p1: { id: 'p1' } }, oneRepMaxes: { o1: { id: 'o1' } }, progression: { t1: { trackId: 't1', cyclesCompleted: 1 } } }
+    const b = { workouts: [], _ts: 2, prescriptions: { p2: { id: 'p2' } }, oneRepMaxes: { o2: { id: 'o2' } } }
     const out = mergeStates(a, b)
     expect(Object.keys(out.prescriptions).sort()).toEqual(['p1', 'p2'])
     expect(Object.keys(out.oneRepMaxes).sort()).toEqual(['o1', 'o2'])
-    expect(out.progression).toEqual({ t1: { trackId: 't1', cyclesCompleted: 1 }, t2: { trackId: 't2', cyclesCompleted: 5 } })
+    expect(out.progression).toEqual({})
   })
-
-  it('keeps the progression state for the latest merged completion on a shared track', () => {
-    const base = { bodyweight: [], exWeights: {} }
-    const aState = { trackId: 't1', cyclesCompleted: 1, lastCompletedLogId: 'log-a' }
-    const bState = { trackId: 't1', cyclesCompleted: 2, lastCompletedLogId: 'log-b' }
-    const a = { ...base, _ts: 2, workouts: [{ id: 'a', d: '2026-09-01', start: 9, exposures: [{ exposureId: 'log-a', trackId: 't1' }] }], progression: { t1: aState } }
-    const b = { ...base, _ts: 1, workouts: [{ id: 'b', d: '2026-09-01', start: 12, exposures: [{ exposureId: 'log-b', trackId: 't1' }] }], progression: { t1: bState } }
-    expect(mergeStates(a, b).progression.t1).toEqual(bState)
+  it('replays the latest merged completion on a shared track', () => {
+    const a = copy('a', 9, 10), b = copy('b', 12, 13)
+    a._ts = 2; b._ts = 1
+    expect(mergeStates(a, b).progression['r:o0'].lastCompletedLogId).toBe('b:x0')
   })
-
-  it('uses an exposure completion time over its session start time', () => {
-    const base = { bodyweight: [], exWeights: {} }
-    const aState = { trackId: 't1', lastCompletedLogId: 'log-a' }
-    const bState = { trackId: 't1', lastCompletedLogId: 'log-b' }
-    const a = { ...base, _ts: 2, workouts: [{ id: 'a', d: '2026-09-01', start: 9, exposures: [{ exposureId: 'log-a', completedAt: '2026-09-01T12:00:00.000Z' }] }], progression: { t1: aState } }
-    const b = { ...base, _ts: 1, workouts: [{ id: 'b', d: '2026-09-01', start: 10, exposures: [{ exposureId: 'log-b', completedAt: '2026-09-01T11:00:00.000Z' }] }], progression: { t1: bState } }
-    expect(mergeStates(a, b).progression.t1).toEqual(aState)
+  it('recomputes state rather than accepting an orphaned cached log', () => {
+    const a = copy('a', 9, 10, 3), b = copy('b', 12, 13, 3)
+    a.progression['r:o0'].lastCompletedLogId = 'deleted'
+    const state = mergeStates(a, b).progression['r:o0']
+    expect(state.lastCompletedLogId).toBe('b:x0')
+    expect(state.stalls).toBe(2)
   })
 })
 

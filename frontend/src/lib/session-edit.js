@@ -15,7 +15,7 @@
 // between two copies keeps the version edited last (lib/sync-merge.js). So the edit replaces the
 // old copy wherever it is, is never joined by it as a duplicate, and an older copy cannot come
 // back over it on a 409.
-import { appendOneRm, replayProgression } from './prescription/index.js'
+import { reconcileDerivedOneRms, appendOneRm, replayProgression } from './prescription/index.js'
 import { beatsWeight } from './exercises.js'
 import { uid } from './format.js'
 import { buildCompletedSession, workLoadOf } from './finish-session.js'
@@ -62,7 +62,7 @@ function entryOf(x, prescriptions) {
     ...(x.routineId ? { rid: x.routineId } : {}),
     ...(x.excludedFromProgression ? { noProg: true } : {}),
     ...(x.sg ? { sg: x.sg } : {}),
-    target: { ...(x.mode ? { mode: x.mode } : {}), ...(p ? targetFor(p, x.mode) : {}), ...(x.side ? { side: true } : {}), ...(x.bodyweight != null ? { bodyweight: x.bodyweight } : {}), ...(x.intensifier ? { intensifier: x.intensifier } : {}) },
+    target: { ...(x.mode ? { mode: x.mode } : {}), ...(typeof x.assisted === 'boolean' ? { assisted: x.assisted } : {}), ...(x.warmupRestSec != null ? { warmupRestSec: x.warmupRestSec } : {}), ...(p ? targetFor(p, x.mode) : {}), ...(x.side ? { side: true } : {}), ...(x.bodyweight != null ? { bodyweight: x.bodyweight } : {}), ...(x.intensifier ? { intensifier: x.intensifier } : {}) },
     ...(p ? { planned: plannedOf(p) } : {}),
     ...(x.performance?.note ? { note: x.performance.note } : {}),
     ...(x.performance?.notePin ? { notePin: true } : {}),
@@ -192,7 +192,7 @@ export function saveWorkoutEdit(state, now = Date.now()) {
   // replayed the way each finish advanced them. Kept out of progression now, the track is left
   // where the logs before it put it.
   state.progression ||= {}
-  for (const x of record.exposures) {
+  for (const x of [...current.exposures, ...record.exposures]) {
     if (state.progression[x.trackId]?.lastCompletedLogId !== x.exposureId) continue
     const replayed = replayProgression({ workouts: state.workouts, trackId: x.trackId, prescriptions: state.prescriptions })
     if (replayed) state.progression[x.trackId] = replayed
@@ -206,6 +206,7 @@ export function saveWorkoutEdit(state, now = Date.now()) {
   state.workouts = rebuildPrHistory(state.workouts, touched, record)
   const saved = state.workouts.find(w => keyOf(w) === key)
   lowerKeptWeights(state, touched, current, saved)
+  reconcileDerivedOneRms(state)
   state.active = null
   return saved
 }
@@ -239,6 +240,18 @@ export function editedRecord(state) {
   return key == null ? null : list(state.workouts).find(w => keyOf(w) === key) || null
 }
 
+/** Refresh derived references after ordinary history deletion or editor deletion. */
+export function reconcileSessionHistory(state) {
+  reconcileDerivedOneRms(state)
+  const tracks = new Set([...Object.keys(state.progression || {}), ...list(state.workouts).flatMap(w => list(w.exposures).map(x => x.trackId).filter(Boolean))])
+  state.progression ||= {}
+  for (const trackId of tracks) {
+    const next = replayProgression({ workouts: state.workouts, trackId, prescriptions: state.prescriptions })
+    if (next) state.progression[trackId] = next
+    else delete state.progression[trackId]
+  }
+}
+
 /**
  * Deletes the workout the editor is open on and closes the editor: what an edit that took out
  * every set gets instead of Save (editLeftEmpty). The record is found the way Save finds it, and
@@ -251,6 +264,7 @@ export function deleteEditedWorkout(state) {
   state.active = null
   if (!current) return false
   state.workouts = state.workouts.filter(w => w !== current)
+  reconcileSessionHistory(state)
   lowerKeptWeights(state, [...new Set(list(current.exposures).map(x => x?.exerciseId).filter(id => id != null))], current, null)
   return true
 }

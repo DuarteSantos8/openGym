@@ -21,6 +21,8 @@ import { POLICY_IDS } from './prescription/vocabulary.js'
 import { t } from './i18n.js'
 import { coachExOf, coachRoutinesOf, ruleFromView } from '../../../api/coach/core/plan-view.js'
 import { defaultPlanRule, presetForPolicy, validatePlanRule } from './prescription/index.js'
+import { migrateProfileV1ToV2 } from '../../../api/migration/profile-migration.js'
+import { LIB_BY_ID } from '../../../api/coach/core/library.js'
 
 // Bumping this re-prompts everyone: it means what we share, or who we share it with, changed.
 export const CONSENT_VERSION = 1
@@ -271,9 +273,19 @@ export function pushSnapshot(s, proposalId, label) {
  */
 export function revertLast(s) {
   const c = coachOf(s)
-  const snap = (c.snapshots || []).pop()
+  const snap = (c.snapshots || []).at(-1)
   if (!snap) return false
-  s.routines = clone(snap.routines)
+  let routines = snap.routines
+  let audit = snap.migrationAudit
+  if (routines.some(r => (r.ex || []).some(o => !o?.occurrenceId || !o?.exerciseId))) {
+    const { profile } = migrateProfileV1ToV2({ unit: s.unit, restSec: s.restSec, customEx: s.customEx, routines, workouts: [] }, LIB_BY_ID)
+    routines = profile.routines
+    audit = profile.migrationAudit
+  }
+  if (audit) s.migrationAudit = { ...s.migrationAudit, fromSchema: 1, unsupported: [...(s.migrationAudit?.unsupported || []), ...audit.unsupported],
+    discarded: [...(s.migrationAudit?.discarded || []), ...(audit.discarded || [])] }
+  c.snapshots.pop()
+  s.routines = clone(routines)
   s.week = clone(snap.week)
   // Snapshots taken before this field existed have nothing to put back.
   if (snap.dayPlanRestore) Object.assign(s.dayPlan, snap.dayPlanRestore)

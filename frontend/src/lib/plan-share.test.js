@@ -71,9 +71,30 @@ describe('PLAN_FMT 3 and export scoping', () => {
     expect(o.rule.exerciseId).toBe(o.exerciseId)
     expect(target.customEx.map(c => c.id)).toContain(o.exerciseId)
   })
-  it('refuses PLAN_FMT 1 and 2 files with a clear message rather than importing them as empty', () => {
-    expect(() => parsePlan(JSON.stringify({ opengym_plan: 1, routines: [] }))).toThrow()
+  it('A11: converts PLAN_FMT 1 with its own policies, units, custom metadata and schedule', () => {
+    const parsed = parsePlan({ opengym_plan: 1, unit: 'lb', week: { 1: 'r' }, customEx: [{ id: 'custom', n: 'Hold', bp: 'back', eq: 'body weight' }],
+      routines: [{ id: 'r', prog: 'double', ex: [
+        { id: '0025', sets: 3, reps: 10, repsMin: 8, weight: 100 },
+        { id: 'custom', sets: 1, mode: 'time', sec: 30, prog: 'time', inc: 5 }
+      ] }] }, 'kg')
+    expect(parsed.routines[0].ex.map(o => o.rule.preset)).toEqual(['double', 'hold_seconds'])
+    const target = { unit: 'kg', routines: [], customEx: [], week: {} }
+    mergePlan(target, parsed, { schedule: true })
+    expect(target.routines[0].ex[0].rule.parameters.load.value).toBe(45.25)
+    expect(target.routines[0].ex[0].rule.parameters.load.unit).toBe('kg')
+    expect(target.routines[0].ex[1].rule.increment).toEqual({ type: 'seconds', value: 5 })
+    expect(target.week[1]).toEqual([target.routines[0].id])
+    expect(target.customEx[0].eq).toBe('body weight')
+  })
+  it('refuses PLAN_FMT 2 files with a clear message rather than importing them as empty', () => {
     expect(() => parsePlan(JSON.stringify({ opengym_plan: 2, routines: [] }))).toThrow()
+  })
+  it('keeps a legacy plan audit visible after merge under the new routine identities', () => {
+    const parsed = parsePlan({ opengym_plan: 1, routines: [{ id: 'r', prog: 'wave', ex: [{ id: '0025', weight: 60 }] }] })
+    const target = { unit: 'kg', routines: [], customEx: [], week: {} }
+    mergePlan(target, parsed)
+    const routine = target.routines[0]
+    expect(target.migrationAudit.unsupported).toContainEqual({ routineId: routine.id, occurrenceId: routine.ex[0].occurrenceId, exerciseId: '0025', field: 'prog', value: 'wave' })
   })
 })
 

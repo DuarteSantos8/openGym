@@ -494,6 +494,11 @@ in `discarded`, with their original paths and values (**ATTENTION** (A12)).
   the increment. Every lifted load, not only logged targets, is considered.
 * **Dates** — an unparseable `d`/`start`/`end` is dropped, repaired from its sibling field and listed
   in `migrationAudit.unsupported` (`field: 'date'`, `path`); it never blocks the upgrade.
+* **Storage form** — a canonical profile is held in memory as described here, but written to the
+  server's state file, `localStorage`, the native mirror and the sync body in the compact form of
+  `api/migration/profile-pack.js` (`packed: 1`): short keys, derivable row fields omitted, the invariant
+  part of each track's prescriptions in `templates`. `unpackProfile` restores it exactly (and is the
+  identity on an unpacked document); backups exported from Settings remain plain.
 * **Accepted differences** — M9 (a typed `rir` is kept beside `rpe`), M11 (a combined session
   without `rid` is not linked), M12 (the back-off run of a timed hold).
 

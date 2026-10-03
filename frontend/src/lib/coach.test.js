@@ -40,6 +40,22 @@ const proposal = (changes, over = {}) => ({ id: 'p1', kind: 'review', summary: '
 /** Apply against a throwaway draft, the way the store does. */
 const apply = (S, p, ids) => { const s = JSON.parse(JSON.stringify(S)); applyChangeSet(s, p, ids); return s }
 
+it('A6: reverting an old snapshot from an already-upgraded profile restores canonical slots', () => {
+  const S = state()
+  S.coach.snapshots.push({ week: { 1: 'r1' }, routines: [{ id: 'r1', ex: [{ id: '0025', sets: 2, reps: 8, weight: 40, prog: 'wave' }] }] })
+  expect(revertLast(S)).toBe(true)
+  expect(S.routines[0].ex[0]).toMatchObject({ occurrenceId: 'r1:o0', exerciseId: '0025', rule: { preset: 'manual', parameters: { load: { value: 40 } } } })
+  expect(S.coach.snapshots).toHaveLength(0)
+  expect(S.migrationAudit.unsupported[0].value).toBe('wave')
+})
+
+it('shows the review audit when reverting a snapshot already converted at upgrade', () => {
+  const S = state()
+  S.coach.snapshots.push({ routines: S.routines, week: S.week, migrationAudit: { unsupported: [{ field: 'prog', value: 'wave' }] } })
+  expect(revertLast(S)).toBe(true)
+  expect(S.migrationAudit.unsupported).toEqual([{ field: 'prog', value: 'wave' }])
+})
+
 describe('gating', () => {
   it('shows nothing unless the instance offers it and someone is signed in', () => {
     expect(coachAvailable({ coach: { enabled: true } }, { id: 'u' })).toBe(true)

@@ -118,3 +118,22 @@ describe('converting the unit while another device logs in the old one', () => {
     expect(useStore.getState().A.entries[0].sets[0].w).toBe(100)
   })
 })
+
+
+it('A23: relabelling through the store changes canonical load units and keeps their numbers', async () => {
+  const { migrateProfileV1ToV2, validateCanonicalProfile } = await import('../../../api/migration/profile-migration.js')
+  const { LIB_BY_ID } = await import('../../../api/coach/core/library.js')
+  const { profile, activeSession } = migrateProfileV1ToV2({
+    unit: 'kg', routines: [], workouts: [workout('canonical', 60)],
+    active: { id: 'running', entries: [{ id: '0025', target: { sets: 1, reps: 5, weight: 60 }, sets: [{ r: 5, w: 60 }] }] }
+  }, LIB_BY_ID)
+  useStore.setState({ S: { ...clone(DEF), ...profile }, A: activeSession, user: null, ready: true, migration: null })
+  useStore.getState().setUnit('lb', { convert: false })
+  const { S, A } = useStore.getState()
+  const p = S.prescriptions[A.exposures[0].prescriptionId]
+  expect(p.rows[0].load).toEqual({ value: 60, unit: 'lb' })
+  expect(S.workouts[0].exposures[0].performance.sets[0].resistance).toMatchObject({ value: 60, unit: 'lb' })
+  expect(A.entries[0].sets[0].w).toBe(60)
+  expect(validateCanonicalProfile(S).ok).toBe(true)
+  useStore.getState().clearActive()
+})

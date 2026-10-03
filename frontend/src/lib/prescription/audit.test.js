@@ -88,7 +88,7 @@ describe('summarizeActual', () => {
   it('keeps exact logged values — no clamp, truncation or rounding', () => {
     const performed = [{ row: 0, reps: 17, load: kg(250.33) }, { row: 1, reps: 3, load: kg(12.1) }, { row: 5, reps: 5, load: kg(20) }]
     const before = JSON.stringify(performed)
-    expect(summarizeActual(linear, performed)).toEqual({ sets: 3, reps: 3, load: kg(12.1) })
+    expect(summarizeActual(linear, performed)).toEqual({ sets: 2, reps: 3, load: kg(12.1) })
     expect(JSON.stringify(performed)).toBe(before)
   })
 

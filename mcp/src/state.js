@@ -3,6 +3,7 @@
    tool call without a restart. */
 import fs from 'node:fs'
 import path from 'node:path'
+import { unpackProfile } from '../../api/migration/profile-pack.js'
 
 const DATA_DIR = process.env.OPENGYM_DATA || path.join(process.cwd(), 'data')
 
@@ -22,7 +23,7 @@ let _watcher = null
 let _loadedMtime = 0    // mtimeMs we last read at — used to catch watcher omissions
 
 function readJsonOrNull(file) {
-  try { return JSON.parse(fs.readFileSync(file, 'utf8')) } catch { return null }
+  try { return unpackProfile(JSON.parse(fs.readFileSync(file, 'utf8'))) } catch { return null }   // the state file is stored compact
 }
 
 function reloadDb() { _db = readJsonOrNull(path.join(DATA_DIR, 'db.json')) || { users: [], creds: [], subs: [], invites: [] } }

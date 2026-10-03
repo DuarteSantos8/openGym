@@ -67,6 +67,7 @@
 import { beatsWeight } from './exercises.js'
 import { workLoadOf } from './finish-session.js'
 import { convertStateUnit, convertBodyWeight } from './units.js'
+import { canonicalJSON, contentHash, chronologicalWorkouts, replayProgression, reconcileDerivedOneRms } from '../../../api/engine/index.js'
 
 const clone = o => JSON.parse(JSON.stringify(o))
 const list = v => (Array.isArray(v) ? v : [])
@@ -149,19 +150,41 @@ function mergeExWeights(n = {}, o = {}) {
   return out
 }
 
-function mergeProgression(n = {}, o = {}, workouts = []) {
-  const out = { ...(o || {}), ...(n || {}) }
-  const byLogId = new Map()
-  const latest = new Map()
-  for (const states of [o, n]) for (const [trackId, state] of Object.entries(states || {})) {
-    if (state?.lastCompletedLogId) byLogId.set(state.lastCompletedLogId, [trackId, state])
+// Independently migrated copies can share ids with different frozen bodies. Rename the
+// second copy before selecting workouts, so each kept workout retains its own prescription.
+function remapCollisions(a, b) {
+  const out = clone(b), mappings = {}
+  const body = ({ id, contentHash: hash, ...rest }) => canonicalJSON(rest)
+  for (const field of ['oneRepMaxes', 'prescriptions']) {
+    const used = new Set([...Object.keys(a[field] || {}), ...Object.keys(out[field] || {})])
+    const map = mappings[field] = {}
+    for (const [id, record] of Object.entries(out[field] || {})) {
+      if (!a[field]?.[id] || body(a[field][id]) === body(record)) continue
+      const { id: ignored, contentHash: hash, ...data } = record
+      const base = `${id}~${contentHash(data)}`
+      let next = base, suffix = 2
+      while (used.has(next) && body(a[field]?.[next] || out[field]?.[next]) !== body(record)) next = `${base}~${suffix++}`
+      used.add(next); map[id] = next
+    }
+    out[field] = Object.fromEntries(Object.entries(out[field] || {}).map(([id, record]) => {
+      const next = map[id] || id
+      return [next, { ...record, id: next }]
+    }))
   }
-  for (const workout of workouts) for (const exposure of list(workout.exposures)) {
-    const state = byLogId.get(exposure.exposureId)
-    if (!state || (latest.get(state[0])?.completedAt || '') > (exposure.completedAt || '')) continue
-    latest.set(state[0], { state: state[1], completedAt: exposure.completedAt })
+  for (const p of Object.values(out.prescriptions || {})) {
+    if (p.snapshot1RM && mappings.oneRepMaxes[p.snapshot1RM.id]) p.snapshot1RM.id = mappings.oneRepMaxes[p.snapshot1RM.id]
+    delete p.contentHash; p.contentHash = contentHash(p)
   }
-  for (const [trackId, { state }] of latest) out[trackId] = state
+  for (const w of [...list(out.workouts), ...(out.active ? [out.active] : [])]) for (const x of list(w.exposures)) {
+    if (mappings.prescriptions[x.prescriptionId]) x.prescriptionId = mappings.prescriptions[x.prescriptionId]
+  }
+  for (const state of Object.values(out.progression || {})) if (mappings.prescriptions[state.lastPrescriptionId]) state.lastPrescriptionId = mappings.prescriptions[state.lastPrescriptionId]
+  return out
+}
+
+function mergedAudit(a, b) {
+  const out = { ...b, ...a }
+  for (const key of ['unsupported', 'discarded']) out[key] = [...new Map([...list(a?.[key]), ...list(b?.[key])].map(v => [canonicalJSON(v), v])).values()]
   return out
 }
 
@@ -220,7 +243,7 @@ const unitStamp = S => Number(S?.unitSet?.at) || 0
 export function inUnitOf(follow, lead) {
   const to = unitOf(lead)
   if (!follow || unitOf(follow) === to) return follow
-  if (lead?.unitSet?.convert === false) return { ...follow, unit: to }
+  if (lead?.unitSet?.convert === false) return convertStateUnit(follow, to, { convert: false })
   return convertStateUnit({ ...follow, unit: unitOf(follow) }, to)
 }
 
@@ -333,6 +356,7 @@ export function mergeStates(a0, b0, { prefer } = {}) {
     lead = prefer || unitStamp(a) === unitStamp(b) ? (side === 'a' ? a : b) : unitStamp(a) > unitStamp(b) ? a : b
     if (lead === a) b = inUnitOf(b, a); else a = inUnitOf(a, b)
   }
+  if (a.engineSchemaVersion === 2 && b.engineSchemaVersion === 2) b = remapCollisions(a, b)
   const n = side === 'a' ? a : b
   const o = n === a ? b : a
   const out = clone(n)
@@ -375,7 +399,7 @@ export function mergeStates(a0, b0, { prefer } = {}) {
       if (x && y) { mergeWorkoutMedia(w, x); mergeWorkoutMedia(w, y) }
     }
   }
-  out.workouts.sort(byDayStart)
+  out.workouts = chronologicalWorkouts(out.workouts)
   for (const f of ['routines', 'customEx', 'equipProfiles', 'gymCards']) {
     if (list(n[f]).length || list(o[f]).length) out[f] = unionById(n[f], o[f]).map(clone)
   }
@@ -409,13 +433,20 @@ export function mergeStates(a0, b0, { prefer } = {}) {
     if (kept) out.exWeights[id] = clone(kept)
     else delete out.exWeights[id]
   }
-  // prescriptions and oneRepMaxes are immutable and keyed
-  // by id, so a key union is lossless: a key exists on one side or both, never with two
-  // different bodies. Progression follows its latest completed log in the merged history.
+  // Collisions were remapped before conflict resolution; frozen dictionaries can now union.
   for (const f of ['exNotes', 'barWeights', 'prescriptions', 'oneRepMaxes']) {
     if (n[f] || o[f]) out[f] = clone({ ...(o[f] || {}), ...(n[f] || {}) })
   }
-  if (n.progression || o.progression) out.progression = clone(mergeProgression(n.progression, o.progression, out.workouts))
+  if (n.migrationAudit || o.migrationAudit) out.migrationAudit = clone(mergedAudit(n.migrationAudit, o.migrationAudit))
+  if (n.progression || o.progression) {
+    out.progression = {}
+    const tracks = new Set([...Object.keys(n.progression || {}), ...Object.keys(o.progression || {}), ...out.workouts.flatMap(w => list(w.exposures).map(x => x.trackId).filter(Boolean))])
+    for (const trackId of tracks) {
+      const state = replayProgression({ workouts: out.workouts, prescriptions: out.prescriptions, trackId })
+      if (state) out.progression[trackId] = state
+    }
+  }
+  if (out.engineSchemaVersion === 2) reconcileDerivedOneRms(out)
   // The plate-loading choices (lib/plates.js) are stamped the same way: an exercise's loading and
   // a unit's plate inventory are each one choice, made on one device, that a later set logged on
   // the other must not undo.

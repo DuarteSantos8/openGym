@@ -7,6 +7,8 @@ import { buildSessionExposures } from './session-start.js'
 import { buildCompletedSession } from './finish-session.js'
 import { makeSideSet, toggleSide } from './workout-model.js'
 import { ruleOccurrence } from './test-fixtures.js'
+import { migrateProfileV1ToV2 } from '../../../api/migration/profile-migration.js'
+import { LIB_BY_ID } from '../../../api/coach/core/library.js'
 
 let n = 0
 // One saved exposure of `id`, written by the live finish's own writer from these rows.
@@ -25,6 +27,21 @@ const fixture = () => ({
 const rows = (w, i = 0) => rowsOfPerformance(w.exposures[i].performance.sets, w.exposures[i].mode)
 
 describe('saved workout editing', () => {
+  it('A4: saving a reordered migrated draft replaces history and replays its track', () => {
+    const bench = { id: '0025', rid: 'r', target: { sets: 1, reps: 5, weight: 60 }, sets: [{ w: 60, r: 5, done: true }] }
+    const workout = { id: 'w', d: '2026-01-05', start: 1, end: 2, routineIds: ['r'], entries: [bench] }
+    const { profile, activeSession } = migrateProfileV1ToV2({ unit: 'kg', routines: [{ id: 'r', ex: [{ id: '0025', sets: 1, reps: 5, weight: 60 }] }], workouts: [workout],
+      active: { ...workout, editingWorkoutId: 'w', entries: [
+        { id: '0001', target: { sets: 1, reps: 10 }, sets: [{ r: 10, done: true }] },
+        { ...bench, sets: [{ w: 60, r: 2, done: true }] }
+      ] } }, LIB_BY_ID)
+    profile.active = activeSession
+    const saved = saveWorkoutEdit(profile, 3)
+    expect(saved.exposures.map(x => x.exerciseId)).toEqual(['0001', '0025'])
+    expect(profile.progression['r:o0'].readyToIncrement).toBe(false)
+    expect(profile.progression['r:o0'].lastCompletedLogId).toBe(saved.exposures[1].exposureId)
+    expect(profile.active).toBeNull()
+  })
   it('keeps history unchanged until Save, survives reload and preserves its identity, clock and templates', () => {
     const state = fixture(), history = structuredClone(state.workouts), routines = structuredClone(state.routines)
     editCompletedSession(state, 'workout')

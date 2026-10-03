@@ -9,6 +9,16 @@ const profile = over => ({ unit: 'kg', workouts: [], prescriptions: {}, oneRepMa
 const percent = ruleOccurrence('0025', { patch: r => ({ ...r, parameters: { ...r.parameters, load: { mode: 'percent_1rm', percent: 70 } }, increment: { type: 'percentage_points', value: 2.5 } }) })
 
 describe('buildSessionExposures', () => {
+  it('A8: migrated inherited rest follows the profile while explicit rest stays fixed', () => {
+    const inherited = { ...ruleOccurrence('0025'), restFromProfile: true }
+    inherited.rule.parameters.restSeconds = 90
+    const explicit = ruleOccurrence('0032')
+    explicit.rule.parameters.restSeconds = 180
+    const S = profile({ restSec: 120 })
+    const exposures = buildSessionExposures(S, { id: 'r', ex: [inherited, explicit] }, ctx)
+    expect(exposures.map(x => S.prescriptions[x.prescriptionId].parameters.restSeconds)).toEqual([120, 180])
+    expect(inherited.rule.parameters.restSeconds).toBe(90)
+  })
   it('stores one prescription per occurrence, tracked by occurrence', () => {
     const S = profile()
     const [a, b] = buildSessionExposures(S, { id: 'r1', ex: [ruleOccurrence('0025'), ruleOccurrence('0032', { preset: 'double' })] }, ctx)

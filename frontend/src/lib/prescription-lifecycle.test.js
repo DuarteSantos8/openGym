@@ -25,6 +25,15 @@ const loadOf = (S, active) => S.prescriptions[active.exposures[0].prescriptionId
 const session = (S, occ, day) => { const a = start(S, occ, day); return { a, log: finish(S, a, day) } }
 
 describe('prescription lifecycle (linear 20 kg -> 25 kg, +2.5)', () => {
+  it('A7: finishing a unilateral session estimates 1RM from a limb, not combined reps', () => {
+    const S = profile()
+    const a = start(S, { ...linear(), side: true }, 0)
+    a.entries[0].sets = [{ w: 20, r: 10, done: true, setId: 'r0', sides: {
+      L: { w: 20, r: 5, done: true }, R: { w: 20, r: 5, done: true }
+    } }]
+    const result = buildCompletedSession(a, S, { end: T0 + 1000, newId: s => s, unit: 'kg' })
+    expect(result.oneRepMaxes[0].value).toBe(23.3)
+  })
   it('increments once per finished session; an abandoned start adds nothing', () => {
     const S = profile(), occ = linear()
     const { a: a1 } = session(S, occ, 0)
