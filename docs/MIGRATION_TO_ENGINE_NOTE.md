@@ -423,7 +423,7 @@ Exposure (`workout.exposures[j]`):
 | `mode` | `'reps'`\|`'time'`\|`'cardio'` |
 | `routineId`, `occurrenceId`, `trackId` | Where it came from; `trackId` is `null` on legacy exposures |
 | `prescriptionId` | The frozen prescription it was logged against; `null` on legacy exposures |
-| `excludedFromProgression` | `true` on legacy and `noProg` exposures: visible to every reader, never an engine success or failure |
+| `excludedFromProgression` | `true` on legacy and `noProg` exposures, and on a linked/live exposure with no completed work row: visible to every reader, never an engine success or failure |
 | `kind` | `'legacy'` on a migrated entry that could not be linked to an occurrence |
 | `legacyTarget?`, `legacyPlanned?` | The v1 `target`/`planned`, verbatim, on legacy exposures |
 | `sg?`, `side?`, `warmupRestSec?`, `bodyweight?`, `intensifier?`, `muscleSnapshot?` | Carried from the entry/occurrence |
@@ -467,7 +467,7 @@ synced. `{ id, d, start, routineId(s), name, bw?, cur, entries[], exposures[], n
 ### 3.11 `migrationAudit`
 
 `{ fromSchema: 1, unsupported: [{ routineId, occurrenceId, exerciseId, field, value }],
-discarded?: [{ path, value }] }`. Unsupported settings are recorded as follows:
+discarded?: [{ path, value }] }`. A repaired date is an `unsupported` entry of another shape: `{ field: 'date', path, value }`. Unsupported settings are recorded as follows:
 
 | `field` | When | What to do |
 |---|---|---|
@@ -481,12 +481,15 @@ in `discarded`, with their original paths and values (**ATTENTION** (A12)).
 
 ### 3.12 Engine semantics that changed the *meaning* of a stored number
 
-* **Deload** — stalls are counted from the stored state (`stalls`, `stallLoad`) with v1's
-  thresholds; linear/double use the Epley candidate selection, others the factor, holds slide the
+* **Verdict** — a session is judged by sets and reps (or seconds) only, never by the load lifted; the
+  next load is built from the heaviest set lifted (v1 `readSession.weight`). Skipped sessions (no
+  completed work row) are not judged at all.
+* **Deload** — stalls are counted from the stored state (`stalls`, `stallLoad`, and `stallBest` for a
+  double) with v1's thresholds; linear/double use the Epley candidate selection, others the factor, holds slide the
   window back (`deloadedPosition`), assistance machines add one step of help.
 * **Assistance machines** — the increment runs the other way and clamps at 0, the target is a
-  floor, `hit` accepts *no more* help than prescribed, the weakest set is the one with the most
-  help, and warm-up ramps are off.
+  floor, the weakest set is the one with the most help (the next help starts from the lightest set),
+  and warm-up ramps are off.
 * **Cardio** — the rule stores `durationSeconds` (interval) and `speed` (km/h); UI rows are
   `{ min, speed }`; `actualOfRow` converts minutes to seconds.
 * **Rounding** — every absolute load is snapped to `rounding.step`. The migration chooses the
@@ -541,7 +544,7 @@ in `discarded`, with their original paths and values (**ATTENTION** (A12)).
    replaced); on a phone `nativeBackupOnce` writes `gym_state_v1.pre-engine-v1.json`.
 2. **convert** — this browser's copy and the phone's copy are each converted in memory with
    `migrateProfileV1ToV2(state, LIB_BY_ID)`.
-3. **check** — `validateCanonicalProfile` plus active/dictionary validation and expanded sync-body size checks; errors abort before primary replacement.
+3. **check** — `validateCanonicalProfile` plus active/dictionary validation and the sync-body size check (measured on the compact form); errors abort before primary replacement.
 4. **write** — `gym_state_v1` and its converted `gym_active_v1` / strict `nativeSave` +
    `nativeActiveSave`; exact read-back verifies durability. A pending journal retains the original
    source strings until both writes and references validate, so retry/restart resumes partial writes (**A28**).
@@ -631,6 +634,23 @@ record ids with their references and reconcile derived data (**A25**, **A46**).
 app; they can be produced by hand-edited files. Their paths and original values remain in
 `migrationAudit.discarded` and the `.pre-engine-v1` backup.)
 
+**Hardening rules** (`api/test/migration-robustness.test.js`) — the migration never throws on a document
+that passes `migrationStatus`; whatever it cannot use is repaired the same way, or audited, never fatal:
+
+| v1 value | v2 |
+|---|---|
+| An id that is not a non-empty string or a finite number (`[]`, `{}`, `true`, `''`) | not an id: the entry is dropped (audited), a routine/workout gets its generated id |
+| A number past ±1e15, `NaN`, or text that is not a number | absent (the field falls back to its default) — products such as reps × load or min × 60 can never overflow |
+| A negative logged reps, load, time or speed | absent from the row (the row itself is kept) |
+| A fractional logged rep count (5.5) | kept in the log as typed; the plan counts the 5 completed (`generatePrescription`) |
+| `sets` above 50 | 50, and a `migrationAudit.unsupported` entry with field `sets` |
+| A rest-pause cluster that is a bare number / has a non-numeric `r` | `{ r }` / the number dropped; a non-object, non-number cluster is dropped |
+| A rest-pause total on a logged target that is not a whole number | the prescription uses its default total |
+| `oneRepMaxes` already on the document | kept record by record when it is a valid 1RM with no source link; others go to `migrationAudit.discarded` |
+| `prescriptions`, `progression`, `packed`, `templates` already on a v1 document | not v1 data: `migrationAudit.discarded` (the wire form's markers must never reach a profile) |
+| A Coach snapshot whose `routines` is not a list | left untouched |
+| A loaded lift whose logs carry no weight | held, as v1 did ("No weight logged last time"): no increment, no stall, no deload, no rep climb; the plan's weight, if any, stays |
+
 ---
 
 ## 5. Field-by-field mapping
@@ -639,7 +659,7 @@ app; they can be produced by hand-edited files. Their paths and original values 
 
 | v1 | v2 |
 |---|---|
-| Every root field of section 2.2 | **kept verbatim** (deep clone): settings, `bodyweight`, `week`, `dayPlan`, `customEx`, `exNotes`, `favEx`, `barWeights`, `plates`, `loadKind`, `gymCards`, `equipProfiles`…, `resetAt`/`resetIds`/`_ts`/`_rev`; Coach metadata stays, but legacy snapshot routines are converted |
+| Every root field of section 2.2 | **kept verbatim** (deep clone; `unit` is normalised to `'kg'`/`'lb'`): settings, `bodyweight`, `week`, `dayPlan`, `customEx`, `exNotes`, `favEx`, `barWeights`, `plates`, `loadKind`, `gymCards`, `equipProfiles`…, `resetAt`/`resetIds`/`_ts`/`_rev`; Coach metadata stays, but legacy snapshot routines are converted |
 | `routines` | rewritten (5.2) |
 | `workouts` | rewritten (5.4–5.6) |
 | `active` | removed; converted apart (5.8) |
@@ -671,7 +691,7 @@ app; they can be produced by hand-edited files. Their paths and original values 
 
 | v1 | v2 | Notes |
 |---|---|---|
-| `sets` | `parameters.sets = {n,n}` | **ATTENTION** (A22) missing `sets` becomes **1**, preserving the v1 default |
+| `sets` | `parameters.sets = {n,n}` | **ATTENTION** (A22) missing `sets` becomes **1**, preserving the v1 default; capped at 50 |
 | `reps` | `parameters.reps = {n,n}` | preset default when missing |
 | `repsMin` / `reps` (double) | `parameters.reps = { min: repsMin, max: reps }` | top = `reps`, else `repsMax`, else 10; bottom = `repsMin`, else top−2; stride 2 for `side`; a bottom ≥ top widens to `top+stride` |
 | `repsMax` (bodyweight ladder) | `parameters.reps.max = repsMax`, `parameters.sets.max = max(sets, 6)` | v1's ceiling: reps climb to it, then a set is added, up to 6 |
@@ -684,7 +704,7 @@ app; they can be produced by hand-edited files. Their paths and original values 
 | `deloadFactor` | `rule.deload.factor` | linear/double only, if within 0.5–0.95 (v1 fell back to 0.9 outside it too). A factor on a rule that cannot deload → `migrationAudit` `deloadFactor` |
 | (rule default) | `rule.deload = { after: 3\|1\|3\|3, factor: 0.9 }` | linear/greyskull/double/hold_seconds; the same thresholds v1 used |
 | — | `rule.target = { mode:'none' }`, `rule.completion = []` | v1 had no terminal target: a migrated track keeps progressing, it never "completes" |
-| — | `rule.rounding = { nearest, step }` | `step` = the exercise's increment (its own `inc`, else v1's body-part default) if every logged load is on that grid, else the coarsest of 2.5/1.25/1/0.5/0.25/0.1/0.05/0.01/0.001 kg (5/2.5/1/… lb) that leaves every recorded load exactly as it was |
+| — | `rule.rounding = { nearest, step }` | `step` = the exercise's increment (its own `inc`, else v1's body-part default) if every load lifted or targeted is on that grid (within 0.1, as v1 treated its one-decimal storage) and the step divides the increment, else the coarsest of 2.5/1.25/1/0.5/0.25/0.1/0.05/0.01/0.001 kg (5/2.5/1/… lb) that leaves every recorded load exactly as it was |
 | `warmupSets` | `occurrence.warmup = { mode:'smart', count: min(5,n) }` | `0` → off (omitted); `warmupSets` no longer exists on the occurrence |
 | `warmupRestSec` | `occurrence.warmupRestSec` | |
 | `intensifier` | `occurrence.intensifier` | numbers held to the engine bounds (drop-set `count` 1–5, `pct` in (0,100) else 20; rest-pause `totalReps` 1–100, `restSec` 5–120); one the rule cannot run → `migrationAudit` `intensifier` |
@@ -712,7 +732,8 @@ For a **linked** entry (5.4) the migration generates a real, frozen, content-has
 * `planFingerprint` from the entry's `planned` stamp (v1's `plannedOf`): if it equals today's
   routine plan, today's cfg-derived fingerprint stands in for it; only a genuine edit rebuilds the
   fingerprint from the stamp; **no `planned` stamp → fingerprint `null`** ("no recorded plan"),
-  which reads exactly as v1.3.9 did — an own log with no recorded plan never resets;
+  which reads exactly as v1.3.9 did — an own log with no recorded plan never resets; an unedited
+  stamp takes the fingerprint the live rule will have (the ladder one once the last load is 0);
 * `assisted` from the occurrence.
 
 If the engine cannot express a target (an invalid number combination) the link is **dropped** and
@@ -723,7 +744,7 @@ the entry stays as readable legacy history (5.4).
 **Linking rule** (`linkOf`) — an entry is tied to a routine occurrence only when it is certain:
 
 * it has an object `target`; `noProg` is not `true`; the workout is not `excludeFromProgression`;
-* its routine id is `entry.rid`, else the workout's *single* `routineIds` entry;
+* its routine id is `entry.rid`, else the workout's *single* `routineIds` entry (an empty `routineIds` falls back to the scalar `routineId`);
 * that routine has **exactly one** slot for the exercise, not excluded, with the same mode as the
   entry's `target.mode`.
 
@@ -746,7 +767,7 @@ A linked entry with no completed work row (warm-ups don't count) is converted bu
 | `sg`, `muscleSnapshot` | `entry.sg`, `entry.muscleSnapshot` | same |
 | `performance.note`, `performance.notePin` | `entry.note` (trimmed), `entry.notePin` | same |
 | `completedAt` | ISO of `workout.end`, else the workout's date | same |
-| `entry.topW` | used **only** when `entry.sets` is empty: one done work row at that load, no reps | same |
+| `entry.topW` | used **only** when `entry.sets` is empty: one done work row at that load, no reps (a linked entry like this has no completed work in `entry.sets`, so it is excluded from progression) | same |
 | `entry.noProg` | not linked → legacy | legacy |
 
 **ATTENTION** (A3) — **legacy exposures never feed the engine**: no prescription, no track, no
@@ -792,10 +813,10 @@ Nothing is rounded or clamped: values are copied exactly as logged.
 
 v1 had no stored state, so the migration reconstructs it:
 
-1. Each occurrence's **live rule** starts from where its newest linked log left off: the load of
-   the newest linked target (`weight`). For holds, the declared duration retains the original
+1. Each occurrence's **live rule** starts from where its newest *worked* linked log left off: the load of
+   that target (`weight`). For holds, the declared duration retains the original
    plan identity, while the frozen last prescription carries the earned duration window (**A40**).
-2. For every occurrence, its linked logs are replayed **oldest → newest** through
+2. For every occurrence, its linked logs (skipped ones excluded) are replayed **oldest → newest** through
    `advanceProgression` with the prescription each was logged against. The newest log's gate
    decides one earned increment (`readyToIncrement`); the run of misses at one load that v1
    recomputed from history on every read (`stallCount`) becomes `stalls`/`stallLoad`, so a deload

@@ -16,7 +16,7 @@
  * catalogue; the engine stays catalogue-free.
  */
 import { ENGINE_SCHEMA, migrationStatus } from './profile-version.js';
-import { validateCanonicalProfile } from './profile-validation.js';
+import { validOneRepMax, validateCanonicalProfile } from './profile-validation.js';
 import {
   INCREMENTING_GATES, PRESETS, advanceProgression, currentOneRm, defaultPlanRule, estimate1RM,
   generatePrescription, isValidDeloadFactor, migrateOccurrence, normalizeEffort, planFingerprint, presetForPolicy, ruleOfPrescription, summarizeActual, validateIntensifier, validatePlanRule, validateWarmup
@@ -30,12 +30,16 @@ const records = v => (Array.isArray(v) ? v.filter(isObj) : []);
 const list = v => (Array.isArray(v) ? v : []);
 const num = v => {
   const n = typeof v === 'string' && v.trim() !== '' ? Number(v) : v;
-  return typeof n === 'number' && Number.isFinite(n) ? n : null;
+  // Beyond 1e15 (past the last representable date in ms) nothing is a count, a load or a time: and the products below (reps × load, min × 60) must not overflow.
+  return typeof n === 'number' && Number.isFinite(n) && Math.abs(n) <= 1e15 ? n : null;
 };
+// A logged count, load, time or speed is never negative: a negative one is a typo, not a value.
+const nn = v => { const n = num(v); return n != null && n >= 0 ? n : null; };
 const whole = (v, lo = 1) => { const n = num(v); return n != null && Math.round(n) >= lo ? Math.round(n) : null; };
 const fixed = n => ({ min: n, max: n });
 const clone = v => JSON.parse(JSON.stringify(v));
-const idOf = (v, fallback) => (v != null && v !== '' ? String(v) : fallback);
+// An id is a non-empty string or a finite number: [] / {} / true would stringify into a colliding or empty key.
+const idOf = (v, fallback) => (typeof v === 'string' && v !== '' ? v : typeof v === 'number' && Number.isFinite(v) ? String(v) : fallback);
 const iso = ms => new Date(ms).toISOString();
 const whenOf = w => num(w?.start) ?? (Date.parse(`${w?.d}T00:00:00Z`) || 0);
 const dayOf = w => Number.isFinite(Date.parse(w?.d)) ? Date.parse(w.d) : Math.floor(whenOf(w) / 86400000) * 86400000;
@@ -181,8 +185,8 @@ function draftRoutines(state, ctx) {
     const id = routineId(idOf(routine.id, `m1-r${i}`));
     const key = idOf(routine.id, null);
     const drafts = list(routine.ex).flatMap((cfg, j) => {
-      if (!isObj(cfg) || cfg.id == null || cfg.id === '') return [];
-      const exerciseId = String(cfg.id);
+      if (!isObj(cfg) || idOf(cfg.id, null) == null) return [];
+      const exerciseId = idOf(cfg.id);
       const info = exerciseOf(ctx, exerciseId);
       const mode = modeOf(cfg, info);
       const d = {
@@ -206,7 +210,7 @@ const occurrenceOf = d => ({
   ...(d.cfg.restSec == null && d.cfg.rest == null ? { restFromProfile: true } : {}),
   ...(d.warmup ? { warmup: d.warmup } : {}),
   ...(d.cfg.sg ? { sg: d.cfg.sg } : {}),
-  ...(d.cfg.note ? { note: String(d.cfg.note) } : {}),
+  ...(typeof d.cfg.note === 'string' && d.cfg.note ? { note: d.cfg.note } : {}),
   ...(whole(d.cfg.restSec) ? { restSec: whole(d.cfg.restSec) } : {}),
   ...(whole(d.cfg.warmupRestSec) ? { warmupRestSec: whole(d.cfg.warmupRestSec) } : {}),
   ...(d.cfg.excludeFromProgression === true ? { excludeFromProgression: true } : {}),
@@ -236,7 +240,7 @@ function linkOf(w, entry, byRoutine) {
   const routineIds = routineIdsOf(w);
   const rid = idOf(entry.rid ?? (routineIds.length === 1 ? routineIds[0] : null), null);
   if (rid == null) return null;
-  const matches = (byRoutine.get(rid) || []).filter(d => d.exerciseId === String(entry.id));
+  const matches = (byRoutine.get(rid) || []).filter(d => d.exerciseId === idOf(entry.id, null));
   if (matches.length !== 1 || matches[0].excluded) return null;
   return modeOf(entry.target, matches[0].info) === matches[0].mode ? matches[0] : null;
 }
@@ -279,7 +283,7 @@ function finalizeDraft(d, ctx) {
       const fingerprint = !link.planned ? null
         : unedited ? liveFingerprint
         : planFingerprint(d.ruleFor({ repsMin: null, repsMax: null, ...link.planned }));
-      link.prescription = generatePrescription({ id: ctx.prescriptionId(`${link.workoutId}:p${link.j}`), now: link.at, trackId: d.occurrenceId, rule: d.ruleFor(link.values, d.step, dayWindow(link)), fingerprint, assisted: typeof link.assisted === 'boolean' ? link.assisted : d.assisted, restPause: (link.intensifier ?? d.cfg.intensifier)?.type === 'restpause', restPauseReps: (link.intensifier ?? d.cfg.intensifier)?.totalReps });
+      link.prescription = generatePrescription({ id: ctx.prescriptionId(`${link.workoutId}:p${link.j}`), now: link.at, trackId: d.occurrenceId, rule: d.ruleFor(link.values, d.step, dayWindow(link)), fingerprint, assisted: typeof link.assisted === 'boolean' ? link.assisted : d.assisted, ...restPauseOf(link.intensifier ?? d.cfg.intensifier) });
       return true;
     } catch { return false; }   // a target the engine cannot express stays readable legacy history
   });
@@ -295,12 +299,17 @@ function finalizeDraft(d, ctx) {
   if (d.cfg.deloadFactor != null && d.cfg.deloadFactor !== false && !d.rule.deload) {
     ctx.unsupported.push({ routineId: d.routineId, occurrenceId: d.occurrenceId, exerciseId: d.exerciseId, field: 'deloadFactor', value: clone(d.cfg.deloadFactor) });
   }
+  // The set count is held to the engine's own maximum: say so rather than quietly plan fewer sets.
+  if (whole(d.cfg.sets) > MAX_SETS) ctx.unsupported.push({ routineId: d.routineId, occurrenceId: d.occurrenceId, exerciseId: d.exerciseId, field: 'sets', value: clone(d.cfg.sets) });
   d.intensifier = intensifierOf(d.cfg.intensifier, d.rule);
   // One the rule cannot run (a preset that shapes its own rows, a timed or unloaded rule) is audited instead.
   if (d.cfg.intensifier != null && d.cfg.intensifier !== false && !d.intensifier) {
     ctx.unsupported.push({ routineId: d.routineId, occurrenceId: d.occurrenceId, exerciseId: d.exerciseId, field: 'intensifier', value: clone(d.cfg.intensifier) });
   }
 }
+
+// The rest-pause target as logged on an entry is raw v1 data: its rep total counts only when it is a whole number.
+const restPauseOf = i => ({ restPause: i?.type === 'restpause', restPauseReps: whole(i?.totalReps) });
 
 /** v1's drop-set or rest-pause plan, already the engine's shape: its numbers held to the engine's bounds. */
 function intensifierOf(raw, rule) {
@@ -316,11 +325,11 @@ function intensifierOf(raw, rule) {
  *  v1 extras it never had to carry: cardio metrics, drops, rest-pause clusters, sides). */
 function performanceRow(row, unit, mode) {
   const observations = [];
-  const r = num(row.r), w = num(row.w);
+  const r = nn(row.r), w = nn(row.w);
   if (r != null && mode !== 'cardio') observations.push({ metric: 'repetitions', unit: 'reps', value: r });
-  const duration = mode === 'cardio' ? (num(row.min) != null ? num(row.min) * 60 : null) : num(row.sec);
+  const duration = mode === 'cardio' ? (nn(row.min) != null ? nn(row.min) * 60 : null) : nn(row.sec);
   if (duration != null) observations.push({ metric: 'duration', unit: 's', value: duration });
-  if (mode === 'cardio' && num(row.speed) != null) observations.push({ metric: 'speed', unit: 'kmh', value: num(row.speed) });
+  if (mode === 'cardio' && nn(row.speed) != null) observations.push({ metric: 'speed', unit: 'kmh', value: nn(row.speed) });
   const effort = normalizeEffort({ rir: num(row.rir), rpeEntered: num(row.rpe) });
   const out = {
     prescribed: row.setId != null,
@@ -334,7 +343,12 @@ function performanceRow(row, unit, mode) {
     // A drop is extra volume on top of the row; a rest-pause cluster is only how `r` breaks down.
     segments: row.type === 'dropset' ? records(row.drops).map(d => performanceRow({ ...d, done: row.done, phase: row.phase }, unit, mode)) : []
   };
-  if (row.type === 'restpause' && Array.isArray(row.clusters)) out.clusters = clone(row.clusters);
+  // A cluster's counts are numbers or nothing: whatever else was typed there is not a count.
+  if (row.type === 'restpause' && Array.isArray(row.clusters)) out.clusters = row.clusters.flatMap(c => {
+    if (!isObj(c)) return num(c) != null ? [{ r: num(c) }] : [];   // a bare number is the cluster's reps
+    const { r, reps, ...rest } = c;
+    return [{ ...clone(rest), ...(num(r) != null ? { r: num(r) } : {}), ...(num(reps) != null ? { reps: num(reps) } : {}) }];
+  });
   if (isObj(row.sides?.L) && isObj(row.sides?.R)) out.sides = { L: performanceRow(row.sides.L, unit, mode), R: performanceRow(row.sides.R, unit, mode) };
   return out;
 }
@@ -343,12 +357,12 @@ function performanceRow(row, unit, mode) {
 const performedOf = (rows, unit, assisted = false) => rows.filter(row => !isWarmupRow(row)).flatMap((row, k) => {
   const sides = isObj(row.sides?.L) && isObj(row.sides?.R) ? [row.sides.L, row.sides.R] : null;
   if (!row.done || sides?.some(side => !side.done)) return [];
-  const least = key => sides ? sides.every(side => num(side[key]) != null) ? Math.min(...sides.map(side => num(side[key]))) : null : num(row[key]);
-  const load = sides ? sides.every(side => num(side.w) != null) ? (assisted ? Math.max : Math.min)(...sides.map(side => num(side.w))) : null : num(row.w);
+  const least = key => sides ? sides.every(side => nn(side[key]) != null) ? Math.min(...sides.map(side => nn(side[key]))) : null : nn(row[key]);
+  const load = sides ? sides.every(side => nn(side.w) != null) ? (assisted ? Math.max : Math.min)(...sides.map(side => nn(side.w))) : null : nn(row.w);
   return [{
     row: k,
-    ...(sides ? { sideReps: sides.map(side => num(side.r)), sideLoads: sides.map(side => num(side.w)) } : {}),
-    reps: num(row.sec) != null || num(row.min) != null ? null : sides ? least('r') == null ? null : sides.reduce((n, side) => n + num(side.r), 0) : num(row.r),
+    ...(sides ? { sideReps: sides.map(side => nn(side.r)), sideLoads: sides.map(side => nn(side.w)) } : {}),
+    reps: nn(row.sec) != null || nn(row.min) != null ? null : sides ? least('r') == null ? null : sides.reduce((n, side) => n + nn(side.r), 0) : nn(row.r),
     load: load != null && load >= 0 ? { value: load, unit } : null,
     durationSeconds: least('sec') ?? (least('min') != null ? least('min') * 60 : null),
     rir: num(row.rir),
@@ -376,8 +390,8 @@ function migrateWorkout(w, i, ctx) {
   const id = ctx.workoutIds[i];
   const completedAt = iso(num(w.end) ?? whenOf(w));
   const exposures = list(w.entries).flatMap((entry, j) => {
-    if (!isObj(entry) || entry.id == null || entry.id === '') return [];
-    const exerciseId = String(entry.id);
+    if (!isObj(entry) || idOf(entry.id, null) == null) return [];
+    const exerciseId = idOf(entry.id);
     const info = exerciseOf(ctx, exerciseId);
     // A record from before sets were kept holds only the weight confirmed for it (`topW`): one done
     // work row at that load, with no reps, keeps it as the exercise's best and a point on its chart.
@@ -403,7 +417,7 @@ function migrateWorkout(w, i, ctx) {
         // and the readers of the v1 entry shape (performance.js legacyEntriesOf) take it from here.
         : {
           kind: 'legacy', trackId: null, prescriptionId: null, excludedFromProgression: true,
-          ...(entry.noProg === true || w.excludeFromProgression === true || (ctx.byRoutine.get(String(entry.rid ?? w.routineId)) || []).some(d => d.exerciseId === exerciseId && d.excluded) ? { progressionExclusion: 'explicit' } : {}),
+          ...(entry.noProg === true || w.excludeFromProgression === true || (ctx.byRoutine.get(idOf(entry.rid ?? w.routineId, '')) || []).some(d => d.exerciseId === exerciseId && d.excluded) ? { progressionExclusion: 'explicit' } : {}),
           ...(isObj(entry.target) ? { legacyTarget: clone(entry.target) } : {}),
           ...(isObj(entry.planned) ? { legacyPlanned: clone(entry.planned) } : {})
         }),
@@ -428,7 +442,7 @@ function migrateWorkout(w, i, ctx) {
   return {
     ...clone(rest), id, status: 'completed',
     routineIds: clone(routineIdsOf(w)),
-    exposures, vol: num(w.vol) ?? volumeOf(exposures)
+    exposures, vol: num(w.vol) ?? (Number.isFinite(volumeOf(exposures)) ? volumeOf(exposures) : 0)
   };
 }
 
@@ -437,7 +451,7 @@ function migrateWorkout(w, i, ctx) {
 // recomputed from history on every read (stallCount) is counted here so a deload comes when v1's
 // would have. An edit of the plan between two sessions ends the run, as it did in v1.
 function seedProgression(state, drafts, workouts) {
-  const progression = isObj(state.progression) ? clone(state.progression) : {};
+  const progression = {};
   for (const d of drafts) {
     let track = null;
     let before = null;
@@ -456,7 +470,13 @@ function seedProgression(state, drafts, workouts) {
 
 function oneRepMaxesOf(ctx, workouts, unit) {
   const { state } = ctx;
-  const out = isObj(state.oneRepMaxes) ? clone(state.oneRepMaxes) : {};
+  // An existing dictionary is kept record by record; one that is not a 1RM, or points at a log this
+  // conversion does not hold, goes to the audit instead of making the profile invalid.
+  const out = {};
+  for (const [key, r] of Object.entries(isObj(state.oneRepMaxes) ? state.oneRepMaxes : {})) {
+    if (validOneRepMax(key, r) && (r.source !== 'estimated' || r.sourceRecordId == null)) out[key] = clone(r);
+    else ctx.stray.push({ path: `oneRepMaxes[${key}]`, value: clone(r) });
+  }
   const best = new Map();
   for (const w of workouts) for (const x of w.exposures) {
     // An assistance machine has no 1RM: the load is the help you were given (issue #232).
@@ -464,7 +484,7 @@ function oneRepMaxesOf(ctx, workouts, unit) {
     for (const row of x.performance.sets) {
       if (row.status !== 'completed' || row.role === 'warmup' || row.resistance.kind !== 'external-load') continue;
       const value = estimate1RM(row.resistance.value, repsOf(row));
-      if (value != null && value > (best.get(x.exerciseId)?.value ?? 0)) best.set(x.exerciseId, { value, capturedAt: x.completedAt, sourceRecordId: x.exposureId });
+      if (Number.isFinite(value) && value > (best.get(x.exerciseId)?.value ?? 0)) best.set(x.exerciseId, { value, capturedAt: x.completedAt, sourceRecordId: x.exposureId });
     }
   }
   for (const [exerciseId, b] of best) {
@@ -485,9 +505,9 @@ function migrateActive(active, ctx) {
   const entries = [];
   const retained = [];
   list(active.entries).forEach((entry, j) => {
-    if (!isObj(entry) || entry.id == null || entry.id === '') return;
+    if (!isObj(entry) || idOf(entry.id, null) == null) return;
     retained.push(j);
-    const exerciseId = String(entry.id);
+    const exerciseId = idOf(entry.id);
     const info = exerciseOf(ctx, exerciseId);
     const rows = list(entry.sets).filter(isObj);
     const work = rows.filter(row => !isWarmupRow(row));
@@ -505,7 +525,7 @@ function migrateActive(active, ctx) {
     const base = `${id}:active:p${j}`;
     let prescriptionId = base, suffix = 2;
     while (ctx.prescriptions[prescriptionId]) prescriptionId = `${base}~${suffix++}`;
-    const prescription = generatePrescription({ id: prescriptionId, now, trackId, rule, assisted: typeof target.assisted === 'boolean' ? target.assisted : d ? d.assisted : isAssisted(info), restPause: (target.intensifier ?? d?.cfg.intensifier)?.type === 'restpause', restPauseReps: (target.intensifier ?? d?.cfg.intensifier)?.totalReps });
+    const prescription = generatePrescription({ id: prescriptionId, now, trackId, rule, assisted: typeof target.assisted === 'boolean' ? target.assisted : d ? d.assisted : isAssisted(info), ...restPauseOf(target.intensifier ?? d?.cfg.intensifier) });
     ctx.prescriptions[prescription.id] = prescription;
     const exposureId = ctx.exposureId(`${id}:active:x${j}`);
     exposures.push({
@@ -555,12 +575,12 @@ export function migrateProfileV1ToV2(state, catalogue) {
   const workoutId = uniqueIds();
   const ctx = {
     state, catalogue, unit, rest: whole(state.restSec, 0), byRoutine: new Map(), unsupported: [], linked: new Map(),
-    prescriptions: isObj(state.prescriptions) ? clone(state.prescriptions) : {},
+    prescriptions: {}, stray: [],
     workoutIds: workouts.map((w, i) => workoutId(idOf(w.id, `m1-w${i}`)))
   };
   ctx.liftedLoads = new Map();
-  for (const w of workouts) for (const entry of list(w.entries)) if (isObj(entry)) for (const row of list(entry.sets)) {
-    if (isObj(row) && row.done && !isWarmupRow(row) && num(row.w) > 0) ctx.liftedLoads.set(String(entry.id), [...(ctx.liftedLoads.get(String(entry.id)) || []), num(row.w)]);
+  for (const w of workouts) for (const entry of list(w.entries)) if (isObj(entry) && idOf(entry.id, null) != null) for (const row of list(entry.sets)) {
+    if (isObj(row) && row.done && !isWarmupRow(row) && num(row.w) > 0) ctx.liftedLoads.set(idOf(entry.id), [...(ctx.liftedLoads.get(idOf(entry.id)) || []), num(row.w)]);
   }
   ctx.prescriptionId = uniqueIds();
   Object.keys(ctx.prescriptions).forEach(id => ctx.prescriptionId(id));
@@ -578,14 +598,18 @@ export function migrateProfileV1ToV2(state, catalogue) {
   for (const d of drafts) for (const link of d.links) ctx.linked.set(`${link.i}:${link.j}`, { d, prescription: link.prescription, skipped: link.skipped });
   const outWorkouts = workouts.map((w, i) => migrateWorkout(w, i, ctx));
   const activeSession = isObj(state.active) ? migrateActive(state.active, ctx) : null;
-  const { active, ...rest } = state;
+  // `packed` / `templates` are the wire form's own markers (profile-pack.js): a profile never carries them.
+  const { active, packed, templates, ...rest } = state;
   // Unreadable records cannot become exercises, but their original bytes remain recoverable.
-  const discarded = [];
+  // A v1 document owns no prescriptions or progression (nor the wire form's markers): whatever sits there was not written by v1.
+  const oneRepMaxes = oneRepMaxesOf(ctx, outWorkouts, unit);   // fills ctx.stray
+  const discarded = [...ctx.stray];
+  for (const key of ['prescriptions', 'progression', 'packed', 'templates']) if (state[key] != null && !(isObj(state[key]) && !Object.keys(state[key]).length)) discarded.push({ path: key, value: clone(state[key]) });
   const auditList = (items, path, needsId = false) => {
     if (items != null && !Array.isArray(items)) { discarded.push({ path, value: clone(items) }); return; }
     list(items).forEach((value, i) => {
     const at = `${path}[${i}]`;
-    if (!isObj(value) || (needsId && (value.id == null || value.id === ''))) discarded.push({ path: at, value: clone(value) });
+    if (!isObj(value) || (needsId && idOf(value.id, null) == null)) discarded.push({ path: at, value: clone(value) });
     else {
       if ('ex' in value) auditList(value.ex, `${at}.ex`, true);
       if ('entries' in value) auditList(value.entries, `${at}.entries`, true);
@@ -604,14 +628,14 @@ export function migrateProfileV1ToV2(state, catalogue) {
     routines: routines.map(({ routine, id, drafts: ds }) => ({ ...clone(routine), id, ex: ds.map(occurrenceOf) })),
     workouts: oldestFirst.map(i => outWorkouts[i]),
     prescriptions: ctx.prescriptions,
-    oneRepMaxes: oneRepMaxesOf(ctx, outWorkouts, unit),
+    oneRepMaxes,
     progression: seedProgression(state, drafts, outWorkouts),
     migrationAudit: { fromSchema: 1, unsupported: [...ctx.unsupported, ...dateFixes], ...(discarded.length ? { discarded } : {}) }
   };
   // A pre-upgrade Coach revert must restore canonical occurrences too. No history is replayed:
   // a snapshot is the old plan, not another copy of the athlete's logged sessions.
   if (Array.isArray(profile.coach?.snapshots)) profile.coach.snapshots = profile.coach.snapshots.map(snap => {
-    if (!isObj(snap) || !('routines' in snap) || (Array.isArray(snap.routines) && snap.routines.every(r => isObj(r) && Array.isArray(r.ex) && r.ex.every(o => o?.exerciseId && o?.occurrenceId)))) return snap;
+    if (!isObj(snap) || !Array.isArray(snap.routines) || (snap.routines.every(r => isObj(r) && Array.isArray(r.ex) && r.ex.every(o => o?.exerciseId && o?.occurrenceId)))) return snap;
     const converted = migrateProfileV1ToV2({ unit, restSec: state.restSec, customEx: state.customEx, routines: snap.routines, workouts: [] }, catalogue).profile;
     return { ...snap, routines: converted.routines, migrationAudit: converted.migrationAudit };
   });

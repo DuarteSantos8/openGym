@@ -290,7 +290,7 @@ test('rows keep warm-up role, effort, drops, sides, rest-pause clusters and card
       row(8, 30, { warmup: true }),
       row(6, 60, { rir: 2, rpe: 8, type: 'dropset', drops: [{ w: 40, r: 6 }] }),
       { w: 20, r: 10, done: true, sides: { L: { w: 20, r: 10, done: true }, R: { w: 20, r: 9, done: false } } },
-      { w: 50, r: 9, done: true, type: 'restpause', clusters: [5, 2, 2] },
+      { w: 50, r: 9, done: true, type: 'restpause', clusters: [{ r: 5, restSec: 15 }, { r: 2, restSec: 15 }, { r: 2, restSec: 15 }] },
       { r: 5, w: 60, done: false }
     ] },
     { id: CARDIO, target: { mode: 'cardio' }, sets: [{ min: 20, speed: 9.5, done: true }] }
@@ -301,7 +301,7 @@ test('rows keep warm-up role, effort, drops, sides, rest-pause clusters and card
   assert.deepEqual([rows[1].rir, rows[1].rpeEntered], [2, 8]);
   assert.deepEqual(rows[1].segments.map(x => x.resistance.value), [40]);
   assert.deepEqual([rows[2].side, rows[3].side], ['L', 'R']);
-  assert.deepEqual(rows[4].clusters, [5, 2, 2]);
+  assert.deepEqual(rows[4].clusters, [{ r: 5, restSec: 15 }, { r: 2, restSec: 15 }, { r: 2, restSec: 15 }]);
   assert.equal(cardio.mode, 'cardio');
   assert.deepEqual(cardio.performance.sets[0].observations, [{ metric: 'duration', unit: 's', value: 1200 }, { metric: 'speed', unit: 'kmh', value: 9.5 }]);
   assert.equal(cardio.performance.sets[0].resistance.kind, 'none');
@@ -731,11 +731,11 @@ test('A41/A42: skipped prescribed work and incomplete metrics never earn progres
 
 test('A43: a migrated rest-pause block freezes one deciding row and its full repetition target', () => {
   const input = v1(); input.routines[0].ex[0].intensifier = { type: 'restpause', totalReps: 12, restSec: 15 };
-  input.workouts[0].entries[0].sets = [row(12, 62.5, { type: 'restpause', clusters: [6, 4, 2] })];
+  input.workouts[0].entries[0].sets = [row(12, 62.5, { type: 'restpause', clusters: [{ r: 6 }, { r: 4 }, { r: 2 }] })];
   const { profile } = migrate(input); const x = profile.workouts[0].exposures[0]; const p = profile.prescriptions[x.prescriptionId];
   assert.equal(p.rows.length, 1); assert.equal(p.rows[0].reps.min, 12);
   assert.equal(profile.progression['r1:o0'].readyToIncrement, true);
-  assert.deepEqual(x.performance.sets[0].clusters, [6, 4, 2]);
+  assert.deepEqual(x.performance.sets[0].clusters, [{ r: 6 }, { r: 4 }, { r: 2 }]);
 });
 
 test('A48: explicit false assistance overrides the catalogue for estimates', () => {

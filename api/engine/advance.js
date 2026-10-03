@@ -31,6 +31,11 @@ function hit(p, a) {
   return a.sets >= Math.max(p.parameters.sets.min, p.rows.length) && actual != null && actual >= Math.min(...rows.map(r => targetRange(p, r).min))
 }
 
+/** Load-progressing work whose log carries no load (an assistance machine's 0 is real help, not a missing weight). */
+export function unweightedLog(p, actual) {
+  return INCREMENTING_GATES.includes(PRESETS[p.preset].gate) && !p.assisted && !((actual?.load?.value ?? p.parameters.load.resolved?.value ?? 0) > 0)
+}
+
 const GATES = {
   hit,
   max_reps: (p, a) => hit(p, a) && targetMax(p, a),
@@ -72,6 +77,10 @@ export function advanceProgression({ state, prescription: p, log, now }) {
   next.clean = hit(p, log.actual) && effortOk(p, log.actual)
   next.incrementMultiplier = p.preset === 'greyskull' && next.clean && log.actual.amrapReps >= 2 * p.parameters.reps.min ? 2 : 1
   next.readyToIncrement = earned && INCREMENTING_GATES.includes(gate)
+  // A loaded lift logged with no weight (a quick-added exercise starts at 0): there is nothing to
+  // progress from, so v1 held and asked for the weight. No step is earned and no miss is counted.
+  const unweighted = unweightedLog(p, log.actual)
+  if (unweighted) next.readyToIncrement = false
   if (gate === 'rung' && earned && p.position < (p.special.rungs?.length ?? 0) - 1) next.position = p.position + 1
   // The prescription's own position, not the old state's: a deloaded hold was generated further back.
   if (gate === 'seconds') next.position = earned ? p.position + 1 : p.position
@@ -79,7 +88,8 @@ export function advanceProgression({ state, prescription: p, log, now }) {
   // has not yet reached the top of a range is a hold, not a stall, and ends the streak. The streak
   // is also broken by a change of load — the lighter weight after a deload is not judged by the
   // misses that earned it.
-  if (DELOAD_GATES.includes(gate)) {
+  if (unweighted) Object.assign(next, { stalls: 0, stallLoad: null, stallBest: null, readyToDeload: false })
+  else if (DELOAD_GATES.includes(gate)) {
     const missed = !hit(p, log.actual)
     // What the run is at: the load lifted, or a hold's window — v1 kept counting misses across a
     // hold's back-off and deloaded it again straight away; a new window is a new run here.

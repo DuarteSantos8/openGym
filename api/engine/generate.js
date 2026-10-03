@@ -8,6 +8,7 @@ import { deloadPercent, deloadedLoad, deloadedPosition } from './deload.js'
 import { DELOAD_GATES, INCREMENTING_GATES, PRESETS, needsOneRm, validatePlanRule } from './rules.js'
 import { planWarmupRows } from './warmup.js'
 import { bestLoad, planFingerprint } from './context.js'
+import { unweightedLog } from './advance.js'
 
 const copy = v => (v === undefined ? undefined : JSON.parse(JSON.stringify(v)))
 const same = (a, b) => canonicalJSON(a ?? null) === canonicalJSON(b ?? null)
@@ -61,6 +62,8 @@ function rowsFor(rule, { load, loadTo, trainingMax, position, count }) {
  * @param {boolean} [input.assisted]             an assistance machine: the load is the help given, so every automated step runs the other way (issue #232)
  */
 export function generatePrescription({ id, now, trackId, rule, state = null, lastPrescription = null, lastLog = null, oneRm = null, warmup = null, equipment = null, reset = null, heldLoad = null, startFrom = 'plan', fingerprint, perSide = false, restPause = false, restPauseReps = null, assisted = undefined }) {
+  // A log keeps reps as typed (5.5 from a hand-edited or imported record); a plan only deals in whole ones.
+  if (Number.isFinite(lastLog?.actual?.reps) && !Number.isInteger(lastLog.actual.reps)) lastLog = { ...lastLog, actual: { ...lastLog.actual, reps: Math.floor(lastLog.actual.reps) } }
   // Migrated unloaded work climbs repetitions; adding load restores its original policy.
   const declaredLoad = rule.parameters.load.mode === 'absolute' ? rule.parameters.load.value : 0
   const loadEdited = !!lastPrescription && !same(lastPrescription.basis, rule.parameters.load)
@@ -74,7 +77,7 @@ export function generatePrescription({ id, now, trackId, rule, state = null, las
     if (lastPrescription) lastPrescription = { ...lastPrescription, basis: rule.parameters.load, parameters: { ...lastPrescription.parameters, load: { expression: rule.parameters.load } } }
     if (state) state = { ...state, readyToIncrement: !!state.clean && lastLog?.actual?.load?.value === effectiveLoad && (preset !== 'double' || lastLog?.actual?.reps >= rule.parameters.reps.max) }
   } else if (unloadedTransition) {
-    rule = { ...rule, preset: 'bodyweight_ladder', parameters: { ...rule.parameters, sets: { min: rule.parameters.sets.min, max: 6 }, reps: { min: rule.parameters.reps.min, max: Math.max(rule.parameters.reps.min, rule.special.repCeiling ?? 20) }, load: { mode: 'empty' } }, special: { ...rule.special, rungs: [], loadedPreset: rule.preset }, completion: [], target: { mode: 'none' } }
+    rule = { ...rule, preset: 'bodyweight_ladder', parameters: { ...rule.parameters, sets: { min: rule.parameters.sets.min, max: Math.max(rule.parameters.sets.min, 6) }, reps: { min: rule.parameters.reps.min, max: Math.max(rule.parameters.reps.min, rule.special.repCeiling ?? 20) }, load: { mode: 'empty' } }, special: { ...rule.special, rungs: [], loadedPreset: rule.preset }, completion: [], target: { mode: 'none' } }
     delete rule.deload
     if (lastPrescription) lastPrescription = { ...lastPrescription, basis: rule.parameters.load }
     if (state) state = { ...state, readyToIncrement: false }
@@ -154,14 +157,16 @@ export function generatePrescription({ id, now, trackId, rule, state = null, las
   const trainingMax = rule.preset !== 'five_three_one' ? null
     : tmCarry && state?.trainingMax ? copy(state.trainingMax) : trainingMaxFor(rule, snapshot1RM)
 
-  const fresh = !!reset || !lastLog || !carry || increments || !!deload || lastPrescription.position !== position
+  // The last session of a loaded lift carried no weight: v1 held the plan (rows open as planned, no rep climb).
+  const unweighted = !!lastLog && !reset && !!lastPrescription && unweightedLog({ preset: rule.preset, assisted, parameters: lastPrescription.parameters }, lastLog.actual)
+  const fresh = !!reset || !lastLog || !carry || increments || !!deload || lastPrescription.position !== position || unweighted
   // The plan owns sets, reps and a hold's seconds (v1.3.9), unless the athlete chose their last
   // session or the preset climbs them. History decides the weight.
   const fromLast = !fresh && (startFrom === 'last' || CLIMBING_GATES.includes(PRESETS[rule.preset].gate))
   const last = lastLog?.actual || {}
   const unnamedLadder = rule.preset === 'bodyweight_ladder' && !rule.special.rungs?.length
   // A double climbs from its last result after any session (v1: low + 1); a ladder only after a clean one.
-  const climb = !reset && carry && !deload && !increments && !!state && (rule.preset === 'double' || (unnamedLadder && state.clean))
+  const climb = !reset && carry && !deload && !increments && !unweighted && !!state && (rule.preset === 'double' || (unnamedLadder && state.clean))
   let climbedReps = Math.max(p.reps.min, Math.min(p.reps.max, (last.reps ?? p.reps.min) + (perSide ? 2 : 1)))
   let climbedSets = Math.min(p.sets.max, last.sets || p.sets.min)
   if (climb && unnamedLadder && last.reps >= p.reps.max && climbedSets < p.sets.max) { climbedSets++; climbedReps = p.reps.min }
@@ -171,7 +176,8 @@ export function generatePrescription({ id, now, trackId, rule, state = null, las
   const prefill = {
     sets: climb ? climbedSets : asked?.sets ?? (fromLast ? (last.sets || p.sets.min) : p.sets.min),
     // A deload under a rep window may trade reps for load (deload.js): those reps open the session.
-    reps: climb ? climbedReps : deload?.reps ?? asked?.reps ?? (fromLast ? (last.reps ?? p.reps.min) : p.reps.min),
+    // v1 held a double's plan reps (its top) while the weight was missing, rather than starting the range over.
+    reps: climb ? climbedReps : deload?.reps ?? asked?.reps ?? (unweighted && rule.preset === 'double' ? p.reps.max : fromLast ? (last.reps ?? p.reps.min) : p.reps.min),
     ...(duration ? { durationSeconds: fromLast ? (last.durationSeconds ?? duration.min) : duration.min } : {}),
     ...(p.speed ? { speed: fromLast ? (last.speed ?? p.speed) : p.speed } : {}),
     ...(!fresh && last.rir != null ? { rir: last.rir } : {}),

@@ -291,6 +291,7 @@ journal/resume), `sync-merge` with two diverged v1 copies, the Capacitor file mi
 | File | Runner | What |
 |---|---|---|
 | `api/test/migration-audit.test.js` | `cd api && node --test test/migration-audit.test.js` | Every finding (M1–M8, M10, M13, P1) and the v1-parity cases (P2–P4, values taken from v1's own `nextPrescription`) as plain passing tests |
+| `api/test/migration-robustness.test.js` | `cd api && node --test test/migration-robustness.test.js` (`FUZZ_N=8000 FUZZ_HARD=60` widens the seeded fuzz) | Invariants for ANY v1 document — seeded realistic and corrupted profiles: never throws, valid canonical output, input untouched, deterministic, JSON/wire lossless, first session generable — plus named edge cases (shapes, ids, `__proto__`, dates, numbers, active session, stray v2 keys, scale) and one regression per bug the fuzz found |
 | `frontend/src/lib/engine-audit.test.js` | `cd frontend && npx vitest run src/lib/engine-audit.test.js` | The live-engine counterparts of P1–P4, all plain passing tests |
 
 Both are green (api: 605 pass; frontend: 3305 pass).
@@ -307,3 +308,38 @@ test setup cannot do. They can be added as a dev script if useful.
    upgrade match v1 (the stated goal of the migration).
 3. **M6/M8** — turn throws into audited quarantines.
 4. **P2/P3/P4** — product decisions; at minimum add the v1 behaviours back or document them.
+
+## 9. Robustness pass (seeded fuzz + edge cases)
+
+`api/test/migration-robustness.test.js` drives thousands of generated and corrupted v1 documents through
+the migration and checks, for every one: no throw, `validateCanonicalProfile`/`Active` ok, input not mutated
+(deep-frozen), deterministic, JSON round trip and wire pack/unpack lossless, no non-finite number, and the
+first session after the upgrade can be generated for every occurrence. It found, all fixed:
+
+| Bug | Effect before | Fix |
+|---|---|---|
+| Fractional logged reps (5.5) reach the plan | first session after upgrade throws `parameters.reps: must be whole numbers` (the app cannot open the exercise) | `generatePrescription` counts the whole reps; the log keeps 5.5 |
+| Unloaded plan of > 6 sets | same crash (`sets: min is above max`) in the unloaded-ladder transition | ladder keeps `max(sets, 6)` |
+| Negative logged reps / load / time / speed | negative reps seeded the next rule → invalid rule | read as absent |
+| Rest-pause clusters as bare numbers / junk | output failed validation → `invalid-output`, migration stuck | numbers → `{ r }`, junk dropped |
+| Rest-pause total as text on a logged target | prescription with `reps: "x"` → invalid output | whole numbers only |
+| Exercise/routine/workout id `[]`, `{}`, `true` | `''` / `[object Object]` ids, colliding 1RM keys → invalid output | not an id (audited) |
+| Load ≥ 1e308 or time × 60 overflow | `Infinity` 1RM / volume / duration → invalid output | numbers past ±1e15 are absent; guards on 1RM and volume |
+| Coach snapshot with non-list `routines` | recursive migration throws → whole migration fails | snapshot left untouched |
+| `prescriptions` / `progression` / `oneRepMaxes` junk already on the document | invalid output → stuck | kept only if valid, rest audited |
+| `packed` / `templates` on a v1 root | wire form mistook the profile for an already packed one → unpack lost data | stripped and audited |
+| `sets` above 50 | silently clamped | clamped + `migrationAudit.unsupported` (`sets`) |
+| Loaded lift never given a weight (log without load) | v2 opened at one increment (0 → 2.5 kg), reset double reps to the bottom and could count stalls; v1 held the plan and asked for the weight | `advanceProgression` earns/counts nothing for a load-progressing log with no load (`unweightedLog`); `generatePrescription` holds the plan (double: its top reps); typing a weight resumes progression from it |
+
+Every one of these was a state in which `POST /api/data/migrate-engine-v2` answered `500 migration-failed`
+(or the client showed "Try again") forever; each now has its own named regression test, red on the old code.
+
+**Not changed — differences from v1 that remain** (found with the differential harness against v1's own
+`nextPrescription`, not bugs of the migration but of the v2 engine; product decisions):
+
+* *Double progression after a session whose last set was not checked*: v1 reads the unchecked set as 0 reps and
+  aims back at the bottom of the range; v2 judges the sets that were done and keeps the aim (A41/A42 by design).
+* *Rep climbs after an over-performed session* (bodyweight / unloaded): v1 steps from the prescribed target
+  (+1), v2 from what was logged (+1).
+* *Timed hold after a deload run*: seconds can differ by one step in a few percent of random histories (M12).
+* Linear and Greyskull on loaded work with grid-aligned loads match v1 exactly (differential harness, 1,200 trials, 0 differences); the only residue is v1's one-decimal storage (v1 21.3 vs v2 21.25).
