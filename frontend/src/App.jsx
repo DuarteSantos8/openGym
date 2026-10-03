@@ -14,7 +14,7 @@ import { installViewportGuard } from './lib/viewport-guard.js'
 import { installChipDrag } from './lib/hchips.js'
 import { syncPushSubscription } from './lib/push.js'
 import { MOBILE } from './lib/mobile.js'
-import { exitWorkoutEdit, startFlow } from './sheets.jsx'
+import { startFlow, exitWorkoutEdit } from './sheets.jsx'
 import Icon from './components/Icon.jsx'
 import TabBar from './components/TabBar.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
@@ -25,6 +25,7 @@ import RestTimer from './components/RestTimer.jsx'
 import TimerFlash from './components/TimerFlash.jsx'
 import { openDeviceLinkRedeem } from './components/Passkeys.jsx'
 import Login from './views/Login.jsx'
+import MigrationGate from './views/MigrationGate.jsx'
 import MobileOnboarding from './views/MobileOnboarding.jsx'
 import Home from './views/Home.jsx'
 import CheckIn from './views/CheckIn.jsx'
@@ -64,7 +65,7 @@ function Shell() {
   const navigate = useNavigate()
   const loc = useLocation()
   const navType = useNavigationType()
-  const { S, user, ready } = useStore()
+  const { S, A, user, ready } = useStore()
   // iOS: whether timer sounds get past the ring/silent switch (Settings → Sounds). Page-level,
   // so it is applied here on load and on change rather than at each beep.
   useEffect(() => { setPlayOnSilent(!!S.soundOnSilent) }, [S.soundOnSilent])
@@ -72,6 +73,7 @@ function Shell() {
   useEffect(() => { setVibrate(S.vibrate !== false) }, [S.vibrate])
   const isGuest = useStore(s => s.isGuest())
   const needsMobileOnboarding = useStore(s => s.needsMobileOnboarding)
+  const migration = useStore(s => s.migration)
   const langV = useLang()   // re-renders the whole shell when the language (pack) changes
   useEffect(() => { setNav(navigate) }, [navigate])
   const lastEditPath = useRef(loc.pathname)
@@ -80,11 +82,11 @@ function Shell() {
   useEffect(() => {
     const previous = lastEditPath.current
     lastEditPath.current = loc.pathname
-    if (previous !== '/workout' || !S.active?.editingWorkoutId || loc.pathname === '/workout') return
+    if (previous !== '/workout' || !A?.editingWorkoutId || loc.pathname === '/workout') return
     const destination = loc.pathname + loc.search
     navigate('/workout', { replace: true })
     exitWorkoutEdit(() => navigate(destination, { replace: true }))
-  }, [loc.pathname, loc.search, S.active?.editingWorkoutId, navigate])
+  }, [loc.pathname, loc.search, A?.editingWorkoutId, navigate])
   useEffect(() => { applyPrefs(S.theme, S.accent) }, [S.theme, S.accent])
   // 'system' needs to react live if the OS theme flips while the app is open, not just on
   // the next mount — a fixed 'dark'/'light' choice never re-fires this since matchMedia
@@ -156,7 +158,7 @@ function Shell() {
     return () => window.cancelAnimationFrame(frame)
   }, [loc.pathname, navType])
   // bound to the workout, not to the route — checking Stats mid-session keeps the screen on
-  useWakeLock(!!S.active && !S.active.editingWorkoutId && S.keepAwake !== false)
+  useWakeLock(!!A && !A.editingWorkoutId && S.keepAwake !== false)
 
   const authed = user || isGuest
   if (!ready && !authed) return (
@@ -173,7 +175,7 @@ function Shell() {
           re-mounts the boundary, so the tab bar is always a way out */}
       <div id="app" className="vfade" key={loc.pathname}>
         <ErrorBoundary>
-          {!authed ? <Login /> : needsMobileOnboarding ? <MobileOnboarding /> : (
+          {!authed ? <Login /> : migration ? <MigrationGate /> : needsMobileOnboarding ? <MobileOnboarding /> : (
             <Routes>
               <Route path="/home" element={<Home />} />
               {/* Gym check-in — switched off in Settings, the route falls through to the
@@ -206,7 +208,7 @@ function Shell() {
           including on the sign-in screen, when the server has just ended the session. */}
       <SyncBanner />
       {/* The chat owns the bottom of the screen: its composer sits where the tabs would be. */}
-      {loc.pathname !== '/coach' && <TabBar onStart={startFlow} />}
+      {loc.pathname !== '/coach' && !migration && <TabBar onStart={startFlow} />}
       <RestTimer />
       <Modals />
       <Toast />

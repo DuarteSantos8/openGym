@@ -4,7 +4,7 @@ import { LANGS, DERIVED_LOCALES } from './i18n-core.js'
 import { PT_BR_OVERRIDES } from '../locales/pt-BR.js'
 
 const entry = (id, extra = {}) => ({
-  id,
+  id, exposureId: extra.exposureId || extra.occurrenceId || id,
   target: { sets: 1, reps: 5 },
   sets: [{ w: 0, r: 5, done: false }],
   ...extra,
@@ -18,7 +18,8 @@ describe('active workout whole-unit order', () => {
       target: { sets: 2, reps: 7, weight: 82.5, notes: 'Keep this target' },
       sets: [{ w: 77.5, r: 6, done: true, rir: 2 }],
     })
-    const active = { cur: 2, entries: [duplicateA, entry('middle'), selected] }
+    const entries = [duplicateA, entry('middle'), selected]
+    const active = { cur: 2, entries, exposures: entries.map(x => ({ exposureId: x.exposureId, exerciseId: x.id })) }
 
     expect(moveActiveWorkoutUnit(active, active.cur, -1)?.indices).toEqual([0, 2, 1])
     expect(active.entries.map(item => item.occurrenceId || item.id)).toEqual(['duplicate#1', 'duplicate#2', 'middle'])
@@ -26,6 +27,7 @@ describe('active workout whole-unit order', () => {
     expect(active.entries[1]).toBe(selected)
     expect(active.entries[1].target).toBe(selected.target)
     expect(active.entries[1].sets).toBe(selected.sets)
+    expect(active.exposures.map(item => item.exposureId)).toEqual(['duplicate#1', 'duplicate#2', 'middle'])
     expect(active.cur).toBe(1)
   })
 

@@ -2,6 +2,7 @@
 import { t } from './i18n-core.js'
 import { MOBILE } from './mobile.js'
 import { appBase } from './app-base.js'
+import { unpackProfile } from '../../../api/migration/profile-pack.js'
 
 export const IS_APPLE = /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent)
 export const IS_ANDROID = /Android/.test(navigator.userAgent)
@@ -45,7 +46,12 @@ export async function api(path, opts) {
   // there and the change was marked as synced while the server never saw it. status 0, not
   // undefined: this is not "offline", and the store must not show it as such.
   if (MOBILE && !remoteBase) throw failure(t('This phone is not connected to a server.'), 'not-paired', 0)
-  const headers = Object.assign({ 'Content-Type': 'application/json' }, init.headers)
+  const headers = Object.assign({
+    'Content-Type': 'application/json',
+    // A server holding a canonical profile refuses /api/data* without this, so an old tab cannot
+    // read v2 records as empty and overwrite real data.
+    'X-OpenGym-Engine-Schema': '2',
+  }, init.headers)
   if (remoteToken) headers.Authorization = 'Bearer ' + remoteToken
   // A paired phone has an absolute base of its own; everyone else is relative to where the app
   // is served, so a subpath deployment reaches its own API instead of the proxy's root.
@@ -79,7 +85,9 @@ async function exchange(url, init) {
   let data
   let parsed = true
   try { data = await r.json() } catch { parsed = false }
-  const body = parsed && data && typeof data === 'object' ? data : null
+  // /api/data answers the compact form (api/migration/profile-pack.js); callers get the canonical profile.
+  const open = b => (b && b.state ? { ...b, state: unpackProfile(b.state) } : b)
+  const body = parsed && data && typeof data === 'object' ? open(data) : null
   // The body rides along on the error: a 409 from /api/data carries the server's document.
   if (!r.ok) { const e = new Error((body && body.error) || ('HTTP ' + r.status)); e.status = r.status; e.data = body || {}; throw e }
   if (!body) throw failure(t('The server answered with something other than openGym data.'), 'bad-response', r.status)

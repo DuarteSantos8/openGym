@@ -7,11 +7,11 @@ import { Segmented } from './ui.jsx'
 
 const normalizeMetric = value => value === 'vol' ? 'vol' : 'time'
 
-// Legacy records without entries only have the cached volume available. Current records are
-// always recomputed from their completed sets so unit changes and warm-up/per-side rules stay
+// Records without exposures only have the cached volume available. Current records are
+// always recomputed from their completed sets so unit changes and warm-up rules stay
 // authoritative.
 const volumeOf = w => {
-  if (Array.isArray(w?.entries)) return Math.max(0, Number(workoutVolume(w)) || 0)
+  if (Array.isArray(w?.exposures)) return Math.max(0, Number(workoutVolume(null, w)) || 0)
   const volume = Number(w?.vol)
   return Number.isFinite(volume) ? Math.max(0, volume) : 0
 }

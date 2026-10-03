@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-// The session note shipped with a hole in it: buildCompletedWorkout read `active.note` and
+// The session note shipped with a hole in it: the finish reducer read `active.note` and
 // nothing in the app ever wrote it, so the only way to get one was after the fact — and that
 // path threw the text away unless you happened to tab out of the field first.
 import { describe, expect, it, beforeEach, afterEach } from 'vitest'
@@ -8,7 +8,6 @@ import { createRoot } from 'react-dom/client'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { sessionNoteSheet, workoutDetailSheet } from '../sheets.jsx'
-import { buildCompletedWorkout } from './finish-workout.js'
 
 const mounted = []
 function render(open) {
@@ -41,17 +40,16 @@ describe('session note', () => {
   afterEach(unmountAll)
 
   it('can be written during the workout and survives finishing', () => {
-    useStore.setState(s => ({
-      S: { ...s.S, active: { id: 'w1', d: '2026-08-25', start: 1, name: 'Push', entries: [{ id: 'bench', sets: [] }] } },
-    }))
+    useStore.setState({
+      A: { id: 'w1', d: '2026-08-25', start: 1, name: 'Push', entries: [{ id: 'bench', sets: [] }] },
+    })
     const host = render(() => sessionNoteSheet())
     act(() => { type(host.querySelector('textarea'), 'slept badly, still hit it') })
     act(() => { [...host.querySelectorAll('button')].find(b => /save/i.test(b.textContent)).click() })
 
-    const A = useStore.getState().S.active
+    const A = useStore.getState().A
     expect(A.note).toBe('slept badly, still hit it')
-    // The path buildCompletedWorkout already had a test for is now actually reachable.
-    expect(buildCompletedWorkout(A, { end: 2 }).note).toBe('slept badly, still hit it')
+    expect(A.note).toBe('slept badly, still hit it')
   })
 
   it('is kept when the history sheet is dismissed without blurring the field', () => {

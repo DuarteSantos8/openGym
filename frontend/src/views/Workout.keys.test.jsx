@@ -26,8 +26,8 @@ let container
 
 function renderWorkout(entries, cur = 0, extra = {}) {
   const S = clone(DEF)
-  S.active = { id: 'keys-test', d: '2026-09-23', start: Date.now(), routineId: null, name: 'Keys', bw: null, cur, entries, ...extra }
-  useStore.setState({ S, user: null })
+  const A = { id: 'keys-test', d: '2026-09-23', start: Date.now(), routineId: null, name: 'Keys', bw: null, cur, entries, ...extra }
+  useStore.setState({ S, A, user: null })
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)
@@ -39,7 +39,7 @@ const press = (key, target = document.body) => {
   act(() => { target.dispatchEvent(event) })
   return event
 }
-const active = () => useStore.getState().S.active
+const active = () => useStore.getState().A
 const doneOf = idx => active().entries[idx].sets.map(s => s.done)
 
 beforeEach(() => {

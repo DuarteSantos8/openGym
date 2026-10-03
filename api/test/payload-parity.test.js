@@ -7,13 +7,12 @@
    is not exported from payload.js (only isWarmupSet is), so the only way to observe it from
    outside is through payload.build()'s aggregates, which needs a real DATA_DIR and the rest of the
    coach module graph — the same setup payload.test.js already uses under node:test. The frontend
-   imports below are safe under plain node: workout-model.js and progression.js have no Vite- or
+   imports below are safe under plain node: workout-model.js has no Vite- or
    React-only syntax, the same reason mcp/'s own tests import frontend/src/lib directly. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { tempData, sampleState } from './helpers.mjs';
 import { isWarmupRow } from '../../frontend/src/lib/workout-model.js';
-import { readSession as frontendReadSession } from '../../frontend/src/lib/progression.js';
 
 tempData();
 const payload = await import('../coach/core/payload.js');
@@ -51,37 +50,33 @@ function reviewFor(entries) {
 }
 const exOf = p => p.aggregates.exercises.find(e => e.id === EX_ID);
 
-test('readSession agrees with the frontend on an ordinary session', () => {
+test('readSession grades an ordinary session', () => {
   const passing = entry([set(10), set(10), set(10)]);
   const p = reviewFor([passing, passing, passing]);
   assert.equal(exOf(p).lastOk, true);
-  assert.equal(frontendReadSession(passing, PLAN).ok, true);
 });
 
 // Exact inputs: a session logged with a fourth set beyond the planned three, whose reps fall
-// short of the goal. frontend/src/lib/progression.js readSession grades only the first
+// short of the goal. the frontend's readSession (v1 progression.js, now removed) graded only the first
 // `target.sets` sets (issue #233: "a hard [extra set] taken short of the target reps reported
 // the whole session as missed") and calls this a hit. payload.js's copy graded every logged
 // set and called the same session a miss, so stallCount reported a stall the athlete never
 // had, and the Coach's review and proposal were built on it.
-test('readSession agrees with the frontend on a bonus set logged beyond the plan', () => {
+test('readSession grades a bonus set logged beyond the plan', () => {
   const passing = entry([set(10), set(10), set(10)]);
   const bonus = entry([set(10), set(10), set(10), set(5)]);
   const p = reviewFor([passing, passing, bonus]);
 
-  assert.equal(frontendReadSession(bonus, PLAN).ok, true, 'the frontend grades the first 3 sets and calls this a hit');
   assert.equal(exOf(p).lastOk, true, 'and so must this, or stallCount invents a stall');
   assert.equal(exOf(p).stalls, 0);
 
   // A short set INSIDE the plan is still a miss on both sides: the slicing must not swallow it.
   const short = entry([set(10), set(10), set(5)]);
-  assert.equal(frontendReadSession(short, PLAN).ok, false);
   assert.equal(exOf(reviewFor([passing, passing, short])).lastOk, false);
   assert.equal(exOf(reviewFor([passing, passing, short])).stalls, 1);
 
   // Fewer sets than planned is short whichever way it is read, and `enough` says so on both
   // sides before the slicing is reached.
   const tooFew = entry([set(10), set(10)]);
-  assert.equal(frontendReadSession(tooFew, PLAN).ok, false);
   assert.equal(exOf(reviewFor([passing, passing, tooFew])).lastOk, false);
 });

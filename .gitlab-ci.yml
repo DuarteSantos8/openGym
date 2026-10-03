@@ -256,7 +256,8 @@ test:api:
     # A dataset or prompt change that forgets to regenerate them would otherwise only surface as
     # "the Coach can't find that exercise" — or a prompt edit that never reached the model.
     - node scripts/build-coach-assets.mjs --check
-    # api/coach/core is imported by the server under bare node AND by the phone under Vite.
+    # api/coach/core, api/engine and api/migration are imported by the server under bare node AND
+    # by the phone under Vite.
     # vitest forgives what node does not (?raw, import.meta.glob); this runs outside vitest.
     - node api/scripts/check-core-loadable.mjs
   coverage: '/all files\s*\|\s*(\d+\.?\d*)/'
@@ -463,9 +464,9 @@ build:api-check:
       when: manual
       allow_failure: true
 
-# The web image is built from the repository root, and the frontend imports the Coach core from
-# api/coach/core — a path the Dockerfile has to copy by hand. Nothing in test:frontend or the
-# Pages build goes through that Dockerfile, so an MR could pass everything and still ship an
+# The web image is built from the repository root, and the frontend imports api/coach/core,
+# api/engine and api/migration — paths the Dockerfile has to copy by hand. Nothing in
+# test:frontend or the Pages build goes through that Dockerfile, so an MR could pass everything and still ship an
 # image that does not build (v1.2.15 did). Built here, never pushed.
 build:web-check:
   extends: .docker
@@ -491,6 +492,8 @@ build:web-check:
           - "frontend/**/*"
           - "web/**/*"
           - "api/coach/core/**/*"
+          - "api/engine/**/*"
+          - "api/migration/**/*"
           - ".gitlab-ci.yml"
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: manual
@@ -818,6 +821,8 @@ pages:
         paths:
           - "frontend/**/*"
           - "api/coach/core/**/*"
+          - "api/engine/**/*"
+          - "api/migration/**/*"
           - ".gitlab-ci.yml"
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: manual

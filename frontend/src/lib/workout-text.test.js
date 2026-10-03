@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
+import { loggedExposure } from './test-fixtures.js'
 import { workoutText } from './workout-text.js'
 import { fmtDate } from './format.js'
 import { EXIDX } from './exercises.js'
@@ -47,7 +48,7 @@ describe('workoutText', () => {
   })
 
   it('leaves out what was not trained and what was never recorded', () => {
-    const bare = { d: '2026-09-03', start: 5, end: 5, name: 'Legs', entries: [
+    const bare = { d: '2026-09-03', start: 5, end: 5, vol: 120, name: 'Legs', entries: [
       { id: 'bench', target: { mode: 'reps' }, sets: [{ w: 40, r: 8, done: true, phase: 'warmup' }] },
       { id: 'curl', sg: 'sg1', target: { mode: 'reps' }, sets: [{ w: 12, r: 10, done: true }] },
       { id: 'pushdown', sg: 'sg1', target: { mode: 'reps' }, sets: [{ w: 20, r: 12, done: false }] },
@@ -111,5 +112,16 @@ describe('workoutText exercise names per language', () => {
     }
     _setLangState('en', {}, null, null)
     expect(nameLine()).toBe('Barbell Bench Press')
+  })
+})
+
+// A saved workout of the generic engine holds exposures, not entries: the same text comes out of them.
+describe('workoutText of a saved workout with exposures', () => {
+  it('lists each exercise\'s completed work sets and leaves the warm-up out', () => {
+    const w = { d: '2026-09-03', start: 0, end: 0, vol: 0, name: 'Push', exposures: [
+      loggedExposure('bench', [{ role: 'warmup', w: 40, r: 8 }, { w: 60, r: 5 }, { w: 60, r: 4 }, { w: 60, r: 3, done: false }]),
+    ] }
+    const text = workoutText(w, { unit: 'kg', nameOf: () => 'Bench', prescriptions: {} })
+    expect(text.split('\n\n')[1]).toBe('Bench\n60×5, 60×4')
   })
 })

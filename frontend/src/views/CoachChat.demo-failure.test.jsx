@@ -60,10 +60,15 @@ function installDom() {
 const chip = re => [...container.querySelectorAll('.qchip')].find(b => re.test(b.textContent || ''))
 async function click(el) {
   expect(el).toBeTruthy()
+  const before = mocks.S.coach.chat.length
   await act(async () => { el.dispatchEvent(new dom.Event('click', { bubbles: true })); await flush() })
+  // The request waits on a dynamic import (coach-demo.js), which a loaded machine settles late: give it real turns.
+  // Timed on the real clock (hrtime): setTimeout and Date are faked here.
+  const deadline = process.hrtime.bigint() + 15_000_000_000n
+  while (mocks.S.coach.chat.length === before && !mocks.toast.mock.calls.length && process.hrtime.bigint() < deadline) await act(async () => { await new Promise(r => setImmediate(r)) })
 }
 // Microtasks only: the dynamic import of coach-demo.js and the status refresh both settle here.
-const flush = async () => { for (let i = 0; i < 20; i++) await Promise.resolve() }
+const flush = async () => { for (let i = 0; i < 20; i++) await Promise.resolve(); await new Promise(r => setImmediate(r)) }
 const settle = async () => { await act(async () => { await flush() }) }
 const elapse = async ms => { await act(async () => { await vi.advanceTimersByTimeAsync(ms); await flush() }) }
 

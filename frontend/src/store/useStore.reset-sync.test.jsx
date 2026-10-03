@@ -17,7 +17,7 @@ import { resetIdsOf } from '../lib/sync-merge.js'
 
 const clone = v => JSON.parse(JSON.stringify(v))
 const ids = xs => (xs || []).map(x => x.id)
-const workout = (id, end) => ({ id, d: '2026-09-20', start: end - 1000, end, entries: [] })
+const workout = (id, end) => ({ id, d: '2026-09-20', start: end - 1000, end, exposures: [] })
 const puts = () => api.mock.calls.filter(([, o]) => o?.method === 'PUT').map(([, o]) => JSON.parse(o.body))
 const conflict = (state, rev) => Object.assign(new Error('conflict'), { status: 409, data: { state, rev } })
 const signedIn = (S, rev) => {

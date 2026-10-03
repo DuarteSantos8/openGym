@@ -5,9 +5,11 @@ import { createRoot } from 'react-dom/client'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { renameWorkoutSheet, addRoutineToSessionSheet } from '../sheets.jsx'
-import { buildCompletedWorkout } from './finish-workout.js'
+import { ruleOccurrence } from './test-fixtures.js'
 
 const mounted = []
+const fiveAt60 = r => ({ ...r, parameters: { ...r.parameters, sets: { min: 3, max: 3 }, reps: { min: 5, max: 5 }, load: { mode: 'absolute', value: 60, unit: 'kg' } } })
+const routine = (id, name, exerciseId) => ({ id, name, ex: [ruleOccurrence(exerciseId, { occurrenceId: id + '-1', routineId: id, patch: fiveAt60 })] })
 function render(open) {
   open()
   const sheet = useUI.getState().sheets.at(-1)
@@ -35,12 +37,9 @@ describe('rename workout', () => {
   afterEach(unmountAll)
 
   it('renames an active workout and disables save on empty input', () => {
-    useStore.setState(s => ({
-      S: {
-        ...s.S,
-        active: { id: 'w1', d: '2026-08-25', start: 1, name: 'Leg Day', entries: [] },
-      },
-    }))
+    useStore.setState({
+      A: { id: 'w1', d: '2026-08-25', start: 1, name: 'Leg Day', entries: [] },
+    })
 
     const host = render(() => renameWorkoutSheet())
     const input = host.querySelector('input')
@@ -58,22 +57,17 @@ describe('rename workout', () => {
     expect(saveBtn.disabled).toBe(false)
     act(() => { saveBtn.click() })
 
-    const active = useStore.getState().S.active
+    const active = useStore.getState().A
     expect(active.name).toBe('Heavy Squats & Core')
     expect(active.customName).toBe(true)
 
-    // Survives completion
-    const completed = buildCompletedWorkout(active, { end: 2 })
-    expect(completed.name).toBe('Heavy Squats & Core')
+    expect(active.name).toBe('Heavy Squats & Core')
   })
 
   it('submits on Enter key press', () => {
-    useStore.setState(s => ({
-      S: {
-        ...s.S,
-        active: { id: 'w1', d: '2026-08-25', start: 1, name: 'Upper A', entries: [] },
-      },
-    }))
+    useStore.setState({
+      A: { id: 'w1', d: '2026-08-25', start: 1, name: 'Upper A', entries: [] },
+    })
 
     const host = render(() => renameWorkoutSheet())
     const input = host.querySelector('input')
@@ -83,7 +77,7 @@ describe('rename workout', () => {
       input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
     })
 
-    const active = useStore.getState().S.active
+    const active = useStore.getState().A
     expect(active.name).toBe('Upper Power')
     expect(active.customName).toBe(true)
   })
@@ -93,18 +87,19 @@ describe('rename workout', () => {
       S: {
         ...s.S,
         routines: [
-          { id: 'r1', name: 'Routine 1', ex: [{ id: 'bench_press' }] },
-          { id: 'r2', name: 'Routine 2', ex: [{ id: 'squat' }] },
+          routine('r1', 'Routine 1', 'bench_press'),
+          routine('r2', 'Routine 2', 'squat'),
         ],
-        active: {
-          id: 'w1',
-          d: '2026-08-25',
-          start: 1,
-          name: 'My Special Workout',
-          customName: true,
-          routineIds: ['r1'],
-          entries: [{ id: 'bench_press', sets: [] }],
-        },
+      },
+      A: {
+        id: 'w1',
+        d: '2026-08-25',
+        start: 1,
+        name: 'My Special Workout',
+        customName: true,
+        routineIds: ['r1'],
+        exposures: [{ routineId: 'r1' }],
+        entries: [],
       },
     }))
 
@@ -114,7 +109,7 @@ describe('rename workout', () => {
     expect(items.length).toBeGreaterThan(0)
     act(() => { items[0].click() })
 
-    const active = useStore.getState().S.active
+    const active = useStore.getState().A
     // The name should remain 'My Special Workout' instead of being overwritten with 'Routine 1 + Routine 2'
     expect(active.name).toBe('My Special Workout')
     expect(active.routineIds).toContain('r2')

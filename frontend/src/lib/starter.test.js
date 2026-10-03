@@ -29,6 +29,7 @@ const APPROVED = {
 }
 
 const shape = r => r.ex.map(e => [e.id, e.sets, e.reps])
+const ruleShape = r => r.ex.map(e => [e.exerciseId, e.rule.parameters.sets.min, e.rule.parameters.reps.min])
 
 describe('starter plan catalog', () => {
   it('offers exactly the four plans, with the day count read off the schedule', () => {
@@ -54,7 +55,7 @@ describe.each(Object.keys(APPROVED))('%s', planId => {
   it('builds the approved exercises, sets and reps in order', () => {
     const { routines } = buildStarterPlan(planId)
     expect(routines.map(r => r.name)).toEqual(approved.map(([, name]) => name))
-    routines.forEach((r, i) => expect(shape(r)).toEqual(approved[i][2]))
+    routines.forEach((r, i) => expect(ruleShape(r)).toEqual(approved[i][2]))
   })
 
   it('puts each routine on its approved weekday, by identity not position', () => {
@@ -64,13 +65,15 @@ describe.each(Object.keys(APPROVED))('%s', planId => {
       .toEqual(approved.map(([day, name]) => [day, name]))
   })
 
-  it('references only real exercises and starts every one at weight 0', () => {
-    for (const r of buildStarterPlan(planId).routines) {
+  it('references only real exercises, each a fixed linear rule of its own routine', () => {
+    for (const r of buildStarterPlan(planId, 'lb').routines) {
       for (const e of r.ex) {
-        expect(EXIDX[e.id], e.id).toBeTruthy()
-        expect(e.sets).toBeGreaterThan(0)
-        expect(e.reps).toBeGreaterThan(0)
-        expect(e.weight).toBe(0)
+        expect(EXIDX[e.exerciseId], e.exerciseId).toBeTruthy()
+        expect(e.rule.preset).toBe('linear')
+        expect(e.rule.routineId).toBe(r.id)
+        expect(e.rule.parameters.sets.min).toBe(e.rule.parameters.sets.max)
+        expect(e.rule.parameters.reps.min).toBe(e.rule.parameters.reps.max)
+        expect(e.rule.parameters.load.unit).toBe('lb')
       }
     }
   })
@@ -83,8 +86,8 @@ describe.each(Object.keys(APPROVED))('%s', planId => {
     expect(second.routines.some(r => ids.includes(r.id))).toBe(false)
     expect(first.routines[0].ex[0]).not.toBe(second.routines[0].ex[0])
     // and the static definition survives a caller mutating what it got back
-    first.routines[0].ex[0].sets = 99
-    expect(buildStarterPlan(planId).routines[0].ex[0].sets).toBe(approved[0][2][0][1])
+    first.routines[0].ex[0].rule.parameters.sets.min = 99
+    expect(buildStarterPlan(planId).routines[0].ex[0].rule.parameters.sets.min).toBe(approved[0][2][0][1])
   })
 })
 

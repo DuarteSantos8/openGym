@@ -9,10 +9,9 @@
 //
 // Logged weights stay the total on the bar (or the added load). Everything here is display.
 
-import { EXIDX } from './exercises.js'
+import { EXIDX, weightIncrement } from './exercises.js'
 import { usesBar, defaultBarWeight } from './bar.js'
 import { isBw } from './history.js'
-import { weightIncrement } from './progression.js'
 
 /** The plate sizes the inventory editor lists, heaviest first, per unit. */
 export const PLATE_SIZES = {

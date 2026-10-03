@@ -3,8 +3,17 @@
    tool call without a restart. */
 import fs from 'node:fs'
 import path from 'node:path'
+import { unpackProfile } from '../../api/migration/profile-pack.js'
 
 const DATA_DIR = process.env.OPENGYM_DATA || path.join(process.cwd(), 'data')
+
+// routines as occurrences carrying a PlanRule and workouts as logs (exposures) with prescriptions. A profile saved before the engine
+// routines as occurrence+binding and workouts as exposures. A profile saved before the engine
+// (or one whose migration never ran — this reads straight off disk, never through the API's
+// own gate) has neither shape, so every tool must refuse it explicitly rather than iterate
+// fields that silently don't exist and report an empty profile.
+export const MIN_ENGINE_SCHEMA = 2
+export const engineUnsupported = S => (S.engineSchemaVersion || 1) < MIN_ENGINE_SCHEMA
 
 // null = no state file (brand-new account); undefined = not yet loaded.
 let _state = undefined
@@ -14,7 +23,7 @@ let _watcher = null
 let _loadedMtime = 0    // mtimeMs we last read at — used to catch watcher omissions
 
 function readJsonOrNull(file) {
-  try { return JSON.parse(fs.readFileSync(file, 'utf8')) } catch { return null }
+  try { return unpackProfile(JSON.parse(fs.readFileSync(file, 'utf8'))) } catch { return null }   // the state file is stored compact
 }
 
 function reloadDb() { _db = readJsonOrNull(path.join(DATA_DIR, 'db.json')) || { users: [], creds: [], subs: [], invites: [] } }

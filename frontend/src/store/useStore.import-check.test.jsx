@@ -14,7 +14,7 @@ import { DEF, useStore } from './useStore.js'
 
 const clone = v => JSON.parse(JSON.stringify(v))
 const ids = xs => (xs || []).map(x => x.id)
-const workout = (id, d = '2026-09-20') => ({ id, d, start: 1, end: 2, entries: [] })
+const workout = (id, d = '2026-09-20') => ({ id, d, start: 1, end: 2, exposures: [] })
 const puts = () => api.mock.calls.filter(([, o]) => o?.method === 'PUT').map(([, o]) => JSON.parse(o.body))
 const signedIn = (S, rev) => {
   localStorage.setItem('gym_sync', JSON.stringify({ rev, ts: S._ts }))

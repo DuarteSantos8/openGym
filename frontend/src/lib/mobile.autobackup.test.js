@@ -53,7 +53,7 @@ describe('writeAutoBackup', () => {
   it('writes today\'s copy into Documents/openGym, not the Documents root', async () => {
     await writeAutoBackup({ workouts: [{ id: 'w1' }] })
     expect(AUTO_BACKUP_DIR).toBe('openGym')
-    expect(JSON.parse(h.files.get('DOCUMENTS/openGym/' + backup(todayISO())))).toEqual({ workouts: [{ id: 'w1' }] })
+    expect(JSON.parse(h.files.get('DOCUMENTS/openGym/' + backup(todayISO())))).toEqual({ workouts: [{ id: 'w1' }], opengym_backup: 2 })
     expect(h.files.has('DOCUMENTS/' + backup(todayISO()))).toBe(false)
   })
 
@@ -117,9 +117,9 @@ describe('writeAutoBackup where today\'s name belongs to another install', () =>
     h.foreign.add(other)
     await writeAutoBackup({ n: 1 })
     const second = 'DOCUMENTS/openGym/' + backup(todayISO()).replace('.json', '-2.json')
-    expect(JSON.parse(h.files.get(second))).toEqual({ n: 1 })
+    expect(JSON.parse(h.files.get(second))).toEqual({ n: 1, opengym_backup: 2 })
     await writeAutoBackup({ n: 2 })
-    expect(JSON.parse(h.files.get(second))).toEqual({ n: 2 })
+    expect(JSON.parse(h.files.get(second))).toEqual({ n: 2, opengym_backup: 2 })
     expect(JSON.parse(h.files.get('DOCUMENTS/' + other))).toEqual({ theirs: true })
   })
 
