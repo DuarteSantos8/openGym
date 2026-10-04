@@ -334,7 +334,14 @@ export default function RoutineEdit() {
   if (!r) return null
   const move = (i, dir) => {
     // Guard before update so a stale/boundary activation cannot trigger persistence or cleanup.
-    if (!moveSupersetUnit(r.ex, i, dir)) return
+    if (!canMove(i, dir)) return
+    if (isWithinSuperset(i, dir)) {
+      edit(ex => {
+        [ex[i], ex[i + dir]] = [ex[i + dir], ex[i]]
+        cleanupSg(ex)
+      })
+      return
+    }
     edit(ex => {
       const reordered = moveSupersetUnit(ex, i, dir)
       if (!reordered) return
@@ -389,6 +396,11 @@ export default function RoutineEdit() {
 
   const units = supersetUnits(r.ex)
   const unitIndex = new Map(units.flatMap((unit, index) => unit.map(i => [i, index])))
+  const isWithinSuperset = (i, dir) => unitIndex.has(i + dir) && unitIndex.get(i) === unitIndex.get(i + dir)
+  const canMove = (i, dir) => {
+    const group = unitIndex.get(i)
+    return isWithinSuperset(i, dir) || (group + dir >= 0 && group + dir < units.length)
+  }
   const unitFirst = new Set(units.filter(u => u.length > 1).map(u => u[0]))
   const inSS = new Set(units.filter(u => u.length > 1).flat())
   const profile = activeProfile(S)
@@ -463,8 +475,8 @@ export default function RoutineEdit() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 'none', alignItems: 'center' }}>
             {i > 0 && <button className={'iconbtn' + (linkedPrev ? ' on-ss' : '')} title={t('Superset with exercise above')} style={{ width: 32, height: 28, borderRadius: 8, fontSize: 15 }} onClick={ev => { ev.stopPropagation(); toggleLink(i) }}><Icon name="link" /></button>}
             <div style={{ display: 'flex', gap: 2 }}>
-              <button className="iconbtn" aria-label={t('Move up')} title={t('Move up')} disabled={unitIndex.get(i) === 0} style={{ width: 28, height: 24, borderRadius: 7, fontSize: 12 }} onClick={ev => { ev.stopPropagation(); move(i, -1) }}><Icon name="chevronUp" /></button>
-              <button className="iconbtn" aria-label={t('Move down')} title={t('Move down')} disabled={unitIndex.get(i) === units.length - 1} style={{ width: 28, height: 24, borderRadius: 7, fontSize: 12 }} onClick={ev => { ev.stopPropagation(); move(i, 1) }}><Icon name="chevronDown" /></button>
+              <button className="iconbtn" aria-label={t('Move up')} title={t('Move up')} disabled={!canMove(i, -1)} style={{ width: 28, height: 24, borderRadius: 7, fontSize: 12 }} onClick={ev => { ev.stopPropagation(); move(i, -1) }}><Icon name="chevronUp" /></button>
+              <button className="iconbtn" aria-label={t('Move down')} title={t('Move down')} disabled={!canMove(i, 1)} style={{ width: 28, height: 24, borderRadius: 7, fontSize: 12 }} onClick={ev => { ev.stopPropagation(); move(i, 1) }}><Icon name="chevronDown" /></button>
             </div>
           </div>
         </SwipeToDelete>

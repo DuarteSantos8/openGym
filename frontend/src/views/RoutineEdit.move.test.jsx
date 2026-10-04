@@ -90,6 +90,27 @@ afterEach(() => {
 })
 
 describe('routine move controls', () => {
+  it('moves a selected member within its superset and persists the new member order', () => {
+    setRoutine([
+      entry('c4', 5),
+      entry('c1', 10, 'g'),
+      entry('c2', 20, 'g'),
+      entry('c3', 30)
+    ])
+    renderRoutine()
+
+    act(() => moveButton('setup-20', 'Move up').click())
+
+    const moved = useStore.getState().S.routines[0].ex
+    expect(moved).toEqual([
+      entry('c4', 5),
+      entry('c2', 20, 'g'),
+      entry('c1', 10, 'g'),
+      entry('c3', 30)
+    ])
+    expect(JSON.parse(localStorage.getItem('gym_state_v1')).routines[0].ex).toEqual(moved)
+  })
+
   it('moves a selected superset member as one contiguous unit and persists complete occurrences', () => {
     setRoutine([
       entry('c1', 10, 'g'),
@@ -202,7 +223,7 @@ describe('routine move controls', () => {
       entry('c3', 30)
     ])
     renderRoutine()
-    act(() => moveButton('setup-10', 'Move down').click())
+    act(() => moveButton('setup-20', 'Move down').click())
 
     const parsed = parsePlan(JSON.stringify(buildPlanBundle(useStore.getState().S, 'Move test')))
     expect(parsed.routines[0].ex).toEqual([
