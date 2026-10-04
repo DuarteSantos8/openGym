@@ -149,8 +149,10 @@ export const useUI = create((set, get) => ({
   closeAll() { set({ sheets: [] }) },
 
   setShowSyncBanner(show) {
-    try { localStorage.setItem(SYNC_BANNER_KEY, show ? '1' : '0') } catch { /* keep the in-memory choice */ }
-    set({ showSyncBanner: !!show })
+    const value = !!show
+    if (get().showSyncBanner === value) return
+    try { localStorage.setItem(SYNC_BANNER_KEY, value ? '1' : '0') } catch { /* keep the in-memory choice */ }
+    set({ showSyncBanner: value })
   },
 
   toast(msg) {

@@ -14,8 +14,8 @@ export const PENDING_GRACE_MS = 5000
 /* The connection, in view while the app is not connected to a server unless hidden in Settings:
    offline, the server unreachable or answering with an error (its HTTP code, for whoever runs
    it), a server that no longer accepts this device, an answer that is not openGym's, and no
-   server at all — a phone
-   kept local, a guest in a browser. The device-local display preference can hide it; its details
+   server at all — a phone kept local or a guest in a browser. The device-local display preference
+   can hide it; its details
    remain in Settings → Server & sync.
    The first ones say what is wrong and that the changes are kept here, with the one thing to do
    about it (retry, pair again, sign in); the deliberate local setup only says so, quietly.

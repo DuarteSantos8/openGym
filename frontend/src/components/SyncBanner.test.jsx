@@ -7,12 +7,13 @@ import { connectionView } from './ServerSync.jsx'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
-/* The connection indicator: every way the app can be without its server gets a line that stays
-   while the condition lasts — offline, an error with its HTTP code, a server that refuses this
-   device, an answer that is not openGym's, no server at all — and says what to do about it.
-   Never in the public demo, never during the phone's first-launch choice, and a change merely
-   waiting for its push does not flash it. The store is a stand-in: its `sync` is what each test
-   sets; ServerSync.jsx (the words and the actions) is the real one. */
+/* By default, the connection indicator gives every way the app can be without its server a line
+   that stays while the condition lasts — offline, an error with its HTTP code, a server that
+   refuses this device, an answer that is not openGym's, no server at all — and says what to do
+   about it. The device can hide it in Settings, where the full status remains. Never in the public
+   demo, never during the phone's first-launch choice, and a change merely waiting for its push
+   does not flash it. The store is a stand-in: its `sync` is what each test sets; ServerSync.jsx
+   (the words and the actions) is the real one. */
 const mocks = vi.hoisted(() => {
   const state = { MOBILE: false, DEMO: false, webauthn: true, user: null, guest: false, onboarding: false, sync: null, showSyncBanner: true, sheets: [], navs: [] }
   state.toast = vi.fn()
