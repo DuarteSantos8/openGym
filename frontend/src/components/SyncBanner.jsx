@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
+import { useUI } from '../store/useUI.js'
 import { DEMO } from '../lib/demo.js'
 import { connectionView, actionLabel, syncNowWithToast, pairAgain, connectServer, signInAgain, useOnline } from './ServerSync.jsx'
 import Icon from './Icon.jsx'
@@ -10,10 +11,12 @@ import Icon from './Icon.jsx'
 // every one of them would only teach people to ignore the line.
 export const PENDING_GRACE_MS = 5000
 
-/* The connection, always in view while the app is not connected to a server: offline, the server
-   unreachable or answering with an error (its HTTP code, for whoever runs it), a server that no
-   longer accepts this device, an answer that is not openGym's, and no server at all — a phone
-   kept local, a guest in a browser. It cannot be dismissed; it goes when the condition does.
+/* The connection, in view while the app is not connected to a server unless hidden in Settings:
+   offline, the server unreachable or answering with an error (its HTTP code, for whoever runs
+   it), a server that no longer accepts this device, an answer that is not openGym's, and no
+   server at all — a phone
+   kept local, a guest in a browser. The device-local display preference can hide it; its details
+   remain in Settings → Server & sync.
    The first ones say what is wrong and that the changes are kept here, with the one thing to do
    about it (retry, pair again, sign in); the deliberate local setup only says so, quietly.
 
@@ -27,6 +30,7 @@ export default function SyncBanner() {
   const sync = useStore(s => s.sync)
   const guest = useStore(s => s.isGuest())
   const onboarding = useStore(s => s.needsMobileOnboarding)
+  const showSyncBanner = useUI(s => s.showSyncBanner)
   const online = useOnline()
   const [waited, setWaited] = useState(false)
   const row = useRef(null)
@@ -41,7 +45,7 @@ export default function SyncBanner() {
   const view = connectionView(sync, { online })
   // Signed out on the web, the sign-in screen is the whole app: it hears only that the server
   // ended the session, and that the changes are still here.
-  const show = !DEMO && !onboarding && !!view?.banner && (!!user || guest || status === 'auth') && (status !== 'pending' || waited)
+  const show = showSyncBanner && !DEMO && !onboarding && !!view?.banner && (!!user || guest || status === 'auth') && (status !== 'pending' || waited)
 
   useLayoutEffect(() => {
     const root = document.documentElement

@@ -4,6 +4,21 @@ import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 import { useUI } from './useUI.js'
 import { useStore } from './useStore.js'
 
+describe('device-local sync banner preference', () => {
+  afterEach(() => {
+    useUI.getState().setShowSyncBanner(true)
+    localStorage.removeItem('gym_show_sync_banner')
+  })
+
+  it('persists the display choice on this device', () => {
+    useUI.getState().setShowSyncBanner(false)
+    expect(useUI.getState().showSyncBanner).toBe(false)
+    expect(localStorage.getItem('gym_show_sync_banner')).toBe('0')
+    useUI.getState().setShowSyncBanner(true)
+    expect(localStorage.getItem('gym_show_sync_banner')).toBe('1')
+  })
+})
+
 // "Off" has to hold at the timer itself, not at the four places that start one — the same
 // reason the rest-after-a-set rule is a shared condition rather than four copies.
 describe('rest timer set to Off', () => {

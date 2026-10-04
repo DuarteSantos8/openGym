@@ -12,7 +12,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
    it never checked, and which asks before leaving changes the server has not got: try again,
    export a backup, or go ahead anyway with the changes kept on the device. */
 const mocks = vi.hoisted(() => {
-  const state = { S: null, user: null, sync: null, MOBILE: false, unsynced: { owed: false, count: 0 }, kept: [], sheets: [], navs: [] }
+  const state = { S: null, user: null, sync: null, MOBILE: false, showSyncBanner: true, unsynced: { owed: false, count: 0 }, kept: [], sheets: [], navs: [] }
   state.toast = vi.fn()
   state.confirmSheet = vi.fn()
   state.syncNow = vi.fn(async () => state.sync)
@@ -21,7 +21,7 @@ const mocks = vi.hoisted(() => {
   state.signOutAll = vi.fn()
   state.shareExport = vi.fn(async () => {})
   state.snapshot = () => ({
-    S: state.S, user: state.user, sync: state.sync, coachLocal: null,
+    S: state.S, user: state.user, sync: state.sync, coachLocal: null, showSyncBanner: state.showSyncBanner,
     update: vi.fn(), replaceState: vi.fn(), setUser: vi.fn(), pullState: vi.fn(), pushState: vi.fn(), resetDemo: vi.fn(),
     syncNow: state.syncNow, unsyncedChanges: () => state.unsynced, keptChanges: async () => state.kept,
     disconnectServer: state.disconnectServer, signOut: state.signOut, signOutAll: state.signOutAll,
@@ -35,7 +35,7 @@ vi.mock('../store/useStore.js', () => {
   return { useStore, DEF: { reminder: { time: '17:30' } }, hasData: () => false }
 })
 vi.mock('../store/useUI.js', () => {
-  const snap = () => ({ toast: (...a) => mocks.toast(...a), openSheet: (render, opts) => { mocks.sheets.push({ render, opts }); return {} } })
+  const snap = () => ({ showSyncBanner: mocks.showSyncBanner, toast: (...a) => mocks.toast(...a), setShowSyncBanner: v => { mocks.showSyncBanner = v }, openSheet: (render, opts) => { mocks.sheets.push({ render, opts }); return {} } })
   const useUI = selector => selector ? selector(snap()) : snap()
   useUI.getState = snap
   return { useUI }
@@ -76,6 +76,7 @@ beforeEach(() => {
   mocks.S = { unit: 'kg', restSec: 90, restPauseSec: 15, sound: false, effort: 'none', gifSize: 'full', workouts: [], routines: [], exWeights: {} }
   mocks.user = USER
   mocks.MOBILE = true
+  mocks.showSyncBanner = true
   mocks.sync = sync('ok', { lastSynced: Date.now() - 5 * 60000 })
   mocks.unsynced = { owed: false, count: 0 }
   mocks.kept = []
@@ -171,6 +172,17 @@ describe('Server & sync', () => {
     const page = mount(<Settings />)
     await settle()
     expect(rowByTitle(block(page), 'Changes kept for andi')).toBeTruthy()
+  })
+})
+
+describe('the sync banner display preference', () => {
+  it('is available in Settings and can be switched off on this device', () => {
+    const page = mount(<Settings />)
+    const row = rowByTitle(page, 'Show sync banner')
+    expect(row).toBeTruthy()
+    expect(row.querySelector('[role="switch"]').getAttribute('aria-checked')).toBe('true')
+    act(() => row.querySelector('[role="switch"]').click())
+    expect(mocks.showSyncBanner).toBe(false)
   })
 })
 

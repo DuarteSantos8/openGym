@@ -14,13 +14,14 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
    waiting for its push does not flash it. The store is a stand-in: its `sync` is what each test
    sets; ServerSync.jsx (the words and the actions) is the real one. */
 const mocks = vi.hoisted(() => {
-  const state = { MOBILE: false, DEMO: false, webauthn: true, user: null, guest: false, onboarding: false, sync: null, sheets: [], navs: [] }
+  const state = { MOBILE: false, DEMO: false, webauthn: true, user: null, guest: false, onboarding: false, sync: null, showSyncBanner: true, sheets: [], navs: [] }
   state.toast = vi.fn()
   state.syncNow = vi.fn(async () => state.sync)
   state.passkeyLogin = vi.fn(async () => ({ id: 'u1', name: 'andi' }))
   state.snapshot = () => ({
     user: state.user, sync: state.sync, needsMobileOnboarding: state.onboarding,
     isGuest: () => state.guest, syncNow: state.syncNow,
+    showSyncBanner: state.showSyncBanner,
     setUser: vi.fn(), adoptProfile: vi.fn(async () => ({})),
   })
   return state
@@ -31,7 +32,7 @@ vi.mock('../store/useStore.js', () => {
   return { useStore }
 })
 vi.mock('../store/useUI.js', () => {
-  const snap = () => ({ toast: (...a) => mocks.toast(...a), openSheet: (render, opts) => { mocks.sheets.push({ render, opts }); return {} } })
+  const snap = () => ({ showSyncBanner: mocks.showSyncBanner, toast: (...a) => mocks.toast(...a), openSheet: (render, opts) => { mocks.sheets.push({ render, opts }); return {} } })
   const useUI = selector => selector ? selector(snap()) : snap()
   useUI.getState = snap
   return { useUI }
@@ -56,7 +57,7 @@ const network = on => {
 let host, root
 beforeEach(() => {
   network(true)
-  Object.assign(mocks, { MOBILE: false, DEMO: false, webauthn: true, user: { id: 'u1', name: 'andi' }, guest: false, onboarding: false, sync: sync('ok') })
+  Object.assign(mocks, { MOBILE: false, DEMO: false, webauthn: true, user: { id: 'u1', name: 'andi' }, guest: false, onboarding: false, sync: sync('ok'), showSyncBanner: true })
   mocks.sheets.length = 0
   mocks.navs.length = 0
   mocks.toast.mockClear(); mocks.syncNow.mockClear(); mocks.passkeyLogin.mockClear()
@@ -107,6 +108,16 @@ describe('connected and in step', () => {
     expect(bar()).toBeNull()
     act(() => { vi.advanceTimersByTime(PENDING_GRACE_MS) })
     expect(text()).toBe('Offline — your changes are saved on this device and sync when you are back online.')
+  })
+})
+
+describe('the device-local display preference', () => {
+  it('hides the banner and gives its space back when switched off', () => {
+    mocks.showSyncBanner = false
+    network(false)
+    render()
+    expect(bar()).toBeNull()
+    expect(conn()).toBe('')
   })
 })
 

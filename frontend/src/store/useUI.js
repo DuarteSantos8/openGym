@@ -77,6 +77,10 @@ let workInt = null
 let workTick = null
 let workDone = null
 const MAX_WORK_OVERTIME_SEC = 15 * 60
+const SYNC_BANNER_KEY = 'gym_show_sync_banner'
+const readShowSyncBanner = () => {
+  try { return localStorage.getItem(SYNC_BANNER_KEY) !== '0' } catch { return true }
+}
 
 const stopRestTicking = () => {
   if (timerInt) clearInterval(timerInt); timerInt = null
@@ -123,6 +127,7 @@ const runRest = (set, get) => {
 export const useUI = create((set, get) => ({
   sheets: [],          // { id, render:(close)=>JSX, kind:'sheet'|'center', locked }
   toastMsg: '',
+  showSyncBanner: readShowSyncBanner(), // device-local display choice; never part of the synced profile
   timer: null,         // rest countdown between sets — { left, total, endsAt, forIdx, ready?, paused? }
                        // forIdx: index of the active entry whose set started the rest (undefined when unknown)
                        // paused: held at `left`; `endsAt` means nothing until resumeRest sets it again
@@ -142,6 +147,11 @@ export const useUI = create((set, get) => ({
   },
   closeSheet(id) { set(s => ({ sheets: s.sheets.filter(x => x.id !== id) })) },
   closeAll() { set({ sheets: [] }) },
+
+  setShowSyncBanner(show) {
+    try { localStorage.setItem(SYNC_BANNER_KEY, show ? '1' : '0') } catch { /* keep the in-memory choice */ }
+    set({ showSyncBanner: !!show })
+  },
 
   toast(msg) {
     set({ toastMsg: msg })

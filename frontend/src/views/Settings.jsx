@@ -49,6 +49,8 @@ export default function Settings() {
   const credsChanged = () => { passkeys.load(); setCredsV(v => v + 1) }
   const { update, importConflict, importBackup, setUnit, resetEverything: resetAll, setUser, pullState, pushState, resetDemo } = useStore()
   const toast = useUI(s => s.toast)
+  const showSyncBanner = useUI(s => s.showSyncBanner)
+  const setShowSyncBanner = useUI(s => s.setShowSyncBanner)
   const fileRef = useRef(null)
   const importRef = useRef(null)
   const wakeOK = wakeLockSupported()
@@ -539,6 +541,14 @@ export default function Settings() {
           ))}
         </div>
       </div>
+    </Section>
+
+    {/* The sync banner is a per-device display choice; the full status remains in Settings. */}
+    <Section title={t('Display')}>
+      <Row icon="cloud" iconTint="var(--blue)" title={t('Show sync banner')}
+        subtitle={t('Show connection and sync status at the top of the screen.')}>
+        <Switch checked={showSyncBanner} onChange={setShowSyncBanner} />
+      </Row>
     </Section>
 
     {/* ---------- data: fill it, bring things over, back it up, wipe it ---------- */}
