@@ -6,6 +6,7 @@ import Workout from './Workout.jsx'
 import { nextPrescription } from '../lib/progression.js'
 import { buildCombinedEntries } from '../lib/session-merge.js'
 import { buildCompletedWorkout } from '../lib/finish-workout.js'
+import { isoOf } from '../lib/format.js'
 import { isWarmupRow } from '../lib/workout-model.js'
 
 const mocks = vi.hoisted(() => {
@@ -1949,6 +1950,13 @@ describe('the reference line: last time or best set', () => {
     expect(line().textContent).toMatch(/^Best set \(.+\): 80×5$/)
     await act(async () => { line().dispatchEvent(new dom.Event('click', { bubbles: true })) })
     expect(mocks.S.logRef).toBe('last')
+  })
+
+  it('shows the calendar age of the last workout in weeks and days', async () => {
+    const today = new Date()
+    const eightDaysAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 8)
+    await mount([exercise('plain-bench', [false], { rid: 'A' })], 0, { workouts: [session(isoOf(eightDaysAgo), 'A', 55, 8)] })
+    expect(line().textContent).toMatch(/^Last time \(1 week, 1 day ago\): 55×8$/)
   })
 
   it('is not there before the exercise was ever logged', async () => {

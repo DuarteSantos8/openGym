@@ -8,7 +8,7 @@ import { exOr, betterWeight } from '../lib/exercises.js'
 import { usesBar } from '../lib/bar.js'
 import { loadKindFor, baseWeightFor, inventoryFor, rowLoad, sameLoad, plateDelta, dropGrid } from '../lib/plates.js'
 import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, freestyleConfig, defaultConfig, setsDoneActive, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, stepEffort, capEffort, cascadeWeight, insertWarmupRow, removeRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor, setsRepsOf } from '../lib/history.js'
-import { fmtNum, fmtPlate, exerciseNameText, fmtDate, todayISO, exCount, DAYN } from '../lib/format.js'
+import { fmtNum, fmtPlate, exerciseNameText, fmtDate, fmtAgoDate, todayISO, exCount, DAYN } from '../lib/format.js'
 import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
 import { beep, vibrate, unlock } from '../lib/sound.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
@@ -207,7 +207,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // An exercise logged before only in another mode (reps then, a hold today) has a last time but
   // no best set to hold today's rows against. The line stays and says so: gone, it took the
   // switch back to "Last time" with it, reachable then only from Settings or another card.
-  const refHead = ref ? `${refBest ? t('Best set') : t('Last time')} (${fmtDate(ref.d)}): ` : ''
+  const refHead = ref ? `${refBest ? t('Best set') : t('Last time')} (${fmtAgoDate(ref.d)}): ` : ''
   const refSets = ref ? (refBest ? [ref.set] : ref.sets).map(s => setLabel(entry.id, s, ref.target, speedUnitOf(S))) : []
   const refText = ref ? refHead + refSets.join(', ') : refBest && last ? t('Best set: nothing logged this way yet') : null
   const refAction = refBest ? t('Show last time instead') : t('Show your best set instead')

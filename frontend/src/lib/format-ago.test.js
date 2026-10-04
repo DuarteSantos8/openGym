@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { fmtAgo, changeCount, setsWorkCount, fmtDur } from './format.js'
+import { fmtAgo, fmtAgoDate, changeCount, setsWorkCount, fmtDur } from './format.js'
 import { _setLangState } from './i18n-core.js'
 import ar from '../locales/ar.js'
 import uk from '../locales/uk.js'
@@ -17,6 +17,24 @@ describe('fmtAgo', () => {
 
   it('a time ahead of the clock (the clock was set back) reads as now, not "in 5 minutes"', () => {
     expect(fmtAgo(now + 5 * 60000, now)).toBe('now')
+  })
+})
+
+describe('fmtAgoDate', () => {
+  afterEach(() => _setLangState('en', {}, null, null))
+
+  it('uses calendar days and combines weeks, months and remaining days', () => {
+    const now = new Date(2026, 8, 23, 12)
+    expect(fmtAgoDate('2026-09-22', now)).toBe('yesterday')
+    expect(fmtAgoDate('2026-09-17', now)).toBe('6 days ago')
+    expect(fmtAgoDate('2026-09-16', now)).toBe('1 week ago')
+    expect(fmtAgoDate('2026-09-15', now)).toBe('1 week, 1 day ago')
+    expect(fmtAgoDate('2026-08-24', now)).toBe('1 month ago')
+    expect(fmtAgoDate('2026-08-16', now)).toBe('1 month, 8 days ago')
+  })
+
+  it('does not count a future calendar date as time ago', () => {
+    expect(fmtAgoDate('2026-09-24', new Date(2026, 8, 23, 12))).toBe('today')
   })
 })
 

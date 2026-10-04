@@ -82,6 +82,68 @@ export function fmtAgo(ts, now = Date.now()) {
   catch { return new Date(ts).toLocaleString(dateLocale()) }
 }
 
+// Workout history has calendar dates, not timestamps: compare local day numbers so a workout
+// yesterday still reads as yesterday at any time of day or across daylight-saving changes.
+const agoDateFormatterCache = new Map()
+function agoDateFormatters(locale) {
+  if (!agoDateFormatterCache.has(locale)) {
+    agoDateFormatterCache.set(locale, {
+      relative: new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }),
+      past: new Intl.RelativeTimeFormat(locale, { numeric: 'always' }),
+      list: new Intl.ListFormat(locale, { style: 'long', type: 'unit' }),
+      units: new Map(),
+    })
+  }
+  return agoDateFormatterCache.get(locale)
+}
+
+export function fmtAgoDate(iso, now = new Date()) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '')
+  if (!match) return fmtDate(iso, false, true)
+  const [, year, month, day] = match.map(Number)
+  const date = new Date(year, month - 1, day)
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return fmtDate(iso, false, true)
+
+  const dayNumber = (y, m, d) => Date.UTC(y, m, d) / 86400000
+  const days = Math.max(0, dayNumber(now.getFullYear(), now.getMonth(), now.getDate()) - dayNumber(year, month - 1, day))
+  const locale = dateLocale()
+  let formatters
+  try { formatters = agoDateFormatters(locale) }
+  catch { return fmtDate(iso, false, true) }
+  if (days < 7) {
+    try { return formatters.relative.format(-days, 'day') }
+    catch { return fmtDate(iso, false, true) }
+  }
+
+  let left = days
+  const units = []
+  const scales = days >= 365 ? [['year', 365], ['month', 30], ['day', 1]]
+    : days >= 30 ? [['month', 30], ['day', 1]] : [['week', 7], ['day', 1]]
+  for (const [unit, size] of scales) {
+    const count = Math.floor(left / size)
+    if (count) {
+      if (!formatters.units.has(unit)) formatters.units.set(unit, new Intl.NumberFormat(locale, { style: 'unit', unit, unitDisplay: 'long' }))
+      units.push(formatters.units.get(unit).format(count))
+    }
+    left %= size
+  }
+
+  try {
+    const past = formatters.past.formatToParts(-0, 'day')
+    const countAt = past.findIndex(part => part.type === 'integer')
+    const prefix = countAt < 0 ? '' : past.slice(0, countAt).map(part => part.value).join('')
+    const sample = past.map(part => part.value).join('')
+    if (!formatters.units.has('day')) formatters.units.set('day', new Intl.NumberFormat(locale, { style: 'unit', unit: 'day', unitDisplay: 'long' }))
+    const quantity = formatters.units.get('day').format(0)
+    const quantityAt = sample.indexOf(quantity)
+    const suffix = quantityAt < 0 ? '' : sample.slice(quantityAt + quantity.length)
+    const list = formatters.list.format(units)
+    return prefix + list + suffix
+  } catch {
+    return fmtDate(iso, false, true)
+  }
+}
+
 /* ---------------------------------------------------------------- week start --
    Where a week begins is a local convention, not a fact: most of Europe starts on
    Monday, most of the Americas and much of Asia on Sunday. The app used to assume
