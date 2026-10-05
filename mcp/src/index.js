@@ -41,7 +41,7 @@ for (const t of [...TOOLS, ...WRITE_TOOLS]) {
         const code = err.code || 'ERROR'
         return {
           isError: true,
-          content: [{ type: 'text', text: `${code}: ${err.message}` }]
+          content: [{ type: 'text', text: JSON.stringify({ error: code, message: err.message, ...(err.rev === undefined ? {} : { state_version: err.rev, state: err.state }) }) }]
         }
       }
     }

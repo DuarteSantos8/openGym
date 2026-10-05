@@ -82,6 +82,7 @@ Eleven read tools and three write tools:
 | `muscle_balance` | Which muscles I've trained this week/month/all-time, ranked + which I've neglected. |
 | `search_exercises` | Find exercise IDs, including custom exercises, for a proposed plan. |
 | `list_exercises` | Browse the full built-in and custom exercise catalogue in pages (default 100, maximum 200). Follow `next_offset` until null. |
+| `get_profile_state` | Read the synced profile and state_version to propose a revision-confirmed change. |
 | `create_training_plan` | Add routines and optionally assign them to specific weekdays (requires a paired token). |
 | `edit_routine` | Edit a routine's name, icon, progression policy, or ordered exercise list by ID (requires a paired token). |
 | `delete_routine` | Delete a routine and clear its schedule assignments, preserving workout history (requires a paired token). |
@@ -179,3 +180,42 @@ their own 92 tests in `frontend/src/lib/*.test.js`.
 ## License
 
 AGPL-3.0-or-later, same as openGym.
+
+## Shared write path and revision confirmation
+
+Read `get_profile_state`, show the proposed operation to the user, and pass the returned
+`state_version` as `expected_version` to `create_training_plan`, `edit_routine`, or
+`delete_routine`. Deletion also requires `confirm: true`. A conflict returns the current
+revision and state: read again and obtain fresh confirmation. No write tool retries an
+operation against changed data. Read-only stdio still needs no bearer token.
+
+The tools authenticate the paired token against the selected local profile and call
+`POST /api/routines/mutate` with `{ operation, baseRev, input }`. `operation` is `create`,
+`edit` or `delete`; `input` is the tool arguments without `expected_version`. The API runs
+shared validators and transformations from `frontend/src/lib/routine-mutations.js` (a
+checked-in generated copy under `api/` keeps the Docker context self-contained). Creating
+uses `routines` and optional `weekdays`; editing uses `routine_id` plus supplied fields;
+deleting uses `routine_id` and `confirm: true`. Repeated exercise slots retain their own
+settings in order; an empty weekday list clears that day.
+
+Sync and operations commit through `commitProfile` and `api/state-store.js`: a profile
+lock, `_rev` compare-and-swap, monotonic reset markers, device-local `active` stripping,
+cache eviction and media bookkeeping. Operation timestamps advance on the server.
+Browser sync retains its existing caller timestamp and legacy unconditional-write support.
+If a writer holds the lock, the API returns 503 without writing. A crash can leave a
+`state-<uid>.json.lock`: stop all writers, verify no writer remains, remove only that lock,
+and restart. A live lock is never stolen because of its age.
+
+### Integration with remote MCP (#314)
+
+The shared store builds on mzspicoli's `api/state-store.js` proposal in #314. Remote OAuth
+identity, scopes and the Settings destructive-operation approval queue stay transport
+responsibilities. After those checks, remote routine tools should call the same authenticated
+operation endpoint with the confirmed revision; they must not write a whole profile or
+reimplement routine rules. OAuth tokens are not paired API tokens: verified delegation from
+the remote connector to the API must be wired explicitly in #314. That transport integration
+and the maintainer's final tool/schema naming decision remain pending.
+
+Regenerate the server helper with `node scripts/build-routine-assets.mjs`; CI checks it
+with `--check` in the frontend job, which already installs Vite/rolldown. The API has no
+new runtime dependency. History migration remains the separately reviewed draft #326.

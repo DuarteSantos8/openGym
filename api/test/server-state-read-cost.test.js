@@ -173,8 +173,9 @@ test('the three hot-path state reads all go through readStateCached', () => {
     assert.match(body, /readStateCached\(user\.id\)/, `${key} should read through the cache`);
     assert.doesNotMatch(body, /readState\(user\.id\)/, `${key} parses the whole document again`);
   }
-  // GET /api/data hands out the document itself and PUT compares against it — both want the real
-  // thing, uncached.
+  // GET /api/data hands out the document itself. PUT now delegates its uncached
+  // compare-and-swap to the shared commit boundary, rather than reading the cache.
   assert.match(handler('GET /api/data'), /readState\(user\.id\)/);
-  assert.match(handler('PUT /api/data'), /readState\(user\.id\)/);
+  assert.match(handler('PUT /api/data'), /commitProfile\(user\.id/);
+  assert.doesNotMatch(handler('PUT /api/data'), /readStateCached\(/);
 });

@@ -31,6 +31,8 @@ import {
 } from './passkeys-store.js';
 import { createDeviceLink, findDeviceLink, burnDeviceLink, dropDeviceLinks } from './device-link.js';
 import { createMediaStore, mediaLimits, mediaConfig, MediaError, HASH_RE } from './media.js';
+import { changeState } from './state-store.js';
+import { mutateRoutines } from './routine-mutations.js';
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
@@ -125,6 +127,27 @@ const lastSyncOf = (u, S) => Math.max(S?._ts || 0, u?.lastPull || 0) || null;
 function readState(uid) {
   try { return JSON.parse(fs.readFileSync(stateFile(uid), 'utf8')); } catch { return null; }
 }
+// One API-owned commit boundary for sync, routine operations and history migration.
+// Remote transports pass an already authenticated profile to this boundary rather
+// than define a second set of revision/reset/cache/media rules.
+function commitProfile(uid, expectedRev, producer, options = {}) {
+  const saved = changeState(stateFile(uid), expectedRev, producer, options);
+  if (saved.committed) {
+    stateCache.delete(uid);
+    if (MEDIA_ON) {
+      try { MEDIA.noteState(uid, saved.state); } catch (e) { console.error('media noteState', e); }
+    }
+  }
+  return saved;
+}
+function mutationError(res, error) {
+  if (error.code === 'CONFLICT') return json(res, 409, { error: 'conflict', rev: error.version, state: error.state });
+  if (error.code === 'BUSY') return json(res, 503, { error: error.message });
+  if (error.code === 'EINVAL') return json(res, 400, { error: error.message });
+  if (error.code === 'ENOENT') return json(res, 404, { error: error.message });
+  throw error;
+}
+
 // An entry is an object a reader can dereference, and `records` is every entry of a stored
 // list. PUT /api/data drops the rest on the way in — a null workout, a routine that is a
 // number — and refuses a list that is not an array at all, but a file written before it did
@@ -2002,6 +2025,22 @@ const routes = {
     json(res, 200, { rev: readStateCached(user.id)?._rev || 0 });
   },
 
+  'POST /api/routines/mutate': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const body = await readBody(req);
+    if (!Number.isSafeInteger(body.baseRev) || body.baseRev < 0) return json(res, 400, { error: 'baseRev required' });
+    let result, saved;
+    try {
+      saved = commitProfile(user.id, body.baseRev, state => {
+        if (!Array.isArray(state.routines)) throw Object.assign(new Error('no valid synced routines'), { code: 'ENOENT' });
+        result = mutateRoutines(state, body.operation, body.input, crypto.randomUUID);
+        return state;
+      }, { stamp: true });
+    } catch (e) { return mutationError(res, e); }
+    json(res, 200, { ...result, rev: saved.version, ts: saved.state._ts });
+  },
+
   'PUT /api/data': async (req, res) => {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
@@ -2030,46 +2069,13 @@ const routes = {
     // such an entry carries nothing worth keeping, whereas a 400 would strand a client whose own
     // copy is already malformed — it keeps re-sending the same document and never syncs again.
     for (const k of ['workouts', 'routines']) if (Array.isArray(body.state[k])) body.state[k] = records(body.state[k]);
-    // Conditional write: a `baseRev` that is not the current revision means this client last
-    // read an older document — another device has written since — and the copy it is about to
-    // push would silently drop that write. The current document travels back with the 409, so
-    // the client can merge and try again without a second request. No `baseRev` (a client from
-    // before revisions, or a deliberate replace such as a backup import) overwrites, as before.
-    // readState and atomicWrite are synchronous with nothing awaited between them, so the
-    // compare-and-write is atomic for this process.
-    const cur = readState(user.id);
-    const curRev = cur?._rev || 0;
-    if (body.baseRev != null && body.baseRev !== curRev) {
-      return json(res, 409, { error: 'conflict', rev: curRev, state: cur });
-    }
-    delete body.state.active;              // in-progress workouts stay device-local
-    // "Reset everything" stamps the profile (`resetAt`, with `resetIds`: what it wiped). The stamp
-    // only moves forward: a write without it, or with an older one — a client from before it, a
-    // backup restored over the profile — keeps the stored stamp. Otherwise every device that saw
-    // the reset would take that copy for one older than the reset, and wipe it again on its next
-    // merge (frontend/src/lib/sync-merge.js).
-    const storedReset = Number(cur?.resetAt) || 0;
-    if (storedReset > (Number(body.state.resetAt) || 0)) {
-      body.state.resetAt = cur.resetAt;
-      if (cur.resetIds && typeof cur.resetIds === 'object') body.state.resetIds = cur.resetIds;
-      else delete body.state.resetIds;
-    }
-    body.state._rev = curRev + 1;          // server-owned; whatever the client sent is ignored
-    atomicWrite(stateFile(user.id), JSON.stringify(body.state));
-    // The stat cache cannot see this write on its own: mtime granularity is 4 ms here (ext4 on
-    // this kernel — 3901 of 3999 back-to-back same-size writes shared one timestamp), and a
-    // `_rev` going from 7 to 8 does not change the file's size, so two writes inside one 4 ms
-    // tick are the same (mtimeMs, size) key. A reader that sampled between them would then serve
-    // the old revision until some later write happened to land on a different tick. This is the
-    // only writer of a state file in the tree, so evicting here is the whole fix.
-    stateCache.delete(user.id);
-    // Starts (or stops) the grace clock of every stored file this write stopped (or started)
-    // referencing. Bookkeeping only: the state is already saved, so nothing here may turn a
-    // successful write into an error.
-    if (MEDIA_ON) {
-      try { MEDIA.noteState(user.id, body.state); } catch (e) { console.error('media noteState', e); }
-    }
-    json(res, 200, { ok: true, ts: body.state._ts || null, rev: body.state._rev });
+    // Legacy clients without baseRev retain their unconditional replacement behavior;
+    // revision-aware clients and operation endpoints share the same locked commit.
+    let saved;
+    try {
+      saved = commitProfile(user.id, body.baseRev ?? undefined, () => body.state, { corruptAsEmpty: true });
+    } catch (e) { return mutationError(res, e); }
+    json(res, 200, { ok: true, ts: saved.state._ts || null, rev: saved.version });
   },
 
   'GET /api/push/public-key': async (req, res) => json(res, 200, { key: vapid.publicKey }),
