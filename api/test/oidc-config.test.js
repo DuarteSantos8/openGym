@@ -193,6 +193,20 @@ test('every refusal points the reader at the self-hosting documentation, because
   }
 });
 
+test('the documentation those refusals point at actually describes every variable they can name', () => {
+  /* Asserting the pointer exists cannot notice that its target is empty, and a sentence sending
+     an operator to a manual that never mentions the variable is worse than no sentence at all. */
+  const manual = fs.readFileSync(new URL('../../docs/SELF_HOSTING.md', import.meta.url), 'utf8');
+  const sample = fs.readFileSync(new URL('../../.env.example', import.meta.url), 'utf8');
+  for (const name of ['OIDC_ISSUER', 'OIDC_CLIENT_ID', 'OIDC_CLIENT_SECRET', 'OIDC_REDIRECT_URI', 'OIDC_SCOPES', 'OIDC_NAME']) {
+    assert.ok(manual.includes(name), `${name} is refused by name but never documented`);
+    assert.ok(sample.includes(name), `${name} has no line in the sample environment file`);
+  }
+  /* ORIGIN is not an OIDC_ variable but becomes required by one, which is the connection an
+     operator reading about either has no other way to find. */
+  assert.match(manual, /ORIGIN/, 'the ORIGIN requirement is not documented');
+});
+
 test('a credential in the redirect URI is refused without the value being echoed back, the way the issuer check does it', () => {
   const r = readConfig({ env: env({ OIDC_REDIRECT_URI: 'https://someone:hunter2@gym.example.com/api/oidc/callback' }) });
   assert.equal(r.on, false);
