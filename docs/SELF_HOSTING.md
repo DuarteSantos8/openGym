@@ -64,7 +64,9 @@ The standalone mobile app (`docs/MOBILE.md`) sidesteps this entirely for its "co
 server" mode: instead of a passkey ceremony (impossible from inside its WebView, which never
 runs at your real hostname), it pairs by redeeming a short one-time code — minted from
 Settings → "Pair the mobile app" in an already signed-in browser tab — for a bearer token
-sent as an `Authorization` header rather than a cookie. Two consequences worth knowing if
+sent as an `Authorization` header rather than a cookie. Where the instance also offers sign-in
+through an external identity provider (below), the app can sign in through it directly instead
+of pairing, for the same bearer token. Two consequences worth knowing if
 you're poking at the API directly:
 
 - `POST /api/pair/create` (needs a session) and `POST /api/pair/redeem` (doesn't) implement
@@ -340,7 +342,11 @@ bundled `docker-compose.yml` it reads the one the web container passes on: the c
 overwrites `X-Forwarded-For`. If you put another reverse proxy in front of the web container, every
 visitor may arrive as that proxy — then the per-address limits apply to everyone together: one
 client sending wrong passwords can pause password sign-in for everybody for up to 15 minutes at a
-time (passkeys keep working), and the per-name pause is what protects the passwords. Behind
+time (passkeys keep working), and the per-name pause is what protects the passwords. With an
+identity provider configured, the departures to it (signing in, linking an identity, confirming a
+change there) have a limit of their own, 60 a minute per address, so one client can also keep
+those paused for everybody for as long as it keeps sending; that limit never pauses password
+sign-in, and password sign-in never pauses it. Behind
 Cloudflare, `CF_CONNECTING_IP` (see the activity log above) passes the real visitor on. Running
 the API without the web container, leave `TRUST_PROXY` off unless whatever is in front overwrites
 (not appends to) `X-Forwarded-For`.
@@ -351,6 +357,131 @@ that only has a password cannot sign in.
 
 The mobile app keeps pairing: someone with a password signs in to the website with it and pairs
 from Settings → "Pair the mobile app", as with a passkey.
+
+### Sign-in through an external identity provider (optional)
+
+Alongside passkeys, openGym can offer sign-in through an OIDC provider you already run or trust —
+Keycloak, Authelia, PocketID, or any other issuer that speaks the standard discovery/JWKS/token
+endpoint protocol. Off unless you set:
+
+```bash
+OIDC_ISSUER=https://id.example.com
+OIDC_CLIENT_ID=opengym-instance
+```
+
+Every variable below is read from the environment at start-up, the same way `PASSWORD_LOGIN` and
+everything else in this guide is — none of them is a build-time Vite variable, so a prebuilt image
+picks up a changed value on its next restart, no rebuild needed.
+
+- `OIDC_ISSUER` is the on-switch — the provider's base address, with no trailing slash, from
+  which its endpoints and signing keys are read. Plain `http` is accepted only on `localhost`,
+  `127.0.0.1` and `[::1]`. A half-set or malformed block never half-enables the feature: the
+  instance boots, passkey sign-in is unaffected, `GET /api/config` carries no `oidc` key, and one
+  line naming the variable at fault is written to the container log. An identity linked at one
+  issuer signs in only while that same issuer is configured: removing `OIDC_ISSUER`, or pointing
+  it at another provider, leaves such identities listed in Settings as no longer signing in —
+  they stop counting as a way in, so make sure those people have a passkey (or a password)
+  first — and their owners can remove them there.
+- `OIDC_CLIENT_ID` is required once `OIDC_ISSUER` is set — what the provider knows this instance
+  by.
+- `OIDC_CLIENT_SECRET` is optional: a public client authenticating with proof of key exchange
+  alone is left blank, which self-hosted providers permit. It is never reported by any route.
+- `OIDC_REDIRECT_URI` defaults to `ORIGIN` + `/api/oidc/callback`. `ORIGIN` is required once
+  `OIDC_ISSUER` is set — the redirect address is derived from it, and a guessed one would be
+  refused at the provider as unregistered rather than reported here. Set `OIDC_REDIRECT_URI`
+  explicitly only when serving openGym under a subpath (see below).
+- `OIDC_SCOPES` (default `openid profile email`) must include `openid`, or the provider returns no
+  identity token for this instance to verify.
+- `OIDC_NAME` is the label the sign-in screen shows for the provider; it defaults to the issuer's
+  hostname.
+
+**What has to reach what.** The browser makes the round trip, so it has to reach both this
+instance and the provider. This instance itself only ever reaches the provider outbound, and only
+for three things: reading its discovery document, fetching its published signing keys, and
+exchanging an authorization code for an identity token. The provider never needs to reach this
+instance — the return trip is the browser's own navigation back to `OIDC_REDIRECT_URI`. A public
+provider therefore needs a real, publicly registered, browser-trusted HTTPS hostname in that
+address, but this instance does not have to be reachable from the internet itself for a
+self-hosted issuer on the same network to talk to it outbound.
+
+**Google as the provider.** Create an OAuth 2.0 Client ID of type **Web application** in the
+Google Cloud Console, and add this instance's exact callback address —
+`https://your-domain/api/oidc/callback`, or the subpath-aware address below — as an **Authorized
+redirect URI**. `OIDC_ISSUER=https://accounts.google.com`; `OIDC_CLIENT_ID` and
+`OIDC_CLIENT_SECRET` come from that client. The consent screen's **Testing** status is the trap:
+while it stays in Testing (the default for a new project), only the test users listed by e-mail on
+that screen can complete a sign-in — anyone else is refused by Google itself, before this instance
+ever sees them. Publish the app, or add every person who should be able to sign in as a test user.
+
+**A self-hosted issuer instead — Keycloak, Authelia, PocketID, or any other issuer that speaks the
+standard discovery/JWKS/token-endpoint protocol.** `OIDC_ISSUER` is that issuer's own base address
+(a Keycloak realm's URL, for example), and the client is registered there the same way: an
+OAuth/OIDC client, confidential if you set `OIDC_CLIENT_SECRET` or public and relying on PKCE
+alone if you leave it blank, with this instance's callback address as its one registered redirect
+URI.
+
+**Under a subpath deployment** (`BASE_PATH` set, see *Serving openGym under a subpath* below),
+register the provider's redirect URI with that path included, and set `OIDC_REDIRECT_URI` to that
+same address explicitly — for example `OIDC_REDIRECT_URI=https://example.com/gym/api/oidc/callback`
+for a `BASE_PATH=/gym` deployment. Every return address this feature builds — the sign-in screen,
+and Settings after a link or a provider proof — follows that same path rather than assuming the
+site root.
+
+**The phone app (`docs/MOBILE.md`) uses this same client and the same registered redirect URI** —
+it opens the system browser rather than its own WebView, but the provider still only ever returns
+to this instance's own callback, which hands the result to the app from there. Nothing extra has
+to be registered at the provider for it: no second client, no second redirect URI. The phone
+needs this instance reachable over HTTPS for it, exactly like any other sign-in through the
+provider.
+
+An identity signing in for the first time is asked to confirm a name and, on an invite-only
+instance, an invite code — the same one-time cost passkey signup has. A returning identity signs
+straight in, into the same account, the same session shape a passkey mints, so "sign out
+everywhere" ends it exactly the same way.
+
+**Linking an identity to an existing profile, from Settings.** Settings → Account lists a linked
+identity alongside passkeys and the password, once one is configured. Linking asks for the
+owner's proof first — a passkey, the password, or (once an identity is already linked) another
+sign-in at the provider — and only then buys a one-shot ticket that lets the browser leave for the
+provider; a session cookie alone starts nothing. The same identity can be linked to only one
+profile at a time. It counts as a way in exactly like a passkey or the password: it cannot be
+removed, and none of the profile's other ways in can be removed either, while it is the only one
+left.
+
+**What the provider proof checks, and what that means here.** Wherever the app asks you to
+confirm a change with your passkey or your password, a profile with a linked identity can instead
+sign in again at the provider. On every issuer, that proof always has to be for the identity
+actually linked to your profile — no other account at the same provider can stand in for it. On
+an issuer that reports when the sign-in happened (`auth_time`), the proof also has to be recent:
+one made from before the request is refused (`stale-sign-in`). On an issuer that does not report
+`auth_time` at all — Google is one, as a fact about that issuer rather than something that might
+change with a future update — the proof shows possession of the linked provider account, not a
+fresh sign-in: someone at an unlocked device that already holds both a live openGym session and a
+live session at the provider could complete it too. The request that asks for a fresh sign-in
+travels through the browser like any other request parameter, so this also holds on an issuer that
+reports `auth_time` only when specifically asked for it — whoever controls that browser can leave
+the request out, which leaves the same possession-only proof.
+
+**Every code the app can show, and what to check:**
+
+| Code | Where it appears | Cause / what to check |
+|---|---|---|
+| `provider-misconfigured` | sign-in, link, or a provider proof | `OIDC_ISSUER` and its required siblings are not all set, or one of them failed its own check — see the container log for the exact variable named. |
+| `provider-unreachable` | sign-in, link, or a provider proof | This instance could not reach the provider's discovery document, signing keys or token endpoint. Check the provider is up and reachable from the container, and that `OIDC_ISSUER` is exactly what it calls itself. |
+| `state-expired` / `state-unknown` | sign-in, link, or a provider proof | The round trip took too long, was replayed, or came back without the cookie it departed with (a mismatched cookie domain, a proxy that drops cookies, a browser that blocked a cookie mid-redirect). Try again from Settings or the sign-in screen. |
+| `token-invalid` | sign-in, link, or a provider proof | The provider answered with an error, or the identity token it returned failed verification (wrong signing key, wrong nonce, wrong audience). Check the client id and secret registered with the provider match `OIDC_CLIENT_ID`/`OIDC_CLIENT_SECRET`. |
+| `locked` | sign-in, link, or a provider proof | This address navigated to the departures to the provider (signing in, linking and proving share one limit) more than 60 times in a minute. The limit is their own: password sign-in and device codes do not spend it, and it never pauses them. A request a current browser labels as not a top-level navigation, such as an image on another page served over HTTPS, is refused and not counted; a real navigation, or a request without that label (plain http, an older browser), counts toward this limit only. It clears once the minute that burst started in is over; if it keeps coming back, something at that address keeps sending them. Behind a proxy, check `TRUST_PROXY` is set only when the proxy overwrites `X-Forwarded-For`, or every visitor shares one limit. |
+| `invite-invalid` | sign-in, confirming a new profile's name | The invite code entered there is wrong, already used, or revoked, on an instance running `INVITE_ONLY=1`. |
+| `account-disabled` | sign-in | The profile this identity already belongs to has been disabled by an admin. |
+| `not-signed-in` | link | The link departure was reached without a signed-in session; ask Settings to link again. |
+| `session-changed` | link or a provider proof | The session that started the link or the proof is no longer the one that came back — signed out, "sign out everywhere" ran, or a switch to another profile mid-flight. Sign in again and retry from Settings. |
+| `ticket-invalid` | link or a provider proof | The one-shot ticket Settings minted was missing, already spent, or over 60 seconds old by the time the browser reached the departure route. Ask Settings for a fresh one. |
+| `identity-collision` | link | That identity is already linked to a different profile on this instance. Sign out and sign in with it directly to reach that profile instead. |
+| `profile-linked` | link | This profile already has a linked identity; only one can be linked at a time. Unlink the current one first. |
+| `identity-mismatch` | a provider proof | The sign-in at the provider was for an account other than the one linked to this profile. Sign in at the provider as the linked identity. |
+| `stale-sign-in` | a provider proof | The issuer reported a sign-in from before the request left for it — check it honours `prompt=login` and `max_age=0`, and that this instance's clock and the issuer's agree. |
+
+The [Troubleshooting](#troubleshooting) table below points here for any of these seen on screen.
 
 ## 5. Fitting it into an existing stack
 
@@ -686,6 +817,7 @@ browser (see section 2).
 |---|---|
 | No passkey prompt on my phone | You're on `http://` or an IP, not HTTPS. Set up a domain (section 3). |
 | "verification failed" on login | `RP_ID`/`ORIGIN` don't match the URL in the address bar. See the section above — start with what the server logged on startup. |
+| A code after `#err=`, `link-err=` or `proof-err=` | See the code table under *Signing in through an external identity provider* (section 4). |
 | Media didn't download | `docker compose logs media`. Re-run `docker compose up -d`, or run `./scripts/fetch-media.sh`. |
 | Port 8080 already used | Set `WEB_PORT=9090` in `.env` (and update `ORIGIN` for local testing). |
 | A photo or video will not upload ("refused as too large", or it stops partway) | A proxy in front caps the body or cuts the request off: see [Photos and videos](#photos-and-videos-of-custom-exercises) for the body size and timeouts it needs. |
