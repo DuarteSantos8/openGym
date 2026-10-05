@@ -27,6 +27,22 @@ info:
     sent to it. Its routes set exactly the same cookie. With the flag off (the default)
     every one of them answers 404.
 
+    With `OIDC_ISSUER` and its required siblings set, the instance also offers sign-in through
+    one external OpenID Connect provider (tag `auth`). The `/api/oidc/*` routes are
+    browser-navigated `GET`s that answer with redirects, carrying a short code in the URL
+    fragment on a refusal; a successful sign-in sets exactly the same session cookie a passkey
+    does. An identity is attached to an existing profile only through a link its already
+    signed-in owner proves first (`POST /api/account/identities/link-ticket` buys a one-shot
+    ticket; only `GET /api/oidc/link/start` carrying it ever reaches the provider) — a session
+    cookie alone starts nothing. A linked identity counts as a way in for the last-way-in rule
+    only while its provider stays configured, and a sign-in at that provider as the profile's own
+    linked identity is a third answer wherever a change asks for the owner's proof
+    (`identityProof`, routed the same way through `POST /api/account/identities/proof-ticket` and
+    `GET /api/oidc/proof/start`): the verified identity must always be the linked one, and when
+    the provider reports the time of that sign-in (`auth_time`), it must not predate the request
+    (`stale-sign-in` otherwise). With nothing configured, every OIDC route answers as disabled and
+    `GET /api/config` carries no `oidc` key.
+
     ### Throttling
     The `password` routes are counted per client address: at most 60 requests a minute
     across them, and wrong answers (a password, a reset code, an invite code on password
@@ -67,6 +83,13 @@ info:
     password of its own, and could otherwise sign a visitor into it (login CSRF).
     Neither are the device-link routes: a link is redeemed on the app's own origin,
     the only one a passkey can be created for.
+
+    Sign-in through an external provider changes nothing here: the exempt list above is
+    unchanged, its browser-navigated routes (`/api/oidc/start`, `/api/oidc/link/start`,
+    `/api/oidc/proof/start`, `/api/oidc/callback`) are `GET`s the check above already lets
+    through, and the state-changing routes it adds (minting a link ticket, minting a proof
+    ticket, removing the linked identity) sit under the same origin check as every other
+    `/api/account/*` route.
 
     ### Environment-dependent behavior
     - `INVITE_ONLY=1` — registration requires a valid invite code (minted by an admin).
@@ -257,6 +280,21 @@ paths:
                       always wins; a tag the app has no translation for is ignored.
                   media:
                     $ref: '#/components/schemas/MediaConfig'
+                  oidc:
+                    type: object
+                    description: >-
+                      ABSENT unless the instance has a complete, valid OIDC configuration —
+                      absence, not a false value, is how "no external provider exists here" is
+                      expressed, so a client cannot branch on a key that is not there. A half-set
+                      configuration is reported the same way as none at all. Carries a display
+                      label only; the client secret is never exposed on this or any other route.
+                    required: [name]
+                    properties:
+                      name:
+                        type: string
+                        description: >-
+                          The label a sign-in screen shows for the configured provider
+                          (`OIDC_NAME`, defaulting to the issuer's hostname).
               examples:
                 anonymous: { value: { invite_only: true, allow_guest: false } }
                 signedInNoCoach: { value: { invite_only: true, allow_guest: false, coach: null } }
@@ -267,6 +305,7 @@ paths:
                     coach: { enabled: true, provider: compatible, providerLabel: "OpenAI-compatible endpoint", authMode: instance, community: false }
                 passwordLogin: { value: { invite_only: true, allow_guest: false, password_login: true } }
                 media: { value: { invite_only: false, allow_guest: true, media: { imageMB: 2, gifMB: 8, videoMB: 40, videoSec: 60, quotaMB: 200, workouts: true } } }
+                withProvider: { value: { invite_only: true, allow_guest: false, oidc: { name: 'Example ID' } } }
 
   /api/me:
     get:
@@ -492,6 +531,401 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
               example: { error: "user missing" }
+
+  /api/oidc/start:
+    get:
+      tags: [auth]
+      operationId: oidcStart
+      summary: Begin sign-in through the configured OIDC provider
+      description: |
+        Navigated to directly by the browser — never called by script, and it never answers a
+        JSON body. Every outcome of a navigation, including every failure, is a redirect: success sends the
+        browser on to the provider's own authorization endpoint; a failure sends it back to the
+        app root with a short code in the URL fragment (`#err=<code>`), which no browser sends
+        back to any server, so a failure code never reaches a log or an access record.
+
+        Takes nothing at all from the request: no query string, no body, no cookie. Which
+        identity is returning is unknowable until the provider has answered, so an invite-only
+        instance gates the creation of a profile at `POST /api/oidc/confirm` rather than the
+        departure here, where a check would also fall on people who already have a profile.
+
+        Absent or invalid OIDC configuration answers `provider-misconfigured`; a provider that
+        cannot be reached for its discovery document answers `provider-unreachable`.
+
+        Only a top-level navigation departs. A request whose `Sec-Fetch-Dest` is present and not
+        `document`, or whose `Sec-Fetch-Mode` is present and not `navigate` (an image, a script,
+        a fetch from any page), is answered `403` with no body and no cookie, and is not counted.
+        On an instance with a provider configured, every other request counts against a
+        per-address window of 60 a minute that only the three departures (this route,
+        `GET /api/oidc/link/start` and `GET /api/oidc/proof/start`) share. It is not the budget
+        of the password and device-link routes, so no departure can pause those. Past it the
+        route answers `locked` without minting a departure, until the minute the window opened
+        in has passed.
+      security: []
+      responses:
+        '403':
+          description: Not a top-level navigation. No body, no cookie, nothing counted.
+        '302':
+          description: >-
+            The provider's own authorization endpoint on success, or the app root with a short
+            code in the fragment on any failure.
+          headers:
+            Location:
+              description: >-
+                The provider's authorization endpoint on success, or `/#err=<code>` on failure
+                (one of `provider-misconfigured`, `provider-unreachable`, `locked`).
+              schema: { type: string }
+            Set-Cookie:
+              description: >-
+                The departure cookie, binding this browser to the flow state minted for this
+                attempt. Set on success; expired immediately on any failure.
+              schema: { type: string }
+
+  /api/oidc/link/start:
+    get:
+      tags: [auth]
+      operationId: oidcLinkStart
+      summary: Begin attaching an identity to the caller's own profile
+      description: |
+        Navigated to directly by the browser, never called by script, and it never answers a
+        JSON body — like `GET /api/oidc/start`, every outcome of a navigation is a redirect. Unlike that route, a
+        session alone starts nothing here: the request must carry `?ticket=<ticket>`, a one-shot
+        value `POST /api/account/identities/link-ticket` minted after the owner proved it is them.
+        The ticket is bound to the exact profile and session that asked for it, and lives for 60
+        seconds. It is taken (spent) once the session presenting it is known to be that one and
+        before anything else can fail; a presentation under any other session, or none, spends
+        nothing.
+
+        Every failure sends the browser back to `/#/settings?link-err=<code>`, never to the
+        sign-in screen: `not-signed-in` (no session), `ticket-invalid` (missing, already spent,
+        expired, or not a link ticket), `session-changed` (the ticket names a different profile or
+        session than the one presenting it), `provider-misconfigured`, `provider-unreachable`, or
+        `locked` (past the departures' own per-address window, the one `GET /api/oidc/start`
+        spends). Anything but a top-level navigation is answered `403` before the session or the
+        ticket is looked at, as on `GET /api/oidc/start`, so it spends nothing.
+      security: []
+      parameters:
+        - name: ticket
+          in: query
+          required: true
+          schema: { type: string }
+          description: The one-shot value from POST /api/account/identities/link-ticket.
+      responses:
+        '403':
+          description: Not a top-level navigation. No body, no cookie, the ticket untouched.
+        '302':
+          description: >-
+            The provider's own authorization endpoint on success, or `/#/settings?link-err=<code>`
+            on any failure.
+          headers:
+            Location:
+              schema: { type: string }
+            Set-Cookie:
+              description: >-
+                The departure cookie, binding this browser to the flow state minted for this
+                attempt. Set on success; expired immediately on any failure.
+              schema: { type: string }
+
+  /api/oidc/proof/start:
+    get:
+      tags: [auth]
+      operationId: oidcProofStart
+      summary: Begin confirming a change by signing in at the provider as the linked identity
+      description: |
+        Navigated to directly by the browser, never called by script, and every outcome of a
+        navigation is a redirect. The request must carry `?ticket=<ticket>`, a one-shot value
+        `POST /api/account/identities/proof-ticket` minted for one named change. The ticket is
+        bound to the exact profile and session that asked for it, and taken (spent) once the
+        session presenting it is known to be that one and before anything else can fail; a
+        presentation under any other session, or none, spends nothing.
+
+        The authorization request carries `prompt=login` and `max_age=0`, asking the provider to
+        authenticate the person again, and no `claims` request parameter. Nothing rests on those
+        two: they travel through the browser and an issuer may ignore them. What the return leg
+        on `GET /api/oidc/callback` checks is the identity the token names and, when the issuer
+        reports it, the time of the sign-in (`auth_time`).
+
+        Every failure sends the browser back to `/#/settings?proof-err=<code>`: `state-expired`
+        (the ticket is missing, already spent, expired, or not a proof ticket), `state-unknown`
+        (the ticket names a different profile or session than the one presenting it, or no
+        session presented it), `provider-misconfigured`, `provider-unreachable`, or `locked` (past
+        the departures' own per-address window, the one `GET /api/oidc/start` spends). A failure
+        is audited as `auth.proof.fail` with the change it was for (`act`), except a request with
+        no session, which records nothing. Anything but a top-level navigation is answered `403`
+        before the session or the ticket is looked at, as on `GET /api/oidc/start`, so it spends
+        nothing and records nothing.
+      security: []
+      parameters:
+        - name: ticket
+          in: query
+          required: true
+          schema: { type: string }
+          description: The one-shot value from POST /api/account/identities/proof-ticket.
+      responses:
+        '403':
+          description: Not a top-level navigation. No body, no cookie, the ticket untouched.
+        '302':
+          description: >-
+            The provider's own authorization endpoint on success, or
+            `/#/settings?proof-err=<code>` on any failure.
+          headers:
+            Location:
+              schema: { type: string }
+            Set-Cookie:
+              description: >-
+                The departure cookie, binding this browser to the flow state minted for this
+                attempt. Set on success; expired immediately on any failure.
+              schema: { type: string }
+
+  /api/oidc/callback:
+    get:
+      tags: [auth]
+      operationId: oidcCallback
+      summary: Return leg of sign-in through the provider
+      description: |
+        The address the provider sends the browser back to once the person authenticates there.
+        Also navigated to directly rather than called by script, authenticated only by the
+        departure cookie `GET /api/oidc/start` set, and — like that route — every outcome is a
+        redirect, never a JSON body.
+
+        The departure cookie is consumed before anything else runs, so a replayed callback
+        address is refused without ever reaching the provider. A known identity — one already
+        linked to a profile — is signed in immediately, exactly as a passkey login would be, and
+        lands on the app root with a session cookie and no fragment at all. An identity this
+        instance has never seen is parked for a moment instead and sent on to
+        `/#oidc=confirm`, where `GET /api/oidc/pending` and `POST /api/oidc/confirm` finish the
+        sign-in by giving the new profile a name. Any other failure answers `#err=<code>` with one
+        of `state-unknown`, `state-expired`, `token-invalid`, `provider-unreachable` (the
+        provider's own reported error and a token that fails verification both fold into
+        `token-invalid`) or `account-disabled` (the identity is linked to a profile that no longer
+        exists or has been disabled).
+
+        A refusal reached before any departure is consumed (no provider configured, no departure
+        cookie or two of them, a state that does not match it, or a state nothing is waiting
+        under) cannot tell which attempt it ends. While the browser is signed in it answers
+        `/#/settings?oidc-err=<code>` (one of `provider-misconfigured`, `state-unknown`), since a
+        signed-in browser was linking or confirming a change; otherwise the app root, as above.
+        A departure that existed and ran out still answers where it started, with
+        `state-expired`.
+
+        This same address also serves the return leg of `GET /api/oidc/link/start`: the
+        store the consumed departure was held in says which of the attempts this is, never
+        anything on the request. A successful link answers `/#/settings?link=ok` with no session cookie —
+        the owner was already signed in, and this leg can neither mint a session nor create a
+        profile. A link failure answers `/#/settings?link-err=<code>` instead of the app root, with
+        one of `not-signed-in`, `ticket-invalid`, `session-changed` (the session that returns no
+        longer matches the one that departed — signed out, signed out everywhere, or switched
+        profile mid-flight), `provider-misconfigured`, `provider-unreachable`, `state-unknown`,
+        `state-expired`, `token-invalid`, `identity-collision` (that identity is already linked to
+        a different profile), or `profile-linked` (this profile already has a different one).
+
+        It serves the return leg of `GET /api/oidc/proof/start` too. A proof never mints a session,
+        creates a profile or writes anything to disk. The session that returns must be the one that
+        departed, and two rules decide the rest, in this order: the token must name exactly the
+        identity linked to this profile (always, on every issuer), and when the token carries
+        `auth_time` it must not predate the departure by more than two minutes of clock skew. A
+        token from the linked identity without `auth_time` is accepted as proof of possession of
+        the linked account. Success answers `/#/settings?proof=ok` and sets an HttpOnly cookie
+        addressing a one-shot proof, good for five minutes, for that profile, that session, that
+        linked identity and the one change it was requested for; `identityProof: true` in
+        `OwnerProof` spends it. A failure answers `/#/settings?proof-err=<code>` with one of
+        `state-unknown` (the session changed mid-flight), `state-expired`, `token-invalid`,
+        `identity-mismatch` (the provider signed in another account, or the profile has no linked
+        identity any more), `stale-sign-in` (the issuer reported a sign-in older than the request),
+        `provider-unreachable` or `provider-misconfigured`, audited as `auth.proof.fail`.
+
+        The code is kept inside the URL fragment, the way the client's own router reads it. A
+        fragment is never sent to any server, so a failure code never reaches a log or an access
+        record.
+      security: []
+      parameters:
+        - name: code
+          in: query
+          required: false
+          schema: { type: string }
+          description: Authorization code, supplied by the provider on success.
+        - name: state
+          in: query
+          required: false
+          schema: { type: string }
+          description: >-
+            Echoed back by the provider; compared against the departure cookie's own value and
+            never used as a lookup key by itself.
+        - name: error
+          in: query
+          required: false
+          schema: { type: string }
+          description: The provider's own error code, supplied instead of `code` when it refuses.
+      responses:
+        '302':
+          description: >-
+            A sign-in return: the app root with a session on a known identity, `/#oidc=confirm`
+            on an unknown one, or the app root with a failure code in the fragment. A link return:
+            `/#/settings?link=ok` on success, or `/#/settings?link-err=<code>` on failure.
+            A proof return: `/#/settings?proof=ok` on success, or `/#/settings?proof-err=<code>`
+            on failure.
+          headers:
+            Location:
+              description: >-
+                Sign-in: `/` on a known identity, `/#oidc=confirm` on an unknown one, or
+                `/#err=<code>` on failure (one of `state-unknown`, `state-expired`,
+                `token-invalid`, `provider-unreachable`, `account-disabled`). Link: `/#/settings?link=ok`
+                on success, or `/#/settings?link-err=<code>` on failure (one of `not-signed-in`,
+                `ticket-invalid`, `session-changed`, `provider-misconfigured`,
+                `provider-unreachable`, `state-unknown`, `state-expired`, `token-invalid`,
+                `identity-collision`, `profile-linked`). Proof: `/#/settings?proof=ok` on success,
+                or `/#/settings?proof-err=<code>` on failure (one of `state-unknown`,
+                `state-expired`, `token-invalid`, `identity-mismatch`, `stale-sign-in`,
+                `provider-unreachable`, `provider-misconfigured`). Unattributed while signed in:
+                `/#/settings?oidc-err=<code>`.
+              schema: { type: string }
+            Set-Cookie:
+              description: >-
+                Sign-in: a session cookie on a known identity, or a pending-identity cookie
+                addressing the waiting profile-creation screen on an unknown one. Link: never a
+                session cookie. Proof: never a session cookie; on success the HttpOnly proof
+                cookie addressing the one-shot proof. In every case the departure cookie is expired.
+              schema: { type: string }
+
+  /api/oidc/pending:
+    get:
+      tags: [auth]
+      operationId: oidcPending
+      summary: Peek the name seeded for a waiting sign-in
+      description: >-
+        Reads the display name `GET /api/oidc/callback` seeded for a verified identity that has
+        not yet become a profile, without spending the attempt it addresses — a refreshed
+        create-profile screen can call this again and still find the same sign-in waiting.
+        Authenticated by the waiting-identity cookie that route set, never by the ordinary session
+        cookie or bearer token.
+      security: []
+      responses:
+        '200':
+          description: A sign-in is waiting for a name.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    description: >-
+                      The seeded display name — from the identity's claimed name, its preferred
+                      username, or the local part of its address, in that order, or empty if none
+                      of those were present.
+        '401':
+          description: No waiting-identity cookie, or the attempt it names has expired.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [error, code]
+                properties:
+                  error: { type: string }
+                  code:
+                    type: string
+                    enum: [state-unknown, state-expired]
+                    description: >-
+                      A short, stable value the client maps to its own translated sentence —
+                      `state-unknown` for a missing or already-spent cookie, `state-expired` for
+                      one that named a real attempt that has since timed out.
+              example: { error: "sign-in expired — start again", code: "state-unknown" }
+
+  /api/oidc/confirm:
+    post:
+      tags: [auth]
+      operationId: oidcConfirm
+      summary: Name and create the profile for a waiting sign-in
+      description: |
+        The only write path a sign-in through the provider has, and the only step an invite code
+        gates: signing in with a profile that already exists never asks for one. Validates the
+        submitted name and, on an invite-only instance, the submitted invite code before touching
+        the waiting attempt at all, so a mistyped one of either can be retried without losing the
+        attempt or making a second trip to the provider. A second submission for the same identity
+        (two tabs, a doubled click) resolves to the one profile it already created rather than
+        making another. The invite code is burned at the moment the profile is created. Signs the
+        new profile in exactly as a passkey registration would. Origin-checked like every other
+        state-changing route: not in the CSRF exemption list.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  maxLength: 40
+                  description: Display name for the new profile (trimmed, max 40 chars).
+                code:
+                  type: string
+                  description: >-
+                    Invite code — required (and validated) only when the instance runs with
+                    INVITE_ONLY. Compared case-insensitively, exactly as /api/register/verify
+                    compares it. A refusal leaves the waiting attempt intact so the code can be
+                    corrected on the same screen.
+      responses:
+        '200':
+          description: >-
+            Registered and signed in. The session cookie is set and the waiting-identity cookie is
+            expired.
+          headers:
+            Set-Cookie:
+              description: >-
+                Session cookie (see /api/register/verify) alongside an expiry for the
+                waiting-identity cookie.
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { $ref: '#/components/schemas/SessionUser' }
+        '400':
+          description: '`name` missing/empty.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "name required" }
+        '401':
+          description: No waiting-identity cookie, or the attempt it names has expired.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [error, code]
+                properties:
+                  error: { type: string }
+                  code:
+                    type: string
+                    enum: [state-unknown, state-expired]
+                    description: >-
+                      A short, stable value the client maps to its own translated sentence.
+              example: { error: "sign-in expired — start again", code: "state-unknown" }
+        '403':
+          description: >-
+            The identity already resolved to a disabled profile, or — on an invite-only instance
+            — the invite code submitted with this request is not valid. On the invite refusal the
+            waiting-identity cookie is deliberately left in place, so the code can be corrected and
+            resubmitted against the same attempt.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [error, code]
+                properties:
+                  error: { type: string }
+                  code:
+                    type: string
+                    enum: [account-disabled, invite-invalid]
+                    description: >-
+                      A short, stable value the client maps to its own translated sentence.
+              examples:
+                disabled: { value: { error: "this account has been disabled", code: "account-disabled" } }
+                inviteGone: { value: { error: "this invite is no longer valid", code: "invite-invalid" } }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
 
   /api/logout:
     post:
@@ -828,7 +1262,12 @@ paths:
                   email:
                     oneOf: [{ type: string }, { type: 'null' }]
                     description: The e-mail this profile may sign in with (POST /api/account/email), or null.
-              example: { set: true, setAt: "2026-09-23T10:00:00.000Z", passkeys: 1, name: "Ada", nameTaken: false, email: "ada@example.com" }
+                  identity:
+                    type: boolean
+                    description: >-
+                      A linked identity can confirm this profile's owner and would still sign it
+                      in afterwards (its provider is configured and the profile has one linked).
+              example: { set: true, setAt: "2026-09-23T10:00:00.000Z", passkeys: 1, name: "Ada", nameTaken: false, email: "ada@example.com", identity: false }
         '401': { $ref: '#/components/responses/Unauthorized' }
     post:
       tags: [password]
@@ -887,7 +1326,8 @@ paths:
       operationId: removeAccountPassword
       summary: Remove this profile's password
       description: >-
-        Refused while the profile has no passkey: the password would be its last way in.
+        Refused while nothing else could still sign this profile in — no passkey, no linked
+        identity whose provider is configured: the password would be its last way in.
         Otherwise the body carries the same proof setting one takes — `current`, the
         password itself, or a passkey assertion made for this request (`cid` from
         `POST /api/login/options`, `credential` signed by one of *this* profile's
@@ -1079,7 +1519,10 @@ paths:
       summary: Remove one passkey
       description: |
         Refused while it is the profile's last way in: its only passkey, and no password
-        that can sign in (a password counts only while `PASSWORD_LOGIN` is on). Otherwise
+        that can sign in (a password counts only while `PASSWORD_LOGIN` is on) or linked
+        identity that can (an identity counts only while the issuer it was linked at is the one
+        configured).
+        Otherwise
         the body carries the same proof adding one takes (`OwnerProof`): a session alone is
         never enough, since a stolen cookie could otherwise choose which of the owner's
         passkeys is left. Any of the profile's passkeys may confirm, the one being removed
@@ -1254,6 +1697,150 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
               example: { error: "passkey not found", code: "not-found" }
+
+  /api/account/identities:
+    delete:
+      tags: [auth]
+      operationId: removeAccountIdentity
+      summary: Remove the identity an external provider linked to this profile
+      description: |
+        At most one identity per profile, so there is nothing to select between. Refused while it
+        is the profile's last way in: nothing else could sign it in again once it is gone.
+        Otherwise the body carries the same proof removing a passkey takes (`OwnerProof`): a
+        session alone is never enough, since a stolen cookie must not choose which of the owner's
+        ways in is left. The 404 and 409 refusals come before the proof is checked, and the
+        last-way-in rule is checked again after it. Audited as `auth.identity.remove`; a refused
+        proof as `auth.proof.fail`. Neither ever carries the subject, the address or the issuer.
+
+        Sessions are not tied to the identity that opened them, so a session it already opened
+        carries on; `POST /api/logout/all` ends those.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OwnerProof' }
+      responses:
+        '200':
+          description: Removed. The account state as it is now.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PasskeyList'
+                  - type: object
+                    properties:
+                      ok: { type: boolean, const: true }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/ProofRefused' }
+        '404':
+          description: This profile has no linked identity.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "no identity is linked to this profile", code: "not-linked" }
+        '409':
+          description: It is the profile's last way in.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "the linked identity is the only way into this profile", code: "last-way-in" }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Busy' }
+
+  /api/account/identities/link-ticket:
+    post:
+      tags: [auth]
+      operationId: createIdentityLinkTicket
+      summary: Prove ownership and mint a one-shot ticket for linking an identity
+      description: |
+        Linking an external identity to an existing profile is proven before the browser ever
+        leaves for the provider: a session alone is never enough to start it, the same bar a
+        device-link code is held to. The body carries the same proof `DELETE /api/account/identities`
+        takes (`OwnerProof`). A successful proof buys a ticket — a 43-character, one-shot,
+        60-second-lived value bound to this profile and to the exact session that asked for it —
+        which only `GET /api/oidc/link/start?ticket=<ticket>` can spend to reach the provider.
+
+        Refused before any proof is asked when there is nothing a ticket could ever be used for:
+        no external provider is configured (`provider-off`), or this profile already has a linked
+        identity (`profile-linked`). A failed proof is audited as `auth.proof.fail` with
+        `act: identity-link`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OwnerProof' }
+      responses:
+        '200':
+          description: A one-shot link ticket, good for 60 seconds.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticket: { type: string, description: 'Pass as `?ticket=` to GET /api/oidc/link/start.' }
+              example: { ticket: "9f3q…" }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/ProofRefused' }
+        '409':
+          description: '`provider-off` (no external provider configured) or `profile-linked` (already has one).'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "this profile already has a linked identity", code: "profile-linked" }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Busy' }
+
+  /api/account/identities/proof-ticket:
+    post:
+      tags: [auth]
+      operationId: createIdentityProofTicket
+      summary: Mint a one-shot ticket for confirming a change at the provider
+      description: |
+        The first step of the third proof `OwnerProof` accepts: a sign-in at the provider as this
+        profile's own linked identity, for a profile whose only way in may be that identity. The
+        ticket names the one change the proof will be good for (`act`) and grants nothing by
+        itself — it only lets this session leave for the provider through
+        `GET /api/oidc/proof/start?ticket=<ticket>`, and the sign-in there is what proves anything.
+        So no other proof is asked for it. One-shot, 60 seconds, bound to this profile and to the
+        exact session that asked for it; nothing about it is written to disk.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [act]
+              properties:
+                act:
+                  type: string
+                  enum: [email, email-remove, password, password-remove, passkey-add, passkey-remove, device-link, identity-link, identity-remove]
+                  description: The change the proof will confirm; a proof made for one is refused for any other.
+            example: { act: passkey-add }
+      responses:
+        '200':
+          description: A one-shot proof ticket, good for 60 seconds.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticket: { type: string, description: 'Pass as `?ticket=` to GET /api/oidc/proof/start.' }
+              example: { ticket: "9f3q…" }
+        '400':
+          description: '`act-invalid`: `act` is missing or not a change that takes the owner''s proof.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "that change cannot be confirmed with the provider", code: "act-invalid" }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409':
+          description: '`not-linked`: no identity that counts as a way in (none linked, or no provider configured).'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "no identity is linked to this profile", code: "not-linked" }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Busy' }
 
   /api/account/device-link:
     post:
@@ -2127,8 +2714,9 @@ paths:
       description: |
         Removes the account for good: the user record, their passkeys, their push
         subscriptions, their live presence, their training history file, their uploaded
-        photos and videos (`DATA_DIR/uploads/<uid>/`) and any Coach credential stored for
-        them. Not reversible — `/api/admin/user/disable` is the
+        photos and videos (`DATA_DIR/uploads/<uid>/`), any Coach credential stored for
+        them, and the identity linked through an external provider together with the address
+        kept with it (that identity can then sign up again as a new profile). Not reversible — `/api/admin/user/disable` is the
         reversible one. An admin cannot delete their own account, and the last admin
         cannot be deleted. Audited by name, since the id stops meaning anything.
       requestBody:
@@ -2971,7 +3559,9 @@ components:
         counts — none is set, or `PASSWORD_LOGIN` is off — so a passkey has to confirm),
         `passkey` (the assertion did not verify, belongs to another profile, or was made
         for another challenge, one handed out for another ceremony or one already used),
-        `current-required` or `current-wrong`.
+        `current-required`, `current-wrong`, or `identity-proof` (no proof made at the
+        provider to spend, or one already spent, expired, or made for another change, another
+        session or an identity no longer linked).
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
@@ -3033,23 +3623,53 @@ components:
           description: >-
             The profile has a password and `PASSWORD_LOGIN` is on, so `current` can prove
             an addition or a removal.
+        identity:
+          oneOf:
+            - type: object
+              properties:
+                providerName: { oneOf: [{ type: string }, { type: 'null' }], description: "The configured provider's display name; null when the identity is not usable." }
+                email: { oneOf: [{ type: string }, { type: 'null' }], description: 'The address the provider vouched for, display-only.' }
+                linkedAt: { type: string, description: ISO timestamp. }
+                usable:
+                  type: boolean
+                  description: >-
+                    Whether it still signs in: only while the issuer it was linked at is the one
+                    configured. One that is not counts for nothing in `lastWayIn`, cannot confirm a
+                    change, and can still be removed.
+            - type: 'null'
+          description: >-
+            The identity linked to this profile through an external provider, or null when
+            none is linked. Never the issuer or the subject.
         lastWayIn:
           type: boolean
-          description: Removing any one passkey would be refused (409 `last-way-in`).
+          description: >-
+            Removing the profile's only remaining passkey, password or linked identity would
+            be refused (409 `last-way-in`) — the same count every removal route reads.
       example:
         passkeys: [{ id: "g3Xq…", name: "Laptop", created: "2026-09-23T10:00:00.000Z", lastUsed: "2026-09-23T10:00:00.000Z", transports: [internal] }]
         password: false
+        identity: null
         lastWayIn: true
 
     OwnerProof:
       type: object
       description: >-
-        Either a passkey assertion made for this request (`cid` + `credential`), or the
+        Either a passkey assertion made for this request (`cid` + `credential`), a sign-in at
+        the provider as the profile's own linked identity (`identityProof: true`), or the
         profile's current password (`current`) — which counts only while `PASSWORD_LOGIN`
         is on. Each assertion is good for one request: its challenge is spent by it.
       properties:
         cid: { type: string, description: 'From POST /api/login/options.' }
         credential: { $ref: '#/components/schemas/WebAuthnAuthenticationCredential' }
+        identityProof:
+          type: boolean
+          description: >-
+            `true` spends the one-shot proof `GET /api/oidc/callback` left behind after
+            `POST /api/account/identities/proof-ticket` and `GET /api/oidc/proof/start`,
+            carried by its HttpOnly cookie. Accepted only for the change it was requested for,
+            under the session that requested it, while the identity that made it is still the
+            one linked to this profile; spent whatever the outcome. Audited, like the change it
+            confirms, with the proof kind `identity`.
         current: { type: string }
 
     SessionUser:

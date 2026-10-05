@@ -31,6 +31,12 @@ import {
 } from './passkeys-store.js';
 import { createDeviceLink, findDeviceLink, burnDeviceLink, dropDeviceLinks } from './device-link.js';
 import { createMediaStore, mediaLimits, mediaConfig, MediaError, HASH_RE } from './media.js';
+import * as oidcConfig from './oidc/config.js';
+import * as oidcFlow from './oidc/flow.js';
+import { createIssuer } from './oidc/issuer.js';
+import { verifyIdToken, signInFreshness } from './oidc/verify.js';
+import { exchangeCode } from './oidc/token.js';
+import { findIdentity, identityOf, addIdentity, identityView, unlinkIdentity, dropIdentities, pruneIdentities } from './identities-store.js';
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
@@ -50,6 +56,20 @@ const ALLOW_GUEST = !/^(0|false|no|off)$/i.test(process.env.ALLOW_GUEST || '');
 // every account that opts in, so an instance has to ask for it. While it is off every password
 // route answers 404 and the app shows none of it; hashes already stored stay where they are.
 const PASSWORD_LOGIN = /^(1|true|yes|on)$/i.test(process.env.PASSWORD_LOGIN || '');
+// OIDC sign-in is configured entirely from the environment, so "off" is the absence of a variable
+// and nothing has to be stored to represent it. Read once, here, like every other variable: a
+// running process's environment cannot change, so a changed value takes a restart. Shape only —
+// no discovery request, no key-set request, no probe of any kind, so a provider having a bad
+// morning can neither delay nor fail a boot.
+const OIDC = oidcConfig.readConfig();
+const OIDC_PUBLIC = oidcConfig.publicConfig();
+// Fail visible, not fail closed. A typo in an optional block must not take passkey sign-in down
+// with it: on a shared instance, refusing to boot over one character would lock everybody out.
+// So the provider stays off, the boot completes, and the reason is said once, by name. Nothing is
+// said when nothing was configured — an instance whose owner never asked for this must not be
+// told about a feature it does not have, and a message every owner sees is a message nobody
+// reads. The client secret is never part of the sentence.
+if (!OIDC.on && OIDC.error) console.error('OIDC sign-in is off:', OIDC.error, 'Passkey sign-in is unaffected.');
 // The language the sign-in screen, and every profile that never picked one, starts in (#303) —
 // for an instance whose people share a language. Only a tag's shape is checked here; the app
 // matches it against the languages it has and ignores one it does not know. Unset, it is left
@@ -109,6 +129,20 @@ function atomicWrite(file, content, mode) {
   fs.writeFileSync(tmp, content, mode ? { mode } : undefined);
   fs.renameSync(tmp, file);
 }
+// An identity row whose profile no longer exists would hold on to its address and refuse that
+// identity on every later sign-in or link, so such rows (and malformed ones) are dropped once,
+// here. Nothing is written when there is nothing to drop. Fail visible, not fail closed: this runs
+// on every start, provider configured or not, and whatever state db.json is in, a clean-up of
+// optional data must never keep passkey or password sign-in from starting. The line it logs
+// carries counts only, never an identity's issuer, subject or address.
+try {
+  const userIds = Array.isArray(db.users) ? new Set(db.users.map(u => u?.id).filter(id => id !== undefined)) : null;
+  const { orphaned, malformed } = pruneIdentities(db, userIds);
+  if (orphaned || malformed) {
+    console.error(`identity rows dropped at start-up: ${orphaned} without a profile, ${malformed} malformed`);
+    try { saveDb(); } catch (e) { console.error('db save failed', e.message); }
+  }
+} catch (e) { console.error('identity clean-up skipped:', e.message); }
 const stateFile = uid => path.join(DATA, 'state-' + uid.replace(/[^a-zA-Z0-9_-]/g, '') + '.json');
 // When a profile last fetched its document (GET /api/data). The document's own `_ts` moves only
 // on a push, so a device that only ever read — a second phone, a profile that trains elsewhere
@@ -478,14 +512,21 @@ function cookieToken(req) {
   }
   return null;
 }
-// The session behind a request: { user, exp, bearer } — `bearer` when it came in an Authorization
-// header (a paired phone) rather than the cookie — or null for no valid session at all.
-function sessionOf(req) {
+// The token this request presents, cookie first (a browser) then the Authorization header (a
+// paired phone) — exactly the order sessionOf() has always checked — and the cookie it came in,
+// if any. Factored out so a second caller (sessionBinding, below) can hash the very same value
+// without re-deriving which one wins.
+function presentedToken(req) {
   // The paired mobile app has no cookie jar shared with the API's origin, so it carries the same
   // signed token in an Authorization header instead — same payload, same verification below.
   const auth = req.headers.authorization || '';
   const cookie = cookieToken(req);
-  const tok = cookie || (auth.startsWith('Bearer ') ? auth.slice(7).trim() : null);
+  return { tok: cookie || (auth.startsWith('Bearer ') ? auth.slice(7).trim() : null), cookie };
+}
+// The session behind a request: { user, exp, bearer } — `bearer` when it came in an Authorization
+// header (a paired phone) rather than the cookie — or null for no valid session at all.
+function sessionOf(req) {
+  const { tok, cookie } = presentedToken(req);
   if (!tok) return null;
   const payload = verifySig(tok);
   if (!payload) return null;
@@ -499,6 +540,14 @@ function sessionOf(req) {
   const claimed = ver === undefined ? 0 : Number(ver);
   if (!Number.isInteger(claimed) || claimed !== sessionVersion(user)) return null;
   return { user, exp: +exp, bearer: !cookie };
+}
+// Ties a one-shot link ticket to the exact session that asked for it, not merely to the profile:
+// a ticket carried to another browser, or presented under another session of the same account (a
+// second device, a session renewed after "sign out everywhere"), must start nothing. Hashed rather
+// than stored raw, for the same reason a session cookie itself is never written to the log.
+function sessionBinding(req) {
+  const { tok } = presentedToken(req);
+  return tok ? crypto.createHash('sha256').update(tok).digest('base64url') : null;
 }
 function readSession(req) {
   return sessionOf(req)?.user || null;
@@ -522,6 +571,26 @@ function sessionCookie(user) {
 const clearCookie = COOKIE === LEGACY_COOKIE
   ? [expireCookie(LEGACY_COOKIE)]
   : [expireCookie(COOKIE), expireCookie(LEGACY_COOKIE)];
+// Two transitional cookies for a sign-in through the provider, under the identical conditional
+// above: ST_COOKIE carries the value that binds a departure to this browser (the pre-redirect
+// flow-store key), PENDING_COOKIE addresses a verified identity waiting for a name (the
+// post-callback flow-store key, before the account exists). With the __Host- prefix the browser
+// itself guarantees each is host-only, for the same reason the session cookie above wants it: a
+// sibling subdomain cannot plant one that shadows it. Both are HttpOnly for the same reason too — a
+// value readable by page script is a value an injected script can read out of another visitor's
+// in-flight sign-in — and neither is ever consulted by readSession(): both address a one-shot entry
+// in oidcFlows, never a session.
+const ST_COOKIE = SECURE ? '__Host-oidc_st' : 'oidc_st';
+const PENDING_COOKIE = SECURE ? '__Host-oidc_pending' : 'oidc_pending';
+// A third one, under the same conditional and for the same reasons: PROOF_COOKIE addresses a
+// one-shot proof that the owner just signed in at the provider as the profile's linked identity,
+// waiting to be spent by the one change it was requested for (proveOwner). HttpOnly and host-only
+// like the two above, and never consulted by readSession(): it grants nothing on its own, and the
+// entry it addresses is taken, not read, by the first request that presents it.
+const PROOF_COOKIE = SECURE ? '__Host-oidc_proof' : 'oidc_proof';
+// Same attribute string sessionCookie's own cookie uses, minus the session's own lifetime — and
+// Max-Age matches oidcFlow's own entry lifetime, so a cookie never outlives the entry it addresses.
+const transitionalCookie = (name, value) => `${name}=${value}; Path=/; Max-Age=${oidcFlow.FLOW_TTL_MS / 1000}; HttpOnly;${SECURE} SameSite=Lax`;
 
 /* ---------- CSRF ---------- */
 // SameSite=Lax keeps the session cookie off a genuinely cross-*site* request. It does not keep it
@@ -539,6 +608,11 @@ const clearCookie = COOKIE === LEGACY_COOKIE
 // The password routes are deliberately NOT here. A name and a password are a credential too,
 // but one a hostile page can know — its own — so an exempt POST /api/login/password would let
 // any site sign a visitor into the attacker's account and collect what they log (login CSRF).
+//
+// No OIDC route belongs here either, and the absence is deliberate, not forgotten: the
+// browser-navigated ones are GETs, which the check below short-circuits before this list is even
+// consulted, and every state-changing one — naming a new profile (POST /api/oidc/confirm),
+// minting a link or a proof ticket, removing a linked identity — keeps the origin check.
 const CSRF_EXEMPT = new Set([
   'POST /api/register/options', 'POST /api/register/verify',
   'POST /api/login/options', 'POST /api/login/verify',
@@ -603,6 +677,129 @@ function makePairCode() {
   return code;
 }
 setInterval(() => { for (const [k, v] of pairings) if (v.exp < Date.now()) pairings.delete(k); }, 60000).unref();
+
+/* ---------- OIDC sign-in plumbing ---------- */
+// One one-shot, TTL-bound store per kind of entry, never one store shared by all of them. Every
+// key a route reads can only ever address the kind that route expects: a departure's `state`
+// travels through the provider and the address bar, and presented as a waiting identity, a ticket
+// or a proof it must find nothing, rather than an entry of another shape read as if it were one.
+// Separate stores also keep a flood of one kind (anonymous sign-in departures) from evicting
+// another (a ticket, a proof or an identity waiting for its name), since each store makes room
+// only among its own entries.
+const oidcFlows = {
+  signIn: oidcFlow.createFlowStore(),       // state -> { nonce, verifier }
+  link: oidcFlow.createFlowStore(),         // state -> { nonce, verifier, uid, sid }
+  proof: oidcFlow.createFlowStore(),        // state -> { nonce, verifier, uid, sid, act, departedAt }
+  linkTicket: oidcFlow.createFlowStore(),   // ticket -> { uid, sid }
+  proofTicket: oidcFlow.createFlowStore(),  // ticket -> { uid, sid, act }
+  pending: oidcFlow.createFlowStore(),      // id -> { iss, sub, email, seededName }
+  proven: oidcFlow.createFlowStore()        // id -> { uid, sid, act, sv, iss, sub }
+};
+setInterval(() => { for (const store of Object.values(oidcFlows)) store.sweep(); }, 60000).unref();
+// The three kinds of departure the callback can be returning from, by the store each is held in.
+const DEPARTURES = ['signIn', 'link', 'proof'];
+// Consumes the departure `state` addresses, whichever of the three it is, and says which one it
+// was. A miss still names the kind when the entry existed and ran out, so a slow trip through
+// the provider answers on the screen it started from.
+function takeDeparture(state) {
+  let expired = null;
+  for (const mode of DEPARTURES) {
+    const taken = oidcFlows[mode].take(state);
+    if (taken.value) return { mode, value: taken.value, reason: null };
+    if (taken.reason === 'state-expired') expired = mode;
+  }
+  return { mode: expired, value: null, reason: expired ? 'state-expired' : 'state-unknown' };
+}
+// A link ticket's own lifetime, distinct from FLOW_TTL_MS: a ticket is spent by
+// the navigation that immediately follows minting it, never by a round trip to the provider, so a
+// minute is generous for that one redirect and short enough that a leaked ticket is worthless by
+// the time anyone else could reach it.
+const TICKET_TTL_MS = 60000;
+// How long a proof made at the provider waits for the change it was requested for. The same
+// lifetime as a flow entry and the transitional cookie that addresses it, so the cookie never
+// outlives the proof and the proof never outlives the screen that is about to spend it.
+const PROOF_TTL_MS = oidcFlow.FLOW_TTL_MS;
+
+// Built once rather than per request: the discovery cache, the key-set cache and the failure
+// cooldown all live inside the handle createIssuer returns, and a fresh one per request would
+// throw all three away on every single sign-in attempt. Nothing is fetched until a route asks.
+const oidcIssuer = OIDC.on ? createIssuer({ issuer: OIDC.issuer }) : null;
+
+// The one place in this file that builds a `Location` for a browser-navigated OIDC route's
+// failure or success: `start` and `callback` are both GETs, not fetch()/XHR calls with a catch
+// block waiting on the other end, so a JSON body answered to a navigation just renders as the
+// blank-looking page this failure surface exists to avoid. `appPath` is the public path this app
+// is served under (a subpath deployment's registered redirect URI is the one place that path is
+// written down); `tail` is always a fixed relative literal supplied by the caller below — never
+// anything from the request — which is what keeps this from becoming a redirector anyone can aim.
+function browserRedirect(res, appPath, tail, cookies) {
+  res.writeHead(302, {
+    'Location': `${appPath}${tail}`,
+    'Cache-Control': 'no-store',
+    'Set-Cookie': cookies
+  });
+  res.end();
+}
+// A refusal answered as a redirect carrying a short code the frontend maps to a sentence, one
+// destination per kind of attempt. `cfg` is the configuration read at start-up, valid or not —
+// appPath is only ever trusted from a valid configuration, and the site root otherwise, since a
+// misconfigured instance has no registered redirect URI to derive one from. The code rides in the
+// fragment, which is never sent to any server, so it never reaches a log or an access record; the
+// diagnosis is for stderr only, so an operator can see what actually failed without it ever
+// reaching the browser.
+const redirectFail = (label, tail) => (res, cfg, code, diagnosis) => {
+  if (diagnosis) console.error(`OIDC ${label} failed:`, diagnosis);
+  return browserRedirect(res, cfg?.appPath || '/', tail + code, expireCookie(ST_COOKIE));
+};
+// A sign-in: the app root, where the sign-in screen reads it.
+const oidcRedirectFail = redirectFail('sign-in', '#err=');
+// A link: an owner who was already signed in belongs back on the screen that started the
+// attempt, not on the sign-in screen, in the query the client's own router reads with the screen.
+const linkRedirectFail = redirectFail('link', '#/settings?link-err=');
+// A proof: back on Settings, where the change waiting for it was asked for, under its own key so
+// the screen can tell a failed proof from a failed link.
+const proofRedirectFail = redirectFail('proof', '#/settings?proof-err=');
+// A return refused before it is known which departure it belongs to: no provider configured any
+// more, no departure cookie (it lives as long as the attempt, so a slow trip through the provider
+// loses both), or a state nothing matches. A browser still signed in was linking or confirming a
+// change, not signing in, and only Settings shows it anything, so it is answered there under a key
+// of its own; the app root, which only the sign-in screen reads, would drop it silently.
+const returnRedirectFail = redirectFail('return', '#/settings?oidc-err=');
+// The single place the shared callback decides which of the destinations above a refusal answers
+// on, from the store the consumed departure was held in — never from the request. With none known,
+// from whether the browser is still signed in.
+function departureFailFor(mode, req) {
+  if (mode === 'link') return linkRedirectFail;
+  if (mode === 'proof') return proofRedirectFail;
+  if (mode === 'signIn') return oidcRedirectFail;
+  return readSession(req) ? returnRedirectFail : oidcRedirectFail;
+}
+// Sends the browser to the provider for one attempt, the same way for all three departures:
+// mints `state` (which doubles as the key of the entry it holds, since it already has to be
+// unguessable and unique), the nonce and the PKCE pair, holds them with `entry` in the departure
+// store the callback will look in, and answers the destination and the departure cookie in one
+// response, so the departure is a single navigation. redirect_uri comes only from the
+// configuration, never from the request: it was validated against ORIGIN when the configuration
+// was read, which is what makes these routes unable to redirect anywhere a caller chose, and the
+// token exchange later has to send that identical value. `extra` adds parameters of one kind.
+function departTo(res, cfg, metadata, store, entry, extra = {}) {
+  const state = oidcFlow.randomToken();
+  const nonce = oidcFlow.randomToken();
+  const pkce = oidcFlow.pkcePair();
+  store.put(state, { nonce, verifier: pkce.verifier, ...entry }, oidcFlow.FLOW_TTL_MS);
+  const dest = new URL(metadata.authorization_endpoint);
+  const params = {
+    response_type: 'code', client_id: cfg.clientId, redirect_uri: cfg.redirectUri, scope: cfg.scopes,
+    state, nonce, code_challenge: pkce.challenge, code_challenge_method: 'S256', ...extra
+  };
+  for (const [k, v] of Object.entries(params)) dest.searchParams.set(k, v);
+  res.writeHead(302, {
+    'Location': dest.toString(),
+    'Cache-Control': 'no-store',
+    'Set-Cookie': transitionalCookie(ST_COOKIE, state)
+  });
+  res.end();
+}
 
 /* ---------- helpers ---------- */
 function json(res, code, obj, extraHeaders) {
@@ -829,7 +1026,12 @@ const THROTTLED = {
   // budget: the password that may prove them counts its own failures (passwordAttempt).
   'POST /api/device-link/options': 'link', 'POST /api/device-link/verify': 'link',
   'POST /api/account/passkeys/options': null, 'POST /api/account/device-link': null,
-  'DELETE /api/account/passkeys': null
+  'DELETE /api/account/passkeys': null, 'DELETE /api/account/identities': null,
+  'POST /api/account/identities/link-ticket': null, 'POST /api/account/identities/proof-ticket': null,
+  // The naming screen of a sign-in through the provider, which can create a profile. The GETs of
+  // that sign-in (the departures, the read of the waiting name) never spend this budget: csrfOk
+  // passes every GET, so any page could spend it for its visitors (departureRefused below).
+  'POST /api/oidc/confirm': null
 };
 
 // Which address the throttle counts against. Unlike clientIp() above, which only labels a log
@@ -853,6 +1055,40 @@ function limitAddress(req) {
     return g.slice(0, 4).map(x => x.toString(16)).join(':') + '::/64';
   }
   return /^\d{1,3}(\.\d{1,3}){3}$/.test(raw) ? raw : 'unknown';
+}
+// The three departures to the provider are GETs, and a GET passes csrfOk, so any page on the web
+// can make a visitor's browser send one (an <img> is enough). Counted in AUTH_BURST, that would let
+// any page pause password sign-in and device-link redemption for its visitor's address, and for
+// the whole instance behind a proxy that shows the API one address. They are counted instead in
+// a window of their own, which pauses nothing but departures, and only for requests that can be
+// a real departure:
+//   - A top-level navigation. Sec-Fetch-Dest and Sec-Fetch-Mode are set by the browser and no
+//     page can forge them; a subresource or a script's fetch says what it is, and is refused
+//     before anything is counted, looked up or set. A request without them (curl, an older
+//     browser) is taken at its word, the way csrfOk takes one without Sec-Fetch-Site.
+//   - On an instance with a provider configured. One without counts nothing.
+// Past the window the refusal is the route's own redirect carrying `locked`, never the JSON body
+// tooMany() answers, since a navigation shows whatever it lands on. Without the window an
+// anonymous flood of sign-in departures would cost nothing at all.
+const OIDC_DEPARTURES = createWindow({ max: 60, windowMs: 60000 });
+setInterval(() => OIDC_DEPARTURES.sweep(), 60000).unref();
+const topLevelNavigation = req => {
+  const dest = req.headers['sec-fetch-dest'];
+  const mode = req.headers['sec-fetch-mode'];
+  return (dest === undefined || dest === 'document') && (mode === undefined || mode === 'navigate');
+};
+// True when the departure must not go ahead, in which case the request has been answered: a bare
+// 403 for anything but a navigation (nothing renders it, and it carries no cookie that could
+// replace a departure in flight), `locked` through `fail` past the window.
+function departureRefused(req, res, cfg, fail) {
+  if (!topLevelNavigation(req)) {
+    res.writeHead(403, { 'Cache-Control': 'no-store' });
+    res.end();
+    return true;
+  }
+  if (!cfg.on || !OIDC_DEPARTURES.take(limitAddress(req))) return false;
+  fail(res, cfg, 'locked');
+  return true;
 }
 function tooMany(res, secs) {
   json(res, 429, { error: 'too many attempts — try again later', code: 'locked', retryAfter: secs }, { 'Retry-After': String(secs) });
@@ -951,6 +1187,21 @@ function loginTarget(body) {
 }
 const acctKey = u => 'acct:' + u.id;
 const passkeyCount = u => db.creds.filter(c => c.userId === u.id).length;
+
+// One count of every way into a profile, read by every route that removes one and shown by every
+// screen that predicts a refusal -- so the two can never disagree. Three kinds count: a passkey,
+// a password (only while PASSWORD_LOGIN is on, see passwordWayIn), and a linked identity (only
+// while the issuer it was linked at is the one configured — sign-in matches the issuer exactly,
+// so a row left from a provider since removed or replaced signs nobody in, and counts for
+// nothing, exactly like a password kept from when PASSWORD_LOGIN was on).
+const identityWayIn = u => {
+  const row = identityOf(db, u.id);
+  return OIDC.on && !!row && row.iss === OIDC.issuer;
+};
+const wayInCount = u => passkeyCount(u) + (passwordWayIn(u) ? 1 : 0) + (identityWayIn(u) ? 1 : 0);
+// How many ways besides a profile's own passkeys can still sign it in -- what passkeys-store.js's
+// own removal check (`otherWays`) needs, without that module ever having to know an identity exists.
+const waysBesidePasskeys = u => wayInCount(u) - passkeyCount(u);
 const publicUser = u => ({ id: u.id, name: u.name, admin: isAdmin(u) });
 const POLICY_ERRORS = {
   'too-short': `the password needs at least ${MIN_LENGTH} characters`,
@@ -1028,6 +1279,14 @@ function passwordAttempt(req, res, k) {
   };
 }
 
+// Every change proveOwner is asked to confirm, by the name it is called with. A proof made at the
+// provider is requested for exactly one of these and is good for that one only, so a name outside
+// this list must never be able to mint one. A test keeps this list equal to the call sites.
+const PROOF_ACTS = new Set([
+  'email', 'email-remove', 'password', 'password-remove', 'passkey-add', 'passkey-remove',
+  'device-link', 'identity-link', 'identity-remove'
+]);
+
 // Proof that whoever holds this session is the account's owner right now, for the changes that
 // add or take away a lasting way in — setting a password, adding a passkey, making a device link,
 // removing a passkey or the password. A session on its own is not enough for those: it may be a
@@ -1047,11 +1306,32 @@ function passwordAttempt(req, res, k) {
 // `act` names the change being confirmed ('email', 'password-set', 'passkey-remove', …): a failed
 // proof is logged as `auth.proof.fail` for that change, not as a failed sign-in — the owner was
 // signed in all along, and "Password sign-in failed" sent an admin looking for the wrong thing.
+//
+// Or, as a third kind ('identity'), a sign-in at the provider as the profile's own linked
+// identity (`identityProof: true`, spending the proof GET /api/oidc/callback left behind): made
+// for this change (one of PROOF_ACTS), by this session, one time — a fresh sign-in when the
+// provider reports when it happened, otherwise proof that whoever is here holds the linked account.
 async function proveOwner(req, res, user, body, act) {
   if (body.credential) {
     if (await passkeyStepUp(user, body)) return 'passkey';
     audit(req, 'auth.proof.fail', { ok: false, user, msg: 'step-up-failed', act });
     json(res, 403, { error: 'the passkey could not be verified', code: 'passkey' });
+    return null;
+  }
+  if (body.identityProof === true) {
+    // Every proof cookie presented is spent, whatever the outcome: a proof tried against the
+    // wrong change must not survive to be tried against another. Two different values mean
+    // somebody else set one, and there is no safe way to pick, so both are refused.
+    const values = [...new Set(cookieValues(req, PROOF_COOKIE))];
+    const taken = values.map(v => oidcFlows.proven.take(v).value);
+    const p = values.length === 1 ? taken[0] : null;
+    // The identity is compared with the one linked now, not the one linked when the proof was
+    // made, so an identity unlinked or replaced in between proves nothing.
+    const own = identityWayIn(user) ? identityOf(db, user.id) : null;
+    if (p && p.uid === user.id && p.sid === sessionBinding(req) && p.act === act
+        && p.sv === sessionVersion(user) && own && own.iss === p.iss && own.sub === p.sub) return 'identity';
+    audit(req, 'auth.proof.fail', { ok: false, user, msg: 'identity-proof-invalid', act });
+    json(res, 403, { error: 'the confirmation with the provider expired or was made for something else - confirm again', code: 'identity-proof' });
     return null;
   }
   if (!passwordWayIn(user)) {
@@ -1195,7 +1475,10 @@ const passwordRoutes = {
       set: hasPassword(user), setAt: user.pw?.set || null, passkeys: passkeyCount(user),
       name: user.name, nameTaken: nameTaken(user.name, user.id),
       // Only the owner's own session is ever handed their address.
-      email: user.email || null
+      email: user.email || null,
+      // Whether a linked identity can confirm a removal, and would still sign this profile in
+      // afterwards — what this screen needs to offer the password's own removal accurately.
+      identity: identityWayIn(user)
     });
   },
 
@@ -1228,18 +1511,19 @@ const passwordRoutes = {
     json(res, 200, { ok: true }, { 'Set-Cookie': sessionCookie(user) });
   },
 
-  // Never the last way in: a profile with no passkey keeps its password, because nothing else
-  // could sign it in again. Same proof as setting one (proveOwner) — the password itself, or a
-  // passkey assertion made for this request — asked only once the removal could go ahead, so a
-  // refusal the profile's state already decides spends no passkey prompt and no password check.
-  // Existing sessions are left alone; "sign out everywhere" ends them.
+  // Never the last way in: a profile with no other passkey, password-login or linked identity
+  // keeps its password, because nothing else could sign it in again (wayInCount). Same proof as
+  // setting one (proveOwner) — the password itself, or a passkey assertion made for this request
+  // — asked only once the removal could go ahead, so a refusal the profile's state already decides
+  // spends no passkey prompt and no password check. Existing sessions are left alone; "sign out
+  // everywhere" ends them.
   'DELETE /api/account/password': async (req, res) => {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
     const body = await readBody(req);
     const lastWayIn = () => json(res, 409, { error: 'the password is the only way into this profile', code: 'last-way-in' });
     if (!hasPassword(user)) return json(res, 200, { ok: true });
-    if (!passkeyCount(user)) return lastWayIn();
+    if (wayInCount(user) <= 1) return lastWayIn();
     const proof = await proveOwner(req, res, user, body, 'password-remove');
     if (!proof) return;
     // Everything above awaited: the session may have ended, and the profile's last passkey may
@@ -1247,7 +1531,7 @@ const passwordRoutes = {
     if (readSession(req) !== user) return json(res, 401, { error: 'not signed in' });
     if (proof === 'passkey') saveDb();   // the confirming passkey's counter and last use
     if (!hasPassword(user)) return json(res, 200, { ok: true });
-    if (!passkeyCount(user)) return lastWayIn();
+    if (wayInCount(user) <= 1) return lastWayIn();
     delete user.pw;
     saveDb();
     audit(req, 'auth.password.remove', { user });
@@ -1380,7 +1664,8 @@ const passwordRoutes = {
 // Either way the new passkey is a way into the profile that outlives "sign out everywhere", so
 // both ask for the proof a first password does (proveOwner). So does removing one: a stolen
 // cookie must not choose which of the owner's passkeys is left. Removing one never leaves a
-// profile without a way in: its last passkey stays unless a password can sign in instead.
+// profile without a way in: its last passkey stays unless a password or a linked identity can
+// sign in instead.
 //
 // Sessions are not tied to the passkey that opened them — a session is `uid:expiry:version`,
 // nothing more — so removing a passkey stops it signing in again but does not end a session it
@@ -1388,8 +1673,17 @@ const passwordRoutes = {
 const passkeyState = u => {
   const passkeys = listPasskeys(db, u.id);
   // `password`: whether the password can confirm an addition or a removal (proveOwner) — only
-  // while password sign-in is on. `lastWayIn`: whether removing any one passkey would be refused.
-  return { passkeys, password: passwordWayIn(u), lastWayIn: passkeys.length + (passwordWayIn(u) ? 1 : 0) <= 1 };
+  // while password sign-in is on. `identity`: the linked identity's own display shape, or null
+  // when nothing is linked, with `usable` saying whether it still signs in (identityWayIn) and so
+  // whether it can confirm a change. One that no longer does is still shown, so its owner can see
+  // it and remove it, but carries no provider name: the configured provider, if any, is not the
+  // one it came from. `lastWayIn` (wayInCount: passkeys, password, identity) is the one count
+  // every screen and every removal route reads.
+  return {
+    passkeys, password: passwordWayIn(u),
+    identity: identityView(identityOf(db, u.id), OIDC_PUBLIC?.name ?? null, identityWayIn(u)),
+    lastWayIn: wayInCount(u) <= 1
+  };
 };
 const LIMIT = { error: `a profile can have at most ${MAX_PASSKEYS} passkeys`, code: 'passkey-limit' };
 const LINK_INVALID = { error: 'that code is wrong, used or expired', code: 'link-invalid' };
@@ -1507,13 +1801,13 @@ const passkeyRoutes = {
     const id = new URL(req.url, 'http://x').searchParams.get('id') || '';
     const body = await readBody(req);
     const refuse = r => json(res, r.code === 'last-way-in' ? 409 : 404, { error: r.error, code: r.code });
-    const refused = passkeyRemovalRefused(db, user.id, id, passwordWayIn(user) ? 1 : 0);
+    const refused = passkeyRemovalRefused(db, user.id, id, waysBesidePasskeys(user));
     if (refused) return refuse(refused);
     const proof = await proveOwner(req, res, user, body, 'passkey-remove');
     if (!proof) return;
     if (readSession(req) !== user) return notSignedIn(res);
     if (proof === 'passkey') saveDb();   // the confirming passkey's counter and last use
-    const r = removePasskeyRecord(db, user.id, id, passwordWayIn(user) ? 1 : 0);
+    const r = removePasskeyRecord(db, user.id, id, waysBesidePasskeys(user));
     if (r.error) return refuse(r);
     dropDeviceLinks(db, user.id);
     saveDb();
@@ -1604,6 +1898,76 @@ const passkeyRoutes = {
     saveDb();
     audit(req, 'auth.link.ok', { user, msg: added.row.name || null });
     json(res, 200, { user: publicUser(user) }, { 'Set-Cookie': sessionCookie(user) });
+  }
+};
+
+// The account routes for the identity an external provider linked to this profile (there is at
+// most one). Adding one, through the OIDC sign-in flow, and removing it here are both lasting
+// changes to how the profile is reached, so both take the owner's proof (proveOwner) — the same
+// rule a passkey or a password already answers to.
+const identityRoutes = {
+  // The owner's proof buys a one-shot ticket, and only a ticket carried to the departure below can
+  // ever reach the provider — the same bar #95 held a device-link code to: "a code alone
+  // never gives a session", so here a cookie alone never gives a new way in. Refused before any
+  // proof is asked when there is nothing a ticket could ever be used for: no provider configured,
+  // or a linked identity already on this profile.
+  'POST /api/account/identities/link-ticket': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return notSignedIn(res);
+    const body = await readBody(req);
+    if (!OIDC.on) return json(res, 409, { error: 'no external provider is configured on this instance', code: 'provider-off' });
+    if (identityOf(db, user.id)) return json(res, 409, { error: 'this profile already has a linked identity', code: 'profile-linked' });
+    const proof = await proveOwner(req, res, user, body, 'identity-link');
+    if (!proof) return;
+    if (readSession(req) !== user) return notSignedIn(res);
+    if (proof === 'passkey') saveDb();   // the confirming passkey's counter and last use
+    const ticket = oidcFlow.randomToken();
+    oidcFlows.linkTicket.put(ticket, { uid: user.id, sid: sessionBinding(req) }, TICKET_TTL_MS);
+    json(res, 200, { ticket });
+  },
+
+  // The departure half of the third proof proveOwner accepts: a sign-in at the provider as this
+  // profile's own linked identity, requested for one named change (`act`). The ticket grants
+  // nothing by itself — it only lets this session leave for the provider, and it is the sign-in
+  // there, checked on the way back, that proves anything — so no other proof is asked for it.
+  // Refused when the profile has no identity that counts as a way in (none linked, or no provider
+  // configured): there is nothing at the provider it could prove.
+  'POST /api/account/identities/proof-ticket': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return notSignedIn(res);
+    const body = await readBody(req);
+    const act = typeof body.act === 'string' && PROOF_ACTS.has(body.act) ? body.act : null;
+    if (!act) return json(res, 400, { error: 'that change cannot be confirmed with the provider', code: 'act-invalid' });
+    if (!identityWayIn(user)) return json(res, 409, { error: 'no identity is linked to this profile', code: 'not-linked' });
+    const ticket = oidcFlow.randomToken();
+    oidcFlows.proofTicket.put(ticket, { uid: user.id, sid: sessionBinding(req), act }, TICKET_TTL_MS);
+    json(res, 200, { ticket });
+  },
+
+  // No `?id=`: at most one identity per profile, so there is nothing to select between. Refused
+  // 404 `not-linked` before anything else, so a profile with none never sees a proof prompt.
+  // Refused 409 `last-way-in` when the identity is this profile's only remaining way in — checked
+  // before the proof, so a refusal the state already decides spends no passkey prompt and no
+  // password check, and again once the proof is in, since a request running alongside this one
+  // may have removed the profile's last passkey or its password in the meantime. Sessions are
+  // left alone; `POST /api/logout/all` ends them.
+  'DELETE /api/account/identities': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return notSignedIn(res);
+    const body = await readBody(req);
+    if (!identityOf(db, user.id)) return json(res, 404, { error: 'no identity is linked to this profile', code: 'not-linked' });
+    const lastWayIn = () => json(res, 409, { error: 'the linked identity is the only way into this profile', code: 'last-way-in' });
+    if (identityWayIn(user) && wayInCount(user) <= 1) return lastWayIn();
+    const proof = await proveOwner(req, res, user, body, 'identity-remove');
+    if (!proof) return;
+    if (readSession(req) !== user) return notSignedIn(res);
+    if (proof === 'passkey') saveDb();   // the confirming passkey's counter and last use
+    if (identityWayIn(user) && wayInCount(user) <= 1) return lastWayIn();
+    const r = unlinkIdentity(db, user.id);
+    if (r.error) return json(res, 404, { error: r.error, code: r.code });
+    saveDb();
+    audit(req, 'auth.identity.remove', { user, msg: proof });
+    json(res, 200, { ok: true, ...passkeyState(user) });
   }
 };
 
@@ -1760,6 +2124,11 @@ const routes = {
       // Public like the two flags above: the caps are not a secret, and the absence of the
       // block is how the app knows this server does not take photos and videos at all.
       ...(MEDIA_ON ? { media: mediaConfig(MEDIA_LIMITS) } : {}),
+      // Absent unless this instance has a complete, valid OIDC configuration — absence, not a
+      // false value, is how "no external provider exists here" is expressed, so a client cannot
+      // branch on a key that is not there. Carries a display label only; the client secret has no
+      // representation on this route, which is unauthenticated by design.
+      ...(OIDC_PUBLIC ? { oidc: OIDC_PUBLIC } : {}),
       ...(readSession(req) ? { coach: coachConfig.publicConfig() } : {})
     });
   },
@@ -1918,6 +2287,467 @@ const routes = {
     json(res, 200, { user: { id: user.id, name: user.name, admin: isAdmin(user) } }, { 'Set-Cookie': sessionCookie(user) });
   },
 
+  // The one route that sends a browser to the provider. Unauthenticated and reachable by anyone,
+  // so it answers a navigation only with a redirect: never a JSON body, and no parameter of the
+  // request is read. Every branch below ends in exactly one response.
+  'GET /api/oidc/start': async (req, res) => {
+    const cfg = OIDC;
+    if (departureRefused(req, res, cfg, oidcRedirectFail)) return;
+    if (!cfg.on) return oidcRedirectFail(res, cfg, 'provider-misconfigured', cfg.error);
+
+    // No invite gate here, deliberately. Which identity is coming back is unknowable until the
+    // provider has answered, so a check at this point would fall on everyone who signs in —
+    // including a person who already has a profile, whose code was spent when that profile was
+    // created, leaving them no way back in. Creating a profile is the step an invite gates, so
+    // the code is asked for and burned there instead.
+
+    // The only network request this route makes, and the only place a down or misconfigured
+    // provider surfaces: GET /api/config must keep answering without touching the network at all,
+    // so an unreachable provider can never take passkey sign-in down with it.
+    let metadata;
+    try {
+      metadata = await oidcIssuer.metadata();
+    } catch (e) {
+      audit(req, 'auth.oidc.fail', { ok: false, msg: 'provider-unreachable' });
+      return oidcRedirectFail(res, cfg, 'provider-unreachable', e.message);
+    }
+
+    departTo(res, cfg, metadata, oidcFlows.signIn, {});
+  },
+
+  // The route that sends an already-signed-in owner to the provider to attach an identity to
+  // their own profile. Reachable only carrying a live link ticket: a session alone starts
+  // nothing here, which is what makes a stolen session cookie unable to add a new way into a
+  // profile on its own. The ticket is only looked at until the session presenting it is known to
+  // be the one it was minted for, and taken (one-shot) before anything else can fail: a second
+  // presentation by its owner finds nothing to spend, and a presentation by anyone else spends
+  // nothing, so it cannot cancel the owner's link.
+  'GET /api/oidc/link/start': async (req, res) => {
+    const cfg = OIDC;
+    if (departureRefused(req, res, cfg, linkRedirectFail)) return;
+    const user = readSession(req);
+    if (!user) return linkRedirectFail(res, cfg, 'not-signed-in');
+
+    const key = new URL(req.url, 'http://x').searchParams.get('ticket') || '';
+    const ticket = oidcFlows.linkTicket.peek(key).value;
+    if (!ticket) {
+      audit(req, 'auth.identity.link.fail', { ok: false, user, msg: 'ticket-invalid' });
+      return linkRedirectFail(res, cfg, 'ticket-invalid');
+    }
+    // Bound to the profile the ticket was minted for and the exact session that asked for it
+    // (sessionBinding) — a ticket presented under a different session of the same account, or
+    // after a switch to another profile in the same browser, must start nothing either.
+    if (ticket.uid !== user.id || ticket.sid !== sessionBinding(req)) {
+      audit(req, 'auth.identity.link.fail', { ok: false, uid: ticket.uid, msg: 'session-changed' });
+      return linkRedirectFail(res, cfg, 'session-changed');
+    }
+    oidcFlows.linkTicket.take(key);
+
+    if (!cfg.on) return linkRedirectFail(res, cfg, 'provider-misconfigured', cfg.error);
+
+    let metadata;
+    try {
+      metadata = await oidcIssuer.metadata();
+    } catch (e) {
+      audit(req, 'auth.identity.link.fail', { ok: false, user, msg: 'provider-unreachable' });
+      return linkRedirectFail(res, cfg, 'provider-unreachable', e.message);
+    }
+
+    // Held in the link departures' own store, so the callback knows what this attempt was for,
+    // with the profile and the exact session that started it, so a departure cookie on its own
+    // links nothing.
+    departTo(res, cfg, metadata, oidcFlows.link, { uid: user.id, sid: ticket.sid });
+  },
+
+  // The route that sends a signed-in owner to the provider to prove, by signing in there as the
+  // profile's linked identity, that they are the owner (proveOwner). Reachable only carrying a
+  // live proof ticket, which, like a link ticket, is only looked at until the session presenting
+  // it is known to be the one it was minted for, and taken (one-shot) before anything else can
+  // fail. A request with no session is refused before the ticket is even looked up, and records
+  // nothing: an anonymous request can neither cancel the owner's proof nor fill the activity log
+  // with refusals nobody can be named in.
+  'GET /api/oidc/proof/start': async (req, res) => {
+    const cfg = OIDC;
+    if (departureRefused(req, res, cfg, proofRedirectFail)) return;
+    const user = readSession(req);
+    if (!user) return proofRedirectFail(res, cfg, 'state-unknown');
+    const key = new URL(req.url, 'http://x').searchParams.get('ticket') || '';
+    const ticket = oidcFlows.proofTicket.peek(key).value;
+    if (!ticket) {
+      audit(req, 'auth.proof.fail', { ok: false, user, msg: 'ticket-invalid' });
+      return proofRedirectFail(res, cfg, 'state-expired');
+    }
+    // Bound to the profile and the exact session that asked for it, like a link ticket.
+    if (ticket.uid !== user.id || ticket.sid !== sessionBinding(req)) {
+      audit(req, 'auth.proof.fail', { ok: false, uid: ticket.uid, msg: 'session-changed', act: ticket.act });
+      return proofRedirectFail(res, cfg, 'state-unknown');
+    }
+    oidcFlows.proofTicket.take(key);
+
+    if (!cfg.on) return proofRedirectFail(res, cfg, 'provider-misconfigured', cfg.error);
+
+    let metadata;
+    try {
+      metadata = await oidcIssuer.metadata();
+    } catch (e) {
+      audit(req, 'auth.proof.fail', { ok: false, user, msg: 'provider-unreachable', act: ticket.act });
+      return proofRedirectFail(res, cfg, 'provider-unreachable', e.message);
+    }
+
+    // Held in the proof departures' own store, with what the return leg checks the sign-in
+    // against: the profile and session that asked, the one change the proof will be good for, and
+    // when the browser left — the earliest moment a sign-in made for this request can have
+    // happened. prompt=login and max_age=0 ask the provider to authenticate the person again
+    // rather than answer from a session it already holds. Nothing rests on these two: they travel
+    // through the browser, which can strip them, and an issuer may ignore them, so the return leg
+    // relies only on the identity the token names and, when the issuer reports it, on the time of
+    // the sign-in (auth_time).
+    departTo(res, cfg, metadata, oidcFlows.proof, {
+      uid: user.id, sid: ticket.sid, act: ticket.act, departedAt: Math.floor(Date.now() / 1000)
+    }, { prompt: 'login', max_age: '0' });
+  },
+
+  // The route the provider sends the browser back to. Also unauthenticated and browser-navigated,
+  // so every branch below ends in exactly one redirect, never a JSON body. The departure cookie is
+  // consumed before anything else runs, which is what makes a second submission of the same
+  // address refused without ever contacting the provider — and why nothing on any refusal branch
+  // below touches the state directory.
+  'GET /api/oidc/callback': async (req, res) => {
+    const cfg = OIDC;
+    // Until a departure is consumed, which screen a refusal lands on is all that is known.
+    const unresolved = departureFailFor(null, req);
+    if (!cfg.on) return unresolved(res, cfg, 'provider-misconfigured', cfg.error);
+
+    // Duplicate cookie names for ST_COOKIE mean somebody else planted one, same reasoning
+    // cookieToken already applies to the session cookie — there is no safe value to pick, so both
+    // are refused.
+    const stValues = cookieValues(req, ST_COOKIE);
+    if (!stValues.length || stValues.some(v => v !== stValues[0])) return unresolved(res, cfg, 'state-unknown');
+    const departureCookie = stValues[0];
+
+    const query = new URL(req.url, 'http://x').searchParams;
+    // Compared before the entry is consumed. A forged callback, a cross-browser delivery and a
+    // second tab whose cookie was overwritten by a first all fail here for the same reason, and
+    // none of them spends the attempt they failed to match: a top-level cross-site navigation to
+    // this address carries the cookie but no state, and must not be able to cancel a sign-in that
+    // is legitimately in flight.
+    if (query.get('state') !== departureCookie) return unresolved(res, cfg, 'state-unknown');
+
+    // Consumed once the state matches and before anything below runs, so a replayed callback
+    // address finds nothing and never reaches the provider at all — the store itself reports
+    // which of the two misses this is.
+    // Only the three departure stores are asked: a waiting identity, a ticket or a proof is never
+    // a departure, whatever key addresses it.
+    const taken = takeDeparture(departureCookie);
+    if (!taken.value) return departureFailFor(taken.mode, req)(res, cfg, taken.reason);
+    // { nonce, verifier } for a sign-in, plus { uid, sid } for a link, or
+    // { uid, sid, act, departedAt } for a proof of ownership at the provider
+    const departure = taken.value;
+
+    // Bound once, from the store the departure was held in — so every refusal reached from here
+    // on answers on the screen the attempt actually started from, and is recorded under its own
+    // event family: an identity link never collides with the device-link events, which keep
+    // their own auth.link.* meaning untouched, and a failed proof is a failed proof of ownership
+    // (auth.proof.fail), never a failed sign-in. A sign-in departure falls through to the
+    // unchanged behaviour below.
+    const isLink = taken.mode === 'link';
+    const isProof = taken.mode === 'proof';
+    const failFor = departureFailFor(taken.mode);
+    const failEvent = isLink ? 'auth.identity.link.fail' : isProof ? 'auth.proof.fail' : 'auth.oidc.fail';
+    // A failed proof is recorded like any other: against the profile that asked and the change
+    // it was guarding. Empty for the other two modes, whose records are unchanged.
+    const failWho = isProof ? { uid: departure.uid, act: departure.act } : {};
+
+    // The provider reports a refusal in this parameter, but so can anyone who assembles this
+    // address, so its text is never recorded: a caller-chosen string in the activity log is a
+    // liability for the same reason a rejected invite code is. Only the fact of the refusal is
+    // recorded, under a fixed reason; the value itself goes to stderr for an operator reading
+    // container output, clamped, and never to the log file.
+    const oauthError = query.get('error');
+    if (oauthError) {
+      audit(req, failEvent, { ok: false, ...failWho, msg: 'provider-refused' });
+      console.warn('oidc: the provider refused an authorization request:', oauthError.slice(0, 120));
+      return failFor(res, cfg, 'token-invalid');
+    }
+    const authCode = query.get('code');
+    if (!authCode) {
+      audit(req, failEvent, { ok: false, ...failWho, msg: 'token-invalid' });
+      return failFor(res, cfg, 'token-invalid');
+    }
+
+    let metadata;
+    try {
+      metadata = await oidcIssuer.metadata();
+    } catch (e) {
+      audit(req, failEvent, { ok: false, ...failWho, msg: 'provider-unreachable' });
+      return failFor(res, cfg, 'provider-unreachable', e.message);
+    }
+
+    let tokenResult;
+    try {
+      tokenResult = await exchangeCode({
+        tokenEndpoint: metadata.token_endpoint,
+        code: authCode,
+        redirectUri: cfg.redirectUri,
+        clientId: cfg.clientId,
+        clientSecret: cfg.clientSecret,
+        verifier: departure.verifier
+      });
+    } catch (e) {
+      // e.code is already narrowed to one of the two codes the screen knows.
+      audit(req, failEvent, { ok: false, ...failWho, msg: e.code });
+      return failFor(res, cfg, e.code, e.message);
+    }
+
+    // Fetched in its own step, because a key set this instance cannot reach is an instance
+    // problem and a token that fails to verify against a key set it did reach is a token problem.
+    // Collapsing the two tells a person to try again when the truth is that somebody has to fix
+    // the instance.
+    let keys;
+    try {
+      keys = await oidcIssuer.signingKeys();
+    } catch (e) {
+      audit(req, failEvent, { ok: false, ...failWho, msg: 'provider-unreachable' });
+      return failFor(res, cfg, 'provider-unreachable', e.message);
+    }
+
+    let identity;
+    try {
+      identity = await verifyIdToken(tokenResult.idToken, {
+        keys,
+        issuer: cfg.issuer,
+        clientId: cfg.clientId,
+        nonce: departure.nonce
+      });
+    } catch (e) {
+      audit(req, failEvent, { ok: false, ...failWho, msg: 'token-invalid' });
+      return failFor(res, cfg, 'token-invalid', e.message);
+    }
+
+    // A departure minted by the proof route above: it can neither mint a session, create a profile
+    // nor attach anything — its only product is a one-shot proof for the change it was asked for.
+    // Nothing on it is written to disk, whatever the outcome.
+    if (isProof) {
+      // The session that returns must be the one that departed, exactly: the same profile and the
+      // same session token. Signing out, signing out everywhere or switching profile mid-flight
+      // proves nothing.
+      const user = readSession(req);
+      if (!user || user.id !== departure.uid || sessionBinding(req) !== departure.sid) {
+        audit(req, 'auth.proof.fail', { ok: false, uid: departure.uid, msg: 'session-changed', act: departure.act });
+        return proofRedirectFail(res, cfg, 'state-unknown');
+      }
+      // Two rules, in this order. First, always: the token names exactly the identity linked to
+      // this profile — a profile with none linked any more counts as a mismatch. This is what a
+      // stolen session cookie cannot pass, and it holds on every issuer. Second, only when the
+      // issuer reports when the sign-in happened (auth_time): it must not predate this request.
+      // The time check can only tighten the first rule, and only on issuers that report it;
+      // without that report the proof shows possession of the linked account rather than a fresh
+      // sign-in. The identity is decided first so a record always names the rule that refused.
+      const own = identityOf(db, user.id);
+      if (!own || own.iss !== identity.iss || own.sub !== identity.sub) {
+        audit(req, 'auth.proof.fail', { ok: false, user, msg: 'identity-mismatch', act: departure.act });
+        return proofRedirectFail(res, cfg, 'identity-mismatch');
+      }
+      if (signInFreshness(identity.claims, { authAfter: departure.departedAt }) === 'stale') {
+        audit(req, 'auth.proof.fail', { ok: false, user, msg: 'stale-sign-in', act: departure.act });
+        return proofRedirectFail(res, cfg, 'stale-sign-in');
+      }
+      // Bound to everything the change it confirms will be checked against again (proveOwner):
+      // this profile, this session and its version, this change, and the identity that proved it.
+      // Success is not recorded here; the change the proof confirms is, with the proof kind.
+      const proofId = oidcFlow.randomToken();
+      oidcFlows.proven.put(proofId, {
+        uid: user.id, sid: departure.sid, act: departure.act, sv: sessionVersion(user),
+        iss: identity.iss, sub: identity.sub
+      }, PROOF_TTL_MS);
+      return browserRedirect(res, cfg.appPath, '#/settings?proof=ok', [transitionalCookie(PROOF_COOKIE, proofId), expireCookie(ST_COOKIE)]);
+    }
+
+    // A departure minted by the link route above carries its own branch, entirely separate from
+    // the sign-in tail below: it can neither mint a session nor create a profile, only attach the
+    // now-verified identity to the profile that started the attempt (or refuse to). No session
+    // cookie is ever set on this branch — the owner is already signed in, which is the whole
+    // reason this branch is a small thing to prove correct.
+    if (isLink) {
+      // The session that returns must be the one that departed, exactly, as for a proof: the
+      // same profile and the same session token. That covers signing out mid-flight, signing out
+      // everywhere mid-flight (the session version moves and the cookie stops resolving), signing
+      // out and back in, and a switch to another profile in the same browser. Nothing is written
+      // on any of those.
+      const user = readSession(req);
+      if (!user || user.id !== departure.uid || sessionBinding(req) !== departure.sid) {
+        audit(req, 'auth.identity.link.fail', { ok: false, uid: departure.uid, msg: 'session-changed' });
+        return linkRedirectFail(res, cfg, 'session-changed');
+      }
+
+      // Matched on the pair, always both members together — the address the verifier returns is
+      // display data and must never resolve a profile, and a lookup on the subject alone would
+      // collide across a second provider configured later.
+      const collidingWith = findIdentity(db, identity.iss, identity.sub);
+      if (collidingWith && collidingWith.userId !== user.id) {
+        // Attached to somebody else's profile already. Nothing is written; both profile ids are
+        // recorded through the audit helper's own target field, which writes only an id and a
+        // name, keeping the issuer, the subject and the address out of the log entirely.
+        audit(req, 'auth.identity.link.fail', { ok: false, user, target: db.users.find(u => u.id === collidingWith.userId), msg: 'identity-collision' });
+        return linkRedirectFail(res, cfg, 'identity-collision');
+      }
+      if (collidingWith) {
+        // The same owner re-linking the identity they already hold — a doubled tap, a second tab,
+        // a retried navigation. Nothing is written: pushing here would give one profile two rows
+        // for one identity, counted twice and rendered as one row by a screen that expects one.
+        audit(req, 'auth.identity.link.ok', { user, msg: 'already' });
+        return browserRedirect(res, cfg.appPath, '#/settings?link=ok', expireCookie(ST_COOKIE));
+      }
+
+      // Read the top-level, vouched-for address the verifier returns and never the raw email
+      // claim, which the verifier strips out on purpose: null there means either no address was
+      // supplied or one was supplied that nobody vouched for, and both mean the same thing here.
+      // The store's own defensive checks are a safety net for a race between two concurrent link
+      // attempts on the same profile; this profile already had none confirmed above.
+      const added = addIdentity(db, { iss: identity.iss, sub: identity.sub, userId: user.id, email: identity.email, linkedAt: new Date().toISOString() });
+      if (added.error) {
+        audit(req, 'auth.identity.link.fail', { ok: false, user, msg: added.code });
+        return linkRedirectFail(res, cfg, added.code);
+      }
+      saveDb();
+      // A dedicated event family, distinct from a sign-in and from the device-link
+      // events: an operator reading the activity log needs to tell a profile being created apart
+      // from an identity attached to one that already existed — the only lever available against
+      // an identity attached by somebody who should not have been able to.
+      audit(req, 'auth.identity.link.ok', { user });
+      return browserRedirect(res, cfg.appPath, '#/settings?link=ok', expireCookie(ST_COOKIE));
+    }
+
+    // Matched on the pair, always both members together — the address the verifier returns is
+    // display data and must never resolve a profile, and a lookup on the subject alone would
+    // collide across a second provider configured later.
+    const linked = findIdentity(db, identity.iss, identity.sub);
+    if (linked) {
+      const user = db.users.find(u => u.id === linked.userId);
+      if (user && !user.disabled) {
+        audit(req, 'auth.oidc.ok', { user });
+        return browserRedirect(res, cfg.appPath, '', [...sessionCookie(user), expireCookie(ST_COOKIE)]);
+      }
+      // A record pointing at a profile that is gone is an account nobody can sign in to, and
+      // inventing a new profile for it would silently strand the original.
+      audit(req, 'auth.oidc.fail', { ok: false, uid: linked.userId, msg: 'account-disabled' });
+      return oidcRedirectFail(res, cfg, 'account-disabled');
+    }
+
+    // Read the top-level, vouched-for address the verifier returns and never the raw email claim,
+    // which the verifier strips out on purpose. Nothing below is written to DATA_DIR on this
+    // branch. Normalised to the same shape the profile name itself is held to: these claims come
+    // from the provider, and a non-string one would otherwise be answered verbatim by the peek
+    // route, whose contract declares a string.
+    const claimText = v => (typeof v === 'string' ? v.trim() : '');
+    const seededName = (claimText(identity.claims.name) || claimText(identity.claims.preferred_username)
+      || (typeof identity.email === 'string' ? identity.email.split('@')[0] : '')).slice(0, 40);
+    const pendingId = oidcFlow.randomToken();
+    oidcFlows.pending.put(pendingId, {
+      iss: identity.iss, sub: identity.sub, email: identity.email, seededName
+    }, oidcFlow.FLOW_TTL_MS);
+    return browserRedirect(res, cfg.appPath, '#oidc=confirm', [transitionalCookie(PENDING_COOKIE, pendingId), expireCookie(ST_COOKIE)]);
+  },
+
+  'GET /api/oidc/pending': async (req, res) => {
+    const values = cookieValues(req, PENDING_COOKIE);
+    if (!values.length || values.some(v => v !== values[0])) {
+      return json(res, 401, { error: 'sign-in expired — start again', code: 'state-unknown' });
+    }
+    const peeked = oidcFlows.pending.peek(values[0]);
+    if (!peeked.value) return json(res, 401, { error: 'sign-in expired — start again', code: peeked.reason });
+    json(res, 200, { name: peeked.value.seededName });
+  },
+
+  // The only write path a sign-in through the provider has, and the only step an invite code
+  // gates: signing in with a profile that already exists never asks for one. Order matters. The
+  // name and the invite code are both settled while the waiting entry is only peeked at, so a
+  // mistyped one of either can be corrected without spending a sign-in that is still valid. The
+  // identity pair is re-looked-up before a profile is created, so a double submission (a second
+  // tab, a doubled click) resolves to the profile that already exists rather than making a second
+  // one. The entry is taken at the last possible moment, which is what keeps profile creation
+  // one-shot. Stays under the ordinary origin check (not in CSRF_EXEMPT): the pending-identity
+  // cookie is the only credential this route has, and SameSite=Lax already withholds it from a
+  // cross-site POST outright, but the origin check costs nothing extra to keep.
+  'POST /api/oidc/confirm': async (req, res) => {
+    const body = await readBody(req);
+    const name = String(body.name || '').trim().slice(0, 40);
+    if (!name) return json(res, 400, { error: 'name required' });
+    // Same normalisation register/verify applies to the same value, so a code that works there
+    // works here too. The rejected code itself is never recorded and never reaches stderr — a
+    // near-miss guess sitting in a log is a liability, exactly as it is for that other route.
+    const inviteCode = String(body.code || '').trim().toUpperCase();
+
+    const values = cookieValues(req, PENDING_COOKIE);
+    if (!values.length || values.some(v => v !== values[0])) {
+      return json(res, 401, { error: 'sign-in expired — start again', code: 'state-unknown' },
+        { 'Set-Cookie': expireCookie(PENDING_COOKIE) });
+    }
+    const peeked = oidcFlows.pending.peek(values[0]);
+    if (!peeked.value) {
+      return json(res, 401, { error: 'sign-in expired — start again', code: peeked.reason },
+        { 'Set-Cookie': expireCookie(PENDING_COOKIE) });
+    }
+    const pending = peeked.value; // { iss, sub, email, seededName }
+
+    // Matched on the pair, exactly as the callback route resolves a returning sign-in — a second
+    // submission (two tabs, a doubled click) must never create a second profile.
+    const already = findIdentity(db, pending.iss, pending.sub);
+    if (already) {
+      // Spent either way: this sign-in has resolved, and the entry must not answer a replay.
+      oidcFlows.pending.take(values[0]);
+      const user = db.users.find(u => u.id === already.userId);
+      if (user && !user.disabled) {
+        audit(req, 'auth.oidc.ok', { user });
+        return json(res, 200, { user: { id: user.id, name: user.name, admin: isAdmin(user) } },
+          { 'Set-Cookie': [...sessionCookie(user), expireCookie(PENDING_COOKIE)] });
+      }
+      audit(req, 'auth.oidc.fail', { ok: false, uid: already.userId, msg: 'account-disabled' });
+      return json(res, 403, { error: 'this account has been disabled', code: 'account-disabled' },
+        { 'Set-Cookie': expireCookie(PENDING_COOKIE) });
+    }
+
+    // Checked while the entry is still only peeked at, and the cookie is left in place on a
+    // refusal: a code that is mistyped, already spent or revoked can be corrected on the screen
+    // that asked for it, without a second trip to the provider.
+    let invite = null;
+    if (INVITE_ONLY) {
+      invite = db.invites.find(i => i.code === inviteCode && !i.usedBy && !i.revoked);
+      if (!invite) {
+        audit(req, 'auth.oidc.fail', { ok: false, msg: 'invite-invalid' });
+        return json(res, 403, { error: 'this invite is no longer valid', code: 'invite-invalid' });
+      }
+    }
+
+    // Taken here and not earlier, so nothing above can spend a sign-in it went on to refuse. A
+    // concurrent submission that got here first has already emptied it.
+    const spent = oidcFlows.pending.take(values[0]);
+    if (!spent.value) {
+      return json(res, 401, { error: 'sign-in expired — start again', code: spent.reason },
+        { 'Set-Cookie': expireCookie(PENDING_COOKIE) });
+    }
+
+    const uid = crypto.randomBytes(12).toString('base64url');
+    const user = { id: uid, name, created: new Date().toISOString() };
+    // The address lives on the identity record and never on the user record, mirroring how the
+    // passkey-specific fields live on the credential rather than on the profile. Every read and
+    // write of this array goes through identities-store.js — server.js never touches it by hand.
+    // Written before the profile exists, so an entry the store refuses as an identity creates no
+    // profile and spends no invite.
+    const added = addIdentity(db, { iss: pending.iss, sub: pending.sub, userId: uid, email: pending.email, linkedAt: user.created });
+    if (added.error) {
+      audit(req, 'auth.oidc.fail', { ok: false, msg: added.code });
+      return json(res, 401, { error: 'sign-in expired — start again', code: 'state-unknown' },
+        { 'Set-Cookie': expireCookie(PENDING_COOKIE) });
+    }
+    if (invite) { user.invitedBy = invite.code; invite.usedBy = user.id; invite.usedAt = user.created; }
+    db.users.push(user);
+    saveDb();
+    audit(req, 'auth.oidc.new', { user, msg: invite ? invite.code : null });
+    json(res, 200, { user: { id: user.id, name: user.name, admin: isAdmin(user) } },
+      { 'Set-Cookie': [...sessionCookie(user), expireCookie(PENDING_COOKIE)] });
+  },
+
   // Reads the session purely so the sign-out can be recorded; the cookie is cleared either way.
   // A logout with no valid cookie is a no-op and isn't worth an entry.
   'POST /api/logout': async (req, res) => {
@@ -1979,6 +2809,10 @@ const routes = {
 
   // Always there: more passkeys and device links need nothing an instance has to switch on.
   ...passkeyRoutes,
+
+  // Always there too: the route exists whether or not a provider is configured right now, so
+  // an identity linked while it was stays reachable and removable after it is turned off.
+  ...identityRoutes,
 
   // `rev` is the server's own count of writes to this profile (also stored inside the document as
   // `_rev`, so every other reader of the file — reminder tick, admin, Coach, MCP — is unaffected).
@@ -2251,6 +3085,7 @@ const routes = {
     db.creds = (db.creds || []).filter(c => c.userId !== u.id);
     db.subs = (db.subs || []).filter(x => x.userId !== u.id);
     dropDeviceLinks(db, u.id);
+    dropIdentities(db, u.id);   // and the address it kept (identities-store.js)
     presence.delete(u.id);
     // The training history and any Coach credential of theirs, both outside db.json.
     try { fs.unlinkSync(stateFile(u.id)); } catch { /* already gone */ }
@@ -2461,4 +3296,8 @@ server.headersTimeout = 60000;
 // port that was actually bound: with PORT=0 the OS picks one, and a caller that did not choose it
 // (the tests spawn the server that way, and so does anyone running two instances on one box) has
 // no other way to learn it.
-server.listen(PORT, () => console.log(`gym-api on :${server.address().port} (rpID=${RP_ID}, origin=${ORIGIN})`));
+// The two variables people most often get wrong, plus the provider address when one is
+// configured — appended rather than woven in, so an instance without one logs the line it always
+// logged, byte for byte.
+server.listen(PORT, () => console.log(`gym-api on :${server.address().port} (rpID=${RP_ID}, origin=${ORIGIN})`
+  + (OIDC.on ? `, oidc=${OIDC.issuer}` : '')));

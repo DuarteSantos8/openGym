@@ -321,7 +321,7 @@ test('setting a first password needs a passkey made for it, not just a session',
   const cookie = `gymsid=${mintSession('u1')}`;
   const ip = '198.51.100.90';
   const status = await h.req('GET', '/api/account/password', { cookie, ip });
-  assert.deepEqual(status.body, { set: false, setAt: null, passkeys: 1, name: 'Ana', nameTaken: false, email: null });
+  assert.deepEqual(status.body, { set: false, setAt: null, passkeys: 1, name: 'Ana', nameTaken: false, email: null, identity: false });
 
   assert.equal((await h.req('POST', '/api/account/password', { body: { next: GOOD }, cookie, ip })).body.code, 'passkey-required');
   assert.equal((await h.req('POST', '/api/account/password', { body: { next: GOOD, current: 'anything at all' }, cookie, ip })).body.code, 'passkey-required');
