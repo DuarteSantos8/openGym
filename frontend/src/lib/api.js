@@ -16,7 +16,12 @@ export const vault = () => (IS_APPLE ? t('iCloud Keychain') : IS_ANDROID ? t('Go
 // navigator.credentials: some browsers expose WebAuthn while that generic Credential Management
 // API check produces a false negative (notably Chrome on iOS). The real create/get calls still run
 // only after the user chooses a passkey action and surface any genuine browser error there.
-export const webauthnOK = () => typeof window.PublicKeyCredential !== 'undefined'
+//
+// False on the mobile build whatever the WebView itself exposes: the app's WebView runs at its
+// own bundled origin, which never matches the server's RP ID, so no passkey ceremony against the
+// server could ever succeed from here - every caller hides its own passkey option once this says
+// so, rather than each needing its own MOBILE check beside it.
+export const webauthnOK = () => !MOBILE && typeof window.PublicKeyCredential !== 'undefined'
 
 // The paired mobile app (lib/remote.js) is the only caller of these — everywhere else stays on
 // same-origin cookies, so remoteBase/remoteToken stay empty and api() behaves exactly as before.
@@ -220,6 +225,35 @@ export async function pairRedeem(serverBase, code) {
   // change to a server that never gave it a token.
   if (!data.token || !data.user) throw failure(t('The server answered with something other than openGym data.'), 'bad-response', 200)
   return data
+}
+
+// The phone app's own redeem, once its return address hands it the one-shot code: same bootstrap
+// shape as pairRedeem - the base isn't wired into remoteBase yet either, so this talks straight to
+// the server the connect screen is pointed at. `session: true` is only for a re-auth redeem, where
+// the phone already has a (now-refused) remote token to send alongside the new attempt's own
+// credential; a first-time connect sends no Authorization header at all.
+export async function appRedeem(serverBase, body, { session = false } = {}) {
+  const headers = { 'Content-Type': 'application/json' }
+  if (session && remoteToken) headers.Authorization = 'Bearer ' + remoteToken
+  return request(serverBase + '/api/oidc/app/redeem', { method: 'POST', headers, body: JSON.stringify(body) }, TIMEOUT_GET_MS)
+}
+
+// Finishes an identity nobody has linked yet into a profile, with the one-shot handle
+// POST /api/oidc/app/redeem's confirmation answer carried. Same bootstrap shape as appRedeem - no
+// Authorization header, since this phone has no remote token until this call answers one.
+export async function appConfirm(serverBase, body) {
+  const data = await request(serverBase + '/api/oidc/app/confirm', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+  }, TIMEOUT_GET_MS)
+  if (!data.token || !data.user) throw failure(t('The server answered with something other than openGym data.'), 'bad-response', 200)
+  return data
+}
+
+// Peeks a server's public configuration before this phone is connected to it at all - the same
+// GET /api/config the web boot reads, unauthenticated, so the connect screen can learn whether a
+// provider is offered before anything is paired.
+export async function serverConfig(serverBase) {
+  return request(serverBase + '/api/config', { method: 'GET' }, TIMEOUT_GET_MS)
 }
 
 const bufToB64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')

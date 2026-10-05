@@ -138,9 +138,10 @@ export default function Login() {
   </>
   const wrap = { display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '78vh', textAlign: 'center' }
 
-  // Offered only where a provider is configured and the WebView cannot navigate away to it and
-  // back the way a browser tab can (the naming screen and the fuller button precedence arrive in
-  // the next Login plan).
+  // Offered only where a provider is configured and the request runs in an ordinary browser tab,
+  // which can leave for the provider and come back to this same page. The phone app's WebView
+  // cannot make that round trip, so it signs in through the provider from its own connect screen
+  // instead, over its own return address.
   const provider = (!MOBILE && config?.oidc) || null
   const goProvider = () => { window.location.href = oidcStartUrl() }
   const [confirming, setConfirming] = useState(false)

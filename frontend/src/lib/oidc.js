@@ -31,9 +31,12 @@ export const oidcProofStartUrl = ticket => appBase() + 'api/oidc/proof/start?tic
 
 // Buys a one-shot proof ticket bound to the given act; the caller then navigates to
 // oidcProofStartUrl(ticket). A refusal (no linked identity, provider off, an act this instance
-// does not recognise) throws.
-export const requestProofTicket = act => api('/api/account/identities/proof-ticket', { method: 'POST', body: JSON.stringify({ act }) })
-  .then(r => r.ticket)
+// does not recognise) throws. `challenge` is the phone app's own addition (its S256 PKCE
+// challenge, over its Bearer session) - sent only when given, so every web caller's request body
+// stays exactly what it always was.
+export const requestProofTicket = (act, challenge) => api('/api/account/identities/proof-ticket', {
+  method: 'POST', body: JSON.stringify(challenge ? { act, challenge } : { act })
+}).then(r => r.ticket)
 
 // A confirmation only has to be noticed - the reader already knows what they did. A sentence
 // explaining a failure has to be read, so a caller showing one passes this duration to toast().

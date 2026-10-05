@@ -165,12 +165,41 @@ export function initReminderSync(getState) {
 
 // Runs cb whenever the native shell returns to the foreground — the store pulls the account's
 // state then, so a phone that sat in a pocket all afternoon shows what the desktop did. No-op
-// off mobile; the store's own visibility/focus listeners cover the browser.
+// off mobile; the store's own visibility/focus listeners cover the browser. Returns an
+// unsubscribe that removes the native listener - callers that mount and unmount repeatedly
+// within one app session (every sheet that reads peekAttempt on foreground) must not pile up a
+// listener per mount, each one firing a callback whose owner may be long gone. The dynamic
+// import can still be in flight when a caller unsubscribes; `cancelled` makes that case remove
+// the listener the moment it is handed back instead of leaving it live.
 export function onAppActive(cb) {
-  if (!MOBILE) return
+  if (!MOBILE) return () => {}
+  let cancelled = false
+  let handle = null
   import('@capacitor/app').then(({ App }) => {
-    App.addListener('appStateChange', ({ isActive }) => { if (isActive) cb() })
-  }).catch(() => {})
+    if (cancelled) return
+    return Promise.resolve(App.addListener('appStateChange', ({ isActive }) => { if (isActive) cb() }))
+  }).then(h => { if (!h) return; if (cancelled) h.remove(); else handle = h }).catch(() => {})
+  return () => { cancelled = true; handle?.remove() }
+}
+
+// Runs cb with the address whenever the OS hands this app an opengym:// intent - the return leg
+// of sign-in through a server's provider (lib/oidc-app.js's finishAppReturn reads it). Same
+// dynamic import shape as onAppActive, plus one read of the address that started this launch: a
+// return that arrives while the system killed the app in the background comes back as a cold
+// launch, not a foreground event, and would otherwise never reach cb at all. Returns the same
+// kind of unsubscribe as onAppActive, for symmetry - listenForProviderReturn (AppSignIn.jsx) is
+// a one-time, whole-app-lifetime registration and never calls it, but a future caller scoped to
+// one screen can.
+export function onAppUrlOpen(cb) {
+  if (!MOBILE) return () => {}
+  let cancelled = false
+  let handle = null
+  import('@capacitor/app').then(({ App }) => {
+    if (cancelled) return
+    App.getLaunchUrl().then(l => { if (!cancelled && l?.url) cb(l.url) }).catch(() => {})
+    return Promise.resolve(App.addListener('appUrlOpen', ({ url }) => cb(url)))
+  }).then(h => { if (!h) return; if (cancelled) h.remove(); else handle = h }).catch(() => {})
+  return () => { cancelled = true; handle?.remove() }
 }
 
 // WKWebView can't do blob-URL downloads, so the backup goes out through the OS share sheet

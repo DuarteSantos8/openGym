@@ -9,6 +9,7 @@ import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { dateLocale } from '../lib/i18n-core.js'
 import { api, webauthnOK, createPasskey } from '../lib/api.js'
+import { MOBILE } from '../lib/mobile.js'
 import { copyText } from '../lib/clipboard.js'
 import { deviceLinkUrl, deviceLabel } from '../lib/device-link.js'
 import { askAddDeviceData } from '../sheets.jsx'
@@ -132,7 +133,10 @@ export function PasskeysSheet({ close, changed }) {
     {st.passkeys.length === 1 && st.lastWayIn && <div className="dim small" style={{ marginTop: 8 }}>
       {t('It is your only way in, so it cannot be removed until there is another.')}</div>}
     <div style={{ height: 14 }} />
-    {webauthnOK() && <><Button variant="primary" icon="plus" onClick={add}>{t('Add a passkey')}</Button><div style={{ height: 8 }} /></>}
+    {webauthnOK() ? <><Button variant="primary" icon="plus" onClick={add}>{t('Add a passkey')}</Button><div style={{ height: 8 }} /></>
+      // On the phone, webauthnOK() is false for this reason alone - say so with the way that does
+      // work instead of leaving the row to look like it simply has nothing more to offer.
+      : MOBILE && <div className="dim small" style={{ marginBottom: 8 }}>{t('Add passkeys from a browser, or with a code for another device.')}</div>}
     <Button onClick={close}>{t('Done')}</Button>
   </>
 }
@@ -241,6 +245,7 @@ export function AddPasskeySheet({ state, close, done, initialName = '', resume =
    its sign-in screen. When it expires the sheet says so and offers a new one. */
 export function DeviceLinkSheet({ close, resume = false }) {
   const { st } = usePasskeys(true)
+  const sync = useStore(s => s.sync)
   const [link, setLink] = useState(null)   // { code, expires }
   // The proof a provider round trip left behind is good for the first code only: "Make a new
   // code" asks for a fresh proof instead of sending a spent one again.
@@ -252,7 +257,9 @@ export function DeviceLinkSheet({ close, resume = false }) {
     const timer = setTimeout(() => setExpired(true), Math.max(0, link.expires - Date.now()))
     return () => clearTimeout(timer)
   }, [link])
-  const url = link ? deviceLinkUrl(link.code) : ''
+  // On the phone the WebView's own origin is Capacitor's local asset server, never a reachable
+  // address - the code is only ever worth anything at the paired server itself.
+  const url = link ? deviceLinkUrl(link.code, MOBILE ? { origin: sync?.server, pathname: '/' } : window.location) : ''
   const copy = async () => { if (await copyText(url)) toast(t('Copied')) }
   return <>
     <h3>{t('Add another device')}</h3>

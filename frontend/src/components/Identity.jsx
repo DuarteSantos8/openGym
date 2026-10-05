@@ -8,11 +8,13 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { fmtDate } from '../lib/format.js'
+import { MOBILE } from '../lib/mobile.js'
 import { oidcLinkErrorKey } from '../lib/oidc-link-errors.js'
 import { oidcReturnErrorKey } from '../lib/oidc-errors.js'
 import { oidcProofErrorKey } from '../lib/oidc-proof-errors.js'
 import { oidcLinkStartUrl, removeIdentity, requestLinkTicket, SENTENCE_TOAST_MS } from '../lib/oidc.js'
 import { recallProof, forgetProof } from '../lib/pending-proof.js'
+import { startProviderLink } from './AppSignIn.jsx'
 import { passwordError, ProveOwner, resumePasswordProof, passwordStatus } from './PasswordAuth.jsx'
 import { resumePasskeyProof, passkeysState } from './Passkeys.jsx'
 import { Row, Button } from './ui.jsx'
@@ -140,12 +142,17 @@ export function IdentityRow({ state, provider, changed }) {
 }
 
 /* Linking: the owner's proof first, then straight to the provider - a plain navigation, not a
-   second WebAuthn prompt, so nothing here waits for it and nothing here needs a spinner. */
+   second WebAuthn prompt, so nothing here waits for it and nothing here needs a spinner. On the
+   phone there is no page to navigate at all - the system browser departs and returns through the
+   app's own opengym:// channel (AppSignIn.jsx's startProviderLink), which mints the same kind of
+   ticket this sheet's proof already buys on the web, just over the phone's own Bearer session. */
 export function LinkIdentitySheet({ close, state, provider, resume = false }) {
-  const start = async proof => {
-    const ticket = await requestLinkTicket(proof)
-    window.location.href = oidcLinkStartUrl(ticket)
-  }
+  const start = MOBILE
+    ? proof => startProviderLink(proof)
+    : async proof => {
+      const ticket = await requestLinkTicket(proof)
+      window.location.href = oidcLinkStartUrl(ticket)
+    }
   return <>
     <h3>{t('Link {0}', provider.name)}</h3>
     <div className="muted small" style={{ marginBottom: 14 }}>

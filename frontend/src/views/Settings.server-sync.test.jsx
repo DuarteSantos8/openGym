@@ -12,7 +12,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
    it never checked, and which asks before leaving changes the server has not got: try again,
    export a backup, or go ahead anyway with the changes kept on the device. */
 const mocks = vi.hoisted(() => {
-  const state = { S: null, user: null, sync: null, MOBILE: false, unsynced: { owed: false, count: 0 }, kept: [], sheets: [], navs: [] }
+  const state = { S: null, user: null, sync: null, config: null, MOBILE: false, unsynced: { owed: false, count: 0 }, kept: [], sheets: [], navs: [] }
   state.toast = vi.fn()
   state.confirmSheet = vi.fn()
   state.syncNow = vi.fn(async () => state.sync)
@@ -20,8 +20,9 @@ const mocks = vi.hoisted(() => {
   state.signOut = vi.fn()
   state.signOutAll = vi.fn()
   state.shareExport = vi.fn(async () => {})
+  state.startProviderSignIn = vi.fn()
   state.snapshot = () => ({
-    S: state.S, user: state.user, sync: state.sync, coachLocal: null,
+    S: state.S, user: state.user, sync: state.sync, config: state.config, coachLocal: null,
     update: vi.fn(), replaceState: vi.fn(), setUser: vi.fn(), pullState: vi.fn(), pushState: vi.fn(), resetDemo: vi.fn(),
     syncNow: state.syncNow, unsyncedChanges: () => state.unsynced, keptChanges: async () => state.kept,
     disconnectServer: state.disconnectServer, signOut: state.signOut, signOutAll: state.signOutAll,
@@ -51,6 +52,7 @@ vi.mock('../lib/mobile.js', () => ({
   isAndroid: () => Promise.resolve(false), shareExport: (...a) => mocks.shareExport(...a), syncReminder: vi.fn(),
 }))
 vi.mock('./MobileOnboarding.jsx', () => ({ ConnectSheet: props => <div className="connect" data-url={props.initialUrl ?? ''} data-again={String(!!props.again)} /> }))
+vi.mock('../components/AppSignIn.jsx', () => ({ startProviderSignIn: (...a) => mocks.startProviderSignIn(...a), onIdentityChanged: () => () => {} }))
 vi.mock('../sheets.jsx', () => ({
   starterPlanSheet: vi.fn(), confirmSheet: (...a) => mocks.confirmSheet(...a), importFromApp: vi.fn(),
   importFromHevy: vi.fn(), equipmentProfileSheet: vi.fn(), menuSheet: vi.fn(), askAddDeviceData: vi.fn(),
@@ -75,13 +77,14 @@ const settle = () => act(() => new Promise(r => setTimeout(r, 0)))
 beforeEach(() => {
   mocks.S = { unit: 'kg', restSec: 90, restPauseSec: 15, sound: false, effort: 'none', gifSize: 'full', workouts: [], routines: [], exWeights: {} }
   mocks.user = USER
+  mocks.config = null
   mocks.MOBILE = true
   mocks.sync = sync('ok', { lastSynced: Date.now() - 5 * 60000 })
   mocks.unsynced = { owed: false, count: 0 }
   mocks.kept = []
   mocks.sheets.length = 0
   mocks.navs.length = 0
-  for (const f of [mocks.toast, mocks.confirmSheet, mocks.syncNow, mocks.disconnectServer, mocks.signOut, mocks.signOutAll, mocks.shareExport]) f.mockClear()
+  for (const f of [mocks.toast, mocks.confirmSheet, mocks.syncNow, mocks.disconnectServer, mocks.signOut, mocks.signOutAll, mocks.shareExport, mocks.startProviderSignIn]) f.mockClear()
 })
 afterEach(() => { act(() => { mounted.splice(0).forEach(({ root, host }) => { root.unmount(); host.remove() }) }) })
 
@@ -121,6 +124,28 @@ describe('Server & sync', () => {
     // Sync now reports the outcome, whatever it is.
     await act(async () => { rowByTitle(b, 'Sync now').click() })
     expect(mocks.toast).toHaveBeenCalledWith('The server refuses this phone')
+  })
+
+  it('refused by a server with a provider: "Sign in again with Google" sits above "Pair again" and starts it', () => {
+    mocks.sync = sync('auth', { auth: true, pending: true, lastError: { status: 401, code: 'auth' } })
+    mocks.config = { invite_only: false, allow_guest: true, oidc: { name: 'Google' } }
+    const page = mount(<Settings />)
+    const b = block(page)
+    const rows = [...b.querySelectorAll('.lrow-t')].map(el => el.textContent)
+    const providerIndex = rows.indexOf('Sign in again with Google')
+    expect(providerIndex).toBeGreaterThanOrEqual(0)
+    expect(rows[providerIndex + 1]).toBe('Pair again')
+    act(() => rowByTitle(b, 'Sign in again with Google').click())
+    expect(mocks.startProviderSignIn).toHaveBeenCalledWith(BASE)
+  })
+
+  it('refused by a server with no provider: only "Pair again" shows, as before', () => {
+    mocks.sync = sync('auth', { auth: true, pending: true, lastError: { status: 401, code: 'auth' } })
+    mocks.config = { invite_only: false, allow_guest: true }
+    const page = mount(<Settings />)
+    const b = block(page)
+    expect(rowByTitle(b, 'Pair again')).toBeTruthy()
+    expect([...b.querySelectorAll('.lrow-t')].some(el => /^Sign in again with /.test(el.textContent))).toBe(false)
   })
 
   // A v1.3.8 phone that lost its pairing, upgraded: both rows said "This phone is not connected to a

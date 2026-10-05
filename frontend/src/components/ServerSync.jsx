@@ -13,6 +13,7 @@ import { syncMedia } from '../lib/media-sync.js'
 import { DEMO } from '../lib/demo.js'
 import { askAddDeviceData } from '../sheets.jsx'
 import { ConnectSheet } from '../views/MobileOnboarding.jsx'
+import { startProviderSignIn } from './AppSignIn.jsx'
 import { passwordOn, openPasswordSignIn } from './PasswordAuth.jsx'
 import { Section, Row, Button } from './ui.jsx'
 
@@ -46,15 +47,19 @@ export function useOnline() {
 }
 
 /* One state of `sync`, in words:
-     tone    'ok' | 'wait' | 'off' | 'bad' | 'quiet' — the colour, from fine to deliberate local use
-     line    the short status line: Settings, and the toast after "Sync now"
-     banner  the sentence the persistent indicator shows, or null when there is nothing to say
-     action  what the indicator offers: 'retry' | 'pair' | 'signin' | 'connect' | null
+     tone      'ok' | 'wait' | 'off' | 'bad' | 'quiet' - the colour, from fine to deliberate local use
+     line      the short status line: Settings, and the toast after "Sync now"
+     banner    the sentence the persistent indicator shows, or null when there is nothing to say
+     action    what the indicator offers: 'retry' | 'pair' | 'signin' | 'connect' | null
+     provider  the remembered server's provider name, carried only on a mobile refused-token
+               'auth' view that still has a known address - null for a web view, and null for a
+               phone with no address left to check one against, whatever the caller passed in
    `mobile` is the build (a phone pairs, a browser signs in); `online` whether the device has a
-   network, which decides whether "offline" is the device or the server. Every state that is not
-   'ok' says the changes are kept on this device — that is the one thing the person needs to hear
-   first. */
-export function connectionView(sync, { mobile = MOBILE, online = isOnline() } = {}) {
+   network, which decides whether "offline" is the device or the server; `provider` the display
+   name of the remembered server's provider, when the caller already has one to offer. Every state
+   that is not 'ok' says the changes are kept on this device - that is the one thing the person
+   needs to hear first. */
+export function connectionView(sync, { mobile = MOBILE, online = isOnline(), provider = null } = {}) {
   if (!sync) return null
   const err = sync.lastError || {}
   // A device that says it has no network is offline whatever the last request found: said the
@@ -88,10 +93,10 @@ export function connectionView(sync, { mobile = MOBILE, online = isOnline() } = 
     case 'auth':
       if (!mobile) return { tone: 'bad', icon: 'lock', action: 'signin', line: t('The server refuses this browser'), banner: t('Your server no longer accepts this browser. Your changes are kept here.') }
       // A phone an earlier version unpaired kept no address and no token: nothing refuses it,
-      // there is simply nothing to ask.
+      // there is simply nothing to ask - and no remembered server to check a provider against.
       return err.code === 'not-paired'
-        ? { tone: 'bad', icon: 'lock', action: 'pair', line: t('This phone is not connected to a server.'), banner: t('This phone is no longer paired with your server. Your changes are kept here.') }
-        : { tone: 'bad', icon: 'lock', action: 'pair', line: t('The server refuses this phone'), banner: t('Your server no longer accepts this phone. Your changes are kept here.') }
+        ? { tone: 'bad', icon: 'lock', action: 'pair', provider: null, line: t('This phone is not connected to a server.'), banner: t('This phone is no longer paired with your server. Your changes are kept here.') }
+        : { tone: 'bad', icon: 'lock', action: 'pair', provider: provider || null, line: t('The server refuses this phone'), banner: t('Your server no longer accepts this phone. Your changes are kept here.') }
     default:   // 'local': no server at all — chosen, so it is said quietly, but it is said
       return mobile
         ? { tone: 'quiet', icon: 'lock', action: 'connect', line: t('On this phone only — not connected to a server'), banner: t('On this phone only — not connected to a server') }
@@ -119,6 +124,23 @@ export function pairAgain() {
 }
 export function connectServer() {
   ui().openSheet(close => <ConnectSheet close={close} />)
+}
+
+// The same departure the connect sheet's own provider button makes (AppSignIn.jsx), for the
+// remembered server a refused phone is still paired with - no sheet to open, just the same leave
+// and come-back the pairing tail already merges what this phone kept into. Both of this
+// function's own callers (the Settings row, the "not everything is on your server yet" sheet)
+// render it as a plain row/button with no busy state of their own, so the re-entrancy guard
+// lives here instead: a second tap before the first departure's attempt finished writing would
+// overwrite the same attempt record with its own verifier, same as the connect screen's button.
+let signInAgainInFlight = false
+export async function signInAgainWithProvider() {
+  if (signInAgainInFlight) return
+  const server = useStore.getState().sync?.server
+  if (!server) return
+  signInAgainInFlight = true
+  try { await startProviderSignIn(server) }
+  finally { signInAgainInFlight = false }
 }
 
 // A browser whose session ended, or a guest: the passkey sign-in, and the same account merges
@@ -172,11 +194,12 @@ export async function leaveServer(kind, { exportBackup, exportBackupZip, done })
 // its export writes the backup with them (the plain JSON would leave exactly those out).
 export function OwedSheet({ kind, count: count0, media: media0 = 0, exportBackup, exportBackupZip, done, close }) {
   const sync = useStore(s => s.sync)
+  const config = useStore(s => s.config)
   const [count, setCount] = useState(count0)
   const [media, setMedia] = useState(media0)
   const [busy, setBusy] = useState(false)
   const [tried, setTried] = useState(false)
-  const view = connectionView(sync)
+  const view = connectionView(sync, { provider: config?.oidc?.name })
   // Refused because it is paired or signed in to a server that no longer takes it: trying
   // again cannot work, and pairing or signing in again brings the changes to the server.
   const refused = sync?.status === 'auth'
@@ -217,7 +240,11 @@ export function OwedSheet({ kind, count: count0, media: media0 = 0, exportBackup
           : t('Sign in again, or export a backup first. Going ahead anyway keeps a copy of these changes on this device until it connects to this server as this account again — then they are added back.'))
         : t('Try again, or export a backup first. Going ahead anyway keeps a copy of these changes on this device until it connects to this server as this account again — then they are added back.')}
     </div>
-    {refused && MOBILE && <><button className="btn primary" disabled={busy} onClick={() => { close(); pairAgain() }}>{t('Pair again')}</button><div style={{ height: 8 }} /></>}
+    {refused && MOBILE && <>
+      {view.provider && <><button className="btn primary" disabled={busy} onClick={() => { close(); signInAgainWithProvider() }}>{t('Sign in again with {0}', view.provider)}</button><div style={{ height: 8 }} /></>}
+      <button className={view.provider ? 'btn' : 'btn primary'} disabled={busy} onClick={() => { close(); pairAgain() }}>{t('Pair again')}</button>
+      <div style={{ height: 8 }} />
+    </>}
     {refused && !MOBILE && canSignIn() && <><button className="btn primary" disabled={busy} onClick={() => { close(); signInAgain() }}>{pwOn() ? t('Sign in') : t('Sign in with passkey')}</button><div style={{ height: 8 }} /></>}
     {!refused && <><button className="btn primary" disabled={busy} onClick={retry}>{busy ? t('Syncing…') : t('Try again')}</button><div style={{ height: 8 }} /></>}
     {media > 0 && exportBackupZip
@@ -240,7 +267,7 @@ export function ServerSyncSection({ children }) {
   const user = useStore(s => s.user)
   const sync = useStore(s => s.sync)
   useStore(s => s.S)   // the count of waiting changes follows every edit
-  useStore(s => s.config)   // whether "Sign in" may offer a password
+  const config = useStore(s => s.config)   // whether "Sign in" may offer a password, and its provider
   const unsynced = useStore(s => s.unsyncedChanges)
   const online = useOnline()
   const [busy, setBusy] = useState(false)
@@ -248,7 +275,7 @@ export function ServerSyncSection({ children }) {
   const [, tick] = useState(0)
   useEffect(() => { const iv = setInterval(() => tick(n => n + 1), 30000); return () => clearInterval(iv) }, [])
   if (!user || !sync) return null
-  const view = connectionView(sync, { online })
+  const view = connectionView(sync, { online, provider: config?.oidc?.name })
   // While everything is fine, a change still in its short debounce is not news; once anything
   // is wrong, how much is waiting is exactly what the person needs.
   const owed = sync.status !== 'ok' && typeof unsynced === 'function' ? unsynced() : { owed: false }
@@ -269,7 +296,10 @@ export function ServerSyncSection({ children }) {
     <Row icon={view.icon} iconTint={TINT[view.tone]} title={view.line} subtitle={sub} className="sync-status" />
     <Row icon="reset" iconTint="var(--acc)" title={busy ? t('Syncing…') : t('Sync now')} onClick={now} />
     {sync.status === 'auth' && (MOBILE
-      ? <Row icon="link" iconTint="var(--indigo)" title={t('Pair again')} subtitle={t('Your changes are kept here, and merged into your account once it is paired again.')} accessory="chevron" onClick={pairAgain} />
+      ? <>
+          {view.provider && <Row icon="person" iconTint="var(--blue)" title={t('Sign in again with {0}', view.provider)} subtitle={t('Your changes are kept here, and merged into your account once you are signed in again.')} accessory="chevron" onClick={signInAgainWithProvider} />}
+          <Row icon="link" iconTint="var(--indigo)" title={t('Pair again')} subtitle={t('Your changes are kept here, and merged into your account once it is paired again.')} accessory="chevron" onClick={pairAgain} />
+        </>
       : canSignIn() && <Row icon="person" iconTint="var(--blue)" title={pwOn() ? t('Sign in') : t('Sign in with passkey')} subtitle={t('Your changes are kept here, and merged into your account once you are signed in again.')} accessory="chevron" onClick={signInAgain} />)}
     {/* another account's, kept when this one signed in over a copy that still owed them */}
     <KeptChangesRows />
