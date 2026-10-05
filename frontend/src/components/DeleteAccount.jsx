@@ -4,8 +4,8 @@
 // device where a sign-out does (useStore deleteAccount). Two steps: the sheet offers the backup
 // export first (the very one Data & backup has, handed in by Settings) and asks for the
 // account's name typed back; then the owner's proof, the same step the other changes to a way in
-// ask (ProveOwner): a passkey, or the current password where it counts. The proof carries the
-// delete. The phone app holds no passkey for the server, so there a profile without a password is
+// ask (ProveOwner): a passkey, the current password where it counts, or a sign-in at the provider
+// as the profile's linked identity. The proof carries the delete. The phone app holds no passkey for the server, so there a profile without a password is
 // proved by the pairing (the server's rule), after the phone's own screen lock says it is its
 // owner (DeviceConfirm). Shown only while signed in to or paired with a server: a phone in
 // local-only mode has no account, and "Reset everything" is how it wipes its data.
@@ -34,10 +34,13 @@ export function deleteAccountError(e) {
   return t('Couldn’t delete the account. Nothing was removed.')
 }
 
-export function DeleteAccountSheet({ close, exportBackup, exportBackupZip, hasMedia, done }) {
+export function DeleteAccountSheet({ close, exportBackup, exportBackupZip, hasMedia, done, initialName = '', resume = false }) {
   const user = useStore(s => s.user)
-  const [typed, setTyped] = useState('')
-  const [step, setStep] = useState('name')   // 'name' | 'confirm'
+  const [typed, setTyped] = useState(initialName)
+  const [step, setStep] = useState(resume ? 'confirm' : 'name')   // 'name' | 'confirm'
+  // A sheet reopened after the provider round trip carries that one proof, spent by the first
+  // answer: going back to the name step, or a refusal, leaves a fresh proof to be asked for.
+  const [resumed, setResumed] = useState(resume)
   const [proofs, setProofs] = useState(null)   // GET /api/account/passkeys: what can prove it is them
   const [err, setErr] = useState(null)
   const ref = useRef(null)
@@ -52,6 +55,7 @@ export function DeleteAccountSheet({ close, exportBackup, exportBackupZip, hasMe
     setStep('confirm')
   }
   const remove = async proof => {
+    setResumed(false)
     await useStore.getState().deleteAccount(typed.trim(), proof)
     close()
     useUI.getState().toast(t('Your account is gone. Thanks for every rep.'))
@@ -87,9 +91,11 @@ export function DeleteAccountSheet({ close, exportBackup, exportBackupZip, hasMe
       <div className="dim small" style={{ marginBottom: 14 }}>{t('First confirm that it is you.')}</div>
       {!proofs ? (err ? <div className="small" role="alert" style={errStyle}>{err}</div> : <div className="dim small">{t('Loading…')}</div>)
         : MOBILE && !password ? <DeviceConfirm onConfirmed={() => remove({})} />
-        : <ProveOwner passkey={passkey} password={password} explain={deleteAccountError} danger submitText={t('Delete forever')} onProof={remove} />}
+        : <ProveOwner passkey={passkey} password={password} identity={!!proofs.identity?.usable}
+          act="account-delete" draft={{ name: typed.trim() }} resume={resumed}
+          explain={deleteAccountError} danger submitText={t('Delete forever')} onProof={remove} />}
       <div style={{ height: 8 }} />
-      <Button type="button" variant="ghost" className="dim" onClick={() => setStep('name')}>{t('Back')}</Button>
+      <Button type="button" variant="ghost" className="dim" onClick={() => { setResumed(false); setStep('name') }}>{t('Back')}</Button>
     </>}
   </>
 }
@@ -120,6 +126,16 @@ function DeviceConfirm({ onConfirmed }) {
     <button type="button" className="btn danger" disabled={busy || !lock} onClick={go}>{t('Delete forever')}</button>
     {err && <div className="small" role="alert" style={errStyle}>{err}</div>}
   </>
+}
+
+// Reopens the delete sheet at its proof step after the browser came back from confirming with the
+// provider (reopenAfterProof in components/Identity.jsx), with the name typed before it left.
+// `props` are the ones the row passes. Answers false when no name was remembered.
+export function resumeDeleteAccountProof(draft, props) {
+  const name = typeof draft?.name === 'string' ? draft.name : ''
+  if (!name) return false
+  useUI.getState().openSheet(close => <DeleteAccountSheet {...props} close={close} initialName={name} resume />)
+  return true
 }
 
 // The row on the Account page. `done` runs once the account is gone (Settings goes home).

@@ -31,6 +31,7 @@ import { DEFAULT_TEMPLATE_ID } from '../lib/structuralBalanceTemplates.js'
 import { WC_DEFAULT } from '../lib/workout-controls.js'
 import { sanitizeAccent } from '../lib/accent.js'
 import { registerExerciseAliases } from '../lib/exercise-aliases.js'
+import { markGuestDeparture, takeGuestDeparture } from '../lib/guest-departure.js'
 
 const KEY = 'gym_state_v1'
 // Where the saved copy stands with the server: the revision it descends from, and its own `_ts`
@@ -2124,10 +2125,15 @@ export const useStore = create((set, get) => {
         try { await api('/api/logout', { method: 'POST', body: '{}' }); logoutOwed(false) } catch { /* owed until it is answered */ }
         if (logoutOwed()) { finishBoot(); return }
       }
+      // Back from the provider a guest left for in Settings (lib/guest-departure.js): no longer a
+      // guest, so an identity without a profile reaches the sign-in screen that names one, and a
+      // profile that signed in asks about this browser's entries as any sign-in does.
+      const fromGuest = takeGuestDeparture()
+      if (fromGuest) get().setGuest(false)
       try {
         const me = await api('/api/me')
         if (!me.user?.id) throw Object.assign(new Error('no user'), { status: 200, code: 'bad-response' })
-        get().setUser(me.user)
+        get().setUser(me.user, fromGuest ? { adopt: true } : undefined)
         // Re-stamp the reminder's timezone on every load — keeps it correct if you're travelling,
         // without needing to revisit Settings.
         const restampTz = () => {
@@ -2161,6 +2167,9 @@ export const useStore = create((set, get) => {
         // behind a proxy answering for the server: keep the signed-in copy and say so from the
         // first screen, not only after the first failed push.
         else if (get().user) failed(e, { pending: owes() })
+        // Back from the provider but the server's answer never came: the departure's mark goes
+        // back, so the reload that does reach it still asks about this browser's entries.
+        if (fromGuest && e.status !== 401) markGuestDeparture()
       }
       finishBoot()
     }
