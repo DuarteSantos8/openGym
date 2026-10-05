@@ -243,7 +243,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.3.9</span>
-    <span>69 endpoints</span>
+    <span>83 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -258,8 +258,9 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <div class="ov-grid">
   <div class="ov">
     <h3>Authentication</h3>
-<p>Sign-in is by <b>passkey</b> (WebAuthn, via <code>@simplewebauthn/server</code>). A successful <code>register/verify</code> or <code>login/verify</code> sets the session cookie; every authenticated route then works with that cookie. The paired mobile app has no shared cookie jar, so it redeems a short pairing code (<code>/api/pair/redeem</code>) for the <i>same</i> signed token and sends it as <code>Authorization: Bearer &lt;token&gt;</code> instead.</p>
+<p>Sign-in is by <b>passkey</b> (WebAuthn, via <code>@simplewebauthn/server</code>). A successful <code>register/verify</code> or <code>login/verify</code> sets the session cookie; every authenticated route then works with that cookie. The paired mobile app has no shared cookie jar, so it redeems a short pairing code (<code>/api/pair/redeem</code>) for the <i>same</i> signed token and sends it as <code>Authorization: Bearer &lt;token&gt;</code> instead. Where the instance offers sign-in through an external provider, the app can obtain that same token by signing in through it directly instead — the system browser, never the app's own WebView, carries the round trip, and <code>/api/oidc/app/redeem</code> answers with the token (see below).</p>
 <p>An instance started with <code>PASSWORD_LOGIN=1</code> also offers <b>name-and-password sign-in</b> (tag <code>password</code>): opt-in per profile, scrypt-hashed, throttled, with an admin-issued one-time reset code instead of e-mail. A profile may also add an e-mail address to sign in with instead of its name (<code>/api/account/email</code>); no mail is ever sent to it. Its routes set exactly the same cookie. With the flag off (the default) every one of them answers 404.</p>
+<p>With <code>OIDC_ISSUER</code> and its required siblings set, the instance also offers sign-in through one external OpenID Connect provider (tag <code>auth</code>). The <code>/api/oidc/*</code> routes are browser-navigated <code>GET</code>s that answer with redirects, carrying a short code in the URL fragment on a refusal; a successful sign-in sets exactly the same session cookie a passkey does. An identity is attached to an existing profile only through a link its already signed-in owner proves first (<code>POST /api/account/identities/link-ticket</code> buys a one-shot ticket; only <code>GET /api/oidc/link/start</code> carrying it ever reaches the provider) — a session cookie alone starts nothing. A linked identity counts as a way in for the last-way-in rule only while its provider stays configured, and a sign-in at that provider as the profile's own linked identity is a third answer wherever a change asks for the owner's proof (<code>identityProof</code>, routed the same way through <code>POST /api/account/identities/proof-ticket</code> and <code>GET /api/oidc/proof/start</code>): the verified identity must always be the linked one, and when the provider reports the time of that sign-in (<code>auth_time</code>), it must not predate the request (<code>stale-sign-in</code> otherwise). With nothing configured, every OIDC route answers as disabled and <code>GET /api/config</code> carries no <code>oidc</code> key.</p>
   </div>
   <div class="ov">
     <h3>Throttling</h3>
@@ -271,7 +272,8 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="ov">
     <h3>CSRF</h3>
-<p>State-changing browser requests must come from the app's own origin. The server checks <code>Sec-Fetch-Site</code> (falling back to <code>Origin</code> vs the configured <code>ORIGIN</code>); a mismatch is refused with <code>403 {&quot;error&quot;:&quot;cross-origin request refused&quot;}</code> on any non-GET route. Exempt: passkey sign-up and sign-in (<code>register/options</code>, <code>register/verify</code>, <code>login/options</code>, <code>login/verify</code>) and <code>pair/redeem</code>, each of which carries its own one-shot credential in the body, and any request authenticated with a Bearer token. The password routes are <b>not</b> exempt: a hostile page knows a valid name and password of its own, and could otherwise sign a visitor into it (login CSRF). Neither are the device-link routes: a link is redeemed on the app's own origin, the only one a passkey can be created for.</p>
+<p>State-changing browser requests must come from the app's own origin. The server checks <code>Sec-Fetch-Site</code> (falling back to <code>Origin</code> vs the configured <code>ORIGIN</code>); a mismatch is refused with <code>403 {&quot;error&quot;:&quot;cross-origin request refused&quot;}</code> on any non-GET route. Exempt: passkey sign-up and sign-in (<code>register/options</code>, <code>register/verify</code>, <code>login/options</code>, <code>login/verify</code>), <code>pair/redeem</code>, and the phone app's own sign-in redeem and confirm (<code>oidc/app/redeem</code>, <code>oidc/app/confirm</code>), each of which carries its own one-shot credential in the body, and any request authenticated with a Bearer token. The password routes are <b>not</b> exempt: a hostile page knows a valid name and password of its own, and could otherwise sign a visitor into it (login CSRF). Neither are the device-link routes: a link is redeemed on the app's own origin, the only one a passkey can be created for.</p>
+<p>The two app-channel exemptions above act on no existing session even where they create one — <code>oidc/app/redeem</code> carries the return code together with its verifier, <code>oidc/app/confirm</code> the one-shot handle that redeem answered with — and both have to work from the phone's own WebView, whose origin is never <code>ORIGIN</code>. A redeem that links or proves instead carries the phone's own Bearer token, which already skips the check above on its own. Every other state-changing provider route — minting a link or a proof ticket, confirming a new profile in a browser, removing a linked identity — sits under the same origin check as every other <code>/api/account/*</code> route; only the provider's own browser-navigated departures and its callback (<code>/api/oidc/start</code>, <code>/api/oidc/link/start</code>, <code>/api/oidc/proof/start</code>, <code>/api/oidc/callback</code>, and their phone-app counterparts) are the <code>GET</code>s the check above already lets through.</p>
   </div>
   <div class="ov">
     <h3>Environment-dependent behavior</h3>
@@ -335,7 +337,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <div class="ptab">
   <div class="prow rrow">
     <span class="r-code s2">200</span>
-    <span class="p-desc">Instance flags, plus the Coach block for a signed-in caller.<span class="r-sig">{ invite_only: boolean, allow_guest: boolean, coach: object | null, password_login: always true, default_lang: string, media: <a href="#schema-MediaConfig">MediaConfig</a> }</span></span>
+    <span class="p-desc">Instance flags, plus the Coach block for a signed-in caller.<span class="r-sig">{ invite_only: boolean, allow_guest: boolean, coach: object | null, password_login: always true, default_lang: string, media: <a href="#schema-MediaConfig">MediaConfig</a>, oidc: object }</span></span>
   </div>
     </div>
   </div>
@@ -536,6 +538,425 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
 </details>
 
+<details class="ep" id="op-oidcStart">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/oidc/start</code><span class="ep-chip public">public</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Begin sign-in through the configured OIDC provider</span>
+  </summary>
+  <div class="ep-body">
+<p>Navigated to directly by the browser — never called by script, and it never answers a JSON body. Every outcome of a navigation, including every failure, is a redirect: success sends the browser on to the provider's own authorization endpoint; a failure sends it back to the app root with a short code in the URL fragment (<code>#err=&lt;code&gt;</code>), which no browser sends back to any server, so a failure code never reaches a log or an access record.</p>
+<p>Takes nothing at all from the request: no query string, no body, no cookie. Which identity is returning is unknowable until the provider has answered, so an invite-only instance gates the creation of a profile at <code>POST /api/oidc/confirm</code> rather than the departure here, where a check would also fall on people who already have a profile.</p>
+<p>Absent or invalid OIDC configuration answers <code>provider-misconfigured</code>; a provider that cannot be reached for its discovery document answers <code>provider-unreachable</code>.</p>
+<p>Only a top-level navigation departs. A request whose <code>Sec-Fetch-Dest</code> is present and not <code>document</code>, or whose <code>Sec-Fetch-Mode</code> is present and not <code>navigate</code> (an image, a script, a fetch from any page), is answered <code>403</code> with no body and no cookie, and is not counted. On an instance with a provider configured, every other request counts against a per-address window of 60 a minute that only the three departures (this route, <code>GET /api/oidc/link/start</code> and <code>GET /api/oidc/proof/start</code>) share. It is not the budget of the password and device-link routes, so no departure can pause those. Past it the route answers <code>locked</code> without minting a departure, until the minute the window opened in has passed.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public — no authentication required.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s3">302</span>
+    <span class="p-desc">The provider's own authorization endpoint on success, or the app root with a short code in the fragment on any failure.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Not a top-level navigation. No body, no cookie, nothing counted.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-oidcAppStart">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/oidc/app/start</code><span class="ep-chip public">public</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Begin sign-in through the configured OIDC provider, from the phone app</span>
+  </summary>
+  <div class="ep-body">
+<p>The phone app's own counterpart to <code>GET /api/oidc/start</code>: navigated to directly (a plain navigation the native shell hands to the system browser, never a fetch), and every outcome is a redirect. Requires <code>?challenge=&lt;43-character S256 challenge&gt;</code>, computed by the app itself from a verifier it keeps for itself; the departure records the challenge, and the callback that returns from it is never trusted for the same value. On success the return goes to <code>opengym://oidc?code=&lt;one-shot code&gt;</code> instead of setting a cookie; on any failure to <code>opengym://oidc?err=&lt;code&gt;</code>.</p>
+<p>Refused the same way <code>GET /api/oidc/start</code> is: only a top-level navigation departs (<code>403</code>, no body, nothing counted, otherwise), and every departure counts against the same per-address window the three browser departures already share.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public — no authentication required.</span></p>
+<p class="ep-h">Query parameters</p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">challenge<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">RFC 7636 S256 challenge, base64url with no padding, computed by the app from a verifier it holds until the redeem step. A missing or malformed value answers <code>request-invalid</code> without recording anything.</span>
+  </div>
+</div>
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s3">302</span>
+    <span class="p-desc">The provider's own authorization endpoint on success, or <code>opengym://oidc?err=&lt;code&gt;</code> on any failure.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Not a top-level navigation. No body, no cookie, nothing counted.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-oidcAppLinkStart">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/oidc/app/link/start</code><span class="ep-chip public">public</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Begin attaching an identity to the caller's own profile, from the phone app</span>
+  </summary>
+  <div class="ep-body">
+<p>The phone app's own counterpart to <code>GET /api/oidc/link/start</code>: carries no cookie and no Authorization header, since the system browser this navigates to has no session of its own. Requires <code>?ticket=&lt;ticket&gt;</code>, a one-shot value from <code>POST /api/account/identities/link-ticket</code> minted with a <code>challenge</code> over the phone's own Bearer session. The ticket alone is the credential this departure is honoured on; the profile and the session it was minted for are checked only later, when the phone redeems the result with its verifier and its Bearer (<code>POST /api/oidc/app/redeem</code>). A missing, already spent, expired or non-app ticket (one minted for <code>GET /api/oidc/link/start</code>) answers <code>opengym://oidc?err=ticket-invalid</code> and records nothing at all — an anonymous request names nobody.</p>
+<p>Refused the same way <code>GET /api/oidc/app/start</code> is: only a top-level navigation departs (<code>403</code>, no body, nothing counted, otherwise), and every departure counts against the same per-address window the four browser/app departures already share.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public — no authentication required.</span></p>
+<p class="ep-h">Query parameters</p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">ticket<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The one-shot value from POST /api/account/identities/link-ticket.</span>
+  </div>
+</div>
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s3">302</span>
+    <span class="p-desc">The provider's own authorization endpoint on success, or <code>opengym://oidc?err=&lt;code&gt;</code> on any failure.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Not a top-level navigation. No body, no cookie, the ticket untouched.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-oidcLinkStart">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/oidc/link/start</code><span class="ep-chip public">public</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Begin attaching an identity to the caller's own profile</span>
+  </summary>
+  <div class="ep-body">
+<p>Navigated to directly by the browser, never called by script, and it never answers a JSON body — like <code>GET /api/oidc/start</code>, every outcome of a navigation is a redirect. Unlike that route, a session alone starts nothing here: the request must carry <code>?ticket=&lt;ticket&gt;</code>, a one-shot value <code>POST /api/account/identities/link-ticket</code> minted after the owner proved it is them. The ticket is bound to the exact profile and session that asked for it, and lives for 60 seconds. It is taken (spent) once the session presenting it is known to be that one and before anything else can fail; a presentation under any other session, or none, spends nothing.</p>
+<p>Every failure sends the browser back to <code>/#/settings?link-err=&lt;code&gt;</code>, never to the sign-in screen: <code>not-signed-in</code> (no session), <code>ticket-invalid</code> (missing, already spent, expired, or not a link ticket), <code>session-changed</code> (the ticket names a different profile or session than the one presenting it), <code>provider-misconfigured</code>, <code>provider-unreachable</code>, or <code>locked</code> (past the departures' own per-address window, the one <code>GET /api/oidc/start</code> spends). Anything but a top-level navigation is answered <code>403</code> before the session or the ticket is looked at, as on <code>GET /api/oidc/start</code>, so it spends nothing.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public — no authentication required.</span></p>
+<p class="ep-h">Query parameters</p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">ticket<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The one-shot value from POST /api/account/identities/link-ticket.</span>
+  </div>
+</div>
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s3">302</span>
+    <span class="p-desc">The provider's own authorization endpoint on success, or <code>/#/settings?link-err=&lt;code&gt;</code> on any failure.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Not a top-level navigation. No body, no cookie, the ticket untouched.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-oidcProofStart">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/oidc/proof/start</code><span class="ep-chip public">public</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Begin confirming a change by signing in at the provider as the linked identity</span>
+  </summary>
+  <div class="ep-body">
+<p>Navigated to directly by the browser, never called by script, and every outcome of a navigation is a redirect. The request must carry <code>?ticket=&lt;ticket&gt;</code>, a one-shot value <code>POST /api/account/identities/proof-ticket</code> minted for one named change. The ticket is bound to the exact profile and session that asked for it, and taken (spent) once the session presenting it is known to be that one and before anything else can fail; a presentation under any other session, or none, spends nothing.</p>
+<p>The authorization request carries <code>prompt=login</code> and <code>max_age=0</code>, asking the provider to authenticate the person again, and no <code>claims</code> request parameter. Nothing rests on those two: they travel through the browser and an issuer may ignore them. What the return leg on <code>GET /api/oidc/callback</code> checks is the identity the token names and, when the issuer reports it, the time of the sign-in (<code>auth_time</code>).</p>
+<p>Every failure sends the browser back to <code>/#/settings?proof-err=&lt;code&gt;</code>: <code>state-expired</code> (the ticket is missing, already spent, expired, or not a proof ticket), <code>state-unknown</code> (the ticket names a different profile or session than the one presenting it, or no session presented it), <code>provider-misconfigured</code>, <code>provider-unreachable</code>, or <code>locked</code> (past the departures' own per-address window, the one <code>GET /api/oidc/start</code> spends). A failure is audited as <code>auth.proof.fail</code> with the change it was for (<code>act</code>), except a request with no session, which records nothing. Anything but a top-level navigation is answered <code>403</code> before the session or the ticket is looked at, as on <code>GET /api/oidc/start</code>, so it spends nothing and records nothing.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public — no authentication required.</span></p>
+<p class="ep-h">Query parameters</p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">ticket<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The one-shot value from POST /api/account/identities/proof-ticket.</span>
+  </div>
+</div>
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s3">302</span>
+    <span class="p-desc">The provider's own authorization endpoint on success, or <code>/#/settings?proof-err=&lt;code&gt;</code> on any failure.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Not a top-level navigation. No body, no cookie, the ticket untouched.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-oidcAppProofStart">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/oidc/app/proof/start</code><span class="ep-chip public">public</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Begin confirming a change by signing in at the provider, from the phone app</span>
+  </summary>
+  <div class="ep-body">
+<p>The phone app's own counterpart to <code>GET /api/oidc/proof/start</code>: carries no cookie and no Authorization header, since the system browser this navigates to has no session of its own. Requires <code>?ticket=&lt;ticket&gt;</code>, a one-shot value from <code>POST /api/account/identities/proof-ticket</code> minted with a <code>challenge</code> over the phone's own Bearer session. The ticket alone is the credential this departure is honoured on; the profile and the session it was minted for are checked only later, when the phone redeems the result with its verifier and its Bearer (<code>POST /api/oidc/app/redeem</code>). A missing, already spent, expired or non-app ticket (one minted for <code>GET /api/oidc/proof/start</code>) answers <code>opengym://oidc?err=ticket-invalid</code> and records nothing.</p>
+<p>Same <code>prompt=login</code> and <code>max_age=0</code> authorization parameters as the web proof departure, for the same reason: nothing rests on them, since an issuer may ignore them and the redeem's own rules do the real work. Refused the same way <code>GET /api/oidc/app/start</code> is: only a top-level navigation departs, and every departure counts against the same per-address window the other browser/app departures already share.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public — no authentication required.</span></p>
+<p class="ep-h">Query parameters</p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">ticket<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The one-shot value from POST /api/account/identities/proof-ticket.</span>
+  </div>
+</div>
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s3">302</span>
+    <span class="p-desc">The provider's own authorization endpoint on success, or <code>opengym://oidc?err=&lt;code&gt;</code> on any failure.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Not a top-level navigation. No body, no cookie, the ticket untouched.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-oidcCallback">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/oidc/callback</code><span class="ep-chip public">public</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Return leg of sign-in through the provider</span>
+  </summary>
+  <div class="ep-body">
+<p>The address the provider sends the browser back to once the person authenticates there. Also navigated to directly rather than called by script, authenticated only by the departure cookie <code>GET /api/oidc/start</code> set, and — like that route — every outcome is a redirect, never a JSON body.</p>
+<p>The departure cookie is consumed before anything else runs, so a replayed callback address is refused without ever reaching the provider. A known identity — one already linked to a profile — is signed in immediately, exactly as a passkey login would be, and lands on the app root with a session cookie and no fragment at all. An identity this instance has never seen is parked for a moment instead and sent on to <code>/#oidc=confirm</code>, where <code>GET /api/oidc/pending</code> and <code>POST /api/oidc/confirm</code> finish the sign-in by giving the new profile a name. Any other failure answers <code>#err=&lt;code&gt;</code> with one of <code>state-unknown</code>, <code>state-expired</code>, <code>token-invalid</code>, <code>provider-unreachable</code> (the provider's own reported error and a token that fails verification both fold into <code>token-invalid</code>) or <code>account-disabled</code> (the identity is linked to a profile that no longer exists or has been disabled).</p>
+<p>A refusal reached before any departure is consumed (no provider configured, no departure cookie or two of them, a state that does not match it, or a state nothing is waiting under) cannot tell which attempt it ends. While the browser is signed in it answers <code>/#/settings?oidc-err=&lt;code&gt;</code> (one of <code>provider-misconfigured</code>, <code>state-unknown</code>), since a signed-in browser was linking or confirming a change; otherwise the app root, as above. A departure that existed and ran out still answers where it started, with <code>state-expired</code>.</p>
+<p>This same address also serves the return leg of <code>GET /api/oidc/link/start</code>: the store the consumed departure was held in says which of the attempts this is, never anything on the request. A successful link answers <code>/#/settings?link=ok</code> with no session cookie — the owner was already signed in, and this leg can neither mint a session nor create a profile. A link failure answers <code>/#/settings?link-err=&lt;code&gt;</code> instead of the app root, with one of <code>not-signed-in</code>, <code>ticket-invalid</code>, <code>session-changed</code> (the session that returns no longer matches the one that departed — signed out, signed out everywhere, or switched profile mid-flight), <code>provider-misconfigured</code>, <code>provider-unreachable</code>, <code>state-unknown</code>, <code>state-expired</code>, <code>token-invalid</code>, <code>identity-collision</code> (that identity is already linked to a different profile), or <code>profile-linked</code> (this profile already has a different one).</p>
+<p>It serves the return leg of <code>GET /api/oidc/proof/start</code> too. A proof never mints a session, creates a profile or writes anything to disk. The session that returns must be the one that departed, and two rules decide the rest, in this order: the token must name exactly the identity linked to this profile (always, on every issuer), and when the token carries <code>auth_time</code> it must not predate the departure by more than two minutes of clock skew. A token from the linked identity without <code>auth_time</code> is accepted as proof of possession of the linked account. Success answers <code>/#/settings?proof=ok</code> and sets an HttpOnly cookie addressing a one-shot proof, good for five minutes, for that profile, that session, that linked identity and the one change it was requested for; <code>identityProof: true</code> in <code>OwnerProof</code> spends it. A failure answers <code>/#/settings?proof-err=&lt;code&gt;</code> with one of <code>state-unknown</code> (the session changed mid-flight), <code>state-expired</code>, <code>token-invalid</code>, <code>identity-mismatch</code> (the provider signed in another account, or the profile has no linked identity any more), <code>stale-sign-in</code> (the issuer reported a sign-in older than the request), <code>provider-unreachable</code> or <code>provider-misconfigured</code>, audited as <code>auth.proof.fail</code>.</p>
+<p>A departure started by the phone app (<code>GET /api/oidc/app/start</code>, <code>GET /api/oidc/app/link/start</code> or <code>GET /api/oidc/app/proof/start</code>) never lands on any of the screens above: it returns to <code>opengym://oidc?code=&lt;one-shot code&gt;</code> on success or <code>opengym://oidc?err=&lt;code&gt;</code> on any failure, and the app redeems the code at <code>POST /api/oidc/app/redeem</code>. Whether a departure was an app one is read only from the consumed departure entry, never from this request. An app link or an app proof departure writes nothing and mints nothing here either — the code carries what the redeem needs (the identity pair for a link; the identity, the change and whether the sign-in was stale for a proof), and the redeem is where the phone's own Bearer session is checked and anything is finally written or minted.</p>
+<p>The code is kept inside the URL fragment, the way the client's own router reads it. A fragment is never sent to any server, so a failure code never reaches a log or an access record.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public — no authentication required.</span></p>
+<p class="ep-h">Query parameters</p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">code</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Authorization code, supplied by the provider on success.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">state</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Echoed back by the provider; compared against the departure cookie's own value and never used as a lookup key by itself.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">error</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The provider's own error code, supplied instead of <code>code</code> when it refuses.</span>
+  </div>
+</div>
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s3">302</span>
+    <span class="p-desc">A sign-in return: the app root with a session on a known identity, <code>/#oidc=confirm</code> on an unknown one, or the app root with a failure code in the fragment. A link return: <code>/#/settings?link=ok</code> on success, or <code>/#/settings?link-err=&lt;code&gt;</code> on failure. A proof return: <code>/#/settings?proof=ok</code> on success, or <code>/#/settings?proof-err=&lt;code&gt;</code> on failure.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-oidcPending">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/oidc/pending</code><span class="ep-chip public">public</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Peek the name seeded for a waiting sign-in</span>
+  </summary>
+  <div class="ep-body">
+<p>Reads the display name <code>GET /api/oidc/callback</code> seeded for a verified identity that has not yet become a profile, without spending the attempt it addresses — a refreshed create-profile screen can call this again and still find the same sign-in waiting. Authenticated by the waiting-identity cookie that route set, never by the ordinary session cookie or bearer token.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public — no authentication required.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">A sign-in is waiting for a name.<span class="r-sig">{ name: string }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No waiting-identity cookie, or the attempt it names has expired.<span class="r-sig"><code>{&quot;error&quot;:&quot;sign-in expired — start again&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-oidcConfirm">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/oidc/confirm</code><span class="ep-chip public">public</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Name and create the profile for a waiting sign-in</span>
+  </summary>
+  <div class="ep-body">
+<p>The only write path a sign-in through the provider has, and the only step an invite code gates: signing in with a profile that already exists never asks for one. Validates the submitted name and, on an invite-only instance, the submitted invite code before touching the waiting attempt at all, so a mistyped one of either can be retried without losing the attempt or making a second trip to the provider. A second submission for the same identity (two tabs, a doubled click) resolves to the one profile it already created rather than making another. The invite code is burned at the moment the profile is created. Signs the new profile in exactly as a passkey registration would. Origin-checked like every other state-changing route: not in the CSRF exemption list.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public — no authentication required.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">name<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string <span class="p-hint">(&le; 40 chars)</span></span>
+    <span class="p-desc">Display name for the new profile (trimmed, max 40 chars).</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">code</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Invite code — required (and validated) only when the instance runs with INVITE_ONLY. Compared case-insensitively, exactly as /api/register/verify compares it. A refusal leaves the waiting attempt intact so the code can be corrected on the same screen.</span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Registered and signed in. The session cookie is set and the waiting-identity cookie is expired.<span class="r-sig">{ user: <a href="#schema-SessionUser">SessionUser</a> } &middot; sets <code>Set-Cookie</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc"><code>name</code> missing/empty.<span class="r-sig"><code>{&quot;error&quot;:&quot;name required&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No waiting-identity cookie, or the attempt it names has expired.<span class="r-sig"><code>{&quot;error&quot;:&quot;sign-in expired — start again&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">The identity already resolved to a disabled profile, or — on an invite-only instance — the invite code submitted with this request is not valid. On the invite refusal the waiting-identity cookie is deliberately left in place, so the code can be corrected and resubmitted against the same attempt.<span class="r-sig"><code>{&quot;error&quot;:&quot;this account has been disabled&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;this invite is no longer valid&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Paused by the sign-in throttle (see <i>Throttling</i> in the description). The request was not looked at; try again after <code>Retry-After</code> seconds.<span class="r-sig"><code>{&quot;error&quot;:&quot;too many attempts — try again later&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-oidcAppRedeem">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/oidc/app/redeem</code><span class="ep-chip public">public</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Redeem the phone app's one-shot sign-in, link or proof code</span>
+  </summary>
+  <div class="ep-body">
+<p>Called from the phone app itself, once the app's own return address hands it the one-shot code <code>GET /api/oidc/callback</code> minted. The code and the <code>verifier</code> the app has kept since its own departure are the whole credential for a sign-in, exactly like <code>POST /api/pair/redeem</code>'s code alone. The code and the verifier are never logged or audited - only the outcome is. CSRF-exempt for the same reason <code>/api/pair/redeem</code> is: it carries its own one-shot credential in the body, acts on no existing session, and has to work from the mobile WebView, whose origin is never ORIGIN.</p>
+<p>A linked identity signing in is signed in immediately, exactly as <code>POST /api/pair/redeem</code> answers. An identity nobody has linked yet answers a confirmation shape instead: a one-shot <code>handle</code>, never a token, for <code>POST /api/oidc/app/confirm</code> to finish.</p>
+<p>A code minted by <code>GET /api/oidc/app/link/start</code> or <code>GET /api/oidc/app/proof/start</code> also needs the same Bearer session the ticket was minted for — nothing was written or minted at the callback for either, so this is the one point either is checked. A link answers <code>{ linked: true }</code> once <code>attachIdentity</code> runs the web link branch's own rule (a pair linked to another profile is refused, the same owner re-linking writes nothing more, a profile linked meanwhile is refused). A proof answers <code>{ proof: &quot;&lt;id&gt;&quot; }</code> once the two rules the web proof branch enforces both pass (the token names exactly the identity linked to this profile now; when the issuer reported it, the sign-in is not older than the departure) — spendable once by <code>identityProof: true</code> + <code>proof</code> in <code>OwnerProof</code>.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public — no authentication required.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">code<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The one-shot code from the app's return address.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">verifier<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The PKCE verifier the app generated at departure and kept since; its S256 digest must match the challenge the departure recorded.</span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Signed in, an identity waiting for the app's own confirm, or an identity linked.<span class="r-sig">object | object | object | object</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">The code is missing, already spent, or expired.<span class="r-sig"><code>{&quot;error&quot;:&quot;invalid or expired code&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;invalid or expired code&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">The account signed out everywhere between the callback and this redeem — for a link or a proof code, also any Bearer session other than the one the ticket was minted for, or none at all.<span class="r-sig"><code>{&quot;error&quot;:&quot;signed out everywhere since the sign-in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">The verifier does not match the challenge recorded at departure, the account behind the code is disabled, or - a proof code only - the token named a different identity than the one linked to this profile now (<code>identity-mismatch</code>), or the issuer reported a sign-in older than the departure (<code>stale-sign-in</code>). Both proof refusals are audited as <code>auth.proof.fail</code> with the change the proof was for.<span class="r-sig"><code>{&quot;error&quot;:&quot;wrong verifier for this code&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;this account has been disabled&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;the provider signed in a different account than the one linked to this profile&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;the provider reported a sign-in older than the request to confirm&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">A link code only: the identity is already linked to a different profile (<code>identity-collision</code>), or the Bearer session's own profile gained a different linked identity meanwhile (<code>profile-linked</code>).<span class="r-sig"><code>{&quot;error&quot;:&quot;this identity is already linked to a profile&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;this profile already has a linked identity&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-oidcAppConfirm">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/oidc/app/confirm</code><span class="ep-chip public">public</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Name (and, where required, an invite for) a new profile from the phone app</span>
+  </summary>
+  <div class="ep-body">
+<p>The phone's own counterpart to <code>POST /api/oidc/confirm</code>: finished with the <code>handle</code> the redeem above minted instead of the waiting-identity cookie, so no session and no cookie are ever read or set. Runs the exact same rules as the web route (name and invite settled while the entry is only peeked at, the identity pair re-looked-up before a profile is created, the entry taken at the last possible moment), on its own one-shot store addressed only by the handle - a web waiting-identity id, a return code, or a departure state presented here finds nothing. CSRF-exempt and counted in the same burst budget as <code>POST /api/oidc/confirm</code>, for the same reason <code>POST /api/oidc/app/redeem</code> is exempt above.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public — no authentication required.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">handle<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The one-shot handle from POST /api/oidc/app/redeem's confirmation answer.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">name<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string <span class="p-hint">(&le; 40 chars)</span></span>
+    <span class="p-desc">Display name for the new profile (trimmed, max 40 chars).</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">code</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Invite code — required (and validated) only when the instance runs with INVITE_ONLY and this identity is not already linked. A refusal leaves the handle usable, so the code can be corrected against the same attempt.</span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Registered and signed in, exactly like POST /api/pair/redeem.<span class="r-sig">{ token: string, user: <a href="#schema-SessionUser">SessionUser</a> }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc"><code>name</code> missing/empty.<span class="r-sig"><code>{&quot;error&quot;:&quot;name required&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">The handle is missing, already spent, or expired.<span class="r-sig"><code>{&quot;error&quot;:&quot;sign-in expired — start again&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">The identity already resolved to a disabled profile, or — on an invite-only instance — the invite code submitted with this request is not valid.<span class="r-sig"><code>{&quot;error&quot;:&quot;this account has been disabled&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;this invite is no longer valid&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Paused by the sign-in throttle (see <i>Throttling</i> in the description). The request was not looked at; try again after <code>Retry-After</code> seconds.<span class="r-sig"><code>{&quot;error&quot;:&quot;too many attempts — try again later&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
 <details class="ep" id="op-logout">
   <summary>
     <span class="m post">POST</span>
@@ -579,6 +1000,158 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s4">401</span>
     <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-removeAccountIdentity">
+  <summary>
+    <span class="m delete">DELETE</span>
+    <span class="ep-path"><code>/api/account/identities</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Remove the identity an external provider linked to this profile</span>
+  </summary>
+  <div class="ep-body">
+<p>At most one identity per profile, so there is nothing to select between. Refused while it is the profile's last way in: nothing else could sign it in again once it is gone. Otherwise the body carries the same proof removing a passkey takes (<code>OwnerProof</code>): a session alone is never enough, since a stolen cookie must not choose which of the owner's ways in is left. The 404 and 409 refusals come before the proof is checked, and the last-way-in rule is checked again after it. Audited as <code>auth.identity.remove</code>; a refused proof as <code>auth.proof.fail</code>. Neither ever carries the subject, the address or the issuer.</p>
+<p>Sessions are not tied to the identity that opened them, so a session it already opened carries on; <code>POST /api/logout/all</code> ends those.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body</p><p class="p-desc"><a href="#schema-OwnerProof">OwnerProof</a></p>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Removed. The account state as it is now.<span class="r-sig">object</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">No acceptable proof that the owner is here: <code>passkey-required</code> (no password that counts — none is set, or <code>PASSWORD_LOGIN</code> is off — so a passkey has to confirm), <code>passkey</code> (the assertion did not verify, belongs to another profile, or was made for another challenge, one handed out for another ceremony or one already used), <code>current-required</code>, <code>current-wrong</code>, or <code>identity-proof</code> (no proof made at the provider to spend, or one already spent, expired, or made for another change, another session or an identity no longer linked).<span class="r-sig"><code>{&quot;error&quot;:&quot;confirm with your passkey first&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">This profile has no linked identity.<span class="r-sig"><code>{&quot;error&quot;:&quot;no identity is linked to this profile&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">It is the profile's last way in.<span class="r-sig"><code>{&quot;error&quot;:&quot;the linked identity is the only way into this profile&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Paused by the sign-in throttle (see <i>Throttling</i> in the description). The request was not looked at; try again after <code>Retry-After</code> seconds.<span class="r-sig"><code>{&quot;error&quot;:&quot;too many attempts — try again later&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">503</span>
+    <span class="p-desc">Every password check slot and the short queue behind them are taken.<span class="r-sig"><code>{&quot;error&quot;:&quot;the server is busy — try again in a moment&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-createIdentityLinkTicket">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/account/identities/link-ticket</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Prove ownership and mint a one-shot ticket for linking an identity</span>
+  </summary>
+  <div class="ep-body">
+<p>Linking an external identity to an existing profile is proven before the browser ever leaves for the provider: a session alone is never enough to start it, the same bar a device-link code is held to. The body carries the same proof <code>DELETE /api/account/identities</code> takes (<code>OwnerProof</code>). A successful proof buys a ticket — a 43-character, one-shot, 60-second-lived value bound to this profile and to the exact session that asked for it — which only <code>GET /api/oidc/link/start?ticket=&lt;ticket&gt;</code> can spend to reach the provider.</p>
+<p>Refused before any proof is asked when there is nothing a ticket could ever be used for: no external provider is configured (<code>provider-off</code>), or this profile already has a linked identity (<code>profile-linked</code>). A failed proof is audited as <code>auth.proof.fail</code> with <code>act: identity-link</code>.</p>
+<p>A Bearer session (the paired phone app) may also carry <code>challenge</code>: an RFC 7636 S256 challenge the app generated itself, recorded on the ticket so the phone's own departure (<code>GET /api/oidc/app/link/start</code>) can be honoured with no session of its own, and checked only later when the phone redeems the result (<code>POST /api/oidc/app/redeem</code>). Present on a cookie session, or malformed on either kind, answers <code>400 challenge-invalid</code> before any proof is asked. A ticket minted with a challenge is never valid at <code>GET /api/oidc/link/start</code>.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">A one-shot link ticket, good for 60 seconds.<span class="r-sig">{ ticket: string }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc"><code>challenge-invalid</code>: <code>challenge</code> is present on a cookie session, or malformed.<span class="r-sig"><code>{&quot;error&quot;:&quot;malformed app challenge&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">No acceptable proof that the owner is here: <code>passkey-required</code> (no password that counts — none is set, or <code>PASSWORD_LOGIN</code> is off — so a passkey has to confirm), <code>passkey</code> (the assertion did not verify, belongs to another profile, or was made for another challenge, one handed out for another ceremony or one already used), <code>current-required</code>, <code>current-wrong</code>, or <code>identity-proof</code> (no proof made at the provider to spend, or one already spent, expired, or made for another change, another session or an identity no longer linked).<span class="r-sig"><code>{&quot;error&quot;:&quot;confirm with your passkey first&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc"><code>provider-off</code> (no external provider configured) or <code>profile-linked</code> (already has one).<span class="r-sig"><code>{&quot;error&quot;:&quot;this profile already has a linked identity&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Paused by the sign-in throttle (see <i>Throttling</i> in the description). The request was not looked at; try again after <code>Retry-After</code> seconds.<span class="r-sig"><code>{&quot;error&quot;:&quot;too many attempts — try again later&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">503</span>
+    <span class="p-desc">Every password check slot and the short queue behind them are taken.<span class="r-sig"><code>{&quot;error&quot;:&quot;the server is busy — try again in a moment&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-createIdentityProofTicket">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/account/identities/proof-ticket</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Mint a one-shot ticket for confirming a change at the provider</span>
+  </summary>
+  <div class="ep-body">
+<p>The first step of the third proof <code>OwnerProof</code> accepts: a sign-in at the provider as this profile's own linked identity, for a profile whose only way in may be that identity. The ticket names the one change the proof will be good for (<code>act</code>) and grants nothing by itself — it only lets this session leave for the provider through <code>GET /api/oidc/proof/start?ticket=&lt;ticket&gt;</code>, and the sign-in there is what proves anything. So no other proof is asked for it. One-shot, 60 seconds, bound to this profile and to the exact session that asked for it; nothing about it is written to disk.</p>
+<p>Same <code>challenge</code> rule as <code>POST /api/account/identities/link-ticket</code>: a Bearer session may carry an RFC 7636 S256 challenge, recorded on the ticket for <code>GET /api/oidc/app/proof/start</code> to depart with no session of its own. Present on a cookie session, or malformed on either kind, answers <code>400 challenge-invalid</code>. A ticket minted with a challenge is never valid at <code>GET /api/oidc/proof/start</code>.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">act<em class="p-req" title="required">required</em></span>
+    <span class="p-type">&quot;email&quot; | &quot;email-remove&quot; | &quot;password&quot; | &quot;password-remove&quot; | &quot;passkey-add&quot; | &quot;passkey-remove&quot; | &quot;device-link&quot; | &quot;identity-link&quot; | &quot;identity-remove&quot;</span>
+    <span class="p-desc">The change the proof will confirm; a proof made for one is refused for any other.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">challenge</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">RFC 7636 S256 challenge, base64url with no padding. Bearer sessions only.</span>
+  </div>
+</div>
+<pre><code>{
+  &quot;act&quot;: &quot;passkey-add&quot;
+}</code></pre>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">A one-shot proof ticket, good for 60 seconds.<span class="r-sig">{ ticket: string }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc"><code>act-invalid</code>: <code>act</code> is missing or not a change that takes the owner's proof. <code>challenge-invalid</code>: <code>challenge</code> is present on a cookie session, or malformed.<span class="r-sig"><code>{&quot;error&quot;:&quot;that change cannot be confirmed with the provider&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;malformed app challenge&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc"><code>not-linked</code>: no identity that counts as a way in (none linked, or no provider configured).<span class="r-sig"><code>{&quot;error&quot;:&quot;no identity is linked to this profile&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Paused by the sign-in throttle (see <i>Throttling</i> in the description). The request was not looked at; try again after <code>Retry-After</code> seconds.<span class="r-sig"><code>{&quot;error&quot;:&quot;too many attempts — try again later&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">503</span>
+    <span class="p-desc">Every password check slot and the short queue behind them are taken.<span class="r-sig"><code>{&quot;error&quot;:&quot;the server is busy — try again in a moment&quot;}</code></span></span>
   </div>
     </div>
   </div>
@@ -874,7 +1447,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <div class="ptab">
   <div class="prow rrow">
     <span class="r-code s2">200</span>
-    <span class="p-desc">The profile's password state.<span class="r-sig">{ set: boolean, setAt: string | null, passkeys: integer, name: string, nameTaken: boolean, email: string | null }</span></span>
+    <span class="p-desc">The profile's password state.<span class="r-sig">{ set: boolean, setAt: string | null, passkeys: integer, name: string, nameTaken: boolean, email: string | null, identity: boolean }</span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>
@@ -959,7 +1532,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Remove this profile's password</span>
   </summary>
   <div class="ep-body">
-<p>Refused while the profile has no passkey: the password would be its last way in. Otherwise the body carries the same proof setting one takes — <code>current</code>, the password itself, or a passkey assertion made for this request (<code>cid</code> from <code>POST /api/login/options</code>, <code>credential</code> signed by one of <i>this</i> profile's passkeys). A session alone is never enough: a stolen cookie must not take away the owner's way in where passkeys do not work. The last-way-in refusal comes before the proof is checked, and is checked again after it. Wrong <code>current</code> values count toward the same pause as wrong sign-ins. Existing sessions are left alone (<code>POST /api/logout/all</code> ends them). A profile without a password gets 200 as well, with no proof asked. Audited as <code>auth.password.remove</code>.</p>
+<p>Refused while nothing else could still sign this profile in — no passkey, no linked identity whose provider is configured: the password would be its last way in. Otherwise the body carries the same proof setting one takes — <code>current</code>, the password itself, or a passkey assertion made for this request (<code>cid</code> from <code>POST /api/login/options</code>, <code>credential</code> signed by one of <i>this</i> profile's passkeys). A session alone is never enough: a stolen cookie must not take away the owner's way in where passkeys do not work. The last-way-in refusal comes before the proof is checked, and is checked again after it. Wrong <code>current</code> values count toward the same pause as wrong sign-ins. Existing sessions are left alone (<code>POST /api/logout/all</code> ends them). A profile without a password gets 200 as well, with no proof asked. Audited as <code>auth.password.remove</code>.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
 
 <p class="ep-h">Request body</p><p class="p-desc"><a href="#schema-OwnerProof">OwnerProof</a></p>
@@ -975,7 +1548,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">403</span>
-    <span class="p-desc">No acceptable proof that the owner is here: <code>passkey-required</code> (no password that counts — none is set, or <code>PASSWORD_LOGIN</code> is off — so a passkey has to confirm), <code>passkey</code> (the assertion did not verify, belongs to another profile, or was made for another challenge, one handed out for another ceremony or one already used), <code>current-required</code> or <code>current-wrong</code>.<span class="r-sig"><code>{&quot;error&quot;:&quot;confirm with your passkey first&quot;}</code></span></span>
+    <span class="p-desc">No acceptable proof that the owner is here: <code>passkey-required</code> (no password that counts — none is set, or <code>PASSWORD_LOGIN</code> is off — so a passkey has to confirm), <code>passkey</code> (the assertion did not verify, belongs to another profile, or was made for another challenge, one handed out for another ceremony or one already used), <code>current-required</code>, <code>current-wrong</code>, or <code>identity-proof</code> (no proof made at the provider to spend, or one already spent, expired, or made for another change, another session or an identity no longer linked).<span class="r-sig"><code>{&quot;error&quot;:&quot;confirm with your passkey first&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">409</span>
@@ -1026,7 +1599,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">403</span>
-    <span class="p-desc">No acceptable proof that the owner is here: <code>passkey-required</code> (no password that counts — none is set, or <code>PASSWORD_LOGIN</code> is off — so a passkey has to confirm), <code>passkey</code> (the assertion did not verify, belongs to another profile, or was made for another challenge, one handed out for another ceremony or one already used), <code>current-required</code> or <code>current-wrong</code>.<span class="r-sig"><code>{&quot;error&quot;:&quot;confirm with your passkey first&quot;}</code></span></span>
+    <span class="p-desc">No acceptable proof that the owner is here: <code>passkey-required</code> (no password that counts — none is set, or <code>PASSWORD_LOGIN</code> is off — so a passkey has to confirm), <code>passkey</code> (the assertion did not verify, belongs to another profile, or was made for another challenge, one handed out for another ceremony or one already used), <code>current-required</code>, <code>current-wrong</code>, or <code>identity-proof</code> (no proof made at the provider to spend, or one already spent, expired, or made for another change, another session or an identity no longer linked).<span class="r-sig"><code>{&quot;error&quot;:&quot;confirm with your passkey first&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">409</span>
@@ -1068,7 +1641,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">403</span>
-    <span class="p-desc">No acceptable proof that the owner is here: <code>passkey-required</code> (no password that counts — none is set, or <code>PASSWORD_LOGIN</code> is off — so a passkey has to confirm), <code>passkey</code> (the assertion did not verify, belongs to another profile, or was made for another challenge, one handed out for another ceremony or one already used), <code>current-required</code> or <code>current-wrong</code>.<span class="r-sig"><code>{&quot;error&quot;:&quot;confirm with your passkey first&quot;}</code></span></span>
+    <span class="p-desc">No acceptable proof that the owner is here: <code>passkey-required</code> (no password that counts — none is set, or <code>PASSWORD_LOGIN</code> is off — so a passkey has to confirm), <code>passkey</code> (the assertion did not verify, belongs to another profile, or was made for another challenge, one handed out for another ceremony or one already used), <code>current-required</code>, <code>current-wrong</code>, or <code>identity-proof</code> (no proof made at the provider to spend, or one already spent, expired, or made for another change, another session or an identity no longer linked).<span class="r-sig"><code>{&quot;error&quot;:&quot;confirm with your passkey first&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">429</span>
@@ -1123,7 +1696,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Remove one passkey</span>
   </summary>
   <div class="ep-body">
-<p>Refused while it is the profile's last way in: its only passkey, and no password that can sign in (a password counts only while <code>PASSWORD_LOGIN</code> is on). Otherwise the body carries the same proof adding one takes (<code>OwnerProof</code>): a session alone is never enough, since a stolen cookie could otherwise choose which of the owner's passkeys is left. Any of the profile's passkeys may confirm, the one being removed included. The 404 and 409 refusals come before the proof is checked, and the last-way-in rule is checked again after it. Audited as <code>auth.passkey.remove</code>. An unused device code of the profile is dropped too, so one made with the removed passkey cannot add another afterwards.</p>
+<p>Refused while it is the profile's last way in: its only passkey, and no password that can sign in (a password counts only while <code>PASSWORD_LOGIN</code> is on) or linked identity that can (an identity counts only while the issuer it was linked at is the one configured). Otherwise the body carries the same proof adding one takes (<code>OwnerProof</code>): a session alone is never enough, since a stolen cookie could otherwise choose which of the owner's passkeys is left. Any of the profile's passkeys may confirm, the one being removed included. The 404 and 409 refusals come before the proof is checked, and the last-way-in rule is checked again after it. Audited as <code>auth.passkey.remove</code>. An unused device code of the profile is dropped too, so one made with the removed passkey cannot add another afterwards.</p>
 <p>Sessions are not tied to the passkey that opened them, so a session it already opened carries on; <code>POST /api/logout/all</code> ends those.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
 <p class="ep-h">Query parameters</p><div class="ptab">
@@ -1146,7 +1719,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">403</span>
-    <span class="p-desc">No acceptable proof that the owner is here: <code>passkey-required</code> (no password that counts — none is set, or <code>PASSWORD_LOGIN</code> is off — so a passkey has to confirm), <code>passkey</code> (the assertion did not verify, belongs to another profile, or was made for another challenge, one handed out for another ceremony or one already used), <code>current-required</code> or <code>current-wrong</code>.<span class="r-sig"><code>{&quot;error&quot;:&quot;confirm with your passkey first&quot;}</code></span></span>
+    <span class="p-desc">No acceptable proof that the owner is here: <code>passkey-required</code> (no password that counts — none is set, or <code>PASSWORD_LOGIN</code> is off — so a passkey has to confirm), <code>passkey</code> (the assertion did not verify, belongs to another profile, or was made for another challenge, one handed out for another ceremony or one already used), <code>current-required</code>, <code>current-wrong</code>, or <code>identity-proof</code> (no proof made at the provider to spend, or one already spent, expired, or made for another change, another session or an identity no longer linked).<span class="r-sig"><code>{&quot;error&quot;:&quot;confirm with your passkey first&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">404</span>
@@ -1193,7 +1766,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">403</span>
-    <span class="p-desc">No acceptable proof that the owner is here: <code>passkey-required</code> (no password that counts — none is set, or <code>PASSWORD_LOGIN</code> is off — so a passkey has to confirm), <code>passkey</code> (the assertion did not verify, belongs to another profile, or was made for another challenge, one handed out for another ceremony or one already used), <code>current-required</code> or <code>current-wrong</code>.<span class="r-sig"><code>{&quot;error&quot;:&quot;confirm with your passkey first&quot;}</code></span></span>
+    <span class="p-desc">No acceptable proof that the owner is here: <code>passkey-required</code> (no password that counts — none is set, or <code>PASSWORD_LOGIN</code> is off — so a passkey has to confirm), <code>passkey</code> (the assertion did not verify, belongs to another profile, or was made for another challenge, one handed out for another ceremony or one already used), <code>current-required</code>, <code>current-wrong</code>, or <code>identity-proof</code> (no proof made at the provider to spend, or one already spent, expired, or made for another change, another session or an identity no longer linked).<span class="r-sig"><code>{&quot;error&quot;:&quot;confirm with your passkey first&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">409</span>
@@ -1326,7 +1899,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">403</span>
-    <span class="p-desc">No acceptable proof that the owner is here: <code>passkey-required</code> (no password that counts — none is set, or <code>PASSWORD_LOGIN</code> is off — so a passkey has to confirm), <code>passkey</code> (the assertion did not verify, belongs to another profile, or was made for another challenge, one handed out for another ceremony or one already used), <code>current-required</code> or <code>current-wrong</code>.<span class="r-sig"><code>{&quot;error&quot;:&quot;confirm with your passkey first&quot;}</code></span></span>
+    <span class="p-desc">No acceptable proof that the owner is here: <code>passkey-required</code> (no password that counts — none is set, or <code>PASSWORD_LOGIN</code> is off — so a passkey has to confirm), <code>passkey</code> (the assertion did not verify, belongs to another profile, or was made for another challenge, one handed out for another ceremony or one already used), <code>current-required</code>, <code>current-wrong</code>, or <code>identity-proof</code> (no proof made at the provider to spend, or one already spent, expired, or made for another change, another session or an identity no longer linked).<span class="r-sig"><code>{&quot;error&quot;:&quot;confirm with your passkey first&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">409</span>
@@ -2628,7 +3201,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Delete a user and everything of theirs</span>
   </summary>
   <div class="ep-body">
-<p>Removes the account for good: the user record, their passkeys, their push subscriptions, their live presence, their training history file, their uploaded photos and videos (<code>DATA_DIR/uploads/&lt;uid&gt;/</code>) and any Coach credential stored for them. Not reversible — <code>/api/admin/user/disable</code> is the reversible one. An admin cannot delete their own account, and the last admin cannot be deleted. Audited by name, since the id stops meaning anything.</p>
+<p>Removes the account for good: the user record, their passkeys, their push subscriptions, their live presence, their training history file, their uploaded photos and videos (<code>DATA_DIR/uploads/&lt;uid&gt;/</code>), any Coach credential stored for them, and the identity linked through an external provider together with the address kept with it (that identity can then sign up again as a new profile). Not reversible — <code>/api/admin/user/disable</code> is the reversible one. An admin cannot delete their own account, and the last admin cannot be deleted. Audited by name, since the id stops meaning anything.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only — a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
 
 <p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
@@ -3232,9 +3805,14 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-desc">The profile has a password and <code>PASSWORD_LOGIN</code> is on, so <code>current</code> can prove an addition or a removal.</span>
   </div>
   <div class="prow">
+    <span class="p-name">identity</span>
+    <span class="p-type">object | null</span>
+    <span class="p-desc">The identity linked to this profile through an external provider, or null when none is linked. Never the issuer or the subject.</span>
+  </div>
+  <div class="prow">
     <span class="p-name">lastWayIn</span>
     <span class="p-type">boolean</span>
-    <span class="p-desc">Removing any one passkey would be refused (409 <code>last-way-in</code>).</span>
+    <span class="p-desc">Removing the profile's only remaining passkey, password or linked identity would be refused (409 <code>last-way-in</code>) — the same count every removal route reads.</span>
   </div>
 </div>
   </div>
@@ -3244,7 +3822,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <summary>
     <span class="sch-name"><code>OwnerProof</code></span>
     <span class="ep-chev" aria-hidden="true"></span>
-    <span class="ep-sum">Either a passkey assertion made for this request (<code>cid</code> + <code>credential</code>), or the profile's current password (<code>current</code>) — which counts only while <code>PASSWORD_LOGIN</code> is on.</span>
+    <span class="ep-sum">Either a passkey assertion made for this request (<code>cid</code> + <code>credential</code>), a sign-in at the provider as the profile's own linked identity (<code>identityProof: true</code>), or the profile's current password (<code>current</code>) — which counts only while <code>PASSWORD_LOGIN</code> is on.</span>
   </summary>
   <div class="ep-body">
 <p>Each assertion is good for one request: its challenge is spent by it.</p>
@@ -3258,6 +3836,16 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-name">credential</span>
     <span class="p-type"><a href="#schema-WebAuthnAuthenticationCredential">WebAuthnAuthenticationCredential</a></span>
     <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">identityProof</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"><code>true</code> spends the one-shot proof <code>GET /api/oidc/callback</code> (a cookie session) or <code>POST /api/oidc/app/redeem</code> (a Bearer session) left behind after <code>POST /api/account/identities/proof-ticket</code> and <code>GET /api/oidc/proof/start</code> / <code>GET /api/oidc/app/proof/start</code>. A cookie session carries it in its HttpOnly cookie; a Bearer session carries it as <code>proof</code> in this same body instead, since the phone has no cookie jar shared with the server — each kind of session reads only its own carrier, so a value presented on the wrong one proves nothing. Accepted only for the change it was requested for, under the session that requested it, while the identity that made it is still the one linked to this profile; spent whatever the outcome. Audited, like the change it confirms, with the proof kind <code>identity</code>.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">proof</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The one-shot id <code>POST /api/oidc/app/redeem</code> answered for a proof code. Read only alongside <code>identityProof: true</code>, and only on a Bearer session.</span>
   </div>
   <div class="prow">
     <span class="p-name">current</span>
