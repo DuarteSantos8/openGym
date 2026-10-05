@@ -20,6 +20,7 @@ import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { boundPort } from './helpers.mjs';
 import { hashPassword } from '../password.js';
+import { s256 } from '../oidc/flow.js';
 
 const API = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const ORIGIN = 'http://localhost:8080';
@@ -232,6 +233,74 @@ export async function providerSignIn(h, provider, { sub = 'subject-1', email, em
   return { res, sessionCookie: session ? `${SESSION_COOKIE}=${session}` : null };
 }
 
+// The app's own PKCE pair, generated the way the app itself would with WebCrypto: a random
+// verifier and the S256 challenge over it. Distinct from the harness's own provider-facing PKCE
+// (which server.js's departTo() manages) - this is the app-to-server pair a redeem checks.
+export function appPkce() {
+  const verifier = crypto.randomBytes(32).toString('base64url');
+  return { verifier, challenge: s256(verifier) };
+}
+
+// Departs for the provider through the phone app's own start route, carrying the app's S256
+// challenge, and reads back everything a real app would carry forward: the state and nonce the
+// redirect to the provider names, and the departure cookie the response set.
+export async function appDepart(h, challenge) {
+  const res = await h.raw('GET', `/api/oidc/app/start?challenge=${encodeURIComponent(challenge)}`);
+  const departure = cookieValue(res.cookies, ST_COOKIE);
+  return {
+    res,
+    state: res.query.get('state'),
+    nonce: res.query.get('nonce'),
+    cookieHeader: departure ? `${ST_COOKIE}=${departure}` : null
+  };
+}
+
+// Parses an app departure's return Location into { code } | { err } | null, mirroring what the
+// app's own parseAppReturn does on the real opengym:// address.
+export function appReturnOf(res) {
+  if (!res.location || !res.location.startsWith('opengym://oidc')) return null;
+  const q = new URL(res.location.replace('opengym://', 'http://'), 'http://x').searchParams;
+  if (q.has('code')) return { code: q.get('code') };
+  if (q.has('err')) return { err: q.get('err') };
+  return null;
+}
+
+// The full app departure-and-return round trip: mints the app's own PKCE pair, departs, arms the
+// provider's next token-endpoint answer with an identity token for the case's own claims, then
+// completes the callback with the departure cookie and the state the provider echoed back.
+export async function appSignIn(h, provider, { sub = 'subject-1', email, email_verified, extra = {}, challenge, code = 'authcode-from-provider' } = {}) {
+  const pkce = challenge ? { verifier: null, challenge } : appPkce();
+  const flow = await appDepart(h, pkce.challenge);
+  provider.setTokenResponse(200, { id_token: provider.idTokenFor({ sub, nonce: flow.nonce, email, email_verified, extra }) });
+  const res = await completeCallback(h, { cookieHeader: flow.cookieHeader, state: flow.state, code });
+  const ret = appReturnOf(res);
+  return { res, verifier: pkce.verifier, code: ret?.code || null, err: ret?.err || null };
+}
+
+// POST /api/oidc/app/redeem, carrying the headers a WebView actually sends: a cross-site
+// Sec-Fetch-Site and an Origin that is never ORIGIN, since the app's WebView origin is its own
+// bundled asset server, not the site this request reaches.
+export async function appRedeem(h, body, { bearer, headers = {} } = {}) {
+  return h.req('POST', '/api/oidc/app/redeem', {
+    body,
+    headers: {
+      'Sec-Fetch-Site': 'cross-site',
+      'Origin': 'https://localhost',
+      ...(bearer ? { Authorization: `Bearer ${bearer}` } : {}),
+      ...headers
+    }
+  });
+}
+
+// POST /api/oidc/app/confirm, carrying the same WebView-shaped headers appRedeem above does: a
+// cross-site Sec-Fetch-Site and an Origin that is never ORIGIN.
+export async function appConfirm(h, body) {
+  return h.req('POST', '/api/oidc/app/confirm', {
+    body,
+    headers: { 'Sec-Fetch-Site': 'cross-site', 'Origin': 'https://localhost' }
+  });
+}
+
 // Mints a one-shot link ticket through POST /api/account/identities/link-ticket, carrying
 // whatever proof body a case is exercising (`{}` for the bare-session case, a passkey assertion
 // or `{ current }` for a proven one).
@@ -253,6 +322,36 @@ export async function beginLink(h, cookie, ticket) {
   };
 }
 
+// Strips the cookie-name prefix a mintSession() value carries, for a case that wants the same
+// signed value as a Bearer token instead of a cookie - the phone is played by requests carrying
+// `Authorization: Bearer <this>` and no Cookie header at all.
+export function bearerOf(cookie) {
+  return cookie.slice(cookie.indexOf('=') + 1);
+}
+
+// Mints a one-shot link ticket the way the phone app would: over a Bearer session rather than a
+// cookie, carrying the app's own challenge in the body alongside whatever proof a case is
+// exercising.
+export async function appLinkTicket(h, bearer, proof = {}, challenge) {
+  return h.req('POST', '/api/account/identities/link-ticket', {
+    body: { ...proof, ...(challenge !== undefined ? { challenge } : {}) },
+    headers: { Authorization: `Bearer ${bearer}` }
+  });
+}
+
+// The app's own link departure (GET /api/oidc/app/link/start): no cookie, no Authorization - the
+// ticket alone is the credential. Read back the way beginLink reads the web one.
+export async function appDepartLink(h, ticket) {
+  const res = await h.raw('GET', `/api/oidc/app/link/start?ticket=${encodeURIComponent(ticket || '')}`);
+  const departure = cookieValue(res.cookies, ST_COOKIE);
+  return {
+    res,
+    state: res.query.get('state'),
+    nonce: res.query.get('nonce'),
+    cookieHeader: departure ? `${ST_COOKIE}=${departure}` : null
+  };
+}
+
 // Mints a one-shot proof ticket through POST /api/account/identities/proof-ticket for the change
 // `act` names. The ticket needs no proof of its own: it only lets the browser leave for the
 // provider, and the sign-in there is what proves anything.
@@ -260,9 +359,31 @@ export async function proofTicket(h, cookie, act) {
   return h.req('POST', '/api/account/identities/proof-ticket', { body: act === undefined ? {} : { act }, cookie });
 }
 
+// The app's own counterpart of proofTicket, over a Bearer session and carrying the app's own
+// challenge, like appLinkTicket above.
+export async function appProofTicket(h, bearer, act, challenge) {
+  return h.req('POST', '/api/account/identities/proof-ticket', {
+    body: { ...(act === undefined ? {} : { act }), ...(challenge !== undefined ? { challenge } : {}) },
+    headers: { Authorization: `Bearer ${bearer}` }
+  });
+}
+
 // The proof departure (GET /api/oidc/proof/start), read back the way beginLink reads the link one.
 export async function beginProof(h, cookie, ticket) {
   const res = await h.raw('GET', `/api/oidc/proof/start?ticket=${encodeURIComponent(ticket || '')}`, { cookie });
+  const departure = cookieValue(res.cookies, ST_COOKIE);
+  return {
+    res,
+    state: res.query.get('state'),
+    nonce: res.query.get('nonce'),
+    cookieHeader: departure ? `${ST_COOKIE}=${departure}` : null
+  };
+}
+
+// The app's own proof departure (GET /api/oidc/app/proof/start): no cookie, no Authorization, like
+// appDepartLink above.
+export async function appDepartProof(h, ticket) {
+  const res = await h.raw('GET', `/api/oidc/app/proof/start?ticket=${encodeURIComponent(ticket || '')}`);
   const departure = cookieValue(res.cookies, ST_COOKIE);
   return {
     res,

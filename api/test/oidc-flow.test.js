@@ -8,7 +8,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
-import { pkcePair, randomToken, createFlowStore, FLOW_TTL_MS, MAX_FLOWS } from '../oidc/flow.js';
+import {
+  pkcePair, randomToken, createFlowStore, FLOW_TTL_MS, MAX_FLOWS,
+  APP_CODE_TTL_MS, s256, isS256Challenge, verifierMatches, hashAppCode
+} from '../oidc/flow.js';
+import { hashLinkCode } from '../device-link.js';
 
 test('pkcePair: verifier matches the RFC 7636 shape and the challenge is its SHA-256 digest', () => {
   const { verifier, challenge } = pkcePair();
@@ -174,4 +178,72 @@ test('store: overwriting a key already held does not evict anything at the cap',
 test('store: MAX_FLOWS is the default ceiling', () => {
   assert.equal(typeof MAX_FLOWS, 'number');
   assert.ok(MAX_FLOWS > 0, 'a ceiling of zero would refuse every sign-in');
+});
+
+/* ---------- the app's own PKCE verifier check ---------- */
+
+// RFC 7636 Appendix B's own worked example, so s256/verifierMatches are proven against a fixed
+// vector and not merely against whatever pkcePair() itself would have produced.
+const RFC_VERIFIER = 'dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk';
+const RFC_CHALLENGE = 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM';
+
+test('s256: matches the RFC 7636 Appendix B worked example', () => {
+  assert.equal(s256(RFC_VERIFIER), RFC_CHALLENGE);
+});
+
+test('verifierMatches: true for the RFC 7636 verifier and its own challenge', () => {
+  assert.equal(verifierMatches(RFC_VERIFIER, RFC_CHALLENGE), true);
+});
+
+test('verifierMatches: false for a different verifier under the same challenge', () => {
+  const { verifier } = pkcePair();
+  assert.notEqual(verifier, RFC_VERIFIER);
+  assert.equal(verifierMatches(verifier, RFC_CHALLENGE), false);
+});
+
+test('verifierMatches: false for a verifier one character short of the RFC minimum', () => {
+  assert.equal(verifierMatches(RFC_VERIFIER.slice(0, 42), RFC_CHALLENGE), false);
+});
+
+test('verifierMatches: false for a non-string verifier', () => {
+  assert.equal(verifierMatches(12345, RFC_CHALLENGE), false);
+  assert.equal(verifierMatches(null, RFC_CHALLENGE), false);
+  assert.equal(verifierMatches(undefined, RFC_CHALLENGE), false);
+});
+
+test('verifierMatches: false for a verifier carrying a character outside the RFC 7636 unreserved set', () => {
+  const withPlus = RFC_VERIFIER.slice(0, -1) + '+';
+  assert.equal(verifierMatches(withPlus, RFC_CHALLENGE), false);
+});
+
+test('verifierMatches: false for a challenge one character short, one character long, or padded', () => {
+  assert.equal(verifierMatches(RFC_VERIFIER, RFC_CHALLENGE.slice(0, 42)), false);
+  assert.equal(verifierMatches(RFC_VERIFIER, RFC_CHALLENGE + 'x'), false);
+  assert.equal(verifierMatches(RFC_VERIFIER, RFC_CHALLENGE.slice(0, 42) + '='), false);
+});
+
+test('isS256Challenge: accepts only a 43-character base64url string', () => {
+  assert.equal(isS256Challenge(RFC_CHALLENGE), true);
+  assert.equal(isS256Challenge(RFC_CHALLENGE.slice(0, 42)), false);
+  assert.equal(isS256Challenge(RFC_CHALLENGE + 'x'), false);
+  assert.equal(isS256Challenge(RFC_CHALLENGE.slice(0, 42) + '='), false);
+  assert.equal(isS256Challenge(null), false);
+});
+
+test('hashAppCode: 64 hex characters, deterministic, and distinct from hashLinkCode of the same input', () => {
+  const code = randomToken();
+  const first = hashAppCode(code);
+  assert.match(first, /^[0-9a-f]{64}$/);
+  assert.equal(hashAppCode(code), first, 'the same input always hashes the same way');
+  assert.notEqual(first, hashLinkCode(code), 'the two code spaces must never collide on the same input');
+});
+
+test('store: an app-code entry lives for APP_CODE_TTL_MS, one millisecond short of a minute', () => {
+  let clock = 1000;
+  const store = createFlowStore({ now: () => clock });
+  store.put('h1', { mode: 'signIn', uid: 'u1' }, APP_CODE_TTL_MS);
+  clock += APP_CODE_TTL_MS - 1;
+  assert.equal(store.peek('h1').reason, null, 'still alive one millisecond before APP_CODE_TTL_MS elapses');
+  clock += 2;
+  assert.equal(store.peek('h1').reason, 'state-expired', 'expired one millisecond after APP_CODE_TTL_MS elapses');
 });
