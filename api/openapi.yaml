@@ -1422,6 +1422,8 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
+        '503':
+          description: Another writer holds the shared profile lock; no state or backup is committed.
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           description: The account has no synced state.
@@ -1469,6 +1471,8 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
+        '503':
+          description: Another writer holds the shared profile lock; no state or backup is committed.
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           description: No undo backup for this account and identifier.

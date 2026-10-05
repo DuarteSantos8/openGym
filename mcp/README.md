@@ -263,3 +263,8 @@ The committed API module is generated from the canonical pure frontend helper be
 API Docker build context cannot import `frontend/`. After changing that helper or its
 metric/catalogue dependencies, run `node scripts/build-history-assets.mjs`; frontend CI checks
 that this artifact is current. Generation uses Vite's installed Rolldown, with no new dependency.
+
+History preview stays read-only. Merge and undo now use the same locked commit boundary as
+routine operations and sync. The backup hook hashes the finalized committed state while
+holding the lock; a failed backup prevents the write. No-op merges leave the revision and
+timestamp untouched. Any later routine edit invalidates an earlier undo confirmation.

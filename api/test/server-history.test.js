@@ -133,3 +133,44 @@ test('unused backup cannot restore over a different state at the same revision',
   assert.equal(response.status, 409);
   assert.deepEqual(JSON.parse(fs.readFileSync(file)), initial);
 });
+
+test('routine mutations invalidate undo and history writes honor the same lock', async t => {
+  const h = await startServer(t);
+  const file = path.join(h.dataDir, 'state-u_test_1.json');
+  fs.writeFileSync(file, JSON.stringify(initial));
+  const post = (endpoint, body) => fetch(h.api + endpoint, { method: 'POST', headers: { ...cookie('u_test_1'), 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const rev = async () => (await fetch(h.api + '/api/data/rev', { headers: cookie('u_test_1') }).then(res => res.json())).rev;
+  assert.equal(await rev(), 4);
+  fs.writeFileSync(file + '.lock', 'other writer');
+  assert.equal((await post('/api/history/merge', { ...pair, baseRev: 4 })).status, 503);
+  assert.deepEqual(JSON.parse(fs.readFileSync(file)), initial);
+  assert.equal(fs.readdirSync(h.dataDir).some(name => name.startsWith('history-undo-')), false);
+  fs.unlinkSync(file + '.lock');
+  const response = await post('/api/history/merge', { ...pair, baseRev: 4 });
+  assert.equal(response.status, 200);
+  const merge = await response.json();
+  assert.equal(await rev(), 5);
+  fs.writeFileSync(file + '.lock', 'other writer');
+  assert.equal((await post('/api/history/undo', { undo_id: merge.undo_id, baseRev: 5 })).status, 503);
+  fs.unlinkSync(file + '.lock');
+  const routine = await post('/api/routines/mutate', { operation: 'edit', baseRev: 5, input: { routine_id: 'r', name: 'Concurrent edit' } });
+  assert.equal(routine.status, 200);
+  const after = fs.readFileSync(file, 'utf8');
+  assert.equal((await post('/api/history/undo', { undo_id: merge.undo_id, baseRev: 5 })).status, 409);
+  assert.equal((await post('/api/history/undo', { undo_id: merge.undo_id, baseRev: 6 })).status, 409);
+  assert.equal(fs.readFileSync(file, 'utf8'), after);
+  assert.equal(await rev(), 6);
+});
+
+test('no-op migration does not change revision, timestamp or create a backup', async t => {
+  const h = await startServer(t);
+  const file = path.join(h.dataDir, 'state-u_test_1.json');
+  fs.writeFileSync(file, JSON.stringify(initial));
+  const response = await fetch(h.api + '/api/history/merge', { method: 'POST', headers: { ...cookie('u_test_1'), 'Content-Type': 'application/json' }, body: JSON.stringify({ source_exercise_id: '0027', target_exercise_id: '0001', baseRev: 4 }) });
+  assert.equal(response.status, 200);
+  const result = await response.json();
+  assert.equal(result.rev, 4);
+  assert.equal(result.undo_id, null);
+  assert.deepEqual(JSON.parse(fs.readFileSync(file)), initial);
+  assert.equal(fs.readdirSync(h.dataDir).some(name => name.startsWith('history-undo-')), false);
+});
