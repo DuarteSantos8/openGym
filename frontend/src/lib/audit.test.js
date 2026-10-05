@@ -78,6 +78,18 @@ describe('auditLine', () => {
     expect(auditLine({ ev: 'auth.passkey.fail', ok: false, name: 'Ana', msg: 'credential-exists' }).sub).not.toMatch(/credential-exists/)
   })
 
+  // An identity link (auth.identity.link.*) must never be mistaken for the
+  // device-link code (auth.link.*, #95) — the two share nothing but the word "link".
+  it('tells an identity link apart from a device-linked passkey: each family reads as itself', () => {
+    expect(EVENTS).toEqual(expect.arrayContaining(['auth.identity.link.ok', 'auth.identity.link.fail']))
+    expect(auditLabel('auth.link.ok')).toBe('Added a device with a one-time code')
+    expect(auditLabel('auth.identity.link.ok')).toBe('Linked an identity')
+    expect(auditLabel('auth.link.fail')).toBe('Adding a device with a code failed')
+    expect(auditLabel('auth.identity.link.fail')).toBe('Linking an identity failed')
+    expect(auditLine({ ev: 'auth.identity.link.fail', ok: false, name: 'Ana', msg: 'identity-collision' }).sub)
+      .toBe('Ana · that identity is already linked to a different profile')
+  })
+
   it('reads the sign-in e-mail events, whose line carries only a masked address', () => {
     // set/change are picked by a ternary the extraction above cannot read, like password set/change.
     expect(EVENTS).toEqual(expect.arrayContaining(['auth.email.remove', 'auth.email.fail']))
