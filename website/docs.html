@@ -584,6 +584,12 @@ docker compose up -d</code></pre>
     <tr><td><code>AUDIT_DAYS</code></td><td>Days kept in the activity log; <code>0</code> to keep until <code>AUDIT_MAX</code>. Default <code>90</code>.</td></tr>
     <tr><td><code>AUDIT_IP</code></td><td>Record the caller's address: <code>off</code>, <code>net</code> (network only, e.g. <code>203.0.113.0/24</code>) or <code>full</code>. Default <code>off</code>.</td></tr>
     <tr><td><code>PASSWORD_LOGIN</code></td><td>Set <code>1</code> to offer <a href="#admin-signin">name-and-password sign-in</a> next to passkeys. Default: off.</td></tr>
+    <tr><td><code>OIDC_ISSUER</code></td><td>Turns on sign-in through an external identity provider. Default: off.</td></tr>
+    <tr><td><code>OIDC_CLIENT_ID</code></td><td>What that provider knows this instance by.</td></tr>
+    <tr><td><code>OIDC_CLIENT_SECRET</code></td><td>The client's secret, if the provider issues one; blank for a public client using PKCE alone.</td></tr>
+    <tr><td><code>OIDC_REDIRECT_URI</code></td><td>The address the provider sends the browser back to. Default <code>ORIGIN</code> + <code>/api/oidc/callback</code>.</td></tr>
+    <tr><td><code>OIDC_SCOPES</code></td><td>Scopes requested at the provider; must include <code>openid</code>. Default <code>openid profile email</code>.</td></tr>
+    <tr><td><code>OIDC_NAME</code></td><td>Label the sign-in screen shows for the provider. Default: the issuer's hostname.</td></tr>
     <tr><td><code>TRUST_PROXY</code></td><td>Let the sign-in throttle read the visitor's address from proxy headers. <code>1</code> in <code>docker-compose.yml</code>, where the web container is the only way to the API; leave it off if you run the API without it.</td></tr>
     <tr><td><code>DEFAULT_LANG</code></td><td>Language of the sign-in screen and of new profiles, e.g. <code>de</code> or <code>pt-BR</code>. Default: the visitor's browser language.</td></tr>
     <tr><td><code>BASE_PATH</code></td><td>Serve openGym under a subpath such as <code>/gym</code>, no trailing slash. Default: the site root.</td></tr>
