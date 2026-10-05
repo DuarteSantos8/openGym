@@ -69,6 +69,11 @@ function installFetch() {
   })
 }
 const refusing = () => json(401, { error: 'not signed in' })
+// Refuses the pairing token at /api/me like `refusing`, but still answers GET /api/config - the
+// one route a refused phone's boot reads for free, since that route is public.
+const refusingButConfigured = oidc => path => (
+  path === '/api/config' ? json(200, { invite_only: false, allow_guest: true, oidc }) : refusing()
+)
 // The paired server, as api/server.js answers: a revision per document, 409 on a stale baseRev.
 function serverWith(doc) {
   const srv = { doc: clone(doc), puts: [] }
@@ -165,6 +170,23 @@ describe('boot when the server refuses the pairing token', () => {
     expect(st.user).toEqual(USER)
     expect(st.isGuest()).toBe(false)
     expect(st.sync).toMatchObject({ status: 'auth', auth: true, lastError: { status: 401, code: 'auth' }, server: BASE })
+    // The best-effort config read also got refused here (every path does): its own failure is
+    // swallowed and changes nothing else about the refused path above.
+    expect(st.config).toBeNull()
+  })
+
+  it('still learns whether its remembered server offers a provider, from the public GET /api/config', async () => {
+    pairedPhone()
+    h.server = refusingButConfigured({ name: 'Google' })
+    const useStore = await freshStore()
+    await useStore.getState().boot()
+    const st = useStore.getState()
+
+    expect(st.sync).toMatchObject({ status: 'auth', auth: true, lastError: { status: 401, code: 'auth' }, server: BASE })
+    expect(st.config?.oidc).toEqual({ name: 'Google' })
+    // The rest of the refused path's own guarantees are exactly as they are without a provider.
+    expect(st.user).toEqual(USER)
+    expect(readFile('opengym-remote.json')).toEqual({ mode: 'remote', base: BASE, token: 'TOKEN-OLD', user: USER })
   })
 
   it('a change made meanwhile goes to the paired server with the token, and stays owed', async () => {

@@ -14,6 +14,7 @@ import { installViewportGuard } from './lib/viewport-guard.js'
 import { installChipDrag } from './lib/hchips.js'
 import { syncPushSubscription } from './lib/push.js'
 import { MOBILE } from './lib/mobile.js'
+import { listenForProviderReturn } from './components/AppSignIn.jsx'
 import { exitWorkoutEdit, startFlow } from './sheets.jsx'
 import Icon from './components/Icon.jsx'
 import TabBar from './components/TabBar.jsx'
@@ -224,5 +225,8 @@ export default function App() {
     initBackButton().then(fn => { if (gone) fn(); else stop = fn })
     return () => { gone = true; stop?.() }
   }, [])
+  // The system browser's return from a sign-in through a server's provider - registered once,
+  // for the life of the app, on the mobile build only.
+  useEffect(() => { if (MOBILE) listenForProviderReturn() }, [])
   return <HashRouter><Shell /></HashRouter>
 }

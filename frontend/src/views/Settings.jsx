@@ -30,6 +30,7 @@ import { ServerSyncSection, KeptChangesRows, leaveServer, connectServer, passkey
 import { passwordOn, PasswordRow, openPasswordSignIn, openPasswordRegister } from '../components/PasswordAuth.jsx'
 import { usePasskeys, PasskeysRow, DeviceLinkRow } from '../components/Passkeys.jsx'
 import { IdentityRow, IdentityReturn } from '../components/Identity.jsx'
+import { onIdentityChanged } from '../components/AppSignIn.jsx'
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField } from '../components/ui.jsx'
 
 export default function Settings() {
@@ -44,10 +45,20 @@ export default function Settings() {
   // this device rather than stored (#303).
   const lang = effectiveLang(S, config)
   // This profile's passkeys and the code for another device (#95). A change to them is read back
-  // here and by the password row, whose "Remove" depends on there being a passkey.
-  const passkeys = usePasskeys(!!user && !MOBILE && !DEMO)
+  // here and by the password row, whose "Remove" depends on there being a passkey. A paired phone
+  // reads these too: no passkey ceremony against the server can run from its WebView, but it can
+  // still list, rename and remove the passkeys the profile already has elsewhere.
+  const passkeys = usePasskeys(!!user && !DEMO)
   const [credsV, setCredsV] = useState(0)
   const credsChanged = () => { passkeys.load(); setCredsV(v => v + 1) }
+  // An identity linked through the app channel (AppSignIn.jsx's own redeem, never a route this
+  // screen could read back from) tells Settings to read the account state again, the same way a
+  // passkey or password change already does.
+  useEffect(() => {
+    if (!MOBILE) return
+    return onIdentityChanged(credsChanged)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   const { update, importConflict, importBackup, setUnit, resetEverything: resetAll, setUser, pullState, pushState, resetDemo } = useStore()
   const toast = useUI(s => s.toast)
   const fileRef = useRef(null)
@@ -286,6 +297,18 @@ export default function Settings() {
         <Row icon="signOut" iconTint="var(--red)" title={t('Disconnect')} danger onClick={disconnect} />
       </>}
     </ServerSyncSection>}
+
+    {/* ---------- a paired phone's own ways in: the same identity actions the web has, reached
+        from here instead of a cookie-based Settings page. Adding a passkey is left out on
+        purpose - no WebAuthn ceremony against the server can succeed from the app's own WebView
+        origin, which never matches the server's RP ID; PasskeysRow and DeviceLinkRow already word
+        the dead ends that follow from that on their own sheets. ---------- */}
+    {MOBILE && user && !DEMO && <Section title={t('Account')}>
+      <PasskeysRow state={passkeys.st} changed={credsChanged} />
+      <DeviceLinkRow state={passkeys.st} />
+      {(config?.oidc || passkeys.st?.identity) && <IdentityRow state={passkeys.st} provider={config?.oidc} changed={credsChanged} />}
+      {pwOn && <PasswordRow version={credsV} />}
+    </Section>}
 
     {/* ---------- account (demo and mobile builds have nothing to sign in to) ---------- */}
     {!(MOBILE && user) && <Section title={MOBILE ? t('Your data') : DEMO ? t('Demo') : t('Account')}>

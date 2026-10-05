@@ -8,9 +8,24 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('./mobile.js', () => ({ MOBILE: true }))
 
-import { api, beacon, setRemoteAuth } from './api.js'
+import { api, beacon, setRemoteAuth, webauthnOK } from './api.js'
 
 afterEach(() => { vi.unstubAllGlobals(); setRemoteAuth('', null) })
+
+// No passkey ceremony against the server can succeed from the app's own WebView origin, which
+// never matches the server's RP ID - every Settings sheet that offers one hides it by reading this
+// one answer, rather than each needing its own MOBILE check beside webauthnOK().
+describe('webauthnOK() on the phone build', () => {
+  it('is false whatever the WebView itself exposes', () => {
+    const originalPKC = window.PublicKeyCredential
+    try {
+      Object.defineProperty(window, 'PublicKeyCredential', { configurable: true, value: class PublicKeyCredential {} })
+      expect(webauthnOK()).toBe(false)
+    } finally {
+      Object.defineProperty(window, 'PublicKeyCredential', { configurable: true, value: originalPKC })
+    }
+  })
+})
 
 describe('api() on the phone build', () => {
   it('without a paired server it refuses with not-paired (status 0) and never calls fetch', async () => {
