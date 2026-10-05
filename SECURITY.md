@@ -53,6 +53,15 @@ in the thread; there's no objection, and no request to sit on it indefinitely.
   pause by switching between name and e-mail. Adding a passkey to a profile that
   is not yours, removing a profile's last way in, or redeeming a device code twice, after it
   expired, or for a profile it was not made for (`api/passkeys-store.js`, `api/device-link.js`).
+  With an external identity provider configured: accepting a forged or replayed OIDC callback,
+  attaching a linked identity to a profile that is not the caller's, minting a session from an
+  unverified identity token, or accepting the provider proof for an identity other than the one
+  linked to that profile, with a reported `auth_time` older than the request, for a change other
+  than the one it was requested for, from a session other than the one that requested it, or a
+  second time. From the phone app's own channel: redeeming its one-shot return code without the
+  verifier of the app that started it, or creating a profile, linking an identity or minting a
+  provider proof through that channel without the app's own verifier and Bearer session
+  (`api/server.js`, `api/oidc/verify.js`).
 - **Frontend** — XSS in the React app, or anything that lets a page on another origin read or
   change a signed-in user's data.
 - **Shipped deployment config** — `docker-compose.yml`, `web/nginx.conf`, the two Dockerfiles:
@@ -66,10 +75,12 @@ in the thread; there's no objection, and no request to sit on it indefinitely.
   operator is trusted by design — see the security model below.
 - Admins reading their users' workout history. That is the documented purpose of the admin
   dashboard, not a leak.
-- **Missing rate limiting** on anything but password sign-in and device codes, or "I sent 100k
-  requests and it got slow". With `PASSWORD_LOGIN=1` the API throttles its password routes —
-  sign-in, password signup, reset codes, changing a password — and it always throttles the
-  redemption of one-time device codes; nothing else. Volume against the rest, passkey sign-in and
+- **Missing rate limiting** on anything but password sign-in, device codes and provider
+  departures, or "I sent 100k requests and it got slow". With `PASSWORD_LOGIN=1` the API
+  throttles its password routes — sign-in, password signup, reset codes, changing a password —
+  and it always throttles the redemption of one-time device codes; with an identity provider
+  configured it also limits the departures to that provider and the naming of a new profile
+  after one; nothing else. Volume against the rest, passkey sign-in and
   pairing included, belongs in the reverse proxy you put in front of it. A way past that
   throttle *is* in scope, and so is genuine amplification (one small request causing unbounded
   work).
@@ -87,6 +98,11 @@ in the thread; there's no objection, and no request to sit on it indefinitely.
 - The demo build on the website and GitHub Pages — it has no backend at all, everything stays in
   that browser.
 - Third-party content: the exercise image/GIF dataset and the CDN it's fetched from.
+- A hostile or compromised identity provider signing in as any identity it controls — the
+  operator chose to trust it.
+- Passing the provider proof from an unlocked device that already holds both a live openGym
+  session and a live session at a provider that does not report `auth_time` — the documented
+  limit above, not a finding.
 
 ## Security model
 
@@ -106,10 +122,75 @@ Read this before hosting openGym for anyone other than yourself.
   needs a fresh passkey assertion by that profile, a change needs the current password (or that
   assertion), and either ends every other session of the account. Removing it needs the same
   proof — the password itself or a fresh assertion — and it cannot be removed while it is the
-  profile's only way in. Password routes keep the origin check below (no login CSRF).
+  profile's only way in: a spare passkey or a linked identity is what keeps it removable.
+  Password routes keep the origin check below (no login CSRF).
   An admin can issue a one-time reset code — 60 random bits, stored as a SHA-256, 24 hours, single
   use — which also removes the old password and ends every session; admin accounts cannot be
   reset that way (`api/password.js`, the password block in `api/server.js`).
+- **A linked external identity, if the instance offers one.** With `OIDC_ISSUER` configured
+  (`docs/SELF_HOSTING.md`), an identity at that provider can also sign a profile in. Its identity
+  token is verified by `jose` against the provider's own published signing keys — asymmetric
+  algorithms only, never a symmetric one, which would turn a leaked client secret into the
+  ability to forge any token — checking the issuer, the audience, the expiry, the nonce this
+  attempt asked for and, where the token names more than one audience, the authorized party
+  (`api/oidc/verify.js`). The identity's own handle is the issuer and the subject together, never
+  an address: an e-mail claim is kept only when the provider itself vouches for it, and only as
+  display data. `state`, `nonce` and the PKCE verifier live in a one-shot, short-lived, in-memory
+  entry addressed by a host-only cookie — nothing about an attempt in progress is written to disk
+  — and a successful sign-in sets exactly the same session cookie a passkey does. Each kind of
+  entry (a departure, a ticket, an identity waiting for its name, a proof) is held in a store of
+  its own, so a key for one kind never reads as another: a departure's `state`, which its caller
+  can see, cannot stand in for a verified identity. An identity row is written only with a real
+  issuer and subject (`api/identities-store.js`).
+  An identity attaches to an existing profile only through a link its already-signed-in owner
+  proves first: `proveOwner` gates a one-shot, session-bound ticket
+  (`POST /api/account/identities/link-ticket`, `api/server.js:2110`), and only
+  `GET /api/oidc/link/start` carrying that exact ticket ever reaches the provider — a stolen
+  session cookie alone starts nothing, and the return trip still requires the same profile and
+  the same session to be signed in (`sessionBinding`, `api/server.js:548`). A linked identity
+  counts as a way in for the last-way-in rule only while the issuer it was linked at is the one
+  configured — after `OIDC_ISSUER` is removed or pointed elsewhere it signs nobody in, so it
+  counts for nothing, is never offered as a proof, and stays removable
+  (`identityWayIn`, `api/server.js:1328`).
+  A sign-in at the provider as the profile's own linked identity is also a third proof
+  `proveOwner` accepts for a change, wherever it accepts a passkey or the password
+  (`api/server.js:1452`): it departs asking the provider to authenticate again (`prompt=login`,
+  `max_age=0`, `api/server.js:2672`) and is good for exactly one change, one session and one
+  use. It is accepted under two rules, checked in this order (`api/server.js:2893-2901`):
+  **always**, the verified token's issuer and subject must be exactly the identity linked to that
+  profile — a stolen session cookie cannot pass this, since the thief would still have to complete
+  a sign-in at the provider as the owner; and **when the provider reports when that sign-in
+  happened** (`auth_time`), it must not be older than the request, less a small clock skew —
+  otherwise the proof is refused (`stale-sign-in`).
+- **Sign-in through the provider from the phone app.** The paired app reaches the same provider
+  without ever opening a page inside itself — it hands the whole round trip to the system
+  browser, the one place its WebView origin cannot be mistaken for the server's own. The app
+  makes its own PKCE verifier with WebCrypto and sends only its S256 challenge
+  (`GET /api/oidc/app/start`); the provider still returns to this instance's own callback
+  (`GET /api/oidc/callback`), which decides an app departure from what the departure itself
+  recorded when it left, never from anything on the returning request, and answers
+  `opengym://oidc?code=<one-shot code>` instead of setting a cookie — a code good for 60 seconds,
+  held only as a SHA-256 (`mintAppCode`, `hashAppCode`). The code is useless without the verifier
+  it was challenged against, so an app sharing the same return scheme, or anyone who copies the
+  redirect off the device, gets nothing from it. Redeeming it (`POST /api/oidc/app/redeem`)
+  answers the same signed token `POST /api/pair/redeem` does, so "sign out everywhere" ends it
+  exactly the same way; an identity nobody has linked yet answers a
+  one-shot handle instead, which `POST /api/oidc/app/confirm` turns into a new profile under the
+  same invite rule the web confirm already enforces — a handle that addresses nothing else, just
+  as a web waiting-identity cookie, a return code or a departure state address nothing but their
+  own kind.
+  Linking an identity and the provider proof reach the app the same way: both start from a
+  ticket minted over the phone's own Bearer session, carrying that session's own PKCE challenge
+  (`POST /api/account/identities/link-ticket` / `proof-ticket`), and the departures that spend it
+  (`GET /api/oidc/app/link/start`, `GET /api/oidc/app/proof/start`) carry no cookie and no
+  `Authorization` at all — honoured on the ticket alone, since the system browser that leaves for
+  the provider never holds a session of its own. Nothing is written or minted at the callback for
+  either; the check that the same Bearer session came back moves to the redeem, the one point
+  where the phone can present its verifier and that session together. A link there runs
+  `attachIdentity`, the web link branch's own rule, unchanged; a proof reaches `proveOwner` as
+  `identityProof: true` with the one-shot proof id in the request body instead of the web's
+  `PROOF_COOKIE`, checked under exactly the same two rules — the identity match, always, and the
+  freshness rule wherever the issuer reports `auth_time`.
 - **More than one passkey, and one-time device codes.** A profile can hold up to 20 passkeys.
   Adding one from Settings, removing one, or making the code that lets another device add its
   own, needs proof that the owner is there right now — a fresh assertion by one of that
@@ -132,7 +213,37 @@ Read this before hosting openGym for anyone other than yourself.
   between the two does not reset it, and by the identifier as typed when it resolves to nobody. A password check is counted the moment it starts, so guesses
   sent all at once get no more checks than guesses sent one by one. The two routes that redeem a
   device code share that budget, and wrong codes pause the address the same way, for code
-  redemption only. Passkey sign-in, passkey signup and pairing are not throttled at all, so nobody
+  redemption only. Naming a new profile after a sign-in through the provider
+  (`POST /api/oidc/confirm`) spends it too, after the origin check like every counted route, so a
+  forged request still spends nobody's budget; reading the name waiting there
+  (`GET /api/oidc/pending`) is not counted at all. The phone app's own naming screen
+  (`POST /api/oidc/app/confirm`) spends the same budget, the same way, exempt from the origin
+  check instead of passing it, since it carries its own one-shot handle rather than a cookie;
+  redeeming the app's return code (`POST /api/oidc/app/redeem`) is not counted at all, for the
+  same reason pairing isn't — it is already its own one-shot credential, and nothing is granted
+  or written until it is spent. The three departures to the provider —
+  `GET /api/oidc/start`, which needs no session, and `GET /api/oidc/link/start` and
+  `GET /api/oidc/proof/start`, which are only honoured for a signed-in session carrying its own
+  one-shot ticket — and the phone app's own three counterparts (`GET /api/oidc/app/start`,
+  `GET /api/oidc/app/link/start`, `GET /api/oidc/app/proof/start`, honoured on a ticket alone
+  rather than a session) are GETs any page or app departure can trigger, so none of them touch
+  that budget: they count in a window of their own, 60 a minute per address, shared by all six
+  and by nothing else, counted before the session or the ticket is looked at, and only on an
+  instance with a provider configured. A request the browser labels as something other than a
+  top-level navigation (an image, a frame, a script's fetch) is refused with a bare `403` and
+  counted nowhere. That label
+  comes from the `Sec-Fetch-Dest` and `Sec-Fetch-Mode` headers, which current browsers send only
+  to HTTPS origins; a request without them, and any real navigation including one started from
+  another site, is counted — against this window alone, never against the password budget. Past the
+  window a departure lands back on the sign-in screen or on Settings with `locked` ("Too many
+  attempts"). The window is fixed, not rolling: one burst pauses the departures until its minute
+  is over, and a client that keeps sending keeps them paused for as long as it keeps sending.
+  Behind a proxy that shows the API one address for every visitor, that pauses sign-in, linking
+  and proofs through the provider for everybody — never password sign-in or code redemption.
+  Each kind of attempt in flight is also capped in a store of its own, so a flood of anonymous
+  departures can only ever evict other departures, never a ticket, a proof or an identity waiting
+  for its name.
+  Passkey sign-in, passkey signup and pairing are not throttled at all, so nobody
   can pause them — not even behind a proxy that shows the API one address for every visitor. The address is the socket peer unless
   `TRUST_PROXY=1` (set by the bundled compose file, where only the web container reaches the
   API), and IPv6 is counted per /64 (`api/rate-limit.js`).
@@ -243,20 +354,45 @@ Read this before hosting openGym for anyone other than yourself.
   reverse proxy, several apps, i.e. the usual self-hosting layout) is the *same* site and does
   get the cookie. So every state-changing request that a browser sent must also be
   `Sec-Fetch-Site: same-origin`, or carry an `Origin` equal to `ORIGIN` where that header is
-  missing (`api/server.js:344`). Requests authenticated with a Bearer token skip the check —
-  a browser never attaches one by itself, so there is no ambient authority to borrow — as do the
-  register/login/pair handshakes, which carry their own credential in the body and act on no
-  existing session (`api/server.js:338`). The device-code routes are not exempt: a code is
-  redeemed on the app's own origin, the only one a passkey for it can be created on.
+  missing (`csrfOk`, `api/server.js:639-646`). Requests authenticated with a Bearer token skip the
+  check — a browser never attaches one by itself, so there is no ambient authority to borrow — as
+  do the register/login/pair handshakes, which carry their own credential in the body and act on
+  no existing session (`CSRF_EXEMPT`, `api/server.js:621-625`). The device-code routes are not
+  exempt: a code is redeemed on the app's own origin, the only one a passkey for it can be
+  created on.
+  The exempt list also names `POST /api/oidc/app/redeem` and `POST /api/oidc/app/confirm`: each
+  carries its own one-shot credential in the body — the return code together with its verifier,
+  or the confirm handle that redeem answered with — and acts on no existing session even where it
+  creates one, so it has to work from the phone's own WebView, whose origin is never `ORIGIN`. A
+  redeem that links or proves is instead authenticated by the Bearer token it carries, which
+  skips the check anyway and would make the exemption redundant for those two modes on its own.
+  Every other state-changing provider route — minting a link or a proof ticket, confirming a new
+  profile in a browser, removing a linked identity — sits under the same origin check as every
+  other `/api/account/*` route; only the provider's own browser-navigated departures and its
+  callback (`/api/oidc/start`, `/api/oidc/link/start`, `/api/oidc/proof/start`,
+  `/api/oidc/callback`, and their phone-app counterparts) are the `GET`s the check above already
+  lets through.
 - **User verification is preferred, not required.** Both handshakes pass
   `requireUserVerification: false` (`api/server.js:575`, `api/server.js:644`), so a passkey
   released without a biometric or PIN is still accepted. In practice: unlocked device ≈ account
   access.
-- **Recovery is another passkey, or an admin.** A profile can hold several passkeys, and a
-  signed-in device can give a new one its own with a device code; there is no email path. Lose
-  every passkey (and every signed-in device) and that profile is unreachable — unless the
-  instance runs `PASSWORD_LOGIN=1`, where an admin can issue a reset code that sets a password on
-  it. Without that, only direct surgery on `./data` gets it back.
+- **The provider proof is not always a fresh sign-in.** `max_age` and `prompt=login` travel
+  through the browser on the way to the provider, so they can be stripped by whoever controls it,
+  and the token itself only proves what the issuer chooses to report. On an issuer that does not
+  report `auth_time` at all — Google is one — the proof shows possession of the linked provider
+  account, not a fresh sign-in: someone at an unlocked device who already holds both a live
+  openGym session and a live session at that provider can pass it too. The same holds for an
+  issuer that includes `auth_time` only when specifically asked for it: whoever controls the
+  browser can leave the request out, and the result is the same possession-only proof. What holds
+  on every issuer, regardless, is the identity match — the proof is always for the profile's own
+  linked identity, never any other.
+- **Recovery is another passkey, a linked identity, or an admin.** A profile can hold several
+  passkeys, and a signed-in device can give a new one its own with a device code; there is no
+  email path. A linked identity signs the profile back in on its own and, from there, can add a
+  fresh passkey using the provider proof in place of the usual passkey step-up. Lose every
+  passkey, every signed-in device and any linked identity, and that profile is unreachable —
+  unless the instance runs `PASSWORD_LOGIN=1`, where an admin can issue a reset code that sets a
+  password on it. Without that, only direct surgery on `./data` gets it back.
 - **A device code is a capability, and removing a passkey does not end sessions.** Anyone who
   reads a code off the screen within its ten minutes can add a passkey to that profile; the owner
   sees it in Settings → Passkeys and can remove it. The instance's activity log records it as
@@ -270,7 +406,9 @@ Read this before hosting openGym for anyone other than yourself.
   would each keep their own. Behind a second proxy that hides the visitor's address every
   visitor shares one per-address count, so one client can pause *password* sign-in for everybody
   for up to 15 minutes at a time (the per-name pause still holds, and passkeys are never
-  paused). Anyone who knows a name or a sign-in e-mail can keep its password sign-in paused, which the activity log
+  paused). The departures to an identity provider have a limit of their own with the same
+  property: behind such a proxy one client can keep sign-in through the provider paused for
+  everybody for as long as it keeps sending. Anyone who knows a name or a sign-in e-mail can keep its password sign-in paused, which the activity log
   shows as `auth.password.locked`. Because the pause is per account, a paused account also
   answers `429` for a guessed e-mail that belongs to it, which links that address to the name
   that was paused; the `409 email-taken` answer says an address is in use on the instance (never
@@ -287,8 +425,9 @@ Read this before hosting openGym for anyone other than yourself.
   nginx listens on `:80` (`web/nginx.conf`); TLS is your reverse proxy's job. Without it,
   browsers won't do passkeys at all (except on `http://localhost`) and the session cookie is sent
   in the clear.
-- **Rate limiting covers password sign-in and device codes only.** The throttle above applies to
-  the password routes and to device-code redemption; passkey sign-in and signup, pairing, writes
+- **Rate limiting covers password sign-in, device codes and provider departures only.** The
+  throttle above applies to the password routes, to device-code redemption and, with an identity
+  provider configured, to the departures to it and the naming of a new profile; passkey sign-in and signup, pairing, writes
   and everything else behind a session are not limited, so an instance on the open internet should have a rate limit in front of it. `POST
   /api/register/options` still answers whether an invite code is valid, unthrottled. New invite
   codes are 16 hex characters — 64 bits — which makes guessing one impractical even unthrottled;
