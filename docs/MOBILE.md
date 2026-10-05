@@ -32,9 +32,17 @@ you can instead **connect it to a self-hosted openGym server** — your data the
 synced the same way the browser PWA does, instead of only on the phone. This is a mode of the
 same app, not a different build or download.
 
+When the server offers sign-in through an external identity provider, the connect screen leads
+with **"Sign in with {provider}"** right after the server's address: the phone opens the system
+browser, you sign in there, and the browser hands the result back to the app. Signing in there
+for the first time still asks you to name the new profile inside the app — and, on an invite-only
+server, its invite code — before it finishes, the same thing the web confirm screen asks. Pairing
+with a code, below, stays available either way.
+
 Passkeys can't be used for this: the app's WebView runs at its own origin, which never
-matches the real hostname WebAuthn needs. Instead you *pair* the device from a browser
-that's already signed in: Settings → **"Pair the mobile app"** shows a one-time code (valid
+matches the real hostname WebAuthn needs. Pairing with a code — or, where the server offers one,
+signing in through the provider above — replaces it. To pair, do it from a browser that's already
+signed in: Settings → **"Pair the mobile app"** shows a one-time code (valid
 5 minutes); enter your server's address and that code in the app (same first-launch screen,
 or Settings → **"Connect to my server"** later) to finish. Notes:
 
@@ -49,8 +57,9 @@ or Settings → **"Connect to my server"** later) to finish. Notes:
 - "Sign out everywhere" (Settings → Account, in the browser) revokes a paired app's access
   too — it's the same signed session token either way, just delivered over a header instead
   of a cookie. The phone has no passkey to sign back in with, so it has to be **paired
-  again**; nothing on it is lost meanwhile (see below). See `/api/pair/create` and
-  `/api/pair/redeem` in `api/server.js` for the exchange itself.
+  again**, or sign in through the provider again where the server offers one; nothing on it is
+  lost meanwhile (see below). See `/api/pair/create` and `/api/pair/redeem` in `api/server.js`
+  for the exchange itself.
 - Settings → "Disconnect" first checks that your server has every change. If it has, the
   phone drops cleanly back to local mode. If not, it says how many changes are missing and
   offers **Try again**, **Export backup**, or **Disconnect anyway** — which keeps those
@@ -69,7 +78,7 @@ status bar says so on every screen, and stays until the condition is gone:
 | *Offline — your changes are saved on this device…* | No answer at all: no network, the server is down, or it did not answer within 20 s (60 s for an upload). | Nothing — it syncs by itself once the server is reachable. **Try again** checks at once. |
 | *Your server answered with an error (HTTP 502)…* | The server (or the proxy in front of it) answered with an error. The code is the one the server sent. | Check the server and its proxy logs; **Try again** once it is back. A 413 means the proxy's upload limit is too small (`client_max_body_size`). |
 | *Your server's address answered with something other than openGym (HTTP 200)…* | Something else answered in the server's place — typically a proxy's sign-in page or a catch-all that serves the web app for `/api/*`. | Let `/api/*` through to the openGym API unchanged, including the `Authorization` header. |
-| *Your server no longer accepts this phone…* | The server refused the phone's token (401): "sign out everywhere", the account disabled, a `data/secret` that was replaced, a token older than `SESSION_DAYS`, or a proxy with its own login that rejects `Authorization: Bearer`. | **Pair again**: in a signed-in browser open Settings → "Pair the mobile app" and enter the new code. The address is already filled in. |
+| *Your server no longer accepts this phone…* | The server refused the phone's token (401): "sign out everywhere", the account disabled, a `data/secret` that was replaced, a token older than `SESSION_DAYS`, or a proxy with its own login that rejects `Authorization: Bearer`. | **Sign in again with {provider}**, where the server offers one, or **Pair again**: in a signed-in browser open Settings → "Pair the mobile app" and enter the new code. The address is already filled in either way. |
 | *This phone is no longer paired with your server…* | A phone that an earlier version of the app unpaired by itself after its token was refused. The address is gone. | **Pair again**, typing the address. |
 | *On this phone only — not connected to a server* | Local mode, chosen at first launch or after Disconnect. Said quietly. | Nothing, or **Connect** to pair with a server. |
 
@@ -150,6 +159,12 @@ npx cap open ios            # opens Xcode (Mac only) → set your signing team, 
 
 `npm run build:mobile` bakes the CDN media base into the bundle and copies the web build
 into both native projects — re-run it after every web-code change before building natively.
+
+Both shells also register the address a sign-in through the provider returns to —
+`opengym://oidc` (Android's intent filter in `AndroidManifest.xml`; `CFBundleURLTypes` in
+`Info.plist`). Switching to a different scheme later — RFC 8252 recommends a reverse-DNS one —
+is one manifest line, one plist entry, and the matching constant on the server (`api/server.js`);
+an app already installed picks it up with its own next update, same as any other code change.
 
 > **Heads-up:** after `build:mobile`, `frontend/dist` contains the *mobile* bundle.
 > Run a plain `npm run build` again before deploying `dist` to a server.
