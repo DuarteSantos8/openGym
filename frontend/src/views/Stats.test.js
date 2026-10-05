@@ -64,9 +64,9 @@ describe('Stats mixed-entry metric contract', () => {
 })
 
 describe('Social navigation contract', () => {
-  it('preserves upstream Stats routes, bottom navigation and the Home Settings shortcut', () => {
+  it('labels the bottom tab Profile while preserving Stats routes and the Home Settings shortcut', () => {
     expect(tabBarSource).toContain("active={on('stats')}")
-    expect(tabBarSource).toContain("icon=\"chart\" label={t('Stats')}")
+    expect(tabBarSource).toContain("icon=\"personCircle\" label={t('Profile')}")
     expect(tabBarSource).not.toContain("active={on('profile')}")
     expect(appSource).toContain('<Route path="/stats" element={<StatsPage />} />')
     expect(appSource).not.toContain('<Route path="/profile"')
