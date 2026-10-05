@@ -33,11 +33,17 @@ export function responsesSpec(id) {
     errorMessage: data => data && data.error && (typeof data.error === 'string' ? data.error : data.error.message),
     readText: data => {
       if (!data || typeof data !== 'object') return { error: 'empty answer' };
+      // A failed response carries the reason here rather than in the output list.
+      if (data.status === 'failed' || data.error) {
+        const msg = (data.error && (typeof data.error === 'string' ? data.error : data.error.message)) || 'the request failed';
+        return { error: `the model failed: ${String(msg).slice(0, 200)}` };
+      }
       // Some gateways echo a convenience field; the wire shape is data.output.
       if (typeof data.output_text === 'string' && data.output_text) {
         return { text: data.output_text, truncated: isIncomplete(data) };
       }
       const out = Array.isArray(data.output) ? data.output : [];
+      const shape = out.map(i => (i && i.type) || '?').join(',');
       const texts = [];
       for (const item of out) {
         if (!item || typeof item !== 'object') continue;
@@ -46,6 +52,10 @@ export function responsesSpec(id) {
           if (part && part.type === 'refusal' && part.refusal) return { error: `the model refused: ${String(part.refusal).slice(0, 200)}` };
         }
       }
+      // A reasoning model can finish thinking and write no message at all — most often the
+      // output budget went to reasoning. Name the shape so the admin log says what happened
+      // instead of just "no text".
+      if (!texts.length && shape) return { error: `the answer had no message (responses:${data.status || '?'}:[${shape}])` };
       if (!texts.length) return { error: 'the answer had no text' };
       return { text: texts.join(''), truncated: isIncomplete(data) };
     },

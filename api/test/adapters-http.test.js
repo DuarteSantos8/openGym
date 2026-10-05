@@ -388,3 +388,18 @@ test('compatible: the Responses retry fires only on the protocol 400, and refusa
   assert.equal(r3.code, 1);
   assert.match(r3.stderr, /cut off/);
 });
+
+test('compatible: Responses failures name their shape instead of just saying no text', async () => {
+  const cfg = { provider: 'compatible', providerOptions: { compatible: { baseUrl: 'https://opencode.ai/zen/go' } } };
+  const proto = { status: 400, body: { error: { message: 'Model does not support this protocol.' } } };
+  // A failed response surfaces the gateway's reason.
+  const failed = fakeFetch([proto, ok({ status: 'failed', error: { message: 'overloaded' }, output: [] })]);
+  const r = await compatible.invoke({ cfg, prompt: 'P', env, model: 'm', fetch: failed });
+  assert.equal(r.code, 1);
+  assert.match(r.stderr, /overloaded/);
+  // Reasoning with no message names the shape for the admin log.
+  const thinking = fakeFetch([proto, ok({ status: 'completed', output: [{ type: 'reasoning' }] })]);
+  const r2 = await compatible.invoke({ cfg, prompt: 'P', env, model: 'm', fetch: thinking });
+  assert.equal(r2.code, 1);
+  assert.match(r2.stderr, /responses:completed:\[reasoning\]/);
+});
