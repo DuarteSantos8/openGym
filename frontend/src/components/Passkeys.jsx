@@ -9,12 +9,12 @@ import { useUI } from '../store/useUI.js'
 import { t, tn } from '../lib/i18n.js'
 import { dateLocale } from '../lib/i18n-core.js'
 import { api, webauthnOK, createPasskey } from '../lib/api.js'
+import { MOBILE } from '../lib/mobile.js'
 import { copyText } from '../lib/clipboard.js'
 import { deviceLinkUrl, deviceLabel } from '../lib/device-link.js'
 import { askAddDeviceData } from '../sheets.jsx'
 import { passwordError, notReached, useAgainOnceReached, ProveOwner } from './PasswordAuth.jsx'
 import QrCanvas from './QrCanvas.jsx'
-import { MOBILE } from '../lib/mobile.js'
 import { Row, Button } from './ui.jsx'
 
 const ui = () => useUI.getState()
@@ -133,7 +133,10 @@ export function PasskeysSheet({ close, changed }) {
     {st.passkeys.length === 1 && st.lastWayIn && <div className="dim small" style={{ marginTop: 8 }}>
       {t('It is your only way in, so it cannot be removed until there is another.')}</div>}
     <div style={{ height: 14 }} />
-    {webauthnOK() && <><Button variant="primary" icon="plus" onClick={add}>{t('Add a passkey')}</Button><div style={{ height: 8 }} /></>}
+    {webauthnOK() ? <><Button variant="primary" icon="plus" onClick={add}>{t('Add a passkey')}</Button><div style={{ height: 8 }} /></>
+      // On the phone, webauthnOK() is false for this reason alone - say so with the way that does
+      // work instead of leaving the row to look like it simply has nothing more to offer.
+      : MOBILE && <div className="dim small" style={{ marginBottom: 8 }}>{t('Add passkeys from a browser, or with a code for another device.')}</div>}
     <Button onClick={close}>{t('Done')}</Button>
   </>
 }

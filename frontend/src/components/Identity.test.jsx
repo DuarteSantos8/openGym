@@ -12,15 +12,18 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
    remove it. The server decides what needs proof and what the last way in is; this only words
    its answers. */
 const mocks = vi.hoisted(() => {
-  const state = { webauthn: true, sheets: [], toasts: [] }
+  const state = { MOBILE: false, webauthn: true, sheets: [], toasts: [], sync: { server: 'https://gym.example.com' } }
   state.toast = (...a) => state.toasts.push(a)
   state.requestLinkTicket = vi.fn(async () => 'a-ticket')
   state.removeIdentity = vi.fn(async () => ({}))
   state.passkeyAssertion = vi.fn(async () => ({ cid: 'login-cid', credential: { id: 'k1' } }))
+  state.startProviderLink = vi.fn(async () => {})
   return state
 })
 vi.mock('../store/useStore.js', () => {
-  const useStore = selector => selector ? selector({ user: { id: 'u1', name: 'Ana' } }) : { user: { id: 'u1', name: 'Ana' } }
+  const snap = () => ({ user: { id: 'u1', name: 'Ana' }, sync: mocks.sync })
+  const useStore = selector => selector ? selector(snap()) : snap()
+  useStore.getState = snap
   return { useStore }
 })
 vi.mock('../store/useUI.js', () => {
@@ -34,10 +37,21 @@ vi.mock('../lib/api.js', () => ({
   passkeyAssertion: (...a) => mocks.passkeyAssertion(...a),
   passwordLogin: vi.fn(), passwordRegister: vi.fn(), passwordResetRedeem: vi.fn(),
 }))
+// Matches SyncBanner.test.jsx's own convention: a getter, so a test can flip MOBILE mid-suite
+// without re-mocking the module.
+vi.mock('../lib/mobile.js', () => ({ get MOBILE() { return mocks.MOBILE } }))
 vi.mock('../lib/oidc.js', () => ({
   requestLinkTicket: (...a) => mocks.requestLinkTicket(...a),
   oidcLinkStartUrl: ticket => '/api/oidc/link/start?ticket=' + ticket,
   removeIdentity: (...a) => mocks.removeIdentity(...a),
+}))
+// The real PasswordAuth.jsx's ProveOwner (rendered for real by both sheets below) now depends on
+// this module too - a stub keeps every existing, non-MOBILE case exercising the real ProveOwner
+// unchanged, while this file's own MOBILE cases drive startProviderLink directly.
+vi.mock('./AppSignIn.jsx', () => ({
+  startProviderLink: (...a) => mocks.startProviderLink(...a),
+  startProviderProof: vi.fn(async () => vi.fn()),
+  useAttemptUnfinished: () => [false, vi.fn()]
 }))
 
 const fail = (status, data) => Object.assign(new Error(data?.error || 'HTTP ' + status), { status, data })
@@ -58,12 +72,14 @@ const alertText = host => host.querySelector('[role="alert"]')?.textContent || n
 const openedSheet = () => { const close = vi.fn(); return { host: mount(mocks.sheets.at(-1).render(close)), close } }
 
 beforeEach(() => {
+  mocks.MOBILE = false
   mocks.webauthn = true
   mocks.sheets.length = 0
   mocks.toasts.length = 0
   mocks.requestLinkTicket.mockClear().mockImplementation(async () => 'a-ticket')
   mocks.removeIdentity.mockClear().mockImplementation(async () => ({}))
   mocks.passkeyAssertion.mockClear().mockImplementation(async () => ({ cid: 'login-cid', credential: { id: 'k1' } }))
+  mocks.startProviderLink.mockClear().mockImplementation(async () => {})
 })
 afterEach(() => { act(() => { mounted.splice(0).forEach(({ root, host }) => { root.unmount(); host.remove() }) }) })
 
@@ -143,6 +159,27 @@ describe('LinkIdentitySheet', () => {
 
   it("a refused proof (already linked) shows the link table's sentence in the proof step's own error slot", async () => {
     mocks.requestLinkTicket.mockRejectedValueOnce(fail(409, { code: 'profile-linked' }))
+    const host = mount(<LinkIdentitySheet close={() => {}} state={UNLINKED_WITH_PASSKEY} provider={PROVIDER} />)
+    await click(host, 'Confirm with a passkey')
+    expect(alertText(host)).toBe('This profile already has an identity linked - only one can be linked at a time.')
+  })
+})
+
+describe('LinkIdentitySheet on the phone app (MOBILE)', () => {
+  beforeEach(() => { mocks.MOBILE = true })
+  afterEach(() => { mocks.MOBILE = false })
+
+  it('a passkey proof calls startProviderLink with the proof, never buying a web ticket or navigating', async () => {
+    const before = window.location.href
+    const host = mount(<LinkIdentitySheet close={() => {}} state={UNLINKED_WITH_PASSKEY} provider={PROVIDER} />)
+    await click(host, 'Confirm with a passkey')
+    expect(mocks.startProviderLink).toHaveBeenCalledWith({ cid: 'login-cid', credential: { id: 'k1' } })
+    expect(mocks.requestLinkTicket).not.toHaveBeenCalled()
+    expect(window.location.href).toBe(before)
+  })
+
+  it("a refused ticket shows the link table's sentence in the proof step's own error slot", async () => {
+    mocks.startProviderLink.mockRejectedValueOnce(fail(409, { code: 'profile-linked' }))
     const host = mount(<LinkIdentitySheet close={() => {}} state={UNLINKED_WITH_PASSKEY} provider={PROVIDER} />)
     await click(host, 'Confirm with a passkey')
     expect(alertText(host)).toBe('This profile already has an identity linked - only one can be linked at a time.')
