@@ -46,6 +46,46 @@ export function randomToken() {
   return crypto.randomBytes(32).toString('base64url');
 }
 
+/* A one-shot return code minted for a departure that started on the phone app rather than a
+   browser is spent within seconds of the redirect that carries it; a minute covers a slow phone,
+   and a code that leaked through another app's intent filter or a crash report is worthless soon
+   after. */
+export const APP_CODE_TTL_MS = 60000;
+
+/* The base64url SHA-256 digest of a verifier's exact characters - the same digest pkcePair()
+   already computes server-side, run here over the app's own verifier instead of the server's. */
+export function s256(verifier) {
+  return crypto.createHash('sha256').update(verifier).digest('base64url');
+}
+
+/* A syntactically valid S256 challenge: exactly 43 characters (a 32-byte SHA-256 digest,
+   base64url with no padding) from base64url's own alphabet. Checked before anything is compared
+   against it, so a malformed value never reaches a hashing or buffer call it could confuse. */
+export function isS256Challenge(v) {
+  return typeof v === 'string' && /^[A-Za-z0-9_-]{43}$/.test(v);
+}
+
+/* Whether `verifier` is the one the app generated `challenge` from, at redeem time. `verifier`
+   must be a string inside RFC 7636's own 43-128 character bound, drawn from the unreserved
+   character set the RFC requires ([A-Za-z0-9._~-]); `challenge` must already pass
+   isS256Challenge(). Only then are the two compared, and always as equal-length buffers under
+   crypto.timingSafeEqual - the same discipline hashLinkCode's own lookup uses - so neither a
+   malformed input nor the comparison itself leaks anything through timing. */
+export function verifierMatches(verifier, challenge) {
+  if (typeof verifier !== 'string' || verifier.length < 43 || verifier.length > 128) return false;
+  if (!/^[A-Za-z0-9._~-]+$/.test(verifier)) return false;
+  if (!isS256Challenge(challenge)) return false;
+  const expected = Buffer.from(s256(verifier), 'base64url');
+  const actual = Buffer.from(challenge, 'base64url');
+  return expected.length === actual.length && crypto.timingSafeEqual(expected, actual);
+}
+
+/* Hash-at-rest for the app's one-shot return code, mirroring device-link.js's hashLinkCode: the
+   store holds only this digest, so a dump of memory or a log of keys names nothing redeemable.
+   Namespaced so the app-code hash space can never collide with hashLinkCode's own, even if the
+   two code alphabets happened to overlap. */
+export const hashAppCode = code => crypto.createHash('sha256').update('opengym-app-oidc:' + (typeof code === 'string' ? code : '')).digest('hex');
+
 /**
  * A private Map behind four operations, generalising the `challenges`/`putChallenge`/
  * `takeChallenge` shape server.js already carries twice (once for WebAuthn challenges, once for
