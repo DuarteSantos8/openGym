@@ -13,9 +13,11 @@ import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { dateLocale } from '../lib/i18n-core.js'
 import { api, webauthnOK, passkeyAssertion, passwordLogin, passwordRegister, passwordResetRedeem } from '../lib/api.js'
+import { MOBILE } from '../lib/mobile.js'
 import { oidcProofStartUrl, requestProofTicket } from '../lib/oidc.js'
 import { proofChoices } from '../lib/prove-owner.js'
 import { forgetProof, rememberProof } from '../lib/pending-proof.js'
+import { startProviderProof as startAppProviderProof, useAttemptUnfinished } from './AppSignIn.jsx'
 import { askAddDeviceData } from '../sheets.jsx'
 import { Row, Button } from './ui.jsx'
 
@@ -258,11 +260,15 @@ export function ProveOwner({ passkey, password, onProof, explain = passwordError
   const live = useRef(true)
   const prompt = useRef(null)   // the AbortController of a passkey prompt still open
   const resumed = useRef(false)   // guards the resume effect against StrictMode's double mount
+  const proofUnsub = useRef(null)   // the phone's own waiter, cleared on unmount (MOBILE only)
+  // The phone has no page reload to resume across: an abandoned departure is read here instead,
+  // the same way the connect screen reads one for sign-in (AppSignIn.jsx's own attempt store).
+  const [proofUnfinished, clearProofUnfinished] = useAttemptUnfinished('proof')
   useEffect(() => {
     // Set here, not only initially: StrictMode unmounts and mounts again, and the first cleanup
     // must not leave the sheet thinking it is gone.
     live.current = true
-    return () => { live.current = false; prompt.current?.abort() }
+    return () => { live.current = false; prompt.current?.abort(); proofUnsub.current?.() }
   }, [])
   const run = async proof => {
     if (busy) return
@@ -281,9 +287,11 @@ export function ProveOwner({ passkey, password, onProof, explain = passwordError
   }
   // A resumed instance already carries the one-shot proof the provider round trip left on the
   // server (the HttpOnly proof cookie); it goes through the same onProof path any other proof
-  // does, once, even under StrictMode mounting this effect twice.
+  // does, once, even under StrictMode mounting this effect twice. The phone never resumes this
+  // way - its own proof comes back through the app channel's waiter instead (startProviderProof
+  // below), never a page reload, so `resume` never fires there.
   useEffect(() => {
-    if (resume && !resumed.current) { resumed.current = true; run(async () => ({ identityProof: true })) }
+    if (!MOBILE && resume && !resumed.current) { resumed.current = true; run(async () => ({ identityProof: true })) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resume])
   const withPassword = ev => {
@@ -297,9 +305,23 @@ export function ProveOwner({ passkey, password, onProof, explain = passwordError
   // The provider departure is not a WebAuthn ceremony, so it does not go through run() — there is
   // no body for onProof to carry, the navigation itself is the result — but busy/err behave the
   // same way: disabled buttons while it is in flight, the refusal worded by explain() on failure.
+  // On the phone there is no page to leave at all: the system browser departs and returns through
+  // the app's own opengym:// channel instead, so nothing here is remembered in sessionStorage and
+  // nothing here navigates this page anywhere - the proof itself arrives at the waiter below.
   const startProviderProof = async () => {
     if (busy) return
     setBusy(true); setErr(null)
+    if (MOBILE) {
+      clearProofUnfinished()
+      try {
+        proofUnsub.current = await startAppProviderProof(act, id => run(async () => ({ identityProof: true, proof: id })))
+      } catch (e) {
+        if (live.current) setErr(explain(e))
+      } finally {
+        if (live.current) setBusy(false)
+      }
+      return
+    }
     try {
       rememberProof({ act, draft })
       const ticket = await requestProofTicket(act)
@@ -326,6 +348,7 @@ export function ProveOwner({ passkey, password, onProof, explain = passwordError
     {choices.identity && <>
       {choices.identityDivider && <div className="dim small" style={{ margin: '14px 0 8px', textAlign: 'center' }}>{t('or confirm with {0}', providerLabel)}</div>}
       <Button icon="link" variant={choices.identity} disabled={busy} onClick={startProviderProof}>{t('Confirm with {0}', providerLabel)}</Button>
+      {MOBILE && proofUnfinished && <div className="dim small" style={{ marginTop: 8 }}>{t('Sign-in was not finished')}</div>}
     </>}
     {/* A profile with no passkey whose password no longer counts, and no linked identity either
         — the instance switched passwords off — has nothing left to answer with
