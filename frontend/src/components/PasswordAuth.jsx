@@ -13,6 +13,9 @@ import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { dateLocale } from '../lib/i18n-core.js'
 import { api, webauthnOK, passkeyAssertion, passwordLogin, passwordRegister, passwordResetRedeem } from '../lib/api.js'
+import { oidcProofStartUrl, requestProofTicket } from '../lib/oidc.js'
+import { proofChoices } from '../lib/prove-owner.js'
+import { forgetProof, rememberProof } from '../lib/pending-proof.js'
 import { askAddDeviceData } from '../sheets.jsx'
 import { Row, Button } from './ui.jsx'
 
@@ -63,6 +66,7 @@ export function passwordError(e) {
     case 'reset-invalid': return t('That reset code is wrong or has expired — ask your admin for a new one.')
     case 'disabled': return t('This account has been disabled.')
     case 'busy': return t('The server is busy — try again in a moment.')
+    case 'identity-proof': return t('The confirmation attempt expired — try again.')
   }
   return e?.message || t('Sign-in failed')
 }
@@ -222,24 +226,38 @@ function PasswordRegisterSheet({ close }) {
 export const openPasswordRegister = () => ui().openSheet(close => <PasswordRegisterSheet close={close} />)
 
 /* "Confirm it is you" — what the server asks before anything that adds or takes away a way in
-   (proveOwner in api/server.js): a passkey this profile already has, or its current password
-   where that counts. `passkey`: the profile has one. `password`: its password counts as proof —
-   set, and the instance takes passwords (GET /api/account/passkeys → `password`). Hands the body
-   the server takes to `onProof` — for a removal, the removal itself — and shows the refusal,
-   worded by `explain`, when that throws. For a removal this step is the confirmation too, so
-   `danger` colours it and `submitText` names the action on the password's button.
+   (proveOwner in api/server.js): a passkey this profile already has, its current password where
+   that counts, or — the third answer, offered last because it leaves the page — a sign-in at the
+   provider as the profile's linked identity. `passkey`: the profile has one. `password`: its
+   password counts as proof — set, and the instance takes passwords (GET /api/account/passkeys →
+   `password`). `identity`/`providerName`/`act`/`draft`: the profile has a linked identity, its
+   provider's name, and which change this proof is for — the provider option only ever renders
+   when all three of `identity`, an instance provider and `act` hold, since a proof cannot be
+   requested for nothing. Hands the body the server takes to `onProof` — for a removal, the
+   removal itself — and shows the refusal, worded by `explain`, when that throws. For a removal
+   this step is the confirmation too, so `danger` colours it and `submitText` names the action on
+   the password's button. `proofChoices` (lib/prove-owner.js) is the one place that decides which
+   option is loud, which gets a divider, and when none of them can confirm anything at all.
 
    A proof is made on the tap, for the one request it goes with, and never kept. A passkey prompt
    still open when the sheet closes is called off, and whatever a prompt answers after that is
    dropped: someone who backed out of removing a passkey must not have it removed by a prompt
-   they no longer see. */
-export function ProveOwner({ passkey, password, onProof, explain = passwordError, danger = false, submitText }) {
+   they no longer see. The provider option instead departs the page entirely — `rememberProof`
+   holds which change was pending so the sheet can reopen already past its proof step, and a
+   resumed instance (`resume`) hands the server the one-shot proof that round trip left for this
+   change, through the same `onProof` path a passkey or password proof already uses. The server,
+   not this component, decides whether that proof holds. */
+export function ProveOwner({ passkey, password, onProof, explain = passwordError, danger = false, submitText,
+  identity = false, providerName, act, draft, resume = false }) {
   const name = useStore(s => s.user?.name) || ''
+  const oidc = useStore(s => s.config?.oidc)
+  const providerLabel = providerName || oidc?.name || ''
   const [pw, setPw] = useState('')
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState(null)
   const live = useRef(true)
   const prompt = useRef(null)   // the AbortController of a passkey prompt still open
+  const resumed = useRef(false)   // guards the resume effect against StrictMode's double mount
   useEffect(() => {
     // Set here, not only initially: StrictMode unmounts and mounts again, and the first cleanup
     // must not leave the sheet thinking it is gone.
@@ -261,28 +279,58 @@ export function ProveOwner({ passkey, password, onProof, explain = passwordError
       if (live.current) setBusy(false)
     }
   }
-  const withPasskey = !!passkey && webauthnOK()
+  // A resumed instance already carries the one-shot proof the provider round trip left on the
+  // server (the HttpOnly proof cookie); it goes through the same onProof path any other proof
+  // does, once, even under StrictMode mounting this effect twice.
+  useEffect(() => {
+    if (resume && !resumed.current) { resumed.current = true; run(async () => ({ identityProof: true })) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resume])
   const withPassword = ev => {
     ev.preventDefault()
     if (!pw) { setErr(t('Enter your password.')); return }
     run(async () => ({ current: pw }))
   }
-  // A removal's buttons are red whichever proof carries it: each of them removes.
-  const main = danger ? 'danger' : 'primary'
+  // The identity leg exists only when there is something to request a proof for: a linked
+  // identity, a configured provider, and the one operation the proof would be bound to.
+  const withIdentity = !!identity && !!oidc && !!act
+  // The provider departure is not a WebAuthn ceremony, so it does not go through run() — there is
+  // no body for onProof to carry, the navigation itself is the result — but busy/err behave the
+  // same way: disabled buttons while it is in flight, the refusal worded by explain() on failure.
+  const startProviderProof = async () => {
+    if (busy) return
+    setBusy(true); setErr(null)
+    try {
+      rememberProof({ act, draft })
+      const ticket = await requestProofTicket(act)
+      if (!live.current) return
+      window.location.href = oidcProofStartUrl(ticket)
+    } catch (e) {
+      if (live.current) { forgetProof(); setErr(explain(e)) }
+    } finally {
+      if (live.current) setBusy(false)
+    }
+  }
+  const choices = proofChoices({ passkey, webauthn: webauthnOK(), password, identity: withIdentity, danger })
   return <>
-    {withPasskey && <Button variant={main} icon="lock" disabled={busy} onClick={() => run(signal => passkeyAssertion({ signal }))}>{t('Confirm with a passkey')}</Button>}
-    {password && <form onSubmit={withPassword} noValidate>
-      {withPasskey && <div className="dim small" style={{ margin: '14px 0 8px', textAlign: 'center' }}>{t('or with your password')}</div>}
+    {choices.passkey && <Button variant={choices.passkey} icon="lock" disabled={busy} onClick={() => run(signal => passkeyAssertion({ signal }))}>{t('Confirm with a passkey')}</Button>}
+    {choices.password && <form onSubmit={withPassword} noValidate>
+      {choices.passwordDivider && <div className="dim small" style={{ margin: '14px 0 8px', textAlign: 'center' }}>{t('or with your password')}</div>}
       {/* Tells a password manager which account the password belongs to. */}
       <input type="text" name="username" autoComplete="username" value={name} readOnly hidden />
       <input className="input" type="password" name="current-password" autoComplete="current-password" placeholder={t('Current password')}
         value={pw} onChange={e => setPw(e.target.value)} />
       <div style={{ height: 10 }} />
-      <Button type="submit" variant={withPasskey && !danger ? 'plain' : main} disabled={busy}>{submitText || t('Continue')}</Button>
+      <Button type="submit" variant={choices.password} disabled={busy}>{submitText || t('Continue')}</Button>
     </form>}
-    {/* A profile with no passkey whose password no longer counts — the instance switched
-        passwords off — has nothing left to answer with (docs/SELF_HOSTING.md). */}
-    {!withPasskey && !password && <div className="dim small">{passkey
+    {choices.identity && <>
+      {choices.identityDivider && <div className="dim small" style={{ margin: '14px 0 8px', textAlign: 'center' }}>{t('or confirm with {0}', providerLabel)}</div>}
+      <Button icon="link" variant={choices.identity} disabled={busy} onClick={startProviderProof}>{t('Confirm with {0}', providerLabel)}</Button>
+    </>}
+    {/* A profile with no passkey whose password no longer counts, and no linked identity either
+        — the instance switched passwords off — has nothing left to answer with
+        (docs/SELF_HOSTING.md). */}
+    {choices.deadEnd && <div className="dim small">{choices.deadEnd === 'no-passkey-here'
       ? t('This browser cannot confirm with your passkey. Do this on a device that holds one.')
       : t('This profile has no passkey, and this server does not take passwords, so nothing here can confirm that it is you. Ask your admin.')}</div>}
     {err && <div className="small" role="alert" style={errStyle}>{err}</div>}
@@ -299,6 +347,32 @@ export const notReached = e => e?.status == null || e.status >= 500
 export function useAgainOnceReached(unreached, load) {
   const reachedAt = useStore(s => s.sync?.lastSynced)
   useEffect(() => { if (unreached) load() }, [reachedAt])
+}
+
+// GET /api/account/password, taken once rather than kept live — what resumePasswordProof needs to
+// reopen a sheet after a provider round trip; PasswordRow below keeps the live copy the screen
+// renders from.
+export const passwordStatus = () => api('/api/account/password')
+
+// Reopens the sheet a password- or e-mail change was pending for while the browser was away
+// confirming with the provider — mirrors resumePasskeyProof (components/Passkeys.jsx) for this
+// module's own three acts. Answers false for anything else: setting a first password never goes
+// through this proof step at all (its own passkey ceremony proves it instead), so there is
+// nothing here to resume for that act.
+export function resumePasswordProof(act, draft, { status, done }) {
+  if (act === 'password-remove') {
+    ui().openSheet(c => <RemovePasswordSheet status={status} close={c} done={done} resume />)
+    return true
+  }
+  if (act === 'email') {
+    ui().openSheet(c => <EmailSheet status={status} close={c} done={done} initialEmail={draft?.email ?? ''} resume />)
+    return true
+  }
+  if (act === 'email-remove') {
+    ui().openSheet(c => <RemoveEmailSheet status={status} close={c} done={done} resume />)
+    return true
+  }
+  return false
 }
 
 /* ------------------------------------------------------------------- Settings -------------
@@ -380,7 +454,7 @@ export function PasswordSheet({ status, close, done }) {
       <div style={{ height: 8 }} />
       <Button type="button" variant="ghost" className="dim" disabled={busy} onClick={() => save(true)}>{t('Forgot it? Confirm with your passkey instead')}</Button>
     </>}
-    {status.set && status.passkeys > 0 && <>
+    {status.set && (status.passkeys > 0 || status.identity) && <>
       <div style={{ height: 8 }} />
       <button type="button" className="btn danger" disabled={busy} onClick={remove}>{t('Remove password')}</button>
     </>}
@@ -390,9 +464,10 @@ export function PasswordSheet({ status, close, done }) {
 /* Removing the password asks for the proof setting one does (proveOwner in api/server.js): a
    copied session must not take away the owner's way in where passkeys do not work. The proof is
    the confirmation, so it is asked on the sheet that says what removing means — the password
-   itself, or a passkey of this profile. Only offered while a passkey remains (the last way in
-   stays), and the password counts here: this row exists only while the instance takes them. */
-function RemovePasswordSheet({ status, close, done }) {
+   itself, a passkey of this profile, or the linked identity. Only offered while another way in
+   remains (the last way in stays), and the password counts here: this row exists only while the
+   instance takes them. */
+function RemovePasswordSheet({ status, close, done, resume = false }) {
   const remove = async proof => {
     await api('/api/account/password', { method: 'DELETE', body: JSON.stringify(proof) })
     close(); done()
@@ -402,7 +477,7 @@ function RemovePasswordSheet({ status, close, done }) {
     <h3>{t('Remove your password?')}</h3>
     <div className="muted small" style={{ marginBottom: 6 }}>{t('Only your passkeys sign in to this profile afterwards.')}</div>
     <div className="dim small" style={{ marginBottom: 14 }}>{t('First confirm that it is you.')}</div>
-    <ProveOwner passkey={status.passkeys > 0} password danger submitText={t('Remove')} onProof={remove} />
+    <ProveOwner passkey={status.passkeys > 0} password identity={!!status.identity} act="password-remove" resume={resume} danger submitText={t('Remove')} onProof={remove} />
     <div style={{ height: 8 }} />
     <Button type="button" variant="ghost" className="dim" onClick={close}>{t('Cancel')}</Button>
   </>
@@ -426,9 +501,12 @@ export function EmailRow({ status, done }) {
 // Two steps: the address first, checked here before any passkey prompt opens, then the proof,
 // which carries the save. An address in use is only refused after the proof (the server's rule,
 // so that asking costs something), and is said on the proof step.
-export function EmailSheet({ status, close, done }) {
-  const [email, setEmail] = useState(status.email || '')
-  const [step, setStep] = useState('edit')   // 'edit' | 'confirm'
+export function EmailSheet({ status, close, done, initialEmail, resume = false }) {
+  const [email, setEmail] = useState(initialEmail ?? status.email ?? '')
+  const [step, setStep] = useState(initialEmail != null ? 'confirm' : 'edit')   // 'edit' | 'confirm'
+  // A resumed sheet carries one proof made at the provider, spent by the first save: coming back
+  // to the confirm step after "Back" asks for a fresh proof instead of sending it again.
+  const [resumed, setResumed] = useState(resume)
   const [err, setErr] = useState(null)
   const clean = email.trim()
   const next = ev => {
@@ -440,6 +518,7 @@ export function EmailSheet({ status, close, done }) {
     setErr(null); setStep('confirm')
   }
   const save = async proof => {
+    setResumed(false)
     await api('/api/account/email', { method: 'POST', body: JSON.stringify({ email: clean, ...proof }) })
     close(); done()
     toast(t('E-mail saved'))
@@ -465,14 +544,14 @@ export function EmailSheet({ status, close, done }) {
     </> : <>
       <div className="small" style={{ marginBottom: 6, fontWeight: 600, overflowWrap: 'anywhere' }}>{clean}</div>
       <div className="dim small" style={{ marginBottom: 14 }}>{t('First confirm that it is you.')}</div>
-      <ProveOwner passkey={status.passkeys > 0} password={!!status.set} submitText={t('Save')} onProof={save} />
+      <ProveOwner passkey={status.passkeys > 0} password={!!status.set} identity={!!status.identity} act="email" draft={{ email: clean }} resume={resumed} submitText={t('Save')} onProof={save} />
       <div style={{ height: 8 }} />
       <Button type="button" variant="ghost" className="dim" onClick={() => setStep('edit')}>{t('Back')}</Button>
     </>}
   </>
 }
 
-function RemoveEmailSheet({ status, close, done }) {
+function RemoveEmailSheet({ status, close, done, resume = false }) {
   const remove = async proof => {
     await api('/api/account/email', { method: 'DELETE', body: JSON.stringify(proof) })
     close(); done()
@@ -482,7 +561,7 @@ function RemoveEmailSheet({ status, close, done }) {
     <h3>{t('Remove your sign-in e-mail?')}</h3>
     <div className="muted small" style={{ marginBottom: 6 }}>{t('Afterwards you sign in with your profile name only.')}</div>
     <div className="dim small" style={{ marginBottom: 14 }}>{t('First confirm that it is you.')}</div>
-    <ProveOwner passkey={status.passkeys > 0} password={!!status.set} danger submitText={t('Remove')} onProof={remove} />
+    <ProveOwner passkey={status.passkeys > 0} password={!!status.set} identity={!!status.identity} act="email-remove" resume={resume} danger submitText={t('Remove')} onProof={remove} />
     <div style={{ height: 8 }} />
     <Button type="button" variant="ghost" className="dim" onClick={close}>{t('Cancel')}</Button>
   </>
