@@ -338,3 +338,53 @@ test('validateHeaders: small maps pass, framing names and junk do not', () => {
   const many = {}; for (let i = 0; i < 9; i++) many['x-h-' + i] = 'v';
   assert.equal(validateHeaders(many).ok, false);
 });
+
+test('compatible: a model served only over the Responses API is retried through it once', async () => {
+  const cfg = { provider: 'compatible', providerOptions: { compatible: { baseUrl: 'https://opencode.ai/zen/go', headers: { 'x-opencode-session': 'sess-1' } } } };
+  const respOk = { id: 'resp_1', status: 'completed', output: [{ type: 'message', content: [{ type: 'output_text', text: ANSWER }] }] };
+  const f = fakeFetch(n => n === 1
+    ? { status: 400, body: { error: { message: 'Model does not support this protocol.' } } }
+    : ok(respOk));
+  const r = await compatible.invoke({ cfg, prompt: 'P', env, model: 'muse-spark-1.3-contributor', fetch: f, schema: { type: 'object' } });
+  assert.equal(r.code, 0);
+  assert.equal(r.text, ANSWER);
+  assert.equal(f.calls.length, 2);
+  assert.equal(f.calls[0].url, 'https://opencode.ai/zen/go/v1/chat/completions');
+  assert.equal(f.calls[1].url, 'https://opencode.ai/zen/go/v1/responses');
+  assert.deepEqual(f.calls[1].body.input, [
+    { role: 'system', content: SYSTEM_PROMPT },
+    { role: 'user', content: 'P' }
+  ]);
+  assert.equal(f.calls[1].body.text.format.type, 'json_schema');
+  assert.equal(f.calls[1].body.model, 'muse-spark-1.3-contributor');
+  // Gateway routing still applies on the second shape.
+  assert.equal(f.calls[1].headers['x-opencode-session'], 'sess-1');
+  assert.equal(f.calls[1].headers.authorization, 'Bearer compat-1');
+});
+
+test('compatible: the Responses retry fires only on the protocol 400, and refusals read as errors', async () => {
+  const cfg = { provider: 'compatible', providerOptions: { compatible: { baseUrl: 'https://opencode.ai/zen/go' } } };
+  // Any other 400 is final — no second shape.
+  const bad = fakeFetch([{ status: 400, body: { error: { message: 'bad request' } } }]);
+  const r = await compatible.invoke({ cfg, prompt: 'P', env, model: 'm', fetch: bad });
+  assert.equal(r.code, 1);
+  assert.equal(bad.calls.length, 1);
+
+  // A refusal inside a 200 reads as an error, not an empty plan.
+  const refused = fakeFetch([
+    { status: 400, body: { error: { message: 'Model does not support this protocol.' } } },
+    ok({ status: 'completed', output: [{ type: 'message', content: [{ type: 'refusal', refusal: 'nope' }] }] })
+  ]);
+  const r2 = await compatible.invoke({ cfg, prompt: 'P', env, model: 'm', fetch: refused });
+  assert.equal(r2.code, 1);
+  assert.match(r2.stderr, /refused/);
+
+  // Cut off at the output limit fails as provider, like the Chat shape.
+  const cut = fakeFetch([
+    { status: 400, body: { error: { message: 'Model does not support this protocol.' } } },
+    ok({ status: 'incomplete', incomplete_details: { reason: 'max_output_tokens' }, output: [{ type: 'message', content: [{ type: 'output_text', text: 'half' }] }] })
+  ]);
+  const r3 = await compatible.invoke({ cfg, prompt: 'P', env, model: 'm', fetch: cut });
+  assert.equal(r3.code, 1);
+  assert.match(r3.stderr, /cut off/);
+});
