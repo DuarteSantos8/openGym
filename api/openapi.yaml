@@ -18,7 +18,10 @@ info:
     `register/verify` or `login/verify` sets the session cookie; every authenticated
     route then works with that cookie. The paired mobile app has no shared cookie jar,
     so it redeems a short pairing code (`/api/pair/redeem`) for the *same* signed token
-    and sends it as `Authorization: Bearer <token>` instead.
+    and sends it as `Authorization: Bearer <token>` instead. Where the instance offers
+    sign-in through an external provider, the app can obtain that same token by signing
+    in through it directly instead — the system browser, never the app's own WebView,
+    carries the round trip, and `/api/oidc/app/redeem` answers with the token (see below).
 
     An instance started with `PASSWORD_LOGIN=1` also offers **name-and-password
     sign-in** (tag `password`): opt-in per profile, scrypt-hashed, throttled, with an
@@ -76,20 +79,26 @@ info:
     checks `Sec-Fetch-Site` (falling back to `Origin` vs the configured `ORIGIN`);
     a mismatch is refused with `403 {"error":"cross-origin request refused"}` on any
     non-GET route. Exempt: passkey sign-up and sign-in (`register/options`,
-    `register/verify`, `login/options`, `login/verify`) and `pair/redeem`, each of which
-    carries its own one-shot credential in the body, and any request authenticated with a
-    Bearer token.
+    `register/verify`, `login/options`, `login/verify`), `pair/redeem`, and the phone
+    app's own sign-in redeem and confirm (`oidc/app/redeem`, `oidc/app/confirm`), each of
+    which carries its own one-shot credential in the body, and any request authenticated
+    with a Bearer token.
     The password routes are **not** exempt: a hostile page knows a valid name and
     password of its own, and could otherwise sign a visitor into it (login CSRF).
     Neither are the device-link routes: a link is redeemed on the app's own origin,
     the only one a passkey can be created for.
 
-    Sign-in through an external provider changes nothing here: the exempt list above is
-    unchanged, its browser-navigated routes (`/api/oidc/start`, `/api/oidc/link/start`,
-    `/api/oidc/proof/start`, `/api/oidc/callback`) are `GET`s the check above already lets
-    through, and the state-changing routes it adds (minting a link ticket, minting a proof
-    ticket, removing the linked identity) sit under the same origin check as every other
-    `/api/account/*` route.
+    The two app-channel exemptions above act on no existing session even where they
+    create one — `oidc/app/redeem` carries the return code together with its verifier,
+    `oidc/app/confirm` the one-shot handle that redeem answered with — and both have to
+    work from the phone's own WebView, whose origin is never `ORIGIN`. A redeem that
+    links or proves instead carries the phone's own Bearer token, which already skips the
+    check above on its own. Every other state-changing provider route — minting a link or
+    a proof ticket, confirming a new profile in a browser, removing a linked identity —
+    sits under the same origin check as every other `/api/account/*` route; only the
+    provider's own browser-navigated departures and its callback (`/api/oidc/start`,
+    `/api/oidc/link/start`, `/api/oidc/proof/start`, `/api/oidc/callback`, and their
+    phone-app counterparts) are the `GET`s the check above already lets through.
 
     ### Environment-dependent behavior
     - `INVITE_ONLY=1` — registration requires a valid invite code (minted by an admin).
@@ -581,6 +590,100 @@ paths:
                 attempt. Set on success; expired immediately on any failure.
               schema: { type: string }
 
+  /api/oidc/app/start:
+    get:
+      tags: [auth]
+      operationId: oidcAppStart
+      summary: Begin sign-in through the configured OIDC provider, from the phone app
+      description: |
+        The phone app's own counterpart to `GET /api/oidc/start`: navigated to directly (a plain
+        navigation the native shell hands to the system browser, never a fetch), and every outcome
+        is a redirect. Requires `?challenge=<43-character S256 challenge>`, computed by the app
+        itself from a verifier it keeps for itself; the departure records the challenge, and the
+        callback that returns from it is never trusted for the same value. On success the return
+        goes to `opengym://oidc?code=<one-shot code>` instead of setting a cookie; on any failure
+        to `opengym://oidc?err=<code>`.
+
+        Refused the same way `GET /api/oidc/start` is: only a top-level navigation departs (`403`,
+        no body, nothing counted, otherwise), and every departure counts against the same
+        per-address window the three browser departures already share.
+      security: []
+      parameters:
+        - name: challenge
+          in: query
+          required: true
+          schema: { type: string, pattern: '^[A-Za-z0-9_-]{43}$' }
+          description: >-
+            RFC 7636 S256 challenge, base64url with no padding, computed by the app from a
+            verifier it holds until the redeem step. A missing or malformed value answers
+            `request-invalid` without recording anything.
+      responses:
+        '403':
+          description: Not a top-level navigation. No body, no cookie, nothing counted.
+        '302':
+          description: >-
+            The provider's own authorization endpoint on success, or `opengym://oidc?err=<code>`
+            on any failure.
+          headers:
+            Location:
+              description: >-
+                The provider's authorization endpoint on success, or `opengym://oidc?err=<code>`
+                on failure (one of `provider-misconfigured`, `provider-unreachable`,
+                `request-invalid`, `locked`).
+              schema: { type: string }
+            Set-Cookie:
+              description: >-
+                The departure cookie, binding this request to the flow state minted for this
+                attempt. Set on success; expired immediately on any failure.
+              schema: { type: string }
+
+  /api/oidc/app/link/start:
+    get:
+      tags: [auth]
+      operationId: oidcAppLinkStart
+      summary: Begin attaching an identity to the caller's own profile, from the phone app
+      description: |
+        The phone app's own counterpart to `GET /api/oidc/link/start`: carries no cookie and no
+        Authorization header, since the system browser this navigates to has no session of its
+        own. Requires `?ticket=<ticket>`, a one-shot value from
+        `POST /api/account/identities/link-ticket` minted with a `challenge` over the phone's own
+        Bearer session. The ticket alone is the credential this departure is honoured on; the
+        profile and the session it was minted for are checked only later, when the phone redeems
+        the result with its verifier and its Bearer (`POST /api/oidc/app/redeem`). A missing,
+        already spent, expired or non-app ticket (one minted for `GET /api/oidc/link/start`)
+        answers `opengym://oidc?err=ticket-invalid` and records nothing at all — an anonymous
+        request names nobody.
+
+        Refused the same way `GET /api/oidc/app/start` is: only a top-level navigation departs
+        (`403`, no body, nothing counted, otherwise), and every departure counts against the same
+        per-address window the four browser/app departures already share.
+      security: []
+      parameters:
+        - name: ticket
+          in: query
+          required: true
+          schema: { type: string }
+          description: The one-shot value from POST /api/account/identities/link-ticket.
+      responses:
+        '403':
+          description: Not a top-level navigation. No body, no cookie, the ticket untouched.
+        '302':
+          description: >-
+            The provider's own authorization endpoint on success, or
+            `opengym://oidc?err=<code>` on any failure.
+          headers:
+            Location:
+              description: >-
+                The provider's authorization endpoint on success, or `opengym://oidc?err=<code>`
+                on failure (one of `ticket-invalid`, `provider-misconfigured`,
+                `provider-unreachable`, `locked`).
+              schema: { type: string }
+            Set-Cookie:
+              description: >-
+                The departure cookie, binding this request to the flow state minted for this
+                attempt. Set on success; expired immediately on any failure.
+              schema: { type: string }
+
   /api/oidc/link/start:
     get:
       tags: [auth]
@@ -677,6 +780,54 @@ paths:
                 attempt. Set on success; expired immediately on any failure.
               schema: { type: string }
 
+  /api/oidc/app/proof/start:
+    get:
+      tags: [auth]
+      operationId: oidcAppProofStart
+      summary: Begin confirming a change by signing in at the provider, from the phone app
+      description: |
+        The phone app's own counterpart to `GET /api/oidc/proof/start`: carries no cookie and no
+        Authorization header, since the system browser this navigates to has no session of its
+        own. Requires `?ticket=<ticket>`, a one-shot value from
+        `POST /api/account/identities/proof-ticket` minted with a `challenge` over the phone's own
+        Bearer session. The ticket alone is the credential this departure is honoured on; the
+        profile and the session it was minted for are checked only later, when the phone redeems
+        the result with its verifier and its Bearer (`POST /api/oidc/app/redeem`). A missing,
+        already spent, expired or non-app ticket (one minted for `GET /api/oidc/proof/start`)
+        answers `opengym://oidc?err=ticket-invalid` and records nothing.
+
+        Same `prompt=login` and `max_age=0` authorization parameters as the web proof departure,
+        for the same reason: nothing rests on them, since an issuer may ignore them and the
+        redeem's own rules do the real work. Refused the same way `GET /api/oidc/app/start` is:
+        only a top-level navigation departs, and every departure counts against the same
+        per-address window the other browser/app departures already share.
+      security: []
+      parameters:
+        - name: ticket
+          in: query
+          required: true
+          schema: { type: string }
+          description: The one-shot value from POST /api/account/identities/proof-ticket.
+      responses:
+        '403':
+          description: Not a top-level navigation. No body, no cookie, the ticket untouched.
+        '302':
+          description: >-
+            The provider's own authorization endpoint on success, or
+            `opengym://oidc?err=<code>` on any failure.
+          headers:
+            Location:
+              description: >-
+                The provider's authorization endpoint on success, or `opengym://oidc?err=<code>`
+                on failure (one of `ticket-invalid`, `provider-misconfigured`,
+                `provider-unreachable`, `locked`).
+              schema: { type: string }
+            Set-Cookie:
+              description: >-
+                The departure cookie, binding this request to the flow state minted for this
+                attempt. Set on success; expired immediately on any failure.
+              schema: { type: string }
+
   /api/oidc/callback:
     get:
       tags: [auth]
@@ -733,6 +884,16 @@ paths:
         `identity-mismatch` (the provider signed in another account, or the profile has no linked
         identity any more), `stale-sign-in` (the issuer reported a sign-in older than the request),
         `provider-unreachable` or `provider-misconfigured`, audited as `auth.proof.fail`.
+
+        A departure started by the phone app (`GET /api/oidc/app/start`, `GET /api/oidc/app/link/start`
+        or `GET /api/oidc/app/proof/start`) never lands on any of the screens above: it returns to
+        `opengym://oidc?code=<one-shot code>` on success or `opengym://oidc?err=<code>` on any
+        failure, and the app redeems the code at `POST /api/oidc/app/redeem`. Whether a departure
+        was an app one is read only from the consumed departure entry, never from this request. An
+        app link or an app proof departure writes nothing and mints nothing here either — the code
+        carries what the redeem needs (the identity pair for a link; the identity, the change and
+        whether the sign-in was stale for a proof), and the redeem is where the phone's own Bearer
+        session is checked and anything is finally written or minted.
 
         The code is kept inside the URL fragment, the way the client's own router reads it. A
         fragment is never sent to any server, so a failure code never reaches a log or an access
@@ -922,6 +1083,221 @@ paths:
                     enum: [account-disabled, invite-invalid]
                     description: >-
                       A short, stable value the client maps to its own translated sentence.
+              examples:
+                disabled: { value: { error: "this account has been disabled", code: "account-disabled" } }
+                inviteGone: { value: { error: "this invite is no longer valid", code: "invite-invalid" } }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+
+  /api/oidc/app/redeem:
+    post:
+      tags: [auth]
+      operationId: oidcAppRedeem
+      summary: Redeem the phone app's one-shot sign-in, link or proof code
+      description: |
+        Called from the phone app itself, once the app's own return address hands it the one-shot
+        code `GET /api/oidc/callback` minted. The code and the `verifier` the app has kept since
+        its own departure are the whole credential for a sign-in, exactly like
+        `POST /api/pair/redeem`'s code alone. The code and the verifier are never logged or audited
+        - only the outcome is. CSRF-exempt for the same reason `/api/pair/redeem` is: it carries
+        its own one-shot credential in the body, acts on no existing session, and has to work from
+        the mobile WebView, whose origin is never ORIGIN.
+
+        A linked identity signing in is signed in immediately, exactly as `POST /api/pair/redeem`
+        answers. An identity nobody has linked yet answers a confirmation shape instead: a one-shot
+        `handle`, never a token, for `POST /api/oidc/app/confirm` to finish.
+
+        A code minted by `GET /api/oidc/app/link/start` or `GET /api/oidc/app/proof/start` also
+        needs the same Bearer session the ticket was minted for — nothing was written or minted at
+        the callback for either, so this is the one point either is checked. A link answers
+        `{ linked: true }` once `attachIdentity` runs the web link branch's own rule (a pair linked
+        to another profile is refused, the same owner re-linking writes nothing more, a profile
+        linked meanwhile is refused). A proof answers `{ proof: "<id>" }` once the two rules the
+        web proof branch enforces both pass (the token names exactly the identity linked to
+        this profile now; when the issuer reported it, the sign-in is not older than the
+        departure) — spendable once by `identityProof: true` + `proof` in `OwnerProof`.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code, verifier]
+              properties:
+                code:
+                  type: string
+                  description: The one-shot code from the app's return address.
+                verifier:
+                  type: string
+                  description: >-
+                    The PKCE verifier the app generated at departure and kept since; its S256
+                    digest must match the challenge the departure recorded.
+      responses:
+        '200':
+          description: Signed in, an identity waiting for the app's own confirm, or an identity linked.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    required: [token, user]
+                    properties:
+                      token:
+                        type: string
+                        description: Signed session token, valid for SESSION_DAYS.
+                      user: { $ref: '#/components/schemas/SessionUser' }
+                  - type: object
+                    required: [confirm]
+                    properties:
+                      confirm:
+                        type: object
+                        required: [handle, name, invite]
+                        properties:
+                          handle:
+                            type: string
+                            description: >-
+                              One-shot value for `POST /api/oidc/app/confirm`, addressing this
+                              identity and nothing else; grants nothing on its own.
+                          name:
+                            type: string
+                            description: The seeded display name for the new profile.
+                          invite:
+                            type: boolean
+                            description: Whether the confirm must also carry an invite code.
+                  - type: object
+                    required: [linked]
+                    properties:
+                      linked:
+                        type: boolean
+                        description: >-
+                          Always `true` — a code minted by GET /api/oidc/app/link/start answering
+                          this shape means the identity is now linked to the Bearer session's own
+                          profile (or already was, for a doubled redeem of the same attempt).
+                  - type: object
+                    required: [proof]
+                    properties:
+                      proof:
+                        type: string
+                        description: >-
+                          One-shot value for `OwnerProof.proof`, good for the one change
+                          `POST /api/account/identities/proof-ticket` named, this Bearer session
+                          and its version, and one use.
+              examples:
+                signedIn: { value: { token: "<signed token>", user: { id: "u1", name: "Ana", admin: false } } }
+                confirmNeeded: { value: { confirm: { handle: "<one-shot handle>", name: "Ana", invite: false } } }
+                linked: { value: { linked: true } }
+                proof: { value: { proof: "<one-shot proof id>" } }
+        '400':
+          description: The code is missing, already spent, or expired.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              examples:
+                unknown: { value: { error: "invalid or expired code", code: "state-unknown" } }
+                expired: { value: { error: "invalid or expired code", code: "state-expired" } }
+        '401':
+          description: >-
+            The account signed out everywhere between the callback and this redeem — for a link
+            or a proof code, also any Bearer session other than the one the ticket was minted for,
+            or none at all.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "signed out everywhere since the sign-in", code: "session-changed" }
+        '403':
+          description: >-
+            The verifier does not match the challenge recorded at departure, the account behind
+            the code is disabled, or - a proof code only - the token named a different identity
+            than the one linked to this profile now (`identity-mismatch`), or the issuer reported
+            a sign-in older than the departure (`stale-sign-in`). Both proof refusals are audited
+            as `auth.proof.fail` with the change the proof was for.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              examples:
+                verifier: { value: { error: "wrong verifier for this code", code: "verifier-mismatch" } }
+                disabled: { value: { error: "this account has been disabled", code: "account-disabled" } }
+                identityMismatch: { value: { error: "the provider signed in a different account than the one linked to this profile", code: "identity-mismatch" } }
+                staleSignIn: { value: { error: "the provider reported a sign-in older than the request to confirm", code: "stale-sign-in" } }
+        '409':
+          description: >-
+            A link code only: the identity is already linked to a different profile
+            (`identity-collision`), or the Bearer session's own profile gained a different linked
+            identity meanwhile (`profile-linked`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              examples:
+                collision: { value: { error: "this identity is already linked to a profile", code: "identity-collision" } }
+                profileLinked: { value: { error: "this profile already has a linked identity", code: "profile-linked" } }
+
+  /api/oidc/app/confirm:
+    post:
+      tags: [auth]
+      operationId: oidcAppConfirm
+      summary: Name (and, where required, an invite for) a new profile from the phone app
+      description: |
+        The phone's own counterpart to `POST /api/oidc/confirm`: finished with the `handle` the
+        redeem above minted instead of the waiting-identity cookie, so no session and no cookie are
+        ever read or set. Runs the exact same rules as the web route (name and invite settled while
+        the entry is only peeked at, the identity pair re-looked-up before a profile is created, the
+        entry taken at the last possible moment), on its own one-shot store addressed only by the
+        handle - a web waiting-identity id, a return code, or a departure state presented here finds
+        nothing. CSRF-exempt and counted in the same burst budget as `POST /api/oidc/confirm`, for
+        the same reason `POST /api/oidc/app/redeem` is exempt above.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [handle, name]
+              properties:
+                handle:
+                  type: string
+                  description: The one-shot handle from POST /api/oidc/app/redeem's confirmation answer.
+                name:
+                  type: string
+                  maxLength: 40
+                  description: Display name for the new profile (trimmed, max 40 chars).
+                code:
+                  type: string
+                  description: >-
+                    Invite code — required (and validated) only when the instance runs with
+                    INVITE_ONLY and this identity is not already linked. A refusal leaves the
+                    handle usable, so the code can be corrected against the same attempt.
+      responses:
+        '200':
+          description: Registered and signed in, exactly like POST /api/pair/redeem.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: Signed session token, valid for SESSION_DAYS.
+                  user: { $ref: '#/components/schemas/SessionUser' }
+        '400':
+          description: '`name` missing/empty.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "name required" }
+        '401':
+          description: The handle is missing, already spent, or expired.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "sign-in expired — start again", code: "state-unknown" }
+        '403':
+          description: >-
+            The identity already resolved to a disabled profile, or — on an invite-only instance
+            — the invite code submitted with this request is not valid.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
               examples:
                 disabled: { value: { error: "this account has been disabled", code: "account-disabled" } }
                 inviteGone: { value: { error: "this invite is no longer valid", code: "invite-invalid" } }
@@ -1764,11 +2140,27 @@ paths:
         no external provider is configured (`provider-off`), or this profile already has a linked
         identity (`profile-linked`). A failed proof is audited as `auth.proof.fail` with
         `act: identity-link`.
+
+        A Bearer session (the paired phone app) may also carry `challenge`: an RFC 7636 S256
+        challenge the app generated itself, recorded on the ticket so the phone's own departure
+        (`GET /api/oidc/app/link/start`) can be honoured with no session of its own, and checked
+        only later when the phone redeems the result (`POST /api/oidc/app/redeem`). Present on a
+        cookie session, or malformed on either kind, answers `400 challenge-invalid` before any
+        proof is asked. A ticket minted with a challenge is never valid at `GET /api/oidc/link/start`.
       requestBody:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/OwnerProof' }
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/OwnerProof'
+                - type: object
+                  properties:
+                    challenge:
+                      type: string
+                      pattern: '^[A-Za-z0-9_-]{43}$'
+                      description: >-
+                        RFC 7636 S256 challenge, base64url with no padding. Bearer sessions only.
       responses:
         '200':
           description: A one-shot link ticket, good for 60 seconds.
@@ -1779,6 +2171,12 @@ paths:
                 properties:
                   ticket: { type: string, description: 'Pass as `?ticket=` to GET /api/oidc/link/start.' }
               example: { ticket: "9f3q…" }
+        '400':
+          description: '`challenge-invalid`: `challenge` is present on a cookie session, or malformed.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "malformed app challenge", code: "challenge-invalid" }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/ProofRefused' }
         '409':
@@ -1803,6 +2201,12 @@ paths:
         `GET /api/oidc/proof/start?ticket=<ticket>`, and the sign-in there is what proves anything.
         So no other proof is asked for it. One-shot, 60 seconds, bound to this profile and to the
         exact session that asked for it; nothing about it is written to disk.
+
+        Same `challenge` rule as `POST /api/account/identities/link-ticket`: a Bearer session may
+        carry an RFC 7636 S256 challenge, recorded on the ticket for `GET /api/oidc/app/proof/start`
+        to depart with no session of its own. Present on a cookie session, or malformed on either
+        kind, answers `400 challenge-invalid`. A ticket minted with a challenge is never valid at
+        `GET /api/oidc/proof/start`.
       requestBody:
         required: true
         content:
@@ -1815,6 +2219,11 @@ paths:
                   type: string
                   enum: [email, email-remove, password, password-remove, passkey-add, passkey-remove, device-link, identity-link, identity-remove]
                   description: The change the proof will confirm; a proof made for one is refused for any other.
+                challenge:
+                  type: string
+                  pattern: '^[A-Za-z0-9_-]{43}$'
+                  description: >-
+                    RFC 7636 S256 challenge, base64url with no padding. Bearer sessions only.
             example: { act: passkey-add }
       responses:
         '200':
@@ -1827,11 +2236,15 @@ paths:
                   ticket: { type: string, description: 'Pass as `?ticket=` to GET /api/oidc/proof/start.' }
               example: { ticket: "9f3q…" }
         '400':
-          description: '`act-invalid`: `act` is missing or not a change that takes the owner''s proof.'
+          description: >-
+            `act-invalid`: `act` is missing or not a change that takes the owner's proof.
+            `challenge-invalid`: `challenge` is present on a cookie session, or malformed.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
-              example: { error: "that change cannot be confirmed with the provider", code: "act-invalid" }
+              examples:
+                act: { value: { error: "that change cannot be confirmed with the provider", code: "act-invalid" } }
+                challenge: { value: { error: "malformed app challenge", code: "challenge-invalid" } }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '409':
           description: '`not-linked`: no identity that counts as a way in (none linked, or no provider configured).'
@@ -3664,12 +4077,21 @@ components:
         identityProof:
           type: boolean
           description: >-
-            `true` spends the one-shot proof `GET /api/oidc/callback` left behind after
-            `POST /api/account/identities/proof-ticket` and `GET /api/oidc/proof/start`,
-            carried by its HttpOnly cookie. Accepted only for the change it was requested for,
-            under the session that requested it, while the identity that made it is still the
-            one linked to this profile; spent whatever the outcome. Audited, like the change it
-            confirms, with the proof kind `identity`.
+            `true` spends the one-shot proof `GET /api/oidc/callback` (a cookie session) or
+            `POST /api/oidc/app/redeem` (a Bearer session) left behind after
+            `POST /api/account/identities/proof-ticket` and `GET /api/oidc/proof/start` /
+            `GET /api/oidc/app/proof/start`. A cookie session carries it in its HttpOnly cookie;
+            a Bearer session carries it as `proof` in this same body instead, since the phone has
+            no cookie jar shared with the server — each kind of session reads only its own
+            carrier, so a value presented on the wrong one proves nothing. Accepted only for the
+            change it was requested for, under the session that requested it, while the identity
+            that made it is still the one linked to this profile; spent whatever the outcome.
+            Audited, like the change it confirms, with the proof kind `identity`.
+        proof:
+          type: string
+          description: >-
+            The one-shot id `POST /api/oidc/app/redeem` answered for a proof code. Read only
+            alongside `identityProof: true`, and only on a Bearer session.
         current: { type: string }
 
     SessionUser:

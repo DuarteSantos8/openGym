@@ -52,6 +52,11 @@ const LABELS = {
   'auth.oidc.new': 'Created a profile by signing in with a provider',
   'auth.oidc.ok': 'Signed in with a provider',
   'auth.oidc.fail': 'Signing in with a provider failed',
+  // The same round trip, made from the phone app's own connect screen rather than a browser tab -
+  // the system browser departs and returns through the app's own scheme instead of a cookie.
+  'auth.oidc.app.ok': 'Signed in on the phone app with a provider',
+  'auth.oidc.app.fail': 'Signing in on the phone app with a provider failed',
+  'auth.oidc.app.new': 'Created a profile on the phone app with a provider',
   'auth.identity.remove': 'Removed a linked identity',
   // A ticket-proven identity link. Named apart from the auth.link.* device-link
   // events (#95): the two features share nothing but the word "link", and folding them onto the
@@ -108,6 +113,9 @@ const REASONS = {
   'provider-refused': 'the provider refused the sign-in request',
   'provider-unreachable': 'the provider could not be reached',
   'token-invalid': "the provider's answer could not be verified",
+  // The phone app's own redeem step (auth.oidc.app.fail).
+  'app-code-invalid': "the app's one-time return code was wrong, spent or expired",
+  'verifier-mismatch': 'the return code was presented by an app other than the one that started the sign-in',
   // Linking an identity to an existing profile.
   'provider-off': 'no external provider is configured on this instance',
   'ticket-invalid': 'the one-time ticket is missing, spent or expired',
