@@ -118,7 +118,10 @@ export function IdentityRow({ state, provider, changed }) {
       accessory="chevron"
       onClick={() => ui().openSheet(close => <LinkIdentitySheet close={close} state={state} provider={provider} />)} />
   }
-  const linkedDate = fmtDate(state.identity.linkedAt.slice(0, 10), false, true)
+  // A stored record without a link date (one edited by hand, say) still lists: the date is
+  // simply left out of the subtitle rather than taking the whole Settings screen down.
+  const linkedAt = state.identity.linkedAt
+  const linkedDate = typeof linkedAt === 'string' && linkedAt ? fmtDate(linkedAt.slice(0, 10), false, true) : ''
   // An identity that no longer signs in (its provider is gone, or replaced by another) is still
   // listed so its owner can see what is attached and remove it. It never counts as the last way
   // in, since it is not a way in at all.
@@ -128,6 +131,7 @@ export function IdentityRow({ state, provider, changed }) {
     <Row icon="link" iconTint="var(--indigo)"
       title={state.identity.email || state.identity.providerName || t('Linked identity')}
       subtitle={!usable ? t('This identity can no longer sign in - its provider is not set up on this instance any more.')
+        : !linkedDate ? (state.identity.email ? state.identity.providerName : undefined)
         : state.identity.email ? t('{0} - linked {1}', state.identity.providerName, linkedDate)
         : t('Linked {0}', linkedDate)}>
       <button className="iconbtn" aria-label={t('Remove linked identity')} disabled={lastWayIn}

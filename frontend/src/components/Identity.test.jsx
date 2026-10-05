@@ -117,6 +117,18 @@ describe('IdentityRow', () => {
     expect(host.querySelector('.lrow-s').textContent).toBe(`Linked ${fmtDate('2026-11-05', false, true)}`)
   })
 
+  it('a stored record without a link date still lists, the date left out of the subtitle', () => {
+    const { linkedAt, ...withAddress } = LINKED_WITH_ADDRESS.identity
+    const host = mount(<IdentityRow state={{ ...LINKED_WITH_ADDRESS, identity: withAddress }} provider={PROVIDER} changed={() => {}} />)
+    expect(host.querySelector('.lrow-t').textContent).toBe('alex@example.com')
+    expect(host.querySelector('.lrow-s').textContent).toBe('Example ID')
+    const { linkedAt: _, ...noAddress } = LINKED_NO_ADDRESS.identity
+    const bare = mount(<IdentityRow state={{ ...LINKED_NO_ADDRESS, identity: noAddress }} provider={PROVIDER} changed={() => {}} />)
+    expect(bare.querySelector('.lrow-t').textContent).toBe('Example ID')
+    expect(bare.querySelector('.lrow-s')).toBeNull()
+    expect(bare.querySelector('button[aria-label="Remove linked identity"]')).not.toBeNull()
+  })
+
   it('the last way in: the remove button is disabled and the reason renders under the row', () => {
     const host = mount(<IdentityRow state={{ ...LINKED_WITH_ADDRESS, lastWayIn: true }} provider={PROVIDER} changed={() => {}} />)
     expect(host.querySelector('button[aria-label="Remove linked identity"]').disabled).toBe(true)
