@@ -21,6 +21,11 @@ export function responsesSpec(id) {
         { role: 'system', content: system ? SYSTEM_PROMPT + '\n\n' + system : SYSTEM_PROMPT },
         { role: 'user', content: prompt }
       ],
+      // Bound the thinking, not the answer: without this a reasoning model can spend the
+      // whole output budget on reasoning and emit no message at all (observed: 16k tokens
+      // of reasoning, `incomplete` with a reasoning-only output). Low effort still reasons;
+      // the pipeline validator and the owner's approval are the quality gates, not CoT bulk.
+      reasoning: { effort: 'low' },
       text: schema
         ? { format: { type: 'json_schema', name: 'coach_answer', schema } }
         : { format: { type: 'json_object' } },

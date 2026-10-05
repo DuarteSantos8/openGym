@@ -357,6 +357,8 @@ test('compatible: a model served only over the Responses API is retried through 
   ]);
   assert.equal(f.calls[1].body.text.format.type, 'json_schema');
   assert.equal(f.calls[1].body.model, 'muse-spark-1.3-contributor');
+  // Reasoning is bounded so the message fits inside the output budget.
+  assert.deepEqual(f.calls[1].body.reasoning, { effort: 'low' });
   // Gateway routing still applies on the second shape.
   assert.equal(f.calls[1].headers['x-opencode-session'], 'sess-1');
   assert.equal(f.calls[1].headers.authorization, 'Bearer compat-1');
