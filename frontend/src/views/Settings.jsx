@@ -49,6 +49,7 @@ import { AnimationQualityRow } from '../components/Animations.jsx'
 import { ServerSyncSection, KeptChangesRows, leaveServer, connectServer, passkeySignIn } from '../components/ServerSync.jsx'
 import { passwordOn, PasswordRow, openPasswordSignIn, openPasswordRegister } from '../components/PasswordAuth.jsx'
 import { usePasskeys, PasskeysRow, DeviceLinkRow, openDeviceLinkRedeem, PairSheet } from '../components/Passkeys.jsx'
+import { IdentityRow, IdentityReturn } from '../components/Identity.jsx'
 import { DeleteAccountRow } from '../components/DeleteAccount.jsx'
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField, SearchField } from '../components/ui.jsx'
 import { PAGES, ROOT_GROUPS, pageVisible, searchSettings, pageTrail } from './settings-pages.js'
@@ -84,6 +85,9 @@ export function SettingsRoute() {
   const ctx = { user: useStore(s => s.user), mobile: MOBILE, ios: MOBILE && platformNow() !== 'android' }
   if (page && (!PAGES[page] || !pageVisible(PAGES[page].parent || page, ctx) || !pageVisible(page, ctx))) return <Navigate to="/settings" replace />
   if (page === 'coach') return <Navigate to="/coach/setup" replace />
+  // A link or a proof round trip at the identity provider returns to /settings with its outcome in
+  // the query; the account page is where that outcome is read (IdentityReturn), so carry it there.
+  if (!page && /[?&](link|link-err|proof|proof-err|oidc-err)=/.test(loc.search)) return <Navigate to={'/settings/account' + loc.search} replace />
   return <Settings key={page || 'root'} page={page || null} find={loc.state?.find || null} via={loc.state?.via || null} entryKey={loc.key} />
 }
 
@@ -1031,6 +1035,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           {user.admin && <Row icon="crown" iconTint="var(--indigo)" title={t('Admin dashboard')} accessory="chevron" onClick={() => nav('/admin')} />}
           <PasskeysRow state={passkeys.st} changed={credsChanged} />
           <DeviceLinkRow state={passkeys.st} />
+          {(config?.oidc || passkeys.st?.identity) && <IdentityRow state={passkeys.st} provider={config?.oidc} changed={credsChanged} />}
+          {config && (config.oidc || passkeys.st?.identity) && <IdentityReturn changed={credsChanged} provider={config.oidc} />}
           <Row icon="qr" iconTint="var(--blue)" title={t('Pair the mobile app')} subtitle={t('Connect the openGym app on your phone to this account.')} accessory="chevron"
             onClick={() => useUI.getState().openSheet(close => <PairSheet close={close} />)} />
           {pwOn && <PasswordRow version={credsV} />}
