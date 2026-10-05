@@ -66,5 +66,16 @@
 	<string>Used to scan your gym membership QR code, and to take a photo or video of an exercise you add yourself.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Used to record the sound of a video you take of an exercise you add yourself.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>ch.duartesantos.opengym</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>opengym</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>
