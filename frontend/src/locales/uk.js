@@ -1155,6 +1155,7 @@ export default {
   "Asks for your body weight when a workout starts. Off starts the session straight away.": "Запитує твою вагу на початку тренування. Вимкнено — сесія починається одразу.",
   "No entries yet — log your weight to start the curve.": "Записів поки немає — внеси вагу, щоб почати криву.",
   "Play sounds when the phone is on silent": "Відтворювати звуки в беззвучному режимі",
+  "Buzz when the phone is on silent": "Вібрувати в беззвучному режимі",
   "Music playing on this phone stops during a workout and does not resume by itself.": "Музика, що грає на цьому телефоні, зупиняється під час тренування і сама не відновлюється.",
   'Deletes your plan, workouts, body weight, photos and videos from your profile on this server and on every signed-in device. This cannot be undone.': 'Видаляє план, тренування, вагу тіла, фото й відео з профілю на цьому сервері й на всіх пристроях, де виконано вхід. Скасувати неможливо.',
   "Sync failed: the server refused the upload as too large. Your changes have not reached the server.": "Синхронізація не вдалася: сервер відхилив завантаження як завелике. Твої зміни не дійшли до сервера.",

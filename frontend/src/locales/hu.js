@@ -880,6 +880,7 @@ export default {
   'Asks for your body weight when a workout starts. Off starts the session straight away.': 'Edzés indításakor rákérdez a testsúlyodra. Kikapcsolva az edzés azonnal indul.',
   'No entries yet — log your weight to start the curve.': 'Még nincs bejegyzés — rögzítsd a súlyodat a görbe elindításához.',
   'Play sounds when the phone is on silent': 'Hangok lejátszása akkor is, ha a telefon némítva van',
+  'Buzz when the phone is on silent': 'Rezgés akkor is, ha a telefon némítva van',
   'Music playing on this phone stops during a workout and does not resume by itself.': 'A telefonon szóló zene edzés közben leáll, és nem indul újra magától.',
   'Import from Hevy': 'Importálás a Hevyből',
   'Pull your history with a Hevy Pro API key': 'Előzmények letöltése Hevy Pro API-kulccsal',

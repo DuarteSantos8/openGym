@@ -5,7 +5,7 @@ import { api } from '../lib/api.js'
 import { t } from '../lib/i18n.js'
 import { deviceId } from '../lib/push.js'
 import { MOBILE } from '../lib/mobile.js'
-import { armRestAlert, bindNativeRest, disarmRestAlert, holdRestAlert } from '../lib/rest-alert.js'
+import { armRestAlert, bindNativeRest, buzzRestEnd, disarmRestAlert, holdRestAlert } from '../lib/rest-alert.js'
 import { useStore } from './useStore.js'
 
 // Fire-and-forget: lets the server push a "rest over" alert if this tab gets suspended
@@ -18,10 +18,19 @@ const cancelPushRestTimer = () => { if (useStore.getState().user) api('/api/push
 // Books the end of a rest with whatever can announce it while the app is not looking: in the
 // Android app a native alarm and the countdown notification, everywhere else (and wherever that
 // alarm could not be set) the server's push. The web build books the push at once, as before.
+// The long end pattern. With "Buzz when the phone is on silent" on, the native alarm-usage
+// buzz replaces navigator.vibrate so the two do not stack when the ringer is not silenced.
+// A 30ms tick stays on navigator.vibrate either way.
+const buzzEnd = () => {
+  const S = useStore.getState().S
+  if (S.vibrate !== false && S.vibrateOnSilent) buzzRestEnd()
+  else vibrate([200, 100, 200])
+}
+
 const bookRestEnd = (endsAt, totalSec) => {
   if (!MOBILE) { pushRestTimer(Math.max(1, Math.round((endsAt - Date.now()) / 1000))); return }
   const { S } = useStore.getState()
-  armRestAlert(endsAt, { title: t('Rest over — next set!'), countdownTitle: t('Rest'), totalSec, accent: S.accent, sound: !!S.sound, vibrate: S.vibrate !== false })
+  armRestAlert(endsAt, { title: t('Rest over — next set!'), countdownTitle: t('Rest'), totalSec, accent: S.accent, sound: !!S.sound, vibrate: S.vibrate !== false, vibrateOnSilent: S.vibrate !== false && !!S.vibrateOnSilent })
     .then(ok => {
       // Only for the rest that asked: one skipped or moved since then has booked its own end.
       const tm = useUI.getState().timer
@@ -99,7 +108,7 @@ const runRest = (set, get) => {
         // The Android alarm for this end stays quiet while the app is on screen, so this chime is
         // the only one. Locked, this branch never runs and the alarm's tone does.
         chime(snd)
-        vibrate([200, 100, 200]); get().flashTimer()
+        buzzEnd(); get().flashTimer()
       }
       // The toast stays even when the rest ran out while the app was hidden: a guest, or anyone
       // without push permission, gets no notification, and a countdown that silently vanishes
@@ -280,7 +289,7 @@ export const useUI = create((set, get) => ({
       if (left <= 0) {
         if (seenLive && !wk.alerted) {
           chime(snd)
-          vibrate([200, 100, 200]); get().flashTimer()
+          buzzEnd(); get().flashTimer()
         }
         if (wk.overtime && left > -MAX_WORK_OVERTIME_SEC) { set({ work: { ...wk, left, alerted: true } }); return }
         const done = workDone

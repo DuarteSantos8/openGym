@@ -1288,6 +1288,7 @@ export default {
   'Asks for your body weight when a workout starts. Off starts the session straight away.': 'يطلب وزن جسمك عند بدء التمرين. عند الإيقاف تبدأ الجلسة مباشرة.',
   'No entries yet — log your weight to start the curve.': 'لا توجد إدخالات بعد — سجّل وزنك لبدء المنحنى.',
   'Play sounds when the phone is on silent': 'تشغيل الأصوات عندما يكون الهاتف صامتًا',
+  'Buzz when the phone is on silent': 'الاهتزاز عندما يكون الهاتف صامتًا',
   'Music playing on this phone stops during a workout and does not resume by itself.': 'الموسيقى التي تعمل على هذا الهاتف تتوقف أثناء التمرين ولا تستأنف من تلقاء نفسها.',
   'Add this device\'s workouts to your profile?': 'إضافة تدريبات هذا الجهاز إلى ملفك؟',
   '{0} workouts and {1} weigh-ins were logged on this device while signed out. Add them to your profile, or keep the profile exactly as it is on the server.': 'سُجلت {0} تدريبات و{1} قياسات وزن على هذا الجهاز أثناء تسجيل الخروج. أضفها إلى ملفك، أو أبقِ الملف كما هو على الخادم.',

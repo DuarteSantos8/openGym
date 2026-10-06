@@ -26,13 +26,17 @@ export function accentColors(key) {
   return { accent: argb(ACCENTS[k]), ink: argb(ACCENT_INK[k]) }
 }
 
-export function buildRestAlert({ at, title, countdownTitle, totalSec, accent, sound = true, vibrate = true, now = Date.now() } = {}) {
+export function buildRestAlert({ at, title, countdownTitle, totalSec, accent, sound = true, vibrate = true, vibrateOnSilent = false, now = Date.now() } = {}) {
   if (typeof at !== 'number' || !(at > now)) return null
   const totalMs = Math.max(1000, Math.round((totalSec > 0 ? totalSec : (at - now) / 1000) * 1000))
   const colors = accentColors(accent)
+  const mayBuzz = !!vibrate
+  // Alarm-usage buzz is a direct Vibrator call, so the notification itself stays on the quiet
+  // channel. Otherwise the channel and that call would both buzz whenever the phone is not silent.
+  const alarmBuzz = mayBuzz && !!vibrateOnSilent
   return {
     id: REST_ALERT_ID,
-    channelId: vibrate ? REST_CHANNEL_ID : REST_QUIET_CHANNEL_ID,
+    channelId: mayBuzz && !alarmBuzz ? REST_CHANNEL_ID : REST_QUIET_CHANNEL_ID,
     title: title || t('Rest over — next set!'),
     countdownTitle: countdownTitle || t('Rest'),
     pause: t('Pause'),
@@ -46,7 +50,8 @@ export function buildRestAlert({ at, title, countdownTitle, totalSec, accent, so
     at,
     allowWhileIdle: true,
     sound: !!sound,
-    vibrate: !!vibrate,
+    vibrate: mayBuzz,
+    vibrateOnSilent: alarmBuzz,
     localOnly: false,
     visibility: 'public',
     importance: 'high',
@@ -82,13 +87,25 @@ const restPlugin = () => pluginP || (pluginP = (async () => {
 export function armRestAlert(at, opts = {}) {
   if (!MOBILE) return Promise.resolve(false)
   const mine = ++token
-  const alert = buildRestAlert({ at, title: opts.title, countdownTitle: opts.countdownTitle, totalSec: opts.totalSec, accent: opts.accent, sound: opts.sound, vibrate: opts.vibrate !== false })
+  const alert = buildRestAlert({ at, title: opts.title, countdownTitle: opts.countdownTitle, totalSec: opts.totalSec, accent: opts.accent, sound: opts.sound, vibrate: opts.vibrate !== false, vibrateOnSilent: opts.vibrate !== false && !!opts.vibrateOnSilent })
   if (!alert) return Promise.resolve(false)
   return enqueue(async () => {
     let kind = 'failed'
     try { kind = await deliver(alert) } catch { kind = 'failed' }
     if (mine !== token) return false
     return kind === 'android'
+  })
+}
+
+// The end buzz while the app is on screen. navigator.vibrate is muted in silent mode; this
+// plugin call is the alarm-usage buzz, the same one the locked-screen alert uses (issue #375).
+export function buzzRestEnd() {
+  if (!MOBILE) return
+  enqueue(async () => {
+    try {
+      const p = await restPlugin()
+      if (p) await p.RestAlert.buzz()
+    } catch { /* best effort: the in-app pattern is the fallback when this cannot run */ }
   })
 }
 
@@ -162,6 +179,7 @@ async function deliver(alert) {
     // The end of a rest the app is not in front for: the notification, or the buzz standing in
     // for it where notifications are off. With the app in front the page buzzes (lib/sound.js).
     vibrate: alert.vibrate,
+    vibrateOnSilent: alert.vibrateOnSilent,
     channelId: alert.channelId,
     visibility: alert.visibility,
     importance: alert.importance,

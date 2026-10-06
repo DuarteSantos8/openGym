@@ -450,6 +450,7 @@ export default {
   'Asks for your body weight when a workout starts. Off starts the session straight away.': 'Chiede il tuo peso all’avvio di un allenamento. Disattivato, la sessione parte subito.',
   'No entries yet — log your weight to start the curve.': 'Nessun dato — registra il tuo peso per iniziare la curva.',
   'Play sounds when the phone is on silent': 'Riproduci i suoni anche con il telefono in silenzioso',
+  'Buzz when the phone is on silent': 'Vibra anche con il telefono in silenzioso',
   'Music playing on this phone stops during a workout and does not resume by itself.': 'La musica in riproduzione su questo telefono si ferma durante un allenamento e non riprende da sola.',
   'Data': 'Dati',
   'Export backup (JSON)': 'Esporta backup (JSON)',

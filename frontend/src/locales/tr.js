@@ -450,6 +450,7 @@ export default {
   'Asks for your body weight when a workout starts. Off starts the session straight away.': 'Antrenman başlarken kilonu sorar. Kapalıyken seans hemen başlar.',
   'No entries yet — log your weight to start the curve.': 'Henüz kayıt yok — eğriyi başlatmak için kilonu gir.',
   'Play sounds when the phone is on silent': 'Telefon sessizdeyken de sesleri çal',
+  'Buzz when the phone is on silent': 'Telefon sessizdeyken de titret',
   'Music playing on this phone stops during a workout and does not resume by itself.': 'Bu telefonda çalan müzik antrenman sırasında durur ve kendiliğinden devam etmez.',
   'Data': 'Veriler',
   'Export backup (JSON)': 'Yedeği dışa aktar (JSON)',

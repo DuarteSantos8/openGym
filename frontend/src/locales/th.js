@@ -888,6 +888,7 @@ export default {
   'Asks for your body weight when a workout starts. Off starts the session straight away.': 'ถามน้ำหนักตัวเมื่อเริ่มออกกำลังกาย ถ้าปิด เซสชันจะเริ่มทันที',
   'No entries yet — log your weight to start the curve.': 'ยังไม่มีข้อมูล — บันทึกน้ำหนักเพื่อเริ่มกราฟ',
   'Play sounds when the phone is on silent': 'เล่นเสียงแม้โทรศัพท์อยู่ในโหมดเงียบ',
+  'Buzz when the phone is on silent': 'สั่นแม้โทรศัพท์อยู่ในโหมดเงียบ',
   'Music playing on this phone stops during a workout and does not resume by itself.': 'เพลงที่เล่นอยู่บนโทรศัพท์นี้จะหยุดระหว่างการออกกำลังกาย และจะไม่เล่นต่อเอง',
   'Import from Hevy': 'นำเข้าจาก Hevy',
   'Pull your history with a Hevy Pro API key': 'ดึงประวัติด้วยคีย์ API ของ Hevy Pro',

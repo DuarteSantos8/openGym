@@ -137,4 +137,13 @@ describe('the Android side of Vibrate off', () => {
     expect(alert.match(/intent\.putExtra\("vibrate", lastVibrate\);/g)).toHaveLength(2)
     expect(alert).toMatch(/intent\.putExtra\("vibrate", vibrate\);/)
   })
+
+  it('buzzes with alarm usage when silent mode should still buzz, and leaves Vibrate off alone', () => {
+    expect(alert).toMatch(/if \(vibrate && vibrateOnSilent\) \{ buzzAlarm\(ctx\); alarmBuzzed = true; \}/)
+    expect(alert).toMatch(/VibrationAttributes\.USAGE_ALARM/)
+    expect(alert.match(/intent\.putExtra\("vibrateOnSilent", lastVibrateOnSilent\);/g)).toHaveLength(2)
+    expect(alert).toMatch(/intent\.putExtra\("vibrateOnSilent", vibrateOnSilent\);/)
+    expect(src('RestAlertPlugin')).toMatch(/call\.getBoolean\("vibrateOnSilent", Boolean\.FALSE\)/)
+    expect(src('RestAlertPlugin')).toMatch(/public void buzz\(PluginCall call\)/)
+  })
 })

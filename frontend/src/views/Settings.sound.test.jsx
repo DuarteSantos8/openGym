@@ -183,4 +183,19 @@ describe('Settings — vibrate', () => {
     mount()
     expect(rowTitled('Vibrate')).toBeUndefined()
   })
+
+  it('offers a silent-mode buzz under Vibrate, off until turned on, and hides it when Vibrate is off', () => {
+    setVibrateApi(() => true)
+    mount()
+    const row = rowTitled('Buzz when the phone is on silent')
+    expect(row).toBeTruthy()
+    expect(switchIn(row).getAttribute('aria-checked')).toBe('false')
+    const rows = [...host.querySelectorAll('.lrow')]
+    expect(rows.indexOf(row)).toBe(rows.indexOf(rowTitled('Vibrate')) + 1)
+    act(() => { switchIn(row).click() })
+    expect(mocks.S.vibrateOnSilent).toBe(true)
+    mocks.S.vibrate = false
+    mount()
+    expect(rowTitled('Buzz when the phone is on silent')).toBeUndefined()
+  })
 })

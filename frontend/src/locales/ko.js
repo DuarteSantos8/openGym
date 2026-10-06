@@ -450,6 +450,7 @@ export default {
   'Asks for your body weight when a workout starts. Off starts the session straight away.': '운동을 시작할 때 체중을 물어봅니다. 끄면 세션이 바로 시작됩니다.',
   'No entries yet — log your weight to start the curve.': '아직 기록이 없어요 — 체중을 기록해 그래프를 시작하세요.',
   'Play sounds when the phone is on silent': '무음 모드에서도 소리 재생',
+  'Buzz when the phone is on silent': '무음 모드에서도 진동',
   'Music playing on this phone stops during a workout and does not resume by itself.': '운동 중에는 이 휴대폰에서 재생 중인 음악이 멈추며, 자동으로 다시 재생되지 않습니다.',
   'Data': '데이터',
   'Export backup (JSON)': '백업 내보내기 (JSON)',

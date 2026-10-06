@@ -450,6 +450,7 @@ export default {
   'Asks for your body weight when a workout starts. Off starts the session straight away.': '开始训练时询问体重。关闭后直接进入训练。',
   'No entries yet — log your weight to start the curve.': '还没有记录——记录体重以开始曲线。',
   'Play sounds when the phone is on silent': '手机静音时也播放提示音',
+  'Buzz when the phone is on silent': '手机静音时也振动',
   'Music playing on this phone stops during a workout and does not resume by itself.': '锻炼期间，这部手机正在播放的音乐会停止，且不会自动恢复。',
   'Data': '数据',
   'Export backup (JSON)': '导出备份（JSON）',

@@ -88,8 +88,21 @@ public class RestAlertPlugin extends Plugin {
                 call.getString("importance", "high"),
                 Boolean.TRUE.equals(call.getBoolean("localOnly", Boolean.FALSE)),
                 call.getString("countdownTitle", "Rest"),
-                number(call, "totalMs", 0)
+                number(call, "totalMs", 0),
+                Boolean.TRUE.equals(call.getBoolean("vibrateOnSilent", Boolean.FALSE))
         );
+        call.resolve();
+    }
+
+    /** In-app end buzz. The WebView's navigator.vibrate is muted in silent mode. */
+    @PluginMethod
+    public void buzz(PluginCall call) {
+        Context ctx = getContext();
+        if (ctx == null) {
+            call.reject("no context");
+            return;
+        }
+        RestAlert.buzzAlarm(ctx.getApplicationContext());
         call.resolve();
     }
 

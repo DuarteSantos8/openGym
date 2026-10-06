@@ -484,6 +484,14 @@ export default function Settings() {
           <Switch checked={S.vibrate !== false} onChange={v => update(s => { s.vibrate = v })} />
         </Row>
       )}
+      {/* Off by default, same trade-off as playing sound on silent: alarm-usage vibration gets
+          through silent mode, and on some phones that is the most intrusive buzz an app can make.
+          Master Vibrate off hides it and stays quiet (issue #375). */}
+      {vibrateSupported() && S.vibrate !== false && (
+        <Row icon="bell" iconTint="var(--orange)" title={t('Buzz when the phone is on silent')}>
+          <Switch checked={!!S.vibrateOnSilent} onChange={v => update(s => { s.vibrateOnSilent = v })} />
+        </Row>
+      )}
       <Row icon="sun" iconTint="var(--yellow)" title={t('Flash screen when timer ends')}>
         <Switch checked={!!S.timerFlash} onChange={v => update(s => { s.timerFlash = v })} />
       </Row>

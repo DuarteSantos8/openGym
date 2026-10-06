@@ -39,6 +39,12 @@ describe('buildRestAlert', () => {
     expect(REST_QUIET_CHANNEL_ID).not.toBe(REST_CHANNEL_ID)
   })
 
+  it('keeps the notification quiet when the silent-mode buzz is on, and off unless asked', () => {
+    expect(buildRestAlert({ at: now + 1000, now })).toMatchObject({ vibrate: true, vibrateOnSilent: false, channelId: REST_CHANNEL_ID })
+    expect(buildRestAlert({ at: now + 1000, vibrateOnSilent: true, now })).toMatchObject({ vibrate: true, vibrateOnSilent: true, channelId: REST_QUIET_CHANNEL_ID })
+    expect(buildRestAlert({ at: now + 1000, vibrate: false, vibrateOnSilent: true, now })).toMatchObject({ vibrate: false, vibrateOnSilent: false, channelId: REST_QUIET_CHANNEL_ID })
+  })
+
   it('refuses a deadline that has already passed', () => {
     expect(buildRestAlert({ at: now, now })).toBe(null)
     expect(buildRestAlert({ at: now - 1, now })).toBe(null)
