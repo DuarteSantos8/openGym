@@ -138,11 +138,17 @@ If you'd rather control who gets in, three optional settings in `.env` turn that
 
 ```bash
 ADMIN_UIDS=youruserid      # comma-separated; these users get the admin dashboard
+FIRST_USER_ADMIN=1         # the first profile on an empty instance is an admin
 INVITE_ONLY=1              # new profiles need an invite code
 ALLOW_GUEST=0              # remove "Continue without account"
 ```
 
-Register your own passkey profile first, then copy your id from **Settings → Account → Account
+`FIRST_USER_ADMIN=1` is the way to avoid the copy-paste on a server that has no profiles
+yet: the first account created after the flag is on becomes an admin, and every account
+after that does not. It never rewrites people who already exist, so turning it on later
+changes nothing until the instance is empty again.
+
+Otherwise, register your own passkey profile first, then copy your id from **Settings → Account → Account
 ID** (tap it to copy; it is also in `./data/db.json` under `users[].id`) and put it in
 `ADMIN_UIDS`. The same row is how anyone on your instance tells you which account is theirs when
 they need help. You'll get an **Admin dashboard** link in Settings: who's training

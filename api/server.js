@@ -40,6 +40,10 @@ const RP_NAME = process.env.RP_NAME || 'openGym';
 // Admin dashboard (issue): admins are matched by uid; INVITE_ONLY gates new signups behind a
 // code the admin generates. Both default off so a fresh self-hosted instance stays open.
 const ADMIN_UIDS = (process.env.ADMIN_UIDS || '').split(',').map(s => s.trim()).filter(Boolean);
+// #328: on a brand-new instance, the first profile created becomes an admin. Off unless set.
+// Checked only at the moment an account is created, and only when nobody exists yet, so
+// turning it on later never rewrites people who already have profiles.
+const FIRST_USER_ADMIN = /^(1|true|yes|on)$/i.test(process.env.FIRST_USER_ADMIN || '');
 const INVITE_ONLY = /^(1|true|yes|on)$/i.test(process.env.INVITE_ONLY || '');
 // Guest mode ("Continue without account") keeps everything in the browser and never touches this
 // server — but on an instance meant for a known set of people, an entrance nobody can walk back
@@ -101,6 +105,11 @@ db.subs = db.subs || [];
 db.invites = db.invites || [];
 db.deviceLinks = db.deviceLinks || [];   // unused one-time device links, hashed (device-link.js)
 const isAdmin = user => !!user && (user.admin === true || ADMIN_UIDS.includes(user.id));
+// The first account on an empty instance, and only that one. `db.users` is read before the
+// push, so a second registration in the same process sees the first and stays a normal user.
+function grantFirstAdmin(user) {
+  if (FIRST_USER_ADMIN && Array.isArray(db.users) && db.users.length === 0) user.admin = true;
+}
 // 0600: db.json holds passkey credential material. It used to be covered by a blanket 0700 on
 // the whole directory; now that the directory stays traversable, the file carries its own mode.
 function saveDb() { atomicWrite(dbFile, JSON.stringify(db, null, 2), 0o600); }
@@ -1181,6 +1190,7 @@ const passwordRoutes = {
     const created = new Date().toISOString();
     const user = { id: crypto.randomBytes(12).toString('base64url'), name, created, pw: { h, set: created }, ...(email ? { email } : {}) };
     if (inv) { user.invitedBy = inv.code; inv.usedBy = user.id; inv.usedAt = created; }
+    grantFirstAdmin(user);
     db.users.push(user);
     saveDb();
     audit(req, 'auth.register.ok', { user, msg: inv ? inv.code + ' · password' : 'password' });
@@ -1842,6 +1852,7 @@ const routes = {
     }
     const user = { id: c.uid, name: c.name, created: new Date().toISOString() };
     if (invite) { user.invitedBy = invite.code; invite.usedBy = user.id; invite.usedAt = user.created; }
+    grantFirstAdmin(user);
     db.users.push(user);
     db.creds.push({
       id: credential.id, userId: user.id,

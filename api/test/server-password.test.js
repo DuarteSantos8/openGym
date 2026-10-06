@@ -640,3 +640,26 @@ test('a disabled account is refused even with the right password', async t => {
   assert.equal(r.status, 403);
   assert.equal(r.cookie, null);
 });
+
+// #328: FIRST_USER_ADMIN promotes only the first profile on an empty instance.
+test('the first profile on an empty instance is an admin only when FIRST_USER_ADMIN is on', async t => {
+  const off = await startServer(t, { env: { FIRST_USER_ADMIN: '' } });
+  const plain = await off.req('POST', '/api/register/password', { body: { name: 'Ada', password: GOOD }, ip: '198.51.100.210' });
+  assert.equal(plain.status, 200);
+  assert.equal(plain.body.user.admin, false);
+  assert.equal(off.db().users[0].admin, undefined);
+
+  const on = await startServer(t, { env: { FIRST_USER_ADMIN: '1' } });
+  const first = await on.req('POST', '/api/register/password', { body: { name: 'Ada', password: GOOD }, ip: '198.51.100.211' });
+  assert.equal(first.status, 200);
+  assert.equal(first.body.user.admin, true);
+  assert.equal(on.db().users.find(u => u.name === 'Ada').admin, true);
+  const second = await on.req('POST', '/api/register/password', { body: { name: 'Bea', password: GOOD }, ip: '198.51.100.212' });
+  assert.equal(second.body.user.admin, false);
+  assert.notEqual(on.db().users.find(u => u.name === 'Bea').admin, true);
+
+  const later = await startServer(t, { env: { FIRST_USER_ADMIN: '1' }, users: [user('u1', 'Already')] });
+  const extra = await later.req('POST', '/api/register/password', { body: { name: 'Cleo', password: GOOD }, ip: '198.51.100.213' });
+  assert.equal(extra.body.user.admin, false);
+  assert.equal(later.db().users.find(u => u.id === 'u1').admin, undefined);
+});

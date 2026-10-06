@@ -75,6 +75,9 @@ info:
       this API at all).
     - `ADMIN_UIDS=<uid>,<uid>` — user ids treated as admins (a `"admin": true` flag on
       the user record in `db.json` works too). Admins get the `/api/admin/*` routes.
+    - `FIRST_USER_ADMIN=1` — the first profile created while `users` is empty is stored
+      with `"admin": true`. Later profiles, and any profile that already existed when the
+      flag was turned on, are left alone.
     - `AUDIT_LOG` (default on), `AUDIT_MAX` (default 5000 events), `AUDIT_DAYS`
       (default 90), `AUDIT_IP` (`off` | `net` | `full`, default off) — shape the audit
       log served by `GET /api/admin/audit`.
