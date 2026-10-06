@@ -394,6 +394,9 @@ export default function Settings() {
         subtitle={t('Show the body weight card on Home.')}>
         <Switch checked={S.showWeightCard !== false} onChange={v => update(s => { s.showWeightCard = v })} />
       </Row>
+      <Row icon="cloud" iconTint="var(--blue)" title={t('Connection banner')}>
+        <Switch checked={S.showConnectionBanner !== false} onChange={v => update(s => { s.showConnectionBanner = v })} />
+      </Row>
     </Section>
 
     {/* ---------- during a workout ---------- */}

@@ -1008,6 +1008,7 @@ export const PT_BR_OVERRIDES = {
   'Teal': 'Turquesa',
   'Yellow': 'Amarelo',
   'Enter how long it took — at least 1 minute.': 'Informe quanto tempo levou — pelo menos 1 minuto.',
+  'Connection banner': 'Banner de conexão',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

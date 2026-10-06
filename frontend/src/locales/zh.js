@@ -1663,4 +1663,5 @@ export default {
   'Teal': '青色',
   'Yellow': '黄色',
   'Enter how long it took — at least 1 minute.': '请输入用时 — 至少 1 分钟。',
+  'Connection banner': '连接状态横幅',
 }

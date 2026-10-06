@@ -13,7 +13,7 @@ export const PENDING_GRACE_MS = 5000
 /* The connection, always in view while the app is not connected to a server: offline, the server
    unreachable or answering with an error (its HTTP code, for whoever runs it), a server that no
    longer accepts this device, an answer that is not openGym's, and no server at all — a phone
-   kept local, a guest in a browser. It cannot be dismissed; it goes when the condition does.
+   kept local, a guest in a browser. It goes when the condition does, unless hidden in Settings.
    The first ones say what is wrong and that the changes are kept here, with the one thing to do
    about it (retry, pair again, sign in); the deliberate local setup only says so, quietly.
 
@@ -25,6 +25,7 @@ export default function SyncBanner() {
   const nav = useNavigate()
   const user = useStore(s => s.user)
   const sync = useStore(s => s.sync)
+  const showConnectionBanner = useStore(s => s.S?.showConnectionBanner !== false)
   const guest = useStore(s => s.isGuest())
   const onboarding = useStore(s => s.needsMobileOnboarding)
   const online = useOnline()
@@ -41,7 +42,7 @@ export default function SyncBanner() {
   const view = connectionView(sync, { online })
   // Signed out on the web, the sign-in screen is the whole app: it hears only that the server
   // ended the session, and that the changes are still here.
-  const show = !DEMO && !onboarding && !!view?.banner && (!!user || guest || status === 'auth') && (status !== 'pending' || waited)
+  const show = showConnectionBanner && !DEMO && !onboarding && !!view?.banner && (!!user || guest || status === 'auth') && (status !== 'pending' || waited)
 
   useLayoutEffect(() => {
     const root = document.documentElement

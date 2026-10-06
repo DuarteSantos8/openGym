@@ -19,7 +19,7 @@ const mocks = vi.hoisted(() => {
   state.syncNow = vi.fn(async () => state.sync)
   state.passkeyLogin = vi.fn(async () => ({ id: 'u1', name: 'andi' }))
   state.snapshot = () => ({
-    user: state.user, sync: state.sync, needsMobileOnboarding: state.onboarding,
+    S: state.S, user: state.user, sync: state.sync, needsMobileOnboarding: state.onboarding,
     isGuest: () => state.guest, syncNow: state.syncNow,
     setUser: vi.fn(), adoptProfile: vi.fn(async () => ({})),
   })
@@ -56,7 +56,7 @@ const network = on => {
 let host, root
 beforeEach(() => {
   network(true)
-  Object.assign(mocks, { MOBILE: false, DEMO: false, webauthn: true, user: { id: 'u1', name: 'andi' }, guest: false, onboarding: false, sync: sync('ok') })
+  Object.assign(mocks, { MOBILE: false, DEMO: false, webauthn: true, S: {}, user: { id: 'u1', name: 'andi' }, guest: false, onboarding: false, sync: sync('ok') })
   mocks.sheets.length = 0
   mocks.navs.length = 0
   mocks.toast.mockClear(); mocks.syncNow.mockClear(); mocks.passkeyLogin.mockClear()
@@ -111,6 +111,19 @@ describe('connected and in step', () => {
 })
 
 describe('not connected — it says so, and what to do', () => {
+  it('hides the banner when disabled in Settings and restores it when enabled', () => {
+    mocks.sync = sync('local')
+    render()
+    expect(bar()).not.toBeNull()
+    mocks.S = { showConnectionBanner: false }
+    render()
+    expect(bar()).toBeNull()
+    expect(conn()).toBe('')
+    mocks.S = { showConnectionBanner: true }
+    render()
+    expect(bar()).not.toBeNull()
+  })
+
   it('offline with changes waiting: kept on this device, and a retry that reports back', async () => {
     network(false)
     mocks.sync = sync('offline', { offline: true, pending: true, lastError: { status: 0, code: 'network' } })

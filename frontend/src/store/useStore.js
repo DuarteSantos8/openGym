@@ -149,6 +149,9 @@ export const DEF = {
   // entries, Stats, imports and the separate pre-workout weigh-in flow keep working.
   // Defaults on; an older profile without the key reads as on (`!== false`).
   showWeightCard: true,
+  // A profile can hide the persistent connection banner; Settings still shows sync status.
+  // Missing on older profiles means visible, as before.
+  showConnectionBanner: true,
   // Whether Start opens the quick weigh-in first (sheets.jsx startFlow, issue #137). Off starts
   // the session straight away; weight can still be logged from Home/Stats. Defaults on; an
   // older profile without the key reads as on (`!== false`).

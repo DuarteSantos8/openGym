@@ -16,13 +16,14 @@ const mocks = vi.hoisted(() => {
   state.toast = vi.fn()
   state.confirmSheet = vi.fn()
   state.syncNow = vi.fn(async () => state.sync)
+  state.update = vi.fn()
   state.disconnectServer = vi.fn()
   state.signOut = vi.fn()
   state.signOutAll = vi.fn()
   state.shareExport = vi.fn(async () => {})
   state.snapshot = () => ({
     S: state.S, user: state.user, sync: state.sync, coachLocal: null,
-    update: vi.fn(), replaceState: vi.fn(), setUser: vi.fn(), pullState: vi.fn(), pushState: vi.fn(), resetDemo: vi.fn(),
+    update: state.update, replaceState: vi.fn(), setUser: vi.fn(), pullState: vi.fn(), pushState: vi.fn(), resetDemo: vi.fn(),
     syncNow: state.syncNow, unsyncedChanges: () => state.unsynced, keptChanges: async () => state.kept,
     disconnectServer: state.disconnectServer, signOut: state.signOut, signOutAll: state.signOutAll,
     adoptProfile: vi.fn(),
@@ -81,7 +82,7 @@ beforeEach(() => {
   mocks.kept = []
   mocks.sheets.length = 0
   mocks.navs.length = 0
-  for (const f of [mocks.toast, mocks.confirmSheet, mocks.syncNow, mocks.disconnectServer, mocks.signOut, mocks.signOutAll, mocks.shareExport]) f.mockClear()
+  for (const f of [mocks.toast, mocks.confirmSheet, mocks.syncNow, mocks.disconnectServer, mocks.signOut, mocks.signOutAll, mocks.shareExport, mocks.update]) f.mockClear()
 })
 afterEach(() => { act(() => { mounted.splice(0).forEach(({ root, host }) => { root.unmount(); host.remove() }) }) })
 
@@ -91,6 +92,18 @@ const buttonByText = (el, text) => [...el.querySelectorAll('button')].find(b => 
 const openSheet = (i = -1) => mount(mocks.sheets.at(i).render(() => {}))
 
 describe('Server & sync', () => {
+  it('lets a user hide the connection banner without hiding sync details in Settings', () => {
+    const page = mount(<Settings />)
+    const row = rowByTitle(page, 'Connection banner')
+    expect(row.querySelector('[role="switch"]').getAttribute('aria-checked')).toBe('true')
+    act(() => row.querySelector('[role="switch"]').click())
+    const change = mocks.update.mock.calls.at(-1)?.[0]
+    expect(change).toBeTypeOf('function')
+    change(mocks.S)
+    expect(mocks.S.showConnectionBanner).toBe(false)
+    expect(block(page)).toBeTruthy()
+  })
+
   it('a paired phone in step: server, account, "All synced" with the time, and Sync now reporting back', async () => {
     const page = mount(<Settings />)
     const b = block(page)

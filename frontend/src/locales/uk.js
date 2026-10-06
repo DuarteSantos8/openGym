@@ -1660,4 +1660,5 @@ export default {
   'Teal': 'Бірюзовий',
   'Yellow': 'Жовтий',
   'Enter how long it took — at least 1 minute.': 'Вкажи, скільки це тривало — щонайменше 1 хвилину.',
+  'Connection banner': 'Банер підключення',
 }
