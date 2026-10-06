@@ -2016,10 +2016,13 @@ describe('the reference line: last time or best set', () => {
   // The text is the reference; the name also says what a tap does, after the text it shows.
   it('names the switch a tap makes', async () => {
     await mount([exercise('plain-bench', [false], { rid: 'A' })], 0, { workouts: history })
-    expect(line().getAttribute('aria-label')).toMatch(/^Last time \(.+\): 55×8\. Show your best set instead$/)
+    // The gap is what the line shows; the calendar date follows it when those differ,
+    // then what a tap does. A year-old session shows the date in the line itself.
+    expect(line().getAttribute('aria-label')).toMatch(/^Last time \(.+\): 55×8\. (?:.+\. )?Show your best set instead$/)
+    expect(line().getAttribute('title')).toMatch(/Show your best set instead$/)
     await act(async () => { line().dispatchEvent(new dom.Event('click', { bubbles: true })) })
     await rerender()
-    expect(line().getAttribute('aria-label')).toMatch(/^Best set \(.+\): 80×5\. Show last time instead$/)
+    expect(line().getAttribute('aria-label')).toMatch(/^Best set \(.+\): 80×5\. (?:.+\. )?Show last time instead$/)
   })
 })
 

@@ -82,6 +82,42 @@ export function fmtAgo(ts, now = Date.now()) {
   catch { return new Date(ts).toLocaleString(dateLocale()) }
 }
 
+// Whole calendar days from `iso` (a logged session's day) back to `now`. Noon on both
+// sides, so a workout late yesterday is one day ago just after midnight, and a DST
+// shift cannot turn one day into zero or two. Null when `iso` is not a date.
+export function daysBefore(iso, now = new Date()) {
+  const then = new Date(iso + 'T12:00:00')
+  const today = new Date(now)
+  if (Number.isNaN(then.getTime()) || Number.isNaN(today.getTime())) return null
+  today.setHours(12, 0, 0, 0)
+  return Math.round((today - then) / 86400000)
+}
+
+function relTime(n, unit, numeric) {
+  try { return new Intl.RelativeTimeFormat(dateLocale(), { numeric }).format(-n, unit) }
+  catch { return null }
+}
+
+// How long ago a training day was, for the "Last time" / "Best set" line (#363).
+// The calendar date made you subtract from today; this reads the gap in the UI
+// language the same way "Last synced" does (Intl.RelativeTimeFormat), so no pack
+// grows a word for week or month.
+//
+// A day that is not an exact week (under a month) or an exact 30-day month stays
+// in days — "8 days ago", "38 days ago" — which is the count the line was missing.
+// An exact 7 days is "1 week ago", an exact 30 is "1 month ago". A year or more
+// goes back to the date: a best set from two years ago is a date, and "400 days
+// ago" is not how anyone recalls it. A day in the future (the clock is wrong)
+// stays a date too. fmtAgo is left alone — sync times are minutes and hours.
+export function fmtTrainingAgo(iso, now = new Date()) {
+  const days = daysBefore(iso, now)
+  if (days == null || days < 0 || days >= 365) return fmtDate(iso)
+  if (days < 7) return relTime(days, 'day', days < 2 ? 'auto' : 'always') || fmtDate(iso)
+  if (days < 30 && days % 7 === 0) return relTime(days / 7, 'week', 'always') || fmtDate(iso)
+  if (days >= 30 && days % 30 === 0) return relTime(days / 30, 'month', 'always') || fmtDate(iso)
+  return relTime(days, 'day', 'always') || fmtDate(iso)
+}
+
 /* ---------------------------------------------------------------- week start --
    Where a week begins is a local convention, not a fact: most of Europe starts on
    Monday, most of the Americas and much of Asia on Sunday. The app used to assume
