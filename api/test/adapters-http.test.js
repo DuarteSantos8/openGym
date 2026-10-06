@@ -15,7 +15,7 @@ const openai = (await import('../coach/core/adapters/openai.js')).default;
 const gemini = (await import('../coach/core/adapters/gemini.js')).default;
 const compatible = (await import('../coach/core/adapters/compatible.js')).default;
 const { attemptOnce } = await import('../coach/core/pipeline.js');
-const { HTTP_PROVIDERS, validateBaseUrl } = await import('../coach/core/providers.js');
+const { HTTP_PROVIDERS, validateBaseUrl, validateHeaders } = await import('../coach/core/providers.js');
 const { SYSTEM_PROMPT } = await import('../coach/core/system-prompt.js');
 
 /** A fetch that records what it was asked and answers from a script. Like the real one, it
@@ -304,4 +304,104 @@ test('models(): OpenAI’s list is cut to what Chat Completions can use; a compa
   const { default: compatible } = await import('../coach/core/adapters/compatible.js');
   const co = fakeFetch([ok({ data: [{ id: 'qwen2.5:3b' }, { id: 'llama3.2' }] })]);
   assert.deepEqual((await compatible.models({ providerOptions: { compatible: { baseUrl: 'http://ollama:11434' } } }, {}, { fetch: co })).models, ['llama3.2', 'qwen2.5:3b']);
+});
+
+test('compatible: configured extra headers ride on models, check and jobs — auth framing always wins', async () => {
+  const cfg = { provider: 'compatible', providerOptions: { compatible: { baseUrl: 'http://ollama.lan:11434', headers: { 'x-opencode-session': 'sess-1' } } } };
+  const m = fakeFetch([ok({ data: [] })]);
+  await compatible.models(cfg, env, { fetch: m });
+  assert.equal(m.calls[0].headers['x-opencode-session'], 'sess-1');
+  assert.equal(m.calls[0].headers.authorization, 'Bearer compat-1');
+  const j = fakeFetch([ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] })]);
+  await compatible.invoke({ cfg, prompt: 'P', env, model: 'llama3', fetch: j });
+  assert.equal(j.calls[0].headers['x-opencode-session'], 'sess-1');
+
+  // A stored map from before a name was reserved must not override auth framing.
+  const evil = { provider: 'compatible', providerOptions: { compatible: { baseUrl: 'http://x', headers: { authorization: 'Bearer evil', 'content-type': 'text/plain' } } } };
+  const e = fakeFetch([ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] })]);
+  await compatible.invoke({ cfg: evil, prompt: 'P', env, model: 'llama3', fetch: e });
+  assert.equal(e.calls[0].headers.authorization, 'Bearer compat-1');
+  assert.equal(e.calls[0].headers['content-type'], 'application/json');
+});
+
+test('validateHeaders: small maps pass, framing names and junk do not', () => {
+  assert.deepEqual(validateHeaders(null).value, null);
+  assert.deepEqual(validateHeaders({}).value, null);
+  assert.deepEqual(validateHeaders({ 'X-Opencode-Session': ' abc ' }).value, { 'x-opencode-session': 'abc' });
+  for (const bad of ['authorization', 'Content-Type', 'content-length', 'Host', 'cookie']) {
+    assert.equal(validateHeaders({ [bad]: 'x' }).ok, false, bad);
+  }
+  assert.equal(validateHeaders({ 'not a name!': 'x' }).ok, false);
+  assert.equal(validateHeaders({ a: '' }).ok, false);
+  assert.equal(validateHeaders('x-opencode-session: abc').ok, false);
+  assert.equal(validateHeaders([['a', 'b']]).ok, false);
+  const many = {}; for (let i = 0; i < 9; i++) many['x-h-' + i] = 'v';
+  assert.equal(validateHeaders(many).ok, false);
+});
+
+test('compatible: a model served only over the Responses API is retried through it once', async () => {
+  const cfg = { provider: 'compatible', providerOptions: { compatible: { baseUrl: 'https://opencode.ai/zen/go', headers: { 'x-opencode-session': 'sess-1' } } } };
+  const respOk = { id: 'resp_1', status: 'completed', output: [{ type: 'message', content: [{ type: 'output_text', text: ANSWER }] }] };
+  const f = fakeFetch(n => n === 1
+    ? { status: 400, body: { error: { message: 'Model does not support this protocol.' } } }
+    : ok(respOk));
+  const r = await compatible.invoke({ cfg, prompt: 'P', env, model: 'muse-spark-1.3-contributor', fetch: f, schema: { type: 'object' } });
+  assert.equal(r.code, 0);
+  assert.equal(r.text, ANSWER);
+  assert.equal(f.calls.length, 2);
+  assert.equal(f.calls[0].url, 'https://opencode.ai/zen/go/v1/chat/completions');
+  assert.equal(f.calls[1].url, 'https://opencode.ai/zen/go/v1/responses');
+  assert.deepEqual(f.calls[1].body.input, [
+    { role: 'system', content: SYSTEM_PROMPT },
+    { role: 'user', content: 'P' }
+  ]);
+  assert.equal(f.calls[1].body.text.format.type, 'json_schema');
+  assert.equal(f.calls[1].body.model, 'muse-spark-1.3-contributor');
+  // Reasoning is bounded so the message fits inside the output budget.
+  assert.deepEqual(f.calls[1].body.reasoning, { effort: 'low' });
+  // Gateway routing still applies on the second shape.
+  assert.equal(f.calls[1].headers['x-opencode-session'], 'sess-1');
+  assert.equal(f.calls[1].headers.authorization, 'Bearer compat-1');
+});
+
+test('compatible: the Responses retry fires only on the protocol 400, and refusals read as errors', async () => {
+  const cfg = { provider: 'compatible', providerOptions: { compatible: { baseUrl: 'https://opencode.ai/zen/go' } } };
+  // Any other 400 is final — no second shape.
+  const bad = fakeFetch([{ status: 400, body: { error: { message: 'bad request' } } }]);
+  const r = await compatible.invoke({ cfg, prompt: 'P', env, model: 'm', fetch: bad });
+  assert.equal(r.code, 1);
+  assert.equal(bad.calls.length, 1);
+
+  // A refusal inside a 200 reads as an error, not an empty plan.
+  const refused = fakeFetch([
+    { status: 400, body: { error: { message: 'Model does not support this protocol.' } } },
+    ok({ status: 'completed', output: [{ type: 'message', content: [{ type: 'refusal', refusal: 'nope' }] }] })
+  ]);
+  const r2 = await compatible.invoke({ cfg, prompt: 'P', env, model: 'm', fetch: refused });
+  assert.equal(r2.code, 1);
+  assert.match(r2.stderr, /refused/);
+
+  // Cut off at the output limit fails as provider, like the Chat shape.
+  const cut = fakeFetch([
+    { status: 400, body: { error: { message: 'Model does not support this protocol.' } } },
+    ok({ status: 'incomplete', incomplete_details: { reason: 'max_output_tokens' }, output: [{ type: 'message', content: [{ type: 'output_text', text: 'half' }] }] })
+  ]);
+  const r3 = await compatible.invoke({ cfg, prompt: 'P', env, model: 'm', fetch: cut });
+  assert.equal(r3.code, 1);
+  assert.match(r3.stderr, /cut off/);
+});
+
+test('compatible: Responses failures name their shape instead of just saying no text', async () => {
+  const cfg = { provider: 'compatible', providerOptions: { compatible: { baseUrl: 'https://opencode.ai/zen/go' } } };
+  const proto = { status: 400, body: { error: { message: 'Model does not support this protocol.' } } };
+  // A failed response surfaces the gateway's reason.
+  const failed = fakeFetch([proto, ok({ status: 'failed', error: { message: 'overloaded' }, output: [] })]);
+  const r = await compatible.invoke({ cfg, prompt: 'P', env, model: 'm', fetch: failed });
+  assert.equal(r.code, 1);
+  assert.match(r.stderr, /overloaded/);
+  // Reasoning with no message names the shape for the admin log.
+  const thinking = fakeFetch([proto, ok({ status: 'completed', output: [{ type: 'reasoning' }] })]);
+  const r2 = await compatible.invoke({ cfg, prompt: 'P', env, model: 'm', fetch: thinking });
+  assert.equal(r2.code, 1);
+  assert.match(r2.stderr, /responses:completed:\[reasoning\]/);
 });

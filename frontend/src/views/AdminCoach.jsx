@@ -3,7 +3,7 @@ import { useUI } from '../store/useUI.js'
 import { useStore } from '../store/useStore.js'
 import { api } from '../lib/api.js'
 import Icon from '../components/Icon.jsx'
-import { Button, Switch, TextField } from '../components/ui.jsx'
+import { Button, Switch, TextArea, TextField } from '../components/ui.jsx'
 
 /* The operator's side of the Coach, laid out as a guided setup: one master switch, numbered
    steps that each say what they are for, and everything an owner rarely needs folded away
@@ -24,6 +24,27 @@ const rel = ts => {
   if (s < 3600) return Math.floor(s / 60) + ' min ago'
   if (s < 86400) return Math.floor(s / 3600) + ' h ago'
   return Math.floor(s / 86400) + ' d ago'
+}
+
+// Extra static headers for the endpoint, one `Name: value` per line — e.g. a gateway's
+// routing/session header (opencode Go's `x-opencode-session`). Parsed client-side so a
+// typo reads as a message on the card, not a 400 the admin has to decode. Empty clears.
+export const headersToText = h => h && typeof h === 'object'
+  ? Object.entries(h).map(([k, v]) => `${k}: ${v}`).join('\n')
+  : ''
+export function parseHeadersText(text) {
+  const lines = String(text || '').split('\n').map(l => l.trim()).filter(Boolean)
+  if (!lines.length) return { headers: null }
+  const out = {}
+  for (const line of lines) {
+    const i = line.indexOf(':')
+    if (i < 1) return { error: `not a Name: value line: ${line.slice(0, 40)}` }
+    const name = line.slice(0, i).trim()
+    const value = line.slice(i + 1).trim()
+    if (!name || !value) return { error: `not a Name: value line: ${line.slice(0, 40)}` }
+    out[name] = value
+  }
+  return { headers: out }
 }
 
 // Which chips go under which heading. Runtime-backed providers are the ones that need the
@@ -182,6 +203,18 @@ export default function AdminCoach() {
             onBlur={e => e.target.value !== (d.baseUrl || '') && patch({ baseUrl: e.target.value })} />
         </div>
         <div className="adm-hint" style={{ margin: 0 }}>The host is written to the job log, so you can always see where requests went.</div>
+        <div className="adm-field">
+          <label>Extra headers (optional)</label>
+          <TextArea key={headersToText(d.headers)} defaultValue={headersToText(d.headers)} placeholder={'x-opencode-session: 550e8400-…'} autoCapitalize="none" autoCorrect="off" rows={2}
+            onBlur={e => {
+              const cur = headersToText(d.headers)
+              if (e.target.value === cur) return
+              const p = parseHeadersText(e.target.value)
+              if (p.error) { toast(p.error); e.target.value = cur; return }
+              patch({ headers: p.headers })
+            }} />
+        </div>
+        <div className="adm-hint" style={{ margin: 0 }}>One <code>Name: value</code> per line, sent with every request to this endpoint. For gateways that demand routing headers. Never <code>Authorization</code> or <code>Content-Type</code> — those are refused.</div>
       </Step>}
 
       {/* ---------- credential ---------- */}

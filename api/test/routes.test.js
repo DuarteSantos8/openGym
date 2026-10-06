@@ -234,3 +234,29 @@ test('an admin can raise the Coach message length past the old 1000-char default
   const status = await call('GET /api/coach/status');
   assert.equal(status.body.maxMessageLen, 1800);
 });
+
+/* ---------- compatible extra headers (issue #385) ---------- */
+test('an admin can store extra headers for the compatible endpoint; framing names are refused', async () => {
+  fresh();
+  const { call } = harness();
+
+  // Empty by default.
+  assert.equal((await call('GET /api/admin/coach')).body.headers, null);
+
+  let r = await call('POST /api/admin/coach/config', { provider: 'compatible', baseUrl: 'http://127.0.0.1:9', headers: { 'x-opencode-session': 'sess-1' } });
+  assert.equal(r.status, 200);
+  assert.deepEqual((await call('GET /api/admin/coach')).body.headers, { 'x-opencode-session': 'sess-1' });
+  assert.deepEqual(cfg.load().providerOptions.compatible.headers, { 'x-opencode-session': 'sess-1' }, 'persists with the rest of the Coach config');
+
+  // Reserved framing names are refused, and a fixed-endpoint provider takes none.
+  r = await call('POST /api/admin/coach/config', { headers: { authorization: 'Bearer x' } });
+  assert.equal(r.status, 400);
+  r = await call('POST /api/admin/coach/config', { provider: 'openai', headers: { 'x-a': 'b' } });
+  assert.equal(r.status, 400);
+
+  // Clearing with null drops the key rather than storing an empty map.
+  r = await call('POST /api/admin/coach/config', { provider: 'compatible', headers: null });
+  assert.equal(r.status, 200);
+  assert.equal((await call('GET /api/admin/coach')).body.headers, null);
+  assert.equal('headers' in cfg.load().providerOptions.compatible, false);
+});

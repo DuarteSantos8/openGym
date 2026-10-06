@@ -74,6 +74,12 @@ answers on instead, and a key only if it wants one.
 - For a compatible endpoint, enter the **Endpoint** — `http://` or `https://`, no username or
   password in it, no query string. The host is written into the job log so you can see where
   jobs went.
+- A gateway that demands extra headers gets them under **Extra headers**: one `Name: value`
+  per line (e.g. opencode Go's `x-opencode-session`), sent with the list, test and job
+  calls. `Authorization` and `Content-Type` are refused there — auth framing always wins.
+- A model the gateway serves only over the Responses API (rather than Chat Completions)
+  is retried through it automatically when the Chat call comes back `400 Model does not
+  support this protocol` — List models is unaffected, and the extra headers ride along.
 - **Use an API key** → paste it. It is encrypted into `./data/coach.json` and is never shown
   again.
 - **List models** asks the endpoint what it serves and turns the model field into a picker.

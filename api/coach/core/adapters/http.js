@@ -19,7 +19,7 @@
  *
  * A provider is described by a spec (see anthropic.js etc.); this file owns the transport.
  */
-import { HTTP_PROVIDERS, baseUrlFor } from '../providers.js';
+import { HTTP_PROVIDERS, baseUrlFor, extraHeadersFor } from '../providers.js';
 
 export const MAX_OUTPUT_TOKENS = 16000;
 const DEFAULT_TIMEOUT_MS = 5 * 60000;
@@ -101,7 +101,7 @@ export function httpAdapter(spec) {
       if (!key && !meta.keyOptional) return { ok: false, error: 'no API key configured', models: [] };
       let res;
       try {
-        res = await call(fetchImpl, base + spec.modelsPath, { method: 'GET', headers: spec.headers(key) }, timeoutMs, signal);
+        res = await call(fetchImpl, base + spec.modelsPath, { method: 'GET', headers: { ...extraHeadersFor(id, cfg), ...spec.headers(key) } }, timeoutMs, signal);
       } catch (e) {
         return { ok: false, error: e.name === 'AbortError' ? 'timed out' : `could not reach ${hostOf(base)}: ${trim(e.message, 120)}`, models: [] };
       }
@@ -127,15 +127,17 @@ export function httpAdapter(spec) {
       const chosen = model || meta.defaultModel;
       if (!chosen) return { code: 1, text: '', stderr: `no model chosen for ${id} — pick one from the list the endpoint serves` };
 
-      let body = spec.body({ model: chosen, prompt, system: system || null, schema: schema || null, maxTokens: MAX_OUTPUT_TOKENS });
+      let active = spec;
+      let body = active.body({ model: chosen, prompt, system: system || null, schema: schema || null, maxTokens: MAX_OUTPUT_TOKENS });
       let retriedWithoutJsonMode = false;
+      let retriedResponses = false;
       let transientRetries = 0;
       for (;;) {
         let res;
         try {
-          res = await call(fetchImpl, base + spec.path(chosen), {
+          res = await call(fetchImpl, base + active.path(chosen), {
             method: 'POST',
-            headers: { 'content-type': 'application/json', ...spec.headers(key) },
+            headers: { ...extraHeadersFor(id, cfg), 'content-type': 'application/json', ...active.headers(key) },
             body: JSON.stringify(body)
           }, timeoutMs, signal);
         } catch (e) {
@@ -144,22 +146,31 @@ export function httpAdapter(spec) {
         }
         const { data, text } = await readJson(res);
         if (!res.ok) {
-          const msg = spec.errorMessage(data) || trim(text, 200);
+          const msg = active.errorMessage(data) || trim(text, 200);
           if (RETRY_STATUSES.has(res.status) && transientRetries < RETRY_DELAYS_MS.length && !(signal && signal.aborted)) {
             await sleep(opts.retryDelayMs != null ? opts.retryDelayMs : RETRY_DELAYS_MS[transientRetries], signal);
             transientRetries++;
             continue;
           }
           // Some OpenAI-compatible servers reject the JSON-mode flag outright. Once, without it.
-          if (res.status === 400 && spec.withoutJsonMode && !retriedWithoutJsonMode && /response_format|json_schema|json_object|json mode|structured/i.test(msg)) {
-            body = spec.withoutJsonMode(body);
+          if (res.status === 400 && active.withoutJsonMode && !retriedWithoutJsonMode && /response_format|json_schema|json_object|json mode|structured/i.test(msg)) {
+            body = active.withoutJsonMode(body);
             retriedWithoutJsonMode = true;
+            continue;
+          }
+          // A gateway that serves this model only over the Responses API answers the Chat
+          // shape with 400 Model does not support this protocol. Once, through the other
+          // shape — extra headers ride along untouched, so gateway routing still applies.
+          if (res.status === 400 && active.responsesFallback && !retriedResponses && /does not support this protocol/i.test(msg)) {
+            active = active.responsesFallback;
+            body = active.body({ model: chosen, prompt, system: system || null, schema: schema || null, maxTokens: MAX_OUTPUT_TOKENS });
+            retriedResponses = true;
             continue;
           }
           return { code: 1, text: '', stderr: `${res.status} ${trim(msg, 280)}` };
         }
         let out;
-        try { out = spec.readText(data); } catch (e) { out = { error: `unexpected response shape: ${trim(e.message, 100)}` }; }
+        try { out = active.readText(data); } catch (e) { out = { error: `unexpected response shape: ${trim(e.message, 100)}` }; }
         if (out.error) return { code: 1, text: '', stderr: out.error };
         if (out.truncated) return { code: 1, text: '', stderr: 'the answer was cut off at the output limit — try a smaller plan or a bigger model' };
         return { code: 0, text: String(out.text || '').trim(), stderr: '' };
