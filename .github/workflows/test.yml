@@ -9,6 +9,7 @@ on:
       - 'api/**'
       - 'mcp/**'
       - 'scripts/build-coach-assets.mjs'
+      - 'scripts/build-routine-assets.mjs'
       - 'scripts/build-coach-library.mjs'
       - 'api/coach/prompts/**'
       - '.github/workflows/test.yml'
@@ -19,6 +20,7 @@ on:
       - 'api/**'
       - 'mcp/**'
       - 'scripts/build-coach-assets.mjs'
+      - 'scripts/build-routine-assets.mjs'
       - 'scripts/build-coach-library.mjs'
       - 'api/coach/prompts/**'
       - '.github/workflows/test.yml'
@@ -49,6 +51,7 @@ jobs:
       # A broken import or bad JSX fails the build long before any test covers it.
       - run: npm run build
         working-directory: frontend
+      - run: node scripts/build-routine-assets.mjs --check
       - run: node scripts/check-locales.mjs
         working-directory: frontend
       # check-locales compares the packs to each other, so a key missing from ALL of them is

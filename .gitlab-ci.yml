@@ -162,6 +162,7 @@ test:frontend:
     # heavy one (@capacitor/assets → sharp, a 10 MB libvips download from GitHub) is only
     # used to draw app icons. That download timing out is what turned a release red.
     - npm ci --cache .npm --prefer-offline --ignore-scripts
+    - node ../scripts/build-history-assets.mjs --check
     # JUnit → the MR widget lists exactly which tests failed; cobertura → coverage on the
     # diff; text-summary → the number the coverage badge shows.
     - npx vitest run
@@ -169,6 +170,7 @@ test:frontend:
         --coverage --coverage.reporter=text-summary --coverage.reporter=cobertura
     # A broken import or bad JSX fails the build long before any test covers it.
     - npm run build
+    - node ../scripts/build-routine-assets.mjs --check
     # What this commit costs on the wire, and — in an MR — what it adds compared with main.
     # main's numbers are the artifact of its last green test:frontend; report-only.
     - node scripts/bundle-size.mjs --out bundle-size.json
