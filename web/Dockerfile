@@ -26,7 +26,7 @@ COPY frontend/ ./
 ARG APP_BUILD=""
 RUN APP_BUILD="$APP_BUILD" npm run build
 
-FROM nginx:alpine
+FROM nginxinc/nginx-unprivileged:alpine
 # Same reason as in api/Dockerfile: alpine fixes land faster than the nginx image is rebuilt.
 RUN apk upgrade --no-cache
 ARG VERSION=dev
