@@ -10,7 +10,7 @@ export const LANGS = {
   ko: '한국어', hi: 'हिन्दी', th: 'ไทย', hu: 'Magyar', ar: 'العربية'
 }
 export const INSTR_LANGS = ['en', 'es', 'fr', 'it', 'tr', 'ru', 'zh', 'hi', 'pl', 'ko', 'pt-BR', 'hu', 'ar']
-export const EXERCISE_NAME_LANGS = ['pt-BR', 'hu', 'de', 'es', 'ru', 'it', 'fr']
+export const EXERCISE_NAME_LANGS = ['pt-BR', 'hu', 'de', 'es', 'ru', 'it', 'fr', 'ko']
 // Languages rendered right-to-left; i18n.js setLang applies the direction from this.
 export const RTL_LANGS = new Set(['ar'])
 export const DATE_LOCALES = {
@@ -104,7 +104,8 @@ export const exerciseNameFor = ex => {
 // the English names ("supino com barra"). Left without the title-casing English gets, those
 // read all lower-case in every list, card and history row. A new pack goes here only when it
 // carries real casing; i18n-core.test.js checks this list against the packs themselves.
-export const CASED_NAME_LANGS = ['de']
+// Korean retains exact Latin letter/acronym casing (EZ바, Hyght, T바).
+export const CASED_NAME_LANGS = ['de', 'ko']
 
 // EXDB stores English names lower-case and the UI title-cases them with CSS. A pack in
 // CASED_NAME_LANGS carries its own casing and must not be cased again on top, so the class that
