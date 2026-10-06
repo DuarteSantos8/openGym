@@ -798,46 +798,52 @@ function OneRM({ ex }) {
 
 function ExerciseDetail({ ex, close }) {
   const st = useStore(s => s.S)
-  const last = lastEntryFor(st, ex.id)
-  const best = bestWeightFor(st, ex.id)
-  const fav = isFav(st, ex.id)
+  // The row in customEx is what makes this exercise yours. `custom: true` is written on create,
+  // but a copy that arrived without it is still yours, and Edit/Delete used to require the flag
+  // (issue #358). Those buttons also used to sit under the animation, past the point a sheet
+  // that does not scroll can reach — Firefox and Safari reporters never saw Delete (issue #378).
+  const owned = (st.customEx || []).find(c => c && c.id === ex?.id) || null
+  const view = owned ? (owned.custom ? owned : { ...owned, custom: true }) : ex
+  const last = lastEntryFor(st, view.id)
+  const best = bestWeightFor(st, view.id)
+  const fav = isFav(st, view.id)
   const flipFav = () => {
     let on = false
-    update(s => { on = toggleFav(s, ex.id) })
+    update(s => { on = toggleFav(s, view.id) })
     toast(on ? t('Added to favourites') : t('Removed from favourites'))
   }
   return <>
     <div className="row between" style={{ gap: 8, alignItems: 'flex-start' }}>
-      <h3 className={exerciseNameClass(ex)}>{exerciseNameFor(ex)}</h3>
+      <h3 className={exerciseNameClass(view)}>{exerciseNameFor(view)}</h3>
       <button className={'iconbtn fav-btn' + (fav ? ' on' : '')} aria-pressed={fav}
         aria-label={fav ? t('Remove from favourites') : t('Add to favourites')} onClick={flipFav}>
         <Icon name={fav ? 'starFill' : 'star'} />
       </button>
     </div>
-    <Media ex={ex} />
-    <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '10px 0' }}>
-      <span className="tag acc">{t(ex.bp)}</span>
-      {ex.bp === 'cardio' ? <span className="tag"><Icon name="target" />{t(MUSCLE_NAME['cardiovascular system'])}</span> : (ex.primaries?.length ? ex.primaries : (ex.tg ? [ex.tg] : [])).map((s, i) => <span key={i} className="tag"><Icon name="target" />{t(MUSCLE_NAME[s]  || s)}</span>)}
-      <span className="tag"><Icon name="dumbbell" />{t(ex.eq)}</span>
-      {(ex.secondaries?.length ? ex.secondaries : smOf(ex)).slice(0, 3).map((s, i) => <span key={i} className="tag">{t(MUSCLE_NAME[s] || s)}</span>)}
-    </div>
-    {ex.desc && <div className="exnote">{ex.desc}</div>}
-    {best > 0 && <div className="small row" style={{ marginBottom: 6, gap: 5 }}><Icon name="trophy" style={{ fontSize: 14, color: 'var(--yellow)' }} />{t('Best:')} <b className="accent" style={{ whiteSpace: 'nowrap' }}>{fmtNum(best)} {st.unit}</b>{last ? ` · ${t('last')} ${fmtDate(last.d)}: ${last.sets.map(s => setLabel(ex.id, s, last.target, speedUnitOf(st))).join(', ')}` : ''}</div>}
-    <Button variant="primary" icon="plus" style={{ margin: '10px 0 4px' }} onClick={() => addToRoutineSheet(ex)}>{t('Add to my plan')}</Button>
-    {last && <Button icon="history" style={{ marginTop: 4 }} onClick={() => exerciseHistorySheet(ex.id)}>{t('History')}</Button>}
-    {ex.custom && <div className="row" style={{ gap: 8, marginTop: 8 }}>
-      <Button icon="pencil" style={{ flex: 1 }} onClick={() => { close(); customExSheet(ex) }}>{t('Edit')}</Button>
-      <Button variant="danger" icon="trash" style={{ flex: 1 }} onClick={() => deleteCustomEx(ex, close)}>{t('Delete')}</Button>
+    {owned && <div className="row" style={{ gap: 8, marginTop: 8 }}>
+      <Button icon="pencil" style={{ flex: 1 }} onClick={() => { close(); customExSheet(view) }}>{t('Edit')}</Button>
+      <Button variant="danger" icon="trash" style={{ flex: 1 }} onClick={() => deleteCustomEx(view, close)}>{t('Delete')}</Button>
     </div>}
-    {modeOf({ id: ex.id }) === 'reps' && <>
+    <Media ex={view} />
+    <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '10px 0' }}>
+      <span className="tag acc">{t(view.bp)}</span>
+      {view.bp === 'cardio' ? <span className="tag"><Icon name="target" />{t(MUSCLE_NAME['cardiovascular system'])}</span> : (view.primaries?.length ? view.primaries : (view.tg ? [view.tg] : [])).map((s, i) => <span key={i} className="tag"><Icon name="target" />{t(MUSCLE_NAME[s]  || s)}</span>)}
+      <span className="tag"><Icon name="dumbbell" />{t(view.eq)}</span>
+      {(view.secondaries?.length ? view.secondaries : smOf(view)).slice(0, 3).map((s, i) => <span key={i} className="tag">{t(MUSCLE_NAME[s] || s)}</span>)}
+    </div>
+    {view.desc && <div className="exnote">{view.desc}</div>}
+    {best > 0 && <div className="small row" style={{ marginBottom: 6, gap: 5 }}><Icon name="trophy" style={{ fontSize: 14, color: 'var(--yellow)' }} />{t('Best:')} <b className="accent" style={{ whiteSpace: 'nowrap' }}>{fmtNum(best)} {st.unit}</b>{last ? ` · ${t('last')} ${fmtDate(last.d)}: ${last.sets.map(s => setLabel(view.id, s, last.target, speedUnitOf(st))).join(', ')}` : ''}</div>}
+    <Button variant="primary" icon="plus" style={{ margin: '10px 0 4px' }} onClick={() => addToRoutineSheet(view)}>{t('Add to my plan')}</Button>
+    {last && <Button icon="history" style={{ marginTop: 4 }} onClick={() => exerciseHistorySheet(view.id)}>{t('History')}</Button>}
+    {modeOf({ id: view.id }) === 'reps' && <>
       <h4 className="sec">{t('Plate loading')}</h4>
-      <BarWeightEditor ex={ex} extra={t('You still log the total weight — this only feeds the plate line under each set.')} />
+      <BarWeightEditor ex={view} extra={t('You still log the total weight — this only feeds the plate line under each set.')} />
     </>}
     {/* No one-rep max on an assistance machine: the load is the help you were given, so the
         calculator would answer "your 1RM is 23 kg" about a number that gets smaller as you get
         stronger (issue #232). Cardio has none for the same kind of reason. */}
-    {!isCardio(ex) && !isAssisted(ex) && <OneRM ex={ex} />}
-    {instrFor(ex).length > 0 &&<><h4 className="sec">{t('How to')}{!INSTR_LANGS.includes(getLang()) && <span className="dim" style={{ textTransform: 'none', letterSpacing: 0 }}> · {t('instructions in English')}</span>}</h4><ol className="steps-list">{instrFor(ex).map((s, i) => <li key={i}>{s}</li>)}</ol></>}
+    {!isCardio(view) && !isAssisted(view) && <OneRM ex={view} />}
+    {instrFor(view).length > 0 &&<><h4 className="sec">{t('How to')}{!INSTR_LANGS.includes(getLang()) && <span className="dim" style={{ textTransform: 'none', letterSpacing: 0 }}> · {t('instructions in English')}</span>}</h4><ol className="steps-list">{instrFor(view).map((s, i) => <li key={i}>{s}</li>)}</ol></>}
   </>
 }
 export const exerciseDetailSheet = ex => ui().openSheet(close => <ExerciseDetail ex={ex} close={close} />)
@@ -1365,6 +1371,8 @@ const intensifierToSave = x => (x.type === 'dropset'
 
 function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, initial, saveLabel }) {
   const st = useStore(s => s.S)
+  const customOwned = (st.customEx || []).find(c => c && c.id === ex?.id) || null
+  const customView = customOwned ? (customOwned.custom ? customOwned : { ...customOwned, custom: true }) : null
   const cardio = isCardio(ex.id)
   const speedUnit = speedUnitOf(st)
   const seed = existing || initial || defaultConfig(ex.id)
@@ -1452,7 +1460,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   }
   return <>
     <h3 className={exerciseNameClass(ex)}>{exerciseNameFor(ex)}</h3>
-    <Media ex={ex} />
+    <Media ex={customView || ex} />
     {/* The same tags the exercise detail sheet shows, secondaries included: choosing what goes
         into a plan is exactly when "what else does this hit" matters, and until now that was
         only visible from the Exercises tab, after the fact. Custom exercises and the newer
@@ -1614,7 +1622,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         Replace (#110) seeds this sheet with the slot it replaces, and saving puts the exercise
         into that slot. */}
     <Button variant="primary" disabled={progressionStepInvalid} onClick={save}>{saveLabel || (existing ? t('Save') : t('Add to routine'))}</Button>
-    {ex.custom && <><div style={{ height: 8 }} /><Button icon="pencil" onClick={() => { close(); customExSheet(ex) }}>{t('Edit or delete this exercise')}</Button></>}
+    {customView && <><div style={{ height: 8 }} /><Button icon="pencil" onClick={() => { close(); customExSheet(customView) }}>{t('Edit or delete this exercise')}</Button></>}
     {/* The routine editor's counterpart to a workout's Swap (#110): another exercise in this
         slot, with the slot's sets, reps, weight, rule and note kept (lib/routines.js). What was
         changed on this sheet and not saved is left behind, as closing it would. */}
