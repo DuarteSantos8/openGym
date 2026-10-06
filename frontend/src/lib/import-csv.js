@@ -29,18 +29,34 @@ import { HEVY_TITLE_MAP } from './hevy-id-map.js'
  * A real CSV reader: quoted fields, embedded commas and newlines, doubled quotes, BOM
  * and CRLF. Splitting on commas breaks on the first exercise named "Bench Press, Close
  * Grip" — and a whole history would import shifted by one column without ever erroring.
+ * The delimiter is sniffed from the header line: Strong 6.x exports are
+ * semicolon-delimited, everything else the importer reads uses commas.
  */
+function sniffDelim(s) {
+  let quoted = false, commas = 0, semis = 0
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i]
+    if (c === '"') quoted = !quoted
+    else if (quoted) continue
+    else if (c === ',') commas++
+    else if (c === ';') semis++
+    else if (c === '\n' || c === '\r') break
+  }
+  return semis > commas ? ';' : ','
+}
+
 export function parseCSV(text) {
   const rows = []
   let row = [], field = '', quoted = false
   const s = String(text).replace(/^﻿/, '')
+  const delim = sniffDelim(s)
   for (let i = 0; i < s.length; i++) {
     const c = s[i]
     if (quoted) {
       if (c === '"') { if (s[i + 1] === '"') { field += '"'; i++ } else quoted = false }
       else field += c
     } else if (c === '"') quoted = true
-    else if (c === ',') { row.push(field); field = '' }
+    else if (c === delim) { row.push(field); field = '' }
     else if (c === '\n' || c === '\r') {
       if (c === '\r' && s[i + 1] === '\n') i++
       row.push(field); field = ''
@@ -73,10 +89,16 @@ const COLUMNS = [
   ['rpe', ['rpe', 'rpe rating']],
   ['rir', ['rir', 'reps in reserve']],
   ['distanceKm', ['distance km']],
+  // Strong 6.x writes distances in metres ("Distance (meters)"); with no unit column
+  // toKm would read a bare 8000 as kilometres.
+  ['distanceM', ['distance meters', 'distance m']],
   ['distance', ['distance']],
   ['distanceUnit', ['distance unit']],
   ['seconds', ['seconds', 'duration seconds', 'set duration sec']],
   ['time', ['time', 'duration']],
+  // Strong 6.x writes the workout's length in seconds ("Duration (sec)") — a separate
+  // field from the per-set Seconds column and from the old "Duration" ("1h 5m").
+  ['durationSec', ['duration sec']],
   ['setType', ['set type']],
   // Hevy numbers the supersets of a workout; rows sharing a number were done as one.
   ['superset', ['superset id']],
@@ -90,6 +112,10 @@ const COLUMNS = [
 function mapHeader(header) {
   const map = {}
   header.forEach((h, i) => {
+    // Strong's "Workout #" is the workout's number, not its name. It normalises to
+    // "workout" — an alias of workoutName below, and first match wins — so without this
+    // every workout would import named "1", "2", "3" while the real name went unread.
+    if (String(h).trim().toLowerCase() === 'workout #') return
     const n = norm(h)
     for (const [field, names] of COLUMNS) {
       if (map[field] === undefined && names.includes(n)) { map[field] = i; return }
@@ -414,6 +440,15 @@ export function parseWorkoutCSV(text, { unit = 'kg' } = {}) {
   // row; the set's own time is its Seconds column. Read as a set time it turned every
   // weight-less row into an hour of cardio and left the workout itself at zero minutes.
   if (source === 'Strong' && map.time !== undefined) { map.workoutDuration = map.time; delete map.time }
+  // Strong 6.x exports the length in seconds; toMinutes reads a bare number as minutes —
+  // a 55-minute workout would import as 3,300 minutes — so it is converted to minutes
+  // where the length is read below.
+  let workoutSec = false
+  if (source === 'Strong' && map.durationSec !== undefined) {
+    map.workoutDuration = map.durationSec
+    workoutSec = true
+    delete map.durationSec
+  }
 
   const resolved = new Map()          // exercise name -> dataset id | null, resolved once
   const byDate = new Map()
@@ -448,7 +483,9 @@ export function parseWorkoutCSV(text, { unit = 'kg' } = {}) {
     const mins = secs > 0 ? Math.round(secs / 60 * 10) / 10 : toMinutes(cell(r, 'time'))
     const km = map.distanceKm !== undefined && cell(r, 'distanceKm')
       ? num(cell(r, 'distanceKm'))
-      : toKm(cell(r, 'distance'), cell(r, 'distanceUnit'))
+      : map.distanceM !== undefined && cell(r, 'distanceM')
+        ? toKm(cell(r, 'distanceM'), 'm')
+        : toKm(cell(r, 'distance'), cell(r, 'distanceUnit'))
     if (!w && !reps && !mins && !km) { skipped++; continue }
     const warmup = /warm/i.test(cell(r, 'setType'))
     if (warmup) warmups++
@@ -514,7 +551,9 @@ export function parseWorkoutCSV(text, { unit = 'kg' } = {}) {
     if (!day.note) day.note = cell(r, 'workoutNote')
     if (map.endTime !== undefined) { const e = parseWhen(cell(r, 'endTime')); if (e && e.t != null) day.end = e.t }
     else if (map.workoutDuration !== undefined && day.end == null) {
-      const len = toMinutes(cell(r, 'workoutDuration'))
+      const len = workoutSec
+        ? Math.round(num(cell(r, 'workoutDuration')) / 60 * 10) / 10
+        : toMinutes(cell(r, 'workoutDuration'))
       if (len > 0) day.end = (day.start ?? 18 * 3600000) + Math.round(len * 60000)
     }
     if (!day.ex.has(id)) day.ex.set(id, [])

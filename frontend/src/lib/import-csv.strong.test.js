@@ -14,6 +14,16 @@ const STRONG = [
   '2026-04-05 17:00:00,"Legs",52m,"Running (Treadmill)",1,0,0,3,1200,"","",',
 ].join('\n')
 
+// Strong 6.x changed the export: semicolon-delimited, a "Workout #" column ahead of the
+// name, the workout length in seconds ("Duration (sec)"), and distances in metres
+// ("Distance (meters)"). Issue #394.
+const STRONG6 = [
+  '"Workout #";"Date";"Workout Name";"Duration (sec)";"Exercise Name";"Set Order";"Weight (kg)";"Reps";"RPE";"Distance (meters)";"Seconds";"Notes";"Workout Notes"',
+  '"1";"2026-05-01 18:00:00";"Back and Biceps";"3300";"Bench Press (Barbell)";"1";"60";"8";"8";"0";"0";"";"Good day"',
+  '"1";"2026-05-01 18:00:00";"Back and Biceps";"3300";"Bent Over Row (Barbell)";"1";"50";"10";"";"0";"0";"";"Good day"',
+  '"2";"2026-05-03 17:00:00";"Cardio";"780";"Running (Treadmill)";"1";"0";"0";"";"8000";"780";"";""',
+].join('\n')
+
 const HEVY = [
   '"title","start_time","end_time","description","exercise_title","superset_id","exercise_notes","set_index","set_type","weight_kg","reps","distance_km","duration_seconds","rpe"',
   '"Push","3 févr. 2026, 18:00","3 févr. 2026, 19:10","Felt fresh","Bench Press (Barbell)",,"",0,"normal",62.5,8,,,8',
@@ -51,6 +61,33 @@ describe('a Strong export', () => {
     expect(plank).toBeTruthy()
     expect(plank.sets).toEqual([{ sec: 60, w: 0, done: true }])
     expect(legs.entries[1].sets).toEqual([{ min: 20, speed: 9, done: true }])
+  })
+})
+
+describe('a Strong 6.x export (semicolons)', () => {
+  const parsed = parseWorkoutCSV(STRONG6, { unit: 'kg' })
+  const [back, cardio] = parsed.workouts
+
+  it('reads the semicolon delimiter and detects Strong', () => {
+    expect(parsed.error).toBeUndefined()
+    expect(parsed.source).toBe('Strong')
+    expect(parsed.workouts).toHaveLength(2)
+  })
+
+  it('takes Workout Name as the name, not Workout #', () => {
+    expect(back.name).toBe('Back and Biceps')
+    expect(cardio.name).toBe('Cardio')
+  })
+
+  it('reads Duration (sec) as a length in seconds', () => {
+    expect(minutes(back)).toBe(55)
+    expect(minutes(cardio)).toBe(13)
+  })
+
+  it('reads Distance (meters) as metres, not kilometres', () => {
+    const [run] = cardio.entries[0].sets
+    expect(run.min).toBe(13)
+    expect(run.speed).toBeCloseTo(36.9, 1)
   })
 })
 
