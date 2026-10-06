@@ -169,6 +169,7 @@ test:frontend:
         --coverage --coverage.reporter=text-summary --coverage.reporter=cobertura
     # A broken import or bad JSX fails the build long before any test covers it.
     - npm run build
+    - node ../scripts/build-routine-assets.mjs --check
     # What this commit costs on the wire, and — in an MR — what it adds compared with main.
     # main's numbers are the artifact of its last green test:frontend; report-only.
     - node scripts/bundle-size.mjs --out bundle-size.json

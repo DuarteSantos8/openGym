@@ -1486,6 +1486,74 @@ paths:
                 missing: { value: { error: "state required" } }
                 invalid: { value: { error: "invalid state" } }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '503':
+          description: Another writer holds the profile lock; no state was committed.
+
+  /api/routines/mutate:
+    post:
+      tags: [data]
+      operationId: mutateRoutines
+      summary: Apply a revision-confirmed routine operation
+      description: |
+        Applies create_training_plan, edit_routine or delete_routine behavior on the
+        authenticated profile. Cookie and paired bearer sessions use the same route.
+        Read GET /api/data before proposing a change and pass that exact rev as baseRev.
+        A 409 returns the current state and revision; read and confirm again, never retry
+        the previous confirmation against different data. Deletion needs input.confirm=true.
+        No caller-supplied uid is used. Sync and mutations share a lock, reset-marker rules,
+        active-workout stripping and a server-owned revision; mutations also stamp _ts.
+        The operation-specific input fields are documented in mcp/README.md.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [operation, baseRev, input]
+              properties:
+                operation: { type: string, enum: [create, edit, delete] }
+                baseRev: { type: integer, minimum: 0, maximum: 9007199254740991 }
+                input:
+                  type: object
+                  description: Create uses routines and optional weekdays; edit uses routine_id and supplied fields; delete uses routine_id and confirm=true.
+            example:
+              operation: delete
+              baseRev: 4
+              input: { routine_id: routine-1, confirm: true }
+      responses:
+        '200':
+          description: Operation summary, committed rev and server timestamp ts.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [rev, ts]
+                properties:
+                  rev: { type: integer }
+                  ts: { type: number }
+                  created_routines: { type: array, items: { type: object } }
+                  updated_routine: { type: object }
+                  deleted_routine: { type: object }
+                  changed_weekdays: { type: array, items: {} }
+                  changed_dates: { type: array, items: { type: string } }
+        '400':
+          description: Missing or invalid revision, malformed operation input, invalid exercise ID or unconfirmed deletion. No state is written.
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: No synced routines or the selected routine is not in this profile.
+        '409':
+          description: The confirmed revision is stale. Includes current rev and state; fresh confirmation is required.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [error, rev, state]
+                properties:
+                  error: { type: string, const: conflict }
+                  rev: { type: integer }
+                  state: { $ref: '#/components/schemas/State' }
+        '503':
+          description: Another writer holds the profile lock. Nothing is committed; retry with the same revision or read again.
 
   /api/data/rev:
     get:
