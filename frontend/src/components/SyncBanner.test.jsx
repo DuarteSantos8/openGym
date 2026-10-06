@@ -188,6 +188,24 @@ describe('not connected — it says so, and what to do', () => {
     expect(openedConnect().dataset.url).toBe('')
   })
 
+  // The remembered server's provider, carried through connectionView for whoever offers signing
+  // in again with it (Settings' "Server & sync" and the owed sheet - SyncBanner itself unchanged).
+  it('a refused phone with a provider carries it on the view; one with no address never does', () => {
+    const refused = sync('auth', { auth: true, pending: true, lastError: { status: 401, code: 'auth' } })
+    expect(connectionView(refused, { mobile: true, provider: 'Google' })).toMatchObject({ action: 'pair', provider: 'Google' })
+    expect(connectionView(refused, { mobile: true })).toMatchObject({ action: 'pair', provider: null })
+
+    const unpaired = sync('auth', { auth: true, pending: true, server: null, lastError: { status: 0, code: 'not-paired' } })
+    expect(connectionView(unpaired, { mobile: true, provider: 'Google' })).toMatchObject({ action: 'pair', provider: null })
+  })
+
+  it('a refused browser carries no provider at all, whatever is passed', () => {
+    const refused = sync('auth', { auth: true, pending: true, lastError: { status: 401, code: 'auth' } })
+    expect(connectionView(refused, { mobile: false, provider: 'Google' })).toEqual(
+      expect.not.objectContaining({ provider: expect.anything() })
+    )
+  })
+
   it('browser refused mid-session: "Sign in" is the passkey, right there', async () => {
     mocks.sync = sync('auth', { auth: true, pending: true, lastError: { status: 401, code: 'auth' } })
     render()

@@ -143,10 +143,12 @@ export const useUI = create((set, get) => ({
   closeSheet(id) { set(s => ({ sheets: s.sheets.filter(x => x.id !== id) })) },
   closeAll() { set({ sheets: [] }) },
 
-  toast(msg) {
+  // A confirmation only has to be noticed - the reader already knows what they did. A sentence
+  // explaining a failure has to be read, so a caller showing one passes a longer duration.
+  toast(msg, ms = 2200) {
     set({ toastMsg: msg })
     clearTimeout(toastTm)
-    toastTm = setTimeout(() => set({ toastMsg: '' }), 2200)
+    toastTm = setTimeout(() => set({ toastMsg: '' }), ms)
   },
 
   startRest(sec, forIdx) {

@@ -155,6 +155,12 @@ Traefik and nginx, and there are separate guides for
 | `INVITE_ONLY` | Require an invite code to create a profile | *(off)* |
 | `ALLOW_GUEST` | Offer "Continue without account"; `0` requires a profile | *(on)* |
 | `PASSWORD_LOGIN` | Offer name-and-password sign-in next to passkeys | *(off)* |
+| `OIDC_ISSUER` | Turns on sign-in through an external identity provider | *(off)* |
+| `OIDC_CLIENT_ID` | What that provider knows this instance by | *(none)* |
+| `OIDC_CLIENT_SECRET` | The client's secret, if the provider issues one; blank for a public client using PKCE alone | *(none)* |
+| `OIDC_REDIRECT_URI` | Where the provider sends the browser back to | `ORIGIN` + `/api/oidc/callback` |
+| `OIDC_SCOPES` | Scopes requested at the provider; must include `openid` | `openid profile email` |
+| `OIDC_NAME` | Label the sign-in screen shows for the provider | the issuer's hostname |
 | `TRUST_PROXY` | Let the sign-in throttle read the client address from proxy headers | `1` in `docker-compose.yml` |
 | `AUDIT_LOG` | Record sign-ins and admin actions; `0` records nothing | *(on)* |
 | `AUDIT_MAX` | Events kept in the activity log; `0` for no limit | `5000` |
@@ -193,8 +199,9 @@ Details and build instructions: [docs/MOBILE.md](docs/MOBILE.md).
 </p>
 
 - **`frontend/`** is React 19 and Vite (React Router, Zustand), built to static files inside Docker.
-- **`api/`** is plain `node:http` with two dependencies: `@simplewebauthn/server` for passkeys and
-  `web-push` for notifications. Everything is stored as JSON under `./data`.
+- **`api/`** is plain `node:http` with four dependencies: `@simplewebauthn/server` for passkeys,
+  `jose` for identity-token verification, `undici` for its own outbound HTTP and `web-push` for
+  notifications. Everything is stored as JSON under `./data`.
 - **`web/`** builds the frontend and serves it with nginx, proxying `/api` so the whole app sits on
   one origin, which passkeys require.
 

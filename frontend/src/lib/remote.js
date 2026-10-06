@@ -45,13 +45,23 @@ export async function renewToken(remote, token) {
   await saveRemoteFile({ ...remote, token })
 }
 
+// Wires api.js at an already-resolved base and a token already in hand, and persists the
+// connection the same way connect() does - the one tail both a pairing code and a provider
+// sign-in end at, so everything downstream of a successful connect (boot's remote restore, "sign
+// out everywhere") behaves identically whichever one produced the token.
+export async function connectWithGrant(rawUrl, { token, user }) {
+  const base = normalizeServerUrl(rawUrl)
+  if (!base) throw new Error('Enter a valid server address')
+  setRemoteAuth(base, token)
+  await saveRemoteFile({ mode: 'remote', base, token, user })
+  return user
+}
+
 // Redeems the pairing code, wires api.js at the resolved base, and persists the connection so
 // boot() can restore it on the next launch.
 export async function connect(rawUrl, code) {
   const base = normalizeServerUrl(rawUrl)
   if (!base) throw new Error('Enter a valid server address')
   const { token, user } = await pairRedeem(base, String(code || '').trim())
-  setRemoteAuth(base, token)
-  await saveRemoteFile({ mode: 'remote', base, token, user })
-  return user
+  return connectWithGrant(rawUrl, { token, user })
 }

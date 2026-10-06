@@ -46,10 +46,28 @@ const LABELS = {
   'auth.passkey.add': 'Added a passkey',
   'auth.passkey.fail': 'Adding a passkey failed',
   'auth.passkey.remove': 'Removed a passkey',
+  // Sign-in through an external identity provider. "new" is a brand-new, empty profile created
+  // by confirming a name; "ok" is a returning identity landing back in the profile it is already
+  // linked to.
+  'auth.oidc.new': 'Created a profile by signing in with a provider',
+  'auth.oidc.ok': 'Signed in with a provider',
+  'auth.oidc.fail': 'Signing in with a provider failed',
+  // The same round trip, made from the phone app's own connect screen rather than a browser tab -
+  // the system browser departs and returns through the app's own scheme instead of a cookie.
+  'auth.oidc.app.ok': 'Signed in on the phone app with a provider',
+  'auth.oidc.app.fail': 'Signing in on the phone app with a provider failed',
+  'auth.oidc.app.new': 'Created a profile on the phone app with a provider',
+  'auth.identity.remove': 'Removed a linked identity',
+  // A ticket-proven identity link. Named apart from the auth.link.* device-link
+  // events (#95): the two features share nothing but the word "link", and folding them onto the
+  // same event names would misreport one as the other in the activity log.
+  'auth.identity.link.ok': 'Linked an identity',
+  'auth.identity.link.fail': 'Linking an identity failed',
   'auth.link.create': 'Made a one-time code for another device',
   'auth.link.ok': 'Added a device with a one-time code',
   'auth.link.fail': 'Adding a device with a code failed',
-  // The owner's proof (current password or a passkey) for one of the changes below was refused.
+  // The owner's proof (current password, a passkey, or a sign-in at the provider as the linked
+  // identity) for one of the changes below was refused.
   'auth.proof.fail': 'Confirming a change failed',
   // The password throttle paused an address; `msg` says for what (password, signup).
   'auth.throttled': 'Too many failed attempts from one address',
@@ -91,6 +109,24 @@ const REASONS = {
   'reset-invalid': 'wrong or expired reset code',
   'link-invalid': 'wrong, used or expired device code',
   'passkey-limit': 'the profile already has as many passkeys as it can hold',
+  // Sign-in through an external identity provider (auth.oidc.fail).
+  'provider-refused': 'the provider refused the sign-in request',
+  'provider-unreachable': 'the provider could not be reached',
+  'token-invalid': "the provider's answer could not be verified",
+  // The phone app's own redeem step (auth.oidc.app.fail).
+  'app-code-invalid': "the app's one-time return code was wrong, spent or expired",
+  'verifier-mismatch': 'the return code was presented by an app other than the one that started the sign-in',
+  // Linking an identity to an existing profile.
+  'provider-off': 'no external provider is configured on this instance',
+  'ticket-invalid': 'the one-time ticket is missing, spent or expired',
+  'session-changed': 'the session changed before the provider answered',
+  'identity-collision': 'that identity is already linked to a different profile',
+  'profile-linked': 'this profile already has a linked identity',
+  'already': 'the identity was already linked to this profile',
+  // Confirming a change by signing in at the provider as the linked identity (auth.proof.fail).
+  'identity-mismatch': 'the provider signed in a different account than the one linked to this profile',
+  'stale-sign-in': 'the provider reported a sign-in older than the request to confirm',
+  'identity-proof-invalid': 'the confirmation with the provider was spent, expired or made for another change',
   // What an `auth.throttled` pause was for.
   'password': 'wrong passwords or reset codes',
   'signup': 'wrong invite codes on password signup',
@@ -110,6 +146,8 @@ const ACTS = {
   'password-remove': 'removing the password',
   'passkey-add': 'adding a passkey',
   'passkey-remove': 'removing a passkey',
+  'identity-remove': 'removing the linked identity',
+  'identity-link': 'linking an identity',
   'device-link': 'making a one-time code for another device'
 }
 export const auditAct = act => ACTS[act] || (act ? String(act) : '')

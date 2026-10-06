@@ -9,6 +9,7 @@ import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { dateLocale } from '../lib/i18n-core.js'
 import { api, webauthnOK, createPasskey } from '../lib/api.js'
+import { MOBILE } from '../lib/mobile.js'
 import { copyText } from '../lib/clipboard.js'
 import { deviceLinkUrl, deviceLabel } from '../lib/device-link.js'
 import { askAddDeviceData } from '../sheets.jsx'
@@ -53,9 +54,9 @@ export function passkeyError(e) {
   return passwordError(e)
 }
 
-// GET /api/account/passkeys: { passkeys, password, lastWayIn }, or null until it answers — and
-// for as long as the answer is not a list, which is what a server from before #95 gives, so
-// Settings on such a server simply has no passkey rows.
+// GET /api/account/passkeys: { passkeys, password, identity, lastWayIn }, or null until it
+// answers — and for as long as the answer is not a list, which is what a server from before #95
+// gives, so Settings on such a server simply has no passkey rows.
 const listOf = r => (Array.isArray(r?.passkeys) ? r : null)
 export function usePasskeys(on) {
   const [st, setSt] = useState(null)
@@ -64,6 +65,35 @@ export function usePasskeys(on) {
   useEffect(() => { if (on) load() }, [on])
   useAgainOnceReached(on && unreached, load)
   return { st, load, set: setSt }
+}
+
+// The same read, taken once rather than kept live — what reopenAfterProof (components/Identity.jsx)
+// needs to reopen a sheet after a provider round trip; usePasskeys above is for a screen that stays
+// mounted and wants the answer kept current.
+export const passkeysState = () => api('/api/account/passkeys').then(listOf)
+
+// Reopens the sheet a passkey- or device-link change was pending for while the browser was away
+// confirming with the provider — already past its proof step, since the round trip is what proved
+// it. Answers false for an act outside this module's own three, or a remembered passkey no longer
+// on the list (removed, from another device, while this one was away): there is nothing sensible
+// left to reopen either way.
+export function resumePasskeyProof(act, draft, { st, changed }) {
+  const done = () => changed?.()
+  if (act === 'passkey-add') {
+    ui().openSheet(c => <AddPasskeySheet state={st} close={c} done={done} initialName={draft?.name} resume />)
+    return true
+  }
+  if (act === 'passkey-remove') {
+    const i = st.passkeys.findIndex(p => p.id === draft?.id)
+    if (i < 0) return false
+    ui().openSheet(c => <RemovePasskeySheet passkey={st.passkeys[i]} title={label(st.passkeys[i], i)} state={st} close={c} done={done} resume />)
+    return true
+  }
+  if (act === 'device-link') {
+    ui().openSheet(c => <DeviceLinkSheet close={c} resume />)
+    return true
+  }
+  return false
 }
 
 /* ------------------------------------------------------------------- Settings -------------
@@ -103,7 +133,10 @@ export function PasskeysSheet({ close, changed }) {
     {st.passkeys.length === 1 && st.lastWayIn && <div className="dim small" style={{ marginTop: 8 }}>
       {t('It is your only way in, so it cannot be removed until there is another.')}</div>}
     <div style={{ height: 14 }} />
-    {webauthnOK() && <><Button variant="primary" icon="plus" onClick={add}>{t('Add a passkey')}</Button><div style={{ height: 8 }} /></>}
+    {webauthnOK() ? <><Button variant="primary" icon="plus" onClick={add}>{t('Add a passkey')}</Button><div style={{ height: 8 }} /></>
+      // On the phone, webauthnOK() is false for this reason alone - say so with the way that does
+      // work instead of leaving the row to look like it simply has nothing more to offer.
+      : MOBILE && <div className="dim small" style={{ marginBottom: 8 }}>{t('Add passkeys from a browser, or with a code for another device.')}</div>}
     <Button onClick={close}>{t('Done')}</Button>
   </>
 }
@@ -144,7 +177,7 @@ function PasskeySheet({ passkey, title, state, close, done }) {
    so it is asked on the sheet that says what removing means; any passkey of the profile may give
    it, this one included. Removing does not end a session the passkey opened — sessions are not
    tied to one (api/server.js) — which the sheet says, with the way to do that. */
-function RemovePasskeySheet({ passkey, title, state, close, done }) {
+export function RemovePasskeySheet({ passkey, title, state, close, done, resume = false }) {
   const remove = async proof => {
     const r = await api('/api/account/passkeys?id=' + encodeURIComponent(passkey.id), { method: 'DELETE', body: JSON.stringify(proof) })
     close(); done(r)
@@ -157,7 +190,7 @@ function RemovePasskeySheet({ passkey, title, state, close, done }) {
       {t('It can no longer sign in to this profile. A device already signed in with it stays signed in — use Sign out everywhere if it was lost.')}
     </div>
     <div className="dim small" style={{ marginBottom: 14 }}>{t('First confirm that it is you.')}</div>
-    <ProveOwner passkey password={state.password} explain={passkeyError} danger submitText={t('Remove')} onProof={remove} />
+    <ProveOwner passkey password={state.password} identity={!!state.identity?.usable} act="passkey-remove" draft={{ id: passkey.id }} resume={resume} explain={passkeyError} danger submitText={t('Remove')} onProof={remove} />
     <div style={{ height: 8 }} />
     <Button type="button" variant="ghost" className="dim" onClick={close}>{t('Cancel')}</Button>
   </>
@@ -168,10 +201,13 @@ function RemovePasskeySheet({ passkey, title, state, close, done }) {
    one), and a password, where that is the proof, is typed before either. What it is for: a
    security key, a password manager, a phone through the browser's own QR prompt. Another device
    that can open openGym itself is easier with a code (DeviceLinkSheet). */
-function AddPasskeySheet({ state, close, done }) {
+export function AddPasskeySheet({ state, close, done, initialName = '', resume = false }) {
   // Blank to start with: what gets added here is rarely this browser (a key, a phone, a manager).
-  const [name, setName] = useState('')
+  const [name, setName] = useState(initialName)
   const [ready, setReady] = useState(null)   // { cid, options } once the proof went through
+  // A resumed sheet carries one proof made at the provider, spent by the first answer; a retry
+  // after the server spent the challenge asks for a fresh proof instead of sending it again.
+  const [resumed, setResumed] = useState(resume)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState(null)
   const create = async () => {
@@ -197,8 +233,9 @@ function AddPasskeySheet({ state, close, done }) {
     <input className="input" placeholder={t('Name, e.g. Work laptop')} maxLength={40} value={name} onChange={e => setName(e.target.value)} />
     <div style={{ height: 12 }} />
     {ready ? <Button variant="primary" icon="plus" disabled={busy} onClick={create}>{t('Create passkey')}</Button>
-      : <ProveOwner passkey={state.passkeys.length > 0} password={state.password} explain={passkeyError}
-        onProof={async proof => setReady(await post('/api/account/passkeys/options', proof))} />}
+      : <ProveOwner passkey={state.passkeys.length > 0} password={state.password} identity={!!state.identity?.usable}
+        act="passkey-add" draft={{ name }} resume={resumed} explain={passkeyError}
+        onProof={async proof => { setResumed(false); setReady(await post('/api/account/passkeys/options', proof)) }} />}
     {err && <div className="small" role="alert" style={errStyle}>{err}</div>}
   </>
 }
@@ -206,9 +243,13 @@ function AddPasskeySheet({ state, close, done }) {
 /* A code for another device: after the same proof, the code itself, a QR code of the link that
    carries it, and a way to copy that link. The other device either scans it or types the code on
    its sign-in screen. When it expires the sheet says so and offers a new one. */
-export function DeviceLinkSheet({ close }) {
+export function DeviceLinkSheet({ close, resume = false }) {
   const { st } = usePasskeys(true)
+  const sync = useStore(s => s.sync)
   const [link, setLink] = useState(null)   // { code, expires }
+  // The proof a provider round trip left behind is good for the first code only: "Make a new
+  // code" asks for a fresh proof instead of sending a spent one again.
+  const [resumed, setResumed] = useState(resume)
   const [expired, setExpired] = useState(false)
   useEffect(() => {
     if (!link) return
@@ -216,7 +257,9 @@ export function DeviceLinkSheet({ close }) {
     const timer = setTimeout(() => setExpired(true), Math.max(0, link.expires - Date.now()))
     return () => clearTimeout(timer)
   }, [link])
-  const url = link ? deviceLinkUrl(link.code) : ''
+  // On the phone the WebView's own origin is Capacitor's local asset server, never a reachable
+  // address - the code is only ever worth anything at the paired server itself.
+  const url = link ? deviceLinkUrl(link.code, MOBILE ? { origin: sync?.server, pathname: '/' } : window.location) : ''
   const copy = async () => { if (await copyText(url)) toast(t('Copied')) }
   return <>
     <h3>{t('Add another device')}</h3>
@@ -224,8 +267,9 @@ export function DeviceLinkSheet({ close }) {
       <div className="muted small" style={{ marginBottom: 14 }}>
         {t('You get a code that lets your phone or another computer create a passkey for this profile. First confirm that it is you.')}
       </div>
-      <ProveOwner passkey={st.passkeys.length > 0} password={st.password} explain={passkeyError}
-        onProof={async proof => setLink(await post('/api/account/device-link', proof))} />
+      <ProveOwner passkey={st.passkeys.length > 0} password={st.password} identity={!!st.identity?.usable}
+        act="device-link" resume={resumed} explain={passkeyError}
+        onProof={async proof => { setResumed(false); setLink(await post('/api/account/device-link', proof)) }} />
     </> : expired ? <>
       <div className="muted small" style={{ marginBottom: 14 }}>{t('This code has expired.')}</div>
       <Button variant="primary" onClick={() => setLink(null)}>{t('Make a new code')}</Button>
