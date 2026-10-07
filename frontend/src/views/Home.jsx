@@ -10,6 +10,7 @@ import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { glyphOf } from '../lib/glyphs.js'
+import { BEN_PROFILE, BEN_GOAL_SHORT } from '../lib/ben-profile.js'
 
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
 export default function Home() {
@@ -65,8 +66,26 @@ export default function Home() {
 
   return <div className="narrow">
     <div className="hdr">
-      <div><h1>{user ? t('Hi {0}', user.name) : 'openGym'}</h1><div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
+      <div><h1>{BEN_PROFILE.name}</h1><div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
       <button className="iconbtn" onClick={() => nav('/settings')} aria-label={t('Settings')}><Icon name="gear" /></button>
+    </div>
+
+    <div className="card">
+      <div className="row" style={{ gap: 9, marginBottom: 6 }}>
+        <span className="lrow-i" style={{ background: 'var(--acc)' }}><Icon name="target" /></span>
+        <div>
+          <div className="lbl2">{t('Benjamin\'s focus')}</div>
+          <div className="ttl">{BEN_GOAL_SHORT}</div>
+        </div>
+      </div>
+      <div className="muted small" style={{ lineHeight: 1.5 }}>
+        {t('{0} sessions per week · {1}', BEN_PROFILE.frequency, BEN_PROFILE.environment)}
+      </div>
+      <div className="row between" style={{ marginTop: 10 }}>
+        <span className="small">{t('This week')}</span>
+        <b>{wThisWeek} / {BEN_PROFILE.frequency}</b>
+      </div>
+      <div className="muted small" style={{ marginTop: 5 }}>{t(BEN_PROFILE.priority)}</div>
     </div>
 
     <div className="card">
@@ -112,23 +131,6 @@ export default function Home() {
         </Button>
       </div>}
     </div>
-
-    {/* Jump to the gym check-in cards (QR membership codes). Shown here as a quick tap on
-        arrival at the gym; folds away per user via the "Gym check-in" switch in Settings. */}
-    {S.checkIn !== false && (
-      <div className="card tappable" style={{ cursor: 'pointer' }} {...tappable(() => nav('/checkin'))}>
-        <div className="row between">
-          <div className="row" style={{ gap: 9 }}>
-            <span className="lrow-i" style={{ background: 'var(--blue)' }}><Icon name="qr" /></span>
-            <div>
-              <div className="lbl2">{t('At the gym')}</div>
-              <div className="ttl">{t('Check in')}</div>
-            </div>
-          </div>
-          <Icon name="chevronRight" className="chev" />
-        </div>
-      </div>
-    )}
 
     {!S.routines.length && !S.active && (
       <div className="card">
