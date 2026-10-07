@@ -1,4 +1,5 @@
-# Publishes the browser-only demo to GitHub Pages: https://duartesantos8.github.io/openGym/
+# Publishes the browser-only demo
+# Personal demo build kept intentionally lightweight. to GitHub Pages: https://duartesantos8.github.io/openGym/
 #
 # Dormant from 2026-08-19 to 2026-09-10 while the GitHub account was suspended; live again since.
 # The same build (same command, Vite's base is './') is also served from the project's own site at
