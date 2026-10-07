@@ -1,5 +1,10 @@
 // Arabic UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Sync with Apple Health": "المزامنة مع صحة Apple",
+  "Sync body weight both ways and save finished workouts to Health.": "مزامنة وزن الجسم في الاتجاهين وحفظ التمارين المكتملة في تطبيق الصحة.",
+  "Apple Health: {0}": "صحة Apple: {0}",
+  "Sync Apple Health now": "المزامنة مع صحة Apple الآن",
+
   'Confirm': 'تأكيد',
   'Cancel': 'إلغاء',
   'Press back again to exit': 'اضغط زر الرجوع مرة أخرى للخروج',

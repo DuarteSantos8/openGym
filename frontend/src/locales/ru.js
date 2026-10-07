@@ -1,5 +1,10 @@
 // Russian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Sync with Apple Health": "Синхронизация с Apple Здоровье",
+  "Sync body weight both ways and save finished workouts to Health.": "Синхронизируйте вес в обоих направлениях и сохраняйте завершённые тренировки в Здоровье.",
+  "Apple Health: {0}": "Apple Здоровье: {0}",
+  "Sync Apple Health now": "Синхронизировать Apple Здоровье сейчас",
+
   'Confirm': 'Подтвердить',
   'Cancel': 'Отмена',
   'Press back again to exit': 'Нажмите «Назад» ещё раз, чтобы выйти',

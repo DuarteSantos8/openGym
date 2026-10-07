@@ -1,5 +1,10 @@
 // Korean UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Sync with Apple Health": "Apple 건강과 동기화",
+  "Sync body weight both ways and save finished workouts to Health.": "체중을 양방향으로 동기화하고 완료한 운동을 건강 앱에 저장합니다.",
+  "Apple Health: {0}": "Apple 건강: {0}",
+  "Sync Apple Health now": "지금 Apple 건강 동기화",
+
   'Confirm': '확인',
   'Cancel': '취소',
   'Press back again to exit': '뒤로를 한 번 더 누르면 종료됩니다',

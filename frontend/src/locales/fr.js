@@ -1,5 +1,10 @@
 // French UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Sync with Apple Health": "Synchroniser avec Apple Santé",
+  "Sync body weight both ways and save finished workouts to Health.": "Synchroniser le poids dans les deux sens et enregistrer les entraînements terminés dans Santé.",
+  "Apple Health: {0}": "Apple Santé : {0}",
+  "Sync Apple Health now": "Synchroniser Apple Santé maintenant",
+
   'Confirm': 'Confirmer',
   'Cancel': 'Annuler',
   'Press back again to exit': 'Appuyez de nouveau pour quitter',

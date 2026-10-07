@@ -1,5 +1,10 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Sync with Apple Health": "与 Apple 健康同步",
+  "Sync body weight both ways and save finished workouts to Health.": "双向同步体重，并将已完成的训练保存到健康。",
+  "Apple Health: {0}": "Apple 健康：{0}",
+  "Sync Apple Health now": "立即同步 Apple 健康",
+
   'Confirm': '确认',
   'Cancel': '取消',
   'Press back again to exit': '再按一次返回退出',
