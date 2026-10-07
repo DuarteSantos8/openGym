@@ -4,6 +4,7 @@ import { metricEntriesForExercise, bestWeightForEntry, completedRepsOf } from '.
 import { betterWeight, EXIDX } from './exercises.js'
 import { weeklyWeights } from './bodyweight.js'
 import { weekStartOf, exerciseNameText } from './format.js'
+import { avgRir } from './effort.js'
 
 const startOf = w => Number.isFinite(w?.start) ? w.start : new Date((w?.d || '') + 'T12:00:00').getTime()
 
@@ -45,6 +46,10 @@ export function recommendationFor(S, routine, exId) {
   const complete = done >= plannedSets && hits >= plannedSets
 
   if (complete) {
+    const effort = avgRir(last.sets.filter(s => s?.done === true))
+    if (effort != null && effort < 2) {
+      return { status: 'repeat', label: 'Repeat the target', reason: 'The target was completed, but the sets were very close to failure; repeat before increasing the demand.' }
+    }
     return {
       status: 'progress',
       label: last.weight > 0 ? 'Increase slightly' : 'Make it harder',
