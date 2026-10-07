@@ -10,7 +10,7 @@ import { Button } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { glyphOf } from '../lib/glyphs.js'
 import { BEN_PROFILE } from '../lib/ben-profile.js'
-import { bodyweightTrend, strengthRetention, exerciseAttention, alternativesFor } from '../lib/ben-coach.js'
+import { bodyweightTrend, strengthRetention, exerciseAttention, alternativesFor, trainingSystem } from '../lib/ben-coach.js'
 
 // Home = what to do now + a quick glance. One action, one week view, two compact
 // trends, and at most one next-action message. Everything detailed lives where it
@@ -55,6 +55,7 @@ export default function Home() {
   const weekDone = Math.min(wThisWeek, WEEK_TARGET)
   const benBW = bodyweightTrend({ ...S, weekStart: ws })
   const benStrength = strengthRetention(S)
+  const training = trainingSystem(S)
   // The trend sentence follows the same fitted story as Stats: the weekly rate when it is
   // meaningful, otherwise the plain last-week difference with no direction word — pairing
   // that number with the slope's word could read "+0.4 down" when the two disagree.
@@ -133,6 +134,18 @@ export default function Home() {
     )}
 
     {/* How the week is going: count, segments, strip. The schedule itself lives in Plan. */}
+    {!!S.routines.length && training.optionalEligible && <div className="card">
+      <div className="row between" style={{ marginBottom: 6 }}>
+        <div>
+          <div className="lbl2">{t('Optional')}</div>
+          <h2 style={{ margin: '2px 0 0', fontSize: 17, color: 'var(--label)', fontWeight: 600 }}>{training.optional.name}</h2>
+        </div>
+        <span className="tag">{t('Low volume')}</span>
+      </div>
+      <div className="small muted" style={{ marginBottom: 10 }}>{t('The three main sessions are done. Use this only if you feel recovered and want a little extra work.')}</div>
+      <Button onClick={() => startFlow([training.optional.id])}>{t('Start optional session')}</Button>
+    </div>}
+
     {!!S.routines.length && <div className="card">
       <div className="row between" style={{ marginBottom: 4 }}>
         <div><div className="lbl2">{t('This week')}</div><h2 style={{ margin: '2px 0 0', fontSize: 17, color: 'var(--label)', fontWeight: 600 }}>{t('Training week')}</h2></div>
