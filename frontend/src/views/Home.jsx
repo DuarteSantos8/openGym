@@ -1,5 +1,24 @@
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+import { useStore } from '../store/useStore.js'
+import { effectiveRoutines, effectiveRoutineIds, nextTrainingDay, lastBW, setsDoneActive, setUnitsTotal } from '../lib/history.js'
+import { fmtNum, fmtDate, todayISO, isoOf, weekKey, weekStartOf, weekDayOffset, DAYS, DAYN, exCount } from '../lib/format.js'
+import { t, dateLocale } from '../lib/i18n.js'
+import { bwSheet, goalSheet, dayOverrideSheet, startFlow, startShortFlow, starterPlanSheet, bwDeltaColor } from '../sheets.jsx'
+import AttentionRow from '../components/AttentionRow.jsx'
+import Icon from '../components/Icon.jsx'
+import { Button, Slider } from '../components/ui.jsx'
+import { tappable } from '../lib/use-sheet-keyboard.js'
+import { glyphOf } from '../lib/glyphs.js'
+import { BEN_PROFILE } from '../lib/ben-profile.js'
+import { bodyweightTrend, strengthRetention, exerciseAttention, alternativesFor, trainingSystem } from '../lib/ben-coach.js'
+
+// Home = what to do now + a quick glance. One action, one week view, two compact
+// trends, and at most one next-action message. Everything detailed lives where it
+// belongs: workout choice on the Start screen, full guidance and attention in
+// Stats, the schedule in Plan, the log in History.
+const WEEK_TARGET = BEN_PROFILE.frequency || 3
+
 export default function Home() {
   const nav = useNavigate()
   const S = useStore(s => s.S)
@@ -102,7 +121,7 @@ export default function Home() {
         <div className="row between" style={{ marginBottom: 6 }}><div className="lbl2">{t('How much time do you have?')}</div><b>{workoutLength} min</b></div>
         <Slider value={workoutLength} min={15} max={45} step={10} onChange={v => { setWorkoutLength(v); update(s => { s.workoutLength = v }) }} aria-label={t('Workout length')} />
         <div className="row between small muted" style={{ marginTop: 2 }}><span>15 min</span><span>25 min</span><span>35 min</span><span>45 min</span></div>
-        <div className="small muted" style={{ marginTop: 8 }}>{t('{0} exercises · approximate length', durationExerciseCount(workoutLength))}</div>
+        <div className="small muted" style={{ marginTop: 8 }}>{durationExerciseCount(workoutLength)} exercises · approximate length</div>
       </div>}
       <div className="hero-act">
         {S.active
