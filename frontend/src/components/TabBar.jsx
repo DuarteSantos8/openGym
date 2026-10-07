@@ -47,8 +47,8 @@ export default function TabBar({ onStart }) {
         <span className="cir"><Icon name={S.active ? (cur === 'workout' ? 'dumbbell' : 'play') : 'dumbbell'} /></span>
         <span>{S.active ? (cur === 'workout' ? t('Workout') : S.active.editingWorkoutId ? t('Edit workout') : t('Resume')) : t('Start')}</span>
       </button>
-      <Tab active={on('stats')} icon="chart" label={t('Progress')} onClick={() => nav('/stats')} />
-      <Tab active={on('library')} icon="list" label={t('Library')} onClick={() => nav('/library')} />
+      <Tab active={on('stats')} icon="chart" label={t('Stats')} onClick={() => nav('/stats')} />
+      <Tab active={on('library')} icon="list" label={t('Exercises')} onClick={() => nav('/library')} />
     </nav>
   )
 }
