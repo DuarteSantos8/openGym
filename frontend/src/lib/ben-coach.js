@@ -484,6 +484,50 @@ function decideRecommendation(S, r) {
 // Training covers the current week-to-date; trends and records read the trailing windows
 // behind them. Every number names its evidence; thin evidence reads as baseline, never as
 // a verdict.
+// Combines the three outcome signals into one conservative verdict.
+// Losing weight is only a good result here when strength is at least broadly maintained.
+export function progressVerdict(review) {
+  const w = review?.bodyweight
+  const s = review?.strength
+  const c = review?.consistency
+  if (!review) return { status: 'baseline', title: 'Not enough data', detail: 'Log training and body weight to judge the plan.' }
+  if (c?.status === 'behind') return {
+    status: 'consistency',
+    title: 'Consistency is the limiter',
+    detail: 'The plan cannot be judged reliably yet because too few planned sessions were completed.',
+  }
+  if (w?.direction === 'toward' && w?.meaningful && s?.status === 'holding') return {
+    status: 'working',
+    title: 'The plan is working',
+    detail: 'Weight is moving down while strength is broadly holding.',
+  }
+  if (w?.direction === 'toward' && w?.meaningful && s?.status === 'mixed') return {
+    status: 'watch',
+    title: 'Good direction, watch strength',
+    detail: 'Weight is moving down, but some strength has slipped. Keep the loss gradual and avoid adding fatigue.',
+  }
+  if (w?.direction === 'toward' && w?.meaningful && s?.status === 'attention') return {
+    status: 'adjust',
+    title: 'Weight is dropping too fast for performance',
+    detail: 'Strength is falling across the compared exercises. Prioritize recovery and a slower rate of loss.',
+  }
+  if ((w?.direction === 'flat' || w?.status === 'steady') && s?.status === 'holding') return {
+    status: 'steady',
+    title: 'Stable, but fat loss is not showing yet',
+    detail: 'Strength is holding, but body weight is not moving meaningfully toward the goal.',
+  }
+  if (w?.direction === 'away') return {
+    status: 'adjust',
+    title: 'The trend is going the wrong way',
+    detail: 'Body weight is moving away from the goal. Review consistency before changing training.',
+  }
+  return {
+    status: 'baseline',
+    title: 'Keep collecting evidence',
+    detail: 'There is not enough consistent signal to make a meaningful change yet.',
+  }
+}
+
 export function weeklyReview(S) {
   const ws = weekStartOf(S)
   const wk = weekKey(todayISO(), ws)
