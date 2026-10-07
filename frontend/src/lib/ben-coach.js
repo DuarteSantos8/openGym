@@ -257,6 +257,34 @@ function longerVariant(S, routine, setsOf) {
   return { key: 'longer', routineIds: [routine?.id, pick.id].filter(Boolean), name: pick.name, sets: setsOf(routine?.ex || []) + setsOf(pick.ex) }
 }
 
+// The personal training system sits above individual exercise progression.
+// It answers a simpler program-level question: which sessions are main, which is optional,
+// and when a fourth session is useful rather than just adding more work.
+export function trainingSystem(S) {
+  const routines = S?.routines || []
+  const main = routines.filter(r => r?.trainingPriority === 'Main session').slice(0, 3)
+  const optional = routines.find(r => r?.trainingPriority === 'Optional' || r?.name === 'Short Full Body') || null
+  const ws = weekStartOf(S)
+  const wk = weekKey(todayISO(), ws)
+  const weekWorkouts = (S?.workouts || []).filter(w => w?.d && weekKey(w.d, ws) === wk)
+  const mainIds = new Set(main.map(r => r.id))
+  const mainDone = weekWorkouts.filter(w => [].concat(w?.routineIds || []).some(id => mainIds.has(id))).length
+  const last = [...weekWorkouts].sort((a, b) => String(b.d).localeCompare(String(a.d)))[0]
+  const today = todayISO()
+  const daysSinceLast = last?.d ? Math.round((new Date(today + 'T12:00:00') - new Date(last.d + 'T12:00:00')) / 86400000) : Infinity
+  const optionalEligible = !!optional && main.length >= 3 && mainDone >= 3 && weekWorkouts.length < 4 && daysSinceLast >= 1
+  return {
+    main,
+    optional,
+    mainDone,
+    weekWorkouts: weekWorkouts.length,
+    target: Math.min(3, main.length),
+    optionalEligible,
+    daysSinceLast,
+    lengths: { short: '15–25 min', normal: '25–40 min', long: '40–55 min' },
+  }
+}
+
 export function bodyweightTrend(S) {
   const weeks = weeklyWeights(S?.bodyweight || [], weekStartOf(S))
   if (weeks.length < 2) return { status: 'baseline', delta: null, weeks, rate: null, weeksUsed: weeks.length, noise: null, meaningful: false }
