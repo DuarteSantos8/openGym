@@ -1699,7 +1699,7 @@ body.chips-dragging *{cursor:inherit}
    fewer floating cards, stronger type hierarchy, quiet dividers, one clear accent.
    ========================================================================== */
 
-:root{
+:root[data-accent="lime"], :root[data-accent="sky"], :root[data-accent="orange"], :root[data-accent="violet"], :root[data-accent="pink"], :root[data-accent="red"], :root[data-accent="teal"], :root[data-accent="gold"]{
   --bg:#090a09;
   --bg-el:#0d0f0d;
   --surface:#111411;
