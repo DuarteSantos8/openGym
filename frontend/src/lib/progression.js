@@ -20,6 +20,7 @@ import { modeOf, repStep, rerampWarmups, isBw, isPerSide, entryExcluded, entryRo
 import { EXIDX, isAssisted, isLoadedEq } from './exercises.js'
 import { isWarmupRow, isSideSet, syncSideAggregate, makeSideSet } from './workout-model.js'
 import { normalizeRepRange } from './rep-range.js'
+import { isPyramid } from './pyramid.js'
 
 export const POLICIES = ['off', 'linear', 'greyskull', 'double', 'time']
 
@@ -40,7 +41,7 @@ export const POLICY_NAME = {
 export const POLICY_DESC = {
   off: 'Targets stay where you set them.',
   linear: 'Hit every rep in every set and the weight goes up. Repeated misses trigger a deload.',
-  greyskull: 'Two straight sets plus a final set taken to failure. Beat the target on that set and the weight goes up — double if you double the reps. One failure resets 10 %.',
+  greyskull: 'Two straight sets plus a final set taken to failure. Beat the target on that set and the weight goes up (twice as much if you double the reps). One failure resets 10 %.',
   double: 'Work up through a rep range at the same weight. Reach the top of the range in every set and the weight goes up, reps back to the bottom.',
   time: 'Hold every set for the full duration and the target goes up.'
 }
@@ -99,6 +100,8 @@ export const MAX_BW_SETS = 6
 // The policy in force for one exercise: its own override, else the routine's default, else
 // the mode's default. Reps keeps behaving the way the app always did (all reps → add a step).
 export function policyFor(cfg, routine, mode) {
+  // Pyramid sets are never progressed: the lifter picks every set's weight (CONTEXT.md).
+  if (isPyramid(cfg)) return 'off'
   const m = mode || modeOf(cfg || {})
   const allowed = POLICIES_FOR[m] || ['off']
   const pick = (cfg && cfg.prog) || (routine && routine.prog) || (m === 'reps' ? 'linear' : 'off')
@@ -262,7 +265,12 @@ export function readSession(entry, fallback) {
   // Warm-up rows are prep, not the session: one filtered read beats guarding every consumer
   // below (an undone warm-up otherwise poisons `ok` forever and its reps drag `low`/`count`).
   const logged = ((entry && entry.sets) || []).filter(s => !isWarmupRow(s))
-  const planned = target.sets || logged.length
+  // A timed per-side hold doubles its row count (buildWorkSets: one set on the plan becomes an
+  // L row and an R row) — `target.sets` is still the plan's pre-doubling number, so it has to
+  // double here too, or `sets` below stops after the first side's rows and the other side's
+  // holds never reach `ok`/`held`/`best`.
+  const plannedRows = target.sets || logged.length
+  const planned = mode === 'time' && isPerSide(target) ? plannedRows * 2 : plannedRows
   const enough = logged.length >= planned
   // Only the sets the plan asked for decide what happens next (issue #233). A set added on top
   // is extra work, and it used to be read as part of the prescription: one heavier bonus set
@@ -270,7 +278,12 @@ export function readSession(entry, fallback) {
   // whole session as missed. Extra sets still count everywhere else — volume, PRs, history —
   // they just do not move the plan. The plan's own sets are the ones it laid out first, so the
   // read stops at that many; a session with fewer than planned is short either way (`enough`).
-  const sets = logged.slice(0, Math.max(1, planned))
+  // Only a plan the session itself carried may decide where that line falls. `target` above
+  // falls back to the exercise's CURRENT config (sessionsFor hands it in), and a Hevy or CSV
+  // import, or anything logged before v1.2.2, has no target of its own: slicing those to
+  // today's set count reads the working weight off the warm-up end of a session nobody planned
+  // that way, and the next prescription then starts again from there.
+  const sets = entry && entry.target ? logged.slice(0, Math.max(1, planned)) : logged
 
   if (mode === 'time') {
     const goal = target.sec || 0
@@ -391,7 +404,7 @@ export function nextPrescription(S, cfg, routine) {
   // routine has none yet (issue #216) — see sessionsFor.
   const sessions = sessionsFor(S, cfg.id, cfg, routine?.id).filter(s => s.mode === mode)
   const last = sessions[sessions.length - 1]
-  if (!last) return { policy, kind: 'first', why: ['Nothing logged yet — this session sets the baseline.'] }
+  if (!last) return { policy, kind: 'first', why: ['Nothing logged yet, so this session sets the baseline.'] }
 
   // Start again from the plan (issue #275) when the last session was built from a different one:
   // the routine's sets or reps were edited since, or the session is borrowed from another routine
@@ -403,7 +416,7 @@ export function nextPrescription(S, cfg, routine) {
   // A borrowed session saved before plans were stamped is taken as a different plan.
   const borrowed = !!routine?.id && last.rid !== routine.id
   if (last.planned ? planChanged(last.planned, cfg) : borrowed) {
-    const why = borrowed ? ['First time in this routine — starting from its own target.'] : ['Plan changed — starting from your new target.']
+    const why = borrowed ? ['First time in this routine, so starting from its own target.'] : ['Plan changed, so starting from your new target.']
     // The weight holds at what was last lifted, unless the plan's own weight is not the one the
     // session was built from: the same edit that turned 3 × 5 @ 100 into 3 × 10 @ 70 set 70,
     // and 102.5 × 10 is a load never lifted for those reps. A routine whose weight nobody
@@ -429,13 +442,13 @@ export function nextPrescription(S, cfg, routine) {
   if (mode === 'time') {
     if (last.ok) {
       const sec = (last.goal || cfg.sec || 0) + inc
-      return { policy, kind: 'up', sec, why: ['Held every set for the full time — target up by {0}s.', inc] }
+      return { policy, kind: 'up', sec, why: ['Held every set for the full time. Target goes up by {0}s.', inc] }
     }
     if (stalls >= deloadAt) {
       const sec = deloadTo(last.goal || cfg.sec || 0, 5)
-      return { policy, kind: 'deload', sec, why: ['Short {0} sessions in a row — back off to {1}s and build up again.', stalls, sec] }
+      return { policy, kind: 'deload', sec, why: ['Short {0} sessions in a row. Back off to {1}s and build up again.', stalls, sec] }
     }
-    return { policy, kind: 'hold', sec: last.goal || cfg.sec, why: ['Last time came up short — same target again.'] }
+    return { policy, kind: 'hold', sec: last.goal || cfg.sec, why: ['Came up short last time. Same target again.'] }
   }
 
   const w = last.weight
@@ -454,7 +467,7 @@ export function nextPrescription(S, cfg, routine) {
     const planSets = Math.max(1, cfg.sets || 1)
     const reached = last.planned ? Math.max(planSets, (last.target && last.target.sets) || 0) : planSets
     const keep = reached > planSets ? { sets: reached } : {}
-    if (!last.ok || goal <= 0) return { policy, kind: 'hold', weight: 0, reps: goal || undefined, ...keep, why: ['Bodyweight — same target again until every set is clean.'] }
+    if (!last.ok || goal <= 0) return { policy, kind: 'hold', weight: 0, reps: goal || undefined, ...keep, why: ['Bodyweight: same target again until every set is clean.'] }
     // A ceiling turns "+1 rep forever" into a plan (issue #33). Past the top of the range the
     // reps go back to the bottom and a set is added instead, which is how bodyweight work
     // actually progresses once a set of 30 push-ups stops being a strength stimulus.
@@ -462,20 +475,20 @@ export function nextPrescription(S, cfg, routine) {
     if (top > 0 && goal >= top) {
       const sets = reached + 1
       const bottom = Math.max(1, Math.min(cfg.reps || top, top))
-      if (sets <= MAX_BW_SETS) return { policy, kind: 'up', weight: 0, reps: bottom, sets, why: ['{0} reps in every set — add a set and go back to {1}.', goal, bottom] }
+      if (sets <= MAX_BW_SETS) return { policy, kind: 'up', weight: 0, reps: bottom, sets, why: ['{0} reps in every set! Add a set and go back to {1}.', goal, bottom] }
       // Out of sets worth adding: more volume is no longer the answer, load or a harder
       // variation is — and that is a decision for a person, not a policy.
-      return { policy, kind: 'hold', weight: 0, reps: goal, ...keep, why: ['{0} sets of {1} — time to add weight or move to a harder variation.', sets - 1, goal] }
+      return { policy, kind: 'hold', weight: 0, reps: goal, ...keep, why: ['{0} sets of {1}. Time to add weight or try a harder variation.', sets - 1, goal] }
     }
     // Unilateral work steps by two, so the total stays even and both sides get the rep.
     const next = goal + repStep(cfg)
-    return { policy, kind: 'up', weight: 0, reps: next, ...keep, why: ['Bodyweight — every rep last time, so go for {0} this time.', next] }
+    return { policy, kind: 'up', weight: 0, reps: next, ...keep, why: ['Bodyweight: every rep last time, so go for {0} this time.', next] }
   }
   // A loaded lift logged at 0 had its weight never typed in — a quick-added exercise starts at
   // 0 kg. Climbing its reps as though it were a push-up turned a 2 × 10 bench into 2 × 11, 12…
   // There is nothing to progress from, so it asks for the weight: the plan's, when it has one.
   // Only a bar, a bell, a stack or a sled gets here; an ab wheel at 0 climbed reps above.
-  if (w <= 0) return { policy, kind: 'hold', ...(cfg.weight > 0 ? { weight: cfg.weight } : {}), why: ['No weight logged last time — enter what you lift and progression takes it from there.'] }
+  if (w <= 0) return { policy, kind: 'hold', ...(cfg.weight > 0 ? { weight: cfg.weight } : {}), why: ['No weight logged last time. Enter what you lift and progression takes it from there.'] }
 
   // Epley deloads apply only to externally loaded rep work. Keep the prescribed target from the
   // session that stalled (falling back field-by-field to the current config), while the logged
@@ -523,8 +536,8 @@ export function nextPrescription(S, cfg, routine) {
       target1RM: candidate.target1RM,
       deloadFactor: candidate.factor,
       why: held
-        ? ['Stalled {0} sessions — hold {1} {2} and use {3} reps.', stalls, candidate.weight, unit, candidate.reps]
-        : ['Stalled {0} sessions — Epley deload to {1} {2} for {3} reps.', stalls, candidate.weight, unit, candidate.reps]
+        ? ['Stuck for {0} sessions. Hold {1} {2} and use {3} reps.', stalls, candidate.weight, unit, candidate.reps]
+        : ['Stuck for {0} sessions. Epley deload to {1} {2} for {3} reps.', stalls, candidate.weight, unit, candidate.reps]
     }
   }
 
@@ -540,8 +553,8 @@ export function nextPrescription(S, cfg, routine) {
     if (last.ok && last.low >= top) return {
       policy, kind: 'up', weight: harder(w, inc), reps: bottom,
       why: assisted
-        ? ['Top of the rep range in every set — {0} {1} less help, back to {2} reps.', inc, unit, bottom]
-        : ['Top of the rep range in every set — {0} {1} more, back to {2} reps.', inc, unit, bottom]
+        ? ['Top of the rep range in every set. {0} {1} less help, back to {2} reps.', inc, unit, bottom]
+        : ['Top of the rep range in every set. {0} {1} more, back to {2} reps.', inc, unit, bottom]
     }
     if (stalls >= deloadAt) {
       const selected = epleyDeload()
@@ -550,12 +563,12 @@ export function nextPrescription(S, cfg, routine) {
       return {
         policy, kind: 'deload', weight: dw, reps: bottom,
         why: assisted
-          ? ['Stalled {0} sessions — back to {1} {2} of help and build up again.', stalls, dw, unit]
-          : ['Stalled {0} sessions — deload to {1} {2}.', stalls, dw, unit]
+          ? ['Stuck for {0} sessions. Back to {1} {2} of help, then build up again.', stalls, dw, unit]
+          : ['Stuck for {0} sessions. Deload to {1} {2}.', stalls, dw, unit]
       }
     }
     const aim = Math.min(top, Math.max(bottom, last.low + repStep(cfg)))
-    return { policy, kind: 'hold', weight: w, reps: aim, why: ['Same weight — aim for {0} reps this time.', aim] }
+    return { policy, kind: 'hold', weight: w, reps: aim, why: ['Same weight, aim for {0} reps this time.', aim] }
   }
 
   // linear + greyskull
@@ -567,10 +580,10 @@ export function nextPrescription(S, cfg, routine) {
     return {
       policy, kind: 'up', weight: harder(w, step),
       why: dbl
-        ? ['Last set hit {0} reps — twice the target, so take a double jump of {1} {2}.', last.amrap, step, unit]
+        ? ['Last set hit {0} reps, twice the target! Take a double jump of {1} {2}.', last.amrap, step, unit]
         : assisted
-          ? ['Every rep last time — {0} {1} less help.', step, unit]
-          : ['Every rep last time — {0} {1} more.', step, unit]
+          ? ['Every rep last time. {0} {1} less help.', step, unit]
+          : ['Every rep last time. {0} {1} more.', step, unit]
     }
   }
   if (stalls >= deloadAt) {
@@ -580,13 +593,13 @@ export function nextPrescription(S, cfg, routine) {
     return {
       policy, kind: 'deload', weight: dw,
       why: assisted
-        ? ['Missed reps — {0} {1} of help while you build back up.', dw, unit]
+        ? ['Missed reps. {0} {1} of help while you build back up.', dw, unit]
         : stalls > 1
-          ? ['Missed reps {0} sessions running — reset to {1} {2} and work back up.', stalls, dw, unit]
-          : ['Missed reps — reset to {0} {1} and work back up.', dw, unit]
+          ? ['Missed reps {0} sessions running. Reset to {1} {2} and work back up.', stalls, dw, unit]
+          : ['Missed reps. Reset to {0} {1} and work back up.', dw, unit]
     }
   }
-  return { policy, kind: 'hold', weight: w, why: ['Missed reps last time — same weight again ({0} of {1} to go).', deloadAt - stalls, deloadAt] }
+  return { policy, kind: 'hold', weight: w, why: ['Missed reps last time. Same weight again ({0} of {1} to go).', deloadAt - stalls, deloadAt] }
 }
 
 /**

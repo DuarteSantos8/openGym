@@ -26,6 +26,7 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
+import { syncDir, syncFile } from './durable.js';
 
 export const HASH_RE = /^[0-9a-f]{64}$/;
 const MB = 1024 * 1024;          // every *_MB setting means MiB; the client uses the same unit
@@ -95,8 +96,8 @@ const MESSAGES = {
   'media-missing': 'no such file',
   'hash-mismatch': 'the file does not match its name',
   'storage-full': 'the server is running out of disk space',
-  busy: 'too many uploads at once — try again in a moment',
-  locked: 'too many uploads — try again later',
+  busy: 'too many uploads at once, try again in a moment',
+  locked: 'too many uploads, try again later',
   timeout: 'the upload stalled'
 };
 /** A refusal the client caused or can act on. The server's catch-all answers it as
@@ -441,6 +442,9 @@ export function createMediaStore({ dir, limits, now = Date.now, readState = () =
       if (!m || !d.isFile() || e.hashes.has(m[1])) continue;
       try {
         const size = fs.statSync(path.join(e.dir, d.name)).size;
+        // An empty file is what a reset right after an upload can leave behind: not a file this
+        // profile has. Left out, it is reported missing and the next upload replaces it.
+        if (!size) continue;
         e.hashes.set(m[1], { ext: m[2], size });
         e.bytes += size;
         e.count++;
@@ -448,6 +452,16 @@ export function createMediaStore({ dir, limits, now = Date.now, readState = () =
     }
     users.set(id, e);
     return e;
+  }
+  // The cache entry of `hash` when its file is whole: on disk, not empty, the size the cache
+  // knows and, given one, the size an upload of the same bytes has. null otherwise.
+  function intact(e, hash, size) {
+    const f = e.hashes.get(hash);
+    if (!f) return null;
+    let st;
+    try { st = fs.statSync(path.join(e.dir, `${hash}.${f.ext}`)); } catch { return null; }
+    if (!st.size || st.size !== f.size || (size != null && size !== f.size)) return null;
+    return f;
   }
   function forget(e, hash) {
     const f = e.hashes.get(hash);
@@ -474,8 +488,10 @@ export function createMediaStore({ dir, limits, now = Date.now, readState = () =
   function writeMarks(e, marks) {
     const f = gcFile(e), tmp = f + '.tmp';
     try {
-      fs.writeFileSync(tmp, JSON.stringify(marks), { mode: 0o600 });
+      const fd = fs.openSync(tmp, 'w', 0o600);
+      try { fs.writeFileSync(fd, JSON.stringify(marks)); fs.fsyncSync(fd); } finally { fs.closeSync(fd); }
       fs.renameSync(tmp, f);
+      syncDir(path.dirname(f));
     } catch (err) {
       try { fs.unlinkSync(tmp); } catch { /* never written */ }
       throw err;
@@ -610,7 +626,11 @@ export function createMediaStore({ dir, limits, now = Date.now, readState = () =
         cap = maxCap;
         throw new MediaError(413, 'media-too-large', { maxMB: capMB(declared.kind) });
       }
-      const have = e.hashes.get(hash);
+      // A file this profile already has is taken as it is, unless it is not whole: its size on
+      // disk differs from what the cache knows or from what this upload declares (a reset right
+      // after an upload, a damaged restore). Then these bytes, checked against the hash below,
+      // replace it, instead of the damaged file being vouched for forever.
+      const have = intact(e, hash, len);
       if (have) { drain(req, 2 * cap); touch(e, hash); return existed(hash, have); }
 
       // Reserved before a byte is read, so two uploads at once cannot both fit into the space
@@ -653,10 +673,18 @@ export function createMediaStore({ dir, limits, now = Date.now, readState = () =
 
       // The same bytes from another device may have landed while these were streaming. The
       // rename and the cache update below are synchronous, so this check cannot be overtaken.
-      const now2 = e.hashes.get(hash);
+      const now2 = intact(e, hash, got.size);
       if (now2) { touch(e, hash); return existed(hash, now2); }
+      // The bytes are on disk before the name is, and the name before the answer (durable.js).
+      syncFile(tmp);
+      const damaged = e.hashes.get(hash);
+      if (damaged) {
+        if (damaged.ext !== sn.ext) { try { fs.unlinkSync(path.join(e.dir, `${hash}.${damaged.ext}`)); } catch { /* gone */ } }
+        forget(e, hash);
+      }
       fs.renameSync(tmp, path.join(e.dir, `${hash}.${sn.ext}`));
       tmp = null;
+      syncDir(e.dir);
       e.hashes.set(hash, { ext: sn.ext, size: got.size });
       e.bytes += got.size;
       e.count++;
@@ -695,13 +723,15 @@ export function createMediaStore({ dir, limits, now = Date.now, readState = () =
       let st;
       try { st = fs.statSync(p); } catch { forget(e, hash); return null; }
       if (!st.isFile()) return null;
+      if (!st.size) { forget(e, hash); return null; }   // not whole: missing, for a device to send again
       if (st.size !== f.size) { e.bytes += st.size - f.size; f.size = st.size; }
       return { path: p, ext: f.ext, mime: EXT_MIME[f.ext], size: st.size };
     },
     receive,
     missing(uid, hashes) {
       const e = entry(uid);
-      return { missing: [...new Set(hashes)].filter(h => !e.hashes.has(h)), usage: usageOf(e) };
+      // A file that is not whole (intact) counts as missing: the device that has it sends it again.
+      return { missing: [...new Set(hashes)].filter(h => !intact(e, h)), usage: usageOf(e) };
     },
     noteState,
     sweep,

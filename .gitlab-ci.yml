@@ -256,6 +256,10 @@ test:api:
     # A dataset or prompt change that forgets to regenerate them would otherwise only surface as
     # "the Coach can't find that exercise" — or a prompt edit that never reached the model.
     - node scripts/build-coach-assets.mjs --check
+    # website/api.html is generated from api/openapi.yaml and committed. Same reason: a spec
+    # change that forgets to regenerate it publishes a reference for the previous version.
+    - npm ci
+    - node scripts/build-api-docs.mjs --check
     # api/coach/core is imported by the server under bare node AND by the phone under Vite.
     # vitest forgives what node does not (?raw, import.meta.glob); this runs outside vitest.
     - node api/scripts/check-core-loadable.mjs

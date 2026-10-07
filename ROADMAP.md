@@ -8,7 +8,7 @@ theme, so a version is out before the branch has drifted and every fix reaches p
 fortnight. Whatever is not merged and tested on gym-test by the Friday before rolls into the next
 block, the date does not move. Version numbers follow the release rule, not the size of the change:
 the next release is the last published one plus one patch (1.3.7 → 1.3.8), and a minor bump is
-reserved for something that breaks compatibility — that is v1.4.0, the database.
+reserved for something that breaks compatibility, like the new exercise database (v1.4.0).
 
 - Milestones: https://github.com/DuarteSantos8/openGym/milestones — every open issue sits in exactly one
 - Tracks, in order: promised items → history editing → queue and programmes → the progression
@@ -103,20 +103,29 @@ Structural Balance, Ukrainian and Arabic. Thirty-nine community pull requests. S
   focus (#133); extra passkeys and the device link (PR #95); body measurements (PR #82) move
   to v1.3.10
 
-## v1.3.10 — Session queue & rotation  (2026-10-25)
+## v1.3.10: New design, rotation & safer sync  (released 2026-10-07)
 
-Next up.
+Bigger than planned, on purpose: the queue and rotation from this block, the redesign that was
+pencilled in for v1.3.11, and a sync rework so no device loses data again. See the changelog for
+the full list.
 
-- A free-running session queue beside the fixed week — the next session is the next undone one,
-  whatever the weekday — with an in-app editor and automatic refill (#158, #69; PR #167 and the
-  editor on top of it; Discord "not forced into a weekly plan")
-- Swipe between exercise cards during a workout (#113, GitLab !114) — the swipe preview landed in
-  v1.3.9 (#202)
-- Drag-and-drop exercise order that survives touch (#114 — the first version came out again on
-  2026-09-07; a drag handle on computers came in v1.3.9, #277); the Start/Resume button as "next"
-  during a workout (Discord)
-- Rolled over from v1.3.9: repeat a past workout from History and undo finish (#58, GitLab !130),
-  relabel an "Unknown" exercise after an import without losing its sets, body measurements (PR #82)
+- A rotation beside the fixed week: the next session is the next one you haven't done, whatever
+  the weekday, with an editor in Plan (#158, #69; PR #167 and kurktchiev/openGym#1)
+- A calmer app: Settings on one screen with search, Plan as Schedule and Routines, a workout screen
+  without the tab bar, a docked rest bar and a rest-time wheel up to 15:00, one icon per idea
+- Swipe actions on sets, routines and the loop, with Undo; a colour of your own as the accent
+- Safer sync: every change stamped down to the field, deletions that stay deleted, two tabs that no
+  longer overwrite each other, durable writes and `db.json.bak` on the server
+- Repeat a past workout today (#58), pyramid sets (#362, PR #367), progress photos (PR #361), per
+  side on timed holds (PR #322), the backup folder on Android (#161), FIRST_USER_ADMIN (#328),
+  the connection line can be hidden (#330, #369), Traditional Chinese (PR #368)
+- Still to come from the old block: undo finish (GitLab !130), relabelling an "Unknown" exercise
+  after an import, body measurements (PR #82), drag-and-drop on touch (#114)
+
+## Next: v1.4.0, a new exercise database
+
+The next release brings a new exercise database. Details follow once it is ready. The blocks
+below keep their themes, but their version numbers and dates move once it is out.
 
 ## v1.3.11 — Programmes & phases  (2026-11-08)
 
@@ -148,7 +157,7 @@ Next up.
   (#110)
 - Complexes and interval groups beside supersets (Discord)
 
-## v1.4.0 — Foundation: database  (2027-01-10)
+## Later: database storage
 
 **The one compatibility break.** Storage moves from one JSON file per profile to a database (#191):
 tables for workouts, sets, routines, weigh-ins, custom exercises, favourites, credentials, push

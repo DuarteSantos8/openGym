@@ -3,7 +3,7 @@ import { useStore } from '../store/useStore.js'
 import { BODYPARTS, allExercises, equipmentOf, searchExercises } from '../lib/exercises.js'
 import { activeProfile, exAvailable } from '../lib/equipment.js'
 import { bestWeightFor } from '../lib/history.js'
-import { fmtNum } from '../lib/format.js'
+import { fmtNum, exCount } from '../lib/format.js'
 import { MUSCLES, MUSCLE_NAME, musclesOf } from '../lib/muscles.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import BodyMap from './BodyMap.jsx'
@@ -41,10 +41,13 @@ export default function MuscleExplorer({ onPick, onDetail, onPlan }) {
   // Favourites float to the top of whatever the filters left (issue #6), the rest keeps its order.
   const exercises = sortFavouritesFirst(eqOn ? base.filter(e => e.eq === eqOn) : base, S)
   const choose = ex => onPick ? onPick(ex) : onDetail(ex)
+  // The live count and the × of the Library's search (#338): the count while a search or a
+  // filter narrows the muscle's list, the × while there is text.
+  const narrowed = !!(q.trim() || bp || eqOn)
 
   return <>
     {profile && <div className="small dim row" style={{ margin: '-4px 2px 10px', gap: 6, alignItems: 'center' }}>
-      <Icon name="dumbbell" style={{ fontSize: 13 }} />
+      <Icon name="kettlebell" style={{ fontSize: 13 }} />
       {showAll ? t('Showing all equipment') : t('Showing what you have in "{0}"', profile.name)}
       <button className="chip nocap" style={{ marginInlineStart: 'auto', padding: '3px 10px', fontSize: 12 }} onClick={() => { setShowAll(v => !v); setEq(''); setShown(40) }}>
         {showAll ? t('Filter by "{0}"', profile.name) : t('Show all equipment')}
@@ -60,19 +63,24 @@ export default function MuscleExplorer({ onPick, onDetail, onPlan }) {
       </div>
     </div>
 
-    {!selected && onPick && <div className="empty"><div className="ico"><Icon name="target" /></div>{t('Choose a muscle to see exercises that train it.')}</div>}
+    {!selected && onPick && <div className="empty"><div className="ico"><Icon name="figureStrength" /></div>{t('Choose a muscle to see exercises that train it.')}</div>}
 
     {selected && <>
       <div className="row between" style={{ margin: '2px 0 10px' }}>
         <h4 className="sec" style={{ margin: 0 }}>{t('Exercises for {0}', t(MUSCLE_NAME[selected]))}</h4>
         <Button size="sm" variant="ghost" onClick={() => pick(selected)}>{t('Clear selection')}</Button>
       </div>
-      <div className="search" style={{ marginBottom: 10 }}><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+      <div className={'search' + (narrowed ? ' has-count' : '') + (q ? ' has-clear' : '')} style={{ marginBottom: 10 }}><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
         <input className="input" placeholder={t('Search…')} value={q} onChange={e => { setQ(e.target.value); setShown(40) }} />
+        {narrowed && <span className="search-count" role="status" aria-label={exCount(exercises.length)}>{fmtNum(exercises.length)}</span>}
+        {q && <button className="clear" onClick={() => { setQ(''); setShown(40) }} aria-label={t('Clear')}><Icon name="xmark" /></button>}
       </div>
+      {/* Changing body part keeps the equipment filter (issue #71, same rule as Library): the
+          eqOn fallback above drops it only for this view if the new body part has nothing under
+          it, without forgetting the choice. "All" clears it, since it spans every body part. */}
       <div className="chips" style={{ marginBottom: eqOpts.length > 1 ? 8 : 12 }}>
         <button className={'chip nocap' + (!bp ? ' on' : '')} onClick={() => { setBp(''); setEq(''); setShown(40) }}>{t('All')}</button>
-        {BODYPARTS.map(b => <button key={b} className={'chip' + (bp === b ? ' on' : '')} onClick={() => { setBp(b); setEq(''); setShown(40) }}>{t(b)}</button>)}
+        {BODYPARTS.map(b => <button key={b} className={'chip' + (bp === b ? ' on' : '')} onClick={() => { setBp(b); setShown(40) }}>{t(b)}</button>)}
       </div>
       {eqOpts.length > 1 && <div className="chips" style={{ marginBottom: 12 }}>
         <button className={'chip nocap' + (!eqOn ? ' on' : '')} onClick={() => { setEq(''); setShown(40) }}>{t('Any equipment')}</button>

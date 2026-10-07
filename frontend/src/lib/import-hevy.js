@@ -9,6 +9,7 @@ import { EXIDX } from './exercises.js'
 import { uid } from './format.js'
 import { isWarmupRow } from './workout-model.js'
 import { HEVY_ID_MAP, HEVY_TITLE_MAP } from './hevy-id-map.js'
+import { daysBetween, importId } from './import-csv.js'
 
 export { HEVY_ID_MAP, HEVY_TITLE_MAP }
 export const HEVY_API = 'https://api.hevyapp.com'
@@ -101,8 +102,10 @@ export async function fetchHevyAccount(apiKey, { onProgress } = {}) {
 
 /* ---------------------------------------------------------- template → id -- */
 
-// Hevy primary_muscle_group → openGym body-part for exercises we invent.
-const HEVY_BP = {
+// Hevy primary_muscle_group → openGym body-part for exercises we invent. Indexed straight from
+// the API's text, so it has no prototype: a plain object answers "constructor" and "__proto__"
+// with Object's own machinery, and that would ride into the store as a body part.
+const HEVY_BP = Object.assign(Object.create(null), {
   biceps: 'upper arms', triceps: 'upper arms', forearms: 'lower arms',
   chest: 'chest', lats: 'back', upper_back: 'back', lower_back: 'back',
   traps: 'back', shoulders: 'shoulders',
@@ -110,7 +113,7 @@ const HEVY_BP = {
   quadriceps: 'upper legs', hamstrings: 'upper legs', glutes: 'upper legs',
   abductors: 'upper legs', adductors: 'upper legs', calves: 'lower legs',
   cardio: 'cardio', full_body: 'upper legs', other: 'upper legs', neck: 'neck',
-}
+})
 
 /**
  * Resolve a Hevy exercise template to a catalogue id.
@@ -140,6 +143,9 @@ const p2 = n => String(n).padStart(2, '0')
 
 /** Hevy ISO timestamps → local calendar date + ms-since-midnight (matches CSV import). */
 export function localWhen(iso) {
+  // Hevy writes ISO strings. Anything else is not a time — null in particular, which Date
+  // reads as the epoch and would file the session under 1970.
+  if (typeof iso !== 'string') return null
   const d = new Date(iso)
   if (isNaN(d.getTime())) return null
   const day = `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`
@@ -156,7 +162,7 @@ function bpOfTemplate(t) {
 function makeResolver(templates) {
   const byId = new Map((templates || []).map(t => [t.id, t]))
   const created = new Map()
-  const unmatched = new Set()
+  const titleOf = new Map()      // custom id → the name Hevy showed for it
   const matchedIds = new Set()
 
   const resolve = (templateId, fallbackTitle) => {
@@ -172,23 +178,28 @@ function makeResolver(templates) {
       const t = templateId ? byId.get(templateId) : null
       const name = (t?.title || fallbackTitle || 'exercise').toLowerCase()
       c = {
-        id: 'im' + uid(), n: name, custom: true, eq: 'custom', tg: '', desc: '',
+        id: importId('im', 'Hevy|' + key), n: name, custom: true, eq: 'custom', tg: '', desc: '',
         bp: bpOfTemplate(t) || (t?.type === 'distance_duration' || t?.type === 'duration' ? 'cardio' : null)
           || 'upper legs',
       }
       created.set(key, c)
-      unmatched.add(t?.title || fallbackTitle || name)
+      titleOf.set(c.id, t?.title || fallbackTitle || name)
     }
     return c.id
   }
 
+  // Everything is reported against the ids the parse actually kept: resolve() runs before an
+  // exercise's sets are read, so one whose sets all had nothing measured has been resolved and
+  // invented but points at nothing — and would otherwise be counted, listed under "added as your
+  // own", and (mergeHevyRoutines takes every custom it is given) put in the library on its own.
+  const kept = used => [...created.values()].filter(c => used.has(c.id))
   return {
     resolve,
     byId,
-    customEx: () => [...created.values()],
-    unmatchedNames: () => [...unmatched].sort(),
-    matchedCount: () => matchedIds.size,
-    createdCount: () => created.size,
+    customEx: used => kept(used),
+    unmatchedNames: used => [...new Set(kept(used).map(c => titleOf.get(c.id)))].sort(),
+    matchedCount: used => [...matchedIds].filter(id => used.has(id)).length,
+    createdCount: used => kept(used).length,
   }
 }
 
@@ -212,21 +223,25 @@ export function parseHevyWorkouts(workouts, templates, { unit = 'kg' } = {}) {
     const start = localWhen(w.start_time)
     const end = localWhen(w.end_time)
     if (!start) { skipped++; continue }
+    // The history list renders the name as it is stored, so only text may become one.
+    const title = typeof w.title === 'string' ? w.title : ''
 
     let day = byDate.get(start.d)
     if (!day) {
-      day = { ex: new Map(), name: w.title || '', start: start.t, end: end?.t ?? null }
+      day = { ex: new Map(), name: title, start: start.t, end: end?.t ?? null }
       byDate.set(start.d, day)
-    } else if (!day.name && w.title) day.name = w.title
-    if (end?.t != null) day.end = end.t
+    } else if (!day.name && title) day.name = title
+    // Past midnight the end's clock restarts; count it from the start day's midnight instead.
+    if (end?.t != null) day.end = end.t + daysBetween(start.d, end.d) * 86400000
 
     for (const ex of w.exercises || []) {
       const id = R.resolve(ex.exercise_template_id, ex.title)
       if (!id) { skipped++; continue }
       if (EXIDX[id] && !String(id).startsWith('im')) matched++
 
-      if (!day.ex.has(id)) day.ex.set(id, [])
-      const list = day.ex.get(id)
+      // Filed only once a set lands in it: an exercise whose sets all had nothing measured would
+      // otherwise import as an entry with no sets, which nothing that reads a session back expects.
+      const list = day.ex.get(id) || []
 
       for (const s of ex.sets || []) {
         const warmup = /warm/i.test(String(s.type || ''))
@@ -234,7 +249,9 @@ export function parseHevyWorkouts(workouts, templates, { unit = 'kg' } = {}) {
         const reps = s.reps != null ? Math.round(s.reps) : 0
         const wgt = toProfileWeight(s.weight_kg, unit)
         const secs = s.duration_seconds != null ? Number(s.duration_seconds) : 0
-        const km = s.distance_meters != null ? Number(s.distance_meters) / 1000 : 0
+        // A distance that is not a number would otherwise divide into a NaN speed.
+        const dist = Number(s.distance_meters)
+        const km = isFinite(dist) ? dist / 1000 : 0
         if (!wgt && !reps && !secs && !km) { skipped++; continue }
 
         const isCardio = (km > 0 || secs > 0) && !reps
@@ -250,10 +267,13 @@ export function parseHevyWorkouts(workouts, templates, { unit = 'kg' } = {}) {
         list.push(set)
         sets++
       }
+      if (list.length && !day.ex.has(id)) day.ex.set(id, list)
     }
   }
 
-  const dates = [...byDate.keys()].sort()
+  // A day on which nothing measurable landed is not a workout — and imported, it would block the
+  // real one from a later export, since existing days win in mergeImport.
+  const dates = [...byDate.keys()].filter(d => byDate.get(d).ex.size).sort()
   const outWorkouts = dates.map(d => {
     const day = byDate.get(d)
     const entries = [...day.ex.entries()].map(([id, ss]) => {
@@ -264,23 +284,25 @@ export function parseHevyWorkouts(workouts, templates, { unit = 'kg' } = {}) {
     const startMs = base + (day.start ?? 18 * 3600000)
     const endMs = day.end != null ? base + day.end : startMs
     const workout = {
-      id: 'iw' + uid(), d, start: startMs, end: endMs > startMs ? endMs : startMs,
+      // From what it is (importId), so the same import on two devices merges into one.
+      id: importId('iw', JSON.stringify(['Hevy', d, startMs, day.name || '', entries.map(e => [e.id, e.sets])])), d, start: startMs, end: endMs > startMs ? endMs : startMs,
       routineId: null, name: day.name || 'Imported', entries, prs: [],
     }
     // Work sets only, the number `workoutVolume` gives a workout finished in the app; it is stored for good.
     workout.vol = entries.reduce((a, e) => a + e.sets.reduce((b, s) => b + (isWarmupRow(s) ? 0 : (s.w || 0) * (s.r || 0)), 0), 0)
     return workout
   })
+  const used = new Set(outWorkouts.flatMap(w => w.entries.map(e => e.id)))
 
   return {
     kind: 'workouts',
     source: 'Hevy',
     workouts: outWorkouts,
-    customEx: R.customEx(),
-    matched: R.matchedCount(),
+    customEx: R.customEx(used),
+    matched: R.matchedCount(used),
     matchedSets: matched,
-    created: R.createdCount(),
-    unmatchedNames: R.unmatchedNames(),
+    created: R.createdCount(used),
+    unmatchedNames: R.unmatchedNames(used),
     sets, skipped, warmups,
     fileUnit: 'kg',
     mixedUnits: false,
@@ -358,14 +380,15 @@ export function parseHevyRoutines(routines, templates, { unit = 'kg' } = {}) {
     })
   }
 
+  const used = new Set(out.flatMap(r => r.ex.map(e => e.id)))
   return {
     kind: 'routines',
     source: 'Hevy',
     routines: out,
-    customEx: R.customEx(),
-    matched: R.matchedCount(),
-    created: R.createdCount(),
-    unmatchedNames: R.unmatchedNames(),
+    customEx: R.customEx(used),
+    matched: R.matchedCount(used),
+    created: R.createdCount(used),
+    unmatchedNames: R.unmatchedNames(used),
     exerciseCount: out.reduce((n, r) => n + r.ex.length, 0),
     converted: unit === 'lb',
   }

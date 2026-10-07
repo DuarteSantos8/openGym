@@ -204,6 +204,18 @@ describe('strengthExerciseRowsForMuscle', () => {
     const S = unitState([workout(3, [bench])])
     expect(strengthExerciseRowsForMuscle(S, NOW, 'biceps')).toEqual([])
   })
+
+  it('does not expose zero-weight historical mappings as strength rows', () => {
+    const zeroMapped = {
+      id: 'deleted-zero-mapped',
+      muscleSnapshot: { n: 'Zero mapped', muscleWeights: { chest: 1, biceps: 0 } },
+      sets: [{ phase: 'work', w: 80, r: 8, done: true, unit: 'kg' }],
+    }
+    const S = unitState([workout(3, [zeroMapped])])
+
+    expect(strengthExerciseRowsForMuscle(S, NOW, 'chest')).toHaveLength(1)
+    expect(strengthExerciseRowsForMuscle(S, NOW, 'biceps')).toEqual([])
+  })
 })
 
 describe('primaryMuscleOf', () => {
@@ -213,5 +225,10 @@ describe('primaryMuscleOf', () => {
     expect(primaryMuscleOf({ tg: 'back', mg: 'biceps' }).slug).toBe('upper-back') // canonicalised
     expect(primaryMuscleOf({})).toBeNull()
     expect(primaryMuscleOf(null)).toBeNull()
+  })
+
+  it('never selects an explicit zero as the primary muscle', () => {
+    expect(primaryMuscleOf({ muscleWeights: { chest: 0, biceps: 0 } })).toBeNull()
+    expect(primaryMuscleOf({ muscleWeights: { chest: 1, biceps: 0 } })).toEqual({ slug: 'chest', weight: 1 })
   })
 })

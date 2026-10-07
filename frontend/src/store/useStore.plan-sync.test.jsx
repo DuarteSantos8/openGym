@@ -22,7 +22,7 @@ import { convertWeight } from '../lib/units.js'
 import { isWarmupRow } from '../lib/workout-model.js'
 
 const BENCH = '0025'   // barbell bench press — loaded, 2.5 kg step
-const PLAN_CHANGED = 'Plan changed — starting from your new target.'
+const PLAN_CHANGED = 'Plan changed, so starting from your new target.'
 const clone = value => JSON.parse(JSON.stringify(value))
 const work = e => e.sets.filter(s => !isWarmupRow(s))
 const rows = e => work(e).map(s => [s.w, s.r])

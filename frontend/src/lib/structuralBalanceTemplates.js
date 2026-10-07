@@ -120,7 +120,7 @@ export const TEMPLATES = {
 
   thibaudeauPowerlifting: {
     id: 'thibaudeauPowerlifting',
-    label: 'Thibaudeau — Powerlifting',
+    label: 'Thibaudeau (Powerlifting)',
     roles: [
       {
         id: 'squat',

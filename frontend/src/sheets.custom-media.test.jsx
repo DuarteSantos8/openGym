@@ -172,7 +172,7 @@ describe('custom exercise photo, GIF or video, and link', () => {
     customExSheet(null)
     const form = renderTop()
     await pick(form)
-    expect(useUI.getState().toastMsg).toBe('That file is too large — up to 40 MB.')
+    expect(useUI.getState().toastMsg).toBe('That file is too big. Max 40 MB.')
     expect(form.querySelector('.cmf-thumb')).toBeNull()
   })
 

@@ -137,6 +137,23 @@ describe('syncMedia', () => {
     expect(api).toHaveBeenCalledTimes(2)
   })
 
+  it('files that come back after nothing referred to them (reset, then a backup import) go up at once', async () => {
+    const S = { customEx: [{ id: 'a', media: refOf(hex('a')) }] }
+    await put(hex('a'))
+    const store = appStore({ S })
+    const sync = make(store)
+    await sync.syncMedia()
+    expect(api).toHaveBeenCalledTimes(1)
+    store.setState({ S: { customEx: [] } })
+    await sync.syncMedia()
+    clock += 60000
+    store.setState({ S })
+    await put(hex('a'))
+    await sync.syncMedia()
+    expect(api).toHaveBeenCalledTimes(2)
+    expect(apiUpload).toHaveBeenCalledTimes(2)
+  })
+
   it('a 429 is honoured for as long as it says', async () => {
     const S = { customEx: [{ id: 'a', media: refOf(hex('a')) }] }
     await put(hex('a'))

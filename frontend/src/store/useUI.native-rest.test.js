@@ -14,7 +14,7 @@ vi.mock('../lib/rest-alert.js', () => ({
   disarmRestAlert: vi.fn(),
   bindNativeRest: vi.fn(cb => { h.native = cb }),
 }))
-vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn() }))
+vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn() }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({ ok: true })) }))
 
 import { useUI } from './useUI.js'

@@ -15,7 +15,7 @@ vi.mock('../sheets.jsx', () => ({
 }))
 vi.mock('../components/LineChart.jsx', () => ({ default: props => { mocks.charts.push(props); return null } }))
 vi.mock('../components/Heatmap.jsx', () => ({ default: () => null }))
-vi.mock('../components/BodyMap.jsx', () => ({ default: () => null }))
+vi.mock('../components/BodyMap.jsx', () => ({ default: () => null, BodyMapLegend: () => null }))
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 const BIKE = '2138'

@@ -14,8 +14,10 @@ import android.media.AudioFormat;
 import android.media.AudioTrack;
 import android.os.Build;
 import android.os.PowerManager;
+import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.os.VibratorManager;
 import android.util.Log;
 
 /**
@@ -42,6 +44,7 @@ public final class RestAlert {
     private static String lastAlertTitle = "Rest over";
     private static boolean lastSound = true;
     private static boolean lastVibrate = true;
+    private static boolean lastAlarmBuzz = false;
     private static String lastChannel = CHANNEL_ID;
     private static String labPause = "Pause";
     private static String labResume = "Resume";
@@ -62,15 +65,22 @@ public final class RestAlert {
 
     private RestAlert() {}
 
+    /**
+     * `alarmBuzz` is Settings → "Vibrate when the phone is on silent" (#375): the end buzzes as an
+     * alarm, which silent mode lets through, and the notification goes out on the quiet channel so
+     * a phone with its ringer on does not buzz twice.
+     */
     public static void schedule(Context ctx, long at, int id, String title, boolean sound, boolean vibrate,
-                                String channelId, String visibility, String importance, boolean localOnly,
-                                String countdownTitle, long totalMs) {
+                                boolean alarmBuzz, String channelId, String visibility, String importance,
+                                boolean localOnly, String countdownTitle, long totalMs) {
+        alarmBuzz = vibrate && alarmBuzz;
         channelId = channelFor(channelId, vibrate);
         Intent intent = alarmIntent(ctx);
         intent.putExtra("id", id);
         intent.putExtra("title", title == null ? "" : title);
         intent.putExtra("sound", sound);
         intent.putExtra("vibrate", vibrate);
+        intent.putExtra("alarmBuzz", alarmBuzz);
         intent.putExtra("channelId", channelId);
         intent.putExtra("visibility", visibility == null ? "public" : visibility);
         intent.putExtra("importance", importance == null ? "high" : importance);
@@ -89,11 +99,13 @@ public final class RestAlert {
         if (!exact) Log.w("openGym", "exact alarms not allowed; the rest countdown sounds the end itself");
         if (Build.VERSION.SDK_INT >= 26) {
             NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
-            ensureChannel(ctx, nm, channelId, importanceOf(importance), visibilityOf(visibility), vibrate);
+            String posted = alarmBuzz ? QUIET_CHANNEL_ID : channelId;
+            ensureChannel(ctx, nm, posted, importanceOf(importance), visibilityOf(visibility), !alarmBuzz && vibrate);
         }
         lastAlertTitle = title == null ? "Rest over" : title;
         lastSound = sound;
         lastVibrate = vibrate;
+        lastAlarmBuzz = alarmBuzz;
         lastChannel = channelId;
         startCountdown(ctx, at, totalMs, countdownTitle);
     }
@@ -134,6 +146,7 @@ public final class RestAlert {
         intent.putExtra("title", lastAlertTitle);
         intent.putExtra("sound", lastSound);
         intent.putExtra("vibrate", lastVibrate);
+        intent.putExtra("alarmBuzz", lastAlarmBuzz);
         intent.putExtra("channelId", lastChannel);
         intent.putExtra("at", at);
         new Thread(() -> fire(ctx, intent), "opengym-rest").start();
@@ -166,9 +179,13 @@ public final class RestAlert {
             }
             pokeScreen(ctx);
             boolean vibrate = intent.getBooleanExtra("vibrate", true);
-            boolean shown = showNotification(ctx, intent);
+            boolean alarmBuzz = vibrate && intent.getBooleanExtra("alarmBuzz", false);
+            boolean shown = showNotification(ctx, intent, alarmBuzz);
+            // On silent the channel's buzz is muted; an alarm's is not (#375). The notification
+            // went out on the quiet channel, so this is the one buzz with the ringer on too.
+            if (alarmBuzz) buzz(ctx, VIBRATE);
             // Settings → Vibrate off is off here too: without notifications this buzz is the alert.
-            if (!shown && vibrate) vibrateFallback(ctx);
+            else if (!shown && vibrate) vibrateFallback(ctx);
             // The countdown card is the foreground-service notification. Drop it once the
             // "rest over" alert is up, including when the WebView is frozen.
             stopCountdown(ctx);
@@ -205,10 +222,11 @@ public final class RestAlert {
     }
 
     @SuppressWarnings("deprecation")
-    private static boolean showNotification(Context ctx, Intent intent) {
+    private static boolean showNotification(Context ctx, Intent intent, boolean alarmBuzz) {
         String title = intent.getStringExtra("title");
-        if (title == null || title.isEmpty()) title = "Rest over — next set!";
-        boolean vibrate = intent.getBooleanExtra("vibrate", true);
+        if (title == null || title.isEmpty()) title = "Rest’s over. Next set!";
+        // With the alarm buzz on, the notification itself stays still: the buzz comes from buzz().
+        boolean vibrate = intent.getBooleanExtra("vibrate", true) && !alarmBuzz;
         String channelId = channelFor(intent.getStringExtra("channelId"), vibrate);
         int id = intent.getIntExtra("id", NOTIFICATION_ID);
         boolean localOnly = intent.getBooleanExtra("localOnly", false);
@@ -298,6 +316,36 @@ public final class RestAlert {
         } catch (Exception ignored) { /* */ }
     }
 
+    /**
+     * A buzz silent mode lets through (#375): vibration with the alarm usage, which the system
+     * plays in silent and vibrate-only modes like the clock app's alarm. `pattern` is Android's
+     * waveform (off, on, off, on…). Do Not Disturb still decides, as it does for alarms.
+     */
+    @SuppressWarnings("deprecation")
+    static void buzz(Context ctx, long[] pattern) {
+        try {
+            Vibrator vibrator;
+            if (Build.VERSION.SDK_INT >= 31) {
+                VibratorManager vm = (VibratorManager) ctx.getSystemService(Context.VIBRATOR_MANAGER_SERVICE);
+                vibrator = vm == null ? null : vm.getDefaultVibrator();
+            } else {
+                vibrator = (Vibrator) ctx.getSystemService(Context.VIBRATOR_SERVICE);
+            }
+            if (vibrator == null || !vibrator.hasVibrator()) return;
+            if (Build.VERSION.SDK_INT >= 33) {
+                vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1),
+                        VibrationAttributes.createForUsage(VibrationAttributes.USAGE_ALARM));
+                return;
+            }
+            AudioAttributes alarm = new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_ALARM)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build();
+            if (Build.VERSION.SDK_INT >= 26) vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1), alarm);
+            else vibrator.vibrate(pattern, -1, alarm);
+        } catch (Exception ignored) { /* nothing else to fall back on here */ }
+    }
+
     static void updateAlarm(Context ctx, long at) {
         if (at <= System.currentTimeMillis()) {
             cancelAlarmOnly(ctx, NOTIFICATION_ID);
@@ -308,6 +356,7 @@ public final class RestAlert {
         intent.putExtra("title", lastAlertTitle);
         intent.putExtra("sound", lastSound);
         intent.putExtra("vibrate", lastVibrate);
+        intent.putExtra("alarmBuzz", lastAlarmBuzz);
         intent.putExtra("channelId", lastChannel);
         intent.putExtra("visibility", "public");
         intent.putExtra("importance", "high");

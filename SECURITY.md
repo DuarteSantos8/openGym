@@ -127,7 +127,7 @@ Read this before hosting openGym for anyone other than yourself.
   (`api/passkeys-store.js`, `api/device-link.js`, the passkeys block in `api/server.js`).
 - **Password sign-in is throttled.** Every password route spends a budget of 60 requests a minute
   per address; wrong passwords, reset codes and (on password signup) invite codes pause the
-  address after 20 (30 s, doubling to 15 min); wrong passwords pause the *account* after 5 (1 min,
+  address from the 21st on (30 s, doubling to 15 min); wrong passwords pause the *account* from the 6th on (1 min,
   doubling to 1 h) — keyed by the account the name or sign-in e-mail resolves to, so switching
   between the two does not reset it, and by the identifier as typed when it resolves to nobody. A password check is counted the moment it starts, so guesses
   sent all at once get no more checks than guesses sent one by one. The two routes that redeem a

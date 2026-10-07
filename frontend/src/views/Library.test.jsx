@@ -104,3 +104,57 @@ describe('Library exercise-name casing per language', () => {
     })
   }
 })
+
+// The header counts the catalogue, and from the first exercise of your own, those too (owner
+// request for v1.3.10): "1324 animated exercises + 5 of your own". It has to stay one line on a
+// phone, so it runs under the title row at full width, never wraps, and ellipsizes as a last resort.
+describe('Library header count', () => {
+  const sub = host => host.querySelector('.hdr .sub').textContent
+  const own = n => Array.from({ length: n }, (_, i) => ({ id: 'c' + i, n: 'my move ' + i, bp: 'chest', eq: '', custom: true }))
+  afterEach(() => _setLangState('en', {}, null, null))
+
+  it('shows only the catalogue while you have no exercises of your own', () => {
+    expect(sub(render())).toBe(`${EXDB.length} exercises with animations`)
+  })
+
+  it('adds "+ 1 of your own" for a single custom exercise', () => {
+    mocks.S.customEx = own(1)
+    expect(sub(render())).toBe(`${EXDB.length} animated exercises + 1 of your own`)
+  })
+
+  it('adds the count for several custom exercises', () => {
+    mocks.S.customEx = own(5)
+    expect(sub(render())).toBe(`${EXDB.length} animated exercises + 5 of your own`)
+  })
+
+  it('uses the language\'s own plural forms (Russian: 1 своё, 2 своих, 5 своих)', async () => {
+    const { default: ru } = await import('../locales/ru.js')
+    _setLangState('ru', ru, null, null)
+    const forms = ru['{1} animated exercises + {0} of your own']
+    expect(typeof forms).toBe('object')
+    mocks.S.customEx = own(1)
+    const one = sub(render())
+    act(() => { mounted.splice(0).forEach(root => root.unmount()) })
+    mocks.S.customEx = own(5)
+    const five = sub(render())
+    expect(one).toContain(String(EXDB.length))
+    expect(five).toBe(forms.many.replace('{0}', '5').replace('{1}', String(EXDB.length)))
+    expect(one).not.toBe(five.replace('5', '1'))
+  })
+
+  it('keeps the subtitle on one line on wider screens, clipping with an ellipsis', () => {
+    expect(sub(render())).toBeTruthy()
+    const rule = cssSource.match(/^\.hdr\.lib-hdr>\.sub\.lib-count\{([^}]*)\}/m)?.[1] || ''
+    expect(rule).toContain('white-space:nowrap')
+    expect(rule).toContain('overflow:hidden')
+    expect(rule).toContain('text-overflow:ellipsis')
+    expect(rule).toContain('flex:1 0 100%')
+    expect(cssSource).toMatch(/^\.hdr\.lib-hdr\{[^}]*flex-wrap:wrap/m)
+  })
+
+  it('lets the subtitle wrap on narrow phones so nothing is cut at 320 px', () => {
+    const narrow = cssSource.match(/@media \(max-width:360px\)\{\.hdr\.lib-hdr>\.sub\.lib-count\{([^}]*)\}\}/)?.[1] || ''
+    expect(narrow).toContain('white-space:normal')
+    expect(narrow).toContain('overflow:visible')
+  })
+})

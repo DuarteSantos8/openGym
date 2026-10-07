@@ -67,6 +67,26 @@ describe('readSession', () => {
     expect(s.best).toBe(50)
     expect(readSession({ id: LIFT, target: { sets: 2, sec: 45, mode: 'time' }, sets: [{ sec: 45, done: true }, { sec: 30, done: true }] }).ok).toBe(false)
   })
+
+  it('reads all of a per-side timed hold\'s doubled rows, not just the first pair', () => {
+    const T = { sets: 2, sec: 30, mode: 'time', side: true }
+    // 2 planned sets, per side, is 4 real rows (buildSets) — every one of them has to be read,
+    // or a miss on the second pair goes unnoticed and progression bumps the hold anyway.
+    const allHeld = readSession({ id: LIFT, target: T, sets: [
+      { sec: 30, done: true, side: 'L' }, { sec: 30, done: true, side: 'R' },
+      { sec: 30, done: true, side: 'L' }, { sec: 30, done: true, side: 'R' },
+    ] })
+    expect(allHeld.ok).toBe(true)
+    const secondPairShort = readSession({ id: LIFT, target: T, sets: [
+      { sec: 30, done: true, side: 'L' }, { sec: 30, done: true, side: 'R' },
+      { sec: 15, done: true, side: 'L' }, { sec: 30, done: true, side: 'R' },
+    ] })
+    expect(secondPairShort.ok).toBe(false)
+    // Fewer logged rows than the doubled count is short, same as any other mode.
+    expect(readSession({ id: LIFT, target: T, sets: [
+      { sec: 30, done: true, side: 'L' }, { sec: 30, done: true, side: 'R' },
+    ] }).ok).toBe(false)
+  })
 })
 
 describe('stallCount', () => {
@@ -713,7 +733,7 @@ describe('an edited plan restarts progression (#275)', () => {
     const S = { unit: 'kg', workouts: [logged(LIFT, { sets: 2, reps: 15, weight: 40 }, { sets: 2, reps: 15, weight: 40 }, 40, [15, 15])] }
     const p = nextPrescription(S, { id: LIFT, sets: 2, reps: 10, weight: 40, prog: 'linear' }, R)
     expect(p).toMatchObject({ kind: 'hold', weight: 40, reps: 10 })
-    expect(p.why[0]).toBe('Plan changed — starting from your new target.')
+    expect(p.why[0]).toBe('Plan changed, so starting from your new target.')
     // The same session under an unchanged plan progresses as usual.
     expect(nextPrescription(S, { id: LIFT, sets: 2, reps: 15, weight: 40, prog: 'linear' }, R)).toMatchObject({ kind: 'up', weight: 42.5 })
   })
@@ -726,7 +746,7 @@ describe('an edited plan restarts progression (#275)', () => {
     const S = { unit: 'kg', workouts: [five] }
     const p = nextPrescription(S, { id: LIFT, sets: 3, reps: 10, weight: 70, prog: 'linear' }, R)
     expect(p).toMatchObject({ kind: 'hold', weight: 70, reps: 10 })
-    expect(p.why[0]).toBe('Plan changed — starting from your new target.')
+    expect(p.why[0]).toBe('Plan changed, so starting from your new target.')
     // Only the reps edited, the weight the routine was created with left alone: what was lifted.
     expect(nextPrescription(S, { id: LIFT, sets: 3, reps: 10, weight: 100, prog: 'linear' }, R)).toMatchObject({ kind: 'hold', weight: 102.5, reps: 10 })
     // A weight edit alone restarts nothing: the sets and reps are the plan's, the history moves on.
@@ -781,7 +801,7 @@ describe('an edited plan restarts progression (#275)', () => {
     const B = { d: '2026-04-01', routineIds: ['b'], entries: [{ id: PUSH, rid: 'b', planned: { sets: 2, reps: 15, weight: 0 }, target: { sets: 2, reps: 15, weight: 0 }, sets: [{ w: 0, r: 15, done: true }, { w: 0, r: 15, done: true }] }] }
     const p = nextPrescription({ unit: 'kg', workouts: [B] }, { id: PUSH, sets: 2, reps: 10, weight: 0, bodyweight: true }, { id: 'a', ex: [] })
     expect(p).toMatchObject({ kind: 'hold', reps: 10 })
-    expect(p.why[0]).toBe('First time in this routine — starting from its own target.')
+    expect(p.why[0]).toBe('First time in this routine, so starting from its own target.')
   })
 
   // A heavy day and a light day of the same lift (#216): the heavy day's first session opens at
@@ -790,7 +810,7 @@ describe('an edited plan restarts progression (#275)', () => {
     const B = { d: '2026-04-01', routineIds: ['b'], entries: [{ id: LIFT, rid: 'b', planned: { sets: 2, reps: 15, weight: 40 }, target: { sets: 2, reps: 15, weight: 40 }, sets: [{ w: 40, r: 15, done: true }, { w: 40, r: 15, done: true }] }] }
     const p = nextPrescription({ unit: 'kg', workouts: [B] }, { id: LIFT, sets: 2, reps: 10, weight: 60, prog: 'linear' }, { id: 'a', ex: [] })
     expect(p).toMatchObject({ kind: 'hold', weight: 60, reps: 10 })
-    expect(p.why[0]).toBe('First time in this routine — starting from its own target.')
+    expect(p.why[0]).toBe('First time in this routine, so starting from its own target.')
   })
 
   it('opens a loaded lift logged at 0 kg at the plan\'s weight when the plan changed', () => {

@@ -35,7 +35,7 @@ Notes:
   Coach with an API key works on that same API image; the Claude and Codex sign-in providers
   need the `coach` build target, which is not published — build it yourself (see
   [AI_COACH.md](AI_COACH.md)).
-- The images are pinned to a release (`1.3.9`), the API and the web image always to the same
+- The images are pinned to a release (`1.3.10`), the API and the web image always to the same
   one. To update, read the release notes, set the new version on both and apply again; pinning
   to `latest` instead means a restarted pod can come back on a version you never chose.
 - Settings are environment variables on the `api` container, named as in `.env.example`. Keep

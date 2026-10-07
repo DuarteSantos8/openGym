@@ -63,7 +63,7 @@ afterEach(() => {
   host.remove()
 })
 
-const mount = () => act(() => root.render(<Settings />))
+const mount = () => act(() => root.render(<Settings page="workout" />))
 const segButton = label => [...host.querySelectorAll('.seg button')].find(b => b.textContent === label)
 
 describe('Settings — workout view', () => {

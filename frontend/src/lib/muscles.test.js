@@ -3,7 +3,8 @@ import { EXIDX, EXDB, smOf } from './exercises.js'
 import { LANGS, DERIVED_LOCALES } from './i18n-core.js'
 import {
   MUSCLE_NAME, exerciseMuscleSnapshot, hasExplicitMuscleMetadata, levelsOf, loadOf,
-  loadOfWorkouts, matchesMuscleGroups, muscleBalanceWindow, muscleGroupsOf, musclesOf, rankOf
+  loadOfWorkouts, loadOfWeeklyPlan, matchesMuscleGroups, muscleBalanceWindow, muscleGroupsOf,
+  musclesOf, muscleWeightsOf, rankOf
 } from './muscles.js'
 
 describe('multi-muscle exercise metadata', () => {
@@ -47,6 +48,33 @@ describe('multi-muscle exercise metadata', () => {
       id: 'deleted-custom', muscleGroups: ['chest', 'chest', 'triceps'],
       sets: [{ done: true }]
     }] }])).toEqual({ chest: 1, triceps: 1 })
+  })
+})
+
+describe('explicit muscle weights', () => {
+  const complete = { chest: 1, deltoids: 0.4, triceps: 0 }
+
+  it('preserves every finite explicit weight from zero through one', () => {
+    expect(muscleWeightsOf({ muscleWeights: complete })).toEqual(complete)
+  })
+
+  it('keeps effective stimulus positive-only', () => {
+    expect(musclesOf({ muscleWeights: complete })).toEqual({ chest: 1, deltoids: 0.4 })
+  })
+
+  it('treats a recognized all-zero map as authoritative instead of using body-part defaults', () => {
+    const ex = { bp: 'chest', muscleWeights: { chest: 0, triceps: 0 } }
+    expect(muscleWeightsOf(ex)).toEqual({ chest: 0, triceps: 0 })
+    expect(musclesOf(ex)).toEqual({})
+  })
+
+  it('preserves complete weights in history snapshots', () => {
+    expect(exerciseMuscleSnapshot({ n: 'Press', bp: 'chest', muscleWeights: complete }))
+      .toMatchObject({ n: 'Press', bp: 'chest', muscleWeights: complete })
+  })
+
+  it('keeps legacy primary and secondary fallback weights', () => {
+    expect(muscleWeightsOf({ tg: 'pectorals', mg: 'triceps' })).toEqual({ chest: 1, triceps: 0.4 })
   })
 })
 
@@ -147,6 +175,44 @@ describe('map load with warm-up phases', () => {
   })
 })
 
+describe('planned weekly muscle volume', () => {
+  const state = {
+    customEx: [
+      { id: 'press', primaries: ['chest'], secondaries: ['triceps'] },
+      { id: 'curl', primaries: ['biceps'], secondaries: [] },
+    ],
+    routines: [
+      { id: 'push', ex: [{ id: 'press', sets: 2 }] },
+      { id: 'arms', ex: [{ id: 'curl', sets: 3 }] },
+    ],
+    week: { 0: 'arms', 1: ['push', 'missing'], 3: ['push'] },
+    dayPlan: { '2026-08-18': 'arms' },
+    workouts: [{ entries: [{ id: 'snapshot-only', muscleSnapshot: { muscleWeights: { quadriceps: 1 } } }] }],
+  }
+
+  it('aggregates arrays and legacy scalar assignments, including routines repeated in the week', () => {
+    expect(loadOfWeeklyPlan(state)).toEqual({ chest: 4, triceps: 1.6, biceps: 3 })
+  })
+
+  it('ignores stale routine ids, date overrides, and completed-workout snapshots', () => {
+    const load = loadOfWeeklyPlan(state)
+    expect(load).not.toHaveProperty('quadriceps')
+    expect(load.biceps).toBe(3)
+  })
+
+  it('counts a floating week once per session, beside the weekday routines it does not cover', () => {
+    const queued = { ...state, queue: { ids: ['push', 'push', 'gone'], since: 0, startsOn: '2026-08-17' } }
+    // weekday 'arms' (3) + the queue's 'push' once (2 chest, 0.8 triceps); the weekday 'push' rows
+    // are the queue's session, not a second plan of their own.
+    expect(loadOfWeeklyPlan(queued)).toEqual({ chest: 2, triceps: 0.8, biceps: 3 })
+  })
+
+  it('returns an empty projection for missing or empty plans', () => {
+    expect(loadOfWeeklyPlan()).toEqual({})
+    expect(loadOfWeeklyPlan({ routines: [], week: { 1: ['missing'] } })).toEqual({})
+  })
+})
+
 // A custom exercise that was deleted from the catalogue survives in history only as the
 // muscleSnapshot finish-workout wrote. Reading it back is what keeps those sessions in the
 // body map and in Stats instead of silently contributing nothing.
@@ -207,7 +273,7 @@ describe('muscle balance windows and ranking', () => {
   it('keeps catalogue precedence and deleted-custom snapshot weights', () => {
     const known = { id: '0025', muscleGroups: ['quadriceps'], sets: [{ done: true }] }
     const deleted = { id: 'deleted', muscleSnapshot: { muscleWeights: { chest: 1 } }, sets: [{ done: true }] }
-    expect(loadOfWorkouts([{ entries: [known] }])).toEqual({ chest: 1, triceps: 0.4, deltoids: 0.4, biceps: 0.4 })
+    expect(loadOfWorkouts([{ entries: [known] }])).toEqual({ chest: 1, triceps: 0.4, deltoids: 0.4 })
     expect(loadOfWorkouts([{ entries: [deleted] }])).toEqual({ chest: 1 })
   })
 })

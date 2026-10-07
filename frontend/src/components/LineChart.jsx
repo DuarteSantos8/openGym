@@ -66,7 +66,10 @@ export default function LineChart({ points, h = 150, unit = '', color = 'var(--a
     const pow = Math.pow(10, Math.floor(Math.log10(raw)))
     let step = 10 * pow
     for (const m of [1, 2, 2.5, 5, 10]) if (raw <= m * pow) { step = m * pow; break }
-    for (let v = Math.ceil(ymin / step) * step; v <= ymax + 1e-9; v += step) {
+    for (let v0 = Math.ceil(ymin / step) * step; v0 <= ymax + 1e-9; v0 += step) {
+      // Snapped to the step, so adding it up never drifts, and `|| 0` turns the -0 that
+      // Math.ceil gives a range just under zero into a plain 0 instead of a "-0" label.
+      const v = Math.round(v0 / step) * step || 0
       const y = Y(v)
       gridlines.push(<g key={'y' + v}>
         <line x1={P.l} y1={y} x2={W - P.r} y2={y} stroke="var(--sep-op)" strokeWidth="1" strokeDasharray="2 4" />

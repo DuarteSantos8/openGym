@@ -151,6 +151,8 @@ describe('the Coach on a phone with its own key', () => {
     await expect(local.localReview(state())).rejects.toMatchObject({ code: 'busy' })
     await settle()
 
+    // The cap is keyed by the LOCAL date (todayISO), not the UTC one: in the evening in the
+    // Americas the two differ, and a UTC stamp here read as yesterday's record and let the run through.
     await saveCoachDevice({ daily: { d: todayISO(), n: local.LOCAL_DAILY_CAP } })
     await expect(local.localReview(state())).rejects.toMatchObject({ code: 'cap' })
     expect((await local.localStatus()).cap).toEqual({ used: local.LOCAL_DAILY_CAP, limit: local.LOCAL_DAILY_CAP })

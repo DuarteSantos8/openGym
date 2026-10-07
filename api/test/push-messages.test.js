@@ -10,12 +10,12 @@ test('localizes every server-generated notification in pt-BR', () => {
   });
   assert.deepEqual(testPush('pt-BR'), {
     title: 'openGym',
-    body: 'Notificação de teste ✅ — é assim que os alertas aparecem.',
+    body: 'Notificação de teste ✅ É assim que os alertas aparecem.',
     tag: 'test',
   });
   assert.deepEqual(dayReminderPush('pt-BR', { name: 'Treino A', emoji: '💪' }), {
     title: '💪 Treino A hoje',
-    body: 'Está no seu plano — vamos treinar 💪',
+    body: 'Está no seu plano. Bora treinar 💪',
     tag: 'day-reminder',
   });
 });
@@ -23,5 +23,5 @@ test('localizes every server-generated notification in pt-BR', () => {
 test('keeps the existing English copy as the fallback', () => {
   assert.deepEqual(restTimerPush('fr'), restTimerPush('en'));
   assert.equal(dayReminderPush('unknown', null).title, 'Workout planned today');
-  assert.equal(testPush(undefined).body, 'Test notification ✅ — this is what alerts look like.');
+  assert.equal(testPush(undefined).body, 'Test notification ✅ This is what alerts look like.');
 });

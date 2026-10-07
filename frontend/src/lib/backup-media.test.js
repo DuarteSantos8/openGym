@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { exportBackupZip, readBackupFile, storeBackupMedia, sanitizeCustomMedia, BACKUP_JSON } from './backup-media.js'
+import { exportBackupZip, readBackupFile, backupImportError, storeBackupMedia, sanitizeCustomMedia, BACKUP_JSON } from './backup-media.js'
 import { createMediaStore, memoryBackend } from './media-store.js'
 import { zipStore, readZip } from './zip.js'
 import { sha256Hex } from './sha256.js'
@@ -81,6 +81,18 @@ describe('import', () => {
     await expect(readBackupFile(new File(['{"hello":1}'], 'x.json'))).rejects.toThrow()
     const zip = await zipStore([{ name: 'something.txt', blob: new Blob(['x']) }])
     await expect(readBackupFile(new File([zip], 'x.zip'))).rejects.toThrow()
+  })
+
+  // German QA: 'Import fehlgeschlagen: not-zip', '... not an openGym backup', 'Unexpected token ...'.
+  it('says why an import failed in words, never the thrown developer text', async () => {
+    const why = async (content, name) => { try { await readBackupFile(new File([content], name)) } catch (e) { return backupImportError(e) } }
+    const notOurs = 'That file isn’t an openGym backup.'
+    expect(await why('[1,2]', 'x.json')).toBe(notOurs)
+    expect(await why('hello there', 'x.txt')).toBe(notOurs)
+    expect(await why(new Uint8Array([0x50, 0x4b, 0x03, 0x04, 1, 2, 3, 4]), 'fake.zip')).toBe(notOurs)
+    expect(await why(await zipStore([{ name: 'something.txt', blob: new Blob(['x']) }]), 'x.zip')).toBe(notOurs)
+    expect(backupImportError(Object.assign(new Error('compressed'), { code: 'compressed' }))).toBe('That zip was repacked. Import the original backup file.')
+    expect(backupImportError(new TypeError('x is undefined'))).toBe('Couldn’t read that file.')
   })
 
   it('sanitizeCustomMedia leaves a state without custom exercises alone', () => {

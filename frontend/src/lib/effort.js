@@ -147,12 +147,12 @@ export const isHardSet = s => { const r = rirOf(s); return r != null && r <= HAR
 // 0, 0.5 and 1 actually changes the training. A typed value between presets still colours by
 // the band it falls in, so the flexibility of a free number is never lost.
 export const EFFORT_BANDS = [
-  { rir: 0, max: 0.25, color: 'var(--purple)', feel: 'Nothing left — went to failure' },
+  { rir: 0, max: 0.25, color: 'var(--purple)', feel: 'Nothing left, went to failure' },
   { rir: 0.5, max: 0.75, color: 'var(--red)', feel: 'Maybe half a rep left' },
   { rir: 1, max: 1.5, color: 'var(--orange)', feel: 'One more rep in the tank' },
   { rir: 2, max: 2.5, color: 'var(--yellow)', feel: 'Two more reps' },
   { rir: 3, max: 3.5, color: 'var(--green)', feel: 'Three more reps' },
-  { rir: 4, max: Infinity, color: 'var(--acc-2)', feel: 'Easy — warm-up territory' }
+  { rir: 4, max: Infinity, color: 'var(--acc-2)', feel: 'Easy, warm-up territory' }
 ]
 // The presets shown in the picker, hardest first — the order they read on the scale and the
 // order the colours run. `tail` is the collapsed top bucket ("4+"): its value is the floor it

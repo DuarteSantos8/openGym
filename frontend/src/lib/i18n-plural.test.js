@@ -1,0 +1,109 @@
+import { describe, it, expect, afterEach } from 'vitest'
+import { t, tn, _setLangState } from './i18n-core.js'
+import ru from '../locales/ru.js'
+import de from '../locales/de.js'
+import uk from '../locales/uk.js'
+import pl from '../locales/pl.js'
+import { readFileSync, readdirSync } from 'node:fs'
+import { join, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+// Every plural key the app actually asks tn() for, read off the source.
+const SRC = join(dirname(fileURLToPath(import.meta.url)), '..')
+const walk = d => readdirSync(d, { withFileTypes: true }).flatMap(e =>
+  e.isDirectory() ? walk(join(d, e.name)) : [join(d, e.name)])
+const tnKeys = () => {
+  const keys = new Set()
+  const re = /\btn\(\s*(['"`])((?:\\.|(?!\1).)*)\1\s*,\s*(['"`])((?:\\.|(?!\3).)*)\3/gs
+  for (const f of walk(SRC)) {
+    if (!/\.(jsx?|mjs)$/.test(f) || /\.test\./.test(f) || /[\\/]locales[\\/]/.test(f)) continue
+    const s = readFileSync(f, 'utf8')
+    let m
+    while ((m = re.exec(s))) keys.add(m[4])
+  }
+  return [...keys]
+}
+
+describe('tn() — plural forms from the pack', () => {
+  afterEach(() => _setLangState('en', {}, null, null))
+
+  it('falls back to the English two-form split with no pack', () => {
+    _setLangState('en', {}, null, null)
+    expect(tn('{0} exercise', '{0} exercises', 1)).toBe('1 exercise')
+    expect(tn('{0} exercise', '{0} exercises', 2)).toBe('2 exercises')
+    expect(tn('{0} exercise', '{0} exercises', 0)).toBe('0 exercises')
+  })
+
+  it('leaves a pack that answers with a plain string exactly as it was', () => {
+    // German has two forms and says so with ordinary strings; nothing about it changes.
+    _setLangState('de', de, null, null)
+    expect(tn('{0} exercise', '{0} exercises', 1)).toBe(de['{0} exercise'].replace('{0}', 1))
+    expect(tn('{0} exercise', '{0} exercises', 7)).toBe(de['{0} exercises'].replace('{0}', 7))
+  })
+
+  it('picks Russian one / few / many by the CLDR rule, not by n === 1', () => {
+    _setLangState('ru', ru, null, null)
+    const ex = n => tn('{0} exercise', '{0} exercises', n)
+    expect(ex(1)).toBe('1 упражнение')
+    expect(ex(2)).toBe('2 упражнения')
+    expect(ex(4)).toBe('4 упражнения')
+    expect(ex(5)).toBe('5 упражнений')
+    expect(ex(0)).toBe('0 упражнений')
+    // The teens are the trap: 11-14 take "many" even though 1-4 do not.
+    expect(ex(11)).toBe('11 упражнений')
+    expect(ex(14)).toBe('14 упражнений')
+    expect(ex(21)).toBe('21 упражнение')
+    expect(ex(22)).toBe('22 упражнения')
+    expect(ex(25)).toBe('25 упражнений')
+    expect(ex(101)).toBe('101 упражнение')
+  })
+
+  it('fills every placeholder, not just the count', () => {
+    _setLangState('ru', ru, null, null)
+    expect(tn('{0} set · {1} work', '{0} sets · {1} work', 2, 3)).toBe('2 подхода · 3 рабочих')
+    expect(tn('{0} set · {1} work', '{0} sets · {1} work', 5, 4)).toBe('5 подходов · 4 рабочих')
+  })
+
+  it('reads the forms off the plural key, so a singular-only key needs no entry', () => {
+    _setLangState('ru', ru, null, null)
+    // '1 day a week' carries no {0} and has no entry of its own; the plural key answers for it.
+    expect(tn('1 day a week', '{0} days a week', 1)).toBe('1 день в неделю')
+    expect(tn('1 day a week', '{0} days a week', 3)).toBe('3 дня в неделю')
+  })
+
+  it('has a form for every plural key the Russian pack declares', () => {
+    for (const [key, value] of Object.entries(ru)) {
+      if (!value || typeof value !== 'object') continue
+      expect(Object.keys(value), key).toEqual(expect.arrayContaining(['one', 'few', 'many']))
+      for (const form of Object.values(value)) expect(typeof form, key).toBe('string')
+    }
+  })
+
+  it('does not crash when a plural key is read through plain t()', () => {
+    _setLangState('ru', ru, null, null)
+    expect(t('{0} exercises', 5)).toBe('5 упражнений')
+    expect(t('{0} exercises', 2)).toBe('2 упражнения')
+  })
+
+  it('gives every tn() key real one / few / many forms in ru, uk and pl (#365)', () => {
+    const keys = tnKeys()
+    expect(keys.length).toBeGreaterThan(20)
+    for (const [lang, pack] of [['ru', ru], ['uk', uk], ['pl', pl]]) {
+      for (const k of keys) {
+        expect(typeof pack[k], `${lang}: ${k}`).toBe('object')
+        expect(Object.keys(pack[k]), `${lang}: ${k}`).toEqual(expect.arrayContaining(['one', 'few', 'many']))
+      }
+    }
+  })
+
+  it('says "3 treningi" in Polish and "3 дні" in Ukrainian', () => {
+    _setLangState('pl', pl, null, null)
+    expect(tn('{0} workout', '{0} workouts', 3)).toBe('3 treningi')
+    expect(tn('{0} workout', '{0} workouts', 5)).toBe('5 treningów')
+    expect(tn('{0} workout', '{0} workouts', 22)).toBe('22 treningi')
+    expect(tn('{0} workout total', '{0} workouts total', 3)).toBe('łącznie 3 treningi')
+    _setLangState('uk', uk, null, null)
+    expect(tn('{0} day a week', '{0} days a week', 3)).toBe('3 дні на тиждень')
+    expect(tn('{0} day a week', '{0} days a week', 5)).toBe('5 днів на тиждень')
+  })
+})

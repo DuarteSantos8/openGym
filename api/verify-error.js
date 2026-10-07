@@ -7,6 +7,6 @@ const MISCONFIGURED = /unexpected (rp id|authentication response origin|registra
 export function verifyError(e, { rpId, origin } = {}) {
   const msg = String((e && e.message) || 'verification failed');
   if (!MISCONFIGURED.test(msg)) return 'verification failed: ' + msg;
-  return `${msg} — this server is configured with RP_ID=${rpId} and ORIGIN=${origin}, and both `
+  return `${msg}. This server is configured with RP_ID=${rpId} and ORIGIN=${origin}, and both `
     + 'must match the address you opened. See docs/SELF_HOSTING.md.';
 }

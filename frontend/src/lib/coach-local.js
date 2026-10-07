@@ -129,7 +129,7 @@ async function start(S, kind, opts) {
   const adapter = ADAPTERS[d.provider]
   if (d.mode !== 'byok' || !adapter) throw Object.assign(new Error(t('The Coach isn’t set up on this phone.')), { status: 503, code: 'off' })
   const cap = await capState()
-  if (cap.used >= cap.limit) throw Object.assign(new Error(t('The Coach is resting — you have used today’s {0} runs on this phone.', cap.limit)), { status: 429, code: 'cap' })
+  if (cap.used >= cap.limit) throw Object.assign(new Error(t('The Coach is taking a breather. You’ve used today’s {0} runs on this phone.', cap.limit)), { status: 429, code: 'cap' })
 
   await bumpDaily()
   job = { id: 'local-' + Date.now().toString(36), kind, state: 'running', startedAt: Date.now() }

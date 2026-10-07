@@ -27,8 +27,9 @@ const LISTS = {
   r: ['routines', r => r?.id],
   c: ['customEx', e => e?.id],
 }
-// Not content: the stamp and the revision say when, not what; the running workout never syncs.
-const NOT_CONTENT = new Set(['_ts', '_rev', 'active', ...Object.values(LISTS).map(([f]) => f)])
+// Not content: the stamps and the revision say when, not what (`deleted` and `edited` go with a
+// change the lists or the rest already count); the running workout never syncs.
+const NOT_CONTENT = new Set(['_ts', '_rev', 'active', 'deleted', 'edited', ...Object.values(LISTS).map(([f]) => f)])
 
 /** A fingerprint of `S`: per-entry hashes of the counted lists, one hash (`s`) for the rest. */
 export function syncFingerprint(S) {

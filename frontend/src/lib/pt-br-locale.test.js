@@ -41,7 +41,7 @@ describe('Brazilian Portuguese locale', () => {
     // has to be taught is a number nobody reads. What the numbers stood for is asserted above.
     // If the hash fails, review the changed keys and wording before accepting a new one. From
     // frontend/: node scripts/pt-br-inheritance-fingerprint.mjs --list
-    expect(fingerprint, 'pt-PT inheritance changed; review the inherited pt-BR wording').toBe('9be6cc7996a836338e4c6d4aaa075dc40f350dad94c72ef67c0a021870720c49')
+    expect(fingerprint, 'pt-PT inheritance changed; review the inherited pt-BR wording').toBe('5304c30895afe32bf14334f32497355b645f481f695c582e3b28161a23cba864')
   })
 
   test('does not leak European Portuguese UI terms', () => {
@@ -53,7 +53,7 @@ describe('Brazilian Portuguese locale', () => {
     expect(ptBR.Settings).toBe('Configurações')
     expect(ptBR['Delete workout']).toBe('Excluir treino')
     expect(ptBR.Superset).toBe('Superset')
-    expect(ptBR['Guest mode — data lives only in this browser.']).toContain('visitante')
+    expect(ptBR['Guest mode: your data lives only in this browser.']).toContain('visitante')
     expect(ptBR['Sign in with passkey']).toContain('chave de acesso')
     expect(ptBR.band).toBe('elástico')
     expect(ptBR['resistance band']).toBe('faixa elástica')
@@ -63,11 +63,11 @@ describe('Brazilian Portuguese locale', () => {
     // The sign-in e-mail's strings are overridden, not inherited: pt-PT says palavra-passe and «».
     expect(ptBR['Wrong name, e-mail or password.']).toBe('Nome, e-mail ou senha incorretos.')
     expect(ptBR['Sign-in e-mail']).toBe('E-mail de login')
-    for (const key of ['Name or e-mail', 'Sign in with “{0}” instead of your name', '“{0}” is saved, but signs in only once this profile has a password.', 'Type it at “Sign in with password” instead of your profile name. Nothing is ever sent to it — a forgotten password is still reset by your admin.'])
+    for (const key of ['Name or e-mail', 'Sign in with “{0}” instead of your name', '“{0}” is saved, but signs in only once this profile has a password.', 'Type it at “Sign in with password” instead of your profile name. We never send anything to it; a forgotten password is still reset by your admin.'])
       expect(key in PT_BR_OVERRIDES, key).toBe(true)
     // So are the backup import's warning (pt-PT says cópia and registado) and the sign-in hold's
     // status (pt-PT says «À espera da tua resposta»).
-    for (const key of ['The server has 1 workout that is not in this backup, logged since it was made or on another device. Replacing deletes it.', 'The server has {0} workouts that are not in this backup, logged since it was made or on another device. Replacing deletes them.', 'Replace anyway', 'Merge them in', 'Waiting for your answer about this device’s workouts', 'Nothing syncs until you say whether this device’s workouts go into your profile — tap to answer.'])
+    for (const key of ['The server has 1 workout that is not in this backup, logged since it was made or on another device. Replacing deletes it.', 'The server has {0} workouts that are not in this backup, logged since it was made or on another device. Replacing deletes them.', 'Replace anyway', 'Merge them in', 'Waiting for your answer about this device’s workouts', 'Nothing syncs until you say whether this device’s workouts go into your profile. Tap to answer.'])
       expect(key in PT_BR_OVERRIDES, key).toBe(true)
   })
 })

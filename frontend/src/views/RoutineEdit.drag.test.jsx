@@ -151,7 +151,8 @@ describe('routine long-press reorder', () => {
     expect(exercises().map(e => e.id)).toEqual(['b', 'c', 'a', 'd'])
     expect(JSON.parse(localStorage.getItem('gym_state_v1')).routines[0].ex.map(e => e.id)).toEqual(['b', 'c', 'a', 'd'])
     expect(localStorage.getItem('gym_state_v1')).not.toBe(before)
-    expect(writes).toHaveBeenCalledTimes(1)
+    // one save of the copy (beside it the write id other tabs read, useStore persist)
+    expect(writes.mock.calls.filter(([k]) => k === 'gym_state_v1')).toHaveLength(1)
   })
 
   it('suppresses the compatibility click after a successful changed drop', () => {

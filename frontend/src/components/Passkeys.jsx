@@ -6,7 +6,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
-import { t } from '../lib/i18n.js'
+import { t, tn } from '../lib/i18n.js'
 import { dateLocale } from '../lib/i18n-core.js'
 import { api, webauthnOK, createPasskey } from '../lib/api.js'
 import { copyText } from '../lib/clipboard.js'
@@ -48,7 +48,7 @@ export function passkeyError(e) {
     case 'last-way-in': return t('It is your only way in, so it cannot be removed until there is another.')
     case 'passkey-limit': return t('This profile already has as many passkeys as it can hold.')
     case 'credential-exists': return t('This passkey already belongs to a profile.')
-    case 'link-invalid': return t('That code is wrong, used or expired — make a new one on your other device.')
+    case 'link-invalid': return t('That code is wrong, already used or expired. Make a new one on your other device.')
   }
   return passwordError(e)
 }
@@ -73,8 +73,8 @@ export function usePasskeys(on) {
 export function PasskeysRow({ state, changed }) {
   if (!state) return null
   const n = state.passkeys.length
-  return <Row icon="lock" iconTint="var(--acc)" title={t('Passkeys')} accessory="chevron"
-    subtitle={n === 0 ? t('None yet — add one to sign in without your password.') : n === 1 ? t('1 passkey') : t('{0} passkeys', n)}
+  return <Row icon="fingerprint" iconTint="var(--acc)" title={t('Passkeys')} accessory="chevron"
+    subtitle={n === 0 ? t('None yet. Add one and sign in without your password.') : tn('1 passkey', '{0} passkeys', n)}
     onClick={() => ui().openSheet(close => <PasskeysSheet close={close} changed={changed} />)} />
 }
 
@@ -97,7 +97,7 @@ export function PasskeysSheet({ close, changed }) {
       {t('Each one signs in to this profile from the device or password manager that keeps it. Tap one to rename or remove it.')}
     </div>
     {st.passkeys.length > 0 && <div className="sect-b">
-      {st.passkeys.map((p, i) => <Row key={p.id} icon="lock" iconTint="var(--grey)" title={label(p, i)} subtitle={meta(p) || null}
+      {st.passkeys.map((p, i) => <Row key={p.id} icon="fingerprint" iconTint="var(--grey)" title={label(p, i)} subtitle={meta(p) || null}
         accessory="chevron" onClick={() => edit(p, i)} />)}
     </div>}
     {st.passkeys.length === 1 && st.lastWayIn && <div className="dim small" style={{ marginTop: 8 }}>
@@ -154,7 +154,7 @@ function RemovePasskeySheet({ passkey, title, state, close, done }) {
     <h3>{t('Remove this passkey?')}</h3>
     <div className="small" style={{ fontWeight: 600, marginBottom: 6 }}>{title}</div>
     <div className="muted small" style={{ marginBottom: 6 }}>
-      {t('It can no longer sign in to this profile. A device already signed in with it stays signed in — use Sign out everywhere if it was lost.')}
+      {t('It can no longer sign in to this profile. A device already signed in with it stays signed in. If it was lost, use Sign out everywhere.')}
     </div>
     <div className="dim small" style={{ marginBottom: 14 }}>{t('First confirm that it is you.')}</div>
     <ProveOwner passkey password={state.password} explain={passkeyError} danger submitText={t('Remove')} onProof={remove} />
@@ -192,7 +192,7 @@ function AddPasskeySheet({ state, close, done }) {
   return <>
     <h3>{t('Add a passkey')}</h3>
     <div className="muted small" style={{ marginBottom: 14 }}>{ready
-      ? t('Confirmed. Now create the new passkey — your browser asks where to keep it.')
+      ? t('Confirmed. Now create the new passkey; your browser will ask where to keep it.')
       : t('For this device, a security key, a password manager, or your phone through the browser’s own QR code. First confirm that it is you.')}</div>
     <input className="input" placeholder={t('Name, e.g. Work laptop')} maxLength={40} value={name} onChange={e => setName(e.target.value)} />
     <div style={{ height: 12 }} />
@@ -237,7 +237,7 @@ export function DeviceLinkSheet({ close }) {
       {/* Read out or typed character by character: left to right in every language. */}
       <div className="card" dir="ltr" style={{ textAlign: 'center', fontSize: 24, fontWeight: 700, letterSpacing: '.12em', padding: '14px 0' }}>{link.code}</div>
       <div style={{ height: 12 }} />
-      <Button icon="link" onClick={copy}>{t('Copy link')}</Button>
+      <Button icon="copy" onClick={copy}>{t('Copy link')}</Button>
     </>}
     <div style={{ height: 8 }} />
     <Button variant="ghost" onClick={close}>{t('Done')}</Button>
@@ -322,7 +322,7 @@ export function DeviceLinkRedeemSheet({ close }) {
     <h3>{t('Add this device')}</h3>
     <div className="muted small" style={{ marginBottom: 14 }}>{joining
       ? t('Create a passkey on this device for the profile “{0}”. It signs you in here from now on.', joining.name)
-      : t('Enter the code your other device shows under Settings → Add another device. This device then gets a passkey of its own.')}</div>
+      : t('Enter the code your other device shows under Settings → Account → Add another device. This device then gets a passkey of its own.')}</div>
     {elsewhere && <div className="card small" style={{ textAlign: 'start', marginBottom: 14 }}>
       {user && <div style={{ marginBottom: 8 }}>{user.name === joining.name
         ? t('This code is for a different profile that is also called “{0}”, not the one this browser is signed in as. Adding it there signs yours out here.', joining.name)

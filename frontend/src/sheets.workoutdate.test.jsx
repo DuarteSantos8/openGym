@@ -102,6 +102,26 @@ describe('changing the date of a saved workout', () => {
     expect(useUI.getState().toast).toHaveBeenCalledWith('Pick a day up to today')
   })
 
+  // At 01:42, today at 23:30 passed the date check and filed the session 22 hours ahead.
+  it('refuses a time today that has not happened yet, counting the length it keeps', () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date(2026, 7, 26, 1, 42))
+    try {
+      const before = history()
+      const host = render(() => workoutDateSheet(before[1]))   // 47 minutes long
+      act(() => { type(host.querySelector('input[type=date]'), '2026-08-26') })
+      for (const time of ['23:30', '01:00']) {
+        act(() => { type(host.querySelector('input[type=time]'), time) })
+        act(() => { button(host, 'Save').click() })
+        expect(history(), time).toEqual(before)
+        expect(useUI.getState().toast).toHaveBeenLastCalledWith('That’s still in the future. Try an earlier start.')
+      }
+      act(() => { type(host.querySelector('input[type=time]'), '00:50') })
+      act(() => { button(host, 'Save').click() })
+      expect(history().find(w => w.id === 'late').d).toBe('2026-08-26')
+    } finally { vi.useRealTimers() }
+  })
+
   it('saving without changing anything closes and touches nothing', () => {
     const before = history()
     const host = render(() => workoutDateSheet(before[1]))
@@ -243,15 +263,31 @@ describe('changing the duration of a saved workout', () => {
       act(() => { type(field, typed) })
       act(() => { field.dispatchEvent(new FocusEvent('focusout', { bubbles: true })) })
       expect(field.value === '' || field.value === '0', typed).toBe(true)
-      expect(host.textContent).toContain('Enter how long it took — at least 1 minute.')
+      expect(host.textContent).toContain('Enter how long it took (at least 1 minute).')
       act(() => { button(host, 'Save').click() })
       expect(history()[1]).toEqual(before)
-      expect(useUI.getState().toast).toHaveBeenLastCalledWith('Enter how long it took — at least 1 minute.')
+      expect(useUI.getState().toast).toHaveBeenLastCalledWith('Enter how long it took (at least 1 minute).')
     }
     act(() => { type(field, '40') })
     expect(host.textContent).not.toContain('at least 1 minute')
     act(() => { button(host, 'Save').click() })
     expect(history()[1].end - history()[1].start).toBe(40 * 60000)
+  })
+
+  // 99999 minutes saved as '1666h 39m', ending weeks from now.
+  it('refuses more than a day, says why under the field, and keeps the saved length', () => {
+    const before = history()[1]
+    const host = render(() => workoutDurationSheet(before))
+    const field = host.querySelector('input.num')
+    act(() => { type(field, '99999') })
+    expect(host.textContent).toContain('That’s more than a day. Keep it to 24 hours or less.')
+    act(() => { button(host, 'Save').click() })
+    expect(history()[1]).toEqual(before)
+    expect(useUI.getState().toast).toHaveBeenLastCalledWith('That’s more than a day. Keep it to 24 hours or less.')
+    act(() => { type(field, '1440') })
+    expect(host.textContent).not.toContain('more than a day')
+    act(() => { button(host, 'Save').click() })
+    expect(history()[1].end - history()[1].start).toBe(1440 * 60000)
   })
 
   it('saving the same length closes and touches nothing', () => {

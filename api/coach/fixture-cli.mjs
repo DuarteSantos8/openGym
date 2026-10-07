@@ -81,7 +81,7 @@ if (kind === 'create') {
     // carried its predecessor from one that silently sent `previous: null`.
     basedOn: P.refine?.previous
       ? 'Refined from the plan you were shown.'
-      : 'No training history yet — starting conservatively.',
+      : 'No training history yet, so starting conservatively.',
     week: { 1: 'r1', 3: 'r2', 5: 'r1' },
     routines: [
       {

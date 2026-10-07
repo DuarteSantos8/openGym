@@ -1,9 +1,26 @@
 # openGym — standalone web server: serves the static app AND proxies /api to the backend,
 # so the whole app lives on ONE origin (required for WebAuthn / passkeys).
+
+# What the two /api blocks below forward: the request's own target, path and query exactly as
+# the client sent it, with BASE_PATH taken off the front. The API's routes are /api/... whatever
+# the browser's prefix is, so a subpath deployment forwarded /gym/api/health as-is and got a 404
+# on every call. With BASE_PATH empty the pattern matches the whole target and nothing changes.
+# A target that reached the block without the prefix spelled out as sent (/%67ym/api/...) maps
+# to nothing, so the target goes through unchanged and the API answers it 404, as it always did.
+# BASE_PATH sits between \Q and \E, PCRE's quotes for literal text: a "." or "+" in it is that
+# character, not part of the pattern.
+map $request_uri $api_request_uri {
+    "~^\Q${BASE_PATH}\E(?<api_request_rest>/.*)$" $api_request_rest;
+}
+
 server {
     listen ${NGINX_PORT};
     root /usr/share/nginx/html;
     index index.html;
+    # Every redirect nginx sends (the unknown-path one below, and /api to /api/) carries a
+    # relative Location. An absolute one is built from nginx's own scheme and port,
+    # http://host:8080/api/, which is not an address behind an https reverse proxy.
+    absolute_redirect off;
 
     # Sent on every response below. NOTE: an `add_header` inside a location replaces the whole
     # inherited set rather than adding to it, so the two locations further down that set their
@@ -36,7 +53,9 @@ server {
         # service address (`kubectl -n kube-system get svc kube-dns`, commonly 10.96.0.10).
         resolver ${RESOLVER} valid=10s ipv6=off;
         set $api_upstream http://${BACKEND}:${PORT};
-        proxy_pass $api_upstream;
+        # With a URI after the host, a proxy_pass built from variables sends that URI verbatim;
+        # an empty one (the map's no-match case) sends the request's own target, as before.
+        proxy_pass $api_upstream$api_request_uri;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -71,7 +90,9 @@ server {
         proxy_send_timeout 300s;
         resolver ${RESOLVER} valid=10s ipv6=off;
         set $api_upstream http://${BACKEND}:${PORT};
-        proxy_pass $api_upstream;
+        # The same mapped target as the block above: under a prefix the upload has to reach the
+        # API's /api/media/... route too.
+        proxy_pass $api_upstream$api_request_uri;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -95,11 +116,12 @@ server {
         # `rewrite ... break` rather than `alias`: try_files inside an aliased prefix location is
         # a long-standing nginx trap (it still resolves the untranslated URI). With BASE_PATH
         # empty this rewrite is an identity and the block behaves exactly as it always has.
-        rewrite ^${BASE_PATH}/(.*)$ /$1 break;
+        # \Q...\E makes BASE_PATH literal text here too, as in the map at the top: read as a
+        # pattern, /g+ym never matched itself and /g+ym/ redirected to /g+ym/ forever.
+        rewrite ^\Q${BASE_PATH}\E/(.*)$ /$1 break;
         try_files $uri $uri/ @root;
     }
     location @root {
-        absolute_redirect off;
         return 302 ${BASE_PATH}/$is_args$args;
     }
 
@@ -107,7 +129,7 @@ server {
     location ~* \.(js|css|json|html)$ {
         # A regex location wins over the prefix block above, so it never saw its rewrite and
         # looked for the file under the prefix on disk. Same identity-when-empty rewrite here.
-        rewrite ^${BASE_PATH}/(.*)$ /$1 break;
+        rewrite ^\Q${BASE_PATH}\E/(.*)$ /$1 break;
         add_header Cache-Control "no-cache, must-revalidate";
         add_header X-Frame-Options "DENY" always;
         add_header X-Content-Type-Options "nosniff" always;
@@ -115,12 +137,13 @@ server {
         add_header Content-Security-Policy "frame-ancestors 'none'" always;
     }
 
-    # Exercise images/GIFs never change → cache hard
+    # Exercise images/GIFs never change → cache hard.
+    # `expires` would add a second Cache-Control of its own (plus an Expires header) on top of the
+    # explicit one below, so the header is set once, here, where `immutable` can be part of it.
     location ~* \.(png|jpg|jpeg|gif|ico|svg|woff|woff2|webp|avif)$ {
         # A regex location wins over the prefix block above, so it never saw its rewrite and
         # looked for the file under the prefix on disk. Same identity-when-empty rewrite here.
-        rewrite ^${BASE_PATH}/(.*)$ /$1 break;
-        expires 30d;
+        rewrite ^\Q${BASE_PATH}\E/(.*)$ /$1 break;
         add_header Cache-Control "public, max-age=2592000, immutable";
         add_header X-Frame-Options "DENY" always;
         add_header X-Content-Type-Options "nosniff" always;

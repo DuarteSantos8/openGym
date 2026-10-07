@@ -58,15 +58,39 @@ export function equipmentOf(list) {
 
 // Custom (user-created) exercises live in synced state S.customEx (issue #11) and are
 // merged into the id index here so every EXIDX[id] lookup keeps working unchanged.
-let customIds = []
+let customIds = new Set()
+const BUILTIN = new Set(CATALOGUE)
 export function registerCustom(list) {
   customIds.forEach(id => {
     delete EXIDX[id]
     const builtIn = CATALOGUE.find(ex => ex.id === id)
     if (builtIn) EXIDX[id] = builtIn
   })
-  customIds = (list || []).map(e => e.id)
-  ;(list || []).forEach(e => { EXIDX[e.id] = e })
+  const xs = (Array.isArray(list) ? list : []).filter(e => e && e.id != null)
+  customIds = new Set(xs.map(e => e.id))
+  xs.forEach(e => { EXIDX[e.id] = e })
+}
+
+// Whether an exercise is one of the user's own (#378, #358). Where it lives decides, not the
+// `custom` flag alone: a plan import before 1.3.8 (a shared plan file, a plan from the AI coach)
+// stored its exercises without the flag, and those were left with no Edit, no Delete and a
+// broken thumbnail. A built-in catalogue entry is never custom, even if a custom one shadows its id.
+export const isCustomEx = ex => !!ex && typeof ex === 'object' && !BUILTIN.has(ex) &&
+  (ex.custom === true || customIds.has(ex.id))
+
+// The stored list with the flag put back on every entry that lost it — the same array when
+// nothing is missing, so a copy that is already right is never rewritten. The entry keeps its own
+// `_ts`: the heal is no edit, and a newer stamp would let it win a merge over a real rename made
+// on another device that has not healed yet.
+export function healCustomEx(list) {
+  if (!Array.isArray(list)) return list
+  let changed = false
+  const out = list.map(c => {
+    if (!c || typeof c !== 'object' || c.custom === true) return c
+    changed = true
+    return { ...c, custom: true, ...(c.eq == null ? { eq: '' } : {}) }
+  })
+  return changed ? out : list
 }
 // Full searchable catalogue — customs first so your own exercises are easy to find.
 export const allExercises = st => [...(st.customEx || []), ...CATALOGUE]

@@ -74,66 +74,66 @@ afterEach(() => {
   setAudioSession(undefined)
 })
 
-const mount = () => act(() => root.render(<Settings />))
+const mount = (page = 'alerts') => act(() => root.render(<Settings page={page} />))
 const rowTitled = title => [...host.querySelectorAll('.lrow')].find(r => r.querySelector('.lrow-t')?.textContent === title)
 const switchIn = row => row.querySelector('[role="switch"]') || row.querySelector('input[type="checkbox"]') || row.querySelector('button')
 
 describe('Settings — play sounds when the phone is on silent', () => {
-  it('is offered on a browser with an audio session (iOS), under Sounds, with the music trade-off spelled out', () => {
+  it('is offered on a browser with an audio session (iOS), under the sound rows, with the music trade-off spelled out', () => {
     mount()
-    const row = rowTitled('Play sounds when the phone is on silent')
+    const row = rowTitled('Play even on silent')
     expect(row).toBeTruthy()
-    expect(row.querySelector('.lrow-s').textContent).toBe('Music playing on this phone stops during a workout and does not resume by itself.')
+    expect(row.querySelector('.lrow-s').textContent).toBe('Music playing on this phone stops during a workout and does not resume by itself.iPhone only')
     const rows = [...host.querySelectorAll('.lrow')]
-    expect(rows.indexOf(row)).toBe(rows.indexOf(rowTitled('Sounds')) + 1)
+    expect(rows.indexOf(row)).toBe(rows.indexOf(rowTitled('Sound')) + 1)
   })
 
   it('is not offered where the browser has no audio session API', () => {
     setAudioSession(undefined)
     mount()
-    expect(rowTitled('Play sounds when the phone is on silent')).toBeUndefined()
+    expect(rowTitled('Play even on silent')).toBeUndefined()
   })
 
   it('is not offered on macOS Safari, which has the API but no ring/silent switch', () => {
     Object.defineProperty(navigator, 'userAgent', { value: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15', configurable: true })
     Object.defineProperty(navigator, 'maxTouchPoints', { value: 0, configurable: true })
     mount()
-    expect(rowTitled('Play sounds when the phone is on silent')).toBeUndefined()
+    expect(rowTitled('Play even on silent')).toBeUndefined()
   })
 
   it('is not offered while Sounds is off', () => {
     mocks.S.sound = false
     mount()
-    expect(rowTitled('Play sounds when the phone is on silent')).toBeUndefined()
+    expect(rowTitled('Play even on silent')).toBeUndefined()
   })
 
   it('writes soundOnSilent to the store', () => {
     mount()
-    const sw = switchIn(rowTitled('Play sounds when the phone is on silent'))
+    const sw = switchIn(rowTitled('Play even on silent'))
     expect(sw).toBeTruthy()
     act(() => { sw.click() })
     expect(mocks.S.soundOnSilent).toBe(true)
   })
 })
 
-describe('Settings — Sounds switch unlocks audio from the tap', () => {
+describe('Settings — Play a sound unlocks audio from the tap', () => {
   it('turning Sounds on unlocks; turning it off does not', () => {
     mocks.S.sound = false
     mount()
-    act(() => { switchIn(rowTitled('Sounds')).click() })
+    act(() => { switchIn(rowTitled('Play a sound')).click() })
     expect(mocks.S.sound).toBe(true)
     expect(unlock).toHaveBeenCalledWith(true)
     unlock.mockClear()
     mount()
-    act(() => { switchIn(rowTitled('Sounds')).click() })
+    act(() => { switchIn(rowTitled('Play a sound')).click() })
     expect(mocks.S.sound).toBe(false)
     expect(unlock).not.toHaveBeenCalled()
   })
 })
 
 describe('Settings — optional timed-set overtime', () => {
-  it('offers the opt-in beside the timer alerts and writes the preference', () => {
-    mount()
+  it('offers the opt-in in Fine-tuning and writes the preference', () => {
+    mount('advanced')
     const row = rowTitled('Keep timing after target')
     expect(row).toBeTruthy()
     expect(row.querySelector('.lrow-s').textContent).toBe('Timed sets continue up to 15 extra minutes. Tap Done to log the actual duration.')
@@ -156,8 +156,8 @@ describe('Settings — vibrate', () => {
     expect(row).toBeTruthy()
     expect(switchIn(row).getAttribute('aria-checked')).toBe('true')
     const rows = [...host.querySelectorAll('.lrow')]
-    expect(rows.indexOf(row)).toBeGreaterThan(rows.indexOf(rowTitled('Sounds')))
-    expect(rows.indexOf(row)).toBeLessThan(rows.indexOf(rowTitled('Flash screen when timer ends')))
+    expect(rows.indexOf(row)).toBeGreaterThan(rows.indexOf(rowTitled('Play a sound')))
+    expect(rows.indexOf(row)).toBeLessThan(rows.indexOf(rowTitled('Flash the screen')))
   })
 
   it('stays on offer with Sounds off: the buzz does not depend on the sound', () => {
@@ -178,9 +178,37 @@ describe('Settings — vibrate', () => {
     expect(mocks.S.vibrate).toBe(true)
   })
 
-  it('is not offered where there is nothing to buzz (iOS has no navigator.vibrate)', () => {
+  // v1.3.11: an iPhone user looking for Vibrate finds it, greyed out, with the reason.
+  it('on an iPhone (no navigator.vibrate) the row stays, disabled, says "Not on iPhone" and explains below', () => {
     setVibrateApi(undefined)
     mount()
-    expect(rowTitled('Vibrate')).toBeUndefined()
+    const row = rowTitled('Vibrate')
+    expect(row).toBeTruthy()
+    expect(row.classList.contains('dis')).toBe(true)
+    expect(row.querySelector('.lrow-s').textContent).toBe('Not on iPhone')
+    expect(switchIn(row).disabled).toBe(true)
+    expect(switchIn(row).getAttribute('aria-checked')).toBe('false')
+    expect(host.textContent).toContain('iPhone doesn’t let openGym vibrate. A sound or a flash does the job.')
+  })
+
+  it('a desktop browser without vibration shows it disabled as not supported, with no iPhone footer', () => {
+    setVibrateApi(undefined)
+    Object.defineProperty(navigator, 'userAgent', { value: 'Mozilla/5.0 (X11; Linux x86_64) Gecko/20100101 Firefox/130.0', configurable: true })
+    mount()
+    expect(rowTitled('Vibrate').querySelector('.lrow-s').textContent).toBe('Not supported in this browser.')
+    expect(host.textContent).not.toContain('iPhone doesn’t let openGym vibrate')
+  })
+})
+
+describe('Settings — which sound', () => {
+  it('shows the chime by default and Classic beeps for classicChime, only while sound is on', () => {
+    mount()
+    expect(rowTitled('Sound').querySelector('.lrow-v').textContent).toBe('Chime (louder)')
+    mocks.S.classicChime = true
+    mount()
+    expect(rowTitled('Sound').querySelector('.lrow-v').textContent).toBe('Classic beeps')
+    mocks.S.sound = false
+    mount()
+    expect(rowTitled('Sound')).toBeUndefined()
   })
 })

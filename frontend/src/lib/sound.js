@@ -96,11 +96,21 @@ export function beep(enabled, freq, dur, when) {
 //    ticks before it (660 Hz), a set tick (1040 Hz) nor the rising finish fanfare has.
 // It does not turn other apps down. A web page cannot duck another app's audio: Android only
 // grants audio focus to native code, and on iOS the 'playback' session pauses the music (1. above).
+//
+// Some people preferred the original under music — quieter is not a defect for everyone, e.g.
+// headphones at the gym rather than a phone speaker next to a stereo. Settings → "Classic timer
+// sound" (S.classicChime) picks between the two without reviving the three separate beep() calls
+// this replaced: CLASSIC is the exact same three tones, just driven through the same tone() path
+// as the chime below, so both share one gating/try-catch and one sleepAfter bookkeeping.
 export const CHIME_PEAK = 0.9
 const CHIME = [[1319, 0.16, 0], [988, 0.16, 0.22], [1319, 0.5, 0.44]]
-export function chime(enabled) {
+const CLASSIC = [[880, 0.15, 0], [880, 0.15, 0.25], [1320, 0.4, 0.5]]
+export function chime(enabled, classic) {
   if (!enabled) return
-  try { CHIME.forEach(([freq, dur, when]) => tone(freq, dur, when, { peak: CHIME_PEAK, hold: 0.6, bright: true })) } catch (e) { /* */ }
+  try {
+    if (classic) CLASSIC.forEach(([freq, dur, when]) => tone(freq, dur, when))
+    else CHIME.forEach(([freq, dur, when]) => tone(freq, dur, when, { peak: CHIME_PEAK, hold: 0.6, bright: true }))
+  } catch (e) { /* */ }
 }
 
 // Call from inside a tap. Gets the context created and running while the browser still counts
@@ -118,6 +128,12 @@ export function unlock(enabled) {
 // this one). Applied by App.jsx whenever the setting is loaded or changed.
 export const playOnSilentSupported = () => {
   if (typeof navigator === 'undefined' || !navigator.audioSession) return false
+  return appleTouchDevice()
+}
+// An iPhone or iPad, in Safari, a home-screen web app or the iOS app (an iPad reports itself as
+// a Mac with a touch screen). Settings says "Not on iPhone" on the Vibrate row here.
+export const appleTouchDevice = () => {
+  if (typeof navigator === 'undefined') return false
   const ua = navigator.userAgent || ''
   return /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)
 }
@@ -137,4 +153,20 @@ export const vibrateSupported = () => typeof navigator !== 'undefined' && typeof
 export function vibrate(p) {
   if (!buzz) return
   try { navigator.vibrate && navigator.vibrate(p) } catch (e) { /* */ }
+}
+
+// Settings → "Vibrate when the phone is on silent" (#375), Android app only. The page's buzz is an
+// ordinary one, and a phone on silent drops it; the end of a rest or a hold then goes through the
+// native side as an alarm (lib/rest-alert.js buzzAsAlarm), which silent mode lets through. App.jsx
+// hands that buzzer in while the setting is on; it answers false when it could not buzz, and the
+// page's own buzz stands in. A set tick never comes here: it should not override silent.
+let alarmBuzzer = null
+export function setAlarmBuzzer(fn) { alarmBuzzer = typeof fn === 'function' ? fn : null }
+export function alertBuzz(p) {
+  if (!buzz) return
+  const native = alarmBuzzer
+  if (!native) { vibrate(p); return }
+  let asked
+  try { asked = Promise.resolve(native(p)) } catch (e) { asked = Promise.resolve(false) }
+  asked.then(ok => { if (!ok) vibrate(p) }, () => vibrate(p))
 }

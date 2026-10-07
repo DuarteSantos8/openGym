@@ -114,7 +114,7 @@ afterEach(() => { vi.useRealTimers(); act(() => { mounted.splice(0).forEach(({ r
 describe('passkeyError', () => {
   it('words this feature’s refusals, and hands the proof refusals to the password sheet’s wording', () => {
     expect(passkeyError(named('InvalidStateError'))).toBe('This device already has a passkey for this profile.')
-    expect(passkeyError(fail(400, { code: 'link-invalid' }))).toMatch(/wrong, used or expired/)
+    expect(passkeyError(fail(400, { code: 'link-invalid' }))).toMatch(/wrong, already used or expired/)
     expect(passkeyError(fail(409, { code: 'last-way-in' }))).toMatch(/only way in/)
     expect(passkeyError(fail(409, { code: 'passkey-limit' }))).toMatch(/as many passkeys/)
     expect(passkeyError(fail(403, { code: 'current-wrong' }))).toBe('Your current password is not right.')
@@ -190,7 +190,7 @@ describe('Settings: removing a passkey', () => {
     const { host, close, edit, changed } = await openRemove()
     expect(host.querySelector('h3').textContent).toBe('Remove this passkey?')
     expect(host.textContent).toContain('Laptop')
-    expect(host.textContent).toMatch(/stays signed in — use Sign out everywhere/)
+    expect(host.textContent).toMatch(/stays signed in. If it was lost, use Sign out everywhere/)
     expect(host.textContent).toContain('First confirm that it is you.')
     // No password on this profile, or none that counts: the passkey is the only proof offered.
     expect(byPlaceholder(host, 'Current password')).toBeNull()
@@ -415,7 +415,7 @@ describe('the other device: redeeming a code', () => {
     type(byPlaceholder(host, 'Code from your other device'), 'wrng-code-0000')
     await submit(host)
     expect(mocks.calls[0].body).toEqual({ code: 'WRNG-CODE-0000' })
-    expect(alertText(host)).toMatch(/wrong, used or expired/)
+    expect(alertText(host)).toMatch(/wrong, already used or expired/)
     expect(mocks.createPasskey).not.toHaveBeenCalled()
     expect(mocks.setUser).not.toHaveBeenCalled()
   })

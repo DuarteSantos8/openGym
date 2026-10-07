@@ -55,10 +55,10 @@ describe('Login with password sign-in', () => {
   it('an instance without it looks exactly as before', () => {
     const page = mount(<Login />)
     expect(buttons(page)).not.toContain('Sign in with password')
-    expect(page.textContent).toContain('Passkeys use your fingerprint — no passwords.')
+    expect(page.textContent).toContain('Passkeys use your fingerprint. No passwords to remember.')
     mocks.webauthn = false
     const noPasskeys = mount(<Login />)
-    expect(noPasskeys.textContent).toContain("This browser doesn't support passkeys — you can still use openGym locally on this device.")
+    expect(noPasskeys.textContent).toContain("This browser doesn't do passkeys, but you can still use openGym locally on this device.")
     expect(buttons(noPasskeys)).not.toContain('Sign in with password')
   })
 
@@ -77,7 +77,7 @@ describe('Login with password sign-in', () => {
     mocks.webauthn = false
     mocks.config = { password_login: true, allow_guest: false }
     const page = mount(<Login />)
-    expect(page.textContent).toContain("This browser doesn't support passkeys — sign in with your name and password instead.")
+    expect(page.textContent).toContain("This browser doesn't support passkeys. Sign in with your name and password instead.")
     expect(page.textContent).not.toContain('Try a browser or device with passkey support.')
     expect(buttons(page)).toEqual(['Sign in with password', 'Create new profile'])
     // Creating a profile here can only mean a password: no passkey/password choice to make.

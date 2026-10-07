@@ -69,7 +69,7 @@ afterEach(() => {
   host.remove()
 })
 
-const mount = () => act(() => root.render(<Settings />))
+const mount = () => act(() => root.render(<Settings page="advanced" />))
 const row = () => [...host.querySelectorAll('.lrow')].find(r => r.textContent.includes('Planned sessions start from'))
 const choose = label => {
   act(() => { row().click() })

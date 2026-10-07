@@ -97,7 +97,7 @@ export default function CheckIn() {
     </div>}
 
     {!cards.length && <div className="muted small" style={{ textAlign: 'center', marginTop: 18, lineHeight: 1.5 }}>
-      {t('Import a photo of your membership card or scan it with the camera. No extra app needed at the gym — just open this screen.')}
+      {t('Import a photo of your membership card or scan it with the camera. No extra app needed at the gym, just open this screen.')}
     </div>}
   </div>
 }
@@ -165,6 +165,14 @@ function CardSheet({ close, card }) {
     if (!trimmed) { toast(t('Scan or import a code first')); return }
     const update = useStore.getState().update
     if (editing) {
+      // The card can be removed on another device while this sheet is open. Checking inside the
+      // mutator returned from the MUTATOR, not from here, so the sheet still said "Card updated",
+      // closed, and pushed a write that changed nothing. Look first, and say what happened.
+      if (!(useStore.getState().S.gymCards || []).some(x => x.id === card.id)) {
+        toast(t('That card was removed on another device'))
+        close()
+        return
+      }
       update(s => {
         const c = (s.gymCards || []).find(x => x.id === card.id)
         if (!c) return
@@ -193,7 +201,7 @@ function CardSheet({ close, card }) {
         onCancel={closeCam}
         onFound={code => {
           closeCam()
-          if (!canRenderFmt(code.fmt)) { toast(t("That's not a QR code — only QR cards can be shown here")); return }
+          if (!canRenderFmt(code.fmt)) { toast(t("That's not a QR code. Only QR cards can be shown here")); return }
           setValue(code.value)
         }} />)
       return
@@ -202,7 +210,7 @@ function CardSheet({ close, card }) {
     try {
       const code = await scanCode()
       if (!code) return                       // user backed out
-      if (!canRenderFmt(code.fmt)) { toast(t("That's not a QR code — only QR cards can be shown here")); return }
+      if (!canRenderFmt(code.fmt)) { toast(t("That's not a QR code. Only QR cards can be shown here")); return }
       setValue(code.value)
     } catch (e) {
       toast(scanErrorMessage(e))
@@ -217,7 +225,7 @@ function CardSheet({ close, card }) {
     try {
       const code = await importCodeFromImage(file)
       if (!code) { toast(t('No QR code found in that image')); return }
-      if (!canRenderFmt(code.fmt)) { toast(t("That's not a QR code — only QR cards can be shown here")); return }
+      if (!canRenderFmt(code.fmt)) { toast(t("That's not a QR code. Only QR cards can be shown here")); return }
       setValue(code.value)
     } catch (e) {
       toast(t('Could not read that image'))

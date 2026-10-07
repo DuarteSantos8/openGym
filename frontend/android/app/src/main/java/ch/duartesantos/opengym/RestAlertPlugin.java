@@ -2,6 +2,7 @@ package ch.duartesantos.opengym;
 
 import android.content.Context;
 import android.content.Intent;
+import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
@@ -17,6 +18,7 @@ import com.getcapacitor.annotation.CapacitorPlugin;
  *   const RestAlert = registerPlugin('RestAlert');
  *   await RestAlert.schedule({ id, at, title, sound, vibrate, channelId, visibility, importance, localOnly });
  *   await RestAlert.cancel({ id });
+ *   await RestAlert.buzz({ pattern: [200, 100, 200] });   // navigator.vibrate's shape, as an alarm
  */
 @CapacitorPlugin(name = "RestAlert")
 public class RestAlertPlugin extends Plugin {
@@ -83,6 +85,7 @@ public class RestAlertPlugin extends Plugin {
                 call.getString("title", "Rest over"),
                 !Boolean.FALSE.equals(call.getBoolean("sound", Boolean.TRUE)),
                 !Boolean.FALSE.equals(call.getBoolean("vibrate", Boolean.TRUE)),
+                Boolean.TRUE.equals(call.getBoolean("alarmBuzz", Boolean.FALSE)),
                 call.getString("channelId", RestAlert.CHANNEL_ID),
                 call.getString("visibility", "public"),
                 call.getString("importance", "high"),
@@ -90,6 +93,34 @@ public class RestAlertPlugin extends Plugin {
                 call.getString("countdownTitle", "Rest"),
                 number(call, "totalMs", 0)
         );
+        call.resolve();
+    }
+
+    /**
+     * The page's end-of-rest or end-of-hold buzz with Settings → "Vibrate when the phone is on
+     * silent" on (#375). `pattern` is navigator.vibrate's (on, off, on…); Android's waveform starts
+     * with an off, so a 0 goes in front.
+     */
+    @PluginMethod
+    public void buzz(PluginCall call) {
+        Context ctx = getContext();
+        if (ctx == null) {
+            call.reject("no context");
+            return;
+        }
+        long[] pattern = new long[] {0, 200, 100, 200};
+        JSArray given = call.getArray("pattern");
+        if (given != null && given.length() > 0 && given.length() <= 20) {
+            long[] p = new long[given.length() + 1];
+            boolean ok = true;
+            for (int i = 0; i < given.length(); i++) {
+                long v = given.optLong(i, -1);
+                if (v < 0 || v > 10_000) { ok = false; break; }
+                p[i + 1] = v;
+            }
+            if (ok) pattern = p;
+        }
+        RestAlert.buzz(ctx.getApplicationContext(), pattern);
         call.resolve();
     }
 

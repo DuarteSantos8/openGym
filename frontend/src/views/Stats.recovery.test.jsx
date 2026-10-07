@@ -312,6 +312,28 @@ describe('Stats muscle recovery view runtime', () => {
     expect(Math.min(...Object.values(strengthMap.load))).toBe(STRENGTH_FLOOR)
     expect(strengthMap.thresholds.at(-1)).toEqual({ at: 1, level: 4 })
   })
+
+  it('keeps zero-weight snapshots out of recovery maps and last-trained recency', async () => {
+    resetFixture([workout('zero-mapped', BASE_NOW, [{
+      id: 'deleted-zero-mapped',
+      muscleSnapshot: { n: 'Zero mapped', muscleWeights: { chest: 1, biceps: 0 } },
+      sets: [set(true)],
+    }])])
+    await mountStats()
+
+    expect(lastMap().load).toEqual({ chest: 1 })
+    await click(viewButton('Fatigue'))
+    expect(lastMap().load.chest).toBeGreaterThan(0)
+    expect(lastMap().load.biceps).toBe(0)
+    expect(levelsOf(lastMap().load, lastMap().thresholds).biceps).toBe(0)
+
+    await click(viewButton('Strength'))
+    expect(lastMap().load.chest).toBe(1)
+    expect(lastMap().load.biceps).toBe(STRENGTH_FLOOR)
+    const bicepsRow = [...muscleCard().querySelectorAll('.mrow')]
+      .find(row => row.querySelector('.nm')?.textContent === 'Biceps')
+    expect(bicepsRow.querySelector('.v').textContent).toContain('not trained')
+  })
 })
 
 describe('Stats strength exercise rows', () => {

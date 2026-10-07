@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { imgSrc, gifSrc } from '../lib/exercises.js'
+import { imgSrc, gifSrc, isCustomEx } from '../lib/exercises.js'
 import { useStore } from '../store/useStore.js'
 import { t, exerciseNameFor } from '../lib/i18n.js'
 import Icon from './Icon.jsx'
@@ -10,7 +10,7 @@ import CustomMedia, { CustomThumb } from './CustomMedia.jsx'
 // name files of the shipped dataset (a stray img/gif on a custom exercise, written by a fork, is
 // ignored). The split is by component, not by branch, so each side keeps its own hooks in order.
 export default function Media(p) {
-  return p.ex?.custom ? <CustomMedia {...p} /> : <BuiltinMedia {...p} />
+  return isCustomEx(p.ex) ? <CustomMedia {...p} /> : <BuiltinMedia {...p} />
 }
 
 // Big autoplaying animation; tap toggles to the still frame. `compact` shrinks it (superset cards).
@@ -63,7 +63,7 @@ function BuiltinMedia({ ex, id, compact, minimizable }) {
 // broken-image glyph in a list of them (#281). The failure is remembered per image, so a list
 // that re-renders does not ask again; a new exercise in the same slot tries its own.
 export function Thumb(p) {
-  return p.ex?.custom ? <CustomThumb {...p} /> : <BuiltinThumb {...p} />
+  return isCustomEx(p.ex) ? <CustomThumb {...p} /> : <BuiltinThumb {...p} />
 }
 function BuiltinThumb({ ex }) {
   const src = ex.img ? imgSrc(ex) : null

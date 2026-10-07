@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { BODYPARTS, EXDB, EXIDX, registerCustom } from './exercises.js'
 import { MACHINE_BATCH_2 } from './exercise-muscle-batch-2.js'
-import { MUSCLES, musclesOf } from './muscles.js'
+import { MUSCLES, musclesOf, muscleWeightsOf } from './muscles.js'
 
 const ids = Object.keys(MACHINE_BATCH_2)
 const catalogue = new Map(EXDB.map(exercise => [exercise.id, exercise]))
@@ -118,7 +118,8 @@ describe('machine muscle metadata batch 2', () => {
     expect(raw).not.toHaveProperty('primaries')
     expect(raw).not.toHaveProperty('secondaries')
     expect(musclesOf(raw)).toEqual({ chest: 1, deltoids: 0.4, triceps: 0.4 })
-    expect(musclesOf(EXIDX['0577'])).toEqual({ chest: 1, deltoids: 0.4, triceps: 0.4, biceps: 0.4 })
+    expect(muscleWeightsOf(EXIDX['0577'])).toEqual({ chest: 1, deltoids: 0.4, triceps: 0.4, biceps: 0 })
+    expect(musclesOf(EXIDX['0577'])).toEqual({ chest: 1, deltoids: 0.4, triceps: 0.4 })
   })
 
   it('gives an explicit custom collision precedence and restores the machine overlay', () => {
@@ -130,6 +131,7 @@ describe('machine muscle metadata batch 2', () => {
     expect(musclesOf(EXIDX['0577'])).toEqual({ triceps: 1 })
     registerCustom([])
     expect(EXIDX['0577']).toMatchObject(MACHINE_BATCH_2['0577'])
-    expect(musclesOf(EXIDX['0577'])).toEqual({ chest: 1, deltoids: 0.4, triceps: 0.4, biceps: 0.4 })
+    expect(muscleWeightsOf(EXIDX['0577'])).toEqual({ chest: 1, deltoids: 0.4, triceps: 0.4, biceps: 0 })
+    expect(musclesOf(EXIDX['0577'])).toEqual({ chest: 1, deltoids: 0.4, triceps: 0.4 })
   })
 })

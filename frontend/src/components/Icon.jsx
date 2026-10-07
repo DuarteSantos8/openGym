@@ -77,7 +77,10 @@ const P = {
   link: <><path d="M10.2 13.8a3.6 3.6 0 0 0 5.4.4l2.6-2.6a3.6 3.6 0 0 0-5.1-5.1l-1.5 1.5" /><path d="M13.8 10.2a3.6 3.6 0 0 0-5.4-.4l-2.6 2.6a3.6 3.6 0 0 0 5.1 5.1l1.5-1.5" /></>,
   play: <path d="M8.4 5.6 18 12l-9.6 6.4Z" />,
   pause: <path d="M9.4 5.8v12.4M14.6 5.8v12.4" />,
+  skipForward: <><path d="M6.4 5.8 15.2 12l-8.8 6.2Z" /><path d="M18.2 5.8v12.4" /></>,
   reset: <><path d="M4.4 12a7.6 7.6 0 1 0 2.3-5.4" /><path d="M4 4.4v4.4h4.4" /></>,
+  // undo: an arrow curling back to the start
+  undo: <><path d="M8.6 14.4 4.2 10l4.4-4.4" /><path d="M4.6 10h9.6a5.4 5.4 0 0 1 0 10.8h-3" /></>,
   bell: <><path d="M6.6 10.4a5.4 5.4 0 0 1 10.8 0c0 4 1.4 5.6 1.4 5.6H5.2s1.4-1.6 1.4-5.6Z" /><path d="M10.1 19.2a2.1 2.1 0 0 0 3.8 0" /></>,
   bellSlash: <><path d="M8.1 6.6a5.4 5.4 0 0 1 9.3 3.8c0 4 1.4 5.6 1.4 5.6H9.4M6.6 16H5.2s1.4-1.6 1.4-5.6v-.6" /><path d="M10.1 19.2a2.1 2.1 0 0 0 3.8 0M4 3.6l16 16.8" /></>,
   chevronRight: <path d="m9.6 5.6 6.6 6.4-6.6 6.4" />,
@@ -105,7 +108,6 @@ const P = {
   cloud: <path d="M7 18.2h10.2a3.6 3.6 0 0 0 .1-7.2 5.4 5.4 0 0 0-10.4.6A3.3 3.3 0 0 0 7 18.2Z" />,
   cloudSlash: <><path d="M7 18.2h10.2a3.6 3.6 0 0 0 .1-7.2 5.4 5.4 0 0 0-10.4.6A3.3 3.3 0 0 0 7 18.2Z" /><path d="M4 3.6l16 16.8" /></>,
   download: <path d="M12 3.8v11.4M7.6 11.2 12 15.6l4.4-4.4M4.6 19.4h14.8" />,
-  upload: <path d="M12 15.6V4.2M7.6 8.2 12 3.8l4.4 4.4M4.6 19.4h14.8" />,
   wrench: <path d="M15.2 3.9a5 5 0 0 0-4.8 6.6l-6 6a2.1 2.1 0 0 0 3 3l6-6a5 5 0 0 0 6.1-6.3l-2.9 2.9-2.8-.7-.7-2.8Z" />,
   // checkered, not a pennant — this marks "finish workout", and a 2×2 grid is
   // what reads as a finish line at 16px
@@ -115,6 +117,13 @@ const P = {
   more: <><circle cx="5.5" cy="12" r="1.6" fill="currentColor" stroke="none" /><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" /><circle cx="18.5" cy="12" r="1.6" fill="currentColor" stroke="none" /></>,
   // the drag handle: two columns of three dots, the grip a pointer-device user looks for
   grip: <>{[6.2, 12, 17.8].map(y => [9.2, 14.8].map(x => <circle key={x + '-' + y} cx={x} cy={y} r="1.5" fill="currentColor" stroke="none" />))}</>,
+  // reorder by dragging: up and down chevrons stacked, where the grip above is for a mouse
+  chevronsUpDown: <path d="m7.6 9.4 4.4-4.4 4.4 4.4M7.6 14.6l4.4 4.4 4.4-4.4" />,
+  // a rotation: the routines go round in a loop (shuffle stays for freestyle)
+  repeat: <><path d="m17.6 4.4 2.4 2.4-2.4 2.4" /><path d="M4.4 11.6V10a3.2 3.2 0 0 1 3.2-3.2H20" /><path d="m6.4 19.6-2.4-2.4 2.4-2.4" /><path d="M19.6 12.4V14a3.2 3.2 0 0 1-3.2 3.2H4" /></>,
+  // share or export: out of the box (download is the way in)
+  share: <><path d="M12 14.4V3.8M8.4 7.4 12 3.8l3.6 3.6" /><path d="M8 10.2H6.6a2 2 0 0 0-2 2v6.2a2 2 0 0 0 2 2h10.8a2 2 0 0 0 2-2v-6.2a2 2 0 0 0-2-2H16" /></>,
+  note: <><rect x="4.6" y="3.6" width="14.8" height="16.8" rx="2.6" /><path d="M8.4 8.6h7.2M8.4 12h7.2M8.4 15.4h4" /></>,
   history: <><path d="M4.5 12.2a7.6 7.6 0 1 0 2.5-5.6" /><path d="M4.1 4.4v4.3h4.3" /><path d="M12 8.3v4.2l3.1 1.9" /></>,
   signOut: <><path d="M14.2 4.6H7a1.9 1.9 0 0 0-1.9 1.9v11a1.9 1.9 0 0 0 1.9 1.9h7.2" /><path d="m16.8 8.4 3.6 3.6-3.6 3.6M20.4 12H10.2" /></>,
   shuffle: <><path d="M3.6 7.2h2.9c1.6 0 2.8.9 3.8 2.4l3 4.8c1 1.5 2.2 2.4 3.8 2.4h2.9M3.6 16.8h2.9c1.6 0 2.8-.9 3.8-2.4l.7-1.1M15.6 9.9l.7-1.1c1-1.5 2.2-2.4 3.8-2.4h1.9" /><path d="m17.9 4.3 2.8 2.1-2.8 2.1M17.9 14.7l2.8 2.1-2.8 2.1" /></>,
@@ -125,15 +134,53 @@ const P = {
   camera: <><path d="M3.6 8.8a2 2 0 0 1 2-2h1.9l1.3-2.1h6.4l1.3 2.1h1.9a2 2 0 0 1 2 2v8.4a2 2 0 0 1-2 2H5.6a2 2 0 0 1-2-2Z" /><circle cx="12" cy="12.8" r="3.3" /></>,
   image: <><rect x="3.6" y="4.8" width="16.8" height="14.4" rx="2.6" /><circle cx="8.6" cy="9.6" r="1.7" /><path d="m4.4 17.4 4.8-4.6 3.3 3 3-2.6 4.1 4" /></>,
   warning: <><path d="M12 3.4 21.2 19.4H2.8Z" /><path d="M12 9.6v4.4" /><circle cx="12" cy="16.6" r=".9" fill="currentColor" stroke="none" /></>,
-}
 
-// A few keys are aliases so call sites can say what they mean.
-P.search = P.magnifier
-P.settings = P.gear
-P.exercises = P.magnifier
-P.weight = P.scale
-P.streak = P.flame
-P.done = P.check
+  /* ---- v1.3.11: one icon per concept (the Settings redesign names them) ---- */
+  // sound, not "notification": a speaker with two waves
+  speaker: <><path d="M4.6 9.4h3.2l4.6-3.8v12.8l-4.6-3.8H4.6Z" /><path d="M15.6 9.2a4 4 0 0 1 0 5.6M18 6.8a7.4 7.4 0 0 1 0 10.4" /></>,
+  // a phone with buzz marks on both sides
+  vibrate: <><rect x="8" y="4.2" width="8" height="15.6" rx="2" /><path d="M4.8 9v6M19.2 9v6M2.6 10.6v2.8M21.4 10.6v2.8" /></>,
+  // keep the screen on (sun stays flash and the light theme)
+  phoneScreen: <><rect x="6.6" y="3.4" width="10.8" height="17.2" rx="2.4" /><path d="M10.6 5.8h2.8" /></>,
+  ruler: <><rect x="3.4" y="8" width="17.2" height="8" rx="1.6" /><path d="M7 8v3M10.4 8v2M13.8 8v3M17.2 8v2" /></>,
+  palette: <><path d="M12 3.6a8.4 8.4 0 0 0 0 16.8c1.2 0 1.8-.7 1.8-1.6 0-1.1-.9-1.4-.9-2.4 0-.9.7-1.5 1.6-1.5h2.2a3.6 3.6 0 0 0 3.6-3.6c0-4.3-3.8-7.7-8.3-7.7Z" /><circle cx="8" cy="11.2" r="1.1" /><circle cx="11" cy="7.6" r="1.1" /><circle cx="15.2" cy="8.4" r="1.1" /></>,
+  // swap or replace: two opposed arrows
+  swap: <path d="M4.4 8.2h14.4M15.2 4.6l3.6 3.6-3.6 3.6M19.6 15.8H5.2M8.8 12.2l-3.6 3.6 3.6 3.6" />,
+  // the workout layout, and its Cards option: two stacked cards
+  layout: <><rect x="4" y="4" width="16" height="7" rx="2" /><rect x="4" y="13" width="16" height="7" rx="2" /></>,
+  // per side: one line down the middle, an arrow out to each side
+  sides: <><path d="M12 3.6v16.8" /><path d="M8.6 8.4 5.2 12l3.4 3.6M15.4 8.4l3.4 3.6-3.4 3.6" /></>,
+  hourglass: <path d="M6.8 3.8h10.4M6.8 20.2h10.4M8 3.8v2.6c0 2.2 4 3.6 4 5.6s-4 3.4-4 5.6v2.6M16 3.8v2.6c0 2.2-4 3.6-4 5.6s4 3.4 4 5.6v2.6" />,
+  // effort per set (RIR / RPE)
+  gauge: <><path d="M4.2 16.6a8 8 0 1 1 15.6 0" /><path d="m12 14.4 3.6-4.6" /><circle cx="12" cy="14.6" r="1.2" /></>,
+  // don't count for progression, and a deload routine (pause is only for pausing)
+  chartLineSlash: <><path d="M3.6 20.2V4.4M3.6 20.2h16.8M6.4 16.4l3.9-4.8 3.1 2.7 5.2-6.6" /><path d="M4.6 4.6 19.8 19.8" /></>,
+  // warm-up (flame is the streak only)
+  sunrise: <path d="M3.6 17.4h16.8M7.6 17.4a4.4 4.4 0 0 1 8.8 0M12 6.4v2.4M5.4 10.2 7 11.8M18.6 10.2 17 11.8M8.4 20.4h7.2" />,
+  plusCircle: <><circle cx="12" cy="12" r="8.2" /><path d="M12 8.2v7.6M8.2 12h7.6" /></>,
+  // a timed set's clock (timer stays the rest timer)
+  stopwatch: <><circle cx="12" cy="13.4" r="7.2" /><path d="M12 9.6v3.8M9.6 3.4h4.8M18 7.2l1.4-1.4" /></>,
+  // exercise settings: two sliders
+  slider: <><path d="M4.4 7.4h9.2M17.8 7.4h1.8M4.4 16.6h1.8M10.4 16.6h9.2" /><circle cx="15.7" cy="7.4" r="2.1" /><circle cx="8.3" cy="16.6" r="2.1" /></>,
+
+  /* ---- v1.3.11 icon sweep: the meanings shuffle, pause and friends used to share ---- */
+  // the Compact layout: four tight rows, where `list` has three with bullets
+  compact: <path d="M4.4 6.4h15.2M4.4 10.1h15.2M4.4 13.9h15.2M4.4 17.6h15.2" />,
+  // convert the numbers to the other unit
+  calculator: <><rect x="5.4" y="3.4" width="13.2" height="17.2" rx="2.6" /><path d="M8.6 7.6h6.8M9 12h.01M12 12h.01M15 12h.01M9 16.2h.01M12 16.2h.01M15 16.2h.01" /></>,
+  // merge an import into what is already here: two lines that become one
+  merge: <><path d="M6.4 3.8v3.4c0 3 5.6 4.6 5.6 8.2v4.8M17.6 3.8v3.4c0 3-5.6 4.6-5.6 8.2" /><path d="m8.8 17 3.2 3.2 3.2-3.2" /></>,
+  // pyramid sets: the weight steps up set by set
+  steps: <path d="M3.6 19.8h4.6v-4.6h4.6v-4.6h4.6V6h3" />,
+  // a note pinned to show next time (flag is Finish workout)
+  pin: <path d="M9.2 3.8h5.6M10.2 3.8v5.4l-3.4 3.8h10.4l-3.4-3.8V3.8M12 13v7.2" />,
+  // copy to the clipboard: two overlapping sheets
+  copy: <><rect x="8.4" y="8.4" width="11.6" height="11.6" rx="2.4" /><path d="M15.6 8.4v-2A2.4 2.4 0 0 0 13.2 4H6.4A2.4 2.4 0 0 0 4 6.4v6.8a2.4 2.4 0 0 0 2.4 2.4h2" /></>,
+  // a passkey (key is the password, lock is "stays on this device")
+  fingerprint: <><path d="M5.2 9.2a7.8 7.8 0 0 1 13.6 0" /><path d="M4.8 14.4v-1.2a7.2 7.2 0 0 1 .4-2.4M18.8 9.2a7.6 7.6 0 0 1 .4 2.6v3" /><path d="M8.6 20a9.6 9.6 0 0 1-1.2-4.6v-2.2a4.6 4.6 0 0 1 9.2 0v1.6" /><path d="M12 13v2.6a9.4 9.4 0 0 0 1.6 5" /><path d="M16.6 18.2v.6c0 .6.1 1.2.2 1.6" /></>,
+  // how a message sounds (the nudge tone)
+  chat: <path d="M5.6 4.8h12.8a2.2 2.2 0 0 1 2.2 2.2v8a2.2 2.2 0 0 1-2.2 2.2H11l-4.4 3.4v-3.4h-1a2.2 2.2 0 0 1-2.2-2.2V7a2.2 2.2 0 0 1 2.2-2.2Z" />,
+}
 
 export const ICON_NAMES = Object.keys(P)
 

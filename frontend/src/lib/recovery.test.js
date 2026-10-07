@@ -164,6 +164,20 @@ describe('fatigueOf and strengthOf', () => {
     expect(strength[untouchedSlug]).toBe(STRENGTH_FLOOR)
   })
 
+  it('gives explicit zero snapshot weights no fatigue or retained-strength stimulus', () => {
+    const workouts = [workoutAt('deleted-zero-mapped', NOW, [{ done: true, w: 80, r: 8 }])]
+    workouts[0].entries[0].muscleSnapshot = {
+      n: 'Zero mapped', muscleWeights: { chest: 1, biceps: 0 },
+    }
+
+    const fatigue = fatigueOf(workouts, NOW)
+    const strength = strengthOf(workouts, NOW)
+    expect(fatigue.chest).toBeGreaterThan(0)
+    expect(fatigue.biceps).toBe(0)
+    expect(strength.chest).toBe(1)
+    expect(strength.biceps).toBe(STRENGTH_FLOOR)
+  })
+
   it('raises starting fatigue with volume, never pins, and fades without a cliff', () => {
     const at0 = count => fatigueOf([doneWorkoutAt(SINGLE.id, NOW, count)], NOW)[SINGLE_SLUG]
     expect(at0(1)).toBeCloseTo(1 - Math.exp(-V / FATIGUE_REF_VOLUME), 10)

@@ -34,13 +34,14 @@ export function parseCSV(text) {
   const rows = []
   let row = [], field = '', quoted = false
   const s = String(text).replace(/^﻿/, '')
+  const sep = delimiterOf(s)
   for (let i = 0; i < s.length; i++) {
     const c = s[i]
     if (quoted) {
       if (c === '"') { if (s[i + 1] === '"') { field += '"'; i++ } else quoted = false }
       else field += c
     } else if (c === '"') quoted = true
-    else if (c === ',') { row.push(field); field = '' }
+    else if (c === sep) { row.push(field); field = '' }
     else if (c === '\n' || c === '\r') {
       if (c === '\r' && s[i + 1] === '\n') i++
       row.push(field); field = ''
@@ -53,7 +54,18 @@ export function parseCSV(text) {
   return rows
 }
 
-const norm = h => h.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+// Strong's current export (and any spreadsheet saved in a comma-decimal locale) separates
+// fields with ';'. The header line decides: it holds no numbers, so a ';' there is a separator.
+function delimiterOf(s) {
+  const nl = s.search(/[\r\n]/)
+  const head = (nl < 0 ? s : s.slice(0, nl)).replace(/"[^"]*"/g, '')
+  const count = ch => head.split(ch).length - 1
+  return count(';') > count(',') ? ';' : ','
+}
+
+// '#' reads as "no": Strong's "Workout #" is the session number, and stripped to "workout" it
+// took the place of the workout's name.
+const norm = h => h.toLowerCase().replace(/#/g, ' no ').replace(/[^a-z0-9]+/g, ' ').trim()
 
 // header text -> the field we care about. Specific names first; first match wins.
 const COLUMNS = [
@@ -61,6 +73,7 @@ const COLUMNS = [
   ['date', ['date', 'workout date']],
   ['startTime', ['start time', 'start date']],
   ['endTime', ['end time']],
+  ['workoutNo', ['workout no']],
   ['workoutName', ['workout name', 'title', 'workout']],
   ['category', ['category', 'body part', 'muscle group']],
   ['weightKg', ['weight kg']],
@@ -73,10 +86,13 @@ const COLUMNS = [
   ['rpe', ['rpe', 'rpe rating']],
   ['rir', ['rir', 'reps in reserve']],
   ['distanceKm', ['distance km']],
+  ['distanceM', ['distance meters', 'distance m', 'distance metres']],
   ['distance', ['distance']],
   ['distanceUnit', ['distance unit']],
   ['seconds', ['seconds', 'duration seconds', 'set duration sec']],
   ['time', ['time', 'duration']],
+  // Strong's current export: the whole workout's length, in seconds, on every row.
+  ['durationSec', ['duration sec', 'duration secs']],
   ['setType', ['set type']],
   // Hevy numbers the supersets of a workout; rows sharing a number were done as one.
   ['superset', ['superset id']],
@@ -301,13 +317,16 @@ export const bpFromName = name => {
 }
 
 // Categories the exporters use -> the dataset's body parts, for exercises we invent.
-const CATEGORY_BP = {
+// Indexed straight from a cell of the file, so it has no prototype: a plain object answers
+// "constructor" and "__proto__" with Object's own machinery, and a function or Object.prototype
+// would then ride into the store as an exercise's body part.
+const CATEGORY_BP = Object.assign(Object.create(null), {
   chest: 'chest', back: 'back', lats: 'back', shoulders: 'shoulders', delts: 'shoulders',
   legs: 'upper legs', quads: 'upper legs', hamstrings: 'upper legs', glutes: 'upper legs',
   calves: 'lower legs', abs: 'waist', core: 'waist', obliques: 'waist',
   arms: 'upper arms', biceps: 'upper arms', triceps: 'upper arms', forearms: 'lower arms',
   cardio: 'cardio', 'full body': 'upper legs', olympic: 'upper legs', neck: 'neck',
-}
+})
 
 /* ----------------------------------------------------------- conversion --- */
 
@@ -325,6 +344,8 @@ const effortNum = (raw, zeroMeansRated) => {
   return Math.min(10, Math.round(n * 100) / 100)
 }
 const LB_TO_KG = 0.45359237
+// Past these a cell is broken, not a record (the heaviest lifts ever logged stay well under).
+const MAX_KG = 2000, MAX_REPS = 1000, MAX_KM = 1000, MAX_BODY_KG = 650
 const p2 = n => String(n).padStart(2, '0')
 // Month names as the exporting app wrote them. Hevy and Strong localize the date on every
 // row to the language the app was set to, so an English-only table silently dropped seven
@@ -358,14 +379,14 @@ const monthOf = w => {
 export function parseWhen(s) {
   const v = String(s || '').trim()
   let m = v.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?:[T ](\d{1,2}):(\d{2}))?/)
-  if (m) return { d: `${m[1]}-${p2(m[2])}-${p2(m[3])}`, t: hm(m[4], m[5]) }
+  if (m) return calendarDay(m[1], m[2], m[3], m[4], m[5])
   // \p{L} rather than [A-Za-z]: the month word carries an accent in most languages.
   m = v.match(/^(\d{1,2})\s+(\p{L}{3,})\.?\s+(\d{4})(?:,?\s+(\d{1,2}):(\d{2}))?/u)
   let mon = m && monthOf(m[2])
-  if (mon) return { d: `${m[3]}-${p2(mon)}-${p2(m[1])}`, t: hm(m[4], m[5]) }
+  if (mon) return calendarDay(m[3], mon, m[1], m[4], m[5])
   m = v.match(/^(\p{L}{3,})\.?\s+(\d{1,2}),?\s+(\d{4})(?:,?\s+(\d{1,2}):(\d{2}))?/u)
   mon = m && monthOf(m[1])
-  if (mon) return { d: `${m[3]}-${p2(mon)}-${p2(m[2])}`, t: hm(m[4], m[5]) }
+  if (mon) return calendarDay(m[3], mon, m[2], m[4], m[5])
   // Day-first when ambiguous: FitNotes/Strong/Hevy all write unambiguous dates, so a
   // bare numeric one came through a spreadsheet, and those are usually European.
   m = v.match(/^(\d{1,2})[/.](\d{1,2})[/.](\d{4})(?:[, ]+(\d{1,2}):(\d{2}))?/)
@@ -373,9 +394,27 @@ export function parseWhen(s) {
     const [, a, b, y] = m
     const day = +a > 12 ? a : +b > 12 ? b : a
     const mon = day === a ? b : a
-    return { d: `${y}-${p2(mon)}-${p2(day)}`, t: hm(m[4], m[5]) }
+    return calendarDay(y, mon, day, m[4], m[5])
   }
   return null
+}
+/** Whole calendar days from one "YYYY-MM-DD" to another (0 when either is unreadable). */
+export const daysBetween = (a, b) => {
+  const n = (Date.UTC(+b.slice(0, 4), +b.slice(5, 7) - 1, +b.slice(8, 10)) - Date.UTC(+a.slice(0, 4), +a.slice(5, 7) - 1, +a.slice(8, 10))) / 86400000
+  return isFinite(n) && n > 0 && n < 2 ? n : 0
+}
+// A date only counts when it is one: a real calendar day (no 31 February, no month 13), not
+// before 1900 and not in the future. A day of slack covers a file written in a time zone
+// ahead of this one. Anything else is a broken cell, and filed as a workout it would sit
+// in the history as "Invalid Date" or a session from the year 9999.
+function calendarDay(y, mo, d, h, mi) {
+  y = +y; mo = +mo; d = +d
+  const at = new Date(Date.UTC(y, mo - 1, d))
+  if (y < 1900 || at.getUTCFullYear() !== y || at.getUTCMonth() !== mo - 1 || at.getUTCDate() !== d) return null
+  if (h !== undefined && (+h > 23 || +mi > 59)) return null
+  const now = new Date()
+  if (at.getTime() > Date.UTC(now.getFullYear(), now.getMonth(), now.getDate() + 1)) return null
+  return { d: `${y}-${p2(mo)}-${p2(d)}`, t: hm(h, mi) }
 }
 const hm = (h, mi) => (h === undefined ? null : (parseInt(h, 10) || 0) * 3600000 + (parseInt(mi, 10) || 0) * 60000)
 
@@ -392,7 +431,8 @@ function toMinutes(v) {
   if (m || mm) return (m ? +m[1] * 60 : 0) + (mm ? +mm[1] : 0)
   return Math.round(num(s) * 10) / 10
 }
-const KM = { m: 0.001, km: 1, cm: 0.00001, in: 0.0000254, ft: 0.0003048, yd: 0.0009144, mi: 1.609344 }
+// No prototype for the same reason as CATEGORY_BP: the key is a cell from the file.
+const KM = Object.assign(Object.create(null), { m: 0.001, km: 1, cm: 0.00001, in: 0.0000254, ft: 0.0003048, yd: 0.0009144, mi: 1.609344 })
 const toKm = (v, unit) => num(v) * (KM[String(unit || 'km').toLowerCase().trim()] ?? 1)
 
 /* --------------------------------------------------------------- parse ---- */
@@ -403,6 +443,22 @@ const toKm = (v, unit) => num(v) * (KM[String(unit || 'km').toLowerCase().trim()
  * of several thousand sets will contain oddities, and losing the file over one of them
  * helps nobody. Bad rows are counted and reported instead.
  */
+// Ids of what an import makes, from what it is rather than at random: the same file imported on
+// two devices before they synced made every session and custom exercise twice (two random ids
+// each), and the merge, which unites by id, kept both. The same session from the same app now has
+// the same id wherever it is imported, and the merge keeps one. (cyrb53, 53 bits, base 36.)
+export function importId(prefix, text) {
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57
+  for (let i = 0; i < text.length; i++) {
+    const ch = text.charCodeAt(i)
+    h1 = Math.imul(h1 ^ ch, 2654435761)
+    h2 = Math.imul(h2 ^ ch, 1597334677)
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909)
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909)
+  return prefix + (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36)
+}
+
 export function parseWorkoutCSV(text, { unit = 'kg' } = {}) {
   const rows = parseCSV(text)
   if (rows.length < 2) return { error: 'empty' }
@@ -414,6 +470,13 @@ export function parseWorkoutCSV(text, { unit = 'kg' } = {}) {
   // row; the set's own time is its Seconds column. Read as a set time it turned every
   // weight-less row into an hour of cardio and left the workout itself at zero minutes.
   if (source === 'Strong' && map.time !== undefined) { map.workoutDuration = map.time; delete map.time }
+  // The newer Strong export writes that length in seconds instead. Elsewhere a seconds column
+  // under that name is the set's own time.
+  if (map.durationSec !== undefined) {
+    if (source === 'Strong') map.workoutDurationSec = map.durationSec
+    else if (map.seconds === undefined) map.seconds = map.durationSec
+    delete map.durationSec
+  }
 
   const resolved = new Map()          // exercise name -> dataset id | null, resolved once
   const byDate = new Map()
@@ -448,8 +511,14 @@ export function parseWorkoutCSV(text, { unit = 'kg' } = {}) {
     const mins = secs > 0 ? Math.round(secs / 60 * 10) / 10 : toMinutes(cell(r, 'time'))
     const km = map.distanceKm !== undefined && cell(r, 'distanceKm')
       ? num(cell(r, 'distanceKm'))
-      : toKm(cell(r, 'distance'), cell(r, 'distanceUnit'))
+      : map.distanceM !== undefined && cell(r, 'distanceM')
+        ? toKm(cell(r, 'distanceM'), 'm')
+        : toKm(cell(r, 'distance'), cell(r, 'distanceUnit'))
     if (!w && !reps && !mins && !km) { skipped++; continue }
+    // Nobody lifts a negative weight or 2 t, nor does 1,000 reps in a set; a cell like that is
+    // broken, and kept it would show as an infinite PR or a NaN chart. Skip the row, say so.
+    const maxW = rowUnit === 'lb' || (!rowUnit && unit === 'lb') ? MAX_KG / LB_TO_KG : MAX_KG
+    if (w < 0 || reps < 0 || secs < 0 || mins < 0 || km < 0 || w > maxW || reps > MAX_REPS || mins > 24 * 60 || km > MAX_KM) { skipped++; continue }
     const warmup = /warm/i.test(cell(r, 'setType'))
     if (warmup) warmups++
 
@@ -466,7 +535,7 @@ export function parseWorkoutCSV(text, { unit = 'kg' } = {}) {
       let c = created.get(key)
       if (!c) {
         c = {
-          id: 'im' + uid(), n: name.toLowerCase(), custom: true, eq: 'custom', tg: '', desc: '',
+          id: importId('im', source + '|' + name.toLowerCase()), n: name.toLowerCase(), custom: true, eq: 'custom', tg: '', desc: '',
           bp: CATEGORY_BP[cell(r, 'category').toLowerCase()] || (km ? 'cardio' : null)
             // Seconds with nothing else is a hold when the name says what it is (a plank is
             // core work); a name that says nothing keeps being read as cardio, as before.
@@ -512,9 +581,13 @@ export function parseWorkoutCSV(text, { unit = 'kg' } = {}) {
     }
     if (!day.name) day.name = cell(r, 'workoutName') || ''
     if (!day.note) day.note = cell(r, 'workoutNote')
-    if (map.endTime !== undefined) { const e = parseWhen(cell(r, 'endTime')); if (e && e.t != null) day.end = e.t }
-    else if (map.workoutDuration !== undefined && day.end == null) {
-      const len = toMinutes(cell(r, 'workoutDuration'))
+    // The end is kept as time since the start day's midnight, so a session that runs past
+    // midnight ends on the next day's clock plus 24 h rather than before it began.
+    if (map.endTime !== undefined) { const e = parseWhen(cell(r, 'endTime')); if (e && e.t != null) day.end = e.t + daysBetween(when.d, e.d) * 86400000 }
+    else if ((map.workoutDuration !== undefined || map.workoutDurationSec !== undefined) && day.end == null) {
+      const len = map.workoutDurationSec !== undefined
+        ? num(cell(r, 'workoutDurationSec')) / 60
+        : toMinutes(cell(r, 'workoutDuration'))
       if (len > 0) day.end = (day.start ?? 18 * 3600000) + Math.round(len * 60000)
     }
     if (!day.ex.has(id)) day.ex.set(id, [])
@@ -527,7 +600,7 @@ export function parseWorkoutCSV(text, { unit = 'kg' } = {}) {
     }
     const ss = cell(r, 'superset')
     if (ss && !day.sg.has(id)) {
-      if (!day.groups.has(ss)) day.groups.set(ss, 'is' + uid())
+      if (!day.groups.has(ss)) day.groups.set(ss, importId('is', when.d + '|' + ss))
       day.sg.set(id, day.groups.get(ss))
     }
     sets++
@@ -567,7 +640,7 @@ export function parseWorkoutCSV(text, { unit = 'kg' } = {}) {
     const start = base + (day.start ?? 18 * 3600000)
     const end = day.end != null ? base + day.end : start
     const w = {
-      id: 'iw' + uid(), d, start, end: end > start ? end : start,
+      id: importId('iw', JSON.stringify([source, d, start, day.name || '', entries.map(e => [e.id, e.sets])])), d, start, end: end > start ? end : start,
       routineId: null, name: day.name || 'Imported', entries, prs: [],
       ...(day.note ? { note: day.note } : {}),
     }
@@ -616,7 +689,11 @@ export function parseBodyweight(text, { unit = 'kg' } = {}) {
       const when = parseWhen(dt[1])
       if (!when) continue
       if (u) fileUnit = /lb/i.test(u[1]) ? 'lb' : 'kg'
-      out.set(when.d, { w: parseFloat(val[1]), t: new Date(dt[1]).getTime() || null })
+      // `[\d.]+` lets a bare "." through, which parseFloat reads as NaN, and a zeroed record is
+      // no weigh-in either — the same gate the CSV branch below applies with `!w`.
+      const w = parseFloat(val[1])
+      if (!isFinite(w) || !w || !bodyOk(w, fileUnit || unit)) continue
+      out.set(when.d, { w, t: new Date(dt[1]).getTime() || null })
     }
   } else {
     const rows = parseCSV(s)
@@ -631,7 +708,7 @@ export function parseBodyweight(text, { unit = 'kg' } = {}) {
     for (let i = 1; i < rows.length; i++) {
       const when = parseWhen(String(rows[i][dCol] ?? ''))
       const w = num(rows[i][wCol])
-      if (!when || !w) continue
+      if (!when || !w || !bodyOk(w, fileUnit || unit)) continue
       out.set(when.d, { w, t: new Date(when.d).getTime() + (when.t ?? 0) })
     }
   }
@@ -648,6 +725,9 @@ export function parseBodyweight(text, { unit = 'kg' } = {}) {
     fileUnit, converted, from: dates[0], to: dates[dates.length - 1],
   }
 }
+
+/** A weigh-in a person could have: above zero and below MAX_BODY_KG in the given unit. */
+const bodyOk = (w, u) => w > 0 && w <= (u === 'lb' ? MAX_BODY_KG / LB_TO_KG : MAX_BODY_KG)
 
 /** Sniff the file and parse it as whatever it is. */
 export function parseImport(text, opts) {
@@ -685,7 +765,9 @@ export function mergeImport(S, parsed) {
   const fresh = parsed.workouts.filter(w => !have.has(w.d))
     .map(w => ({ ...w, entries: w.entries.map(e => (exIdMap[e.id] ? { ...e, id: exIdMap[e.id] } : e)) }))
   const used = new Set(fresh.flatMap(w => w.entries.map(e => e.id)))
-  const customs = parsed.customEx.filter(c => used.has(c.id) && !EXIDX[c.id])
+  // (one an earlier import of the same name already made has the same id now: kept once)
+  const known = new Set(S.customEx.map(c => c?.id))
+  const customs = parsed.customEx.filter(c => used.has(c.id) && !EXIDX[c.id] && !known.has(c.id))
   S.customEx = [...S.customEx, ...customs]
   S.workouts = [...S.workouts, ...fresh].sort((a, b) => (a.d < b.d ? -1 : 1))
   // seed the weight suggestions from the newest imported set of each lift

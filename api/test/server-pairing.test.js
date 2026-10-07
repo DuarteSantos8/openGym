@@ -65,7 +65,7 @@ test('logout/all invalidates the account\'s outstanding pairing codes and nobody
   assert.equal((await post('/api/logout/all', cookie('u_test_1', 0))).status, 200);
   const r = await redeem(stale);
   assert.equal(r.status, 400);
-  assert.deepEqual(await r.json(), { error: 'invalid or expired code' });
+  assert.deepEqual(await r.json(), { error: 'invalid or expired code', code: 'pair-invalid' });
 
   // the other account's code is untouched
   assert.equal((await redeem(other)).status, 200);

@@ -98,8 +98,8 @@ describe('passwordError', () => {
     expect(passwordError(fail(400, { code: 'too-common' }))).toMatch(/too easy to guess/)
     expect(passwordError(fail(400, { code: 'too-short' }))).toBe('Use at least 10 characters.')
     expect(passwordError(fail(409, { code: 'last-way-in' }))).toMatch(/only way into your profile/)
-    expect(passwordError(fail(429, { code: 'locked', retryAfter: 120 }))).toBe('Too many attempts — try again in 2 minutes.')
-    expect(passwordError(fail(429, { code: 'locked', retryAfter: 30 }))).toBe('Too many attempts — try again in 30 seconds.')
+    expect(passwordError(fail(429, { code: 'locked', retryAfter: 120 }))).toBe('Too many attempts. Try again in 2 minutes.')
+    expect(passwordError(fail(429, { code: 'locked', retryAfter: 30 }))).toBe('Too many attempts. Try again in 30 seconds.')
     // No code: what the server said, as it said it.
     expect(passwordError(fail(500, { error: 'server error' }))).toBe('server error')
   })
@@ -164,7 +164,7 @@ describe('PasswordSignInSheet', () => {
   it('the one field takes an e-mail as well as a name, long enough for either, and sends it as typed', async () => {
     mocks.passwordLogin.mockResolvedValue({ id: 'u1', name: 'Ana' })
     const host = mount(<PasswordSignInSheet close={() => {}} />)
-    expect(host.textContent).toContain('Use your profile name — or the e-mail you added to it — and your password.')
+    expect(host.textContent).toContain('Use your profile name (or the e-mail you added to it) and your password.')
     const field = byPlaceholder(host, 'Name or e-mail')
     // Not type="email": that would refuse a plain name.
     expect(field.type).toBe('text')
@@ -293,7 +293,7 @@ describe('Settings → Password', () => {
     mocks.answers['GET /api/account/password'] = { set: true, setAt: null, passkeys: 0, name: 'Ana', nameTaken: false, email: null }
     const unset = mount(<PasswordRow />)
     await settle()
-    expect(subs(unset)[1]).toBe('Not set — sign in with an e-mail instead of your name.')
+    expect(subs(unset)[1]).toBe('Not set. Lets you sign in with an e-mail instead of your name.')
     act(() => [...unset.querySelectorAll('.lrow')].find(r => r.textContent.includes('Sign-in e-mail')).click())
     const sheet = mount(mocks.sheets.at(-1).render(() => {}))
     expect(sheet.querySelector('h3').textContent).toBe('Add a sign-in e-mail')
@@ -331,7 +331,7 @@ describe('Settings → Password', () => {
     expect(mocks.calls.at(-1)).toEqual({ path: '/api/account/password', method: 'POST', body: { next: 'correct horse battery', cid: 'c1', credential: { id: 'k1' } } })
     expect(close).toHaveBeenCalled()
     expect(done).toHaveBeenCalled()
-    expect(mocks.toast).toHaveBeenCalledWith('Password saved — you are signed out everywhere else.')
+    expect(mocks.toast).toHaveBeenCalledWith('Password saved. You’re now signed out everywhere else.')
   })
 
   it('a change sends the current password; a wrong one is said on the sheet', async () => {
@@ -411,7 +411,7 @@ describe('Settings → Password → Remove', () => {
     expect(alertText(sheet)).toBe('This password is the only way into your profile, so it cannot be removed.')
     mocks.answers['DELETE /api/account/password'] = fail(429, { code: 'locked', retryAfter: 60 })
     await submit(sheet)
-    expect(alertText(sheet)).toMatch(/^Too many attempts — try again /)
+    expect(alertText(sheet)).toMatch(/^Too many attempts. Try again /)
     expect(close).not.toHaveBeenCalled()
     expect(done).not.toHaveBeenCalled()
     expect(mocks.toast).not.toHaveBeenCalled()
@@ -471,7 +471,7 @@ describe('Settings → Sign-in e-mail', () => {
     const input = byPlaceholder(host, 'E-mail address')
     expect(input.type).toBe('email')
     expect(input.getAttribute('autocomplete')).toBe('email')
-    expect(host.textContent).toContain('Nothing is ever sent to it')
+    expect(host.textContent).toContain('We never send anything to it')
     type(input, 'not an address')
     await submit(host)
     expect(alertText(host)).toBe('That is not an e-mail address.')

@@ -36,7 +36,7 @@ describe('adoptProfile — sign-in takes the server profile', () => {
     api.mockResolvedValueOnce({ state: clone(server), rev: 4 })
     const ask = vi.fn(async () => false)
     const r = await useStore.getState().adoptProfile(ask)
-    expect(ask).toHaveBeenCalledWith({ workouts: 1, bodyweight: 0, customEx: 0 })
+    expect(ask).toHaveBeenCalledWith(expect.objectContaining({ workouts: 1, bodyweight: 0, customEx: 0 }))
     const S = useStore.getState().S
     expect(S.unit).toBe('lb'); expect(S.restSec).toBe(60)
     expect(S.workouts.map(w => w.id)).toEqual(['w1'])
@@ -54,7 +54,8 @@ describe('adoptProfile — sign-in takes the server profile', () => {
     api.mockResolvedValueOnce({ ok: true, rev: 5 })
     await useStore.getState().adoptProfile(async () => true)
     const S = useStore.getState().S
-    expect(S.unit).toBe('lb'); expect(S.week).toEqual({ 1: ['r1'] })
+    // the profile's plan, with the device's day added where the profile had nothing planned
+    expect(S.unit).toBe('lb'); expect(S.week).toEqual({ 1: ['r1'], 2: ['rg'] })
     expect(S.workouts.map(w => w.id)).toEqual(['w1', 'w9'])
     expect(S.routines.map(x => x.id).sort()).toEqual(['r1', 'rg'])
     expect(puts()).toHaveLength(1)
@@ -93,7 +94,7 @@ describe('adoptProfile — sign-in takes the server profile', () => {
     api.mockResolvedValueOnce({ state: null, rev: 0 })
     const ask = vi.fn(async () => false)
     const r = await useStore.getState().adoptProfile(ask, { alwaysAsk: true })
-    expect(ask).toHaveBeenCalledWith({ workouts: 1, bodyweight: 0, customEx: 0 })
+    expect(ask).toHaveBeenCalledWith(expect.objectContaining({ workouts: 1, bodyweight: 0, customEx: 0 }))
     expect(puts()).toHaveLength(0)
     const S = useStore.getState().S
     expect(S.workouts).toEqual([])
@@ -170,7 +171,7 @@ describe('offline and unsynced flags', () => {
     expect(useStore.getState().sync).toMatchObject({ offline: false, pending: false })
     expect(localStorage.getItem('gym_dirty')).toBeNull()
     await new Promise(r => setTimeout(r, 0))   // the toast goes through a lazy import of useUI
-    expect(toast).toHaveBeenCalledWith('Back online — synced with the server.')
+    expect(toast).toHaveBeenCalledWith('Back online and synced with the server.')
   })
 
   it('a push the server refused is pending but not offline', async () => {
@@ -252,7 +253,7 @@ describe('web sign-in: nothing syncs while the question is open', () => {
     const ask = vi.fn(async () => false)
     api.mockResolvedValueOnce({ state: clone(server), rev: 4 })
     await useStore.getState().resumeAdoption(ask)
-    expect(ask).toHaveBeenCalledWith({ workouts: 1, bodyweight: 0, customEx: 0 })
+    expect(ask).toHaveBeenCalledWith(expect.objectContaining({ workouts: 1, bodyweight: 0, customEx: 0 }))
     expect(puts()).toHaveLength(0)
     expect(useStore.getState().S.workouts.map(w => w.id)).toEqual(['w1'])
     expect(localStorage.getItem('gym_adopt')).toBeNull()
@@ -273,7 +274,7 @@ describe('the sign-in hold: never stuck, and only about what the device had', ()
     window.dispatchEvent(new Event('online'))
     await vi.waitFor(() => expect(localStorage.getItem('gym_adopt')).toBeNull())
     await settle()
-    expect(sheetAsk).toHaveBeenCalledWith({ workouts: 1, bodyweight: 0, customEx: 0 })
+    expect(sheetAsk).toHaveBeenCalledWith(expect.objectContaining({ workouts: 1, bodyweight: 0, customEx: 0 }))
     expect(useStore.getState().S.workouts.map(w => w.id)).toEqual(['w1'])
     expect(useStore.getState().sync.status).not.toBe('held')
   })
@@ -302,7 +303,7 @@ describe('the sign-in hold: never stuck, and only about what the device had', ()
     api.mockResolvedValueOnce({ state: clone(server), rev: 4 })
     api.mockResolvedValueOnce({ ok: true, rev: 5 })
     await useStore.getState().syncNow()
-    expect(sheetAsk).toHaveBeenCalledWith({ workouts: 1, bodyweight: 0, customEx: 0 })   // w9 only
+    expect(sheetAsk).toHaveBeenCalledWith(expect.objectContaining({ workouts: 1, bodyweight: 0, customEx: 0 }))   // w9 only
     expect(useStore.getState().S.workouts.map(w => w.id)).toEqual(['w1', 'w-later'])
     const put = puts().at(-1)
     expect(put.baseRev).toBe(4)
@@ -327,6 +328,6 @@ describe('the back-online toast belongs to the account that was offline', () => 
     api.mockResolvedValueOnce({ ok: true, rev: 1 })
     await useStore.getState().pushState()
     await new Promise(r => setTimeout(r, 10))
-    expect(toast).not.toHaveBeenCalledWith('Back online — synced with the server.')
+    expect(toast).not.toHaveBeenCalledWith('Back online and synced with the server.')
   })
 })

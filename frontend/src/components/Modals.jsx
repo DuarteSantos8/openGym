@@ -2,6 +2,48 @@ import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useUI } from '../store/useUI.js'
 import { keyboardOpen } from '../lib/viewport-guard.js'
 
+// Putting the page back after a sheet closes takes up to three goes (see the un-pin below): now,
+// next frame, and once the keyboard's dismiss animation is over. Anything else that wants to
+// scroll in that same commit is overwritten. Rating a set closes the effort picker AND ticks the
+// set in one tap, and the superset card's "bring the partner's row into view" was undone about
+// 3 ms after it was asked for, every time. afterScrollRestore runs fn once the sequence is done,
+// or straight away when none is running, and returns a canceller for the caller's effect cleanup.
+//
+// It does not get a timer of its own. Two ~350 ms timers armed a few milliseconds apart run in
+// whichever order the browser likes, and on a phone the re-assert can come second and undo the
+// scroll. So the last re-assert runs these itself, in its own timer callback, right after its own
+// scrollTo: there is no ordering left to get wrong.
+const RESTORE_MS = 350
+let restoreUntil = 0
+// Real closes, counted, so the last re-assert can tell whether it belongs to the latest one. That,
+// not the clock, ends the sequence: with Date.now() coarsened or jittered (privacy.resistFingerprinting
+// rounds it to 100 ms) a deadline read in that callback can still look a few ms away, and a waiter
+// would then sit in the queue with nothing left to run it.
+let closes = 0
+let waiting = []
+export function afterScrollRestore(fn) {
+  if (!(restoreUntil - Date.now() > 0)) { fn(); return () => {} }
+  waiting.push(fn)
+  return () => { waiting = waiting.filter(x => x !== fn) }
+}
+// Whether that sequence is still running, for a scroll that would rather not happen at all than
+// come after it: the superset card's scroll when the marker did not move (views/Workout.jsx) used
+// to be undone by the restore on the spot, and skipping it keeps that exactly.
+export const scrollRestorePending = () => restoreUntil - Date.now() > 0
+// Called by the last re-assert of close number `close`, once it has had its say. Two reasons to
+// leave the queue alone and let a later re-assert take it: a second sheet closed inside this window
+// (its own last re-assert drains it), or the page is pinned again behind a newly opened sheet,
+// where a scroll would be meaningless; that sheet's own un-pin comes with a fresh sequence.
+const drainScrollRestore = close => {
+  if (!close || close !== closes || document.body.style.position === 'fixed') return
+  restoreUntil = 0
+  const queue = waiting
+  waiting = []
+  for (const fn of queue) {
+    try { fn() } catch (e) { /* one caller must not keep the others waiting */ }
+  }
+}
+
 // One bottom sheet (or centered dialog) with swipe-to-dismiss.
 function Sheet({ sheet }) {
   const { closeSheet } = useUI()
@@ -184,6 +226,13 @@ export default function Modals() {
     b.position = 'fixed'; b.top = -y + 'px'; b.left = '0'; b.right = '0'; b.width = '100%'
     return () => {
       b.position = b.top = b.left = b.right = b.width = ''
+      // Tell anything that scrolls for its own reasons how long this will go on (afterScrollRestore),
+      // but only when a sheet really did close. React StrictMode runs this cleanup immediately after
+      // the effect when Modals mounts with a sheet already up, and arming the window there would make
+      // anything waiting on the restore wait RESTORE_MS for a page nobody is putting back: late in
+      // dev, on time in production. In production this cleanup runs on the close path alone.
+      const close = useUI.getState().sheets.length ? 0 : ++closes
+      if (close) restoreUntil = Date.now() + RESTORE_MS
       window.scrollTo(0, y)
       // iOS scrolls asynchronously; a restore issued in the same task as the un-pin can be applied
       // a frame late or against the still-short layout. Say it once more on the next frame.
@@ -192,13 +241,21 @@ export default function Modals() {
       // iOS scrolls the page again while the keyboard dismisses — after the line above ran.
       // Ask once more when that animation is over. The window-level guard in
       // lib/viewport-guard.js covers the keyboard closing while a sheet stays open.
-      // Only with the keyboard up, though: without one there is nothing to undo, and a late
-      // restore would overwrite a scroll the page behind made on purpose because the sheet
-      // closed — the workout list going to the current exercise after ⋯ → Layout → List
-      // (issue #224). At this point the sheet's field is already out of the DOM but the
-      // keyboard has not started to go, so the visual viewport still tells the truth.
-      if (!keyboardOpen()) return
-      window.setTimeout(() => { if (document.body.style.position !== 'fixed') window.scrollTo(0, y) }, 350)
+      // This last one also hands the page over to anything that has been waiting for the sequence
+      // to finish (afterScrollRestore), in this same callback, right after its own scrollTo, so a
+      // scroll of someone else's cannot be undone by a re-assert still to come.
+      //
+      // The re-assert itself is for the keyboard case only: without one there is nothing to undo,
+      // and a late restore would overwrite a scroll the page behind made on purpose because the
+      // sheet closed — the workout list going to the current exercise after ⋯ → Layout → List
+      // (issue #224). At this point the sheet's field is already out of the DOM but the keyboard
+      // has not started to go, so the visual viewport still tells the truth. The timer is armed
+      // either way, because the hand-over is the only thing that drains the queue.
+      const hadKeyboard = keyboardOpen()
+      window.setTimeout(() => {
+        if (hadKeyboard && document.body.style.position !== 'fixed') window.scrollTo(0, y)
+        drainScrollRestore(close)
+      }, RESTORE_MS)
     }
   }, [sheets.length > 0])
 

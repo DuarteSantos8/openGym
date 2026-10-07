@@ -10,10 +10,12 @@ import { useStore, DEF } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { barWeightSheet, plateInventorySheet } from './sheets.jsx'
 import { EXIDX } from './lib/exercises.js'
+import { loadKindFor } from './lib/plates.js'
 
 const SQUAT = '0043'      // barbell
 const COCOONS = '0260'    // body weight
 const LEG_PRESS = EXIDX['0585'] ? '0585' : Object.values(EXIDX).find(e => e.eq === 'leverage machine').id
+const DUMBBELL = Object.values(EXIDX).find(e => e.eq === 'dumbbell').id
 
 const mounted = []
 function mountTopSheet() {
@@ -48,6 +50,7 @@ describe('plate loading editor', () => {
     expect(EXIDX[SQUAT].eq).toBe('barbell')
     expect(EXIDX[LEG_PRESS].eq).toBe('leverage machine')
     expect(EXIDX[COCOONS].eq).toBe('body weight')
+    expect(EXIDX[DUMBBELL].eq).toBe('dumbbell')
   })
 
   it('the editor derives its default from the same config the workout rows use', () => {
@@ -63,6 +66,38 @@ describe('plate loading editor', () => {
     act(() => barWeightSheet(COCOONS))
     const host2 = mountTopSheet()
     expect(segButton(host2, 'Single stack').classList.contains('on')).toBe(true)
+  })
+
+  it('a pick the equipment alone cannot settle is stored, not read back as the default', () => {
+    // The exercise-detail sheet has no routine config, so it cannot know whether the routine logs
+    // this body-weight exercise as added weight ('single') or as a plain total ('none') — the two
+    // readings of the bodyweight flag disagree. The segment shows the body-weight default, and
+    // tapping it used to match the cfg-less default and delete the key: the pick stored nothing
+    // and the rows of a bodyweight:false routine went on showing no plate line at all.
+    act(() => barWeightSheet(COCOONS))
+    const host = mountTopSheet()
+    expect(segButton(host, 'Single stack').classList.contains('on')).toBe(true)
+    act(() => segButton(host, 'Single stack').click())
+    expect(S().loadKind[COCOONS]).toEqual(stamped('single'))
+    expect(loadKindFor(S(), { id: COCOONS, bodyweight: false })).toBe('single')
+    // 'Off' is the other reading's default and is stored just the same.
+    act(() => segButton(host, 'Off').click())
+    expect(S().loadKind[COCOONS]).toEqual(stamped('none'))
+  })
+
+  it('a dumbbell still stores no kind of its own for the one its equipment already implies', () => {
+    // The two readings of the bodyweight flag differ for a dumbbell too ('single' as added
+    // weight, 'none' as a plain loaded lift), but the cfg-less default — 'none' — is what a
+    // dumbbell row derives, so the segment and the rows already agree and the pick is only
+    // restating it. Storing it would freeze 'none' onto the exercise everywhere and override the
+    // 'single' an entry with bodyweight: true derives, with no way left to take it off: the pick
+    // puts the exercise back on its equipment's (a stamped null) instead.
+    act(() => barWeightSheet(DUMBBELL))
+    const host = mountTopSheet()
+    expect(segButton(host, 'Off').classList.contains('on')).toBe(true)
+    act(() => segButton(host, 'Off').click())
+    expect(S().loadKind[DUMBBELL]).toEqual(stamped(null))
+    expect(loadKindFor(S(), { id: DUMBBELL, bodyweight: true })).toBe('single')
   })
 
   it('a barbell defaults to per side and stores nothing until you pick something else', () => {

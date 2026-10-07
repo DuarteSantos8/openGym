@@ -35,13 +35,21 @@ export const numWidthCh = s => Math.max(1, [...s].reduce((n, c) => n + (c === '.
 export function NumberField({ value, onChange, decimal = true, nullable = false, fit = false, className = '', ...rest }) {
   const [draft, setDraft] = useState(null)
   const committed = useRef(null)
+  // Focus selects the number so typing replaces it. In WebKit (Safari, the iOS app) the release
+  // of the tap that focused the field then moves the caret to the finger and drops that
+  // selection: 65 typed over 62.5 read 6265.5. The first mouseup after focus keeps its default
+  // off; a later tap on the focused field still places the caret to edit one digit.
+  const justFocused = useRef(false)
   // null and undefined are the same "empty" here — a nullable field's key is dropped once cleared.
   if (draft !== null && (committed.current ?? null) !== (value ?? null)) { setDraft(null); committed.current = null }
   const commit = raw => {
     let s = raw.replace(/,/g, '.').replace(/[^0-9.]/g, '')
     const i = s.indexOf('.')
-    if (i !== -1) s = decimal ? s.slice(0, i + 1) + s.slice(i + 1).replace(/\./g, '') : s.slice(0, i)
-    const n = s === '' || s === '.' ? (nullable ? null : 0) : Math.max(0, parseFloat(s))
+    if (i !== -1) s = s.slice(0, i + 1) + s.slice(i + 1).replace(/\./g, '')
+    // A whole-number field keeps what was typed after a separator on screen until blur and
+    // counts only the part before it: cutting the separator off at each keystroke read 8.5 as 85.
+    const whole = !decimal && i !== -1 ? s.slice(0, i) : s
+    const n = whole === '' || whole === '.' ? (nullable ? null : 0) : Math.max(0, parseFloat(whole))
     committed.current = n
     setDraft(s)
     onChange(n)
@@ -56,9 +64,10 @@ export function NumberField({ value, onChange, decimal = true, nullable = false,
       // `fit` hugs the digits on screen — a big read-out with its unit sitting right beside
       // it — where the default fills whatever cell the field is in.
       style={fit ? { width: numWidthCh(String(shown)) + 'ch' } : undefined}
-      onFocus={e => e.target.select()}
+      onFocus={e => { justFocused.current = true; e.target.select() }}
+      onMouseUp={e => { if (justFocused.current) { justFocused.current = false; e.preventDefault() } }}
       onChange={e => commit(e.target.value)}
-      onBlur={() => { setDraft(null); committed.current = null }}
+      onBlur={() => { setDraft(null); committed.current = null; justFocused.current = false }}
       {...rest}
     />
   )
@@ -271,11 +280,12 @@ export function Slider({ value, min = 0, max = 100, step = 1, onChange, classNam
 
 /* ============================ checkbox ============================ */
 
-export function Check({ checked, onChange, className = '', size }) {
+export function Check({ checked, onChange, className = '', size, label }) {
   return (
     <button
       role="checkbox"
       aria-checked={!!checked}
+      aria-label={label}
       className={'chk' + (checked ? ' on' : '') + ' ' + className}
       style={size ? { width: size, height: size } : null}
       onClick={() => onChange(!checked)}

@@ -107,7 +107,7 @@ describe('exercise settings: a timed bodyweight hold', () => {
     const { host } = renderConfig({ mode: 'time', sec: 45, weight: 0, bodyweight: true })
     expect(labels(host)).not.toContain('Weight (kg)')
     expect(labels(host).filter(l => l === 'Added (kg)')).toHaveLength(1)
-    expect(host.textContent).toContain('No weight to enter — just time the hold.')
+    expect(host.textContent).toContain('No weight to enter. Just time the hold.')
     expect(host.textContent).not.toContain('just log the reps')
   })
 

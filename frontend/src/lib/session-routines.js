@@ -1,5 +1,5 @@
 import { uid } from './format.js'
-import { modeOf, defaultConfig, isPerSide, entryRoutineId } from './history.js'
+import { modeOf, defaultConfig, isPerSide, entryRoutineId, setsFromRows } from './history.js'
 import { isSideSet, isWarmupRow } from './workout-model.js'
 
 // A saved workout is evidence of what was logged, not a live routine. Copy only its flat
@@ -71,7 +71,7 @@ function copiedEntry(entry, source) {
   const target = entry?.target && typeof entry.target === 'object'
     ? structuredClone(entry.target)
     : {}
-  const cfg = { ...defaultConfig(entry?.id), ...target, id: entry?.id, sets: Math.max(1, work.length || 1), warmupSets: rows.filter(isWarmupRow).length }
+  const cfg = { ...defaultConfig(entry?.id), ...target, id: entry?.id, sets: Math.max(1, setsFromRows({ ...defaultConfig(entry?.id), ...target }, work.length) || 1), warmupSets: rows.filter(isWarmupRow).length }
   const mode = modeOf(cfg)
   if (mode === 'time' && row) Object.assign(cfg, { sec: row.sec ?? cfg.sec, weight: row.w ?? cfg.weight ?? 0 })
   else if (mode === 'cardio' && row) Object.assign(cfg, { min: row.min ?? cfg.min, speed: row.speed ?? cfg.speed })

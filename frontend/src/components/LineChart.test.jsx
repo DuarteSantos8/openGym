@@ -102,3 +102,12 @@ describe('LineChart hover state', () => {
     expect(container.querySelector('.cvl')).toBeTruthy()
   })
 })
+
+describe('LineChart y axis', () => {
+  it('labels the zero line 0, never -0, when the range dips just below zero', () => {
+    act(() => root.render(<LineChart points={[point(2026, 1, 1, 70), point(2026, 1, 8, 9999)]} axes unit="kg" />))
+    const labels = [...container.querySelectorAll('text')].map(n => n.textContent)
+    expect(labels).toContain('0')
+    expect(labels.some(l => /^[-\u2212]0$/.test(l))).toBe(false)
+  })
+})

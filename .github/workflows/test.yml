@@ -10,6 +10,8 @@ on:
       - 'mcp/**'
       - 'scripts/build-coach-assets.mjs'
       - 'scripts/build-coach-library.mjs'
+      - 'scripts/build-api-docs.mjs'
+      - 'website/api.html'
       - 'api/coach/prompts/**'
       - '.github/workflows/test.yml'
   push:
@@ -20,6 +22,8 @@ on:
       - 'mcp/**'
       - 'scripts/build-coach-assets.mjs'
       - 'scripts/build-coach-library.mjs'
+      - 'scripts/build-api-docs.mjs'
+      - 'website/api.html'
       - 'api/coach/prompts/**'
       - '.github/workflows/test.yml'
   workflow_dispatch:
@@ -103,6 +107,9 @@ jobs:
       # that forgets to regenerate it would otherwise only surface as "the Coach can't find
       # that exercise" on somebody's instance.
       - run: node scripts/build-coach-assets.mjs --check
+      # website/api.html is generated from api/openapi.yaml and committed. Same reason.
+      - run: npm ci
+      - run: node scripts/build-api-docs.mjs --check
       - run: node api/scripts/check-core-loadable.mjs
 
   # Builds *and runs* both image targets. Building alone would not have caught the api image

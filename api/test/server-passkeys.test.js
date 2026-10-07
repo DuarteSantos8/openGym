@@ -756,3 +756,25 @@ test('a Settings or device-link challenge never finishes a sign-up, a sign-in or
   assert.ok(made.cookie);
   assert.equal(h.db().users.length, 2);
 });
+
+// The app says these in the UI language, so each refusal carries a stable code beside its English line.
+test('passkey sign-up and sign-in refusals carry a code the app can translate', async t => {
+  const known = softPasskey(), stranger = softPasskey();
+  const h = await startServer(t, { env: { INVITE_ONLY: '1' }, users: [user('u1', 'Ana', { disabled: true })], creds: [known.row('u1')] });
+  const reg = await h.req('POST', '/api/register/options', { body: { name: 'Bo', code: 'NOPE' } });
+  assert.equal(reg.status, 403);
+  assert.equal(reg.body.code, 'invite');
+  const expired = await h.req('POST', '/api/register/verify', { body: { cid: 'gone', credential: stranger.attestation('x') } });
+  assert.equal(expired.status, 400);
+  assert.equal(expired.body.code, 'challenge-expired');
+  const late = await h.req('POST', '/api/login/verify', { body: { cid: 'gone', credential: stranger.assertion('x') } });
+  assert.equal(late.body.code, 'challenge-expired');
+  let lo = (await h.req('POST', '/api/login/options', { body: {} })).body;
+  const unknown = await h.req('POST', '/api/login/verify', { body: { cid: lo.cid, credential: stranger.assertion(lo.options.challenge) } });
+  assert.equal(unknown.status, 404);
+  assert.equal(unknown.body.code, 'unknown-credential');
+  lo = (await h.req('POST', '/api/login/options', { body: {} })).body;
+  const off = await h.req('POST', '/api/login/verify', { body: { cid: lo.cid, credential: known.assertion(lo.options.challenge) } });
+  assert.equal(off.status, 403);
+  assert.equal(off.body.code, 'disabled');
+});

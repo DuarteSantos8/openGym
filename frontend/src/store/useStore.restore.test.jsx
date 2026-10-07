@@ -225,10 +225,12 @@ describe('signing in as a different profile', () => {
       useStore.getState().replaceState({ ...clone(DEF), _ts: 20, routines: [routine('A-routine')], active }, true)   // arms a push
       api.mockResolvedValue({})
 
-      // B's setUser in the other tab: it wiped the copy, wrote defaults, then recorded the owner.
-      // B's own data only lands there after its pull — this tab never re-reads it.
-      localStorage.setItem('gym_state_v1', JSON.stringify({ ...clone(DEF), _ts: 30 }))
+      // B's setUser in the other tab: it wiped the copy, recorded the owner, then wrote defaults
+      // under B. B's own data only lands there after its pull.
+      localStorage.removeItem('gym_state_v1')
       localStorage.setItem('gym_owner', 'B')
+      localStorage.setItem('gym_state_v1', JSON.stringify({ ...clone(DEF), _ts: 30 }))
+      localStorage.setItem('gym_state_owner', 'B')
       window.dispatchEvent(new StorageEvent('storage', { key: 'gym_owner', oldValue: 'A', newValue: 'B' }))
 
       expect(useStore.getState().user).toBeNull()
@@ -267,9 +269,10 @@ describe('signing in as a different profile', () => {
     expect(hasData(useStore.getState().S)).toBe(false)
   })
 
-  // The listener above reacts to the owner key alone, so the wiped copy has to be in storage
-  // before the owner is removed — the same order setUser uses when it records a new owner.
-  it('signing out removes the owner only after the wiped copy is written', async () => {
+  // The previous copy leaves storage first, then the owner, and only then is the wiped copy
+  // written: a tab that sees the wiped copy already knows it is nobody's, and does not join the
+  // account's copy it holds into it (QA 2026-10-06; the old order, owner last, leaked it).
+  it('signing out removes the old copy, then the owner, then writes the wiped copy', async () => {
     useStore.getState().setUser({ id: 'A', name: 'A' })
     useStore.getState().replaceState({ ...clone(DEF), _ts: 20, routines: [routine('A-routine')] })
     api.mockResolvedValue({})
@@ -290,9 +293,10 @@ describe('signing in as a different profile', () => {
 
     expect(globalThis.localStorage).toBe(real)
     expect(writes).toContain('removeItem gym_owner')
-    expect(writes.lastIndexOf('removeItem gym_owner')).toBeGreaterThan(writes.lastIndexOf('setItem gym_state_v1'))
+    expect(writes.lastIndexOf('removeItem gym_owner')).toBeLessThan(writes.lastIndexOf('setItem gym_state_v1'))
     expect(writes.lastIndexOf('removeItem gym_owner')).toBeGreaterThan(writes.lastIndexOf('removeItem gym_state_v1'))
     expect(localStorage.getItem('gym_owner')).toBeNull()
+    expect(localStorage.getItem('gym_state_owner')).toBe('')
     expect(JSON.parse(localStorage.getItem('gym_state_v1')).routines).toEqual([])
   })
 

@@ -6,15 +6,17 @@ import { exOr } from '../lib/exercises.js'
 import { activeProfile, exAvailable } from '../lib/equipment.js'
 import { uid, exerciseNameText } from '../lib/format.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
-import { supersetUnits, moveSupersetUnit, cleanupSg, exLine, defaultConfig } from '../lib/history.js'
+import { supersetUnits, moveRoutineEntry, cleanupSg, exLine, defaultConfig } from '../lib/history.js'
 import { Thumb } from '../components/Media.jsx'
 import { glyphPicker, exercisePicker, exConfigSheet, confirmSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { glyphOf } from '../lib/glyphs.js'
 import { Button, Row, SelectRow, Switch } from '../components/ui.jsx'
-import SwipeToDelete from '../components/SwipeToDelete.jsx'
+import SwipeRow from '../components/SwipeRow.jsx'
+import { workoutControls } from '../lib/workout-controls.js'
 import { copyRoutine, deleteRoutine, replaceSlotExercise } from '../lib/routines.js'
 import { planPrintHTML, printPlan } from '../lib/plan-share.js'
+import { markEntryUndone } from '../lib/sync-merge.js'
 import { MOBILE, printHtml } from '../lib/mobile.js'
 import { speedUnitOf } from '../lib/speed.js'
 import { POLICIES_FOR, POLICY_NAME, POLICY_DESC } from '../lib/progression.js'
@@ -212,7 +214,7 @@ function useRoutineReorder(routineIdentity, exercises, onDrop) {
       }
       if (event.isPrimary === false || (event.pointerType === 'mouse' && event.button !== 0)) return
       const target = event.target
-      if (!target?.closest || target.closest('button,a,input,textarea,select,[data-nodrag]')) return
+      if (!target?.closest || target.closest('button:not([data-row-open]),a,input,textarea,select,[data-nodrag]')) return
       const row = target.closest('[data-routine-row]')
       if (!row || !list.contains(row)) return
       const sourceIndex = Number(row.dataset.exIndex)
@@ -312,7 +314,50 @@ function useRoutineReorder(routineIdentity, exercises, onDrop) {
     window.clearTimeout(suppressTimerRef.current)
     event.preventDefault(); event.stopPropagation()
   }
-  return { listRef, drag, onClickCapture }
+  // Whether a long press has picked a row up: the row's swipe stays out of the way while it has.
+  const lifted = () => !!gestureRef.current?.active
+  return { listRef, drag, onClickCapture, lifted }
+}
+
+/**
+ * Takes exercise `i` out of routine `routineId` with an Undo (v1.3.11: the row's swipe and the
+ * exercise sheet's Remove). While the routine's exercises are still what the removal left, Undo
+ * puts the list back as it was, superset links included (a partner left alone loses its link,
+ * cleanupSg). Once something else changed them, the exercise goes back in at its old place.
+ */
+export function removeRoutineExercise(routineId, i) {
+  const st = useStore.getState()
+  const routine = st.S.routines.find(x => x.id === routineId)
+  const slot = routine?.ex?.[i]
+  if (!slot) return false
+  const before = structuredClone(routine.ex)
+  const base = Number(routine._f?.ex) || 0
+  st.update(s => {
+    const ex = s.routines.find(x => x.id === routineId)?.ex
+    if (!ex) return
+    ex.splice(i, 1); cleanupSg(ex)
+  })
+  const now = useStore.getState().S.routines.find(x => x.id === routineId)
+  const after = JSON.stringify(now?.ex)
+  const del = Number(now?._f?.ex) || 0
+  useUI.getState().toast(t('“{0}” left the routine.', exerciseNameText(exOr(slot.id))),
+    { action: t('Undo'), onAction: () => undoRemoveRoutineExercise({ routineId, i, before, after, base, del }) })
+  return true
+}
+export function undoRemoveRoutineExercise({ routineId, i, before, after, base, del }) {
+  if (!useStore.getState().S.routines.some(x => x.id === routineId)) {
+    useUI.getState().toast(t('Too late, that one’s gone'))
+    return false
+  }
+  useStore.getState().update(s => {
+    const routine = s.routines.find(x => x.id === routineId)
+    // Put back exactly, so a change another device made to these exercises before it saw the
+    // removal still wins (lib/sync-merge.js, "Undo").
+    if (JSON.stringify(routine.ex) === after) { routine.ex = structuredClone(before); if (del) markEntryUndone(routine, 'ex', base, del); return }
+    routine.ex.splice(Math.min(i, routine.ex.length), 0, structuredClone(before[i]))
+    cleanupSg(routine.ex)
+  })
+  return true
 }
 
 export default function RoutineEdit() {
@@ -332,11 +377,13 @@ export default function RoutineEdit() {
     edit(exercises => { reorderRoutineUnit(exercises, sourceIndex, targetSlot) })
   })
   if (!r) return null
+  // The arrows move one exercise (#377): inside its superset, out of it at the edge, and past a
+  // whole neighbouring unit otherwise (lib/history.js moveRoutineEntry). Drag moves supersets whole.
   const move = (i, dir) => {
     // Guard before update so a stale/boundary activation cannot trigger persistence or cleanup.
-    if (!moveSupersetUnit(r.ex, i, dir)) return
+    if (!moveRoutineEntry(r.ex, i, dir)) return
     edit(ex => {
-      const reordered = moveSupersetUnit(ex, i, dir)
+      const reordered = moveRoutineEntry(ex, i, dir)
       if (!reordered) return
       ex.splice(0, ex.length, ...reordered)
       cleanupSg(ex)
@@ -387,12 +434,21 @@ export default function RoutineEdit() {
     cleanupSg(ex)
   })
 
+  const addExercise = () => exercisePicker((ex, quick) => {
+    if (quick) {
+      edit(x => x.push({ id: ex.id, ...defaultConfig(ex.id) }))
+      toast(t('“{0}” added to {1}', exerciseNameText(ex), r.name))
+    } else {
+      exConfigSheet(ex, null, cfg => edit(x => { x.push({ id: ex.id, ...cfg }) }), null, r)
+    }
+  })
+
   const units = supersetUnits(r.ex)
-  const unitIndex = new Map(units.flatMap((unit, index) => unit.map(i => [i, index])))
   const unitFirst = new Set(units.filter(u => u.length > 1).map(u => u[0]))
   const inSS = new Set(units.filter(u => u.length > 1).flat())
   const profile = activeProfile(S)
   const missingCount = profile ? r.ex.filter(e => !exAvailable(S, exOr(e.id))).length : 0
+  const swipe = workoutControls(S).swipeSets
 
   return <div className="narrow">
     <div className="hdr">
@@ -413,7 +469,7 @@ export default function RoutineEdit() {
           This switch decides whether the routine's workouts count at all: a deload routine's
           sessions open at its own numbers and are never the baseline the next regular session
           progresses from (session-start.js, history.js entryExcluded). */}
-      <Row icon="pause" iconTint="var(--orange)" title={t('Deload routine')}
+      <Row icon="chartLineSlash" iconTint="var(--orange)" title={t('Deload routine')}
         subtitle={t('Its workouts do not count toward progression. They still show in history and statistics.')}>
         <Switch checked={r.excludeFromProgression === true} onChange={v => update(s => {
           const routine = s.routines.find(x => x.id === id)
@@ -435,6 +491,12 @@ export default function RoutineEdit() {
       </div>
     </div>}
 
+    {/* "Add exercise" heads the list (v1.3.11): with it under the last exercise, a long routine
+        had to be scrolled to the bottom before anything could be added. */}
+    <div className="row between plan-sec-h routine-ex-h">
+      <h4 className="sec">{t('Exercises')}</h4>
+      <Button size="sm" variant="tinted" icon="plus" onClick={addExercise}>{t('Add exercise')}</Button>
+    </div>
     {r.ex.length ? <div ref={reorder.listRef} onClickCapture={reorder.onClickCapture}
       className={'list routine-list' + (reorder.drag ? ' is-reordering' : '')}>{r.ex.map((e, i) => {
       // An unresolvable id is shown rather than skipped — hiding it left an entry you
@@ -442,35 +504,48 @@ export default function RoutineEdit() {
       const ex = exOr(e.id)
       const noEquip = profile && !exAvailable(S, ex)
       const linkedPrev = i > 0 && e.sg && r.ex[i - 1].sg === e.sg
+      // At a superset's edge an arrow takes the exercise out of it rather than past a neighbour.
+      const leavesUp = inSS.has(i) && !linkedPrev
+      const leavesDown = inSS.has(i) && r.ex[i + 1]?.sg !== e.sg
       const isDragging = reorder.drag && i >= reorder.drag.first && i <= reorder.drag.last
-      return <div key={i} data-routine-row data-ex-index={i}
-        className={'routine-drag-row' + (isDragging ? ' is-dragging' : '')}
-        style={isDragging ? { transform: `translate3d(0, ${reorder.drag.deltaY}px, 0)` } : undefined}>
-        {unitFirst.has(i) && <div className="ss-label"><Icon name="link" />{t('Superset')}</div>}
-        <SwipeToDelete className={'item' + (inSS.has(i) ? ' in-ss' : '')}
-          deleteLabel={t('Remove from routine')}
-          onDelete={() => edit(x => { x.splice(i, 1); cleanupSg(x) })}
-          onClick={() => {
-            exConfigSheet(ex, e, cfg => edit(x => { x[i] = { id: x[i].id, sg: x[i].sg, ...cfg } }), () => edit(x => { x.splice(i, 1); cleanupSg(x) }), r, null, () => replace(i))
-          }}>
+      const removeHere = () => removeRoutineExercise(id, i)
+      // A tap anywhere on the row opens the exercise's sheet; its Remove is the keyboard's way
+      // to take it out. The row itself is no button (it holds the link and Move buttons, which a
+      // screen reader would lose inside one): the name is, a real <button> a click bubbles up
+      // from. The long press treats it as the row (data-row-open, useRoutineReorder).
+      const item = <div className={'item' + (inSS.has(i) ? ' in-ss' : '')} onClick={() => {
+          exConfigSheet(ex, e, cfg => edit(x => { x[i] = { id: x[i].id, sg: x[i].sg, ...cfg } }), removeHere, r, null, () => replace(i))
+        }}>
           {/* Shown on pointer devices only (index.css .routine-grip); the Move buttons and the
               long press stay the way in for a keyboard and a finger. */}
           <span className="routine-grip" data-drag-handle aria-hidden="true" title={t('Reorder exercises')}><Icon name="grip" /></span>
           <Thumb ex={ex} />
-          <div className="grow"><div className={`tt ${exerciseNameClass(ex)}`}>{exerciseNameFor(ex)}</div><div className="ss">{exLine(e, S.unit, speedUnitOf(S))}</div>
-            {e.note && <div className="small dim" style={{ marginTop: 2 }}>{e.note}</div>}</div>
-          {noEquip && <span className="tag" style={{ color: 'var(--orange)', borderColor: 'var(--orange)' }} title={t('Needs {0} — not in your active profile', t(ex.eq))}><Icon name="warning" /></span>}
+          <button type="button" className="grow item-open" data-row-open><span className={`tt ${exerciseNameClass(ex)}`}>{exerciseNameFor(ex)}</span><span className="ss">{exLine(e, S.unit, speedUnitOf(S))}</span>
+            {e.note && <span className="small dim" style={{ marginTop: 2 }}>{e.note}</span>}</button>
+          {noEquip && <span className="tag" style={{ color: 'var(--orange)', borderColor: 'var(--orange)' }} title={t('Needs {0}, which isn’t in your active profile', t(ex.eq))}><Icon name="warning" /></span>}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 'none', alignItems: 'center' }}>
             {i > 0 && <button className={'iconbtn' + (linkedPrev ? ' on-ss' : '')} title={t('Superset with exercise above')} style={{ width: 32, height: 28, borderRadius: 8, fontSize: 15 }} onClick={ev => { ev.stopPropagation(); toggleLink(i) }}><Icon name="link" /></button>}
             <div style={{ display: 'flex', gap: 2 }}>
-              <button className="iconbtn" aria-label={t('Move up')} title={t('Move up')} disabled={unitIndex.get(i) === 0} style={{ width: 28, height: 24, borderRadius: 7, fontSize: 12 }} onClick={ev => { ev.stopPropagation(); move(i, -1) }}><Icon name="chevronUp" /></button>
-              <button className="iconbtn" aria-label={t('Move down')} title={t('Move down')} disabled={unitIndex.get(i) === units.length - 1} style={{ width: 28, height: 24, borderRadius: 7, fontSize: 12 }} onClick={ev => { ev.stopPropagation(); move(i, 1) }}><Icon name="chevronDown" /></button>
+              <button className="iconbtn" aria-label={t('Move up')} title={leavesUp ? t('Move out of the superset') : t('Move up')} disabled={!moveRoutineEntry(r.ex, i, -1)} style={{ width: 28, height: 24, borderRadius: 7, fontSize: 12 }} onClick={ev => { ev.stopPropagation(); move(i, -1) }}><Icon name="chevronUp" /></button>
+              <button className="iconbtn" aria-label={t('Move down')} title={leavesDown ? t('Move out of the superset') : t('Move down')} disabled={!moveRoutineEntry(r.ex, i, 1)} style={{ width: 28, height: 24, borderRadius: 7, fontSize: 12 }} onClick={ev => { ev.stopPropagation(); move(i, 1) }}><Icon name="chevronDown" /></button>
             </div>
           </div>
-        </SwipeToDelete>
+        </div>
+      return <div key={i} data-routine-row data-ex-index={i}
+        className={'routine-drag-row' + (isDragging ? ' is-dragging' : '')}
+        style={isDragging ? { transform: `translate3d(0, ${reorder.drag.deltaY}px, 0)` } : undefined}>
+        {unitFirst.has(i) && <div className="ss-label"><Icon name="link" />{t('Superset')}</div>}
+        {/* Swipe (v1.3.11, Settings → Swipe actions): toward the start takes the exercise out,
+            with an Undo; nothing on the other side. The long press still picks the row up to
+            reorder it (a press that has lifted keeps the swipe out), and the row's sheet keeps
+            Remove for a keyboard. Rows are keyed by index, so the row shuts when the count changes. */}
+        {swipe
+          ? <SwipeRow className="swrow-item" deleteLabel={t('Remove')} deleteIcon="minus" closeKey={r.ex.length}
+            canSwipe={() => !reorder.lifted()} onDelete={removeHere}>{item}</SwipeRow>
+          : item}
       </div>
     })}{reorder.drag && <div className="routine-drop-indicator" data-testid="routine-drop-indicator"
-      aria-hidden="true" style={{ top: `${reorder.drag.indicatorTop}px` }} />}</div> : <div className="empty"><div className="ico"><Icon name="dumbbell" /></div>{t('No exercises yet — add your first one.')}</div>}
+      aria-hidden="true" style={{ top: `${reorder.drag.indicatorTop}px` }} />}</div> : <div className="empty"><div className="ico"><Icon name="dumbbell" /></div>{t('No exercises yet. Add your first one!')}</div>}
 
     {/* Coverage of the routine as planned, so a gap shows up while you're building it
         rather than after a month of training around it. */}
@@ -486,16 +561,7 @@ export default function RoutineEdit() {
       </div>
     })()}
 
-    <div className="small dim row" style={{ margin: '10px 2px', gap: 5 }}><Icon name="link" style={{ fontSize: 13 }} />{t('Tap the link button on an exercise to superset it with the one above — you’ll do them back-to-back.')}</div>
-    <Button variant="primary" onClick={() => exercisePicker((ex, quick) => {
-      if (quick) {
-        edit(x => x.push({ id: ex.id, ...defaultConfig(ex.id) }))
-        toast(t('“{0}” added to {1}', exerciseNameText(ex), r.name))
-      } else {
-        exConfigSheet(ex, null, cfg => edit(x => { x.push({ id: ex.id, ...cfg }) }), null, r)
-      }
-    })} icon="plus">{t('Add exercise')}</Button>
-    <div style={{ height: 10 }} />
+    <div className="small dim row" style={{ margin: '10px 2px', gap: 5 }}><Icon name="link" style={{ fontSize: 13 }} />{t('Tap the link button on an exercise to superset it with the one above. You’ll do them back-to-back.')}</div>
     <Button onClick={() => {
       const copy = copyRoutine(r, t('Copy'))
       update(s => { s.routines.push(copy) })

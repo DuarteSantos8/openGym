@@ -51,8 +51,20 @@ for (const [lang, dict] of locales) {
   const orphans = union.filter(k => keys.has(k) && seen.get(k) === 1)
   // A blank value is worse than no translation: the English fallback only runs for a key that
   // is ABSENT, so an empty string reaches the screen as an empty screen.
-  const blank = Object.entries(dict).filter(([, v]) => typeof v !== 'string' || !v.trim()).map(([k]) => k)
-  const mangled = Object.entries(dict).filter(([k, v]) => typeof v === 'string' && marks(v) !== marks(k))
+  // A plural entry (tn()) answers with the forms of a language that needs more than two —
+  // { one, few, many } for Russian — instead of one string. Every form is held to the same
+  // rules a plain string is: present, not blank, same placeholders as the English key.
+  const formsOf = v => (v && typeof v === 'object' && !Array.isArray(v) ? Object.values(v) : null)
+  const blank = Object.entries(dict).filter(([, v]) => {
+    const forms = formsOf(v)
+    if (forms) return !forms.length || forms.some(f => typeof f !== 'string' || !f.trim())
+    return typeof v !== 'string' || !v.trim()
+  }).map(([k]) => k)
+  const mangled = Object.entries(dict).flatMap(([k, v]) => {
+    const forms = formsOf(v)
+    if (forms) return forms.filter(f => typeof f === 'string' && marks(f) !== marks(k)).map(f => [k, f])
+    return typeof v === 'string' && marks(v) !== marks(k) ? [[k, v]] : []
+  })
   if (missing.length || orphans.length || blank.length || mangled.length) {
     failed = true
     console.error(`\n${lang}.js: ${keys.size}/${union.length} keys`)

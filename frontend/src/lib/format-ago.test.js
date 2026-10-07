@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { fmtAgo, changeCount, setsWorkCount, fmtDur } from './format.js'
+import { fmtAgo, fmtDaysAgo, changeCount, setsWorkCount, fmtDur, fmtDate } from './format.js'
 import { _setLangState } from './i18n-core.js'
 import ar from '../locales/ar.js'
 import uk from '../locales/uk.js'
@@ -61,5 +61,54 @@ describe('fmtDur', () => {
     _setLangState('uk', uk, null, null)
     expect(fmtDur(34 * 60000)).toBe('34 хв')
     expect(fmtDur(65 * 60000)).toBe('1 год 5 хв')
+  })
+})
+
+// The "Last time (…)" line of a workout (#363): calendar days back from the session's own day.
+describe('fmtDaysAgo', () => {
+  afterEach(() => _setLangState('en', {}, null, null))
+  const day = '2026-10-04'
+  const back = n => { const d = new Date(Date.UTC(2026, 9, 4 - n)); return d.toISOString().slice(0, 10) }
+
+  it('days for the first week, then weeks, then months', () => {
+    expect(fmtDaysAgo(back(0), day)).toBe('today')
+    expect(fmtDaysAgo(back(1), day)).toBe('yesterday')
+    expect(fmtDaysAgo(back(2), day)).toBe('2 days ago')
+    expect(fmtDaysAgo(back(6), day)).toBe('6 days ago')
+    expect(fmtDaysAgo(back(7), day)).toBe('last week')
+    expect(fmtDaysAgo(back(13), day)).toBe('last week')
+    expect(fmtDaysAgo(back(14), day)).toBe('2 weeks ago')
+    expect(fmtDaysAgo(back(34), day)).toBe('4 weeks ago')
+    expect(fmtDaysAgo(back(35), day)).toBe('last month')
+    expect(fmtDaysAgo(back(60), day)).toBe('last month')
+    expect(fmtDaysAgo(back(61), day)).toBe('2 months ago')
+    expect(fmtDaysAgo(back(364), day)).toBe('11 months ago')
+  })
+
+  it('a year or more back is the date with its year', () => {
+    expect(fmtDaysAgo(back(365), day)).toBe(fmtDate(back(365), false, true))
+    expect(fmtDaysAgo('2024-03-02', day)).toMatch(/2024/)
+  })
+
+  it('counts calendar days across a DST change, not 24-hour blocks', () => {
+    // Europe: clocks go forward on 2026-03-29 and back on 2026-10-25.
+    expect(fmtDaysAgo('2026-03-28', '2026-03-30')).toBe('2 days ago')
+    expect(fmtDaysAgo('2026-10-24', '2026-10-26')).toBe('2 days ago')
+    expect(fmtDaysAgo('2026-03-29', '2026-03-30')).toBe('yesterday')
+  })
+
+  it('counts from the given day, so a workout logged into the past reads correctly', () => {
+    expect(fmtDaysAgo('2026-09-01', '2026-09-04')).toBe('3 days ago')
+  })
+
+  it('a day after the reference day (a clock set back) reads as today', () => {
+    expect(fmtDaysAgo('2026-10-06', day)).toBe('today')
+  })
+
+  it('in the UI language, from the platform', () => {
+    _setLangState('de', {}, null, null)
+    expect(fmtDaysAgo(back(1), day)).toBe('gestern')
+    expect(fmtDaysAgo(back(3), day)).toBe('vor 3 Tagen')
+    expect(fmtDaysAgo(back(14), day)).toBe('vor 2 Wochen')
   })
 })

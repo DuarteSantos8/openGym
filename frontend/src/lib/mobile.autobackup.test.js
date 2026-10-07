@@ -123,6 +123,12 @@ describe('writeAutoBackup where today\'s name belongs to another install', () =>
     expect(JSON.parse(h.files.get('DOCUMENTS/' + other))).toEqual({ theirs: true })
   })
 
+  it('with the first two names owned by earlier installs, the copy goes under the third', async () => {
+    for (const n of ['', '-2']) { const p = 'openGym/' + backup(todayISO()).replace('.json', n + '.json'); put(p, '{"theirs":true}'); h.foreign.add(p) }
+    await writeAutoBackup({ n: 3 })
+    expect(JSON.parse(h.files.get('DOCUMENTS/openGym/' + backup(todayISO()).replace('.json', '-3.json')))).toEqual({ n: 3 })
+  })
+
   it('counts the second names among the fourteen it keeps, and prunes them like any other', async () => {
     for (let i = 0; i < 20; i++) put('openGym/' + backup(day(i)).replace('.json', i % 2 ? '-2.json' : '.json'))
     await writeAutoBackup({})
@@ -145,6 +151,7 @@ describe('writeAutoBackup where today\'s name belongs to another install', () =>
 it('the Settings subtitle names the same number of copies the pruning keeps', async () => {
   const fs = await import('node:fs')
   const src = fs.readFileSync(new URL('../views/Settings.jsx', import.meta.url), 'utf8')
-  const m = src.match(/keeps the newest \{0\}[^']*', (\d+)\)/)
+  // autoBackupSubtitle(folder, keep) (components/BackupFolderRow.jsx) fills in every wording
+  const m = src.match(/autoBackupSubtitle\([^)]*, (\d+)\)/)
   expect(m && Number(m[1])).toBe(AUTO_BACKUP_KEEP)
 })

@@ -29,11 +29,15 @@ const cssSource = readFileSync(resolve(process.cwd(), 'src/index.css'), 'utf8')
 describe('log a past workout', () => {
   beforeEach(() => {
     globalThis.IS_REACT_ACT_ENVIRONMENT = true
+    // Late in the evening, so the default 18:00 start on today's date is already over: a past
+    // session has to have ended before now.
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date(2026, 7, 26, 21, 0))
     useUI.setState({ sheets: [], toasts: [] })
     useStore.setState(s => ({ S: { ...s.S, active: null, routines: [], workouts: [{ id: 'old', d: todayISO(), start: 1, end: 2, name: 'Old', entries: [], prs: [] }] } }))
     document.body.innerHTML = ''
   })
-  afterEach(() => { act(() => { mounted.splice(0).forEach(root => root.unmount()) }) })
+  afterEach(() => { act(() => { mounted.splice(0).forEach(root => root.unmount()) }); vi.useRealTimers() })
 
   it('refuses while a workout is running', () => {
     const toast = vi.fn()
@@ -122,11 +126,33 @@ describe('log a past workout', () => {
     const host = mountTopSheet()
     act(() => { type(host.querySelector('input[type=date]'), '2020-01-02') })
     act(() => { type(host.querySelector('input.num'), '') })
-    expect(host.textContent).toContain('Enter how long it took — at least 1 minute.')
+    expect(host.textContent).toContain('Enter how long it took (at least 1 minute).')
     act(() => { button(host, 'Continue').click() })
     expect(useStore.getState().S.active).toBeFalsy()
     act(() => { type(host.querySelector('input.num'), '1') })
     act(() => { button(host, 'Continue').click() })
     expect(useStore.getState().S.active.backfill.durationMin).toBe(1)
+  })
+
+  it('refuses a session that would still be running now, and one longer than a day', () => {
+    useUI.setState({ toast: vi.fn() })
+    vi.setSystemTime(new Date(2026, 7, 26, 1, 42))
+    {
+      logPastWorkoutSheet()
+      const host = mountTopSheet()
+      act(() => { type(host.querySelector('input[type=date]'), '2026-08-26') })
+      act(() => { type(host.querySelector('input[type=time]'), '23:30') })
+      act(() => { button(host, 'Continue').click() })
+      expect(useStore.getState().S.active).toBeFalsy()
+      expect(useUI.getState().toast).toHaveBeenLastCalledWith('That’s still in the future. Try an earlier start.')
+      act(() => { type(host.querySelector('input[type=date]'), '2026-08-20') })
+      act(() => { type(host.querySelector('input.num'), '99999') })
+      expect(host.textContent).toContain('That’s more than a day. Keep it to 24 hours or less.')
+      act(() => { button(host, 'Continue').click() })
+      expect(useStore.getState().S.active).toBeFalsy()
+      act(() => { type(host.querySelector('input.num'), '90') })
+      act(() => { button(host, 'Continue').click() })
+      expect(useStore.getState().S.active.d).toBe('2026-08-20')
+    }
   })
 })
