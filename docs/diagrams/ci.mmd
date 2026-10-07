@@ -1,0 +1,6 @@
+flowchart TB
+    pr["Pull request<br/>on GitHub"] --> actions["GitHub Actions<br/>frontend, api, MCP tests<br/>+ build and boot both api images"]
+    actions --> review["Review and merge<br/>into main"]
+    review --> mirror["Mirror workflow<br/>pushes to GitLab"]
+    mirror --> gitlab["GitLab CI<br/>signed APK, multi-arch images,<br/>SBOMs, release"]
+    gitlab --> ghcr["GHCR images<br/>on release"]

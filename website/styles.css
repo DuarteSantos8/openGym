@@ -758,8 +758,6 @@ p code, li code, td code {
   transition: border-color .25s var(--ease), color .25s var(--ease);
 }
 .toc a:hover { color: var(--fg); border-color: var(--hair); text-decoration: none; }
-/* The topic rail lists the same sections on a wide screen; twice is clutter. */
-@media (min-width: 1300px) { .toc { display: none; } }
 
 /* config table on the docs page */
 table.cfg { width: 100%; border-collapse: collapse; margin: 18px 0 24px; font-size: 15.5px; }
@@ -933,4 +931,36 @@ table.cfg td:first-child { white-space: nowrap; width: 1%; padding-right: 26px; 
 }
 .prose p a:hover, .prose li a:hover, .prose td a:hover, .foot .c a:hover, .note a:hover {
   text-decoration-color: currentColor;
+}
+
+/* ------------------------------------------------- contents: easier to find
+   The pill used to be grey on black in a corner, and on a computer people did not
+   see it at all. It now carries the accent colour, and on the two reference pages
+   (body.dock: docs, API) a wide screen gets the contents as a fixed column beside
+   the text instead of a drawer, so there is nothing to find. */
+.toc-btn {
+  color: var(--acc); font-weight: 600; font-size: 14.5px;
+  border-color: rgba(50, 215, 75, .45);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .5), 0 0 0 4px rgba(50, 215, 75, .08);
+}
+.toc-btn:hover { color: var(--fg); border-color: var(--acc); background: rgba(32, 33, 37, .96); }
+
+@media (min-width: 1200px) {
+  body.dock { --rail-w: 270px; }
+  body.dock .side {
+    width: var(--rail-w);
+    transform: none; visibility: visible; transition: none;
+    box-shadow: none; background: #050506;
+  }
+  body.dock .side-top { position: static; }
+  body.dock .rail-close, body.dock .toc-btn { display: none; }
+  body.dock::after { content: none; }
+  /* Centre the text in what the rail leaves over, never under it. */
+  body.dock main.prose { margin-left: max(calc(var(--rail-w) + 24px), calc((100% - 720px) / 2)); margin-right: auto; }
+  body.dock main.api-main { margin-left: max(calc(var(--rail-w) + 24px), calc((100% - 880px) / 2)); margin-right: auto; }
+  body.dock .toc { display: none; }
+}
+@media (max-width: 1199px) {
+  /* Where the drawer is the only way in, keep the chip row that points into the page. */
+  .toc { display: flex; }
 }

@@ -18,7 +18,7 @@ import * as coachJobs from './coach/jobs.js';
 import { coachRoutes } from './coach/routes.js';
 import { startCadence } from './coach/cadence.js';
 import { startWarmup } from './coach/warmup.js';
-import { dayReminderPush, restTimerPush, testPush } from './push-messages.js';
+import { dayReminderPush, nudgePush, restTimerPush, testPush } from './push-messages.js';
 import { verifyError } from './verify-error.js';
 import { socialRoutes } from './social/routes.js';
 import { accountView, profileRoutes } from './profile.js';
@@ -33,16 +33,36 @@ import {
 } from './passkeys-store.js';
 import { createDeviceLink, findDeviceLink, burnDeviceLink, dropDeviceLinks } from './device-link.js';
 import { createMediaStore, mediaLimits, mediaConfig, MediaError, HASH_RE } from './media.js';
+import { effectiveRoutineId } from './queue.js';
+import { stampPut } from './sync-stamps.js';
+import { atomicWrite as durableWrite } from './durable.js';
+import { nudgeFor, nudgeWindowOpen, toneOf } from './nudge.js';
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
 const RP_ID = process.env.RP_ID || 'localhost';
 const ORIGIN = process.env.ORIGIN || 'http://localhost:8080';
 const RP_NAME = process.env.RP_NAME || 'openGym';
-// Admin dashboard (issue): admins are matched by uid; INVITE_ONLY gates new signups behind a
-// code the admin generates. Both default off so a fresh self-hosted instance stays open.
+// Admin dashboard (issue): admins are matched by uid (or the admin flag FIRST_USER_ADMIN sets);
+// INVITE_ONLY gates new signups behind a code the admin generates. Off by default, so a fresh
+// self-hosted instance stays open.
 const ADMIN_UIDS = (process.env.ADMIN_UIDS || '').split(',').map(s => s.trim()).filter(Boolean);
 const INVITE_ONLY = /^(1|true|yes|on)$/i.test(process.env.INVITE_ONLY || '');
+// The first profile made on an instance with no profiles at all becomes its admin (#328), so a
+// fresh install has someone who can open the admin dashboard without editing ADMIN_UIDS and
+// restarting. Stored on the user record (user.admin), which isAdmin already honours. It is
+// decided at the moment of registration only: an instance that already has profiles changes
+// nothing on upgrade. Default OFF: an existing instance with no profiles yet (guest-only, or phones
+// kept local) would otherwise hand admin to whoever signs up first after the upgrade.
+// FIRST_USER_ADMIN=1 turns it on for a fresh install.
+const FIRST_USER_ADMIN = /^(1|true|yes|on)$/i.test(process.env.FIRST_USER_ADMIN || '');
+// Checked synchronously right before db.users.push, with no await in between, so two
+// registrations racing each other cannot both see an empty instance.
+function claimFirstAdmin(req, user) {
+  if (!FIRST_USER_ADMIN || db.users.length !== 0) return;
+  user.admin = true;
+  audit(req, 'admin.first-user', { user });
+}
 // Guest mode ("Continue without account") keeps everything in the browser and never touches this
 // server — but on an instance meant for a known set of people, an entrance nobody can walk back
 // out of is still the wrong front door (#42). Default ON, so existing instances are unchanged;
@@ -97,8 +117,34 @@ if (!fs.existsSync(secretFile)) fs.writeFileSync(secretFile, crypto.randomBytes(
 const SECRET = fs.readFileSync(secretFile, 'utf8').trim();
 
 const dbFile = path.join(DATA, 'db.json');
-let db = { users: [], creds: [], subs: [], invites: [] };
-try { db = JSON.parse(fs.readFileSync(dbFile, 'utf8')); } catch {}
+// Every account, passkey and invite. Only a missing file starts empty: an unreadable one (a write
+// cut short by a power loss, a damaged restore) used to boot with no users at all, and the first
+// save then replaced it — every profile locked out, every training history orphaned, and with
+// FIRST_USER_ADMIN the first visitor made admin. Now the damaged file is kept aside and the copy
+// saveDb keeps of each version it writes (db.json.bak) is used; with neither readable the server
+// refuses to start, saying why, rather than start as a new instance.
+function loadDb() {
+  let raw;
+  try { raw = fs.readFileSync(dbFile, 'utf8'); }
+  catch (e) { if (e.code === 'ENOENT') return { users: [], creds: [], subs: [], invites: [] }; throw e; }
+  const parse = text => { const v = JSON.parse(text); if (!v || typeof v !== 'object' || Array.isArray(v)) throw new Error('not an object'); return v; };
+  try { return parse(raw); } catch (err) {
+    const aside = `${dbFile}.unreadable-${Date.now()}`;
+    try { fs.copyFileSync(dbFile, aside); } catch { /* the original stays where it is anyway */ }
+    console.error(`db.json cannot be read (${err.message}); kept a copy as ${path.basename(aside)}`);
+    try {
+      const bak = parse(fs.readFileSync(dbFile + '.bak', 'utf8'));
+      console.error('db.json: using db.json.bak, the copy of the last save');
+      return bak;
+    } catch {
+      console.error('db.json: no readable db.json.bak either. Refusing to start: restore db.json from a backup.');
+      process.exit(1);
+    }
+  }
+}
+let db = loadDb();
+db.users = db.users || [];
+db.creds = db.creds || [];
 db.subs = db.subs || [];
 db.invites = db.invites || [];
 db.deviceLinks = db.deviceLinks || [];   // unused one-time device links, hashed (device-link.js)
@@ -106,12 +152,22 @@ const isAdmin = user => !!user && (user.admin === true || ADMIN_UIDS.includes(us
 const sessionUser = user => accountView(user, isAdmin);
 // 0600: db.json holds passkey credential material. It used to be covered by a blanket 0700 on
 // the whole directory; now that the directory stays traversable, the file carries its own mode.
-function saveDb() { atomicWrite(dbFile, JSON.stringify(db, null, 2), 0o600); }
-function atomicWrite(file, content, mode) {
-  const tmp = file + '.tmp';
-  fs.writeFileSync(tmp, content, mode ? { mode } : undefined);
-  fs.renameSync(tmp, file);
+// Once the new version is on disk, a second copy of it goes to db.json.bak, the same durable
+// way: loadDb falls back to it. A copy of the version being replaced, as it used to be, lost
+// whatever the last save wrote (a profile just created) when db.json was later found unreadable.
+// A write cut short leaves the previous db.json.bak whole (temporary file and rename).
+function saveDb() {
+  const text = JSON.stringify(db, null, 2);
+  atomicWrite(dbFile, text, 0o600);
+  try { atomicWrite(dbFile + '.bak', text, 0o600); }
+  catch (e) { console.error('db.json.bak could not be written', e.message); }
 }
+// Flushed before and after the rename (durable.js): a host reset must not bring back the file
+// the client was told had been replaced.
+function atomicWrite(file, content, mode) { durableWrite(file, content, mode); }
+// How many earlier write ids a document keeps (`_wids`, see PUT /api/data): a device that last
+// synced more writes ago than this merges on its next pull instead of taking the server's copy.
+const WID_KEEP = 50;
 const stateFile = uid => path.join(DATA, 'state-' + uid.replace(/[^a-zA-Z0-9_-]/g, '') + '.json');
 // When a profile last fetched its document (GET /api/data). The document's own `_ts` moves only
 // on a push, so a device that only ever read — a second phone, a profile that trains elsewhere
@@ -127,6 +183,22 @@ function notePull(user, now = Date.now()) {
 const lastSyncOf = (u, S) => Math.max(S?._ts || 0, u?.lastPull || 0) || null;
 function readState(uid) {
   try { return JSON.parse(fs.readFileSync(stateFile(uid), 'utf8')); } catch { return null; }
+}
+// GET and PUT /api/data tell a profile with no state yet from one whose file cannot be read: the
+// second answers 503 instead of an empty profile, which a device would adopt, or a write would
+// replace, losing what a restore could still bring back.
+const UNREADABLE = Symbol('unreadable');
+function readStateStrict(uid) {
+  let raw;
+  try { raw = fs.readFileSync(stateFile(uid), 'utf8'); }
+  catch (e) { return e.code === 'ENOENT' ? null : UNREADABLE; }
+  try { return JSON.parse(raw); } catch { return UNREADABLE; }
+}
+// A stored document as a client gets it: without the server's own notes `_unstamped` and `_prior`.
+function forClient(S) {
+  if (!S || typeof S !== 'object' || !('_unstamped' in S || '_prior' in S)) return S;
+  const { _unstamped, _prior, ...rest } = S;
+  return rest;
 }
 // An entry is an object a reader can dereference, and `records` is every entry of a stored
 // list. PUT /api/data drops the rest on the way in — a null workout, a routine that is a
@@ -252,11 +324,13 @@ function pushEndpointError(raw) {
 }
 
 // `deviceId` narrows the send to the subscriptions one browser registered (the rest-timer alert
-// belongs to the device that started the rest); a subscription stored without one — an older
-// client — still gets everything, as before.
+// belongs to the device that started the rest, #348); a subscription stored without one (an
+// older client) still gets everything, as before. A resting device with no subscription of its
+// own gets nothing: the phone in the bag must not ring for a rest timed on the desktop. The
+// client re-sends its subscription with its id on every boot, so an id that changed heals there.
 async function sendPush(userId, payload, deviceId) {
   let subs = db.subs.filter(s => s.userId === userId);
-  if (deviceId && subs.some(s => s.deviceId === deviceId)) subs = subs.filter(s => s.deviceId === deviceId);
+  if (deviceId) subs = subs.filter(s => !s.deviceId || s.deviceId === deviceId);
   if (!subs.length) return;
   const body = JSON.stringify(payload);
   let dirty = false;
@@ -330,16 +404,7 @@ function cancelRestTimer(userId, deviceId) {
 const deviceIdOf = v => (typeof v === 'string' && /^[A-Za-z0-9_-]{8,64}$/.test(v) ? v : undefined);
 
 // "Workout planned today" reminder — one per user per day, at their chosen time.
-// Duplicated (not imported) from frontend/src/lib/history.js effectiveRoutineId — tiny pure helper, not worth sharing across the two runtimes.
-// The `?.` on each entry is this copy's own: it reads whatever is on disk, including a file written before PUT /api/data dropped null entries.
-// A weekday can hold a routine-id list (combine routines); the reminder only needs the first.
-function effectiveRoutineId(S, iso) {
-  const ov = S.dayPlan?.[iso];
-  if (ov === 'rest') return null;
-  if (ov && S.routines?.some(r => r?.id === ov)) return ov;
-  const wd = new Date(iso + 'T12:00:00').getDay();
-  return [].concat(S.week?.[wd] || []).find(id => S.routines?.some(r => r?.id === id)) || null;
-}
+// effectiveRoutineId (queue-aware) lives in ./queue.js — see there for the DONE RULE.
 // Computes "now" in an arbitrary IANA zone (e.g. "Europe/Lisbon") instead of the server's own —
 // each user's reminder fires by their own clock, wherever they and their phone actually are.
 function userNow(tz) {
@@ -402,6 +467,23 @@ function readStateCached(uid) {
   while (stateCache.size > STATE_CACHE_MAX) stateCache.delete(stateCache.keys().next().value);
   return S;
 }
+// Missed-workout nudge (nudge.js): opt-in on top of the reminder, so it needs everything the
+// reminder does (a push subscription, the reminder on, a zone). Owed from 20:00 — or 2 h after the
+// reminder — until 21:30 on the user's clock, the same catch-up idea as the reminder's window: a
+// restart inside the evening still sends it. Once per local date (`user.lastNudge`), never while
+// a workout is on screen, and nudgeFor() decides the day and the back-off.
+function nudgeTick(user, S, now) {
+  if (!S.reminder.nudge || user.lastNudge === now.date) return;
+  if (!nudgeWindowOpen(S.reminder.time, now.hhmm)) return;
+  if (livePresence(user.id)) return; // a session is under way — today's workout in the making
+  const rid = nudgeFor(S, now.date);
+  if (!rid) return;
+  const routine = (S.routines || []).find(r => r?.id === rid);
+  console.log('nudge firing', user.id, rid);
+  user.lastNudge = now.date;
+  saveDb();
+  sendPush(user.id, nudgePush(S.lang, toneOf(S.reminder), routine, now.date));
+}
 setInterval(() => {
   for (const user of db.users) {
     if (!db.subs.some(s => s.userId === user.id)) continue;
@@ -413,6 +495,7 @@ setInterval(() => {
       if (!S?.reminder?.on) continue;
       const now = userNow(S.reminder.tz || 'UTC');
       if (!now) continue;
+      nudgeTick(user, S, now);
       const late = minutesLate(S.reminder.time, now);
       if (!(late >= 0 && late <= REMINDER_WINDOW_MIN)) continue;
       if (user.lastReminder === now.date) continue;
@@ -588,7 +671,12 @@ function csrfOk(req, key) {
 // passkey on the owner's profile and a session for it, without using the code up, as often as
 // wanted, and past "sign out everywhere".
 const challenges = new Map(); // cid -> {kind, challenge, name?, uid?, exp}
+// POST /api/login/options is anonymous and unthrottled, and every call leaves a challenge here
+// for five minutes, so the Map has a ceiling: past it the oldest goes. A ceremony takes seconds,
+// so only a flood far beyond any real sign-in traffic reaches back far enough to cost one.
+const MAX_CHALLENGES = 20000;
 function putChallenge(data) {
+  while (challenges.size >= MAX_CHALLENGES) challenges.delete(challenges.keys().next().value);
   const cid = crypto.randomBytes(16).toString('base64url');
   challenges.set(cid, { ...data, exp: Date.now() + 5 * 60000 });
   return cid;
@@ -788,8 +876,10 @@ if (AUDIT_ON) {
 // since none of them exists otherwise — and so are the two that redeem a device link (#95).
 // Passkey sign-in, passkey registration and phone pairing stay out of it, as they always were:
 // nothing there is worth guessing (an assertion is a signature, an invite code 64 random bits, a
-// pairing code lives five minutes), and behind a proxy that hands the API one address for every
-// visitor a per-address count on them would let one stranger pause everybody's way in. A
+// pairing code 40 bits that live five minutes, one per profile), and behind a proxy that hands the
+// API one address for every visitor a per-address count on them would let one stranger pause
+// everybody's way in. Their failures are still written to the audit log, but only a few per
+// address a minute (auditFail below), so a flood of junk cannot push everything else out of it. A
 // device-link code is 60 bits that live ten minutes, no more worth guessing than a pairing code,
 // but it is counted the way a reset code is: every wrong one is a guess at a way into somebody's
 // profile, and the pause it can start only ever stops link redemption, never a sign-in.
@@ -867,7 +957,7 @@ function limitAddress(req) {
   return /^\d{1,3}(\.\d{1,3}){3}$/.test(raw) ? raw : 'unknown';
 }
 function tooMany(res, secs) {
-  json(res, 429, { error: 'too many attempts — try again later', code: 'locked', retryAfter: secs }, { 'Retry-After': String(secs) });
+  json(res, 429, { error: 'too many attempts, try again later', code: 'locked', retryAfter: secs }, { 'Retry-After': String(secs) });
 }
 // Whether the caller's address is paused for `kind`, answering 429 when it is. A route asks this
 // again right before the check it guards, with no await in between: the dispatcher asked before
@@ -882,6 +972,20 @@ function addressPaused(req, res, kind) {
 function strikeAddress(req, kind) {
   const lock = ADDR_FAILS.fail(kind + '|' + limitAddress(req));
   if (lock) audit(req, 'auth.throttled', { ok: false, msg: kind });
+}
+
+// A failure on a route anyone can call without a session (passkey sign-in and sign-up, pairing)
+// is audited like any other, but only the first few per address and event a minute, and only so
+// many from everybody together. The log keeps the newest AUDIT_MAX rows, so without this a few
+// thousand junk requests (no Origin needed: these routes are CSRF-exempt) pushed every sign-in,
+// admin action and deletion out of it in seconds. Nobody is refused anything here: what is
+// dropped is a row that says the same thing as the ten before it.
+const FAIL_AUDIT = createWindow({ max: 10, windowMs: 60000 });
+const FAIL_AUDIT_ALL = createWindow({ max: 120, windowMs: 60000 });
+setInterval(() => { FAIL_AUDIT.sweep(); FAIL_AUDIT_ALL.sweep(); }, 60000).unref();
+function auditFail(req, ev, f) {
+  if (FAIL_AUDIT.take(ev + '|' + limitAddress(req)) || FAIL_AUDIT_ALL.take(ev)) return;
+  audit(req, ev, f);
 }
 
 /* ---------- password sign-in (#118) ---------- */
@@ -1184,7 +1288,7 @@ const passwordRoutes = {
       inv = invite();
       if (!inv) {
         audit(req, 'auth.register.fail', { ok: false, name, msg: 'invite-invalid' });
-        return json(res, 403, { error: 'invite code is no longer valid — ask for a new one', code: 'invite' });
+        return json(res, 403, { error: 'invite code is no longer valid, ask for a new one', code: 'invite' });
       }
     }
     if (nameTaken(name)) return taken();
@@ -1193,6 +1297,7 @@ const passwordRoutes = {
     const created = new Date().toISOString();
     const user = { id: crypto.randomBytes(12).toString('base64url'), name, shareBodyWeight: false, created, pw: { h, set: created }, ...(email ? { email } : {}) };
     if (inv) { user.invitedBy = inv.code; inv.usedBy = user.id; inv.usedAt = created; }
+    claimFirstAdmin(req, user);
     db.users.push(user);
     saveDb();
     audit(req, 'auth.register.ok', { user, msg: inv ? inv.code + ' · password' : 'password' });
@@ -1481,7 +1586,7 @@ const passkeyRoutes = {
     const c = takeChallenge(text(body.cid));
     if (!c || c.kind !== 'add' || c.uid !== user.id) {
       audit(req, 'auth.passkey.fail', { ok: false, user, msg: 'challenge-expired' });
-      return json(res, 400, { error: 'challenge expired — try again' });
+      return json(res, 400, { error: 'challenge expired, try again', code: 'challenge-expired' });
     }
     const cred = await newPasskey(req, res, c, body, 'auth.passkey.fail', user);
     if (!cred) return;
@@ -1594,7 +1699,7 @@ const passkeyRoutes = {
     }
     if (!c || c.kind !== 'link' || c.lh !== link.h || c.uid !== link.userId) {
       audit(req, 'auth.link.fail', { ok: false, uid: link.userId, msg: 'challenge-expired' });
-      return json(res, 400, { error: 'challenge expired — try again' });
+      return json(res, 400, { error: 'challenge expired, try again', code: 'challenge-expired' });
     }
     const owner = db.users.find(u => u.id === link.userId);
     const cred = await newPasskey(req, res, c, body, 'auth.link.fail', owner || { id: link.userId });
@@ -1799,7 +1904,7 @@ const routes = {
     if (INVITE_ONLY && !db.invites.some(i => i.code === code && !i.usedBy && !i.revoked)) {
       // The rejected code itself is never recorded — a near-miss guess in the log is a liability.
       audit(req, 'auth.register.denied', { ok: false, name, msg: 'invite-rejected' });
-      return json(res, 403, { error: 'a valid invite code is required' });
+      return json(res, 403, { error: 'a valid invite code is required', code: 'invite' });
     }
     const uid = crypto.randomBytes(12).toString('base64url');
     const options = await generateRegistrationOptions({
@@ -1817,8 +1922,8 @@ const routes = {
     const body = await readBody(req);
     const c = takeChallenge(body.cid);
     if (!c || c.kind !== 'register' || !c.uid) {
-      audit(req, 'auth.register.fail', { ok: false, msg: 'challenge-expired' });
-      return json(res, 400, { error: 'challenge expired — try again' });
+      auditFail(req, 'auth.register.fail', { ok: false, msg: 'challenge-expired' });
+      return json(res, 400, { error: 'challenge expired, try again', code: 'challenge-expired' });
     }
     let verification;
     try {
@@ -1831,11 +1936,11 @@ const routes = {
       });
     } catch (e) {
       // e.message can echo attacker-supplied response fields, so only the reason code is kept.
-      audit(req, 'auth.register.fail', { ok: false, name: c.name, msg: 'verify-error' });
+      auditFail(req, 'auth.register.fail', { ok: false, name: c.name, msg: 'verify-error' });
       return json(res, 400, { error: verifyError(e, { rpId: RP_ID, origin: ORIGIN }) });
     }
     if (!verification.verified) {
-      audit(req, 'auth.register.fail', { ok: false, name: c.name, msg: 'not-verified' });
+      auditFail(req, 'auth.register.fail', { ok: false, name: c.name, msg: 'not-verified' });
       return json(res, 400, { error: 'not verified' });
     }
     const { credential } = verification.registrationInfo;
@@ -1849,11 +1954,12 @@ const routes = {
       invite = db.invites.find(i => i.code === c.code && !i.usedBy && !i.revoked);
       if (!invite) {
         audit(req, 'auth.register.fail', { ok: false, name: c.name, msg: 'invite-invalid' });
-        return json(res, 403, { error: 'invite code is no longer valid — ask for a new one' });
+        return json(res, 403, { error: 'invite code is no longer valid, ask for a new one', code: 'invite' });
       }
     }
     const user = { id: c.uid, name: c.name, created: new Date().toISOString(), shareBodyWeight: false };
     if (invite) { user.invitedBy = invite.code; invite.usedBy = user.id; invite.usedAt = user.created; }
+    claimFirstAdmin(req, user);
     db.users.push(user);
     db.creds.push({
       id: credential.id, userId: user.id,
@@ -1880,16 +1986,16 @@ const routes = {
     const body = await readBody(req);
     const c = takeChallenge(body.cid);
     if (c?.kind !== 'login') {
-      audit(req, 'auth.login.fail', { ok: false, msg: 'challenge-expired' });
-      return json(res, 400, { error: 'challenge expired — try again' });
+      auditFail(req, 'auth.login.fail', { ok: false, msg: 'challenge-expired' });
+      return json(res, 400, { error: 'challenge expired, try again', code: 'challenge-expired' });
     }
     const cred = db.creds.find(x => x.id === body.credential?.id);
     if (!cred) {
       // No credential id goes in the log: it is a stable handle for one passkey, and recording it
       // would let an admin correlate an unknown device across attempts. Nothing here identifies
       // the caller beyond the timestamp (and the network, if AUDIT_IP is on).
-      audit(req, 'auth.login.fail', { ok: false, msg: 'unknown-credential' });
-      return json(res, 404, { error: 'unknown passkey — create a profile first' });
+      auditFail(req, 'auth.login.fail', { ok: false, msg: 'unknown-credential' });
+      return json(res, 404, { error: 'unknown passkey, create a profile first', code: 'unknown-credential' });
     }
     let verification;
     try {
@@ -1907,11 +2013,11 @@ const routes = {
         }
       });
     } catch (e) {
-      audit(req, 'auth.login.fail', { ok: false, user: db.users.find(u => u.id === cred.userId), uid: cred.userId, msg: 'verify-error' });
+      auditFail(req, 'auth.login.fail', { ok: false, user: db.users.find(u => u.id === cred.userId), uid: cred.userId, msg: 'verify-error' });
       return json(res, 400, { error: verifyError(e, { rpId: RP_ID, origin: ORIGIN }) });
     }
     if (!verification.verified) {
-      audit(req, 'auth.login.fail', { ok: false, user: db.users.find(u => u.id === cred.userId), uid: cred.userId, msg: 'not-verified' });
+      auditFail(req, 'auth.login.fail', { ok: false, user: db.users.find(u => u.id === cred.userId), uid: cred.userId, msg: 'not-verified' });
       return json(res, 400, { error: 'not verified' });
     }
     cred.counter = verification.authenticationInfo.newCounter;
@@ -1924,7 +2030,7 @@ const routes = {
     }
     if (user.disabled) {
       audit(req, 'auth.login.fail', { ok: false, user, msg: 'account-disabled' });
-      return json(res, 403, { error: 'this account has been disabled' });
+      return json(res, 403, { error: 'this account has been disabled', code: 'disabled' });
     }
     audit(req, 'auth.login.ok', { user });
     json(res, 200, { user: sessionUser(user) }, { 'Set-Cookie': sessionCookie(user) });
@@ -1960,6 +2066,9 @@ const routes = {
   'POST /api/pair/create': async (req, res) => {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
+    // One live code per profile: the newest is the one on screen. Keeping every code minted
+    // let one session grow this Map without limit for five minutes at a time.
+    for (const [k, v] of pairings) if (v.uid === user.id) pairings.delete(k);
     const code = makePairCode();
     pairings.set(code, { uid: user.id, exp: Date.now() + 5 * 60000 });
     audit(req, 'auth.pair.create', { user });
@@ -1974,13 +2083,13 @@ const routes = {
     const p = pairings.get(code);
     if (p) pairings.delete(code);
     if (!p || p.exp < Date.now()) {
-      audit(req, 'auth.pair.fail', { ok: false, msg: 'code-invalid' });
-      return json(res, 400, { error: 'invalid or expired code' });
+      auditFail(req, 'auth.pair.fail', { ok: false, msg: 'code-invalid' });
+      return json(res, 400, { error: 'invalid or expired code', code: 'pair-invalid' });
     }
     const user = db.users.find(u => u.id === p.uid);
     if (!user || user.disabled) {
       audit(req, 'auth.pair.fail', { ok: false, uid: p.uid, msg: 'user-unavailable' });
-      return json(res, 400, { error: 'invalid or expired code' });
+      return json(res, 400, { error: 'invalid or expired code', code: 'pair-invalid' });
     }
     audit(req, 'auth.pair.ok', { user });
     json(res, 200, { token: makeSession(user), user: sessionUser(user) });
@@ -1995,12 +2104,16 @@ const routes = {
   // `rev` is the server's own count of writes to this profile (also stored inside the document as
   // `_rev`, so every other reader of the file — reminder tick, admin, Coach, MCP — is unaffected).
   // A client pushes it back as `baseRev`, and a write over a document it never saw is refused.
+  // `_unstamped` is the server's note of what it stamped for an older app's last push
+  // (sync-stamps.js ownRecord), `_prior` what each field held before (notePrior): read back only
+  // by the next PUT, never sent to a client.
   'GET /api/data': async (req, res) => {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
-    const state = readState(user.id);
+    const state = readStateStrict(user.id);
+    if (state === UNREADABLE) { console.error('state file unreadable for', user.id); return json(res, 503, { error: 'state unreadable' }); }
     notePull(user);
-    json(res, 200, { state, rev: state?._rev || 0 });
+    json(res, 200, { state: forClient(state), rev: state?._rev || 0 });
   },
   // Just the revision: the client asks this every half minute while it is open and on every
   // return to the foreground, and fetches the document only when the number moved — a signed-in
@@ -2011,7 +2124,8 @@ const routes = {
   'GET /api/data/rev': async (req, res) => {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
-    json(res, 200, { rev: readStateCached(user.id)?._rev || 0 });
+    const doc = readStateCached(user.id);
+    json(res, 200, { rev: doc?._rev || 0, ...(doc?._wid ? { wid: doc._wid } : {}) });
   },
 
   'PUT /api/data': async (req, res) => {
@@ -2049,10 +2163,17 @@ const routes = {
     // before revisions, or a deliberate replace such as a backup import) overwrites, as before.
     // readState and atomicWrite are synchronous with nothing awaited between them, so the
     // compare-and-write is atomic for this process.
-    const cur = readState(user.id);
+    const cur = readStateStrict(user.id);
+    if (cur === UNREADABLE) { console.error('state file unreadable for', user.id); return json(res, 503, { error: 'state unreadable' }); }
     const curRev = cur?._rev || 0;
-    if (body.baseRev != null && body.baseRev !== curRev) {
-      return json(res, 409, { error: 'conflict', rev: curRev, state: cur });
+    // `_rev` is a counter, so after the data directory went back in time (a restored backup, a
+    // write lost to a power cut) the same number names a different document. Every write also gets
+    // a write id (`_wid`) and keeps its ancestors' (`_wids`): a client quoting the id it last saw
+    // (`baseWid`) is refused when the stored document is not that one, whatever the numbers say,
+    // and a client reading a document can tell whether it descends from its own (useStore pullState).
+    if ((body.baseRev != null && body.baseRev !== curRev) ||
+        (body.baseRev != null && typeof body.baseWid === 'string' && cur?._wid && body.baseWid !== cur._wid)) {
+      return json(res, 409, { error: 'conflict', rev: curRev, state: forClient(cur) });
     }
     delete body.state.active;              // in-progress workouts stay device-local
     // "Reset everything" stamps the profile (`resetAt`, with `resetIds`: what it wiped). The stamp
@@ -2066,8 +2187,29 @@ const routes = {
       if (cur.resetIds && typeof cur.resetIds === 'object') body.state.resetIds = cur.resetIds;
       else delete body.state.resetIds;
     }
+    // The records of removals and edits only grow, and what a writer that does not stamp its own
+    // changes (an older app, an API script) changed is stamped here, so it is neither wiped nor
+    // undone by the next device that merges (sync-stamps.js).
+    // A document nested too deep to compare is the bad request the stringify below refuses too.
+    const report = {};
+    try { stampPut(cur, body.state, { overRead: body.baseRev != null && body.baseRev === curRev, stamped: body.stamped === true, report }); }
+    catch (e) { if (e instanceof RangeError) return json(res, 400, { error: 'invalid state' }); throw e; }
     body.state._rev = curRev + 1;          // server-owned; whatever the client sent is ignored
-    atomicWrite(stateFile(user.id), JSON.stringify(body.state));
+    // A writer that does not stamp (an older app) takes the revision it is told for the document it
+    // sent, and only reads the profile again once the revision moves. When the server put back
+    // something it left out or set back (sync-stamps.js), the document stored is not that one: it
+    // goes in one revision further, so the writer's next check of the revision (every half minute)
+    // finds it moved and reads it, and its next push over the one it was told is a conflict to merge.
+    if (report.changed) body.state._rev = curRev + 2;
+    body.state._wids = [...(Array.isArray(cur?._wids) ? cur._wids : []), ...(cur?._wid ? [cur._wid] : [])]
+      .filter(x => typeof x === 'string').slice(-WID_KEEP);
+    body.state._wid = crypto.randomBytes(8).toString('hex');
+    // JSON.parse takes any nesting, JSON.stringify recurses and runs out of stack on a document
+    // nested some thousands deep. No client builds one; it is a bad request, not a server error.
+    let text;
+    try { text = JSON.stringify(body.state); }
+    catch (e) { if (e instanceof RangeError) return json(res, 400, { error: 'invalid state' }); throw e; }
+    atomicWrite(stateFile(user.id), text);
     // The stat cache cannot see this write on its own: mtime granularity is 4 ms here (ext4 on
     // this kernel — 3901 of 3999 back-to-back same-size writes shared one timestamp), and a
     // `_rev` going from 7 to 8 does not change the file's size, so two writes inside one 4 ms
@@ -2081,7 +2223,7 @@ const routes = {
     if (MEDIA_ON) {
       try { MEDIA.noteState(user.id, body.state); } catch (e) { console.error('media noteState', e); }
     }
-    json(res, 200, { ok: true, ts: body.state._ts || null, rev: body.state._rev });
+    json(res, 200, { ok: true, ts: body.state._ts || null, rev: curRev + 1, wid: body.state._wid });
   },
 
   'GET /api/push/public-key': async (req, res) => json(res, 200, { key: vapid.publicKey }),
@@ -2102,6 +2244,9 @@ const routes = {
     // instance lost — pruned after a dead send, a rebuilt db.json — comes back without anyone
     // touching Settings. The same endpoint sent again keeps its original `created`.
     const prev = db.subs.find(s => s.endpoint === sub.endpoint);
+    // No usable id in the request (none, or not a short token) leaves the id the row already
+    // has: the request is a re-send, not a request to forget which device the row is.
+    const storedDevice = deviceId || prev?.deviceId;
     db.subs = db.subs.filter(s => s.endpoint !== sub.endpoint);
     // A browser holds one subscription per device, so this cap is far above real use. Without
     // it a single account could pile up endpoints without limit — every one of them a target
@@ -2111,7 +2256,7 @@ const routes = {
       const drop = new Set(mine.slice(0, mine.length - MAX_SUBS_PER_USER + 1).map(s => s.endpoint));
       db.subs = db.subs.filter(s => !drop.has(s.endpoint));
     }
-    db.subs.push({ userId: user.id, endpoint: sub.endpoint, keys, ...(deviceId ? { deviceId } : {}), created: prev?.created || new Date().toISOString() });
+    db.subs.push({ userId: user.id, endpoint: sub.endpoint, keys, ...(storedDevice ? { deviceId: storedDevice } : {}), created: prev?.created || new Date().toISOString() });
     saveDb();
     json(res, 200, { ok: true });
   },
@@ -2119,11 +2264,16 @@ const routes = {
   // Whether this instance still holds the caller's subscription for `endpoint`. The browser's
   // side (PushManager.getSubscription) says nothing about ours — a row pruned after a dead send
   // leaves the browser subscribed to nowhere — so Settings asks here before it shows "on".
+  // A stored row also says which device it is filed under, `null` for none: a row from before
+  // device ids, or one the worker re-sent without its id, sends that device's rest-timer alert
+  // to every device of the account (sendPush), and the client re-sends its subscription with its
+  // id when this is not its own.
   'GET /api/push/status': async (req, res) => {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
     const endpoint = new URL(req.url, 'http://x').searchParams.get('endpoint') || '';
-    json(res, 200, { subscribed: db.subs.some(s => s.userId === user.id && s.endpoint === endpoint) });
+    const row = db.subs.find(s => s.userId === user.id && s.endpoint === endpoint);
+    json(res, 200, row ? { subscribed: true, deviceId: row.deviceId || null } : { subscribed: false });
   },
 
   'POST /api/push/unsubscribe': async (req, res) => {
@@ -2305,7 +2455,7 @@ const routes = {
     const body = await readBody(req);
     const inv = db.invites.find(i => i.code === text(body.code).toUpperCase());
     if (!inv) return json(res, 404, { error: 'no such code' });
-    if (inv.usedBy) return json(res, 400, { error: 'already used — cannot revoke' });
+    if (inv.usedBy) return json(res, 400, { error: 'already used, cannot revoke' });
     db.invites = db.invites.filter(i => i.code !== inv.code);
     saveDb();
     audit(req, 'admin.invite.revoke', { user: admin, msg: inv.code });
@@ -2404,6 +2554,9 @@ function bodyDeadline(req) {
   req.allowSlowBody = clear;
 }
 
+// The Capacitor WebView origins of the Android and iOS app.
+const APP_ORIGINS = new Set(['https://localhost', 'capacitor://localhost', 'http://localhost']);
+
 const server = http.createServer(async (req, res) => {
   bodyDeadline(req);
   // Same-origin (the deployed nginx-proxied web app) never triggers CORS, so this only matters
@@ -2413,10 +2566,17 @@ const server = http.createServer(async (req, res) => {
   const origin = req.headers.origin;
   if (origin) { res.setHeader('Access-Control-Allow-Origin', origin); res.setHeader('Vary', 'Origin'); }
   if (req.method === 'OPTIONS') {
+    // Chrome's Private Network Access asks before a page reaches a LAN address (a phone pairing
+    // with 192.168.x.x); an answer without this header is refused like a CORS failure (#329).
+    // Only the app's own WebView origins get it, so an arbitrary website still can't reach a
+    // LAN-only instance through the visitor's browser.
+    const pna = String(req.headers['access-control-request-private-network'] || '').toLowerCase() === 'true'
+      && APP_ORIGINS.has(origin);
     res.writeHead(204, {
       'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      'Access-Control-Max-Age': '86400'
+      'Access-Control-Max-Age': '86400',
+      ...(pna ? { 'Access-Control-Allow-Private-Network': 'true' } : {})
     });
     return res.end();
   }
@@ -2461,7 +2621,7 @@ const server = http.createServer(async (req, res) => {
     }
     // Every scrypt slot and the short queue behind them are taken (password.js).
     if (e instanceof BusyError) {
-      if (!res.headersSent) json(res, 503, { error: 'the server is busy — try again in a moment', code: 'busy' }, { 'Retry-After': '2' });
+      if (!res.headersSent) json(res, 503, { error: 'the server is busy, try again in a moment', code: 'busy' }, { 'Retry-After': '2' });
       return;
     }
     console.error(key, e);

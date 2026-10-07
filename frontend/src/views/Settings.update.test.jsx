@@ -83,7 +83,7 @@ afterEach(() => {
 
 // The effect resolves two promises (isAndroid, then checkForUpdate) before the row can render.
 const mount = async () => {
-  await act(async () => { root.render(<Settings />) })
+  await act(async () => { root.render(<Settings page="about" />) })
   await act(async () => { await Promise.resolve(); await Promise.resolve() })
 }
 const updateRow = () => [...host.querySelectorAll('.lrow')].find(r => r.textContent.includes('Update to openGym v9.9.9'))

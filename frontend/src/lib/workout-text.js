@@ -20,7 +20,7 @@ export function workoutText(w, { unit, nameOf, speedUnit }) {
     fmtVol(w.vol ?? workoutVolume(w), unit),
     ...(w.bw ? [t('Body weight') + ' ' + fmtNum(w.bw) + ' ' + unit] : []),
   ]
-  const blocks = [[[w.name, fmtDate(w.d, true, true)].filter(Boolean).join(' — '), facts.join(' · ')].join('\n')]
+  const blocks = [[[w.name, fmtDate(w.d, true, true)].filter(Boolean).join(' · '), facts.join(' · ')].join('\n')]
   // Work sets only: the text is what you trained, the work the volume above counts. Warm-ups are
   // left out of volume, records and progression everywhere else, and listed here with nothing to
   // tell them apart they would read as sets of their own.

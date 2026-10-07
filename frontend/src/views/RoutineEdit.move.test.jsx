@@ -90,23 +90,90 @@ afterEach(() => {
 })
 
 describe('routine move controls', () => {
-  it('moves a selected superset member as one contiguous unit and persists complete occurrences', () => {
+  // #377: the arrows on a superset row move that one exercise, not the whole superset.
+  it('moves a superset member inside its superset and persists complete occurrences', () => {
+    setRoutine([
+      entry('c1', 10, 'g'),
+      entry('c2', 20, 'g'),
+      entry('c3', 30, 'g'),
+      entry('c4', 40)
+    ])
+    renderRoutine()
+
+    act(() => moveButton('setup-10', 'Move down').click())
+
+    const moved = useStore.getState().S.routines[0].ex
+    expect(moved).toEqual([
+      entry('c2', 20, 'g'),
+      entry('c1', 10, 'g'),
+      entry('c3', 30, 'g'),
+      entry('c4', 40)
+    ])
+    expect(JSON.parse(localStorage.getItem('gym_state_v1')).routines[0].ex).toEqual(moved)
+  })
+
+  it('takes the last member out of its superset, where it stands, and the next press moves it on', () => {
+    setRoutine([
+      entry('c1', 10, 'g'),
+      entry('c2', 20, 'g'),
+      entry('c3', 30, 'g'),
+      entry('c4', 40)
+    ])
+    renderRoutine()
+    expect(moveButton('setup-30', 'Move down').title).toBe('Move out of the superset')
+    expect(moveButton('setup-20', 'Move down').title).toBe('Move down')
+
+    act(() => moveButton('setup-30', 'Move down').click())
+    expect(useStore.getState().S.routines[0].ex).toEqual([
+      entry('c1', 10, 'g'),
+      entry('c2', 20, 'g'),
+      entry('c3', 30),
+      entry('c4', 40)
+    ])
+
+    act(() => moveButton('setup-30', 'Move down').click())
+    expect(useStore.getState().S.routines[0].ex).toEqual([
+      entry('c1', 10, 'g'),
+      entry('c2', 20, 'g'),
+      entry('c4', 40),
+      entry('c3', 30)
+    ])
+  })
+
+  it('a superset member on the first row can still leave upward; a superset of two dissolves', () => {
     setRoutine([
       entry('c1', 10, 'g'),
       entry('c2', 20, 'g'),
       entry('c3', 30)
     ])
     renderRoutine()
+    const up = moveButton('setup-10', 'Move up')
+    expect(up.disabled).toBe(false)
+    expect(up.title).toBe('Move out of the superset')
 
-    act(() => moveButton('setup-20', 'Move down').click())
+    act(() => up.click())
+    expect(useStore.getState().S.routines[0].ex).toEqual([
+      entry('c1', 10),
+      entry('c2', 20),
+      entry('c3', 30)
+    ])
+    expect(moveButton('setup-10', 'Move up').disabled).toBe(true)
+  })
 
-    const moved = useStore.getState().S.routines[0].ex
-    expect(moved).toEqual([
+  it('a single exercise jumps a whole superset and does not join it', () => {
+    setRoutine([
       entry('c3', 30),
       entry('c1', 10, 'g'),
       entry('c2', 20, 'g')
     ])
-    expect(JSON.parse(localStorage.getItem('gym_state_v1')).routines[0].ex).toEqual(moved)
+    renderRoutine()
+
+    act(() => moveButton('setup-30', 'Move down').click())
+    expect(useStore.getState().S.routines[0].ex).toEqual([
+      entry('c1', 10, 'g'),
+      entry('c2', 20, 'g'),
+      entry('c3', 30)
+    ])
   })
 
   it('moves the selected duplicate occurrence without aliasing its configuration', () => {
@@ -206,9 +273,9 @@ describe('routine move controls', () => {
 
     const parsed = parsePlan(JSON.stringify(buildPlanBundle(useStore.getState().S, 'Move test')))
     expect(parsed.routines[0].ex).toEqual([
-      entry('c3', 30),
+      entry('c2', 20, 'g'),
       entry('c1', 10, 'g'),
-      entry('c2', 20, 'g')
+      entry('c3', 30)
     ])
   })
 })

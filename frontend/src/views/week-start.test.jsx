@@ -70,7 +70,7 @@ const segButton = label => [...host.querySelectorAll('.seg button')].find(b => b
 const dayRows = () => [...host.querySelectorAll('.item .tt')].map(e => e.textContent)
 
 describe('Settings — week starts on', () => {
-  const mount = () => act(() => root.render(<Settings />))
+  const mount = () => act(() => root.render(<Settings page="plan" />))
 
   it('offers Monday and Sunday and writes the getDay() index', () => {
     mount()
@@ -93,18 +93,17 @@ describe('Settings — week starts on', () => {
 
 describe('Plan — the week schedule follows the setting', () => {
   const mount = () => act(() => root.render(<Plan />))
+  const planDays = () => [...host.querySelectorAll('.plan-day')].map(e => e.getAttribute('aria-label'))
 
   it('runs Monday to Sunday by default', () => {
     mount()
-    expect(dayRows().slice(0, 7)).toEqual(
-      ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])
+    expect(planDays()).toEqual(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])
   })
 
   it('runs Sunday to Saturday for a Sunday profile', () => {
     mocks.S.weekStart = 0
     mount()
-    expect(dayRows().slice(0, 7)).toEqual(
-      ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])
+    expect(planDays()).toEqual(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])
   })
 
   it('keeps a routine attached to its day, not to its position in the list', () => {
@@ -112,16 +111,16 @@ describe('Plan — the week schedule follows the setting', () => {
     mocks.S.week = { 0: 'r1' }        // Sunday
     mocks.S.weekStart = 0
     mount()
-    const rows = [...host.querySelectorAll('.item')]
-    expect(rows[0].querySelector('.tt').textContent).toBe('Sunday')
-    expect(rows[0].textContent).toContain('Push')
+    const rows = [...host.querySelectorAll('.plan-day')]
+    expect(rows[0].getAttribute('aria-label')).toBe('Sunday')
+    expect(rows[0].querySelector('.tt').textContent).toBe('Push')
     expect(rows[1].textContent).not.toContain('Push')
   })
 })
 
-describe('Plan — inline per-day routine management (combine routines)', () => {
+describe('Plan — a combined day (combine routines)', () => {
   const mount = () => act(() => root.render(<Plan />))
-  const dayContainer = name => [...host.querySelectorAll('.item')].find(el => el.querySelector('.tt')?.textContent === name)
+  const day = name => [...host.querySelectorAll('.plan-day')].find(el => el.getAttribute('aria-label') === name)
 
   beforeEach(() => {
     mocks.S.routines = [
@@ -130,31 +129,20 @@ describe('Plan — inline per-day routine management (combine routines)', () => 
     ]
   })
 
-  it('renders a sub-row per routine on a populated day, with the count hint', () => {
+  it('reads as one session with both names and the routine count', () => {
     mocks.S.week = { 1: ['r1', 'r2'] }
     mount()
-    const mon = dayContainer('Monday')
-    expect(mon.textContent).toContain('Push')
-    expect(mon.textContent).toContain('Core')
-    expect(mon.textContent).toContain('2 routines')
+    const mon = day('Monday')
+    expect(mon.querySelector('.tt').textContent).toBe('Push + Core')
+    expect(mon.querySelector('.ss').textContent).toBe('2 routines')
   })
 
-  it('✕ removes a routine, and drops the day key on the last removal', () => {
-    mocks.S.week = { 1: ['r1', 'r2'] }
-    mount()
-    const removeButtons = () => [...dayContainer('Monday').querySelectorAll('button[aria-label="Remove"]')]
-    act(() => { removeButtons()[1].dispatchEvent(new Event('click', { bubbles: true })) })
-    expect(mocks.S.week[1]).toEqual(['r1'])
-    mount()
-    act(() => { removeButtons()[0].dispatchEvent(new Event('click', { bubbles: true })) })
-    expect(mocks.S.week).not.toHaveProperty('1')
-  })
-
-  it('an empty day stays one tappable row', () => {
+  it('an empty day is a rest day, one tappable row', () => {
     mocks.S.week = {}
     mount()
-    const tue = dayContainer('Tuesday')
-    expect(tue.textContent).toContain('Rest')
-    expect(tue.querySelectorAll('button[aria-label="Remove"]').length).toBe(0)
+    const tue = day('Tuesday')
+    expect(tue.querySelector('.tt').textContent).toBe('Rest day')
+    expect(tue.getAttribute('role')).toBe('button')
+    expect(tue.querySelectorAll('button').length).toBe(0)
   })
 })

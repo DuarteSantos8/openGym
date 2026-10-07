@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- GENERATED FILE - do not edit by hand.
-     Built by scripts/build-api-docs.mjs from api/openapi.yaml (openGym API v1.3.9).
+     Built by scripts/build-api-docs.mjs from api/openapi.yaml (openGym API v1.3.10).
      Regenerate with: node scripts/build-api-docs.mjs -->
 <html lang="en">
 <head>
@@ -27,7 +27,7 @@
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 <link rel="icon" type="image/png" sizes="180x180" href="icon-180.png">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="styles.css?v=19">
+<link rel="stylesheet" href="styles.css?v=22">
 <script>document.documentElement.className += ' js'</script>
 <!-- Umami web analytics for opengym.duarte-santos.ch (self-hosted, cookieless). -->
 <script defer src="https://stats.duarte-santos.ch/script.js" data-website-id="db36019e-50f4-453c-9c56-d0588aefe233"></script>
@@ -152,7 +152,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
    only way the two rail pages can feel like the same rail. */
 </style>
 </head>
-<body class="topnav">
+<body class="topnav dock">
 <a class="skip" href="#main">Skip to content</a>
 
 <nav><div class="wrap nav-in">
@@ -243,7 +243,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
-    <span>openGym v1.3.9</span>
+    <span>openGym v1.3.10</span>
     <span>81 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
@@ -264,7 +264,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="ov">
     <h3>Throttling</h3>
-<p>The <code>password</code> routes are counted per client address: at most 60 requests a minute across them, and wrong answers (a password, a reset code, an invite code on password signup, an e-mail address already in use) pause the address after 20 for 30 s, doubling up to 15 min. Wrong passwords also pause the <i>account</i> they were tried against after 5, for 1 min doubling up to 1 h — the same pause whether the account was named by its name or its e-mail — and an identifier that names no account is paused the same way, as typed. A password check counts from the moment it starts, so checks sent at once get no more tries than checks sent one by one. A paused caller gets <code>429 {&quot;error&quot;: …, &quot;code&quot;: &quot;locked&quot;, &quot;retryAfter&quot;: &lt;s&gt;}</code> with a <code>Retry-After</code> header. Passkey sign-up and sign-in and the pairing routes are not throttled. The two routes that redeem a one-time device link (tag <code>passkeys</code>) share the per-address budget, and wrong codes pause the address for link redemption only, after 20, the way wrong reset codes do. Adding or removing a passkey in Settings (<code>POST /api/account/passkeys/options</code>, <code>DELETE /api/account/passkeys</code>) and making a device code (<code>POST /api/account/device-link</code>) spend the per-address budget too, and a current password given there as proof counts like one given at sign-in. The address is the socket's, or with <code>TRUST_PROXY=1</code> the one a trusted proxy put in <code>CF-Connecting-IP</code> / the last <code>X-Forwarded-For</code> entry / <code>X-Real-IP</code>; IPv6 clients are counted by /64. Counters live in memory and reset on restart.</p>
+<p>The <code>password</code> routes are counted per client address: at most 60 requests a minute across them, and wrong answers (a password, a reset code, an invite code on password signup, an e-mail address already in use) pause the address from the 21st on, for 30 s, doubling up to 15 min. Wrong passwords also pause the <i>account</i> they were tried against from the 6th on, for 1 min doubling up to 1 h — the same pause whether the account was named by its name or its e-mail — and an identifier that names no account is paused the same way, as typed. A password check counts from the moment it starts, so checks sent at once get no more tries than checks sent one by one. A paused caller gets <code>429 {&quot;error&quot;: …, &quot;code&quot;: &quot;locked&quot;, &quot;retryAfter&quot;: &lt;s&gt;}</code> with a <code>Retry-After</code> header. Passkey sign-up and sign-in and the pairing routes are not throttled (their failures reach the audit log at most ten a minute per address). The two routes that redeem a one-time device link (tag <code>passkeys</code>) share the per-address budget, and wrong codes pause the address for link redemption only, from the 21st on, the way wrong reset codes do. Adding or removing a passkey in Settings (<code>POST /api/account/passkeys/options</code>, <code>DELETE /api/account/passkeys</code>) and making a device code (<code>POST /api/account/device-link</code>) spend the per-address budget too, and a current password given there as proof counts like one given at sign-in. The address is the socket's, or with <code>TRUST_PROXY=1</code> the one a trusted proxy put in <code>CF-Connecting-IP</code> / the last <code>X-Forwarded-For</code> entry / <code>X-Real-IP</code>; IPv6 clients are counted by /64. Counters live in memory and reset on restart.</p>
   </div>
   <div class="ov">
     <h3>Sessions</h3>
@@ -276,7 +276,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="ov">
     <h3>Environment-dependent behavior</h3>
-<ul><li><code>INVITE_ONLY=1</code> — registration requires a valid invite code (minted by an admin).</li><li><code>ALLOW_GUEST=0</code> — hides the client-side &quot;continue without account&quot; mode; the server merely reports the flag via <code>GET /api/config</code> (guest mode never talks to this API at all).</li><li><code>ADMIN_UIDS=&lt;uid&gt;,&lt;uid&gt;</code> — user ids treated as admins (a <code>&quot;admin&quot;: true</code> flag on the user record in <code>db.json</code> works too). Admins get the <code>/api/admin/*</code> routes.</li><li><code>AUDIT_LOG</code> (default on), <code>AUDIT_MAX</code> (default 5000 events), <code>AUDIT_DAYS</code> (default 90), <code>AUDIT_IP</code> (<code>off</code> | <code>net</code> | <code>full</code>, default off) — shape the audit log served by <code>GET /api/admin/audit</code>.</li><li><code>PASSWORD_LOGIN=1</code> — adds the <code>password</code> routes and <code>password_login: true</code> in <code>GET /api/config</code>. Off by default.</li><li><code>DEFAULT_LANG</code> (e.g. <code>pt-BR</code>; unset by default) — <code>default_lang</code> in <code>GET /api/config</code>, the language of the sign-in screen and of every profile that never picked one.</li><li><code>TRUST_PROXY=1</code> — the throttle reads the client address from proxy headers (set by the bundled <code>docker-compose.yml</code>, where only the web container can reach the API).</li><li><code>MEDIA_UPLOADS</code> (default on; <code>0</code> removes the <code>media</code> routes and the <code>media</code> block of <code>GET /api/config</code>), <code>MEDIA_QUOTA_MB</code> (200 per profile, <code>0</code> = no cap), <code>MEDIA_IMAGE_MAX_MB</code> (2), <code>MEDIA_GIF_MAX_MB</code> (8), <code>MEDIA_VIDEO_MAX_MB</code> (40), <code>MEDIA_VIDEO_MAX_SEC</code> (60), <code>MEDIA_GC_GRACE_DAYS</code> (14), <code>MEDIA_UPLOADS_PER_HOUR</code> (600 per profile), <code>MEDIA_MIN_FREE_MB</code> (512, <code>0</code> = no floor) — photos and videos of custom exercises (tag <code>media</code>). Every MB here is 2^20 bytes.</li></ul>
+<ul><li><code>INVITE_ONLY=1</code> — registration requires a valid invite code (minted by an admin).</li><li><code>ALLOW_GUEST=0</code> — hides the client-side &quot;continue without account&quot; mode; the server merely reports the flag via <code>GET /api/config</code> (guest mode never talks to this API at all).</li><li><code>ADMIN_UIDS=&lt;uid&gt;,&lt;uid&gt;</code> — user ids treated as admins (a <code>&quot;admin&quot;: true</code> flag on the user record in <code>db.json</code> works too). Admins get the <code>/api/admin/*</code> routes.</li><li><code>FIRST_USER_ADMIN</code> (default off; <code>1</code> turns it on) — the first profile registered on an instance with no profiles gets that <code>&quot;admin&quot;: true</code> flag. Decided at registration only, never applied to an instance that already has profiles.</li><li><code>AUDIT_LOG</code> (default on), <code>AUDIT_MAX</code> (default 5000 events), <code>AUDIT_DAYS</code> (default 90), <code>AUDIT_IP</code> (<code>off</code> | <code>net</code> | <code>full</code>, default off) — shape the audit log served by <code>GET /api/admin/audit</code>.</li><li><code>PASSWORD_LOGIN=1</code> — adds the <code>password</code> routes and <code>password_login: true</code> in <code>GET /api/config</code>. Off by default.</li><li><code>DEFAULT_LANG</code> (e.g. <code>pt-BR</code>; unset by default) — <code>default_lang</code> in <code>GET /api/config</code>, the language of the sign-in screen and of every profile that never picked one.</li><li><code>TRUST_PROXY=1</code> — the throttle reads the client address from proxy headers (set by the bundled <code>docker-compose.yml</code>, where only the web container can reach the API).</li><li><code>MEDIA_UPLOADS</code> (default on; <code>0</code> removes the <code>media</code> routes and the <code>media</code> block of <code>GET /api/config</code>), <code>MEDIA_QUOTA_MB</code> (200 per profile, <code>0</code> = no cap), <code>MEDIA_IMAGE_MAX_MB</code> (2), <code>MEDIA_GIF_MAX_MB</code> (8), <code>MEDIA_VIDEO_MAX_MB</code> (40), <code>MEDIA_VIDEO_MAX_SEC</code> (60), <code>MEDIA_GC_GRACE_DAYS</code> (14), <code>MEDIA_UPLOADS_PER_HOUR</code> (600 per profile), <code>MEDIA_MIN_FREE_MB</code> (512, <code>0</code> = no floor) — photos and videos of custom exercises (tag <code>media</code>). Every MB here is 2^20 bytes.</li></ul>
   </div>
   <div class="ov">
     <h3>Conventions</h3>
@@ -498,11 +498,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">400</span>
-    <span class="p-desc">Challenge expired/replayed, or the attestation did not verify (wrong origin/RP ID, malformed response…). The message is human-readable.<span class="r-sig"><code>{&quot;error&quot;:&quot;challenge expired — try again&quot;}</code></span></span>
+    <span class="p-desc">Challenge expired/replayed, or the attestation did not verify (wrong origin/RP ID, malformed response…). The message is human-readable.<span class="r-sig"><code>{&quot;error&quot;:&quot;challenge expired, try again&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">403</span>
-    <span class="p-desc">Invite-only and the code became invalid since step 1.<span class="r-sig"><code>{&quot;error&quot;:&quot;invite code is no longer valid — ask for a new one&quot;}</code></span></span>
+    <span class="p-desc">Invite-only and the code became invalid since step 1.<span class="r-sig"><code>{&quot;error&quot;:&quot;invite code is no longer valid, ask for a new one&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">409</span>
@@ -573,7 +573,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">404</span>
-    <span class="p-desc">The passkey's credential id is unknown to this instance.<span class="r-sig"><code>{&quot;error&quot;:&quot;unknown passkey — create a profile first&quot;}</code></span></span>
+    <span class="p-desc">The passkey's credential id is unknown to this instance.<span class="r-sig"><code>{&quot;error&quot;:&quot;unknown passkey, create a profile first&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s5">500</span>
@@ -646,7 +646,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Mint a pairing code for the mobile app</span>
   </summary>
   <div class="ep-body">
-<p>Called from an already signed-in browser tab (Settings → &quot;Pair the mobile app&quot;). Returns an 8-character code (alphabet without 0/O/1/I) the phone redeems within 5 minutes via /api/pair/redeem. One-shot.</p>
+<p>Called from an already signed-in browser tab (Settings → &quot;Pair the mobile app&quot;). Returns an 8-character code (alphabet without 0/O/1/I) the phone redeems within 5 minutes via /api/pair/redeem. One-shot. One live code per profile: minting a new one retires the previous one.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
 
 
@@ -714,7 +714,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Sign in with a profile name or e-mail and a password</span>
   </summary>
   <div class="ep-body">
-<p>Only a profile that has set a password can sign in this way. The identifier is the profile's display name or the e-mail address it added (<code>POST /api/account/email</code>), compared trimmed, NFKC-normalised and case-insensitively. Send it as <code>identifier</code> (what the app sends), <code>name</code> (the original field, still accepted) or <code>email</code>. In <code>identifier</code> and <code>name</code>, a value with an <code>@</code> is looked up as an e-mail first and then as a name; <code>email</code> is looked up only as an e-mail. A wrong password, an unknown name and a name whose profile has no password all get the same <code>401</code> after the same scrypt work, so neither the answer nor its timing says which names exist. So does a password that was right when its check started but was changed, reset or removed before the check finished. Five wrong passwords for an account pause it, whichever identifier they named it by (see <i>Throttling</i>); passkey sign-in is never paused by this. Sets the same session cookie as <code>/api/login/verify</code>. <b>Not</b> CSRF-exempt.</p>
+<p>Only a profile that has set a password can sign in this way. The identifier is the profile's display name or the e-mail address it added (<code>POST /api/account/email</code>), compared trimmed, NFKC-normalised and case-insensitively. Send it as <code>identifier</code> (what the app sends), <code>name</code> (the original field, still accepted) or <code>email</code>. In <code>identifier</code> and <code>name</code>, a value with an <code>@</code> is looked up as an e-mail first and then as a name; <code>email</code> is looked up only as an e-mail. A wrong password, an unknown name and a name whose profile has no password all get the same <code>401</code> after the same scrypt work, so neither the answer nor its timing says which names exist. So does a password that was right when its check started but was changed, reset or removed before the check finished. Five wrong passwords for an account are free and the sixth pauses it, whichever identifier they named it by (see <i>Throttling</i>); passkey sign-in is never paused by this. Sets the same session cookie as <code>/api/login/verify</code>. <b>Not</b> CSRF-exempt.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public — no authentication required.</span></p>
 
 <p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
@@ -759,11 +759,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">429</span>
-    <span class="p-desc">Paused by the sign-in throttle (see <i>Throttling</i> in the description). The request was not looked at; try again after <code>Retry-After</code> seconds.<span class="r-sig"><code>{&quot;error&quot;:&quot;too many attempts — try again later&quot;}</code></span></span>
+    <span class="p-desc">Paused by the sign-in throttle (see <i>Throttling</i> in the description). The request was not looked at; try again after <code>Retry-After</code> seconds.<span class="r-sig"><code>{&quot;error&quot;:&quot;too many attempts, try again later&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s5">503</span>
-    <span class="p-desc">Every password check slot and the short queue behind them are taken.<span class="r-sig"><code>{&quot;error&quot;:&quot;the server is busy — try again in a moment&quot;}</code></span></span>
+    <span class="p-desc">Every password check slot and the short queue behind them are taken.<span class="r-sig"><code>{&quot;error&quot;:&quot;the server is busy, try again in a moment&quot;}</code></span></span>
   </div>
     </div>
   </div>
@@ -827,11 +827,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">429</span>
-    <span class="p-desc">Paused by the sign-in throttle (see <i>Throttling</i> in the description). The request was not looked at; try again after <code>Retry-After</code> seconds.<span class="r-sig"><code>{&quot;error&quot;:&quot;too many attempts — try again later&quot;}</code></span></span>
+    <span class="p-desc">Paused by the sign-in throttle (see <i>Throttling</i> in the description). The request was not looked at; try again after <code>Retry-After</code> seconds.<span class="r-sig"><code>{&quot;error&quot;:&quot;too many attempts, try again later&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s5">503</span>
-    <span class="p-desc">Every password check slot and the short queue behind them are taken.<span class="r-sig"><code>{&quot;error&quot;:&quot;the server is busy — try again in a moment&quot;}</code></span></span>
+    <span class="p-desc">Every password check slot and the short queue behind them are taken.<span class="r-sig"><code>{&quot;error&quot;:&quot;the server is busy, try again in a moment&quot;}</code></span></span>
   </div>
     </div>
   </div>
@@ -895,11 +895,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">429</span>
-    <span class="p-desc">Paused by the sign-in throttle (see <i>Throttling</i> in the description). The request was not looked at; try again after <code>Retry-After</code> seconds.<span class="r-sig"><code>{&quot;error&quot;:&quot;too many attempts — try again later&quot;}</code></span></span>
+    <span class="p-desc">Paused by the sign-in throttle (see <i>Throttling</i> in the description). The request was not looked at; try again after <code>Retry-After</code> seconds.<span class="r-sig"><code>{&quot;error&quot;:&quot;too many attempts, try again later&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s5">503</span>
-    <span class="p-desc">Every password check slot and the short queue behind them are taken.<span class="r-sig"><code>{&quot;error&quot;:&quot;the server is busy — try again in a moment&quot;}</code></span></span>
+    <span class="p-desc">Every password check slot and the short queue behind them are taken.<span class="r-sig"><code>{&quot;error&quot;:&quot;the server is busy, try again in a moment&quot;}</code></span></span>
   </div>
     </div>
   </div>
@@ -988,11 +988,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">429</span>
-    <span class="p-desc">Paused by the sign-in throttle (see <i>Throttling</i> in the description). The request was not looked at; try again after <code>Retry-After</code> seconds.<span class="r-sig"><code>{&quot;error&quot;:&quot;too many attempts — try again later&quot;}</code></span></span>
+    <span class="p-desc">Paused by the sign-in throttle (see <i>Throttling</i> in the description). The request was not looked at; try again after <code>Retry-After</code> seconds.<span class="r-sig"><code>{&quot;error&quot;:&quot;too many attempts, try again later&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s5">503</span>
-    <span class="p-desc">Every password check slot and the short queue behind them are taken.<span class="r-sig"><code>{&quot;error&quot;:&quot;the server is busy — try again in a moment&quot;}</code></span></span>
+    <span class="p-desc">Every password check slot and the short queue behind them are taken.<span class="r-sig"><code>{&quot;error&quot;:&quot;the server is busy, try again in a moment&quot;}</code></span></span>
   </div>
     </div>
   </div>
@@ -1030,11 +1030,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">429</span>
-    <span class="p-desc">Paused by the sign-in throttle (see <i>Throttling</i> in the description). The request was not looked at; try again after <code>Retry-After</code> seconds.<span class="r-sig"><code>{&quot;error&quot;:&quot;too many attempts — try again later&quot;}</code></span></span>
+    <span class="p-desc">Paused by the sign-in throttle (see <i>Throttling</i> in the description). The request was not looked at; try again after <code>Retry-After</code> seconds.<span class="r-sig"><code>{&quot;error&quot;:&quot;too many attempts, try again later&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s5">503</span>
-    <span class="p-desc">Every password check slot and the short queue behind them are taken.<span class="r-sig"><code>{&quot;error&quot;:&quot;the server is busy — try again in a moment&quot;}</code></span></span>
+    <span class="p-desc">Every password check slot and the short queue behind them are taken.<span class="r-sig"><code>{&quot;error&quot;:&quot;the server is busy, try again in a moment&quot;}</code></span></span>
   </div>
     </div>
   </div>
@@ -1081,11 +1081,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">429</span>
-    <span class="p-desc">Paused by the sign-in throttle (see <i>Throttling</i> in the description). The request was not looked at; try again after <code>Retry-After</code> seconds.<span class="r-sig"><code>{&quot;error&quot;:&quot;too many attempts — try again later&quot;}</code></span></span>
+    <span class="p-desc">Paused by the sign-in throttle (see <i>Throttling</i> in the description). The request was not looked at; try again after <code>Retry-After</code> seconds.<span class="r-sig"><code>{&quot;error&quot;:&quot;too many attempts, try again later&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s5">503</span>
-    <span class="p-desc">Every password check slot and the short queue behind them are taken.<span class="r-sig"><code>{&quot;error&quot;:&quot;the server is busy — try again in a moment&quot;}</code></span></span>
+    <span class="p-desc">Every password check slot and the short queue behind them are taken.<span class="r-sig"><code>{&quot;error&quot;:&quot;the server is busy, try again in a moment&quot;}</code></span></span>
   </div>
     </div>
   </div>
@@ -1119,11 +1119,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">429</span>
-    <span class="p-desc">Paused by the sign-in throttle (see <i>Throttling</i> in the description). The request was not looked at; try again after <code>Retry-After</code> seconds.<span class="r-sig"><code>{&quot;error&quot;:&quot;too many attempts — try again later&quot;}</code></span></span>
+    <span class="p-desc">Paused by the sign-in throttle (see <i>Throttling</i> in the description). The request was not looked at; try again after <code>Retry-After</code> seconds.<span class="r-sig"><code>{&quot;error&quot;:&quot;too many attempts, try again later&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s5">503</span>
-    <span class="p-desc">Every password check slot and the short queue behind them are taken.<span class="r-sig"><code>{&quot;error&quot;:&quot;the server is busy — try again in a moment&quot;}</code></span></span>
+    <span class="p-desc">Every password check slot and the short queue behind them are taken.<span class="r-sig"><code>{&quot;error&quot;:&quot;the server is busy, try again in a moment&quot;}</code></span></span>
   </div>
     </div>
   </div>
@@ -1205,11 +1205,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">429</span>
-    <span class="p-desc">Paused by the sign-in throttle (see <i>Throttling</i> in the description). The request was not looked at; try again after <code>Retry-After</code> seconds.<span class="r-sig"><code>{&quot;error&quot;:&quot;too many attempts — try again later&quot;}</code></span></span>
+    <span class="p-desc">Paused by the sign-in throttle (see <i>Throttling</i> in the description). The request was not looked at; try again after <code>Retry-After</code> seconds.<span class="r-sig"><code>{&quot;error&quot;:&quot;too many attempts, try again later&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s5">503</span>
-    <span class="p-desc">Every password check slot and the short queue behind them are taken.<span class="r-sig"><code>{&quot;error&quot;:&quot;the server is busy — try again in a moment&quot;}</code></span></span>
+    <span class="p-desc">Every password check slot and the short queue behind them are taken.<span class="r-sig"><code>{&quot;error&quot;:&quot;the server is busy, try again in a moment&quot;}</code></span></span>
   </div>
     </div>
   </div>
@@ -1248,11 +1248,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">429</span>
-    <span class="p-desc">Paused by the sign-in throttle (see <i>Throttling</i> in the description). The request was not looked at; try again after <code>Retry-After</code> seconds.<span class="r-sig"><code>{&quot;error&quot;:&quot;too many attempts — try again later&quot;}</code></span></span>
+    <span class="p-desc">Paused by the sign-in throttle (see <i>Throttling</i> in the description). The request was not looked at; try again after <code>Retry-After</code> seconds.<span class="r-sig"><code>{&quot;error&quot;:&quot;too many attempts, try again later&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s5">503</span>
-    <span class="p-desc">Every password check slot and the short queue behind them are taken.<span class="r-sig"><code>{&quot;error&quot;:&quot;the server is busy — try again in a moment&quot;}</code></span></span>
+    <span class="p-desc">Every password check slot and the short queue behind them are taken.<span class="r-sig"><code>{&quot;error&quot;:&quot;the server is busy, try again in a moment&quot;}</code></span></span>
   </div>
     </div>
   </div>
@@ -1294,7 +1294,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">400</span>
-    <span class="p-desc">Challenge expired, replayed or made for another profile, or the attestation did not verify.<span class="r-sig"><code>{&quot;error&quot;:&quot;challenge expired — try again&quot;}</code></span></span>
+    <span class="p-desc">Challenge expired, replayed or made for another profile, or the attestation did not verify.<span class="r-sig"><code>{&quot;error&quot;:&quot;challenge expired, try again&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>
@@ -1381,11 +1381,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">429</span>
-    <span class="p-desc">Paused by the sign-in throttle (see <i>Throttling</i> in the description). The request was not looked at; try again after <code>Retry-After</code> seconds.<span class="r-sig"><code>{&quot;error&quot;:&quot;too many attempts — try again later&quot;}</code></span></span>
+    <span class="p-desc">Paused by the sign-in throttle (see <i>Throttling</i> in the description). The request was not looked at; try again after <code>Retry-After</code> seconds.<span class="r-sig"><code>{&quot;error&quot;:&quot;too many attempts, try again later&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s5">503</span>
-    <span class="p-desc">Every password check slot and the short queue behind them are taken.<span class="r-sig"><code>{&quot;error&quot;:&quot;the server is busy — try again in a moment&quot;}</code></span></span>
+    <span class="p-desc">Every password check slot and the short queue behind them are taken.<span class="r-sig"><code>{&quot;error&quot;:&quot;the server is busy, try again in a moment&quot;}</code></span></span>
   </div>
     </div>
   </div>
@@ -1428,7 +1428,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">429</span>
-    <span class="p-desc">Paused by the sign-in throttle (see <i>Throttling</i> in the description). The request was not looked at; try again after <code>Retry-After</code> seconds.<span class="r-sig"><code>{&quot;error&quot;:&quot;too many attempts — try again later&quot;}</code></span></span>
+    <span class="p-desc">Paused by the sign-in throttle (see <i>Throttling</i> in the description). The request was not looked at; try again after <code>Retry-After</code> seconds.<span class="r-sig"><code>{&quot;error&quot;:&quot;too many attempts, try again later&quot;}</code></span></span>
   </div>
     </div>
   </div>
@@ -1483,7 +1483,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">429</span>
-    <span class="p-desc">Paused by the sign-in throttle (see <i>Throttling</i> in the description). The request was not looked at; try again after <code>Retry-After</code> seconds.<span class="r-sig"><code>{&quot;error&quot;:&quot;too many attempts — try again later&quot;}</code></span></span>
+    <span class="p-desc">Paused by the sign-in throttle (see <i>Throttling</i> in the description). The request was not looked at; try again after <code>Retry-After</code> seconds.<span class="r-sig"><code>{&quot;error&quot;:&quot;too many attempts, try again later&quot;}</code></span></span>
   </div>
     </div>
   </div>
@@ -1532,6 +1532,8 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="ep-body">
 <p>Replaces the stored state wholesale (atomic write; there is no merge on the server). The <code>active</code> field — an in-progress workout — is stripped before saving: a running session belongs to the device running it. Body limit 5 MiB.</p>
 <p>With <code>baseRev</code> the write is conditional: it goes through only when <code>baseRev</code> equals the document's current revision, and answers 409 with the current document otherwise — the client merges the two and pushes again with the revision it was given. Without <code>baseRev</code> the write is unconditional (clients from before revisions, and deliberate replaces such as a backup import). The server stamps the new revision into the document as <code>_rev</code>; a <code>_rev</code> sent by the client is ignored.</p>
+<p>The records of removals (<code>deleted</code>) and of edits (<code>edited</code>) never shrink: the stored ones are joined into the write (a reset keeps its own). A writer that does not stamp its own changes (no <code>stamped: true</code>; an API script, an older app) and sends the current <code>baseRev</code> gets them stamped by the server, at the server's time: every entry it removed (a workout, routine, custom exercise, weigh-in, card, profile or favourite), every setting and plan day it changed (<code>queue</code>, <code>week.&lt;day&gt;</code>, …), and every entry it edited (<code>_ts</code>, per field <code>_f</code>). That keeps a planner's new week, or a routine it removed, from being undone by a phone that reconnects later with an older change. A setting, plan day or entry field whose stored stamp (<code>edited</code>, <code>_f</code>) is later than the one the writer sends back keeps the stored value: the writer never saw that change, so send back the <code>edited</code> and <code>_f</code> you read. A writer that sends no <code>edited</code> at all is not held to it. An entry the document holds while a removal on record says it was deleted after its last edit is kept and marked as added back.</p>
+<p>Such a writer also cannot delete what it does not know: a field of the stored document, of a stored routine, workout, custom exercise, card or profile, of a routine's exercise, or of a logged exercise or set that its copy leaves out comes back from the stored copy (an older app rebuilds an exercise from the fields it knows, which dropped pyramid sets made on an updated device). Only the fields v1.3.9 itself removes (a superset link, a note, a cleared set value, …) can be removed this way. Send <code>stamped: true</code> to remove anything else.</p>
 <p>Every accepted write also starts the grace period of each stored file (tag <code>media</code>) the new state no longer references, and stops it for each one it references again. That bookkeeping never changes the answer.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
 
@@ -1546,12 +1548,22 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-type">integer | null</span>
     <span class="p-desc">The revision this client last read or wrote. Omit or null for an unconditional overwrite.</span>
   </div>
+  <div class="prow">
+    <span class="p-name">baseWid</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The write id (<code>_wid</code>) of the document this client last read or wrote. With <code>baseRev</code>, a write over a different document at the same revision (the data directory went back in time and the number was reached again) answers 409.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">stamped</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc">True when the client stamps its own changes in <code>deleted</code>, <code>edited</code> and each entry's <code>_ts</code>/<code>_f</code>, as the app does. Omit it to have the server stamp what changed against the stored document.</span>
+  </div>
 </div>
     <p class="ep-h">Responses</p>
     <div class="ptab">
   <div class="prow rrow">
     <span class="r-code s2">200</span>
-    <span class="p-desc">Saved.<span class="r-sig">{ ok: always true, ts: number | null, rev: integer }</span></span>
+    <span class="p-desc">Saved.<span class="r-sig">{ ok: always true, ts: number | null, rev: integer, wid: string }</span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">400</span>
@@ -1585,7 +1597,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <div class="ptab">
   <div class="prow rrow">
     <span class="r-code s2">200</span>
-    <span class="p-desc">The current revision (0 when the profile has no state yet).<span class="r-sig">{ rev: integer }</span></span>
+    <span class="p-desc">The current revision (0 when the profile has no state yet).<span class="r-sig">{ rev: integer, wid: string }</span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>
@@ -1644,7 +1656,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow">
     <span class="p-name">deviceId</span>
     <span class="p-type">string</span>
-    <span class="p-desc">A token the browser made up for itself (stored in its localStorage), so rest-timer pushes can be aimed at the device that started the rest. Optional; anything that is not a short token is ignored.</span>
+    <span class="p-desc">A token the browser made up for itself (stored in its localStorage), so rest-timer pushes can be aimed at the device that started the rest. Optional; anything that is not a short token is ignored, and a re-send of an endpoint without one keeps the id its row already has.</span>
   </div>
 </div>
     <p class="ep-h">Responses</p>
@@ -1673,7 +1685,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Does the server hold this subscription?</span>
   </summary>
   <div class="ep-body">
-<p>Whether the caller's account has a stored subscription with exactly this <code>endpoint</code>. The browser's <code>PushManager.getSubscription()</code> says nothing about the server's side — a row pruned after a dead send (404/410/403) leaves the browser subscribed to nowhere — so the client asks here before showing the notifications switch as on, and re-registers when the answer is no.</p>
+<p>Whether the caller's account has a stored subscription with exactly this <code>endpoint</code>. The browser's <code>PushManager.getSubscription()</code> says nothing about the server's side — a row pruned after a dead send (404/410/403) leaves the browser subscribed to nowhere — so the client asks here before showing the notifications switch as on, and re-registers when the answer is no. A stored subscription also names the <code>deviceId</code> it is stored with, and the client re-registers when that is not its own: a row stored without one (from before device ids) sends that device's rest-timer alerts to every subscription of the account.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
 <p class="ep-h">Query parameters</p><div class="ptab">
   <div class="prow">
@@ -1687,7 +1699,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <div class="ptab">
   <div class="prow rrow">
     <span class="r-code s2">200</span>
-    <span class="p-desc">The answer.<span class="r-sig">{ subscribed: boolean }</span></span>
+    <span class="p-desc">The answer.<span class="r-sig">{ subscribed: boolean, deviceId: string | null }</span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>
@@ -2396,7 +2408,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">429</span>
-    <span class="p-desc"><code>locked</code> — more than <code>MEDIA_UPLOADS_PER_HOUR</code> uploads this hour; <code>busy</code> — two uploads of this profile are already in flight (<code>retryAfter</code> 5).<span class="r-sig"><code>{&quot;error&quot;:&quot;too many uploads — try again later&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;too many uploads at once — try again in a moment&quot;}</code></span></span>
+    <span class="p-desc"><code>locked</code> — more than <code>MEDIA_UPLOADS_PER_HOUR</code> uploads this hour; <code>busy</code> — two uploads of this profile are already in flight (<code>retryAfter</code> 5).<span class="r-sig"><code>{&quot;error&quot;:&quot;too many uploads, try again later&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;too many uploads at once, try again in a moment&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s5">507</span>
@@ -2476,7 +2488,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">429</span>
-    <span class="p-desc">More than 10 sweeps this hour (<code>locked</code>).<span class="r-sig"><code>{&quot;error&quot;:&quot;too many uploads — try again later&quot;}</code></span></span>
+    <span class="p-desc">More than 10 sweeps this hour (<code>locked</code>).<span class="r-sig"><code>{&quot;error&quot;:&quot;too many uploads, try again later&quot;}</code></span></span>
   </div>
     </div>
   </div>
@@ -2540,7 +2552,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s5">503</span>
-    <span class="p-desc">The Coach is not set up on this instance — switched off, or no provider connected. Every Coach route answers this rather than pretending, so an unconfigured instance renders exactly the app it was before the feature existed.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is not set up on this instance&quot;}</code></span></span>
+    <span class="p-desc">The Coach is not set up on this instance — switched off, or no provider connected. Every Coach route answers this rather than pretending, so an unconfigured instance renders exactly the app it was before the feature existed. <code>code</code> is <code>off</code>, the class a job refused at enqueue for the same reason carries; the app shows its own line for it.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is not set up on this instance&quot;}</code></span></span>
   </div>
     </div>
   </div>
@@ -2609,7 +2621,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s5">503</span>
-    <span class="p-desc">The Coach is not set up on this instance — switched off, or no provider connected. Every Coach route answers this rather than pretending, so an unconfigured instance renders exactly the app it was before the feature existed.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is not set up on this instance&quot;}</code></span></span>
+    <span class="p-desc">The Coach is not set up on this instance — switched off, or no provider connected. Every Coach route answers this rather than pretending, so an unconfigured instance renders exactly the app it was before the feature existed. <code>code</code> is <code>off</code>, the class a job refused at enqueue for the same reason carries; the app shows its own line for it.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is not set up on this instance&quot;}</code></span></span>
   </div>
     </div>
   </div>
@@ -2662,7 +2674,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s5">503</span>
-    <span class="p-desc">The Coach is not set up on this instance — switched off, or no provider connected. Every Coach route answers this rather than pretending, so an unconfigured instance renders exactly the app it was before the feature existed.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is not set up on this instance&quot;}</code></span></span>
+    <span class="p-desc">The Coach is not set up on this instance — switched off, or no provider connected. Every Coach route answers this rather than pretending, so an unconfigured instance renders exactly the app it was before the feature existed. <code>code</code> is <code>off</code>, the class a job refused at enqueue for the same reason carries; the app shows its own line for it.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is not set up on this instance&quot;}</code></span></span>
   </div>
     </div>
   </div>
@@ -2715,7 +2727,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s5">503</span>
-    <span class="p-desc">The Coach is not set up on this instance — switched off, or no provider connected. Every Coach route answers this rather than pretending, so an unconfigured instance renders exactly the app it was before the feature existed.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is not set up on this instance&quot;}</code></span></span>
+    <span class="p-desc">The Coach is not set up on this instance — switched off, or no provider connected. Every Coach route answers this rather than pretending, so an unconfigured instance renders exactly the app it was before the feature existed. <code>code</code> is <code>off</code>, the class a job refused at enqueue for the same reason carries; the app shows its own line for it.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is not set up on this instance&quot;}</code></span></span>
   </div>
     </div>
   </div>
@@ -2761,7 +2773,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s5">503</span>
-    <span class="p-desc">The Coach is not set up on this instance — switched off, or no provider connected. Every Coach route answers this rather than pretending, so an unconfigured instance renders exactly the app it was before the feature existed.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is not set up on this instance&quot;}</code></span></span>
+    <span class="p-desc">The Coach is not set up on this instance — switched off, or no provider connected. Every Coach route answers this rather than pretending, so an unconfigured instance renders exactly the app it was before the feature existed. <code>code</code> is <code>off</code>, the class a job refused at enqueue for the same reason carries; the app shows its own line for it.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is not set up on this instance&quot;}</code></span></span>
   </div>
     </div>
   </div>
@@ -2791,7 +2803,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s5">503</span>
-    <span class="p-desc">The Coach is not set up on this instance — switched off, or no provider connected. Every Coach route answers this rather than pretending, so an unconfigured instance renders exactly the app it was before the feature existed.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is not set up on this instance&quot;}</code></span></span>
+    <span class="p-desc">The Coach is not set up on this instance — switched off, or no provider connected. Every Coach route answers this rather than pretending, so an unconfigured instance renders exactly the app it was before the feature existed. <code>code</code> is <code>off</code>, the class a job refused at enqueue for the same reason carries; the app shows its own line for it.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is not set up on this instance&quot;}</code></span></span>
   </div>
     </div>
   </div>
@@ -2830,7 +2842,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s5">503</span>
-    <span class="p-desc">The Coach is not set up on this instance — switched off, or no provider connected. Every Coach route answers this rather than pretending, so an unconfigured instance renders exactly the app it was before the feature existed.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is not set up on this instance&quot;}</code></span></span>
+    <span class="p-desc">The Coach is not set up on this instance — switched off, or no provider connected. Every Coach route answers this rather than pretending, so an unconfigured instance renders exactly the app it was before the feature existed. <code>code</code> is <code>off</code>, the class a job refused at enqueue for the same reason carries; the app shows its own line for it.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is not set up on this instance&quot;}</code></span></span>
   </div>
     </div>
   </div>
@@ -3200,7 +3212,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">400</span>
-    <span class="p-desc">The code was already used.<span class="r-sig"><code>{&quot;error&quot;:&quot;already used — cannot revoke&quot;}</code></span></span>
+    <span class="p-desc">The code was already used.<span class="r-sig"><code>{&quot;error&quot;:&quot;already used, cannot revoke&quot;}</code></span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>
@@ -3982,6 +3994,26 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-desc">Server-set revision, incremented on every accepted PUT. Ignored when sent by a client.</span>
   </div>
   <div class="prow">
+    <span class="p-name">_wid</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Server-set id of this write (16 hex characters), new on every accepted PUT.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">_wids</span>
+    <span class="p-type">string[]</span>
+    <span class="p-desc">The write ids of the documents this one descends from, oldest first (up to 50).</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">deleted</span>
+    <span class="p-type">object</span>
+    <span class="p-desc">When entries were removed, per list and entry key ({ workouts: { &lt;id&gt;: ms } }, weigh-ins by day, favourites by exercise id). A negative stamp is an add-back after a removal. Never shrinks on the server; stamped for writers that do not stamp (see PUT /api/data).</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">edited</span>
+    <span class="p-type">object</span>
+    <span class="p-desc">When each setting and plan day was last changed, ms ({ queue: ms, 'week.3': ms, … }). Never shrinks on the server; stamped for writers that do not stamp (see PUT /api/data).</span>
+  </div>
+  <div class="prow">
     <span class="p-name">unit</span>
     <span class="p-type">&quot;kg&quot; | &quot;lb&quot;</span>
     <span class="p-desc"></span>
@@ -4010,6 +4042,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-name">routines</span>
     <span class="p-type"><a href="#schema-Routine">Routine</a>[]</span>
     <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">queue</span>
+    <span class="p-type">object</span>
+    <span class="p-desc">A planner's floating week {ids, since, startsOn, label} — the week's sessions as an ordered queue, the first undone one is today's. Written by an API client or by the app's own rotation feature, read by the reminder tick.</span>
   </div>
   <div class="prow">
     <span class="p-name">week</span>
@@ -5821,7 +5858,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
 </div></footer>
 
-<script src="site.js?v=19" defer></script>
+<script src="site.js?v=22" defer></script>
 <script>
 /* Jumping to an anchor inside a collapsed card opens the card — and re-aligns, since
    the browser scrolled to where the target was while it was still collapsed. */

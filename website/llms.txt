@@ -7,12 +7,16 @@
 ## Docs
 - [Complete reference](https://opengym.duarte-santos.ch/docs.html): every feature, self-hosting, every .env setting, AI Coach, imports (FitNotes/Strong/Hevy/Apple Health), backups, MCP server, troubleshooting
 - [HTTP API](https://opengym.duarte-santos.ch/api.html): OpenAPI spec, also at [openapi.yaml](https://opengym.duarte-santos.ch/openapi.yaml)
-- [README](https://opengym.duarte-santos.ch/README.md): project overview in Markdown
+- [README](https://raw.githubusercontent.com/DuarteSantos8/openGym/main/README.md): project overview in Markdown
+- [Documentation index](https://github.com/DuarteSantos8/openGym/blob/main/docs/README.md): every guide by audience, plus an [FAQ](https://raw.githubusercontent.com/DuarteSantos8/openGym/main/docs/FAQ.md)
 
 ## Try & get it
 - [Live demo](https://opengym.duarte-santos.ch/demo/): the real app with example data, in the browser
 - [Android APK](https://opengym.duarte-santos.ch/openGym.apk): signed, sideloadable; SHA-256 next to it at openGym.apk.sha256 and on the GitHub release
 - [About](https://opengym.duarte-santos.ch/about.html): the story and every release
+
+## How it is built
+- Developed with Claude Code (Anthropic's coding agent); changes are reviewed, tested and released by the maintainer. The app itself needs no AI service; the AI coach and MCP server are optional.
 
 ## Source & community
 - [GitHub repository](https://github.com/DuarteSantos8/openGym): code, issues, pull requests, releases

@@ -1,7 +1,7 @@
-# PROJECT_CONTEXT.md
+# Set types: drop sets and rest-pause
 
 Notes for whoever picks this up next. Not a spec — a map of what changed and why, kept next to
-the code it describes. See `CLAUDE.md` for the general architecture; this file only covers the
+the code it describes. See [`CLAUDE.md`](../../CLAUDE.md) for the general architecture; this file only covers the
 drop-set / rest-pause work.
 
 ## What this adds

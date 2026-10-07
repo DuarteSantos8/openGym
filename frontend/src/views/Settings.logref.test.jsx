@@ -69,7 +69,7 @@ afterEach(() => {
   host.remove()
 })
 
-const mount = () => act(() => root.render(<Settings />))
+const mount = () => act(() => root.render(<Settings page="workout" />))
 const row = () => [...host.querySelectorAll('.lrow')].find(r => r.textContent.includes('Shown under each exercise'))
 const choose = label => {
   act(() => { row().click() })

@@ -98,6 +98,19 @@ function panel({ opener, panelEl, flag, closeBtn }) {
   // leave the page scroll-locked behind a sheet nobody can see.
   addEventListener('resize', () => { if (innerWidth >= 1000) nav?.set(false) })
 
+  // On a wide screen the docs and API pages show the contents as a fixed column
+  // (body.dock in styles.css). It is not a closed drawer there, so it must not be
+  // hidden from screen readers either.
+  const menu = document.getElementById('menu')
+  const wide = matchMedia('(min-width: 1200px)')
+  const syncDock = () => {
+    if (!menu || !document.body.classList.contains('dock')) return
+    if (wide.matches) { toc?.set(false); menu.setAttribute('aria-hidden', 'false') }
+    else if (!document.body.classList.contains('contents-open')) menu.setAttribute('aria-hidden', 'true')
+  }
+  syncDock()
+  wide.addEventListener?.('change', syncDock)
+
   // An earlier build remembered an open rail across visits. It no longer does, and
   // the stale key would otherwise sit in the browser forever.
   try { localStorage.removeItem('og_rail') } catch (e) {}

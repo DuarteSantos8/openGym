@@ -432,3 +432,23 @@ test('an admin can raise the Coach message length past the old 1000-char default
   const status = await call('GET /api/coach/status');
   assert.equal(status.body.maxMessageLen, 1800);
 });
+
+// The guard in front of every user route answers 503 while the Coach is switched off or has no
+// provider connected. It sent the words with no class, so the app could not pick its own,
+// translated line for it and a German lifter read "the Coach is not set up on this instance". It
+// names the class now: 'off', the class enqueue's own refusal carries for the same state.
+test('the Coach-off guard names its class beside the words, on every guarded user route', async () => {
+  const guarded = ['GET /api/coach/status', 'POST /api/coach/plan', 'POST /api/coach/review', 'POST /api/coach/debrief',
+    'GET /api/coach/cohort', 'POST /api/coach/cohort/share', 'POST /api/coach/pending/resolve'];
+  const refusal = { error: 'the Coach is not set up on this instance', code: 'off' };
+  const { call } = harness();
+  for (const [state, patch] of [['switched off', { enabled: false }], ['no provider connected', { provider: 'anthropic' }]]) {
+    fresh(patch);
+    assert.equal(cfg.isConnected(), false, state);
+    for (const key of guarded) {
+      const r = await call(key, {});
+      assert.equal(r.status, 503, `${state}: ${key}`);
+      assert.deepEqual(r.body, refusal, `${state}: ${key}`);
+    }
+  }
+});

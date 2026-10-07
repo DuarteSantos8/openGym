@@ -8,7 +8,7 @@ need — what the app protects you from and what it doesn't.
 
 Only the **latest release**. Releases are semver tags (`v1.0.0` → `v1.2.3`, see
 [CHANGELOG.md](CHANGELOG.md)); there is no LTS or maintenance branch and older tags are never
-patched. A fix ships in the next release and in the `latest` images in GitLab's registry.
+patched. A fix ships in the next release and in the `latest` images on both registries.
 
 Updating a self-hosted instance:
 
@@ -18,22 +18,18 @@ git pull && docker compose pull && docker compose up -d
 
 ## Reporting a vulnerability
 
-The project lives on GitLab. It has no security-advisory workflow on the free tier, but it does
-have **confidential issues**, and that is the private channel: open an issue at
-<https://gitlab.com/DuarteSantos8/opengym/-/issues/new> and tick **"This issue is confidential"**
-*before* you submit. A confidential issue is readable only by project members — you'll see it,
-I'll see it, nobody else will, and it stays that way if it is later closed.
+Use GitHub's private vulnerability reporting:
+<https://github.com/DuarteSantos8/openGym/security/advisories/new>. The report is visible only to
+you and the maintainer, and it becomes the advisory thread where the fix is discussed and, once
+released, published.
 
-If you'd rather not put the details in GitLab at all, open a confidential issue saying only
-*"I need an address for a security report"* — no details, no repro, no version — and you'll get
-one back within a couple of days.
+If you can't use GitHub, ask for an e-mail address on the
+[Discord](https://discord.gg/e62jY6fwVb) without giving any details, and you'll get one back within
+a couple of days.
 
-> The GitHub repo and its private vulnerability reporting are gone with the suspended account;
-> `github.com/DuarteSantos8/openGym/security/advisories/new` no longer resolves.
-
-Please don't put a working exploit in a *non-confidential* issue if it can be used against other
-people's instances — and not in the Discord either, which is a public room. Everything else (a crash you can only trigger on your own box, a scanner warning)
-is fine as a normal issue.
+Please don't put a working exploit in a public issue if it can be used against other people's
+instances, and not in the Discord either, which is a public room. Everything else (a crash you can
+only trigger on your own box, a scanner warning) is fine as a normal issue.
 
 Useful in a report: the version or commit, whether you're running the prebuilt images or a
 source build, your `RP_ID`/`ORIGIN` and what sits in front of the app, steps to reproduce, and
@@ -61,7 +57,8 @@ in the thread; there's no objection, and no request to sit on it indefinitely.
   change a signed-in user's data.
 - **Shipped deployment config** — `docker-compose.yml`, `web/nginx.conf`, the two Dockerfiles:
   a default that exposes something a self-hoster wouldn't expect to be exposed.
-- **The published images** `registry.gitlab.com/duartesantos8/opengym/api` and `/web`.
+- **The published images** `registry.gitlab.com/duartesantos8/opengym/{api,web}` and
+  `ghcr.io/duartesantos8/opengym-{api,web}`.
 
 ## Out of scope
 
@@ -87,7 +84,8 @@ in the thread; there's no objection, and no request to sit on it indefinitely.
   in the clear. That is the documented trade of running without TLS, not a finding.
 - Scanner output with no working exploit, and `npm audit` findings in build-time
   devDependencies (Vite, Vitest, Capacitor CLI) that never reach a running instance.
-- The GitLab Pages demo build — it has no backend at all, everything stays in that browser.
+- The demo build on the website and GitHub Pages — it has no backend at all, everything stays in
+  that browser.
 - Third-party content: the exercise image/GIF dataset and the CDN it's fetched from.
 
 ## Security model
@@ -129,7 +127,7 @@ Read this before hosting openGym for anyone other than yourself.
   (`api/passkeys-store.js`, `api/device-link.js`, the passkeys block in `api/server.js`).
 - **Password sign-in is throttled.** Every password route spends a budget of 60 requests a minute
   per address; wrong passwords, reset codes and (on password signup) invite codes pause the
-  address after 20 (30 s, doubling to 15 min); wrong passwords pause the *account* after 5 (1 min,
+  address from the 21st on (30 s, doubling to 15 min); wrong passwords pause the *account* from the 6th on (1 min,
   doubling to 1 h) — keyed by the account the name or sign-in e-mail resolves to, so switching
   between the two does not reset it, and by the identifier as typed when it resolves to nobody. A password check is counted the moment it starts, so guesses
   sent all at once get no more checks than guesses sent one by one. The two routes that redeem a

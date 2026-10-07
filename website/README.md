@@ -17,13 +17,14 @@ Not in this folder (added at deploy time):
   of exercise media stays out of it. It has to live on this host: the site frames it, and
   `X-Frame-Options: SAMEORIGIN` would block it from anywhere else.
 
-Navigation is a topic rail (`.side`): one title/subtitle list of everything on the
-site, a fixed column beside the page from 1300 px up and the hamburger sheet below
-that, with a scrollspy lighting the section under the reader. The top bar keeps
-only the brand, GitHub, Discord and the download button.
+Every page has the same top bar. Pages with a table of contents (home, docs, about, API)
+also have a contents drawer (`.side`), opened by the green **Contents** pill in the
+bottom-left corner. On the two reference pages (`<body class="dock">`: docs and API) a
+screen 1200 px or wider shows the contents as a fixed column beside the text instead, so
+there is nothing to find; a scrollspy lights the section under the reader.
 
 `site.js` carries five independent pieces, each one failing soft so the page is
-complete without any of them: the topic-rail sheet, its scrollspy, the scroll
+complete without any of them: the contents drawer (docked on wide docs/API pages), its scrollspy, the scroll
 reveals, the demo iframe (injected only once the frame is on screen, and never
 below 700 px, where the CSS swaps it for an "open it full-screen" card), and the
 two things that come from the public api.github.com at view time — the star/issue

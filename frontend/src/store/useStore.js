@@ -2,12 +2,14 @@ import { create } from 'zustand'
 import { api, setRemoteAuth } from '../lib/api.js'
 import { localTZ } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
-import { registerCustom } from '../lib/exercises.js'
+import { registerCustom, healCustomEx } from '../lib/exercises.js'
 import { DEMO, DEMO_SEEDED } from '../lib/demo.js'
 import { rememberDefaultLang } from '../lib/default-lang.js'
 import { guestAllowed } from '../lib/guest.js'
 import { MOBILE, initReminderSync, nativeLoad, nativeSave, onAppActive, readJsonFile, syncReminder, writeAutoBackup, writeJsonFile } from '../lib/mobile.js'
-import { mergeStates, localExtras, stampRoutines, stampCustomEx, inUnitOf, keepReset, resetIdsOf, mergeResetIds, entryKey } from '../lib/sync-merge.js'
+import { refillIfComplete } from '../lib/rotation.js'
+import { liftLegacy } from '../lib/sync-legacy.js'
+import { mergeStates, localExtras, stampChange, highestStamp, stampRestore, stampReplace, inUnitOf, keepReset, resetIdsOf, mergeResetIds, entryKey } from '../lib/sync-merge.js'
 import { convertStateUnit } from '../lib/units.js'
 import { pendingRefCount, settleMedia, loadPending } from '../lib/media-owed.js'
 import { referencedHashes } from '../lib/media-refs.js'
@@ -22,6 +24,7 @@ import { RTL_LANGS } from '../lib/i18n-core.js'
 import { DEFAULT_TEMPLATE_ID } from '../lib/structuralBalanceTemplates.js'
 
 import { WC_DEFAULT } from '../lib/workout-controls.js'
+import { sanitizeAccent } from '../lib/accent.js'
 
 const KEY = 'gym_state_v1'
 // Where the saved copy stands with the server: the revision it descends from, and its own `_ts`
@@ -31,7 +34,15 @@ const KEY = 'gym_state_v1'
 // in the store); this marker is written beside the saved copy for whichever tab loads it next.
 // See pushState/pullState.
 const SYNC_KEY = 'gym_sync'
+// Which write of the saved copy this is: a tab finds another tab's write by it (persist, joinSaved).
+const WID_KEY = 'gym_state_wid'
+// Whose copy that write was: the owner (gym_owner) the writing tab held, '' for a guest's. A tab
+// joins only a copy written under the owner it holds itself (joinSaved, syncFromSaved).
+const WID_OWNER_KEY = 'gym_state_owner'
 const DIRTY_KEY = 'gym_dirty'          // the saved copy owes the server a change
+// An owed copy an older app (v1.3.9) left behind: its first sync stamps what it changed
+// (lib/sync-legacy.js), holding the fingerprint that app last agreed on with the server.
+const LEGACY_KEY = 'gym_legacy_owed'
 const SYNCED_AT_KEY = 'gym_synced_at'  // when this device and the server last held the same copy
 const SYNCED_FP_KEY = 'gym_synced_fp'  // a fingerprint of that copy (lib/sync-changes.js)
 // Changes a forced sign-out or disconnect kept on this device, by server and account, until it
@@ -72,9 +83,18 @@ const gainedWorkoutMedia = (prev, next) => {
   return workoutMediaHashes(next).some(h => !had.has(h))
 }
 export const DEF = {
-  unit: 'kg', restSec: 90, restPauseSec: 15, sound: true, soundOnSilent: false, timerFlash: false, timedSetOvertime: false, keepAwake: true, lang: 'en',
+  unit: 'kg', restSec: 90, restPauseSec: 15, sound: true, soundOnSilent: false, vibrateOnSilent: false, timerFlash: false, timedSetOvertime: false, keepAwake: true, lang: 'en',
   theme: 'dark', accent: 'lime', body: 'male', targetW: null,
   bodyweight: [], routines: [], week: {}, dayPlan: {},
+  queue: null,   // a planner's floating week (lib/queue.js) — via the API, or by this rotation feature (below)
+  // The in-app rotation's reusable definition — { id, sequence, label } (lib/rotation.js). Never
+  // a live queue: it only ever feeds `queue`, and `queue.rotationId` says the pass is managed here.
+  rotation: null,
+  // null | 'week' | 'rotation' — which of the two scheduling screens Home/Plan show. A live
+  // queue always wins regardless of this (scheduleModeOf, lib/rotation.js): the flag exists only
+  // to keep Rotation selected, and the weekday grid hidden, from the moment it's chosen in
+  // Settings/Plan through to the first routine being added — there's no queue yet to derive it from.
+  scheduleMode: null,
   exWeights: {}, workouts: [], active: null, customEx: [], gifSize: 'full',
   // Stats activity heatmap metric. Profiles without this key continue to open on time.
   heatmapMetric: 'time',
@@ -89,11 +109,15 @@ export const DEF = {
   // lean layout: one "more" button per exercise and a menu on each set number. Every switch
   // brings one of the old always-visible button groups back (Settings → During a workout).
   wc: { ...WC_DEFAULT },
+  // One-time hints already shown to this profile, synced so each shows once per person rather
+  // than once per device: { swipeSets: true } after the first swipe-on-sets nudge (Workout.jsx).
+  hints: {},
   // effort: which per-set effort scale is logged — 'none' | 'rir' | 'rpe'. null, not 'none', so
   // that a profile which never chose (loaded state is overlaid on DEF, on every path: local,
   // server pull, backup import) still falls back to the `showRir` boolean this replaced and
   // keeps the column it had. See effortOf.
-  reminder: { on: false, time: '08:00', tz: null }, effort: null, autoBackup: false,
+  // nudge/tone: the missed-workout nudge (lib/nudge.js), opt-in, rides on the reminder.
+  reminder: { on: false, time: '08:00', tz: null, nudge: false, tone: 'friendly' }, effort: null, autoBackup: false,
   // Equipment profiles (issue: filter Library/picker/routines by what you actually own —
   // e.g. "Home" vs "Gym" — building on the session-only equipment filter from issue #6).
   equipProfiles: [], activeEquipId: null, equipFilterOn: false,
@@ -150,9 +174,15 @@ export const DEF = {
   // Defaults on; an older profile without the key reads as on (`!== false`).
   showWeightCard: true,
   // Whether Start opens the quick weigh-in first (sheets.jsx startFlow, issue #137). Off starts
-  // the session straight away; weight can still be logged from Home/Stats. Defaults on; an
-  // older profile without the key reads as on (`!== false`).
+  // the session straight away; weight can still be logged from Home/Stats. On here, so an
+  // older profile without the key reads as on (`!== false`) and keeps the step it had; a profile
+  // started from nothing begins with it off (freshState below, v1.3.11): most people weigh in at
+  // home in the morning, not at the gym, and the step cost a tap every workout.
   weighIn: true,
+  // The connection banner at the top (components/SyncBanner.jsx, #369/#330). Off hides it; a
+  // stuck sync then shows as a dot on Home instead. Defaults on; an older profile without the
+  // key reads as on (`!== false`).
+  connStatus: true,
   // Where a planned session's reps come from (Settings → During a workout, lib/session-start.js):
   // 'plan' opens at the routine's own sets × reps and lets history and progression decide the
   // weight; 'last' carries the reps over from the last session, the way it always worked before.
@@ -200,6 +230,19 @@ export function freshState() {
   const s = clone(DEF)
   s.lang = detectedLang()
   s.langAuto = true
+  s.weighIn = false
+  // Exercise animations: Small (v1.3.11), a thumbnail beside the exercise name that a tap opens,
+  // so the first set is on screen without scrolling. DEF stays 'full' for a profile saved before.
+  s.gifSize = 'mini'
+  return s
+}
+
+// A copy that starts over on this device: Reset everything, or another account signing in here.
+// It is a new profile like freshState's (weigh-in off, small animations), but in the language
+// already on screen, and still marked as never picked when it never was.
+export function restartedState(cur) {
+  const s = freshState()
+  if (cur?.lang) { s.lang = cur.lang; s.langAuto = cur.langAuto === true }
   return s
 }
 
@@ -208,7 +251,7 @@ function loadState() {
     const raw = localStorage.getItem(KEY)
     if (raw) {
       const saved = JSON.parse(raw)
-      const s = Object.assign(clone(DEF), saved)
+      const s = sanitizeAccent(Object.assign(clone(DEF), saved))
       if (!saved.lang) s.lang = detectedLang()
       return s
     }
@@ -227,7 +270,7 @@ const hasData = st => !!((st.workouts || []).length || (st.routines || []).lengt
 // session belongs to the device that is currently running it.
 export function restoredStateFor(local, remote, dirty = false) {
   if (!remote || (hasData(local) && (dirty || (remote._ts || 0) < (local._ts || 0)))) return null
-  const next = Object.assign(clone(DEF), remote)
+  const next = sanitizeAccent(Object.assign(clone(DEF), remote))
   if (local.active) next.active = local.active
   return next
 }
@@ -242,7 +285,11 @@ export const useStore = create((set, get) => {
   let pulling = null       // the GET in flight, so two resume signals make one request
   let configFetch = null   // the /api/config in flight, so two callers make one request
   let pushPending = false  // a change made before boot's pull — pushed once boot is through
-  let forceNext = false    // the next push replaces the server copy outright (import, reset)
+  let forceNext = false    // the next push replaces the server copy outright (reset)
+  // A backup import's replace: pushed against the revision the import's check read (importRead),
+  // so a change another device synced while the confirm was open is merged in, not wiped.
+  let replaceRev = null
+  let importRead = null    // what importConflict last read: { uid, state, rev }
   let lastCheck = 0
   let pollTm = null
   let offlineChanges = false   // a push failed for lack of network — the next one that lands says so
@@ -254,6 +301,26 @@ export const useStore = create((set, get) => {
   let fpOf = null          // the copy the stored fingerprint was last taken of (confirmed)
   let keeping = null       // phone: the file write of what keepForPrevious set aside, until it lands
   let mirrorQ = Promise.resolve()   // phone: the file mirror's writes, one after the other (saveMirror)
+  // The write of the saved copy this tab last read or made, and whose copy it was (joinSaved).
+  let seenWid = (() => { try { return localStorage.getItem(WID_KEY) } catch { return null } })()
+  let seenOwner = (() => { try { return localStorage.getItem('gym_owner') } catch { return null } })()
+  // Another tab signed in or out under this one (the gym_owner storage event below): what this
+  // tab holds is no copy of the new owner's, so it writes nothing until it has taken that owner's
+  // saved copy as it is (takeSaved).
+  let handedOver = false
+  const staleUid = 'device-tab-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
+  // A copy that owes the server a change and was never written with a write id was last saved by
+  // an app from before this one (v1.3.9), which stamped none of its settings, plan days or notes.
+  // Noted now, before this app's first save writes a write id beside it.
+  try {
+    if (!seenWid && seenOwner && localStorage.getItem(DIRTY_KEY) === '1' && localStorage.getItem(KEY) && !localStorage.getItem(LEGACY_KEY)) {
+      let fp = null
+      try { fp = JSON.parse(localStorage.getItem(SYNCED_FP_KEY)) } catch { /* no fingerprint: the copy is kept aside instead */ }
+      localStorage.setItem(LEGACY_KEY, JSON.stringify({ fp, owner: seenOwner }))
+    }
+  } catch { /* storage refused: the first sync merges it as before */ }
+  const readLegacy = () => { try { return JSON.parse(localStorage.getItem(LEGACY_KEY)) || null } catch { return null } }
+  const clearLegacy = () => { try { localStorage.removeItem(LEGACY_KEY) } catch { /* the next sync tries again */ } }
 
   const readAdopt = () => { try { return JSON.parse(localStorage.getItem(ADOPT_KEY)) || null } catch { return null } }
   const writeAdopt = v => { try { if (v) localStorage.setItem(ADOPT_KEY, JSON.stringify(v)); else localStorage.removeItem(ADOPT_KEY) } catch { /* the hold in memory still stands */ } }
@@ -283,17 +350,26 @@ export const useStore = create((set, get) => {
     if (!m) { m = { base: readStoredSync(), owed: storedOwed() }; meta.set(S, m) }
     return m
   }
+  // The saved copy is not the one in memory: its last write was refused (storage full). The
+  // marker and the dirty flag then must not describe the copy in memory, or a restart loads the
+  // older saved copy as one in step with a newer revision, calls it synced, and its next push
+  // (a conditional one that matches) deletes from the server everything it received meanwhile.
+  // Until a write lands again the marker is left out (a restart merges, its first-sync path) and
+  // the copy stays owed.
+  let storeLag = false
   const saveMarker = base => {
     try {
-      if (!base) { localStorage.removeItem(SYNC_KEY); return }
+      if (!base || storeLag) { localStorage.removeItem(SYNC_KEY); return }
       const v = JSON.stringify(base)
       // Unchanged, it is not written again: other tabs react to this key moving (see below).
       if (localStorage.getItem(SYNC_KEY) !== v) localStorage.setItem(SYNC_KEY, v)
     } catch { /* storage refused — the copy in memory still knows */ }
   }
-  const saveOwed = owed => { try { if (owed) localStorage.setItem(DIRTY_KEY, '1'); else localStorage.removeItem(DIRTY_KEY) } catch { /* as above */ } }
-  const writeSync = (rev, ts) => {
-    const base = { rev, ts: ts || 0 }
+  const saveOwed = owed => { try { if (owed || storeLag) localStorage.setItem(DIRTY_KEY, '1'); else localStorage.removeItem(DIRTY_KEY) } catch { /* as above */ } }
+  // `wid`: the write id of the server's document at that revision (api/server.js PUT /api/data):
+  // the same `rev` after the server went back in time names a different document.
+  const writeSync = (rev, ts, wid) => {
+    const base = { rev, ts: ts || 0, ...(typeof wid === 'string' ? { wid } : {}) }
     meta.set(get().S, { ...metaOf(), base })
     saveMarker(base)
   }
@@ -303,7 +379,11 @@ export const useStore = create((set, get) => {
   // the debounce or in flight, a change made while boot was pulling, or a copy changed since the
   // revision it descends from.
   const localChanged = (S = get().S) => { const { base } = metaOf(S); return !!base && (S._ts || 0) > (base.ts || 0) }
-  const owes = () => metaOf().owed || pushPending || pushTm !== null || !!pushing || localChanged()
+  // A sign-in whose question is still open (adoptHold, e.g. its GET failed) holds a copy that has
+  // reached no server yet: with any data in it, it is owed, so a sign-out asks and keeps it aside
+  // instead of wiping the guest's history and what was logged during the hold.
+  const owesOwn = () => metaOf().owed || pushPending || pushTm !== null || !!pushing || localChanged()
+  const owes = () => owesOwn() || (adoptHold && hasData(get().S))
 
   /* The connection as the screens show it (components/SyncBanner.jsx, Settings). The flags are set
      where each outcome is known; `status` is derived from them here, once, so no screen has to
@@ -395,9 +475,73 @@ export const useStore = create((set, get) => {
   // before the revision it builds on: that stamp came from the clock of whichever device wrote
   // it, and with this clock behind, the change looked older than its own base — unchanged — and
   // a pull replaced it with the server's copy.
+  /* Two tabs of one browser share the saved copy, and each writes its own copy over it whole. A
+     change one tab saved and had not pushed (offline, the server down, a guest who never pushes)
+     was gone as soon as the other tab saved anything, or the closed tab's finished workout was:
+     no trace in storage, on the server or in the count of changes owed. And a second tab's pull
+     wrote its `active: null` over the workout running in the first. So every write of the saved
+     copy carries a write id (WID_KEY). A tab that finds another tab's write there joins that copy
+     into its own first, the way two devices merge (joinSaved), and a tab told of one by the
+     browser (the storage event below) takes it into memory straight away. The running workout
+     belongs to the browser, not the tab: it is the saved copy's unless this change touched it. */
+  const sameCopy = (a, b) => JSON.stringify({ ...a, _ts: 0 }) === JSON.stringify({ ...b, _ts: 0 })
+  const readWid = () => { try { return localStorage.getItem(WID_KEY) } catch { return null } }
+  const readOwner = () => { try { return localStorage.getItem('gym_owner') } catch { return null } }
+  // The owner the saved copy was written under; null for a copy saved before this was recorded.
+  const readWidOwner = () => { try { return localStorage.getItem(WID_OWNER_KEY) } catch { return null } }
+  // The saved copy is the one this tab may join: written under the owner this tab holds. QA
+  // 2026-10-06: a sign-out (or another account signing in) wrote its wiped copy while the owner
+  // key still named the previous account, a second tab joined its whole in-memory copy into it,
+  // and the next guest, or the next profile created there, got the previous account's history.
+  const savedIsMine = () => {
+    if (readOwner() !== seenOwner) return false
+    const tag = readWidOwner()
+    return tag === null || tag === (seenOwner || '')
+  }
+  const readSaved = () => {
+    try { const raw = localStorage.getItem(KEY); return raw ? Object.assign(clone(DEF), JSON.parse(raw)) : null } catch { return null }
+  }
+  // Another tab's copy joined into `mine`; `touched` when this change set the running workout.
+  const joinTabs = (mine, theirs, touched) => {
+    const merged = Object.assign(clone(DEF), mergeStates(mine, theirs))
+    merged.active = touched ? carryActive(mine, merged) : carryActive(theirs, merged)
+    return merged
+  }
+  // `S` with what another tab saved since this one last read or wrote the copy; null when there is
+  // nothing to join (the same write, no saved copy, or a copy another account's sign-in replaced).
+  const joinSaved = (S, prev) => {
+    if (readWid() === seenWid || !savedIsMine()) return null
+    const theirs = readSaved()
+    if (!theirs) return null
+    const touched = JSON.stringify(prev?.active ?? null) !== JSON.stringify(S?.active ?? null)
+    const merged = joinTabs(S, theirs, touched)
+    return sameCopy(merged, S) ? null : merged
+  }
+
+  // A tab whose owner changed under it (another tab signed in or out) does not write: its copy is
+  // not the new owner's, and written, it went into that owner's copy, settings and all, and on to
+  // the server (QA 2026-10-06). Once the new owner's copy is saved it takes that copy as it is.
+  // What it was asked to save was made on the empty copy it holds meanwhile, never on the previous
+  // owner's: that small change is kept aside, as "Keep profile as is" keeps a device's copy.
+  const refuseStale = S => {
+    if (!handedOver) return false
+    takeSaved()
+    clearTimeout(pushTm)
+    pushTm = null
+    if (hasData(S)) keepAside(S, t('This device, before signing in'), staleUid).catch(() => {})
+    return true
+  }
   const persist = (S, push = true, stamp = true) => {
+    if (refuseStale(S)) return
     const { base, owed } = metaOf()   // the copy being replaced; the new one stands where it stood
-    if (stamp) S._ts = Math.max(Date.now(), (base?.ts || 0) + 1)
+    const joined = joinSaved(S, get()?.S)
+    if (joined) S = joined
+    // A join holds another tab's changes, which this copy then owes the server too.
+    if (stamp || joined) S._ts = Math.max(Date.now(), (base?.ts || 0) + 1, Number(S._ts) || 0)
+    // Every copy that enters the store — an edit, a pull, an adoption, a restored backup — has its
+    // custom exercises marked as such (#378): one stored without the flag by an older plan import
+    // goes out with it on the next push, without a stamp of its own (healCustomEx).
+    S.customEx = healCustomEx(S.customEx)
     registerCustom(S.customEx)
     // A refused write used to take the change with it — Finish looked like it simply did
     // nothing. The copy is kept in memory either way and marked as owed to the server, so a
@@ -409,9 +553,17 @@ export const useStore = create((set, get) => {
       // copy's, which costs one merge at worst — never a newer one, which would lose data.
       saveMarker(base)
       localStorage.setItem(KEY, JSON.stringify(S))
+      localStorage.setItem(WID_OWNER_KEY, seenOwner || '')
+      const wid = Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
+      localStorage.setItem(WID_KEY, wid)
+      seenWid = wid
+      seenOwner = readOwner()
       toldNoRoom = false
+      if (storeLag) { storeLag = false; saveMarker(base) }   // the saved copy is this one again
     } catch (e) {
       saved = false
+      storeLag = true
+      try { localStorage.removeItem(SYNC_KEY) } catch { /* nothing to take back */ }
       if (!toldNoRoom) {
         toldNoRoom = true
         import('./useUI.js')
@@ -419,7 +571,7 @@ export const useStore = create((set, get) => {
           .catch(() => {})
       }
     }
-    meta.set(S, { base, owed: owed || !saved })
+    meta.set(S, { base, owed: owed || !saved || (!!joined && storedOwed()) })
     if (!saved) saveOwed(true)
     set({ S })
     // A copy that replaces the last one wholesale and keeps an older stamp — adopted from the
@@ -461,8 +613,8 @@ export const useStore = create((set, get) => {
     const { base } = metaOf()
     if (!base || owes()) return get().pullState()
     try {
-      const { rev } = await api('/api/data/rev')
-      if (rev !== base.rev) return get().pullState()
+      const { rev, wid } = await api('/api/data/rev')
+      if (rev !== base.rev || (base.wid && wid && wid !== base.wid)) return get().pullState()
       confirmed(get().S)   // nothing moved on either side
     } catch (e) {
       if (isNetworkError(e) || refused(e)) failed(e)
@@ -487,11 +639,25 @@ export const useStore = create((set, get) => {
   // happens before the push lands still sees it as unsent.
   const mergeInto = (local, remote, rev) => {
     const ts = metaOf().base?.ts || 0
+    // The first merge of an older app's owed copy: what that app changed besides its lists is
+    // stamped so the merge keeps it (lib/sync-legacy.js). When that cannot be told, the copy as
+    // it was is kept aside before the merge, to be saved from Settings, so nothing is lost.
+    const legacy = readLegacy()
+    if (legacy && legacy.owner === get().user?.id) {
+      const lifted = liftLegacy(local, remote, legacy.fp, Math.max(Date.now(), highestStamp(local) + 1, highestStamp(remote) + 1))
+      if (!lifted.resolved) keepAside(local, t('This device, before the update'))
+      local = Object.assign(clone(DEF), lifted.state)
+    }
+    if (legacy) clearLegacy()
     const merged = Object.assign(clone(DEF), mergeStates(local, remote))
     merged.active = carryActive(local, merged)
+    // A pass of this app's rotation that the merge left complete (each copy finished a session of
+    // it, or one copy's refill lost to the other's older queue) starts its next pass here, as the
+    // finish that completed it would have (lib/rotation.js).
+    if (refillIfComplete(merged)) merged.edited = { ...(merged.edited || {}), queue: Math.max(Date.now(), highestStamp(merged) + 1) }
     persist(merged, false)
     if (rev == null) dropSync()
-    else writeSync(rev, ts)
+    else writeSync(rev, ts, remote?._wid)
   }
   // The workout running on this device, carried from its copy into the one replacing it — in that
   // copy's unit: a merge or a pull can bring the other device's switch to lb along, and a session
@@ -503,7 +669,7 @@ export const useStore = create((set, get) => {
     return !a || fu === tu ? a : inUnitOf({ unit: fu, active: a }, to).active
   }
   // Take the server's copy as this device's own, timestamp and all (see persist).
-  const adopt = (next, rev) => { persist(next, false, false); writeSync(rev, next._ts); markOwed(false) }
+  const adopt = (next, rev) => { persist(next, false, false); writeSync(rev, next._ts, next._wid); markOwed(false) }
 
   const doPush = async (attempt = 0) => {
     const S = get().S
@@ -513,14 +679,23 @@ export const useStore = create((set, get) => {
     // replaced whatever another device had written in the meantime.
     const force = forceNext
     forceNext = false
-    const body = { state: S }
-    if (!force && base) body.baseRev = base.rev
+    const asReplace = replaceRev
+    replaceRev = null
+    // `stamped`: this client stamps its own changes; the server stamps only for one that does not
+    // (api/sync-stamps.js).
+    // An older app's owed copy over the revision it read: the server stamps what that app changed
+    // against the copy it holds, exactly as it would for that app (api/sync-stamps.js).
+    const legacy = readLegacy()
+    const body = { state: S, stamped: !(legacy && legacy.owner === get().user?.id) }
+    if (asReplace != null) { body.baseRev = asReplace.rev; if (asReplace.wid) body.baseWid = asReplace.wid }
+    else if (!force && base) { body.baseRev = base.rev; if (base.wid) body.baseWid = base.wid }
     try {
       const r = await api('/api/data', { method: 'PUT', body: JSON.stringify(body) })
       // A server from before revisions answers without one — then there is nothing to hold the
       // next push to, and the marker must not pretend otherwise.
       if (r.rev == null) dropSync()
-      else writeSync(r.rev, S._ts)
+      else writeSync(r.rev, S._ts, r.wid)
+      if (legacy) clearLegacy()
       markOwed(false)
       toldTooLarge = false
       confirmed(S)
@@ -528,13 +703,19 @@ export const useStore = create((set, get) => {
       // "syncs when you're back online" has just kept its word.
       if (offlineChanges) {
         offlineChanges = false
-        import('./useUI.js').then(({ useUI }) => useUI.getState().toast(t('Back online — synced with the server.'))).catch(() => {})
+        import('./useUI.js').then(({ useUI }) => useUI.getState().toast(t('Back online and synced with the server.'))).catch(() => {})
       }
     } catch (e) {
       if (e.status === 409 && e.data && attempt < 2) {
         // Another device wrote since this one last read. The server sent its document along;
         // merge and push once more against that revision. A second refusal in a row leaves the
-        // copy owed and the next resume pull takes it from there.
+        // copy owed and the next resume pull takes it from there. A backup import whose replace
+        // met another device's sync keeps that device's changes too, and says so.
+        if (asReplace != null) {
+          import('./useUI.js')
+            .then(({ useUI }) => useUI.getState().toast(t('Another device synced while you were importing, so its changes were kept next to the backup.')))
+            .catch(() => {})
+        }
         mergeInto(get().S, e.data.state, e.data.rev || 0)
         return doPush(attempt + 1)
       }
@@ -572,21 +753,37 @@ export const useStore = create((set, get) => {
   window.addEventListener('pagehide', flush)   // Safari kills the home-screen app without a visibilitychange at times
 
   // The owner check in setUser only runs in the tab that signs in. Another tab of the same
-  // browser still holding the previous profile would keep writing that profile's data over the
-  // shared copy and push it under the new session's cookie — so it drops the profile, and
-  // whoever signs in there passes the same check. The owner key is written last on both a
-  // sign-in and a sign-out, so on a new owner the copy in storage is already the wiped one; with
-  // no owner (a sign-out) this tab falls back to defaults rather than read the key at all — the
-  // previous profile's data must not stay here whichever key's event lands first.
+  // browser still holding the previous profile, or a guest's copy, would keep writing it over the
+  // shared copy and push it under the new session's cookie, or join it into the new owner's copy
+  // the moment that one is saved (QA 2026-10-06: a guest tab left open put its workout, routine
+  // and default settings into the account after "Keep profile as is"). So any tab whose owner
+  // changes under it drops what it holds, signed in or not, and takes the new owner's copy as it
+  // is once that is saved (takeSaved); until then it writes nothing (refuseStale). Whoever signs in
+  // there passes the same check. The owner key goes first on both a sign-in and a sign-out, so
+  // this runs before the new owner's copy reaches this tab.
   window.addEventListener('storage', e => {
     if (e.key !== 'gym_owner') return
-    const user = get().user
-    if (!user || e.newValue === user.id) return
+    const owner = readOwner()
+    if (owner === seenOwner) return
     clearTimeout(pushTm)
     pushTm = null
-    const S = e.newValue ? loadState() : freshState()
-    meta.set(S, e.newValue ? { base: readStoredSync(), owed: storedOwed() } : { base: null, owed: false })
-    set({ user: null, S })
+    // A guest's workout running here went along with the sign-in in the other tab (it joined this
+    // browser's saved copy first, setUser), and this tab shows it again once that tab is done
+    // (followSignIn). Said, so a workout that leaves the screen mid-set is not taken for lost; only
+    // where the workout is on screen (a tab on Stats never showed it), and it goes on right here.
+    if (!seenOwner && owner && get().S.active && /^#\/workout(?:[/?]|$)/.test(location.hash || '')) {
+      import('./useUI.js')
+        .then(({ useUI }) => useUI.getState().toast(t('Signed in from another tab. Your workout came along, keep going here.')))
+        .catch(() => {})
+    }
+    const S = restartedState(get().S)
+    meta.set(S, { base: null, owed: false })
+    seenWid = readWid()
+    seenOwner = owner
+    handedOver = true
+    const user = get().user
+    set({ ...(user && user.id !== owner ? { user: null } : {}), S })
+    takeSaved()
   })
   // Another tab of this browser synced — its marker moved to a revision this tab's copy does not
   // descend from. Rather than take that tab's saved copy (storage holds the copy and its marker
@@ -596,12 +793,87 @@ export const useStore = create((set, get) => {
   // guards the push either way: a copy this tab has not refreshed gets a 409 and a merge.
   window.addEventListener('storage', e => {
     if (e.key !== SYNC_KEY || !e.newValue) return
+    if (!get().user && !followSignIn()) return
     const user = get().user
     if (!user || localStorage.getItem('gym_owner') !== user.id) return
     let theirs = null
     try { theirs = JSON.parse(e.newValue) } catch { return }
-    if (theirs?.rev == null || theirs.rev === metaOf().base?.rev) return
+    if (theirs?.rev == null || (theirs.rev === metaOf().base?.rev && theirs.wid === metaOf().base?.wid)) return
     checkRev(true)
+  })
+
+  // Another tab saved: its copy joins this one's at once, so this tab shows it and never writes
+  // over it. When the saved copy holds everything this tab has, this tab takes it as it is, with
+  // where it stands with the server (its marker and dirty flag); otherwise the join is saved and
+  // pushed like any change.
+  // A tab the owner changed under takes the new owner's saved copy as it is, with where it stands
+  // with the server: it has no changes of its own to join, only the previous owner's copy, or a
+  // guest's, which must not go into it.
+  const takeSaved = () => {
+    if (!handedOver) return false
+    // Only a copy known to be written under the new owner: one saved before the owner was
+    // recorded beside it is most likely the guest's copy the sign-in is still asking about.
+    if (readOwner() !== seenOwner || readWidOwner() !== (seenOwner || '')) return false
+    const theirs = readSaved()
+    if (!theirs) return false
+    const S = sanitizeAccent(theirs)
+    seenWid = readWid()
+    handedOver = false
+    meta.set(S, { base: readStoredSync(), owed: storedOwed() })
+    registerCustom(S.customEx)
+    set({ S })
+    followSignIn()
+    return true
+  }
+  // A tab signed out, or a guest's, whose browser another tab signed in: once that sign-in is
+  // settled (its question answered, its copy saved under the account and in step with a revision),
+  // this tab is signed in too, as a tab opened now would be. The session cookie is the browser's.
+  // A guest's workout carried into the account shows here again.
+  const followSignIn = () => {
+    if (get()?.user || handedOver) return false
+    const owner = readOwner()
+    if (!owner || owner !== seenOwner || readWidOwner() !== owner || readWid() !== seenWid) return false
+    let u = null
+    try { u = JSON.parse(localStorage.getItem('gym_user')) } catch { return false }
+    if (!u || u.id !== owner) return false
+    const m = readAdopt()
+    if (m && m.uid === owner) return false
+    const base = readStoredSync()
+    if (!base) return false
+    meta.set(get().S, { base, owed: storedOwed() })
+    set({ user: u })
+    setSync({ held: false })
+    return true
+  }
+  // The answered sign-in's copy saved under its account once, whatever the answer did: an answer
+  // that changed nothing here ("Add them" with nothing to add, a profile with no copy yet) wrote
+  // no save, and another tab waited on one (takeSaved).
+  const claimSaved = () => {
+    const u = get().user
+    if (u && readOwner() === u.id && readWidOwner() !== u.id) persist(get().S, false, false)
+  }
+  const syncFromSaved = () => {
+    if (handedOver) { takeSaved(); return }
+    const wid = readWid()
+    if (wid === seenWid || !savedIsMine()) return
+    const theirs = readSaved()
+    if (!theirs) return
+    const mine = get().S
+    const merged = joinTabs(mine, theirs, false)
+    seenWid = wid
+    if (sameCopy(merged, mine)) return
+    if (sameCopy(merged, theirs)) {
+      merged._ts = Math.max(Number(theirs._ts) || 0, Number(mine._ts) || 0)
+      meta.set(merged, { base: readStoredSync(), owed: storedOwed() })
+      registerCustom(merged.customEx)
+      set({ S: merged })
+      return
+    }
+    persist(merged, true)
+  }
+  window.addEventListener('storage', e => {
+    if (e.key !== WID_KEY || !e.newValue || e.newValue === seenWid) return
+    syncFromSaved()
   })
 
   // Before a sign-out decides anything: the pull on its way has landed, and every push asked
@@ -609,6 +881,7 @@ export const useStore = create((set, get) => {
   // still waiting get one more try (lib/media-owed.js, at most a minute): they are owed exactly
   // like a change is.
   const settle = async () => {
+    syncFromSaved()   // what another tab of this browser saved and has not sent counts too
     if (pulling) await pulling
     await get().pushState()   // never throws — an owed copy stays owed when it does not land
     while (pushing) await pushing
@@ -625,7 +898,8 @@ export const useStore = create((set, get) => {
   }
 
   // Everything a sign-out leaves behind on this device, whichever way it was triggered. The owner
-  // goes last, after the wiped copy is written — the storage listener above relies on the order.
+  // goes before the wiped copy is written: another tab must learn that the copy is nobody's before
+  // it sees the new copy, or it joins its own copy of the account into it (QA 2026-10-06).
   const clearLocalSession = () => {
     const hadMedia = referencedHashes(get().S).size > 0
     get().setUser(null)
@@ -633,10 +907,12 @@ export const useStore = create((set, get) => {
     forgetSync()
     releaseAdopt()   // the copy it was about is gone
     localStorage.removeItem(KEY)
-    // Signed out, this device is nobody's: the sign-in screen is in the instance's language.
-    persist(freshState(), false)
     localStorage.removeItem('gym_owner_name')
     localStorage.removeItem('gym_owner')
+    seenOwner = null   // a guest's tab now: it joins what other signed-out tabs save (as setUser)
+    handedOver = false
+    // Signed out, this device is nobody's: the sign-in screen is in the instance's language.
+    persist(freshState(), false)
     setSync({ offline: false, auth: false, lastError: null, pending: false, lastSynced: 0 })
     // On a phone the file is wiped with it, now rather than after the usual wait: a start in
     // between would open in local mode on the signed-out account's data, since that boot takes
@@ -684,23 +960,32 @@ export const useStore = create((set, get) => {
     set({ keptRev: get().keptRev + 1 })
     return ok || empty
   }
-  // A different account signing in on a copy that still owes its own: the copy goes, as it always
-  // has — it must not be pushed into the new account — but what it owed is kept aside first, the
-  // way a forced sign-out keeps it, for when that account comes back. Written to localStorage
-  // right here, since setUser wipes the copy straight after; on a phone the file follows, and
-  // pairing waits for it (`keeping`) before it goes on.
-  // Photos or videos that never reached that account's server count as owed on their own, even on
-  // a copy with no workouts or routines yet — the custom exercise they belong to is all there is.
+  // A different account signing in on a copy whose session ended without a sign-out (it expired,
+  // was revoked, the server no longer knows the account) — or on a live one that still owes it or
+  // runs a workout: the copy goes, as it always has — it
+  // must not be pushed into the new account — but it is kept aside first, the way a forced
+  // sign-out keeps what it owed, for when that account comes back. Not only what it owed: a copy
+  // in step with a server that has since lost the account (rebuilt, the account deleted, the data
+  // directory gone) is the last one there is, and a workout running here never reached any server.
+  // A proper sign-out clears the owner first, so a shared device keeps nothing after one. Written
+  // to localStorage right here, since setUser wipes the copy straight after; on a phone the file
+  // follows, and pairing waits for it (`keeping`) before it goes on. Kept changes can be saved as a
+  // backup file from Settings (keptState), to import into another profile.
   const keepForPrevious = uid => {
+    syncFromSaved()
     const S = get().S
-    if (!(owes() && hasData(S)) && !pendingRefCount(S)) return
+    if (!hasData(S) && !S.active && !pendingRefCount(S)) return
+    // Still signed in (an account switch on a live session): its server has the copy, so only
+    // what it owes and a running workout are kept, as before.
+    const live = get().user?.id === uid
+    if (live && !(owesOwn() && hasData(S)) && !pendingRefCount(S) && !S.active) return
     const server = serverBase()
     const key = stashKey(server, uid)
     let all = {}
     try { all = JSON.parse(localStorage.getItem(STASH_KEY)) || {} } catch { /* none */ }
     const prev = all[key]?.state
     const state = prev ? mergeStates(S, prev) : clone(S)
-    state.active = S.active || prev?.active || null
+    state.active = carryActive(S, state) || carryActive(prev, state) || null
     // The name comes from beside the owner when the account is no longer signed in here (its
     // session ended), so the screens say whose changes these are rather than an id.
     let name = get().user?.id === uid ? get().user.name || '' : ''
@@ -728,10 +1013,42 @@ export const useStore = create((set, get) => {
     const key = stashKey(server, user.id)
     const prev = all[key]?.state
     const state = prev ? mergeStates(get().S, prev) : clone(get().S)
-    state.active = get().S.active || prev?.active || null
+    // Each running workout in the kept copy's unit (carryActive), never a kg session under lb.
+    state.active = carryActive(get().S, state) || carryActive(prev, state) || null
+    // Kept while a sign-in's question was open: a copy that was never this account's, added back
+    // like an answered "Add them" (applyStash), the account's settings and history first.
+    const adopt = adoptHold || !!all[key]?.adopt
+    all[key] = { server: server || null, uid: user.id, name: user.name || '', at: Date.now(), state, ...(adopt ? { adopt: true } : {}) }
+    return writeStashes(all)
+  }
+  // A workout running here is never on the server (a push leaves `active` out), so a sign-out
+  // with nothing owed used to wipe it. It is kept aside the way owed changes are, on its own:
+  // the rest of the copy is the server's already, and a shared device keeps no more of the
+  // account than it has to. It comes back on the next sign-in here as this account (applyStash).
+  const stashActive = async () => {
+    const user = get().user
+    const a = get().S.active
+    if (!user || !a) return true
+    const all = await readStashes()
+    const server = serverBase()
+    const key = stashKey(server, user.id)
+    const prev = all[key]?.state
+    const state = prev ? clone(prev) : Object.assign(clone(DEF), { _ts: 0, unit: get().S.unit || 'kg' })
+    state.active = clone(carryActive(get().S, state))
     all[key] = { server: server || null, uid: user.id, name: user.name || '', at: Date.now(), state }
     return writeStashes(all)
   }
+  // A sign-out ends the rest and the hold running on this device: the countdown must not go on
+  // over the sign-in screen, or ring for an account that has left. Before the logout request,
+  // while the session can still call the server push off. A hold hands back what it held first.
+  const stopTimers = async () => {
+    try {
+      const ui = (await import('./useUI.js')).useUI.getState()
+      ui.abandonWork?.()
+      ui.stopRest?.()
+    } catch { /* no timers to stop */ }
+  }
+
   // Back on the server and account a forced sign-out or disconnect left: the kept changes are
   // merged in like a conflict (lib/sync-merge.js), marked owed and pushed, and the stash goes.
   // If the push does not land, the copy itself owes them from here and nothing wipes it.
@@ -744,9 +1061,11 @@ export const useStore = create((set, get) => {
     if (!keys.length) return
     const S = get().S
     let merged = S
-    for (const k of keys) merged = mergeStates(merged, all[k].state)
+    for (const k of keys) merged = all[k].adopt ? mergeStates(merged, all[k].state, { prefer: 'a' }) : mergeStates(merged, all[k].state)
     merged = Object.assign(clone(DEF), merged)
-    merged.active = S.active || keys.map(k => all[k].state?.active).find(Boolean) || null
+    // A kept running workout comes back in the unit of the copy it joins: the account may have
+    // switched to lb (converting every weight) since it was kept in kg.
+    merged.active = S.active || keys.map(k => carryActive(all[k].state, merged)).find(Boolean) || null
     persist(merged, false)
     markOwed(true)
     if (MOBILE) await nativePersist(true)   // the durable copy holds it before the stash goes
@@ -754,6 +1073,20 @@ export const useStore = create((set, get) => {
     for (const k of keys) delete all[k]
     await writeStashes(all)
   }
+
+  // "Keep profile as is": what this device held before the sign-in leaves the screen, but not the
+  // device. It is kept aside like a kept change (its own key, never added back on its own) and can
+  // be saved as a backup file from Settings, in case the answer was the wrong one.
+  const keepAside = async (S, name, keepUid) => {
+    if (!hasData(S)) return
+    const state = clone(S)
+    const all = await readStashes()
+    const uid = keepUid || 'device-' + Date.now().toString(36)
+    all[stashKey(serverBase(), uid)] = { server: serverBase() || null, uid, name, at: Date.now(), state }
+    await writeStashes(all)
+    set({ keptRev: get().keptRev + 1 })
+  }
+  const keepDeviceCopy = () => keepAside(get().S, t('This device, before signing in'))
 
   // adoptProfile's work (see there). Every way out answers the question — releaseAdopt — before
   // the decision is written and pushed; only a server that could not be reached leaves it owed.
@@ -777,7 +1110,7 @@ export const useStore = create((set, get) => {
     reached()
     let asked = false
     const askAbout = async extras => {
-      if (!(extras.workouts || extras.bodyweight || extras.customEx) || typeof ask !== 'function') return false
+      if (!(extras.workouts || extras.bodyweight || extras.customEx || extras.routines || extras.setup) || typeof ask !== 'function') return false
       asked = true
       return !!(await ask(extras))
     }
@@ -789,7 +1122,7 @@ export const useStore = create((set, get) => {
       try { const r = await api('/api/data'); if (r && r.state) ({ state, rev } = r) } catch { /* the first read */ }
     }
     const takeServer = () => {
-      const copy = Object.assign(clone(DEF), state)
+      const copy = sanitizeAccent(Object.assign(clone(DEF), state))
       copy.active = carryActive(get().S, copy)
       if (rev != null) adopt(copy, rev)
       else { dropSync(); persist(copy, false, false); markOwed(false) }
@@ -800,6 +1133,7 @@ export const useStore = create((set, get) => {
       const push = hasData(S0) && (!alwaysAsk || sameAccount || await askAbout(localExtras(S0, null)))
       releaseAdopt()
       if (hasData(get().S) && !push) {
+        if (asked) await keepDeviceCopy()
         takeServer()
         await applyStash()
         return { adopted: true, added: false }
@@ -843,21 +1177,27 @@ export const useStore = create((set, get) => {
       const S = get().S
       const merged = Object.assign(clone(DEF), mergeStates(state, S, { prefer: 'a' }))
       merged.active = carryActive(S, merged)
+      // The account's plan wins; a day it has nothing planned for takes the device's.
+      for (const f of ['week', 'dayPlan']) {
+        const mine = S[f] && typeof S[f] === 'object' ? S[f] : {}
+        merged[f] = { ...mine, ...(merged[f] || {}) }
+      }
       persist(merged, false)
-      if (rev != null) writeSync(rev, 0)
+      if (rev != null) writeSync(rev, 0, state?._wid)
       else dropSync()
       await get().pushState()
       await applyStash()
       return { adopted: true, added: true }
     }
     const later = pre ? splitByPre(get().S, pre).later : null
+    if (asked) await keepDeviceCopy()
     takeServer()
     if (later) {
       const S = get().S
       const merged = Object.assign(clone(DEF), mergeStates(S, later, { prefer: 'a' }))
       merged.active = S.active || null
       persist(merged, false)
-      if (rev != null) writeSync(rev, 0)
+      if (rev != null) writeSync(rev, 0, state?._wid)
       else dropSync()
       await get().pushState()
     }
@@ -907,12 +1247,14 @@ export const useStore = create((set, get) => {
     try { owner = localStorage.getItem('gym_owner') } catch { /* evicted along with the copy */ }
     if (!who || of?.owner !== who || (owner && owner !== who) || of.ts !== (saved._ts || 0)) return
     try { if (!owner) localStorage.setItem('gym_owner', who) } catch { /* setUser writes it again */ }
-    persist(Object.assign(clone(DEF), saved), false, false)
+    seenOwner = readOwner()
+    persist(sanitizeAccent(Object.assign(clone(DEF), saved)), false, false)
     dropSync()
     markOwed(true)
   }
 
   const S0 = loadState()
+  S0.customEx = healCustomEx(S0.customEx)
   registerCustom(S0.customEx)
   // Which photos and videos are still waiting for the server, known before the first sign-out
   // check has to ask (lib/media-owed.js). A copy without any leaves the media store unopened.
@@ -951,8 +1293,11 @@ export const useStore = create((set, get) => {
       const prev = get().S
       const S = clone(prev)
       mut(S)
-      stampRoutines(prev.routines, S.routines)
-      stampCustomEx(prev.customEx, S.customEx)
+      // What the change removed, and which routines, workouts, settings and plan days it touched,
+      // each with one time that comes after every stamp the copy already carries: a conflict then
+      // keeps a removal and the edit made last, even from a device whose clock runs behind
+      // (lib/sync-merge.js stampChange).
+      S._ts = stampChange(prev, S, Date.now())
       persist(S, push)
       // A photo or video added to a workout is a change worth the day's backup too: the one
       // finishing wrote went before the finish screen's pictures (autoBackupNow). Not a removal,
@@ -988,14 +1333,14 @@ export const useStore = create((set, get) => {
       const S0 = get().S
       if ((S0.unit || 'kg') === to) return null
       const S = clone(convert ? convertStateUnit(S0, to) : { ...S0, unit: to })
-      S.unitSet = { at: Date.now(), convert }
+      S.unitSet = { at: Math.max(Date.now(), highestStamp(S0) + 1), convert }
       persist(S, true)
       return convert && get().ready ? get().pushState() : null
     },
-    // Settings → Reset everything: the empty copy, stamped with when (`resetAt`). Pushed as a
-    // replace, and the stamp is what makes it hold: a device that has not seen the reset and
-    // still pushes a change of its own gets the 409, and its merge keeps only what that device
-    // made after the reset instead of bringing the whole profile back (lib/sync-merge.js).
+    // Settings → Reset everything: a new profile (restartedState), stamped with when (`resetAt`).
+    // Pushed as a replace, and the stamp is what makes it hold: a device that has not seen the
+    // reset and still pushes a change of its own gets the 409, and its merge keeps only what that
+    // device made after the reset instead of bringing the whole profile back (lib/sync-merge.js).
     //
     // With it goes `resetIds`, the names of every entry the reset wiped: this copy's, the earlier
     // resets' (a copy older than those too is still judged right), and the server's once it
@@ -1004,8 +1349,8 @@ export const useStore = create((set, get) => {
     // Resolves once the server's names are in (or could not be had).
     resetEverything() {
       const cur = get().S
-      const S = clone(DEF)
-      S.resetAt = Math.max(Date.now(), (Number(cur.resetAt) || 0) + 1)
+      const S = restartedState(cur)
+      S.resetAt = Math.max(Date.now(), highestStamp(cur) + 1)
       S.resetIds = mergeResetIds(cur.resetIds, resetIdsOf(cur))
       get().replaceState(S, !!get().user)
       if (!get().user) return Promise.resolve()
@@ -1027,6 +1372,7 @@ export const useStore = create((set, get) => {
       let res
       try { res = await api('/api/data') } catch { return null }
       const state = res?.state
+      importRead = { uid: get().user?.id, state: state || null, rev: res?.rev ?? null }
       if (!state) return null
       const key = w => entryKey('workouts', w)
       const inBackup = new Set((Array.isArray(backup?.workouts) ? backup.workouts : []).filter(Boolean).map(key))
@@ -1042,19 +1388,52 @@ export const useStore = create((set, get) => {
     // any): the backup's settings and plan, every entry of all of them (mergeStates with the backup
     // preferred, in the backup's unit), pushed against that revision like any other change, so a
     // workout logged meanwhile elsewhere, or here, is not lost either.
+    //
+    // Either way the backup is a deliberate add-back (lib/sync-merge.js stampRestore): what it holds
+    // stays, though this device or the server recorded it as deleted since, and its settings and
+    // plan are the latest choice, on every device. The replace goes against the revision the check
+    // read (or this copy's own): a change another device synced meanwhile is merged in, not wiped.
     importBackup(backup, { mergeWith } = {}) {
-      const next = Object.assign(clone(DEF), backup)
-      if (!mergeWith?.state || !get().user) { get().replaceState(next, !!get().user); return }
-      const others = mergeWith.local ? mergeStates(get().S, mergeWith.state) : mergeWith.state
-      const merged = keepReset(get().S, Object.assign(clone(DEF), mergeStates(next, others, { prefer: 'a' })))
-      merged.active = next.active || null
+      const cur = get().S
+      const uid = get().user?.id
+      const read = mergeWith?.state ? mergeWith : importRead && importRead.uid === uid ? importRead : null
+      importRead = null
+      const server = read?.state || null
+      const now = Math.max(Date.now(), highestStamp(cur) + 1, highestStamp(server) + 1, highestStamp(backup) + 1)
+      const next = sanitizeAccent(Object.assign(clone(DEF), backup))
+      // A workout running here lives on this device only: no backup and no server copy holds it,
+      // so the import keeps it (in the backup's unit). Only with none running does a backup taken
+      // mid-workout bring its own session back. Both the replace and "Merge them in" dropped it.
+      const running = carryActive(cur, next) || next.active || null
+      if (!mergeWith?.state || !uid) {
+        stampRestore(next, [cur, server], now)
+        // …and like a reset of what it replaces: an unsent change of another device from before it
+        // no longer brings the replaced workouts back (lib/sync-merge.js stampReplace).
+        stampReplace(next, [cur, server].filter(Boolean), now)
+        next._ts = now
+        next.active = running
+        const at = read?.rev != null ? { rev: read.rev, wid: read.state?._wid } : metaOf().base
+        get().replaceState(next, !!uid, { baseRev: at?.rev ?? null, baseWid: at?.wid })
+        return
+      }
+      const others = mergeWith.local ? mergeStates(cur, mergeWith.state) : mergeWith.state
+      // The merge keeps the backup's reset stamp (prefer); a later one this copy or the server's
+      // holds stays, as it does on a replace.
+      const merged = keepReset(others, keepReset(cur, Object.assign(clone(DEF), mergeStates(next, others, { prefer: 'a' }))))
+      stampRestore(merged, [cur, mergeWith.state, next], now)
+      merged._ts = now
+      merged.active = carryActive({ unit: next.unit, active: running }, merged)
       persist(merged, true)
-      if (mergeWith.rev != null) writeSync(mergeWith.rev, 0)
+      if (mergeWith.rev != null) writeSync(mergeWith.rev, 0, mergeWith.state?._wid)
     },
     // A replace that is meant to reach the server (backup import, reset) is a deliberate
-    // overwrite, not a change to merge: the push it arms goes without a baseRev. It never takes
-    // the reset stamp back (keepReset).
-    replaceState(S, push = false) { if (push) forceNext = true; persist(keepReset(get().S, clone(S)), push) },
+    // overwrite, not a change to merge: the push it arms goes without a baseRev — or, given one
+    // (an import), against that revision, so a 409 merges what another device wrote since. It
+    // never takes the reset stamp back (keepReset).
+    replaceState(S, push = false, { baseRev = null, baseWid } = {}) {
+      if (push) { if (baseRev != null) replaceRev = { rev: baseRev, wid: baseWid }; else forceNext = true }
+      persist(keepReset(get().S, clone(S)), push)
+    },
 
     // Fires after the moments where losing local data would actually hurt — a workout just
     // logged, a routine just edited — not on every keystroke. No-op off mobile or with the
@@ -1120,11 +1499,20 @@ export const useStore = create((set, get) => {
           if (m && m.uid !== u.id) writeAdopt(null)
           adoptHold = !!m && m.uid === u.id
         }
+        // What another tab of this browser saved under the copy's owner so far is this copy's
+        // too: the question below is about it, and from here on this tab joins only the
+        // account's saves (seenOwner below).
+        syncFromSaved()
         if (other) {
           keepForPrevious(owner)
           forgetSync()
           localStorage.removeItem(KEY)
-          persist(clone(DEF), false)
+          // The new owner before the new copy, as on a sign-out: another tab still holding the
+          // previous account's copy must not join it into this one (QA 2026-10-06).
+          localStorage.setItem('gym_owner_name', u.name || '')
+          localStorage.setItem('gym_owner', u.id)
+          seenOwner = u.id
+          persist(restartedState(get().S), false)
           setSync({ pending: false, lastSynced: 0, lastError: null })
         }
         // The mark, with the names of what this copy holds now (`pre`) — what the question is
@@ -1132,8 +1520,17 @@ export const useStore = create((set, get) => {
         if (adopt) writeAdopt({ uid: u.id, rejoined, alwaysAsk: !!adopt.alwaysAsk, pre: preOf(get().S) })
         localStorage.setItem('gym_owner_name', u.name || '')
         localStorage.setItem('gym_owner', u.id)
+        // This tab now joins the account's saves like any tab opened on it: one opened after the
+        // sign-in saves under the new owner, and a tab still comparing against the old one took
+        // no part until it had saved itself, then wrote its copy over theirs (joinSaved).
+        seenOwner = u.id
+        handedOver = false
         localStorage.setItem('gym_user', JSON.stringify(u)); localStorage.removeItem('gym_guest')
         logoutOwed(false)   // this sign-in's cookie replaced the one a failed sign-out left behind
+        // A profile created here (no question: this copy becomes it) is saved once under its owner
+        // now. Another tab of this browser takes only a copy saved under the new owner, and went
+        // blank until this one happened to save something (takeSaved).
+        if (!adopt && !other && owner !== u.id) persist(get().S, false, false)
         // The file follows at once, as the new account's: until then it holds the previous one's.
         if (other && MOBILE) nativePersist(true)
         // The server answers /api/config with a `coach` key only to a session — the block, or
@@ -1196,15 +1593,24 @@ export const useStore = create((set, get) => {
             if (dirty && state) { mergeInto(S, state, rev); pushPending = false; await get().pushState(); return }
             const restored = restoredStateFor(S, state, false)
             if (restored) { adopt(restored, rev); confirmed(get().S) }
-            else if (hasData(S)) { writeSync(rev, 0); await get().pushState() }
-            else { writeSync(rev, state?._ts || 0); confirmed(get().S) }
+            else if (hasData(S)) { writeSync(rev, 0, state?._wid); await get().pushState() }
+            else { writeSync(rev, state?._ts || 0, state?._wid); confirmed(get().S) }
             return
           }
-          const serverMoved = rev !== base.rev
+          // The document the server holds now, and whether it descends from the one this copy last
+          // synced: one it does not (the server's data went back in time — a restored backup, a
+          // write lost to a power cut — or an answer that left before this device's own push
+          // landed) is never taken as it is. It is merged, and pushed: what this device had
+          // confirmed would otherwise vanish here too, and the same revision number can name a
+          // different document, which a push would have overwritten without a 409.
+          const wid = state?._wid
+          const serverMoved = rev !== base.rev || (!!base.wid && !!wid && wid !== base.wid)
+          const descends = !base.wid || !wid || wid === base.wid || (Array.isArray(state?._wids) && state._wids.includes(base.wid))
           const changed = dirty || localChanged(S)
           if (!serverMoved) { if (changed) await get().pushState(); else confirmed(S); return }
           if (!state) { writeSync(rev, 0); if (hasData(S)) await get().pushState(); return }
-          if (!changed) { const next = Object.assign(clone(DEF), state); next.active = carryActive(S, next); adopt(next, rev); confirmed(get().S); return }
+          if (!descends) { mergeInto(S, state, rev); pushPending = false; await get().pushState(); return }
+          if (!changed) { const next = sanitizeAccent(Object.assign(clone(DEF), state)); next.active = carryActive(S, next); adopt(next, rev); confirmed(get().S); return }
           mergeInto(S, state, rev)
           pushPending = false
           await get().pushState()
@@ -1251,6 +1657,11 @@ export const useStore = create((set, get) => {
       const all = await readStashes()
       return Object.values(all).map(({ server, uid, name, at }) => ({ server: server || null, uid, name, at }))
     },
+    // The copy kept for one account (keptChanges' server and uid), to save as a backup file.
+    async keptState(server, uid) {
+      const all = await readStashes()
+      return all[stashKey(server, uid)]?.state || null
+    },
     // Every photo and video file the stashes refer to: they are kept on this device for as long
     // as the stash is (lib/media-sync.js localMediaGc, Reset everything).
     async stashedMediaHashes() {
@@ -1284,6 +1695,7 @@ export const useStore = create((set, get) => {
       // stays held, and the next check or "Sync now" runs it again; a bare call has nothing to
       // hold for and lets go.
       adopting = runAdopt(ask, opts)
+        .then(r => { claimSaved(); return r })
         .catch(e => { if (!adoptOwed()) releaseAdopt(); throw e })
         .finally(() => { adopting = null })
       return adopting
@@ -1309,12 +1721,15 @@ export const useStore = create((set, get) => {
        export, or going ahead anyway. `force` goes ahead: the owed copy is kept aside on this
        device (stashOwed) and comes back when it next reaches this server as this account. If
        even that cannot be written, nothing is wiped ({ owed, count, stashed: false }).
-       Otherwise { owed: false } or { owed: true, count, stashed: true }, signed out. */
+       Otherwise { owed: false } or { owed: true, count, stashed: true }, signed out. A workout
+       running here is kept aside either way (stashActive), and the rest and hold timers stop. */
     async signOut({ force = false } = {}) {
       await settle()
       const left = get().unsyncedChanges()
       if (left.owed && !force) return owedResult(left)
+      await stopTimers()
       if (left.owed && !(await stashOwed())) return owedResult(left, { stashed: false })
+      if (!left.owed && !(await stashActive())) return { owed: true, count: 0, stashed: false }
       // The device is signed out either way. A request that did not get through leaves the cookie
       // behind, still valid, so the logout is owed until the server answers it (see boot).
       try { await api('/api/logout', { method: 'POST', body: '{}' }) } catch (e) { if (!MOBILE) logoutOwed(true) }
@@ -1369,8 +1784,10 @@ export const useStore = create((set, get) => {
       await settle()
       const left = get().unsyncedChanges()
       if (left.owed && !force) return owedResult(left)
+      await stopTimers()
       await api('/api/logout/all', { method: 'POST', body: '{}' })
       if (left.owed && !(await stashOwed())) return owedResult(left, { stashed: false })
+      if (!left.owed && !(await stashActive())) return { owed: true, count: 0, stashed: false }
       await clearLocalSession()
       return left.owed ? owedResult(left, { stashed: true }) : { owed: false }
     },
@@ -1439,7 +1856,7 @@ export const useStore = create((set, get) => {
         const saved = await nativeLoad()
         const S = get().S
         if (saved && (!hasData(S) || (saved._ts || 0) >= (S._ts || 0))) {
-          persist(Object.assign(clone(DEF), saved), false, false)
+          persist(sanitizeAccent(Object.assign(clone(DEF), saved)), false, false)
         } else if (hasData(S)) {
           nativePersist(true)   // first run after an update from a file-less version: seed the mirror
         }

@@ -178,3 +178,18 @@ describe('warmupRestSecFor', () => {
     expect(warmupRestSecFor({ target: {}, sets: [] }, 0, 120)).toBe(120)
   })
 })
+
+describe('restSecFor with a pyramid set’s own rest', () => {
+  const entries = [{ target: { restSec: 90 } }, { target: { restSec: 60 } }]
+  it('the set’s rest stands in for its exercise’s', () => {
+    expect(restSecFor(entries, [0], 120, { idx: 0, sec: 180 })).toBe(180)
+    expect(restSecFor(entries, [0], 120, { idx: 0, sec: 30 })).toBe(30)
+  })
+  it('0 falls back to the exercise’s rest', () => {
+    expect(restSecFor(entries, [0], 120, { idx: 0, sec: 0 })).toBe(90)
+  })
+  it('a superset still takes the longest of the group', () => {
+    expect(restSecFor(entries, [0, 1], 120, { idx: 1, sec: 30 })).toBe(90)
+    expect(restSecFor(entries, [0, 1], 120, { idx: 1, sec: 200 })).toBe(200)
+  })
+})

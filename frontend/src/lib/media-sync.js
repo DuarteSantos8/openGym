@@ -105,7 +105,9 @@ export function createMediaSync(deps = {}) {
     if (!cfg?.media) { await publishPending({ usage: null }); return }
     const files = referencedFiles(st.S)
     const refs = files.map(f => f.hash)
-    if (!refs.length) { await publishPending({ deferred: 0, rejected: 0, unavailable: 0 }); return }
+    // Nothing referenced (a reset, everything deleted) forgets the last run: the same files coming
+    // back from a backup within ten minutes are new to the server again, not a repeat of that run.
+    if (!refs.length) { lastRun = { refs: '', at: 0, complete: false }; await publishPending({ deferred: 0, rejected: 0, unavailable: 0 }); return }
     const key = refs.join(',')
     if (!force && lastRun.complete && lastRun.refs === key && d.now() - lastRun.at < DEDUPE_MS) return
     if (!force && d.now() < retryNotBefore) return
@@ -181,8 +183,8 @@ export function createMediaSync(deps = {}) {
           if (!rejectTold.has(h)) {
             rejectTold.add(h)
             d.toast(code === 'media-type' || code === 'media-invalid'
-              ? t('That file type is not supported — use a photo, a GIF, or an MP4, MOV or WebM video.')
-              : code === 'media-too-long' ? t('That video is too long — up to {0} seconds.', Number(e.data?.maxSec) || 60)
+              ? t('That file type isn’t supported. Use a photo, a GIF, or an MP4, MOV or WebM video.')
+              : code === 'media-too-long' ? t('That video is too long. Max {0} seconds.', Number(e.data?.maxSec) || 60)
                 : t('The server refused the file as too large.'))
           }
           continue

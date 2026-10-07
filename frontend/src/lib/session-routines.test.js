@@ -13,6 +13,14 @@ const rebuild = cfg => buildSessionEntries(
 )[0]
 
 describe('routineFromSession', () => {
+  it('saves a per-side timed hold with its planned sets, not one per side row (#322)', () => {
+    const hold = side => ({ sec: 40, w: 0, side, done: true })
+    const w = { id: 'w-hold', entries: [entry('plank', { mode: 'time', side: true, sets: 2, sec: 30 }, [hold('L'), hold('R'), hold('L'), hold('R')])] }
+    const cfg = routineFromSession(w, 'Core').ex[0]
+    expect(cfg).toMatchObject({ mode: 'time', side: true, sets: 2, sec: 40 })
+    expect(rebuild(cfg).sets).toHaveLength(4)
+  })
+
   it('copies the saved setup and derives current reps, weight, warm-ups, and per-side state', () => {
     const session = {
       name: 'Evening push',
@@ -164,7 +172,7 @@ describe('a routine saved from a planned session', () => {
     expect(copy.ex[0]).toMatchObject({ sets: 3, reps: 12, repsMin: 8, weight: 60, prog: 'double' })
     // The copy picks up where the source stands: the same aim the source itself opens at next.
     const next = open(st, copy)
-    expect(next.plan.why[0]).not.toBe('Plan changed — starting from your new target.')
+    expect(next.plan.why[0]).not.toBe('Plan changed, so starting from your new target.')
     expect(work(next).map(s => [s.w, s.r])).toEqual(work(open(st, source)).map(s => [s.w, s.r]))
   })
 

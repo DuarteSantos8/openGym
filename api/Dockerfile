@@ -53,7 +53,7 @@ RUN npm ci --omit=dev --omit=optional && npm cache clean --force
 
 # Every module server.js imports from the api root has to be named here: the image carries nothing
 # else, and one that is missing only shows at boot, as ERR_MODULE_NOT_FOUND.
-COPY server.js push-messages.js verify-error.js password.js rate-limit.js passkeys-store.js device-link.js media.js profile.js ./
+COPY server.js push-messages.js nudge.js nudge-copy.js verify-error.js password.js rate-limit.js passkeys-store.js device-link.js media.js queue.js sync-stamps.js durable.js profile.js ./
 COPY coach ./coach
 COPY social ./social
 COPY training ./training
@@ -78,7 +78,7 @@ RUN npm ci --omit=dev && npm cache clean --force
 # bubblewrap is its sandbox — a Codex requirement, which is why neither appears in the default
 # target or anywhere in this tree until now.
 RUN apk add --no-cache bubblewrap \
- && npm install -g @openai/codex \
+ && npm install -g @openai/codex@0.160.0 \
  && npm cache clean --force
 
 # Where Codex keeps its refreshable login cache. Deliberately a sibling of /data rather than a

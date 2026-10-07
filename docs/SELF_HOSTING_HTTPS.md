@@ -1,4 +1,4 @@
-# Selfhosting with HTTPS
+# HTTPS at home without exposing your server
 
 This is a rather complex topic of its own, so it lives apart from the [SELF_HOSTING.md](./SELF_HOSTING.md) which focuses on how to run openGym.
 This document takes a more general approach on how to achieve "https at home", it is not necessarily focused on openGym and applies to self hosting in general.
@@ -17,13 +17,12 @@ Given we have the following setup:
 - a client (your PC, mobile, tablet, etc.)
 - your router (the thing that provides internet access, wifi, etc.)
 
-```mermaid
-graph TD
-    A@{ shape: cloud, label: "Internet"}
-    A <--> B[Router]
-    B <-->C[PC]
-    B <-->E[Mobile]
-    B <-->D[homelab]
+```
+Internet
+   │
+Router ──┬── PC
+         ├── phone
+         └── homelab (the server)
 ```
 
 ### DNS
@@ -39,7 +38,7 @@ You probably heard of dyndns, duckdns and the like. This is what they do: provid
 In order to make the public DNS servers out there resolve the local IP address of our homelab we will set up the DNS provider.
 It is strongly advised to check which DNS providers are supported by the tools you choose (we'll get to that later).
 
-### Let's encrypt!
+### Let's Encrypt
 
 Let's encrypt is free to use, they provide certificates for everyone to make the internet safer. Read [here](https://letsencrypt.org/docs/why-all-https/) for more information.
 They provide tools to automatically create certificates with a challenge to ensure your request is valid.  
@@ -48,7 +47,7 @@ If all is checked, the certificate authority of Let's Encrypt signs the certific
 
 We will make use of a wildcard certificate, so we can serve all our services with one certificate.
 
-### proxy
+### Reverse proxy
 
 A proxy is optional but desirable. It acts as sort of a gateway to our service and can be a single entrypoint to multiple services on our homelab.
 Let's say we have three services running on our instance. Since a TCP port can be used only once on a host we would have three ports that access our individual services.
@@ -56,16 +55,13 @@ It would not be very nice to have to remember all the ports when we address our 
 
 Port 443 (https) can only be used once so we would let our proxy answer to that port.
 We configure the proxy to forward requests to our individual services like so:
-```mermaid
-graph TD
-    A[proxy]
-    A <-->B[openGym :8080]
-    A <-->C[openGym-api :3000]
-    A <-->D[Nextcloud :8081]
+```
+proxy :443 ──┬── openGym   :8080   (the web container; it forwards /api itself)
+             └── Nextcloud :8081
 ```
 Now we have a nice URL and can forget about the ports. The proxy reads the URL request and forwards it to the target service/host.
 
-## How?!
+## Putting it together
 
 So how does it all come together?
 
@@ -110,7 +106,7 @@ Additional info:
 3. install caddy
     1. most linux distributions provide the packages for this, e.g. debian: `apt install caddy` check the [docs](https://caddyserver.com/docs/install) 
     2. create the caddy config, this is an example that should work:
-    ```jsonc
+    ```caddy
     :443 {
         header Content-Type text/html
         respond <<HTML

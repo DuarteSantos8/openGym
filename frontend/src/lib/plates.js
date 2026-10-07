@@ -47,8 +47,8 @@ const sizesOf = entry => (entry && typeof entry === 'object' && !Array.isArray(e
 export const ownsPlates = S => sizesOf(S?.plates?.[unitOf(S)]).length > 0
 
 /**
- * The plates this profile can load, heaviest first: [{ w, n }] with n pairs (or plates, for a
- * single stack) of each size. S.plates[unit] is { [size]: count, _ts }; absent or without any
+ * The plates this profile can load, heaviest first: [{ w, n }] with n pairs of each size (a
+ * single stack loads both plates of a pair, see rowLoad). S.plates[unit] is { [size]: count, _ts }; absent or without any
  * size → the default set.
  */
 export function inventoryFor(S) {
@@ -222,7 +222,10 @@ export function rowLoad(kind, weight, base, inv) {
   const b = Math.max(0, num(base))
   if (w <= b) return { kind, barOnly: true, perSide: 0, plates: [], missing: 0 }
   const perSide = Math.round(((w - b) / (kind === 'pairs' ? 2 : 1)) * 100) / 100
-  const { plates, missing } = plateStack(perSide, inv)
+  // The inventory counts pairs. A bar takes one plate of a pair per side; a single stack can
+  // take both, so one pair of 20s is two 20s on a sled, not one.
+  const stock = kind === 'single' ? (inv || []).map(p => ({ ...p, n: p.n * 2 })) : inv
+  const { plates, missing } = plateStack(perSide, stock)
   return { kind, barOnly: false, perSide, plates, missing }
 }
 

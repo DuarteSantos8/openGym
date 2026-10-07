@@ -8,7 +8,7 @@ theme, so a version is out before the branch has drifted and every fix reaches p
 fortnight. Whatever is not merged and tested on gym-test by the Friday before rolls into the next
 block, the date does not move. Version numbers follow the release rule, not the size of the change:
 the next release is the last published one plus one patch (1.3.7 → 1.3.8), and a minor bump is
-reserved for something that breaks compatibility — that is v1.4.0, the database.
+reserved for something that breaks compatibility, like the new exercise database (v1.4.0).
 
 - Milestones: https://github.com/DuarteSantos8/openGym/milestones — every open issue sits in exactly one
 - Tracks, in order: promised items → history editing → queue and programmes → the progression
@@ -77,14 +77,14 @@ QA sweep of every screen. Left over: routine reordering (#142), the Smith-bar "n
 All four promises, plus the iOS keyboard, the assisted machines and a QA sweep of every screen —
 twenty-four reports in total. See the changelog for the full list.
 
-- Reorder routines in Plan; the Start sheet follows that order (#142) ✅
-- "No bar" per exercise, so Smith-machine lifts calculate plates and drop sets from 0 (#138) ✅
-- Two decimals on weights, as a display toggle (#139) ✅
-- Delete a user from the admin dashboard: credentials, state file, subscriptions, Coach data (#107) ✅
+- Reorder routines in Plan; the Start sheet follows that order (#142)
+- "No bar" per exercise, so Smith-machine lifts calculate plates and drop sets from 0 (#138)
+- Two decimals on weights, as a display toggle (#139)
+- Delete a user from the admin dashboard: credentials, state file, subscriptions, Coach data (#107)
 - Custom-exercise muscle order is fixed, not click order; the import fallback classifies "wrist
-  curl", "row … neutral grip" and Romanian deadlifts correctly (Discord) ✅
+  curl", "row … neutral grip" and Romanian deadlifts correctly (Discord)
 - The small open pull requests: unknown-path redirect (#185), manifest behind an auth proxy (#184),
-  standard ß (#190) ✅ — the distance mode (#177, #178) moves to a later release
+  standard ß (#190); the distance mode (#177, #178) moves to a later release
 
 ## v1.3.9 — Editing history  (released 2026-09-28, two weeks early)
 
@@ -95,28 +95,37 @@ extra passkeys, custom-exercise pictures, the Android rest notification, plate l
 Structural Balance, Ukrainian and Arabic. Thirty-nine community pull requests. See the changelog.
 
 - **Edit a finished workout** — date, start time, duration, sets, weights, exercises; progression
-  and 1RM history re-read the corrected session (#143, #203, #263, #218) ✅
-- Save a logged workout as a routine (#111, #211) ✅ — repeating a past workout from History and
+  and 1RM history re-read the corrected session (#143, #203, #263, #218)
+- Save a logged workout as a routine (#111, #211); repeating a past workout from History and
   undo finish (#58, GitLab !130) move to v1.3.10
-- Copy a workout as text ✅ — relabelling an "Unknown" exercise after an import moves to v1.3.10
-- Auto-backup keeps the newest 14 files (#161, first half) ✅; a "next step" hotkey independent of
-  focus (#133) ✅; extra passkeys and the device link (PR #95) ✅ — body measurements (PR #82) move
+- Copy a workout as text; relabelling an "Unknown" exercise after an import moves to v1.3.10
+- Auto-backup keeps the newest 14 files (#161, first half); a "next step" hotkey independent of
+  focus (#133); extra passkeys and the device link (PR #95); body measurements (PR #82) move
   to v1.3.10
 
-## v1.3.10 — Session queue & rotation  (2026-10-25)
+## v1.3.10: New design, rotation & safer sync  (released 2026-10-07)
 
-Next up.
+Bigger than planned, on purpose: the queue and rotation from this block, the redesign that was
+pencilled in for v1.3.11, and a sync rework so no device loses data again. See the changelog for
+the full list.
 
-- A free-running session queue beside the fixed week — the next session is the next undone one,
-  whatever the weekday — with an in-app editor and automatic refill (#158, #69; PR #167 and the
-  editor on top of it; Discord "not forced into a weekly plan")
-- Swipe between exercise cards during a workout (#113, GitLab !114) — the swipe preview landed in
-  v1.3.9 (#202) ✅
-- Drag-and-drop exercise order that survives touch (#114 — the first version came out again on
-  2026-09-07; a drag handle on computers came in v1.3.9, #277); the Start/Resume button as "next"
-  during a workout (Discord)
-- Rolled over from v1.3.9: repeat a past workout from History and undo finish (#58, GitLab !130),
-  relabel an "Unknown" exercise after an import without losing its sets, body measurements (PR #82)
+- A rotation beside the fixed week: the next session is the next one you haven't done, whatever
+  the weekday, with an editor in Plan (#158, #69; PR #167 and kurktchiev/openGym#1)
+- A calmer app: Settings on one screen with search, Plan as Schedule and Routines, a workout screen
+  without the tab bar, a docked rest bar and a rest-time wheel up to 15:00, one icon per idea
+- Swipe actions on sets, routines and the loop, with Undo; a colour of your own as the accent
+- Safer sync: every change stamped down to the field, deletions that stay deleted, two tabs that no
+  longer overwrite each other, durable writes and `db.json.bak` on the server
+- Repeat a past workout today (#58), pyramid sets (#362, PR #367), progress photos (PR #361), per
+  side on timed holds (PR #322), the backup folder on Android (#161), FIRST_USER_ADMIN (#328),
+  the connection line can be hidden (#330, #369), Traditional Chinese (PR #368)
+- Still to come from the old block: undo finish (GitLab !130), relabelling an "Unknown" exercise
+  after an import, body measurements (PR #82), drag-and-drop on touch (#114)
+
+## Next: v1.4.0, a new exercise database
+
+The next release brings a new exercise database. Details follow once it is ready. The blocks
+below keep their themes, but their version numbers and dates move once it is out.
 
 ## v1.3.11 — Programmes & phases  (2026-11-08)
 
@@ -145,10 +154,10 @@ Next up.
 - Cardio: incline and intervals (rounds × work/rest), interval programmes such as C25k, rucking as
   distance + pace + load (#132, #169; Discord "incline treadmill", "cardio programs", "rucking")
 - Exercise alternatives per routine slot (Discord); Replace in the routine editor came in v1.3.9
-  (#110) ✅
+  (#110)
 - Complexes and interval groups beside supersets (Discord)
 
-## v1.4.0 — Foundation: database  (2027-01-10)
+## Later: database storage
 
 **The one compatibility break.** Storage moves from one JSON file per profile to a database (#191):
 tables for workouts, sets, routines, weigh-ins, custom exercises, favourites, credentials, push
@@ -171,7 +180,7 @@ default so `docker compose up` stays one line, a server database as an option (D
 ## v1.4.2 — Accounts: password & OIDC  (2027-02-07)
 
 - Optional username + password login next to passkeys (#118; Discord "Basic login", the
-  password-manager thread) ✅ — shipped early in v1.3.9, behind `PASSWORD_LOGIN`
+  password-manager thread) — shipped early in v1.3.9, behind `PASSWORD_LOGIN`
 - OIDC login for PocketID / Authelia-style setups (#130, #72; GitLab !132 is the candidate)
 
 ## v1.4.3 — Trainer & MCP write  (2027-02-21)
@@ -192,9 +201,9 @@ default so `docker compose up` stays one line, a server database as an option (D
 
 - Health Connect for weight and sessions (Discord "Use health connect"); Withings and other scales
   (#127)
-- The rest timer as an ongoing notification on the lock screen (#122, PR #296) ✅ in v1.3.9; a
+- The rest timer as an ongoing notification on the lock screen (#122, PR #296) (shipped in v1.3.9); a
   home-screen widget (#125)
-- APK ABI filters (#136) ✅ in v1.3.9, about 12 MB smaller; the auto-backup directory picker (#161,
+- APK ABI filters (#136) (shipped in v1.3.9), about 12 MB smaller; the auto-backup directory picker (#161,
   second half)
 - Media for the routine's exercises cached on the phone, so a session works with no signal (#123;
   Discord "Download all videos")
@@ -203,13 +212,13 @@ default so `docker compose up` stays one line, a server database as an option (D
 
 ## v1.4.6 — Exercises & catalogue  (2027-04-04)
 
-- Pictures for custom exercises: upload a photo, GIF or video and a link per exercise ✅ in v1.3.9
+- Pictures for custom exercises: upload a photo, GIF or video and a link per exercise (shipped in v1.3.9)
   (#126, #170); picking one from the catalogue and media on built-in exercises (#259) stay here
   (Discord "custom images/GIFs", "upload videos")
 - Catalogue: bench as equipment with flat / adjustable, TRX / suspension, lats and the three delts
   as their own categories, exercises that should not carry weight, more routine icons (#132, #188;
   Discord)
-- Choose what the "last time" line shows on the logger (#173) ✅ in v1.3.9; one progress line per set number
+- Choose what the "last time" line shows on the logger (#173) (shipped in v1.3.9); one progress line per set number
   (#145); custom heatmap targets per muscle; a shareable image after a workout (Discord)
 
 ## v1.4.7 — Looks, social, plugins  (2027-04-18)
@@ -218,7 +227,7 @@ default so `docker compose up` stays one line, a server database as an option (D
   #134, #135)
 - Social: friends, progress and plan sharing (PR #180); a plugin surface for integrations (Discord)
 - Native NixOS module (GitLab !83) and Azure deployment (!35) only if someone maintains them;
-  Arabic and right-to-left (GitLab !36) ✅ in v1.3.9
+  Arabic and right-to-left (GitLab !36) (shipped in v1.3.9)
 
 ## How things move
 

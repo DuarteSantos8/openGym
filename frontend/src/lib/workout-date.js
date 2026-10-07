@@ -100,6 +100,15 @@ export function moveWorkout(workouts, ref, iso, time, now = Date.now()) {
   return rebuildPrHistory(filed, (current.entries || []).map(e => e.id), moved)
 }
 
+// The longest a session can be said to have run: a day. Past that it is a typo (99999 read as
+// 1666 hours), and a session ending weeks from now throws off every stat that sums time.
+export const MAX_DURATION_MIN = 24 * 60
+
+// Whether a session started on `iso` at `time` and running `minutes` would still be going on at
+// `now`. Today's date with a later time passed the date check and filed the workout hours ahead.
+export const endsInFuture = (iso, time, minutes, now = Date.now()) =>
+  backfillStart(iso, time) + Math.max(0, Number(minutes) || 0) * 60000 > now
+
 // How long a saved session ran, in whole minutes — what the duration row starts from. At least a
 // minute, the way a logged past session is at least one (backfillEnd).
 export const durationMinOf = w => Math.max(1, Math.round(Math.max(0, (w?.end ?? w?.start ?? 0) - (w?.start ?? 0)) / 60000))
@@ -112,7 +121,7 @@ export const durationMinOf = w => Math.max(1, Math.round(Math.max(0, (w?.end ?? 
 export function setWorkoutDuration(workouts, ref, minutes, now = Date.now()) {
   const list = Array.isArray(workouts) ? workouts : []
   const current = list.find(w => sameWorkout(w, ref))
-  const min = Math.max(1, Math.round(Number(minutes) || 0))
+  const min = Math.min(MAX_DURATION_MIN, Math.max(1, Math.round(Number(minutes) || 0)))
   if (!current || !Number.isFinite(current.start) || (current.end != null && min === durationMinOf(current))) return null
   // A record from before ids is keyed by its day and start, and neither moves here.
   const edited = stampWorkout({ ...current, end: current.start + min * 60000 }, now)

@@ -76,7 +76,7 @@ export default function SocialProfile() {
       <div className="tile"><div className="l"><Icon name="dumbbell" />{t('Workouts')}</div><div className="v">{profile.workouts}</div></div>
       <div className="tile"><div className="l"><Icon name="calendar" />{t('This month')}</div><div className="v">{profile.thisMonth}</div></div>
       <div className="tile"><div className="l"><Icon name="flame" />{t('Week streak')}</div><div className="v">{profile.weekStreak}</div></div>
-      <div className="tile"><div className="l"><Icon name="scale" />{t('Body weight')}</div><div className="v social-weight">{profile.bodyWeightShared === false ? t('Private') : bodyWeight ? `${fmtNum(bodyWeight.value)} ${profile.unit}` : '—'}</div>
+      <div className="tile"><div className="l"><Icon name="scale" />{t('Body weight')}</div><div className="v social-weight">{profile.bodyWeightShared === false ? t('Private') : bodyWeight ? `${fmtNum(bodyWeight.value)} ${profile.unit}` : '–'}</div>
         {bodyWeight && <div className="small dim">{fmtDate(bodyWeight.date, false, true)}{bodyWeight.change30d == null ? ''
           : ` · 30d ${(bodyWeight.change30d > 0 ? '+' : '') + fmtNum(bodyWeight.change30d)} ${profile.unit}`}</div>}</div>
     </div>

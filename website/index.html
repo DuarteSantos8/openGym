@@ -26,7 +26,7 @@
 <link rel="icon" type="image/png" sizes="180x180" href="icon-180.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="preload" as="image" type="image/webp" imagesrcset="img/home-480.webp 480w, img/home-600.webp 600w, img/home-1170.webp 1170w" imagesizes="(max-width: 700px) 62vw, 300px" fetchpriority="high">
-<link rel="stylesheet" href="styles.css?v=19">
+<link rel="stylesheet" href="styles.css?v=22">
 <!-- Marks that JS is alive before first paint, so the scroll-reveal styles never
      hide content from a browser that will not run them. -->
 <script>
@@ -51,8 +51,8 @@ try {
  "url":"https://opengym.duarte-santos.ch/",
  "image":"https://opengym.duarte-santos.ch/img/social.jpg",
  "screenshot":["https://opengym.duarte-santos.ch/img/home.png","https://opengym.duarte-santos.ch/img/workout.png","https://opengym.duarte-santos.ch/img/stats.png"],
- "softwareVersion":"1.3.9","datePublished":"2026-07-18","dateModified":"2026-09-28","isAccessibleForFree":true,
- "featureList":["Weekly plan with a routine per weekday","Guided workouts with rest timer, supersets, warm-up and timed sets","Progression rules: linear, Greyskull LP, double progression","Estimated 1RM, activity heatmap, muscle balance and fatigue maps","Body-weight tracking with a goal line","Import from Hevy, Strong, FitNotes and Apple Health","Passkey login and multi-device sync when self-hosted","Standalone Android APK with no account","17 languages, including Arabic right-to-left","Optional AI coach on your own API key"],
+ "softwareVersion":"1.3.10","datePublished":"2026-07-18","dateModified":"2026-10-07","isAccessibleForFree":true,
+ "featureList":["Weekly plan with a routine per weekday, or a rotation","Guided workouts with rest timer, supersets, warm-up and timed sets","Progression rules: linear, Greyskull LP, double progression","Estimated 1RM, activity heatmap, muscle balance and fatigue maps","Body-weight tracking with a goal line","Edit saved workouts, with photos and videos","Structural Balance between your lifts","Import from Hevy, Strong, FitNotes and Apple Health","Passkey login and multi-device sync when self-hosted","Standalone Android APK with no account","18 languages, including Arabic right-to-left","Optional AI coach on your own API key"],
  "downloadUrl":"https://opengym.duarte-santos.ch/openGym.apk",
  "author":{"@type":"Person","name":"Duarte Santos","url":"https://duarte-santos.ch"},
  "sameAs":["https://github.com/DuarteSantos8/openGym","https://gitlab.com/DuarteSantos8/opengym","https://discord.gg/e62jY6fwVb"]}
@@ -251,7 +251,7 @@ try {
 
     <div class="more rv">
       <h3>And the rest of it</h3>
-      <p class="more-hint">Sixteen more things it does.</p>
+      <p class="more-hint">Nineteen more things it does.</p>
     </div>
   </div>
 
@@ -296,9 +296,24 @@ try {
         <span class="fcard-b">Per exercise, from your best eligible set, naming which set it used. It will not guess above 12 reps.</span>
       </article>
       <article class="fcard">
+        <span class="fcard-ic"><svg aria-hidden="true"><use href="#i-body"/></svg></span>
+        <b class="fcard-t">Structural Balance</b>
+        <span class="fcard-b">Your lifts compared with each other against the Poliquin, Thibaudeau and ATG ratios, with the weakest link named.</span>
+      </article>
+      <article class="fcard">
         <span class="fcard-ic"><svg aria-hidden="true"><use href="#i-gauge"/></svg></span>
         <b class="fcard-t">Effort per set</b>
         <span class="fcard-b">Rate a set as RIR or RPE, whichever scale you already think in. Optional, and each set keeps the scale it was logged with.</span>
+      </article>
+      <article class="fcard">
+        <span class="fcard-ic"><svg aria-hidden="true"><use href="#i-calendar"/></svg></span>
+        <b class="fcard-t">Fix a workout afterwards</b>
+        <span class="fcard-b">Edit the weights, sets, exercises, date or duration of a saved session, add photos or videos to it, or log one you did on paper. Records re-read the corrected history.</span>
+      </article>
+      <article class="fcard">
+        <span class="fcard-ic"><svg aria-hidden="true"><use href="#i-library"/></svg></span>
+        <b class="fcard-t">Your own pictures</b>
+        <span class="fcard-b">Give an exercise you made a photo, GIF or short video and a link to a guide. Shrunk and stripped of location data on the phone before it goes anywhere.</span>
       </article>
       <article class="fcard">
         <span class="fcard-ic"><svg aria-hidden="true"><use href="#i-share"/></svg></span>
@@ -318,7 +333,7 @@ try {
       </article>
       <article class="fcard">
         <span class="fcard-ic"><svg aria-hidden="true"><use href="#i-globe"/></svg></span>
-        <b class="fcard-t">17 languages</b>
+        <b class="fcard-t">18 languages</b>
         <span class="fcard-b">The full interface, Arabic right to left, exercise instructions in 12 languages and translated exercise names in seven, all loaded on demand.</span>
       </article>
       <article class="fcard">
@@ -330,7 +345,7 @@ try {
       <article class="fcard">
         <span class="fcard-ic"><svg aria-hidden="true"><use href="#i-palette"/></svg></span>
         <b class="fcard-t">Designed, not assembled</b>
-        <span class="fcard-b">Light and dark themes, eight accent colours, a hand-drawn icon set, and the same layout on every phone.</span>
+        <span class="fcard-b">Light and dark themes, eight accent colours or one you pick yourself, a hand-drawn icon set, and the same layout on every phone.</span>
       </article>
       <article class="fcard">
         <span class="fcard-ic"><svg aria-hidden="true"><use href="#i-sparkle"/></svg></span>
@@ -420,7 +435,7 @@ try {
         </ul>
         <div class="push">
           <a class="btn" href="openGym.apk" download>Download for Android</a>
-          <p class="meta">v1.3.9 · 16.2 MB · Android 6.0+ · signed APK. Your browser will ask
+          <p class="meta">v1.3.10 · 16.2 MB · Android 6.0+ · signed APK. Your browser will ask
              before installing; that is normal outside the Play Store.</p>
           <p class="meta">Every release is also built and signed by CI and attached to the
              <a href="https://github.com/DuarteSantos8/openGym/releases" rel="noopener">GitHub
@@ -479,7 +494,7 @@ try {
         <div><b data-gh="issues-n">–</b><span>open issues</span></div>
         <div><b data-dc="members-n">–</b><span>on Discord</span></div>
         <div><b>1,324</b><span>exercises</span></div>
-        <div><b>17</b><span>languages</span></div>
+        <div><b>18</b><span>languages</span></div>
       </div>
     </div>
 
@@ -560,6 +575,6 @@ try {
   </div>
 </div></footer>
 
-<script src="site.js?v=19" defer></script>
+<script src="site.js?v=22" defer></script>
 </body>
 </html>

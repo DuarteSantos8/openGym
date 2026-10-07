@@ -1,0 +1,14 @@
+sequenceDiagram
+    participant P as Phone
+    participant S as Server
+    participant L as Laptop
+
+    P->>S: save (baseRev 7)
+    S-->>P: ok, rev 8
+    L->>S: save (baseRev 7)
+    S-->>L: 409 conflict + current doc (rev 8)
+    Note over L: merge local changes<br/>into rev 8
+    L->>S: save (baseRev 8)
+    S-->>L: ok, rev 9
+    P->>S: poll
+    S-->>P: rev 9

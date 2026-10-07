@@ -15,13 +15,16 @@ License: AGPL-3.0-or-later.
 frontend/  React 19 + Vite app (src/views, src/components, src/store, src/lib). Builds to static files.
            android/ + ios/ are the Capacitor shells for the standalone mobile app (docs/MOBILE.md).
 api/       backend — server.js (Node, no framework), deps: @simplewebauthn/server, web-push.
+           coach/ is the optional AI coach; openapi.yaml documents every route.
 web/       multi-stage Dockerfile (builds frontend → nginx) + nginx.conf.template (serves app, proxies /api).
 mcp/       optional MCP server — read-only stdio bridge exposing a user's workouts/1RM/muscle
            balance to LLM clients (Claude Desktop, Cursor…). Not part of the Docker build; only
            runs when an LLM client spawns it.
 media/     exercise img/gif, gitignored, fetched at runtime by the `media` compose service.
-website/   static marketing site (plain HTML/CSS/JS), deployed separately by .gitlab-ci.yml.
-docs/      SELF_HOSTING.md, MOBILE.md.
+website/   static project site (plain HTML/CSS/JS), deployed separately.
+kubernetes/ example manifests (docs/SELF_HOSTING_KUBERNETES.md).
+docs/      guides indexed in docs/README.md (FAQ, SELF_HOSTING*, MOBILE, AI_COACH, DATA_IMPORTS, API);
+           docs/dev/ holds feature design notes (SET_TYPES: drop sets/rest-pause, LIST_VIEW, COMBINE_ROUTINES).
 ```
 
 ## Commands
@@ -40,7 +43,8 @@ cd frontend && npm run test:watch
 npx vitest run src/lib/progression.test.js   # single file
 npx vitest run -t "some test name"           # single test by name
 
-# MCP server tests
+# API and MCP server tests
+cd api && npm test
 cd mcp && npm test
 
 # Production build
@@ -51,11 +55,13 @@ cd frontend && npm run build:mobile   # + cap sync, points media at the CDN data
 There is no linter/formatter configured (no ESLint/Prettier config in the repo) and no
 TypeScript — match the existing style by hand.
 
-The CI gate is `.gitlab-ci.yml` on GitLab, the canonical remote (see README): it runs the
-`frontend/` tests on Node 22 — the same version as `web/Dockerfile` / `api/Dockerfile`
-(`node:22-alpine`) — and additionally builds and publishes the Docker images, packages the
-signed Android APK, and deploys the demo/docs site. The Gitea and GitHub workflow copies
-(`.gitea/workflows/`, `.github/workflows/`) are dormant mirrors; neither host runs them.
+GitHub (`github.com/DuarteSantos8/openGym`) is the home of the project; `.github/workflows/mirror.yml`
+pushes `main` and `v*` tags to the GitLab mirror. Pull requests are gated by
+`.github/workflows/test.yml` on Node 22 — the same version as `web/Dockerfile` / `api/Dockerfile`
+(`node:22-alpine`): the frontend, api and MCP suites, the locale checks, and building and booting
+both api image targets. GitLab CI on the mirror (`.gitlab-ci.yml`) builds the release artifacts:
+the signed Android APK, the multi-arch images and the SBOMs. Never push or merge on GitLab
+directly; the mirror is fast-forward only.
 
 ## Architecture
 

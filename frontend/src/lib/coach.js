@@ -18,10 +18,12 @@ import { uid, todayISO, DAYN } from './format.js'
 import { mergePlan } from './plan-share.js'
 import { deleteRoutine } from './routines.js'
 import { POLICIES } from './progression.js'
-import { t } from './i18n.js'
+import { t, tn } from './i18n.js'
 
 // Bumping this re-prompts everyone: it means what we share, or who we share it with, changed.
-export const CONSENT_VERSION = 1
+// 2: the training line names the session notes, which the payload carries and version 1 never
+// mentioned.
+export const CONSENT_VERSION = 2
 
 // Bounds. The whole state has to stay inside the server's 5 MB body limit, and a Coach log
 // that grows forever is exactly the kind of thing that eats it invisibly. Worst case here is
@@ -64,7 +66,7 @@ export const coachAvailable = (config, user, { demo, mobile, coachMode } = {}) =
 // builder uses (api/coach/core/categories.js), so the screen cannot promise less than leaves.
 export const CATEGORY_TEXT = {
   plan: ['Your plan', 'Routines, exercises, sets and reps, your weekly schedule and progression settings.'],
-  training: ['Your logged training', 'Sets you logged in the review window — weights, reps, times, effort ratings and how long sessions took.'],
+  training: ['Your logged training', 'Sets you logged in the review window: weights, reps, times, effort ratings, how long sessions took, and your session notes.'],
   bodyweight: ['Body weight', 'Weigh-ins from the same window, and your goal weight if you set one.'],
   profile: ['What you tell the Coach', 'Your intake answers, including any limitations or injuries you describe.'],
   prefs: ['A few preferences', 'Your unit, your language and which effort scale you log.']
@@ -370,7 +372,7 @@ export function profileLines(p) {
   const lines = []
   if (goal) lines.push(t(goal))
   if (exp) lines.push(t(exp))
-  if (p.daysPerWeek) lines.push(p.daysPerWeek === 1 ? t('1 day a week') : t('{0} days a week', p.daysPerWeek))
+  if (p.daysPerWeek) lines.push(tn('1 day a week', '{0} days a week', p.daysPerWeek))
   if (p.sessionMin) lines.push(t('{0} min per session', p.sessionMin))
   if (p.equipment?.length) lines.push(p.equipment.join(', '))
   if (p.limitations) lines.push(t('Limits: {0}', p.limitations))
@@ -523,7 +525,7 @@ const CHANGE_APPLY = {
   week: (s, c) => {
     // A single-routine op: the slot is a list, but the Coach only ever names one routine (or
     // rest), and it replaces the day. This collapses a combined day to one routine — the same
-    // stated limitation as a DayOverride (see docs/COMBINE_ROUTINES.md §8).
+    // stated limitation as a DayOverride (see docs/dev/COMBINE_ROUTINES.md §8).
     const d = c.target.weekday
     if (c.after == null || c.after === 'rest') delete s.week[d]
     else s.week[d] = [c.after]
@@ -605,7 +607,7 @@ export function changeTitle(c, S) {
   const ex = c.target?.exId ? exTitle(c.target.exId) : null
   switch (c.type) {
     case 'add-exercise': return t('Add {0}', exTitle(c.after?.id))
-    case 'remove-exercise': return t('Drop {0}', ex)
+    case 'remove-exercise': return t('Remove {0}', ex)
     case 'swap-exercise': return t('Swap {0} for {1}', ex, exTitle(c.after?.id))
     case 'sets': return t('{0}: sets', ex)
     case 'reps': return t('{0}: reps', ex)
@@ -637,7 +639,7 @@ export function changeValues(c, S) {
       const ids = [].concat(v ?? []).filter(x => x && x !== 'rest')
       return ids.length ? ids.map(routineName).join(' + ') : t('Rest')
     }
-    if (v == null) return '—'
+    if (v == null) return '–'
     if (typeof v === 'object') return v.id ? exTitle(v.id) : v.name || JSON.stringify(v)
     if (Array.isArray(v)) return v.length + ''
     return String(v)

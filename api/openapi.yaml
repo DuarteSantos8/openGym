@@ -6,11 +6,11 @@ openapi: 3.1.0
 
 info:
   title: openGym API
-  version: 1.3.9
+  version: 1.3.10
   summary: Passkey (WebAuthn) auth + per-user state storage for openGym
   description: |
     The backend of [openGym](https://opengym.duarte-santos.ch) — a free, open-source
-    gym & body-weight tracker. One Node file, no framework, JSON-file storage,
+    gym & body-weight tracker. A plain Node server, no framework, JSON-file storage,
     HMAC-signed session cookies.
 
     ### Authentication
@@ -30,17 +30,18 @@ info:
     ### Throttling
     The `password` routes are counted per client address: at most 60 requests a minute
     across them, and wrong answers (a password, a reset code, an invite code on password
-    signup, an e-mail address already in use) pause the address after 20 for 30 s,
+    signup, an e-mail address already in use) pause the address from the 21st on, for 30 s,
     doubling up to 15 min. Wrong passwords also pause the *account* they were tried
-    against after 5, for 1 min doubling up to 1 h — the same pause whether the account
+    against from the 6th on, for 1 min doubling up to 1 h — the same pause whether the account
     was named by its name or its e-mail — and an identifier that names no account is
     paused the same way, as typed. A password check counts from the moment it
     starts, so checks sent at once get no more tries than checks sent one by one. A
     paused caller gets `429 {"error": …, "code": "locked", "retryAfter": <s>}` with a
     `Retry-After` header. Passkey sign-up and sign-in and the pairing routes are not
-    throttled. The two routes that redeem a one-time device link (tag `passkeys`) share
+    throttled (their failures reach the audit log at most ten a minute per address).
+    The two routes that redeem a one-time device link (tag `passkeys`) share
     the per-address budget, and wrong codes pause the address for link redemption only,
-    after 20, the way wrong reset codes do. Adding or removing a passkey in Settings
+    from the 21st on, the way wrong reset codes do. Adding or removing a passkey in Settings
     (`POST /api/account/passkeys/options`, `DELETE /api/account/passkeys`) and making a
     device code (`POST /api/account/device-link`) spend the per-address budget too, and a
     current password given there as proof counts like one given at sign-in.
@@ -75,6 +76,9 @@ info:
       this API at all).
     - `ADMIN_UIDS=<uid>,<uid>` — user ids treated as admins (a `"admin": true` flag on
       the user record in `db.json` works too). Admins get the `/api/admin/*` routes.
+    - `FIRST_USER_ADMIN` (default off; `1` turns it on) — the first profile registered
+      on an instance with no profiles gets that `"admin": true` flag. Decided at
+      registration only, never applied to an instance that already has profiles.
     - `AUDIT_LOG` (default on), `AUDIT_MAX` (default 5000 events), `AUDIT_DAYS`
       (default 90), `AUDIT_IP` (`off` | `net` | `full`, default off) — shape the audit
       log served by `GET /api/admin/audit`.
@@ -391,7 +395,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
-              example: { error: "a valid invite code is required" }
+              example: { error: "a valid invite code is required", code: "invite" }
 
   /api/register/verify:
     post:
@@ -439,13 +443,13 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
-              example: { error: "challenge expired — try again" }
+              example: { error: "challenge expired, try again", code: "challenge-expired" }
         '403':
           description: Invite-only and the code became invalid since step 1.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
-              example: { error: "invite code is no longer valid — ask for a new one" }
+              example: { error: "invite code is no longer valid, ask for a new one", code: "invite" }
         '409':
           description: This credential id is already registered.
           content:
@@ -523,13 +527,13 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
-              example: { error: "this account has been disabled" }
+              example: { error: "this account has been disabled", code: "disabled" }
         '404':
           description: The passkey's credential id is unknown to this instance.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
-              example: { error: "unknown passkey — create a profile first" }
+              example: { error: "unknown passkey, create a profile first", code: "unknown-credential" }
         '500':
           description: Credential exists but its user record is missing (corrupt db).
           content:
@@ -589,7 +593,8 @@ paths:
       description: |
         Called from an already signed-in browser tab (Settings → "Pair the mobile
         app"). Returns an 8-character code (alphabet without 0/O/1/I) the phone
-        redeems within 5 minutes via /api/pair/redeem. One-shot.
+        redeems within 5 minutes via /api/pair/redeem. One-shot. One live code per
+        profile: minting a new one retires the previous one.
       responses:
         '200':
           description: A fresh pairing code.
@@ -646,7 +651,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
-              example: { error: "invalid or expired code" }
+              example: { error: "invalid or expired code", code: "pair-invalid" }
 
   /api/login/password:
     post:
@@ -664,7 +669,7 @@ paths:
         the same `401` after the same scrypt work, so neither the answer nor its timing says
         which names exist. So does a password that was right when its check started but
         was changed, reset or removed before the check finished. Five wrong passwords for an
-        account pause it, whichever identifier they named it by (see *Throttling*); passkey
+        account are free and the sixth pauses it, whichever identifier they named it by (see *Throttling*); passkey
         sign-in is never paused by this. Sets the
         same session cookie as `/api/login/verify`. **Not** CSRF-exempt.
       security: []
@@ -1248,7 +1253,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
-              example: { error: "challenge expired — try again" }
+              example: { error: "challenge expired, try again", code: "challenge-expired" }
         '401':
           description: >-
             Not signed in — including a session that was ended ("sign out everywhere", a
@@ -1469,6 +1474,29 @@ paths:
         server stamps the new revision into the document as `_rev`; a `_rev` sent by
         the client is ignored.
 
+        The records of removals (`deleted`) and of edits (`edited`) never shrink: the
+        stored ones are joined into the write (a reset keeps its own). A writer that does
+        not stamp its own changes (no `stamped: true`; an API script, an older app) and
+        sends the current `baseRev` gets them stamped by the server, at the server's time:
+        every entry it removed (a workout, routine, custom exercise, weigh-in, card,
+        profile or favourite), every setting and plan day it changed (`queue`,
+        `week.<day>`, …), and every entry it edited (`_ts`, per field `_f`). That keeps a
+        planner's new week, or a routine it removed, from being undone by a phone that
+        reconnects later with an older change. A setting, plan day or entry field whose
+        stored stamp (`edited`, `_f`) is later than the one the writer sends back keeps the
+        stored value: the writer never saw that change, so send back the `edited` and `_f`
+        you read. A writer that sends no `edited` at all is not held to it. An entry the document holds while a
+        removal on record says it was deleted after its last edit is kept and marked as
+        added back.
+
+        Such a writer also cannot delete what it does not know: a field of the stored
+        document, of a stored routine, workout, custom exercise, card or profile, of a
+        routine's exercise, or of a logged exercise or set that its copy leaves out comes
+        back from the stored copy (an older app rebuilds an exercise from the fields it
+        knows, which dropped pyramid sets made on an updated device). Only the fields
+        v1.3.9 itself removes (a superset link, a note, a cleared set value, …) can be
+        removed this way. Send `stamped: true` to remove anything else.
+
         Every accepted write also starts the grace period of each stored file (tag `media`)
         the new state no longer references, and stops it for each one it references again.
         That bookkeeping never changes the answer.
@@ -1486,6 +1514,18 @@ paths:
                   description: >-
                     The revision this client last read or wrote. Omit or null for an
                     unconditional overwrite.
+                baseWid:
+                  type: string
+                  description: >-
+                    The write id (`_wid`) of the document this client last read or wrote. With
+                    `baseRev`, a write over a different document at the same revision (the data
+                    directory went back in time and the number was reached again) answers 409.
+                stamped:
+                  type: boolean
+                  description: >-
+                    True when the client stamps its own changes in `deleted`, `edited` and
+                    each entry's `_ts`/`_f`, as the app does. Omit it to have the server
+                    stamp what changed against the stored document.
       responses:
         '200':
           description: Saved.
@@ -1500,7 +1540,14 @@ paths:
                     description: Echo of the pushed state's `_ts`, if present.
                   rev:
                     type: integer
-                    description: The revision the write produced.
+                    description: >-
+                      The revision the write produced. For a writer that does not stamp, when the
+                      server put back something it left out or set back, the document is stored one
+                      revision further, so the writer's next check of the revision reads it again.
+                      `wid` is the stored document's either way.
+                  wid:
+                    type: string
+                    description: The write id (`_wid`) of the stored document.
         '409':
           description: >-
             `baseRev` is not the current revision — another client wrote since this one
@@ -1548,6 +1595,7 @@ paths:
                 type: object
                 properties:
                   rev: { type: integer }
+                  wid: { type: string, description: 'The write id (`_wid`) of the stored document; absent before its first write.' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
   /api/media/{hash}:
@@ -1700,8 +1748,8 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
               examples:
-                locked: { value: { error: "too many uploads — try again later", code: "locked", retryAfter: 1740 } }
-                busy: { value: { error: "too many uploads at once — try again in a moment", code: "busy", retryAfter: 5 } }
+                locked: { value: { error: "too many uploads, try again later", code: "locked", retryAfter: 1740 } }
+                busy: { value: { error: "too many uploads at once, try again in a moment", code: "busy", retryAfter: 5 } }
         '507':
           description: The server's disk has less than `MEDIA_MIN_FREE_MB` free (`storage-full`).
           content:
@@ -1802,7 +1850,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
-              example: { error: "too many uploads — try again later", code: "locked", retryAfter: 1200 }
+              example: { error: "too many uploads, try again later", code: "locked", retryAfter: 1200 }
 
   /api/push/public-key:
     get:
@@ -1853,7 +1901,8 @@ paths:
                   description: >-
                     A token the browser made up for itself (stored in its localStorage),
                     so rest-timer pushes can be aimed at the device that started the
-                    rest. Optional; anything that is not a short token is ignored.
+                    rest. Optional; anything that is not a short token is ignored, and a
+                    re-send of an endpoint without one keeps the id its row already has.
       responses:
         '200':
           description: Stored.
@@ -1880,7 +1929,11 @@ paths:
         `endpoint`. The browser's `PushManager.getSubscription()` says nothing about
         the server's side — a row pruned after a dead send (404/410/403) leaves the
         browser subscribed to nowhere — so the client asks here before showing the
-        notifications switch as on, and re-registers when the answer is no.
+        notifications switch as on, and re-registers when the answer is no. A stored
+        subscription also names the `deviceId` it is stored with, and the client
+        re-registers when that is not its own: a row stored without one (from before
+        device ids) sends that device's rest-timer alerts to every subscription of the
+        account.
       parameters:
         - in: query
           name: endpoint
@@ -1893,8 +1946,18 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [subscribed]
                 properties:
                   subscribed: { type: boolean }
+                  deviceId:
+                    type: ['string', 'null']
+                    description: >-
+                      Present when `subscribed` is true: the device id the subscription is
+                      stored with, `null` when it has none.
+              examples:
+                stored: { value: { subscribed: true, deviceId: "3f9c1d2e7b0a4c6d9e8f1a2b3c4d5e6f" } }
+                storedWithoutDevice: { value: { subscribed: true, deviceId: null } }
+                notStored: { value: { subscribed: false } }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
   /api/push/unsubscribe:
@@ -2640,7 +2703,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
-              example: { error: "already used — cannot revoke" }
+              example: { error: "already used, cannot revoke" }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404':
@@ -3285,11 +3348,17 @@ components:
       description: >-
         The Coach is not set up on this instance — switched off, or no provider connected.
         Every Coach route answers this rather than pretending, so an unconfigured instance
-        renders exactly the app it was before the feature existed.
+        renders exactly the app it was before the feature existed. `code` is `off`, the
+        class a job refused at enqueue for the same reason carries; the app shows its own
+        line for it.
       content:
         application/json:
-          schema: { $ref: '#/components/schemas/Error' }
-          example: { error: "the Coach is not set up on this instance" }
+          schema:
+            type: object
+            properties:
+              error: { type: string }
+              code: { type: string, enum: [off] }
+          example: { error: "the Coach is not set up on this instance", code: off }
     CoachJobQueued:
       description: >-
         Queued. The job runs in the background; its outcome arrives through
@@ -3334,7 +3403,7 @@ components:
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
-          example: { error: "too many attempts — try again later", code: "locked", retryAfter: 60 }
+          example: { error: "too many attempts, try again later", code: "locked", retryAfter: 60 }
     Busy:
       description: Every password check slot and the short queue behind them are taken.
       headers:
@@ -3343,7 +3412,7 @@ components:
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
-          example: { error: "the server is busy — try again in a moment", code: "busy" }
+          example: { error: "the server is busy, try again in a moment", code: "busy" }
     PasswordPolicy:
       description: >-
         The new password breaks the policy — `too-short` (under 10 characters),
@@ -3566,6 +3635,28 @@ components:
           type: integer
           readOnly: true
           description: Server-set revision, incremented on every accepted PUT. Ignored when sent by a client.
+        _wid:
+          type: string
+          readOnly: true
+          description: Server-set id of this write (16 hex characters), new on every accepted PUT.
+        _wids:
+          type: array
+          readOnly: true
+          items: { type: string }
+          description: The write ids of the documents this one descends from, oldest first (up to 50).
+        deleted:
+          type: object
+          description: >-
+            When entries were removed, per list and entry key ({ workouts: { <id>: ms } }, weigh-ins
+            by day, favourites by exercise id). A negative stamp is an add-back after a removal.
+            Never shrinks on the server; stamped for writers that do not stamp (see PUT /api/data).
+          additionalProperties: { type: object, additionalProperties: { type: number } }
+        edited:
+          type: object
+          description: >-
+            When each setting and plan day was last changed, ms ({ queue: ms, 'week.3': ms, … }).
+            Never shrinks on the server; stamped for writers that do not stamp (see PUT /api/data).
+          additionalProperties: { type: number }
         unit: { type: string, enum: [kg, lb] }
         lang:
           type: string
@@ -3579,6 +3670,10 @@ components:
         routines:
           type: array
           items: { $ref: '#/components/schemas/Routine' }
+        queue:
+          type: object
+          nullable: true
+          description: A planner's floating week {ids, since, startsOn, label} — the week's sessions as an ordered queue, the first undone one is today's. Written by an API client or by the app's own rotation feature, read by the reminder tick.
         week:
           type: object
           description: 'Weekly plan: weekday (0=Sunday … 6) → routine id.'

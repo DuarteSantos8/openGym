@@ -83,7 +83,7 @@ const asked = path => mocks.api.mock.calls.filter(([p]) => p === path).length
 
 describe('Settings: passkeys and another device', () => {
   it('a signed-in browser lists its passkeys and offers a code for another device, in Account', async () => {
-    const page = mount(<Settings />)
+    const page = mount(<Settings page="account" />)
     await settle()
     const account = section(page, 'Account')
     expect(titles(account)).toEqual(expect.arrayContaining(['Passkeys', 'Add another device']))
@@ -96,7 +96,7 @@ describe('Settings: passkeys and another device', () => {
 
   it('a guest gets neither, and nothing is asked', async () => {
     mocks.user = null
-    const page = mount(<Settings />)
+    const page = mount(<Settings page="account" />)
     await settle()
     expect(titles(page)).not.toContain('Passkeys')
     expect(titles(page)).not.toContain('Add another device')
@@ -107,7 +107,7 @@ describe('Settings: passkeys and another device', () => {
     const list = mocks.list
     mocks.list = {}
     try {
-      const page = mount(<Settings />)
+      const page = mount(<Settings page="account" />)
       await settle()
       expect(titles(page)).not.toContain('Passkeys')
       expect(titles(page)).not.toContain('Add another device')
@@ -123,21 +123,21 @@ describe('Settings: passkeys and another device', () => {
       if (path === '/api/account/passkeys' || path === '/api/account/password') throw Object.assign(new Error('HTTP 502'), { status: 502, data: {} })
       return answer(path)
     })
-    const page = mount(<Settings />)
+    const page = mount(<Settings page="account" />)
     await settle()
     expect(titles(section(page, 'Account'))).not.toEqual(expect.arrayContaining(['Passkeys']))
     expect(titles(section(page, 'Account'))).not.toContain('Password')
 
     mocks.api.mockImplementation(answer)
     mocks.sync = { ...mocks.sync, lastSynced: mocks.sync.lastSynced + 30000 }   // a check that found both sides in step
-    act(() => mounted.at(-1).root.render(<Settings />))
+    act(() => mounted.at(-1).root.render(<Settings page="account" />))
     await settle()
     expect(titles(section(page, 'Account'))).toEqual(expect.arrayContaining(['Passkeys', 'Add another device', 'Password']))
     expect(asked('/api/account/passkeys')).toBe(2)
     expect(asked('/api/account/password')).toBe(2)
 
     mocks.sync = { ...mocks.sync, lastSynced: mocks.sync.lastSynced + 30000 }
-    act(() => mounted.at(-1).root.render(<Settings />))
+    act(() => mounted.at(-1).root.render(<Settings page="account" />))
     await settle()
     expect(asked('/api/account/passkeys')).toBe(2)
     expect(asked('/api/account/password')).toBe(2)
@@ -150,10 +150,10 @@ describe('Settings: passkeys and another device', () => {
       return answer(path)
     })
     try {
-      const page = mount(<Settings />)
+      const page = mount(<Settings page="account" />)
       await settle()
       mocks.sync = { ...mocks.sync, lastSynced: mocks.sync.lastSynced + 30000 }
-      act(() => mounted.at(-1).root.render(<Settings />))
+      act(() => mounted.at(-1).root.render(<Settings page="account" />))
       await settle()
       expect(titles(page)).not.toContain('Passkeys')
       expect(asked('/api/account/passkeys')).toBe(1)
@@ -161,7 +161,7 @@ describe('Settings: passkeys and another device', () => {
   })
 
   it('a change to the passkeys reads the list and the password row again', async () => {
-    const page = mount(<Settings />)
+    const page = mount(<Settings page="account" />)
     await settle()
     expect(asked('/api/account/passkeys')).toBe(1)
     expect(asked('/api/account/password')).toBe(1)

@@ -24,7 +24,7 @@
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 <link rel="icon" type="image/png" sizes="180x180" href="icon-180.png">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="styles.css?v=19">
+<link rel="stylesheet" href="styles.css?v=22">
 <script>document.documentElement.className += ' js'</script>
 <!-- Umami web analytics for opengym.duarte-santos.ch (self-hosted, cookieless). -->
 <script defer src="https://stats.duarte-santos.ch/script.js" data-website-id="db36019e-50f4-453c-9c56-d0588aefe233"></script>
@@ -112,7 +112,7 @@
 
   <p>Then friends wanted in. That brought passkey profiles, so everyone signs in with a
      fingerprint and keeps their own data, and sync, so the log survives any phone. Somewhere
-     along the way the little page was rewritten into a proper React app, learned 17 languages,
+     along the way the little page was rewritten into a proper React app, learned 18 languages,
      grew a muscle map that reads three ways (where the volume went, what is still recovering,
      and what each muscle is actually strong at), picked up importers for FitNotes, Strong,
      Hevy and Apple Health, and finally became a native Android app you can install from
@@ -125,6 +125,12 @@
 
   <p>openGym still runs on the same homelab server it started on, and I still log every
      session with it. That is the quality bar: I am the first user of every release.</p>
+  <p>Since people ask: I build openGym with <a href="https://claude.com/claude-code" rel="noopener">Claude Code</a>,
+     Anthropic's coding agent. A lot of the code, the tests and the documentation start as
+     Claude Code drafts. Deciding what goes in, reviewing it, testing every release on a staging
+     server and on my own phone, and shipping it stays with me &mdash; and pull requests from the
+     community go through the same review. The app itself needs no AI: the coach and the MCP
+     server are optional and off by default.</p>
 
   <p class="who">— <a href="https://duarte-santos.ch" rel="noopener">Duarte Santos</a></p>
 
@@ -148,7 +154,7 @@
         must always be one export away.</li>
     <li><b>No telemetry, ever.</b> If a feature needs analytics to justify itself, it does
         not ship.</li>
-    <li><b>Dependency-light.</b> The backend is one Node file with a single dependency; the
+    <li><b>Dependency-light.</b> The backend is plain Node with two dependencies; the
         frontend is React, a router and a store. Small enough to actually audit.</li>
     <li><b>Open source that stays open.</b> AGPL-3.0, so every fork and every hosted version
         owes its code back to everyone.</li>
@@ -172,6 +178,6 @@
   </div>
 </div></footer>
 
-<script src="site.js?v=19" defer></script>
+<script src="site.js?v=22" defer></script>
 </body>
 </html>
