@@ -132,6 +132,6 @@ test('PUT /api/data refuses an empty object, which would wipe the profile and ke
   assert.deepEqual(onDisk().workouts.map(w => w.id), ['w1'], 'the profile is still there');
 
   // …and a document that carries one real key alongside them is a profile, and goes through.
-  assert.equal((await put({ state: { _rev: 99, _ts: 1, routines: [] }, baseRev: 1 })).status, 200);
+  assert.equal((await put({ state: { _rev: 99, _ts: 1, routines: [] }, baseRev: 1, stamped: true })).status, 200);
   assert.equal(await rev(), 2);
 });

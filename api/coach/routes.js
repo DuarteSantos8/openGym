@@ -17,7 +17,7 @@ import { validateBaseUrl, baseUrlFor } from './core/providers.js';
 const USER_ERROR = {
   off: 'the Coach is not set up on this instance',
   busy: 'the Coach is already thinking about your training',
-  cap: 'the Coach is resting — try again tomorrow',
+  cap: 'the Coach is taking a rest day, try again tomorrow',
   consent: 'the Coach needs your go-ahead first',
   // Verbatim, because it tells the user the one thing that resolves it and names who resolves
   // it. A vaguer message here turns into a support question for the person running the box.
@@ -27,11 +27,13 @@ const USER_ERROR = {
 const HTTP_FOR = { off: 503, busy: 409, cap: 429, consent: 403, shared: 409, unprivileged: 503 };
 
 export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
-  /** Every user route starts the same way: signed in, feature on, feature reachable. */
+  /** Every user route starts the same way: signed in, feature on, feature reachable. The class
+   *  goes beside the words, as enqueue's refusal sends it: the app shows its own translated line
+   *  for the class, and these English words only where it has none. */
   const guard = (req, res) => {
     const user = readSession(req);
     if (!user) { json(res, 401, { error: 'not signed in' }); return null; }
-    if (!cfgStore.isEnabled() || !cfgStore.isConnected()) { json(res, 503, { error: USER_ERROR.off }); return null; }
+    if (!cfgStore.isEnabled() || !cfgStore.isConnected()) { json(res, 503, { error: USER_ERROR.off, code: 'off' }); return null; }
     return user;
   };
   const failEnqueue = (res, e) => {

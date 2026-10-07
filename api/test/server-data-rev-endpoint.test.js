@@ -43,5 +43,7 @@ test('GET /api/data/rev tracks PUT /api/data', async t => {
   assert.deepEqual(await (await fetch(`${base}/api/data/rev`, { headers: h })).json(), { rev: 0 });
   const put = await fetch(`${base}/api/data`, { method: 'PUT', headers: h, body: JSON.stringify({ state: { workouts: [], routines: [] }, baseRev: 0 }) });
   assert.equal(put.status, 200);
-  assert.deepEqual(await (await fetch(`${base}/api/data/rev`, { headers: h })).json(), { rev: 1 });
+  const after = await (await fetch(`${base}/api/data/rev`, { headers: h })).json();
+  assert.equal(after.rev, 1);
+  assert.match(after.wid, /^[0-9a-f]{16}$/, 'the write id of the stored document');
 });

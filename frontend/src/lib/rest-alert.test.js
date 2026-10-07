@@ -5,11 +5,11 @@ describe('buildRestAlert', () => {
   const now = 1_700_000_000_000
 
   it('schedules a public notification', () => {
-    const alert = buildRestAlert({ at: now + 90_000, title: 'Rest over — next set!', sound: true, now })
+    const alert = buildRestAlert({ at: now + 90_000, title: 'Rest’s over. Next set!', sound: true, now })
     expect(alert).toMatchObject({
       id: REST_ALERT_ID,
       channelId: REST_CHANNEL_ID,
-      title: 'Rest over — next set!',
+      title: 'Rest’s over. Next set!',
       at: now + 90_000,
       allowWhileIdle: true,
       countdownTitle: 'Rest',

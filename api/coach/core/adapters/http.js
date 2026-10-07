@@ -125,7 +125,7 @@ export function httpAdapter(spec) {
       const key = keyOf(env);
       if (!key && !meta.keyOptional) return { code: -1, text: '', stderr: `no API key configured for ${id}`, spawnError: true };
       const chosen = model || meta.defaultModel;
-      if (!chosen) return { code: 1, text: '', stderr: `no model chosen for ${id} — pick one from the list the endpoint serves` };
+      if (!chosen) return { code: 1, text: '', stderr: `no model chosen for ${id} (pick one from the list the endpoint serves)` };
 
       let body = spec.body({ model: chosen, prompt, system: system || null, schema: schema || null, maxTokens: MAX_OUTPUT_TOKENS });
       let retriedWithoutJsonMode = false;
@@ -161,7 +161,7 @@ export function httpAdapter(spec) {
         let out;
         try { out = spec.readText(data); } catch (e) { out = { error: `unexpected response shape: ${trim(e.message, 100)}` }; }
         if (out.error) return { code: 1, text: '', stderr: out.error };
-        if (out.truncated) return { code: 1, text: '', stderr: 'the answer was cut off at the output limit — try a smaller plan or a bigger model' };
+        if (out.truncated) return { code: 1, text: '', stderr: 'the answer was cut off at the output limit; try a smaller plan or a bigger model' };
         return { code: 0, text: String(out.text || '').trim(), stderr: '' };
       }
     }

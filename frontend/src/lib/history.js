@@ -2,7 +2,7 @@
 import { todayISO, isoOf, weekKey, weekStartOf, fmtNum } from './format.js'
 import { fmtSpeed } from './speed.js'
 import { isCardio, isBodyweightEq, isAssisted, betterWeight } from './exercises.js'
-import { phaseForSet, modeForSet, modeForEntry, isWarmupRow, normalizeMode, completedVolumeOf, hasCompletedWork, nextDropWeight, splitBurstReps, makeSideSet, isSideSet, syncSideAggregate, WEIGHT_ORIGIN_MANUAL, dropsOf, clustersOf } from './workout-model.js'
+import { phaseForSet, modeForSet, modeForEntry, isWarmupRow, isDropSet, isRestPauseSet, normalizeMode, completedVolumeOf, hasCompletedWork, nextDropWeight, splitBurstReps, makeSideSet, isSideSet, syncSideAggregate, WEIGHT_ORIGIN_MANUAL, dropsOf, clustersOf } from './workout-model.js'
 const objectOf = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {}
 // Completed-state-independent work rows whose authoritative mode matches the requested mode.
 const workRowsForMode = (entry = {}, mode = 'reps') => {
@@ -17,6 +17,8 @@ const workRowsForMode = (entry = {}, mode = 'reps') => {
 // for the hook — and it re-exports this very `t` from core, so nothing changes here except what
 // gets dragged along behind it.
 import { t } from './i18n-core.js'
+import { queueNext, pinState, queueLiveOn } from './queue.js'
+import { isPyramid, pyramidLabel, pyramidTargetAt, PYRAMID_MAX } from './pyramid.js'
 
 // How an exercise is logged (issue #16). This used to be derived from the body part alone,
 // which meant a plank or a farmer's carry could only be timed by filing it under cardio.
@@ -54,6 +56,14 @@ export const sideReps = reps => (reps || 0) / 2
 // Unilateral work moves in pairs, so its rep target steps by two — 16, 18, 20 — and a total
 // that stayed odd would put a rep on one side and not the other.
 export const repStep = cfg => (isPerSide(cfg) ? 2 : 1)
+// How many planned sets a count of logged work rows stands for: the inverse of buildSets, which
+// lays a per-side timed hold out as one left and one right row per set. Without it a copy of
+// such a session (Repeat today, Save as routine) read 2 sets as 4 and buildSets doubled them
+// again. A pair with only one side logged still counts as its set.
+export const setsFromRows = (cfg, rows) => {
+  const n = Math.max(0, Number(rows) || 0)
+  return modeOf(cfg) === 'time' && isPerSide(cfg) ? Math.ceil(n / 2) : n
+}
 
 // mm:ss for a work duration — seconds alone read badly past a minute ("90 s" vs "1:30").
 export function fmtSec(sec) {
@@ -107,6 +117,7 @@ const effortTail = s => {
 // One-line summary of a logged set. `cfg` carries the mode when the caller has it (a routine
 // entry or a workout entry); passing an id alone keeps the old body-part behaviour.
 // `speedUnit` is the profile's (lib/speed.js speedUnitOf); without one a cardio set reads km/h.
+const EXPLICIT_MODES = new Set(['reps', 'time', 'cardio'])
 export function setLabel(id, s, cfg, speedUnit) {
   // The id is the caller's when the config does not carry one: a freestyle target is built
   // without it, and modeOf would then fall back to 'reps' and print a run as "0×0".
@@ -115,6 +126,10 @@ export function setLabel(id, s, cfg, speedUnit) {
   // A set saved by an older build carries no target with it; the set's own fields still say what
   // it was — seconds for a timed set, minutes for cardio — so those are not read back as "0 reps".
   if (!cfg && !(s.r > 0)) { if (s.min > 0 || s.speed > 0) mode = 'cardio'; else if (s.sec > 0) mode = 'time' }
+  // A target with no mode of its own takes it from the exercise, and an exercise can change: a
+  // custom one moved to Cardio after months of rep sets read them all as "0 min @ 0 km/h", next
+  // to the volume those same sets still count. A set with reps and nothing cardio was a rep set.
+  if (!EXPLICIT_MODES.has(cfg?.mode) && mode !== 'reps' && s.r > 0 && !(s.min > 0 || s.speed > 0 || s.sec > 0)) mode = 'reps'
   if (mode === 'cardio') return `${s.min || 0} min @ ${fmtSpeed(s.speed || 0, speedUnit)}`
   if (mode === 'time') return fmtSec(s.sec) + (s.w > 0 ? ` · ${fmtNum(s.w)}` : '')
   const bw = isBw(c)
@@ -150,7 +165,7 @@ export function setLabel(id, s, cfg, speedUnit) {
     const partial = s.sides.L.done !== s.sides.R.done
     return ['L', 'R'].map(key => {
       const side = s.sides[key]
-      return `${t(key)} ${partial && !side.done ? '—' : oneSide(side) + effortTail(side)}`
+      return `${t(key)} ${partial && !side.done ? '–' : oneSide(side) + effortTail(side)}`
     }).join(' · ')
   }
   // Bodyweight reads as what you did — "12", or "+10 × 12" once there is a belt involved —
@@ -179,6 +194,7 @@ export function setsRepsOf(cfg) {
   const n = cfg.sets || 1
   if (mode === 'cardio') return `${n} × ${cfg.min || 20} min`
   if (mode === 'time') return `${n} × ${fmtSec(cfg.sec || 45)}`
+  if (isPyramid(cfg)) return pyramidLabel(cfg.pyramid)
   return `${n} × ${repsOf(cfg)}`
 }
 
@@ -190,7 +206,9 @@ export function exLine(cfg, unit, speedUnit) {
   // Added weight reads as added: "+10 kg" on a dip belt, "60 kg" on a barbell.
   const load = cfg.weight ? ' · ' + (isBw(cfg) ? '+' : '') + fmtNum(cfg.weight) + ' ' + unit : ''
   if (mode === 'cardio') return `${n} × ${cfg.min || 20} min @ ${fmtSpeed(cfg.speed || 8, speedUnit)}`
-  if (mode === 'time') return `${setsRepsOf(cfg)}${load}`
+  // A timed hold has no rep count to spell a split out of ("8/side" below) — "per side" says it
+  // happens twice, once each side (buildWorkSets), rather than trying to divide a duration.
+  if (mode === 'time') return `${setsRepsOf(cfg)}${load}${isPerSide(cfg) ? ' · ' + t('per side') : ''}`
   // This is the line with room for it, so the split is spelled out: "3 × 16 · 8/side".
   const split = isPerSide(cfg) ? ' · ' + t('{0}/side', repsOf(cfg, v => fmtNum(sideReps(v)))) : ''
   return `${setsRepsOf(cfg)}${load}${split}`
@@ -349,8 +367,14 @@ export const NOTE_MAX = 500
  */
 export function pinnedNoteFor(S, exId) {
   const workouts = S?.workouts || []
+  // Editing a logged workout: its own pinned note is already in the editor, as that entry's
+  // note, so it is not shown a second time as the note from last time. The key is the one
+  // session-edit.js gives the editor (id, or day|start for a workout logged before ids).
+  const editing = S?.active?.editingWorkoutId
   for (let i = workouts.length - 1; i >= 0; i--) {
-    const en = (workouts[i].entries || []).find(e => e.id === exId)
+    const w = workouts[i]
+    if (editing != null && (w.id != null ? w.id : `${w.d}|${w.start}`) === editing) continue
+    const en = (w.entries || []).find(e => e.id === exId)
     const note = (en?.note || '').trim()
     if (note && en.notePin) return { note, d: workouts[i].d }
   }
@@ -392,13 +416,29 @@ export function bestWeightFor(S, exId) {
  *
  * `S.dayPlan[iso]` stays scalar (a routine id, the `'rest'` sentinel, or undefined): the
  * per-date override and Start-time are single-pick. All array-tolerance is on `S.week`.
+ *
+ * A coach week (`S.queue`, lib/queue.js) has no weekdays: its sessions are done in order, and
+ * the first undone one is today's session — so it goes in front of whatever the weekday
+ * holds. The planner's own weekday pointers (a week applied before the queue existed) are
+ * hidden behind it; routines you planned yourself ride along as a combined day. `today` is a
+ * parameter so tests and the reminder builder can pin the clock; the override still wins.
+ *
+ * An override naming a queue session is a PIN (queue.js): the session is that day's, with the
+ * weekday's own routines riding along as on any queue day, and the floating rule skips it on
+ * other days. Once the session is done the pin is fulfilled and the day reads as if unpinned.
  */
-export function effectiveRoutineIds(S, iso) {
+export function effectiveRoutineIds(S, iso, today = todayISO()) {
   const ov = S.dayPlan[iso]
   if (ov === 'rest') return []
-  if (ov && S.routines.some(r => r.id === ov)) return [ov]
+  const pin = pinState(S, ov)
+  if (!pin && ov && S.routines.some(r => r.id === ov)) return [ov]
   const wd = new Date(iso + 'T12:00:00').getDay()
-  return [].concat(S.week[wd] || []).filter(id => S.routines.some(r => r.id === id))
+  const weekday = [].concat(S.week[wd] || []).filter(id => S.routines.some(r => r.id === id))
+  const q = pin === 'open' ? ov : queueNext(S, iso, today)
+  // The planner's weekday pointers stay hidden on the queue's day even when it has no session for
+  // it (every remaining one pinned to another day): those sessions have their days.
+  const own = q || queueLiveOn(S, iso, today) ? weekday.filter(id => !S.queue.ids.includes(id)) : weekday
+  return q ? [q, ...own] : own
 }
 export function effectiveRoutines(S, iso) {
   return effectiveRoutineIds(S, iso).map(id => S.routines.find(r => r.id === id)).filter(Boolean)
@@ -483,12 +523,20 @@ function buildWorkSets(S, cfg, options = {}) {
     return sets
   }
   if (mode === 'time') {
-    for (let i = 0; i < n; i++) {
+    // A timed hold has no rep count to split in half, so "per side" here means the whole hold
+    // happens once per side rather than once total: the planned sets double (2 sets of 30s
+    // becomes 2 left + 2 right, each still 30s) instead of the duration being divided. Plain
+    // rows tagged with `side`, not the L/R sub-row pair reps uses (isSideSet) — there is only
+    // one duration to log per row, not two independent values to track side by side.
+    const count = isPerSide(cfg) ? n * 2 : n
+    for (let i = 0; i < count; i++) {
       // Only carry a previous value over when it came from a timed set — switching an
       // exercise from reps to time must not seed the duration from a rep count.
       const prev = prevAt(i)
       const carried = prev && prev.sec > 0 ? prev : null
-      sets.push({ sec: carried ? carried.sec : (cfg.sec || 45), w: carried ? (carried.w || 0) : (cfg.weight || 0), done: false })
+      const row = { sec: carried ? carried.sec : (cfg.sec || 45), w: carried ? (carried.w || 0) : (cfg.weight || 0), done: false }
+      if (isPerSide(cfg)) row.side = i % 2 === 0 ? 'L' : 'R'
+      sets.push(row)
     }
     return sets
   }
@@ -507,6 +555,16 @@ function buildWorkSets(S, cfg, options = {}) {
       ? (cfg.weight > 0 ? cfg.weight : (lastRegular && lastRegular.r > 0 ? lastRegular.w : cfg.weight))
       : usable ? usable.w : (conf && conf.w > 0 ? conf.w : cfg.weight)
     const row = { w, r: planReps || !usable ? cfg.reps : usable.r, done: false }
+    // Pyramid sets: the plan owns each set's own target; a max set opens at what you managed
+    // in that same set last time, so the number to beat is already there.
+    if (isPyramid(cfg)) {
+      const target = pyramidTargetAt(cfg.pyramid, i)
+      // A pyramid is never progressed, so a planned session builds it with `useTarget` and
+      // `usable` is null there: the max set reads the same set last time directly.
+      const seed = usable || (lastRegular && lastRegular.r > 0 ? lastRegular : null)
+      if (target === PYRAMID_MAX) { row.r = seed ? seed.r : 0; row.max = true }
+      else row.r = target
+    }
     // A unilateral exercise logs each side on its own (issue #60): the row splits into L/R,
     // each seeded with half the total reps at the same weight. When "last time" was itself a
     // per-side set, carry its two sides over so an asymmetry you logged persists — both sides'
@@ -700,6 +758,34 @@ export function moveSupersetUnit(items, index, direction) {
   reordered[target] = selected
   return reordered.flat().map(i => items[i])
 }
+// The routine editor's up/down arrows (#377). A member of a superset moves inside it, past the
+// next member; at the superset's edge it leaves it — its position kept, its `sg` dropped — so the
+// next press moves it on as an exercise of its own. Anything else (a single exercise, a lone
+// leftover `sg`) moves as a whole unit, as moveSupersetUnit does: it jumps a superset and never
+// joins one (that is the link button's job). Moving a whole superset is left to drag. Returns the
+// new list — entries that change are copies, the others keep their identity — or null when the
+// press would do nothing. A superset left with one member is dissolved here, like cleanupSg would.
+export function moveRoutineEntry(items, index, direction) {
+  if (!Array.isArray(items) || (direction !== -1 && direction !== 1)) return null
+  if (!Number.isInteger(index) || index < 0 || index >= items.length) return null
+  const group = contiguousSgGroup(items, index)
+  if (group.length < 2) return moveSupersetUnit(items, index, direction)
+  const next = items.slice()
+  const other = index + direction
+  if (group.includes(other)) {
+    next[index] = items[other]
+    next[other] = items[index]
+    return next
+  }
+  const { sg, ...left } = items[index]
+  next[index] = left
+  const rest = group.filter(i => i !== index)
+  if (rest.length === 1) {
+    const { sg: _gone, ...alone } = items[rest[0]]
+    next[rest[0]] = alone
+  }
+  return next
+}
 export function unitOf(units, idx) { return units.find(u => u.includes(idx)) || [idx] }
 
 export function streakWeeks(S) {
@@ -842,13 +928,105 @@ export function insertWarmupRow(rows, mode, target, step = 2.5) {
   return next
 }
 
-/** Remove the row at `i`, never emptying the entry below one row. */
-export function removeRowAt(rows, i) {
-  if (rows.length <= 1) return rows.slice()
-  const next = rows.slice()
-  next.splice(i, 1)
+// The set-number menu's "Make it a warm-up set": the row takes the shape insertWarmupRow gives a
+// warm-up (its weight, reps and tick kept; drops, bursts, sides and effort dropped, since a
+// warm-up has none) and moves to the end of the warm-ups, so it is numbered, rested and left out
+// of progression and records like any other warm-up. A row that is one already is left alone.
+// Only a plain straight set: a warm-up is one weight times one rep count, so a drop set would
+// lose its drops, a rest-pause row would add its bursts into one inflated rep count, and a
+// per-side row would merge both sides with no way back (a per-side warm-up is never made a work
+// set again).
+export const canBeWarmup = row => !!row && !isWarmupRow(row) && !isSideSet(row) && !isDropSet(row) && !isRestPauseSet(row)
+
+export function makeWarmupAt(rows, i) {
+  const src = rows[i]
+  if (!canBeWarmup(src)) return rows
+  const warm = { w: src.w || 0, r: src.r, done: !!src.done, phase: 'warmup', warmup: true }
+  if (src.at != null) warm.at = src.at
+  return placeRow(rows, i, warm)
+}
+// And back: "Count it as a working set" makes it the first work set.
+export function makeWorkAt(rows, i) {
+  const src = rows[i]
+  if (!src || !isWarmupRow(src)) return rows
+  const { phase, warmup, ...work } = src
+  return placeRow(rows, i, work)
+}
+// Takes row i out and puts `row` where the work sets begin.
+const placeRow = (rows, i, row) => {
+  const next = rows.filter((_, j) => j !== i)
+  const firstWork = next.findIndex(x => !isWarmupRow(x))
+  next.splice(firstWork === -1 ? next.length : firstWork, 0, row)
   return next
 }
+
+/** The rows one set takes up at `i`: a timed per-side hold is an L row and an R row that read
+ *  as one set number (addSet pushes them as a pair), so taking one out takes its partner too.
+ *  Anything else is the row alone. Returns [start, count]. */
+export function setSpanAt(rows, i) {
+  const row = rows[i]
+  if (row?.side === 'L' && rows[i + 1]?.side === 'R') return [i, 2]
+  if (row?.side === 'R' && rows[i - 1]?.side === 'L') return [i - 1, 2]
+  return [i, 1]
+}
+
+
+// What a copied set leaves behind (v1.3.11, swipe right or "Copy this set"): the tick and when it
+// happened, a hold's set-aside plan, the manual-weight marker (the copy follows a weight change
+// above it like any inherited row) and the drop/burst sub-rows, which belong to the set that was
+// actually done. Weight, reps, time, speed, effort, the warm-up phase, a pyramid's Max and the
+// side layout all come along.
+const NOT_COPIED = ['done', 'at', 'planSec', 'weightOrigin', 'type', 'drops', 'clusters']
+const bare = src => {
+  const out = { ...src }
+  for (const k of NOT_COPIED) delete out[k]
+  return out
+}
+function copyOfRow(src) {
+  if (isSideSet(src)) {
+    const side = sd => ({ ...bare(sd), done: false })
+    return syncSideAggregate({ ...bare(src), sides: { L: side(src.sides.L), R: side(src.sides.R) }, done: false })
+  }
+  return { ...bare(src), done: false }
+}
+
+/** "One more like this one": a copy of row `i` right below it, unticked and without sub-rows.
+ *  A timed per-side hold is planned as an L row then an R row (buildSets), so copying either
+ *  half copies the pair and puts it after the pair, keeping every L next to its R. */
+export function copySpanAt(rows, i) {
+  const work = r => r && !isWarmupRow(r) ? r.side : null
+  const start = work(rows[i]) === 'R' && work(rows[i - 1]) === 'L' ? i - 1 : i
+  const end = work(rows[start]) === 'L' && work(rows[start + 1]) === 'R' ? start + 1 : start
+  return { start, end }
+}
+export function copyRowAt(rows, i) {
+  if (!rows[i]) return rows.slice()
+  const { start, end } = copySpanAt(rows, i)
+  const next = rows.slice()
+  next.splice(end + 1, 0, ...rows.slice(start, end + 1).map(copyOfRow))
+  return next
+}
+
+/** Undo for a removed set: `row` back at index `i` exactly as it was (tick, values, sub-rows).
+ *  An index past the end (the entry lost rows since) lands it last. */
+export function insertRowAt(rows, i, row) {
+  const next = rows.slice()
+  const at = Number.isInteger(i) ? Math.max(0, Math.min(i, next.length)) : next.length
+  next.splice(at, 0, row)
+  return next
+}
+
+/** Remove the set at `i` (both halves of a per-side pair), never emptying the entry. */
+export function removeRowAt(rows, i) {
+  const [start, count] = setSpanAt(rows, i)
+  if (rows.length <= count) return rows.slice()
+  const next = rows.slice()
+  next.splice(start, count)
+  return next
+}
+
+/** "Remove set": the last set, which for a timed per-side exercise is its last L/R pair. */
+export const removeLastSet = rows => rows.length ? removeRowAt(rows, rows.length - 1) : rows.slice()
 
 /** Completed non-warm-up sets across a workout's entries, counted the way setsDone counts them —
  *  each side of a unilateral row on its own — so "22 sets · 19 work" never reads as three

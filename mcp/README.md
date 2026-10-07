@@ -74,7 +74,7 @@ Nine read-only tools in v1:
 | `list_routines` | What routines are saved in my profile? (names + exercise counts) |
 | `get_routine` | What does the Push Day routine prescribe? (sets/reps/weight and rest per exercise) |
 | `preview_session` | What will the app actually put on screen when I start this routine — after the progression policy and my history have overridden the plan? |
-| `get_week_plan` | What's on my plan this week, including today with any date-specific override? |
+| `get_week_plan` | What's planned when: the next seven days with their routines and how each was decided (coach week, a pinned session, an override, the weekday plan), the current coach week when one is running, and the weekday table. |
 | `list_workouts` | Recent sessions — newest first, with dates, sets done/planned, volume, duration, PRs. |
 | `get_workout` | Full set-by-set breakdown of one session, by `workout_id` or by date. On a day with two sessions the date alone returns both ids to pick from rather than guessing at one. |
 | `get_bodyweight` | Weigh-ins with the latest weight, the goal line, and deltas vs goal. |

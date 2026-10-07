@@ -19,15 +19,33 @@ const bytesToUrlBase64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf))
 // the account's subscriptions belong to this device, so a rest-timer alert goes to the phone
 // that started the rest and not to every tab of the account. Nothing identifying in it.
 const DEVICE_KEY = 'gym_device'
+// The shape the server keeps, mirrored from deviceIdOf in api/server.js: anything else it treats
+// as no id at all. A stored value outside it (set by hand, or left by some other build) went out
+// as it was, so the row kept no id, the boot sync saw that and sent it again, on every boot, and
+// the rest timer's alert went to every device. Such a value is replaced like a missing one.
+const DEVICE_ID_RULE = /^[A-Za-z0-9_-]{8,64}$/
 export function deviceId() {
   try {
     let id = localStorage.getItem(DEVICE_KEY)
-    if (!id) {
+    if (!id || !DEVICE_ID_RULE.test(id)) {
       id = (crypto.randomUUID?.() || Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('')).replace(/-/g, '')
       localStorage.setItem(DEVICE_KEY, id)
     }
     return id
   } catch { return undefined }
+}
+
+// The worker re-registers a subscription the push service rotated (public/sw.js,
+// pushsubscriptionchange), usually with no page open, and it cannot read localStorage. It finds
+// the device id here instead, in a cache of its own that its activate sweep leaves alone. Left
+// every time this browser holds a subscription the server should have, so a browser subscribed
+// before the worker looked for it has it by its next boot.
+const DEVICE_CACHE = 'opengym-device'
+const DEVICE_URL = '/opengym-device-id'
+async function shareDeviceId() {
+  const id = deviceId()
+  if (!id) return
+  try { await (await caches.open(DEVICE_CACHE)).put(DEVICE_URL, new Response(id)) } catch { /* no Cache API: the worker sends none, as before */ }
 }
 
 // The worker is registered at boot; on https it is there within a moment, but a promise that
@@ -46,6 +64,7 @@ export async function enablePush() {
   const reg = await readyWorker()
   const { key } = await api('/api/push/public-key')
   const subscription = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(key) })
+  await shareDeviceId()
   await register(subscription)
 }
 
@@ -64,7 +83,8 @@ export async function disablePush() {
    db.json, a regenerated VAPID key — and the toggle used to read "on" from the browser's side
    while nothing was ever going to arrive. Resolves to whether the server now holds it:
    - no permission or no subscription here → false, nothing to do;
-   - the server already has this endpoint → true, no write;
+   - the server already has this endpoint under this browser's device id → true, no write;
+   - the server has it under no device id or another one → sent again with this one, true;
    - the server lost it → re-registered, true;
    - the server's key changed → the old subscription is useless; unsubscribe, subscribe against
      the new key, register, true.
@@ -74,6 +94,7 @@ export async function syncPushSubscription() {
   const reg = await readyWorker()
   let sub = await reg.pushManager.getSubscription()
   if (!sub) return false
+  await shareDeviceId()
   const { key } = await api('/api/push/public-key')
   const mine = sub.options?.applicationServerKey
   if (mine && key && bytesToUrlBase64(mine) !== key.replace(/=+$/, '')) {
@@ -82,8 +103,16 @@ export async function syncPushSubscription() {
     await register(sub)
     return true
   }
-  const { subscribed } = await api('/api/push/status?endpoint=' + encodeURIComponent(sub.endpoint))
-  if (!subscribed) await register(sub)
+  // A row the server stores under no device id, or another one, is sent again with this
+  // browser's: the same endpoint and keys, and the server's upsert keeps the row's created date.
+  // Without the id the server cannot tell this browser's rest-timer alert from the account's, and
+  // sends it to every device. Such rows come from before device ids, or from the worker re-sending
+  // a rotated subscription with no id to hand, and the check used to stop at "subscribed". An api
+  // from before this answer sends no deviceId at all (not null): it cannot say, and a re-send it
+  // never reports back would be a db.json write on every boot.
+  const { subscribed, deviceId: storedAs } = await api('/api/push/status?endpoint=' + encodeURIComponent(sub.endpoint))
+  const id = deviceId()
+  if (!subscribed || (id && storedAs !== undefined && storedAs !== id)) await register(sub)
   return true
 }
 

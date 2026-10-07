@@ -16,7 +16,7 @@ Back returns to the exercise list, where a small timer opens the countdown again
 swipe also returns: toward the right for a left wrist and toward the left for a right wrist.
 Rest completion uses the system notification haptic/sound and follows Watch silent mode.
 Finishing and discarding each require confirmation; discarding does not save the workout.
-Choose the countdown font and color in the iPhone app's Settings → Apple Watch.
+Choose the countdown font and color in the iPhone app's Settings → Workout → Apple Watch.
 
 Starting on the iPhone requests launch of the paired Watch app through HealthKit. Starting on
 the Watch notifies the iPhone while it is inactive; tapping the notification opens openGym.

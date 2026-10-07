@@ -82,7 +82,7 @@ afterEach(() => {
   host.remove()
 })
 
-const mount = () => act(() => root.render(<Settings />))
+const mount = () => act(() => root.render(<Settings page="data" />))
 const resetRow = () => [...host.querySelectorAll('.lrow')].find(r => r.textContent.includes('Reset everything'))
 const openDialog = () => {
   act(() => { resetRow().click() })
@@ -154,9 +154,9 @@ describe('Settings — reset everything', () => {
 })
 
 describe('Settings — footer', () => {
-  it('links the source code to its home on GitHub', () => {
-    mount()
-    const link = [...host.querySelectorAll('a')].find(a => a.textContent === 'source code')
+  it('links the source code to its home on GitHub, on About & updates', () => {
+    act(() => root.render(<Settings page="about" />))
+    const link = [...host.querySelectorAll('a')].find(a => a.textContent === 'Source code')
     expect(link.getAttribute('href')).toBe('https://github.com/DuarteSantos8/openGym')
   })
 })

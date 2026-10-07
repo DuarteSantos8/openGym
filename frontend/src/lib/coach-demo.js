@@ -70,10 +70,10 @@ function buildReview(S) {
   return {
     id: 'demo-review', kind: 'review', createdAt: Date.now(), expiresAt: Date.now() + 864e5,
     planHash: planHash(S), iteration: 1,
-    summary: t('Three things worth changing, and one worth knowing about. Everything else is working — the squat and the pulls are both progressing on schedule.'),
+    summary: t('Three things worth changing, and one worth knowing about. Everything else is working: the squat and the pulls are both progressing on schedule.'),
     evidence: { from: sessions[0]?.d || iso(new Date(Date.now() - 28 * 864e5)), to: sessions.at(-1)?.d || iso(new Date()), sessions: sessions.length || 9 },
     changes,
-    notes: [t('Body weight has been flat for four weeks while the goal is to gain. That is a kitchen problem rather than a training one — the plan is not what is holding it back.')]
+    notes: [t('Body weight has been flat for four weeks while the goal is to gain. That’s a kitchen problem, not a training one. The plan isn’t what’s holding it back.')]
   }
 }
 
@@ -88,14 +88,14 @@ function buildPlan(S, intake) {
       id: 'dr1', name: t('Full body A'), emoji: '💪', prog: 'linear',
       why: t('The two big lower-body and pressing patterns first, while you are fresh.'),
       ex: [
-        mk(pick('upper legs', eq)?.id, null, 3, 8, t('The main lower-body driver — where most of the strength comes from.')),
+        mk(pick('upper legs', eq)?.id, null, 3, 8, t('The main lower-body driver, where most of the strength comes from.')),
         mk(pick('chest', eq)?.id, null, 3, 10, t('Horizontal pressing, the other half of the session.')),
         mk(pick('back', eq)?.id, null, 3, 10, t('A pull for every press, so the shoulders stay balanced.'))
       ].filter(e => e.id)
     },
     {
       id: 'dr2', name: t('Full body B'), emoji: '🏋️', prog: 'linear',
-      why: t('The same patterns, different variations — enough overlap to progress, enough difference to stay fresh.'),
+      why: t('The same patterns, different variations: enough overlap to progress, enough difference to stay fresh.'),
       ex: [
         mk(pick('upper legs', eq)?.id, null, 3, 10, t('Same pattern, higher reps than day A.')),
         mk(pick('shoulders', eq)?.id, null, 3, 10, t('Vertical pressing.')),
@@ -112,7 +112,7 @@ function buildPlan(S, intake) {
     bundle: {
       opengym_plan: 1, name: t('Coach plan'),
       summary: t('A two-day rotation across three sessions a week, built around the equipment you listed. Compounds first, one pull for every press, and enough overlap between the days that nothing goes two weeks without being trained.'),
-      basedOn: (S.workouts || []).length ? t('Based on the training already in this demo profile.') : t('No training history yet — starting conservatively.'),
+      basedOn: (S.workouts || []).length ? t('Based on the training already in this demo profile.') : t('No training history yet, so starting conservatively.'),
       week, routines, customEx: []
     }
   }
@@ -136,19 +136,19 @@ function buildDebrief(S, workoutId) {
   const complete = planned > 0 && done >= planned
   const score = complete ? (prs ? 9 : 8) : 7
   const highlights = [
-    complete ? t('Every planned set done — {0} of {1}.', done, planned) : t('{0} of {1} planned sets done.', done, planned),
+    complete ? t('Every planned set done: {0} of {1}.', done, planned) : t('{0} of {1} planned sets done.', done, planned),
     t('{0} {1} moved in total.', fmtNum(vol), S.unit)
   ]
   if (prs) highlights.push(t('{0} new personal records.', prs))
-  const watch = minutes && minutes > 80 ? [t('{0} minutes is long — rest periods may be creeping up.', minutes)] : [t('Top sets logged without an effort rating; add RIR so the next review can read how hard they were.')]
+  const watch = minutes && minutes > 80 ? [t('{0} minutes is long. Rest periods may be creeping up.', minutes)] : [t('Top sets logged without an effort rating; add RIR so the next review can read how hard they were.')]
   const nextTime = [complete ? t('Add the next load step on the main lift.') : t('Repeat the same loads and get every set.'), t('Keep the session under an hour and a quarter.')]
   return {
     id: 'demo-debrief', kind: 'debrief', createdAt: Date.now(), expiresAt: Date.now() + 864e5,
     planHash: planHash(S), iteration: 1,
     workout: { id: w.id, d: w.d, name: w.name || null, minutes, vol, sets: done, prs },
     summary: complete
-      ? t('A clean session: everything on the sheet got done and the loads held. This is exactly what progress looks like from the inside — unremarkable, repeated.')
-      : t('Most of the work got done. One or two sets fell short, which is fine once — it becomes a signal if the same sets miss next time.'),
+      ? t('A clean session: everything on the sheet got done and the loads held. This is exactly what progress looks like from the inside: unremarkable, repeated.')
+      : t('Most of the work got done. One or two sets fell short, which is fine once. It only becomes a signal if the same sets miss next time.'),
     score, highlights, watch, nextTime
   }
 }
@@ -191,7 +191,7 @@ export const demoReview = S => {
   // Refused before the job starts, the way demoDebrief refuses with no workout: without a
   // two-exercise routine buildReview has nothing to aim at, and a job that runs the whole wait
   // and ends with neither a proposal nor an error reads as the Coach ignoring you.
-  if (!reviewable(S)) throw Object.assign(new Error(t('There is no routine to review yet — build one with at least two exercises first.')), { status: 409, code: 'noroutine' })
+  if (!reviewable(S)) throw Object.assign(new Error(t('There’s no routine to review yet. Build one with at least two exercises first.')), { status: 409, code: 'noroutine' })
   return start('review', () => buildReview(S))
 }
 export const demoPlan = (S, intake) => start('create', () => buildPlan(S, intake))
@@ -203,7 +203,7 @@ export const demoRefine = S => start('create', () => {
   return { ...p, iteration: (pending?.iteration || 1) + 1, summary: t('Revised as you asked. Everything you did not question is exactly as it was.') + ' ' + p.summary }
 })
 export const demoDebrief = (S, workoutId) => {
-  if (!(S.workouts || []).some(w => w && w.d)) throw Object.assign(new Error(t('There is no workout to look at yet — log one first.')), { status: 409, code: 'noworkout' })
+  if (!(S.workouts || []).some(w => w && w.d)) throw Object.assign(new Error(t('There’s no workout to look at yet. Log one first.')), { status: 409, code: 'noworkout' })
   return start('debrief', () => buildDebrief(S, workoutId))
 }
 export const demoResolve = () => { pending = null; return { ok: true } }

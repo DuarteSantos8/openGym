@@ -13,8 +13,30 @@ let _uid = null
 let _watcher = null
 let _loadedMtime = 0    // mtimeMs we last read at — used to catch watcher omissions
 
+// null means one thing only: the file is not there (an account that never synced from a device).
+// Every other failure — no permission on the mount, a truncated or corrupt file — is a real fault,
+// and reporting it as "no synced state yet, sign in from a device" sends the operator to fix the
+// wrong thing while the data sits there unreadable.
 function readJsonOrNull(file) {
-  try { return JSON.parse(fs.readFileSync(file, 'utf8')) } catch { return null }
+  let raw
+  try {
+    raw = fs.readFileSync(file, 'utf8')
+  } catch (e) {
+    if (e.code === 'ENOENT') return null
+    // Node's own message repeats the path it was given, and that is the server's absolute path:
+    // the basename identifies the file just as well.
+    const base = path.basename(file)
+    const err = new Error(`cannot read ${base}: ${e.code || e.name} — ${String(e.message).replaceAll(file, base)}`)
+    err.code = 'EIO'
+    throw err
+  }
+  try {
+    return JSON.parse(raw)
+  } catch (e) {
+    const err = new Error(`${path.basename(file)} is not valid JSON: ${e.message}`)
+    err.code = 'EIO'
+    throw err
+  }
 }
 
 function reloadDb() { _db = readJsonOrNull(path.join(DATA_DIR, 'db.json')) || { users: [], creds: [], subs: [], invites: [] } }
@@ -40,17 +62,23 @@ function resolveUid() {
     reloadDb()
     if (_db.users.length === 1) return _db.users[0].id
     if (_db.users.length === 0) throw new Error(`no openGym users found in ${path.join(DATA_DIR, 'db.json')} — sign in at least once on a device`)
-    // Multiple users in db.json but no state files yet — list their ids, not the (empty)
-    // files list. Hit when accounts exist but none has signed in on a device.
-    throw new Error(
-      `multiple openGym users found — set OPENGYM_UID to one of: ${_db.users.map(u => u.id).join(', ')}\n` +
-      `  (look them up in ${path.join(DATA_DIR, 'db.json')} under "users"[].id)`
-    )
+    // Multiple users in db.json but no state file yet — hit when accounts exist but none has
+    // signed in on a device.
+    throw ambiguousUid(_db.users.map(u => u.id))
   }
-  throw new Error(
-    `multiple openGym users found — set OPENGYM_UID to one of: ${files.join(', ')}\n` +
-    `  (look them up in ${path.join(DATA_DIR, 'db.json')} under "users"[].id)`
-  )
+  throw ambiguousUid(files)
+}
+
+// "Which profile?" is a config question for the operator, and this message travels as a tool
+// result: into the model's context and into whatever transcript it lands in. Every account id on
+// the box, plus the server's absolute paths, has no business there. The count and the setting to
+// change are what the model can act on; the ids and the path go to the server log on stderr,
+// where the operator is already reading the startup line.
+function ambiguousUid(ids) {
+  console.error(`[opengym-mcp] ${ids.length} openGym profiles in ${DATA_DIR}: ${ids.join(', ')} — set OPENGYM_UID to one of them`)
+  const err = new Error(`this openGym data directory holds ${ids.length} profiles — set OPENGYM_UID to the one this server should read (the ids are on the server's stderr, and in db.json under "users"[].id)`)
+  err.code = 'EINVAL'
+  return err
 }
 
 // Idempotent. Picks the uid, loads db.json, attaches the watcher, primes state.

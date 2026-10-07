@@ -24,7 +24,7 @@
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 <link rel="icon" type="image/png" sizes="180x180" href="icon-180.png">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="styles.css?v=21">
+<link rel="stylesheet" href="styles.css?v=22">
 <script>document.documentElement.className += ' js'</script>
 <!-- Umami web analytics for opengym.duarte-santos.ch (self-hosted, cookieless). -->
 <script defer src="https://stats.duarte-santos.ch/script.js" data-website-id="db36019e-50f4-453c-9c56-d0588aefe233"></script>
@@ -231,18 +231,18 @@
     <li>The <a href="https://github.com/DuarteSantos8/openGym/releases" rel="noopener">GitHub release</a> for that version, with the APK and its <code>.sha256</code> attached.</li>
   </ul>
   <p>Got the file from anywhere else? Verify it against the registry's <code>.sha256</code>
-     before installing. <b>Updates come to you:</b> when a newer release exists, Settings &rarr; Data
+     before installing. <b>Updates come to you:</b> when a newer release exists, Settings &rarr; About &amp; updates
      shows "openGym vX available" &mdash; one tap downloads the signed APK, checks its SHA-256
      against the published checksum and opens the installer (no checksum, no install; the first
      time Android asks for the "install unknown apps" permission). Installing over the old
      version by hand works too &mdash; same signing key, data stays. Everything is stored on the phone itself. The app goes online for two things only:
      exercise images and animations from a CDN, on demand, and &mdash; when you open
-     Settings &mdash; a look at the public release list on GitLab to see whether a newer
+     Settings &rarr; About &amp; updates &mdash; a look at the public release list on GitLab to see whether a newer
      version exists.</p>
   <p>The app requests notification permission only when you switch the workout-day reminder
      on, and declares <code>SCHEDULE_EXACT_ALARM</code> so reminders fire to the minute.
      Reminders are scheduled per calendar date — a day you already trained, or rescheduled
-     away, stays quiet.</p>
+     away, stays quiet. The missed-workout nudge, when switched on, is scheduled the same way.</p>
 
   <h2 id="iphone">Use on iPhone</h2>
   <p>Apple does not allow installing apps outside the App Store, so there is no iOS download —
@@ -269,7 +269,7 @@
     <li><b>Reschedule any day.</b> Sick, missed a session, fewer gym days this week? Move a
         workout to another date without touching the weekly plan itself — the override applies
         to that date only.</li>
-    <li><b>Weeks start where you say.</b> Monday or Sunday, in Settings &rarr; General. The
+    <li><b>Weeks start where you say.</b> Monday or Sunday, in Settings &rarr; Plan &amp; schedule. The
         weekly plan, the day strip on Home, the calendar grid and every &ldquo;this week&rdquo;
         total &mdash; the workout count, the week streak, the seven-day muscle balance &mdash;
         all follow it. Existing profiles keep the Monday week they have been looking at.</li>
@@ -358,7 +358,7 @@
         name &mdash; note, details, progression, bar weight, warm-up set, superset with the
         previous or next exercise, swap, move, remove &mdash; and the set number is the set's own
         menu (drop set, rest-pause burst, remove). Nothing else sits between you and the numbers.
-        Miss a button? Settings &rarr; During a workout &rarr; <b>Workout controls</b> brings any
+        Miss a button? Settings &rarr; Workout &rarr; <b>Fine-tuning</b> brings any
         group back: +/&minus; steppers, drop/burst shortcuts on every row, superset buttons in
         the header, move/swap/remove below the card.</li>
     <li><b>List view keeps the header pinned</b> &mdash; name, clock, set counter, discard and
@@ -379,10 +379,10 @@
         it. On Android the countdown also sits in a notification, with Pause and &plusmn;15&nbsp;s,
         and stays on time with the screen off.</li>
     <li><b>Animations are your call:</b> the demo for each exercise can be full size, small, or
-        hidden entirely during a workout (Settings &rarr; During a workout). Hidden collapses
+        hidden entirely during a workout (Settings &rarr; Workout). Hidden collapses
         the media instead of leaving a gap.</li>
     <li><b>The screen stays awake while you train</b> — on for as long as a workout runs,
-        released the moment you finish, switchable off in Settings. (Needs HTTPS or
+        released the moment you finish, switchable off in Settings &rarr; Workout. (Needs HTTPS or
         localhost; iOS refuses the wake lock in Low Power Mode.)</li>
     <li><b>Change your mind mid-session:</b> add an exercise you decided to do, or remove one
         you didn't, without ending the workout. Removing a member of a superset asks which
@@ -434,7 +434,11 @@
             the exercises that built it with their estimated 1RM.</li>
       </ul>
         It also previews what a routine hits while you build it, and shows what you just
-        trained when you finish.</li>
+        trained when you finish.
+        <p>An explicit muscle credit of <b>0</b> retains the association metadata but contributes
+        no effective sets, fatigue, per-muscle strength stimulus, last-trained recency or body-map
+        training intensity for that muscle. This is separate from logging an exercise with zero
+        load. Secondary muscle credit remains <b>0.4</b> when no override is specified.</p></li>
     <li><b>Body-weight chart</b> with a goal line you set — gains and losses colored by
         whether they move toward it.</li>
     <li><b>PRs</b> detected as you train, listed per exercise.</li>
@@ -444,16 +448,20 @@
 
   <h3 id="f-looks">Looks, languages &amp; little things</h3>
   <ul>
-    <li><b>Light/dark themes and 8 accent colors</b>, saved to your profile, over a
-        hand-drawn icon set instead of emoji — it looks the same on every phone.</li>
-    <li><b>17 languages</b> — EN, DE, ES, FR, IT, PT (Portugal), PT (Brazil), PL, TR, RU,
-        UK, ZH, KO, HI, TH, HU, AR, with Arabic laid out right to left. Exercise instructions
+    <li><b>Light/dark themes, 8 accent colors or one of your own</b>, saved to your profile, over a
+        hand-drawn icon set instead of emoji, so it looks the same on every phone.</li>
+    <li><b>18 languages:</b> EN, DE, ES, FR, IT, PT (Portugal), PT (Brazil), PL, TR, RU,
+        UK, ZH, ZH-TW, KO, HI, TH, HU, AR, with Arabic laid out right to left. Exercise instructions
         are localized in 12 of them, and built-in exercise names are translated in seven
         (PT-BR, HU, DE, ES, RU, IT, FR). Translations load on demand, so the app stays fast.</li>
     <li><b>kg or lb</b> — pick your unit; imports convert.</li>
     <li><b>Workout-day reminder:</b> an optional notification on days you have a workout
         planned but haven't logged one. It fires at <i>your</i> local time — each device
         reports its own timezone — and follows you if you travel.</li>
+    <li><b>Missed-workout nudge:</b> opt-in, under the reminder. Skip a planned workout and you
+        get one nudge that evening, in the tone you picked: <i>Friendly</i>, <i>Guilt trip</i>
+        (&ldquo;I miss you&rdquo;) or <i>Drill sergeant</i>. Rest days stay quiet, and after
+        three missed days in a row it stops until your next workout.</li>
     <li><b>Installable PWA</b> (self-hosted): add it to your home screen from any browser and
         it opens full-screen with its own icon.</li>
   </ul>
@@ -518,7 +526,7 @@ docker compose up -d   # restart alone does NOT re-read .env</code></pre>
   <h3 id="sh-notify">Notifications</h3>
   <p>A self-hosted instance can push two kinds of alert to your phone or desktop, even with
      the app closed: <b>rest timer over</b>, and the <b>workout-day reminder</b>. Turn them on
-     per profile in <b>Settings → Notifications</b> (needs a signed-in profile and HTTPS).
+     per profile in <b>Settings → Reminders</b> (needs a signed-in profile and HTTPS).
      Nothing to configure server-side: VAPID keys are generated on first run and saved to
      <code>./data/vapid.json</code>, and each browser reports its own timezone. Set
      <code>VAPID_SUBJECT=mailto:you@example.com</code> if you'd rather push services could
@@ -530,6 +538,9 @@ docker compose up -d   # restart alone does NOT re-read .env</code></pre>
      re-registers its subscription with the server on every signed-in start, so one the server
      lost heals itself; and a rest-timer alert belongs to the device that started the rest, so
      finishing a rest on the desktop no longer silences the phone.</p>
+  <p>The optional <b>missed-workout nudge</b> rides on the reminder: one push between 20:00 and
+     21:30 (or from 2 hours after a late reminder) on a planned day with nothing logged and no
+     workout on screen, at most three missed days in a row, then quiet until the next workout.</p>
 
   <h3 id="sh-sync">Sync between devices</h3>
   <p>Signed in, <b>the profile on the server is the truth</b>. Signing in on a device adopts it
@@ -608,7 +619,7 @@ docker compose up -d</code></pre>
 INVITE_ONLY=1              # new profiles need an invite code
 ALLOW_GUEST=0              # remove "Continue without account"</code></pre>
   <p>Register your own passkey profile <i>first</i>, then put your id in
-     <code>ADMIN_UIDS</code>. You'll get an <b>Admin dashboard</b> link in Settings: who's
+     <code>ADMIN_UIDS</code>. You'll get an <b>Admin dashboard</b> link in Settings → Account: who's
      training right now, each user's workout history and body weight, disabling an account
      (signed out and locked out everywhere until re-enabled), and — with invite-only on —
      generating and revoking invite codes. Admin access rides on your passkey and is enforced
@@ -643,21 +654,23 @@ ALLOW_GUEST=0              # remove "Continue without account"</code></pre>
   <h2 id="mobile-server">Connecting the mobile app to your server</h2>
   <p>The mobile app normally keeps everything on the phone. It can instead <b>connect to
      your self-hosted instance</b> — your data then lives there, synced like the browser PWA.
-     Same app, not a different download; offered on first launch and under Settings →
+     Same app, not a different download; offered on first launch and under Settings → Account →
      <b>Connect to my server</b>.</p>
   <p>Passkeys can't work inside the app's WebView (it never runs at your real hostname), so
      the device is <b>paired</b> instead:</p>
   <ol>
-    <li>In a browser that's already signed in: Settings → <b>Pair the mobile app</b> — shows
+    <li>In a browser that's already signed in: Settings → Account → <b>Pair the mobile app</b> — shows
         a one-time code, valid 5 minutes.</li>
     <li>In the app: enter your server's address and that code. Done.</li>
   </ol>
   <p>Worth knowing: the pairing exchanges the code for a bearer token that is the same signed
      value a session cookie carries — so <b>"sign out everywhere"</b> in the browser revokes
-     paired apps too. Use an HTTPS address if at all possible (the token would otherwise
-     cross the network in plain text). A connected app keeps working without a network on the
+     paired apps too. Use an <code>https://</code> address: the phone blocks a plain
+     <code>http://</code> server before anything is sent. Pairing fails while the browser works?
+     A reverse proxy or a login page in front of <code>/api/</code> is answering instead of
+     openGym; see <a href="https://github.com/DuarteSantos8/openGym/blob/main/docs/SELF_HOSTING.md#phone-app-and-cors" rel="noopener">Phone app and CORS</a>. A connected app keeps working without a network on the
      last copy it synced — it shows an "Offline" line under the header and pushes your changes
-     as soon as the connection is back, same as the browser PWA. Settings → <b>Disconnect</b> syncs one last
+     as soon as the connection is back, same as the browser PWA. Settings → Account → <b>Disconnect</b> syncs one last
      time, then drops the device cleanly back to local mode. (For the curious: it's
      <code>POST /api/pair/create</code> + <code>/api/pair/redeem</code> in
      <code>api/server.js</code>.)</p>
@@ -692,7 +705,7 @@ ALLOW_GUEST=0              # remove "Continue without account"</code></pre>
   </ol>
 
   <h3 id="coach-providers">Providers</h3>
-  <p>It is <b>off by default</b>. An admin turns it on in <b>Settings → Admin dashboard</b>,
+  <p>It is <b>off by default</b>. An admin turns it on in <b>Settings → Account → Admin dashboard</b>,
      on the <b>AI Coach</b> card, and picks who answers:</p>
   <table class="cfg">
     <tr><td><b>Anthropic, OpenAI, Google&nbsp;Gemini</b></td><td>Paste an API key from the provider's console. Plain HTTPS from the api process — runs on the default image.</td></tr>
@@ -714,7 +727,7 @@ ALLOW_GUEST=0              # remove "Continue without account"</code></pre>
       - OLLAMA_NUM_PARALLEL=1
     mem_limit: 4g</code></pre>
   <pre><code>docker exec -it &lt;ollama container&gt; ollama pull qwen2.5:3b</code></pre>
-  <p>Then on the <b>AI Coach</b> card (<b>Settings → Admin dashboard</b>): provider <b>OpenAI-compatible endpoint</b> →
+  <p>Then on the <b>AI Coach</b> card (<b>Settings → Account → Admin dashboard</b>): provider <b>OpenAI-compatible endpoint</b> →
      Base URL <code>http://ollama:11434</code> → <b>List models</b> → pick the model →
      <b>Test the Coach</b>. That's the whole setup.</p>
   <p><b>Any model you can pull, you can use.</b> <code>ollama pull</code> whatever you like and
@@ -777,7 +790,7 @@ ALLOW_GUEST=0              # remove "Continue without account"</code></pre>
      <a href="https://github.com/DuarteSantos8/openGym/blob/main/mcp/README.md" rel="noopener">mcp/README.md</a>.</p>
 
   <h2 id="import">Import your training history</h2>
-  <p>Coming from another tracker? <b>Settings → Data → Import from another app</b> reads a
+  <p>Coming from another tracker? <b>Settings → Data &amp; backup → Import from another app</b> reads a
      CSV export; these apps work without touching the file:</p>
   <table class="cfg">
     <tr><td><b>FitNotes</b> (Android)</td><td>Settings → Backup/Export → Spreadsheet Export</td></tr>
@@ -795,7 +808,7 @@ ALLOW_GUEST=0              # remove "Continue without account"</code></pre>
   <h3 id="imp-hevy">Hevy, directly over the API</h3>
   <p>With <b>Hevy Pro</b>, skip the CSV: create an API key under
      <a href="https://hevy.com/settings?developer" rel="noopener">Hevy → Settings → Developer</a>,
-     then in openGym use <b>Settings → Import from Hevy</b>, paste the key (used only for that
+     then in openGym use <b>Settings → Data &amp; backup → Import from Hevy</b>, paste the key (used only for that
      import — never saved), and choose any mix of <b>workouts</b>, <b>routines</b> and
      <b>weigh-ins</b>. Workout days that already have data here are left alone; imported
      routines are always added as new plans.</p>
@@ -825,7 +838,7 @@ Leg Day,Leg Press,2026-08-21,200,1</code></pre>
 
   <h2 id="backup">Backups &amp; your data</h2>
   <h3>Per user</h3>
-  <p><b>Settings → Data → Export backup (JSON)</b> writes your entire log — plan, workouts,
+  <p><b>Settings → Data &amp; backup → Export backup (JSON)</b> writes your entire log — plan, workouts,
      weights, settings — into one file. On the mobile app it goes out through the share sheet
      (Files, AirDrop, mail…); in the browser it downloads. <b>Import backup</b> restores it
      anywhere: another phone, your self-hosted instance, or a fresh install. That file is the
@@ -919,10 +932,10 @@ Leg Day,Leg Press,2026-08-21,200,1</code></pre>
     <tr><td>"verification failed" on login</td><td><code>RP_ID</code>/<code>ORIGIN</code> don't match the address bar — see the checklist above, starting with what the server logged.</td></tr>
     <tr><td>Media didn't download</td><td><code>docker compose logs media</code>, re-run <code>docker compose up -d</code>, or run <code>./scripts/fetch-media.sh</code>.</td></tr>
     <tr><td>Port 8080 already used</td><td><code>WEB_PORT=9090</code> in <code>.env</code> (and update <code>ORIGIN</code> for local testing).</td></tr>
-    <tr><td>No "Notifications" option in Settings</td><td>Needs a signed-in profile and HTTPS (or localhost) — guest mode and plain HTTP over LAN can't subscribe.</td></tr>
+    <tr><td>No "Reminders" page in Settings</td><td>Needs a signed-in profile and HTTPS (or localhost) — guest mode and plain HTTP over LAN can't subscribe.</td></tr>
     <tr><td>Day reminder fires at the wrong time</td><td>Toggle it off and on so it re-detects your browser's timezone (also happens on every app load).</td></tr>
     <tr><td>"Keep screen awake" shows as unsupported</td><td>The Wake Lock API needs HTTPS or localhost; iOS also refuses it in Low Power Mode.</td></tr>
-    <tr><td>Want to reset a stuck login</td><td>Delete the cookie — sessions are just signed cookies. "Sign out everywhere" in Settings ends every session (and paired apps) at once.</td></tr>
+    <tr><td>Want to reset a stuck login</td><td>Delete the cookie — sessions are just signed cookies. "Sign out everywhere" in Settings → Account ends every session (and paired apps) at once.</td></tr>
     <tr><td><code>docker compose pull</code> says "denied"</td><td>Build from source instead: <code>docker compose up -d --build</code>.</td></tr>
     <tr><td>Exercise images blank in an old build</td><td>Fixed in current images. <code>VITE_IMG_BASE</code>/<code>VITE_GIF_BASE</code> are <b>build-time</b>: they're baked into the bundle when the frontend compiles, so setting them at runtime does nothing to a prebuilt image — redirect media in your reverse proxy instead, or rebuild.</td></tr>
   </table>
@@ -936,7 +949,7 @@ Leg Day,Leg Press,2026-08-21,200,1</code></pre>
   <ul>
     <li><b>The app collects nothing.</b> No telemetry, no analytics, no crash reporting, no
         accounts on anyone else's server. The mobile app goes online only for exercise
-        media from a CDN and, when you open Settings, for GitLab's public release list (the update
+        media from a CDN and, when you open Settings → About &amp; updates, for GitLab's public release list (the update
         check). In the browser, a self-hosted instance talks only to your own server.</li>
     <li><b>Passkey private keys never leave your device</b> — the server stores only public
         keys.</li>
@@ -1016,6 +1029,6 @@ Leg Day,Leg Press,2026-08-21,200,1</code></pre>
   </div>
 </div></footer>
 
-<script src="site.js?v=21" defer></script>
+<script src="site.js?v=22" defer></script>
 </body>
 </html>
