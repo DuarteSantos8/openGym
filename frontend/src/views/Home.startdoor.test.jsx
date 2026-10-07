@@ -16,7 +16,7 @@ const nav = vi.fn()
 vi.mock('react-router-dom', () => ({ useNavigate: () => nav }))
 vi.mock('../sheets.jsx', () => ({
   starterPlanSheet: vi.fn(), bwSheet: vi.fn(), goalSheet: vi.fn(), dayOverrideSheet: vi.fn(),
-  calendarSheet: vi.fn(), startFlow: vi.fn(), bwDeltaColor: () => '', weighInsSheet: vi.fn(),
+  calendarSheet: vi.fn(), startFlow: vi.fn(), startShortFlow: vi.fn(), bwDeltaColor: () => '', weighInsSheet: vi.fn(),
 }))
 
 const routines = [{ id: 'r1', name: 'Push', emoji: null, ex: [{ id: '0025' }] }]

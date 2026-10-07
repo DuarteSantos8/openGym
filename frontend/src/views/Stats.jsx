@@ -3,11 +3,12 @@ import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { EXIDX, matchExercise, betterWeight } from '../lib/exercises.js'
 import { streakWeeks, setLabel, modeOf, effortOf, entriesForExercise, metricEntriesForExercise, metricModeForEntry, bestWeightForEntry, completedRepsOf, workoutDay } from '../lib/history.js'
-import { fmtNum, fmtDate, fmtVol, todayISO, weekStartOf, exerciseNameText } from '../lib/format.js'
+import { fmtNum, fmtDate, todayISO, weekStartOf, exerciseNameText } from '../lib/format.js'
 import { speedUnitOf, speedLabel, toSpeed } from '../lib/speed.js'
 import { t, exerciseNameFor, exerciseNameClass, getLang } from '../lib/i18n.js'
 import { bwSheet, goalSheet, calendarSheet, workoutDetailSheet, exerciseHistorySheet, WorkoutRow, weighInsSheet } from '../sheets.jsx'
 import LineChart from '../components/LineChart.jsx'
+import AttentionRow from '../components/AttentionRow.jsx'
 import Heatmap from '../components/Heatmap.jsx'
 import Icon from '../components/Icon.jsx'
 import BodyMap, { BodyMapLegend } from '../components/BodyMap.jsx'
@@ -337,21 +338,8 @@ function WeeklyReview({ S }) {
       <span className="nm"><b>{t('New records (14 days)')}</b><span className="small dim" style={{ display: 'block', fontWeight: 400 }}>{review.improvements.map(p => p.name).join(', ')}</span></span>
       <span className="v" style={{ color: 'var(--green)' }}>{t('{0} new', review.improvements.length)}</span>
     </div>}
-    {review.attention.slice(0, 3).map(a => {
-      const alts = alternativesFor(S, a.id, { count: 1 })
-      return <div key={a.id + ':' + a.kind} className="mrow" style={{ alignItems: 'flex-start' }}>
-        <span className="nm" style={{ whiteSpace: 'normal', lineHeight: 1.35 }}>
-          <span style={{ display: 'block' }}>{a.name}</span>
-          <span className="small dim" style={{ display: 'block', fontWeight: 400 }}>
-            {a.kind === 'stalling' ? t('Missed the target {0} sessions running.', a.stalls)
-              : a.kind === 'skipped' ? t('No completed sets in the last {0} days, across {1} workouts.', a.days, a.workouts)
-              : t('Needs {0} — not in the active equipment profile.', a.eq)}
-            {alts.length > 0 ? ' ' + t('Try: {0}.', alts[0].name) : ''}
-          </span>
-        </span>
-        <span className="v" style={{ color: 'var(--orange)' }}>{a.kind === 'stalling' ? t('Stalled') : a.kind === 'skipped' ? t('Skipped') : t('Equipment')}</span>
-      </div>
-    })}
+    {review.attention.slice(0, 3).map(a => <AttentionRow key={a.id + ':' + a.kind} a={a}
+      altNames={alternativesFor(S, a.id, { count: 1 }).map(x => x.name)} />)}
     <div style={{ background: 'var(--acc-soft)', borderRadius: 12, padding: '12px 14px', marginTop: 12 }}>
       <div className="lbl2" style={{ marginBottom: 4 }}>{t('Next week')}</div>
       <div style={{ lineHeight: 1.45 }}>{t(...rec.why)}</div>

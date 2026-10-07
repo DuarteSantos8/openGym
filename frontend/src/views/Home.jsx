@@ -6,6 +6,7 @@ import { fmtNum, fmtDate, todayISO, isoOf, weekKey, weekStartOf, weekDayOffset, 
 import { t, dateLocale } from '../lib/i18n.js'
 import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, startFlow, startShortFlow, starterPlanSheet, bwDeltaColor, weighInsSheet } from '../sheets.jsx'
 import LineChart from '../components/LineChart.jsx'
+import AttentionRow from '../components/AttentionRow.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
@@ -61,6 +62,13 @@ export default function Home() {
   const benBW = bodyweightTrend({ ...S, weekStart: ws })
   const benStrength = strengthRetention(S)
   const bwPoints = S.bodyweight.slice(-30).map(b => ({ t: b.t || new Date(b.d).getTime(), y: b.w, d: b.d }))
+  // The trend sentence follows the same fitted story as Stats: the weekly rate when it is
+  // meaningful, otherwise the plain last-week difference with no direction word — pairing
+  // that number with the slope's word could read "+0.4 down" when the two disagree.
+  const bwRate1 = benBW.rate == null ? null : Math.round(benBW.rate * 10) / 10 + 0
+  const bwTrendLine = benBW.delta == null ? t('Log another week to see the trend.') : benBW.meaningful
+    ? t('Weekly average {0} over {1} weeks.', (bwRate1 > 0 ? '+' : '') + fmtNum(bwRate1) + ' ' + S.unit + '/wk', benBW.weeksUsed)
+    : t('Weekly average {0} vs previous logged week.', (benBW.delta > 0 ? '+' : '') + fmtNum(benBW.delta) + ' ' + S.unit)
 
   // Progression guidance follows the session that matters: today's plan, else the next
   // planned session, so a rest day still shows what is coming rather than nothing.
@@ -247,9 +255,7 @@ export default function Home() {
           )}
           <span className="dim small" style={{ marginInlineStart: 'auto' }}>{fmtDate(bw.d, true)}</span>
         </div>
-        <div className="small muted" style={{ marginTop: 4 }}>
-          {benBW.delta == null ? t('Log another week to see the trend.') : t('Weekly average {0} {1} vs previous logged week', (benBW.delta > 0 ? '+' : '') + fmtNum(benBW.delta) + ' ' + S.unit, benBW.status === 'down' ? t('down') : benBW.status === 'up' ? t('up') : t('steady'))}
-        </div>
+        <div className="small muted" style={{ marginTop: 4 }}>{bwTrendLine}</div>
         {S.targetW && (
           <div className="small row" style={{ color: 'var(--yellow)', marginTop: 4, gap: 5 }}>
             <Icon name="target" style={{ fontSize: 13 }} />
@@ -286,21 +292,8 @@ export default function Home() {
       </div> : <div className="small muted">{t('Complete a planned workout to unlock exercise-specific guidance.')}</div>}
       {attention.length > 0 && <div style={{ marginTop: 10 }}>
         <div className="small dim" style={{ marginBottom: 5 }}>{t('Needs attention')}</div>
-        {attention.map((a, i) => {
-          const alts = alternativesFor(S, a.id, { count: 2 })
-          return <div key={a.id + ':' + a.kind + ':' + i} className="mrow" style={{ alignItems: 'flex-start' }}>
-            <span className="nm" style={{ whiteSpace: 'normal', lineHeight: 1.35 }}>
-              <span style={{ display: 'block' }}>{a.name}</span>
-              <span className="small dim" style={{ display: 'block', fontWeight: 400 }}>
-                {a.kind === 'stalling' ? t('Missed the target {0} sessions running.', a.stalls)
-                  : a.kind === 'skipped' ? t('No completed sets in the last {0} days, across {1} workouts.', a.days, a.workouts)
-                  : t('Needs {0} — not in the active equipment profile.', a.eq)}
-                {alts.length > 0 ? ' ' + t('Try: {0}.', alts.map(x => x.name).join(', ')) : ''}
-              </span>
-            </span>
-            <span className="v" style={{ color: 'var(--orange)' }}>{a.kind === 'stalling' ? t('Stalled') : a.kind === 'skipped' ? t('Skipped') : t('Equipment')}</span>
-          </div>
-        })}
+        {attention.map((a, i) => <AttentionRow key={a.id + ':' + a.kind + ':' + i} a={a}
+          altNames={alternativesFor(S, a.id, { count: 2 }).map(x => x.name)} />)}
         {guideRoutine && <div className="row" style={{ justifyContent: 'flex-end', marginTop: 4 }}>
           <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={() => nav(`/plan/r/${guideRoutine.id}`)}>{t('Adjust in plan')}</Button>
         </div>}
