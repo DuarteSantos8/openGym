@@ -27,6 +27,8 @@ import { checkForUpdate, downloadAndInstall } from '../lib/update.js'
 import { forgetCoach } from '../lib/coach-api.js'
 import { starterPlanSheet, confirmSheet, importFromApp, importFromHevy, equipmentProfileSheet, plateInventorySheet, menuSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
+import WatchTimerPreview from '../components/WatchTimerPreview.jsx'
+import { WATCH_TIMER_FONTS, WATCH_TIMER_COLORS, watchDisplayOf } from '../lib/watch-display.js'
 import { ServerSyncSection, KeptChangesRows, leaveServer, connectServer, passkeySignIn } from '../components/ServerSync.jsx'
 import { passwordOn, PasswordRow, openPasswordSignIn, openPasswordRegister } from '../components/PasswordAuth.jsx'
 import { usePasskeys, PasskeysRow, DeviceLinkRow } from '../components/Passkeys.jsx'
@@ -53,6 +55,7 @@ export default function Settings() {
   const fileRef = useRef(null)
   const importRef = useRef(null)
   const wakeOK = wakeLockSupported()
+  const watchDisplay = watchDisplayOf(S)
 
   // Two honest choices on a unit switch (issue #22): convert the numbers, or keep them and only
   // change the label — the old behaviour, still right for someone who logged in lb all along
@@ -541,6 +544,23 @@ export default function Settings() {
         </div>
       </div>
     </Section>
+
+    {MOBILE && !android && <Section title="Apple Watch" footer={t('Font and color of the rest countdown on your watch.')}>
+      <SelectRow icon="timer" iconTint="var(--green)" title={t('Countdown font')}
+        value={watchDisplay.timerFont}
+        options={WATCH_TIMER_FONTS.map(f => ({ ...f, label: t(f.label) }))}
+        onChange={v => update(s => { s.watchDisplay = { ...watchDisplayOf(s), timerFont: v } })} />
+      <div className="lrow" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 12 }}>
+        <span className="lrow-t">{t('Countdown color')}</span>
+        <div className="swatches">
+          {WATCH_TIMER_COLORS.map(c => <button key={c.value}
+            className={'swatch' + (watchDisplay.timerColor === c.value ? ' on' : '')}
+            style={{ background: c.value }} aria-label={t(c.label)} aria-pressed={watchDisplay.timerColor === c.value}
+            onClick={() => update(s => { s.watchDisplay = { ...watchDisplayOf(s), timerColor: c.value } })} />)}
+        </div>
+        <WatchTimerPreview font={watchDisplay.timerFont} color={watchDisplay.timerColor} />
+      </div>
+    </Section>}
 
     {/* ---------- data: fill it, bring things over, back it up, wipe it ---------- */}
     <Section title={t('Data')}>

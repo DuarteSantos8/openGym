@@ -4,6 +4,14 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  "Font and color of the rest countdown on your watch.": "Fonte e cor da contagem regressiva do descanso no relógio.",
+  "Countdown font": "Fonte da contagem regressiva",
+  "Countdown color": "Cor da contagem regressiva",
+  "Digital (segments)": "Digital (segmentos)",
+  "Rounded": "Arredondada",
+  "Monospaced": "Monoespaçada",
+  "Lime": "Verde-lima",
+  "White": "Branco",
   "The matching workout saved by openGym in Apple Health will also be deleted.": "O treino correspondente salvo pelo openGym no Saúde da Apple também será excluído.",
   "Sync with Apple Health": "Sincronizar com o Saúde da Apple",
   "Sync body weight both ways and save finished workouts to Health.": "Sincroniza o peso nos dois sentidos e salva os treinos concluídos no Saúde.",

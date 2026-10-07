@@ -1,5 +1,13 @@
 // Hindi UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Font and color of the rest countdown on your watch.": "आपकी घड़ी पर आराम की उलटी गिनती का फ़ॉन्ट और रंग।",
+  "Countdown font": "उलटी गिनती का फ़ॉन्ट",
+  "Countdown color": "उलटी गिनती का रंग",
+  "Digital (segments)": "डिजिटल (खंड)",
+  "Rounded": "गोल",
+  "Monospaced": "समान चौड़ाई",
+  "Lime": "लाइम",
+  "White": "सफ़ेद",
   "The matching workout saved by openGym in Apple Health will also be deleted.": "openGym द्वारा Apple Health में सहेजा गया संबंधित वर्कआउट भी हटा दिया जाएगा।",
   "Sync with Apple Health": "Apple Health के साथ सिंक करें",
   "Sync body weight both ways and save finished workouts to Health.": "वज़न दोनों दिशाओं में सिंक करें और पूरे हुए वर्कआउट Health में सहेजें।",

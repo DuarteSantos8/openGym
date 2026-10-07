@@ -309,3 +309,8 @@ membership, the distribution certificate and profile as protected file variables
   it: a foreground service (`specialUse`) keeps the countdown in the notification and holds a
   wake lock until the end, so the end of a rest sounds on time with the screen locked; the
   rest-over alarm is only its fallback.
+
+### Apple Watch companion
+
+For cached routines, offline sessions, rest controls, live vitals, signing and validation,
+see [the Apple Watch guide](APPLE_WATCH.md).

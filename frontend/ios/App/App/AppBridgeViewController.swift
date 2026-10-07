@@ -6,5 +6,6 @@ class AppBridgeViewController: CAPBridgeViewController {
         // App-local plugins need explicit registration with Capacitor 7.
         bridge?.registerPluginInstance(PrintPlugin())
         bridge?.registerPluginInstance(HealthSyncPlugin())
+        bridge?.registerPluginInstance(WatchBridgePlugin())
     }
 }

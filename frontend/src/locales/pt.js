@@ -1,5 +1,13 @@
 // Portuguese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Font and color of the rest countdown on your watch.": "Tipo de letra e cor da contagem decrescente do descanso no relógio.",
+  "Countdown font": "Tipo de letra da contagem",
+  "Countdown color": "Cor da contagem",
+  "Digital (segments)": "Digital (segmentos)",
+  "Rounded": "Arredondada",
+  "Monospaced": "Monoespaçada",
+  "Lime": "Verde-lima",
+  "White": "Branco",
   "The matching workout saved by openGym in Apple Health will also be deleted.": "O treino correspondente guardado pelo openGym na Saúde da Apple também será eliminado.",
   "Sync with Apple Health": "Sincronizar com a Saúde da Apple",
   "Sync body weight both ways and save finished workouts to Health.": "Sincroniza o peso nos dois sentidos e guarda os treinos concluídos na Saúde.",

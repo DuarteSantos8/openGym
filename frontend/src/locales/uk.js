@@ -1,5 +1,13 @@
 // Ukrainian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Font and color of the rest countdown on your watch.": "Шрифт і колір таймера відпочинку на годиннику.",
+  "Countdown font": "Шрифт таймера",
+  "Countdown color": "Колір таймера",
+  "Digital (segments)": "Цифровий (сегменти)",
+  "Rounded": "Заокруглений",
+  "Monospaced": "Моноширинний",
+  "Lime": "Лаймовий",
+  "White": "Білий",
   "The matching workout saved by openGym in Apple Health will also be deleted.": "Відповідне тренування, збережене openGym в Apple Здоров’ї, також буде видалено.",
   "Sync with Apple Health": "Синхронізація з Apple Здоров’я",
   "Sync body weight both ways and save finished workouts to Health.": "Синхронізуйте вагу в обох напрямках і зберігайте завершені тренування у Здоров’ї.",

@@ -52,6 +52,7 @@ export async function setLang(l, showEn, enOnly) {
   document.documentElement.lang = l
   document.documentElement.dir = RTL_LANGS.has(l) ? 'rtl' : 'ltr'
   notify()
+  document.dispatchEvent(new Event('opengym:language'))
 }
 
 // Re-renders the subscribing component (and its children) whenever the language changes.

@@ -2639,7 +2639,11 @@ export function finishWorkout() {
   if (done < total) { confirmSheet({ title: t('Finish early?'), message: t(total - done === 1 ? '{0} set still unchecked. Finish the workout now?' : '{0} sets still unchecked. Finish the workout now?', total - done), confirmText: t('Finish workout'), onConfirm: doFinishWorkout }); return }
   doFinishWorkout()
 }
-function doFinishWorkout() {
+export function finishWorkoutFromWatch(id, end) {
+  if (S().active?.id !== id || S().active?.editingWorkoutId) return
+  doFinishWorkout(Number.isFinite(end) && end >= S().active.start && end <= Date.now() ? end : Date.now())
+}
+function doFinishWorkout(end = Date.now()) {
   const st = S()
   const A = st.active
   if (!A) return
@@ -2660,7 +2664,7 @@ function doFinishWorkout() {
     if (rec && !prs.includes(e.id)) e1prs.push({ id: e.id, ...rec })
   })
   const w = buildCompletedWorkout(A, {
-    end: past ? backfillEnd(A) : Date.now(),
+    end: past ? backfillEnd(A) : end,
     prs,
     snapshotFor: e => EXIDX[e.id]?.custom ? exerciseMuscleSnapshot(EXIDX[e.id]) : null,
   })
