@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { renderQrToCanvas } from '../lib/qr.js'
 import { t } from '../lib/i18n.js'
 
-// Renders a gym check-in code as a QR image on a <canvas>. lean-qr draws one module per pixel;
+// Renders a value as a QR image on a <canvas>. lean-qr draws one module per pixel;
 // CSS (.qr-canvas) scales it up with image-rendering: pixelated so it stays razor-sharp at any
 // display size without re-generating. Regenerated from `value` on every change — we never store
 // the picture (see lib/qr.js).

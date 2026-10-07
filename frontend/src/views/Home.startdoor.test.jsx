@@ -56,9 +56,14 @@ describe('Home — the way to the Start screen when a plan already owns today', 
     expect(startFlow).not.toHaveBeenCalled()
   })
 
-  it('is still there on a rest day, where freestyle is the only thing left to start', () => {
+  it('on a rest day the single action opens the Start screen without starting anything', () => {
     setS({ week: {} }); mount()
-    expect(door()).toBeTruthy()
+    // No duplicate "All workouts" next to it: both would open the same screen.
+    expect(door()).toBeFalsy()
+    const browse = [...host.querySelectorAll('button')].find(b => b.textContent.includes('Browse workouts'))
+    act(() => { browse.dispatchEvent(new MouseEvent('click', { bubbles: true })) })
+    expect(nav).toHaveBeenCalledWith('/workout')
+    expect(startFlow).not.toHaveBeenCalled()
   })
 
   it('goes away once a session is running — that screen resumes it, it does not choose', () => {

@@ -34,13 +34,24 @@ describe('Stats mixed-entry metric contract', () => {
     expect(source).not.toContain('(en.topW || 0)')
   })
 
-  it('stacks the Stats exercise selector value without changing shared SelectRow defaults', () => {
-    expect(source).toContain("onChange={setExId} stackedValue")
+  it('stacks the Stats exercise selector value without changing shared SelectRow defaults', () => {    expect(source).toContain("onChange={setExId} stackedValue")
     expect(uiSource).toContain('sheetTitle, stackedValue = false')
     expect(uiSource).toContain("className={stackedValue ? 'lrow-stack-value' : ''}")
     expect(cssSource).toContain('.lrow.lrow-stack-value .lrow-m{grid-column:1;grid-row:1}')
     expect(cssSource).toContain('.lrow.lrow-stack-value .lrow-v{grid-column:1;grid-row:2;width:100%;max-width:none;text-align:start}')
     expect(cssSource).toContain('flex:0 1 auto;max-width:55%;min-width:0;')
     expect(cssSource).toContain('overflow:hidden;text-overflow:ellipsis;white-space:nowrap')
+  })
+
+  it('leads with a weekly review and a trend-based weight tile, not first-minus-last', () => {
+    // The review explains training, weight and strength with one recommendation; the old
+    // goal card duplicated the Home strength card, and the 30d tile reacted to two
+    // individual weigh-ins instead of the fitted trend.
+    expect(source).toContain('function WeeklyReview')
+    expect(source).toContain('weeklyReview(S)')
+    expect(source).toContain("t('Weight trend')")
+    expect(source).not.toContain('function BenjaminProgress')
+    expect(source).not.toContain('Weight 30d')
+    expect(source).not.toContain('bwDelta30')
   })
 })

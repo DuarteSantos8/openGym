@@ -2,11 +2,11 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { EXIDX, matchExercise, betterWeight } from '../lib/exercises.js'
-import { lastBW, streakWeeks, setLabel, modeOf, effortOf, entriesForExercise, metricEntriesForExercise, metricModeForEntry, bestWeightForEntry, completedRepsOf, workoutDay } from '../lib/history.js'
+import { streakWeeks, setLabel, modeOf, effortOf, entriesForExercise, metricEntriesForExercise, metricModeForEntry, bestWeightForEntry, completedRepsOf, workoutDay } from '../lib/history.js'
 import { fmtNum, fmtDate, fmtVol, todayISO, weekStartOf, exerciseNameText } from '../lib/format.js'
 import { speedUnitOf, speedLabel, toSpeed } from '../lib/speed.js'
 import { t, exerciseNameFor, exerciseNameClass, getLang } from '../lib/i18n.js'
-import { bwSheet, goalSheet, calendarSheet, workoutDetailSheet, exerciseHistorySheet, WorkoutRow, bwDeltaColor, weighInsSheet } from '../sheets.jsx'
+import { bwSheet, goalSheet, calendarSheet, workoutDetailSheet, exerciseHistorySheet, WorkoutRow, weighInsSheet } from '../sheets.jsx'
 import LineChart from '../components/LineChart.jsx'
 import Heatmap from '../components/Heatmap.jsx'
 import Icon from '../components/Icon.jsx'
@@ -23,7 +23,7 @@ import {
 import { Button, Segmented, SelectRow } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { isWarmupRow } from '../lib/workout-model.js'
-import { bodyweightTrend, strengthRetention } from '../lib/ben-coach.js'
+import { bodyweightTrend, weeklyReview, alternativesFor } from '../lib/ben-coach.js'
 
 // Which muscles the training in a window actually hit — and, the point of the card,
 // which ones it keeps missing. Shading is relative within the window (lib/muscles.js).
@@ -287,49 +287,78 @@ function EffortCard({ S }) {
   </div>
 }
 
-// Stats = the analytics hub: all charts, progress and history live here.
-function BenjaminProgress({ S }) {
-  const trend = bodyweightTrend(S)
-  const strength = strengthRetention(S)
-  const latest = trend.weeks?.[0]
-  const previous = trend.weeks?.[1]
+// Stats = the analytics hub: the weekly review answers whether training, weight and
+// strength are on track, and everything below it is the evidence behind that answer.
+function WeeklyReview({ S }) {
+  const nav = useNavigate()
+  const review = weeklyReview(S)
+  const rec = review.recommendation
+  const b = review.bodyweight
+  const rateStr = b.rate == null ? null : (b.rate > 0 ? '+' : '') + (Math.round(b.rate * 10) / 10) + ' ' + S.unit + '/wk'
+
+  const weightLine = (() => {
+    if (b.direction === 'unknown') return t('Need two logged weeks before judging the trend.')
+    if (b.direction === 'at-goal') return t('At goal — hold it steady.')
+    if (b.direction === 'toward') return b.meaningful
+      ? t('Moving toward goal — {0} over {1} weeks.', rateStr, b.weeksUsed)
+      : t('Leaning the right way, but within normal fluctuation — keep logging.')
+    if (b.direction === 'away') return b.meaningful
+      ? t('Moving away from goal — {0} over {1} weeks.', rateStr, b.weeksUsed)
+      : t('Leaning the wrong way, but within normal fluctuation — keep logging.')
+    return t('Holding roughly steady.')
+  })()
+
+  const strengthLine = (() => {
+    const s = review.strength
+    if (s.status === 'baseline') return t('Needs the same exercises across both 30-day windows.')
+    if (s.status === 'holding') return t('Holding across {0} exercises ({1} up).', s.compared, s.improved)
+    if (s.status === 'mixed') return t('Mixed across {0} exercises ({1} up, {2} down).', s.compared, s.improved, s.declined)
+    return t('Down in {0} of {1} compared exercises.', s.declined, s.compared)
+  })()
+
+  const weekLine = review.training.planned > 0
+    ? t('{0} of {1} sessions this week', review.training.done, review.training.planned) +
+      (review.training.extra > 0 ? t(' +{0} extra', review.training.extra) : '')
+    : t('No sessions scheduled')
+  const con = review.consistency
+  const conLine = con.expected > 0
+    ? t('{0}% of plan over the last 4 weeks ({1} of {2} sessions)', Math.round(con.rate * 100), con.done, Math.round(con.expected))
+    : t('No weekly plan to measure against yet.')
+
   return <div className="card">
     <div className="row between" style={{ marginBottom: 8 }}>
-      <div><div className="lbl2">{t('Progress focus')}</div><h2 style={{ margin: '2px 0 0' }}>{t('Lose fat. Keep strength.')}</h2></div>
-      <Icon name="target" style={{ color: 'var(--acc)' }} />
+      <div><div className="lbl2">{t('Weekly review')}</div><h2 style={{ margin: '2px 0 0', fontSize: 17, color: 'var(--label)', fontWeight: 600 }}>{t('Training, weight, strength')}</h2></div>
+      <Icon name="chart" style={{ color: 'var(--acc)' }} />
     </div>
-    <div className="tiles" style={{ marginBottom: 10 }}>
-      <div className="tile">
-        <div className="l"><Icon name="scale" />{t('Weight trend')}</div>
-        <div className="v" style={{ fontSize: 20 }}>{trend.delta == null ? '—' : (trend.delta > 0 ? '+' : '') + fmtNum(trend.delta) + ' ' + S.unit}</div>
-        <div className="small dim">{latest ? t('weekly average') : t('Need two logged weeks')}</div>
-      </div>
-      <div className="tile">
-        <div className="l"><Icon name="dumbbell" />{t('Strength retention')}</div>
-        <div className="v" style={{ fontSize: 20 }}>{strength.holding == null ? '—' : Math.round(strength.holding * 100) + '%'}</div>
-        <div className="small dim">{strength.compared ? t('{0} exercises', strength.compared) : t('Need more history')}</div>
-      </div>
-    </div>
-    {latest && previous && <div className="small muted" style={{ marginBottom: 10 }}>
-      {t('Latest weekly average')}: <b>{fmtNum(latest.avg)} {S.unit}</b> · {t('previous')}: <b>{fmtNum(previous.avg)} {S.unit}</b>
+    <div className="mrow"><span className="nm"><b>{t('Training')}</b><span className="small dim" style={{ display: 'block', fontWeight: 400 }}>{weekLine} · {conLine}</span></span></div>
+    <div className="mrow"><span className="nm"><b>{t('Body weight')}</b><span className="small dim" style={{ display: 'block', fontWeight: 400 }}>{weightLine}</span></span></div>
+    <div className="mrow"><span className="nm"><b>{t('Strength')}</b><span className="small dim" style={{ display: 'block', fontWeight: 400 }}>{strengthLine}</span></span></div>
+    {review.improvements.length > 0 && <div className="mrow">
+      <span className="nm"><b>{t('New records (14 days)')}</b><span className="small dim" style={{ display: 'block', fontWeight: 400 }}>{review.improvements.map(p => p.name).join(', ')}</span></span>
+      <span className="v" style={{ color: 'var(--green)' }}>{t('{0} new', review.improvements.length)}</span>
     </div>}
-    <div className="small" style={{ lineHeight: 1.5 }}>
-      {trend.status === 'down'
-        ? t('Weight is moving in the intended direction. Keep training consistently while strength stays stable.')
-        : trend.status === 'up'
-          ? t('Weight is currently moving up. Treat this as a signal to review consistency and food intake, not as a verdict from one week.')
-          : trend.status === 'steady'
-            ? t('Weight is broadly steady. If fat loss is still the goal, the weekly average needs to move down over time.')
-            : t('The app needs at least two logged weeks before it judges the weight trend.')}
-    </div>
-    <div className="small dim" style={{ marginTop: 7 }}>
-      {strength.status === 'holding'
-        ? t('Strength is holding across the exercises with enough history to compare.')
-        : strength.status === 'mixed'
-          ? t('Strength is mixed across exercises. Keep the current loads before making the plan harder.')
-          : strength.status === 'attention'
-            ? t('Several comparable exercises are down. Prioritize recovery and repeatable sessions before pushing progression.')
-            : t('Strength retention becomes meaningful after the same exercises have been trained across both comparison windows.')}
+    {review.attention.slice(0, 3).map(a => {
+      const alts = alternativesFor(S, a.id, { count: 1 })
+      return <div key={a.id + ':' + a.kind} className="mrow" style={{ alignItems: 'flex-start' }}>
+        <span className="nm" style={{ whiteSpace: 'normal', lineHeight: 1.35 }}>
+          <span style={{ display: 'block' }}>{a.name}</span>
+          <span className="small dim" style={{ display: 'block', fontWeight: 400 }}>
+            {a.kind === 'stalling' ? t('Missed the target {0} sessions running.', a.stalls)
+              : a.kind === 'skipped' ? t('No completed sets in the last {0} days, across {1} workouts.', a.days, a.workouts)
+              : t('Needs {0} — not in the active equipment profile.', a.eq)}
+            {alts.length > 0 ? ' ' + t('Try: {0}.', alts[0].name) : ''}
+          </span>
+        </span>
+        <span className="v" style={{ color: 'var(--orange)' }}>{a.kind === 'stalling' ? t('Stalled') : a.kind === 'skipped' ? t('Skipped') : t('Equipment')}</span>
+      </div>
+    })}
+    <div style={{ background: 'var(--acc-soft)', borderRadius: 12, padding: '12px 14px', marginTop: 12 }}>
+      <div className="lbl2" style={{ marginBottom: 4 }}>{t('Next week')}</div>
+      <div style={{ lineHeight: 1.45 }}>{t(...rec.why)}</div>
+      <div className="row" style={{ justifyContent: 'flex-end', gap: 8, marginTop: rec.kind === 'attention' || rec.kind === 'weight' ? 8 : 0 }}>
+        {rec.kind === 'attention' && <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={() => nav('/plan')}>{t('Open plan')}</Button>}
+        {rec.kind === 'weight' && <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={() => bwSheet()}>{t('Log weight')}</Button>}
+      </div>
     </div>
   </div>
 }
@@ -346,8 +375,9 @@ export default function Stats() {
 
   const bwPts = S.bodyweight.filter(b => range === 0 || (b.t || new Date(b.d).getTime()) > now - range * 86400000)
     .map(b => ({ t: b.t || new Date(b.d).getTime(), y: b.w, d: b.d }))
-  const bw30 = S.bodyweight.filter(b => (b.t || new Date(b.d).getTime()) > now - 30 * 86400000)
-  const bwDelta30 = bw30.length > 1 ? bw30[bw30.length - 1].w - bw30[0].w : null
+  // The tile shows the fitted weekly rate, not first-minus-last: two individual weigh-ins
+  // 30 days apart say more about water than about fat.
+  const trend = bodyweightTrend(S)
   const workouts = S.workouts
   const monthW = workouts.filter(w => workoutDay(w)?.slice(0, 7) === todayISO().slice(0, 7)).length
 
@@ -497,7 +527,7 @@ export default function Stats() {
   if (showEff) exOpts.push({ value: 'effort', label: t('Effort') })
 
   return <>
-    <BenjaminProgress S={S} />
+    <WeeklyReview S={S} />
 
     <div className="hdr"><div><h1>{t('Stats')}</h1><div className="sub">{t('Progress & history')}</div></div>
       <button className="iconbtn" onClick={() => nav('/history')} aria-label={t('History')}><Icon name="history" /></button></div>
@@ -506,7 +536,7 @@ export default function Stats() {
       <div className="tile"><div className="l"><Icon name="dumbbell" />{t('Workouts')}</div><div className="v">{workouts.length}</div></div>
       <div className="tile"><div className="l"><Icon name="calendar" />{t('This month')}</div><div className="v">{monthW}</div></div>
       <div className="tile"><div className="l"><Icon name="flame" />{t('Week streak')}</div><div className="v">{streakWeeks(S)}</div></div>
-      <div className="tile"><div className="l"><Icon name="scale" />{t('Weight 30d')}</div><div className="v" style={{ fontSize: 22, color: bwDelta30 === null ? 'inherit' : bwDeltaColor(bwDelta30, (lastBW(S) || {}).w || 0) }}>{bwDelta30 === null ? '—' : (bwDelta30 > 0 ? '+' : '') + fmtNum(bwDelta30) + ' ' + S.unit}</div></div>
+      <div className="tile"><div className="l"><Icon name="scale" />{t('Weight trend')}</div><div className="v" style={{ fontSize: 22 }}>{trend.rate == null || !trend.meaningful ? '—' : (trend.rate > 0 ? '+' : '') + fmtNum(Math.round(trend.rate * 10) / 10) + ' ' + S.unit + '/wk'}</div><div className="small dim">{trend.weeksUsed > 1 ? t('{0} weeks', trend.weeksUsed) : t('no clear trend')}</div></div>
 
     </div>
 

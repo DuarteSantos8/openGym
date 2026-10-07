@@ -8,7 +8,7 @@
  *
  * Rules, by field:
  *   - scalars and settings, `week`, `dayPlan`, `wc`, `reminder`, …: from the copy with the newer `_ts`
- *   - equipProfiles, gymCards: union by id, the newer copy's version of an id that both have
+ *   - equipProfiles: union by id, the newer copy's version of an id that both have
  *   - customEx: union by id; of an id that both have, the version edited last by its own `_ts`
  *     (stampCustomEx), the newer copy's on a tie — a photo or link added on one device must not
  *     be lost to the other's copy just because that one logged a set since
@@ -45,7 +45,7 @@
  *     to meet the other device's kg copy and come back as kg with lb numbers under it.
  *   - Reset. "Reset everything" stamps the empty copy with `resetAt` and with `resetIds`: the keys
  *     of every entry it wiped — workouts, routines, custom exercises, weigh-ins (day and entry
- *     time), gym cards, equipment profiles, favourites, notes, bar weights and the stamped
+ *     time), equipment profiles, favourites, notes, bar weights and the stamped
  *     settings maps — of this device's copy and of the server's (resetIdsOf). A copy that has not
  *     seen that reset (an older or no `resetAt`) loses exactly those entries and keeps everything
  *     else, whatever its dates say: a CSV or Apple Health import of old sessions, a device whose
@@ -215,7 +215,7 @@ const workoutTime = w => Number(w?._ts) || Number(w?.end) || Number(w?.start) ||
 const bodyweightKey = e => `${e?.d}|${e?.t ?? ''}`
 const RESET_LISTS = {
   workouts: workoutKey, routines: x => x?.id, customEx: x => x?.id, bodyweight: bodyweightKey,
-  gymCards: x => x?.id, equipProfiles: x => x?.id, favEx: x => x,
+  equipProfiles: x => x?.id, favEx: x => x,
 }
 const RESET_MAPS = ['exNotes', 'barWeights', 'balanceOverrides', 'loadKind', 'plates']
 /** An entry's name in resetIds: a workout's id (or day and start), a weigh-in's day and time, … */
@@ -272,7 +272,6 @@ export function sinceReset(S, at, ids) {
     out.bodyweight = list(S.bodyweight).filter(e => e && after(e.t))
     // No time of their own: taken for what they were before the reset, which cleared them.
     out.equipProfiles = []
-    out.gymCards = []
     out.favEx = []
     out.exNotes = {}
     out.barWeights = {}
@@ -360,7 +359,7 @@ export function mergeStates(a0, b0, { prefer } = {}) {
     }
   }
   out.workouts.sort(byDayStart)
-  for (const f of ['routines', 'customEx', 'equipProfiles', 'gymCards']) {
+  for (const f of ['routines', 'customEx', 'equipProfiles']) {
     if (list(n[f]).length || list(o[f]).length) out[f] = unionById(n[f], o[f]).map(clone)
   }
   // A routine edited on both sides keeps the version edited last. Taking the newer copy's

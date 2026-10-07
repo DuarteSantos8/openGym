@@ -4,14 +4,14 @@ import { useStore } from '../store/useStore.js'
 import { effectiveRoutines, effectiveRoutineIds, nextTrainingDay, streakWeeks, lastBW, setsDoneActive, setUnitsTotal } from '../lib/history.js'
 import { fmtNum, fmtDate, todayISO, isoOf, weekKey, weekStartOf, weekDayOffset, DAYS, DAYN, exCount } from '../lib/format.js'
 import { t, dateLocale } from '../lib/i18n.js'
-import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, startFlow, starterPlanSheet, bwDeltaColor, weighInsSheet } from '../sheets.jsx'
+import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, startFlow, startShortFlow, starterPlanSheet, bwDeltaColor, weighInsSheet } from '../sheets.jsx'
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { glyphOf } from '../lib/glyphs.js'
 import { BEN_PROFILE } from '../lib/ben-profile.js'
-import { routineCoaching, bodyweightTrend, strengthRetention } from '../lib/ben-coach.js'
+import { routineCoaching, bodyweightTrend, strengthRetention, exerciseAttention, alternativesFor, sessionVariants } from '../lib/ben-coach.js'
 
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
 // Single-person build: no name in the header, no generic fitness content. The page
@@ -66,6 +66,23 @@ export default function Home() {
   // planned session, so a rest day still shows what is coming rather than nothing.
   const guideRoutine = routine || next?.routine || null
   const benCoaching = guideRoutine ? routineCoaching(S, guideRoutine, 3) : []
+  // Cross-exercise signals for that same session: stalling runs, skipped movements and
+  // equipment mismatches, each with the evidence behind it.
+  const attention = guideRoutine ? exerciseAttention(S, guideRoutine) : []
+  // Shorter/longer options only make sense for a single-routine day; a combined day is
+  // already the long version.
+  const variants = todayRoutines.length === 1 && routine ? sessionVariants(routine, S) : { short: null, full: null, longer: null }
+
+  // The concrete numbers behind a guidance label, if the engine prescribed any.
+  const nextSummary = n => {
+    if (!n) return ''
+    if (n.sec != null) return `${n.sec}s`
+    const parts = []
+    if (n.weight != null && n.weight > 0) parts.push(`${fmtNum(n.weight)} ${S.unit}`)
+    if (n.reps != null) parts.push(`×${n.reps}`)
+    if (n.sets != null) parts.push(t('{0} sets', n.sets))
+    return parts.join(' ')
+  }
 
   // This week's planned sessions, in weekday order, with the status of the shown week.
   // Days are tappable to reschedule, the same as the strip above.
@@ -102,7 +119,7 @@ export default function Home() {
           </span>
           <div style={{ minWidth: 0 }}>
             <div className="lbl2">{S.active ? t('In progress') : doneToday ? t('Done for today') : routine ? t("Today's session") : t('Rest day')}</div>
-            <div className="ttl">{S.active ? (editingSaved ? S.active.name : S.active.name)
+            <div className="ttl">{S.active ? S.active.name
               : doneToday ? (doneToday.name || t('Workout done'))
               : routine ? todayName : t('Recovery')}</div>
             {S.active && activeTotal > 0 && !editingSaved && <div className="ss">{t('{0} of {1} sets', activeDone, activeTotal)}</div>}
@@ -125,7 +142,9 @@ export default function Home() {
             : routine
               ? <Button variant="primary" icon="play" onClick={() => startFlow(effectiveRoutineIds(S, todayIso))}>{t('Start {0}', todayName)}</Button>
               : <Button icon="dumbbell" onClick={() => nav('/workout')}>{t('Browse workouts')}</Button>}
-        {!S.active && <Button variant="ghost" className="dim" onClick={() => nav('/workout')}>{t('All workouts')}</Button>}
+        {/* One button per destination: the "All workouts" door only sits beside the primary
+            when the primary starts today's plan — everywhere else it would duplicate it. */}
+        {!S.active && !doneToday && routine && <Button variant="ghost" className="dim" onClick={() => nav('/workout')}>{t('All workouts')}</Button>}
       </div>
     </div>
 
@@ -186,6 +205,20 @@ export default function Home() {
         <span className="tag acc">{t('Start')}</span>
       </div>)}
       {todayRoutines.length > 0 && otherRoutines.length === 0 && <div className="muted small">{t('This is the only routine in the plan.')}</div>}
+      {/* Session lengths for a single-routine day: a short subset built from the same routine
+          (same prescription, same history), or a longer session combining two routines. */}
+      {todayRoutines.length === 1 && variants.short && (
+        <div className="sess" {...tappable(() => startShortFlow(routine.id, variants.short.exerciseIds))}>
+          <span className="lrow-i" style={{ width: 26, height: 26, fontSize: 14 }}><Icon name="timer" /></span>
+          <div className="grow" style={{ minWidth: 0 }}><div className="tt" style={{ fontSize: 14 }}>{t('Short version')}</div><div className="ss">{t('{0} exercises · {1} sets', variants.short.exerciseIds.length, variants.short.sets)}{variants.short.minutes != null ? t(' · about {0} min', variants.short.minutes) : ''}</div></div>
+          <span className="tag acc">{t('Start')}</span>
+        </div>)}
+      {todayRoutines.length === 1 && variants.longer && variants.longer.routineIds.length === 2 && (
+        <div className="sess" {...tappable(() => startFlow(variants.longer.routineIds))}>
+          <span className="lrow-i" style={{ width: 26, height: 26, fontSize: 14 }}><Icon name="plus" /></span>
+          <div className="grow" style={{ minWidth: 0 }}><div className="tt" style={{ fontSize: 14 }}>{t('Longer session')}</div><div className="ss">{todayName} + {variants.longer.name}</div></div>
+          <span className="tag acc">{t('Start')}</span>
+        </div>)}
       <div className="sess" {...tappable(() => startFlow([]))}>
         <span className="lrow-i" style={{ width: 26, height: 26, fontSize: 14 }}><Icon name="shuffle" /></span>
         <div className="grow" style={{ minWidth: 0 }}><div className="tt" style={{ fontSize: 14 }}>{t('Freestyle')}</div><div className="ss">{t('Pick exercises as you go')}</div></div>
@@ -248,9 +281,30 @@ export default function Home() {
         <div className="small dim" style={{ marginBottom: 5 }}>{guideRoutine && guideRoutine !== routine ? t('Guidance for next session: {0}', guideRoutine.name) : t('Guidance for today')}</div>
         {benCoaching.map(x => <div key={x.id} className="mrow">
           <span className="nm" style={{ minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{x.name}</span>
-          <span className="v" style={{ color: x.recommendation.status === 'progress' ? 'var(--green)' : x.recommendation.status === 'regress' ? 'var(--orange)' : 'var(--label-2)' }}>{t(x.recommendation.label)}</span>
+          <span className="v" style={{ color: x.recommendation.status === 'progress' ? 'var(--green)' : x.recommendation.status === 'regress' ? 'var(--orange)' : 'var(--label-2)' }}>{t(x.recommendation.label)}{nextSummary(x.recommendation.next) ? ` → ${nextSummary(x.recommendation.next)}` : ''}</span>
         </div>)}
       </div> : <div className="small muted">{t('Complete a planned workout to unlock exercise-specific guidance.')}</div>}
+      {attention.length > 0 && <div style={{ marginTop: 10 }}>
+        <div className="small dim" style={{ marginBottom: 5 }}>{t('Needs attention')}</div>
+        {attention.map((a, i) => {
+          const alts = alternativesFor(S, a.id, { count: 2 })
+          return <div key={a.id + ':' + a.kind + ':' + i} className="mrow" style={{ alignItems: 'flex-start' }}>
+            <span className="nm" style={{ whiteSpace: 'normal', lineHeight: 1.35 }}>
+              <span style={{ display: 'block' }}>{a.name}</span>
+              <span className="small dim" style={{ display: 'block', fontWeight: 400 }}>
+                {a.kind === 'stalling' ? t('Missed the target {0} sessions running.', a.stalls)
+                  : a.kind === 'skipped' ? t('No completed sets in the last {0} days, across {1} workouts.', a.days, a.workouts)
+                  : t('Needs {0} — not in the active equipment profile.', a.eq)}
+                {alts.length > 0 ? ' ' + t('Try: {0}.', alts.map(x => x.name).join(', ')) : ''}
+              </span>
+            </span>
+            <span className="v" style={{ color: 'var(--orange)' }}>{a.kind === 'stalling' ? t('Stalled') : a.kind === 'skipped' ? t('Skipped') : t('Equipment')}</span>
+          </div>
+        })}
+        {guideRoutine && <div className="row" style={{ justifyContent: 'flex-end', marginTop: 4 }}>
+          <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={() => nav(`/plan/r/${guideRoutine.id}`)}>{t('Adjust in plan')}</Button>
+        </div>}
+      </div>}
     </div>
   </div>
 }

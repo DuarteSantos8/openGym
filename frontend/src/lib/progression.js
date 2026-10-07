@@ -17,6 +17,7 @@
 // So a session that fell apart can never advance the load as though it had succeeded.
 
 import { modeOf, repStep, rerampWarmups, isBw, isPerSide, entryExcluded, entryRoutineId } from './history.js'
+import { rirOf } from './effort.js'
 import { EXIDX, isAssisted, isLoadedEq } from './exercises.js'
 import { isWarmupRow, isSideSet, syncSideAggregate, makeSideSet } from './workout-model.js'
 import { normalizeRepRange } from './rep-range.js'
@@ -256,6 +257,30 @@ function loadOf(entry, sets) {
   return loaded.length ? Math.min(...loaded) : 0
 }
 
+// Mean effort of a session's completed work sets, in RIR, with its coverage. Sets carry
+// RIR or RPE; rirOf converts, so either scale feeds the same number. Sparse or missing
+// ratings read as null and never steer a prescription — only a rated majority of the
+// completed work can hold a raise back (see effortHold).
+function readEffort(sets) {
+  const done = (sets || []).filter(s => s?.done === true)
+  const rated = done.map(rirOf).filter(v => v != null)
+  if (!rated.length) return { avg: null, rated: 0, done: done.length }
+  return { avg: rated.reduce((a, b) => a + b, 0) / rated.length, rated: rated.length, done: done.length }
+}
+
+// Hold the weight when a clean session was ground out at failure. Completing every rep with
+// nothing left is not the same signal as completing them comfortably: loading more on top
+// invites misses next time. Only linear and double-progression climbs consult it —
+// Greyskull's final set goes to failure by design, bodyweight climbs cost a rep rather than
+// load, and a hold has no load to add. It takes at least two rated sets covering half the
+// completed work, averaging under 1 RIR; anything thinner keeps the old behaviour.
+const EFFORT_HOLD_RIR = 1
+function effortHold(last) {
+  const e = last && last.effort
+  if (!e || e.avg == null || e.rated < 2 || e.done < 1) return false
+  return e.rated >= Math.ceil(e.done / 2) && e.avg < EFFORT_HOLD_RIR
+}
+
 export function readSession(entry, fallback) {
   const target = (entry && entry.target) || fallback || {}
   const mode = modeOf({ ...target, id: entry && entry.id })
@@ -290,6 +315,7 @@ export function readSession(entry, fallback) {
     count: reps.length,                                   // the dimension bodyweight work grows (#33)
     low: reps.length ? Math.min(...reps) : 0,
     amrap: reps.length ? reps[reps.length - 1] : 0,       // Greyskull's final set
+    effort: readEffort(sets),
     ok: goal > 0 && enough && reps.length > 0 && reps.every(r => r >= goal)
   }
 }
@@ -537,11 +563,21 @@ export function nextPrescription(S, cfg, routine) {
     // from before the exercise moved to double progression. Hitting it is compliance with that
     // session, not "reached the top". Double progression must not add weight until every set
     // actually reaches the top of the range (issue #278).
-    if (last.ok && last.low >= top) return {
-      policy, kind: 'up', weight: harder(w, inc), reps: bottom,
-      why: assisted
-        ? ['Top of the rep range in every set — {0} {1} less help, back to {2} reps.', inc, unit, bottom]
-        : ['Top of the rep range in every set — {0} {1} more, back to {2} reps.', inc, unit, bottom]
+    if (last.ok && last.low >= top) {
+      // Clean at the top, but ground out at failure (see effortHold): consolidate at this
+      // weight rather than loading the grind.
+      if (effortHold(last)) {
+        return {
+          policy, kind: 'hold', weight: w, reps: top,
+          why: ['Top of the range in every set, but taken to failure — hold {0} {1} for {2} before adding load.', w, unit, top]
+        }
+      }
+      return {
+        policy, kind: 'up', weight: harder(w, inc), reps: bottom,
+        why: assisted
+          ? ['Top of the rep range in every set — {0} {1} less help, back to {2} reps.', inc, unit, bottom]
+          : ['Top of the rep range in every set — {0} {1} more, back to {2} reps.', inc, unit, bottom]
+      }
     }
     if (stalls >= deloadAt) {
       const selected = epleyDeload()
@@ -560,6 +596,15 @@ export function nextPrescription(S, cfg, routine) {
 
   // linear + greyskull
   if (last.ok) {
+    // Clean, but every rated set was taken to failure: hold the weight and consolidate
+    // rather than loading the grind (see effortHold). Greyskull is exempt — its final
+    // set goes to failure by design.
+    if (policy === 'linear' && effortHold(last)) {
+      return {
+        policy, kind: 'hold', weight: w,
+        why: ['Every rep last time, but taken to failure — hold {0} {1} and consolidate before adding load.', w, unit]
+      }
+    }
     // Greyskull's final set is taken to failure: double the target reps there and you have
     // earned a double jump.
     const dbl = policy === 'greyskull' && last.goal > 0 && last.amrap >= last.goal * 2

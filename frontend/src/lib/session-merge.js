@@ -32,6 +32,23 @@ export function buildCombinedEntries(st, routineIds) {
 }
 
 /**
+ * A shortened session: one routine's entries for a subset of its exercises, in routine order.
+ * Everything a full build stamps is kept — the prescription, the plan, `rid` — because it
+ * builds through the same per-exercise path with the routine's own id, so progression, history
+ * and the detail sheet read a short session exactly like a full one with fewer entries. Only
+ * the live start offers it; logging a past workout keeps whole routines.
+ */
+export function buildSubsetEntries(st, routineId, exIds) {
+  const r = (st.routines || []).find(x => x?.id === routineId)
+  const wanted = new Set([].concat(exIds ?? []).filter(Boolean))
+  if (!r || !wanted.size) return { entries: [], routineIds: [], routines: [] }
+  const sub = { ...r, ex: (r.ex || []).filter(e => wanted.has(e?.id)) }
+  if (!sub.ex.length) return { entries: [], routineIds: [], routines: [] }
+  const entries = buildSessionEntries(st, sub).map(e => ({ ...e, rid: r.id }))
+  return { entries, routineIds: [r.id], routines: [r] }
+}
+
+/**
  * The session name for a combined workout, from routine names in merge order (ENG-12 rule):
  *   1–3 routines → join with " + "          → "Rehab + Core"
  *   4+ routines  → first two, then "+ N more" → "Rehab + Core + 2 more"

@@ -1645,57 +1645,10 @@ body.chips-dragging *{cursor:inherit}
   .hm-wrap{display:flex;flex-direction:column;align-items:center}
 }
 
-/* ------------------------------------------------------- gym check-in -- */
-/* Mobile-only feature (views/CheckIn.jsx): saved membership codes shown as QR, swiped
-   through horizontally. The rail is a scroll-snap track — one card per viewport, no JS
-   carousel — with a trailing "+" card to add another. */
-.ci-rail{
-  display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;
-  -webkit-overflow-scrolling:touch;scrollbar-width:none;
-  padding:4px 0 8px;margin:0 -16px;padding-left:16px;padding-right:16px;
-}
-.ci-rail::-webkit-scrollbar{display:none}
-.ci-card{
-  scroll-snap-align:center;flex:0 0 100%;box-sizing:border-box;
-  background:var(--surface);border-radius:var(--r-xl);padding:22px 18px;
-  display:flex;flex-direction:column;align-items:center;gap:14px;
-  transition:transform var(--fast),box-shadow var(--fast),opacity var(--fast);
-}
-/* header row: edit — title — trash. The two icon buttons are equal fixed widths so the title,
-   flexed between them, stays optically centered on the card no matter how long it is. */
-.ci-card-hd{display:flex;align-items:center;gap:8px;width:100%}
-.ci-card-btn{width:30px;height:30px;font-size:14px;flex:none}
-.ci-card .ci-label{flex:1;min-width:0;font-size:19px;font-weight:600;letter-spacing:-.014em;text-align:center;overflow-wrap:anywhere}
-.ci-card .ci-value{font-size:14px;color:var(--label-2);word-break:break-all;text-align:center;font-variant-numeric:tabular-nums}
-/* reorder row under a card (only shown with >1 card): ◀ position ▶ to nudge the card one slot
-   along the rail. A plain, reliable control — no drag gesture to fight the horizontal scroll. */
-.ci-reorder{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:2px}
-.ci-reorder .ci-pos{font-size:13px;color:var(--label-2);font-variant-numeric:tabular-nums;min-width:44px;text-align:center}
-.ci-reorder .iconbtn:disabled{opacity:.3;pointer-events:none}
-/* The QR itself: lean-qr paints 1 module per pixel, so scale it up with the browser's
-   nearest-neighbour so every module stays a crisp square instead of a blurred blob. White
-   quiet-zone padding is baked in by the renderer; the plate underneath just frames it. */
+/* QR plate around a code (components/Passkeys.jsx device link): white frame so the
+   modules stay readable on a dark theme. */
 .ci-qr-plate{background:#fff;border-radius:var(--r-lg);padding:16px}
 .qr-canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;transition:opacity var(--fast)}
-/* the trailing add card — a big + on a dashed outline, same footprint as a real card */
-.ci-add{
-  scroll-snap-align:center;flex:0 0 100%;box-sizing:border-box;
-  min-height:280px;border-radius:var(--r-xl);
-  border:2px dashed var(--surface-3);background:none;color:var(--label-2);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
-}
-.ci-add:active{background:var(--surface);transform:scale(.99)}
-.ci-add .icn{font-size:40px;--icon-stroke:1.8}
-.ci-add .ci-add-t{font-size:16px;font-weight:500}
-/* dots under the rail — which card you're on. Purely a hint; the rail itself is the control. */
-.ci-dots{display:flex;justify-content:center;gap:7px;margin-top:4px}
-.ci-dot{width:7px;height:7px;border-radius:50%;background:var(--surface-3);transition:background var(--fast),transform var(--fast)}
-.ci-dot.on{background:var(--acc);transform:scale(1.15)}
-/* browser camera sheet (components/CameraScan.jsx): the video fills a portrait plate, a dashed
-   square in the middle says "put the code here" — decoding reads the whole frame regardless. */
-.cam-wrap{position:relative;width:100%;aspect-ratio:3/4;max-height:58vh;border-radius:var(--r-lg);overflow:hidden;background:#000}
-.cam-wrap video{width:100%;height:100%;object-fit:cover;display:block}
-.cam-frame{position:absolute;inset:0;margin:auto;width:62%;aspect-ratio:1;border:2px dashed rgba(255,255,255,.75);border-radius:14px;pointer-events:none}
 /* ------------------------------------------------- the Coach entry on Plan -- */
 .coach-cta{
   display:flex;align-items:center;gap:13px;width:100%;text-align: start;

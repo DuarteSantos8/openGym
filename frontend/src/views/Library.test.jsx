@@ -84,6 +84,19 @@ describe('Library favourites', () => {
     expect(shown[0]).toBe(chest[4].n)
     expect(shown).not.toContain(legs.n)
   })
+
+  it('switches between the A–Z list and the muscle explorer without leaving the page', () => {
+    mocks.S.body = 'male'
+    const host = render()
+    const seg = [...host.querySelectorAll('.seg button')]
+    expect(seg.map(b => b.textContent)).toEqual(['All', 'By muscle'])
+    act(() => seg[1].click())
+    // The explorer's body map takes over the list; flipping back restores it.
+    expect(host.querySelectorAll('.item .tt').length).toBe(0)
+    expect([...host.querySelectorAll('.chips .chip')].length).toBeGreaterThan(0)
+    act(() => seg[0].click())
+    expect(names(host).length).toBeGreaterThan(0)
+  })
 })
 
 // #290 took the title-casing off every translated name; the packs stored lower-case then read

@@ -43,7 +43,7 @@ import { useSheetKeyboard, useRevealActiveChip, tappable } from './lib/use-sheet
 import { isFav, toggleFav, sortFavouritesFirst } from './lib/favourites.js'
 import { buildSessionEntries, buildPlannedEntry, builtOutOfProgression } from './lib/session-start.js'
 import { joinSessionNoProg } from './lib/session-noprog.js'
-import { buildCombinedEntries, deriveSessionName } from './lib/session-merge.js'
+import { buildCombinedEntries, buildSubsetEntries, deriveSessionName } from './lib/session-merge.js'
 import { workoutsOn, backfillStart, backfillEnd, completeBackfill, historyAsOf, sessionHistory } from './lib/backfill.js'
 import { moveWorkout, sameWorkout, startTimeOf, durationMinOf, setWorkoutDuration, rebuildPrHistory } from './lib/workout-date.js'
 import { editCompletedSession, editLeftEmpty, editedRecord, editChangesNothing } from './lib/session-edit.js'
@@ -2186,6 +2186,31 @@ export function beginWorkout(routineIds, bw) {
       bw: bw || null, cur: 0, entries,
       // Snapshot the layout at start so the header ⋮ can change it for this session only —
       // changing the saved default (Settings → Workout view) mid-session leaves it alone.
+      workoutView: st.workoutView || 'cards',
+    }
+  })
+  useUI.getState().stopRest()
+  nav('/workout')
+}
+
+// A shortened session of one routine (lib/session-merge.js buildSubsetEntries): the same
+// entries a full start would build for those exercises, nothing else. The weigh-in behaves
+// exactly like startFlow, and the saved workout keeps the routine's name and rid stamps, so
+// history, progression and the detail sheet read it as the routine with fewer entries.
+export function startShortFlow(routineId, exIds) {
+  if (S().weighIn === false) { beginSubsetWorkout(routineId, exIds, null); return }
+  bwSheet({ required: true, onDone: bw => beginSubsetWorkout(routineId, exIds, bw) })
+}
+export function beginSubsetWorkout(routineId, exIds, bw) {
+  const st = S()
+  const { entries, routineIds: rids, routines } = buildSubsetEntries(st, routineId, exIds)
+  if (!entries.length) return
+  update(s => {
+    s.active = {
+      id: uid(), d: todayISO(), start: Date.now(),
+      routineIds: rids,
+      name: routines.length ? deriveSessionName(routines.map(r => r.name)) : t('Freestyle'),
+      bw: bw || null, cur: 0, entries,
       workoutView: st.workoutView || 'cards',
     }
   })

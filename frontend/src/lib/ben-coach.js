@@ -1,82 +1,288 @@
 // Benjamin's coaching layer. Pure functions only: it reads the existing workout log and never
-// mutates history. The point is to turn completed sets into a small, auditable next-step signal.
-import { metricEntriesForExercise, bestWeightForEntry, completedRepsOf } from './history.js'
-import { betterWeight, EXIDX } from './exercises.js'
+// mutates history.
+//
+// The workout engine (lib/progression.js) stays the source of truth for what happens next:
+// recommendations translate its prescriptions into plain guidance instead of running a
+// parallel heuristic, so the Home hint and the session you actually open can never disagree.
+// On top of the engine this layer adds the cross-exercise signals the engine does not keep —
+// stalling runs, skipped movements, equipment mismatches, alternatives and session-length
+// variants — all derived from the same completed sets, and all silent when the evidence is
+// thin rather than inventing progress from it.
+import { entriesForExercise, metricEntriesForExercise, bestWeightForEntry, completedRepsOf, modeOf, streakWeeks } from './history.js'
+import { sessionsFor, stallCount, nextPrescription, policyFor } from './progression.js'
+import { betterWeight, EXIDX, exOr, allExercises, isBodyweightEq, isCardio, isAssisted } from './exercises.js'
+import { muscleGroupsOf } from './muscles.js'
+import { activeProfile, exAvailable } from './equipment.js'
+import { isWarmupRow, isSideSet } from './workout-model.js'
 import { weeklyWeights } from './bodyweight.js'
-import { weekStartOf, exerciseNameText } from './format.js'
-import { avgRir } from './effort.js'
+import { weekStartOf, weekKey, todayISO, exerciseNameText, isoOf } from './format.js'
 
 const startOf = w => Number.isFinite(w?.start) ? w.start : new Date((w?.d || '') + 'T12:00:00').getTime()
 
-function lastExerciseResult(S, exId) {
-  const rows = []
-  for (const w of S?.workouts || []) {
-    const items = metricEntriesForExercise(w, exId)
-    if (!items.length) continue
-    const mode = items.at(-1)?.mode
-    if (!mode) continue
-    const same = items.filter(x => x.mode === mode)
-    const sets = same.flatMap(x => x.rows).filter(Boolean)
-    if (!sets.length) continue
-    const reps = mode === 'reps' ? Math.max(0, ...sets.map(completedRepsOf)) : 0
-    const weight = mode === 'reps' ? bestWeightForEntry(same.at(-1).entry) : 0
-    rows.push({ w, mode, sets, reps, weight })
-  }
-  rows.sort((a, b) => startOf(a.w) - startOf(b.w))
-  return rows.at(-1) || null
-}
+const exName = id => (EXIDX[id] ? exerciseNameText(EXIDX[id]) : (exOr(id).n || id))
 
 function targetFor(routine, exId) {
   const x = routine?.ex?.find(e => e?.id === exId)
   return x || null
 }
 
+// The engine's [template, ...args] explanation as a plain sentence. Reasons are informational
+// (the UI translates labels, not sentences); the numbers stay exact, as logged.
+function fillWhy(why) {
+  if (!Array.isArray(why) || !why.length) return ''
+  return String(why[0]).replace(/\{(\d+)\}/g, (_, i) => (why[+i + 1] ?? ''))
+}
+
+// Recorded effort behind the verdict, when there is enough of it to mean something: at least
+// two rated sets. Stays on the RIR scale it was logged in, rounded to a logged step — never
+// more precise than the taps behind it.
+function rirNote(last) {
+  const e = last?.effort
+  if (!e || e.avg == null || e.rated < 2) return ''
+  return ` (avg RIR ${Math.round(e.avg * 2) / 2}).`
+}
+
+// The concrete numbers behind a prescription, for the UI to print next to the label.
+function nextOf(p) {
+  if (!p || p.kind === 'first' || p.kind === 'off') return null
+  const out = {}
+  for (const k of ['weight', 'reps', 'sets', 'sec']) if (p[k] != null) out[k] = p[k]
+  return Object.keys(out).length ? out : null
+}
+
+function progressLabel(p, target) {
+  if (p.sec != null) return 'Add time'
+  if (p.sets != null) return 'Add a set'
+  if (isAssisted(target)) return 'Use less help'
+  if (p.weight > 0) return 'Increase slightly'
+  return 'Make it harder'
+}
+
+function translatePrescription(p, last, target) {
+  const next = nextOf(p)
+  switch (p.kind) {
+    case 'first':
+      return { status: 'baseline', label: 'Build a baseline', reason: 'Log this exercise once before changing the target.', next: null }
+    case 'off':
+      return { status: 'repeat', label: 'Repeat the target', reason: 'Automatic progression is off for this exercise — follow the plan.', next: null }
+    case 'up': {
+      const label = progressLabel(p, target)
+      return { status: 'progress', label, reason: fillWhy(p.why) + rirNote(last), next }
+    }
+    case 'deload':
+      return { status: 'regress', label: 'Repeat or reduce', reason: fillWhy(p.why) + rirNote(last), next }
+    case 'hold':
+    default:
+      return { status: 'repeat', label: 'Repeat the target', reason: fillWhy(p.why) + rirNote(last), next }
+  }
+}
+
 export function recommendationFor(S, routine, exId) {
   const target = targetFor(routine, exId)
-  const last = lastExerciseResult(S, exId)
-  if (!target || !last) return { status: 'baseline', label: 'Build a baseline', reason: 'Log this exercise once before changing the target.' }
-
-  const planned = Number(target.reps)
-  if (!(planned > 0) || last.mode !== 'reps') return { status: 'repeat', label: 'Repeat the target', reason: 'Keep the current prescription and collect another clean result.' }
-
-  const hits = last.sets.filter(s => s?.done === true && completedRepsOf(s) >= planned).length
-  const done = last.sets.filter(s => s?.done === true).length
-  const misses = Math.max(0, last.sets.length - hits)
-  const plannedSets = Number(target.sets) || last.sets.length
-  const complete = done >= plannedSets && hits >= plannedSets
-
-  if (complete) {
-    const effort = avgRir(last.sets.filter(s => s?.done === true))
-    if (effort != null && effort < 2) {
-      return { status: 'repeat', label: 'Repeat the target', reason: 'The target was completed, but the sets were very close to failure; repeat before increasing the demand.' }
-    }
-    return {
-      status: 'progress',
-      label: last.weight > 0 ? 'Increase slightly' : 'Make it harder',
-      reason: last.weight > 0 ? 'All planned sets reached the rep target last time.' : 'All planned sets reached the target; bodyweight progress now needs load or a harder variation.',
-    }
-  }
-  if (misses >= 2 || done < plannedSets) {
-    return { status: 'regress', label: 'Repeat or reduce', reason: 'The last session missed several planned sets; earn the target before progressing.' }
-  }
-  return { status: 'repeat', label: 'Repeat the target', reason: 'Close, but not enough evidence to progress yet.' }
+  if (!target) return { status: 'baseline', label: 'Build a baseline', reason: 'Log this exercise once before changing the target.', next: null }
+  const mode = modeOf(target)
+  const sessions = sessionsFor(S, target.id, target, routine?.id).filter(s => s.mode === mode)
+  // No completed session on this line yet — not even a no-progression exercise has a
+  // target to repeat. (The engine answers 'off' before it looks at history.)
+  if (!sessions.length) return { status: 'baseline', label: 'Build a baseline', reason: 'Log this exercise once before changing the target.', next: null }
+  // The verdict is the engine's (nextPrescription reads completed reps, load, the plan the
+  // last session was built from, and recorded effort); this layer only words it.
+  const p = nextPrescription(S, target, routine)
+  return translatePrescription(p, sessions.at(-1), target)
 }
 
 export function routineCoaching(S, routine, limit = 3) {
   return (routine?.ex || [])
-    .map(e => ({ id: e.id, name: EXIDX[e.id] ? exerciseNameText(EXIDX[e.id]) : (e.name || e.id), target: e, recommendation: recommendationFor(S, routine, e.id) }))
+    .map(e => ({ id: e.id, name: exName(e.id), target: e, recommendation: recommendationFor(S, routine, e.id) }))
     .slice(0, limit)
+}
+
+// Flag a run at two straight misses: the engine deloads at three, so this is the early,
+// still-cheap moment to notice — repeat once more, then back off.
+export const STALL_FLAG = 2
+// Skipped means trained before, but nothing completed in the window while training happened:
+// at least this many workouts logged in the last this many days.
+export const ATTENTION_WINDOW_DAYS = 30
+export const ATTENTION_MIN_WORKOUTS = 2
+
+function countDoneIn(S, exId, cutoff) {
+  let n = 0
+  for (const w of S?.workouts || []) {
+    if (!w?.d || w.d < cutoff) continue
+    for (const e of entriesForExercise(w, exId)) {
+      for (const s of e?.sets || []) {
+        if (isWarmupRow(s)) continue
+        if (isSideSet(s)) { if (s.sides?.L?.done === true || s.sides?.R?.done === true) n++ }
+        else if (s?.done === true) n++
+      }
+    }
+  }
+  return n
+}
+
+// Exercises in a routine that deserve a look, each with the evidence for why. At most one
+// flag per exercise, most actionable first: a movement planned around unavailable equipment
+// explains a stall, so equipment is checked before performance, and a stalling run explains
+// itself, so it wins over the skipped check. Strength (reps-mode) work only — holds and
+// cardio progress by fixed steps and carry no stall signal.
+export function exerciseAttention(S, routine, opts = {}) {
+  const out = []
+  const windowDays = opts.windowDays ?? ATTENTION_WINDOW_DAYS
+  const minWorkouts = opts.minWorkouts ?? ATTENTION_MIN_WORKOUTS
+  const cutoff = isoOf(new Date(Date.now() - windowDays * 86400000))
+  const recent = (S?.workouts || []).filter(w => w?.d && w.d >= cutoff)
+  const profile = activeProfile(S)
+  for (const cfg of routine?.ex || []) {
+    if (!cfg?.id || modeOf(cfg) !== 'reps') continue
+    const name = exName(cfg.id)
+    if (profile && !exAvailable(S, exOr(cfg.id))) {
+      out.push({ id: cfg.id, name, kind: 'equipment', eq: exOr(cfg.id).eq || null })
+      continue
+    }
+    const sessions = sessionsFor(S, cfg.id, cfg, routine?.id).filter(s => s.mode === 'reps')
+    const stalls = stallCount(sessions, policyFor(cfg, routine, 'reps'))
+    if (stalls >= STALL_FLAG) {
+      out.push({ id: cfg.id, name, kind: 'stalling', stalls, sessions: sessions.length })
+      continue
+    }
+    if (sessions.length > 0 && recent.length >= minWorkouts && countDoneIn(S, cfg.id, cutoff) === 0) {
+      out.push({ id: cfg.id, name, kind: 'skipped', sessions: sessions.length, workouts: recent.length, days: windowDays })
+    }
+  }
+  return out
+}
+
+// Sensible replacements for one exercise: same primary muscle, never itself, never across
+// the cardio/strength line. Ranked for a home setup — usable with the active equipment
+// profile first, then bodyweight (needs nothing), then the same equipment as the original —
+// in catalogue order within each tier, so the list is stable. Applied through the existing
+// Replace/Swap flows; nothing here edits the plan.
+export function alternativesFor(S, exId, { count = 3 } = {}) {
+  const src = exOr(exId)
+  if (!src || src.missing) return []
+  const groups = muscleGroupsOf(src)
+  const primary = groups[0]
+  if (!primary) return []
+  const srcCardio = isCardio(src)
+  const srcEq = src.eq || null
+  const ranked = []
+  for (const c of allExercises(S)) {
+    if (!c || c.id === exId || c.missing) continue
+    if (isCardio(c) !== srcCardio) continue
+    const g = muscleGroupsOf(c)
+    if (!g.includes(primary)) continue
+    ranked.push({
+      id: c.id,
+      name: exName(c.id),
+      eq: c.eq || null,
+      bodyweight: isBodyweightEq(c),
+      available: exAvailable(S, c),
+      sameEq: !!(srcEq && c.eq === srcEq),
+      shared: g.filter(x => groups.includes(x)).length,
+    })
+  }
+  ranked.sort((a, b) =>
+    (b.available - a.available) || (b.bodyweight - a.bodyweight) ||
+    (b.sameEq - a.sameEq) || (b.shared - a.shared) || 0)
+  return ranked.slice(0, Math.max(0, count))
+    .map(({ id, name, eq, bodyweight, available }) => ({ id, name, eq, bodyweight, available }))
+}
+
+// How long the routine usually takes its owner: the median of its own logged durations.
+// Needs two timed sessions; with fewer there is no estimate rather than a guessed one. A
+// short session keeps the routine's name, so it joins this pool once logged.
+function routineMinutes(S, routine) {
+  if (!routine?.id) return null
+  const ds = []
+  for (const w of S?.workouts || []) {
+    const ids = [].concat(w?.routineIds ?? [])
+    if (!ids.includes(routine.id) && w?.name !== routine.name) continue
+    if (!(w.end > w.start)) continue
+    ds.push(Math.round((w.end - w.start) / 60000))
+  }
+  if (ds.length < 2) return null
+  ds.sort((a, b) => a - b)
+  return ds[Math.floor(ds.length / 2)]
+}
+
+// Short, normal and longer variants of one routine. Short keeps the movements with the most
+// completed sessions behind them — the work with the strongest evidence — in routine order,
+// about three-fifths of the exercises; routines of three exercises or fewer are already
+// short. Longer combines with one other routine through the existing combine mechanism
+// (lib/session-merge.js), preferring what the week already schedules.
+export function sessionVariants(routine, S) {
+  const ex = (routine?.ex || []).filter(e => e?.id)
+  const setsOf = list => list.reduce((n, e) => n + Math.max(1, e?.sets || 1), 0)
+  const full = { key: 'full', exerciseIds: ex.map(e => e.id), sets: setsOf(ex), minutes: routineMinutes(S, routine) }
+  let short = null
+  if (ex.length > 3) {
+    const target = Math.max(2, Math.min(4, Math.ceil(ex.length * 0.6)))
+    const scored = ex.map((e, i) => ({ e, i, done: sessionsFor(S, e.id, e, routine?.id).length }))
+    scored.sort((a, b) => b.done - a.done || a.i - b.i)
+    const kept = scored.slice(0, target).sort((a, b) => a.i - b.i).map(x => x.e)
+    const shortSets = setsOf(kept)
+    short = {
+      key: 'short',
+      exerciseIds: kept.map(e => e.id),
+      sets: shortSets,
+      minutes: full.minutes != null && full.sets > 0
+        ? Math.max(5, Math.round(full.minutes * shortSets / full.sets / 5) * 5)
+        : null,
+    }
+  }
+  return { short, full, longer: longerVariant(S, routine, setsOf) }
+}
+
+function longerVariant(S, routine, setsOf) {
+  const others = (S?.routines || []).filter(r => r?.id && r.id !== routine?.id && (r.ex || []).length)
+  if (!others.length) return null
+  const scheduled = new Set(Object.values(S?.week || {}).flatMap(ids => [].concat(ids ?? [])))
+  const ranked = [...others].sort((a, b) =>
+    ((scheduled.has(b.id) ? 1 : 0) - (scheduled.has(a.id) ? 1 : 0)) || (setsOf(b.ex) - setsOf(a.ex)))
+  const pick = ranked[0]
+  return { key: 'longer', routineIds: [routine?.id, pick.id].filter(Boolean), name: pick.name, sets: setsOf(routine?.ex || []) + setsOf(pick.ex) }
 }
 
 export function bodyweightTrend(S) {
   const weeks = weeklyWeights(S?.bodyweight || [], weekStartOf(S))
-  if (weeks.length < 2) return { status: 'baseline', delta: null, weeks }
+  if (weeks.length < 2) return { status: 'baseline', delta: null, weeks, rate: null, weeksUsed: weeks.length, noise: null, meaningful: false }
   const delta = weeks[0].avg - weeks[1].avg
-  return {
-    status: delta < -0.15 ? 'down' : delta > 0.15 ? 'up' : 'steady',
-    delta,
-    weeks,
+  if (weeks.length === 2) {
+    const status = delta < -0.15 ? 'down' : delta > 0.15 ? 'up' : 'steady'
+    return { status, delta, weeks, rate: delta, weeksUsed: 2, noise: null, meaningful: status !== 'steady' }
   }
+  // Three or more logged weeks: fit the slope over the latest four so one salty evening
+  // cannot flip the verdict. `rate` is unit/week (x = 0 at the latest week); `noise` is the
+  // mean miss of the weekly averages against that line — the scale day-to-day fluctuation
+  // lives on. A trend only counts as meaningful when the fitted change clears both a floor
+  // (0.3) and twice that noise.
+  const fit = weeks.slice(0, 4)
+  const n = fit.length
+  const xs = fit.map((_, i) => -i)
+  const ys = fit.map(w => w.avg)
+  const mx = xs.reduce((a, b) => a + b, 0) / n
+  const my = ys.reduce((a, b) => a + b, 0) / n
+  const den = xs.reduce((a, x) => a + (x - mx) ** 2, 0)
+  const rate = den > 0 ? xs.reduce((a, x, i) => a + (x - mx) * (ys[i] - my), 0) / den : 0
+  const noise = ys.reduce((a, y, i) => a + Math.abs(y - (my + rate * (xs[i] - mx))), 0) / n
+  const status = rate < -0.15 ? 'down' : rate > 0.15 ? 'up' : 'steady'
+  const meaningful = status !== 'steady' && Math.abs(rate) * (n - 1) >= Math.max(0.3, 2 * noise)
+  return { status, delta, weeks, rate, weeksUsed: n, noise, meaningful }
+}
+
+// Where the weight trend points relative to intent: toward a set goal, or — with no goal
+// set — toward the profile's standing intent, fat loss (see ben-profile.js). 'flat' covers
+// steady and within-noise movement alike; only the review decides whether that matters.
+export function weightDirection(S, trend) {
+  if (!trend || trend.status === 'baseline' || trend.delta == null) return 'unknown'
+  const latestAvg = trend.weeks?.[0]?.avg
+  if (S?.targetW > 0 && latestAvg != null) {
+    if (Math.abs(latestAvg - S.targetW) < 0.05) return 'at-goal'
+    const toward = (latestAvg > S.targetW && trend.status === 'down') || (latestAvg < S.targetW && trend.status === 'up')
+    return toward ? 'toward' : trend.status === 'steady' ? 'flat' : 'away'
+  }
+  if (trend.status === 'steady') return 'flat'
+  return trend.status === 'down' ? 'toward' : 'away'
 }
 
 // Strength retention is deliberately conservative. It compares exercise-level bests between
@@ -139,6 +345,122 @@ export function strengthRetention(S, days = 30) {
     status: holding >= 0.7 ? 'holding' : holding >= 0.5 ? 'mixed' : 'attention',
     compared: comparisons.length,
     holding,
+    // Direction counts for the review: clearly up (>2%, past noise) vs down with the
+    // holding boundary (<0.95). Between them is maintenance, which is the goal while
+    // losing fat — neither progress to celebrate nor loss to chase.
+    improved: comparisons.filter(x => x.ratio > 1.02).length,
+    declined: comparisons.filter(x => x.ratio < 0.95).length,
     comparisons,
   }
+}
+
+// Training consistency over the last four weeks: completed workouts against the plan's own
+// scheduled days. Overrides for single days are ignored — over a month the pattern matters,
+// not any one reschedule. No scheduled days means no plan to keep, not a failure.
+export const CONSISTENCY_DAYS = 28
+export function consistency(S, opts = {}) {
+  const days = opts.days ?? CONSISTENCY_DAYS
+  const cutoff = isoOf(new Date(Date.now() - days * 86400000))
+  const done = (S?.workouts || []).filter(w => w?.d && w.d >= cutoff).length
+  const perWeek = Object.values(S?.week || {}).filter(ids => [].concat(ids ?? []).length).length
+  const expected = perWeek * days / 7
+  const rate = expected > 0 ? done / expected : null
+  return {
+    done, expected: Math.round(expected * 10) / 10, rate,
+    streak: streakWeeks(S),
+    status: expected <= 0 ? 'baseline' : rate >= 1 ? 'on-track' : rate >= 0.5 ? 'close' : 'behind',
+  }
+}
+
+// Records the engine awarded in the window (w.prs is written once, at finish, against the
+// all-time best) — the review's "notable improvements" straight from the source of truth.
+function recentPRs(S, days) {
+  const cutoff = isoOf(new Date(Date.now() - days * 86400000))
+  const seen = new Set()
+  const out = []
+  for (const w of S?.workouts || []) {
+    if (!w?.d || w.d < cutoff) continue
+    for (const id of w.prs || []) {
+      if (seen.has(id)) continue
+      seen.add(id)
+      out.push({ id, name: exName(id) })
+    }
+  }
+  return out
+}
+
+function allAttention(S) {
+  const seen = new Set()
+  const out = []
+  for (const r of S?.routines || []) {
+    for (const a of exerciseAttention(S, r)) {
+      const key = a.id + ':' + a.kind
+      if (seen.has(key)) continue
+      seen.add(key)
+      out.push(a)
+    }
+  }
+  return out
+}
+
+// One clear recommendation for the coming week, first match wins — in the order the levers
+// actually work: no training, no progress to judge, so consistency outranks everything past
+// setup; a concrete stalling or missing movement outranks a slow-moving scale; the scale
+// outranks strength noise only when the trend is meaningful.
+function decideRecommendation(S, r) {
+  const routines = S?.routines || []
+  if (!routines.length) return { kind: 'setup', why: ['No plan yet — build the weekly routine in Plan, then log the first session.'] }
+  const scheduled = Object.values(S?.week || {}).filter(ids => [].concat(ids ?? []).length).length
+  if (!scheduled) return { kind: 'setup', why: ['Nothing is scheduled — put the routines on training days in Plan.'] }
+  if (!(S?.workouts || []).length) return { kind: 'start', why: ['Log the first session to start the history.'] }
+  if (r.consistency.status === 'behind') {
+    return { kind: 'consistency', why: ['Training ran at {0}% of plan over the last 4 weeks — start the next planned session.', Math.round(r.consistency.rate * 100)] }
+  }
+  const [top] = r.attention
+  if (top) {
+    if (top.kind === 'stalling') {
+      const alt = alternativesFor(S, top.id, { count: 1 })[0]
+      return alt
+        ? { kind: 'attention', exerciseId: top.id, why: ['{0} missed the target {1} sessions running — repeat it at the same load, or swap in {2}.', top.name, top.stalls, alt.name] }
+        : { kind: 'attention', exerciseId: top.id, why: ['{0} missed the target {1} sessions running — repeat it at the same load.', top.name, top.stalls] }
+    }
+    if (top.kind === 'skipped') return { kind: 'attention', exerciseId: top.id, why: ['{0} has no completed sets in the last {1} days — train it next session or replace it.', top.name, top.days] }
+    return { kind: 'attention', exerciseId: top.id, why: ['{0} needs {1}, which is not in the active equipment profile — swap it or update the profile.', top.name, top.eq] }
+  }
+  if (r.bodyweight.direction === 'away' && r.bodyweight.meaningful) {
+    const signed = (r.bodyweight.rate > 0 ? '+' : '') + (Math.round(r.bodyweight.rate * 10) / 10)
+    return { kind: 'weight', why: ['Weight is working against the goal ({0} {1}/week over {2} weeks) — review training consistency and intake.', signed, S.unit, r.bodyweight.weeksUsed] }
+  }
+  if (r.strength.status === 'attention') {
+    return { kind: 'strength', why: ['Strength is down in {0} of {1} compared exercises — repeat current loads and recover before pushing further.', r.strength.declined, r.strength.compared] }
+  }
+  return { kind: 'progress', why: ['On track — the next raises are already in the session targets.'] }
+}
+
+// The weekly review: training completed, bodyweight trend, strength trend, notable
+// improvements, anything needing attention, and one recommendation for the coming week.
+// Training covers the current week-to-date; trends and records read the trailing windows
+// behind them. Every number names its evidence; thin evidence reads as baseline, never as
+// a verdict.
+export function weeklyReview(S) {
+  const ws = weekStartOf(S)
+  const wk = weekKey(todayISO(), ws)
+  const weekWorkouts = (S?.workouts || []).filter(w => w?.d && weekKey(w.d, ws) === wk)
+  const planned = Object.values(S?.week || {}).filter(ids => [].concat(ids ?? []).length).length
+  const training = {
+    done: weekWorkouts.length, planned, extra: Math.max(0, weekWorkouts.length - planned),
+    status: planned <= 0 ? 'baseline' : weekWorkouts.length >= planned ? 'complete' : 'open',
+  }
+  const bw = bodyweightTrend(S)
+  const bodyweight = {
+    status: bw.status, delta: bw.delta, rate: bw.rate, weeksUsed: bw.weeksUsed,
+    noise: bw.noise, meaningful: bw.meaningful, direction: weightDirection(S, bw),
+  }
+  const st = strengthRetention(S)
+  const strength = { status: st.status, compared: st.compared, improved: st.improved ?? 0, declined: st.declined ?? 0 }
+  const con = consistency(S)
+  const improvements = recentPRs(S, 14)
+  const attention = allAttention(S)
+  const recommendation = decideRecommendation(S, { consistency: con, attention, bodyweight, strength })
+  return { weekKey: wk, training, bodyweight, strength, consistency: con, improvements, attention, recommendation }
 }

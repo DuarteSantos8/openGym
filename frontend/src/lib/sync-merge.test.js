@@ -10,7 +10,7 @@ const routine = (id, name = id) => ({ id, name, ex: [] })
 const base = (over = {}) => ({
   unit: 'kg', restSec: 90, lang: 'en', week: { 1: ['r1'] }, dayPlan: {},
   workouts: [], routines: [], bodyweight: [], customEx: [], favEx: [], exWeights: {}, exNotes: {}, barWeights: {},
-  equipProfiles: [], gymCards: [], _ts: 0, ...over
+  equipProfiles: [], _ts: 0, ...over
 })
 const ids = xs => (xs || []).map(x => x.id)
 
@@ -42,7 +42,7 @@ describe('mergeStates', () => {
     bodyweight: [{ d: '2026-09-01', w: 80, t: 10 }],
     customEx: [{ id: 'cA', name: 'A ex' }], favEx: ['x', 'y'],
     exWeights: { sq: { w: 100 }, bp: { w: 60 } }, exNotes: { sq: 'A note' }, barWeights: { sq: 20 },
-    gymCards: [{ id: 'g1', value: '1' }], _rev: 7
+    equipProfiles: [{ id: 'g1', name: 'Home' }], _rev: 7
   })
   const B = () => base({
     _ts: 100, restSec: 60, week: { 1: ['rB'] },
@@ -51,7 +51,7 @@ describe('mergeStates', () => {
     bodyweight: [{ d: '2026-09-01', w: 79, t: 20 }, { d: '2026-08-30', w: 82, t: 1 }],
     customEx: [{ id: 'cB', name: 'B ex' }], favEx: ['y', 'z'],
     exWeights: { sq: { w: 110 }, dl: { w: 140 } }, exNotes: { dl: 'B note' }, barWeights: { dl: 15 },
-    gymCards: [{ id: 'g2', value: '2' }], _rev: 8
+    equipProfiles: [{ id: 'g2', name: 'Gym' }], _rev: 8
   })
 
   it('no entity of either side disappears, ids stay unique', () => {
@@ -59,7 +59,7 @@ describe('mergeStates', () => {
     expect(ids(m.workouts).sort()).toEqual(['w1', 'wA', 'wB'])
     expect(ids(m.routines).sort()).toEqual(['onlyA', 'onlyB', 'shared'])
     expect(ids(m.customEx).sort()).toEqual(['cA', 'cB'])
-    expect(ids(m.gymCards).sort()).toEqual(['g1', 'g2'])
+    expect(ids(m.equipProfiles).sort()).toEqual(['g1', 'g2'])
     expect(m.bodyweight.map(b => b.d)).toEqual(['2026-08-30', '2026-09-01'])
     expect(m.favEx).toEqual(['x', 'y', 'z'])
     expect(new Set(ids(m.workouts)).size).toBe(m.workouts.length)
@@ -161,7 +161,7 @@ describe('mergeStates', () => {
 
   it('is commutative on the union fields and idempotent', () => {
     const ab = mergeStates(A(), B()), ba = mergeStates(B(), A())
-    for (const f of ['workouts', 'routines', 'customEx', 'gymCards']) expect(ids(ab[f]).sort()).toEqual(ids(ba[f]).sort())
+    for (const f of ['workouts', 'routines', 'customEx']) expect(ids(ab[f]).sort()).toEqual(ids(ba[f]).sort())
     expect(ab.bodyweight).toEqual(ba.bodyweight)
     expect([...ab.favEx].sort()).toEqual([...ba.favEx].sort())
     expect(ab.exWeights).toEqual(ba.exWeights)
@@ -515,7 +515,7 @@ describe('a reset holds against a copy that has not seen it', () => {
     routines: [{ id: 'r-old', name: 'old', ex: [], _ts: 100 }, { id: 'r-new', name: 'new', ex: [], _ts: 5800 }, { id: 'r-unstamped', name: 'x', ex: [] }],
     bodyweight: [{ d: '2026-08-01', w: 80, t: 100 }, { d: '2026-09-27', w: 81, t: 5900 }],
     customEx: [{ id: 'c-old', n: 'old', _ts: 100 }, { id: 'c-new', n: 'new', _ts: 5900 }],
-    favEx: ['0025'], exNotes: { '0025': 'seat 4' }, gymCards: [{ id: 'g1', value: '123' }],
+    favEx: ['0025'], exNotes: { '0025': 'seat 4' },
     exWeights: { '0025': { w: 140, d: '2026-08-01' }, '0100': { w: 30, d: '2026-08-01' } },
     loadKind: { '0025': { kind: 'single', _ts: 100 }, '0100': { kind: 'pairs', _ts: 5900 } },
   })
@@ -528,7 +528,6 @@ describe('a reset holds against a copy that has not seen it', () => {
       expect(ids(m.customEx)).toEqual(['c-new'])
       expect(m.favEx || []).toEqual([])
       expect(m.exNotes || {}).toEqual({})
-      expect(m.gymCards || []).toEqual([])
       expect(Object.keys(m.loadKind)).toEqual(['0100'])
       // the kept loads are those of the workouts that remain, not the ones from before the reset
       expect(m.exWeights).toEqual({ '0025': { w: 100, d: '2026-09-01' } })
@@ -573,7 +572,7 @@ describe('a reset names what it wiped', () => {
     _ts: R - 1000,
     workouts: [w('old', R - 5000)], routines: [{ id: 'r-old', name: 'old', ex: [], _ts: R - 5000 }],
     bodyweight: [{ d: '2026-08-01', w: 80, t: R - 5000 }], customEx: [{ id: 'c-old', n: 'old', _ts: R - 5000 }],
-    favEx: ['0025'], exNotes: { '0025': 'seat 4' }, gymCards: [{ id: 'g1', value: '123' }],
+    favEx: ['0025'], exNotes: { '0025': 'seat 4' },
     loadKind: { '0025': { kind: 'single', _ts: R - 5000 } },
   })
   const reset = base({ _ts: R, resetAt: R, resetIds: resetIdsOf(before) })
@@ -588,7 +587,6 @@ describe('a reset names what it wiped', () => {
       expect(m.customEx || []).toEqual([])
       expect(m.favEx || []).toEqual([])
       expect(m.exNotes || {}).toEqual({})
-      expect(m.gymCards || []).toEqual([])
       expect(m.loadKind || {}).toEqual({})
       expect(m.exWeights).toEqual({})
       expect(m.resetAt).toBe(R)

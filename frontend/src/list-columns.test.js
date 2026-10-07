@@ -78,14 +78,14 @@ const page = cls => ({ classes: [cls] })
 const modal = { id: 'modal-root' }
 
 describe('lists on a computer', () => {
-  it('stay one column on a .narrow page (Home, Workout, Settings, Admin, CheckIn, the coach pages)', () => {
+  it('stay one column on a .narrow page (Home, Workout, Settings, Admin, the coach pages)', () => {
     expect(displayOf(['list'], [app, page('narrow')])).toBe('flex')
     // a list inside a card on the page, not a direct child of it
     expect(displayOf(['list'], [app, page('narrow'), page('card')])).toBe('flex')
     expect(displayOf(['list', 'routine-list'], [app, page('narrow')])).toBe('flex')
   })
 
-  it('keep two columns on the full-width pages (Library, History, Stats, Plan, Muscles)', () => {
+  it('keep two columns on the full-width pages (Library, History, Stats, Plan)', () => {
     expect(displayOf(['list'], [app])).toBe('grid')
     expect(displayOf(['list'], [app, page('card')])).toBe('grid')
   })

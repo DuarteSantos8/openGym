@@ -1,16 +1,12 @@
-// QR rendering for the gym check-in cards (see views/CheckIn.jsx).
+// QR rendering (components/QrCanvas.jsx), currently for the device-link code that pairs
+// another device (see components/Passkeys.jsx).
 //
-// We never store a photo of a membership card, only its decoded value (+ its symbology in
-// `fmt`). The picture a turnstile scanner reads is regenerated from that value every time the
-// card is shown, here.
+// The picture a scanner reads is regenerated from the value every time it is shown, here.
 //
 // lean-qr (MIT, see NOTICE.md) is loaded with a dynamic import so its ~4kB only loads when a
-// card is actually shown, on every platform — the PWA renders the same code as the app.
+// code is actually shown, on every platform — the PWA renders the same code as the app.
 //
-// Scope: lean-qr generates QR codes only. A gym card is virtually always a QR code, and the
-// capture flow (lib/scan.js) refuses any symbology we cannot faithfully reproduce, so a stored
-// card is guaranteed renderable here — canRenderFmt() is the single source of that truth, shared
-// by both sides.
+// Scope: lean-qr generates QR codes only.
 
 let _leanqr = null
 
@@ -20,16 +16,16 @@ async function loadLeanQr() {
   return _leanqr
 }
 
-// The symbologies we can both read (mlkit) AND redraw (lean-qr). Stored `fmt` is a lower-cased
-// BarcodeFormat. Only QR qualifies: reproducing an EAN/Code128/etc. would need a 1D renderer we
-// deliberately did not add, and a code we can't redraw faithfully is worse than not storing it —
-// it would look scannable but carry the wrong bars.
+// The symbologies we can redraw (lean-qr). Only QR qualifies: reproducing an
+// EAN/Code128/etc. would need a 1D renderer we deliberately did not add, and a code we
+// can't redraw faithfully is worse than not storing it — it would look scannable but
+// carry the wrong bars.
 export function canRenderFmt(fmt) {
   return normalizeFmt(fmt) === 'qrcode'
 }
 
-// mlkit reports BarcodeFormat as e.g. 'QR_CODE' | 'QrCode'; older callers may pass 'qr'. Fold
-// them all to a stable lower-case token we store and compare on.
+// Barcode scanners report their format in various casings ('QR_CODE', 'QrCode'); older
+// callers may pass 'qr'. Fold them all to a stable lower-case token we store and compare on.
 export function normalizeFmt(fmt) {
   const s = String(fmt || '').toLowerCase().replace(/[^a-z0-9]/g, '')
   if (s === 'qr' || s === 'qrcode') return 'qrcode'
@@ -38,7 +34,7 @@ export function normalizeFmt(fmt) {
 
 // Draw `value` as a QR code onto `canvas` at 1 module per pixel; CSS scales it up with
 // image-rendering: pixelated (see .qr-canvas in index.css) so it stays crisp at any size.
-// `on`/`off` default to solid black on white — turnstile scanners want maximum contrast, not
+// `on`/`off` default to solid black on white — scanners want maximum contrast, not
 // the app's theme colours, and a themed (e.g. lime-on-black) code fails to read on many
 // readers. Returns the module count (QR size) so the caller can react if it wants.
 export async function renderQrToCanvas(canvas, value, { on = '#000000', off = '#ffffff' } = {}) {
