@@ -27,10 +27,10 @@ const BEN_PLANK = pick('plank')
 const BEN_PIKE = pick('pike push-up', 'pike push up')
 const BEN_OPTIONAL = pick('mountain climber', 'mountain climbers')
 const BEN_HOME = [
-  ['ben-a', 'Full Body A', 'figureStrength', [benEx(BEN_PUSH, 3, 12), benEx(BEN_PULL, 3, 5), benEx(BEN_SQUAT, 3, 15), benEx(BEN_BRIDGE, 3, 15), benEx(BEN_PLANK, 3, 45)].filter(Boolean)],
-  ['ben-b', 'Full Body B', 'figureStrength', [benEx(BEN_PIKE, 3, 8), benEx(BEN_PULL, 3, 5), benEx(BEN_LUNGE, 3, 10), benEx(BEN_BRIDGE, 3, 15), benEx(BEN_PLANK, 3, 45)].filter(Boolean)],
-  ['ben-c', 'Full Body C', 'figureStrength', [benEx(BEN_PUSH, 3, 12), benEx(BEN_PULL, 3, 5), benEx(BEN_SQUAT, 3, 15), benEx(BEN_LUNGE, 2, 10), benEx(BEN_OPTIONAL, 3, 30)].filter(Boolean)],
-  ['ben-short', 'Short Full Body', 'figureStrength', [benEx(BEN_PUSH, 2, 12), benEx(BEN_PULL, 2, 5), benEx(BEN_SQUAT, 2, 15), benEx(BEN_PLANK, 2, 45)].filter(Boolean)]
+  ['ben-a', 'Full Body A', 'figureStrength', [benEx(BEN_PUSH, 3, 12), benEx(BEN_PULL, 3, 5), benEx(BEN_SQUAT, 3, 15), benEx(BEN_BRIDGE, 3, 15), benEx(BEN_PLANK, 3, 45)].filter(Boolean), { role: 'Strength foundation', focus: 'Push, pull, squat and trunk', priority: 'Main session' }],
+  ['ben-b', 'Full Body B', 'figureStrength', [benEx(BEN_PIKE, 3, 8), benEx(BEN_PULL, 3, 5), benEx(BEN_LUNGE, 3, 10), benEx(BEN_BRIDGE, 3, 15), benEx(BEN_PLANK, 3, 45)].filter(Boolean), { role: 'Strength + single-leg', focus: 'Upper-body strength and unilateral legs', priority: 'Main session' }],
+  ['ben-c', 'Full Body C', 'figureStrength', [benEx(BEN_PUSH, 3, 12), benEx(BEN_PULL, 3, 5), benEx(BEN_SQUAT, 3, 15), benEx(BEN_LUNGE, 2, 10), benEx(BEN_OPTIONAL, 3, 30)].filter(Boolean), { role: 'Full-body progression', focus: 'Repeat key patterns with a small conditioning finish', priority: 'Main session' }],
+  ['ben-short', 'Short Full Body', 'figureStrength', [benEx(BEN_PUSH, 2, 12), benEx(BEN_PULL, 2, 5), benEx(BEN_SQUAT, 2, 15), benEx(BEN_PLANK, 2, 45)].filter(Boolean), { role: 'Optional short session', focus: 'Keep the habit and cover the basics with low volume', priority: 'Optional' }]
 ]
 
 
@@ -70,7 +70,13 @@ const PLANS = {
 }
 
 const build = routines =>
-  routines.map(([, name, emoji, list]) => ({ id: uid(), name, emoji, ex: list.map(([id, sets, reps]) => ({ id, sets, reps, weight: 0 })) }))
+  routines.map(([, name, emoji, list, meta]) => ({
+    id: uid(),
+    name,
+    emoji,
+    ex: list.map(([id, sets, reps]) => ({ id, sets, reps, weight: 0 })),
+    ...(meta ? { trainingRole: meta.role, trainingFocus: meta.focus, trainingPriority: meta.priority } : {}),
+  }))
 
 // Fresh routine objects (new ids) — [push, pull, legs]. The demo build seeds a history on
 // top of exactly these three, so this entry point keeps its shape.
