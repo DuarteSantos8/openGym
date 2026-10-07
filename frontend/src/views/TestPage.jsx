@@ -29,8 +29,8 @@ export default function TestPage() {
     const strength = strengthRetention(S)
     return [
       ['Store booted', ready, ready ? 'Zustand store reports ready.' : 'Store is still booting.'],
-      ['Benjamin profile', BEN_PROFILE.name === 'Benjamin', `${BEN_PROFILE.name} · ${BEN_PROFILE.frequency} sessions/week`],
-      ['Benjamin plan', !!plan && plan.routines?.length === 4, plan ? `${plan.routines?.length || 0} routines available · 3 scheduled` : 'Plan is missing.'],
+      ['Profile', BEN_PROFILE.name === 'Benjamin', `${BEN_PROFILE.name} · ${BEN_PROFILE.frequency} sessions/week`],
+      ['Home plan', !!plan && plan.routines?.length === 4, plan ? `${plan.routines?.length || 0} routines available · 3 scheduled` : 'Plan is missing.'],
       ['Home environment', BEN_PROFILE.environment === 'Home training', BEN_PROFILE.environment],
       ['Coach engine', typeof routineCoaching === 'function', coaching.length ? `${coaching.length} exercise recommendations generated` : 'No routine data available yet.'],
       ['Weight trend engine', ['baseline','down','up','steady'].includes(bw.status), bw.delta == null ? 'Waiting for two weekly averages.' : `${bw.delta.toFixed(2)} kg vs previous week`],
@@ -61,8 +61,8 @@ export default function TestPage() {
       <div style={{ marginBottom:22 }}>
         <button onClick={() => navigate('/home')} style={{ marginBottom:18 }}>← Back to app</button>
         <div style={{ fontSize:12, fontWeight:800, letterSpacing:1.2, opacity:.6 }}>BENOPENGYM / TEST</div>
-        <h1 style={{ margin:'8px 0 6px' }}>Benjamin App Test</h1>
-        <p style={{ margin:0, color:'var(--label-2)' }}>A smoke-test page for the GitHub Pages build and Benjamin-specific features.</p>
+        <h1 style={{ margin:'8px 0 6px' }}>App Test</h1>
+        <p style={{ margin:0, color:'var(--label-2)' }}>A smoke-test page for the GitHub Pages build and personal features.</p>
       </div>
 
       <section style={{ border:'1px solid var(--separator)', borderRadius:16, overflow:'hidden', marginBottom:16, background:'var(--secondary-background)' }}>
