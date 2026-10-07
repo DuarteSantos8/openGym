@@ -15,7 +15,7 @@ import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { api, beacon } from '../lib/api.js'
 import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor } from '../lib/supersetFlow.js'
 import Media from '../components/Media.jsx'
-import { startFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, finishWorkout, exitWorkoutEdit, workoutCompleteSheet, confirmSheet, exerciseNoteSheet, sessionNoteSheet, renameWorkoutSheet, swapActiveWorkoutExercise, barWeightSheet, menuSheet, effortPickerSheet, exerciseHistorySheet, addRoutineToSessionSheet } from '../sheets.jsx'
+import { startFlow, startShortFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, finishWorkout, exitWorkoutEdit, workoutCompleteSheet, confirmSheet, exerciseNoteSheet, sessionNoteSheet, renameWorkoutSheet, swapActiveWorkoutExercise, barWeightSheet, menuSheet, effortPickerSheet, exerciseHistorySheet, addRoutineToSessionSheet } from '../sheets.jsx'
 import { effortColor } from '../lib/effort.js'
 import Icon from '../components/Icon.jsx'
 import { Button, Check, NumberField } from '../components/ui.jsx'
@@ -28,6 +28,7 @@ import { markAllSetsDone, sessionHistory } from '../lib/backfill.js'
 import { bestSetFor } from '../lib/exercise-history.js'
 import { isWarmupRow, isDropSet, isRestPauseSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL } from '../lib/workout-model.js'
 import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit } from '../lib/active-workout-order.js'
+import { sessionVariants } from '../lib/ben-coach.js'
 import { nextOpenSet, workoutKeyAction } from '../lib/workout-keys.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
 
@@ -46,6 +47,9 @@ function StartChooser() {
   const todayOvr = S.dayPlan[todayISO()] !== undefined
   const idSet = new Set(todayIds)
   const others = S.routines.filter(r => !idSet.has(r.id))
+  // Shorter/longer options only make sense for a single-routine day; a combined day is
+  // already the long version.
+  const variants = todayRoutines.length === 1 ? sessionVariants(todayRoutines[0], S) : { short: null, longer: null }
   return <div className="narrow">
     <div className="hdr"><div><h1>{t('Start workout')}</h1><div className="sub">{t(DAYN[new Date().getDay()])} — {todayRoutines.length ? t('today is {0}', todayName) : t('rest day — anything counts as extra')}</div></div></div>
     {todayRoutines.length > 0 && <div className="card" style={{ borderColor: 'var(--acc)' }}>
@@ -61,6 +65,16 @@ function StartChooser() {
         <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
         <div className="grow"><div className="tt">{r.name}</div><div className="ss">{exCount(r.ex.length)}</div></div>
         <span className="tag acc">{t('Start')}</span></div>)}</div></>}
+    {todayRoutines.length === 1 && variants.short && (
+      <div className="item" onClick={() => startShortFlow(todayRoutines[0].id, variants.short.exerciseIds)}>
+        <span className="lrow-i"><Icon name="timer" /></span>
+        <div className="grow"><div className="tt">{t('Short version')}</div><div className="ss">{t('{0} exercises · {1} sets', variants.short.exerciseIds.length, variants.short.sets)}{variants.short.minutes != null ? t(' · about {0} min', variants.short.minutes) : ''}</div></div>
+        <span className="tag acc">{t('Start')}</span></div>)}
+    {todayRoutines.length === 1 && variants.longer && variants.longer.routineIds.length === 2 && (
+      <div className="item" onClick={() => startFlow(variants.longer.routineIds)}>
+        <span className="lrow-i"><Icon name="plus" /></span>
+        <div className="grow"><div className="tt">{t('Longer session')}</div><div className="ss">{todayName} + {variants.longer.name}</div></div>
+        <span className="tag acc">{t('Start')}</span></div>)}
     <div style={{ height: 14 }} />
     <Button icon="shuffle" onClick={() => startFlow([])}>{t('Freestyle workout (pick as you go)')}</Button>
     {!S.routines.length && <><div style={{ height: 10 }} /><Button variant="primary" onClick={() => nav('/plan')}>{t('Build a plan first')}</Button></>}

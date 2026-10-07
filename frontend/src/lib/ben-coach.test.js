@@ -191,6 +191,17 @@ describe('sessionVariants', () => {
     expect(v.short.sets).toBe(9)
   })
 
+  it('covers muscle groups before doubling up on the best-trained one', () => {
+    // Chest ran most, but the short session still keeps one movement per group rather
+    // than three chest exercises and nothing for deltoids.
+    const trained = (id, n, d0) => Array.from({ length: n }, (_, i) => logged(id, T(3, 10, 20), clean(10, null), 20, `2026-04-${String(d0 + i).padStart(2, '0')}`))
+    const st = S(
+      ...trained('0025', 5, 1), ...trained('0047', 4, 6), ...trained('0031', 3, 10),
+    )
+    const v = sessionVariants(routine5, st)
+    expect(v.short.exerciseIds).toEqual(['0025', '0031', '0334'])
+  })
+
   it('estimates minutes only from the routine’s own timed history', () => {
     expect(sessionVariants(routine5, S()).full.minutes).toBe(null)
     const timed = (d, min) => ({ d, routineIds: ['r'], start: 1000, end: 1000 + min * 60000, entries: [] })

@@ -205,11 +205,11 @@ function routineMinutes(S, routine) {
   return ds[Math.floor(ds.length / 2)]
 }
 
-// Short, normal and longer variants of one routine. Short keeps the movements with the most
-// completed sessions behind them — the work with the strongest evidence — in routine order,
-// about three-fifths of the exercises; routines of three exercises or fewer are already
-// short. Longer combines with one other routine through the existing combine mechanism
-// (lib/session-merge.js), preferring what the week already schedules.
+// Short, normal and longer variants of one routine. Short keeps one movement per primary
+// muscle group — the important work first — preferring the best-evidenced movement in each
+// group, in routine order, about three-fifths of the exercises; routines of three exercises
+// or fewer are already short. Longer combines with one other routine through the existing
+// combine mechanism (lib/session-merge.js), preferring what the week already schedules.
 export function sessionVariants(routine, S) {
   const ex = (routine?.ex || []).filter(e => e?.id)
   const setsOf = list => list.reduce((n, e) => n + Math.max(1, e?.sets || 1), 0)
@@ -217,9 +217,23 @@ export function sessionVariants(routine, S) {
   let short = null
   if (ex.length > 3) {
     const target = Math.max(2, Math.min(4, Math.ceil(ex.length * 0.6)))
-    const scored = ex.map((e, i) => ({ e, i, done: sessionsFor(S, e.id, e, routine?.id).length }))
-    scored.sort((a, b) => b.done - a.done || a.i - b.i)
-    const kept = scored.slice(0, target).sort((a, b) => a.i - b.i).map(x => x.e)
+    // Cover the routine's muscle groups first: within each primary group keep the movement
+    // with the most completed sessions (routine order breaks ties), then rank the groups
+    // the same way and take the top `target`. Picking by raw count alone would let a
+    // well-trained group crowd out a whole body region — the short session would skip
+    // the important work rather than shorten it.
+    const byGroup = new Map()
+    ex.forEach((e, i) => {
+      const key = muscleGroupsOf(EXIDX[e.id] || e)[0] ?? 'id:' + e.id
+      const done = sessionsFor(S, e.id, e, routine?.id).length
+      const cur = byGroup.get(key)
+      if (!cur || done > cur.done || (done === cur.done && i < cur.i)) byGroup.set(key, { e, i, done })
+    })
+    const kept = [...byGroup.values()]
+      .sort((a, b) => b.done - a.done || a.i - b.i)
+      .slice(0, target)
+      .sort((a, b) => a.i - b.i)
+      .map(x => x.e)
     const shortSets = setsOf(kept)
     short = {
       key: 'short',
