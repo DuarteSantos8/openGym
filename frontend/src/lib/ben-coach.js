@@ -1,8 +1,9 @@
 // Benjamin's coaching layer. Pure functions only: it reads the existing workout log and never
 // mutates history. The point is to turn completed sets into a small, auditable next-step signal.
 import { metricEntriesForExercise, bestWeightForEntry, completedRepsOf } from './history.js'
-import { betterWeight } from './exercises.js'
+import { betterWeight, EXIDX } from './exercises.js'
 import { weeklyWeights } from './bodyweight.js'
+import { weekStartOf, exerciseNameText } from './format.js'
 
 const startOf = w => Number.isFinite(w?.start) ? w.start : new Date((w?.d || '') + 'T12:00:00').getTime()
 
@@ -58,12 +59,12 @@ export function recommendationFor(S, routine, exId) {
 
 export function routineCoaching(S, routine, limit = 3) {
   return (routine?.ex || [])
-    .map(e => ({ id: e.id, name: e.name || e.id, target: e, recommendation: recommendationFor(S, routine, e.id) }))
+    .map(e => ({ id: e.id, name: EXIDX[e.id] ? exerciseNameText(EXIDX[e.id]) : (e.name || e.id), target: e, recommendation: recommendationFor(S, routine, e.id) }))
     .slice(0, limit)
 }
 
 export function bodyweightTrend(S) {
-  const weeks = weeklyWeights(S?.bodyweight || [], S?.weekStart)
+  const weeks = weeklyWeights(S?.bodyweight || [], weekStartOf(S))
   if (weeks.length < 2) return { status: 'baseline', delta: null, weeks }
   const delta = weeks[0].avg - weeks[1].avg
   return {
