@@ -2,7 +2,7 @@
 // session-length variants — all from the same completed sets, silent when evidence is thin.
 import { describe, it, expect } from 'vitest'
 import {
-  recommendationFor, routineCoaching, exerciseAttention, alternativesFor, sessionVariants, trainingSystem,
+  recommendationFor, routineCoaching, exerciseAttention, alternativesFor, sessionVariants, trainingSystem, progressVerdict,
 } from './ben-coach.js'
 import { EXDB, isAssisted } from './exercises.js'
 import { muscleGroupsOf } from './muscles.js'
@@ -241,5 +241,31 @@ describe('trainingSystem', () => {
       ],
     }
     expect(trainingSystem(st)).toMatchObject({ mainDone: 3, optionalEligible: true })
+  })
+})
+
+describe('progressVerdict', () => {
+  it('recognizes successful fat loss when strength is holding', () => {
+    expect(progressVerdict({
+      bodyweight: { direction: 'toward', meaningful: true },
+      strength: { status: 'holding' },
+      consistency: { status: 'on-track' },
+    }).status).toBe('working')
+  })
+
+  it('warns when weight loss is paired with broad strength decline', () => {
+    expect(progressVerdict({
+      bodyweight: { direction: 'toward', meaningful: true },
+      strength: { status: 'attention' },
+      consistency: { status: 'on-track' },
+    }).status).toBe('adjust')
+  })
+
+  it('does not blame the plan when consistency is the missing evidence', () => {
+    expect(progressVerdict({
+      bodyweight: { direction: 'unknown' },
+      strength: { status: 'baseline' },
+      consistency: { status: 'behind' },
+    }).status).toBe('consistency')
   })
 })
