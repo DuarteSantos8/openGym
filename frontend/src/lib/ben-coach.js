@@ -81,33 +81,35 @@ export function strengthRetention(S, days = 30) {
   const now = Date.now()
   const recent = new Map()
   const previous = new Map()
-  const metric = new Map()
 
-  const record = (map, id, value) => {
+  const record = (map, id, value, metric) => {
     if (!(value > 0)) return
     const old = map.get(id)
-    if (!old || betterWeight(id, old, value)) map.set(id, value)
+    if (!old || (metric === 'load' ? betterWeight(id, old.value, value) : value > old.value)) {
+      map.set(id, { value, metric })
+    }
   }
 
   for (const w of S?.workouts || []) {
     const age = (now - startOf(w)) / 86400000
     if (age < 0 || age > days * 2) continue
+
     for (const e of w.entries || []) {
-      const items = metricEntriesForExercise(w, e.id)
-      const mode = items.at(-1)?.mode
-      if (!mode || mode !== 'reps') continue
-      const value = bestWeightForEntry(e)
-      if (value > 0) {
-        metric.set(e.id, 'load')
-        if (age <= days) record(recent, e.id, value)
-        else record(previous, e.id, value)
+      const items = metricEntriesForExercise(w, e.id).filter(x => x.mode === 'reps')
+      if (!items.length) continue
+
+      const weighted = items.some(x => bestWeightForEntry(x.entry) > 0)
+      const map = age <= days ? recent : previous
+
+      if (weighted) {
+        const value = items.reduce((best, item) => {
+          const candidate = bestWeightForEntry(item.entry)
+          return candidate > 0 && (best === 0 || betterWeight(e.id, best, candidate)) ? candidate : best
+        }, 0)
+        record(map, e.id, value, 'load')
       } else {
-        const reps = Math.max(0, ...items.filter(x => x.mode === 'reps').flatMap(x => x.rows).map(completedRepsOf))
-        if (reps > 0) {
-          metric.set(e.id, 'reps')
-          if (age <= days) recent.set(e.id, Math.max(recent.get(e.id) || 0, reps))
-          else previous.set(e.id, Math.max(previous.get(e.id) || 0, reps))
-        }
+        const value = Math.max(0, ...items.flatMap(x => x.rows).map(completedRepsOf))
+        record(map, e.id, value, 'reps')
       }
     }
   }
@@ -115,11 +117,18 @@ export function strengthRetention(S, days = 30) {
   const comparisons = []
   for (const [id, current] of recent) {
     const old = previous.get(id)
-    if (!(old > 0)) continue
-    const ratio = current / old
-    comparisons.push({ id, ratio, metric: metric.get(id) || 'reps' })
+    if (!old || old.metric !== current.metric || !(old.value > 0)) continue
+
+    // Assisted movements are unusual: less assistance is better, so invert the ratio.
+    const assisted = EXIDX[id]?.assisted === true
+    const ratio = assisted ? old.value / current.value : current.value / old.value
+    comparisons.push({ id, ratio, metric: current.metric })
   }
-  if (comparisons.length < 2) return { status: 'baseline', compared: comparisons.length, holding: null, comparisons }
+
+  if (comparisons.length < 2) {
+    return { status: 'baseline', compared: comparisons.length, holding: null, comparisons }
+  }
+
   const holding = comparisons.filter(x => x.ratio >= 0.95).length / comparisons.length
   return {
     status: holding >= 0.7 ? 'holding' : holding >= 0.5 ? 'mixed' : 'attention',
@@ -127,4 +136,4 @@ export function strengthRetention(S, days = 30) {
     holding,
     comparisons,
   }
-}
+}\n
