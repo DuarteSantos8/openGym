@@ -8,7 +8,7 @@ import { useStore } from '../store/useStore.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
-vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn() }))
+vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn() }))
 
 let host, root, originalS
 
@@ -41,7 +41,7 @@ describe('RestTimer Ready and overtime display', () => {
 
     expect(host.querySelector('#timer .t').textContent).toBe('Ready')
     expect(host.querySelector('#timer .t').getAttribute('role')).toBe('status')
-    expect(host.querySelector('#timer .skip').textContent).toBe('Dismiss')
+    expect(host.querySelector('#timer .skip .on').textContent).toBe('Dismiss')
     expect(useUI.getState().timer.forIdx).toBe(4)
 
     act(() => root.render(null))
@@ -97,5 +97,19 @@ describe('RestTimer pause and resume', () => {
     act(() => useUI.getState().startWork(30, 'Hold', vi.fn()))
     expect(host.querySelector('#timer.working')).not.toBeNull()
     expect(pause()).toBeNull()
+  })
+})
+
+describe('RestTimer switch-sides pause', () => {
+  it('names the pause, counts it down, and goes without a Ready or a toast', () => {
+    useUI.setState({ toastMsg: '' })
+    act(() => useUI.getState().startRest(10, 0, { kind: 'switch' }))
+    mount()
+    expect(host.querySelector('#timer.switch .lbl')?.textContent).toBe('Switch sides')
+    expect(host.querySelector('#timer .t').textContent).toBe('0:10')
+    act(() => vi.advanceTimersByTime(10_000))
+    expect(useUI.getState().timer).toBeNull()
+    expect(useUI.getState().toastMsg).toBe('')
+    expect(host.querySelector('#timer')).toBeNull()
   })
 })

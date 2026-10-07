@@ -10,6 +10,7 @@
 import { isWarmupRow } from './workout-model.js'
 import { EXIDX, smOf } from './exercises.js'
 import { todayISO, weekKey, MONDAY } from './format.js'
+import { queueOf } from './queue.js'
 
 // The muscles a map can shade, in head-to-toe order — also the order of any list
 // built from them, so "what am I neglecting" reads top-down like a body.
@@ -186,16 +187,16 @@ export function matchesMuscleGroups(ex, requested) {
   return wanted.some(group => groups.has(group))
 }
 
-/** Muscles one exercise trains: { slug: 0…1 }. Duplicate metadata never adds load twice. */
-export function musclesOf(ex) {
+/** Complete muscle-weight metadata, including explicit zero-credit associations. */
+export function muscleWeightsOf(ex) {
   if (!ex) return {}
   const sourceEx = metadataOf(ex)
-  if (sourceEx !== ex) return musclesOf(sourceEx)
+  if (sourceEx !== ex) return muscleWeightsOf(sourceEx)
   if (ex.muscleWeights && typeof ex.muscleWeights === 'object' && !Array.isArray(ex.muscleWeights)) {
     const snapshot = {}
     MUSCLES.forEach(slug => {
       const weight = Number(ex.muscleWeights[slug])
-      if (Number.isFinite(weight) && weight > 0) snapshot[slug] = weight
+      if (Number.isFinite(weight) && weight >= 0 && weight <= 1) snapshot[slug] = weight
     })
     if (Object.keys(snapshot).length) return snapshot
   }
@@ -221,13 +222,18 @@ export function musclesOf(ex) {
   return out
 }
 
+/** Muscles one exercise trains: positive effective stimulus only. */
+export function musclesOf(ex) {
+  return Object.fromEntries(Object.entries(muscleWeightsOf(ex)).filter(([, weight]) => weight > 0))
+}
+
 /** Snapshot display and weighted muscle metadata into a completed history entry. */
 export function exerciseMuscleSnapshot(ex) {
   if (!ex || typeof ex !== 'object') return {}
   const out = {}
   if (ex.n != null) out.n = ex.n
   if (ex.bp != null) out.bp = ex.bp
-  const weights = musclesOf(ex)
+  const weights = muscleWeightsOf(ex)
   if (Object.keys(weights).length) out.muscleWeights = { ...weights }
   const parts = explicitPartsOf(ex)
   if (parts) {
@@ -284,8 +290,33 @@ export function muscleBalanceWindow(workouts, win, now = Date.now(), today = tod
 }
 
 /** Load a routine *would* produce, from its planned set counts. */
-export const loadOfRoutine = routine =>
-  loadOf((routine?.ex || []).map(c => ({ id: c.id, ex: c, sets: c.sets || 1 })))
+export const loadOfRoutine = (routine, exercises = {}) =>
+  loadOf((routine?.ex || []).map(c => ({ id: c.id, ex: exercises[c.id] || c, sets: c.sets || 1 })))
+
+/**
+ * Effective sets programmed by the live recurring week; overrides and history are not plans.
+ * A floating week or rotation (S.queue, lib/queue.js) is the plan too: each of its sessions once,
+ * beside your own weekday routines — the same split the Home streak card tallies (weekTally).
+ */
+export function loadOfWeeklyPlan(S) {
+  const routines = new Map((S?.routines || []).map(routine => [routine.id, routine]))
+  const exercises = Object.fromEntries((S?.customEx || []).map(exercise => [exercise.id, exercise]))
+  const q = queueOf(S)
+  const queued = new Set(q ? (S.queue.ids || []) : [])
+  const ids = [
+    ...Object.values(S?.week || {}).flatMap(value => [].concat(value || [])).filter(id => !queued.has(id)),
+    ...(q ? q.ids : []),
+  ]
+  const load = {}
+  for (const id of ids) {
+    const routine = routines.get(id)
+    if (!routine) continue
+    for (const [slug, sets] of Object.entries(loadOfRoutine(routine, exercises))) {
+      load[slug] = (load[slug] || 0) + sets
+    }
+  }
+  return load
+}
 
 /** Load for a workout still in progress — the sets ticked so far. */
 export const loadOfActive = active =>

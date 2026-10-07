@@ -16,7 +16,7 @@ import { buildSessionEntries } from '../lib/session-start.js'
 import { swapActiveWorkoutExercise } from '../sheets.jsx'
 import { EXDB } from '../lib/exercises.js'
 
-vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), unlock: vi.fn() }))
+vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn() }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})), appBase: () => '/' }))
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
@@ -175,9 +175,9 @@ describe('don’t count this session for progression', () => {
       return { ...useStore.getState().S, active: null, workouts: [...logged, saved] }
     }
 
-    it('Progression settings saved unchanged, then Undo: the session counts at 102.5 and the next one goes on from there', () => {
+    it('Exercise settings saved unchanged, then Undo: the session counts at 102.5 and the next one goes on from there', () => {
       start()
-      const settings = menuItem(openMenu(), 'Progression settings')
+      const settings = menuItem(openMenu(), 'Exercise settings')
       act(() => settings.click())
       const sheet = renderTopSheet()
       const save = [...sheet.querySelectorAll('button')].find(b => b.textContent.trim() === 'Save')
@@ -216,11 +216,11 @@ describe('don’t count this session for progression', () => {
     })
   })
 
-  it('a deload routine’s exercise saved in Progression settings stays at the routine’s own numbers', () => {
+  it('a deload routine’s exercise saved in Exercise settings stays at the routine’s own numbers', () => {
     // 70 × 8 in Main would put a counting row at 75; the deload keeps its 40.
     const rowInMain = { id: 'w0', d: '2026-09-18', routineIds: ['main'], entries: [{ id: ROW, rid: 'main', target: { sets: 1, reps: 8, weight: 70 }, sets: [{ w: 70, r: 8, done: true }] }] }
     renderWorkout([{ ...entry(ROW, 'deload', 40, { noProg: true }), target: { sets: 1, reps: 8, weight: 40 }, sets: [{ w: 40, r: 8, done: false }] }], { withHistory: [...history, rowInMain] })
-    const settings = menuItem(openMenu(), 'Progression settings')
+    const settings = menuItem(openMenu(), 'Exercise settings')
     act(() => settings.click())
     const save = [...renderTopSheet().querySelectorAll('button')].find(b => b.textContent.trim() === 'Save')
     act(() => save.click())

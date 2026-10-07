@@ -12,6 +12,7 @@ import { EXIDX, isBodyweightEq } from './exercises.js'
 import { cleanUrl } from './media-refs.js'
 import { modeOf, exLine, MAX_PLANNED_WARMUPS } from './history.js'
 import { deriveSessionName } from './session-merge.js'
+import { isPyramid, normalizePyramid, normalizePyramidRest } from './pyramid.js'
 import { uid, todayISO, DAYN, weekOrder, weekStartOf, exCount } from './format.js'
 import { t, exerciseNameFor, exerciseNameClass, getLang, RTL_LANGS } from './i18n-core.js'
 import { convertWeight } from './units.js'
@@ -77,12 +78,18 @@ function cleanEx(e) {
   } else {
     if (e.reps != null) o.reps = e.reps
     if (e.weight) o.weight = e.weight
+    // Pyramid sets are the prescription itself; without them a "12 · 8 · 6 · Max · 12" arrives as 5 × 12.
+    if (isPyramid(e)) {
+      o.pyramid = normalizePyramid(e.pyramid)
+      const rest = normalizePyramidRest(e.pyramidRest, o.pyramid.length)
+      if (rest.length) o.pyramidRest = rest
+    }
   }
   // How the exercise is logged travels too (issues #31/#32) — the bodyweight flag only when
   // it disagrees with the catalogue, since agreeing is what the other end already assumes.
   if (e.bodyweight != null && e.bodyweight !== isBodyweightEq(e.id)) o.bodyweight = e.bodyweight
-  // Only on reps work — `side` counts reps, and a timed hold has none to split.
-  if (e.side && mode !== 'time' && mode !== 'cardio') o.side = true
+  // Reps work and timed holds (a per-side hold is an L and an R hold per set); never cardio.
+  if (e.side && mode !== 'cardio') o.side = true
   // Progression settings travel with the plan — a shared Greyskull routine that arrives
   // without its rule is just a list of weights.
   if (e.prog) o.prog = e.prog
@@ -199,10 +206,12 @@ export function buildPlanBundle(S, name) {
  * is trained.
  */
 export function parsePlan(raw, destinationUnit = 'kg') {
-  const data = typeof raw === 'string' ? JSON.parse(raw) : raw
+  const notPlan = () => Object.assign(new Error(t('this isn’t an openGym plan file')), { code: 'not-plan' })
+  let data = raw
+  if (typeof raw === 'string') { try { data = JSON.parse(raw) } catch { throw notPlan() } }
   const destination = planUnit(destinationUnit)
   if (!data || typeof data !== 'object' || Array.isArray(data) || !data.opengym_plan || !Array.isArray(data.routines) || !destination) {
-    throw new Error(t('this isn’t an openGym plan file'))
+    throw notPlan()
   }
   const sourceUnit = declaredPlanUnit(data)
   const customEx = (Array.isArray(data.customEx) ? data.customEx : []).filter(c => c && c.id)
@@ -221,8 +230,10 @@ export function parsePlan(raw, destinationUnit = 'kg') {
       const intens = cleanIntensifier(e.intensifier)
       const rest = cleanRestSec(e.restSec)
       const warmRest = cleanRestSec(e.warmupRestSec)
-      const { warmupSets, intensifier, restSec, warmupRestSec, ...passthrough } = e
-      return convertedExercise({ ...passthrough, ...(warm ? { warmupSets: warm } : {}), ...(intens ? { intensifier: intens } : {}), ...(rest ? { restSec: rest } : {}), ...(warmRest ? { warmupRestSec: warmRest } : {}) }, sourceUnit || destination, destination)
+      const pyramid = normalizePyramid(e.pyramid)
+      const pyramidRest = pyramid.length ? normalizePyramidRest(e.pyramidRest, pyramid.length) : []
+      const { warmupSets, intensifier, restSec, warmupRestSec, pyramid: _pyramid, pyramidRest: _pyramidRest, ...passthrough } = e
+      return convertedExercise({ ...passthrough, ...(pyramid.length ? { pyramid } : {}), ...(pyramidRest.length ? { pyramidRest } : {}), ...(warm ? { warmupSets: warm } : {}), ...(intens ? { intensifier: intens } : {}), ...(rest ? { restSec: rest } : {}), ...(warmRest ? { warmupRestSec: warmRest } : {}) }, sourceUnit || destination, destination)
     })
   }))
   return {

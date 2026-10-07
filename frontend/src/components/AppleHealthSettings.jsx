@@ -4,22 +4,23 @@ import { useStore } from '../store/useStore.js'
 import { t } from '../lib/i18n-core.js'
 import { appleHealthAvailable, appleHealthEnabled, enableAppleHealth, disableAppleHealth, syncAppleHealth } from '../lib/apple-health.js'
 
-export default function AppleHealthSettings() {
+export default function AppleHealthSettings({ available } = {}) {
   const owner = useStore(s => JSON.stringify([s.sync?.server || 'local', s.user?.id || 'local']))
-  return <HealthRows key={owner} />
+  return <HealthRows key={owner} available={available} />
 }
 
-function HealthRows() {
-  const [available, setAvailable] = useState(false)
+function HealthRows({ available: supplied }) {
+  const [available, setAvailable] = useState(supplied === true)
   const [enabled, setEnabled] = useState(() => appleHealthEnabled(useStore))
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const alive = useRef(false)
   useEffect(() => {
     alive.current = true
-    appleHealthAvailable().then(value => { if (alive.current) setAvailable(value) })
+    if (typeof supplied === 'boolean') setAvailable(supplied)
+    else appleHealthAvailable().then(value => { if (alive.current) setAvailable(value) })
     return () => { alive.current = false }
-  }, [])
+  }, [supplied])
 
   async function connect(authorize) {
     if (busy) return

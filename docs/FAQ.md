@@ -36,7 +36,7 @@ checks for updates itself. Get it from the
 On a self-hosted instance, in the `./data` folder next to `docker-compose.yml`: one JSON file per
 profile plus the account list. Back up that folder and you've backed up everything. In the phone app
 it's in the app's private storage. In guest mode it's only in that browser. You can export
-everything as one file at any time under **Settings → Data**.
+everything as one file at any time under **Settings → Data & backup**.
 
 ### Does the app send anything anywhere?
 
@@ -85,6 +85,12 @@ invite-only and give yourself an admin dashboard; see
 
 `git pull && docker compose pull && docker compose up -d`. Your data is untouched. See
 [updating](SELF_HOSTING.md#8-updating).
+
+Then update the app on every device that syncs. A phone still on v1.3.9 or older keeps syncing,
+and the server looks after what that phone doesn't know about, but it can't always tell what the
+phone has seen. One case it gets wrong on purpose: if the old phone sets something back to exactly
+what it was before, after another device changed it, the other device's change wins. Once every
+device is updated, nobody has to guess.
 
 ### I'm moving from another app. Can I bring my history?
 

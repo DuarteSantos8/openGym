@@ -3,7 +3,7 @@
 // singular ("1 workout and 1 weigh-in"), per noun, in English and in the packs.
 import { afterEach, describe, expect, it } from 'vitest'
 import { _setLangState } from './lib/i18n-core.js'
-import { addDeviceDataMessage } from './sheets.jsx'
+import { addDeviceDataMessage, addDeviceSetupMessage } from './sheets.jsx'
 import de from './locales/de.js'
 import ru from './locales/ru.js'
 
@@ -26,5 +26,14 @@ describe('addDeviceDataMessage', () => {
     expect(addDeviceDataMessage(3, 1)).toMatch(/^3 Trainings und 1 Wiegung wurden/)
     _setLangState('ru', ru, null, null)
     expect(addDeviceDataMessage(1, 1)).toMatch(/^1 тренировка и 1 взвешивание/)
+  })
+
+  it('a plan made while signed out has words of its own', () => {
+    _setLangState('en', null, null, null)
+    expect(addDeviceSetupMessage(1)).toMatch(/^1 routine was made on this device/)
+    expect(addDeviceSetupMessage(3)).toMatch(/^3 routines were made on this device/)
+    expect(addDeviceSetupMessage(0)).toMatch(/^Your plan, notes or gym cards/)
+    _setLangState('de', de, null, null)
+    expect(addDeviceSetupMessage(2)).toMatch(/^2 Routinen wurden/)
   })
 })

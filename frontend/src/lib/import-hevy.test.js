@@ -303,3 +303,13 @@ describe('buildHevyExerciseMap', () => {
     expect(map.size).toBe(TEMPLATES.length)
   })
 })
+
+describe('parseHevyWorkouts past midnight', () => {
+  it('a session ending after midnight keeps its length', () => {
+    // Local-time ISO strings, so the test reads the same in every time zone.
+    const late = { ...WORKOUT, start_time: '2026-09-06T23:30:00', end_time: '2026-09-07T00:20:00' }
+    const [w] = parseHevyWorkouts([late], TEMPLATES, { unit: 'kg' }).workouts
+    expect(w.d).toBe('2026-09-06')
+    expect((w.end - w.start) / 60000).toBe(50)
+  })
+})

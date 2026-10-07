@@ -23,6 +23,7 @@ import { sniffKind } from './media-sniff.js'
 import { sha256Hex } from './sha256.js'
 import { mediaStore } from './media-store.js'
 import { DEFAULT_LIMITS, MB } from './media-limits.js'
+import { t } from './i18n-core.js'
 
 export const BACKUP_JSON = 'opengym-backup.json'
 const MEDIA_ENTRY = /^media\/([0-9a-f]{64})\.(jpg|png|webp|gif|mp4|mov|webm)$/
@@ -35,7 +36,7 @@ media/               the photos, GIFs and videos of your own exercises and of yo
                      workouts, each named by its SHA-256, plus the small previews
                      shown in lists.
 
-To bring it back: openGym -> Settings -> Import backup, and pick this .zip as it is.
+To bring it back: openGym -> Settings -> Data & backup -> Import backup, and pick this .zip as it is.
 Do not unpack and re-zip it: the app reads zips that are stored, not compressed.
 `
 
@@ -82,6 +83,18 @@ export async function exportBackupZip(S, { media = mediaStore, fetchOne = null, 
 
 const isBackup = d => !!d && typeof d === 'object' && !Array.isArray(d) && Array.isArray(d.workouts) && Array.isArray(d.routines)
 
+const notBackup = () => Object.assign(new Error('not an openGym backup'), { code: 'not-backup' })
+
+/**
+ * What to tell someone whose pick did not import, in their language. The thrown messages are for
+ * a developer ('not-zip', a JSON.parse complaint) and used to be toasted as they were.
+ */
+export function backupImportError(e) {
+  if (e?.code === 'compressed') return t('That zip was repacked. Import the original backup file.')
+  if (e?.code === 'not-backup' || e?.code === 'not-zip' || e?.code === 'encrypted' || e instanceof SyntaxError) return t('That file isn’t an openGym backup.')
+  return t('Couldn’t read that file.')
+}
+
 /**
  * Reads a picked backup, .json or .zip (told apart by its first bytes, not its name):
  * { state, files: [{ hash, entry }], zip }. `files` are the zip's media entries the state refers
@@ -94,9 +107,9 @@ export async function readBackupFile(file) {
   if (zip) {
     const entries = await readZip(file)
     const json = entries.find(e => e.name === BACKUP_JSON)
-    if (!json) throw new Error('not an openGym backup')
+    if (!json) throw notBackup()
     state = JSON.parse(await json.blob.text())
-    if (!isBackup(state)) throw new Error('not an openGym backup')
+    if (!isBackup(state)) throw notBackup()
     const wanted = new Set(referencedFiles(state).map(f => f.hash))
     const seen = new Set()
     for (const e of entries) {
@@ -107,7 +120,7 @@ export async function readBackupFile(file) {
     }
   } else {
     state = JSON.parse(await file.text())
-    if (!isBackup(state)) throw new Error('not an openGym backup')
+    if (!isBackup(state)) throw notBackup()
   }
   return { state: sanitizeCustomMedia(state), files, zip }
 }

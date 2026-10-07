@@ -375,3 +375,21 @@ test('a workout\'s photos and videos never reach the payload', () => {
     }
   }
 });
+
+/* The session note is the athlete's own explanation of the numbers, and the app lets it run to
+   NOTE_MAX (500) characters. It was cut at 300 here, so a note explaining how a dumbbell weight
+   had been counted reached the model mid-sentence. */
+test('a session note reaches the model whole, bounded only at the app\'s own cap', () => {
+  const S = sampleState();
+  const whole = 'It is confusing whether the weight is total or per dumbbell. '.repeat(8).trim();   // 487 chars: past the old 300, within the cap
+  const mk = (d, note) => ({
+    id: 'w' + d, d, name: 'A', start: 0, end: 60000, prs: [], note,
+    entries: [{ id: '0001', target: { sets: 3, reps: 10, weight: 20 }, sets: [{ w: 20, r: 10, done: true }] }]
+  });
+  S.workouts = [mk('2026-09-02', whole), mk('2026-09-03', 'y'.repeat(payload.NOTE_MAX + 100))];   // only a document edited outside the app carries the second
+  const p = payload.build(S, { handle: handleFor('u1'), kind: 'review' });
+  const [full, edited] = p.window.workouts;
+  assert.equal(full.compact, undefined, 'both sessions are in full detail');
+  assert.equal(full.note, whole, 'the session note arrives whole (was cut at 300)');
+  assert.equal(edited.note.length, payload.NOTE_MAX, 'a note no app could have written is bounded at the cap');
+});

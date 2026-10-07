@@ -72,6 +72,16 @@ describe('starter plan chooser', () => {
     expect(useUI.getState().toastMsg).toBe('Upper / Lower loaded')
   })
 
+  it('loading the same plan twice reuses its routines instead of duplicating them', () => {
+    expect(loadStarterPlan('upper-lower')).toBe(true)
+    const ids = S().routines.map(r => r.id)
+    const week = structuredClone(S().week)
+    expect(loadStarterPlan('upper-lower')).toBe(true)
+    expect(S().routines.map(r => r.id)).toEqual(ids)
+    expect(S().routines.filter(r => r.name === 'Upper A')).toHaveLength(1)
+    expect(S().week).toEqual(week)
+  })
+
   it('asks first when a weekday the plan wants is already taken', () => {
     useStore.setState(s => ({ S: { ...s.S, week: { 3: ['mine'] } } }))
     choose('Full Body')
@@ -108,14 +118,13 @@ describe('starter plan chooser', () => {
 })
 
 describe('loadStarterPlan', () => {
-  it('appends independent routines each time the same plan is loaded', () => {
+  it('two different plans add independent routines', () => {
     loadStarterPlan('ppl')
     const first = S().routines.slice(1).map(r => r.id)
-    loadStarterPlan('ppl')
+    loadStarterPlan('full-body')
     const second = S().routines.slice(4).map(r => r.id)
     expect(S().routines).toHaveLength(7)
     expect(new Set([...first, ...second]).size).toBe(6)
-    expect(second.some(id => first.includes(id))).toBe(false)
   })
 
   it('refuses a plan it does not know and changes nothing', () => {

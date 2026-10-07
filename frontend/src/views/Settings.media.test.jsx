@@ -101,7 +101,7 @@ afterEach(() => {
   host.remove()
   _setMediaStore(null)
 })
-const mount = async () => { act(() => root.render(<Settings />)); await settle() }
+const mount = async () => { act(() => root.render(<Settings page="data" />)); await settle() }
 
 describe('Settings — photos and videos', () => {
   it('the JSON export says it leaves them out, the zip row and the Photos & videos row appear', async () => {

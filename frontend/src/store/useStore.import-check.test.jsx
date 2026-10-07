@@ -70,13 +70,61 @@ describe('importing a backup over a profile that moved on', () => {
     expect(ids(puts().at(-1).state.workouts)).toEqual(['w1', 'w2', 'elsewhere', 'unsent'])
   })
 
-  it('"Replace anyway" is the replace it always was', async () => {
+  it('"Replace anyway" replaces, against the revision the check read (or the copy\'s own)', async () => {
     signedIn({ ...clone(DEF), _ts: 200, workouts: [workout('w1')] }, 6)
+    api.mockResolvedValueOnce({ state: clone(SERVER), rev: 7 })
+    await useStore.getState().importConflict(BACKUP)
     api.mockResolvedValueOnce({ ok: true, rev: 8 })
     useStore.getState().importBackup(BACKUP)
     await useStore.getState().pushState()
-    const put = puts().at(-1)
-    expect(put.baseRev).toBeUndefined()
+    let put = puts().at(-1)
+    expect(put.baseRev).toBe(7)
     expect(ids(put.state.workouts)).toEqual(['w1', 'w2'])
+    // no check before it (the server could not be asked): the copy's own revision
+    api.mockResolvedValueOnce({ ok: true, rev: 9 })
+    useStore.getState().importBackup(BACKUP)
+    await useStore.getState().pushState()
+    put = puts().at(-1)
+    expect(put.baseRev).toBe(8)
+  })
+})
+
+// RC review 2026-10-07: a backup imported mid-workout dropped the workout running on this device.
+// "Merge them in" set the backup's `active` (none) over it, and the replace took the backup's
+// whole copy, `active` included. A running session lives on this device only, so no backup or
+// server copy can stand in for it: it stays, in the unit of the copy that replaces this one.
+describe('a backup imported while a workout is running', () => {
+  const running = { start: 1000, entries: [{ id: 'bench', sets: [{ w: 100, r: 5, done: true }] }] }
+  it('"Merge them in" keeps the running workout', async () => {
+    signedIn({ ...clone(DEF), _ts: 200, workouts: [workout('w1')], active: clone(running) }, 6)
+    api.mockResolvedValueOnce({ state: clone(SERVER), rev: 7 })
+    const c = await useStore.getState().importConflict(BACKUP)
+    useStore.getState().importBackup(BACKUP, { mergeWith: c })
+    expect(useStore.getState().S.active).toEqual(running)
+  })
+  it('"Replace anyway" and the plain import keep it too', async () => {
+    signedIn({ ...clone(DEF), _ts: 200, workouts: [workout('w1')], active: clone(running) }, 6)
+    api.mockResolvedValueOnce({ state: clone(SERVER), rev: 7 })
+    await useStore.getState().importConflict(BACKUP)
+    useStore.getState().importBackup(BACKUP)
+    expect(useStore.getState().S.active).toEqual(running)
+    useStore.setState({ user: null })
+    useStore.getState().importBackup({ ...BACKUP, active: null })
+    expect(useStore.getState().S.active).toEqual(running)
+  })
+  it('in the backup\'s unit when the backup is in another one', async () => {
+    signedIn({ ...clone(DEF), _ts: 200, unit: 'kg', workouts: [workout('w1')], active: clone(running) }, 6)
+    useStore.setState({ user: null })
+    useStore.getState().importBackup({ ...BACKUP, unit: 'lb' })
+    const S = useStore.getState().S
+    expect(S.unit).toBe('lb')
+    expect(S.active.start).toBe(1000)
+    expect(S.active.entries[0].sets[0].w).not.toBe(100)
+  })
+  it('a backup taken mid-workout still brings its session when none runs here', async () => {
+    signedIn({ ...clone(DEF), _ts: 200, workouts: [workout('w1')] }, 6)
+    useStore.setState({ user: null })
+    useStore.getState().importBackup({ ...BACKUP, active: clone(running) })
+    expect(useStore.getState().S.active).toEqual(running)
   })
 })

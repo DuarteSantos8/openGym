@@ -129,7 +129,7 @@ export async function downloadAndInstall(url, expectedHash = null, onProgress = 
     const buffer = await blob.arrayBuffer()
     const actualHash = await sha256(buffer)
     if (actualHash !== expectedHash.toLowerCase().trim()) {
-      throw new Error('SHA-256 mismatch — download may be corrupted or tampered with')
+      throw new Error('SHA-256 mismatch: the download may be corrupted or tampered with')
     }
   }
 
