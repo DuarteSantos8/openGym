@@ -1,9 +1,10 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react'
+import { useState } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { effectiveRoutines, effectiveRoutineIds, nextTrainingDay, lastBW, setsDoneActive, setUnitsTotal } from '../lib/history.js'
 import { fmtNum, fmtDate, todayISO, isoOf, weekKey, weekStartOf, weekDayOffset, DAYS, DAYN, exCount } from '../lib/format.js'
 import { t, dateLocale } from '../lib/i18n.js'
-import { bwSheet, goalSheet, dayOverrideSheet, startFlow, starterPlanSheet, bwDeltaColor } from '../sheets.jsx'
+import { bwSheet, goalSheet, dayOverrideSheet, startFlow, startShortFlow, starterPlanSheet, bwDeltaColor } from '../sheets.jsx'
 import AttentionRow from '../components/AttentionRow.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
@@ -21,6 +22,7 @@ const WEEK_TARGET = BEN_PROFILE.frequency || 3
 export default function Home() {
   const nav = useNavigate()
   const S = useStore(s => s.S)
+  const [workoutLength, setWorkoutLength] = useState(() => S.workoutLength || 35)
 
   const today = new Date()
   const todayIso = todayISO()
@@ -74,7 +76,13 @@ export default function Home() {
   const activeDone = S.active ? setsDoneActive(S.active) : 0
   const activeTotal = S.active ? setUnitsTotal(S.active.entries) : 0
 
-  const onToday = () => { if (S.active) nav('/workout'); else if (todayRoutines.length) startFlow(effectiveRoutineIds(S, todayIso)); else nav('/workout') }
+  const durationExerciseCount = minutes => !routine ? 0 : minutes <= 15 ? Math.min(3, routine.ex.length) : minutes <= 25 ? Math.min(4, routine.ex.length) : routine.ex.length
+  const startToday = () => {
+    const routineIds = effectiveRoutineIds(S, todayIso)
+    if (!routine || routineIds.length !== 1 || durationExerciseCount(workoutLength) >= routine.ex.length) startFlow(routineIds)
+    else startShortFlow(routine.id, routine.ex.slice(0, durationExerciseCount(workoutLength)).map(e => e.id))
+  }
+  const onToday = () => { if (S.active) nav('/workout'); else if (todayRoutines.length) startToday(); else nav('/workout') }
 
   return <div className="narrow">
     <div className="hdr">
@@ -83,24 +91,43 @@ export default function Home() {
     </div>
 
     {/* One clear next action. Tapping the row and the primary button do the same thing. */}
-    <div className="card">
-      <div className="today-row" {...tappable(onToday)}>
-        <div className="row" style={{ gap: 9, minWidth: 0 }}>
-          <span className="lrow-i" style={{ background: S.active ? 'var(--orange)' : doneToday ? 'var(--surface-3)' : routine ? 'var(--acc)' : 'var(--surface-3)' }}>
-            <Icon name={S.active ? (editingSaved ? 'pencil' : 'timer') : doneToday ? 'checkCircle' : routine ? glyphOf(routine.emoji) : 'moon'}
-              style={doneToday && !S.active ? { color: 'var(--green)' } : undefined} />
-          </span>
-          <div style={{ minWidth: 0 }}>
-            <div className="lbl2">{S.active ? t('In progress') : doneToday ? t('Done for today') : routine ? t("Today's session") : t('Rest day')}</div>
-            <div className="ttl">{S.active ? S.active.name
-              : doneToday ? (doneToday.name || t('Workout done'))
-              : routine ? todayName : t('Recovery')}</div>
-            {S.active && activeTotal > 0 && !editingSaved && <div className="ss">{t('{0} of {1} sets', activeDone, activeTotal)}</div>}
-            {!S.active && !doneToday && routine && <div className="ss">{exCount(todayExCount)}{todayOvr ? ' · ' + t('rescheduled') : ''}</div>}
-            {!S.active && !doneToday && !routine && next && <div className="ss">{t('Next: {0}, {1}', t(DAYN[next.weekday]), next.routine.name)}</div>}
-            {!S.active && !doneToday && !routine && !next && <div className="ss">{t('No sessions planned')}</div>}
-            {!S.active && doneToday && <div className="ss">{wThisWeek >= WEEK_TARGET ? t('{0} of {1} this week — anything more is extra', wThisWeek, WEEK_TARGET) : t('{0} of {1} this week', wThisWeek, WEEK_TARGET)}</div>}
-          </div>
+    <div className="card" style={{ padding: 18 }}>
+      <div className="lbl2">{S.active ? t('In progress') : doneToday ? t('Done for today') : routine ? t("Today's session") : t('Recovery')}</div>
+      <div className="row between" style={{ marginTop: 4, alignItems: 'flex-start' }}>
+        <div style={{ minWidth: 0 }}>
+          <h2 style={{ margin: 0, fontSize: 24, color: 'var(--label)' }}>{S.active ? S.active.name : doneToday ? (doneToday.name || t('Workout done')) : routine ? todayName : t('Rest day')}</h2>
+          <div className="ss" style={{ marginTop: 4 }}>{S.active && activeTotal > 0 && !editingSaved
+            ? t('{0} of {1} sets', activeDone, activeTotal)
+            : routine ? exCount(todayExCount) : next ? t('Next: {0}, {1}', t(DAYN[next.weekday]), next.routine.name) : t('Recovery')}</div>
+        </div>
+        {routine && !S.active && !doneToday && <span className="tag acc">{t('Today')}</span>}
+      </div>
+
+      {routine && !S.active && !doneToday && <div style={{ marginTop: 18 }}>
+        <div className="row between" style={{ marginBottom: 6 }}>
+          <div className="lbl2">{t('How much time do you have?')}</div>
+          <b>{workoutLength} min</b>
+        </div>
+        <Slider value={workoutLength} min={15} max={45} step={10}
+          onChange={v => { setWorkoutLength(v); update(s => { s.workoutLength = v }) }}
+          aria-label={t('Workout length')} />
+        <div className="row between small muted" style={{ marginTop: 2 }}>
+          <span>15 min</span><span>25 min</span><span>35 min</span><span>45 min</span>
+        </div>
+        <div className="small muted" style={{ marginTop: 8 }}>{t('{0} exercises · approximate length', durationExerciseCount(workoutLength))}</div>
+      </div>}
+
+      <div className="hero-act" style={{ marginTop: 16 }}>
+        {S.active
+          ? <Button variant="primary" icon={editingSaved ? 'pencil' : 'play'} onClick={() => nav('/workout')}>{editingSaved ? t('Open editor') : t('Resume workout')}</Button>
+          : doneToday
+            ? <Button icon="plus" onClick={() => nav('/workout')}>{t('Log another workout')}</Button>
+            : routine
+              ? <Button variant="primary" icon="play" onClick={startToday}>{t('Start {0}', todayName)}</Button>
+              : <Button icon="dumbbell" onClick={() => nav('/workout')}>{t('Browse workouts')}</Button>}
+        {!S.active && !doneToday && routine && <Button variant="ghost" className="dim" onClick={() => nav('/workout')}>{t('All workouts')}</Button>}
+      </div>
+    </div>>
         </div>
         {S.active ? <span className="tag" style={{ color: 'var(--orange)', background: 'color-mix(in srgb,var(--orange) 16%,transparent)' }}>{editingSaved ? t('Edit') : t('Resume')}</span>
           : doneToday ? <span className="tag" style={{ color: 'var(--green)', background: 'color-mix(in srgb,var(--green) 16%,transparent)' }}>{t('Done')}</span>
@@ -113,7 +140,7 @@ export default function Home() {
           : doneToday
             ? <Button icon="plus" onClick={() => nav('/workout')}>{t('Log another workout')}</Button>
             : routine
-              ? <Button variant="primary" icon="play" onClick={() => startFlow(effectiveRoutineIds(S, todayIso))}>{t('Start {0}', todayName)}</Button>
+              ? <Button variant="primary" icon="play" onClick={startToday}>{t('Start {0}', todayName)}</Button>
               : <Button icon="dumbbell" onClick={() => nav('/workout')}>{t('Browse workouts')}</Button>}
         {/* One button per destination: the "All workouts" door only sits beside the primary
             when the primary starts today's plan — everywhere else it would duplicate it. */}
