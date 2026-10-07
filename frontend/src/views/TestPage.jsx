@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { BEN_PROFILE, BEN_GOAL_SHORT } from '../lib/ben-profile.js'
 import { bodyweightTrend, strengthRetention, routineCoaching } from '../lib/ben-coach.js'
-import { PLANS } from '../lib/starter.js'
+import { buildStarterPlan } from '../lib/starter.js'
 
 function Check({ name, ok, detail }) {
   return (
@@ -22,7 +22,7 @@ export default function TestPage() {
   const [demoWeight, setDemoWeight] = useState(null)
 
   const checks = useMemo(() => {
-    const plan = PLANS['benjamin-home']
+    const plan = buildStarterPlan('benjamin-home')
     const routine = plan?.routines?.[0]
     const coaching = routine ? routineCoaching(S, routine, 3) : []
     const bw = bodyweightTrend(S)
@@ -30,7 +30,7 @@ export default function TestPage() {
     return [
       ['Store booted', ready, ready ? 'Zustand store reports ready.' : 'Store is still booting.'],
       ['Benjamin profile', BEN_PROFILE.name === 'Benjamin', `${BEN_PROFILE.name} · ${BEN_PROFILE.frequency} sessions/week`],
-      ['Benjamin plan', !!plan, plan ? `${plan.routines?.length || 0} routines available` : 'Plan is missing.'],
+      ['Benjamin plan', !!plan && plan.routines?.length === 4, plan ? `${plan.routines?.length || 0} routines available · 3 scheduled` : 'Plan is missing.'],
       ['Home environment', BEN_PROFILE.environment === 'Home training', BEN_PROFILE.environment],
       ['Coach engine', typeof routineCoaching === 'function', coaching.length ? `${coaching.length} exercise recommendations generated` : 'No routine data available yet.'],
       ['Weight trend engine', ['baseline','down','up','steady'].includes(bw.status), bw.delta == null ? 'Waiting for two weekly averages.' : `${bw.delta.toFixed(2)} kg vs previous week`],
