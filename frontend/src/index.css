@@ -716,7 +716,7 @@ body.chips-dragging *{cursor:inherit}
   position:absolute;width:26px;height:26px;border-radius:50%;background:#fff;
   transform:translateX(-50%);
   box-shadow:0 4px 10px rgba(0,0,0,.22),0 1px 2px rgba(0,0,0,.16);
-  transition:transform var(--fast) var(--ease);
+  transition:inset-inline-start 180ms var(--ease),transform var(--fast) var(--ease);
 }
 .sld.dragging .sld-knob{transform:translateX(-50%) scale(1.14)}
 
