@@ -194,8 +194,6 @@ export const SLIDER_GRAB_PX = 22
 export function Slider({ value, min = 0, max = 100, step = 1, onChange, className = '' }) {
   const ref = useRef(null)
   const [drag, setDrag] = useState(false)
-  // Grabbing the knob drags it relative to where the finger landed; a finger
-  // is ~22px wide, so a touch that far off still means "the knob", not "jump".
   const offset = useRef(0)
   const pct = Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100))
 
@@ -203,13 +201,12 @@ export function Slider({ value, min = 0, max = 100, step = 1, onChange, classNam
     const el = ref.current
     if (!el) return value
     const r = el.getBoundingClientRect()
-    // The fraction is read from the physical left edge, then mirrored in RTL where the
-    // minimum sits at the inline-start (right) end of the track.
-    let f = Math.min(1, Math.max(0, (clientX - r.left) / r.width))
+    const half = 13
+    const usable = Math.max(1, r.width - half * 2)
+    let f = Math.min(1, Math.max(0, (clientX - r.left - half) / usable))
     if (document.documentElement.dir === 'rtl') f = 1 - f
     const raw = min + f * (max - min)
     const snapped = Math.round(raw / step) * step
-    // step can be fractional (0.1) — round away binary noise
     return Math.min(max, Math.max(min, Math.round(snapped * 1000) / 1000))
   }, [min, max, step, value])
 
@@ -217,7 +214,8 @@ export function Slider({ value, min = 0, max = 100, step = 1, onChange, classNam
     if (!drag) return
     const move = e => {
       e.preventDefault()
-      onChange(posToValue((e.touches ? e.touches[0].clientX : e.clientX) - offset.current))
+      const x = e.touches ? e.touches[0].clientX : e.clientX
+      onChange(posToValue(x - offset.current))
     }
     const up = () => setDrag(false)
     window.addEventListener('pointermove', move)
@@ -231,7 +229,6 @@ export function Slider({ value, min = 0, max = 100, step = 1, onChange, classNam
   }, [drag, onChange, posToValue])
 
   const key = e => {
-    // The arrow pointing at the inline-end (max) end still increases; in RTL that is Left.
     const inc = document.documentElement.dir === 'rtl' ? 'ArrowLeft' : 'ArrowRight'
     const dec = document.documentElement.dir === 'rtl' ? 'ArrowRight' : 'ArrowLeft'
     const d = e.key === inc || e.key === 'ArrowUp' ? step
@@ -248,15 +245,17 @@ export function Slider({ value, min = 0, max = 100, step = 1, onChange, classNam
       role="slider"
       tabIndex={0}
       aria-valuenow={value} aria-valuemin={min} aria-valuemax={max}
-      data-nodrag                                  /* keeps the sheet from swipe-dismissing */
+      data-nodrag
       onKeyDown={key}
       onPointerDown={e => {
         e.currentTarget.setPointerCapture?.(e.pointerId)
         const r = e.currentTarget.getBoundingClientRect()
-        // The knob is measured from inline-start: left in LTR, right in RTL.
+        const half = 13
+        const usable = Math.max(1, r.width - half * 2)
+        const pctPos = pct / 100
         const knobX = document.documentElement.dir === 'rtl'
-          ? r.right - (pct / 100) * r.width
-          : r.left + (pct / 100) * r.width
+          ? r.right - half - pctPos * usable
+          : r.left + half + pctPos * usable
         const d = e.clientX - knobX
         offset.current = Math.abs(d) <= SLIDER_GRAB_PX ? d : 0
         setDrag(true)
@@ -264,7 +263,7 @@ export function Slider({ value, min = 0, max = 100, step = 1, onChange, classNam
       }}
     >
       <span className="sld-track"><span className="sld-fill" style={{ width: pct + '%' }} /></span>
-      <span className="sld-knob" style={{ insetInlineStart: pct + '%' }} />
+      <span className="sld-knob" style={{ insetInlineStart: 'calc(13px + ' + pct + '% * (100% - 26px) / 100)' }} />
     </div>
   )
 }
