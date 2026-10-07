@@ -29,7 +29,8 @@ function pointer(target, type, { x = 0, y = 0, button = 0 } = {}) {
 }
 
 describe('Slider', () => {
-  // 300px track from x=100 to x=400 over 0..300 so 1px == 1 unit
+  // 300px track from x=100 to x=400 over 0..300. The knob travels the track minus
+  // its 13px insets on each side (usable 274px), so the scale is 300/274 per px.
   const mountSlider = (value, onChange) => {
     act(() => root.render(<Slider value={value} min={0} max={300} step={1} onChange={onChange} />))
     const el = host.querySelector('.sld')
@@ -39,11 +40,11 @@ describe('Slider', () => {
 
   it('drags relative to the grab point when the touch lands on the knob', () => {
     const onChange = vi.fn()
-    const el = mountSlider(80, onChange)               // knob at x=180
+    const el = mountSlider(80, onChange)               // knob at x=186 (100 + 13 + 80/300 * 274)
     pointer(el, 'pointerdown', { x: 180 + SLIDER_GRAB_PX - 2 })
     expect(onChange).not.toHaveBeenCalled()             // grabbing must not jump
     pointer(window, 'pointermove', { x: 180 + SLIDER_GRAB_PX - 2 + 60 })
-    expect(onChange).toHaveBeenLastCalledWith(140)      // moved by 60, not to the finger
+    expect(onChange).toHaveBeenLastCalledWith(146)      // moved with the finger, knob travel is 274px for 300 units
     pointer(window, 'pointerup')
   })
 
@@ -51,9 +52,25 @@ describe('Slider', () => {
     const onChange = vi.fn()
     const el = mountSlider(80, onChange)
     pointer(el, 'pointerdown', { x: 350 })
-    expect(onChange).toHaveBeenLastCalledWith(250)
+    expect(onChange).toHaveBeenLastCalledWith(259)
     pointer(window, 'pointermove', { x: 360 })
-    expect(onChange).toHaveBeenLastCalledWith(260)
+    expect(onChange).toHaveBeenLastCalledWith(270)
+    pointer(window, 'pointerup')
+  })
+
+  it('snaps from min, not from zero, so a min of 15 with step 10 stops at 15/25/35/45', () => {
+    const seen = []
+    act(() => root.render(<Slider value={35} min={15} max={45} step={10} onChange={v => seen.push(v)} />))
+    const el = host.querySelector('.sld')
+    vi.spyOn(el, 'getBoundingClientRect').mockReturnValue({ left: 100, right: 400, width: 300, top: 0, bottom: 20, height: 20, x: 100, y: 0 })
+    // far left of the usable track lands on min, far right on max — never 20/30/40
+    pointer(el, 'pointerdown', { x: 105 })
+    expect(seen.at(-1)).toBe(15)
+    pointer(el, 'pointerdown', { x: 395 })
+    expect(seen.at(-1)).toBe(45)
+    // the middle tick (25) sits halfway between 15 and 35 in value, i.e. 1/3 along the track
+    pointer(el, 'pointerdown', { x: 100 + 13 + (274 / 3) })
+    expect(seen.at(-1)).toBe(25)
     pointer(window, 'pointerup')
   })
 })
@@ -80,19 +97,19 @@ describe('Slider under dir=rtl', () => {
   it('reads the pointer from the physical right: the left end is near max, the right end near min', () => {
     const onChange = vi.fn()
     const el = mountSlider(80, onChange)
-    pointer(el, 'pointerdown', { x: 110 })              // f = .033 → mirrored .967 → 290
-    expect(onChange).toHaveBeenLastCalledWith(290)
-    pointer(el, 'pointerdown', { x: 390 })              // f = .967 → mirrored .033 → 10
-    expect(onChange).toHaveBeenLastCalledWith(10)
+    pointer(el, 'pointerdown', { x: 110 })              // left of the usable track → mirrored to max
+    expect(onChange).toHaveBeenLastCalledWith(300)
+    pointer(el, 'pointerdown', { x: 390 })              // right of the usable track → mirrored to min
+    expect(onChange).toHaveBeenLastCalledWith(0)
   })
 
   it('grabs the knob from the right end and drags relative to the finger', () => {
     const onChange = vi.fn()
-    const el = mountSlider(80, onChange)               // RTL knob sits at x=400-80=320
-    pointer(el, 'pointerdown', { x: 320 + SLIDER_GRAB_PX - 2 })
+    const el = mountSlider(80, onChange)               // RTL knob sits at x=314 (400 - 13 - 80/300 * 274)
+    pointer(el, 'pointerdown', { x: 314 + SLIDER_GRAB_PX - 2 })
     expect(onChange).not.toHaveBeenCalled()             // grabbing must not jump
-    pointer(window, 'pointermove', { x: 320 + SLIDER_GRAB_PX - 2 + 60 })
-    expect(onChange).toHaveBeenLastCalledWith(20)       // moved toward min by 60, not to the finger
+    pointer(window, 'pointermove', { x: 314 + SLIDER_GRAB_PX - 2 + 60 })
+    expect(onChange).toHaveBeenLastCalledWith(14)       // moved toward min with the finger, not to the finger
     pointer(window, 'pointerup')
   })
 

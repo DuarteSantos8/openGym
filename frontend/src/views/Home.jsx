@@ -23,7 +23,11 @@ export default function Home() {
   const nav = useNavigate()
   const S = useStore(s => s.S)
   const update = useStore(s => s.update)
-  const [workoutLength, setWorkoutLength] = useState(() => S.workoutLength || 35)
+  // The slider only stops at 15/25/35/45 — snap any stored value (e.g. 20/30/40
+  // produced while the slider snapped from zero instead of from min) back onto
+  // the grid so the knob, the label and the tick marks agree.
+  const snapLength = v => Math.min(45, Math.max(15, Math.round(((v ?? 35) - 15) / 10) * 10 + 15))
+  const [workoutLength, setWorkoutLength] = useState(() => snapLength(S.workoutLength))
 
   const today = new Date()
   const todayIso = todayISO()

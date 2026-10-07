@@ -191,11 +191,15 @@ export function Stepper({ value, step = 1, min = 0, max = Infinity, onChange, de
 // pseudo-elements, which is the only way the control looks identical on every
 // platform and can pick up the accent colour.
 export const SLIDER_GRAB_PX = 22
-export function Slider({ value, min = 0, max = 100, step = 1, onChange, className = '' }) {
+export function Slider({ value, min = 0, max = 100, step = 1, onChange, className = '', ...rest }) {
   const ref = useRef(null)
   const [drag, setDrag] = useState(false)
   const offset = useRef(0)
   const pct = Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100))
+  const snap = v => {
+    const s = min + Math.round((v - min) / step) * step
+    return Math.min(max, Math.max(min, Math.round(s * 1000) / 1000))
+  }
 
   const posToValue = useCallback(clientX => {
     const el = ref.current
@@ -206,8 +210,7 @@ export function Slider({ value, min = 0, max = 100, step = 1, onChange, classNam
     let f = Math.min(1, Math.max(0, (clientX - r.left - half) / usable))
     if (document.documentElement.dir === 'rtl') f = 1 - f
     const raw = min + f * (max - min)
-    const snapped = Math.round(raw / step) * step
-    return Math.min(max, Math.max(min, Math.round(snapped * 1000) / 1000))
+    return snap(raw)
   }, [min, max, step, value])
 
   useEffect(() => {
@@ -235,7 +238,7 @@ export function Slider({ value, min = 0, max = 100, step = 1, onChange, classNam
       : e.key === dec || e.key === 'ArrowDown' ? -step : 0
     if (!d) return
     e.preventDefault()
-    onChange(Math.min(max, Math.max(min, Math.round((value + d) * 1000) / 1000)))
+    onChange(snap(value + d))
   }
 
   return (
@@ -246,6 +249,7 @@ export function Slider({ value, min = 0, max = 100, step = 1, onChange, classNam
       tabIndex={0}
       aria-valuenow={value} aria-valuemin={min} aria-valuemax={max}
       data-nodrag
+      {...rest}
       onKeyDown={key}
       onPointerDown={e => {
         e.currentTarget.setPointerCapture?.(e.pointerId)
