@@ -1690,3 +1690,126 @@ body.chips-dragging *{cursor:inherit}
 [dir="rtl"] .hm-wrap,[dir="rtl"] .cal-grid{direction:ltr}
 /* Tight tracking is tuned for Latin; Arabic is a connected script and gets none. */
 [dir="rtl"] *{letter-spacing:0}
+
+
+/* ==========================================================================
+   Phase 10 — product identity
+   A training app should feel like a training app, not a generic dashboard.
+   Keep the existing component system and behavior; change the visual language:
+   fewer floating cards, stronger type hierarchy, quiet dividers, one clear accent.
+   ========================================================================== */
+
+:root{
+  --bg:#090a09;
+  --bg-el:#0d0f0d;
+  --surface:#111411;
+  --surface-2:#191d19;
+  --surface-3:#252a25;
+  --label:#f5f7f2;
+  --label-2:rgba(232,238,229,.58);
+  --label-3:rgba(232,238,229,.34);
+  --label-4:rgba(232,238,229,.18);
+  --sep:rgba(220,230,218,.12);
+  --sep-op:rgba(220,230,218,.07);
+  --r-sm:6px; --r:9px; --r-lg:12px; --r-xl:16px; --r-card:12px;
+  --acc:#b7f34a;
+  --acc-2:#79b51e;
+  --on-acc:#0a0d08;
+  --acc-soft:rgba(183,243,74,.11);
+  --acc-line:rgba(183,243,74,.28);
+}
+
+:root[data-theme="light"]{
+  --bg:#f4f5f1;
+  --bg-el:#fafbf8;
+  --surface:#ffffff;
+  --surface-2:#edf0e9;
+  --surface-3:#e0e5da;
+  --label:#10130f;
+  --label-2:rgba(16,19,15,.58);
+  --label-3:rgba(16,19,15,.34);
+  --sep:rgba(16,19,15,.12);
+  --acc:#5f8d16;
+  --acc-2:#4b7111;
+  --on-acc:#fff;
+  --acc-soft:rgba(95,141,22,.10);
+  --acc-line:rgba(95,141,22,.25);
+}
+
+/* The shell is intentionally quiet. Content, not chrome, gets the visual weight. */
+body{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;letter-spacing:-.015em}
+#app{max-width:620px;padding-top:calc(var(--sat) + var(--conn) + 18px)}
+.hdr{margin:0 0 28px;align-items:flex-start}
+.hdr h1{font-size:42px;line-height:.98;letter-spacing:-.045em;font-weight:750}
+.hdr .sub{margin-top:7px;font-size:14px;color:var(--label-3)}
+.eyebrow{font-size:11px;line-height:1.2;text-transform:uppercase;letter-spacing:.13em;color:var(--label-3);font-weight:700;margin-bottom:7px}
+.iconbtn{width:40px;height:40px;border-radius:10px;background:transparent;border:1px solid var(--sep);color:var(--label-2)}
+.iconbtn:hover{background:var(--surface);color:var(--label)}
+
+.card{background:var(--surface);border:1px solid var(--sep);border-radius:var(--r-card);padding:18px;margin-bottom:10px;box-shadow:none}
+.card h2{font-size:12px;text-transform:uppercase;letter-spacing:.09em;font-weight:700;color:var(--label-3)}
+.card .big{font-size:32px;font-weight:700;letter-spacing:-.04em}
+
+.today-row{padding:2px 0 16px}
+.today-row .ttl{font-size:23px;font-weight:700;letter-spacing:-.035em;line-height:1.1}
+.today-row .lbl2{font-size:11px;text-transform:uppercase;letter-spacing:.1em;font-weight:700;color:var(--label-3);margin-bottom:4px}
+.today-row .ss{font-size:13px;color:var(--label-2);margin-top:5px}
+.today-row .lrow-i{width:38px;height:38px;border-radius:9px}
+.hero-act{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;border-top:1px solid var(--sep);padding-top:14px}
+.hero-act .btn{min-height:46px;border-radius:8px}
+.hero-act .btn.primary{background:var(--acc);color:var(--on-acc);font-weight:750}
+.hero-act .btn.ghost{border:1px solid var(--sep);background:transparent}
+
+.segs{display:flex;gap:5px;margin:14px 0 8px}
+.segs i{display:block;flex:1;height:4px;border-radius:2px;background:var(--surface-3)}
+.segs i.fill{background:var(--acc)}
+
+.week{gap:3px}
+.wday{min-height:58px;border:0;background:transparent;border-radius:8px;padding:7px 2px}
+.wday.today{background:var(--acc-soft)}
+.wday .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--label-3)}
+.wday .num{font-size:15px;font-weight:650;margin-top:2px}
+.wday .dot{width:5px;height:5px;border-radius:50%;background:var(--surface-3);margin:6px auto 0}
+.wday .dot.plan{background:var(--label-3)}
+.wday .dot.done{background:var(--acc)}
+.wday .dot.ovr{background:var(--orange)}
+
+.tag{border-radius:5px;padding:4px 7px;font-size:11px;font-weight:700;letter-spacing:.01em;background:var(--surface-2)}
+.tag.acc{background:var(--acc);color:var(--on-acc)}
+
+.progress-link{width:100%;display:flex;align-items:center;justify-content:space-between;text-align:start;padding:17px 2px;border:0;border-top:1px solid var(--sep);background:transparent}
+.progress-title{font-size:22px;font-weight:700;letter-spacing:-.03em;margin-top:2px}
+.progress-meta{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--label-3)}
+.progress-link:hover .progress-title{color:var(--acc)}
+
+#tabbar{height:68px;left:50%;transform:translateX(-50%);max-width:620px;padding:6px 10px calc(6px + var(--sab));background:color-mix(in srgb,var(--bg) 96%,transparent);border-top:1px solid var(--sep);box-shadow:none}
+#tabbar>button{height:50px;border-radius:8px;color:var(--label-3);font-size:10px;font-weight:650}
+#tabbar>button.on{color:var(--label);background:var(--surface)}
+#tabbar>button.start{background:var(--acc);color:var(--on-acc);border-radius:9px;box-shadow:none}
+#tabbar>button.start .cir{width:32px;height:32px;border-radius:8px;background:transparent}
+#tabbar>button.start.rec{background:var(--orange);color:#111}
+#tabbar>button.start.on{outline:2px solid var(--acc);outline-offset:-3px}
+
+.btn{border-radius:8px;min-height:42px;font-weight:650}
+.btn.primary{background:var(--acc);color:var(--on-acc);box-shadow:none}
+.btn.primary:active{filter:brightness(.92)}
+.btn:not(.primary){background:var(--surface-2)}
+.btn.ghost{background:transparent;border:1px solid var(--sep)}
+.input,.select{border-radius:8px;background:var(--surface);border:1px solid var(--sep)}
+.sect-b{border:1px solid var(--sep);background:var(--surface)}
+.sect{margin-bottom:24px}
+.sect-t{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--label-3);font-weight:700}
+.lrow{min-height:52px;padding:12px 14px}
+.lrow+.lrow::before{background:var(--sep)}
+.lrow-i{border-radius:7px}
+
+@media(max-width:520px){
+  #app{padding-left:14px;padding-right:14px}
+  .hdr h1{font-size:38px}
+  .hero-act{grid-template-columns:1fr}
+  .hero-act .btn.ghost{display:none}
+}
+@media(min-width:700px){
+  #app{padding-top:34px}
+  .hdr h1{font-size:48px}
+}
