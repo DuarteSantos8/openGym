@@ -11,6 +11,7 @@ import { Button } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { glyphOf } from '../lib/glyphs.js'
 import { BEN_PROFILE, BEN_GOAL_SHORT } from '../lib/ben-profile.js'
+import { routineCoaching, bodyweightTrend, strengthRetention } from '../lib/ben-coach.js'
 
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
 export default function Home() {
@@ -59,6 +60,9 @@ export default function Home() {
   const wThisWeek = S.workouts.filter(w => weekKey(w.d, ws) === weekKey(todayISO(), ws)).length
   // Days scheduled, not routines — a combined day counts as 1, matching wThisWeek (one w).
   const plannedPerWeek = Object.values(S.week).filter(ids => ids?.length).length
+  const benBW = bodyweightTrend({ ...S, weekStart: ws })
+  const benStrength = strengthRetention(S)
+  const benCoaching = routine ? routineCoaching(S, routine, 3) : []
   const bwPoints = S.bodyweight.slice(-30).map(b => ({ t: b.t || new Date(b.d).getTime(), y: b.w, d: b.d }))
 
   // today's session shown right under the week strip
@@ -143,6 +147,30 @@ export default function Home() {
         <div style={{ height: 8 }} /><Button onClick={() => nav('/plan')}>{t('Build my own plan')}</Button>
       </div>
     )}
+
+    <div className="card">
+      <div className="row between" style={{ marginBottom: 8 }}>
+        <div><div className="lbl2">{t('Benjamin coach')}</div><h2 style={{ margin: '2px 0 0' }}>{t('What the data says')}</h2></div>
+        <Icon name="sparkles" style={{ color: 'var(--acc)' }} />
+      </div>
+      <div className="row" style={{ gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+        <span className="tag" style={{ color: benBW.status === 'down' ? 'var(--green)' : benBW.status === 'up' ? 'var(--orange)' : 'var(--label-2)' }}>
+          {benBW.delta == null ? t('Weight: baseline') : t('Weight: {0}', benBW.status === 'down' ? 'trending down' : benBW.status === 'up' ? 'trending up' : 'steady')}
+        </span>
+        <span className="tag">
+          {benStrength.status === 'baseline' ? t('Strength: building baseline') : benStrength.status === 'holding' ? t('Strength: holding') : benStrength.status === 'mixed' ? t('Strength: mixed') : t('Strength: needs attention')}
+        </span>
+      </div>
+      {benBW.delta != null && <div className="small muted" style={{ marginBottom: 10 }}>{t('Weekly average')} · {benBW.delta > 0 ? '+' : ''}{fmtNum(benBW.delta)} {S.unit} {t('vs previous logged week')}</div>}
+      {benStrength.compared > 0 && <div className="small muted" style={{ marginBottom: 10 }}>{t('{0} exercises compared over the last two 30-day windows.', benStrength.compared)}</div>}
+      {benCoaching.length > 0 ? <div>
+        <div className="small dim" style={{ marginBottom: 5 }}>{t('Next-session guidance')}</div>
+        {benCoaching.map(x => <div key={x.id} className="mrow">
+          <span className="nm" style={{ minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{x.name}</span>
+          <span className="v" style={{ color: x.recommendation.status === 'progress' ? 'var(--green)' : x.recommendation.status === 'regress' ? 'var(--orange)' : 'var(--label-2)' }}>{t(x.recommendation.label)}</span>
+        </div>)}
+      </div> : <div className="small muted">{t('Complete a planned workout to unlock exercise-specific guidance.')}</div>}
+    </div>
 
     {S.showWeightCard !== false && <div className="card">
       <div className="row between bw-head" style={{ marginBottom: 6 }}>
