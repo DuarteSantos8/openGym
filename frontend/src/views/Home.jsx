@@ -23,6 +23,7 @@ const WEEK_TARGET = BEN_PROFILE.frequency || 3
 export default function Home() {
   const nav = useNavigate()
   const S = useStore(s => s.S)
+  const update = useStore(s => s.update)
   const [workoutLength, setWorkoutLength] = useState(() => S.workoutLength || 35)
 
   const today = new Date()
