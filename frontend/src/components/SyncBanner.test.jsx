@@ -2,7 +2,7 @@
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import SyncBanner, { PENDING_GRACE_MS } from './SyncBanner.jsx'
+import SyncBanner, { PENDING_GRACE_MS, useConnectionTrouble } from './SyncBanner.jsx'
 import { connectionView } from './ServerSync.jsx'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
@@ -14,12 +14,12 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
    waiting for its push does not flash it. The store is a stand-in: its `sync` is what each test
    sets; ServerSync.jsx (the words and the actions) is the real one. */
 const mocks = vi.hoisted(() => {
-  const state = { MOBILE: false, DEMO: false, webauthn: true, user: null, guest: false, onboarding: false, sync: null, sheets: [], navs: [] }
+  const state = { MOBILE: false, DEMO: false, webauthn: true, user: null, guest: false, onboarding: false, sync: null, S: {}, sheets: [], navs: [] }
   state.toast = vi.fn()
   state.syncNow = vi.fn(async () => state.sync)
   state.passkeyLogin = vi.fn(async () => ({ id: 'u1', name: 'andi' }))
   state.snapshot = () => ({
-    user: state.user, sync: state.sync, needsMobileOnboarding: state.onboarding,
+    S: state.S, user: state.user, sync: state.sync, needsMobileOnboarding: state.onboarding,
     isGuest: () => state.guest, syncNow: state.syncNow,
     setUser: vi.fn(), adoptProfile: vi.fn(async () => ({})),
   })
@@ -56,7 +56,7 @@ const network = on => {
 let host, root
 beforeEach(() => {
   network(true)
-  Object.assign(mocks, { MOBILE: false, DEMO: false, webauthn: true, user: { id: 'u1', name: 'andi' }, guest: false, onboarding: false, sync: sync('ok') })
+  Object.assign(mocks, { MOBILE: false, DEMO: false, webauthn: true, user: { id: 'u1', name: 'andi' }, guest: false, onboarding: false, sync: sync('ok'), S: {} })
   mocks.sheets.length = 0
   mocks.navs.length = 0
   mocks.toast.mockClear(); mocks.syncNow.mockClear(); mocks.passkeyLogin.mockClear()
@@ -91,10 +91,10 @@ describe('connected and in step', () => {
     render()
     expect(bar()).toBeNull()
     act(() => network(false))
-    expect(text()).toBe('Offline — showing the last copy synced with the server.')
+    expect(text()).toBe('Offline. Showing the last copy synced with the server.')
     expect(bar().className).toContain('off')
     expect(label()).toBe('Try again')
-    expect(connectionView(sync('ok'), { online: false }).line).toBe('Offline — the server cannot be reached')
+    expect(connectionView(sync('ok'), { online: false }).line).toBe('Offline. The server can’t be reached')
     act(() => network(true))
     expect(bar()).toBeNull()
   })
@@ -106,7 +106,7 @@ describe('connected and in step', () => {
     render()
     expect(bar()).toBeNull()
     act(() => { vi.advanceTimersByTime(PENDING_GRACE_MS) })
-    expect(text()).toBe('Offline — your changes are saved on this device and sync when you are back online.')
+    expect(text()).toBe('Offline. Your changes are saved on this device and sync when you’re back online.')
   })
 })
 
@@ -115,21 +115,21 @@ describe('not connected — it says so, and what to do', () => {
     network(false)
     mocks.sync = sync('offline', { offline: true, pending: true, lastError: { status: 0, code: 'network' } })
     render()
-    expect(text()).toBe('Offline — your changes are saved on this device and sync when you are back online.')
+    expect(text()).toBe('Offline. Your changes are saved on this device and sync when you’re back online.')
     expect(bar().className).toContain('off')
     expect(label()).toBe('Try again')
     // Its row's height is what the page and the pinned headers leave free.
     expect(conn()).not.toBe('')
     await act(async () => { button().click() })
     expect(mocks.syncNow).toHaveBeenCalledTimes(1)
-    expect(mocks.toast).toHaveBeenCalledWith('Offline — the server cannot be reached')
+    expect(mocks.toast).toHaveBeenCalledWith('Offline. The server can’t be reached')
   })
 
   it('offline with nothing waiting: the copy on screen is the last synced one', () => {
     network(false)
     mocks.sync = sync('offline', { offline: true, lastError: { status: 0, code: 'timeout' } })
     render()
-    expect(text()).toBe('Offline — showing the last copy synced with the server.')
+    expect(text()).toBe('Offline. Showing the last copy synced with the server.')
   })
 
   // A proxy answering 502 without a CORS header fails fetch exactly as no network does; the phone
@@ -137,7 +137,7 @@ describe('not connected — it says so, and what to do', () => {
   it('the server out of reach while the device is online is the server, not the device', async () => {
     mocks.sync = sync('offline', { offline: true, pending: true, lastError: { status: 0, code: 'network' } })
     render()
-    expect(text()).toBe('Your server cannot be reached — your changes are saved on this device and sync once it answers again.')
+    expect(text()).toBe('Your server can’t be reached. Your changes are saved on this device and sync once it answers again.')
     expect(bar().className).toContain('off')
     expect(label()).toBe('Try again')
     await act(async () => { button().click() })
@@ -147,11 +147,11 @@ describe('not connected — it says so, and what to do', () => {
   it('with nothing waiting it shows the last copy, and the words follow the network as it goes and comes', () => {
     mocks.sync = sync('offline', { offline: true, lastError: { status: 0, code: 'network' } })
     render()
-    expect(text()).toBe('Your server cannot be reached — showing the last copy synced with it.')
+    expect(text()).toBe('Your server can’t be reached. Showing the last copy synced with it.')
     act(() => network(false))
-    expect(text()).toBe('Offline — showing the last copy synced with the server.')
+    expect(text()).toBe('Offline. Showing the last copy synced with the server.')
     act(() => network(true))
-    expect(text()).toBe('Your server cannot be reached — showing the last copy synced with it.')
+    expect(text()).toBe('Your server can’t be reached. Showing the last copy synced with it.')
   })
 
   it('a server error carries its HTTP code, for whoever runs the server', () => {
@@ -213,7 +213,7 @@ describe('no server at all', () => {
     mocks.sync = sync('local', { server: null })
     render()
     expect(bar().className).toContain('quiet')
-    expect(text()).toBe('On this phone only — not connected to a server')
+    expect(text()).toBe('On this phone only, not connected to a server')
     expect(label()).toBe('Connect')
     act(() => button().click())
     expect(openedConnect().dataset.again).toBe('false')
@@ -224,9 +224,9 @@ describe('no server at all', () => {
     mocks.guest = true
     mocks.sync = sync('local')
     render()
-    expect(text()).toBe('Guest mode — data lives only in this browser.')
+    expect(text()).toBe('Guest mode: your data lives only in this browser.')
     act(() => button().click())
-    expect(mocks.navs).toEqual(['/settings'])
+    expect(mocks.navs).toEqual(['/settings/account'])
     expect(mocks.passkeyLogin).not.toHaveBeenCalled()
   })
 
@@ -236,7 +236,7 @@ describe('no server at all', () => {
     mocks.webauthn = false
     mocks.sync = sync('local')
     render()
-    expect(text()).toBe('Guest mode — data lives only in this browser.')
+    expect(text()).toBe('Guest mode: your data lives only in this browser.')
     expect(button()).toBeNull()
   })
 
@@ -253,7 +253,7 @@ describe('a sign-in waiting for its question', () => {
   it('says nothing syncs until it is answered, and the tap runs Sync now, which asks it', () => {
     mocks.sync = sync('held')
     render()
-    expect(text()).toBe('Nothing syncs until you say whether this device’s workouts go into your profile — tap to answer.')
+    expect(text()).toBe('Nothing syncs until you say whether this device’s workouts go into your profile. Tap to answer.')
     expect(connectionView(sync('held')).line).toBe('Waiting for your answer about this device’s workouts')
     act(() => { button().click() })
     expect(mocks.syncNow).toHaveBeenCalled()
@@ -289,7 +289,7 @@ describe('a change waiting while the server is reachable', () => {
     act(() => { vi.advanceTimersByTime(PENDING_GRACE_MS - 100) })
     expect(bar()).toBeNull()
     act(() => { vi.advanceTimersByTime(200) })
-    expect(text()).toBe('Not synced yet — tap to retry.')
+    expect(text()).toBe('Not synced yet. Tap to retry.')
     expect(label()).toBeNull()   // the sentence already says "tap to retry"
   })
 
@@ -303,5 +303,77 @@ describe('a change waiting while the server is reachable', () => {
     act(() => { vi.advanceTimersByTime(PENDING_GRACE_MS) })
     expect(bar()).toBeNull()
     expect(conn()).toBe('')
+  })
+})
+
+// Settings → "Show connection status" (#369, #330): off hides the bar in every state; a problem
+// then shows as a dot (useConnectionTrouble), and a device with no server never gets one.
+describe('with the connection status switched off', () => {
+  const Probe = () => <i className="probe" data-trouble={String(useConnectionTrouble())} />
+  const both = () => act(() => root.render(<><SyncBanner /><Probe /></>))
+  const trouble = () => host.querySelector('.probe').dataset.trouble === 'true'
+
+  it('hides the bar whatever it would say, and gives the page its height back', () => {
+    for (const [st, extra, who] of [
+      ['offline', { pending: true }, {}], ['error', { lastError: { status: 502 } }, {}], ['auth', {}, {}], ['held', {}, {}],
+      ['local', { server: null }, { MOBILE: true, user: null, guest: true }], ['local', {}, { user: null, guest: true }],
+    ]) {
+      Object.assign(mocks, { MOBILE: false, user: { id: 'u1', name: 'andi' }, guest: false }, who, { sync: sync(st, extra), S: { connStatus: true } })
+      both()
+      expect(bar(), st).not.toBeNull()
+      expect(conn(), st).not.toBe('')
+      mocks.S = { connStatus: false }
+      both()
+      expect(bar(), st).toBeNull()
+      expect(conn(), st).toBe('')
+    }
+  })
+
+  it('an older profile without the setting still shows it', () => {
+    mocks.S = {}
+    mocks.sync = sync('offline', { pending: true })
+    both()
+    expect(bar()).not.toBeNull()
+    expect(trouble()).toBe(false)
+  })
+
+  it('a dot for offline, an error, a refusal and an open sign-in question', () => {
+    mocks.S = { connStatus: false }
+    for (const st of ['offline', 'error', 'auth', 'held']) {
+      mocks.sync = sync(st, st === 'error' ? { lastError: { status: 500 } } : {})
+      both()
+      expect(trouble(), st).toBe(true)
+    }
+    mocks.sync = sync('ok')
+    both()
+    expect(trouble()).toBe(false)
+  })
+
+  it('a change waiting gets the dot only after the grace period', () => {
+    vi.useFakeTimers()
+    mocks.S = { connStatus: false }
+    mocks.sync = sync('pending', { pending: true })
+    both()
+    expect(trouble()).toBe(false)
+    act(() => { vi.advanceTimersByTime(PENDING_GRACE_MS + 100) })
+    expect(trouble()).toBe(true)
+  })
+
+  it('never for a phone kept local or a guest: no server is a choice, not a fault', () => {
+    mocks.S = { connStatus: false }
+    Object.assign(mocks, { MOBILE: true, user: null, guest: true, sync: sync('local', { server: null }) })
+    both()
+    expect(trouble()).toBe(false)
+    Object.assign(mocks, { MOBILE: false, user: null, guest: true, sync: sync('local') })
+    both()
+    expect(trouble()).toBe(false)
+  })
+
+  it('no dot while the bar is on: it already says so', () => {
+    mocks.S = { connStatus: true }
+    mocks.sync = sync('offline', { pending: true })
+    both()
+    expect(bar()).not.toBeNull()
+    expect(trouble()).toBe(false)
   })
 })

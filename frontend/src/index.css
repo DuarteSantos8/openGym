@@ -99,7 +99,7 @@
 :root[data-accent="pink"]  { --acc:var(--pink);   --acc-2:#d70036; --on-acc:#fff }
 :root[data-accent="red"]   { --acc:var(--red);    --acc-2:#d70015; --on-acc:#fff }
 :root[data-accent="teal"]  { --acc:var(--teal);   --acc-2:#0071a4; --on-acc:#000 }
-:root[data-accent="gold"]  { --acc:var(--yellow); --acc-2:#b25000; --on-acc:#000 }
+:root[data-accent="gold"]  { --acc:var(--yellow); --acc-2:#b25000; --on-acc:#000; --knob-ring:rgba(0,0,0,.28) }
 /* Label colour on a filled accent button is picked per accent by measured contrast,
    not by taste. Button text is 17px/600, so the AA bar is 3:1 (large text). White on
    the light-theme green is 2.22:1 and on teal 2.57:1 — both fail, and green is the
@@ -147,15 +147,10 @@ button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp butto
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 
 /* ------------------------------------------------------------ type scale -- */
-.t-large  {font-size:34px;line-height:1.06;font-weight:700;letter-spacing:-.028em}
-.t-title  {font-size:28px;line-height:1.12;font-weight:700;letter-spacing:-.024em}
-.t-title2 {font-size:22px;line-height:1.18;font-weight:700;letter-spacing:-.021em}
-.t-head   {font-size:17px;line-height:1.29;font-weight:600;letter-spacing:-.012em}
-.t-body   {font-size:17px;line-height:1.29;font-weight:400;letter-spacing:-.012em}
-.t-callout{font-size:16px;line-height:1.31;font-weight:400;letter-spacing:-.009em}
-.t-sub    {font-size:15px;line-height:1.33;font-weight:400;letter-spacing:-.006em}
-.t-foot   {font-size:13px;line-height:1.38;font-weight:400;letter-spacing:-.001em}
-.t-cap    {font-size:12px;line-height:1.33;font-weight:400;letter-spacing:0}
+/* The nine .t-* classes that used to live here emitted from no JSX in the app, while the views
+   typed their numbers inline (Home.jsx:223 is .t-title2 with a different weight). Deleted
+   2026-09-22 rather than adopted, because adopting a scale means changing what four screens
+   render, which is a design call and not a cleanup. `git log -- src/index.css` has them. */
 
 .muted{color:var(--label-2)} .dim{color:var(--label-3)}
 .small{font-size:13px;line-height:1.38}
@@ -175,10 +170,13 @@ button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp butto
 }
 /* Android 15 with the keyboard up: room to scroll the last field on a page above the keys.
    The tab bar stays where it is, under the keyboard, rather than riding up on it. */
-:root[data-native-kb] #app,:root[data-native-kb] body.resting #app{padding-bottom:calc(88px + var(--native-kb))}
+:root[data-native-kb] #app,:root[data-native-kb] body.resting #app,:root[data-native-kb] body.no-tabbar.resting #app{padding-bottom:calc(88px + var(--native-kb))}
 /* Keep the last workout controls clear of the mobile overlays without adding a second
    screenful of blank scroll space. The stacked rest timer needs the larger reserve. */
-body.resting #app{padding-bottom:calc(206px + var(--sab))}
+body.resting #app{padding-bottom:calc(166px + var(--sab))}
+/* The workout screen has no tab bar (App.jsx): only the docked rest bar, when it is there. */
+body.no-tabbar #app{padding-bottom:calc(24px + var(--sab))}
+body.no-tabbar.resting #app{padding-bottom:calc(96px + var(--sab))}
 .workout-end-spacer{height:0}
 @keyframes viewfade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 #app.vfade{animation:viewfade var(--med) var(--ease)}
@@ -235,6 +233,13 @@ button.conn:active{filter:brightness(1.12)}
 .hdr h1{font-size:34px;line-height:1.06;font-weight:700;letter-spacing:-.028em;overflow-wrap:break-word}
 @media (max-width:420px){.hdr h1{font-size:30px}}
 .hdr .sub{color:var(--label-2);font-size:15px;letter-spacing:-.006em;margin-top:4px}
+/* Library: the count line runs under the title row at full width instead of beside the "By muscle"
+   button, which left it ~200px on a phone: the catalogue count plus your own exercises stays one
+   line in every language. The ellipsis is only the safety net (the strings are kept short), and
+   text-overflow follows the text direction, so Arabic clips on its own end. */
+.hdr.lib-hdr{flex-wrap:wrap;align-items:center;row-gap:0}
+.hdr.lib-hdr>.sub.lib-count{flex:1 0 100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:360px){.hdr.lib-hdr>.sub.lib-count{white-space:normal;overflow:visible;text-overflow:clip}}
 
 .iconbtn{
   width:36px;height:36px;border-radius:50%;flex:none;
@@ -262,7 +267,6 @@ h4.sec{
   text-transform:none;margin:0 0 12px;
 }
 .divider{height:var(--hair);background:var(--sep);margin:14px 0;border:0}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .row{display:flex;align-items:center;gap:12px}
 .row.between{justify-content:space-between}
 /* The body-weight card header (Home and Stats): title on the left, Goal + Log on the right. In
@@ -330,6 +334,8 @@ h4.sec{
 .lrow-c{color:var(--label);font-size:15px;flex:none;--icon-stroke:2.4}
 .lrow-k{color:var(--acc);font-size:17px;flex:none;--icon-stroke:2.4}
 .lrow.danger,.lrow.danger .lrow-t{color:var(--red)}
+/* A warning under a settings row reads at subtitle size: a sentence, not a row title. */
+.lrow.backup-lost .lrow-t{font-size:13px;line-height:1.3;color:var(--label-2);letter-spacing:0}
 /* The Stats exercise name gets its own line so long names cannot run into the title.
    Two columns only — label/value on the left, chevron on the right — so this is for rows
    WITHOUT an icon. `.lrow-i` is not placed here; on a row that has one it would auto-place
@@ -370,6 +376,9 @@ h4.sec{
 .btn.sm .icn{font-size:16px}
 .btn.xs{padding:5px 10px;width:auto;font-size:13px;border-radius:7px;gap:4px}
 .btn:disabled{opacity:.32;pointer-events:none}
+.weekly-volume-toggle{padding-block:0}
+.weekly-volume-toggle .icn{transition:transform var(--fast) var(--ease)}
+.weekly-volume-toggle[aria-expanded="true"] .icn{transform:rotate(180deg)}
 
 /* ----------------------------------------------------------- tab bar ----- */
 /* Nearly opaque, and deliberately so. At the old 72% the page read straight through the bar
@@ -400,6 +409,14 @@ h4.sec{
 #tabbar button .icn{font-size:25px;--icon-stroke:1.65;color:var(--label)}
 #tabbar button.on{color:var(--acc)}
 #tabbar button.on .icn{--icon-stroke:2;color:inherit;opacity:1}
+/* A connection problem while the banner is switched off (Settings → Show connection status):
+   a dot on the Home tab and on the Settings gear. */
+#tabbar .tab-ic{position:relative;display:inline-flex}
+.tab-dot{
+  position:absolute;top:-1px;right:-3px;width:8px;height:8px;border-radius:50%;
+  background:var(--orange);box-shadow:0 0 0 2px var(--bg-el);pointer-events:none;
+}
+.iconbtn .tab-dot{top:5px;right:5px;box-shadow:0 0 0 2px var(--bg)}
 #tabbar button.start{margin-top:-24px}
 #tabbar button.start .cir{
   width:52px;height:52px;border-radius:50%;background:var(--acc);color:var(--on-acc);
@@ -410,6 +427,7 @@ h4.sec{
 #tabbar button.start:active .cir{transform:scale(.93)}
 #tabbar button.start .cir .icn{font-size:26px;--icon-stroke:2;color:inherit;opacity:1}
 #tabbar button.start span{color:var(--acc);font-weight:600}
+#tabbar button.start .tab-time{font-variant-numeric:tabular-nums}
 /* `.cir` is itself a <span>, so the label rules above and below reach it too and
    outrank the `.cir` block — which is how the running state ended up painting an
    orange play glyph onto an orange disc. Both states restate their own colour.
@@ -505,6 +523,10 @@ h4.sec{
 .item .tt{font-size:16px;font-weight:400;line-height:1.25;letter-spacing:-.009em}
 .item .ss{color:var(--label-2);font-size:13px;margin-top:2px}
 .item .grow{flex:1;min-width:0}
+/* A row's opener as a real button (the routine editor's exercise name), so a row holding other
+   buttons is no button itself. Reads as the plain text it replaced. */
+.item .item-open{display:flex;flex-direction:column;justify-content:center;align-self:stretch;text-align:start}
+.item .item-open>span{display:block}
 .chev{color:var(--label);flex:none;font-size:15px;--icon-stroke:2.4}
 .tag{
   display:inline-flex;align-items:center;gap:3px;background:var(--surface-2);
@@ -512,10 +534,18 @@ h4.sec{
   font-weight:500;text-transform:capitalize;
 }
 .tag.acc{background:var(--acc-soft);color:var(--acc)}
+/* Left / Right on a per-side row: one width for both (#322). The two hidden words share the
+   visible one's grid cell, so the pill is as wide as the longer word. */
+.tag.sidepill{display:inline-grid;justify-items:center;flex:none}
+.tag.sidepill>span,.tag.sidepill::before,.tag.sidepill::after{grid-area:1/1}
+.tag.sidepill::before{content:attr(data-l);visibility:hidden}
+.tag.sidepill::after{content:attr(data-r);visibility:hidden}
 /* favourite marker (issue #6): a small yellow star glued to the exercise name — distinct from
    the accent "chosen" tag at the row's end, which means "already in a routine or the log" */
 .fav-star{color:var(--yellow);font-size:12px;display:inline-block;margin-inline-end:5px;vertical-align:-1px}
-.fav-btn{margin-top:-4px}
+.fav-btn{margin-top:-4px;flex:none}
+/* One long word (a German custom name) wraps instead of pushing the star off the screen. */
+.exdetail-name{min-width:0;overflow-wrap:anywhere}
 .fav-btn.on{color:var(--yellow)}
 
 /* ---------------------------------------------------------------- chips -- */
@@ -546,6 +576,7 @@ h4.sec{
 .chip:active{background:var(--surface-2)}
 .chip.on{background:var(--acc);color:var(--on-acc);font-weight:500}
 .chip.on .dim{color:color-mix(in srgb,var(--on-acc) 62%,transparent)}
+.chip .qstate{text-transform:none}
 /* On a phone these rows scroll by swipe. On a pointer device lib/hchips.js lets you
    click-drag anywhere on the row to pull it along; a grab cursor on rows that actually
    overflow (data-xscroll, set by hchips.js on hover) is the hint. */
@@ -604,6 +635,17 @@ body.chips-dragging *{cursor:inherit}
   background:var(--surface-3);padding:2px 8px;border-radius:99px;
   font-variant-numeric:tabular-nums;pointer-events:none;user-select:none;
 }
+/* The × that empties the search (Library and the exercise picker), the same round button as
+   SearchField's, at the end of the field; the count moves in beside it while both show. */
+.search .clear{
+  position:absolute;inset-inline-end:8px;top:50%;transform:translateY(-50%);z-index:1;
+  width:22px;height:22px;border-radius:50%;
+  background:var(--label-3);color:var(--bg);display:flex;align-items:center;
+  justify-content:center;font-size:11px;--icon-stroke:3;
+}
+.search.has-clear .input{padding-inline-end:36px}
+.search.has-count.has-clear .input{padding-inline-end:90px}
+.search.has-clear .search-count{inset-inline-end:36px}
 
 /* --- switch --- */
 .sw{
@@ -617,6 +659,10 @@ body.chips-dragging *{cursor:inherit}
   transition:transform var(--med) var(--ease),width var(--fast) var(--ease);
 }
 .sw.on{background:var(--acc)}
+/* On an accent nearly as light as the knob (an own white or pale yellow, the gold preset) the
+   knob gets a hairline ring so it does not vanish into the track. lib/accent.js sets --knob-ring
+   for an own colour; it is transparent everywhere else. */
+.sw.on .knob{box-shadow:0 0 0 1px var(--knob-ring,transparent),0 3px 8px rgba(0,0,0,.15),0 1px 1px rgba(0,0,0,.16)}
 .sw.on .knob{transform:translateX(20px)}
 .sw:active .knob{width:31px}
 .sw.on:active .knob{transform:translateX(16px)}
@@ -658,7 +704,14 @@ body.chips-dragging *{cursor:inherit}
 .lrow:has(.seg-inline){flex-wrap:wrap}
 .lrow:has(.seg-inline) .lrow-m{min-width:min(150px,100%)}
 .seg-range{margin-bottom:10px}
-.seg-inline button{padding:5px 10px;font-size:13px;min-height:28px}
+/* Every segment as wide as the widest label (QA 10-05: with flex:1 1 0 the track was sized by the
+   labels' sum but split evenly, so "Compact" / "Versteckt" got less than its own width and
+   touched the segment's edge). A grid of equal 1fr columns sizes each to the widest one, so the
+   thumb (100%/n) still lines up; the sliding thumb is absolutely positioned with no grid
+   placement, so its box is the track's padding box, as in the flex version. */
+.seg-inline{display:grid;grid-auto-flow:column;grid-auto-columns:1fr}
+.seg-inline button{padding:5px 12px;font-size:13px;min-height:28px}
+.seg-inline button span{white-space:nowrap}
 .seg-inline button .icn{font-size:14px}
 
 /* native time input, restyled to sit in a row like a value label */
@@ -757,6 +810,26 @@ body.chips-dragging *{cursor:inherit}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
   .whdr.stick{background:var(--bg)}
 }
+/* The workout's own header (v1.3.11): ⌄ (or the editor's ✕), the name with the clock and set
+   count, ⋯, and a labelled Finish pill. The name block takes what is left and truncates; the pill
+   never shrinks. */
+.hdr.whdr-bar{align-items:center;gap:8px;margin:4px 0 12px}
+.whdr-mid{flex:1;min-width:0;text-align:center}
+.whdr-name{font-weight:600;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* The clock and set count may take a second line: in ru/uk the count is the long half and a
+   one-line ellipsis cut exactly the 0/19 the line is there for. */
+.whdr-mid .sub{font-size:13px;margin-top:1px;font-variant-numeric:tabular-nums;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;overflow-wrap:anywhere;text-wrap:balance}
+.btn.pill.whdr-finish{width:auto;flex:none;padding:8px 16px;border-radius:99px;font-size:15px;max-width:40%}
+/* Animations set to Small: the picture beside the exercise name, with an expand badge. */
+.wthumb{position:relative;flex:none;width:48px;height:48px;border-radius:10px;overflow:hidden;padding:0}
+.wthumb .thumb{width:48px;height:48px;border-radius:10px}
+.wthumb .thumb-x{background:var(--surface-3)}
+.wthumb-x{
+  position:absolute;inset-inline-end:3px;bottom:3px;width:16px;height:16px;border-radius:5px;
+  display:flex;align-items:center;justify-content:center;font-size:10px;
+  background:rgba(0,0,0,.55);color:#fff;--icon-stroke:2.4;
+}
+.exhd{align-items:center}
 .wprog{height:4px;background:var(--surface-2);border-radius:99px;overflow:hidden;margin-bottom:16px}
 .wprog i{display:block;height:100%;background:var(--acc);border-radius:99px;transition:width var(--med) var(--ease)}
 .exmedia{position:relative;border-radius:var(--r-lg);overflow:hidden;background:#fff;margin-bottom:12px}
@@ -851,6 +924,30 @@ body.chips-dragging *{cursor:inherit}
 .wmedia-add:disabled{opacity:.5;cursor:default}
 .wmedia-note{margin:6px 2px 0;line-height:1.35}
 .wrow-media{display:inline-flex;align-items:center;gap:3px;font-size:12px;color:var(--label-2);flex:none}
+
+.pp-selected{outline:3px solid var(--acc);outline-offset:-3px}
+.pp-check{
+  position:absolute;inset-inline-end:5px;top:5px;width:20px;height:20px;border-radius:99px;
+  display:flex;align-items:center;justify-content:center;background:var(--acc);color:#fff;font-size:11px;
+}
+.pp-cta{position:sticky;bottom:calc(var(--sab) + 10px);display:flex;justify-content:center;margin-top:14px}
+.pp-compare{position:relative;flex:1;min-height:0;overflow:hidden;background:#000;touch-action:none}
+.pp-img{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;
+  -webkit-user-select:none;user-select:none;
+}
+.pp-handle{
+  position:absolute;inset-block:0;transform:translateX(-50%);width:0;
+  display:flex;align-items:center;justify-content:center;pointer-events:none;
+}
+.pp-handle::before{content:'';position:absolute;inset-block:0;width:2px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.3)}
+.pp-grip{width:36px;height:36px;border-radius:99px;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.4)}
+.pp-label{
+  position:absolute;bottom:14px;font-size:12px;font-weight:600;color:#fff;
+  background:rgba(0,0,0,.55);padding:4px 9px;border-radius:99px;pointer-events:none;
+}
+.pp-label-before{inset-inline-start:10px}
+.pp-label-after{inset-inline-end:10px}
 .wrow-media .icn{font-size:13px}
 .mviewer{
   position:absolute;inset:0;background:#000;color:#fff;display:flex;flex-direction:column;
@@ -996,6 +1093,44 @@ body.chips-dragging *{cursor:inherit}
 .effpick .effpick-free .stp .num::placeholder{color:var(--label-3);font-weight:500}
 .setrow.done .n{background:var(--acc);color:var(--on-acc)}
 .setrow.done{opacity:.45}
+
+/* Swipe on sets (v1.3.11, components/SwipeRow.jsx). The row slides over two panes: Copy at the
+   start of the line, Delete at its end, each as wide as the swipe has gone and zero wide at rest.
+   pan-y leaves vertical scroll to the browser and hands sideways moves to the row. */
+.swrow{position:relative;overflow:hidden;border-radius:10px;touch-action:pan-y;-webkit-touch-callout:none}
+.swrow.dragging{-webkit-user-select:none;user-select:none}
+/* Plan's lists (v1.3.11): the row is a whole .item card, so the swipe clips to the card's corners */
+.swrow.swrow-item{border-radius:var(--r-card)}
+.swfront{position:relative;z-index:1;background:var(--surface);will-change:transform}
+.swpane{position:absolute;top:0;bottom:0;width:0;overflow:hidden;z-index:0}
+.swpane.del{inset-inline-end:0;background:color-mix(in srgb,var(--red) 22%,var(--surface))}
+.swpane.cp{inset-inline-start:0;background:var(--acc-soft)}
+.swpane button{position:absolute;top:0;bottom:0;width:76px;padding:0;color:#fff;transition:width .16s var(--ease)}
+.swpane.del button{inset-inline-end:0;background:var(--red)}
+.swpane.cp button{inset-inline-start:0;background:var(--acc);color:var(--on-acc)}
+.swpane.armed button{width:100%}
+.swpane .lab{position:absolute;top:0;bottom:0;width:76px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12px}
+.swpane.del .lab{inset-inline-start:0}
+.swpane.cp .lab{inset-inline-end:0}
+.swpane .lab .icn{font-size:21px;transform:scale(.8);transition:transform .16s var(--ease)}
+.swpane .lab b{font-weight:500}
+.swpane.armed .lab .icn{transform:scale(1)}
+.swpane.armed .lab b{font-weight:800}
+/* The last set cannot go: the delete side shows grey and never fills. */
+.swpane.del.dis{background:var(--surface-2)}
+.swpane.del.dis button{background:var(--surface-3);color:var(--label-3)}
+.swpane.del.dis.armed button{width:76px}
+.swrow.flash .swfront{animation:swflash .4s ease}
+@keyframes swflash{0%,35%{background:color-mix(in srgb,var(--acc) 28%,var(--surface))}100%{background:var(--surface)}}
+.swrow.flash-red .swfront{animation:swflashr .5s ease}
+@keyframes swflashr{0%,35%{background:color-mix(in srgb,var(--red) 22%,var(--surface))}100%{background:var(--surface)}}
+/* The first-use hint under the row it nudged. */
+.swhint{display:flex;justify-content:center;padding:4px 0 6px}
+.swhint button{display:inline-flex;align-items:center;gap:8px;background:var(--acc-soft);color:var(--acc);border-radius:99px;padding:7px 12px;font-size:13px;font-weight:600;animation:swhintin .3s var(--ease);text-align:start}
+.swhint .icn{font-size:15px;flex:none}
+.swhint .icn:last-child{opacity:.7}
+@keyframes swhintin{from{opacity:0;transform:translateY(-4px)}}
+.vh{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 
 /* one-sided (unilateral) sets (issue #60): the set number sits beside a two-row L/R stack, each
    side its own weight/reps/effort + done tick. The two inner rows reuse .setrow so their columns
@@ -1146,6 +1281,18 @@ body.chips-dragging *{cursor:inherit}
 .menu-list .menu-item.disabled{opacity:.4;pointer-events:none}
 .menu-on{color:transparent;font-size:16px;flex:none}
 .menu-on.is-on{color:var(--acc)}
+/* A grouped menu (menuSheet's `sections`): groups sit apart, each with a small header, so a long
+   list reads as four short ones. */
+.menu-group.grouped+.menu-group.grouped{margin-top:14px}
+.menu-group.grouped .menu-list{gap:0;background:var(--surface);border-radius:var(--r-card);overflow:hidden}
+.menu-group.grouped .menu-item{border-radius:0;position:relative}
+.menu-group.grouped .menu-item+.menu-item::before{
+  content:'';position:absolute;top:0;inset-inline-start:56px;inset-inline-end:0;height:var(--hair);background:var(--sep-op);
+}
+.menu-sec{font-size:13px;font-weight:600;color:var(--label-2);padding:0 6px 6px;letter-spacing:.005em}
+.menu-list .menu-item.accent .lrow-i{background:var(--acc);color:var(--on-acc)}
+.menu-chev{color:var(--label-3);font-size:14px;flex:none}
+[dir="rtl"] .menu-chev{transform:scaleX(-1)}
 .setextra{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 8px 32px}
 .setextra .chip.add{display:inline-flex;align-items:center;gap:4px;color:var(--acc)}
 .setextra .chip.add svg{width:13px;height:13px}
@@ -1191,41 +1338,88 @@ body.chips-dragging *{cursor:inherit}
 }
 
 /* --- rest timer --- */
+/* One row: the clock (a button, tap to set the time left), then the controls; the progress is a
+   thin line along the top edge, so it takes no width from them. On the workout screen, which has
+   no tab bar (body.no-tabbar, App.jsx), the bar is docked to the bottom edge; anywhere else it
+   sits just above the tab bar. */
 #timer{
   position:fixed;inset-inline-start:12px;inset-inline-end:12px;bottom:calc(88px + var(--sab));z-index:60;
   /* nearly opaque: the set rows underneath were reading through the old 82% and made the
      clock hard to pick out mid-set. The blur stays, so it still sits above the page. */
   background:color-mix(in srgb,var(--surface) 97%,transparent);
   -webkit-backdrop-filter:saturate(180%) blur(10px);backdrop-filter:saturate(180%) blur(10px);
-  border-radius:var(--r-lg);padding:12px 14px;
-  display:flex;align-items:center;gap:12px;
+  border-radius:var(--r-lg);padding:12px 12px 10px;overflow:hidden;
+  display:flex;align-items:center;gap:10px;
   box-shadow:0 12px 34px -8px rgba(0,0,0,.55);
   animation:slideup var(--med) var(--ease);
 }
 @keyframes slideup{from{transform:translateY(16px);opacity:0}to{transform:none;opacity:1}}
-#timer .t{font-size:26px;font-weight:600;letter-spacing:-.026em;font-variant-numeric:tabular-nums;min-width:66px}
-#timer .bar{flex:1;height:4px;background:var(--surface-3);border-radius:99px;overflow:hidden}
+#timer .bar{position:absolute;top:0;inset-inline-start:0;inset-inline-end:0;height:3px;background:var(--surface-3)}
 #timer .bar i{display:block;height:100%;background:var(--acc);transition:width 1s linear}
-/* rest variant: −15/+15/Skip and the clock won't share one line on a phone, so the clock and
-   bar take the top row and the controls take their own. The work timer keeps a single row —
-   it only ever has two buttons. */
-#timer.rest{flex-direction:column;align-items:stretch;gap:10px}
-#timer.rest .head{display:flex;align-items:center;gap:12px}
-#timer.rest .acts{display:flex;align-items:center;gap:8px}
-#timer.rest .acts .btn{padding-top:11px;padding-bottom:11px}   /* sweaty hands, mid-set */
-#timer.rest .acts .skip{margin-inline-start:auto;min-width:84px}
+/* The clock is what the bar is for, so it never gives up width: the buttons do (Skip is the one that
+   gives: in a long language on a narrow phone it becomes an icon, RestTimer.jsx useSkipFits). The label under the
+   clock fills the clock's width but does not widen it. */
+#timer .tclock{flex:none;min-width:0;display:flex;flex-direction:column;align-items:flex-start;text-align:start;padding:2px 0}
+#timer .t{font-size:28px;font-weight:600;line-height:1.1;letter-spacing:-.026em;font-variant-numeric:tabular-nums;white-space:nowrap}
+/* The rest clock is as wide as the wider of its two faces, the time and Ready: the face not
+   showing sits in a hidden zero-height line (data-alt), so turning Ready does not move the
+   buttons beside it. */
+#timer.rest .t{display:flex;flex-direction:column}
+#timer.rest .t::after{content:attr(data-alt);height:0;overflow:hidden;visibility:hidden}
+#timer .lbl{
+  font-size:12px;color:var(--label-2);width:0;min-width:100%;margin-top:1px;
+  display:inline-flex;align-items:center;gap:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+#timer .lbl .icn{font-size:10px;flex:none;opacity:.8}
+#timer .acts{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex:1 1 auto;min-width:0}
+#timer .acts .btn{padding-top:11px;padding-bottom:11px}   /* sweaty hands, mid-set */
+#timer .acts .adj{padding-inline:9px;gap:2px}
+#timer .acts .btn.plain{background:var(--surface-2);color:var(--label)}
+#timer .acts .btn.plain:active{background:var(--surface-3)}
+#timer .acts .btn{flex:none}
+#timer .acts .skip{min-width:min(70px,100%);flex:0 1 auto}
+#timer .acts .skip > span{display:grid;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Skip and Dismiss stacked in one cell, the one not in use hidden, so the button keeps one width
+   between counting and Ready; so does the pause slot, kept invisible once the rest is over. */
+#timer .acts .skip > span > span{grid-area:1/1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+#timer .acts .skip .off,#timer .acts .pause-slot{visibility:hidden}
+/* Hidden copies of both labels, at their natural width, that RestTimer measures to decide
+   whether Skip shows its label or only its icon (skip-forward, or × once Ready). */
+#timer .acts .skip{position:relative}
+#timer .acts .skip > .skip-probe{position:absolute;inset-inline-start:0;top:0;visibility:hidden;pointer-events:none;display:block;overflow:visible;width:max-content}
+#timer .acts .skip > .skip-probe > span{display:block;width:max-content;white-space:nowrap}
+#timer .acts .skip.icon-only{min-width:0}
 /* A paused rest reads as held: the clock and the bar step back until it runs again. */
 #timer.rest.paused .t,#timer.rest.paused .bar{opacity:.5}
 /* work timer (issue #16): the same bar doing the opposite job — outlined and tinted so a
    glance tells "you are holding this" apart from "you are recovering". */
-#timer.working{border:var(--hair) solid var(--acc)}
+#timer.working{box-shadow:inset 0 0 0 var(--hair) var(--acc),0 12px 34px -8px rgba(0,0,0,.55)}
 #timer.working .t{color:var(--acc)}
-#timer.working .grow{flex:1;min-width:0}
 /* The label is the exercise name, handed in already cased (exerciseNameText): a capitalize here
    would title-case German's own casing too. */
-#timer.working .lbl{
-  font-size:12px;color:var(--label-2);margin-bottom:5px;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+#timer.working .lbl{display:block}
+/* A hold's label is the exercise name, so there the clock side takes the room and its two
+   buttons keep theirs; the time itself still never shrinks (the label adds no minimum). */
+#timer.working .tclock{flex:1 1 0;min-width:auto}
+#timer.working .acts{flex:none}
+/* Docked on the workout screen: edge to edge, flush with the bottom, the home indicator's inset
+   inside it. */
+body.no-tabbar #timer{
+  inset-inline-start:0;inset-inline-end:0;bottom:0;
+  border-radius:var(--r-xl) var(--r-xl) 0 0;padding:14px 14px calc(10px + var(--sab));
+  box-shadow:0 -10px 30px -14px rgba(0,0,0,.55);
+}
+body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10px 30px -14px rgba(0,0,0,.55)}
+@media (max-width:399px){
+  #timer .acts{gap:4px}
+  #timer .acts .adj{padding-inline:6px;gap:1px}
+  #timer .acts .pause,#timer .acts .pause-slot{padding-inline:10px}
+  #timer .acts .skip{padding-inline:10px}
+}
+@media (max-width:359px){
+  body.no-tabbar #timer,#timer{padding-inline:10px}
+  #timer .t{font-size:25px}
+  #timer .acts .skip{min-width:0}
 }
 
 /* ---------------------------------------------------------------- modal -- */
@@ -1340,12 +1534,6 @@ body.chips-dragging *{cursor:inherit}
   font-variant-numeric:tabular-nums;text-align:center;cursor:text;
   -moz-appearance:textfield;appearance:textfield;
 }
-.bwin{display:flex;align-items:baseline;justify-content:center;gap:7px;margin:16px 0}
-.bwin input{
-  width:150px;background:none;border:none;outline:none;text-align: end;
-  font-size:52px;font-weight:600;letter-spacing:-.035em;color:var(--label);
-}
-.bwin span{color:var(--label-2);font-size:19px}
 
 /* --------------------------------------------------------------- charts -- */
 .chart{width:100%;overflow:hidden}
@@ -1466,6 +1654,14 @@ body.chips-dragging *{cursor:inherit}
   width:max-content;max-width:88vw;text-align:center;
 }
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* With an action (Undo): the message, then the button at the end, and the toast takes taps. */
+#toast.has-action{pointer-events:auto;display:flex;align-items:center;gap:6px;padding:4px 6px 4px 18px;text-align:start}
+#toast.has-action .toast-msg{flex:1;min-width:0;padding:7px 0}
+#toast .toast-act{flex:none;display:inline-flex;align-items:center;gap:5px;color:var(--acc);font-weight:700;padding:8px 12px;border-radius:14px;min-height:36px}
+#toast .toast-act:active{background:color-mix(in srgb,var(--label) 10%,transparent)}
+#toast .toast-act .icn{font-size:16px}
+body.no-tabbar #toast{bottom:calc(24px + var(--sab))}
+body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 
 /* ---------------------------------------------------------------- misc --- */
 .empty{text-align:center;color:var(--label-2);padding:44px 20px;font-size:15px;line-height:1.45}
@@ -1498,7 +1694,18 @@ body.chips-dragging *{cursor:inherit}
 .swatches{display:flex;gap:12px;flex-wrap:wrap}
 .swatch{width:32px;height:32px;border-radius:50%;flex:none;position:relative;transition:transform var(--fast)}
 .swatch:active{transform:scale(.9)}
-.swatch.on::after{content:'';position:absolute;inset:-4px;border-radius:50%;box-shadow:0 0 0 2px var(--label)}
+/* The ring takes no taps: over the own colour it lay on the colour input, so the picker never opened. */
+.swatch.on::after{content:'';position:absolute;inset:-4px;border-radius:50%;box-shadow:0 0 0 2px var(--label);pointer-events:none}
+/* The user's own colour (Settings → Accent color): a rainbow ring until there is one, then filled
+   with it. The native colour input lies over it, invisible, so the tap lands on the input itself. */
+.swatch-own{display:inline-flex;align-items:center;justify-content:center;font-size:15px;--icon-stroke:2.4}
+.swatch-own.unset{
+  background:radial-gradient(circle,var(--surface) 0 52%,transparent 54%),
+    conic-gradient(#ff453a,#ff9f0a,#ffd60a,#30d158,#40c8e0,#0a84ff,#bf5af2,#ff375f,#ff453a);
+  color:var(--label-2);
+}
+.swatch-input{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;padding:0;margin:0;border-radius:50%;cursor:pointer;-webkit-appearance:none;appearance:none}
+.swatch-note{margin-top:-4px}
 
 /* --- supersets --- */
 .ss-label{
@@ -1601,7 +1808,9 @@ body.chips-dragging *{cursor:inherit}
 @media (min-width:1000px){
   #app{max-width:1080px;padding-top:calc(var(--conn) + 32px);padding-bottom:calc(128px + var(--sab))}
   .conn-row{max-width:640px}   /* the width of the .narrow pages below it */
-  body.resting #app{padding-bottom:calc(250px + var(--sab))}
+  body.resting #app{padding-bottom:calc(220px + var(--sab))}
+  body.no-tabbar #app{padding-bottom:calc(40px + var(--sab))}
+  body.no-tabbar.resting #app{padding-bottom:calc(130px + var(--sab))}
   .workout-end-spacer{height:40px}
   .cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
   .cols>*{min-width:0}
@@ -1624,9 +1833,7 @@ body.chips-dragging *{cursor:inherit}
   .sheet{left:50%;right:auto;margin-left:-320px;width:640px;border-radius:var(--r-xl) var(--r-xl) 0 0}
   .center{width:340px}
   #timer{left:50%;right:auto;margin-left:-260px;width:520px;bottom:112px}
-  /* 520px fits the clock, the bar and all three controls on one line again */
-  #timer.rest{flex-direction:row;align-items:center;gap:14px}
-  #timer.rest .head{flex:1;min-width:0}
+  body.no-tabbar #timer{left:50%;right:auto;bottom:16px;border-radius:var(--r-xl);padding-bottom:10px;box-shadow:0 12px 40px -10px rgba(0,0,0,.5)}
   .exmedia img,.exmedia video{height:380px}
   .hm-wrap{display:flex;flex-direction:column;align-items:center}
 }
@@ -1682,23 +1889,127 @@ body.chips-dragging *{cursor:inherit}
 .cam-wrap{position:relative;width:100%;aspect-ratio:3/4;max-height:58vh;border-radius:var(--r-lg);overflow:hidden;background:#000}
 .cam-wrap video{width:100%;height:100%;object-fit:cover;display:block}
 .cam-frame{position:absolute;inset:0;margin:auto;width:62%;aspect-ratio:1;border:2px dashed rgba(255,255,255,.75);border-radius:14px;pointer-events:none}
-/* ------------------------------------------------- the Coach entry on Plan -- */
-.coach-cta{
-  display:flex;align-items:center;gap:13px;width:100%;text-align: start;
-  margin-bottom:12px;padding:14px 16px;border-radius:var(--r-card);
-  background:linear-gradient(135deg,var(--acc-soft),color-mix(in srgb,var(--acc) 6%,var(--surface)));
-  border:1px solid color-mix(in srgb,var(--acc) 35%,transparent);
-  transition:transform var(--fast),filter var(--fast)
+/* ---------------------------------------------------------------- Plan -- */
+/* Schedule | Routines (views/Plan.jsx). A settings-like page, one column at every width. */
+.plan-views{margin-bottom:18px}
+.plan-views button{min-height:34px;font-size:15px}
+.plan .plan-mode .lrow-t{white-space:nowrap}
+/* The control takes the rest of the row when it fits, and a full line of its own when it does
+   not, rather than squeezing "Fixed Week" onto two lines. */
+.plan-mode .seg-inline{flex:1 1 200px;min-width:0}
+.plan-mode .seg-inline button{white-space:nowrap}
+.plan-mode-locked{margin-inline-start:auto;text-align:end}
+.plan-sec-h{margin:22px 0 8px;gap:8px;flex-wrap:wrap}
+/* Long words (German "Hinzufügen") push the loop's buttons off a 320 px screen; they drop
+   to their own line instead and stay on the trailing edge. */
+.plan-sec-h>.plan-sec-acts{margin-inline-start:auto}
+.plan-sec-h h4.sec{margin:0}
+.plan-routines-bar{margin-top:0}
+.plan-textbtn{color:var(--acc);font-size:16px;padding:6px 4px;position:relative}
+.plan-textbtn::before{content:'';position:absolute;inset:-6px}
+.plan .sect-f{margin:0 0 4px}
+.plan .list+.sect-f{padding-top:8px}
+/* a weekday: short day name, the routine's glyph (a moon on a rest day), what is on it */
+.plan-day-n{min-width:30px;flex:none;white-space:nowrap;font-size:15px;font-weight:600;color:var(--label-2)}
+.plan-day-n.today{color:var(--acc)}
+/* Arabic names the whole day: one column wide enough for the longest keeps the glyphs aligned */
+[dir="rtl"] .plan-day-n{min-width:88px}
+.item .lrow-i.rest{background:var(--surface-3);color:var(--label-2)}
+/* the loop: a numbered position, lit when up next, a tick once done this round */
+.plan-order{
+  width:24px;height:24px;border-radius:50%;flex:none;display:grid;place-items:center;
+  font-size:13px;font-weight:600;color:var(--label-2);background:var(--surface-3);--icon-stroke:2.6;
 }
-.coach-cta:active{transform:scale(.985);filter:brightness(1.06)}
-.coach-cta-av{
-  width:42px;height:42px;border-radius:13px;flex:none;display:grid;place-items:center;font-size:21px;
-  background:var(--acc);color:var(--on-acc);box-shadow:0 6px 18px -6px color-mix(in srgb,var(--acc) 60%,transparent)
+.plan-order.next{background:var(--acc);color:var(--on-acc)}
+.rotation-row.is-done .tt{color:var(--label-2)}
+/* Edit mode, as on an iPhone: a red minus at the start, a handle at the end */
+.plan-minus{
+  width:24px;height:24px;border-radius:50%;flex:none;display:grid;place-items:center;
+  background:var(--red);color:#fff;font-size:14px;--icon-stroke:2.6;position:relative;
 }
-.coach-cta-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
-.coach-cta-t b{font-size:17px;font-weight:600;letter-spacing:-.015em;color:var(--label)}
-.coach-cta-t span{font-size:13px;color:var(--label-2);line-height:1.35}
-.coach-cta-chev{color:var(--acc);font-size:15px;flex:none}
+.plan-minus::before{content:'';position:absolute;inset:-10px}
+.plan-handle{
+  flex:none;align-self:stretch;display:flex;align-items:center;padding:0 6px;margin:-10px -6px -10px 0;
+  color:var(--label-3);font-size:18px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;
+}
+.plan-handle:active{cursor:grabbing;color:var(--label-2)}
+.plan [data-reorder-row]{transition:transform var(--fast) var(--ease)}
+.plan-link{margin-top:24px}
+.plan-empty{padding:28px 20px}
+/* Stats: the card Plan links to clears the sticky banners when it is scrolled to */
+#weekly-volume{scroll-margin-top:calc(var(--sat) + var(--conn) + 96px)}
+
+/* ------------------------------------------------- duration wheel picker -- */
+/* components/DurationWheel.jsx: two scroll-snap wheels under one highlight band. --dw-item is
+   WHEEL_ITEM there. The band sits behind the rows; the rows fade and lean back toward the edges
+   (painted from JS while scrolling), and the mask softens the top and bottom rows further. */
+.dw{--dw-item:40px;position:relative;display:flex;justify-content:center;height:calc(var(--dw-item) * 5);
+  margin:4px auto 16px;max-width:320px;user-select:none;-webkit-user-select:none;touch-action:pan-y}
+.dw-band{position:absolute;inset-inline:6px;top:calc(var(--dw-item) * 2);height:var(--dw-item);border-radius:10px;
+  background:color-mix(in srgb,var(--label) 10%,transparent);pointer-events:none}
+.dw-col{position:relative;flex:1;min-width:0;outline:none;border-radius:10px}
+.dw-col:focus-visible::after{content:'';position:absolute;inset-inline:8px;top:calc(var(--dw-item) * 2);height:var(--dw-item);
+  border-radius:10px;box-shadow:0 0 0 2px var(--acc);pointer-events:none}
+.dw-scroll{height:100%;overflow-y:scroll;overflow-x:hidden;scroll-snap-type:y mandatory;overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;perspective:420px;
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 34%,#000 66%,transparent 100%);
+  mask-image:linear-gradient(to bottom,transparent 0,#000 34%,#000 66%,transparent 100%)}
+.dw-scroll::-webkit-scrollbar{display:none}
+.dw-pad{height:calc(var(--dw-item) * 2)}
+.dw-it{height:var(--dw-item);scroll-snap-align:center;display:flex;align-items:center;justify-content:flex-end;
+  padding-inline-end:calc(50% + 2px);font-size:22px;font-variant-numeric:tabular-nums;color:var(--label-2);
+  cursor:pointer;transform-origin:50% 50%;will-change:transform,opacity}
+.dw-it.on{color:var(--label);font-weight:600}
+.dw-it.out{color:var(--label-4)}
+.dw-unit{position:absolute;top:calc(var(--dw-item) * 2);height:var(--dw-item);display:flex;align-items:center;
+  inset-inline-start:calc(50% + 8px);font-size:17px;font-weight:600;color:var(--label);pointer-events:none}
+.dw-read{text-align:center;font-size:34px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin:-4px 0 2px}
+.dw-foot{text-align:center;margin:-6px 0 14px;line-height:1.4}
+@media (hover:hover){.dw-it:hover{color:var(--label)}}
+
+/* ------------------------------------------------------- Settings (v1.3.11) -- */
+/* A sub-page's nav bar: the back button names where it goes, the title sits in the middle.
+   The back column is at least as wide as its label ("Einstellungen" stays whole), and the two
+   side columns share what is left equally, so the title is centred whenever it can be and moves
+   over when the label needs the room. Only a label past half the screen is cut. */
+.sp-nav{display:grid;grid-template-columns:minmax(max-content,1fr) minmax(0,max-content) minmax(0,1fr);align-items:center;column-gap:6px;
+  min-height:44px;margin:4px -6px 10px}
+.sp-back{display:inline-flex;align-items:center;gap:2px;color:var(--acc);font-size:17px;padding:6px;border-radius:10px;
+  min-width:0;max-width:50vw;justify-self:start}
+.sp-back span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sp-back .icn{font-size:22px;--icon-stroke:2.2;flex:none}
+/* A long title ("Alertas do temporizador", "Megjelenés és Kezdőlap") takes a second line rather
+   than lose its end to an ellipsis next to a whole back label. */
+.sp-title{text-align:center;font-weight:600;font-size:17px;line-height:1.2;margin:0;overflow:hidden;overflow-wrap:anywhere;-webkit-hyphens:auto;hyphens:auto;
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;text-wrap:balance}
+.sp-root-title{font-size:34px;line-height:1.06;font-weight:700;letter-spacing:-.028em;margin:2px 0 10px}
+@media (max-width:420px){.sp-root-title{font-size:30px}}
+.sp-search{margin-bottom:18px}
+/* the account card on top of the root: a big round avatar, the name, one line under it */
+.lrow.sp-acct{padding-block:12px;gap:14px}
+.sp-avatar{width:56px;height:56px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:30px;
+  background:linear-gradient(160deg,var(--surface-3),var(--surface-2));color:var(--label-2)}
+.sp-acct .lrow-t{font-size:19px;font-weight:600}
+.sp-avatar.on{background:var(--acc-soft);color:var(--acc);font-size:24px;font-weight:700}
+.sp-version{text-align:center;margin-top:4px;line-height:1.6}
+/* The root rows' previews ("2:00 de descanso · Tarjetas", "Som · Vibração") are two or three facts, and a
+   one-line ellipsis cut all but the first. They wrap instead, up to three lines, and never below
+   their longest word (min-content, since overflow:hidden would make auto mean 0). On the narrowest phones there is no room beside
+   the title at all, so the preview moves under it, like a subtitle. */
+.lrow.sp-root-row .lrow-v{white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;line-clamp:3;
+  min-width:min-content;max-width:62%;line-height:1.25;text-wrap:balance}
+@media (max-width:360px){
+  .lrow.sp-root-row:has(.lrow-v){display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;column-gap:12px;row-gap:1px}
+  .lrow.sp-root-row:has(.lrow-v) .lrow-i{grid-column:1;grid-row:1 / span 2}
+  .lrow.sp-root-row:has(.lrow-v) .lrow-m{grid-column:2;grid-row:1}
+  .lrow.sp-root-row .lrow-v{grid-column:2;grid-row:2;min-width:0;max-width:none;text-align:start;font-size:15px;-webkit-line-clamp:2;line-clamp:2}
+  .lrow.sp-root-row:has(.lrow-v) .lrow-c{grid-column:3;grid-row:1 / span 2}
+}
+.lrow.dis .lrow-i,.lrow.dis .lrow-t,.lrow.dis .sw{opacity:.45}
+/* a row a search result jumped to: a short accent wash that fades out */
+.lrow.sp-flash,.btn.sp-flash{animation:spflash 1.8s ease}
+@keyframes spflash{0%,45%{background:var(--acc-soft)}100%{background:transparent}}
+.sp-empty{color:var(--label-2);text-align:center;padding:28px 12px;line-height:1.4}
 
 /* ----------------------------------------------------------- RTL (Arabic) -- */
 /* Directional icons flip: back chevrons point right, trailing chevrons point left. */

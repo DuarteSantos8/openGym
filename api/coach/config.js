@@ -220,7 +220,7 @@ export function clearProfileAuth(uid) {
 /* ---------- which credential pays for this job ---------- */
 
 export const SHARED_ACCOUNT_REFUSAL =
-  'This instance is configured with a single shared account — ask your admin to enable per-profile sign-in.';
+  'This instance is configured with a single shared account. Ask your admin to enable per-profile sign-in.';
 
 /**
  * Resolve the credential for one profile, or say why there isn't one. Never throws and never

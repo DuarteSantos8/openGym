@@ -151,7 +151,7 @@ describe('coach-demo — the starter plan', () => {
     expect(think(() => demoPlan(state(), null)).bundle.basedOn)
       .toBe('Based on the training already in this demo profile.')
     expect(think(() => demoPlan(state({ workouts: [] }), null)).bundle.basedOn)
-      .toBe('No training history yet — starting conservatively.')
+      .toBe('No training history yet, so starting conservatively.')
   })
 
   it('stamps the plan hash of the state it was built from, so the app can spot a stale one', () => {
@@ -260,7 +260,7 @@ describe('coach-demo — the review', () => {
     try { demoReview(S) } catch (e) { err = e }
     expect(err.status).toBe(409)
     expect(err.code).toBe('noroutine')
-    expect(err.message).toBe('There is no routine to review yet — build one with at least two exercises first.')
+    expect(err.message).toBe('There’s no routine to review yet. Build one with at least two exercises first.')
     expect(demoStatus().job).toBe(null)
     vi.advanceTimersByTime(DELAY)
     expect(demoStatus().pending).toBe(null)
@@ -273,7 +273,7 @@ describe('coach-demo — the debrief', () => {
     try { demoDebrief(state({ workouts: [] })) } catch (e) { err = e }
     expect(err.status).toBe(409)
     expect(err.code).toBe('noworkout')
-    expect(err.message).toBe('There is no workout to look at yet — log one first.')
+    expect(err.message).toBe('There’s no workout to look at yet. Log one first.')
     expect(demoStatus().job).toBe(null)
   })
 
@@ -299,7 +299,7 @@ describe('coach-demo — the debrief', () => {
     w.entries[0].sets.unshift({ done: true, w: 20, r: 10, phase: 'warmup' })
     const p = think(() => demoDebrief(state({ workouts: [w] })))
     expect(p.workout.sets).toBe(3)                                   // 4 rows logged, 3 of them work
-    expect(p.highlights[0]).toBe('Every planned set done — 3 of 3.')
+    expect(p.highlights[0]).toBe('Every planned set done: 3 of 3.')
     expect(p.workout.vol).toBe(3 * 60 * 8)                           // the 20×10 warm-up is not in it
   })
 
@@ -311,7 +311,7 @@ describe('coach-demo — the debrief', () => {
   it('warns about the clock only past eighty minutes, and about missing effort otherwise', () => {
     const long = workout({ start: NOW - 864e5, end: NOW - 864e5 + 81 * 60e3 })
     expect(think(() => demoDebrief(state({ workouts: [long] }))).watch)
-      .toEqual(['81 minutes is long — rest periods may be creeping up.'])
+      .toEqual(['81 minutes is long. Rest periods may be creeping up.'])
     expect(think(() => demoDebrief(state({ workouts: [workout()] }))).watch[0])
       .toMatch(/^Top sets logged without an effort rating/)
   })

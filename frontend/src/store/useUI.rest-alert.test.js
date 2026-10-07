@@ -52,7 +52,7 @@ describe('the local rest-over alert follows the Push switch', () => {
     await runOut()
     expect(showNotification).toHaveBeenCalledTimes(1)
     const [title, opts] = showNotification.mock.calls[0]
-    expect(title).toBe('Rest over — next set!')
+    expect(title).toBe('Rest’s over. Next set!')
     expect(opts.tag).toBe('rest-timer')
     expect(opts.body).toBeUndefined()
   })

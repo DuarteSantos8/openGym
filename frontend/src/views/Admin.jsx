@@ -98,7 +98,7 @@ function UserDetail({ id, onChanged, close }) {
       {/* The sign-in e-mail (password instances only): shown to admins and nobody else. */}
       {u.email && <span className="adm-pill" title="sign-in e-mail">{u.email}</span>}
       {u.resetUntil && <span className="adm-pill acc">reset code until {new Date(u.resetUntil).toLocaleString()}</span>}
-      <span className="adm-pill">joined {u.created ? fmtDate(u.created.slice(0, 10)) : '—'}</span>
+      <span className="adm-pill">joined {u.created ? fmtDate(u.created.slice(0, 10)) : '–'}</span>
     </div>
     <div className="tiles" style={{ textAlign: 'start' }}>
       <div className="tile"><div className="l">Workouts</div><div className="v" style={{ fontSize: '1.1rem' }}>{workouts.length}</div></div>
@@ -123,7 +123,7 @@ function UserDetail({ id, onChanged, close }) {
           danger: true,
           onConfirm: () => confirmSheet({
             title: 'Delete ' + u.name + ' for good?',
-            message: 'Last chance — there is no undo and no backup of this on the server.',
+            message: 'Last chance. There’s no undo and no backup of this on the server.',
             confirmText: 'Delete account',
             danger: true,
             onConfirm: doDelete,
@@ -135,7 +135,7 @@ function UserDetail({ id, onChanged, close }) {
         <button className="btn" style={{ margin: '14px 0 4px' }} onClick={resetPassword}>Reset password</button>
         <div className="adm-hint">{u.password
           ? 'For a forgotten password: a one-time code lets them choose a new one. Their current password stops working at once.'
-          : 'No password yet. A one-time code lets them set one — the way back in after losing their only passkey.'}</div>
+          : 'No password yet. A one-time code lets them set one. That’s the way back in after losing their only passkey.'}</div>
       </>}
     </>}
     <h4 className="sec">Workout history</h4>
@@ -169,14 +169,14 @@ function InvitesCard({ invites, reload, inviteOnly }) {
     <div className="adm-lead">
       {inviteOnly
         ? 'Sign-up is invite-only: someone needs one of these codes to create a profile. Each code works once.'
-        : 'Sign-up is open, so codes are optional here — they only record who invited whom.'}
+        : 'Sign-up is open, so codes are optional here. They only record who invited whom.'}
     </div>
     {open.length ? <>
       <div className="adm-group-t">Unused · tap to copy</div>
       {open.map(i => <div key={i.code} className="row between" style={{ padding: '6px 0', borderBottom: 'var(--hair) solid var(--sep)' }}>
         <button className="adm-code" onClick={() => copy(i.code)} aria-label={'copy ' + i.code}>{i.code}</button>
         <div className="row" style={{ gap: 4 }}>
-          <button className="iconbtn adm-iconbtn" onClick={() => copy(i.code)} aria-label="copy"><Icon name="clipboard" /></button>
+          <button className="iconbtn adm-iconbtn" onClick={() => copy(i.code)} aria-label="copy"><Icon name="copy" /></button>
           <button className="iconbtn adm-iconbtn" style={{ color: 'var(--red)' }} onClick={() => revoke(i.code)} aria-label="revoke"><Icon name="trash" /></button>
         </div>
       </div>)}
@@ -282,7 +282,7 @@ export default function Admin() {
 
   return <div className="narrow">
     <div className="hdr">
-      <button className="iconbtn" onClick={() => nav('/settings')} aria-label="Back"><Icon name="chevronLeft" /></button>
+      <button className="iconbtn" onClick={() => nav('/settings/account')} aria-label="Back"><Icon name="chevronLeft" /></button>
       <div style={{ flex: 1, marginInlineStart: 8 }}><h1 style={{ margin: 0 }}>Admin</h1>
         <div className="sub">{users ? users.length + ' users · ' + activeCount + ' active this week' : usersErr ? 'Could not load' : 'Loading…'}</div></div>
       <button className="iconbtn" onClick={() => { loadUsers(); loadInvites(); setTick(n => n + 1) }} aria-label="refresh">↻</button>
@@ -300,10 +300,10 @@ export default function Admin() {
     </div>}
 
     <div className="tiles" style={{ marginBottom: 12 }}>
-      <div className="tile"><div className="l">Users</div><div className="v">{users ? users.length : '—'}</div></div>
-      <div className="tile"><div className="l">Training now</div><div className="v" style={{ color: liveUsers.length ? 'var(--acc)' : undefined }}>{users ? liveUsers.length : '—'}</div></div>
-      <div className="tile"><div className="l">Active 7 days</div><div className="v">{users ? activeCount : '—'}</div></div>
-      <div className="tile"><div className="l">Disabled</div><div className="v">{users ? disabledCount : '—'}</div></div>
+      <div className="tile"><div className="l">Users</div><div className="v">{users ? users.length : '–'}</div></div>
+      <div className="tile"><div className="l">Training now</div><div className="v" style={{ color: liveUsers.length ? 'var(--acc)' : undefined }}>{users ? liveUsers.length : '–'}</div></div>
+      <div className="tile"><div className="l">Active 7 days</div><div className="v">{users ? activeCount : '–'}</div></div>
+      <div className="tile"><div className="l">Disabled</div><div className="v">{users ? disabledCount : '–'}</div></div>
     </div>
 
     {liveUsers.length > 0 && <div className="card" style={{ borderColor: 'var(--acc)' }}>

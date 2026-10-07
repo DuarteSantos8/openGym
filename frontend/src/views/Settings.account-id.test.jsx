@@ -79,7 +79,7 @@ afterEach(() => { act(() => { mounted.splice(0).forEach(({ root, host }) => { ro
 
 describe('Settings → Account ID', () => {
   it('a signed-in browser shows the id under Account, and a tap copies it', async () => {
-    const page = mount(<Settings />)
+    const page = mount(<Settings page="account" />)
     const row = idRow(section(page, 'Account'))
     expect(row).toBeTruthy()
     expect(row.querySelector('.acct-id').textContent).toBe(ID)
@@ -91,13 +91,13 @@ describe('Settings → Account ID', () => {
 
   it('a paired phone shows it in the Server & sync block', () => {
     mocks.MOBILE = true
-    const page = mount(<Settings />)
+    const page = mount(<Settings page="account" />)
     expect(idRow(section(page, 'Server & sync')).querySelector('.acct-id').textContent).toBe(ID)
   })
 
   it('a clipboard that refuses says nothing, and the id stays on screen', async () => {
     writeText.mockImplementation(() => Promise.reject(new Error('denied')))
-    const page = mount(<Settings />)
+    const page = mount(<Settings page="account" />)
     act(() => idRow(page).click())
     await tick()
     expect(mocks.toast).not.toHaveBeenCalled()
@@ -109,7 +109,7 @@ describe('Settings → Account ID', () => {
     const execCommand = vi.fn(() => true)
     Object.defineProperty(document, 'execCommand', { value: execCommand, configurable: true })
     try {
-      const page = mount(<Settings />)
+      const page = mount(<Settings page="account" />)
       act(() => idRow(page).click())
       await tick()
       expect(execCommand).toHaveBeenCalledWith('copy')
@@ -119,7 +119,7 @@ describe('Settings → Account ID', () => {
 
   it('a guest has no account and no id', () => {
     mocks.user = null
-    const page = mount(<Settings />)
+    const page = mount(<Settings page="account" />)
     expect(idRow(page)).toBeUndefined()
   })
 })

@@ -17,6 +17,16 @@ describe('matchLocale', () => {
     expect(matchLocale('')).toBe(null)
     expect(matchLocale(undefined)).toBe(null)
   })
+  it('reads the Traditional Chinese tags as zh-TW and the rest of Chinese as zh', () => {
+    expect(matchLocale('zh-TW')).toBe('zh-TW')
+    expect(matchLocale('zh-Hant')).toBe('zh-TW')
+    expect(matchLocale('zh-Hant-TW')).toBe('zh-TW')
+    expect(matchLocale('zh-HK')).toBe('zh-TW')
+    expect(matchLocale('zh-MO')).toBe('zh-TW')
+    expect(matchLocale('zh-CN')).toBe('zh')
+    expect(matchLocale('zh-Hans-CN')).toBe('zh')
+    expect(matchLocale('zh')).toBe('zh')
+  })
 })
 
 describe('autoLang', () => {

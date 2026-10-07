@@ -287,7 +287,7 @@ test('the hourly budget answers 429 with Retry-After, and is recorded once', asy
     assert.equal(r.status, 429);
     const retry = +r.headers.get('retry-after');
     assert.ok(retry > 3000 && retry <= 3600, `retry-after ${retry}`);
-    assert.deepEqual(await r.json(), { error: 'too many uploads — try again later', code: 'locked', retryAfter: retry });
+    assert.deepEqual(await r.json(), { error: 'too many uploads, try again later', code: 'locked', retryAfter: retry });
   }
   assert.equal((await h.put(M.jpeg(), { uid: U2 })).status, 201, 'per profile, not per instance');
   const audit = fs.readFileSync(path.join(h.dataDir, 'audit.log'), 'utf8').trim().split('\n').map(l => JSON.parse(l));
@@ -305,7 +305,7 @@ test('a third upload while two are in flight is refused as busy', async t => {
   const r = await h.put(M.jpeg());
   assert.equal(r.status, 429);
   assert.equal(r.headers.get('retry-after'), '5');
-  assert.deepEqual(await r.json(), { error: 'too many uploads at once — try again in a moment', code: 'busy', retryAfter: 5 });
+  assert.deepEqual(await r.json(), { error: 'too many uploads at once, try again in a moment', code: 'busy', retryAfter: 5 });
   a.req.destroy(); b.req.destroy();
   await sleep(150);
   assert.equal((await h.put(M.jpeg())).status, 201, 'the slots come back when the two go away');

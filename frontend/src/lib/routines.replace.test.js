@@ -118,7 +118,7 @@ describe('history after a replace', () => {
     // Not the bench's 65: the dumbbells have never been logged, so they open at the slot's own
     // sets × reps × weight, and say why.
     expect(work(db).map(s => [s.w, s.r])).toEqual([[60, 10], [60, 10]])
-    expect(db.plan.why[0]).toBe('Nothing logged yet — this session sets the baseline.')
+    expect(db.plan.why[0]).toBe('Nothing logged yet, so this session sets the baseline.')
     expect(lastEntryFor(st, DB_BENCH, 'A')).toBeNull()
 
     // The bench's sessions in this routine are still there if it comes back.
@@ -156,7 +156,7 @@ describe('history after a replace', () => {
     const [db] = buildCombinedEntries(st, ['A']).entries
     // Routine A's 3 × 8, at what the dumbbells were last lifted at — not the bench's 80.
     expect(work(db).map(s => [s.w, s.r])).toEqual([[32.5, 8], [32.5, 8], [32.5, 8]])
-    expect(db.plan.why[0]).toBe('First time in this routine — starting from its own target.')
+    expect(db.plan.why[0]).toBe('First time in this routine, so starting from its own target.')
   })
 
   it('carries on from the replacement\'s own history when the rep schemes match', () => {

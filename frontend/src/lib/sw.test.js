@@ -4,6 +4,7 @@
  * without having a working one to put there: its cache is what a home-screen app reopened
  * without a network comes back from. So an install that did not get the shell fails, and the
  * previous build's cache is swept only once this build's shell is in its own. */
+import { readFileSync } from 'node:fs'
 import { beforeEach, describe, expect, it } from 'vitest'
 
 class FakeCache {
@@ -157,5 +158,66 @@ describe('sw.js install and activate', () => {
 
     expect(await globalThis.caches.keys()).toEqual([CACHE])
     expect((await globalThis.caches.open(CACHE)).keys()).toContain('index.html')
+  })
+})
+
+// The push service rotates a subscription (expiry, a key change) and the worker re-registers it,
+// usually with no page open. It sent no device id, so the server's row lost it and the rest-timer
+// alert for that account went to every device until a page next booted. The page leaves the id
+// in a cache the worker can read (lib/push.js shareDeviceId).
+describe('sw.js re-registers a rotated push subscription with the page\'s device id', () => {
+  const rotated = {
+    endpoint: 'https://push.example/e2',
+    options: { applicationServerKey: new Uint8Array([1, 2, 3]).buffer },
+    toJSON: () => ({ endpoint: 'https://push.example/e2', keys: { p256dh: 'p2', auth: 'a2' } })
+  }
+  const rotate = async () => {
+    const sent = []
+    globalThis.fetch = async (url, init) => { sent.push([String(url), JSON.parse(init.body)]); return { ok: true, status: 200 } }
+    await fire('pushsubscriptionchange', { oldSubscription: { endpoint: 'https://push.example/e1', options: rotated.options }, newSubscription: rotated })
+    return sent
+  }
+  // The same cache name and key on both sides, read out of the two files, so the page and the
+  // worker cannot drift apart without this failing.
+  const constant = (src, name) => src.match(new RegExp('const ' + name + " = '([^']+)'"))?.[1]
+  const pageSrc = readFileSync(new URL('./push.js', import.meta.url), 'utf8')
+  const swSrc = readFileSync(new URL('../../public/sw.js', import.meta.url), 'utf8')
+  const DEVICE_CACHE = constant(pageSrc, 'DEVICE_CACHE')
+  const DEVICE_URL = constant(pageSrc, 'DEVICE_URL')
+
+  it('the page and the worker look in the same place', () => {
+    expect(DEVICE_CACHE).toBeTruthy()
+    expect(DEVICE_URL).toBeTruthy()
+    expect(constant(swSrc, 'DEVICE_CACHE')).toBe(DEVICE_CACHE)
+    expect(constant(swSrc, 'DEVICE_URL')).toBe(DEVICE_URL)
+  })
+
+  it('sends the device id the page left', async () => {
+    await loadSW()
+    await (await globalThis.caches.open(DEVICE_CACHE)).put(DEVICE_URL, new Response('dev1234abcd'))
+    expect(await rotate()).toEqual([['api/push/subscribe', {
+      subscription: { endpoint: 'https://push.example/e2', keys: { p256dh: 'p2', auth: 'a2' } },
+      deviceId: 'dev1234abcd'
+    }]])
+  })
+
+  it('with nothing left there, sends the subscription alone, as before', async () => {
+    await loadSW()
+    const sent = await rotate()
+    expect(sent).toHaveLength(1)
+    expect(sent[0][1]).toEqual({ subscription: { endpoint: 'https://push.example/e2', keys: { p256dh: 'p2', auth: 'a2' } } })
+  })
+
+  it('a new build\'s activate sweeps the old build\'s cache and keeps the device id', async () => {
+    await loadSW()
+    await previousBuild()
+    await (await globalThis.caches.open(DEVICE_CACHE)).put(DEVICE_URL, new Response('dev1234abcd'))
+    globalThis.fetch = async u => (String(u) === 'index.html'
+      ? { ok: true, status: 200, redirected: false, text: async () => shellHtml }
+      : { ok: true, status: 200, clone: () => ({}) })
+    await fire('install')
+    await fire('activate')
+    expect((await globalThis.caches.keys()).sort()).toEqual([CACHE, DEVICE_CACHE].sort())
+    expect(await (await (await globalThis.caches.open(DEVICE_CACHE)).match(DEVICE_URL)).text()).toBe('dev1234abcd')
   })
 })

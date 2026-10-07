@@ -1,6 +1,6 @@
 # Importing and exporting data
 
-Everything here lives in the app under **Settings → Data**, except plan sharing, which is on the
+Everything here lives in the app under **Settings → Data & backup**, except plan sharing, which is on the
 **Plan** screen.
 
 | You want to | Use |
@@ -13,7 +13,7 @@ Everything here lives in the app under **Settings → Data**, except plan sharin
 
 ## Workout history from another app
 
-Export a CSV from your old app, then pick it under **Settings → Data → Import from another app**.
+Export a CSV from your old app, then pick it under **Settings → Data & backup → Import from another app**.
 openGym matches exercise names against its library; anything it doesn't recognise becomes one of
 your own exercises, so nothing in the file is dropped. Days that already have a workout in openGym
 are left alone, so importing the same file twice never duplicates anything.
@@ -40,7 +40,7 @@ Other files work too, as long as they have a date, an exercise name and somethin
 With **Hevy Pro** you can skip the CSV:
 
 1. In Hevy, open [Settings → Developer](https://hevy.com/settings?developer) and create an API key.
-2. In openGym, go to **Settings → Data → Import from Hevy** and paste the key. It's used for this
+2. In openGym, go to **Settings → Data & backup → Import from Hevy** and paste the key. It's used for this
    import only and isn't saved.
 3. Choose workouts, routines, weigh-ins or any mix, then confirm.
 
@@ -80,7 +80,7 @@ library.
 - **Import backup** restores such a file and *replaces* everything currently in the app.
 - **Auto-backup on changes** (phone app only) saves a dated copy to `Documents/openGym` after each
   workout or routine edit and keeps the newest 14. Point a sync app at that folder to get them off
-  the phone.
+  the phone — or, on Android, choose the sync app's own folder under Settings → Data & backup → **Backup folder**.
 
 If you host openGym yourself, backing up the `./data` folder covers every profile at once; see
 [backups](SELF_HOSTING.md#6-backups).
