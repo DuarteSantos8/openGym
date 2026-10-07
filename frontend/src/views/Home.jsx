@@ -78,7 +78,7 @@ export default function Home() {
       <div className="row" style={{ gap: 9, marginBottom: 6 }}>
         <span className="lrow-i" style={{ background: 'var(--acc)' }}><Icon name="target" /></span>
         <div>
-          <div className="lbl2">{t('Benjamin\'s focus')}</div>
+          <div className="lbl2">{t('Your focus')}</div>
           <div className="ttl">{BEN_GOAL_SHORT}</div>
         </div>
       </div>
@@ -150,7 +150,7 @@ export default function Home() {
 
     <div className="card">
       <div className="row between" style={{ marginBottom: 8 }}>
-        <div><div className="lbl2">{t('Benjamin coach')}</div><h2 style={{ margin: '2px 0 0' }}>{t('What the data says')}</h2></div>
+        <div><div className="lbl2">{t('Coach')}</div><h2 style={{ margin: '2px 0 0' }}>{t('What the data says')}</h2></div>
         <Icon name="sparkles" style={{ color: 'var(--acc)' }} />
       </div>
       <div className="row" style={{ gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
