@@ -10,12 +10,17 @@ container, and requires no extra authentication. The LLM never sees passkeys, VA
 session secrets — it can only read the same `state-<uid>.json` files the openGym api already
 writes.
 
+An optional, opt-in Docker service adds the same tools over OAuth-authenticated Streamable HTTP
+for hosted clients (Claude, ChatGPT, Cursor …), plus write tools. Each remote connection only
+reaches the profile of the openGym user who approved it. See
+[`docs/MCP_REMOTE.md`](../docs/MCP_REMOTE.md).
+
 The numbers it answers with are computed by the **same pure functions the React UI uses**
 (`frontend/src/lib/*.js`) — `estimate1RM`, `loadOfWorkouts`, `effectiveRoutine`, etc. — so a
 "what's my bench 1RM?" answer matches the Stats screen exactly.
 
-> Phase 1 of a multi-phase plan. Read-only today; long-lived token auth + write tools are
-> planned but not shipped yet. See **Roadmap** below.
+> The stdio bridge is read-only. Write tools exist only in the opt-in remote mode, behind OAuth.
+> See **Roadmap** below.
 
 ## Quick start
 
@@ -105,7 +110,7 @@ top level) — split into `i18n-core.js` (pure, Node-safe) + `i18n.js` (Vite/Rea
 re-exports from core). `exercises.js` got a one-line `import.meta.env || {}` guard. No new
 dependencies landed in `frontend/`, no public exports changed.
 
-## Design constraints honoured
+## Design constraints honoured (stdio mode)
 
 - **One runtime dependency beyond the MCP SDK:** none. No database driver, no HTTP framework.
 - **No new container.** stdio transport is spawned by the LLM client; nothing to add to
@@ -114,6 +119,9 @@ dependencies landed in `frontend/`, no public exports changed.
   user's box. No passkey material, VAPID keys, or session secrets ever cross it.
 - **No telemetry, no network.** Reads `./data/*.json` and exits when the LLM client
   disconnects.
+
+The opt-in remote mode is the deliberate exception: a separate container, Express (already a
+dependency of the MCP SDK's HTTP transport) and its own OAuth state in `./data/mcp-oauth`.
 
 ## Tests
 
@@ -137,8 +145,10 @@ their own 92 tests in `frontend/src/lib/*.test.js`.
   admin dashboard (new `./data/tokens.json`) and a write-lock against the web UI's read-modify-
   write of `state-<uid>.json`. Tools: `log_workout`, `add_bodyweight`, `edit_routine`,
   `assign_weekday`, `override_day`.
-- **Phase 3:** Streamable HTTP transport, opt-in 4th container in `docker-compose.yml`. Same
-  tool implementations, second transport — the MCP SDK supports both behind one tool registration.
+- **Done (Phase 3):** Streamable HTTP transport, opt-in `mcp` container in `docker-compose.yml`
+  (`--profile mcp`). Same tool implementations, second transport. OAuth 2.1 + PKCE with consent
+  on the app's own passkey session instead of long-lived tokens; write tools share the API's
+  `_rev` compare-and-swap. See [`docs/MCP_REMOTE.md`](../docs/MCP_REMOTE.md).
 
 ## License
 
