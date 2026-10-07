@@ -1,33 +1,26 @@
 import { useNavigate } from 'react-router-dom'
-import { useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { effectiveRoutines, effectiveRoutineIds, nextTrainingDay, lastBW, setsDoneActive, setUnitsTotal } from '../lib/history.js'
 import { fmtNum, fmtDate, todayISO, isoOf, weekKey, weekStartOf, weekDayOffset, DAYS, DAYN, exCount } from '../lib/format.js'
 import { t, dateLocale } from '../lib/i18n.js'
-import { bwSheet, goalSheet, dayOverrideSheet, startFlow, startShortFlow, starterPlanSheet, bwDeltaColor } from '../sheets.jsx'
+import { bwSheet, goalSheet, dayOverrideSheet, starterPlanSheet, bwDeltaColor } from '../sheets.jsx'
 import AttentionRow from '../components/AttentionRow.jsx'
 import Icon from '../components/Icon.jsx'
-import { Button, Slider } from '../components/ui.jsx'
+import { Button } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { glyphOf } from '../lib/glyphs.js'
 import { BEN_PROFILE } from '../lib/ben-profile.js'
 import { bodyweightTrend, strengthRetention, exerciseAttention, alternativesFor, trainingSystem } from '../lib/ben-coach.js'
 
-// Home = what to do now + a quick glance. One action, one week view, two compact
-// trends, and at most one next-action message. Everything detailed lives where it
-// belongs: workout choice on the Start screen, full guidance and attention in
-// Stats, the schedule in Plan, the log in History.
+// Home = Today: a quick-reference dashboard, not a workout screen. One compact
+// card points at today's session with a Start shortcut into the Start section,
+// then the week, the weight trend and strength — each a widget opening its
+// detail elsewhere. Starting itself lives in Start.
 const WEEK_TARGET = BEN_PROFILE.frequency || 3
 
 export default function Home() {
   const nav = useNavigate()
   const S = useStore(s => s.S)
-  const update = useStore(s => s.update)
-  // The slider only stops at 15/25/35/45 — snap any stored value (e.g. 20/30/40
-  // produced while the slider snapped from zero instead of from min) back onto
-  // the grid so the knob, the label and the tick marks agree.
-  const snapLength = v => Math.min(45, Math.max(15, Math.round(((v ?? 35) - 15) / 10) * 10 + 15))
-  const [workoutLength, setWorkoutLength] = useState(() => snapLength(S.workoutLength))
 
   const today = new Date()
   const todayIso = todayISO()
@@ -41,6 +34,9 @@ export default function Home() {
   const bw = lastBW(S)
   const prevBW = S.bodyweight.length > 1 ? S.bodyweight[S.bodyweight.length - 2] : null
   const delta = bw && prevBW ? bw.w - prevBW.w : null
+  // The approximate length shown beside today's session follows the preference
+  // the Start screen's presets write.
+  const plannedMin = S.workoutLength || 35
 
   const ws = weekStartOf(S)
   const wkStart = new Date(today)
@@ -81,14 +77,9 @@ export default function Home() {
   const activeDone = S.active ? setsDoneActive(S.active) : 0
   const activeTotal = S.active ? setUnitsTotal(S.active.entries) : 0
 
-  const durationExerciseCount = minutes => !routine ? 0 : minutes <= 15 ? Math.min(3, routine.ex.length) : minutes <= 25 ? Math.min(4, routine.ex.length) : routine.ex.length
-  const startToday = () => {
-    const routineIds = effectiveRoutineIds(S, todayIso)
-    const count = durationExerciseCount(workoutLength)
-    if (!routine || routineIds.length !== 1 || count >= routine.ex.length) startFlow(routineIds)
-    else startShortFlow(routine.id, routine.ex.slice(0, count).map(e => e.id))
-  }
-  const onToday = () => { if (S.active) nav('/workout'); else if (todayRoutines.length) startToday(); else nav('/workout') }
+  // The row and the shortcut both open the Start section — Home never starts a
+  // session by itself. An active session still resumes where it is.
+  const onToday = () => { if (S.active) nav('/workout'); else nav('/start') }
 
   return <div className="narrow">
     <div className="hdr">
@@ -96,7 +87,7 @@ export default function Home() {
       <button className="iconbtn" onClick={() => nav('/settings')} aria-label={t('Settings')}><Icon name="gear" /></button>
     </div>
 
-    {/* One clear next action. Tapping the row and the primary button do the same thing. */}
+    {/* Today's workout at a glance. Compact by design — the Start section owns the launch. */}
     <div className="card">
       <div className="today-row" {...tappable(onToday)}>
         <div className="row" style={{ gap: 9, minWidth: 0 }}>
@@ -105,12 +96,12 @@ export default function Home() {
               style={doneToday && !S.active ? { color: 'var(--green)' } : undefined} />
           </span>
           <div style={{ minWidth: 0 }}>
-            <div className="lbl2">{S.active ? t('In progress') : doneToday ? t('Done for today') : routine ? t("Today's session") : t('Rest day')}</div>
+            <div className="lbl2">{S.active ? t('In progress') : doneToday ? t('Done for today') : routine ? t("Today's workout") : t('Rest day')}</div>
             <div className="ttl">{S.active ? S.active.name
               : doneToday ? (doneToday.name || t('Workout done'))
               : routine ? todayName : t('Recovery')}</div>
             {S.active && activeTotal > 0 && !editingSaved && <div className="ss">{t('{0} of {1} sets', activeDone, activeTotal)}</div>}
-            {!S.active && !doneToday && routine && <div className="ss">{exCount(todayExCount)}{todayOvr ? ' · ' + t('rescheduled') : ''}</div>}
+            {!S.active && !doneToday && routine && <div className="ss">{exCount(todayExCount)} · {t('about {0} min', plannedMin)}{todayOvr ? ' · ' + t('rescheduled') : ''}</div>}
             {!S.active && !doneToday && !routine && next && <div className="ss">{t('Next: {0}, {1}', t(DAYN[next.weekday]), next.routine.name)}</div>}
             {!S.active && !doneToday && !routine && !next && <div className="ss">{t('No sessions planned')}</div>}
             {!S.active && doneToday && <div className="ss">{wThisWeek >= WEEK_TARGET ? t('{0} of {1} this week — anything more is extra', wThisWeek, WEEK_TARGET) : t('{0} of {1} this week', wThisWeek, WEEK_TARGET)}</div>}
@@ -121,23 +112,14 @@ export default function Home() {
           : routine ? <span className="tag acc">{t('Start')}</span>
           : <Icon name="chevronRight" className="chev" />}
       </div>
-      {routine && !S.active && !doneToday && <div style={{ marginTop: 18 }}>
-        <div className="row between" style={{ marginBottom: 6 }}><div className="lbl2">{t('How much time do you have?')}</div><b>{workoutLength} min</b></div>
-        <Slider value={workoutLength} min={15} max={45} step={10} onChange={v => { setWorkoutLength(v); update(s => { s.workoutLength = v }) }} aria-label={t('Workout length')} />
-        <div className="row between small muted" style={{ marginTop: 2 }}><span>15 min</span><span>25 min</span><span>35 min</span><span>45 min</span></div>
-        <div className="small muted" style={{ marginTop: 8 }}>{durationExerciseCount(workoutLength)} exercises · approximate length</div>
-      </div>}
       <div className="hero-act">
         {S.active
           ? <Button variant="primary" icon={editingSaved ? 'pencil' : 'play'} onClick={() => nav('/workout')}>{editingSaved ? t('Open editor') : t('Resume workout')}</Button>
           : doneToday
-            ? <Button icon="plus" onClick={() => nav('/workout')}>{t('Log another workout')}</Button>
+            ? <Button icon="plus" onClick={() => nav('/start')}>{t('Log another workout')}</Button>
             : routine
-              ? <Button variant="primary" icon="play" onClick={startToday}>{t('Start {0}', todayName)}</Button>
-              : <Button icon="dumbbell" onClick={() => nav('/workout')}>{t('Browse workouts')}</Button>}
-        {/* One button per destination: the "All workouts" door only sits beside the primary
-            when the primary starts today's plan — everywhere else it would duplicate it. */}
-        {!S.active && !doneToday && routine && <Button variant="ghost" className="dim" onClick={() => nav('/workout')}>{t('All workouts')}</Button>}
+              ? <Button variant="primary" icon="play" onClick={() => nav('/start')}>{t('Start')}</Button>
+              : <Button icon="dumbbell" onClick={() => nav('/start')}>{t('Choose a workout')}</Button>}
       </div>
     </div>
 
@@ -163,7 +145,7 @@ export default function Home() {
         <span className="tag">{t('Low volume')}</span>
       </div>
       <div className="small muted" style={{ marginBottom: 10 }}>{t('The three main sessions are done. Use this only if you feel recovered and want a little extra work.')}</div>
-      <Button onClick={() => startFlow([training.optional.id])}>{t('Start optional session')}</Button>
+      <Button onClick={() => nav('/start')}>{t('Open in Start')}</Button>
     </div>}
 
     {!!S.routines.length && <div className="card">
@@ -178,7 +160,7 @@ export default function Home() {
       <div className="week">{strip}</div>
     </div>}
 
-    {/* Compact weight trend. Chart and full history live in Stats. */}
+    {/* Compact weight trend. Chart and full history live in Progress. */}
     {S.showWeightCard !== false && <div className="card">
       <div className="row between bw-head" style={{ marginBottom: 6 }}>
         <h2 style={{ margin: 0 }}>{t('Body weight')}</h2>
@@ -211,11 +193,11 @@ export default function Home() {
     </div>}
 
     {/* Compact strength status plus the one thing needing attention, if any.
-        Guidance, alternatives and the fix live in Stats. */}
+        Guidance, alternatives and the fix live in Progress. */}
     <div className="card">
       <div className="row between" style={{ marginBottom: 8 }}>
         <h2 style={{ margin: 0, fontSize: 17, color: 'var(--label)', fontWeight: 600 }}>{t('Strength')}</h2>
-        <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={() => nav('/stats')}>{t('Details')}</Button>
+        <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={() => nav('/progress')}>{t('Details')}</Button>
       </div>
       <div className="row" style={{ gap: 8, marginBottom: topAttention ? 8 : 0, flexWrap: 'wrap' }}>
         <span className="tag">
@@ -223,7 +205,7 @@ export default function Home() {
         </span>
         {benStrength.compared > 0 && <span className="tag">{t('{0} exercises compared', benStrength.compared)}</span>}
       </div>
-      {topAttention && <div {...tappable(() => nav('/stats'))}>
+      {topAttention && <div {...tappable(() => nav('/progress'))}>
         <div className="small dim" style={{ marginBottom: 5 }}>{t('Needs attention')}</div>
         <AttentionRow a={topAttention} altNames={alternativesFor(S, topAttention.id, { count: 1 }).map(x => x.name)} />
       </div>}

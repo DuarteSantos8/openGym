@@ -14,7 +14,7 @@ import { installViewportGuard } from './lib/viewport-guard.js'
 import { installChipDrag } from './lib/hchips.js'
 import { syncPushSubscription } from './lib/push.js'
 import { MOBILE } from './lib/mobile.js'
-import { exitWorkoutEdit, startFlow } from './sheets.jsx'
+import { exitWorkoutEdit } from './sheets.jsx'
 import Icon from './components/Icon.jsx'
 import TabBar from './components/TabBar.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
@@ -27,6 +27,7 @@ import { openDeviceLinkRedeem } from './components/Passkeys.jsx'
 import Login from './views/Login.jsx'
 import MobileOnboarding from './views/MobileOnboarding.jsx'
 import Home from './views/Home.jsx'
+import Start from './views/Start.jsx'
 import Plan from './views/Plan.jsx'
 import RoutineEdit from './views/RoutineEdit.jsx'
 import Workout from './views/Workout.jsx'
@@ -176,11 +177,16 @@ function Shell() {
             <Routes>
               <Route path="/home" element={<Home />} />
               <Route path="/test" element={<TestPage />} />
+              <Route path="/start" element={<Start />} />
               <Route path="/plan" element={<Plan />} />
               <Route path="/plan/r/:id" element={<RoutineEdit />} />
               <Route path="/workout" element={<Workout />} />
+              {/* Progress is the nav label; /stats stays as an alias so old
+                  deep links and in-app back buttons keep working. */}
+              <Route path="/progress" element={<Stats />} />
               <Route path="/stats" element={<Stats />} />
               <Route path="/history" element={<History />} />
+              {/* No main-navigation tab: reached from Start and the workout. */}
               <Route path="/library" element={<Library />} />
               <Route path="/structural-balance" element={<StructuralBalance />} />
               <Route path="/settings" element={<Settings />} />
@@ -202,7 +208,7 @@ function Shell() {
           including on the sign-in screen, when the server has just ended the session. */}
       <SyncBanner />
       {/* The chat owns the bottom of the screen: its composer sits where the tabs would be. */}
-      {loc.pathname !== '/coach' && <TabBar onStart={startFlow} />}
+      {loc.pathname !== '/coach' && <TabBar />}
       <RestTimer />
       <Modals />
       <Toast />
