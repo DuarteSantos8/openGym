@@ -142,6 +142,13 @@ This setting is absent from the web/PWA and Android builds.
 - **Workouts:** finished sessions are exported as strength training with their name, start
   and end time. Active or discarded sessions are not exported. This integration does not
   estimate energy expenditure or heart rate, and does not import workouts from Health.
+- **Deleting a workout:** confirming Delete workout also removes the matching session
+  exported by this app to Health when sync is enabled. Only that exact identifier, app
+  source and saved time range are eligible. Other apps' workouts and weigh-ins are never
+  selected. Failed deletions remain in a local queue for retry; restoring the record
+  before retry cancels the request. Logout, reset and backup restoration never infer
+  Health deletions from missing history. Previously removed sessions are not purged
+  retroactively.
 - **Timing:** sync runs after local changes and when the app returns to the foreground.
   **Sync Apple Health now** retries immediately. It does not promise execution while iOS
   has suspended the app.

@@ -126,4 +126,39 @@ public class HealthSyncPlugin: CAPPlugin {
         }
         health.execute(query)
     }
+    @objc func deleteWorkout(_ call: CAPPluginCall) {
+        guard HKHealthStore.isHealthDataAvailable() else { call.reject("Apple Health is unavailable"); return }
+        guard health.authorizationStatus(for: .workoutType()) == .sharingAuthorized else {
+            call.reject("Allow openGym to write workouts in Apple Health before deleting an exported workout"); return
+        }
+        guard let row = call.getObject("workout"), let target = HealthWorkoutDeletion(row) else {
+            call.reject("Invalid workout deletion request"); return
+        }
+        let own = HKQuery.predicateForObjects(from: .default())
+        let identifier = HKQuery.predicateForObjects(withMetadataKey: HKMetadataKeyExternalUUID, operatorType: .equalTo, value: target.externalID)
+        let predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [own, identifier])
+        let query = HKSampleQuery(sampleType: .workoutType(), predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { [weak self] _, samples, error in
+            guard let self = self else { call.reject("Health sync stopped"); return }
+            if let error = error { call.reject(error.localizedDescription); return }
+            let matches = (samples ?? []).compactMap { $0 as? HKWorkout }.filter {
+                target.matches(source: $0.sourceRevision.source.bundleIdentifier,
+                               appSource: Bundle.main.bundleIdentifier ?? "",
+                               externalID: $0.metadata?[HKMetadataKeyExternalUUID] as? String,
+                               start: $0.startDate, end: $0.endDate)
+            }
+            // Never broaden an empty match to a date range, another source or all workouts.
+            guard !matches.isEmpty else {
+                // Own samples remain readable when external workout reads are denied.
+                // An absent identifier is an idempotent no-op; a date mismatch is unresolved.
+                call.resolve(["deleted": 0, "confirmed": (samples ?? []).isEmpty]); return
+            }
+            self.health.delete(matches) { ok, error in
+                if let error = error { call.reject(error.localizedDescription); return }
+                guard ok else { call.reject("HealthKit did not delete the workout"); return }
+                call.resolve(["deleted": matches.count, "confirmed": true])
+            }
+        }
+        health.execute(query)
+    }
+
 }

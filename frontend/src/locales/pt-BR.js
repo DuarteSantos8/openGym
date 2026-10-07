@@ -4,6 +4,7 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  "The matching workout saved by openGym in Apple Health will also be deleted.": "O treino correspondente salvo pelo openGym no Saúde da Apple também será excluído.",
   "Sync with Apple Health": "Sincronizar com o Saúde da Apple",
   "Sync body weight both ways and save finished workouts to Health.": "Sincroniza o peso nos dois sentidos e salva os treinos concluídos no Saúde.",
   "Apple Health: {0}": "Saúde da Apple: {0}",

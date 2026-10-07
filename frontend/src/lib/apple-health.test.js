@@ -1,13 +1,13 @@
 // @vitest-environment happy-dom
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-const native = vi.hoisted(() => ({ available: vi.fn(), authorize: vi.fn(), readWeights: vi.fn(), writeWeights: vi.fn(), writeWorkouts: vi.fn() }))
+const native = vi.hoisted(() => ({ available: vi.fn(), authorize: vi.fn(), readWeights: vi.fn(), writeWeights: vi.fn(), writeWorkouts: vi.fn(), deleteWorkout: vi.fn() }))
 vi.mock('./mobile.js', () => ({ MOBILE: true }))
 vi.mock('@capacitor/core', () => ({
   Capacitor: { getPlatform: () => 'ios' },
   // Returning this proxy directly from an async helper would await its fake `then`.
   registerPlugin: () => new Proxy(native, { get: (target, key) => key in target ? target[key] : vi.fn() }),
 }))
-import { appleHealthAvailable, appleHealthEnabled, enableAppleHealth, disableAppleHealth, syncAppleHealth, latestHealthWeights, healthWeightPayload } from './apple-health.js'
+import { appleHealthAvailable, appleHealthEnabled, enableAppleHealth, disableAppleHealth, syncAppleHealth, latestHealthWeights, healthWeightPayload, queueAppleHealthWorkoutDeletion } from './apple-health.js'
 const date = '2026-10-07', time = Date.parse(`${date}T12:00:00`)
 function makeStore(unit = 'kg') {
   const state = { user: { id: 'a' }, sync: { server: 'https://one.example' }, S: { unit, bodyweight: [], workouts: [] } }
@@ -17,6 +17,7 @@ function makeStore(unit = 'kg') {
 beforeEach(() => {
   localStorage.clear(); disableAppleHealth(); vi.clearAllMocks()
   native.available.mockResolvedValue({ available: true }); native.authorize.mockResolvedValue({})
+  native.deleteWorkout.mockResolvedValue({ deleted: 1, confirmed: true })
   native.readWeights.mockResolvedValue({ weights: [] })
   native.writeWeights.mockImplementation(async ({ weights }) => ({ written: weights.length }))
   native.writeWorkouts.mockImplementation(async ({ workouts }) => ({ written: workouts.length }))
@@ -110,6 +111,87 @@ describe('Apple Health', () => {
     const payload = healthWeightPayload({ d: '2026-10-01', w: 80, t: time }, 'kg')
     expect(payload.timestamp).toBe(Date.parse('2026-10-01T12:00:00'))
     expect(payload.version).toBe(time)
+  })
+
+  const session = id => ({ id, start: time, end: time + 60000 })
+  async function exportedPair() {
+    const store = makeStore(); store.getState().S.workouts = [session('one'), session('two')]
+    await enableAppleHealth(store); await syncAppleHealth(store)
+    return store
+  }
+  function remove(store, id) {
+    const record = store.getState().S.workouts.find(w => w.id === id)
+    queueAppleHealthWorkoutDeletion(store, record)
+    store.getState().S.workouts = store.getState().S.workouts.filter(w => w.id !== id)
+  }
+  it('deletes exactly the selected exported workout, preserving other sessions', async () => {
+    const store = await exportedPair(); remove(store, 'one')
+    await syncAppleHealth(store); await syncAppleHealth(store)
+    expect(native.deleteWorkout).toHaveBeenCalledOnce()
+    expect(native.deleteWorkout).toHaveBeenCalledWith({ workout: session('one') })
+    expect(store.getState().S.workouts).toEqual([session('two')])
+  })
+  it('never infers deletions from logout, reset or missing history', async () => {
+    const store = await exportedPair(); store.getState().S.workouts = []
+    await syncAppleHealth(store)
+    expect(native.deleteWorkout).not.toHaveBeenCalled()
+  })
+  it('retries only the explicitly deleted session after a native failure', async () => {
+    const store = await exportedPair(); remove(store, 'one')
+    native.deleteWorkout.mockRejectedValueOnce(new Error('denied'))
+    await expect(syncAppleHealth(store)).rejects.toThrow('denied')
+    await syncAppleHealth(store)
+    expect(native.deleteWorkout.mock.calls.map(args => args[0].workout.id)).toEqual(['one', 'one'])
+  })
+  it('keeps an unconfirmed deletion pending', async () => {
+    const store = await exportedPair(); remove(store, 'one')
+    native.deleteWorkout.mockResolvedValueOnce({ deleted: 0, confirmed: false })
+    await expect(syncAppleHealth(store)).rejects.toThrow('could not be confirmed')
+    await syncAppleHealth(store)
+    expect(native.deleteWorkout).toHaveBeenCalledTimes(2)
+  })
+  it('keeps deletions on their original server and account', async () => {
+    const store = await exportedPair(); remove(store, 'one')
+    store.getState().sync.server = 'https://two.example'
+    await enableAppleHealth(store); await syncAppleHealth(store)
+    expect(native.deleteWorkout).not.toHaveBeenCalled()
+    store.getState().sync.server = 'https://one.example'
+    await enableAppleHealth(store); await syncAppleHealth(store)
+    expect(native.deleteWorkout).toHaveBeenCalledOnce()
+  })
+  it('cancels a pending deletion if the workout is restored before retry', async () => {
+    const store = await exportedPair(); remove(store, 'one')
+    store.getState().S.workouts.push(session('one'))
+    await syncAppleHealth(store)
+    store.getState().S.workouts = []
+    await syncAppleHealth(store)
+    expect(native.deleteWorkout).not.toHaveBeenCalled()
+  })
+  it('does not queue or execute native deletions when sync is disabled', async () => {
+    const store = await exportedPair(); disableAppleHealth()
+    expect(queueAppleHealthWorkoutDeletion(store, session('one'))).toBe(false)
+    remove(store, 'one'); await syncAppleHealth(store)
+    expect(native.deleteWorkout).not.toHaveBeenCalled()
+  })
+  it('finishes an in-flight export before deleting that same session', async () => {
+    const store = makeStore(); store.getState().S.workouts = [session('one')]
+    await enableAppleHealth(store)
+    let finish; native.writeWorkouts.mockImplementationOnce(() => new Promise(resolve => { finish = resolve }))
+    const syncing = syncAppleHealth(store)
+    await vi.waitFor(() => expect(finish).toBeTypeOf('function'))
+    remove(store, 'one'); finish({ written: 1 }); await syncing
+    expect(native.deleteWorkout).toHaveBeenCalledWith({ workout: session('one') })
+  })
+
+  it('persists each successful deletion even if the next pending deletion fails', async () => {
+    const store = await exportedPair(); remove(store, 'one'); remove(store, 'two')
+    native.deleteWorkout.mockResolvedValueOnce({ deleted: 1, confirmed: true }).mockRejectedValueOnce(new Error('denied'))
+    await expect(syncAppleHealth(store)).rejects.toThrow('denied')
+    expect(JSON.parse(localStorage.getItem('opengym_apple_health_written')).workouts).toEqual(['two'])
+    store.getState().S.workouts.push(session('one'))
+    await syncAppleHealth(store)
+    expect(native.deleteWorkout.mock.calls.map(args => args[0].workout.id)).toEqual(['one', 'two', 'two'])
+    expect(native.writeWorkouts.mock.calls.at(-1)[0].workouts[0].id).toBe('one')
   })
 
 })

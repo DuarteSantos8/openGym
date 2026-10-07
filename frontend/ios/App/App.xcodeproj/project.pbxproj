@@ -21,6 +21,7 @@
 		AB0200000000000000000002 /* HealthSyncPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0200000000000000000001 /* HealthSyncPlugin.swift */; };
 		AB0200000000000000000004 /* HealthSyncPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = AB0200000000000000000003 /* HealthSyncPlugin.m */; };
 		AB0200000000000000000006 /* AppBridgeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0200000000000000000005 /* AppBridgeViewController.swift */; };
+		AB020000000000000000000A /* HealthWorkoutDeletion.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0200000000000000000009 /* HealthWorkoutDeletion.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -43,6 +44,7 @@
 		AB0200000000000000000003 /* HealthSyncPlugin.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HealthSyncPlugin.m; sourceTree = "<group>"; };
 		AB0200000000000000000005 /* AppBridgeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppBridgeViewController.swift; sourceTree = "<group>"; };
 		AB0200000000000000000007 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
+		AB0200000000000000000009 /* HealthWorkoutDeletion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthWorkoutDeletion.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -89,6 +91,7 @@
 				50379B222058CBB4000EE86E /* capacitor.config.json */,
 				504EC3071FED79650016851F /* AppDelegate.swift */,
 				AA0000000000000000000001 /* SceneDelegate.swift */,
+				AB0200000000000000000009 /* HealthWorkoutDeletion.swift */,
 				AB0200000000000000000001 /* HealthSyncPlugin.swift */,
 				AB0200000000000000000003 /* HealthSyncPlugin.m */,
 				AB0200000000000000000005 /* AppBridgeViewController.swift */,
@@ -231,6 +234,7 @@
 			files = (
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
 				AA0000000000000000000002 /* SceneDelegate.swift in Sources */,
+				AB020000000000000000000A /* HealthWorkoutDeletion.swift in Sources */,
 				AB0200000000000000000002 /* HealthSyncPlugin.swift in Sources */,
 				AB0200000000000000000004 /* HealthSyncPlugin.m in Sources */,
 				AB0200000000000000000006 /* AppBridgeViewController.swift in Sources */,

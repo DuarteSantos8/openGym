@@ -2,6 +2,7 @@
 // to the server or copied into an exported openGym profile. HealthKit's own permission sheet
 // is the final authority for each read and write type.
 import { MOBILE } from './mobile.js'
+import { healthDeletionOwner, queueHealthWorkoutDeletion, flushHealthWorkoutDeletions } from './apple-health-deletions.js'
 import { convertBodyWeight } from './units.js'
 
 const KEY = 'opengym_apple_health_owner'
@@ -82,6 +83,11 @@ export function healthWeightPayload(entry, unit) {
 }
 const weightFingerprint = weight => `${weight.kg}:${weight.timestamp}:${weight.version}`
 
+export function queueAppleHealthWorkoutDeletion(store, workout) {
+  if (!appleHealthEnabled(store)) return false
+  return queueHealthWorkoutDeletion(healthDeletionOwner(store), workout)
+}
+
 export async function syncAppleHealth(store) {
   if (!appleHealthEnabled(store)) return { imported: 0, weights: 0, workouts: 0 }
   if (running) { await running; return syncAppleHealth(store) }
@@ -132,6 +138,19 @@ export async function syncAppleHealth(store) {
     if (!current()) return empty
     for (const weight of weights) ledger.weights[weight.date] = weightFingerprint(weight)
     for (const workout of workouts) writtenWorkouts.add(workout.id)
+    // Do this after exports: deleting while an export is in flight must still remove it.
+    ledger.workouts = [...writtenWorkouts]
+    const saveLedger = () => {
+      try { localStorage.setItem(LEDGER, JSON.stringify(ledger)) } catch { /* Native identifiers deduplicate retries. */ }
+    }
+    saveLedger()
+    const deleted = await flushHealthWorkoutDeletions(store, native, current, id => {
+      writtenWorkouts.delete(id)
+      ledger.workouts = [...writtenWorkouts]
+      saveLedger()
+    })
+    if (!current()) return empty
+    for (const id of deleted) writtenWorkouts.delete(id)
     ledger.workouts = [...writtenWorkouts]
     try { localStorage.setItem(LEDGER, JSON.stringify(ledger)) } catch { /* Native metadata still deduplicates. */ }
     return { imported: incoming.length, weights: savedWeights.written || 0, workouts: savedWorkouts.written || 0 }

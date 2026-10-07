@@ -1,5 +1,6 @@
 // Arabic UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "The matching workout saved by openGym in Apple Health will also be deleted.": "سيُحذف أيضًا التمرين المطابق الذي حفظه openGym في صحة Apple.",
   "Sync with Apple Health": "المزامنة مع صحة Apple",
   "Sync body weight both ways and save finished workouts to Health.": "مزامنة وزن الجسم في الاتجاهين وحفظ التمارين المكتملة في تطبيق الصحة.",
   "Apple Health: {0}": "صحة Apple: {0}",

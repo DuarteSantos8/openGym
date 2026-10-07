@@ -1,5 +1,6 @@
 // Ukrainian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "The matching workout saved by openGym in Apple Health will also be deleted.": "Відповідне тренування, збережене openGym в Apple Здоров’ї, також буде видалено.",
   "Sync with Apple Health": "Синхронізація з Apple Здоров’я",
   "Sync body weight both ways and save finished workouts to Health.": "Синхронізуйте вагу в обох напрямках і зберігайте завершені тренування у Здоров’ї.",
   "Apple Health: {0}": "Apple Здоров’я: {0}",

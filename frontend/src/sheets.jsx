@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { appleHealthEnabled } from './lib/apple-health.js'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, smOf, searchExercises, exOr, isAssisted, betterWeight, beatsWeight } from './lib/exercises.js'
@@ -2090,11 +2091,14 @@ function WorkoutDetail({ w, close }) {
     <div style={{ height: 10 }} />
     {/* Matched the way the edits above are, not by id: a workout from before ids has none, and
         filtering on `x.id !== undefined` took every other one of them with it. */}
-    <Button variant="danger" onClick={() => confirmSheet({ title: t('Delete workout?'), message: t('This removes it from your history for good.') + mediaGoesToo(S().workouts.find(x => sameWorkout(x, w))), confirmText: t('Delete'), danger: true, onConfirm: () => { update(s => { s.workouts = s.workouts.filter(x => !sameWorkout(x, w)) }); close(); toast(t('Workout deleted')) } })}>{t('Delete workout')}</Button>
+    <Button variant="danger" onClick={() => confirmSheet({ title: t('Delete workout?'), message: t('This removes it from your history for good.') + healthWorkoutDeletionNotice(w) + mediaGoesToo(S().workouts.find(x => sameWorkout(x, w))), confirmText: t('Delete'), danger: true, onConfirm: () => { update(s => { s.workouts = s.workouts.filter(x => !sameWorkout(x, w)) }, true, { deletedHealthWorkout: S().workouts.find(x => sameWorkout(x, w)) }); close(); toast(t('Workout deleted')) } })}>{t('Delete workout')}</Button>
   </>
 }
 // The sentence a workout's Delete adds when its photos and videos go with it — every file the
 // record lists, shown or not. Empty when it has none.
+function healthWorkoutDeletionNotice(rec) {
+  return rec?.id && appleHealthEnabled(useStore) ? ' ' + t('The matching workout saved by openGym in Apple Health will also be deleted.') : ''
+}
 function mediaGoesToo(rec) {
   const n = workoutMediaOf(rec, Infinity).length
   return n ? ' ' + t(n === 1 ? 'Its photo or video is deleted with it.' : 'Its {0} photos or videos are deleted with it.', n) : ''
@@ -2558,7 +2562,7 @@ export function saveWorkoutEdits(onExit = () => nav('/history')) {
   if (editLeftEmpty(S().active)) {
     confirmSheet({
       title: t('Delete workout?'),
-      message: t('No sets are left in this workout, so there is nothing to save. Delete it from your history?') + mediaGoesToo(editedRecord(S())),
+      message: t('No sets are left in this workout, so there is nothing to save. Delete it from your history?') + healthWorkoutDeletionNotice(editedRecord(S())) + mediaGoesToo(editedRecord(S())),
       confirmText: t('Delete workout'), cancelText: t('Keep editing'), danger: true,
       onConfirm: () => {
         useStore.getState().deleteHistoryEdit()

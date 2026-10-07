@@ -1,5 +1,6 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "The matching workout saved by openGym in Apple Health will also be deleted.": "openGym 保存到 Apple 健康的对应训练也将被删除。",
   "Sync with Apple Health": "与 Apple 健康同步",
   "Sync body weight both ways and save finished workouts to Health.": "双向同步体重，并将已完成的训练保存到健康。",
   "Apple Health: {0}": "Apple 健康：{0}",
