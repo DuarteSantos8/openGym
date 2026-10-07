@@ -132,7 +132,8 @@ const PLAN_COPY = {
   ppl: () => ({ name: t('Push / Pull / Legs'), about: t('Push, pull and legs each get their own day.') }),
   'upper-lower': () => ({ name: t('Upper / Lower'), about: t('Upper body twice, lower body twice.') }),
   'full-body': () => ({ name: t('Full Body'), about: t('Three sessions, the whole body each time.') }),
-  '5x5': () => ({ name: t('5×5'), about: t('Five sets of five on the main barbell lifts.') })
+  '5x5': () => ({ name: t('5×5'), about: t('Five sets of five on the main barbell lifts.') }),
+  'benjamin-home': () => ({ name: t('Benjamin Home Plan'), about: t('Three home sessions built around fat loss, strength retention and gradual progression.') })
 }
 
 // Adds the plan's routines and puts them on its weekdays. Existing routines are never touched
