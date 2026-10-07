@@ -6,13 +6,15 @@
 // schedule points at, so a weekday never depends on the position of a routine in the array.
 // Names stay canonical English — they become ordinary user routines, which are not translated.
 import { uid } from './format.js'
-import { EXDB } from './exercises.js'
+import { EXDB, isBodyweightEq } from './exercises.js'
 
 // Benjamin-specific home training: resolve exercises by name so the profile survives dataset id changes.
 const pick = (...terms) => {
   const qs = terms.map(x => x.toLowerCase())
-  const exact = EXDB.find(e => qs.some(q => String(e.n || '').toLowerCase() === q))
+  const exact = EXDB.find(e => isBodyweightEq(e.id) && qs.some(q => String(e.n || '').toLowerCase() === q))
   if (exact) return exact.id
+  const bodyweight = EXDB.find(e => isBodyweightEq(e.id) && qs.some(q => String(e.n || '').toLowerCase().includes(q)))
+  if (bodyweight) return bodyweight.id
   return EXDB.find(e => qs.some(q => String(e.n || '').toLowerCase().includes(q)))?.id || null
 }
 const benEx = (id, sets, reps) => id ? [id, sets, reps] : null
