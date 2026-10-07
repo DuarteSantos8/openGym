@@ -53,7 +53,7 @@ describe('starter plan chooser', () => {
     starterPlanSheet()
     const host = renderTop()
     expect([...host.querySelectorAll('.item .tt')].map(el => el.textContent))
-      .toEqual(['Push / Pull / Legs', 'Upper / Lower', 'Full Body', '5×5'])
+      .toEqual(['Push / Pull / Legs', 'Upper / Lower', 'Full Body', '5×5', 'Home Plan'])
     expect(rowFor(host, 'Upper / Lower').querySelector('.ss').textContent).toContain('4 days per week')
   })
 
@@ -104,6 +104,19 @@ describe('starter plan chooser', () => {
     choose('5×5')                                                                // wants Mon/Wed/Fri
     expect(useUI.getState().sheets).toHaveLength(0)
     expect(nameOn(1)).toBe('5×5 A')
+  })
+})
+
+describe('Home Plan', () => {
+  it('loads role-named routines straight away when weekdays are free', () => {
+    useStore.setState(s => ({ S: { ...s.S, week: { 2: ['mine'], 6: ['mine'] } } }))   // Tue + Sun
+    choose('Home Plan')
+    expect(useUI.getState().sheets).toHaveLength(0)
+    expect(nameOn(1)).toBe('Strength A')
+    expect(nameOn(3)).toBe('Volume B')
+    expect(nameOn(5)).toBe('Conditioning C')
+    expect(S().week[2]).toEqual(['mine'])   // untouched weekdays stay put
+    expect(useUI.getState().toastMsg).toBe('Home Plan loaded')
   })
 })
 

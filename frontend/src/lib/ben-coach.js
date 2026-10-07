@@ -16,6 +16,8 @@ import { activeProfile, exAvailable } from './equipment.js'
 import { isWarmupRow, isSideSet } from './workout-model.js'
 import { weeklyWeights } from './bodyweight.js'
 import { weekStartOf, weekKey, todayISO, exerciseNameText, isoOf } from './format.js'
+import { fatigueOf, strengthOf, fatiguedMuscles, detrainedMuscles, STRENGTH_FLOOR } from './recovery.js'
+import { MUSCLES } from './muscles.js'
 
 const startOf = w => Number.isFinite(w?.start) ? w.start : new Date((w?.d || '') + 'T12:00:00').getTime()
 
@@ -477,4 +479,102 @@ export function weeklyReview(S) {
   const attention = allAttention(S)
   const recommendation = decideRecommendation(S, { consistency: con, attention, bodyweight, strength })
   return { weekKey: wk, training, bodyweight, strength, consistency: con, improvements, attention, recommendation }
+}
+
+/* ============================ optional 4th session ============================ */
+
+// Muscles that matter most for a full-body strength-and-conditioning program — the ones the
+// Home Plan hits directly. Recovery is read per-muscle; these are the ones whose signal is
+// worth acting on for the optional session.
+const KEY_MUSCLES = ['chest', 'deltoids', 'upper-back', 'biceps', 'triceps', 'quadriceps', 'hamstring', 'gluteal', 'abs']
+
+// The routines currently on the schedule, in weekday order — used to pick a 4th-session routine
+// that matches the program's session roles.
+function scheduledRoutines(S) {
+  const ids = new Set()
+  for (const day of Object.keys(S?.week || {}))
+    for (const id of [].concat(S?.week[day] || [])) ids.add(id)
+  return (S?.routines || []).filter(r => r && ids.has(r.id))
+}
+
+// Identify a routine by its role prefix (Strength A, Volume B, Conditioning C).
+function routineByRole(routines, role) {
+  const prefix = role === 'strength' ? 'Strength' : role === 'volume' ? 'Volume' : role === 'conditioning' ? 'Conditioning' : null
+  return routines.find(r => prefix && (r.name || '').startsWith(prefix)) || null
+}
+
+/**
+ * Recommend an optional 4th session for the week, based on recovery + recent training +
+ * program goals. The Home Plan has three scheduled sessions (Strength / Volume / Conditioning);
+ * a 4th is only advised when recovery and training history point to a specific, useful purpose.
+ *
+ * Returns null when there is not enough evidence to give a recommendation (no workouts yet,
+ * no scheduled routines, or the program structure is not recognised).
+ *
+ * @param {object} S Full state object.
+ * @returns {{kind:string,label:string,note:string,routineId:string|null}|null}
+ *   kind is one of 'recovery', 'strength', 'conditioning', 'volume', or 'extra'.
+ */
+export function optionalSession(S) {
+  const now = Date.now()
+  const workouts = S?.workouts || []
+  if (!workouts.length) return null
+
+  const routines = scheduledRoutines(S)
+  if (!routines.length) return null
+
+  const fatigue = fatigueOf(workouts, now, { unit: S?.unit })
+  const strength = strengthOf(workouts, now)
+
+  // Average fatigue and strength retention across the key muscle groups.
+  const avgFatigue = KEY_MUSCLES.reduce((s, m) => s + (fatigue[m] || 0), 0) / KEY_MUSCLES.length
+  const avgStrength = KEY_MUSCLES.reduce((s, m) => s + (strength[m] || STRENGTH_FLOOR), 0) / KEY_MUSCLES.length
+
+  // Muscles whose strength has fallen below full retention (14 days since last work).
+  const detrained = detrainedMuscles(workouts, now)
+  const hasDetraining = detrained.some(m => KEY_MUSCLES.includes(m))
+
+  // Recovered enough to train? Below 0.3 average fatigue reads as ready.
+  if (avgFatigue > 0.35) {
+    // Still recovering from recent sessions — a rest or light-movement day is the useful 4th.
+    return {
+      kind: 'recovery',
+      label: 'Rest day',
+      note: 'Key muscles are still recovering from recent training — rest or light movement.',
+      routineId: null,
+    }
+  }
+
+  // Strength is declining on at least one key muscle → a maintenance session helps hold it.
+  if (hasDetraining) {
+    const routine = routineByRole(routines, 'strength')
+    if (routine) {
+      return {
+        kind: 'strength',
+        label: routine.name,
+        note: 'Some strength is fading — a maintenance session helps you hold it on a deficit.',
+        routineId: routine.id,
+      }
+    }
+  }
+
+  // Fully recovered and strength is holding → a conditioning session keeps fat-loss momentum.
+  const condRoute = routineByRole(routines, 'conditioning')
+  if (condRoute) {
+    return {
+      kind: 'conditioning',
+      label: condRoute.name,
+      note: 'Fully recovered — conditioning supports the fat-loss goal.',
+      routineId: condRoute.id,
+    }
+  }
+
+  // Fallback: no role-matched routine found (e.g. user renamed routines). Offer the first
+  // scheduled routine as a safe default.
+  return {
+    kind: 'extra',
+    label: routines[0].name,
+    note: 'Pick whichever session fits your day and energy.',
+    routineId: routines[0].id,
+  }
 }

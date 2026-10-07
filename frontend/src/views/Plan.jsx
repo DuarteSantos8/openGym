@@ -12,6 +12,7 @@ import { glyphOf, DEFAULT_GLYPH } from '../lib/glyphs.js'
 import { DEMO } from '../lib/demo.js'
 import { MOBILE } from '../lib/mobile.js'
 import { coachAvailable } from '../lib/coach.js'
+import { BEN_PROFILE, BEN_GOAL_SHORT, SESSION_ROLES, PROGRAM_ROLES } from '../lib/ben-profile.js'
 
 export default function Plan() {
   const nav = useNavigate()
@@ -51,15 +52,37 @@ export default function Plan() {
   // The same confirmation and the same delete as RoutineEdit's "Delete routine" button, minus
   // its navigation back to /plan, which this screen already is.
   const confirmDelete = r => confirmSheet({
-    title: t('Delete routine?'), message: t('“{0}” and its exercises will be removed.', r.name), confirmText: t('Delete'), danger: true,
+    title: t('Delete routine?'), message: t('"{0}" and its exercises will be removed.', r.name), confirmText: t('Delete'), danger: true,
     onConfirm: () => update(s => { deleteRoutine(s, r.id) })
   })
+
+  // The optional 4th session is only surfaced when the Home Plan is active (routines with
+  // role-based names). Other plans keep their original behaviour.
+  const isHomePlan = (S.routines || []).some(r => PROGRAM_ROLES.some(role => r.name?.startsWith(SESSION_ROLES[role].label)))
+  const roleOfRoutine = r => {
+    for (const role of PROGRAM_ROLES) {
+      if (r.name?.startsWith(SESSION_ROLES[role].label)) return SESSION_ROLES[role]
+    }
+    return null
+  }
 
   return <>
     <div className="hdr">
       <div><h1>{t('Plan')}</h1><div className="sub">{t('Your weekly routine')}</div></div>
       <button className="iconbtn" onClick={planToolsSheet} aria-label={t('Share your plan')} title={t('Share your plan')}><Icon name="upload" /></button>
     </div>
+    {isHomePlan && <div className="card" style={{ marginBottom: 16 }}>
+      <div className="row" style={{ gap: 12, marginBottom: 8 }}>
+        <span className="lrow-i"><Icon name="fire" /></span>
+        <div><h3 style={{ margin: 0 }}>{t('Program')}</h3></div>
+      </div>
+      <div className="mt muted" style={{ fontSize: 14, lineHeight: 1.4 }}>{t(BEN_GOAL_SHORT)}</div>
+      <div className="row" style={{ gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+        {PROGRAM_ROLES.map(role => <span key={role} className="tag">{SESSION_ROLES[role].label}</span>)}
+        <span className="small dim">·</span>
+        <span className="small dim">{t('3 sessions/week')}</span>
+      </div>
+    </div>}
     {showCoach && <button className="coach-cta" onClick={() => nav('/coach')}>
       <span className="coach-cta-av"><Icon name="sparkles" /></span>
       <span className="coach-cta-t">
@@ -93,11 +116,15 @@ export default function Plan() {
                   onClick={() => dayAddRoutineSheet(d)}><Icon name="plus" /></button>
               </div>
             </div>
-            {dayRoutines.map(r => <div key={r.id} className="row" style={{ gap: 8, padding: '4px 0 4px 8px' }}>
-              <span className="lrow-i" style={{ width: 26, height: 26, fontSize: 14 }}><Icon name={glyphOf(r.emoji)} /></span>
-              <div className="grow" style={{ minWidth: 0 }}><div className="tt" style={{ fontSize: 14 }}>{r.name}</div><div className="ss">{exCount(r.ex.length)}</div></div>
-              <button className="iconbtn sm" aria-label={t('Remove')} onClick={() => removeFromDay(d, r.id)}><Icon name="xmark" /></button>
-            </div>)}
+            {dayRoutines.map(r => {
+              const role = roleOfRoutine(r)
+              return <div key={r.id} className="row" style={{ gap: 8, padding: '4px 0 4px 8px' }}>
+                <span className="lrow-i" style={{ width: 26, height: 26, fontSize: 14 }}><Icon name={glyphOf(r.emoji)} /></span>
+                <div className="grow" style={{ minWidth: 0 }}><div className="tt" style={{ fontSize: 14 }}>{r.name}</div><div className="ss">{exCount(r.ex.length)}</div></div>
+                {role && <span className="tag" style={{ fontSize: 11, height: 'auto', padding: '2px 6px' }}>{role.label}</span>}
+                <button className="iconbtn sm" aria-label={t('Remove')} onClick={() => removeFromDay(d, r.id)}><Icon name="xmark" /></button>
+              </div>
+            })}
           </div>
         })}
       </div>
