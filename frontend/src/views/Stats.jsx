@@ -23,6 +23,7 @@ import {
 import { Button, Segmented, SelectRow } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { isWarmupRow } from '../lib/workout-model.js'
+import { bodyweightTrend, strengthRetention } from '../lib/ben-coach.js'
 
 // Which muscles the training in a window actually hit — and, the point of the card,
 // which ones it keeps missing. Shading is relative within the window (lib/muscles.js).
@@ -287,6 +288,52 @@ function EffortCard({ S }) {
 }
 
 // Stats = the analytics hub: all charts, progress and history live here.
+function BenjaminProgress({ S }) {
+  const trend = bodyweightTrend(S)
+  const strength = strengthRetention(S)
+  const latest = trend.weeks?.[0]
+  const previous = trend.weeks?.[1]
+  return <div className="card">
+    <div className="row between" style={{ marginBottom: 8 }}>
+      <div><div className="lbl2">{t('Benjamin progress')}</div><h2 style={{ margin: '2px 0 0' }}>{t('Lose fat. Keep strength.')}</h2></div>
+      <Icon name="target" style={{ color: 'var(--acc)' }} />
+    </div>
+    <div className="tiles" style={{ marginBottom: 10 }}>
+      <div className="tile">
+        <div className="l"><Icon name="scale" />{t('Weight trend')}</div>
+        <div className="v" style={{ fontSize: 20 }}>{trend.delta == null ? '—' : (trend.delta > 0 ? '+' : '') + fmtNum(trend.delta) + ' ' + S.unit}</div>
+        <div className="small dim">{latest ? t('weekly average') : t('Need two logged weeks')}</div>
+      </div>
+      <div className="tile">
+        <div className="l"><Icon name="dumbbell" />{t('Strength retention')}</div>
+        <div className="v" style={{ fontSize: 20 }}>{strength.holding == null ? '—' : Math.round(strength.holding * 100) + '%'}</div>
+        <div className="small dim">{strength.compared ? t('{0} exercises', strength.compared) : t('Need more history')}</div>
+      </div>
+    </div>
+    {latest && previous && <div className="small muted" style={{ marginBottom: 10 }}>
+      {t('Latest weekly average')}: <b>{fmtNum(latest.avg)} {S.unit}</b> · {t('previous')}: <b>{fmtNum(previous.avg)} {S.unit}</b>
+    </div>}
+    <div className="small" style={{ lineHeight: 1.5 }}>
+      {trend.status === 'down'
+        ? t('Weight is moving in the intended direction. Keep training consistently while strength stays stable.')
+        : trend.status === 'up'
+          ? t('Weight is currently moving up. Treat this as a signal to review consistency and food intake, not as a verdict from one week.')
+          : trend.status === 'steady'
+            ? t('Weight is broadly steady. If fat loss is still the goal, the weekly average needs to move down over time.')
+            : t('The app needs at least two logged weeks before it judges the weight trend.')}
+    </div>
+    <div className="small dim" style={{ marginTop: 7 }}>
+      {strength.status === 'holding'
+        ? t('Strength is holding across the exercises with enough history to compare.')
+        : strength.status === 'mixed'
+          ? t('Strength is mixed across exercises. Keep the current loads before making the plan harder.')
+          : strength.status === 'attention'
+            ? t('Several comparable exercises are down. Prioritize recovery and repeatable sessions before pushing progression.')
+            : t('Strength retention becomes meaningful after the same exercises have been trained across both comparison windows.')}
+    </div>
+  </div>
+}
+
 export default function Stats() {
   const nav = useNavigate()
   const S = useStore(s => s.S)
@@ -450,6 +497,8 @@ export default function Stats() {
   if (showEff) exOpts.push({ value: 'effort', label: t('Effort') })
 
   return <>
+    <BenjaminProgress S={S} />
+
     <div className="hdr"><div><h1>{t('Stats')}</h1><div className="sub">{t('Progress & history')}</div></div>
       <button className="iconbtn" onClick={() => nav('/history')} aria-label={t('History')}><Icon name="history" /></button></div>
 
