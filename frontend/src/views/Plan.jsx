@@ -133,10 +133,15 @@ export default function Plan() {
         <h4 className="sec" style={{ margin: 0 }}>{t('Routines')}</h4>
         <Button size="sm" variant="tinted" icon="plus" onClick={addRoutine}>{t('New')}</Button>
       </div>
+      {S.routines.some(r => r.trainingRole) && <div className="card" style={{ marginBottom: 12 }}>
+        <div className="lbl2">{t('Training structure')}</div>
+        <div className="small muted" style={{ marginTop: 4 }}>{t('{0} main sessions per week. The fourth session is optional and low volume.', BEN_PROFILE.frequency)}</div>
+        <div className="small dim" style={{ marginTop: 4 }}>{t('Short {0} · Normal {1} · Long {2}', BEN_PROFILE.lengths.short, BEN_PROFILE.lengths.normal, BEN_PROFILE.lengths.long)}</div>
+      </div>}
       {S.routines.length ? <div className="list">{S.routines.map((r, i) => <SwipeToDelete key={r.id} className="item"
         deleteLabel={t('Delete routine')} onDelete={() => confirmDelete(r)} {...tappable(() => nav('/plan/r/' + r.id))}>
         <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
-        <div className="grow"><div className="tt">{r.name}</div><div className="ss">{exCount(r.ex.length)}</div></div>
+        <div className="grow"><div className="tt">{r.name}</div><div className="ss">{r.trainingRole ? r.trainingRole + ' · ' : ''}{exCount(r.ex.length)}</div></div>
         {/* The order of this list is the order of `S.routines`, and every other screen reads the
             same array — the Start screen, the day-assignment sheets, the routine pickers. So
             moving a routine here moves it everywhere, which is what the request asked for (#142). */}

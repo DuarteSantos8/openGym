@@ -2,7 +2,7 @@
 // session-length variants — all from the same completed sets, silent when evidence is thin.
 import { describe, it, expect } from 'vitest'
 import {
-  recommendationFor, routineCoaching, exerciseAttention, alternativesFor, sessionVariants,
+  recommendationFor, routineCoaching, exerciseAttention, alternativesFor, sessionVariants, trainingSystem, progressVerdict,
 } from './ben-coach.js'
 import { EXDB, isAssisted } from './exercises.js'
 import { muscleGroupsOf } from './muscles.js'
@@ -216,5 +216,56 @@ describe('sessionVariants', () => {
     const st = { unit: 'kg', routines: [routine5, other], week: { 1: ['r'], 3: ['o'] }, workouts: [] }
     expect(sessionVariants(routine5, st).longer).toMatchObject({ routineIds: ['r', 'o'] })
     expect(sessionVariants(routine5, S()).longer).toBe(null)
+  })
+})
+
+describe('trainingSystem', () => {
+  const main = (id, name) => ({ id, name, trainingPriority: 'Main session', trainingRole: 'Main', ex: [{ id: BWEX, sets: 2, reps: 10, weight: 0 }] })
+  const optional = { id: 'short', name: 'Short Full Body', trainingPriority: 'Optional', trainingRole: 'Optional short session', ex: [{ id: BWEX, sets: 2, reps: 10, weight: 0 }] }
+
+  it('keeps three main sessions as the weekly base', () => {
+    const st = { ...S(), routines: [main('a', 'Full Body A'), main('b', 'Full Body B'), main('c', 'Full Body C'), optional], workouts: [] }
+    expect(trainingSystem(st)).toMatchObject({ target: 3, main: [{ id: 'a' }, { id: 'b' }, { id: 'c' }], optionalEligible: false })
+  })
+
+  it('offers the fourth session only after all three main sessions are completed with a recovery day', () => {
+    const st = {
+      ...S(
+        { d: new Date().toISOString().slice(0, 10), routineIds: ['a'], entries: [] },
+      ),
+      routines: [main('a', 'Full Body A'), main('b', 'Full Body B'), main('c', 'Full Body C'), optional],
+      workouts: [
+        { d: new Date(Date.now() - 2 * 86400000).toISOString().slice(0, 10), routineIds: ['a'], entries: [] },
+        { d: new Date(Date.now() - 1 * 86400000).toISOString().slice(0, 10), routineIds: ['b'], entries: [] },
+        { d: new Date(Date.now() - 3 * 86400000).toISOString().slice(0, 10), routineIds: ['c'], entries: [] },
+      ],
+    }
+    expect(trainingSystem(st)).toMatchObject({ mainDone: 3, optionalEligible: true })
+  })
+})
+
+describe('progressVerdict', () => {
+  it('recognizes successful fat loss when strength is holding', () => {
+    expect(progressVerdict({
+      bodyweight: { direction: 'toward', meaningful: true },
+      strength: { status: 'holding' },
+      consistency: { status: 'on-track' },
+    }).status).toBe('working')
+  })
+
+  it('warns when weight loss is paired with broad strength decline', () => {
+    expect(progressVerdict({
+      bodyweight: { direction: 'toward', meaningful: true },
+      strength: { status: 'attention' },
+      consistency: { status: 'on-track' },
+    }).status).toBe('adjust')
+  })
+
+  it('does not blame the plan when consistency is the missing evidence', () => {
+    expect(progressVerdict({
+      bodyweight: { direction: 'unknown' },
+      strength: { status: 'baseline' },
+      consistency: { status: 'behind' },
+    }).status).toBe('consistency')
   })
 })

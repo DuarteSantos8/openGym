@@ -259,6 +259,34 @@ function longerVariant(S, routine, setsOf) {
   return { key: 'longer', routineIds: [routine?.id, pick.id].filter(Boolean), name: pick.name, sets: setsOf(routine?.ex || []) + setsOf(pick.ex) }
 }
 
+// The personal training system sits above individual exercise progression.
+// It answers a simpler program-level question: which sessions are main, which is optional,
+// and when a fourth session is useful rather than just adding more work.
+export function trainingSystem(S) {
+  const routines = S?.routines || []
+  const main = routines.filter(r => r?.trainingPriority === 'Main session').slice(0, 3)
+  const optional = routines.find(r => r?.trainingPriority === 'Optional' || r?.name === 'Short Full Body') || null
+  const ws = weekStartOf(S)
+  const wk = weekKey(todayISO(), ws)
+  const weekWorkouts = (S?.workouts || []).filter(w => w?.d && weekKey(w.d, ws) === wk)
+  const mainIds = new Set(main.map(r => r.id))
+  const mainDone = weekWorkouts.filter(w => [].concat(w?.routineIds || []).some(id => mainIds.has(id))).length
+  const last = [...weekWorkouts].sort((a, b) => String(b.d).localeCompare(String(a.d)))[0]
+  const today = todayISO()
+  const daysSinceLast = last?.d ? Math.round((new Date(today + 'T12:00:00') - new Date(last.d + 'T12:00:00')) / 86400000) : Infinity
+  const optionalEligible = !!optional && main.length >= 3 && mainDone >= 3 && weekWorkouts.length < 4 && daysSinceLast >= 1
+  return {
+    main,
+    optional,
+    mainDone,
+    weekWorkouts: weekWorkouts.length,
+    target: Math.min(3, main.length),
+    optionalEligible,
+    daysSinceLast,
+    lengths: { short: '15–25 min', normal: '25–40 min', long: '40–55 min' },
+  }
+}
+
 export function bodyweightTrend(S) {
   const weeks = weeklyWeights(S?.bodyweight || [], weekStartOf(S))
   if (weeks.length < 2) return { status: 'baseline', delta: null, weeks, rate: null, weeksUsed: weeks.length, noise: null, meaningful: false }
@@ -458,6 +486,50 @@ function decideRecommendation(S, r) {
 // Training covers the current week-to-date; trends and records read the trailing windows
 // behind them. Every number names its evidence; thin evidence reads as baseline, never as
 // a verdict.
+// Combines the three outcome signals into one conservative verdict.
+// Losing weight is only a good result here when strength is at least broadly maintained.
+export function progressVerdict(review) {
+  const w = review?.bodyweight
+  const s = review?.strength
+  const c = review?.consistency
+  if (!review) return { status: 'baseline', title: 'Not enough data', detail: 'Log training and body weight to judge the plan.' }
+  if (c?.status === 'behind') return {
+    status: 'consistency',
+    title: 'Consistency is the limiter',
+    detail: 'The plan cannot be judged reliably yet because too few planned sessions were completed.',
+  }
+  if (w?.direction === 'toward' && w?.meaningful && s?.status === 'holding') return {
+    status: 'working',
+    title: 'The plan is working',
+    detail: 'Weight is moving down while strength is broadly holding.',
+  }
+  if (w?.direction === 'toward' && w?.meaningful && s?.status === 'mixed') return {
+    status: 'watch',
+    title: 'Good direction, watch strength',
+    detail: 'Weight is moving down, but some strength has slipped. Keep the loss gradual and avoid adding fatigue.',
+  }
+  if (w?.direction === 'toward' && w?.meaningful && s?.status === 'attention') return {
+    status: 'adjust',
+    title: 'Weight is dropping too fast for performance',
+    detail: 'Strength is falling across the compared exercises. Prioritize recovery and a slower rate of loss.',
+  }
+  if ((w?.direction === 'flat' || w?.status === 'steady') && s?.status === 'holding') return {
+    status: 'steady',
+    title: 'Stable, but fat loss is not showing yet',
+    detail: 'Strength is holding, but body weight is not moving meaningfully toward the goal.',
+  }
+  if (w?.direction === 'away') return {
+    status: 'adjust',
+    title: 'The trend is going the wrong way',
+    detail: 'Body weight is moving away from the goal. Review consistency before changing training.',
+  }
+  return {
+    status: 'baseline',
+    title: 'Keep collecting evidence',
+    detail: 'There is not enough consistent signal to make a meaningful change yet.',
+  }
+}
+
 export function weeklyReview(S) {
   const ws = weekStartOf(S)
   const wk = weekKey(todayISO(), ws)

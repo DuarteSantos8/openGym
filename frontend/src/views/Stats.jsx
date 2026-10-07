@@ -24,7 +24,7 @@ import {
 import { Button, Segmented, SelectRow } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { isWarmupRow } from '../lib/workout-model.js'
-import { bodyweightTrend, weeklyReview, alternativesFor } from '../lib/ben-coach.js'
+import { weeklyReview, progressVerdict } from '../lib/ben-coach.js'
 
 // Which muscles the training in a window actually hit — and, the point of the card,
 // which ones it keeps missing. Shading is relative within the window (lib/muscles.js).
@@ -295,6 +295,7 @@ function WeeklyReview({ S }) {
   const review = weeklyReview(S)
   const rec = review.recommendation
   const b = review.bodyweight
+  const verdict = progressVerdict(review)
   const rateStr = b.rate == null ? null : (b.rate > 0 ? '+' : '') + (Math.round(b.rate * 10) / 10) + ' ' + S.unit + '/wk'
 
   const weightLine = (() => {
@@ -309,13 +310,14 @@ function WeeklyReview({ S }) {
     return t('Holding roughly steady.')
   })()
 
-  const strengthLine = (() => {
-    const s = review.strength
-    if (s.status === 'baseline') return t('Needs the same exercises across both 30-day windows.')
-    if (s.status === 'holding') return t('Holding across {0} exercises ({1} up).', s.compared, s.improved)
-    if (s.status === 'mixed') return t('Mixed across {0} exercises ({1} up, {2} down).', s.compared, s.improved, s.declined)
-    return t('Down in {0} of {1} compared exercises.', s.declined, s.compared)
-  })()
+  const s = review.strength
+  const strengthLine = s.status === 'baseline'
+    ? t('Needs the same exercises across both 30-day windows.')
+    : s.status === 'holding'
+      ? t('Holding across {0} exercises ({1} up).', s.compared, s.improved)
+      : s.status === 'mixed'
+        ? t('Mixed across {0} exercises ({1} up, {2} down).', s.compared, s.improved, s.declined)
+        : t('Down in {0} of {1} compared exercises.', s.declined, s.compared)
 
   const weekLine = review.training.planned > 0
     ? t('{0} of {1} sessions this week', review.training.done, review.training.planned) +
@@ -328,20 +330,18 @@ function WeeklyReview({ S }) {
 
   return <div className="card">
     <div className="row between" style={{ marginBottom: 8 }}>
-      <div><div className="lbl2">{t('Weekly review')}</div><h2 style={{ margin: '2px 0 0', fontSize: 17, color: 'var(--label)', fontWeight: 600 }}>{t('Training, weight, strength')}</h2></div>
+      <div><div className="lbl2">{t('Weekly review')}</div><h2 style={{ margin: '2px 0 0', fontSize: 17, color: 'var(--label)', fontWeight: 600 }}>{t('Is the plan working?')}</h2></div>
       <Icon name="chart" style={{ color: 'var(--acc)' }} />
+    </div>
+    <div style={{ background: 'var(--acc-soft)', borderRadius: 12, padding: '12px 14px', marginBottom: 10 }}>
+      <div className="lbl2" style={{ marginBottom: 4 }}>{t(verdict.title)}</div>
+      <div style={{ lineHeight: 1.45 }}>{t(verdict.detail)}</div>
     </div>
     <div className="mrow"><span className="nm"><b>{t('Training')}</b><span className="small dim" style={{ display: 'block', fontWeight: 400 }}>{weekLine} · {conLine}</span></span></div>
     <div className="mrow"><span className="nm"><b>{t('Body weight')}</b><span className="small dim" style={{ display: 'block', fontWeight: 400 }}>{weightLine}</span></span></div>
     <div className="mrow"><span className="nm"><b>{t('Strength')}</b><span className="small dim" style={{ display: 'block', fontWeight: 400 }}>{strengthLine}</span></span></div>
-    {review.improvements.length > 0 && <div className="mrow">
-      <span className="nm"><b>{t('New records (14 days)')}</b><span className="small dim" style={{ display: 'block', fontWeight: 400 }}>{review.improvements.map(p => p.name).join(', ')}</span></span>
-      <span className="v" style={{ color: 'var(--green)' }}>{t('{0} new', review.improvements.length)}</span>
-    </div>}
-    {review.attention.slice(0, 3).map(a => <AttentionRow key={a.id + ':' + a.kind} a={a}
-      altNames={alternativesFor(S, a.id, { count: 1 }).map(x => x.name)} />)}
-    <div style={{ background: 'var(--acc-soft)', borderRadius: 12, padding: '12px 14px', marginTop: 12 }}>
-      <div className="lbl2" style={{ marginBottom: 4 }}>{t('Next week')}</div>
+    <div style={{ marginTop: 12 }}>
+      <div className="lbl2" style={{ marginBottom: 4 }}>{t('Next step')}</div>
       <div style={{ lineHeight: 1.45 }}>{t(...rec.why)}</div>
       <div className="row" style={{ justifyContent: 'flex-end', gap: 8, marginTop: rec.kind === 'attention' || rec.kind === 'weight' ? 8 : 0 }}>
         {rec.kind === 'attention' && <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={() => nav('/plan')}>{t('Open plan')}</Button>}
