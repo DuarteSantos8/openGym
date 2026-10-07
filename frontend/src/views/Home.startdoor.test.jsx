@@ -1,9 +1,10 @@
 // @vitest-environment happy-dom
-// The Start button in the tab bar (components/TabBar.jsx) and Home's today row both go straight
+// The Start button in the tab bar (components/TabBar.jsx) and Home's hero row both go straight
 // into today's planned session the moment there is one, and only fall through to the Start
 // screen when nothing is planned. So on any day with a routine, a freestyle session and the
 // "Other routines" list are unreachable — the only other way in, "Choose a different workout"
-// on the weigh-in sheet, does not exist with the weigh-in switched off. Home carries that door.
+// on the weigh-in sheet, does not exist with the weigh-in switched off. Home carries that door
+// as an "All workouts" action next to the one clear next step.
 import React, { act } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createRoot } from 'react-dom/client'
@@ -40,7 +41,7 @@ const setS = (over = {}) => useStore.setState(s => ({
   user: null,
 }))
 const mount = () => act(() => root.render(<Home />))
-const door = () => [...host.querySelectorAll('button')].find(b => b.textContent.includes('Choose a different workout'))
+const door = () => [...host.querySelectorAll('button')].find(b => b.textContent.includes('All workouts'))
 
 describe('Home — the way to the Start screen when a plan already owns today', () => {
   it('offers the door on a planned day, where the Start button would start the plan', () => {
@@ -80,7 +81,8 @@ describe('Home — the way to the Start screen when a plan already owns today', 
     setS({ active: { id: 'a', name: 'Push', start: Date.now(), cur: 0, entries: [] } })
     mount()
     const row = host.querySelector('.today-row')
-    expect(row.querySelector('.ttl').textContent).toBe('Push — in progress')
+    expect(row.querySelector('.lbl2').textContent).toBe('In progress')
+    expect(row.querySelector('.ttl').textContent).toBe('Push')
     expect(row.querySelector('.tag').textContent).toBe('Resume')
   })
 })

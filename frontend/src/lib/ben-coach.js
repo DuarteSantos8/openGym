@@ -141,4 +141,4 @@ export function strengthRetention(S, days = 30) {
     holding,
     comparisons,
   }
-}\n
+}

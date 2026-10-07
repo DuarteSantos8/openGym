@@ -1575,6 +1575,20 @@ body.chips-dragging *{cursor:inherit}
 }
 
 /* --- home: today's session row --- */
+.lbl2{font-size:11px;font-weight:500;letter-spacing:.03em;text-transform:uppercase;color:var(--label-3)}
+.hero-act{display:flex;gap:8px;margin-top:12px}
+.hero-act .btn{flex:1;min-width:0}
+/* --- home: week progress segments (3 sessions is the target) --- */
+.segs{display:flex;gap:6px;margin:10px 0 4px}
+.segs i{flex:1;height:6px;border-radius:99px;background:var(--surface-3)}
+.segs i.fill{background:var(--acc)}
+/* --- home: planned-session and workout-picker rows --- */
+.sess{display:flex;align-items:center;gap:10px;padding:9px 2px;width:100%;text-align:start;cursor:pointer;border-radius:8px}
+.sess+.sess{border-top:var(--hair) solid var(--sep)}
+.sess .grow{flex:1;min-width:0}
+.sess .tt{font-size:16px;font-weight:400;line-height:1.25;letter-spacing:-.009em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sess .ss{color:var(--label-2);font-size:13px;margin-top:2px}
+.sess:active{background:var(--surface-2)}
 .today-row{
   display:flex;align-items:center;justify-content:space-between;gap:10px;
   margin-top:12px;padding:12px 14px;border-radius:var(--r);background:var(--surface-2);

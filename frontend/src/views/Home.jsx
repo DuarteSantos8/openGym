@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
-import { effectiveRoutines, effectiveRoutineIds, nextTrainingDay, streakWeeks, lastBW, setsDoneActive } from '../lib/history.js'
-import { fmtNum, fmtDate, todayISO, isoOf, weekKey, weekStartOf, weekDayOffset, DAYS, DAYN } from '../lib/format.js'
+import { effectiveRoutines, effectiveRoutineIds, nextTrainingDay, streakWeeks, lastBW, setsDoneActive, setUnitsTotal } from '../lib/history.js'
+import { fmtNum, fmtDate, todayISO, isoOf, weekKey, weekStartOf, weekDayOffset, DAYS, DAYN, exCount } from '../lib/format.js'
 import { t, dateLocale } from '../lib/i18n.js'
 import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, startFlow, starterPlanSheet, bwDeltaColor, weighInsSheet } from '../sheets.jsx'
 import LineChart from '../components/LineChart.jsx'
@@ -10,100 +10,90 @@ import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { glyphOf } from '../lib/glyphs.js'
-import { BEN_PROFILE, BEN_GOAL_SHORT } from '../lib/ben-profile.js'
+import { BEN_PROFILE } from '../lib/ben-profile.js'
 import { routineCoaching, bodyweightTrend, strengthRetention } from '../lib/ben-coach.js'
 
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
+// Single-person build: no name in the header, no generic fitness content. The page
+// answers, top to bottom: what to do today (one action), where the week stands
+// (3 sessions is the target, a 4th is optional), which workout to start, how body
+// weight is trending, and whether strength is holding.
+const WEEK_TARGET = BEN_PROFILE.frequency || 3
+
 export default function Home() {
   const nav = useNavigate()
   const S = useStore(s => s.S)
-  const user = useStore(s => s.user)
   const [weekOffset, setWeekOffset] = useState(0)
 
   const today = new Date()
-  // A weekday can hold several routines. `todayRoutines` is the whole day; `routine` is the
-  // first, kept for the one-routine glyph. The derived session name joins them (§9).
-  const todayRoutines = effectiveRoutines(S, todayISO())
+  const todayIso = todayISO()
+  const todayRoutines = effectiveRoutines(S, todayIso)
   const routine = todayRoutines[0] || null
   const todayName = todayRoutines.map(r => r.name).join(' + ')
-  const todayOvr = S.dayPlan[todayISO()] !== undefined
-  // An open editor on a saved workout (lib/session-edit.js) holds S.active too, but it is not a
-  // session in progress: the row takes you back to it as an edit, the way the tab bar does.
+  const todayExCount = todayRoutines.reduce((n, r) => n + (r.ex || []).length, 0)
+  const todayOvr = S.dayPlan[todayIso] !== undefined
   const editingSaved = !!S.active?.editingWorkoutId
-  // On a rest day, saying when you train next beats leaving the row as a full stop.
-  const next = !S.active && !todayRoutines.length ? nextTrainingDay(S, todayISO()) : null
+  const next = !S.active && !todayRoutines.length ? nextTrainingDay(S, todayIso) : null
   const bw = lastBW(S)
   const prevBW = S.bodyweight.length > 1 ? S.bodyweight[S.bodyweight.length - 2] : null
   const delta = bw && prevBW ? bw.w - prevBW.w : null
 
   const ws = weekStartOf(S)
-  // The first day of the shown week. Named for the role, not for Monday — which day that is
-  // is the setting.
   const wkStart = new Date(today)
   wkStart.setDate(today.getDate() - weekDayOffset(today.getDay(), ws) + weekOffset * 7)
   const doneDays = new Set(S.workouts.map(w => w.d))
-  // The last session logged for today, if any — what the row below reports instead of asking
-  // you to start the one you already did. Last wins, so a second session names itself.
-  const doneToday = S.workouts.filter(w => w.d === todayISO()).at(-1) || null
+  const doneToday = S.workouts.filter(w => w.d === todayIso).at(-1) || null
   const strip = []
   for (let i = 0; i < 7; i++) {
     const d = new Date(wkStart); d.setDate(wkStart.getDate() + i)
     const iso = isoOf(d)
     const eff = effectiveRoutineIds(S, iso).length > 0, ovr = S.dayPlan[iso] !== undefined, done = doneDays.has(iso)
     const dot = done ? ' done' : ovr && eff ? ' ovr' : eff ? ' plan' : ''
-    strip.push(<div key={i} className={'wday' + (iso === todayISO() ? ' today' : '')} {...tappable(() => dayOverrideSheet(iso))}>
+    strip.push(<div key={i} className={'wday' + (iso === todayIso ? ' today' : '')} {...tappable(() => dayOverrideSheet(iso))}>
       <div className="lbl">{t(DAYS[d.getDay()])}</div><div className="num">{d.getDate()}</div><div className={'dot' + dot} /></div>)
   }
   const wkEnd = new Date(wkStart); wkEnd.setDate(wkStart.getDate() + 6)
   const wkLabel = weekOffset === 0 ? t('This week') : `${wkStart.getDate()} ${wkStart.toLocaleDateString(dateLocale(), { month: 'short' })} – ${wkEnd.getDate()} ${wkEnd.toLocaleDateString(dateLocale(), { month: 'short' })}`
 
-  const wThisWeek = S.workouts.filter(w => weekKey(w.d, ws) === weekKey(todayISO(), ws)).length
-  // Days scheduled, not routines — a combined day counts as 1, matching wThisWeek (one w).
-  const plannedPerWeek = Object.values(S.week).filter(ids => ids?.length).length
+  const wThisWeek = S.workouts.filter(w => weekKey(w.d, ws) === weekKey(todayIso, ws)).length
+  const extra = Math.max(0, wThisWeek - WEEK_TARGET)
+  const weekDone = Math.min(wThisWeek, WEEK_TARGET)
   const benBW = bodyweightTrend({ ...S, weekStart: ws })
   const benStrength = strengthRetention(S)
-  const benCoaching = routine ? routineCoaching(S, routine, 3) : []
   const bwPoints = S.bodyweight.slice(-30).map(b => ({ t: b.t || new Date(b.d).getTime(), y: b.w, d: b.d }))
 
-  // today's session shown right under the week strip
-  const onToday = () => { if (S.active) nav('/workout'); else if (todayRoutines.length) startFlow(effectiveRoutineIds(S, todayISO())); else dayOverrideSheet(todayISO()) }
+  // Progression guidance follows the session that matters: today's plan, else the next
+  // planned session, so a rest day still shows what is coming rather than nothing.
+  const guideRoutine = routine || next?.routine || null
+  const benCoaching = guideRoutine ? routineCoaching(S, guideRoutine, 3) : []
+
+  // This week's planned sessions, in weekday order, with the status of the shown week.
+  // Days are tappable to reschedule, the same as the strip above.
+  const weekSessions = []
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(wkStart); d.setDate(wkStart.getDate() + i)
+    const iso = isoOf(d)
+    const routines = effectiveRoutineIds(S, iso).map(id => S.routines.find(r => r.id === id)).filter(Boolean)
+    if (!routines.length) continue
+    weekSessions.push({ iso, weekday: d.getDay(), date: d.getDate(), routines, done: doneDays.has(iso), isToday: iso === todayIso })
+  }
+
+  // Active-session progress for the hero row.
+  const activeDone = S.active ? setsDoneActive(S.active) : 0
+  const activeTotal = S.active ? setUnitsTotal(S.active.entries) : 0
+
+  const onToday = () => { if (S.active) nav('/workout'); else if (todayRoutines.length) startFlow(effectiveRoutineIds(S, todayIso)); else nav('/workout') }
+  const idSet = new Set(effectiveRoutineIds(S, todayIso))
+  const otherRoutines = S.routines.filter(r => !idSet.has(r.id))
 
   return <div className="narrow">
     <div className="hdr">
-      <div><h1>{BEN_PROFILE.name}</h1><div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
+      <div><h1>{t('Today')}</h1><div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
       <button className="iconbtn" onClick={() => nav('/settings')} aria-label={t('Settings')}><Icon name="gear" /></button>
     </div>
 
+    {/* One clear next action. Tapping the row and the primary button do the same thing. */}
     <div className="card">
-      <div className="row" style={{ gap: 9, marginBottom: 6 }}>
-        <span className="lrow-i" style={{ background: 'var(--acc)' }}><Icon name="target" /></span>
-        <div>
-          <div className="lbl2">{t('Your focus')}</div>
-          <div className="ttl">{BEN_GOAL_SHORT}</div>
-        </div>
-      </div>
-      <div className="muted small" style={{ lineHeight: 1.5 }}>
-        {t('{0} sessions per week · {1}', BEN_PROFILE.frequency, BEN_PROFILE.environment)}
-      </div>
-      <div className="row between" style={{ marginTop: 10 }}>
-        <span className="small">{t('This week')}</span>
-        <b>{wThisWeek} / {BEN_PROFILE.frequency}</b>
-      </div>
-      <div className="muted small" style={{ marginTop: 5 }}>{t(BEN_PROFILE.priority)}</div>
-    </div>
-
-    <div className="card">
-      <div className="row between" style={{ marginBottom: 8 }}>
-        <button className="iconbtn" style={{ width: 30, height: 30, fontSize: 15 }} onClick={() => setWeekOffset(w => w - 1)} aria-label={t('Previous week')}><Icon name="chevronLeft" /></button>
-        <div className="small muted" style={{ fontWeight: 500 }}>{wkLabel}</div>
-        <button className="iconbtn" style={{ width: 30, height: 30, fontSize: 15 }} onClick={() => setWeekOffset(w => w + 1)} aria-label={t('Next week')}><Icon name="chevronRight" /></button>
-      </div>
-      <div className="week">{strip}</div>
-      {/* Once today's session is logged the row stops asking for it. The week strip already
-          knew (its dot goes 'done'); this row did not, so a finished day kept showing the
-          routine name behind a green Start tag and read as still outstanding (issue #4).
-          An in-progress session still wins — that one is happening right now. Tapping the
-          row keeps working, so a second session in one day is a tap away, just not urged. */}
       <div className="today-row" {...tappable(onToday)}>
         <div className="row" style={{ gap: 9, minWidth: 0 }}>
           <span className="lrow-i" style={{ background: S.active ? 'var(--orange)' : doneToday ? 'var(--surface-3)' : routine ? 'var(--acc)' : 'var(--surface-3)' }}>
@@ -111,29 +101,32 @@ export default function Home() {
               style={doneToday && !S.active ? { color: 'var(--green)' } : undefined} />
           </span>
           <div style={{ minWidth: 0 }}>
-            <div className="lbl2">{t('Today')}</div>
-            <div className="ttl">{S.active ? (editingSaved ? S.active.name : t('{0} — in progress', S.active.name))
-              : doneToday ? (doneToday.name ? t('{0} — done', doneToday.name) : t('Workout done'))
-              : routine ? todayName : t('Rest day')}{todayOvr && routine && !doneToday ? ' · ' + t('rescheduled') : ''}</div>
-            {next && !doneToday && <div className="ss">{t('Next session: {0}, {1}', t(DAYN[next.weekday]), next.routine.name)}</div>}
+            <div className="lbl2">{S.active ? t('In progress') : doneToday ? t('Done for today') : routine ? t("Today's session") : t('Rest day')}</div>
+            <div className="ttl">{S.active ? (editingSaved ? S.active.name : S.active.name)
+              : doneToday ? (doneToday.name || t('Workout done'))
+              : routine ? todayName : t('Recovery')}</div>
+            {S.active && activeTotal > 0 && !editingSaved && <div className="ss">{t('{0} of {1} sets', activeDone, activeTotal)}</div>}
+            {!S.active && !doneToday && routine && <div className="ss">{exCount(todayExCount)}{todayOvr ? ' · ' + t('rescheduled') : ''}</div>}
+            {!S.active && !doneToday && !routine && next && <div className="ss">{t('Next: {0}, {1}', t(DAYN[next.weekday]), next.routine.name)}</div>}
+            {!S.active && !doneToday && !routine && !next && <div className="ss">{t('No sessions planned')}</div>}
+            {!S.active && doneToday && <div className="ss">{wThisWeek >= WEEK_TARGET ? t('{0} of {1} this week — anything more is extra', wThisWeek, WEEK_TARGET) : t('{0} of {1} this week', wThisWeek, WEEK_TARGET)}</div>}
           </div>
         </div>
         {S.active ? <span className="tag" style={{ color: 'var(--orange)', background: 'color-mix(in srgb,var(--orange) 16%,transparent)' }}>{editingSaved ? t('Edit') : t('Resume')}</span>
           : doneToday ? <span className="tag" style={{ color: 'var(--green)', background: 'color-mix(in srgb,var(--green) 16%,transparent)' }}>{t('Done')}</span>
           : routine ? <span className="tag acc">{t('Start')}</span>
-          : <Icon name="plus" className="chev" />}
+          : <Icon name="chevronRight" className="chev" />}
       </div>
-      {/* The row above starts today's plan in one tap, and so does the Start button in the tab
-          bar — which is the whole problem when you want something else. Both jump straight into
-          the planned session whenever there is one, so the Start screen (a freestyle session,
-          and your other routines) is only reachable on a day with nothing planned. The one other
-          way in, "Choose a different workout" on the weigh-in sheet, does not exist when the
-          weigh-in is switched off. This is that door, and it starts nothing on its own. */}
-      {!S.active && <div style={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
-        <Button size="sm" variant="ghost" className="dim" icon="reset" onClick={() => nav('/workout')}>
-          {t('Choose a different workout')}
-        </Button>
-      </div>}
+      <div className="hero-act">
+        {S.active
+          ? <Button variant="primary" icon={editingSaved ? 'pencil' : 'play'} onClick={() => nav('/workout')}>{editingSaved ? t('Open editor') : t('Resume workout')}</Button>
+          : doneToday
+            ? <Button icon="plus" onClick={() => nav('/workout')}>{t('Log another workout')}</Button>
+            : routine
+              ? <Button variant="primary" icon="play" onClick={() => startFlow(effectiveRoutineIds(S, todayIso))}>{t('Start {0}', todayName)}</Button>
+              : <Button icon="dumbbell" onClick={() => nav('/workout')}>{t('Browse workouts')}</Button>}
+        {!S.active && <Button variant="ghost" className="dim" onClick={() => nav('/workout')}>{t('All workouts')}</Button>}
+      </div>
     </div>
 
     {!S.routines.length && !S.active && (
@@ -148,30 +141,60 @@ export default function Home() {
       </div>
     )}
 
-    <div className="card">
+    {/* Weekly structure: 3 sessions is the target, a 4th is optional extra. */}
+    {!!S.routines.length && <div className="card">
+      <div className="row between" style={{ marginBottom: 4 }}>
+        <div><div className="lbl2">{wkLabel}</div><h2 style={{ margin: '2px 0 0', fontSize: 17, color: 'var(--label)', fontWeight: 600 }}>{t('Training week')}</h2></div>
+        <b>{t('{0} of {1}', Math.min(wThisWeek, WEEK_TARGET), WEEK_TARGET)}{extra > 0 ? t(' +{0} extra', extra) : ''}</b>
+      </div>
+      <div className="segs" aria-hidden="true">
+        {Array.from({ length: WEEK_TARGET }, (_, i) => <i key={i} className={i < weekDone ? 'fill' : ''} />)}
+      </div>
       <div className="row between" style={{ marginBottom: 8 }}>
-        <div><div className="lbl2">{t('Coach')}</div><h2 style={{ margin: '2px 0 0' }}>{t('What the data says')}</h2></div>
-        <Icon name="sparkles" style={{ color: 'var(--acc)' }} />
+        <button className="iconbtn" style={{ width: 30, height: 30, fontSize: 15 }} onClick={() => setWeekOffset(w => w - 1)} aria-label={t('Previous week')}><Icon name="chevronLeft" /></button>
+        <div className="small muted" style={{ fontWeight: 500 }}>{t('{0} sessions keep the week on track. A 4th is optional.', WEEK_TARGET)}</div>
+        <button className="iconbtn" style={{ width: 30, height: 30, fontSize: 15 }} onClick={() => setWeekOffset(w => w + 1)} aria-label={t('Next week')}><Icon name="chevronRight" /></button>
       </div>
-      <div className="row" style={{ gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
-        <span className="tag" style={{ color: benBW.status === 'down' ? 'var(--green)' : benBW.status === 'up' ? 'var(--orange)' : 'var(--label-2)' }}>
-          {benBW.delta == null ? t('Weight: baseline') : t('Weight: {0}', benBW.status === 'down' ? 'trending down' : benBW.status === 'up' ? 'trending up' : 'steady')}
-        </span>
-        <span className="tag">
-          {benStrength.status === 'baseline' ? t('Strength: building baseline') : benStrength.status === 'holding' ? t('Strength: holding') : benStrength.status === 'mixed' ? t('Strength: mixed') : t('Strength: needs attention')}
-        </span>
-      </div>
-      {benBW.delta != null && <div className="small muted" style={{ marginBottom: 10 }}>{t('Weekly average')} · {benBW.delta > 0 ? '+' : ''}{fmtNum(benBW.delta)} {S.unit} {t('vs previous logged week')}</div>}
-      {benStrength.compared > 0 && <div className="small muted" style={{ marginBottom: 10 }}>{t('{0} exercises compared over the last two 30-day windows.', benStrength.compared)}</div>}
-      {benCoaching.length > 0 ? <div>
-        <div className="small dim" style={{ marginBottom: 5 }}>{t('Next-session guidance')}</div>
-        {benCoaching.map(x => <div key={x.id} className="mrow">
-          <span className="nm" style={{ minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{x.name}</span>
-          <span className="v" style={{ color: x.recommendation.status === 'progress' ? 'var(--green)' : x.recommendation.status === 'regress' ? 'var(--orange)' : 'var(--label-2)' }}>{t(x.recommendation.label)}</span>
+      <div className="week">{strip}</div>
+      {weekSessions.length > 0 ? <div style={{ marginTop: 8 }}>
+        {weekSessions.map(s => <div key={s.iso} className="sess" {...tappable(() => dayOverrideSheet(s.iso))}>
+          <span className="lrow-i" style={{ width: 26, height: 26, fontSize: 14, background: s.done ? 'var(--surface-3)' : s.isToday ? 'var(--acc)' : 'var(--surface-3)' }}>
+            <Icon name={s.done ? 'checkCircle' : glyphOf(s.routines[0].emoji)} style={s.done ? { color: 'var(--green)' } : undefined} />
+          </span>
+          <div className="grow" style={{ minWidth: 0 }}>
+            <div className="tt" style={{ fontSize: 14 }}>{t(DAYN[s.weekday])} · {s.routines.map(r => r.name).join(' + ')}</div>
+            <div className="ss">{s.done ? t('Done') : s.isToday ? t('Today') : t('{0} exercises', s.routines.reduce((n, r) => n + (r.ex || []).length, 0))}</div>
+          </div>
+          {s.isToday && !s.done && !S.active && <span className="tag acc">{t('Start')}</span>}
         </div>)}
-      </div> : <div className="small muted">{t('Complete a planned workout to unlock exercise-specific guidance.')}</div>}
-    </div>
+      </div> : <div className="muted small" style={{ marginTop: 8 }}>{t('No sessions planned this week.')}</div>}
+      <div className="row between" style={{ marginTop: 8 }}>
+        <div className="muted small">{t('{0} week streak', streakWeeks(S))} · {t('{0} workouts total', S.workouts.length)}</div>
+        <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={() => calendarSheet()}>{t('Calendar')}</Button>
+      </div>
+    </div>}
 
+    {/* Workout selection: today's plan is above; everything else lives here. */}
+    {!!S.routines.length && !S.active && <div className="card">
+      <div className="row between" style={{ marginBottom: 8 }}>
+        <h2 style={{ margin: 0, fontSize: 17, color: 'var(--label)', fontWeight: 600 }}>{todayRoutines.length ? t('Other workouts') : t('Start a workout')}</h2>
+        <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={() => nav('/plan')}>{t('Edit plan')}</Button>
+      </div>
+      {(todayRoutines.length ? otherRoutines : S.routines).map(r => <div key={r.id} className="sess" {...tappable(() => startFlow([r.id]))}>
+        <span className="lrow-i" style={{ width: 26, height: 26, fontSize: 14 }}><Icon name={glyphOf(r.emoji)} /></span>
+        <div className="grow" style={{ minWidth: 0 }}><div className="tt" style={{ fontSize: 14 }}>{r.name}</div><div className="ss">{exCount((r.ex || []).length)}</div></div>
+        <span className="tag acc">{t('Start')}</span>
+      </div>)}
+      {todayRoutines.length > 0 && otherRoutines.length === 0 && <div className="muted small">{t('This is the only routine in the plan.')}</div>}
+      <div className="sess" {...tappable(() => startFlow([]))}>
+        <span className="lrow-i" style={{ width: 26, height: 26, fontSize: 14 }}><Icon name="shuffle" /></span>
+        <div className="grow" style={{ minWidth: 0 }}><div className="tt" style={{ fontSize: 14 }}>{t('Freestyle')}</div><div className="ss">{t('Pick exercises as you go')}</div></div>
+        <span className="tag">{t('Start')}</span>
+      </div>
+      {!todayRoutines.length && <div className="muted small" style={{ marginTop: 6 }}>{t('Rest day — training now counts as an optional extra session.')}</div>}
+    </div>}
+
+    {/* Bodyweight trend. The toggle in Settings hides this card only. */}
     {S.showWeightCard !== false && <div className="card">
       <div className="row between bw-head" style={{ marginBottom: 6 }}>
         <h2 style={{ margin: 0 }}>{t('Body weight')}</h2>
@@ -183,7 +206,6 @@ export default function Home() {
       {bw ? <>
         <div className="row" style={{ gap: 8, alignItems: 'baseline' }}>
           <div className="big">{fmtNum(bw.w)} <span className="muted" style={{ fontSize: '1rem' }}>{S.unit}</span></div>
-          {/* only when it actually moved — an unchanged weight used to read as "− 0" */}
           {!!delta && (
             <span className="small row" style={{ gap: 2, fontWeight: 500, color: bwDeltaColor(delta, bw.w) }}>
               <Icon name={delta > 0 ? 'arrowUp' : 'arrowDown'} style={{ fontSize: 12 }} />
@@ -192,6 +214,9 @@ export default function Home() {
           )}
           <span className="dim small" style={{ marginInlineStart: 'auto' }}>{fmtDate(bw.d, true)}</span>
         </div>
+        <div className="small muted" style={{ marginTop: 4 }}>
+          {benBW.delta == null ? t('Log another week to see the trend.') : t('Weekly average {0} {1} vs previous logged week', (benBW.delta > 0 ? '+' : '') + fmtNum(benBW.delta) + ' ' + S.unit, benBW.status === 'down' ? t('down') : benBW.status === 'up' ? t('up') : t('steady'))}
+        </div>
         {S.targetW && (
           <div className="small row" style={{ color: 'var(--yellow)', marginTop: 4, gap: 5 }}>
             <Icon name="target" style={{ fontSize: 13 }} />
@@ -199,7 +224,6 @@ export default function Home() {
           </div>
         )}
         <div className="chart" style={{ marginTop: 8 }}><LineChart points={bwPoints} h={130} unit={S.unit} goal={S.targetW} /></div>
-        {/* every weigh-in, week by week with its average (Discord 'Weight') */}
         <div className="row" style={{ justifyContent: 'flex-end', marginTop: 4 }}>
           <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={weighInsSheet}>{t('All weigh-ins')}</Button>
         </div>
@@ -208,17 +232,25 @@ export default function Home() {
         : t("No entries yet — log your weight to start the curve. It's also asked before every workout.")}</div>}
     </div>}
 
-    <div className="card tappable" style={{ cursor: 'pointer' }} {...tappable(() => calendarSheet())}>
-      <div className="row between">
-        <div>
-          <div className="row" style={{ gap: 7, fontSize: 22, fontWeight: 600, letterSpacing: '-.021em' }}>
-            <Icon name="flame" style={{ color: 'var(--orange)' }} />
-            {t('{0} week streak', streakWeeks(S))}
-          </div>
-          <div className="muted small" style={{ marginTop: 2 }}>{wThisWeek}{plannedPerWeek ? ' / ' + plannedPerWeek : ''} {t('this week')} · {t(S.workouts.length === 1 ? '{0} workout total' : '{0} workouts total', S.workouts.length)}</div>
-        </div>
-        <Icon name="calendar" className="chev" style={{ fontSize: 20 }} />
+    {/* Strength / progression: retention across windows + guidance for the relevant session. */}
+    <div className="card">
+      <div className="row between" style={{ marginBottom: 8 }}>
+        <h2 style={{ margin: 0, fontSize: 17, color: 'var(--label)', fontWeight: 600 }}>{t('Strength')}</h2>
+        <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={() => nav('/stats')}>{t('Details')}</Button>
       </div>
+      <div className="row" style={{ gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+        <span className="tag">
+          {benStrength.status === 'baseline' ? t('Building baseline') : benStrength.status === 'holding' ? t('Holding') : benStrength.status === 'mixed' ? t('Mixed') : t('Needs attention')}
+        </span>
+        {benStrength.compared > 0 && <span className="tag">{t('{0} exercises compared', benStrength.compared)}</span>}
+      </div>
+      {benCoaching.length > 0 ? <div>
+        <div className="small dim" style={{ marginBottom: 5 }}>{guideRoutine && guideRoutine !== routine ? t('Guidance for next session: {0}', guideRoutine.name) : t('Guidance for today')}</div>
+        {benCoaching.map(x => <div key={x.id} className="mrow">
+          <span className="nm" style={{ minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{x.name}</span>
+          <span className="v" style={{ color: x.recommendation.status === 'progress' ? 'var(--green)' : x.recommendation.status === 'regress' ? 'var(--orange)' : 'var(--label-2)' }}>{t(x.recommendation.label)}</span>
+        </div>)}
+      </div> : <div className="small muted">{t('Complete a planned workout to unlock exercise-specific guidance.')}</div>}
     </div>
   </div>
 }
