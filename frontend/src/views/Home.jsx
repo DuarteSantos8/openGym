@@ -4,13 +4,12 @@ import { effectiveRoutines, effectiveRoutineIds, nextTrainingDay, lastBW, setsDo
 import { fmtNum, fmtDate, todayISO, isoOf, weekKey, weekStartOf, weekDayOffset, DAYS, DAYN, exCount } from '../lib/format.js'
 import { t, dateLocale } from '../lib/i18n.js'
 import { bwSheet, goalSheet, dayOverrideSheet, startFlow, starterPlanSheet, bwDeltaColor } from '../sheets.jsx'
-import AttentionRow from '../components/AttentionRow.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { glyphOf } from '../lib/glyphs.js'
 import { BEN_PROFILE } from '../lib/ben-profile.js'
-import { bodyweightTrend, strengthRetention, exerciseAttention, alternativesFor, trainingSystem } from '../lib/ben-coach.js'
+import { bodyweightTrend, strengthRetention, trainingSystem } from '../lib/ben-coach.js'
 
 // Home = what to do now + a quick glance. One action, one week view, two compact
 // trends, and at most one next-action message. Everything detailed lives where it
@@ -66,10 +65,6 @@ export default function Home() {
 
   // The single next-action message: the top flag for the session that matters (today's
   // plan, else the next one). Full detail, alternatives and the fix live in Stats.
-  const guideRoutine = routine || next?.routine || null
-  const attention = guideRoutine ? exerciseAttention(S, guideRoutine) : []
-  const topAttention = attention[0] || null
-
   // Active-session progress for the hero row.
   const activeDone = S.active ? setsDoneActive(S.active) : 0
   const activeTotal = S.active ? setUnitsTotal(S.active.entries) : 0
@@ -77,8 +72,8 @@ export default function Home() {
   const onToday = () => { if (S.active) nav('/workout'); else if (todayRoutines.length) startFlow(effectiveRoutineIds(S, todayIso)); else nav('/workout') }
 
   return <div className="narrow">
-    <div className="hdr">
-      <div><h1>{t('Today')}</h1><div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
+    <div className="hdr home-hdr">
+      <div><div className="eyebrow">{t('Training')}</div><h1>{t('Today')}</h1><div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
       <button className="iconbtn" onClick={() => nav('/settings')} aria-label={t('Settings')}><Icon name="gear" /></button>
     </div>
 
@@ -190,23 +185,9 @@ export default function Home() {
         : t("No entries yet — log your weight to start the curve. It's also asked before every workout.")}</div>}
     </div>}
 
-    {/* Compact strength status plus the one thing needing attention, if any.
-        Guidance, alternatives and the fix live in Stats. */}
-    <div className="card">
-      <div className="row between" style={{ marginBottom: 8 }}>
-        <h2 style={{ margin: 0, fontSize: 17, color: 'var(--label)', fontWeight: 600 }}>{t('Strength')}</h2>
-        <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={() => nav('/stats')}>{t('Details')}</Button>
-      </div>
-      <div className="row" style={{ gap: 8, marginBottom: topAttention ? 8 : 0, flexWrap: 'wrap' }}>
-        <span className="tag">
-          {benStrength.status === 'baseline' ? t('Building baseline') : benStrength.status === 'holding' ? t('Holding') : benStrength.status === 'mixed' ? t('Mixed') : t('Needs attention')}
-        </span>
-        {benStrength.compared > 0 && <span className="tag">{t('{0} exercises compared', benStrength.compared)}</span>}
-      </div>
-      {topAttention && <div {...tappable(() => nav('/stats'))}>
-        <div className="small dim" style={{ marginBottom: 5 }}>{t('Needs attention')}</div>
-        <AttentionRow a={topAttention} altNames={alternativesFor(S, topAttention.id, { count: 1 }).map(x => x.name)} />
-      </div>}
-    </div>
+    <button className="progress-link" onClick={() => nav('/stats')}>
+      <div><div className="eyebrow">{t('Strength')}</div><div className="progress-title">{benStrength.status === 'baseline' ? t('Building baseline') : benStrength.status === 'holding' ? t('Holding') : benStrength.status === 'mixed' ? t('Mixed') : t('Needs attention')}</div></div>
+      <div className="progress-meta">{benStrength.compared > 0 ? t('{0} exercises compared', benStrength.compared) : t('View progress')} <Icon name="chevronRight" /></div>
+    </button>
   </div>
 }
