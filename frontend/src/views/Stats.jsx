@@ -295,7 +295,7 @@ function BenjaminProgress({ S }) {
   const previous = trend.weeks?.[1]
   return <div className="card">
     <div className="row between" style={{ marginBottom: 8 }}>
-      <div><div className="lbl2">{t('Benjamin progress')}</div><h2 style={{ margin: '2px 0 0' }}>{t('Lose fat. Keep strength.')}</h2></div>
+      <div><div className="lbl2">{t('Progress focus')}</div><h2 style={{ margin: '2px 0 0' }}>{t('Lose fat. Keep strength.')}</h2></div>
       <Icon name="target" style={{ color: 'var(--acc)' }} />
     </div>
     <div className="tiles" style={{ marginBottom: 10 }}>
