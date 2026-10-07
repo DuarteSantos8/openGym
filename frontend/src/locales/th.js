@@ -1961,7 +1961,6 @@ export default {
   'Greys show darker in light mode, so buttons don’t look switched off.': 'สีเทาจะเข้มขึ้นในโหมดสว่าง ปุ่มจะได้ไม่ดูเหมือนถูกปิดอยู่',
   'custom color picker': 'สีเอง กำหนดเอง ตัวเลือกสี',
   'Signed in from another tab. Your workout came along, keep going here.': 'ลงชื่อเข้าใช้จากแท็บอื่นแล้ว การออกกำลังกายของคุณมาด้วย ทำต่อที่นี่ได้เลย',
-  'Enter how long it took — at least 1 minute.': 'ใส่ระยะเวลาที่ใช้ — อย่างน้อย 1 นาที',
   // --- focus workout view ---
   'Add burst': 'เพิ่มเซ็ตพักสั้น',
   'Add drop set': 'เพิ่มดรอปเซ็ต',

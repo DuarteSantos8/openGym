@@ -1950,7 +1950,6 @@ export default {
   'Greys show darker in light mode, so buttons don’t look switched off.': 'Los grises se ven más oscuros en modo claro, para que los botones no parezcan apagados.',
   'custom color picker': 'color propio personalizado selector de color',
   'Signed in from another tab. Your workout came along, keep going here.': 'Sesión iniciada en otra pestaña. Tu entreno vino contigo, sigue aquí.',
-  'Enter how long it took — at least 1 minute.': 'Indica cuánto duró — al menos 1 minuto.',
   // --- focus workout view ---
   'Add burst': 'Añadir serie rest-pause',
   'Add drop set': 'Añadir serie descendente',

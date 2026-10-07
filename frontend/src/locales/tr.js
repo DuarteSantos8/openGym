@@ -1950,7 +1950,6 @@ export default {
   'Greys show darker in light mode, so buttons don’t look switched off.': 'Griler aydınlık modda daha koyu görünür, düğmeler kapalıymış gibi durmasın diye.',
   'custom color picker': 'kendi renk özel renk seçici',
   'Signed in from another tab. Your workout came along, keep going here.': 'Başka bir sekmede giriş yapıldı. Antrenmanın da geldi, buradan devam et.',
-  'Enter how long it took — at least 1 minute.': 'Ne kadar sürdüğünü gir — en az 1 dakika.',
   // --- focus workout view ---
   'Add burst': 'Rest-pause seti ekle',
   'Add drop set': 'Drop set ekle',

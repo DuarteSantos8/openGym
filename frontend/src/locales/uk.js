@@ -1947,7 +1947,6 @@ export default {
   'Greys show darker in light mode, so buttons don’t look switched off.': 'Сірі відтінки у світлій темі темніші, щоб кнопки не здавалися вимкненими.',
   'custom color picker': 'свій колір власний палітра вибір кольору',
   'Signed in from another tab. Your workout came along, keep going here.': 'Вхід виконано в іншій вкладці. Тренування збережено, продовжуй тут.',
-  'Enter how long it took — at least 1 minute.': 'Вкажи, скільки це тривало — щонайменше 1 хвилину.',
   // --- focus workout view ---
   'Add burst': 'Додати підхід рест-паузи',
   'Add drop set': 'Додати дроп-сет',

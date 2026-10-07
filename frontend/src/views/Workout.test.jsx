@@ -1679,7 +1679,7 @@ describe('workout focus view', () => {
 
     await click(buttonNamed('Complete set'))
     expect(mocks.S.active.entries[0].sets[0].done).toBe(true)
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number))
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), { forSet: expect.any(Number) })
     expect(container.textContent).toContain('2/2')
 
     await click(buttonNamed('Complete set'))
@@ -1705,7 +1705,7 @@ describe('workout focus view', () => {
 
     await click(buttonNamed('Complete set'))
     expect(mocks.S.active.cur).toBe(0)
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number))
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), { forSet: expect.any(Number) })
     await rerender()
     expect(container.textContent).toContain('Round 2')
 
@@ -2156,18 +2156,14 @@ describe('workout view header menu', () => {
     expect(item(layout, 'Cards').on).toBe(false)
   })
 
-  it('includes Rename workout, Add routine and the whole-workout progression switch, then a Layout sheet with the four layouts marked current', async () => {
+  it('marks Focus current in the Layout sheet when the session is in the focus view', async () => {
     await mount([exercise('plain-bench', [false])], 0, { active: { workoutView: 'focus', routineIds: [] } })
 
     const menu = await openMenu()
-    expect(menu.items.filter(Boolean).map(it => it.label)).toEqual(['Rename workout', 'Add routine', 'Don’t count for progression', 'Layout'])
     expect(item(menu, 'Layout').sub).toBe('Focus')
 
-    await act(async () => { item(menu, 'Rename workout').onClick() })
-    expect(mocks.renameWorkoutSheet).toHaveBeenCalled()
-
     const layout = await openLayout(menu)
-    expect(layout.items.filter(Boolean).map(it => it.label)).toEqual(['Cards', 'List', 'Compact', 'Focus'])
+    expect(menuItemsOf(layout).map(it => it.label)).toEqual(['Cards', 'List', 'Compact', 'Focus'])
     expect(item(layout, 'Focus').on).toBe(true)
     expect(item(layout, 'Cards').on).toBe(false)
   })

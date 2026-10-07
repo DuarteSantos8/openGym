@@ -1953,7 +1953,6 @@ export default {
   'Greys show darker in light mode, so buttons don’t look switched off.': 'A szürkék világos módban sötétebbek, hogy a gombok ne tűnjenek kikapcsoltnak.',
   'custom color picker': 'saját szín egyéni színválasztó',
   'Signed in from another tab. Your workout came along, keep going here.': 'Bejelentkeztél egy másik lapon. Az edzésed is jött vele, folytasd itt.',
-  'Enter how long it took — at least 1 minute.': 'Add meg, meddig tartott — legalább 1 perc.',
   // --- focus workout view ---
   'Add burst': 'Rest-pause sorozat hozzáadása',
   'Add drop set': 'Vetkőző sorozat hozzáadása',

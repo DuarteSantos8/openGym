@@ -1950,7 +1950,6 @@ export default {
   'Greys show darker in light mode, so buttons don’t look switched off.': 'लाइट मोड में ग्रे रंग गहरे दिखते हैं, ताकि बटन बंद जैसे न लगें।',
   'custom color picker': 'अपना रंग कस्टम रंग चुनने वाला',
   'Signed in from another tab. Your workout came along, keep going here.': 'दूसरे टैब से साइन इन हुआ। आपका वर्कआउट साथ आ गया, यहीं जारी रखें।',
-  'Enter how long it took — at least 1 minute.': 'बताएँ कि इसमें कितना समय लगा — कम से कम 1 मिनट।',
   // --- focus workout view ---
   'Add burst': 'रेस्ट-पॉज़ सेट जोड़ें',
   'Add drop set': 'ड्रॉप सेट जोड़ें',

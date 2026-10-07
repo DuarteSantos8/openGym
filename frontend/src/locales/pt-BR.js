@@ -1212,7 +1212,6 @@ export const PT_BR_OVERRIDES = {
   'Greys show lighter in dark mode, so buttons don’t look switched off.': 'Os cinzas ficam mais claros no modo escuro, para os botões não parecerem desligados.',
   'Greys show darker in light mode, so buttons don’t look switched off.': 'Os cinzas ficam mais escuros no modo claro, para os botões não parecerem desligados.',
   'Signed in from another tab. Your workout came along, keep going here.': 'Login feito em outra aba. Seu treino veio junto, continue por aqui.',
-  'Enter how long it took — at least 1 minute.': 'Informe quanto tempo levou — pelo menos 1 minuto.',
   // --- focus workout view ---
   'Add burst': 'Adicionar série rest-pause',
   'Add drop set': 'Adicionar drop set',
@@ -1225,7 +1224,6 @@ export const PT_BR_OVERRIDES = {
   'Delete set': 'Excluir série',
   'Exercise {0} of {1}': 'Exercício {0} de {1}',
   'Focus': 'Foco',
-  'Left': 'Esquerda',
   'Load': 'Carga',
   'Load ({0})': 'Carga ({0})',
   'Mark as warm-up': 'Marcar como aquecimento',
@@ -1234,7 +1232,6 @@ export const PT_BR_OVERRIDES = {
   'Next superset set': 'Próxima série do superset',
   'Previous set': 'Série anterior',
   'Previous superset set': 'Série anterior do superset',
-  'Right': 'Direita',
   'Round {0}': 'Rodada {0}',
   'Set menu': 'Menu da série',
   'Set note': 'Nota da série',

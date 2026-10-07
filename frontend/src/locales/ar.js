@@ -2003,7 +2003,6 @@ export default {
   'Greys show darker in light mode, so buttons don’t look switched off.': 'تظهر الألوان الرمادية أغمق في الوضع الفاتح، حتى لا تبدو الأزرار مُعطّلة.',
   'custom color picker': 'لون خاص مخصص منتقي الألوان',
   'Signed in from another tab. Your workout came along, keep going here.': 'تم تسجيل الدخول من علامة تبويب أخرى. تمرينك انتقل معك، تابعه هنا.',
-  'Enter how long it took — at least 1 minute.': 'أدخل المدة التي استغرقها — دقيقة واحدة على الأقل.',
   // --- focus workout view ---
   'Add burst': 'إضافة مجموعة راحة مؤقتة',
   'Add drop set': 'إضافة مجموعة تنازلية',

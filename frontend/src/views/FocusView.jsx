@@ -94,7 +94,7 @@ function PlateBadge({ S, entry, set }) {
   if (!load) return null
   const stack = load.plates.map(fmtPlate).join(' + ')
   const text = load.barOnly ? t('Bar only')
-    : load.kind === 'pairs' ? t('{0} per side', stack || '—') : t('Load {0}', stack || '—')
+    : load.kind === 'pairs' ? t('{0} per side', stack || '–') : t('Load {0}', stack || '–')
   return <span className="focus-badge plate"><Icon name="plate" />{text}{load.missing > 0 && <> · <span className="short">{t('{0} short', fmtPlate(load.missing) + ' ' + S.unit)}</span></>}</span>
 }
 
