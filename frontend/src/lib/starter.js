@@ -6,6 +6,31 @@
 // schedule points at, so a weekday never depends on the position of a routine in the array.
 // Names stay canonical English — they become ordinary user routines, which are not translated.
 import { uid } from './format.js'
+import { EXDB } from './exercises.js'
+
+// Benjamin-specific home training: resolve exercises by name so the profile survives dataset id changes.
+const pick = (...terms) => {
+  const qs = terms.map(x => x.toLowerCase())
+  const exact = EXDB.find(e => qs.some(q => String(e.n || '').toLowerCase() === q))
+  if (exact) return exact.id
+  return EXDB.find(e => qs.some(q => String(e.n || '').toLowerCase().includes(q)))?.id || null
+}
+const benEx = (id, sets, reps) => id ? [id, sets, reps] : null
+const BEN_PUSH = pick('push-up', 'push up')
+const BEN_PULL = pick('pull-up', 'pull up')
+const BEN_SQUAT = pick('bodyweight squat', 'air squat', 'squat')
+const BEN_LUNGE = pick('bodyweight lunge', 'reverse lunge', 'lunge')
+const BEN_BRIDGE = pick('glute bridge', 'hip bridge')
+const BEN_PLANK = pick('plank')
+const BEN_PIKE = pick('pike push-up', 'pike push up')
+const BEN_OPTIONAL = pick('mountain climber', 'mountain climbers')
+const BEN_HOME = [
+  ['ben-a', 'Benjamin · Full Body A', 'figureStrength', [benEx(BEN_PUSH, 3, 12), benEx(BEN_PULL, 3, 5), benEx(BEN_SQUAT, 3, 15), benEx(BEN_BRIDGE, 3, 15), benEx(BEN_PLANK, 3, 45)].filter(Boolean)],
+  ['ben-b', 'Benjamin · Full Body B', 'figureStrength', [benEx(BEN_PIKE, 3, 8), benEx(BEN_PULL, 3, 5), benEx(BEN_LUNGE, 3, 10), benEx(BEN_BRIDGE, 3, 15), benEx(BEN_PLANK, 3, 45)].filter(Boolean)],
+  ['ben-c', 'Benjamin · Full Body C', 'figureStrength', [benEx(BEN_PUSH, 3, 12), benEx(BEN_PULL, 3, 5), benEx(BEN_SQUAT, 3, 15), benEx(BEN_LUNGE, 2, 10), benEx(BEN_OPTIONAL, 3, 30)].filter(Boolean)],
+  ['ben-short', 'Benjamin · Short Full Body', 'figureStrength', [benEx(BEN_PUSH, 2, 12), benEx(BEN_PULL, 2, 5), benEx(BEN_SQUAT, 2, 15), benEx(BEN_PLANK, 2, 45)].filter(Boolean)]
+]
+
 
 const PPL = [
   ['push', 'Push Day', 'barbell', [['0025', 4, 8], ['0047', 3, 10], ['0426', 3, 10], ['0334', 3, 12], ['0241', 3, 12], ['0251', 3, 10]]],
@@ -38,7 +63,8 @@ const PLANS = {
   ppl: { routines: PPL, schedule: [[1, 'push'], [3, 'pull'], [5, 'legs']] },
   'upper-lower': { routines: UPPER_LOWER, schedule: [[1, 'upper-a'], [2, 'lower-a'], [4, 'upper-b'], [5, 'lower-b']] },
   'full-body': { routines: FULL_BODY, schedule: [[1, 'fb-a'], [3, 'fb-b'], [5, 'fb-c']] },
-  '5x5': { routines: FIVE_BY_FIVE, schedule: [[1, '5x5-a'], [3, '5x5-b'], [5, '5x5-c']] }
+  '5x5': { routines: FIVE_BY_FIVE, schedule: [[1, '5x5-a'], [3, '5x5-b'], [5, '5x5-c']] },
+  'benjamin-home': { routines: BEN_HOME, schedule: [[1, 'ben-a'], [3, 'ben-b'], [5, 'ben-c']] }
 }
 
 const build = routines =>
@@ -46,7 +72,7 @@ const build = routines =>
 
 // Fresh routine objects (new ids) — [push, pull, legs]. The demo build seeds a history on
 // top of exactly these three, so this entry point keeps its shape.
-export const starterRoutines = () => build(PPL)
+export const starterRoutines = () => build(BEN_HOME.slice(0, 3))
 
 // [{ id, days }] for the chooser. The day count is read off the schedule rather than stored
 // beside it, so the two can never disagree.
