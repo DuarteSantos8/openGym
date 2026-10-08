@@ -11,6 +11,7 @@ import { tappable } from '../lib/use-sheet-keyboard.js'
 import { glyphOf } from '../lib/glyphs.js'
 import { BEN_PROFILE } from '../lib/ben-profile.js'
 import { bodyweightTrend, strengthRetention, exerciseAttention, alternativesFor, trainingSystem } from '../lib/ben-coach.js'
+import { recommendToday } from '../lib/recommendation.js'
 
 // Home = Today: a quick-reference dashboard, not a workout screen. One compact
 // card points at today's session with a Start shortcut into the Start section,
@@ -26,7 +27,8 @@ export default function Home() {
   const todayIso = todayISO()
   const todayRoutines = effectiveRoutines(S, todayIso)
   const routine = todayRoutines[0] || null
-  const todayName = todayRoutines.map(r => r.name).join(' + ')
+  const recommendation = recommendToday(S)
+  const todayName = todayRoutines.map(r => r.name).join(' + ') || (recommendation.routine?.name || '')
   const todayExCount = todayRoutines.reduce((n, r) => n + (r.ex || []).length, 0)
   const todayOvr = S.dayPlan[todayIso] !== undefined
   const editingSaved = !!S.active?.editingWorkoutId
@@ -96,13 +98,14 @@ export default function Home() {
               style={doneToday && !S.active ? { color: 'var(--green)' } : undefined} />
           </span>
           <div style={{ minWidth: 0 }}>
-            <div className="lbl2">{S.active ? t('In progress') : doneToday ? t('Done for today') : routine ? t("Today's workout") : t('Rest day')}</div>
+            <div className="lbl2">{S.active ? t('In progress') : doneToday ? t('Done for today') : routine ? t("Today's workout") : recommendation.routine ? t('Today') + (recommendation.reason ? ' — ' + recommendation.reason : '') : t('Rest day')}</div>
             <div className="ttl">{S.active ? S.active.name
               : doneToday ? (doneToday.name || t('Workout done'))
-              : routine ? todayName : t('Recovery')}</div>
+              : routine ? todayName : recommendation.routine ? recommendation.routine.name : t('Recovery')}</div>
             {S.active && activeTotal > 0 && !editingSaved && <div className="ss">{t('{0} of {1} sets', activeDone, activeTotal)}</div>}
             {!S.active && !doneToday && routine && <div className="ss">{exCount(todayExCount)} · {t('about {0} min', plannedMin)}{todayOvr ? ' · ' + t('rescheduled') : ''}</div>}
-            {!S.active && !doneToday && !routine && next && <div className="ss">{t('Next: {0}, {1}', t(DAYN[next.weekday]), next.routine.name)}</div>}
+            {!S.active && !doneToday && !routine && recommendation.routine && <div className="ss">{exCount(recommendation.routine.ex?.length || 0)} · {t('about {0} min', recommendation.duration || 35)} · {recommendation.reason}</div>}
+            {!S.active && !doneToday && !routine && !recommendation.routine && next && <div className="ss">{t('Next: {0}, {1}', t(DAYN[next.weekday]), next.routine.name)}</div>}
             {!S.active && !doneToday && !routine && !next && <div className="ss">{t('No sessions planned')}</div>}
             {!S.active && doneToday && <div className="ss">{wThisWeek >= WEEK_TARGET ? t('{0} of {1} this week — anything more is extra', wThisWeek, WEEK_TARGET) : t('{0} of {1} this week', wThisWeek, WEEK_TARGET)}</div>}
           </div>
@@ -110,6 +113,7 @@ export default function Home() {
         {S.active ? <span className="tag" style={{ color: 'var(--orange)', background: 'color-mix(in srgb,var(--orange) 16%,transparent)' }}>{editingSaved ? t('Edit') : t('Resume')}</span>
           : doneToday ? <span className="tag" style={{ color: 'var(--green)', background: 'color-mix(in srgb,var(--green) 16%,transparent)' }}>{t('Done')}</span>
           : routine ? <span className="tag acc">{t('Start')}</span>
+          : recommendation.routine ? <span className="tag acc">{t('Start')}</span>
           : <Icon name="chevronRight" className="chev" />}
       </div>
       <div className="hero-act">
@@ -119,7 +123,9 @@ export default function Home() {
             ? <Button icon="plus" onClick={() => nav('/start')}>{t('Log another workout')}</Button>
             : routine
               ? <Button variant="primary" icon="play" onClick={() => nav('/start')}>{t('Start')}</Button>
-              : <Button icon="dumbbell" onClick={() => nav('/start')}>{t('Choose a workout')}</Button>}
+              : recommendation.routine
+                ? <Button variant="primary" icon="play" onClick={() => nav('/start')}>{t('Start')}</Button>
+                : <Button icon="dumbbell" onClick={() => nav('/start')}>{t('Choose a workout')}</Button>}
       </div>
     </div>
 

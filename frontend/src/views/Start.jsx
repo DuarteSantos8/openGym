@@ -12,6 +12,7 @@ import { todayISO, exCount, DAYN, fmtNum, fmtDate } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
 import { bwSheet, beginWorkout, beginSubsetWorkout, starterPlanSheet } from '../sheets.jsx'
 import { sessionVariants } from '../lib/ben-coach.js'
+import { recommendToday } from '../lib/recommendation.js'
 import Icon from '../components/Icon.jsx'
 import { Button, Segmented } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
@@ -64,9 +65,10 @@ export default function Start() {
 
   const todayIso = todayISO()
   const todayRoutines = effectiveRoutines(S, todayIso)
+  const recommendation = recommendToday(S)
   const routineIds = effectiveRoutineIds(S, todayIso)
-  const routine = todayRoutines[0] || null
-  const single = todayRoutines.length === 1
+  const routine = todayRoutines[0] || (recommendation.routine || null)
+  const single = todayRoutines.length === 1 || (todayRoutines.length === 0 && !!recommendation.routine)
   const todayName = todayRoutines.map(r => r.name).join(' + ')
   const todayOvr = S.dayPlan[todayIso] !== undefined
   const editingSaved = !!S.active?.editingWorkoutId
@@ -116,13 +118,13 @@ export default function Start() {
       </div>
     )}
 
-    {!!todayRoutines.length && <div className="card" style={{ borderColor: 'var(--acc)' }}>
-      <div className="lbl2">{t("Today's workout")}{todayOvr ? ' · ' + t('rescheduled') : ''}</div>
+    {!!(todayRoutines.length || (recommendation.routine && !todayRoutines.length)) && <div className="card" style={{ borderColor: 'var(--acc)' }}>
+      <div className="lbl2">{todayRoutines.length ? t("Today's workout") + (todayOvr ? ' · ' + t('rescheduled') : '') : t('Today') + (recommendation.reason ? ' — ' + recommendation.reason : '')}</div>
       <div className="row" style={{ gap: 9, margin: '4px 0 4px', alignItems: 'center' }}>
-        <span className="lrow-i" style={{ width: 38, height: 38, borderRadius: 9, fontSize: 22 }}><Icon name={glyphOf(routine.emoji)} /></span>
+        <span className="lrow-i" style={{ width: 38, height: 38, borderRadius: 9, fontSize: 22 }}><Icon name={glyphOf((todayRoutines[0] || recommendation.routine)?.emoji)} /></span>
         <div style={{ minWidth: 0 }}>
-          <div className="big">{todayName}</div>
-          <div className="muted small">{exCount(todayRoutines.reduce((n, r) => n + (r.ex || []).length, 0))}</div>
+          <div className="big">{todayRoutines.length ? todayName : (recommendation.routine?.name || t('Recovery'))}</div>
+          <div className="muted small">{exCount((todayRoutines[0] || recommendation.routine)?.ex?.length || 0)}</div>
         </div>
       </div>
 
@@ -143,10 +145,10 @@ export default function Start() {
     </div>}
 
     {!todayRoutines.length && !!S.routines.length && <div className="card">
-      <div className="lbl2">{t('Rest day')}</div>
-      <div className="big" style={{ margin: '2px 0 4px' }}>{t('Recovery')}</div>
+      <div className="lbl2">{recommendation.routine ? t('Recommended') : t('Rest day')}</div>
+      <div className="big" style={{ margin: '2px 0 4px' }}>{recommendation.routine ? recommendation.routine.name : t('Recovery')}</div>
       <div className="muted small" style={{ marginBottom: 12 }}>
-        {next ? t('Next: {0}, {1}', t(DAYN[next.weekday]), next.routine.name) : t('No sessions planned — pick anything below.')}
+        {recommendation.routine ? recommendation.reason : (next ? t('Next: {0}, {1}', t(DAYN[next.weekday]), next.routine.name) : t('No sessions planned — pick anything below.'))}
       </div>
     </div>}
 
