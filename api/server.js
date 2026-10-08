@@ -32,6 +32,7 @@ import {
 import { createDeviceLink, findDeviceLink, burnDeviceLink, dropDeviceLinks } from './device-link.js';
 import { createMediaStore, mediaLimits, mediaConfig, MediaError, HASH_RE } from './media.js';
 import { effectiveRoutineId } from './queue.js';
+import { PLAN_SCOPE, makePlanKey, planKeyPublic, planKeyUser, importPlan, planView } from './plan-import.js';
 import { stampPut } from './sync-stamps.js';
 import { atomicWrite as durableWrite } from './durable.js';
 import { nudgeFor, nudgeWindowOpen, toneOf } from './nudge.js';
@@ -918,7 +919,7 @@ const THROTTLED = {
   // Redeeming a device link (#95). Adding or removing a passkey and making a link only spend the
   // budget: the password that may prove them counts its own failures (passwordAttempt).
   'POST /api/device-link/options': 'link', 'POST /api/device-link/verify': 'link',
-  'POST /api/account/passkeys/options': null, 'POST /api/account/device-link': null,
+  'POST /api/account/plan-keys': null, 'POST /api/account/passkeys/options': null, 'POST /api/account/device-link': null,
   'DELETE /api/account/passkeys': null
 };
 
@@ -2095,6 +2096,70 @@ const routes = {
   // `_unstamped` is the server's note of what it stamped for an older app's last push
   // (sync-stamps.js ownRecord), `_prior` what each field held before (notePrior): read back only
   // by the next PUT, never sent to a client.
+  'GET /api/account/plan-keys': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    json(res, 200, { keys: (user.planKeys || []).map(planKeyPublic) });
+  },
+  'POST /api/account/plan-keys': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const body = await readBody(req);
+    const days = body.days ?? 30;
+    if (typeof body.name !== 'string' || !body.name.trim() || body.name.length > 80 || !Number.isInteger(days) || days < 1 || days > 365) return json(res, 400, { error: 'invalid key metadata' });
+    if (!await proveOwner(req, res, user, body, 'plan-key-add')) return;
+    const now = Date.now();
+    const existing = (user.planKeys || []).filter(k => k.expires > now && k.sv === sessionVersion(user));
+    if (existing.length >= 10) return json(res, 400, { error: 'too many plan keys' });
+    const { token, key } = makePlanKey(user, body.name.trim(), days, now);
+    user.planKeys = [...existing, key];
+    saveDb();
+    audit(req, 'auth.plan-key.add', { user });
+    json(res, 200, { ...planKeyPublic(key), token });
+  },
+  'POST /api/account/plan-keys/revoke': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const body = await readBody(req);
+    if (typeof body.id !== 'string') return json(res, 400, { error: 'key id required' });
+    user.planKeys = (user.planKeys || []).filter(k => k.id !== body.id);
+    saveDb();
+    audit(req, 'auth.plan-key.revoke', { user });
+    json(res, 200, { ok: true });
+  },
+  'GET /api/plans': async (req, res) => {
+    const user = planKeyUser(req, db.users) || readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const state = readStateStrict(user.id);
+    if (state === UNREADABLE) return json(res, 503, { error: 'state unreadable' });
+    let plan;
+    try { plan = planView(state); } catch { return json(res, 503, { error: 'stored plan unreadable' }); }
+    json(res, 200, { plan, rev: state?._rev || 0, wid: state?._wid || null });
+  },
+  'POST /api/plans/import': async (req, res) => {
+    const user = planKeyUser(req, db.users) || readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const body = await readBody(req);
+    const cur = readStateStrict(user.id);
+    if (cur === UNREADABLE) return json(res, 503, { error: 'state unreadable' });
+    const rev = cur?._rev || 0;
+    let imported;
+    try { imported = importPlan(cur, body); }
+    catch (e) { return json(res, e.message === 'stored plan unreadable' ? 503 : 400, { error: e.message === 'stored plan unreadable' ? e.message : 'invalid plan file' }); }
+    // No await between reading the document, comparing it and writing it. No full state
+    // in a conflict response: even a valid plan key may not read workout history.
+    if (body.baseRev !== rev || (cur?._wid && body.baseWid !== cur._wid)) return json(res, 409, { error: 'conflict', rev, wid: cur?._wid || null });
+    const next = imported.next;
+    stampPut(cur, next, { overRead: true });
+    next._rev = rev + 1;
+    next._wids = [...(Array.isArray(cur?._wids) ? cur._wids : []), ...(cur?._wid ? [cur._wid] : [])].filter(x => typeof x === 'string').slice(-WID_KEEP);
+    next._wid = crypto.randomBytes(8).toString('hex');
+    atomicWrite(stateFile(user.id), JSON.stringify(next));
+    stateCache.delete(user.id);
+    audit(req, 'plan.import', { user });
+    json(res, 200, { ok: true, rev: next._rev, wid: next._wid, routines: imported.routines });
+  },
+
   'GET /api/data': async (req, res) => {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
