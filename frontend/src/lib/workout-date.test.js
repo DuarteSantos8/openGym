@@ -2,12 +2,12 @@ import { describe, expect, it } from 'vitest'
 import { legacySyncKey, startTimeOf, sameWorkout, retimeWorkout, rebuildPrHistory, moveWorkout, durationMinOf, setWorkoutDuration } from './workout-date.js'
 import { backfillStart } from './backfill.js'
 
-const set = w => ({ w, r: 5, done: true })
-const entry = (id, w) => ({ id, sets: [set(w)] })
+// A saved workout of the generic engine: exposures with the rows performed.
+const entry = (id, w) => ({ exerciseId: id, performance: { sets: [{ role: 'work', status: 'completed', observations: [{ metric: 'repetitions', value: 5 }], resistance: { kind: 'external-load', value: w } }] } })
 // A session on `d` starting at `time`, lasting `min` minutes.
-const w = (id, d, time, min, entries = [], prs = []) => {
+const w = (id, d, time, min, exposures = [], prs = []) => {
   const start = backfillStart(d, time)
-  return { id, d, start, end: start + min * 60000, name: id, entries, prs }
+  return { id, d, start, end: start + min * 60000, name: id, exposures, prs }
 }
 
 describe('startTimeOf', () => {
@@ -52,7 +52,7 @@ describe('retimeWorkout', () => {
     const copy = JSON.parse(JSON.stringify(before))
     const moved = retimeWorkout(before, '2026-02-01', '07:30')
     expect(before).toEqual(copy)
-    expect(moved.entries).toBe(before.entries)
+    expect(moved.exposures).toBe(before.exposures)
     expect(moved.prs).toEqual(['bench'])
     expect(moved.name).toBe('a')
   })
@@ -71,7 +71,7 @@ describe('retimeWorkout', () => {
   // The sync key of a legacy record is its day and start time, which is what this edit
   // changes. Freezing the old key as the id is what stops the merge duplicating it.
   it('gives a legacy record the old day-and-start as its id', () => {
-    const moved = retimeWorkout({ d: '2026-03-10', start: 1741626000000, end: 1741626000000, entries: [] }, '2026-02-01', '07:30')
+    const moved = retimeWorkout({ d: '2026-03-10', start: 1741626000000, end: 1741626000000, exposures: [] }, '2026-02-01', '07:30')
     expect(moved.id).toBe('2026-03-10|1741626000000')
   })
   it('never rewrites an id it already has', () => {
@@ -231,7 +231,7 @@ describe('moveWorkout', () => {
     expect(before).toEqual(copy)
   })
   it('moves a legacy record and leaves its twin no way to come back', () => {
-    const legacy = { d: '2026-01-05', start: 1767636000000, end: 1767639600000, name: 'Old', entries: [], prs: [] }
+    const legacy = { d: '2026-01-05', start: 1767636000000, end: 1767639600000, name: 'Old', exposures: [], prs: [] }
     const out = moveWorkout([legacy], legacy, '2026-01-03', '07:00')
     expect(out).toHaveLength(1)
     expect(out[0].id).toBe('2026-01-05|1767636000000')
@@ -264,7 +264,7 @@ describe('setWorkoutDuration', () => {
     expect(setWorkoutDuration(list, { id: 'gone' }, 45)).toBeNull()
   })
   it('a record from before ids keeps the key the sync knows it by', () => {
-    const legacy = { d: '2026-01-01', start: 5000, end: 5000 + 600000, entries: [], prs: [] }
+    const legacy = { d: '2026-01-01', start: 5000, end: 5000 + 600000, exposures: [], prs: [] }
     const out = setWorkoutDuration([legacy], legacy, 20)
     expect(out[0]).not.toHaveProperty('id')
     expect(legacySyncKey(out[0])).toBe(legacySyncKey(legacy))

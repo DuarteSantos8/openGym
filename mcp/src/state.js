@@ -3,8 +3,17 @@
    tool call without a restart. */
 import fs from 'node:fs'
 import path from 'node:path'
+import { unpackProfile } from '../../api/migration/profile-pack.js'
 
 const DATA_DIR = process.env.OPENGYM_DATA || path.join(process.cwd(), 'data')
+
+// routines as occurrences carrying a PlanRule and workouts as logs (exposures) with prescriptions. A profile saved before the engine
+// routines as occurrence+binding and workouts as exposures. A profile saved before the engine
+// (or one whose migration never ran — this reads straight off disk, never through the API's
+// own gate) has neither shape, so every tool must refuse it explicitly rather than iterate
+// fields that silently don't exist and report an empty profile.
+export const MIN_ENGINE_SCHEMA = 2
+export const engineUnsupported = S => (S.engineSchemaVersion || 1) < MIN_ENGINE_SCHEMA
 
 // null = no state file (brand-new account); undefined = not yet loaded.
 let _state = undefined
@@ -31,7 +40,7 @@ function readJsonOrNull(file) {
     throw err
   }
   try {
-    return JSON.parse(raw)
+    return unpackProfile(JSON.parse(raw))
   } catch (e) {
     const err = new Error(`${path.basename(file)} is not valid JSON: ${e.message}`)
     err.code = 'EIO'

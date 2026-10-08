@@ -10,6 +10,9 @@ frontend/  React + Vite app (src/views, src/components, src/store, src/lib). Bui
            android/ and ios/ are the Capacitor shells for the standalone app (docs/MOBILE.md).
 api/       Backend: server.js on plain node:http, two dependencies (@simplewebauthn/server, web-push).
            coach/ is the optional AI coach; openapi.yaml documents every route.
+           api/engine is the training engine (presets, prescriptions, progression, 1RM, warm-up)
+           and api/migration the one-way v1 → v2 profile conversion; both are pure and run
+           unchanged in the server and in the web/phone build.
 web/       Multi-stage Dockerfile (builds the frontend, serves it with nginx) and the nginx template.
 mcp/       Optional read-only MCP server for LLM clients (Claude Desktop, Cursor, ...). Not in the
            Docker build; it only runs when a client spawns it. See mcp/README.md.
@@ -28,7 +31,7 @@ docker compose up -d --build      # api + web on :8080
 
 cd frontend && npm install && npm run dev   # hot reload, proxies /api to :3000
 cd frontend && npm test                     # training logic, locales, components
-cd api && npm test
+cd api && npm test                # engine-gate and profile-migration tests live here
 cd mcp && npm test
 ```
 
@@ -48,9 +51,10 @@ cd mcp && npm test
 - **Click through what you touched**, including the workout flow, in a browser before opening a
   pull request.
 - **Training logic gets a unit test.** Anything that decides what you lift next, or reads a logged
-  session back, belongs in a pure helper in `src/lib` with a test beside it. These rules are easy
-  to get subtly wrong and nearly impossible to check by clicking; the progression engine has had
-  real bugs that only a test caught.
+  session back, belongs in the engine (`api/engine`) or a pure helper in `src/lib`, with tests
+  beside it (`frontend/src/lib/prescription/*.test.js`, `api/test/`; run `npm test`). These rules
+  are easy to get subtly wrong and nearly impossible to check by clicking; the progression engine
+  has had real bugs that only a test caught.
 - **New UI strings go into every locale** in `frontend/src/locales/`. English is the source
   language and has no file. `node scripts/check-locales.mjs` (run in CI) flags a key that is
   missing, blank or has lost a `{n}` placeholder. Portuguese (Brazil) inherits from Portuguese
@@ -87,8 +91,14 @@ should come as a GitHub pull request.
 - More starter plans
 - Exercise translations: any language in `catalogue/i18n/` with gaps, or a new one
   (see [catalogue/README.md](catalogue/README.md#translating))
-- Percentage or training-max programming (5/3/1 style) on top of the progression engine in
-  `src/lib/progression.js`; the policy interface is already there
+- New progression templates. A template is a function in `api/engine/rules.js` that builds a
+  program (phases of set groups, operators, exits) from a few numbers, plus its editor metadata in
+  `PRESETS` and its read-back in `planOptions` — the engine never branches on a template's name. Add
+  the builder, its defaults (`templateDefaults`), its name and hint in `components/RuleEditor.jsx` and
+  the strings in every locale (CI runs `scripts/check-locales.mjs`), and tests in
+  `frontend/src/lib/prescription/`: `rules.test.js` pins the list and checks every template reads back
+  exactly, `golden.test.js` records how it plays out session by session. `docs/MIGRATION_TO_ENGINE_NOTE.md`
+  describes the rule, program, prescription and progression-state shapes.
 - Accessibility passes on the workout and chart screens
 
 ## Where to ask what

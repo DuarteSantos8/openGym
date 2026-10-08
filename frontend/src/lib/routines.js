@@ -1,8 +1,6 @@
 import { uid } from './format.js'
-import { defaultConfig, isBw, modeOf, MAX_PLANNED_WARMUPS, NOTE_MAX } from './history.js'
+import { defaultPlanRule } from './prescription/index.js'
 import { isAssisted, isBodyweightEq, isCardio } from './exercises.js'
-import { sessionsFor } from './progression.js'
-import { isWarmupRow } from './workout-model.js'
 
 /**
  * Create a deep copy of a routine with a new id and a "(Copy)" suffix.
@@ -15,6 +13,15 @@ export function copyRoutine(routine, suffix = 'Copy') {
   const esc = suffix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   const m = new RegExp('^(.*) \\(' + esc + '(?: (\\d+))?\\)$').exec(routine.name || '')
   copy.name = m ? m[1] + ' (' + suffix + ' ' + ((Number(m[2]) || 1) + 1) + ')' : routine.name + ' (' + suffix + ')'
+  // An occurrence's progression track is its own occurrenceId (two occurrences of the same
+  // exercise progress independently) — carrying the source's ids over verbatim would entangle
+  // the copy's history with the original's. Legacy occurrences (no occurrenceId) have nothing
+  // here to regenerate and pass through untouched.
+  copy.ex = (copy.ex || []).map(e => e.occurrenceId == null ? e : {
+    ...e,
+    occurrenceId: uid(),
+    ...(e.rule ? { rule: { ...e.rule, id: uid(), routineId: copy.id } } : {}),
+  })
   return copy
 }
 
@@ -100,134 +107,29 @@ export function restoreRoutine(s, snap) {
 }
 
 /**
- * A routine slot with another exercise in it (#110): the machine you planned around is gone, or
- * a variation takes over the lift for a block. The slot keeps its place and what was set up for
- * it — sets, reps, weight, rest, warm-ups, the progression rule, the note, its superset — and only
- * the exercise changes. The old way (remove, add, configure again) lost all of that.
+ * A routine slot with another exercise in it (#110). The slot keeps its place, its superset, its
+ * note and — when the two exercises are the same kind of work — its rule, warm-up and intensifier,
+ * and only the exercise changes. Cardio, bodyweight and assistance-machine work each mean something
+ * else by "load", so between kinds the slot starts from the new exercise's default rule.
  *
- * Some things cannot come along. A cardio slot is minutes at a speed and a lifting slot is sets
- * of reps at a load, so between the two only the note, the rest and the superset carry over and
- * the rest starts from the new exercise's defaults. A load means something else once the new
- * exercise is bodyweight where the old one was not, or the other way round: 60 kg on a bench is
- * not 60 kg added to a push-up. The same goes for an assistance machine, where the number is
- * help rather than load: 40 kg off a pull-up is not 40 kg on a pulldown. There the weight goes
- * back to 0. The bodyweight, assisted and per-side flags describe the movement, not the
- * prescription, so they are dropped and the new exercise follows its own, the way the Coach's
- * swap does (lib/coach.js): a split squat's "per side" would split a back squat's reps into L/R.
- *
- * What is not carried is history. Progress belongs to a routine and an exercise together (#216),
- * so the new exercise starts on its own line — its own sessions in this routine, and until there
- * are any, the slot's numbers — and the old exercise keeps its sessions, ready if it comes back.
- * That is also why the old exercise's weight gives way to the new one's own wherever the new one
- * has been logged (`S`, and the routine `rid` the slot is in): the next session reads a slot
- * weight that differs from the one its last session was planned at as a deliberate edit, and
- * opens there (#275, nextPrescription). An 80 kg barbell bench carried onto dumbbells trained at
- * 30 would open the dumbbells at 80 — and only when the two rep schemes differed, because a
- * plan whose sets and reps match just carries on. With the new exercise's own planned weight in
- * the slot, its history decides either way. One never logged keeps the slot's weight, since
- * there is nothing better to start from.
- *
- * Picking the exercise that is already in the slot replaces nothing, and changes nothing.
+ * The replacement is a new occurrence: progression belongs to an occurrence (its track), so the new
+ * exercise starts on its own line instead of inheriting the old exercise's load history, and the old
+ * one keeps its history, ready if it comes back. Picking the exercise already in the slot changes
+ * nothing.
  */
 export function replaceSlotExercise(slot, id, S, rid) {
   const old = slot || {}
-  if (old.id === id) return { ...old }
-  if ((modeOf(old) === 'cardio') !== isCardio(id)) {
-    const kept = ['sg', 'note', 'restSec'].filter(key => old[key] != null)
-    return { id, ...defaultConfig(id), ...Object.fromEntries(kept.map(key => [key, old[key]])) }
+  if (old.exerciseId === id) return { ...old }
+  const occurrenceId = uid()
+  const unit = S?.unit === 'lb' ? 'lb' : 'kg'
+  const preset = isCardio(id) ? 'autoregulated' : isBodyweightEq(id) ? 'bodyweight_ladder' : 'linear'
+  const fresh = defaultPlanRule(preset, { id: occurrenceId, exerciseId: id, routineId: rid ?? null, unit })
+  const sameKind = isCardio(old.exerciseId) === isCardio(id) && isBodyweightEq(old.exerciseId) === isBodyweightEq(id) && (typeof old.assisted === 'boolean' ? old.assisted : isAssisted(old.exerciseId)) === isAssisted(id)
+  if (!sameKind || !old.rule) {
+    const kept = Object.fromEntries(['sg', 'note'].filter(key => old[key] != null).map(key => [key, old[key]]))
+    return { occurrenceId, exerciseId: id, rule: fresh, ...kept }
   }
-  const { id: _replaced, bodyweight: _flag, assisted: _assisted, side: _side, ...carried } = old
-  const out = { id, ...carried }
-  if (isCardio(id)) return out
-  if (isBw(old) !== isBodyweightEq(id)) {
-    out.weight = 0
-    // A rep ceiling belongs to bodyweight work: it adds sets where there is no load to add.
-    delete out.repsMax
-  }
-  if (isAssisted(old) !== isAssisted(id)) out.weight = 0
-  // The session the next prescription will read for this slot (nextPrescription), so the weight
-  // put here is the one that session was planned at: the restart rule then sees no edit and
-  // holds at what was lifted, or the plan carries on from it. A session saved before plans were
-  // stamped has no planned weight, and what was lifted in it is the nearest thing.
-  const mode = modeOf(out)
-  const last = S ? sessionsFor(S, id, out, rid).filter(s => s.mode === mode).at(-1) : null
-  if (last) out.weight = last.planned?.weight ?? last.weight ?? 0
-  return out
-}
-
-/**
- * Where a running session's exercise sits in the routine it was built from, as an index into
- * `routine.ex`, or -1 when it does not sit anywhere: a freestyle exercise, one added from
- * another routine, one swapped for something the routine never had.
- *
- * A session entry keeps the routine it came from (`rid`), and a combined day can hold the same
- * exercise twice, so the match is by position among the twins: the second bench press of that
- * routine in the session is the routine's second bench press.
- */
-export function routineSlotIndex(routine, entries, idx) {
-  const entry = entries?.[idx]
-  if (!entry || !routine || !Array.isArray(routine.ex) || entry.rid !== routine.id) return -1
-  const twinsBefore = entries.slice(0, idx).filter(e => e && e.rid === routine.id && e.id === entry.id).length
-  let seen = 0
-  for (let i = 0; i < routine.ex.length; i++) {
-    if (routine.ex[i]?.id === entry.id && seen++ === twinsBefore) return i
-  }
-  return -1
-}
-
-// What the exercise config sheet writes into a routine slot that a session can also change: the
-// warm-ups added or removed on the exercise, and the rest and the note its settings sheet edits.
-// A key that does not apply to the exercise is left out, so it can never overwrite the slot's own:
-// a cardio interval has no warm-ups, and rest-pause builds its own warm-up row (ExConfig hides
-// the stepper for both).
-function setupOf(entry) {
-  const target = entry.target || {}
-  const out = {
-    restSec: Math.max(0, Math.round(Number(target.restSec)) || 0),
-    note: String(target.note || '').trim().slice(0, NOTE_MAX),
-  }
-  if (!isCardio(entry.id) && target.intensifier?.type !== 'restpause') {
-    out.warmupSets = Math.min(MAX_PLANNED_WARMUPS, (entry.sets || []).filter(isWarmupRow).length)
-  }
-  return out
-}
-
-/**
- * What a running session's exercise would change in its routine, or null when there is nothing
- * to change: the exercise has no routine slot, or the slot already says what the session did.
- * `changes` are `{ key, from, to }` for `warmupSets`, `restSec` and `note`.
- *
- * Warm-ups added in a session used to last that session only, and so did anything edited on the
- * exercise's settings sheet from inside it (Progression settings opens the same sheet the routine
- * editor does). Sets, reps and weight are not offered: the progression engine moves those every
- * session, and the routine is the plan it reads them against.
- */
-export function routineChangesFromEntry(routine, entries, idx) {
-  const at = routineSlotIndex(routine, entries, idx)
-  if (at < 0) return null
-  const slot = routine.ex[at]
-  const now = setupOf(entries[idx])
-  const changes = []
-  for (const key of ['warmupSets', 'restSec', 'note']) {
-    if (now[key] === undefined) continue
-    const from = key === 'note' ? String(slot.note || '').trim() : Math.max(0, Math.round(Number(slot[key])) || 0)
-    if (from !== now[key]) changes.push({ key, from, to: now[key] })
-  }
-  return changes.length ? { at, changes } : null
-}
-
-/**
- * Write those changes into the routine, in place on a store draft, the way the config sheet
- * does: a key is only stored when it has a value, so "no warm-ups" removes it instead of leaving
- * a 0 that no plan file ever had. Returns the changes it applied, or null.
- */
-export function updateRoutineFromEntry(routine, entries, idx) {
-  const found = routineChangesFromEntry(routine, entries, idx)
-  if (!found) return null
-  const slot = routine.ex[found.at]
-  for (const { key, to } of found.changes) {
-    if (to) slot[key] = to
-    else delete slot[key]
-  }
-  return found.changes
+  // "Assisted" describes the movement, not the prescription: the new exercise follows its own.
+  const { assisted: _movement, ...carried } = old
+  return { ...carried, occurrenceId, exerciseId: id, rule: { ...old.rule, id: occurrenceId, exerciseId: id, revision: 1 } }
 }

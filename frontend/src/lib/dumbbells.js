@@ -31,7 +31,7 @@
 
 import { EXIDX, isBodyweightEq } from './exercises.js'
 
-const exOf = exOrId => (typeof exOrId === 'string' ? EXIDX[exOrId] : exOrId)
+const exOf = exOrId => (typeof exOrId === 'string' ? EXIDX[exOrId] : EXIDX[exOrId?.exerciseId] || exOrId)
 const unitOf = S => (S?.unit === 'lb' ? 'lb' : 'kg')
 const isMap = v => !!v && typeof v === 'object' && !Array.isArray(v)
 const tidy = w => Math.round(w * 1000) / 1000
@@ -53,7 +53,7 @@ export function dbLoadOf(value) {
  */
 export function dbLoadFor(S, cfgOrId) {
   const cfg = typeof cfgOrId === 'string' ? { id: cfgOrId } : (cfgOrId || {})
-  return dbLoadOf(cfg.dbLoad) || dbLoadOf(S?.dbLoad?.[cfg.id]) || 'as'
+  return dbLoadOf(cfg.dbLoad) || dbLoadOf(S?.dbLoad?.[(cfg.id || cfg.exerciseId)]) || 'as'
 }
 
 /**
@@ -68,9 +68,9 @@ export const withDbLoad = (map, exId, mode, now = Date.now()) =>
 const ONE_ARM = /\b(one|single)[- ]?(arm|hand|handed)\b/i
 
 /** Whether this exercise uses a single bell: logged per side, or named one-arm. */
-export const isOneArm = cfg => !!cfg?.side || ONE_ARM.test(exOf(cfg?.id)?.n || '')
+export const isOneArm = cfg => !!cfg?.side || ONE_ARM.test(exOf(cfg?.id || cfg?.exerciseId)?.n || '')
 /** How many bells are lifted at once: 1 for one-arm work, else 2. */
-export const bellsIn = cfg => (isOneArm(cfg) ? 1 : 2)
+export const bellsIn = cfg => (cfg?.bells === 1 || cfg?.bells === 2 ? cfg.bells : isOneArm(cfg) ? 1 : 2)
 
 /**
  * A freestyle entry's target with the meaning it is logged in stamped on it, as buildPlannedEntry
@@ -82,8 +82,8 @@ export function withMeaning(S, cfg, id = cfg?.id) {
 }
 
 /** The meaning a logged entry was saved with: its target's stamp, 'as' when it has none. */
-export const entryDbLoad = entry => dbLoadOf(entry?.target?.dbLoad) || 'as'
-const cfgOfEntry = entry => ({ ...(entry?.target || {}), id: entry?.id })
+export const entryDbLoad = entry => dbLoadOf(entry?.dbLoad ?? entry?.target?.dbLoad) || 'as'
+const cfgOfEntry = entry => ({ ...(entry?.target || {}), id: entry?.id || entry?.exerciseId, side: entry?.side ?? entry?.target?.side, bells: entry?.bells ?? entry?.target?.bells })
 
 /** What one logged kilo of this entry is worth in volume: 2 for "each" on two bells, else 1. */
 export const volumeFactor = entry =>
@@ -118,6 +118,10 @@ export function entryAs(entry, to) {
   const from = entryDbLoad(entry)
   const f = meaningFactor(from, to, cfgOfEntry(entry))
   if (f === 1) return entry
+  if (entry.performance) {
+    const scale = row => ({ ...row, ...(row.resistance?.kind === 'external-load' ? { resistance: { ...row.resistance, value: tidy(row.resistance.value * f) } } : {}), ...(row.segments ? { segments: row.segments.map(scale) } : {}) })
+    return { ...entry, dbLoad: to, ...(entry.actual?.load ? { actual: { ...entry.actual, load: { ...entry.actual.load, value: tidy(entry.actual.load.value * f) } } } : {}), performance: { ...entry.performance, sets: entry.performance.sets.map(scale) } }
+  }
   const out = { ...entry, target: { ...(entry.target || {}), dbLoad: to }, sets: (entry.sets || []).map(s => scaleRow(s, f)) }
   if (Number(entry.topW) > 0) out.topW = tidy(entry.topW * f)
   return out
@@ -125,7 +129,9 @@ export function entryAs(entry, to) {
 
 /** A workout with every entry of `exId` read as `to` (entryAs); the workout itself when nothing changes. */
 export function workoutAs(w, exId, to) {
-  if (!to || to === 'as' || !Array.isArray(w?.entries)) return w
+  if (!to || to === 'as') return w
+  if (Array.isArray(w?.exposures)) return { ...w, exposures: w.exposures.map(e => e.exerciseId === exId ? entryAs(e, to) : e) }
+  if (!Array.isArray(w?.entries)) return w
   let changed = false
   const entries = w.entries.map(e => {
     if (e?.id !== exId) return e
@@ -161,8 +167,8 @@ export function currentDbLoad(S, exId) {
   if (own) return own
   const ws = Array.isArray(S?.workouts) ? S.workouts : []
   for (let i = ws.length - 1; i >= 0; i--) {
-    const list = Array.isArray(ws[i]?.entries) ? ws[i].entries : []
-    for (let j = list.length - 1; j >= 0; j--) if (list[j]?.id === exId && list[j]?.target?.dbLoad) return entryDbLoad(list[j])
+    const list = ws[i]?.exposures || ws[i]?.entries || []
+    for (let j = list.length - 1; j >= 0; j--) if ((list[j]?.id || list[j]?.exerciseId) === exId && (list[j]?.dbLoad || list[j]?.target?.dbLoad)) return entryDbLoad(list[j])
   }
   return 'as'
 }
@@ -202,9 +208,9 @@ export const withDumbbells = (S, weights, now = Date.now()) =>
  * moves in pairs (2 × each weight); every other meaning moves one bell at a time.
  */
 export function ownedWeightsFor(S, cfg) {
-  const ex = exOf(cfg?.id)
+  const ex = exOf(cfg?.id || cfg?.exerciseId)
   if (ex?.eq !== 'dumbbell') return null
-  const bw = cfg?.bodyweight != null ? !!cfg.bodyweight : isBodyweightEq(cfg?.id)
+  const bw = cfg?.bodyweight != null ? !!cfg.bodyweight : isBodyweightEq(cfg?.id || cfg?.exerciseId)
   if (bw) return null
   const ws = dumbbellsOf(S)
   if (!ws.length) return null

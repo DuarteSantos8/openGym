@@ -9,6 +9,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const sheets = vi.hoisted(() => ({
   exConfigSheet: vi.fn(), exercisePicker: vi.fn(), glyphPicker: vi.fn(), confirmSheet: vi.fn(),
+  occurrenceSummary: vi.fn(() => ''), quickOccurrence: vi.fn(),
 }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})), beacon: vi.fn(), appBase: () => '/' }))
 vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn() }))
@@ -20,15 +21,16 @@ import RoutineEdit, { ROUTINE_LONG_PRESS_MS, removeRoutineExercise } from './Rou
 import { DEF, useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { closeOpenRow } from '../lib/use-swipe-row.js'
+import { ruleOccurrence } from '../lib/test-fixtures.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 const clone = value => JSON.parse(JSON.stringify(value))
-const configured = (id, extra = {}) => ({ id, mode: 'reps', sets: 3, reps: 5, weight: 0, ...extra })
+const configured = (id, extra = {}) => ({ ...ruleOccurrence(id), ...extra })
 let root, host, widthSpy
 
 function mount(entries, wc) {
   const S = clone(DEF)
-  S.routines = [{ id: 'r1', name: 'Swipe routine', emoji: 'dumbbell', prog: 'linear', ex: entries }]
+  S.routines = [{ id: 'r1', name: 'Swipe routine', emoji: 'dumbbell', ex: entries }]
   if (wc) S.wc = { ...S.wc, ...wc }
   useStore.setState({ S, user: null })
   host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host)
@@ -78,7 +80,7 @@ describe('swiping an exercise out of a routine', () => {
     expect(pane.getAttribute('aria-hidden')).toBe('true')
     expect(pane.querySelector('button').tabIndex).toBe(-1)
     swipe(swrows()[0].querySelector('.item'), 60, 330)
-    expect(ex().map(e => e.id)).toEqual(['1001', '1002'])
+    expect(ex().map(e => e.exerciseId)).toEqual(['1001', '1002'])
     expect(swrows()[0].querySelector('.swfront').style.transform).toBe('')
   })
 
@@ -86,7 +88,7 @@ describe('swiping an exercise out of a routine', () => {
     const entries = [configured('1001', { sg: 'g1' }), configured('1002', { sg: 'g1' }), configured('1003')]
     mount(clone(entries))
     swipe(swrows()[1].querySelector('.item'), 330, 60)
-    expect(ex().map(e => e.id)).toEqual(['1001', '1003'])
+    expect(ex().map(e => e.exerciseId)).toEqual(['1001', '1003'])
     expect(ex()[0].sg).toBeUndefined()          // a lone partner loses its link
     expect(useUI.getState().toastMsg).toMatch(/” left the routine\.$/)
     undo()
@@ -99,7 +101,7 @@ describe('swiping an exercise out of a routine', () => {
     const pending = useUI.getState().toastAction
     act(() => useStore.getState().update(s => { s.routines[0].ex.push(configured('1004')) }))
     act(() => pending.run())
-    expect(ex().map(e => e.id)).toEqual(['1001', '1002', '1003', '1004'])
+    expect(ex().map(e => e.exerciseId)).toEqual(['1001', '1002', '1003', '1004'])
   })
 
   it('the name is the keyboard’s button (no button inside a button), and the sheet’s Remove has the same Undo', () => {
@@ -120,9 +122,9 @@ describe('swiping an exercise out of a routine', () => {
     expect(sheets.exConfigSheet).toHaveBeenCalledTimes(2)
     const onDelete = sheets.exConfigSheet.mock.calls[0][3]
     act(() => onDelete())
-    expect(ex().map(e => e.id)).toEqual(['1001'])
+    expect(ex().map(e => e.exerciseId)).toEqual(['1001'])
     undo()
-    expect(ex().map(e => e.id)).toEqual(['1001', '1002'])
+    expect(ex().map(e => e.exerciseId)).toEqual(['1001', '1002'])
     click(swrows()[1].querySelector('button[aria-label="Move up"]'))   // its own job, no sheet
     expect(sheets.exConfigSheet).toHaveBeenCalledTimes(2)
   })
@@ -137,7 +139,7 @@ describe('swiping an exercise out of a routine', () => {
     expect(swrows()[0].classList.contains('go-del')).toBe(false)
     pointer(item, 'pointerup', 60)
     act(() => vi.advanceTimersByTime(800))
-    expect(ex().map(e => e.id)).toEqual(['1001', '1002'])
+    expect(ex().map(e => e.exerciseId)).toEqual(['1001', '1002'])
   })
 
   it('is the plain row with the setting off', () => {
