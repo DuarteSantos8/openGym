@@ -31,6 +31,16 @@ export const HTTP_PROVIDERS = Object.freeze({
     defaultModel: 'gemini-2.5-pro',
     keyPlaceholder: 'AIza… or AQ.…'
   }),
+  // One key in front of several hundred models from different vendors. A named row rather
+  // than `compatible` because the endpoint is fixed, so nobody types a base URL and the model
+  // list comes straight from it.
+  aimlapi: Object.freeze({
+    label: 'AI/ML API', runtime: 'HTTPS', http: true,
+    apiKeyEnv: 'AIMLAPI_API_KEY', oauthEnv: null,
+    defaultBase: 'https://api.aimlapi.com',
+    defaultModel: 'openai/gpt-6-luna',
+    keyPlaceholder: '…'
+  }),
   // Ollama, LM Studio, vLLM, OpenRouter, a corporate gateway: anything that serves the
   // Chat Completions shape. The base URL is the whole configuration; a key is optional
   // because a model on your own LAN usually has none.

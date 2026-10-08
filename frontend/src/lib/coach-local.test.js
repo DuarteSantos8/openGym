@@ -203,6 +203,16 @@ describe('timeouts on the phone', () => {
     const { timeoutFor, TIMEOUT_MS, LOCAL_ENDPOINT_TIMEOUT_MS } = await import('./coach-local.js')
     expect(timeoutFor('compatible')).toBe(LOCAL_ENDPOINT_TIMEOUT_MS)
     expect(LOCAL_ENDPOINT_TIMEOUT_MS).toBeGreaterThanOrEqual(20 * 60000)
-    for (const p of ['anthropic', 'openai', 'gemini']) expect(timeoutFor(p)).toBe(TIMEOUT_MS)
+    for (const p of ['anthropic', 'openai', 'gemini', 'aimlapi']) expect(timeoutFor(p)).toBe(TIMEOUT_MS)
+  })
+})
+
+describe('the providers the phone offers', () => {
+  // CoachSetup lists every row of HTTP_PROVIDERS as a chip; a row with no adapter here is a chip
+  // that can only answer "unknown provider".
+  it('has an adapter for every provider the setup screen lists', async () => {
+    const { ADAPTERS } = await import('./coach-local.js')
+    const { HTTP_PROVIDER_IDS } = await import('../../../api/coach/core/providers.js')
+    expect(Object.keys(ADAPTERS).sort()).toEqual([...HTTP_PROVIDER_IDS].sort())
   })
 })
