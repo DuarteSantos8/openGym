@@ -2059,5 +2059,12 @@ export default {
   "{0} exercises · {1} sets": "{0} 个动作 · {1} 组",
   "{0} of {1} sessions completed": "已完成 {0}/{1} 节训练课",
   "{0} planned sessions": "已计划 {0} 节训练课",
-  "{0} weeks": "{0} 周"
+  "{0} weeks": "{0} 周",
+  "Export programme file": "导出训练计划文件",
+  "Import a programme file": "导入训练计划文件",
+  "Weeks, routines and exercise notes only. No workout history or weigh-ins.": "仅包含各周安排、训练方案和动作备注，不包含训练记录或体重记录。",
+  "Added as a new programme. Choose your own start date.": "将添加为新的训练计划。请自行选择开始日期。",
+  "Programme file saved. Send it to a friend!": "训练计划文件已保存，发给朋友吧！",
+  "this isn’t an openGym programme file": "这不是 openGym 训练计划文件",
+  "Couldn’t export that programme.": "无法导出此训练计划。"
 }

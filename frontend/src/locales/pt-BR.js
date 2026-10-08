@@ -1321,7 +1321,14 @@ export const PT_BR_OVERRIDES = {
   "{0} exercises · {1} sets": "{0} exercícios · {1} séries",
   "{0} of {1} sessions completed": "{0} de {1} sessões concluídas",
   "{0} planned sessions": "{0} sessões planejadas",
-  "{0} weeks": "{0} semanas"
+  "{0} weeks": "{0} semanas",
+  "Export programme file": "Exportar arquivo do programa",
+  "Import a programme file": "Importar um arquivo de programa",
+  "Weeks, routines and exercise notes only. No workout history or weigh-ins.": "Somente semanas, rotinas e notas dos exercícios. Sem histórico de treinos ou pesagens.",
+  "Added as a new programme. Choose your own start date.": "Adicionado como um novo programa. Escolha sua própria data de início.",
+  "Programme file saved. Send it to a friend!": "Arquivo do programa salvo. Envie-o a um amigo!",
+  "this isn’t an openGym programme file": "este não é um arquivo de programa do openGym",
+  "Couldn’t export that programme.": "Não foi possível exportar esse programa."
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

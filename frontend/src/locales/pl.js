@@ -2059,5 +2059,12 @@ export default {
   "{0} exercises · {1} sets": "{0} ćwiczeń · {1} serii",
   "{0} of {1} sessions completed": "Ukończone sesje: {0} z {1}",
   "{0} planned sessions": "{0} zaplanowanych sesji",
-  "{0} weeks": "{0} tygodni"
+  "{0} weeks": "{0} tygodni",
+  "Export programme file": "Eksportuj plik programu",
+  "Import a programme file": "Importuj plik programu",
+  "Weeks, routines and exercise notes only. No workout history or weigh-ins.": "Tylko tygodnie, plany ćwiczeń i notatki do ćwiczeń. Bez historii treningów i pomiarów masy ciała.",
+  "Added as a new programme. Choose your own start date.": "Dodawany jako nowy program. Wybierz własną datę rozpoczęcia.",
+  "Programme file saved. Send it to a friend!": "Plik programu zapisany. Wyślij go znajomemu!",
+  "this isn’t an openGym programme file": "to nie jest plik programu openGym",
+  "Couldn’t export that programme.": "Nie udało się wyeksportować tego programu."
 }

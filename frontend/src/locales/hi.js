@@ -2059,5 +2059,12 @@ export default {
   "{0} exercises · {1} sets": "{0} व्यायाम · {1} सेट",
   "{0} of {1} sessions completed": "{1} में से {0} सेशन पूरे",
   "{0} planned sessions": "{0} नियोजित सेशन",
-  "{0} weeks": "{0} सप्ताह"
+  "{0} weeks": "{0} सप्ताह",
+  "Export programme file": "कार्यक्रम फ़ाइल निर्यात करें",
+  "Import a programme file": "कार्यक्रम फ़ाइल आयात करें",
+  "Weeks, routines and exercise notes only. No workout history or weigh-ins.": "केवल सप्ताह, रूटीन और व्यायाम के नोट्स। कसरत का इतिहास या वजन के रिकॉर्ड शामिल नहीं हैं।",
+  "Added as a new programme. Choose your own start date.": "नए कार्यक्रम के रूप में जोड़ा जाएगा। अपनी शुरुआत की तारीख चुनें।",
+  "Programme file saved. Send it to a friend!": "कार्यक्रम फ़ाइल सहेज दी गई। इसे किसी मित्र को भेजें!",
+  "this isn’t an openGym programme file": "यह openGym कार्यक्रम फ़ाइल नहीं है",
+  "Couldn’t export that programme.": "इस कार्यक्रम को निर्यात नहीं किया जा सका।"
 }

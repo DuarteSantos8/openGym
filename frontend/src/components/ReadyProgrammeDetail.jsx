@@ -73,7 +73,7 @@ export function renderSupersetGroups(rows, rowKey, nameOf, targetOf, notesOf, sg
   })
 }
 
-export default function ReadyProgrammeDetail({ definition, onStart, onClose, onEdit, onDuplicate, effortKind = 'none', customEx = [], onExercise, initialWeek = 1, onWeekChange }) {
+export default function ReadyProgrammeDetail({ definition, onStart, onClose, onEdit, onDuplicate, onShare, effortKind = 'none', customEx = [], onExercise, initialWeek = 1, onWeekChange }) {
   const [selectedWeek, setSelectedWeek] = useState(() => initialWeek)
   const [openSession, setOpenSession] = useState(null)
   const weeks = Array.isArray(definition?.weeks) ? definition.weeks : []
@@ -146,9 +146,10 @@ export default function ReadyProgrammeDetail({ definition, onStart, onClose, onE
         </div>
       })()}
     </>}
-    <div className="prog-detail-actions row" style={{ justifyContent: 'flex-end', gap: 8, padding: '12px 12px 4px' }}>
+    <div className="prog-detail-actions row" style={{ justifyContent: 'flex-end', flexWrap: 'wrap', gap: 8, padding: '12px 12px 4px' }}>
       <Button size="sm" variant="tinted" icon="pencil" onClick={() => onEdit?.(definition)}>{t('Edit')}</Button>
       {onDuplicate && <Button size="sm" variant="tinted" onClick={() => onDuplicate(definition)}>{t('Duplicate')}</Button>}
+      {onShare && <Button size="sm" variant="tinted" icon="share" onClick={() => onShare(definition)}>{t('Share')}</Button>}
       <Button size="sm" variant="primary" icon="play" onClick={() => onStart?.(definition)}>{t('Start programme')}</Button>
     </div>
   </section>

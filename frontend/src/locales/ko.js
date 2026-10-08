@@ -2059,5 +2059,12 @@ export default {
   "{0} exercises · {1} sets": "운동 {0}개 · {1}세트",
   "{0} of {1} sessions completed": "세션 {1}개 중 {0}개 완료",
   "{0} planned sessions": "예정된 세션 {0}개",
-  "{0} weeks": "{0}주"
+  "{0} weeks": "{0}주",
+  "Export programme file": "프로그램 파일 내보내기",
+  "Import a programme file": "프로그램 파일 가져오기",
+  "Weeks, routines and exercise notes only. No workout history or weigh-ins.": "주차, 루틴, 운동 메모만 포함됩니다. 운동 기록이나 체중 기록은 포함되지 않습니다.",
+  "Added as a new programme. Choose your own start date.": "새 프로그램으로 추가됩니다. 시작 날짜는 직접 선택하세요.",
+  "Programme file saved. Send it to a friend!": "프로그램 파일을 저장했습니다. 친구에게 보내세요!",
+  "this isn’t an openGym programme file": "openGym 프로그램 파일이 아닙니다",
+  "Couldn’t export that programme.": "프로그램을 내보낼 수 없습니다."
 }
