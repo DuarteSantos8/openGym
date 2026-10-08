@@ -1,3 +1,4 @@
+import { migratedFixture } from './test-fixtures.js'
 import { describe, expect, it } from 'vitest'
 import { healthRecords, planSync, recordKey, sessionRecord, sessionType, SESSION_TYPES, TEXT_MAX, weightRecord, writtenIds } from './health-connect.js'
 
@@ -137,5 +138,15 @@ describe('writtenIds', () => {
   it('lists what this phone wrote, by type', () => {
     expect(writtenIds({ a: { k: 'session', h: '1' }, b: { k: 'weight', h: '2' }, c: { k: 'other' } }))
       .toEqual({ sessions: ['a'], weights: ['b'] })
+  })
+})
+
+describe('canonical workouts in Health Connect', () => {
+  it('preserves strength, cardio machine types and the exact notes after migration', () => {
+    for (const entries of [[strength], [treadmill], [bike], [treadmill, strength]]) {
+      const original = workout(entries)
+      const canonical = migratedFixture({ workouts: [original], routines: [], unit: 'kg' }).workouts[0]
+      expect(sessionRecord(canonical, { unit: 'kg', nameOf })).toEqual(sessionRecord(original, { unit: 'kg', nameOf }))
+    }
   })
 })

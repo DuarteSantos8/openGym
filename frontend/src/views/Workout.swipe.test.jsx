@@ -27,14 +27,14 @@ function setActive(entries, { cur = 0, wc, hints = { swipeSets: true }, editing 
   const S = clone(DEF)
   if (wc) S.wc = { ...S.wc, ...wc }
   S.hints = hints
-  S.active = {
+  const A = {
     id: 'swipe-test', d: '2026-10-06', start: Date.now(), routineId: null,
     name: 'Swipe test', bw: null, cur, entries,
     ...(editing ? { editingWorkoutId: 'w1' } : {}),
   }
-  useStore.setState({ S, user: null })
+  useStore.setState({ S, A, user: null })
 }
-const sets = (k = 0) => useStore.getState().S.active.entries[k].sets
+const sets = (k = 0) => useStore.getState().A.entries[k].sets
 const toast = () => useUI.getState().toastMsg
 
 function render() {
@@ -66,7 +66,7 @@ beforeEach(() => {
   useUI.getState().stopRest()
   useUI.getState().stopWork()
   useUI.setState({ sheets: [], toastMsg: '', toastAction: null, timer: null, work: null, swipeHint: null, setFlash: null })
-  useStore.setState({ S: clone(DEF), user: null })
+  useStore.setState({ S: clone(DEF), A: null, user: null })
   root = null
   container = null
 })
@@ -332,7 +332,7 @@ describe('the swipe on a rendered set row', () => {
     render()
     swipe(swrows()[0], 300, 240)
     act(() => vi.advanceTimersByTime(800))
-    expect(useStore.getState().S.active.cur).toBe(0)
+    expect(useStore.getState().A.cur).toBe(0)
   })
 })
 

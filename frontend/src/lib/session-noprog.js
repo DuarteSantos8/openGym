@@ -51,3 +51,12 @@ export function setEntryNoProg(active, index, on) {
 
 /** An entry joining the session (added, or brought in with a routine): out too while the whole session is. */
 export const joinSessionNoProg = (active, entry) => (sessionNoProg(active) ? { ...entry, noProg: true } : entry)
+
+/** The engine reads a session's exclusion from its exposures (finish-session.js): mirror the entries' `noProg` onto them. */
+export function syncExposureExclusion(active) {
+  const byId = new Map(list(active?.exposures).map(x => [x?.exposureId, x]))
+  for (const entry of list(active?.entries)) {
+    const exposure = byId.get(entry?.exposureId)
+    if (exposure) exposure.excludedFromProgression = entry.noProg === true
+  }
+}

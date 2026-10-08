@@ -587,3 +587,13 @@ export function similarExercises(list, query, exclude = [], limit = 30) {
   out.sort((a, b) => b.score - a.score || a.len - b.len || a.i - b.i)
   return out.slice(0, limit).map(x => x.e)
 }
+
+export const weightIncrement = (cfg, unit) => (cfg && cfg.inc > 0 ? cfg.inc : defaultIncrement(cfg?.id, unit))
+
+// A load already off its increment's grid keeps that offset when the user taps a stepper.
+export function stepWeight(value, step, direction) {
+  const v = Number(value) || 0
+  const onGrid = step > 0 && Math.abs(v - Math.round(v / step) * step) <= 0.1
+  const next = v + direction * step
+  return Math.max(0, Number((onGrid ? Math.round(next / step) * step : next).toFixed(6)))
+}

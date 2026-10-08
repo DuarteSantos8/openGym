@@ -11,7 +11,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { hashPassword, hashResetCode } from '../password.js';
+import { hashPassword, hashResetCode, verifyPassword } from '../password.js';
 import { boundPort } from './helpers.mjs';
 
 const API = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -395,7 +395,11 @@ for (const [label, stored] of [['current', () => pwHash], ['older parameters', (
     for (const cookie of cookies) if ((await h.req('GET', '/api/me', { cookie })).status === 200) alive.push(cookie);
     assert.equal(alive.length, 0, `${alive.length} of ${cookies.length} sessions signed with the old password survived the change`);
     assert.equal((await h.req('GET', '/api/me', { cookie: done.cookie })).status, 200, "the owner's own session carries on");
-    assert.equal((await login(h, 'Ana', next, '203.0.113.201')).status, 200);
+    // The new password took. Read off the stored record, not signed in with: the old-password
+    // guesses that land after the change may have paused the name (five are free), and whether
+    // they did is timing, not what this test is about.
+    const saved = JSON.parse(fs.readFileSync(path.join(h.dataDir, 'db.json'), 'utf8')).users.find(u => u.id === 'u1');
+    assert.equal(await verifyPassword(next, saved.pw.h), true);
   });
 }
 

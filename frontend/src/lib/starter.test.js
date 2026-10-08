@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { planPhase } from './prescription/index.js'
 import { EXIDX } from './exercises.js'
 import { ALL_EQUIPMENT, eqAvailable } from './equipment.js'
 import { buildStarterPlan, starterPlanDays, starterPlanOptions, starterRoutines } from './starter.js'
@@ -29,7 +30,8 @@ const APPROVED = {
   ],
 }
 
-const shape = r => r.ex.map(e => [e.id, e.sets, e.reps])
+const shape = r => r.ex.map(e => e.rule ? [e.exerciseId, planPhase(e.rule).parameters.sets.min, planPhase(e.rule).parameters.reps.min] : [e.id, e.sets, e.reps])
+const ruleShape = r => r.ex.map(e => [e.exerciseId, planPhase(e.rule).parameters.sets.min, planPhase(e.rule).parameters.reps.min])
 
 describe('starter plan catalog', () => {
   it('offers exactly the four plans, with the day count read off the schedule', () => {
@@ -55,7 +57,7 @@ describe.each(Object.keys(APPROVED))('%s', planId => {
   it('builds the approved exercises, sets and reps in order', () => {
     const { routines } = buildStarterPlan(planId)
     expect(routines.map(r => r.name)).toEqual(approved.map(([, name]) => name))
-    routines.forEach((r, i) => expect(shape(r)).toEqual(approved[i][2]))
+    routines.forEach((r, i) => expect(ruleShape(r)).toEqual(approved[i][2]))
   })
 
   it('puts each routine on its approved weekday, by identity not position', () => {
@@ -65,13 +67,15 @@ describe.each(Object.keys(APPROVED))('%s', planId => {
       .toEqual(approved.map(([day, name]) => [day, name]))
   })
 
-  it('references only real exercises and starts every one at weight 0', () => {
-    for (const r of buildStarterPlan(planId).routines) {
+  it('references only real exercises, each a fixed linear rule of its own routine', () => {
+    for (const r of buildStarterPlan(planId, undefined, 'lb').routines) {
       for (const e of r.ex) {
-        expect(EXIDX[e.id], e.id).toBeTruthy()
-        expect(e.sets).toBeGreaterThan(0)
-        expect(e.reps).toBeGreaterThan(0)
-        expect(e.weight).toBe(0)
+        expect(EXIDX[e.exerciseId], e.exerciseId).toBeTruthy()
+        expect(e.rule.preset).toBe('linear')
+        expect(e.rule.routineId).toBe(r.id)
+        expect(planPhase(e.rule).parameters.sets.min).toBe(planPhase(e.rule).parameters.sets.max)
+        expect(planPhase(e.rule).parameters.reps.min).toBe(planPhase(e.rule).parameters.reps.max)
+        expect(planPhase(e.rule).parameters.load.unit).toBe('lb')
       }
     }
   })
@@ -84,8 +88,8 @@ describe.each(Object.keys(APPROVED))('%s', planId => {
     expect(second.routines.some(r => ids.includes(r.id))).toBe(false)
     expect(first.routines[0].ex[0]).not.toBe(second.routines[0].ex[0])
     // and the static definition survives a caller mutating what it got back
-    first.routines[0].ex[0].sets = 99
-    expect(buildStarterPlan(planId).routines[0].ex[0].sets).toBe(approved[0][2][0][1])
+    planPhase(first.routines[0].ex[0].rule).parameters.sets.min = 99
+    expect(planPhase(buildStarterPlan(planId).routines[0].ex[0].rule).parameters.sets.min).toBe(approved[0][2][0][1])
   })
 })
 
@@ -105,7 +109,7 @@ describe('starterRoutines (the demo build entry point)', () => {
 })
 
 describe('fitting a starter plan to equipment', () => {
-  const ids = plan => plan.routines.flatMap(r => r.ex.map(e => e.id))
+  const ids = plan => plan.routines.flatMap(r => r.ex.map(e => e.exerciseId))
 
   it('changes nothing when the equipment already covers the plan', () => {
     const all = ALL_EQUIPMENT
@@ -122,11 +126,11 @@ describe('fitting a starter plan to equipment', () => {
     const fitted = buildStarterPlan('ppl', ['dumbbell'])
     const push = fitted.routines[0]
     // dumbbell exercises stay put; the barbell bench and the cable pushdown are swapped
-    expect(push.ex.map(e => e.id)).toContain('0426')
-    expect(push.ex.map(e => e.id)).toContain('0334')
-    expect(push.ex[0].id).not.toBe('0025')
-    expect(push.ex[0].sets).toBe(4)
-    expect(push.ex[0].reps).toBe(8)
+    expect(push.ex.map(e => e.exerciseId)).toContain('0426')
+    expect(push.ex.map(e => e.exerciseId)).toContain('0334')
+    expect(push.ex[0].exerciseId).not.toBe('0025')
+    expect(planPhase(push.ex[0].rule).parameters.sets.min).toBe(4)
+    expect(planPhase(push.ex[0].rule).parameters.reps.min).toBe(8)
     expect(fitted.fit.swapped).toBeGreaterThan(0)
   })
 
@@ -143,7 +147,7 @@ describe('fitting a starter plan to equipment', () => {
     for (const eq of [['dumbbell'], ['band'], []]) {
       for (const { id } of starterPlanOptions()) {
         for (const r of buildStarterPlan(id, eq).routines) {
-          const own = r.ex.map(e => e.id)
+          const own = r.ex.map(e => e.exerciseId)
           expect(new Set(own).size).toBe(own.length)
         }
       }
@@ -164,15 +168,15 @@ describe('fitting a starter plan to equipment', () => {
     // body-weight drills; a loaded leg exercise still wins
     const legs = buildStarterPlan('ppl', ['dumbbell']).routines.find(r => r.name === 'Leg Day')
     const swappedIn = legs.ex[3]
-    expect(swappedIn.id).not.toBe('0585')
-    expect(EXIDX[swappedIn.id].eq).toBe('dumbbell')
-    expect(EXIDX[swappedIn.id].bp).toBe('upper legs')
+    expect(swappedIn.exerciseId).not.toBe('0585')
+    expect(EXIDX[swappedIn.exerciseId].eq).toBe('dumbbell')
+    expect(EXIDX[swappedIn.exerciseId].bp).toBe('upper legs')
   })
 
   it('swaps a barbell bench press for chest work with the same kit, not a push-up', () => {
     const push = buildStarterPlan('ppl', ['dumbbell']).routines[0]
-    expect(EXIDX[push.ex[0].id].eq).toBe('dumbbell')
-    expect(EXIDX[push.ex[0].id].bp).toBe('chest')
+    expect(EXIDX[push.ex[0].exerciseId].eq).toBe('dumbbell')
+    expect(EXIDX[push.ex[0].exerciseId].bp).toBe('chest')
   })
 
   it('is deterministic', () => {

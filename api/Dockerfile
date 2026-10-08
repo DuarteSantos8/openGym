@@ -55,6 +55,9 @@ RUN npm ci --omit=dev --omit=optional && npm cache clean --force
 # else, and one that is missing only shows at boot, as ERR_MODULE_NOT_FOUND.
 COPY server.js push-messages.js nudge.js nudge-copy.js verify-error.js password.js rate-limit.js passkeys-store.js device-link.js media.js queue.js sync-stamps.js durable.js ./
 COPY coach ./coach
+# The training engine and the v1 → v2 profile migration, shared with the web build.
+COPY engine ./engine
+COPY migration ./migration
 ENV NODE_ENV=production
 ENV PORT=3000
 EXPOSE 3000

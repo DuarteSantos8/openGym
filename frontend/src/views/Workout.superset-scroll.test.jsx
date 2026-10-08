@@ -17,7 +17,7 @@ const menuItemsOf = menu => (menu.sections ? menu.sections.flatMap(g => g.items 
 // over: the store clones the whole state on every write and the row refs are keyed by entry.
 const mocks = vi.hoisted(() => {
   const state = {
-    S: null, timer: null, work: null,
+    S: null, A: null, timer: null, work: null,
     startRest: vi.fn(), startWork: vi.fn(), toast: vi.fn(), menuSheet: vi.fn(),
     stopRest: null, stopWork: null,
     afterScrollRestore: vi.fn(fn => { fn(); return () => {} }),
@@ -27,8 +27,12 @@ const mocks = vi.hoisted(() => {
   state.stopWork = vi.fn(() => { state.work = null })
   state.storeSnapshot = () => ({
     S: state.S,
+    A: state.A,
     user: null,
     update: mut => { const next = structuredClone(state.S); mut(next); state.S = next },
+    updateActive: mut => { if (!state.A) return; const next = structuredClone(state.A); mut(next); state.A = next },
+    setActive: session => { state.A = session ? structuredClone(session) : null },
+    clearActive: () => { state.A = null },
   })
   state.uiSnapshot = () => ({
     timer: state.timer, work: state.work,
@@ -90,8 +94,8 @@ async function mount(entries, cur = 0, active = {}, prep = null) {
   mocks.S = {
     unit: 'kg', restSec: 90, sound: false, effort: 'none', gifSize: 'full',
     workouts: [], exWeights: {}, routines: [],
-    active: { id: 'active', name: 'Test workout', start: Date.now(), cur, entries, ...active },
   }
+  mocks.A = { id: 'active', name: 'Test workout', start: Date.now(), cur, entries, ...active }
   installDom()
   prep?.()   // anything the first render must already find on the DOM: the screen's geometry
   await act(async () => { root.render(React.createElement(Workout)) })
@@ -149,14 +153,14 @@ describe('the superset card after a rating', () => {
     const rating = kind === 'rpe' ? 8 : 2
     await act(async () => { pick(rating) })
     await rerender()
-    expect(mocks.S.active.entries[0].sets[0].done).toBe(true)
-    expect(mocks.S.active.entries[0].sets[0][kind]).toBe(rating)
-    expect(mocks.S.active.cur).toBe(1)
+    expect(mocks.A.entries[0].sets[0].done).toBe(true)
+    expect(mocks.A.entries[0].sets[0][kind]).toBe(rating)
+    expect(mocks.A.cur).toBe(1)
     expect(queued).toHaveLength(1)
     expect(seen).toHaveLength(0)
     // Another write lands before the wait is over. Every write clones the whole state, so the
     // entry the asking render had is under no row ref any more.
-    mocks.storeSnapshot().update(s => { s.active.entries[2].sets[0].w = 62.5 }); await rerender()
+    mocks.storeSnapshot().updateActive(s => { s.entries[2].sets[0].w = 62.5 }); await rerender()
     await act(async () => { queued[0]() })
     expect(seen).toEqual([partnerFirstRow()])
   })
@@ -166,7 +170,7 @@ describe('the superset card after a rating', () => {
     const seen = watchScrolls()
     await press(container.querySelector('[role="checkbox"]'))
     await rerender()
-    expect(mocks.S.active.cur).toBe(1)
+    expect(mocks.A.cur).toBe(1)
     expect(seen).toEqual([partnerFirstRow()])
   })
 
@@ -182,7 +186,7 @@ describe('the superset card after a rating', () => {
     await rerender()
     expect(queued).toHaveLength(1)
     // The queued callback never re-checks the pairing: the effect's cleanup is what stops it.
-    mocks.storeSnapshot().update(s => { delete s.active.entries[0].sg; delete s.active.entries[1].sg }); await rerender()
+    mocks.storeSnapshot().updateActive(s => { delete s.entries[0].sg; delete s.entries[1].sg }); await rerender()
     expect(cancel).toHaveBeenCalledTimes(1)
     expect(seen).toEqual([])
   })
@@ -204,19 +208,19 @@ describe('the superset card after a rating', () => {
   it('does not scroll when two exercises are paired', async () => {
     await mount([lifted('0025'), lifted('0043'), lifted('0001')], 0)
     rowsAt(400); const seen = watchScrolls()
-    mocks.storeSnapshot().update(s => { s.active.entries[0].sg = 'g'; s.active.entries[1].sg = 'g' }); await rerender()
+    mocks.storeSnapshot().updateActive(s => { s.entries[0].sg = 'g'; s.entries[1].sg = 'g' }); await rerender()
     expect(container.querySelectorAll('.setrow')).toHaveLength(6)
     expect(seen).toEqual([])
   })
   it('does not scroll on List → Cards', async () => {
     await mount(superset(), 0, { workoutView: 'list' })
     rowsAt(400); const seen = watchScrolls()
-    mocks.storeSnapshot().update(s => { s.active.workoutView = 'cards' }); await rerender()
+    mocks.storeSnapshot().updateActive(s => { s.workoutView = 'cards' }); await rerender()
     expect(seen).toEqual([])
     // …and a marker move after the switch still does, on-screen row or not.
     await press(container.querySelector('[role="checkbox"]'))
     await rerender()
-    expect(mocks.S.active.cur).toBe(1)
+    expect(mocks.A.cur).toBe(1)
     expect(seen).toEqual([partnerFirstRow()])
   })
   // The marker moved while the List was up, where this scroll never runs; the switch back to
@@ -224,11 +228,11 @@ describe('the superset card after a rating', () => {
   it('a marker moved in the List does not scroll once Cards comes back', async () => {
     await mount(superset(), 0, {}, () => rowsAt(400))
     const seen = watchScrolls()
-    mocks.storeSnapshot().update(s => { s.active.workoutView = 'list' }); await rerender()
+    mocks.storeSnapshot().updateActive(s => { s.workoutView = 'list' }); await rerender()
     await press(container.querySelector('[role="checkbox"]'))
     await rerender()
-    expect(mocks.S.active.cur).toBe(1)
-    mocks.storeSnapshot().update(s => { s.active.workoutView = 'cards' }); await rerender()
+    expect(mocks.A.cur).toBe(1)
+    mocks.storeSnapshot().updateActive(s => { s.workoutView = 'cards' }); await rerender()
     expect(seen).toEqual([])
   })
   // A session started through the weigh-in sheet, its first block tall enough to push the first
@@ -243,7 +247,7 @@ describe('the superset card after a rating', () => {
     const seen = watchScrolls()
     await press(container.querySelector('[role="checkbox"]'))
     await rerender()
-    expect(mocks.S.active.cur).toBe(1)
+    expect(mocks.A.cur).toBe(1)
     expect(seen).toEqual([partnerFirstRow()])
   })
   // Exercise ⋯ → Move up: the unit changes place and the marker's index follows it. Not a move,
@@ -257,13 +261,13 @@ describe('the superset card after a rating', () => {
     const items = menuItemsOf(mocks.menuSheet.mock.calls.at(-1)[0])
     await act(async () => { items.find(i => i.label === 'Move up').onClick() })
     await rerender()
-    expect(mocks.S.active.entries[0].id).toBe('0025')
-    expect(mocks.S.active.cur).toBe(0)
+    expect(mocks.A.entries[0].id).toBe('0025')
+    expect(mocks.A.cur).toBe(0)
     expect(seen).toEqual([])
     // …while the tick that moves the marker to the partner still centres its row.
     await press(container.querySelector('[role="checkbox"]'))
     await rerender()
-    expect(mocks.S.active.cur).toBe(1)
+    expect(mocks.A.cur).toBe(1)
     expect(seen).toEqual([container.querySelectorAll('.setrow')[3]])
   })
   // Two rows of the same exercise in one superset: the tick from one to the other is a move all
@@ -280,7 +284,7 @@ describe('the superset card after a rating', () => {
     mocks.afterScrollRestore.mockImplementationOnce(fn => { queued.push(fn); return () => {} })
     await act(async () => { pick(2) })
     await rerender()
-    expect(mocks.S.active.cur).toBe(1)
+    expect(mocks.A.cur).toBe(1)
     expect(queued).toHaveLength(1)
     await act(async () => { queued[0]() })
     expect(seen).toEqual([partnerFirstRow()])
@@ -305,7 +309,7 @@ describe('the superset card after a rating', () => {
     rowsAt(400); const seen = watchScrolls()
     const bar = document.createElement('div'); bar.id = 'timer'; document.body.appendChild(bar)
     dom.Element.prototype.getBoundingClientRect = function () { return this.id === 'timer' ? { top: 380, bottom: 659 } : { top: 400, bottom: 444 } }
-    mocks.storeSnapshot().update(s => { s.active.workoutView = 'cards' }); await rerender()
+    mocks.storeSnapshot().updateActive(s => { s.workoutView = 'cards' }); await rerender()
     expect(seen).toEqual([container.querySelectorAll('.setrow')[0]])
   })
 })

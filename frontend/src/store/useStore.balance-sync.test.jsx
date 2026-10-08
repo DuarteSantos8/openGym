@@ -6,7 +6,7 @@
    instead of handing the whole map to the copy that happened to be newer. */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('../lib/api.js', () => ({ api: vi.fn(), setRemoteAuth: vi.fn() }))
+vi.mock('../lib/api.js', () => ({ setAccessHeaders: vi.fn(), api: vi.fn(), setRemoteAuth: vi.fn() }))
 const { toast } = vi.hoisted(() => ({ toast: vi.fn() }))
 vi.mock('./useUI.js', () => ({ useUI: { getState: () => ({ toast }) } }))
 

@@ -60,11 +60,11 @@ describe('swap picker opens on the same muscle', () => {
   it('mid-workout: Swap exercise starts on the target muscle, same equipment first, All goes back', () => {
     expect(CABLE_TRI).toBeTruthy()
     const S = structuredClone(DEF)
-    S.active = {
+    const A = {
       id: 'w', d: '2026-10-08', start: Date.now(), routineId: null, name: 'Push', bw: null, cur: 0,
-      entries: [{ id: CABLE_TRI.id, target: { mode: 'reps', sets: 3, reps: 10, weight: 20 }, sets: [{ w: 20, r: 10, done: false }] }]
+      entries: [{ exposureId: 'tri-exposure', id: CABLE_TRI.id, target: { mode: 'reps', sets: 3, reps: 10, weight: 20 }, sets: [{ w: 20, r: 10, done: false }] }]
     }
-    useStore.setState({ S, user: null })
+    useStore.setState({ S, A, user: null })
     swapActiveWorkoutExercise(0)
     const host = renderTop()
 
@@ -112,7 +112,7 @@ describe('swap picker opens on the same muscle', () => {
     // Every catalogue muscle has body-weight work, which no equipment profile hides, so the empty
     // case is one of your own exercises on a muscle nothing else names.
     S.customEx = [{ id: 'cOnly', n: 'My odd lift', bp: 'neck', tg: 'nothing-else', eq: 'body weight', custom: true }]
-    useStore.setState({ S, user: null })
+    useStore.setState({ S, A: null, user: null })
     exercisePicker(vi.fn(), { like: 'cOnly' })
     const host = renderTop()
     expect(isOn(chipByText(host, 'All'))).toBe(true)

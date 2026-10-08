@@ -66,8 +66,19 @@ if you want to try it before installing anything.
   Sunday, your choice.
 - Or skip the weekdays altogether: a **rotation** (A, B, C, A, ...) where the next session is
   simply the next one you haven't done, however the week went.
-- Supersets, warm-up sets, drop sets and rest-pause, timed exercises (planks, hangs, carries),
-  cardio by time and speed, rest time per exercise, planned deloads.
+- Supersets, timed exercises (planks, hangs, carries), cardio by time and speed, rest time per
+  exercise, planned deloads.
+- Pyramid sets: a rep target for each set ("12 · 8 · 6 · Max · 12"), a Max set that opens at what that set
+  managed last time and names the record to beat, and a rest of its own per set.
+- Warm-up sets that plan themselves: per exercise pick **Off**, a **smart ramp** (1–5 sets, shaped
+  by the equipment) or your own **percentage template** (e.g. 50 % × 5), and every session opens
+  with the warm-ups worked out from today's working weight and rounded down to your plate step.
+  Change the working weight mid-session and the warm-ups still waiting re-aim; the ones you edited
+  or already did stay as they are.
+- Drop sets and rest-pause configured on the exercise — how many drops, how much lighter, how many
+  bursts and how long between them — so every session opens with them already set up and editable.
+  Warm-up rows stay out of the numbers that should not see them: no effect on your estimated 1RM,
+  your progression, records or the fatigue map.
 - Your own exercises, with your own photo, GIF or short video. Location data is stripped on the
   device before upload.
 
@@ -80,7 +91,9 @@ if you want to try it before installing anything.
   list view. Switches in Settings bring the old button rows back if you liked them.
 - Optional effort column as RIR or RPE, colour-coded, with a plain-language line per level.
 - Plate math for barbell, EZ bar, trap bar and Smith machine, worked out from the plates you own.
-- Bodyweight exercises know they carry no load: log reps, add a dip belt if you use one.
+- Bodyweight exercises know they carry no load: log reps, add a dip belt if you use one. The
+  bodyweight ladder climbs reps, then sets, and past the top of both moves you to the next harder
+  variation on a list you write.
 - Per-side reps for lunges and single-arm work, the screen stays awake while you train, and a
   rest-timer alert can flash the screen for loud gyms.
 - Swipe a set left to delete it (with Undo) or right to copy it. Pyramid sets with their own reps
@@ -88,9 +101,16 @@ if you want to try it before installing anything.
 
 **Progress**
 
-- Progression rules per routine or per exercise: linear, Greyskull LP, double progression through a
-  visible rep range, triple progression (reps, then sets, then load), or adding time. Each target explains why it is that number; missed reps never
-  add load, stalls trigger a deload.
+- Progression rules per routine or per exercise, picked from a list: autoregulated (you set
+  reps, load or seconds by feel), linear, Greyskull LP, **double** and **triple** progression through
+  visible rep/set ranges, **pyramid** lightest or heaviest set first (per-set percentages and reps,
+  with a one-tap RPT builder), **5/3/1**, **timed holds** that climb in seconds, and a **bodyweight ladder**. Loads can be
+  absolute or a **% of your 1RM**, rounded to your plate step, and an optional list of conditions
+  ("reach 100 kg", "reach 12 reps") marks the track complete. Each target explains why it is that
+  number; missed targets never add load, and logging off-plan shows a warning without ever blocking
+  the set.
+- A rule can name a **target effort**: the load then only goes up when your hardest set left at
+  least that many reps in reserve.
 - Estimated 1RM per exercise with its own curve, Structural Balance ratios (Poliquin, Thibaudeau,
   ATG), a year-long activity heatmap.
 - A muscle map in three modes: where your volume went, what is still recovering, and what has gone
@@ -280,6 +300,29 @@ two weeks after it.
 | v1.4.1 to v1.4.4 | Dec 2026 and Jan 2027 | Programmes, the progression engine, cardio |
 | v1.4.5 to v1.4.10 | Jan to Apr 2027 | Search, accounts, the iOS app, Android and health, looks |
 | later | | Database storage |
+
+## Tech
+React 19 + Vite (React Router, Zustand) · Node (no framework) · nginx · Docker Compose ·
+WebAuthn · exercise data from [hasaneyldrm/exercises-dataset](https://github.com/hasaneyldrm/exercises-dataset)
+(MIT metadata and instructions; media © Gym visual — see [License](#license)).
+No database server, no cloud dependencies — the frontend builds inside Docker, so self-hosting
+stays a one-command `docker compose up`.
+The training logic — progression rules, 1RM estimation, how a logged session is read back —
+lives in pure functions with tests next to them: `npm test` in `frontend/`. The prescription
+engine itself (rule validation, generating the next session, warm-up planning, advancing a
+track) sits in `api/engine/`, shared by the web build, the phone app and the server's one-time
+profile upgrade, and reached from the frontend through `frontend/src/lib/prescription/`.
+Vitest is a dev dependency; the app itself ships no runtime dependencies beyond
+React, the router and Zustand.
+The optional AI Coach (`api/coach/`) is built the same way round: a by-name allowlist decides
+what may leave the server, and a closed-list validator decides what may come back — the model
+can touch routines and the weekly schedule, nothing else, and every change is applied on the
+client only after you approve it. The core of it — `api/coach/core/` — has no Node dependency,
+so the phone app runs the same validator the server does. The in-container AI runtimes live in a
+separate Docker build target; the API-key providers need none. See [docs/AI_COACH.md](docs/AI_COACH.md).
+The same pure helpers power an optional MCP server (`mcp/`) that lets an LLM client like
+Claude Desktop read your data over stdio — see [mcp/README.md](mcp/README.md). Opt-in, not
+in the Docker build.
 
 ## Community
 

@@ -1,5 +1,25 @@
 # Changelog
 
+## Unreleased
+
+**Configurable progression programs.** A plan rule is now a program: phases of set groups, the
+steps that move them, when a phase ends and what happens at the end of a cycle. The progressions you
+know are templates of it and behave as before (manual, autoregulated and duration are now one
+**Autoregulated** rule you can switch to seconds; pyramid and reverse pyramid are one **Pyramid** with a
+direction), and three new ones join them:
+
+- **Top set and back-off** — one heavy set, then lighter back-off sets at a percentage, each with its
+  own rest; the top set (or every set, if you prefer) decides the next load.
+- **Accumulation then intensification** — reps climb at a lighter share of your training max, then a
+  heavier block of fewer reps; start over with a heavier training max, or finish.
+- **Density** — the same work with a little less rest after every clean session, down to a floor.
+
+Fixed on the way: triple progression and a ladder with named variations could never reach their next
+step; a bodyweight exercise that gained weight went back to the rep climb every other session (and
+after migrating, a bodyweight double climbed the wrong rep range); a ladder session that fell short was
+judged against the plan's minimum rather than the target it asked for, as v1 did. Steps are now
+earned when a session finishes, and a set's own rest drives the timer.
+
 ## v1.4.0 (2026-10-09)
 
 The biggest update openGym has had: a new exercise database with 5,632 exercises and new

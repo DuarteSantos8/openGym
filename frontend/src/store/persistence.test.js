@@ -72,7 +72,7 @@ describe('persistence — measurements survive the round trips', () => {
     const before = Object.assign(profile(), { active: { id: 'live', started: 1 } })
     const after = pullFromServer(pushToServer(before))
     expect(measurementState(after)).toEqual(measurementState(before))
-    expect(after.active).toBeNull()
+    expect(after).not.toHaveProperty('active')
   })
 
   it('survives the two chained — export, import, sync up, sync back down', () => {

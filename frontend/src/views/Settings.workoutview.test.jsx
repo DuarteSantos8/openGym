@@ -67,7 +67,14 @@ const mount = () => act(() => root.render(<Settings page="workout" />))
 const segButton = label => [...host.querySelectorAll('.seg button')].find(b => b.textContent === label)
 
 describe('Settings — workout view', () => {
-  it('offers Cards / List / Compact / Focus and writes workoutView to the store', () => {
+  it('A12: exposes unsupported settings and preserved malformed records in the upgrade review', () => {
+    mocks.S.migrationAudit = { fromSchema: 1, unsupported: [{ routineId: 'r1', exerciseId: '0025', field: 'prog', value: 'wave' }],
+      discarded: [{ path: 'routines[1].ex[0]', value: { sets: 3 } }] }
+    act(() => root.render(<Settings page="data" />))
+    expect(host.querySelector('details').textContent).toContain('wave')
+    expect(host.querySelector('details').textContent).toContain('routines[1].ex[0]')
+  })
+it('offers Cards / List / Compact / Focus and writes workoutView to the store', () => {
     mount()
     expect(['Cards', 'List', 'Compact', 'Focus'].every(label => segButton(label))).toBe(true)
     expect(segButton('Cards').getAttribute('aria-pressed')).toBe('true')

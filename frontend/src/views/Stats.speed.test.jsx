@@ -21,7 +21,8 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
 const BIKE = '2138'
 const session = (d, speeds) => ({
   id: d, d, start: Date.parse(d + 'T10:00:00Z'), end: Date.parse(d + 'T10:40:00Z'), name: 'Cardio',
-  entries: [{ id: BIKE, target: { id: BIKE, sets: speeds.length, min: 20, speed: 8 }, sets: speeds.map(speed => ({ min: 20, speed, done: true })) }],
+  exposures: [{ exposureId: 'x' + d, exerciseId: BIKE, mode: 'cardio', performance: { sets: speeds.map(speed => ({
+    role: 'work', status: 'completed', observations: [{ metric: 'duration', value: 20 * 60 }, { metric: 'speed', value: speed }], resistance: { kind: 'none' }, segments: [] })) } }],
 })
 let root, host
 afterEach(() => { act(() => root.unmount()); host.remove(); mocks.charts = [] })

@@ -160,7 +160,7 @@ const lastCreditDay = s => {
  * today's, and nothing logged before this moment counts for it (`strict`, queue.js): a session
  * done earlier today was the old pass's, even under the same routine name.
  */
-export function startNewPass(s, today = todayISO(), now = Date.now()) {
+export function startNewPass(s, today = todayISO(), now = Date.now(), active = s.active) {
   if (!s.rotation) return
   const ids = rotationIds(s)
   if (!ids.length) return
@@ -169,7 +169,7 @@ export function startNewPass(s, today = todayISO(), now = Date.now()) {
   // A live workout on one of the loop's routines, already running when the loop is started over,
   // belongs to the new pass: otherwise `strict` + since=now means it never counts once finished.
   // Still never earlier than the old pass's own workouts (sinceAfter's floor).
-  const a = s.active
+  const a = active
   const running = a && !a.backfill && Number.isFinite(a.start) && a.start <= now && routineIdsOf(a).some(id => ids.includes(id))
   const since = running ? (q ? sinceAfter(s, q, a.start) : a.start) : (q ? sinceAfter(s, q, now) : now)
   s.queue = { ...newPass(ids, s.rotation.label || '', s.rotation.id, today, since), strict: true }

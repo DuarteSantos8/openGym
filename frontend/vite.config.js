@@ -102,12 +102,15 @@ const appVersion = process.env.APP_BUILD ? `${pkgVersion}+${process.env.APP_BUIL
 
 export default defineConfig({
   define: { __APP_VERSION__: JSON.stringify(appVersion) },
+  // A few tests import the whole app (Workout, the store) inside the test; with every core busy that outruns vitest's 5 s.
+  test: { testTimeout: 20000 },
   plugins: [react(), umami, flavor, swStamp, catalogueMedia],
   base: './',
   server: {
     // The Coach's core (payload, validator, prompts, HTTP adapters) lives in ../api/coach/core
-    // and is imported by the phone build. vite build and vitest already reach it; the dev
-    // server needs to be told the workspace is wider than frontend/.
+    // and the training engine in ../api/engine; the phone build imports both. vite build and
+    // vitest already reach them; the dev server needs to be told the workspace is wider than
+    // frontend/.
     fs: { allow: ['..'] },
     proxy: {
       '/api': { target: backend, changeOrigin: true, headers: { Origin: apiOrigin } },

@@ -6,7 +6,7 @@
 // enabled" to a server whose admin was looking at a green test.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('../lib/api.js', () => ({ api: vi.fn() }))
+vi.mock('../lib/api.js', () => ({ setAccessHeaders: vi.fn(), api: vi.fn() }))
 
 import { api } from '../lib/api.js'
 import { useStore } from './useStore.js'

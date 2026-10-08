@@ -134,7 +134,7 @@ const stopWorkTicking = () => {
 // The set a hold belongs to, while it still is that one: the same exercise at that place in the
 // running workout, not ticked off yet.
 const ownerSet = o => {
-  const e = useStore.getState().S?.active?.entries?.[o?.idx]
+  const e = useStore.getState().A?.entries?.[o?.idx]
   const st = e && e.id === o.id ? e.sets?.[o.i] : null
   return st && !st.done ? st : null
 }
@@ -144,15 +144,15 @@ const ownerSet = o => {
 const ownerDone = wk => !wk?.owner ? null : (elapsed, { abandoned = false } = {}) => {
   if (!ownerSet(wk.owner)) return
   const { idx, i } = wk.owner
-  useStore.getState().update(s => {
-    const st = s.active.entries[idx].sets[i]
+  useStore.getState().updateActive(A => {
+    const st = A.entries[idx].sets[i]
     st.sec = elapsed
     if (abandoned) { if (st.planSec == null) st.planSec = wk.total; return }
     delete st.planSec
     if (st.sides) return   // a per-side row is ticked side by side, on the workout screen
     st.done = true
     st.at = Date.now()
-  }, true)
+  })
 }
 const stopRestTicking = () => {
   if (timerInt) clearInterval(timerInt); timerInt = null
@@ -464,7 +464,7 @@ export function restoreRest(now = Date.now()) {
   try { saved = JSON.parse(ss?.getItem(REST_KEY) || 'null') } catch { saved = null }
   if (!saved || useUI.getState().timer) return false
   const total = Math.round(Number(saved.total))
-  const ok = useStore.getState().S?.active && total > 0 && (saved.paused ? saved.left > 0 : saved.endsAt > now)
+  const ok = useStore.getState().A && total > 0 && (saved.paused ? saved.left > 0 : saved.endsAt > now)
   if (!ok) { try { ss.removeItem(REST_KEY) } catch { /* nothing to drop */ } return false }
   const base = { total, forIdx: saved.forIdx ?? undefined, ...(saved.forSet != null ? { forSet: saved.forSet } : {}), ...(saved.kind === 'switch' ? { kind: 'switch' } : {}) }
   if (saved.paused) {

@@ -40,7 +40,7 @@ server {
         # Match the API's own body limit (MAX_BODY in api/server.js): the whole workout history
         # travels in one PUT /api/data, and nginx's 1 MiB default would answer 413 here before the
         # API ever saw it — a sync that silently stops once the history grows past 1 MiB.
-        client_max_body_size 5m;
+        client_max_body_size 16m;
         # Resolved per request through the container runtime's DNS, not once at start-up: nginx
         # otherwise pins the api container's IP when it boots, and a recreated api (new IP) means
         # 502 on every /api call until web is restarted too (issue #16). The variable is what makes
@@ -81,7 +81,7 @@ server {
     # longest matching prefix, so this block takes those requests from the one above wherever it
     # sits. Same upstream, resolver and headers; what differs is the body. A video may be tens of
     # MB, so the cap is MEDIA_UPLOAD_MAX (48m by default; keep it above MEDIA_VIDEO_MAX_MB)
-    # instead of 5m. The upload is passed to the API as it arrives rather than spooled to a temp
+    # instead of 16m. The upload is passed to the API as it arrives rather than spooled to a temp
     # file here first: the API checks size, hash and type while it streams and answers a refusal
     # before the rest is sent, and spooling would double the disk writes and hide the progress.
     # The two proxy timeouts are the gaps allowed between two reads or writes on the API side,

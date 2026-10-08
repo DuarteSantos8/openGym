@@ -13,6 +13,9 @@ import { DEF, useStore, restoredStateFor } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { EXIDX, exOr } from './lib/exercises.js'
 import { mergeStates } from './lib/sync-merge.js'
+import { migrateProfileV1ToV2 } from '../../api/migration/profile-migration.js'
+import { LIB_BY_ID } from '../../api/coach/core/library.js'
+import { unpackProfile } from '../../api/migration/profile-pack.js'
 import { todayISO } from './lib/format.js'
 import { beginWorkout, exerciseDetailSheet, exerciseHistorySheet, workoutDetailSheet, finishWorkout } from './sheets.jsx'
 import Home from './views/Home.jsx'
@@ -62,20 +65,27 @@ function seed(view = 'cards', extra = {}) {
     active: { id: 'a1', d: todayISO(), start: Date.now(), routineIds: ['r1'], name: 'Push', bw: null, cur: 0, entries: activeEntries(), workoutView: view },
     ...extra,
   })
-  useStore.setState({ S, user: null })
+  delete S.engineSchemaVersion
+  const { profile, activeSession } = migrateProfileV1ToV2(S, LIB_BY_ID)
+  useStore.setState({ S: { ...clone(DEF), ...profile }, A: null, user: null })
+  useStore.getState().setActive(activeSession)
 }
 
 // Every place the seed put the id, read back from whatever copy is handed in.
-function expectKept(S, { active = true } = {}) {
-  expect(S.routines.find(r => r.id === 'r1').ex.map(e => e.id)).toEqual([UNK, SQUAT])
+function expectKept(S, A = null) {
+  expect(S).not.toHaveProperty('active')
+  expect(S.routines.find(r => r.id === 'r1').ex.map(e => e.exerciseId)).toEqual([UNK, SQUAT])
   expect(S.week[1]).toEqual(['r1'])
   expect(S.favEx).toEqual([UNK, SQUAT])
   expect(S.exWeights[UNK]?.w).toBeGreaterThan(0)   // finishing a session moves it on, never away
   expect(S.exNotes[UNK]).toBe('seat 4')
   expect(S.barWeights[UNK]).toBe(15)
-  for (const id of ['w1', 'w2']) expect(S.workouts.find(w => w.id === id).entries.map(e => e.id)).toEqual([UNK, SQUAT])
+  for (const id of ['w1', 'w2']) expect(S.workouts.find(w => w.id === id).exposures.map(e => e.exerciseId)).toEqual([UNK, SQUAT])
   expect(S.workouts.find(w => w.id === 'w1').prs).toEqual([UNK])
-  if (active) expect(S.active.entries.map(e => e.id)).toEqual([UNK, SQUAT])
+  if (A) {
+    expect(A.exposures.map(e => e.exerciseId)).toEqual([UNK, SQUAT])
+    expect(A.entries.map(e => e.id)).toEqual([UNK, SQUAT])
+  }
 }
 
 const mounted = []
@@ -113,7 +123,7 @@ describe('exercise ids this build does not know', () => {
     expect(edit.textContent).toContain('Unknown exercise')
     render(<Library />)
     render(<StructuralBalance />)
-    expectKept(useStore.getState().S)
+    expectKept(useStore.getState().S, useStore.getState().A)
   })
 
   it('Home draws it on a rotation too', () => {
@@ -124,7 +134,7 @@ describe('exercise ids this build does not know', () => {
     })
     render(<Home />)
     render(<Plan />)
-    expectKept(useStore.getState().S)
+    expectKept(useStore.getState().S, useStore.getState().A)
   })
 
   for (const view of ['cards', 'list', 'compact', 'focus']) {
@@ -132,7 +142,7 @@ describe('exercise ids this build does not know', () => {
       seed(view)
       const host = render(<Workout />)
       expect(host.textContent).toContain('Unknown exercise')
-      expectKept(useStore.getState().S)
+      expectKept(useStore.getState().S, useStore.getState().A)
     })
   }
 
@@ -145,7 +155,7 @@ describe('exercise ids this build does not know', () => {
     mountTopSheet()
     exerciseDetailSheet(exOr(UNK))
     mountTopSheet()
-    expectKept(useStore.getState().S)
+    expectKept(useStore.getState().S, useStore.getState().A)
   })
 
   it('Stats draws it, and its exercise picker leaves out the id it has no name for', () => {
@@ -154,33 +164,35 @@ describe('exercise ids this build does not know', () => {
     // Exercise progress opens on the known lift: an id with no name to show is left out of
     // the picker (Stats.jsx exHist), not charted as a bare number.
     expect(host.textContent).toContain('Barbell Full Squat · 100 kg')
-    expectKept(useStore.getState().S)
+    expectKept(useStore.getState().S, useStore.getState().A)
   })
 
   it('starting the routine and finishing the session keep it, in the new workout too', () => {
     seed('cards', { active: null })
     act(() => beginWorkout(['r1'], null))
-    const A = useStore.getState().S.active
+    const A = useStore.getState().A
     expect(A.entries.map(e => e.id)).toEqual([UNK, SQUAT])
     render(<Workout />)
-    act(() => useStore.getState().update(s => { s.active.entries.forEach(e => e.sets.forEach(set => { set.done = true })) }))
+    act(() => useStore.getState().updateActive(A => { A.entries.forEach(e => e.sets.forEach(set => { set.done = true })) }))
     act(() => finishWorkout())
     const S = useStore.getState().S
-    expect(S.active).toBeNull()
-    expect(S.workouts.find(w => w.id === A.id).entries.map(e => e.id)).toEqual([UNK, SQUAT])
-    expectKept(S, { active: false })
+    expect(useStore.getState().A).toBeNull()
+    expect(S.workouts.find(w => w.id === A.id).exposures.map(e => e.exerciseId)).toEqual([UNK, SQUAT])
+    expectKept(S)
   })
 
   it('a save, a sync merge and an adopted server copy carry it through untouched', () => {
     seed()
     act(() => useStore.getState().update(s => { s.restSec = 120 }))
-    const saved = JSON.parse(localStorage.getItem('gym_state_v1'))
-    expectKept(saved)
+    const saved = unpackProfile(JSON.parse(localStorage.getItem('gym_state_v1')))
+    const savedActive = JSON.parse(localStorage.getItem('gym_active_v1'))
+    expect(savedActive).toMatchObject({ id: 'a1' })
+    expectKept(saved, savedActive)
     // The server's copy names the id; this device's older copy does not have it yet.
-    const server = clone(saved); delete server.active
+    const server = clone(saved)
     const local = clone(DEF)
-    expectKept(mergeStates(server, local), { active: false })
-    expectKept(mergeStates(local, server), { active: false })
-    expectKept(restoredStateFor(local, server), { active: false })
+    expectKept(mergeStates(server, local))
+    expectKept(mergeStates(local, server))
+    expectKept(restoredStateFor(local, server))
   })
 })

@@ -4,24 +4,24 @@
 // one that ended while the app was away is written to its set as held to the end.
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 
-vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({ ok: true })) }))
+vi.mock('../lib/api.js', () => ({ setAccessHeaders: vi.fn(), api: vi.fn(() => Promise.resolve({ ok: true })) }))
 vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn() }))
 
 import { useUI, restoreWork, WORK_KEY } from './useUI.js'
 import { useStore } from './useStore.js'
 
 const saved = () => JSON.parse(localStorage.getItem(WORK_KEY) || 'null')
-const plankSet = () => useStore.getState().S.active.entries[1].sets[0]
+const plankSet = () => useStore.getState().A.entries[1].sets[0]
 const owner = { idx: 1, i: 0, id: 'plank' }
 
 let original
 beforeEach(() => {
   vi.useFakeTimers()
   original = useStore.getState().S
-  useStore.setState({ S: { ...original, sound: true, active: { id: 'a', entries: [
+  useStore.setState({ S: { ...original, sound: true }, A: { id: 'a', entries: [
     { id: 'squat', sets: [{ w: 100, r: 5 }] },
     { id: 'plank', sets: [{ sec: 45 }, { sec: 45 }] },
-  ] } } })
+  ] } })
   useUI.setState({ timer: null, work: null })
   localStorage.clear()
 })
@@ -82,7 +82,7 @@ describe('a hold across a reload', () => {
     expect(restoreWork()).toBe(false)
     expect(useUI.getState().work).toBeNull()
     expect(saved()).toBeNull()
-    useStore.getState().update(s => { s.active.entries[1].sets[0].done = true }, false)
+    useStore.getState().updateActive(a => { a.entries[1].sets[0].done = true })
     localStorage.setItem(WORK_KEY, JSON.stringify({ endsAt: Date.now() + 30_000, total: 45, label: 'Plank', overtime: false, owner }))
     expect(restoreWork()).toBe(false)
   })

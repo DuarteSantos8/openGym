@@ -7,12 +7,14 @@
 // catalogue-first (EXIDX), exactly like the fatigue/strength maps, falling back to the
 // logged snapshot (muscleWeights) for exercises no longer in the catalogue.
 import { best1RM } from './onerm.js'
-import { entriesForExercise, workoutAt } from './history.js'
+import { workoutAt } from './history.js'
 import { STRENGTH_FULL_MS, STRENGTH_HALF_LIFE_MS, STRENGTH_FLOOR, halfLifeDecay } from './recovery.js'
 import { musclesOf } from './muscles.js'
 import { EXIDX } from './exercises.js'
-import { hasCompletedWork, isWarmupRow } from './workout-model.js'
 import { exerciseNameFor } from './i18n-core.js'
+
+// A workout's occurrences of an exercise: its exposures (a combined session can hold one twice).
+const entriesForExercise = (workout, id) => (workout?.exposures || []).filter(x => x?.exerciseId === id)
 
 const round1 = value => Math.round(value * 10) / 10
 
@@ -30,17 +32,17 @@ function lastWorkSetAt(S, id) {
   for (const workout of S?.workouts || []) {
     const ts = workoutAt(workout)
     if (!Number.isFinite(ts) || ts <= latest) continue
-    const entries = entriesForExercise(workout, id)
-    if (entries.some(entry => (entry.sets || []).some(s => hasCompletedWork(s) && !isWarmupRow(s)))) latest = ts
+    const exposures = entriesForExercise(workout, id)
+    if (exposures.some(x => (x.performance?.sets || []).some(row => row.status === 'completed' && row.role !== 'warmup'))) latest = ts
   }
   return Number.isFinite(latest) ? latest : null
 }
 
-function snapshotWeights(entry) {
-  const catalogue = entry && typeof entry === 'object' ? EXIDX[entry.id] : null
+function snapshotWeights(exposure) {
+  const catalogue = exposure && typeof exposure === 'object' ? EXIDX[exposure.exerciseId] : null
   if (catalogue) return musclesOf(catalogue)
-  const direct = entry && typeof entry === 'object'
-    ? (entry.muscleWeights || entry.muscleSnapshot?.muscleWeights)
+  const direct = exposure && typeof exposure === 'object'
+    ? (exposure.muscleWeights || exposure.muscleSnapshot?.muscleWeights)
     : null
   if (direct && typeof direct === 'object' && !Array.isArray(direct) && Object.keys(direct).length) {
     return Object.fromEntries(Object.entries(direct).filter(([, value]) => {
@@ -48,7 +50,7 @@ function snapshotWeights(entry) {
       return Number.isFinite(weight) && weight > 0
     }))
   }
-  return musclesOf(entry)
+  return musclesOf(exposure)
 }
 
 // Highest-weight muscle of an exercise - used for the primary/secondary badge and the
@@ -62,13 +64,13 @@ export function primaryMuscleOf(entry) {
   return best
 }
 
-function resolvedExerciseName(entry) {
+function resolvedExerciseName(exposure) {
   // Imported history often has no name snapshot (entries are { id, sets, topW }) - the
   // catalogue (or the registered custom) is the canonical name source.
-  const ex = entry && typeof entry === 'object' ? EXIDX[entry.id] : null
+  const ex = exposure && typeof exposure === 'object' ? EXIDX[exposure.exerciseId] : null
   if (ex?.n) return exerciseNameFor(ex)
-  if (entry?.muscleSnapshot?.n) return entry.muscleSnapshot.n
-  return entry && typeof entry === 'object' && entry.n ? entry.n : null
+  if (exposure?.muscleSnapshot?.n) return exposure.muscleSnapshot.n
+  return exposure && typeof exposure === 'object' && exposure.exerciseNameSnapshot ? exposure.exerciseNameSnapshot : null
 }
 
 function workoutDay(workout) {
@@ -123,20 +125,20 @@ function representativeEntry(occurrences) {
  */
 export function strengthExerciseRows(S, now) {
   const workouts = S?.workouts || []
-  const ids = [...new Set(workouts.flatMap(w => (w.entries || []).map(e => e.id)))]
+  const ids = [...new Set(workouts.flatMap(w => (w.exposures || []).map(exposure => exposure.exerciseId)))]
   const rows = []
   for (const id of ids) {
     const best = best1RM(S, id)
     if (!best) continue
-    const entry = representativeEntry(entriesWithId(S, id))
+    const exposure = representativeEntry(entriesWithId(S, id))
     const lastAt = lastWorkSetAt(S, id)
     const decay = lastAt == null ? STRENGTH_FLOOR : strengthFromAge(Number(now) - lastAt)
     rows.push({
       id,
-      name: resolvedExerciseName(entry) || id,
+      name: resolvedExerciseName(exposure) || id,
       est: best.est,
       estDate: best.d,
-      primary: primaryMuscleOf(entry) ? primaryMuscleOf(entry).slug : null,
+      primary: primaryMuscleOf(exposure) ? primaryMuscleOf(exposure).slug : null,
       decay,
       current: round1(best.est * decay),
     })
