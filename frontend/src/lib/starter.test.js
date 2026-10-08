@@ -31,10 +31,11 @@ const APPROVED = {
 const shape = r => r.ex.map(e => [e.id, e.sets, e.reps])
 
 describe('starter plan catalog', () => {
-  it('offers exactly the four plans, with the day count read off the schedule', () => {
+  it('offers the five plans, with the day count read off the schedule', () => {
     expect(starterPlanOptions()).toEqual([
       { id: 'ppl', days: 3 }, { id: 'upper-lower', days: 4 },
       { id: 'full-body', days: 3 }, { id: '5x5', days: 3 },
+      { id: 'benjamin-home', days: 3 },
     ])
     for (const { id, days } of starterPlanOptions()) expect(starterPlanDays(id)).toHaveLength(days)
   })
@@ -89,11 +90,23 @@ describe.each(Object.keys(APPROVED))('%s', planId => {
 })
 
 describe('starterRoutines (the demo build entry point)', () => {
-  it('still returns push, pull and legs unchanged', () => {
+  // The home-training plan is the default entry: three main bodyweight sessions.
+  it('returns the Ben home trio unchanged', () => {
     const routines = starterRoutines()
-    expect(routines.map(r => r.name)).toEqual(['Push Day', 'Pull Day', 'Leg Day'])
-    routines.forEach((r, i) => expect(shape(r)).toEqual(APPROVED.ppl[i][2]))
-    expect(routines.map(r => r.emoji)).toEqual(['barbell', 'pullup', 'legs'])
+    expect(routines.map(r => r.name)).toEqual(['Strength A', 'Volume B', 'Conditioning C'])
+    expect(routines.map(r => r.emoji)).toEqual(['figureStrength', 'figureStrength', 'figureStrength'])
+    for (const r of routines) {
+      expect(r.ex.length).toBeGreaterThan(0)
+      for (const e of r.ex) {
+        expect(EXIDX[e.id], e.id).toBeTruthy()
+        expect(e.sets).toBeGreaterThan(0)
+        expect(e.reps).toBeGreaterThan(0)
+        expect(e.weight).toBe(0)
+      }
+    }
+    // Same source as the chooser's home plan entry, minus the optional fourth.
+    const { routines: planned } = buildStarterPlan('benjamin-home')
+    expect(routines.map(shape)).toEqual(planned.slice(0, 3).map(shape))
   })
 
   it('mints fresh ids on every invocation', () => {

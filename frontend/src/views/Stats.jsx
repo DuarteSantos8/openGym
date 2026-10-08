@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { EXIDX, matchExercise, betterWeight } from '../lib/exercises.js'
 import { streakWeeks, setLabel, modeOf, effortOf, entriesForExercise, metricEntriesForExercise, metricModeForEntry, bestWeightForEntry, completedRepsOf, workoutDay } from '../lib/history.js'
+import { bodyweightTrend } from '../lib/ben-coach.js'
 import { fmtNum, fmtDate, todayISO, weekStartOf, exerciseNameText } from '../lib/format.js'
 import { speedUnitOf, speedLabel, toSpeed } from '../lib/speed.js'
 import { t, exerciseNameFor, exerciseNameClass, getLang } from '../lib/i18n.js'
@@ -517,7 +518,7 @@ export default function Stats() {
   return <>
     <WeeklyReview S={S} />
 
-    <div className="hdr"><div><h1>{t('Stats')}</h1><div className="sub">{t('Progress & history')}</div></div>
+    <div className="hdr"><div><h1>{t('Progress')}</h1><div className="sub">{t('Progress & history')}</div></div>
       <button className="iconbtn" onClick={() => nav('/history')} aria-label={t('History')}><Icon name="history" /></button></div>
 
     <div className="tiles">

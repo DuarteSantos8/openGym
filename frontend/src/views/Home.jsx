@@ -68,7 +68,7 @@ export default function Home() {
     : t('Weekly average {0} vs previous logged week.', (benBW.delta > 0 ? '+' : '') + fmtNum(benBW.delta) + ' ' + S.unit)
 
   // The single next-action message: the top flag for the session that matters (today's
-  // plan, else the next one). Full detail, alternatives and the fix live in Stats.
+  // plan, else the next one). Full detail, alternatives and the fix live in Progress.
   const guideRoutine = routine || next?.routine || null
   const attention = guideRoutine ? exerciseAttention(S, guideRoutine) : []
   const topAttention = attention[0] || null
@@ -145,7 +145,7 @@ export default function Home() {
         <span className="tag">{t('Low volume')}</span>
       </div>
       <div className="small muted" style={{ marginBottom: 10 }}>{t('The three main sessions are done. Use this only if you feel recovered and want a little extra work.')}</div>
-      <Button onClick={() => nav('/start')}>{t('Open in Start')}</Button>
+      <Button onClick={() => nav('/start')}>{t('Go to Start')}</Button>
     </div>}
 
     {!!S.routines.length && <div className="card">

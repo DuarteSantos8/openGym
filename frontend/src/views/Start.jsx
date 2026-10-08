@@ -11,6 +11,7 @@ import { effectiveRoutines, effectiveRoutineIds, nextTrainingDay, lastBW } from 
 import { todayISO, exCount, DAYN, fmtNum, fmtDate } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
 import { bwSheet, beginWorkout, beginSubsetWorkout, starterPlanSheet } from '../sheets.jsx'
+import { sessionVariants } from '../lib/ben-coach.js'
 import Icon from '../components/Icon.jsx'
 import { Button, Segmented } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
@@ -34,6 +35,24 @@ export const presetExerciseCount = (routine, minutes) => {
   if (minutes <= 25) return Math.min(4, n)
   if (minutes <= 35) return n <= 5 ? n : n - 1
   return n
+}
+
+// Which exercises a preset trains, in session order: the muscle-aware short list
+// first — one proven movement per primary group, so a short session stays a
+// balanced workout rather than the routine's opening third — then the routine's
+// remaining exercises in routine order. Trimmed presets nest inside each other;
+// the full session always keeps exact routine order. With no history the ranking
+// degrades to routine order. Everything stays inside the planned routine: no new
+// equipment, no invented work, and the per-exercise prescription (sets, reps,
+// load from history and progression) is built the same way whatever the length.
+export const presetExerciseIds = (routine, S, minutes) => {
+  const ids = (routine?.ex || []).map(e => e?.id).filter(Boolean)
+  const count = presetExerciseCount(routine, minutes)
+  if (count >= ids.length) return ids
+  const short = sessionVariants(routine, S)?.short?.exerciseIds || []
+  const first = short.filter(id => ids.includes(id))
+  const rest = ids.filter(id => !first.includes(id))
+  return [...first, ...rest].slice(0, count)
 }
 
 export default function Start() {
@@ -62,10 +81,10 @@ export default function Start() {
   const sessionBW = () => (S.weighIn === false ? null : (lastBW(S)?.w ?? null))
   const beginFull = ids => beginWorkout(ids, sessionBW())
   const begin = () => {
-    if (!routine) { beginFull(routineIds); return }
-    const count = single ? presetExerciseCount(routine, minutes) : routine.ex.length
-    if (!single || routineIds.length !== 1 || count >= routine.ex.length) beginFull(routineIds)
-    else beginSubsetWorkout(routine.id, routine.ex.slice(0, count).map(e => e.id), sessionBW())
+    if (!routine || !single || routineIds.length !== 1) { beginFull(routineIds); return }
+    const ids = presetExerciseIds(routine, S, minutes)
+    if (ids.length >= routine.ex.length) beginFull(routineIds)
+    else beginSubsetWorkout(routine.id, ids, sessionBW())
   }
 
   // A running session resumes — starting something new here would overwrite it.

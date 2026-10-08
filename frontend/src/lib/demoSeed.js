@@ -31,7 +31,9 @@ const weekTarget = wk =>
 const EASY = new Set(['0043', '0085', '0739', '0585', '0586'])
 // One exercise nobody ever rates: partial coverage is the normal case (rating is optional and
 // off by default), and it shows the per-exercise Effort toggle correctly staying away.
-const NEVER_RATED = '0605'
+// Mountain climbers are the pick: they sit in the seeded conditioning day, and being cardio
+// they would stay unrated by mode anyway — the explicit skip is what the test pins.
+const NEVER_RATED = '0630'
 const UNRATED = 0.1                    // …plus this share of the remaining sets, at random
 // The first weeks are logged in RPE, as if they came out of another app before the profile
 // switched to RIR. A set is never rewritten (see history.js), so the stats have to average a

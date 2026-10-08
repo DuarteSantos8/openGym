@@ -394,7 +394,7 @@ export default function Settings() {
     {/* ---------- during a workout ---------- */}
     <Section title={t('During a workout')} footer={wakeOK ? t('The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.') : null}>
       {/* The last logged weight rides along into each session (sheets.jsx beginWorkout,
-          issue #137); off leaves it out. Home and Stats still log weight by hand. */}
+          issue #137); off leaves it out. Home and Progress still log weight by hand. */}
       <Row icon="scale" iconTint="var(--green)" title={t('Weigh in before workouts')}
         subtitle={t('Carries your last logged weight into each session. Off leaves it out — logging stays optional either way.')}>
         <Switch checked={S.weighIn !== false} onChange={v => update(s => { s.weighIn = v })} />

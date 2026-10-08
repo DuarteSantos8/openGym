@@ -161,10 +161,10 @@ describe('StructuralBalance view', () => {
     expect(host.querySelector('[data-role-id="frontSquat"] [data-needs-anchor]')).toBe(null)   // not logged either
   })
 
-  it('the back chevron navigates to /stats', () => {
+  it('the back chevron navigates to /progress', () => {
     const host = render()
     act(() => host.querySelector('.iconbtn').click())
-    expect(navSpy).toHaveBeenCalledWith('/stats')
+    expect(navSpy).toHaveBeenCalledWith('/progress')
   })
 
   it('changing a role\'s exercise via the picker saves an override and marks it custom', () => {
@@ -199,7 +199,7 @@ describe('StructuralBalance view', () => {
   })
 })
 
-describe('the way in from Stats', () => {
+describe('the way in from Progress', () => {
   it('is a card like the others that opens the screen, once there is a workout to read', () => {
     const host = render(Stats)
     const card = [...host.querySelectorAll('.card')].find(c => c.querySelector('h2')?.textContent === 'Structural balance')
@@ -219,6 +219,9 @@ describe('the way in from Stats', () => {
 
 // The demo build (VITE_DEMO=1) boots a guest on the seeded example profile and has no server:
 // every template has to render against that profile, and score what it logs.
+// The seed trains the bodyweight home plan, so templates score bodyweight-mapped
+// roles (pull-ups) — the barbell-ratio expectations from the PPL-seed era no
+// longer apply.
 describe('on the demo profile', () => {
   it('renders every template and scores the lifts the example history has', () => {
     useStore.setState({ S: Object.assign(clone(DEF), buildDemoState()), user: null })
@@ -231,8 +234,7 @@ describe('on the demo profile', () => {
       expect(rows.map(r => r.dataset.roleId)).toEqual(tpl.roles.map(r => r.id))
       scored[tpl.id] = rows.filter(r => r.dataset.status !== 'no-data').map(r => r.dataset.roleId)
     }
-    expect(scored.thibaudeauPowerlifting).toEqual(expect.arrayContaining(['squat', 'bench']))
-    expect(scored.atg).toEqual(expect.arrayContaining(['romanianDeadlift', 'atgDips']))
+    expect(scored.atg).toEqual(['pullups'])
     expect(host.textContent).not.toContain('NaN')
     expect(host.textContent).not.toContain('undefined')
   })

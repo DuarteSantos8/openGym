@@ -7,15 +7,15 @@ import { useUI } from '../store/useUI.js'
 import { exOr, betterWeight } from '../lib/exercises.js'
 import { usesBar } from '../lib/bar.js'
 import { loadKindFor, baseWeightFor, inventoryFor, rowLoad, sameLoad, plateDelta, dropGrid } from '../lib/plates.js'
-import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, freestyleConfig, defaultConfig, setsDoneActive, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, stepEffort, capEffort, cascadeWeight, insertWarmupRow, removeRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor, setsRepsOf } from '../lib/history.js'
-import { fmtNum, fmtPlate, exerciseNameText, fmtDate, todayISO, exCount, DAYN } from '../lib/format.js'
+import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, freestyleConfig, defaultConfig, setsDoneActive, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, stepEffort, capEffort, cascadeWeight, insertWarmupRow, removeRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor, setsRepsOf } from '../lib/history.js'
+import { fmtNum, fmtPlate, exerciseNameText, fmtDate } from '../lib/format.js'
 import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
 import { beep, vibrate, unlock } from '../lib/sound.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { api, beacon } from '../lib/api.js'
 import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor } from '../lib/supersetFlow.js'
 import Media from '../components/Media.jsx'
-import { startFlow, startShortFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, finishWorkout, exitWorkoutEdit, workoutCompleteSheet, confirmSheet, exerciseNoteSheet, sessionNoteSheet, renameWorkoutSheet, swapActiveWorkoutExercise, barWeightSheet, menuSheet, effortPickerSheet, exerciseHistorySheet, addRoutineToSessionSheet } from '../sheets.jsx'
+import { exercisePicker, exConfigSheet, exerciseDetailSheet, finishWorkout, exitWorkoutEdit, workoutCompleteSheet, confirmSheet, exerciseNoteSheet, sessionNoteSheet, renameWorkoutSheet, swapActiveWorkoutExercise, barWeightSheet, menuSheet, effortPickerSheet, exerciseHistorySheet, addRoutineToSessionSheet } from '../sheets.jsx'
 import { effortColor } from '../lib/effort.js'
 import Icon from '../components/Icon.jsx'
 import { Button, Check, NumberField } from '../components/ui.jsx'
@@ -23,12 +23,10 @@ import { defaultIncrement, weightIncrement, stepWeight } from '../lib/progressio
 import { progressionGuidance } from '../lib/progression-copy.js'
 import { buildPlannedEntry, plannedConfigOf, builtOutOfProgression } from '../lib/session-start.js'
 import { sessionNoProg, setSessionNoProg, setEntryNoProg, joinSessionNoProg } from '../lib/session-noprog.js'
-import { glyphOf } from '../lib/glyphs.js'
 import { markAllSetsDone, sessionHistory } from '../lib/backfill.js'
 import { bestSetFor } from '../lib/exercise-history.js'
 import { isWarmupRow, isDropSet, isRestPauseSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL } from '../lib/workout-model.js'
 import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit } from '../lib/active-workout-order.js'
-import { sessionVariants } from '../lib/ben-coach.js'
 import { nextOpenSet, workoutKeyAction } from '../lib/workout-keys.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
 
@@ -36,50 +34,6 @@ import { MUSCLE_NAME } from '../lib/muscles.js'
 // that bounces, or a double press, sends two presses a moment apart: the first starts the hold,
 // and the second logged it at one second.
 const HOLD_KEY_GRACE_MS = 1500
-
-/* ---------- start chooser (no active workout) ---------- */
-function StartChooser() {
-  const nav = useNavigate()
-  const S = useStore(s => s.S)
-  const todayIds = effectiveRoutineIds(S, todayISO())
-  const todayRoutines = effectiveRoutines(S, todayISO())
-  const todayName = todayRoutines.map(r => r.name).join(' + ')
-  const todayOvr = S.dayPlan[todayISO()] !== undefined
-  const idSet = new Set(todayIds)
-  const others = S.routines.filter(r => !idSet.has(r.id))
-  // Shorter/longer options only make sense for a single-routine day; a combined day is
-  // already the long version.
-  const variants = todayRoutines.length === 1 ? sessionVariants(todayRoutines[0], S) : { short: null, longer: null }
-  return <div className="narrow">
-    <div className="hdr"><div><h1>{t('Start workout')}</h1><div className="sub">{t(DAYN[new Date().getDay()])} — {todayRoutines.length ? t('today is {0}', todayName) : t('rest day — anything counts as extra')}</div></div></div>
-    {todayRoutines.length > 0 && <div className="card" style={{ borderColor: 'var(--acc)' }}>
-      <h2 className="accent">{t("Today's plan")}{todayOvr ? ' · ' + t('rescheduled') : ''}</h2>
-      <div className="row between" style={{ marginBottom: 12 }}>
-        <div><div className="big">{todayName}</div><div className="muted small">{exCount(todayRoutines.reduce((n, r) => n + r.ex.length, 0))}</div></div>
-        <span className="lrow-i" style={{ width: 38, height: 38, borderRadius: 9, fontSize: 22 }}><Icon name={glyphOf(todayRoutines[0].emoji)} /></span>
-      </div>
-      <Button variant="primary" icon="play" onClick={() => startFlow(todayIds)}>{t('Start {0}', todayName)}</Button>
-    </div>}
-    {others.length > 0 && <><h4 className="sec">{t('Other routines')}</h4>
-      <div className="list">{others.map(r => <div key={r.id} className="item" onClick={() => startFlow([r.id])}>
-        <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
-        <div className="grow"><div className="tt">{r.name}</div><div className="ss">{exCount(r.ex.length)}</div></div>
-        <span className="tag acc">{t('Start')}</span></div>)}</div></>}
-    {todayRoutines.length === 1 && variants.short && (
-      <div className="item" onClick={() => startShortFlow(todayRoutines[0].id, variants.short.exerciseIds)}>
-        <span className="lrow-i"><Icon name="timer" /></span>
-        <div className="grow"><div className="tt">{t('Short version')}</div><div className="ss">{t('{0} exercises · {1} sets', variants.short.exerciseIds.length, variants.short.sets)}{variants.short.minutes != null ? t(' · about {0} min', variants.short.minutes) : ''}</div></div>
-        <span className="tag acc">{t('Start')}</span></div>)}
-    {todayRoutines.length === 1 && variants.longer && variants.longer.routineIds.length === 2 && (
-      <div className="item" onClick={() => startFlow(variants.longer.routineIds)}>
-        <span className="lrow-i"><Icon name="plus" /></span>
-        <div className="grow"><div className="tt">{t('Longer session')}</div><div className="ss">{todayName} + {variants.longer.name}</div></div>
-        <span className="tag acc">{t('Start')}</span></div>)}
-    <div style={{ height: 14 }} />
-    <Button icon="shuffle" onClick={() => startFlow([])}>{t('Freestyle workout (pick as you go)')}</Button>
-    {!S.routines.length && <><div style={{ height: 10 }} /><Button variant="primary" onClick={() => nav('/plan')}>{t('Build a plan first')}</Button></>}
-  </div>
-}
 
 /* ---------- elapsed clock (isolated so the workout tree doesn't re-render every second) ---------- */
 function Elapsed({ start }) {
@@ -1443,6 +1397,12 @@ function ActiveWorkout() {
 }
 
 export default function Workout() {
+  const nav = useNavigate()
   const active = useStore(s => s.S.active)
-  return active ? <ActiveWorkout /> : <StartChooser />
+  // Starting lives in one place: without a session this route hands off to
+  // Start, so deep links to #/workout keep working and there is never a second
+  // chooser with different behavior.
+  useEffect(() => { if (!active) nav('/start', { replace: true }) }, [active, nav])
+  if (!active) return null
+  return <ActiveWorkout />
 }

@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createRoot } from 'react-dom/client'
 import { useStore } from '../store/useStore.js'
 import { setNav } from '../lib/nav.js'
-import Start, { START_PRESETS, presetExerciseCount } from './Start.jsx'
+import Start, { START_PRESETS, presetExerciseCount, presetExerciseIds } from './Start.jsx'
 import Home from './Home.jsx'
 
 const nav = vi.fn()
@@ -138,6 +138,72 @@ describe('Start presets', () => {
     click(button('Resume workout'))
     expect(nav).toHaveBeenCalledWith('/workout')
     expect(bwSheet).not.toHaveBeenCalled()
+  })
+
+  it('the started session is persisted, so a reload resumes it intact', () => {
+    setS({ bodyweight: [{ d: '2026-10-01', w: 80, t: 1 }] }); mount(<Start />)
+    click(button('25 min'))
+    click(button('Start Push'))
+    const stored = JSON.parse(localStorage.getItem('gym_state_v1'))
+    expect(stored.active.id).toBe(active().id)
+    expect(stored.active.entries.map(e => e.id)).toEqual(['e0', 'e1', 'e2', 'e3'])
+    expect(stored.active.bw).toBe(80)
+  })
+})
+
+describe('preset selection scenarios', () => {
+  // Real catalogue ids across four primary groups (0025 and 0047 share one).
+  const fiveIds = ['0025', '0031', '0047', '0334', '0241']
+  const fiveRoutine = () => ({ id: 'r1', name: 'Five', emoji: null, ex: fiveIds.map(id => ({ id, sets: 3, reps: 10, weight: 20 })) })
+  // Saved sessions as the app writes them, stamped to this routine.
+  const logged = (id, n, d0) => Array.from({ length: n }, (_, i) => ({
+    d: `2026-02-${String(d0 + i).padStart(2, '0')}`, routineIds: ['r1'],
+    entries: [{
+      id, rid: 'r1', planned: { sets: 3, reps: 10, weight: 20 }, target: { sets: 3, reps: 10, weight: 20 },
+      sets: [{ w: 20, r: 10, done: true }, { w: 20, r: 10, done: true }, { w: 20, r: 10, done: true }],
+    }],
+  }))
+  const fiveS = (...workouts) => ({ routines: [fiveRoutine()], workouts })
+  const S = () => useStore.getState().S
+
+  it('a new user with no history gets group coverage in routine order, not the head slice', () => {
+    setS(fiveS())
+    // The head slice would repeat the first group (…0025, 0047…); coverage keeps
+    // one movement per group instead.
+    expect(presetExerciseIds(fiveRoutine(), S(), 15)).toEqual(['0025', '0031', '0334'])
+  })
+
+  it('a returning user gets proven movements with coverage, and longer presets extend the same list', () => {
+    // Old dates on purpose: a missed period still counts as evidence, deterministically.
+    setS(fiveS(...logged('0025', 1, 1), ...logged('0031', 1, 2), ...logged('0047', 1, 3), ...logged('0241', 3, 4)))
+    const ids = p => presetExerciseIds(fiveRoutine(), S(), p)
+    expect(ids(15)).toEqual(['0025', '0031', '0241'])
+    expect(ids(25)).toEqual(['0025', '0031', '0241', '0047'])
+    expect(ids(35)).toEqual(fiveIds)
+    expect(ids(45)).toEqual(fiveIds)
+    // Shorter presets are strict prefixes of longer ones, always inside the
+    // routine — so a short session can never demand equipment the plan does
+    // not already need. Order is the coverage-ranked core first (each tier in
+    // routine order), which is what keeps one movement per group up front.
+    for (const p of START_PRESETS) {
+      const list = ids(p)
+      expect(list.every(id => fiveIds.includes(id))).toBe(true)
+    }
+    expect(ids(25).slice(0, 3)).toEqual(ids(15))
+    // The full session is the plan itself, in exact routine order — trimmed
+    // presets nest inside each other, not inside the full list.
+    expect(ids(35)).toEqual(fiveIds)
+    expect(ids(45)).toEqual(fiveIds)
+  })
+
+  it('a 15-minute start trains the proven subset in the session itself', () => {
+    setS(fiveS(...logged('0025', 1, 1), ...logged('0031', 1, 2), ...logged('0047', 1, 3), ...logged('0241', 3, 4)))
+    mount(<Start />)
+    click(button('15 min'))
+    click(button('Start Five'))
+    expect(bwSheet).not.toHaveBeenCalled()
+    expect(active().entries.map(e => e.id)).toEqual(['0025', '0031', '0241'])
+    expect(nav).toHaveBeenCalledWith('/workout')
   })
 })
 

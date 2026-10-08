@@ -130,11 +130,11 @@ export const DEF = {
   // from the equipment. Stamped like the plate list, for the same reason.
   loadKind: {},
   // Whether the body-weight summary card is shown on Home. Off only hides that card: existing
-  // entries, Stats, imports and the separate pre-workout weigh-in flow keep working.
+  // entries, Progress, imports and manual logging keep working.
   // Defaults on; an older profile without the key reads as on (`!== false`).
   showWeightCard: true,
   // Whether a session carries the last logged body weight (sheets.jsx beginWorkout,
-  // issue #137). Off leaves it out; weight can still be logged from Home/Stats.
+  // issue #137). Off leaves it out; weight can still be logged from Home/Progress.
   // Defaults on; an older profile without the key reads as on (`!== false`).
   weighIn: true,
   // Where a planned session's reps come from (Settings → During a workout, lib/session-start.js):

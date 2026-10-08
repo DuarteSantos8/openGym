@@ -80,7 +80,7 @@ const build = routines =>
     ...(meta ? { trainingRole: meta.role, trainingFocus: meta.focus, trainingPriority: meta.priority } : {}),
   }))
 
-// Fresh routine objects (new ids) — [push, pull, legs]. The demo build seeds a history on
+// Fresh routine objects (new ids) — the Ben home trio. The demo build seeds a history on
 // top of exactly these three, so this entry point keeps its shape.
 export const starterRoutines = () => build(BEN_HOME.slice(0, 3))
 

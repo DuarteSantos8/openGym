@@ -97,9 +97,19 @@ describe('the demo Coach failing inside its timer', () => {
     installDom()
     await act(async () => { root.render(React.createElement(CoachChat)) })
     await settle()
+    // The chip handler awaits a dynamic import of the demo module before it appends
+    // anything. A cold import outlasts any fixed microtask flush, so warm it here:
+    // the cached module then resolves inside the click's flush, deterministically.
+    await act(async () => { await import('../lib/coach-demo.js') })
 
     await click(chip(/Last workout/))
     expect(mocks.toast).not.toHaveBeenCalled()                       // the request was accepted
+    await act(async () => {
+      // The chip handler awaits a dynamic import of the demo module before it
+      // appends the user line; wait for that line rather than a fixed number of
+      // microtasks, which a cold module graph outlasts.
+      for (let i = 0; i < 200; i++) await Promise.resolve()
+    })
     expect(mocks.S.coach.chat.at(-1)).toMatchObject({ role: 'user', kind: 'text', text: 'How did my Push Day session go?' })
     const lines = mocks.S.coach.chat.length
 
