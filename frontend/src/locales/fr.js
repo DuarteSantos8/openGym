@@ -1856,6 +1856,7 @@ export default {
   'Switch sides': 'Change de côté',
   'Left side': 'Côté gauche',
   'Right side': 'Côté droit',
+  'Switch': 'Change',
   'Saves a dated copy to “{0}” after finishing a workout or editing a routine, and keeps the newest {1}.': 'Enregistre une copie datée dans « {0} » après chaque séance terminée ou routine modifiée, et garde les {1} plus récentes.',
   'Saves a dated copy to the folder you chose after finishing a workout or editing a routine, and keeps the newest {0}.': 'Enregistre une copie datée dans le dossier choisi après chaque séance terminée ou routine modifiée, et garde les {0} plus récentes.',
   // --- Plan: Schedule | Routines (v1.3.11) ---

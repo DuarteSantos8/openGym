@@ -1161,6 +1161,7 @@ export const PT_BR_OVERRIDES = {
   'That address answers, but it isn’t an openGym server. Check the URL.': 'Esse endereço responde, mas não é um servidor openGym. Verifique a URL.',
   'That address answers, but a login page or proxy rule replied instead of openGym. Let /api/ through to openGym unchanged. See “Phone app and CORS” in docs/SELF_HOSTING.md.': 'Esse endereço responde, mas quem respondeu foi uma página de login ou uma regra do proxy, não o openGym. Deixe o /api/ chegar ao openGym sem alterações. Veja “Phone app and CORS” em docs/SELF_HOSTING.md.',
   'Switch sides': 'Troque de lado',
+  'Switch': 'Troque',
   'Saves a dated copy to “{0}” after finishing a workout or editing a routine, and keeps the newest {1}.': 'Salva uma cópia datada em “{0}” depois de terminar um treino ou editar uma rotina, e mantém as {1} mais recentes.',
   'Saves a dated copy to the folder you chose after finishing a workout or editing a routine, and keeps the newest {0}.': 'Salva uma cópia datada na pasta que você escolheu depois de terminar um treino ou editar uma rotina, e mantém as {0} mais recentes.',
   'Your routines in a loop': 'Suas rotinas em ciclo',

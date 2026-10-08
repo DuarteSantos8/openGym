@@ -1820,6 +1820,7 @@ export default {
   'Switch sides': '換邊',
   'Left side': '左側',
   'Right side': '右側',
+  'Switch': '換邊',
   'Saves a dated copy to “{0}” after finishing a workout or editing a routine, and keeps the newest {1}.': '每次完成訓練或修改課表後，在「{0}」中儲存一份附日期的副本，並保留最新的 {1} 份。',
   'Saves a dated copy to the folder you chose after finishing a workout or editing a routine, and keeps the newest {0}.': '每次完成訓練或修改課表後，在你選擇的資料夾中儲存一份附日期的副本，並保留最新的 {0} 份。',
   // --- Plan: Schedule | Routines (v1.3.11) ---

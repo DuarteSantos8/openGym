@@ -76,13 +76,14 @@ describe('rest timer bar: what it is timing', () => {
     expect(label()).toBe('Rest')
   })
 
-  it('Paused and Switch sides still win', () => {
+  it('Paused and the switch pause still win', () => {
     act(() => { useUI.getState().startRest(90, 0, { kind: 'block' }) })
     mount()
     act(() => { useUI.getState().pauseRest() })
     expect(label()).toBe('Paused')
+    expect(host.querySelector('#timer .lbl svg, #timer .lbl .icn')).not.toBeNull()   // every other rest keeps its chevron
     act(() => { useUI.getState().startRest(10, 0, { kind: 'switch' }) })
-    expect(label()).toBe('Switch sides')
+    expect(label()).toBe('Switch')
   })
 
   it('keeps saying it on Ready', () => {

@@ -2533,4 +2533,5 @@ export default {
   'Show rows': 'সারি দেখান',
   'Left side': 'বাঁ পাশ',
   'Right side': 'ডান পাশ',
+  'Switch': 'বদলান',
 }

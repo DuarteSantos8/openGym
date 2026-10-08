@@ -1864,6 +1864,7 @@ export default {
   'Switch sides': 'สลับข้าง',
   'Left side': 'ข้างซ้าย',
   'Right side': 'ข้างขวา',
+  'Switch': 'สลับ',
   'Saves a dated copy to “{0}” after finishing a workout or editing a routine, and keeps the newest {1}.': 'บันทึกสำเนาพร้อมวันที่ไว้ใน “{0}” ทุกครั้งที่จบการออกกำลังกายหรือแก้รูทีน และเก็บไว้ {1} ชุดล่าสุด',
   'Saves a dated copy to the folder you chose after finishing a workout or editing a routine, and keeps the newest {0}.': 'บันทึกสำเนาพร้อมวันที่ไว้ในโฟลเดอร์ที่คุณเลือกทุกครั้งที่จบการออกกำลังกายหรือแก้รูทีน และเก็บไว้ {0} ชุดล่าสุด',
   // --- Plan: Schedule | Routines (v1.3.11) ---

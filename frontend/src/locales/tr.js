@@ -1856,6 +1856,7 @@ export default {
   'Switch sides': 'Taraf değiştir',
   'Left side': 'Sol taraf',
   'Right side': 'Sağ taraf',
+  'Switch': 'Değiştir',
   'Saves a dated copy to “{0}” after finishing a workout or editing a routine, and keeps the newest {1}.': 'Her antrenman bitince veya rutin düzenlenince «{0}» klasörüne tarihli bir kopya kaydeder ve en yeni {1} kopyayı tutar.',
   'Saves a dated copy to the folder you chose after finishing a workout or editing a routine, and keeps the newest {0}.': 'Her antrenman bitince veya rutin düzenlenince seçtiğin klasöre tarihli bir kopya kaydeder ve en yeni {0} kopyayı tutar.',
   // --- Plan: Schedule | Routines (v1.3.11) ---
