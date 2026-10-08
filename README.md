@@ -51,7 +51,11 @@ if you want to try it before installing anything.
 
 ## Features
 
+- 👥 **Profile with Stats and Social** — keep your progress charts one tap away while connecting with people on your server. Accepted friends can view each other’s training progress and share plans for review and optional import. Profile editing and body-weight privacy controls are available inside Social. [How it works](docs/SOCIAL.md)
+
 **Planning**
+
+
 
 - A routine per weekday over a library of **1,324 exercises** with animated demos, searchable and
   browsable by muscle on a body map. Filter by the equipment you own.

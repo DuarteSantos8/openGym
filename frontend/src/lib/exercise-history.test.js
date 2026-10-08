@@ -4,6 +4,113 @@ import { EXDB } from './exercises-data.js'
 import { estimate1RM, e1rmSeries } from './onerm.js'
 import { lastEntryFor } from './history.js'
 import { nextPrescription } from './progression.js'
+import { socialSummary, socialProfile } from '../../../api/social/summary.js'
+import { weekStreak } from '../../../api/training/history-metrics.js'
+import { streakWeeks } from './history.js'
+
+describe('friend progress summaries', () => {
+  it('uses the same personal record and first-reached date as exercise history', () => {
+    const cases = [
+      [session(0, [warm(150, 5), work(60, 5), work(200, 5, false)]), session(1, [work(70, 5)]), session(2, [work(70, 5)])],
+      [session(0, [work(0, 10)]), session(1, [work(0, 15)])],
+      [session(0, [{ sec: 45, done: true }], { target: { mode: 'time' } }), session(1, [{ sec: 90, done: true }], { target: { mode: 'time' } })],
+      [session(0, [{ min: 10, done: true }, { min: 20, done: true }], { target: { mode: 'cardio' } })],
+      [session(0, [work(70, 5)]), session(1, [{ sec: 30, done: true }], { target: { mode: 'time' } })],
+      [session(0, [{ mode: 'time', sec: 100, w: 150, done: true }, work(50, 5)])],
+      [session(0, [{ ...work(40, 5), phase: 'work', warmup: true }, { ...work(90, 5), phase: 'warm-up' }])],
+      [session(0, [{ r: 5, done: true }], { topW: 65 })],
+      [session(0, [work(0, 10)], { topW: 65 })],
+    ]
+    for (const workouts of cases) {
+      const state = { workouts: [...workouts].reverse(), unit: 'lb' }
+      const history = exerciseHistory(state, 'bench')
+      const summary = socialSummary(state, '2026-01-11')
+      expect(summary.records[0]).toMatchObject({ exerciseId: 'bench', metric: history.metric, value: history.best,
+        date: workouts.find(w => w.id === history.prId).d })
+      expect(summary.unit).toBe('lb')
+    }
+  })
+
+  it('shares only derived progress, with custom exercise names but no private notes', () => {
+    const state = { workouts: [{ ...session(0, [work(60, 5)]), note: 'private note', bw: 82 }],
+      bodyweight: [{ w: 82 }], customEx: [{ id: 'bench', n: 'My press', desc: 'private description' }], gymCards: ['secret'] }
+    const summary = socialSummary(state, '2026-01-11')
+    expect(Object.keys(summary).sort()).toEqual(['lastWorkout', 'recordCount', 'records', 'thisWeek', 'unit', 'weekStreak', 'workouts'])
+    expect(summary.records[0].name).toBe('My press')
+    expect(JSON.stringify(summary)).not.toMatch(/private|secret|bodyweight|sets|82/)
+    expect(socialSummary(null, '2026-01-11')).toMatchObject({ workouts: 0, weekStreak: 0, records: [], lastWorkout: null })
+    expect(socialSummary({ workouts: [null, { d: 'bad' }, session(0, [null, 'bad', work(60, 5)])] }, '2026-01-11').records[0].value).toBe(60)
+  })
+
+  it('pairs a load record with reps from that exact completed work set', () => {
+    const state = { workouts: [session(0, [warm(120, 12), work(100, 5), work(60, 20), work(140, 8, false)])] }
+    expect(socialSummary(state, '2026-01-11').records[0]).toMatchObject({ value: 100, reps: 5 })
+    state.workouts.push(session(1, [work(100, 8)]))
+    expect(socialSummary(state, '2026-01-11').records[0]).toMatchObject({ value: 100, reps: 5, date: iso(0) })
+    const legacy = { workouts: [session(0, [{ r: 8, done: true }], { topW: 90 })] }
+    expect(socialSummary(legacy, '2026-01-11').records[0].reps).toBeUndefined()
+  })
+
+  it('includes repeated occurrences of an exercise and completed limbs only', () => {
+    const perSide = { w: 200, r: 25, done: false,
+      sides: { L: { w: 60, r: 5, done: true }, R: { w: 200, r: 20, done: false } } }
+    const state = { workouts: [{ id: 'w1', d: iso(0), entries: [
+      { id: 'bench', sets: [warm(300, 10)] },
+      { id: 'bench', sets: [perSide] }
+    ] }] }
+    const record = socialSummary(state, '2026-01-11').records[0]
+    expect(record).toMatchObject({ value: 60, reps: 5 })
+    expect(record.value).toBe(exerciseHistory(state, 'bench').best)
+    perSide.sides.R = { w: 40, r: 20, done: true }
+    expect(socialSummary(state, '2026-01-11').records[0]).toMatchObject({ value: 60, reps: 5 })
+    state.workouts[0].entries = [
+      { id: 'run', target: { mode: 'cardio' }, sets: [{ min: 10, done: true }] },
+      { id: 'run', target: { mode: 'cardio' }, sets: [{ min: 15, done: true }] }
+    ]
+    expect(socialSummary(state, '2026-01-11').records[0]).toMatchObject({ metric: 'min', value: 25 })
+  })
+
+  it('uses the least assistance for machine and custom exercise records', () => {
+    const assisted = EXDB.find(ex => ex.eq === 'leverage machine' && /assist(ed)?/i.test(ex.n))
+    const workouts = [
+      { id: 'w1', d: iso(0), entries: [{ id: assisted.id, sets: [work(40, 8), work(30, 6)] }] },
+      { id: 'w2', d: iso(1), entries: [{ id: assisted.id, sets: [work(20, 5), work(40, 12), work(0, 20)] }] }
+    ]
+    expect(socialSummary({ workouts }, '2026-01-11').records[0]).toMatchObject({ value: 20, reps: 5, date: iso(1) })
+    const customEx = [{ id: assisted.id, n: 'My assistance machine', assisted: false }]
+    expect(socialSummary({ workouts, customEx }, '2026-01-11').records[0]).toMatchObject({ value: 40, reps: 8, date: iso(0) })
+    customEx[0].assisted = true
+    expect(socialSummary({ workouts, customEx }, '2026-01-11').records[0].value).toBe(20)
+  })
+
+  it('preserves custom cardio mode without disclosing exercise notes or descriptions', () => {
+    const state = { customEx: [{ id: 'run', n: 'My treadmill', bp: 'cardio', desc: 'private description' }],
+      routines: [{ id: 'r1', name: 'Cardio', ex: [
+        { id: 'run', sets: 2, min: 25, speed: 9, note: 'private note' },
+        { id: 'run', mode: 'time', sec: 45 },
+        { id: 'run', mode: 'reps', reps: 10 }
+      ] }] }
+    const profile = socialProfile(state, '2026-10-02')
+    expect(profile.plan.routines[0].ex.map(e => e.mode)).toEqual(['cardio', 'time', 'reps'])
+    expect(JSON.stringify(profile)).not.toContain('private')
+    expect(state.routines[0].ex[0].mode).toBeUndefined()
+  })
+
+  it('counts weekly streaks with the same unfinished-week grace as Home', () => {
+    vi.useFakeTimers()
+    try {
+      vi.setSystemTime(new Date('2026-01-19T12:00:00'))
+      const state = { workouts: [{ d: '2026-01-05' }, { d: '2026-01-12' }], weekStart: 1 }
+      expect(streakWeeks(state)).toBe(2)
+      expect(socialSummary(state, '2026-01-19').weekStreak).toBe(streakWeeks(state))
+      expect(weekStreak(['2026-01-05'], '2026-01-19')).toBe(0)
+      expect(weekStreak(['2026-01-04', '2026-01-11'], '2026-01-12', 0)).toBe(2)
+      expect(weekStreak(['2026-01-04', '2026-01-11'], '2026-01-12', 1)).toBe(2)
+      expect(weekStreak(['2026-01-11', '2026-01-12'], '2026-01-12', 0)).toBe(1)
+      expect(weekStreak(['2026-01-11', '2026-01-12'], '2026-01-12', 1)).toBe(2)
+    } finally { vi.useRealTimers() }
+  })
+})
 
 const DAY = 86400000
 const T0 = Date.UTC(2026, 0, 5, 10)

@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- **Upstream integration:** merge v1.3.10 into our Social/Profile branch. Retain Profile navigation, friend privacy and plan import receipts alongside the new design, rotation, swipe actions and field-level sync. Social import receipts merge across devices without becoming a last-write-wins setting.
+
+- **Profile navigation:** use the Profile label and person icon in the bottom tab, with a Stats/Social switch inside. Preserve `/stats` links, History access and the Home Settings shortcut. Social has profile editing, a server-local photo and explicit body-weight privacy controls.
+- **Friends and progress:** discover registered profiles on the same server, send and accept requests, and view accepted friends' training profiles. Incoming decisions and shared plans come first; sent requests have their own section. Friend cards label their metrics and expose plan sharing; removal and blocking stay in the action menu.
+- **Shared plans:** choose routines, schedule and optional notes, preview before sending, and review before importing. Imports add routines, convert kg/lb, and apply the sender's schedule only when requested. Snapshots have persistent import receipts to prevent duplicates across devices.
+- **Privacy and recovery:** training data and photos require accepted friendship; new accounts start with body-weight sharing off. Private workout notes and weigh-in history are excluded. Block/unblock controls, retry actions and refresh preserve useful loaded data. Custom cardio displays its mode and the viewer's speed unit. New strings are available in all 17 locale packs.
+
 ## v1.3.10 (2026-10-07)
 
 This one grew. The plan was a queue and a rotation; along the way the whole app got a calmer look,

@@ -1,3 +1,4 @@
+import { isAssistedShape } from '../../../api/training/set-semantics.js'
 import { EXDB } from './exercises-data.js'
 import { USER_EXERCISE_MUSCLE_OVERRIDES, exerciseMuscleMetadataFor } from './exercise-muscle-batch-1.js'
 import { t, getVersion, exerciseNameSearchText } from './i18n-core.js'
@@ -197,20 +198,13 @@ export const isLoadedEq = idOrEx =>
  * `assisted: true` (or `false`) on a custom exercise or on a routine's config overrides the
  * rule in either direction, which is how anything the catalogue does not know gets marked.
  */
-const ASSISTED_EQ = 'leverage machine'
-const assistedName = n => /\bassist(ed)?\b/i.test(String(n || ''))
-
-// The catalogue entry itself carries an `id`, so this never recurses through it — one lookup,
-// then the shape is read directly.
-const assistedShape = ex => (typeof ex?.assisted === 'boolean' ? ex.assisted : ex?.eq === ASSISTED_EQ && assistedName(ex?.n))
-
 export function isAssisted(idOrEx) {
   if (!idOrEx) return false
-  if (typeof idOrEx === 'string') return !!assistedShape(EXIDX[idOrEx])
+  if (typeof idOrEx === 'string') return !!isAssistedShape(EXIDX[idOrEx])
   if (typeof idOrEx.assisted === 'boolean') return idOrEx.assisted
   if (typeof idOrEx.target?.assisted === 'boolean') return idOrEx.target.assisted
   const known = idOrEx.id ? EXIDX[idOrEx.id] : null
-  return !!assistedShape(known || idOrEx)
+  return !!isAssistedShape(known || idOrEx)
 }
 
 /** The better of two loads for this exercise: less assistance, or more weight. */

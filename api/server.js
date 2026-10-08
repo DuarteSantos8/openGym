@@ -20,6 +20,8 @@ import { startCadence } from './coach/cadence.js';
 import { startWarmup } from './coach/warmup.js';
 import { dayReminderPush, nudgePush, restTimerPush, testPush } from './push-messages.js';
 import { verifyError } from './verify-error.js';
+import { socialRoutes } from './social/routes.js';
+import { accountView, profileRoutes } from './profile.js';
 import {
   hashPassword, verifyPassword, needsRehash, passwordProblem, passwordLength, nameKey, BusyError,
   MIN_LENGTH, MAX_LENGTH, makeResetCode, hashResetCode, resetCodeMatches, RESET_TTL_MS, warmUp,
@@ -147,6 +149,7 @@ db.subs = db.subs || [];
 db.invites = db.invites || [];
 db.deviceLinks = db.deviceLinks || [];   // unused one-time device links, hashed (device-link.js)
 const isAdmin = user => !!user && (user.admin === true || ADMIN_UIDS.includes(user.id));
+const sessionUser = user => accountView(user, isAdmin);
 // 0600: db.json holds passkey credential material. It used to be covered by a blanket 0700 on
 // the whole directory; now that the directory stays traversable, the file carries its own mode.
 // Once the new version is on disk, a second copy of it goes to db.json.bak, the same durable
@@ -207,6 +210,15 @@ function forClient(S) {
 // there is the honest reading of such a file — what was dropped carried nothing to show.
 const record = x => !!x && typeof x === 'object' && !Array.isArray(x);
 const records = v => (Array.isArray(v) ? v.filter(record) : []);
+
+const socialFile = path.join(DATA, 'social.json');
+function loadSocial() {
+  try { return JSON.parse(fs.readFileSync(socialFile, 'utf8')); }
+  catch (e) {
+    if (e.code === 'ENOENT') return { connections: [], plans: [] };
+    throw e;
+  }
+}
 
 /* ---------- push notifications (Web Push / VAPID) ---------- */
 const vapidFile = path.join(DATA, 'vapid.json');
@@ -1055,7 +1067,7 @@ function loginTarget(body) {
 }
 const acctKey = u => 'acct:' + u.id;
 const passkeyCount = u => db.creds.filter(c => c.userId === u.id).length;
-const publicUser = u => ({ id: u.id, name: u.name, admin: isAdmin(u) });
+const publicUser = sessionUser;
 const POLICY_ERRORS = {
   'too-short': `the password needs at least ${MIN_LENGTH} characters`,
   'too-long': `the password can have at most ${MAX_LENGTH} characters`,
@@ -1283,7 +1295,7 @@ const passwordRoutes = {
     // No await from here to the push: nothing can take the address between this check and it.
     if (email && emailTaken(email)) return emailRefused();
     const created = new Date().toISOString();
-    const user = { id: crypto.randomBytes(12).toString('base64url'), name, created, pw: { h, set: created }, ...(email ? { email } : {}) };
+    const user = { id: crypto.randomBytes(12).toString('base64url'), name, shareBodyWeight: false, created, pw: { h, set: created }, ...(email ? { email } : {}) };
     if (inv) { user.invitedBy = inv.code; inv.usedBy = user.id; inv.usedAt = created; }
     claimFirstAdmin(req, user);
     db.users.push(user);
@@ -1881,7 +1893,7 @@ const routes = {
     if (!s) return json(res, 401, { error: 'not signed in' });
     const { user } = s;
     const renew = s.bearer && s.exp - Date.now() < SESSION_DAYS * 86400000 / 2;
-    json(res, 200, { user: { id: user.id, name: user.name, admin: isAdmin(user) }, ...(renew ? { token: makeSession(user) } : {}) });
+    json(res, 200, { user: sessionUser(user), ...(renew ? { token: makeSession(user) } : {}) });
   },
 
   'POST /api/register/options': async (req, res) => {
@@ -1945,7 +1957,7 @@ const routes = {
         return json(res, 403, { error: 'invite code is no longer valid, ask for a new one', code: 'invite' });
       }
     }
-    const user = { id: c.uid, name: c.name, created: new Date().toISOString() };
+    const user = { id: c.uid, name: c.name, created: new Date().toISOString(), shareBodyWeight: false };
     if (invite) { user.invitedBy = invite.code; invite.usedBy = user.id; invite.usedAt = user.created; }
     claimFirstAdmin(req, user);
     db.users.push(user);
@@ -1959,7 +1971,7 @@ const routes = {
     });
     saveDb();
     audit(req, 'auth.register.ok', { user, msg: invite ? invite.code : null });
-    json(res, 200, { user: { id: user.id, name: user.name, admin: isAdmin(user) } }, { 'Set-Cookie': sessionCookie(user) });
+    json(res, 200, { user: sessionUser(user) }, { 'Set-Cookie': sessionCookie(user) });
   },
 
   'POST /api/login/options': async (req, res) => {
@@ -2021,7 +2033,7 @@ const routes = {
       return json(res, 403, { error: 'this account has been disabled', code: 'disabled' });
     }
     audit(req, 'auth.login.ok', { user });
-    json(res, 200, { user: { id: user.id, name: user.name, admin: isAdmin(user) } }, { 'Set-Cookie': sessionCookie(user) });
+    json(res, 200, { user: sessionUser(user) }, { 'Set-Cookie': sessionCookie(user) });
   },
 
   // Reads the session purely so the sign-out can be recorded; the cookie is cleared either way.
@@ -2080,7 +2092,7 @@ const routes = {
       return json(res, 400, { error: 'invalid or expired code', code: 'pair-invalid' });
     }
     audit(req, 'auth.pair.ok', { user });
-    json(res, 200, { token: makeSession(user), user: { id: user.id, name: user.name, admin: isAdmin(user) } });
+    json(res, 200, { token: makeSession(user), user: sessionUser(user) });
   },
 
   // Absent entirely while PASSWORD_LOGIN is off, so each of them is a plain 404.
@@ -2485,6 +2497,11 @@ const routes = {
     audit(req, 'admin.audit.clear', { user: admin });
     json(res, 200, { ok: true });
   },
+
+  ...profileRoutes({ json, readBody, readSession, save: saveDb, isAdmin, nameTaken }),
+
+  ...socialRoutes({ json, readBody, readSession, users: () => db.users, readState,
+    load: loadSocial, save: data => atomicWrite(socialFile, JSON.stringify(data), 0o600), userNow }),
 
   /* ---------- AI Coach ---------- */
   // Routes live in coach/routes.js and are handed the helpers above rather than importing

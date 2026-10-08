@@ -1,26 +1,10 @@
 // Focused workout semantics shared by session, history, and strength views.
 // Legacy records have no explicit phase or mode, so the defaults preserve main's work/reps shape.
 
-const MODES = ['reps', 'time', 'cardio']
+import { phaseForSet, isWarmupRow, normalizeMode, modeForSet, modeForEntry, isSideSet, hasCompletedWork } from '../../../api/training/set-semantics.js'
+export { phaseForSet, isWarmupRow, normalizeMode, modeForSet, modeForEntry, isSideSet, hasCompletedWork }
+
 const objectOf = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {}
-
-function normalizedPhase(value, fallback = 'work') {
-  const token = typeof value === 'string' ? value.trim().toLowerCase() : ''
-  if (token === 'warmup' || token === 'warm-up' || token === 'warm_up') return 'warmup'
-  if (token === 'work') return 'work'
-  return fallback === 'warmup' ? 'warmup' : 'work'
-}
-
-/** Resolve a row's phase. An explicit phase wins over the legacy warmup boolean. */
-export function phaseForSet(set, fallback = 'work') {
-  const source = objectOf(set)
-  if (source.phase != null && source.phase !== '') return normalizedPhase(source.phase, fallback)
-  return source.warmup === true ? 'warmup' : normalizedPhase(undefined, fallback)
-}
-
-export function isWarmupRow(set) {
-  return phaseForSet(set) === 'warmup'
-}
 
 // A row's shape beyond warm-up/work: 'straight' (default), 'dropset' (a main set followed by
 // weight drops logged with no rest) or 'restpause' (an activation set followed by short-rest
@@ -166,20 +150,11 @@ export function splitBurstReps(total) {
 //   done  = L.done && R.done  (a set counts done only once both sides are)
 //   effort= the harder side's rating (lower RIR / higher RPE), for the history tail only
 // `syncSideAggregate` recomputes those scalars from `sides` after any per-side edit.
-export function isSideSet(set) {
-  const s = objectOf(set)
-  return !!(s.sides && typeof s.sides === 'object' && s.sides.L && s.sides.R)
-}
-
 // A load explicitly changed by the user is protected from a later cascade. Missing provenance
 // means the row was inherited from the preceding load, including rows written before this field
 // existed. The marker is deliberately tiny and preserved on a side through aggregate resync.
 export const WEIGHT_ORIGIN_MANUAL = 'manual'
 
-/** Includes a completed limb even when its partner is still unchecked. */
-export const hasCompletedWork = set => isSideSet(set)
-  ? set.sides.L.done === true || set.sides.R.done === true
-  : set?.done === true
 
 /** Actual completed load x reps; the scalar maximum weight is only a summary. */
 export function completedVolumeOf(set) {
@@ -317,55 +292,4 @@ export function setSideClusterAt(row, side, i, r) {
     const delta = (Number(r) || 0) - (clustersOf(sd)[i]?.r || 0)
     return { ...setClusterAt(sd, i, { r }), r: Math.max(0, (sd.r || 0) + delta) }
   })
-}
-
-export function normalizeMode(value, fallback = 'reps') {
-  const token = typeof value === 'string' ? value.trim().toLowerCase() : ''
-  if (MODES.includes(token)) return token
-  return MODES.includes(fallback) ? fallback : 'reps'
-}
-
-function modeFromUnit(value) {
-  const token = typeof value === 'string' ? value.trim().toLowerCase() : ''
-  if (['rep', 'reps', 'repetition', 'repetitions'].includes(token)) return 'reps'
-  if (['sec', 'secs', 'second', 'seconds'].includes(token)) return 'time'
-  if (['min', 'mins', 'minute', 'minutes'].includes(token)) return 'cardio'
-  return null
-}
-
-function explicitMode(source) {
-  const value = objectOf(source).mode
-  const token = typeof value === 'string' ? value.trim().toLowerCase() : ''
-  return MODES.includes(token) ? token : modeFromUnit(objectOf(source).unit)
-}
-
-function inferredMode(source) {
-  const value = objectOf(source)
-  const explicit = explicitMode(value)
-  if (explicit) return explicit
-  if (String(value.mode || '').trim().toLowerCase() === 'amrap') return 'reps'
-  if (value.min != null || value.speed != null) return 'cardio'
-  if (value.sec != null || value.seconds != null || value.durationSec != null) return 'time'
-  if (value.r != null || value.reps != null || value.actualReps != null) return 'reps'
-  return null
-}
-
-/** Resolve one row's mode: explicit row, parent target, then legacy result fields. */
-export function modeForSet(set, target = {}) {
-  return explicitMode(set) || inferredMode(target) || inferredMode(set) || 'reps'
-}
-
-/** Resolve a single mode for an entry; mixed work-row modes intentionally return null. */
-export function modeForEntry(entry, fallback = null) {
-  const source = objectOf(entry)
-  const target = objectOf(source.target || source)
-  const sets = Array.isArray(source.sets) ? source.sets : []
-  const work = sets.filter(set => !isWarmupRow(set))
-  const observed = work.length ? work : sets
-  const modes = [...new Set(observed.map(set => modeForSet(set, target)))]
-  if (modes.length > 1) return null
-  if (modes.length === 1) return modes[0]
-  const targetMode = inferredMode(target)
-  if (targetMode) return targetMode
-  return fallback == null ? modeForSet(source, target) : normalizeMode(fallback)
 }

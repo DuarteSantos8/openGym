@@ -604,7 +604,7 @@ function applyDeletions(S, deleted) {
 // merge of their own are not stamped here; a field nobody stamped follows the newer copy, as before.
 const OWN_MERGE = new Set([
   '_ts', '_rev', '_wid', '_wids', '_unstamped', '_prior', 'active', 'unit', 'unitSet', 'resetAt', 'resetIds', 'deleted', 'edited', 'undone', 'routineOrder',
-  'workouts', 'routines', 'customEx', 'equipProfiles', 'gymCards', 'bodyweight', 'favEx',
+  'workouts', 'routines', 'customEx', 'equipProfiles', 'gymCards', 'bodyweight', 'favEx', 'importedSocialPlans',
   'exWeights', 'balanceOverrides', 'loadKind', 'plates',
 ])
 // Stamped per key instead of whole: one day of the plan, one exercise's note or bar.
@@ -812,6 +812,9 @@ export function mergeStates(a0, b0, { prefer } = {}) {
   }
   out.bodyweight = mergeBodyweight(n.bodyweight, o.bodyweight).map(clone)
   if (list(n.favEx).length || list(o.favEx).length) out.favEx = [...new Set([...list(n.favEx), ...list(o.favEx)])]
+  if (list(n.importedSocialPlans).length || list(o.importedSocialPlans).length) {
+    out.importedSocialPlans = [...new Set([...list(n.importedSocialPlans), ...list(o.importedSocialPlans)])]
+  }
   // What either device removed stays removed (the `deleted` section above). A workout taken out
   // this way leaves its exercises' kept loads to be read again, as an edit of it would: from the
   // merged history and from the deleting copy's own, which already let go of what it held.

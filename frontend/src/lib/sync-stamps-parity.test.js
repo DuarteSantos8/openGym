@@ -134,4 +134,3 @@ describe('the write ids are no setting', () => {
     expect(Object.keys(stampRestore({ _wid: 'b', _wids: ['a'], restSec: 60 }, [], 9).edited)).not.toContain('_wid')
   })
 })
-

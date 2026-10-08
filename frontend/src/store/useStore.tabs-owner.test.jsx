@@ -290,4 +290,3 @@ describe('a guest tab while the other tab signs in or creates a profile', () => 
     expect(localStorage.getItem('gym_state_owner')).toBe(OWNER)
   })
 })
-
