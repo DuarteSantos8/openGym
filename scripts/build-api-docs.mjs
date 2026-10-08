@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Builds website/api.html — the static API reference — from api/openapi.yaml.
+// Builds website/api.html (the static API reference) from api/openapi.yaml.
 //
 //   node scripts/build-api-docs.mjs
 //   node scripts/build-api-docs.mjs --check   # fail if stale, never write (CI)
@@ -7,7 +7,7 @@
 // Deterministic: the same spec always produces byte-identical output (no
 // timestamps), so re-running it only dirties the file when the spec changed.
 // The page is plain HTML in the site's own design (styles.css + site.js) with
-// native <details> cards per endpoint — no Swagger UI, no runtime rendering.
+// native <details> cards per endpoint. No Swagger UI, no runtime rendering.
 //
 // js-yaml lives in the repo-root package.json (devDependency, build-time only).
 
@@ -31,7 +31,7 @@ const esc = s => String(s)
 const mdInline = s => esc(String(s).trim())
   .replace(/`([^`]+)`/g, '<code>$1</code>')
   .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
-  .replace(/(^|[\s(—>])\*([^*\n]+)\*(?=[\s.,;:)—]|$)/g, '$1<i>$2</i>')
+  .replace(/(^|[\s(\u2014>])\*([^*\n]+)\*(?=[\s.,;:)\u2014]|$)/g, '$1<i>$2</i>')
   .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" rel="noopener">$1</a>')
 
 // One description onto one line (for table cells and card subtitles).
@@ -131,7 +131,7 @@ const TAGS = {
   push: { title: 'Push', side: 'Notifications &amp; rest timer' },
   activity: { title: 'Activity', side: 'Live presence' },
   media: { title: 'Media', side: 'Photos &amp; videos of your exercises &amp; workouts' },
-  // A tag missing from this map renders nowhere at all, silently — so every tag in the
+  // A tag missing from this map renders nowhere at all, silently, so every tag in the
   // spec needs a line here.
   coach: { title: 'AI Coach', side: 'Plans, reviews, debriefs' },
   admin: { title: 'Admin', side: 'Users, invites, audit log, Coach' }
@@ -146,17 +146,17 @@ const sumText = s => {
 
 function authOf (op, tag) {
   if (Array.isArray(op.security) && op.security.length === 0) {
-    return { chip: 'public', line: 'Public — no authentication required.' }
+    return { chip: 'public', line: 'Public: no authentication required.' }
   }
   if (tag === 'admin') {
     return {
       chip: 'admin',
-      line: 'Admin only — a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.'
+      line: 'Admin only: a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.'
     }
   }
   return {
     chip: null,
-    line: 'Requires a session — the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.'
+    line: 'Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.'
   }
 }
 
@@ -211,7 +211,7 @@ function endpointCard (pathKey, method, op) {
     type: fmtType(p.schema),
     desc: p.description || ''
   }))
-  // p.name may contain markup now; ptab escapes r.name — build rows pre-escaped instead:
+  // p.name may contain markup now; ptab escapes r.name, so build rows pre-escaped instead:
   const paramTab = params.length
     ? `<p class="ep-h">Query parameters</p><div class="ptab">` + params.map(r => `
   <div class="prow">
@@ -244,7 +244,7 @@ ${bodyHtml}
 /* -------------------------------------------------------------- schema cards */
 
 // A schema has no summary of its own, so the collapsed row borrows the first
-// sentence of its description — and the body then starts at the second, rather
+// sentence of its description, and the body then starts at the second, rather
 // than repeating what the reader just read on the way in.
 function schemaCard (name, s) {
   const desc = (s.description || '').trim()
@@ -269,7 +269,7 @@ ${rows.length ? ptab(rows) : '<p class="p-desc">Free-form object.</p>'}
 
 /* ----------------------------------------------------------------- overview */
 
-// The spec's info.description carries "### Heading" sections — each becomes a card.
+// The spec's info.description carries "### Heading" sections; each becomes a card.
 const infoParts = spec.info.description.split(/^### /m).slice(1).map(chunk => {
   const nl = chunk.indexOf('\n')
   return { title: chunk.slice(0, nl).trim(), body: chunk.slice(nl + 1) }
@@ -316,7 +316,7 @@ const railTags = Object.keys(TAGS).map(tag =>
 
 const css = `
 /* ------------------------------------------------------------- API reference
-   Generated page — the reference itself is static HTML in the site's design.
+   Generated page. The reference itself is static HTML in the site's design.
    Layout: one 880px column of per-endpoint <details> cards. */
 main.api-main { max-width: 880px; margin: 0 auto; padding: clamp(44px, 7vw, 72px) var(--pad) 0; }
 main.api-main h1 { font-size: clamp(36px, 6.5vw, 60px); letter-spacing: -.03em; }
@@ -431,12 +431,12 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
 /* The header, the navigation sheet and the contents drawer belong to the site, not
    to this page: .navsheet, .toc-btn, .side and .rail-close live in styles.css and
    site.js and behave identically here, on the docs page and on the home page. This
-   file deliberately adds nothing of its own to them — one implementation is the
+   file deliberately adds nothing of its own to them. One implementation is the
    only way the two rail pages can feel like the same rail. */
 `
 
 const js = `
-/* Jumping to an anchor inside a collapsed card opens the card — and re-aligns, since
+/* Jumping to an anchor inside a collapsed card opens the card and re-aligns, since
    the browser scrolled to where the target was while it was still collapsed. */
 ;(() => {
   const openTo = id => {
@@ -472,7 +472,7 @@ const html = `<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>API — openGym</title>
+<title>openGym: API</title>
 <meta name="description" content="The complete openGym HTTP API, documented as an OpenAPI spec: passkey auth, state sync, push notifications, pairing and admin routes.">
 <meta name="theme-color" content="#000000">
 <meta name="robots" content="index,follow,max-image-preview:large">
@@ -482,7 +482,7 @@ const html = `<!DOCTYPE html>
 <meta property="og:image" content="https://opengym.duarte-santos.ch/img/social.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="openGym — your training, your data, your server. Two phones showing the home and workout screens.">
+<meta property="og:image:alt" content="openGym: your training, your data, your server. Two phones showing the home and workout screens.">
 <meta property="og:url" content="https://opengym.duarte-santos.ch/api.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="openGym">
@@ -493,7 +493,7 @@ const html = `<!DOCTYPE html>
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 <link rel="icon" type="image/png" sizes="180x180" href="icon-180.png">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="styles.css?v=22">
+<link rel="stylesheet" href="styles.css?v=23">
 <script>document.documentElement.className += ' js'</script>
 <!-- Umami web analytics for opengym.duarte-santos.ch (self-hosted, cookieless). -->
 <script defer src="https://stats.duarte-santos.ch/script.js" data-website-id="db36019e-50f4-453c-9c56-d0588aefe233"></script>
@@ -526,7 +526,7 @@ const html = `<!DOCTYPE html>
 
 <!-- The navigation sheet: the header's links again, for the widths where the bar has
      room only for the brand and the download. Byte-identical on every page, like the
-     bar above it — nothing is ever dropped because of which page you are on. -->
+     bar above it, so nothing is ever dropped because of which page you are on. -->
 <div class="navsheet" id="sitemenu" role="navigation" aria-label="Site" aria-hidden="true">
   <div class="nl-rows">
     <a class="nl" href="/#features">Features</a>
@@ -549,7 +549,7 @@ const html = `<!DOCTYPE html>
 </button>
 
 <!-- The contents drawer: one list, one way in, one way out. Closed by default at
-     every width, and no preference is remembered — see .side in styles.css. -->
+     every width, and no preference is remembered. See .side in styles.css. -->
 <aside class="side" id="menu" aria-label="Contents" aria-hidden="true">
   <div class="side-top">
     <p class="side-title">Contents</p>
@@ -567,8 +567,8 @@ ${railTags}
 
 <main id="main" class="api-main">
   <h1>API</h1>
-  <p class="lead">Every route the openGym backend serves — passkey auth, state sync,
-     push, pairing, admin — as one hand-written
+  <p class="lead">Every route the openGym backend serves (passkey auth, state sync,
+     push, pairing, admin) as one hand-written
      OpenAPI&nbsp;spec. The same file lives
      <a href="https://github.com/DuarteSantos8/openGym/blob/main/api/openapi.yaml" rel="noopener">in the repository</a>
      at <code>api/openapi.yaml</code>, next to the one server file it documents.</p>
@@ -603,7 +603,7 @@ ${tagSections}
   <section class="api-sec" id="schemas">
     <h2>Schemas</h2>
     <p class="sub">The named shapes the endpoints above link to. The <code>State</code> blob
-       is <b>representative, not enforced</b> — the server stores it opaquely and the app
+       is <b>representative, not enforced</b>: the server stores it opaquely and the app
        grows it over time.</p>
     <div class="eps">
 ${schemaCards}
@@ -623,7 +623,7 @@ ${schemaCards}
   </div>
 </div></footer>
 
-<script src="site.js?v=22" defer></script>
+<script src="site.js?v=23" defer></script>
 <script>${js}</script>
 </body>
 </html>
@@ -633,17 +633,17 @@ const rel = path.relative(root, outPath)
 const summary = `${ops.length} endpoints, ${Object.keys(spec.components.schemas).length} schemas, ${(html.length / 1024).toFixed(1)} KB`
 // --check is what build-coach-assets.mjs has had all along, for the same reason: the page is
 // generated and committed, so a spec change that forgets to regenerate it ships a reference
-// that describes the previous version of the API. It also catches the other direction — an
+// that describes the previous version of the API. It also catches the other direction: an
 // edit made to the page by hand, which the next regeneration would silently undo.
 if (check) {
   let current = null
   try { current = fs.readFileSync(outPath, 'utf8') } catch { /* missing counts as stale */ }
   if (current !== html) {
-    console.error(`${rel} is out of date — run: node scripts/build-api-docs.mjs`)
+    console.error(`${rel} is out of date. Run: node scripts/build-api-docs.mjs`)
     process.exit(1)
   }
-  console.log(`${rel} in sync — ${summary}`)
+  console.log(`${rel} in sync: ${summary}`)
 } else {
   fs.writeFileSync(outPath, html)
-  console.log(`wrote ${rel} — ${summary}`)
+  console.log(`wrote ${rel}: ${summary}`)
 }
