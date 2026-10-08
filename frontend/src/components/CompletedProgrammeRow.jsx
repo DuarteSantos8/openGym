@@ -10,7 +10,7 @@ export default function CompletedProgrammeRow({ cycle, state, onRepeat, selected
   const rowRef = useRef(null)
   useEffect(() => { if (selected) { setOpen(true); rowRef.current?.scrollIntoView?.({ block: 'start' }) } }, [selected])
   const summary = completedProgrammeSummary(state, cycle)
-  const format = value => value == null ? '—' : fmtNum(value)
+  const format = value => value == null ? '–' : fmtNum(value)
   return <div ref={rowRef} className="item" data-testid="completed-programme-row" style={{ display:'block' }}>
     <button type="button" className="programme-ready-open" style={{ width:'100%' }} aria-expanded={open} onClick={()=>setOpen(value=>!value)}>
       <span className="grow" style={{ minWidth:0 }}><span className="tt">{cycle.name} <span className="tag">{t('Completed')}</span></span>

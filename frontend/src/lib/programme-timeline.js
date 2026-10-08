@@ -51,7 +51,7 @@ export function programmeTimelineForCycle(state, cycle, options = {}) {
       const plan=programmeWeekMode(week.mode)==='deload'?{kind:'hold'}:nextPrescription(source,{...cfg,prog:policy},routine)
       const lastTarget=last?.target || (last?.sets?.length ? { weight:last.sets.at(-1).w,reps:last.sets.at(-1).r,sec:last.sets.at(-1).sec,min:last.sets.at(-1).min } : null)
       return {key:item.instanceId+':'+index,id:cfg.id,name:cfg.name || cfg.n || state.customEx?.find(ex=>ex.id===cfg.id)?.n || EXIDX[cfg.id]?.n || cfg.id,
-        last:lastTarget?targetText(lastTarget,cfg,mode,state.unit || 'kg'):'—',next:targetText(plan,cfg,mode,state.unit || 'kg'),notes:cfg.notes,sg:cfg.sg,rest:cfg.workRestSec}
+        last:lastTarget?targetText(lastTarget,cfg,mode,state.unit || 'kg'):'–',next:targetText(plan,cfg,mode,state.unit || 'kg'),notes:cfg.notes,sg:cfg.sg,rest:cfg.workRestSec}
     }) }
   }) }))
   return {cycle,currentWeek,totalWeeks:weeks.length || 1,weeks}
