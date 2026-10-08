@@ -4,6 +4,7 @@
 // Imports both history.js and progression.js (which itself imports history.js); nothing in
 // either imports this file, so there is no cycle.
 import { buildSets, applyIntensifierPlan, modeOf } from './history.js'
+import { programmeHistoryForExercise } from './programme-timeline.js'
 import { isWarmupRow } from './workout-model.js'
 import { nextPrescription, applyPrescription, defaultIncrement, weightIncrement, plannedOf } from './progression.js'
 import { dropGrid } from './plates.js'
@@ -91,12 +92,19 @@ export const builtOutOfProgression = (entry, routine) => entry?.noProg === true 
 // into real work must exclude only its own exercises. The merge helper (lib/session-merge.js)
 // stamps `entry.rid`, so the single-routine and combined paths share this builder unchanged; it
 // only reads the routine's id, to start each exercise from that routine's own history (#216).
-export function buildSessionEntries(st, r) {
+export function buildSessionEntries(st, r, programmeItem = null) {
   // The prescription is applied as the session is built, so you walk up to the bar with the
   // right weight already on the screen instead of being told about it afterwards.
   const noProg = r?.excludeFromProgression === true
-  return (r ? r.ex : []).map(cfg => {
-    const built = buildPlannedEntry(st, cfg, r, { noProg })
-    return { id: cfg.id, sg: cfg.sg, ...built, ...(noProg ? { noProg: true } : {}) }
+  return (r ? r.ex : []).map((cfg, index) => {
+    const source = programmeItem
+      ? { ...st, exWeights: {}, workouts: programmeHistoryForExercise(st, { id: programmeItem.cycleId }, programmeItem, cfg, index, r.ex) }
+      : st
+    // Programme history is already isolated to this frozen occurrence. Do not apply the
+    // live-routine fallback rule again: older Programme records did not stamp a routine id.
+    const progressionRoutine = programmeItem ? { ...r, id: null } : r
+    const built = buildPlannedEntry(source, cfg, progressionRoutine, { noProg })
+    return { id: cfg.id, sg: cfg.sg, ...built, ...(noProg ? { noProg: true } : {}),
+      ...(programmeItem ? { occurrenceId: cfg.occurrenceId || cfg.id + '#' + (index + 1), unit: st.unit || 'kg' } : {}) }
   })
 }

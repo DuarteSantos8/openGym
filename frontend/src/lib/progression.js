@@ -104,7 +104,7 @@ export function policyFor(cfg, routine, mode) {
   if (isPyramid(cfg)) return 'off'
   const m = mode || modeOf(cfg || {})
   const allowed = POLICIES_FOR[m] || ['off']
-  const pick = (cfg && cfg.prog) || (routine && routine.prog) || (m === 'reps' ? 'linear' : 'off')
+  const pick = cfg?.prog || routine?.prog || routine?.programmeProgression || (m === 'reps' ? 'linear' : 'off')
   return allowed.includes(pick) ? pick : 'off'
 }
 

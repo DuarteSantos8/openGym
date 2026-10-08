@@ -40,7 +40,8 @@ import { speedUnitOf, toSpeed, fromSpeed } from './lib/speed.js'
 import { buildCompletedWorkout, sessionEnd } from './lib/finish-workout.js'
 import { refillAfter } from './lib/rotation.js'
 import { isWarmupRow, hasCompletedWork } from './lib/workout-model.js'
-import { saveSessionAsRoutine } from './lib/session-routines.js'
+import { saveSessionAsRoutine, sourceRoutineIds, sessionChangeFields, applySessionToRoutine } from './lib/session-routines.js'
+import { applySessionToFutureProgramme, programmeSessionChangeFields } from './lib/programme-session-actions.js'
 import { repeatSessionEntries } from './lib/session-repeat.js'
 import { swapActiveExercise } from './lib/active-exercise-swap.js'
 import { useSheetKeyboard, useRevealActiveChip, tappable } from './lib/use-sheet-keyboard.js'
@@ -56,6 +57,7 @@ import { weeklyWeights } from './lib/bodyweight.js'
 import { workoutText } from './lib/workout-text.js'
 import { copyText } from './lib/clipboard.js'
 import { queueRemaining, pinState } from './lib/queue.js'
+import { programmeStartDisposition, programmeWorkoutSource, settleProgrammeWorkoutInState } from './lib/programmes.js'
 
 const S = () => useStore.getState().S
 const update = (...a) => useStore.getState().update(...a)
@@ -2273,7 +2275,7 @@ function WorkoutDetail({ w, close }) {
       initial.current = latest.current.trim().slice(0, NOTE_MAX)
       workoutDurationSheet(w, close)
     }}>{t('Change duration')}</Button>
-    <Button icon="plus" onClick={() => confirmSheet({
+    {!!sourceRoutineIds(w).length && <Button icon="clipboard" style={{ marginBottom: 8 }} onClick={() => sessionTemplateSheet(w)}>{t('Apply session changes')}</Button>}    <Button icon="plus" onClick={() => confirmSheet({
       title: t('Save as routine?'),
       message: t('Create an independent routine from these exercise targets. Your workout history is kept.'),
       confirmText: t('Save'),
@@ -2367,18 +2369,34 @@ export function WorkoutRow({ w, onClick }) {
 /* ============================ workout lifecycle ============================ */
 // `routineIds` accepts `string | string[] | null` — `[r.id]` for one routine,
 // `effectiveRoutineIds(...)` for today's planned session, `[]` / null for explicit freestyle.
-export function startFlow(routineIds) {
+export function startFlow(routineIds, programmeItem = null, requestedISO = null) {
+  if (typeof programmeItem === 'string') { requestedISO = programmeItem; programmeItem = null }
+  const disposition = programmeStartDisposition(S().active, programmeItem)
+  if (disposition === 'resume') { navToWorkout(); return disposition }
+  if (disposition === 'blocked') { toast(t('Finish the current workout first.')); return disposition }
   // The weigh-in is a setting (Settings → During a workout, issue #137): off goes straight
   // into the session with no body weight on it, same as "Start without weighing in".
-  if (S().weighIn === false) { beginWorkout(routineIds, null); return }
-  bwSheet({ required: true, onDone: bw => beginWorkout(routineIds, bw) })
+  if (S().weighIn === false) return beginWorkout(routineIds, null, programmeItem, requestedISO)
+  bwSheet({ required: true, onDone: bw => beginWorkout(routineIds, bw, programmeItem, requestedISO) })
+  return 'start'
 }
-export function beginWorkout(routineIds, bw) {
+export function startProgrammeFlow(programmeItem) {
+  return startFlow(programmeItem?.routineId, programmeItem)
+}
+export function beginWorkout(routineIds, bw, programmeItem = null, requestedISO = null) {
+  if (typeof programmeItem === 'string') { requestedISO = programmeItem; programmeItem = null }
   const st = S()
-  const { entries, routineIds: rids, routines } = buildCombinedEntries(st, routineIds)
+  const disposition = programmeStartDisposition(st.active, programmeItem)
+  if (disposition === 'resume') { navToWorkout(); return disposition }
+  if (disposition === 'blocked') { toast(t('Finish the current workout first.')); return disposition }
+  const routine = programmeItem?.routineSnapshot
+  const combined = programmeItem
+    ? { entries: buildSessionEntries(st, routine, programmeItem).map(entry => ({ ...entry, rid: programmeItem.routineId })), routineIds: [programmeItem.routineId], routines: [routine] }
+    : buildCombinedEntries(st, routineIds)
+  const { entries, routineIds: rids, routines } = combined
   update(s => {
     s.active = {
-      id: uid(), d: todayISO(), start: Date.now(),
+      id: uid(), d: requestedISO || todayISO(), start: Date.now(),
       // A session tracks its routines as a list; per-entry `rid` carries which one each
       // exercise came from. No top-level `excludeFromProgression` — per-entry `noProg` does it.
       routineIds: rids,
@@ -2387,10 +2405,12 @@ export function beginWorkout(routineIds, bw) {
       // Snapshot the layout at start so the header ⋮ can change it for this session only —
       // changing the saved default (Settings → Workout view) mid-session leaves it alone.
       workoutView: st.workoutView || 'cards',
+      ...(programmeItem ? { ...programmeWorkoutSource(programmeItem), unit: st.unit || 'kg' } : {}),
     }
   })
   useUI.getState().stopRest()
   navToWorkout()
+  return 'start'
 }
 
 // "Repeat today" (#58): a saved workout's exercises as a new freestyle session dated today, each
@@ -2891,6 +2911,7 @@ function doFinishWorkout() {
         if (mx > 0 && beatsWeight(e.id, mx, (s.exWeights[e.id] || {}).w || 0)) s.exWeights[e.id] = { w: mx, d: w.d }
       })
       s.workouts.push(w)
+      settleProgrammeWorkoutInState(s, w)
     }
     s.active = null
     // A rotation pass this app manages starts its next pass the moment the last session lands
@@ -2905,4 +2926,27 @@ function doFinishWorkout() {
   useUI.getState().stopWork()
   beep(snd(), 880, 0.15); beep(snd(), 1100, 0.15, 0.18); beep(snd(), 1320, 0.3, 0.36)
   ui().openSheet(close => <FinishSummary w={shown} prs={prs} e1prs={e1prs} close={close} />, { kind: 'center', locked: true })
+}
+export function sessionTemplateSheet(session, live = false) {
+  const ids = sourceRoutineIds(session).filter(id => S().routines.some(routine => routine.id === id))
+  const apply = action => {
+    try {
+      update(state => {
+        const current = live ? state.active : state.workouts.find(workout => workout.id === session.id)
+        if (!current || current.id !== session.id) throw new Error('This workout is no longer available.')
+        action(state, current)
+      })
+      toast(t('Future targets updated'))
+    } catch (error) { toast(t(error.message)) }
+  }
+  const preview = (message, id) => {
+    let fields = []
+    try { fields = id ? sessionChangeFields(S(), session, id) : programmeSessionChangeFields(S(), session) } catch { /* Apply reports stale state. */ }
+    return <><p>{message}</p><p>{t('Changed fields:')} {fields.length ? fields.map(field => t(field)).join(', ') : t('No exercise-level changes detected')}</p><p className="small dim">{t('Uses exercise-level targets and default set rules. Individual warm-up row targets and per-set AMRAP overrides are not copied.')}</p></>
+  }
+  menuSheet({ title: t('Apply session changes'), subtitle: t('Choose which future targets to update. Completed workouts stay unchanged.'), items: [
+    ...ids.map(id => ({ icon: 'clipboard', label: ids.length === 1 ? t('Update source routine') : t('Update routine: {0}', S().routines.find(routine => routine.id === id).name),
+      onClick: () => confirmSheet({ title: t('Update source routine?'), message: preview(t('Replace its exercise targets with this session setup. Future starts from this routine will use the changes.'), id), confirmText: t('Apply'), onConfirm: () => apply((state, current) => applySessionToRoutine(state, current, id)) }) })),
+    ...(session.programmeInstance ? [{ icon: 'calendar', label: t('Update future Programme sessions'), onClick: () => confirmSheet({ title: t('Update future Programme sessions?'), message: preview(t('Apply this setup to later sessions using this routine in the active cycle. Current and completed sessions stay unchanged.')), confirmText: t('Apply'), onConfirm: () => apply(applySessionToFutureProgramme) }) }] : []),
+  ] })
 }
