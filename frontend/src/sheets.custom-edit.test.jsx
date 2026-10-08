@@ -4,6 +4,7 @@
 // exercise sheet or in the routine's exercise settings, and its thumbnail went through the
 // built-in renderer. Every one of those now asks where the exercise lives, not for the flag.
 import React, { act } from 'react'
+import { ruleOccurrence } from './lib/test-fixtures.js'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createRoot } from 'react-dom/client'
 
@@ -82,21 +83,21 @@ describe('a custom exercise stored without the flag', () => {
   it('Delete takes it out of the routines and keeps the name in history', () => {
     const ex = legacy()
     seed(ex, {
-      routines: [{ id: 'r1', name: 'A', ex: [{ id: 'cx1', sets: 3, reps: 8, w: 40 }, { id: '0027', sets: 3, reps: 8, w: 40 }] }],
-      workouts: [{ d: '2026-09-01', entries: [{ id: 'cx1', sets: [{ r: 8, w: 40, done: true }] }] }],
+      routines: [{ id: 'r1', name: 'A', ex: [ruleOccurrence('cx1'), ruleOccurrence('0027')] }],
+      workouts: [{ d: '2026-09-01', exposures: [{ exposureId: 'x1', exerciseId: 'cx1', mode: 'reps', performance: { sets: [] } }] }],
     })
     exerciseDetailSheet(ex)
     click(renderTop(), 'button', 'Delete')
     click(renderTop(), 'button', 'Delete')   // the confirmation
     expect(S().customEx).toEqual([])
-    expect(S().routines[0].ex.map(e => e.id)).toEqual(['0027'])
-    expect(S().workouts[0].entries[0].n).toBe('My row')
+    expect(S().routines[0].ex.map(e => e.exerciseId)).toEqual(['0027'])
+    expect(S().workouts[0].exposures[0].exerciseNameSnapshot).toBe('My row')
   })
 
   it('the routine exercise settings offer "Edit or delete this exercise"', () => {
     const ex = legacy()
     seed(ex)
-    exConfigSheet(ex, { id: 'cx1', sets: 3, reps: 8, w: 40 }, () => {})
+    exConfigSheet(ex, ruleOccurrence('cx1'), () => {})
     expect(buttons(renderTop())).toContain('Edit or delete this exercise')
   })
 

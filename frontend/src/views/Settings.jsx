@@ -25,6 +25,8 @@ import { effectiveLang } from '../lib/default-lang.js'
 import { DEMO, REPO } from '../lib/demo.js'
 import { MOBILE, isAndroid, shareExport, shareExportBlob, syncReminder } from '../lib/mobile.js'
 import { NUDGE_COPY, NUDGE_TONES, toneOf } from '../lib/nudge.js'
+import { isLegacyProfile } from '../../../api/migration/profile-version.js'
+import { buildProfileBackup } from '../lib/export-profile.js'
 import { referencedFiles } from '../lib/media-refs.js'
 import { mediaStore } from '../lib/media-store.js'
 import { syncMedia, fetchToStore } from '../lib/media-sync.js'
@@ -106,7 +108,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   const passkeys = usePasskeys(!!user && !DEMO && (page === 'account'))
   const [credsV, setCredsV] = useState(0)
   const credsChanged = () => { passkeys.load(); setCredsV(v => v + 1) }
-  const { update, importConflict, importBackup, setUnit, resetEverything: resetAll, setUser, pullState, pushState, resetDemo } = useStore()
+  const { update, importConflict, importBackup, importLegacyBackup, setUnit, resetEverything: resetAll, setUser, pullState, pushState, adoptProfile, signOut, signOutAll, resetDemo, disconnectServer } = useStore()
   const toast = useUI(s => s.toast)
   const fileRef = useRef(null)
   const importRef = useRef(null)
@@ -123,6 +125,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   // under a kg label. Closing the sheet leaves the unit as it was.
   const switchUnit = v => {
     if (v === S.unit) return
+    const from = S.unit
     menuSheet({
       title: t('Convert to {0}?', v),
       subtitle: t('Every stored weight (logged sets, working weights, routine targets, body weight, bar weights) is in {0}. Convert the numbers, or keep them and only change the label?', S.unit),
@@ -274,7 +277,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   // Reads the store at the moment of the tap: the sheet that asks before a sign-out offers it too,
   // and the copy it exports is the one that has not reached the server.
   const doExport = async () => {
-    const json = JSON.stringify(useStore.getState().S, null, 2)
+    const json = JSON.stringify(buildProfileBackup(useStore.getState().S), null, 2)
     const name = 'opengym-backup-' + todayISO() + '.json'
     // WKWebView can't download blob URLs — the native build hands the file to the share sheet.
     if (MOBILE) {
@@ -324,6 +327,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         const { storeBackupMedia } = await import('../lib/backup-media.js')
         await storeBackupMedia(read.files, { limits: limitsFrom(useStore.getState().config) })
       }
+      // A backup from before the v2 engine goes through the same upgrade screen as any v1 profile.
+      if (isLegacyProfile(read.state)) return importLegacyBackup(read.state, f.size, { mergeWith })
       importBackup(read.state, { mergeWith })
       // The photos it brought are pending here and maybe gone from the server (a reset): sent now,
       // not after the ten-minute dedupe of the run before the reset.
@@ -369,7 +374,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
      nothing local: still signed in here, and the toast says so. */
   const kept = t('The changes your server has not seen are kept on this device, and added back when it connects as this account again.')
   // A workout running here is kept aside by the sign-out (useStore stashActive): the confirm says so.
-  const running = () => S.active ? ' ' + t('You have a workout running. It waits on this device until you’re back on this account.') : ''
+  const running = () => useStore.getState().A ? ' ' + t('You have a workout running. It waits on this device until you’re back on this account.') : ''
   const leave = (kind, after) => leaveServer(kind, { exportBackup: doExport, exportBackupZip: doExportZip, done: r => { nav('/home'); if (r.stashed) toast(kept); else if (after) toast(after) } })
   const disconnect = () => confirmSheet({
     title: t('Disconnect from your server?'),
@@ -527,7 +532,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         <Row icon="minimize" iconTint="var(--teal)" title={t('Collapse completed exercises')}
           subtitle={t('In List and Compact, a finished exercise folds into one line.')}>
           <Switch aria-label={t('Collapse completed exercises')} checked={!!S.collapseCompleted}
-            onChange={v => update(s => { s.collapseCompleted = v; if (s.active) delete s.active.collapseCompleted })} />
+            onChange={v => { update(s => { s.collapseCompleted = v }); useStore.getState().updateActive(A => { delete A.collapseCompleted }) }} />
         </Row>
         {/* Its counterpart for Cards and Focus (#523): Prev, Next and the swipe jump over an
             exercise whose every set is done. */}
@@ -827,6 +832,19 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     </>,
 
     data: () => <>
+      {(S.migrationAudit?.unsupported?.length > 0 || S.migrationAudit?.discarded?.length > 0) && <details className="lrow" style={{ display: 'block' }}>
+        <summary>{t('Training data upgrade review')}</summary>
+        <div className="muted small" style={{ marginTop: 12 }}>{t('These settings could not be converted. Review the affected exercises before training.')}</div>
+        <ul>
+          {(S.migrationAudit.unsupported || []).map((item, i) => <li key={i}>
+            {item.field === 'date' ? item.path : `${S.routines.find(r => r.id === item.routineId)?.name || item.routineId} · ${item.exerciseId} · ${item.field}`}: {JSON.stringify(item.value)}
+          </li>)}
+        </ul>
+        {S.migrationAudit.discarded?.length > 0 && <>
+          <div className="muted small">{t('Malformed records were preserved below and in the original backup.')}</div>
+          <pre style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{JSON.stringify(S.migrationAudit.discarded, null, 2)}</pre>
+        </>}
+      </details>}
       <Section title={t('Back up')}>
         <Row icon="share" iconTint="var(--blue)" title={t('Export backup (JSON)')} subtitle={hasMedia ? t('Without photos and videos') : undefined} accessory="chevron" onClick={doExport} />
         {hasMedia && <Row icon="share" iconTint="var(--blue)" title={t('Export with photos & videos (.zip)')} accessory="chevron" onClick={doExportZip} />}
@@ -1143,7 +1161,7 @@ function MobileReminderCard({ S, update, toast }) {
   const toggle = async () => {
     const on = !S.reminder?.on
     if (on) {
-      const ok = await syncReminder({ ...S, reminder: { ...(S.reminder || DEF.reminder), on: true } }, true)
+      const ok = await syncReminder({ ...S, reminder: { ...(S.reminder || DEF.reminder), on: true } }, true, !!useStore.getState().A)
       if (!ok) { toast(t('Could not change notification settings')); return }
     }
     setReminder({ on })

@@ -174,7 +174,7 @@ describe('files that are not an export at all', () => {
 describe('mergeImport adds and never overwrites', () => {
   const state = () => ({
     unit: 'kg',
-    workouts: [{ id: 'mine', d: '2024-03-07', name: 'Mine', entries: [{ id: '0025', sets: [{ w: 100, r: 5, done: true }] }] }],
+    workouts: [{ id: 'mine', d: '2024-03-07', name: 'Mine', exposures: [{ exposureId: 'x1', exerciseId: '0025', mode: 'reps', performance: { sets: [{ role: 'work', status: 'completed', observations: [{ metric: 'repetitions', value: 5 }], resistance: { kind: 'external-load', value: 100, unit: 'kg' } }] } }] }],
     bodyweight: [{ d: '2024-03-07', w: 80, t: 1 }],
     routines: [{ id: 'r1', name: 'Push', ex: [{ id: '0025', sets: 3, reps: 5, weight: 100 }] }],
     customEx: [{ id: 'cu1', n: 'grip trainer', bp: 'lower arms', custom: true, eq: 'custom', tg: '', desc: '' }],
@@ -192,7 +192,7 @@ describe('mergeImport adds and never overwrites', () => {
     expect(S.workouts[0].name).toBe('Mine')
     expect(S.routines).toEqual(state().routines)
     expect(S.customEx).toEqual(state().customEx)             // "Grip Trainer" reused cu1, nothing appended
-    expect(S.workouts[1].entries[0].id).toBe('cu1')
+    expect(S.workouts[1].exposures[0].exerciseId).toBe('cu1')
     expect(S.exWeights['0025']).toEqual(state().exWeights['0025'])   // the skipped day seeds nothing
     expect(S.exWeights.cu1).toMatchObject({ w: 20, d: '2024-03-08' })
   })
@@ -220,14 +220,14 @@ describe('mergeImport adds and never overwrites', () => {
       expect(typeof w.id).toBe('string')
       expect(typeof w.d).toBe('string')
       expect(typeof w.name).toBe('string')
-      expect(Array.isArray(w.entries)).toBe(true)
-      for (const e of w.entries) {
-        expect(typeof e.id).toBe('string')
-        expect(Array.isArray(e.sets)).toBe(true)
-        expect(e.sets.length).toBeGreaterThan(0)
+      expect(Array.isArray(w.exposures)).toBe(true)
+      for (const x of w.exposures) {
+        expect(typeof x.exerciseId).toBe('string')
+        expect(Array.isArray(x.performance.sets)).toBe(true)
+        expect(x.performance.sets.length).toBeGreaterThan(0)
       }
     }
-    expect(S.workouts[2].entries[0].sets[0]).toEqual({ min: 30, speed: 10, done: true })
+    expect(S.workouts[2].exposures[0].performance.sets[0].observations).toEqual([{ metric: 'duration', unit: 'min', value: 30 }, { metric: 'speed', unit: 'kmh', value: 10 }])
   })
 
   it('weigh-ins: existing days win and the list stays sorted', () => {
