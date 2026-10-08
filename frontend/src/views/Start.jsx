@@ -10,25 +10,29 @@ import { useStore } from '../store/useStore.js'
 import { effectiveRoutines, effectiveRoutineIds, nextTrainingDay, lastBW } from '../lib/history.js'
 import { todayISO, exCount, DAYN, fmtNum, fmtDate } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
-import { bwSheet, startFlow, startShortFlow, starterPlanSheet } from '../sheets.jsx'
+import { bwSheet, beginWorkout, beginSubsetWorkout, starterPlanSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button, Segmented } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { glyphOf } from '../lib/glyphs.js'
 
 // Presets, not a slider: four fixed approximate lengths. Snapping a stored value
-// (from the old slider) to the nearest preset keeps the knob, the label and the
-// persisted preference in agreement.
+// (from the old slider) to the nearest preset keeps the label and the persisted
+// preference in agreement.
 export const START_PRESETS = [15, 25, 35, 45]
 const snapPreset = v => START_PRESETS.reduce((best, p) => Math.abs(p - (v ?? 35)) < Math.abs(best - (v ?? 35)) ? p : best, START_PRESETS[2])
 
-// Shorter presets trim the routine from the end; the full preset trains it all.
-// Only meaningful for a single-routine day — a combined day is already the long version.
+// Shorter presets train the routine's first exercises, in order, and stop early;
+// the full preset trains it all. Each step up adds training wherever the routine
+// is long enough to tell them apart (15→3, 25→4, 35→all-but-one, 45→all), so the
+// choices are never two labels for the same session. Only meaningful for a
+// single-routine day — a combined day is already the long version.
 export const presetExerciseCount = (routine, minutes) => {
   if (!routine) return 0
   const n = (routine.ex || []).length
   if (minutes <= 15) return Math.min(3, n)
   if (minutes <= 25) return Math.min(4, n)
+  if (minutes <= 35) return n <= 5 ? n : n - 1
   return n
 }
 
@@ -52,11 +56,16 @@ export default function Start() {
   const idSet = new Set(routineIds)
   const others = (S.routines || []).filter(r => !idSet.has(r.id))
 
+  // The weigh-in stays optional and secondary: a session carries the last logged
+  // weight (or none), and starting never interrupts with the sheet. Logging or
+  // updating beforehand is what the weigh-in card below is for.
+  const sessionBW = () => (S.weighIn === false ? null : (lastBW(S)?.w ?? null))
+  const beginFull = ids => beginWorkout(ids, sessionBW())
   const begin = () => {
-    if (!routine) { startFlow(routineIds); return }
+    if (!routine) { beginFull(routineIds); return }
     const count = single ? presetExerciseCount(routine, minutes) : routine.ex.length
-    if (!single || routineIds.length !== 1 || count >= routine.ex.length) startFlow(routineIds)
-    else startShortFlow(routine.id, routine.ex.slice(0, count).map(e => e.id))
+    if (!single || routineIds.length !== 1 || count >= routine.ex.length) beginFull(routineIds)
+    else beginSubsetWorkout(routine.id, routine.ex.slice(0, count).map(e => e.id), sessionBW())
   }
 
   // A running session resumes — starting something new here would overwrite it.
@@ -128,18 +137,18 @@ export default function Start() {
         <div className="small muted">{bw ? t('{0} {1} · {2}', fmtNum(bw.w), S.unit, fmtDate(bw.d, true)) : t('Not weighed in yet')}</div>
         <Button size="sm" icon="plus" onClick={() => bwSheet()}>{bw ? t('Update') : t('Log weight')}</Button>
       </div>
-      <div className="small dim" style={{ marginTop: 6 }}>{t('Optional — the workout asks again unless weigh-ins are off.')}</div>
+      <div className="small dim" style={{ marginTop: 6 }}>{t('Carried into the session automatically — updating is optional.')}</div>
     </div>}
 
     {others.length > 0 && <><h4 className="sec">{t('Other routines')}</h4>
-      <div className="list">{others.map(r => <div key={r.id} className="item" {...tappable(() => startFlow([r.id]))}>
+      <div className="list">{others.map(r => <div key={r.id} className="item" {...tappable(() => beginWorkout([r.id], sessionBW()))}>
         <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
         <div className="grow"><div className="tt">{r.name}</div><div className="ss">{exCount((r.ex || []).length)}</div></div>
         <span className="tag acc">{t('Start')}</span></div>)}</div></>}
 
     {!!S.routines.length && <>
       <div style={{ height: 14 }} />
-      <Button icon="shuffle" onClick={() => startFlow([])}>{t('Freestyle workout (pick as you go)')}</Button>
+      <Button icon="shuffle" onClick={() => beginWorkout([], sessionBW())}>{t('Freestyle workout (pick as you go)')}</Button>
       <div style={{ height: 8 }} />
       <Button variant="ghost" className="dim" icon="list" onClick={() => nav('/library')}>{t('Browse exercises')}</Button>
     </>}

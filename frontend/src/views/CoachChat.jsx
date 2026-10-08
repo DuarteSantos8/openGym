@@ -54,7 +54,11 @@ export default function CoachChat() {
   const coachMode = coachLocal?.mode
 
   const ok = coachAvailable(config, user, { demo: DEMO, mobile: MOBILE, coachMode })
-  const ready = ok && hasConsent(S) && !!S.coach?.profile
+  // An existing workout plan counts: routines built by hand (or imported) are a
+  // plan the Coach can review and work from, so they must not force the
+  // questionnaire. Only with nothing at all does the chat give way to intake.
+  const hasPlan = (S.routines || []).length > 0
+  const ready = ok && hasConsent(S) && (!!S.coach?.profile || hasPlan)
   // Not before the store has loaded: a cold start straight on #/coach would otherwise read an
   // empty state, decide there is no consent, and bounce a consenting user into the intake.
   useEffect(() => {
@@ -132,7 +136,12 @@ export default function CoachChat() {
   const askDebrief = () => ask(() => requestDebrief(lastWorkout?.id || null), lastWorkout?.name
     ? t('How did my {0} session go?', lastWorkout.name)
     : t('How did my last workout go?'))
-  const askNewPlan = () => ask(() => requestPlan(coach.profile), t('Build me a fresh plan from my answers.'))
+  const askNewPlan = () => {
+    // Without answers there is nothing to rebuild from — the questionnaire is
+    // the explicit "create new plan" path, and the plan itself is never touched.
+    if (!coach.profile) { nav('/coach/intake'); return }
+    ask(() => requestPlan(coach.profile), t('Build me a fresh plan from my answers.'))
+  }
   const askImprove = r => ask(
     () => requestReview(t('Focus only on my routine “{0}”. Improve it: exercise choice, order, sets and reps, rep ranges, progression. Leave the other routines alone.', r.name)),
     t('Improve my routine “{0}”.', r.name))
@@ -195,6 +204,16 @@ export default function CoachChat() {
 
     <div className="msgs">
       <Bubble role="coach">{t('Hi — I’m your Coach. I build your plan from your answers and adjust it from what you actually log. Nothing changes until you say so.')}</Bubble>
+
+      {/* A plan that predates the Coach (built by hand, imported): usable as-is,
+          with the questionnaire as the explicit way to make it mine. */}
+      {!coach.profile && hasPlan && <div className="msg coach"><div className="bub">
+        {t('You already have a workout plan — I can review it and work from what you log. Answer a few questions whenever you want it built by me instead.')}
+        <div className="chips-row" style={{ marginTop: 8 }}>
+          <button className="qchip" onClick={askReview}><Icon name="sparkles" />{t('Review my training')}</button>
+          <button className="qchip" onClick={() => nav('/coach/intake')}><Icon name="clipboard" />{t('Create my plan')}</button>
+        </div>
+      </div></div>}
 
       {(coach.chat || []).map(m => <Message key={m.id} m={m} S={S} profile={coach.profile} openSheet={openSheet} />)}
 

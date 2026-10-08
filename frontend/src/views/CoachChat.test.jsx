@@ -237,3 +237,36 @@ describe('the Coach chat', () => {
     expect(byText(/^Compare$/)).toBeTruthy()
   })
 })
+
+describe('the Coach with an existing workout plan but no answers', () => {
+  // Routines built by hand (or imported): a plan the Coach must work from,
+  // never a reason to restart the questionnaire.
+  const planned = () => {
+    const s = state()
+    delete s.coach.profile
+    s.routines = [{ id: 'r1', name: 'Push', emoji: null, ex: [{ id: '0001' }] }]
+    s.week = { [TODAY_WD]: ['r1'] }
+    return s
+  }
+
+  it('shows the chat over the existing plan instead of sending it back to intake', async () => {
+    await mount(null, null, { S: planned() })
+    expect(mocks.nav).not.toHaveBeenCalledWith('/coach/intake', expect.anything())
+    expect(container.textContent).toContain('You already have a workout plan')
+    expect(container.textContent).toContain('Nothing changes until you say so')
+  })
+
+  it('offers a review and an explicit create-plan path from the notice', async () => {
+    await mount(null, null, { S: planned() })
+    expect(byText(/Review my training/)).toBeTruthy()
+    await click(byText(/Create my plan/))
+    expect(mocks.nav).toHaveBeenCalledWith('/coach/intake')
+  })
+
+  it('still sends users with neither plan nor answers into onboarding', async () => {
+    const s = state()
+    delete s.coach.profile
+    await mount(null, null, { S: s })
+    expect(mocks.nav).toHaveBeenCalledWith('/coach/intake', expect.anything())
+  })
+})

@@ -133,16 +133,17 @@ export const DEF = {
   // entries, Stats, imports and the separate pre-workout weigh-in flow keep working.
   // Defaults on; an older profile without the key reads as on (`!== false`).
   showWeightCard: true,
-  // Whether Start opens the quick weigh-in first (sheets.jsx startFlow, issue #137). Off starts
-  // the session straight away; weight can still be logged from Home/Stats. Defaults on; an
-  // older profile without the key reads as on (`!== false`).
+  // Whether a session carries the last logged body weight (sheets.jsx beginWorkout,
+  // issue #137). Off leaves it out; weight can still be logged from Home/Stats.
+  // Defaults on; an older profile without the key reads as on (`!== false`).
   weighIn: true,
   // Where a planned session's reps come from (Settings → During a workout, lib/session-start.js):
   // 'plan' opens at the routine's own sets × reps and lets history and progression decide the
   // weight; 'last' carries the reps over from the last session, the way it always worked before.
   // Absent reads as 'plan' too, which is what the MCP bridge sees on a raw state file.
   startFrom: 'plan',
-  // Home workout-length preference. The Home slider uses this to choose a shorter or fuller session.
+  // Session-length preference. The Start screen's duration presets read and write
+  // this, and Home shows it beside today's session.
   workoutLength: 35,
   // Per-language choice for translated exercise names: whether the original English name is
   // shown in parentheses next to the translation. Map { '<lang>': boolean }; a missing key

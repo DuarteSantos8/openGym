@@ -393,10 +393,10 @@ export default function Settings() {
 
     {/* ---------- during a workout ---------- */}
     <Section title={t('During a workout')} footer={wakeOK ? t('The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.') : null}>
-      {/* The quick weigh-in that opens on Start (sheets.jsx startFlow, issue #137); off skips straight
-          to the session. Home and Stats still log weight by hand. */}
+      {/* The last logged weight rides along into each session (sheets.jsx beginWorkout,
+          issue #137); off leaves it out. Home and Stats still log weight by hand. */}
       <Row icon="scale" iconTint="var(--green)" title={t('Weigh in before workouts')}
-        subtitle={t('Asks for your body weight when a workout starts. Off starts the session straight away.')}>
+        subtitle={t('Carries your last logged weight into each session. Off leaves it out — logging stays optional either way.')}>
         <Switch checked={S.weighIn !== false} onChange={v => update(s => { s.weighIn = v })} />
       </Row>
       {/* One exercise at a time (cards with Prev/Next), the whole session stacked as a

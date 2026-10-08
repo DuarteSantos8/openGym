@@ -189,7 +189,7 @@ export default function Home() {
         )}
       </> : <div className="muted small">{S.weighIn === false
         ? t('No entries yet — log your weight to start the curve.')
-        : t("No entries yet — log your weight to start the curve. It's also asked before every workout.")}</div>}
+        : t('No entries yet — log your weight to start the curve. New sessions carry it automatically.')}</div>}
     </div>}
 
     {/* Compact strength status plus the one thing needing attention, if any.
