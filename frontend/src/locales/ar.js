@@ -1866,6 +1866,7 @@ export default {
   'Switch sides': 'بدّل الجهة',
   'Left side': 'الجانب الأيسر',
   'Right side': 'الجانب الأيمن',
+  'Switch': 'بدّل',
   'Saves a dated copy to “{0}” after finishing a workout or editing a routine, and keeps the newest {1}.': 'يحفظ نسخة مؤرّخة في «{0}» بعد إنهاء تمرين أو تعديل روتين، ويحتفظ بأحدث {1}.',
   'Saves a dated copy to the folder you chose after finishing a workout or editing a routine, and keeps the newest {0}.': 'يحفظ نسخة مؤرّخة في المجلد الذي اخترته بعد إنهاء تمرين أو تعديل روتين، ويحتفظ بأحدث {0}.',
   // --- Plan: Schedule | Routines (v1.3.11) ---

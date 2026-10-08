@@ -2674,6 +2674,7 @@ export default {
   'Show rows': 'সারি দেখান',
   'Left side': 'বাঁ পাশ',
   'Right side': 'ডান পাশ',
+  'Switch': 'বদলান',
   "% of body weight": "শরীরের ওজনের %",
   "Within ±": "± এর মধ্যে",
   "Hold within ±{0} a week.": "সপ্তাহে ±{0} এর মধ্যে ধরে রাখা।",

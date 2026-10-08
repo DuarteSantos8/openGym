@@ -1811,6 +1811,7 @@ export default {
   'Switch sides': 'Zmień stronę',
   'Left side': 'Lewa strona',
   'Right side': 'Prawa strona',
+  'Switch': 'Zmień',
   'Saves a dated copy to “{0}” after finishing a workout or editing a routine, and keeps the newest {1}.': 'Zapisuje kopię z datą w „{0}” po każdym zakończonym treningu lub edycji planu i trzyma {1} najnowszych.',
   'Saves a dated copy to the folder you chose after finishing a workout or editing a routine, and keeps the newest {0}.': 'Zapisuje kopię z datą w wybranym folderze po każdym zakończonym treningu lub edycji planu i trzyma {0} najnowszych.',
   // --- Plan: Schedule | Routines (v1.3.11) ---

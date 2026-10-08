@@ -1811,6 +1811,7 @@ export default {
   'Switch sides': '방향 바꾸기',
   'Left side': '왼쪽',
   'Right side': '오른쪽',
+  'Switch': '바꾸기',
   'Saves a dated copy to “{0}” after finishing a workout or editing a routine, and keeps the newest {1}.': '운동을 마치거나 루틴을 수정할 때마다 “{0}”에 날짜가 붙은 사본을 저장하고 최신 {1}개를 보관합니다.',
   'Saves a dated copy to the folder you chose after finishing a workout or editing a routine, and keeps the newest {0}.': '운동을 마치거나 루틴을 수정할 때마다 선택한 폴더에 날짜가 붙은 사본을 저장하고 최신 {0}개를 보관합니다.',
   // --- Plan: Schedule | Routines (v1.3.11) ---

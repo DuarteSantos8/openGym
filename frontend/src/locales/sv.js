@@ -1832,6 +1832,7 @@ export default {
   'Switch sides': 'Byt sida',
   'Left side': 'Vänster sida',
   'Right side': 'Höger sida',
+  'Switch': 'Byt',
   'Saves a dated copy to “{0}” after finishing a workout or editing a routine, and keeps the newest {1}.': 'Sparar en daterad kopia i ”{0}” när du avslutat ett pass eller ändrat en rutin, och behåller de {1} senaste.',
   'Saves a dated copy to the folder you chose after finishing a workout or editing a routine, and keeps the newest {0}.': 'Sparar en daterad kopia i mappen du valde när du avslutat ett pass eller ändrat en rutin, och behåller de {0} senaste.',
   // --- Plan: Schedule | Routines (v1.3.11) ---

@@ -1811,6 +1811,7 @@ export default {
   'Switch sides': 'साइड बदलें',
   'Left side': 'बाईं तरफ़',
   'Right side': 'दाईं तरफ़',
+  'Switch': 'बदलें',
   'Saves a dated copy to “{0}” after finishing a workout or editing a routine, and keeps the newest {1}.': 'हर वर्कआउट पूरा होने या रूटीन बदलने के बाद “{0}” में तारीख वाली कॉपी सेव करता है और सबसे नई {1} रखता है।',
   'Saves a dated copy to the folder you chose after finishing a workout or editing a routine, and keeps the newest {0}.': 'हर वर्कआउट पूरा होने या रूटीन बदलने के बाद आपके चुने फ़ोल्डर में तारीख वाली कॉपी सेव करता है और सबसे नई {0} रखता है।',
   // --- Plan: Schedule | Routines (v1.3.11) ---

@@ -206,15 +206,21 @@ export default function RestTimer() {
   // and a doubling, and the flow leaves them out. The pause (#193) is what a break you did not
   // plan wants: it holds the gap, and Resume carries on into the next movement. Skip stays; it is
   // the other half — "I'm ready now".
-  const label = timer.kind === 'switch' ? t('Switch sides') : timer.paused ? t('Paused') : t(restLabel(timer))
+  // The switch pause between a per-side hold's two sides says one word, and its label has no
+  // chevron. The label is only as wide as the clock (index.css #timer .lbl), and "Switch sides"
+  // with the chevron did not fit it even in English, on an iPhone 17 Pro Max or a 320 px phone
+  // (WebKit). One word without the chevron fits in English and all 18 languages on both, in a flow
+  // or not. The clock still opens the wheel when tapped; a 10 s pause rarely wants it.
+  const switching = timer.kind === 'switch'
+  const label = switching ? t('Switch') : timer.paused ? t('Paused') : t(restLabel(timer))
   return (
-    <div id="timer" data-tour="rest" className={'rest' + (timer.paused ? ' paused' : '') + (timer.kind === 'switch' ? ' switch' : '') + (timer.ready ? ' ready' : '')}>
+    <div id="timer" data-tour="rest" className={'rest' + (timer.paused ? ' paused' : '') + (switching ? ' switch' : '') + (timer.ready ? ' ready' : '')}>
       <div className="bar" aria-hidden="true"><i style={{ transform: `scaleX(${pct / 100})` }} /></div>
       <SeasonDeco spot="rest-timer" workout />
       <button type="button" className="tclock" onClick={adjustRestSheet}
         aria-label={(timer.ready ? t('Ready') : clock(timer.left)) + '. ' + t('Change the time left')}>
         <span className="t" role={timer.ready ? 'status' : undefined} data-alt={timer.ready ? '0:00' : t('Ready')}>{timer.ready ? t('Ready') : clock(timer.left)}</span>
-        <span className="lbl">{label}<Icon name="chevronDown" /></span>
+        <span className="lbl">{label}{!switching && <Icon name="chevronDown" />}</span>
         <span className="lbl-alts" aria-hidden="true">{REST_WORDS.map(w => <span key={w}>{t(w)}<Icon name="chevronDown" /></span>)}</span>
       </button>
       <div className="acts" ref={actsRef}>
