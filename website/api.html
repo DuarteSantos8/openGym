@@ -29,7 +29,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="styles.css?v=25">
+<link rel="stylesheet" href="styles.css?v=24">
 <script>document.documentElement.className += ' js'</script>
 <!-- Umami web analytics for opengym.ch (self-hosted, cookieless). -->
 <script defer src="https://stats.duarte-santos.ch/script.js" data-website-id="db36019e-50f4-453c-9c56-d0588aefe233"></script>
@@ -245,7 +245,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.4.0</span>
-    <span>69 endpoints</span>
+    <span>72 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -343,7 +343,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <div class="ptab">
   <div class="prow rrow">
     <span class="r-code s2">200</span>
-    <span class="p-desc">Instance flags, plus the Coach block for a signed-in caller.<span class="r-sig">{ invite_only: boolean, allow_guest: boolean, coach: object | null, password_login: always true, default_lang: string, media: <a href="#schema-MediaConfig">MediaConfig</a> }</span></span>
+    <span class="p-desc">Instance flags, plus the Coach block for a signed-in caller.<span class="r-sig">{ invite_only: boolean, allow_guest: boolean, shared_exercises: always true, coach: object | null, password_login: always true, default_lang: string, media: <a href="#schema-MediaConfig">MediaConfig</a> }</span></span>
   </div>
     </div>
   </div>
@@ -1457,6 +1457,32 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="sub">Per-user state sync (the whole app state as one JSON blob)</p>
   <div class="eps">
 
+<details class="ep" id="op-undefined">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/shared-exercises</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Published custom exercises on this server</span>
+  </summary>
+  <div class="ep-body">
+<p>Requires a signed-in account. Returns the catalogue to cache for offline use; profile uploads cannot publish exercises.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Shared exercises with stable ids, metadata, optional media references and serverRevision.<span class="r-sig">{ exercises: object[] }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">Not signed in</span>
+  </div>
+    </div>
+  </div>
+</details>
+
 <details class="ep" id="op-getData">
   <summary>
     <span class="m get">GET</span>
@@ -1903,7 +1929,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Download one of your photos or videos</span>
   </summary>
   <div class="ep-body">
-<p>The stored file, whole, from the caller's own folder only: another profile's file answers exactly like one that was never uploaded (404). The body is the file, not JSON, with headers that keep a browser from ever treating it as a page: <code>Content-Type</code> from the sniffed type (never <code>text/*</code> or SVG), <code>X-Content-Type-Options: nosniff</code>, <code>Content-Security-Policy: default-src 'none'; sandbox</code>, <code>Cross-Origin-Resource-Policy: same-origin</code>, <code>Content-Disposition: inline</code>, <code>X-Robots-Tag: noindex</code> and <code>Cache-Control: private, no-store</code>. The app keeps its own verified copy, and an HTTP-cache copy would outlive signing out.</p>
+<p>The stored file, whole, from the caller's own folder or the separate copy referenced by a currently published server exercise. Other private files answer 404. The body is the file, not JSON, with headers that keep a browser from ever treating it as a page: <code>Content-Type</code> from the sniffed type (never <code>text/*</code> or SVG), <code>X-Content-Type-Options: nosniff</code>, <code>Content-Security-Policy: default-src 'none'; sandbox</code>, <code>Cross-Origin-Resource-Policy: same-origin</code>, <code>Content-Disposition: inline</code>, <code>X-Robots-Tag: noindex</code> and <code>Cache-Control: private, no-store</code>. The app keeps its own verified copy, and an HTTP-cache copy would outlive signing out.</p>
 <p>No <code>Range</code> and no <code>ETag</code>: the app downloads a file once, checks it against its hash and keeps it. A paired phone fetches with its bearer token; <code>&lt;img src&gt;</code> cannot carry one. Not throttled.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
 
@@ -1920,7 +1946,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">404</span>
-    <span class="p-desc">Not in the caller's folder. Never uploaded, removed by the sweep, or someone else's.<span class="r-sig"><code>{&quot;error&quot;:&quot;no such file&quot;}</code></span></span>
+    <span class="p-desc">Neither owned by the caller nor currently shared. Never uploaded, withdrawn, removed by the sweep, or private to someone else.<span class="r-sig"><code>{&quot;error&quot;:&quot;no such file&quot;}</code></span></span>
   </div>
     </div>
   </div>
@@ -1995,10 +2021,15 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Which of these files the server does not have</span>
   </summary>
   <div class="ep-body">
-<p>The app sends every hash its state references and uploads only what comes back, so the same call moves a guest's files into a new account, a phone's into its pairing, a backup's into the server, and re-sends a file the sweep removed while a device still had it. Answered from the caller's own folder only.</p>
+<p>The app sends every hash its state references and uploads only what comes back, so the same call moves a guest's files into a new account, a phone's into its pairing, a backup's into the server, and re-sends a file the sweep removed while a device still had it. Published exercise media counts as available unless <code>privateOnly</code> is true.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
 
 <p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">privateOnly</span>
+    <span class="p-type">boolean <span class="p-hint">(default false)</span></span>
+    <span class="p-desc">Count only files in the caller's own uploads, ignoring shared exercise copies.</span>
+  </div>
   <div class="prow">
     <span class="p-name">hashes<em class="p-req" title="required">required</em></span>
     <span class="p-type">string[]</span>
@@ -2521,6 +2552,130 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s4">409</span>
     <span class="p-desc">Another profile already signs in with this name, or holds it with a reset code that has not been used or expired yet.<span class="r-sig"><code>{&quot;error&quot;:&quot;another profile already signs in with this name&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-undefined">
+  <summary>
+    <span class="m put">PUT</span>
+    <span class="ep-path"><code>/api/admin/shared-exercises</code><span class="ep-chip admin">admin</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Publish or update a shared custom exercise</span>
+  </summary>
+  <div class="ep-body">
+<p>Admin only. Uploaded exercise media is copied to shared storage. Existing exercises require their current serverRevision as baseRevision. The catalogue has a maximum of 1000 exercises.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only: a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">baseRevision</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">exercise<em class="p-req" title="required">required</em></span>
+    <span class="p-type">object</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">exercise.id<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">exercise.n<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string <span class="p-hint">(&le; 200 chars)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">exercise.bp<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">exercise.eq<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">exercise.desc</span>
+    <span class="p-type">string <span class="p-hint">(&le; 1000 chars)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">exercise.media</span>
+    <span class="p-type">object</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Published exercise in the exercise property</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">Invalid metadata</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">Not signed in</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Not an administrator</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">Stale exercise revision or duplicate published name</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-undefined">
+  <summary>
+    <span class="m delete">DELETE</span>
+    <span class="ep-path"><code>/api/admin/shared-exercises</code><span class="ep-chip admin">admin</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Withdraw an exercise from the server catalogue</span>
+  </summary>
+  <div class="ep-body">
+<p>Admin only. Already cached definitions used by existing routines and history are retained by clients. Media is no longer readable by other accounts through the shared catalogue.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only: a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">id<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">baseRevision<em class="p-req" title="required">required</em></span>
+    <span class="p-type">integer</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Withdrawn</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">Not signed in</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Not an administrator</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">Stale exercise revision</span>
   </div>
     </div>
   </div>
@@ -5126,7 +5281,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
 </div></footer>
 
-<script src="site.js?v=25" defer></script>
+<script src="site.js?v=24" defer></script>
 <script>
 /* Jumping to an anchor inside a collapsed card opens the card and re-aligns, since
    the browser scrolled to where the target was while it was still collapsed. */
