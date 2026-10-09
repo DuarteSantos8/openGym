@@ -147,3 +147,38 @@ describe('a move during a rest', () => {
   })
 })
 
+// Owner's call: a hold that runs out while the phone is locked has been followed by its rest ever
+// since. Back on screen the rest has the time that is really left.
+describe('a hold that runs out while the phone is locked', () => {
+  const setHidden = hidden => {
+    Object.defineProperty(document, 'hidden', { configurable: true, get: () => hidden })
+    document.dispatchEvent(new Event('visibilitychange'))
+  }
+  afterEach(() => setHidden(false))
+  const plank3 = () => ({ ...plank(), sets: [0, 1, 2].map(() => ({ sec: 10, w: 0, done: false })) })
+
+  it('back before its rest is over: the rest has been counting since the hold ended', () => {
+    renderWorkout([plank3()])
+    const restSec = useStore.getState().S.restSec
+    const holdEnds = Date.now() + 10_000
+    startHold()
+    setHidden(true)
+    act(() => { vi.advanceTimersByTime(40_000) })               // the hold ran out 30 s ago
+    act(() => setHidden(false))
+    expect(doneOf()).toEqual([true, false, false])
+    expect(useUI.getState().timer).toMatchObject({ kind: 'set', endsAt: holdEnds + restSec * 1000, left: restSec - 30 })
+  })
+
+  it('back after its rest is over too: Ready, and its toast', () => {
+    renderWorkout([plank3()])
+    const restSec = useStore.getState().S.restSec
+    startHold()
+    setHidden(true)
+    act(() => { vi.advanceTimersByTime((10 + restSec + 5) * 1000) })
+    act(() => setHidden(false))
+    expect(doneOf()).toEqual([true, false, false])
+    expect(useUI.getState().timer).toMatchObject({ ready: true, left: 0 })
+    expect(useUI.getState().toastMsg).toBe('Rest’s over. Next set!')
+  })
+})
+
