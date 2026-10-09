@@ -802,3 +802,140 @@ describe('a timer that runs while the page is hidden', () => {
   })
 })
 
+
+// A timed exercise runs itself: the rest after a hold carries the next hold (timer.chain), and the
+// workout screen binds what acts on it (bindRest). It fires when the rest runs out on screen or is
+// skipped in the app, never on a plain stop, and never for a rest that ran out while the page was
+// hidden: a hold nobody watched start would still be logged at its full length.
+describe('what a rest hands over to', () => {
+  let originalSettings, done
+  const chain = { id: 'plank', i: 1, n: 3, cur: 0 }
+  const goHidden = () => { Object.defineProperty(document, 'hidden', { value: true, configurable: true }); document.dispatchEvent(new Event('visibilitychange')) }
+  const goVisible = () => { Object.defineProperty(document, 'hidden', { value: false, configurable: true }); document.dispatchEvent(new Event('visibilitychange')) }
+  beforeEach(() => {
+    vi.useFakeTimers()
+    originalSettings = useStore.getState().S
+    useStore.setState({ S: { ...originalSettings, sound: false, timerFlash: false } })
+    useUI.setState({ timer: null, work: null })
+    done = vi.fn()
+    useUI.getState().bindRest(done)
+  })
+  afterEach(() => { goVisible(); useUI.getState().bindRest(null); useUI.getState().stopRest(); useStore.setState({ S: originalSettings }); vi.useRealTimers() })
+
+  it('fires once when the rest runs out on screen, with the rest already over', () => {
+    done.mockImplementation(() => expect(useUI.getState().timer).toMatchObject({ left: 0, ready: true }))
+    useUI.getState().startRest(1, 0, { kind: 'set', chain })
+    vi.advanceTimersByTime(1000)
+    expect(done).toHaveBeenCalledTimes(1)
+    expect(done.mock.calls[0][0]).toMatchObject({ forIdx: 0, kind: 'set', chain })
+    vi.advanceTimersByTime(3000)
+    expect(done).toHaveBeenCalledTimes(1)
+  })
+
+  // The hold it starts takes the bar, so a rest that hands over on screen never shows Ready.
+  it('a hand-over that starts a hold replaces the rest instead of leaving it on Ready', () => {
+    useUI.getState().bindRest(() => useUI.getState().startWork(30, 'Plank', vi.fn()))
+    useUI.getState().startRest(1, 0, { kind: 'set', chain })
+    vi.advanceTimersByTime(1000)
+    expect(useUI.getState().timer).toBe(null)
+    expect(useUI.getState().work).toMatchObject({ left: 30, label: 'Plank' })
+    useUI.getState().stopWork()
+  })
+
+  it('a hand-over that starts nothing leaves the rest on Ready, and Dismiss then fires nothing more', () => {
+    useUI.getState().startRest(1, 0, { kind: 'set', chain })
+    vi.advanceTimersByTime(1000)
+    expect(useUI.getState().timer).toMatchObject({ left: 0, ready: true })
+    useUI.getState().skipRest()                      // Dismiss
+    expect(useUI.getState().timer).toBe(null)
+    expect(done).toHaveBeenCalledTimes(1)
+  })
+
+  it('hands over the owner as it is now, and keeps the marker it remembers on the same exercise', () => {
+    useUI.getState().startRest(1, 2, { kind: 'set', chain: { ...chain, cur: 2 } })
+    useUI.getState().shiftRestOwner(0, 1)             // an exercise inserted above
+    vi.advanceTimersByTime(1000)
+    expect(done.mock.calls[0][0]).toMatchObject({ forIdx: 3, chain: { cur: 3 } })
+  })
+
+  it('a marker on an exercise that is removed points nowhere afterwards', () => {
+    useUI.getState().startRest(90, 3, { kind: 'set', chain: { ...chain, cur: 1 } })
+    useUI.getState().shiftRestOwner(2, -1)            // the exercise at 1 was removed
+    expect(useUI.getState().timer).toMatchObject({ forIdx: 2, chain: { cur: -1 } })
+  })
+
+  it('rest set to Off: no rest, no hand-over; the next hold waits for a tap', () => {
+    useUI.getState().startRest(0, 0, { kind: 'set', chain })
+    vi.advanceTimersByTime(5000)
+    useUI.getState().skipRest()
+    expect(done).not.toHaveBeenCalled()
+  })
+
+  it('fires on Skip', () => {
+    useUI.getState().startRest(90, 0, { kind: 'set', chain })
+    useUI.getState().skipRest()
+    expect(done).toHaveBeenCalledTimes(1)
+    expect(done.mock.calls[0][0]).toMatchObject({ forIdx: 0, chain })
+    expect(useUI.getState().timer).toBe(null)
+  })
+
+  it('fires when −15 s takes the rest past zero', () => {
+    useUI.getState().startRest(10, 0, { kind: 'set', chain })
+    useUI.getState().addRest(-15)
+    expect(done).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not fire on a plain stop, and a stopped rest cannot fire later', () => {
+    useUI.getState().startRest(1, 0, { kind: 'set', chain })
+    useUI.getState().stopRest()
+    vi.advanceTimersByTime(2000)
+    expect(done).not.toHaveBeenCalled()
+  })
+
+  it('does not fire for a rest that ran out while the page was hidden', () => {
+    useUI.getState().startRest(90, 0, { kind: 'set', chain })
+    goHidden()
+    vi.setSystemTime(Date.now() + 91_000)
+    goVisible()
+    expect(useUI.getState().timer).toMatchObject({ left: 0, ready: true })
+    expect(done).not.toHaveBeenCalled()
+    useUI.getState().skipRest()                      // Dismiss
+    expect(done).not.toHaveBeenCalled()
+  })
+
+  it('a rest without one hands over nothing', () => {
+    useUI.getState().startRest(90, 0, { kind: 'block' })
+    useUI.getState().skipRest()
+    expect(done).not.toHaveBeenCalled()
+  })
+
+  it('a hold starting ends the rest without firing it', () => {
+    useUI.getState().startRest(90, 0, { kind: 'set', chain })
+    useUI.getState().startWork(30, 'Plank', vi.fn())
+    expect(useUI.getState().timer).toBe(null)
+    expect(done).not.toHaveBeenCalled()
+    useUI.getState().stopWork()
+  })
+
+  it('a rest started again from Ready (+15 s) keeps its hand-over, and hands over at its end', () => {
+    useUI.getState().startRest(90, 0, { kind: 'set', chain })
+    goHidden()
+    vi.setSystemTime(Date.now() + 91_000)
+    goVisible()                                       // ran out in a pocket: nothing handed over
+    expect(useUI.getState().timer).toMatchObject({ ready: true, chain })
+    useUI.getState().addRest(15)
+    expect(useUI.getState().timer).toMatchObject({ left: 15, chain })
+    vi.advanceTimersByTime(15_000)
+    expect(done).toHaveBeenCalledTimes(1)
+  })
+
+  it('the switch-sides pause hands over too, when it runs out on screen or is skipped', () => {
+    useUI.getState().startRest(1, 0, { kind: 'switch', chain })
+    vi.advanceTimersByTime(1000)
+    expect(useUI.getState().timer).toBe(null)
+    expect(done).toHaveBeenCalledTimes(1)
+    useUI.getState().startRest(10, 0, { kind: 'switch', chain })
+    useUI.getState().skipRest()
+    expect(done).toHaveBeenCalledTimes(2)
+  })
+})

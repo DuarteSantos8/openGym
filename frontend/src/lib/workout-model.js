@@ -405,3 +405,9 @@ export function holdPosition(sets, setIdx) {
   return { phase: warm ? 'warmup' : 'work', n: numberAt(setIdx), of: numberAt(last) }
 }
 
+// The set a finished timed set hands over to: the first unfinished one after it, or -1. Earlier
+// rows left unticked are the user's own decision and are not jumped back to.
+export function nextUndoneAfter(sets, setIdx) {
+  const rows = Array.isArray(sets) ? sets : []
+  return rows.findIndex((x, k) => k > setIdx && !x.done)
+}

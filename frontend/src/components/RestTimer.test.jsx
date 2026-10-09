@@ -107,6 +107,17 @@ describe('rest timer bar: what it is timing', () => {
     expect(label()).toBe('Hold')
   })
 
+  it('Skip ends the rest early and hands over, like the rest running out on screen', () => {
+    const done = vi.fn()
+    useUI.getState().bindRest(done)
+    act(() => { useUI.getState().startRest(90, 0, { kind: 'set', chain: { id: '0025', i: 0, n: 1, cur: 0 } }) })
+    mount()
+    act(() => { host.querySelector('#timer .acts .skip').click() })
+    expect(useUI.getState().timer).toBe(null)
+    expect(done).toHaveBeenCalledTimes(1)
+    useUI.getState().bindRest(null)
+  })
+
   it('renders nothing and drops the resting class when no timer runs', () => {
     act(() => { useUI.getState().startRest(60, 0, { kind: 'set' }) })
     mount()
