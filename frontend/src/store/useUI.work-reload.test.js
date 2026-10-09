@@ -106,3 +106,18 @@ describe('the count-in of a hold across a reload', () => {
     expect(holdSession).not.toHaveBeenCalledWith(true)
   })
 })
+
+describe('an exercise added above a running hold', () => {
+  it('moves the hold\'s owner down with it, so a reload brings the hold back to the right exercise', () => {
+    useUI.getState().startWork(45, 'Plank', vi.fn(), owner)
+    useUI.getState().shiftRestOwner(0, 1)
+    expect(useUI.getState().work.owner).toEqual({ ...owner, idx: 2 })
+    expect(saved().owner).toEqual({ ...owner, idx: 2 })
+  })
+
+  it('leaves it where it is when the exercise goes in below it', () => {
+    useUI.getState().startWork(45, 'Plank', vi.fn(), owner)
+    useUI.getState().shiftRestOwner(2, 1)
+    expect(useUI.getState().work.owner).toEqual(owner)
+  })
+})
