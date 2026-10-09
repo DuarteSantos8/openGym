@@ -20,6 +20,10 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>openGym reads body weight from Apple Health when you enable sync.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>openGym saves your weigh-ins and completed workouts to Apple Health when you enable sync.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

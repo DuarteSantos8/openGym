@@ -1,5 +1,19 @@
 // Polish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Font and color of the rest countdown on your watch.": "Czcionka i kolor odliczania odpoczynku na zegarku.",
+  "Countdown font": "Czcionka odliczania",
+  "Countdown color": "Kolor odliczania",
+  "Digital (segments)": "Cyfrowa (segmenty)",
+  "Rounded": "Zaokrąglona",
+  "Monospaced": "Monospace",
+  "Lime": "Limonkowy",
+  "White": "Biały",
+  "The matching workout saved by openGym in Apple Health will also be deleted.": "Odpowiedni trening zapisany przez openGym w Apple Zdrowie również zostanie usunięty.",
+  "Sync with Apple Health": "Synchronizuj z Apple Zdrowie",
+  "Sync body weight both ways and save finished workouts to Health.": "Synchronizuj masę ciała w obu kierunkach i zapisuj ukończone treningi w Zdrowiu.",
+  "Apple Health: {0}": "Apple Zdrowie: {0}",
+  "Sync Apple Health now": "Synchronizuj Apple Zdrowie teraz",
+
   'Confirm': 'Potwierdź',
   'Cancel': 'Anuluj',
   'Press back again to exit': 'Naciśnij wstecz ponownie, aby wyjść',

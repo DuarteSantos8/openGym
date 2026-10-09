@@ -15,7 +15,9 @@ import { pendingRefCount, settleMedia, loadPending } from '../lib/media-owed.js'
 import { referencedHashes } from '../lib/media-refs.js'
 import { mediaStore, mediaStoreInUse } from '../lib/media-store.js'
 import { countChanges, syncFingerprint } from '../lib/sync-changes.js'
-import { saveWorkoutEdit, deleteEditedWorkout } from '../lib/session-edit.js'
+import { queueAppleHealthWorkoutDeletion } from '../lib/apple-health.js'
+import { sameWorkout } from '../lib/workout-date.js'
+import { saveWorkoutEdit, deleteEditedWorkout, editedRecord } from '../lib/session-edit.js'
 import { appBase } from '../lib/app-base.js'
 import { linkTokenFromSearch, stripLinkFromUrl } from '../lib/device-link.js'
 import { loadRemote, chooseLocal, forgetRemote, connect, normalizeServerUrl, renewToken } from '../lib/remote.js'
@@ -83,6 +85,7 @@ const gainedWorkoutMedia = (prev, next) => {
   return workoutMediaHashes(next).some(h => !had.has(h))
 }
 export const DEF = {
+  watchDisplay: { timerFont: 'segments', timerColor: '#a3e635' },
   unit: 'kg', restSec: 90, restPauseSec: 15, sound: true, soundOnSilent: false, vibrateOnSilent: false, timerFlash: false, timedSetOvertime: false, keepAwake: true, lang: 'en',
   theme: 'dark', accent: 'lime', body: 'male', targetW: null,
   bodyweight: [], routines: [], week: {}, dayPlan: {},
@@ -1289,10 +1292,14 @@ export const useStore = create((set, get) => {
 
     // Mutate a draft of S via producer fn, then persist + schedule sync. Every routine the change
     // touched carries the time of it, for a conflict to keep the version edited last.
-    update(mut, push = true) {
+    update(mut, push = true, { deletedHealthWorkout = null } = {}) {
       const prev = get().S
       const S = clone(prev)
       mut(S)
+      const deleted = deletedHealthWorkout && prev.workouts.find(w => sameWorkout(w, deletedHealthWorkout))
+      if (deleted && !S.workouts.some(w => sameWorkout(w, deleted))) {
+        queueAppleHealthWorkoutDeletion({ getState: get }, deleted)
+      }
       // What the change removed, and which routines, workouts, settings and plan days it touched,
       // each with one time that comes after every stamp the copy already carries: a conflict then
       // keeps a removal and the edit made last, even from a device whose clock runs behind
@@ -1320,7 +1327,7 @@ export const useStore = create((set, get) => {
     // An edit that took out every set deletes the workout rather than saving it empty.
     deleteHistoryEdit() {
       let removed = false
-      get().update(S => { removed = deleteEditedWorkout(S) })
+      get().update(S => { removed = deleteEditedWorkout(S) }, true, { deletedHealthWorkout: editedRecord(get().S) })
       return removed
     },
     // Settings → unit. `convert` walks every stored weight into the new unit (lib/units.js); off,

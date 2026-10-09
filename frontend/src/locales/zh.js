@@ -1,5 +1,19 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Font and color of the rest countdown on your watch.": "手表上休息倒计时的字体和颜色。",
+  "Countdown font": "倒计时字体",
+  "Countdown color": "倒计时颜色",
+  "Digital (segments)": "数字（分段）",
+  "Rounded": "圆体",
+  "Monospaced": "等宽",
+  "Lime": "青柠色",
+  "White": "白色",
+  "The matching workout saved by openGym in Apple Health will also be deleted.": "openGym 保存到 Apple 健康的对应训练也将被删除。",
+  "Sync with Apple Health": "与 Apple 健康同步",
+  "Sync body weight both ways and save finished workouts to Health.": "双向同步体重，并将已完成的训练保存到健康。",
+  "Apple Health: {0}": "Apple 健康：{0}",
+  "Sync Apple Health now": "立即同步 Apple 健康",
+
   'Confirm': '确认',
   'Cancel': '取消',
   'Press back again to exit': '再按一次返回退出',

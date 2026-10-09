@@ -1,5 +1,19 @@
 // Turkish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Font and color of the rest countdown on your watch.": "Saatinizdeki dinlenme geri sayımının yazı tipi ve rengi.",
+  "Countdown font": "Geri sayım yazı tipi",
+  "Countdown color": "Geri sayım rengi",
+  "Digital (segments)": "Dijital (segmentler)",
+  "Rounded": "Yuvarlak",
+  "Monospaced": "Eş aralıklı",
+  "Lime": "Limon yeşili",
+  "White": "Beyaz",
+  "The matching workout saved by openGym in Apple Health will also be deleted.": "openGym tarafından Apple Sağlık’a kaydedilen ilgili antrenman da silinecek.",
+  "Sync with Apple Health": "Apple Sağlık ile eşitle",
+  "Sync body weight both ways and save finished workouts to Health.": "Vücut ağırlığını iki yönde eşitle ve tamamlanan antrenmanları Sağlık’a kaydet.",
+  "Apple Health: {0}": "Apple Sağlık: {0}",
+  "Sync Apple Health now": "Apple Sağlık’ı şimdi eşitle",
+
   'Confirm': 'Onayla',
   'Cancel': 'İptal',
   'Press back again to exit': 'Çıkmak için geri tuşuna tekrar basın',

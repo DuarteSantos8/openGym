@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { appleHealthEnabled } from './lib/apple-health.js'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, smOf, searchExercises, exOr, isAssisted, betterWeight, beatsWeight, isCustomEx } from './lib/exercises.js'
@@ -2290,11 +2291,14 @@ function WorkoutDetail({ w, close }) {
     <div style={{ height: 10 }} />
     {/* Matched the way the edits above are, not by id: a workout from before ids has none, and
         filtering on `x.id !== undefined` took every other one of them with it. */}
-    <Button variant="danger" onClick={() => confirmSheet({ title: t('Delete workout?'), message: t('This removes it from your history for good.') + mediaGoesToo(S().workouts.find(x => sameWorkout(x, w))), confirmText: t('Delete'), danger: true, onConfirm: () => { update(s => { s.workouts = s.workouts.filter(x => !sameWorkout(x, w)) }); close(); toast(t('Workout deleted')) } })}>{t('Delete workout')}</Button>
+    <Button variant="danger" onClick={() => confirmSheet({ title: t('Delete workout?'), message: t('This removes it from your history for good.') + healthWorkoutDeletionNotice(w) + mediaGoesToo(S().workouts.find(x => sameWorkout(x, w))), confirmText: t('Delete'), danger: true, onConfirm: () => { update(s => { s.workouts = s.workouts.filter(x => !sameWorkout(x, w)) }, true, { deletedHealthWorkout: S().workouts.find(x => sameWorkout(x, w)) }); close(); toast(t('Workout deleted')) } })}>{t('Delete workout')}</Button>
   </>
 }
 // The sentence a workout's Delete adds when its photos and videos go with it — every file the
 // record lists, shown or not. Empty when it has none.
+function healthWorkoutDeletionNotice(rec) {
+  return rec?.id && appleHealthEnabled(useStore) ? ' ' + t('The matching workout saved by openGym in Apple Health will also be deleted.') : ''
+}
 function mediaGoesToo(rec) {
   const n = workoutMediaOf(rec, Infinity).length
   return n ? ' ' + tn('Its photo or video is deleted with it.', 'Its {0} photos or videos are deleted with it.', n) : ''
@@ -2737,7 +2741,7 @@ export function saveWorkoutEdits(onExit = () => nav('/history')) {
   if (editLeftEmpty(S().active)) {
     confirmSheet({
       title: t('Delete workout?'),
-      message: t('No sets are left in this workout, so there is nothing to save. Delete it from your history?') + mediaGoesToo(editedRecord(S())),
+      message: t('No sets are left in this workout, so there is nothing to save. Delete it from your history?') + healthWorkoutDeletionNotice(editedRecord(S())) + mediaGoesToo(editedRecord(S())),
       confirmText: t('Delete workout'), cancelText: t('Keep editing'), danger: true,
       onConfirm: () => {
         useStore.getState().deleteHistoryEdit()
@@ -2828,6 +2832,10 @@ export function finishWorkout() {
   if (done < total) { confirmSheet({ title: t('Finish early?'), message: tn('{0} set still unchecked. Finish the workout now?', '{0} sets still unchecked. Finish the workout now?', total - done), confirmText: t('Finish workout'), onConfirm: doFinishWorkout }); return }
   doFinishWorkout()
 }
+export function finishWorkoutFromWatch(id, end) {
+  if (S().active?.id !== id || S().active?.editingWorkoutId) return
+  doFinishWorkout(Number.isFinite(end) && end >= S().active.start && end <= Date.now() ? end : Date.now())
+}
 // The workout screen's Finish pill (v1.3.11): one sheet with both ways out, Finish and save or
 // Discard. It says what finishWorkout's confirm would have said about sets still unchecked, so
 // the save needs no second question. `onDiscard` is the screen's own discard, with its confirm.
@@ -2848,7 +2856,7 @@ export function finishWorkoutSheet({ onDiscard } = {}) {
     ],
   })
 }
-function doFinishWorkout() {
+function doFinishWorkout(endOverride) {
   const st = S()
   const A = st.active
   if (!A) return
@@ -2869,7 +2877,7 @@ function doFinishWorkout() {
     if (rec && !prs.includes(e.id)) e1prs.push({ id: e.id, ...rec })
   })
   const w = buildCompletedWorkout(A, {
-    end: past ? backfillEnd(A) : sessionEnd(A),
+    end: past ? backfillEnd(A) : Number.isFinite(endOverride) ? endOverride : sessionEnd(A),
     prs,
     snapshotFor: e => isCustomEx(EXIDX[e.id]) ? exerciseMuscleSnapshot(EXIDX[e.id]) : null,
   })

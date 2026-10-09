@@ -1,4 +1,10 @@
 export default {
+  "The matching workout saved by openGym in Apple Health will also be deleted.": "openGym 儲存在 Apple 健康中的對應訓練也會一併刪除。",
+  "Sync with Apple Health": "與 Apple 健康同步",
+  "Sync body weight both ways and save finished workouts to Health.": "雙向同步體重，並將完成的訓練儲存至健康 App。",
+  "Apple Health: {0}": "Apple 健康：{0}",
+  "Sync Apple Health now": "立即同步 Apple 健康",
+
   'Confirm': '確認',
   'Cancel': '取消',
   'Press back again to exit': '再按一次返回以退出',
@@ -1943,4 +1949,12 @@ export default {
   'Greys show darker in light mode, so buttons don’t look switched off.': '淺色模式下灰色會調暗一些，免得按鈕看起來像被停用了。',
   'custom color picker': '自訂顏色 自己的顏色 取色器 調色盤',
   'Signed in from another tab. Your workout came along, keep going here.': '已在另一個分頁登入。你的訓練也一起帶過去了，在這裡繼續吧。',
+  'Digital (segments)': '數位（七段顯示）',
+  'Rounded': '圓角',
+  'Monospaced': '等寬',
+  'Countdown font': '倒數計時字型',
+  'Countdown color': '倒數計時顏色',
+  'Lime': '萊姆綠',
+  'White': '白色',
+  'Font and color of the rest countdown on your watch.': '手錶上休息倒數計時的字型和顏色。',
 }

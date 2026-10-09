@@ -1,5 +1,19 @@
 // Thai UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Font and color of the rest countdown on your watch.": "แบบอักษรและสีของตัวนับเวลาพักบนนาฬิกา",
+  "Countdown font": "แบบอักษรนับถอยหลัง",
+  "Countdown color": "สีนับถอยหลัง",
+  "Digital (segments)": "ดิจิทัล (เซกเมนต์)",
+  "Rounded": "โค้งมน",
+  "Monospaced": "ความกว้างคงที่",
+  "Lime": "เขียวมะนาว",
+  "White": "ขาว",
+  "The matching workout saved by openGym in Apple Health will also be deleted.": "การออกกำลังกายที่ตรงกันซึ่ง openGym บันทึกไว้ในสุขภาพของ Apple จะถูกลบด้วย",
+  "Sync with Apple Health": "ซิงค์กับสุขภาพของ Apple",
+  "Sync body weight both ways and save finished workouts to Health.": "ซิงค์น้ำหนักทั้งสองทิศทางและบันทึกการออกกำลังกายที่เสร็จแล้วในแอปสุขภาพ",
+  "Apple Health: {0}": "สุขภาพของ Apple: {0}",
+  "Sync Apple Health now": "ซิงค์สุขภาพของ Apple ตอนนี้",
+
   // --- generic ---
   'Confirm': 'ยืนยัน',
   'Cancel': 'ยกเลิก',

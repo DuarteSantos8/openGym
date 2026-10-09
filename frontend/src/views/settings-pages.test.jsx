@@ -433,3 +433,16 @@ describe('translations', () => {
     for (const g of ROOT_GROUPS) for (const id of g) expect(PAGES[id], id).toBeTruthy()
   })
 })
+
+// Native integrations are indexed only when the current platform offers them.
+it('finds Apple Health only on a device where the integration is available', () => {
+  expect(searchSettings('healthkit', { ...guestWeb, mobile: true, healthAvailable: true }).map(x => x.title)).toContain('Sync with Apple Health')
+  expect(searchSettings('healthkit', { ...guestWeb, healthAvailable: false })).toEqual([])
+})
+
+it('finds Watch countdown preferences only on iOS and routes them to Workout', () => {
+  const ios = { ...guestWeb, mobile: true, healthAvailable: true }
+  expect(searchSettings('monospaced', ios)).toContainEqual(expect.objectContaining({ title: 'Countdown font', page: 'workout' }))
+  expect(searchSettings('countdown color', ios)).toContainEqual(expect.objectContaining({ title: 'Countdown color', page: 'workout' }))
+  expect(searchSettings('monospaced', { ...ios, healthAvailable: false })).toEqual([])
+})

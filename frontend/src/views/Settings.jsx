@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, forwardRef, useSyncExternalStore } from 'react'
+import AppleHealthSettings from '../components/AppleHealthSettings.jsx'
+import { appleHealthAvailable } from '../lib/apple-health.js'
 import { useNavigate, useParams, useLocation, Navigate } from 'react-router-dom'
 import { useStore, DEF, hasData } from '../store/useStore.js'
 import { workoutControls } from '../lib/workout-controls.js'
@@ -31,6 +33,8 @@ import { forgetCoach } from '../lib/coach-api.js'
 import { REST_MAX, REST_PAUSE_MIN, REST_PAUSE_MAX, fmtRest, fmtDuration } from '../lib/duration.js'
 import { starterPlanSheet, confirmSheet, importFromApp, importFromHevy, equipmentProfileSheet, plateInventorySheet, menuSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
+import WatchTimerPreview from '../components/WatchTimerPreview.jsx'
+import { WATCH_TIMER_FONTS, WATCH_TIMER_COLORS, watchDisplayOf } from '../lib/watch-display.js'
 import { durationSheet } from '../components/DurationWheel.jsx'
 import { showsConnection } from '../components/SyncBanner.jsx'
 import BackupFolderRow, { useBackupFolder, autoBackupSubtitle } from '../components/BackupFolderRow.jsx'
@@ -96,6 +100,7 @@ export default function Settings({ page = null, find = null, via = null }) {
   const importRef = useRef(null)
   const body = useRef(null)
   const wakeOK = wakeLockSupported()
+  const watchDisplay = watchDisplayOf(S)
 
   // A planner's own queue (no rotationId, or one that doesn't match the saved rotation here) is
   // not this app's to switch off or overwrite. The Scheduling row goes read-only for it.
@@ -146,6 +151,12 @@ export default function Settings({ page = null, find = null, via = null }) {
   // --- update check state ---
   const [updateInfo, setUpdateInfo] = useState(null) // { hasUpdate, latestVersion, apkUrl, hashUrl } | null
   const [android, setAndroid] = useState(false)
+  const [healthAvailable, setHealthAvailable] = useState(false)
+  useEffect(() => {
+    let alive = true
+    appleHealthAvailable().then(value => { if (alive) setHealthAvailable(value) })
+    return () => { alive = false }
+  }, [])
   const [checking, setChecking] = useState(false)
   // Where auto-backup writes on this Android phone, for the Auto-backup row's own subtitle.
   const [backupDir] = useBackupFolder(MOBILE && android && !!S.autoBackup)
@@ -390,6 +401,7 @@ export default function Settings({ page = null, find = null, via = null }) {
   /* ---------------- what the pages and the search need to know about this device ---------------- */
   const canVibrate = vibrateSupported()
   const ctx = {
+    healthAvailable,
     user, mobile: MOBILE, android, demo: DEMO, wakeOK, hasMedia, pwOn, webauthn: webauthnOK(),
     sound: !!S.sound, playOnSilent: playOnSilentSupported(), canVibrate, vibrate: S.vibrate !== false,
     profiles: (S.equipProfiles || []).length > 0, nameLang: EXERCISE_NAME_LANGS.includes(baseLang(lang)),
@@ -477,6 +489,23 @@ export default function Settings({ page = null, find = null, via = null }) {
             value={layout} onChange={v => update(s => { s.workoutView = v })} />
         </Row>
       </Section>
+    {MOBILE && !android && <Section title="Apple Watch" footer={t('Font and color of the rest countdown on your watch.')}>
+      <SelectRow icon="timer" iconTint="var(--green)" title={t('Countdown font')}
+        value={watchDisplay.timerFont}
+        options={WATCH_TIMER_FONTS.map(f => ({ ...f, label: t(f.label) }))}
+        onChange={v => update(s => { s.watchDisplay = { ...watchDisplayOf(s), timerFont: v } })} />
+      <div className="lrow" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 12 }}>
+        <span className="lrow-t">{t('Countdown color')}</span>
+        <div className="swatches">
+          {WATCH_TIMER_COLORS.map(c => <button key={c.value}
+            className={'swatch' + (watchDisplay.timerColor === c.value ? ' on' : '')}
+            style={{ background: c.value }} aria-label={t(c.label)} aria-pressed={watchDisplay.timerColor === c.value}
+            onClick={() => update(s => { s.watchDisplay = { ...watchDisplayOf(s), timerColor: c.value } })} />)}
+        </div>
+        <WatchTimerPreview font={watchDisplay.timerFont} color={watchDisplay.timerColor} />
+      </div>
+    </Section>}
+
       <Section title={t('Before and during')}>
         {/* The quick weigh-in that opens on Start (sheets.jsx startFlow, issue #137); off skips
             straight to the session. Home and Stats still log weight by hand. */}
@@ -737,6 +766,7 @@ export default function Settings({ page = null, find = null, via = null }) {
 
     data: () => <>
       <Section title={t('Back up')}>
+        <AppleHealthSettings available={healthAvailable} />
         <Row icon="share" iconTint="var(--blue)" title={t('Export backup (JSON)')} subtitle={hasMedia ? t('Without photos and videos') : undefined} accessory="chevron" onClick={doExport} />
         {hasMedia && <Row icon="share" iconTint="var(--blue)" title={t('Export with photos & videos (.zip)')} accessory="chevron" onClick={doExportZip} />}
         {/* 14 is AUTO_BACKUP_KEEP in lib/mobile.js, written out because the Settings tests mock

@@ -1,5 +1,19 @@
 // Hungarian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Font and color of the rest countdown on your watch.": "A pihenő visszaszámlálásának betűtípusa és színe az órán.",
+  "Countdown font": "Visszaszámlálás betűtípusa",
+  "Countdown color": "Visszaszámlálás színe",
+  "Digital (segments)": "Digitális (szegmensek)",
+  "Rounded": "Lekerekített",
+  "Monospaced": "Egyenletes szélességű",
+  "Lime": "Lime",
+  "White": "Fehér",
+  "The matching workout saved by openGym in Apple Health will also be deleted.": "Az openGym által az Apple Egészségbe mentett megfelelő edzés is törlődik.",
+  "Sync with Apple Health": "Szinkronizálás az Apple Egészséggel",
+  "Sync body weight both ways and save finished workouts to Health.": "Testsúly szinkronizálása mindkét irányban és befejezett edzések mentése az Egészségbe.",
+  "Apple Health: {0}": "Apple Egészség: {0}",
+  "Sync Apple Health now": "Apple Egészség szinkronizálása most",
+
   // --- generic ---
   'Confirm': 'Megerősítés',
   'Cancel': 'Mégse',

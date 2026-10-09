@@ -165,6 +165,14 @@ export const CASED_NAME_LANGS = ['de']
 export const exerciseNameClass = ex => (!enOnly && exerciseNames && ex && exerciseNames[ex.id]
   && CASED_NAME_LANGS.includes(baseLang(lang)) ? '' : 'capitalize')
 
+// Native views do not inherit the web's CSS capitalization. Keep custom and already
+// cased translations verbatim; capitalize catalogue words without removing accents.
+export const exerciseNameText = ex => {
+  const name = exerciseNameFor(ex)
+  return ex?.custom || exerciseNameClass(ex) !== 'capitalize' ? name
+    : name.replace(/(^|[^\p{L}\p{N}])\p{L}/gu, letter => letter.toLocaleUpperCase(lang))
+}
+
 // Search both the localized and canonical English title without changing persisted data.
 export const exerciseNameSearchText = ex => {
   const translated = exerciseNames && ex && exerciseNames[ex.id]

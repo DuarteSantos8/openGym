@@ -148,6 +148,54 @@ video autoplays muted in the Android WebView; a long video seeks from its `_capa
 URL on both platforms; an iPhone photo arrives as JPEG and an iPhone video (HEVC or H.264 MOV)
 plays; the zip export opens the share sheet.
 
+## Apple Health (native iPhone app)
+
+Open **Settings → Data & backup → Sync with Apple Health** in the native iPhone app. Turning the
+switch on opens Apple's permission sheet. Allow body weight reads and writes and workout
+writes. The bridge also requests workout reads to recognize previously exported sessions.
+This setting is absent from the web/PWA and Android builds.
+
+- **Weight:** the latest external reading for each day is imported in the profile's kg/lb
+  unit. A reading only replaces a local entry when its timestamp is newer. Locally entered
+  weights are exported in kilograms. Existing history is included on first sync.
+- **Workouts:** finished sessions are exported as strength training with their name, start
+  and end time. Active or discarded sessions are not exported. This integration does not
+  estimate energy expenditure or heart rate, and does not import workouts from Health.
+- **Deleting a workout:** confirming Delete workout also removes the matching session
+  exported by this app to Health when sync is enabled. Only that exact identifier, app
+  source and saved time range are eligible. Other apps' workouts and weigh-ins are never
+  selected. Failed deletions remain in a local queue for retry; restoring the record
+  before retry cancels the request. Logout, reset and backup restoration never infer
+  Health deletions from missing history. Previously removed sessions are not purged
+  retroactively.
+- **Timing:** sync runs after local changes and when the app returns to the foreground.
+  **Sync Apple Health now** retries immediately. It does not promise execution while iOS
+  has suspended the app.
+- **Opt-in:** the choice and duplicate markers stay on this device, scoped to the server
+  and account (or the local profile). Other accounts or servers do not inherit the choice.
+  Turning the switch off does not delete records already saved in either app.
+- **Privacy:** imported weights become ordinary openGym profile entries. They follow the
+  profile's existing backup/export and, if paired, server sync settings. Health permission
+  choices themselves are never sent to the server.
+
+Apple controls each permission separately. Completing the permission sheet does not mean
+all permissions were granted: denied reads appear as no accessible data; denied writes
+report an error. Review permissions in the Health app if sync brings in no readings.
+Disabling and enabling the switch requests authorization again, but iOS may require
+changing a previous denial in Health rather than showing a new prompt.
+
+For developers, the iOS target includes the HealthKit entitlement, both usage descriptions,
+and the app-local `HealthSync` Capacitor plugin. `AppBridgeViewController` explicitly
+registers it alongside the existing print plugin; the storyboard must use this controller.
+Keep your own signing team and bundle identifier local when building for a physical phone.
+No extra JavaScript or CocoaPods dependency is needed for HealthKit.
+
+HealthKit sync identifiers and versions make retries idempotent, including when workout
+read access is denied. Weight replacement uses HealthKit's versioned save rather than
+removing the previous sample before its replacement succeeds. See Apple's
+[sync identifier documentation](https://developer.apple.com/documentation/healthkit/hkmetadatakeysyncidentifier).
+
+
 ## Prerequisites
 
 - Node 20+
@@ -283,3 +331,8 @@ membership, the distribution certificate and profile as protected file variables
   it: a foreground service (`specialUse`) keeps the countdown in the notification and holds a
   wake lock until the end, so the end of a rest sounds on time with the screen locked; the
   rest-over alarm is only its fallback.
+
+### Apple Watch companion
+
+For cached routines, offline sessions, rest controls, live vitals, signing and validation,
+see [the Apple Watch guide](APPLE_WATCH.md).
