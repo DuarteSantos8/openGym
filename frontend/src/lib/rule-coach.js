@@ -22,12 +22,12 @@ const latestWeight = S => (S?.bodyweight || []).filter(x => Number.isFinite(Numb
 function answerWeek(S, review) {
   const { training, consistency, improvements } = review
   const lines = [
-    `You've logged ${training.done} workout${training.done === 1 ? '' : 's'} this calendar week.`,
+    `You've logged ${training.done} workout${training.done === 1 ? '' : 's'} this week.`,
     consistency.expected > 0
-      ? `Your schedule has ${consistency.status === 'baseline' ? 0 : Object.values(S?.week || {}).filter(ids => [].concat(ids ?? []).length).length} training day(s) in a typical week; your last four weeks show ${consistency.done} completed workout(s) against about ${fmtNum(consistency.expected)} expected.`
+      ? `Your plan schedules ${Object.values(S?.week || {}).filter(ids => [].concat(ids ?? []).length).length} training day(s) each week. Over the last four weeks, you logged ${consistency.done} workout(s) against about ${fmtNum(consistency.expected)} planned.`
       : 'No training days are scheduled yet, so consistency against a plan cannot be measured.',
   ]
-  if (improvements.length) lines.push(`Recent win: ${improvements.slice(0, 3).map(x => x.name).join(', ')} recorded a personal record in the last 14 days.`)
+  if (improvements.length) lines.push(`A recent win: you set a personal record in ${improvements.slice(0, 3).map(x => x.name).join(', ')}.`)
   else lines.push('No new personal records are recorded in the last 14 days. That alone does not mean progress has stalled.')
   return { title: 'Your week so far', summary: training.planned ? `${training.done} workout(s) logged · ${training.planned} scheduled day(s) per week` : `${training.done} workout(s) logged`, lines }
 }
@@ -56,9 +56,9 @@ function answerStrength(S, review) {
   const lines = []
   if (review.strength.compared > 0) {
     lines.push(`Across ${review.strength.compared} comparable exercise(s), ${review.strength.improved} improved and ${review.strength.declined} declined in the comparison window.`)
-    if (review.strength.status === 'holding') lines.push('Overall strength looks broadly maintained in the exercises the app can compare.')
+    if (review.strength.status === 'holding') lines.push('Performance is broadly maintained in the exercises the app can compare. Keep following the displayed targets; progress does not require adding weight every session.')
     else if (review.strength.status === 'attention') lines.push('Several compared movements are down. Repeat current loads, check recovery, and avoid forcing increases this week.')
-    else lines.push('The signal is mixed. Keep logging comparable sets before making a larger change.')
+    else lines.push('The signal is mixed. Keep logging comparable sets with consistent technique, range of motion and effort before making a larger change.')
   } else {
     lines.push('There is not enough comparable logged performance to judge a strength trend yet.')
   }
