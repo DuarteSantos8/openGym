@@ -61,7 +61,7 @@ export async function refreshServerExercises(store) {
     if (token !== request || current.user?.id !== owner || current.sync?.server !== server) return
     if (!Array.isArray(exercises)) return
     const valid = exercises.filter(e => e?.serverShared === true && typeof e.id === 'string' &&
-      /^c[a-zA-Z0-9_-]{1,95}$/.test(e.id) && typeof e.n === 'string' && e.custom === true)
+      /^(?:c[a-zA-Z0-9_-]{1,95}|im[a-zA-Z0-9_-]{1,94})$/.test(e.id) && typeof e.n === 'string' && e.custom === true)
     const next = mergeServerExercises(current.S, valid)
     if (JSON.stringify(next) !== JSON.stringify(current.S.customEx || [])) {
       current.update(s => { s.customEx = next }, true, { stampExercises: false })

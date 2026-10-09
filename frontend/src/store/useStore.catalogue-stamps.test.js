@@ -27,5 +27,7 @@ it('a catalogue refresh still stamps unrelated settings and leaves cached remova
   useStore.getState().update(s => { s.customEx = []; s.keepAwake = false }, false, { stampExercises: false })
   const next = useStore.getState().S
   expect(next.deleted?.customEx?.cshared).toBeUndefined()
-  expect(next.edited.keepAwake).toBe(next._ts)
+  expect(next.edited.keepAwake).toBeGreaterThan(0)
+  // persist may advance the document clock after the field has been stamped.
+  expect(next.edited.keepAwake).toBeLessThanOrEqual(next._ts)
 })

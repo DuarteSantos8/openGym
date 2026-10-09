@@ -125,3 +125,15 @@ describe('publication and withdrawal', () => {
     expect(calls.api).toHaveBeenCalledTimes(1)
   })
 })
+
+it('refreshes an imported shared definition without changing routine or history identifiers', async () => {
+  const imported = exercise({ id: 'imimported123', n: 'Imported curl', _ts: 42 });
+  const st = store([imported]);
+  st.getState().S.routines = [{ ex: [{ id: imported.id }] }];
+  st.getState().S.workouts = [{ entries: [{ id: imported.id }] }];
+  calls.api.mockResolvedValue({ exercises: [{ ...imported, n: 'Shared imported curl', serverRevision: 2 }] });
+  await refreshServerExercises(st);
+  expect(st.getState().S.customEx).toEqual([{ ...imported, n: 'Shared imported curl', serverRevision: 2 }]);
+  expect(st.getState().S.routines[0].ex[0].id).toBe(imported.id);
+  expect(st.getState().S.workouts[0].entries[0].id).toBe(imported.id);
+});

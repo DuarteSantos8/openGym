@@ -1460,7 +1460,7 @@ paths:
                   type: object
                   required: [id, n, bp, eq]
                   properties:
-                    id: { type: string, pattern: '^c[a-zA-Z0-9_-]{1,95}$' }
+                    id: { type: string, pattern: '^(?:c[a-zA-Z0-9_-]{1,95}|im[a-zA-Z0-9_-]{1,94})$' }
                     n: { type: string, maxLength: 200 }
                     bp: { type: string }
                     eq: { type: string }

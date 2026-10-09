@@ -81,7 +81,7 @@ export function createSharedExercises({ data, media, atomicWrite }) {
     file: sharedFile,
     put(raw, admin, baseRevision) {
       if (!raw || typeof raw !== 'object' || Array.isArray(raw)) bad('Exercise required');
-      if (typeof raw.id !== 'string' || !/^c[a-zA-Z0-9_-]{1,95}$/.test(raw.id)) bad('Invalid custom exercise id');
+      if (typeof raw.id !== 'string' || !/^(?:c[a-zA-Z0-9_-]{1,95}|im[a-zA-Z0-9_-]{1,94})$/.test(raw.id)) bad('Invalid custom exercise id');
       const previous = rows.find(e => e.id === raw.id);
       if (previous && previous.serverRevision !== baseRevision) {
         throw new MediaError(409, 'shared-exercise-conflict', { error: 'This exercise changed. Reopen it before saving.' });
@@ -112,7 +112,7 @@ export function createSharedExercises({ data, media, atomicWrite }) {
       return row;
     },
     remove(id, baseRevision) {
-      if (typeof id !== 'string' || !/^c[a-zA-Z0-9_-]{1,95}$/.test(id)) bad('Invalid custom exercise id');
+      if (typeof id !== 'string' || !/^(?:c[a-zA-Z0-9_-]{1,95}|im[a-zA-Z0-9_-]{1,94})$/.test(id)) bad('Invalid custom exercise id');
       const row = rows.find(e => e.id === id);
       if (row && row.serverRevision !== baseRevision) {
         throw new MediaError(409, 'shared-exercise-conflict', { error: 'This exercise changed. Reopen it before saving.' });

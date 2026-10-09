@@ -81,3 +81,17 @@ test('withdraw requires a revision and is idempotent after removal', t => {
   store.remove(row.id, row.serverRevision); store.remove(row.id, row.serverRevision);
   assert.deepEqual(store.list(), []);
 });
+
+test('imported custom exercises keep their identifiers through sharing, editing and withdrawal', t => {
+  const { store, options } = setup(t);
+  const imported = exercise({ id: 'imimported123', n: 'Imported curl' });
+  const published = store.put(imported, admin);
+  assert.equal(published.id, imported.id);
+  const restarted = createSharedExercises(options);
+  const changed = restarted.put({ ...imported, n: 'Edited imported curl' }, admin, published.serverRevision);
+  assert.equal(changed.id, imported.id);
+  restarted.remove(changed.id, changed.serverRevision);
+  assert.deepEqual(restarted.list(), []);
+  for (const id of ['im', 'import/secret', 'im' + 'a'.repeat(95), 'iother'])
+    assert.throws(() => restarted.put(exercise({ id }), admin), status(400));
+});

@@ -53,9 +53,15 @@ With `MEDIA_UPLOADS=0`, exercises can still be shared without attached media.
 
 - `GET /api/shared-exercises`: signed-in users; returns `{ exercises: [...] }`.
 - `PUT /api/admin/shared-exercises`: administrators; accepts `{ exercise, baseRevision? }`.
-  New exercises need a `c`-prefixed custom id. Editing requires the current `serverRevision`.
+  Custom ids use `c` (created in openGym) or `im` (imported from Hevy or CSV).
+  Editing requires the current `serverRevision`.
 - `DELETE /api/admin/shared-exercises`: administrators; accepts `{ id, baseRevision }`.
 - `GET /api/config` advertises `shared_exercises: true`.
 
 Older servers without these routes keep their existing private exercise behaviour. Both the
 API and frontend need to be updated to publish and consume a server catalogue.
+
+Custom exercises imported from Hevy or CSV can be shared using their existing `im…`
+identifiers. Publishing, editing and withdrawing keeps the identifier, so routines and
+workout history keep referring to the same exercise. Official catalogue identifiers
+remain protected.
