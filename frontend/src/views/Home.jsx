@@ -86,7 +86,10 @@ export default function Home() {
   return <div className="narrow">
     <div className="hdr">
       <div><h1>{t('Today')}</h1><div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
-      <button className="iconbtn" onClick={() => nav('/settings')} aria-label={t('Settings')}><Icon name="gear" /></button>
+      <div className="home-head-actions">
+        <button className="iconbtn" onClick={() => nav('/coach')} aria-label={t('Coach')}><Icon name="sparkles" /></button>
+        <button className="iconbtn" onClick={() => nav('/settings')} aria-label={t('Settings')}><Icon name="gear" /></button>
+      </div>
     </div>
 
     {/* Today's workout at a glance. Compact by design — the Start section owns the launch. */}
