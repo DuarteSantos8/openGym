@@ -1950,4 +1950,8 @@ export default {
   'Greys show darker in light mode, so buttons don’t look switched off.': '라이트 모드에서는 버튼이 꺼진 것처럼 보이지 않게 회색을 어둡게 표시해요.',
   'custom color picker': '나만의 색상 사용자 지정 색상 선택기',
   'Signed in from another tab. Your workout came along, keep going here.': '다른 탭에서 로그인했어요. 운동도 함께 넘어왔으니 여기서 이어서 하세요.',
+  // --- Progression: repeat last session ---
+  'Repeat last session': '지난 세션 반복',
+  'Every set opens with the weight and reps you logged last time in this routine. Nothing goes up or down on its own.': '모든 세트가 이 루틴에서 지난번에 기록한 중량과 횟수로 시작합니다. 저절로 오르거나 내리지 않습니다.',
+  'Same weight and reps as last time in this routine.': '이 루틴의 지난번과 같은 중량과 횟수입니다.',
 }

@@ -132,7 +132,9 @@ describe('policyFor', () => {
   it('refuses a policy that makes no sense for the mode', () => {
     expect(policyFor({ id: LIFT, mode: 'time', prog: 'greyskull' }, null, 'time')).toBe('off')
     expect(policyFor({ id: CARDIO, prog: 'linear' }, null, 'cardio')).toBe('off')
-    expect(POLICIES_FOR.cardio).toEqual(['off'])
+    expect(POLICIES_FOR.cardio).toEqual(['off', 'repeat'])
+    // Repeating the last session fits every mode: it copies whatever was logged.
+    for (const mode of ['reps', 'time', 'cardio']) expect(POLICIES_FOR[mode]).toContain('repeat')
   })
 })
 

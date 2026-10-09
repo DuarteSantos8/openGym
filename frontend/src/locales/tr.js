@@ -1950,4 +1950,8 @@ export default {
   'Greys show darker in light mode, so buttons don’t look switched off.': 'Griler aydınlık modda daha koyu görünür, düğmeler kapalıymış gibi durmasın diye.',
   'custom color picker': 'kendi renk özel renk seçici',
   'Signed in from another tab. Your workout came along, keep going here.': 'Başka bir sekmede giriş yapıldı. Antrenmanın da geldi, buradan devam et.',
+  // --- Progression: repeat last session ---
+  'Repeat last session': 'Son antrenmanı tekrarla',
+  'Every set opens with the weight and reps you logged last time in this routine. Nothing goes up or down on its own.': 'Her set, bu rutinde en son kaydettiğin ağırlık ve tekrarla başlar. Hiçbir şey kendiliğinden artmaz ya da azalmaz.',
+  'Same weight and reps as last time in this routine.': 'Bu rutinde son seferki ağırlık ve tekrar.',
 }

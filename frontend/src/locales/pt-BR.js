@@ -1212,6 +1212,10 @@ export const PT_BR_OVERRIDES = {
   'Greys show lighter in dark mode, so buttons don’t look switched off.': 'Os cinzas ficam mais claros no modo escuro, para os botões não parecerem desligados.',
   'Greys show darker in light mode, so buttons don’t look switched off.': 'Os cinzas ficam mais escuros no modo claro, para os botões não parecerem desligados.',
   'Signed in from another tab. Your workout came along, keep going here.': 'Login feito em outra aba. Seu treino veio junto, continue por aqui.',
+  // --- Progression: repeat last session ---
+  'Repeat last session': 'Repetir a última sessão',
+  'Every set opens with the weight and reps you logged last time in this routine. Nothing goes up or down on its own.': 'Cada série começa com o peso e as repetições que você registrou da última vez nesta rotina. Nada sobe nem desce sozinho.',
+  'Same weight and reps as last time in this routine.': 'Mesmo peso e repetições da última vez nesta rotina.',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

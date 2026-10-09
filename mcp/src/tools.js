@@ -509,6 +509,10 @@ function sourceOf(S, cfg, plan, field, routine) {
   // Progression off (or a deload routine): the session is built from the routine's own target,
   // exactly as session-start.js does with useTarget — history and the confirmed weight are ignored.
   if (!plan || plan.kind === 'off') return 'routine_plan'
+  // "Repeat last session": the routine's own numbers until it has a session of its own to repeat
+  // (or after its plan was edited), and from then on exactly what that session logged.
+  if (plan.kind === 'restart') return 'routine_plan'
+  if (plan.kind === 'repeat') return 'last_session'
   const decided = plan.kind !== 'first' && plan[field] != null
   // A policy that settles on the routine's own reps or hold — a restart after the plan was
   // edited, a bodyweight hold at the plan's count — is the plan speaking, not an override.

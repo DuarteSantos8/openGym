@@ -1970,4 +1970,8 @@ export default {
   'Greys show darker in light mode, so buttons don’t look switched off.': 'Grautöne werden im hellen Modus dunkler, damit Buttons nicht ausgeschaltet wirken.',
   'custom color picker': 'eigene Farbe benutzerdefiniert Farbwähler Farbauswahl',
   'Signed in from another tab. Your workout came along, keep going here.': 'In einem anderen Tab angemeldet. Dein Training ist mitgekommen, mach hier weiter.',
+  // --- Progression: repeat last session ---
+  'Repeat last session': 'Letzte Einheit wiederholen',
+  'Every set opens with the weight and reps you logged last time in this routine. Nothing goes up or down on its own.': 'Jeder Satz startet mit dem Gewicht und den Wiederholungen, die du zuletzt in dieser Routine eingetragen hast. Nichts steigt oder sinkt von selbst.',
+  'Same weight and reps as last time in this routine.': 'Gleiches Gewicht und gleiche Wiederholungen wie beim letzten Mal in dieser Routine.',
 }

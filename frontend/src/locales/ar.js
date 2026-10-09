@@ -2003,4 +2003,8 @@ export default {
   'Greys show darker in light mode, so buttons don’t look switched off.': 'تظهر الألوان الرمادية أغمق في الوضع الفاتح، حتى لا تبدو الأزرار مُعطّلة.',
   'custom color picker': 'لون خاص مخصص منتقي الألوان',
   'Signed in from another tab. Your workout came along, keep going here.': 'تم تسجيل الدخول من علامة تبويب أخرى. تمرينك انتقل معك، تابعه هنا.',
+  // --- Progression: repeat last session ---
+  'Repeat last session': 'تكرار الجلسة الأخيرة',
+  'Every set opens with the weight and reps you logged last time in this routine. Nothing goes up or down on its own.': 'تبدأ كل مجموعة بالوزن والتكرارات التي سجّلتها آخر مرة في هذا الروتين. لا يرتفع أو ينخفض شيء من تلقاء نفسه.',
+  'Same weight and reps as last time in this routine.': 'نفس الوزن والتكرارات كآخر مرة في هذا الروتين.',
 }

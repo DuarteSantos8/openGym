@@ -1953,4 +1953,8 @@ export default {
   'Greys show darker in light mode, so buttons don’t look switched off.': 'A szürkék világos módban sötétebbek, hogy a gombok ne tűnjenek kikapcsoltnak.',
   'custom color picker': 'saját szín egyéni színválasztó',
   'Signed in from another tab. Your workout came along, keep going here.': 'Bejelentkeztél egy másik lapon. Az edzésed is jött vele, folytasd itt.',
+  // --- Progression: repeat last session ---
+  'Repeat last session': 'Utolsó edzés megismétlése',
+  'Every set opens with the weight and reps you logged last time in this routine. Nothing goes up or down on its own.': 'Minden sorozat azzal a súllyal és ismétlésszámmal indul, amit legutóbb ebben a rutinban rögzítettél. Semmi sem nő vagy csökken magától.',
+  'Same weight and reps as last time in this routine.': 'Ugyanaz a súly és ismétlés, mint legutóbb ebben a rutinban.',
 }

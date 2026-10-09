@@ -1961,4 +1961,8 @@ export default {
   'Greys show darker in light mode, so buttons don’t look switched off.': 'สีเทาจะเข้มขึ้นในโหมดสว่าง ปุ่มจะได้ไม่ดูเหมือนถูกปิดอยู่',
   'custom color picker': 'สีเอง กำหนดเอง ตัวเลือกสี',
   'Signed in from another tab. Your workout came along, keep going here.': 'ลงชื่อเข้าใช้จากแท็บอื่นแล้ว การออกกำลังกายของคุณมาด้วย ทำต่อที่นี่ได้เลย',
+  // --- Progression: repeat last session ---
+  'Repeat last session': 'ทำซ้ำเซสชันล่าสุด',
+  'Every set opens with the weight and reps you logged last time in this routine. Nothing goes up or down on its own.': 'ทุกเซ็ตเริ่มด้วยน้ำหนักและจำนวนครั้งที่คุณบันทึกครั้งล่าสุดในรูทีนนี้ ไม่มีอะไรเพิ่มหรือลดเอง',
+  'Same weight and reps as last time in this routine.': 'น้ำหนักและจำนวนครั้งเท่ากับครั้งล่าสุดในรูทีนนี้',
 }
