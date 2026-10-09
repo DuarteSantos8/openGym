@@ -31,6 +31,7 @@ import {
 } from './passkeys-store.js';
 import { createDeviceLink, findDeviceLink, burnDeviceLink, dropDeviceLinks } from './device-link.js';
 import { createMediaStore, mediaLimits, mediaConfig, MediaError, HASH_RE } from './media.js';
+import { createStrava } from './strava.js';
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
@@ -1612,6 +1613,13 @@ const passkeyRoutes = {
 // The state only ever carries a small ref; the bytes arrive and leave through the routes below.
 // MEDIA_UPLOADS=0 takes the routes and the /api/config block away, but the store is created
 // either way: an admin deleting a profile must still remove files uploaded while it was on.
+/* ---------- Strava (optional, upload only — strava.js) ---------- */
+const STRAVA = createStrava({
+  dataDir: DATA, origin: ORIGIN, secret: SECRET,
+  clientId: (process.env.STRAVA_CLIENT_ID || '').trim(), clientSecret: (process.env.STRAVA_CLIENT_SECRET || '').trim()
+});
+lock('strava.json');
+
 const MEDIA_LIMITS = mediaLimits(process.env);
 const MEDIA_ON = MEDIA_LIMITS.enabled;
 const MEDIA = createMediaStore({ dir: path.join(DATA, 'uploads'), limits: MEDIA_LIMITS, readState });
@@ -2069,6 +2077,8 @@ const routes = {
     if (MEDIA_ON) {
       try { MEDIA.noteState(user.id, body.state); } catch (e) { console.error('media noteState', e); }
     }
+    // Newly finished workouts go to Strava in the background; the sync never waits on it.
+    try { STRAVA.onState(user.id, body.state); } catch (e) { console.error('strava onState', e); }
     json(res, 200, { ok: true, ts: body.state._ts || null, rev: body.state._rev });
   },
 
@@ -2341,6 +2351,9 @@ const routes = {
   // them: they are closures over db and SECRET, and passing them in keeps that module free of
   // a cycle. Every one of them is inert while the feature is unconfigured.
   ...coachRoutes({ json, readBody, readSession, requireAdmin }),
+
+  /* ---------- Strava ---------- */
+  ...STRAVA.routes({ json, readBody, readSession, readState }),
 
   /* ---------- photos & videos ---------- */
   // Absent, not refusing, when MEDIA_UPLOADS=0: a 404 is what a server from before the feature

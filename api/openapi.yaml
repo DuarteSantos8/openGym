@@ -149,6 +149,8 @@ tags:
       attached to a logged workout. Stored per profile (one quota for both) and named
       by the SHA-256 of its bytes; the state only carries a `MediaRef`. Every route here is a
       404 when the instance runs with `MEDIA_UPLOADS=0`.
+  - name: strava
+    description: Upload finished workouts to Strava (optional, STRAVA_CLIENT_ID / STRAVA_CLIENT_SECRET)
   - name: coach
     description: >-
       AI Coach — plans, reviews and debriefs. Every route here answers 503 unless the
@@ -2337,6 +2339,75 @@ paths:
   # everything above; they are inert — 503 — while the instance has no Coach enabled
   # and connected.
 
+  /api/strava/status:
+    get:
+      tags: [strava]
+      operationId: stravaStatus
+      summary: Whether Strava is configured on this instance and connected for the caller
+      responses:
+        '200':
+          description: "`configured`, `connected`, and when connected `athlete`, `auto`, `uploads`, `needsReconnect`, `lastError`."
+        '401':
+          description: Not signed in.
+  /api/strava/connect:
+    get:
+      tags: [strava]
+      operationId: stravaConnect
+      summary: Start the Strava sign-in (redirects to Strava's consent screen, scope activity:write)
+      responses:
+        '302':
+          description: To Strava, or back to Settings when signed out or Strava is not configured.
+  /api/strava/callback:
+    get:
+      tags: [strava]
+      operationId: stravaCallback
+      summary: Strava's OAuth redirect target; stores the tokens and returns to Settings
+      description: >-
+        The `state` must have been issued to the signed-in caller. Redirects to
+        `/#/settings?strava=connected|denied|scope|error`.
+      responses:
+        '302':
+          description: Back to Settings.
+  /api/strava/settings:
+    post:
+      tags: [strava]
+      operationId: stravaSettings
+      summary: Turn automatic upload of newly finished workouts on or off
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { auto: { type: boolean } } }
+      responses:
+        '200':
+          description: Saved.
+        '409':
+          description: Strava is not connected.
+  /api/strava/upload:
+    post:
+      tags: [strava]
+      operationId: stravaUpload
+      summary: Upload one synced workout to Strava now
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, required: [id], properties: { id: { type: string } } }
+      responses:
+        '200':
+          description: "`activity` is the Strava activity id; `already` when it had been uploaded before."
+        '404':
+          description: The workout is not in the synced profile yet.
+        '409':
+          description: Strava is not connected.
+        '502':
+          description: Strava refused; `reconnect` is true when the tokens are no longer valid.
+  /api/strava/disconnect:
+    post:
+      tags: [strava]
+      operationId: stravaDisconnect
+      summary: Forget the Strava tokens on this server (does not revoke the app on Strava)
+      responses:
+        '200':
+          description: Forgotten.
   /api/coach/disclosure:
     get:
       tags: [coach]

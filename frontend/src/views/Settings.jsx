@@ -29,6 +29,7 @@ import Icon from '../components/Icon.jsx'
 import { ServerSyncSection, KeptChangesRows, leaveServer, connectServer, passkeySignIn } from '../components/ServerSync.jsx'
 import { passwordOn, PasswordRow, openPasswordSignIn, openPasswordRegister } from '../components/PasswordAuth.jsx'
 import { usePasskeys, PasskeysRow, DeviceLinkRow } from '../components/Passkeys.jsx'
+import { StravaCard } from '../components/Strava.jsx'
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField } from '../components/ui.jsx'
 
 export default function Settings() {
@@ -503,6 +504,9 @@ export default function Settings() {
     </Section>
 
     {(user || MOBILE) && <NotificationsCard S={S} update={update} toast={toast} />}
+
+    {/* ---------- Strava: upload finished workouts (only when the server has it set up) ---------- */}
+    {!DEMO && <StravaCard />}
 
     {/* ---------- equipment ---------- */}
     <EquipmentCard S={S} update={update} />
