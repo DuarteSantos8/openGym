@@ -471,10 +471,15 @@ export const useUI = create((set, get) => ({
   },
   // The active list changed shape (an exercise removed or inserted at `at`): keep the rest
   // pointing at the same exercise. Returns nothing; the caller decides whether to stop instead.
+  // A running hold's owner moves the same way: an exercise added above it in the List layout (it
+  // goes in after the current unit, and the hold can be further down) moved its row, and its
+  // saved owner is what a reload brings it back to. The workout screen moves its own copy
+  // (Workout.jsx holdAt) with it.
   shiftRestOwner(at, delta) {
     const tm = get().timer
-    if (!tm || !(tm.forIdx >= at)) return
-    set({ timer: { ...tm, forIdx: tm.forIdx + delta } })
+    if (tm && tm.forIdx >= at) set({ timer: { ...tm, forIdx: tm.forIdx + delta } })
+    const wk = get().work
+    if (wk?.owner && wk.owner.idx >= at) set({ work: { ...wk, owner: { ...wk.owner, idx: wk.owner.idx + delta } } })
   },
   // Android: the rest notification's own Pause, −15 s and +15 s (#296) change the countdown there
   // first, and this brings the bar in the app to the same place — a pause stops the ticking here
