@@ -9,9 +9,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import Workout from './Workout.jsx'
 import { DEF, useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
-import { beep, chime, vibrate, alertBuzz } from '../lib/sound.js'
+import { beep, chime, vibrate, alertBuzz, hush, holdSession } from '../lib/sound.js'
 
-vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn() }))
+vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn(), countdown: vi.fn(), hush: vi.fn(), holdSession: vi.fn() }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})), appBase: () => '/' }))
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
@@ -21,11 +21,12 @@ const plank = () => ({ id: '1001', target: { mode: 'time', sets: 2, sec: 10 }, s
 let root
 let container
 
-function renderWorkout(entries) {
+function renderWorkout(entries, beforeRender) {
   const S = clone(DEF)
   S.sound = true
   S.active = { id: 'hold-test', d: '2026-09-23', start: Date.now(), routineId: null, name: 'Hold', bw: null, cur: 0, entries }
   useStore.setState({ S, user: null })
+  beforeRender?.()
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)
@@ -116,7 +117,7 @@ describe('a per-side hold', () => {
     holdRow(1)
     expect(doneOf()).toEqual([true, true, false, false])
     const tm = useUI.getState().timer
-    expect(tm.kind).toBeUndefined()
+    expect(tm.kind).toBe('set')             // the rest before the next set, not a switch
     expect(tm.total).toBe(useStore.getState().S.restSec)
   })
 
@@ -127,3 +128,57 @@ describe('a per-side hold', () => {
     for (const p of pills) expect([p.dataset.l, p.dataset.r]).toEqual(['Left', 'Right'])
   })
 })
+
+// Moving an exercise up or down drops a hold's callback before the indexes shift (moveUnitAt), and
+// that used to call off the count-in of the rest running at the time and hand the phone's volume
+// buttons back to the ringer for the rest of it.
+describe('a move during a rest', () => {
+  it('leaves the rest counting you in, with the audio session still held', () => {
+    const bench = () => ({ id: '0025', target: { mode: 'reps', sets: 2, reps: 5, weight: 60 }, sets: [{ w: 60, r: 5, done: false }, { w: 60, r: 5, done: false }] })
+    renderWorkout([bench(), plank()], () => { useStore.getState().update(s => { s.wc = { exerciseButtons: true } }) })
+    act(() => container.querySelectorAll('[role="checkbox"]')[0].click())
+    expect(useUI.getState().timer).toMatchObject({ kind: 'set', forIdx: 0 })
+    vi.mocked(hush).mockClear(); vi.mocked(holdSession).mockClear()
+    act(() => container.querySelector('button[aria-label="Move down"]').click())
+    expect(useStore.getState().S.active.entries.map(e => e.id)).toEqual(['1001', '0025'])
+    expect(useUI.getState().timer).toMatchObject({ kind: 'set', forIdx: 1 })
+    expect(hush).not.toHaveBeenCalled()
+    expect(holdSession).not.toHaveBeenCalled()
+  })
+})
+
+// Owner's call: a hold that runs out while the phone is locked has been followed by its rest ever
+// since. Back on screen the rest has the time that is really left.
+describe('a hold that runs out while the phone is locked', () => {
+  const setHidden = hidden => {
+    Object.defineProperty(document, 'hidden', { configurable: true, get: () => hidden })
+    document.dispatchEvent(new Event('visibilitychange'))
+  }
+  afterEach(() => setHidden(false))
+  const plank3 = () => ({ ...plank(), sets: [0, 1, 2].map(() => ({ sec: 10, w: 0, done: false })) })
+
+  it('back before its rest is over: the rest has been counting since the hold ended', () => {
+    renderWorkout([plank3()])
+    const restSec = useStore.getState().S.restSec
+    const holdEnds = Date.now() + 10_000
+    startHold()
+    setHidden(true)
+    act(() => { vi.advanceTimersByTime(40_000) })               // the hold ran out 30 s ago
+    act(() => setHidden(false))
+    expect(doneOf()).toEqual([true, false, false])
+    expect(useUI.getState().timer).toMatchObject({ kind: 'set', endsAt: holdEnds + restSec * 1000, left: restSec - 30 })
+  })
+
+  it('back after its rest is over too: Ready, and its toast', () => {
+    renderWorkout([plank3()])
+    const restSec = useStore.getState().S.restSec
+    startHold()
+    setHidden(true)
+    act(() => { vi.advanceTimersByTime((10 + restSec + 5) * 1000) })
+    act(() => setHidden(false))
+    expect(doneOf()).toEqual([true, false, false])
+    expect(useUI.getState().timer).toMatchObject({ ready: true, left: 0 })
+    expect(useUI.getState().toastMsg).toBe('Rest’s over. Next set!')
+  })
+})
+

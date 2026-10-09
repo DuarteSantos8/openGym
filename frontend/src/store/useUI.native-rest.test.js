@@ -14,14 +14,14 @@ vi.mock('../lib/rest-alert.js', () => ({
   disarmRestAlert: vi.fn(),
   bindNativeRest: vi.fn(cb => { h.native = cb }),
 }))
-vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn() }))
+vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), countdown: vi.fn(), hush: vi.fn(), holdSession: vi.fn() }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({ ok: true })) }))
 
 import { useUI } from './useUI.js'
 import { useStore } from './useStore.js'
 import { api } from '../lib/api.js'
 import { armRestAlert, disarmRestAlert, holdRestAlert } from '../lib/rest-alert.js'
-import { beep, chime } from '../lib/sound.js'
+import { beep, chime, countdown, holdSession } from '../lib/sound.js'
 
 const hide = hidden => {
   Object.defineProperty(document, 'hidden', { configurable: true, get: () => hidden })
@@ -114,8 +114,7 @@ describe('the rest the app starts, pauses and ends', () => {
 
   it('plays the last-seconds ticks', () => {
     useUI.getState().startRest(5)
-    vi.advanceTimersByTime(3000)
-    expect(beep).toHaveBeenCalled()
+    expect(countdown).toHaveBeenLastCalledWith(true, 5)   // queued once, when the rest starts
   })
 
   it('still schedules an alert when sound is off', () => {
@@ -157,6 +156,25 @@ describe('the server push in the Android app', () => {
     useUI.getState().stopRest()   // skipped before the schedule came back
     await vi.advanceTimersByTimeAsync(0)
     expect(pushes()).toEqual([])
+  })
+})
+
+// The rest after a hold that ran out while the app was hidden has been counting since the hold
+// ended (useUI startRest's `since`): the alarm is set for that end, and not at all once it passed.
+describe('the rest after a hold that ran out unseen', () => {
+  it('is armed for its true end, with its whole length', () => {
+    const since = Date.now() - 30_000
+    useUI.getState().startRest(90, 0, { kind: 'set', since })
+    expect(armRestAlert).toHaveBeenCalledTimes(1)
+    expect(armRestAlert.mock.calls[0][0]).toBe(since + 90_000)
+    expect(armRestAlert.mock.calls[0][1]).toMatchObject({ totalSec: 90 })
+  })
+
+  it('is not armed at all when it is over too', () => {
+    useUI.getState().startRest(90, 0, { kind: 'set', since: Date.now() - 120_000 })
+    expect(useUI.getState().timer).toMatchObject({ ready: true })
+    expect(armRestAlert).not.toHaveBeenCalled()
+    expect(api).not.toHaveBeenCalledWith('/api/push/rest-timer', expect.anything())
   })
 })
 
@@ -210,6 +228,23 @@ describe('the notification’s own buttons', () => {
     h.native({ type: 'pause', leftMs: 400, totalMs: 10_000, endsAt: 0, paused: true })
     vi.advanceTimersByTime(5_000)
     expect(useUI.getState().timer).toMatchObject({ left: 1, paused: true })
+  })
+
+  // A rest over in the pocket lets the audio session go there and then (useUI runRest), once: the
+  // notification's +15 s brings its end back, and the new end must let go again.
+  it('+15 s on a rest that ran out while the app was hidden counts on, and lets go again at its new end', () => {
+    useUI.getState().startRest(2)
+    hide(true)
+    vi.advanceTimersByTime(3000)
+    holdSession.mockClear()
+    fromNotification('adjust', 15, 17)
+    expect(holdSession).toHaveBeenLastCalledWith(true)
+    vi.advanceTimersByTime(14_000)
+    expect(holdSession).toHaveBeenLastCalledWith(true)
+    vi.advanceTimersByTime(2000)
+    expect(holdSession).toHaveBeenLastCalledWith(false)
+    hide(false)
+    expect(useUI.getState().timer).toMatchObject({ left: 0, ready: true })
   })
 
   it('Skip ends the rest in the app', () => {

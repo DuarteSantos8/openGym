@@ -8,7 +8,7 @@ import { useStore } from '../store/useStore.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
-vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn() }))
+vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), countdown: vi.fn(), hush: vi.fn(), holdSession: vi.fn() }))
 
 let host, root, originalS
 
@@ -131,6 +131,14 @@ describe('the docked rest bar', () => {
     act(() => applyRestLeft(45))
     expect(useUI.getState().timer).toMatchObject({ left: 45, total: 45, forIdx: 2 })
     expect(useUI.getState().timer.ready).toBeUndefined()
+  })
+
+  // A fresh rest from Ready keeps what the old one led into, and so the sound it ends with.
+  it('a fresh rest from Ready keeps the kind of rest and the set it belongs to', () => {
+    act(() => useUI.getState().startRest(1, 2, { kind: 'block', forSet: 1 }))
+    act(() => vi.advanceTimersByTime(1000))
+    act(() => applyRestLeft(60))
+    expect(useUI.getState().timer).toMatchObject({ left: 60, forIdx: 2, forSet: 1, kind: 'block' })
   })
 
   it('Done on an untouched wheel leaves the rest alone', () => {

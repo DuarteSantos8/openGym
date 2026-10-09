@@ -2296,4 +2296,11 @@ export default {
   'Your sports watch, calling you back.': 'ساعتك الرياضية تناديك للعودة.',
   'Coach wants you back on the bar.': 'المدرب يريدك أن تعود إلى البار.',
   'Gentle, for headphones or a quiet room.': 'هادئ، للسماعات أو لغرفة هادئة.',
+  // --- a sound for each kind of rest (#165) ---
+  'A sound for each kind of rest': 'صوت لكل نوع من الراحة',
+  'Hear what comes next without looking. Until you pick one, each plays the sound above, as holds and the switch-sides pause always do.': 'اعرف ما التالي دون أن تنظر. إلى أن تختار صوتًا، يُشغّل كل نوع الصوت أعلاه، كما يفعل التثبيت واستراحة تبديل الجهة دائمًا.',
+  'Next round': 'الجولة التالية',
+  'Next exercise': 'التمرين التالي',
+  'Same as above': 'كما في الأعلى',
+  'Same as {0}': 'مثل {0}',
 }

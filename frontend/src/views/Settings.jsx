@@ -13,7 +13,7 @@ import { dumbbellsOf } from '../lib/dumbbells.js'
 import { effortOf } from '../lib/history.js'
 import { figureOf } from '../lib/exercises.js'
 import { unlock, chime, playOnSilentSupported, vibrateSupported, appleTouchDevice } from '../lib/sound.js'
-import { REST_SOUND_IDS, restSoundOf } from '../lib/rest-sounds.js'
+import { REST_SOUND_IDS, REST_KINDS, restSoundOf } from '../lib/rest-sounds.js'
 import { scheduleModeOf, chooseFixedWeek, chooseRotation } from '../lib/rotation.js'
 import { queueOf } from '../lib/queue.js'
 import { api, webauthnOK, passkeyRegister, passkeyError, IS_ANDROID } from '../lib/api.js'
@@ -576,8 +576,13 @@ export default function Settings({ page = null, find = null, via = null }) {
         <Section title={t('When a rest ends')}>
           <Row icon="speaker" iconTint="var(--pink)" title={t('Play a sound')}>
             {/* Turning the sound on is a tap: unlock the audio context now so a timer that ends
-                before the next set check can already sound (iOS, #152). */}
-            <Switch checked={!!S.sound} onChange={v => { if (v) unlock(true); update(s => { s.sound = v }) }} />
+                before the next set check can already sound (iOS, #152). A timer already running
+                had its count-in queued when it started, so it is queued again (or called off). */}
+            <Switch checked={!!S.sound} onChange={v => {
+              if (v) unlock(true)
+              update(s => { s.sound = v })
+              useUI.getState().restartCountdown()
+            }} />
           </Row>
           {/* The chime that replaced the original three beeps (Discord: "too quiet under music")
               is not an improvement for everyone: louder is a cost with headphones or in a quiet
@@ -1040,11 +1045,56 @@ export function RestSoundSheet({ close }) {
         subtitle={REST_SOUND_HINT[id] ? t(REST_SOUND_HINT[id]) : null} accessory={id === cur ? 'check' : 'none'}
         onClick={() => pickRestSound(id)} />)}
     </Section>
+    <Section title={t('A sound for each kind of rest')}
+      footer={t('Hear what comes next without looking. Until you pick one, each plays the sound above, as holds and the switch-sides pause always do.')}>
+      {REST_KINDS.map(kind => {
+        const own = kindSoundOf(S, kind)
+        return <Row key={kind} icon="bell" iconTint="var(--pink)" title={t(REST_KIND_TITLE[kind])}
+          value={own ? t(REST_SOUND_LABEL[own]) : t('Same as above')} accessory="chevron" onClick={() => restKindSoundSheet(kind)} />
+      })}
+    </Section>
     <div style={{ height: 14 }} />
     <Button variant="primary" onClick={close}>{t('Done')}</Button>
   </>
 }
 const restSoundSheet = () => useUI.getState().openSheet(close => <RestSoundSheet close={close} />)
+
+// A sound of its own for one kind of rest (lib/rest-sounds.js restSoundFor), so the end of a rest
+// says whether the next set, the next round of a superset or the next exercise is up. Stored in
+// S.restSoundByKind, which holds only the kinds given one; "Same as" takes the kind out again, and
+// it plays the profile's sound. Each pick plays as it is tapped, as in the sheet above.
+const REST_KIND_TITLE = { set: 'Next set', round: 'Next round', block: 'Next exercise' }
+const kindSoundOf = (S, kind) => {
+  const id = S.restSoundByKind?.[kind]
+  return Object.hasOwn(REST_SOUND_LABEL, id) ? id : null
+}
+export function pickKindSound(kind, id) {
+  unlock(true)
+  useStore.getState().update(s => {
+    const was = s.restSoundByKind
+    const by = was && typeof was === 'object' && !Array.isArray(was) ? { ...was } : {}
+    if (id) by[kind] = id; else delete by[kind]
+    if (Object.keys(by).length) s.restSoundByKind = by; else delete s.restSoundByKind
+  })
+  chime(true, id || restSoundOf(useStore.getState().S))
+}
+export function RestKindSoundSheet({ kind, close }) {
+  const S = useStore(s => s.S)
+  const own = kindSoundOf(S, kind)
+  return <>
+    <h3>{t(REST_KIND_TITLE[kind])}</h3>
+    <div className="muted small" style={{ marginBottom: 12 }}>{t('Tap one to hear it.')}</div>
+    <Section>
+      <Row icon={own ? 'play' : 'speaker'} iconTint="var(--pink)" title={t('Same as {0}', t(REST_SOUND_LABEL[restSoundOf(S)]))}
+        accessory={own ? 'none' : 'check'} onClick={() => pickKindSound(kind, null)} />
+      {REST_SOUND_IDS.map(id => <Row key={id} icon={id === own ? 'speaker' : 'play'} iconTint="var(--pink)" title={t(REST_SOUND_LABEL[id])}
+        accessory={id === own ? 'check' : 'none'} onClick={() => pickKindSound(kind, id)} />)}
+    </Section>
+    <div style={{ height: 14 }} />
+    <Button variant="primary" onClick={close}>{t('Done')}</Button>
+  </>
+}
+const restKindSoundSheet = kind => useUI.getState().openSheet(close => <RestKindSoundSheet kind={kind} close={close} />)
 
 function effortHelpSheet() {
   useUI.getState().openSheet(close => <>

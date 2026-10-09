@@ -17,7 +17,7 @@ import { pinState } from '../lib/queue.js'
 import { t, tn, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { api, beacon } from '../lib/api.js'
 import { pyramidRestFor, maxRecordAt, isPyramid, pyramidLabel } from '../lib/pyramid.js'
-import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor } from '../lib/supersetFlow.js'
+import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, restKind } from '../lib/supersetFlow.js'
 import Media from '../components/Media.jsx'
 import WorkoutScrollAnchor from '../components/WorkoutScrollAnchor.jsx'
 import WorkoutChips from '../components/WorkoutChips.jsx'
@@ -1583,7 +1583,7 @@ function ActiveWorkout() {
   }
   // What a hold hands back to its row: on its end, its Done, or a rest displacing it. Also bound
   // again to a hold restored after a reload (useUI.bindWork, below).
-  const holdDone = (owner, plan, onFocusProgress) => (elapsed, { abandoned = false, chimed = false } = {}) => {
+  const holdDone = (owner, plan, onFocusProgress) => (elapsed, { abandoned = false, chimed = false, endedAt } = {}) => {
     const { idx } = owner
     // The row may have moved while the hold ran (a set copied or removed above it): write to
     // where it is now. holdAt is that place (deleteActiveSet, copyActiveSet).
@@ -1603,7 +1603,8 @@ function ActiveWorkout() {
       return
     }
     mutEntry(idx, en => { en.sets[i].sec = elapsed; delete en.sets[i].planSec })
-    if (!useStore.getState().S.active.entries[idx].sets[i].done) toggle(idx, i, undefined, { quiet: chimed, onFocusProgress })
+    // `since`: it ran out while the page was hidden, and the rest it earned has been counting since.
+    if (!useStore.getState().S.active.entries[idx].sets[i].done) toggle(idx, i, undefined, { quiet: chimed, onFocusProgress, since: endedAt })
   }
   // A hold that came back from a reload has no handler yet: this screen gives it its own.
   const holdDoneRef = useRef(holdDone)
@@ -1621,7 +1622,10 @@ function ActiveWorkout() {
   // `quiet`: the hold that ticks this set has just ended with the chime and its buzz pattern
   // (store/useUI.js). The tick's own beep would sound over the chime's first note and clip it,
   // and its short buzz would cut the pattern off: a new vibrate call replaces the running one.
-  const toggle = (idx, i, side, { quiet = false, onFocusProgress } = {}) => {
+  // `since`: when the hold that ticks this set ended, if it ran out while the page was hidden: the
+  // rest it earned has been counting since then (useUI.startRest), not from this tick on the page
+  // coming back.
+  const toggle = (idx, i, side, { quiet = false, onFocusProgress, since } = {}) => {
     // Ticking a set ends the typing in that row: drop the keyboard before the rest timer, the
     // effort sheet or the next exercise moves in. WebKit keeps the input focused across the
     // button tap, and a focused input with its keyboard gone is what leaves the tab bar
@@ -1686,6 +1690,11 @@ function ActiveWorkout() {
       // A warm-up ramp set may rest shorter than a work set (the exercise's warmupRestSec); the
       // last ramp set, into the first work set, still gets the working rest.
       const restAfter = warmupRestSecFor(fresh.entries[idx], i, restSec)
+      // What the rest leads into (the next set, round or exercise), which picks the sound it ends
+      // with when Settings → Sound gives that kind one of its own.
+      const kind = restKind({ unitDone: freshUnitDone, superset: (freshUnit?.length || 0) > 1 })
+      // A hold that ran out unseen hands its end to the rest it earned.
+      const late = since != null ? { since } : {}
 
       // A re-check of finished work must not navigate or reopen a sheet, but it may still owe
       // you a rest — see restOnRecheck, and the other half of issue #3. A rest that already ran
@@ -1693,7 +1702,7 @@ function ActiveWorkout() {
       // still the rest you are in, held on purpose, and a re-check leaves it as it is.
       if (!progress.isNew) {
         const rest = useUI.getState().timer
-        if (!restBeforeWarmup && restOnRecheck({ timerRunning: !!(rest && !rest.ready), unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) startRest(restAfter, idx, { forSet: i })
+        if (!restBeforeWarmup && restOnRecheck({ timerRunning: !!(rest && !rest.ready), unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) startRest(restAfter, idx, { kind, forSet: i, ...late })
         return
       }
 
@@ -1715,7 +1724,7 @@ function ActiveWorkout() {
       const partner = sideOf(rows[i]) === 'L' && sideOf(rows[i + 1]) === 'R' ? rows[i + 1]
         : sideOf(rows[i]) === 'R' && sideOf(rows[i - 1]) === 'L' ? rows[i - 1] : null
       if (m === 'time' && partner && !partner.done && restAfter > 0) {
-        startRest(Math.min(SWITCH_SIDES_SEC, restAfter), idx, { kind: 'switch', forSet: i })
+        startRest(Math.min(SWITCH_SIDES_SEC, restAfter), idx, { kind: 'switch', forSet: i, ...late })
         return
       }
 
@@ -1724,7 +1733,7 @@ function ActiveWorkout() {
       // stopRest() first so a rest that belongs after this set replaces the one that was running.
       if (freshUnitDone) stopRest()
       if (!freshUnit || freshUnit.length <= 1) {
-        if (!restBeforeWarmup && restAfterSet({ unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) startRest(restAfter, idx, { forSet: i })
+        if (!restBeforeWarmup && restAfterSet({ unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) startRest(restAfter, idx, { kind, forSet: i, ...late })
         onFocusProgress?.({ unitDone: freshUnitDone })
         return
       }
@@ -1732,10 +1741,10 @@ function ActiveWorkout() {
       const step = supersetFlowStep(fresh.entries, freshUnit, idx)
       if (!step) { onFocusProgress?.({ unitDone: freshUnitDone }); return }
       if (step.unitDone) {
-        if (nextUnit?.length && !restBeforeWarmup) startRest(restAfter, idx, { forSet: i })
+        if (nextUnit?.length && !restBeforeWarmup) startRest(restAfter, idx, { kind, forSet: i, ...late })
       } else {
         if (step.nextIdx != null) update(s => { if (s.active) s.active.cur = step.nextIdx })
-        if (step.roundDone) startRest(restAfter, idx, { forSet: i })
+        if (step.roundDone) startRest(restAfter, idx, { kind, forSet: i, ...late })
       }
       onFocusProgress?.({ unitDone: freshUnitDone })
     }
