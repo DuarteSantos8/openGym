@@ -1666,4 +1666,12 @@ export default {
   'Teal': 'Türkiz',
   'Yellow': 'Sárga',
   'Enter how long it took — at least 1 minute.': 'Add meg, meddig tartott — legalább 1 perc.',
+  "Normal": "Normál",
+  "Routine type": "Edzésterv típusa",
+  "Interval Training": "Intervallumos edzés",
+  "Interval configuration": "Intervallumok beállítása",
+  "Rounds": "Körök",
+  "Work": "Munka",
+  "sec": "mp",
+
 }

@@ -19,6 +19,45 @@ describe('completed workout boundary', () => {
     })
   })
 
+  it('keeps interval workout metadata and entries without completed sets', () => {
+    const active = {
+      id: 'interval-1',
+      d: '2026-10-08',
+      start: 1000,
+      routineIds: ['hiit'],
+      name: 'HIIT',
+      bw: null,
+      interval: {
+        round: 2,
+        exercise: 1,
+        phase: 'work',
+        rounds: 4,
+        exerciseCount: 3,
+        workSec: 30,
+        restSec: 15,
+      },
+      entries: [
+        { id: 'burpees', sets: [], target: {} },
+        { id: 'squats', sets: [], target: {} },
+        { id: 'pushups', sets: [], target: {} },
+      ],
+    }
+
+    const completed = buildCompletedWorkout(active, { end: 10000, prs: [] })
+
+    expect(completed.type).toBe('interval')
+    expect(completed.interval).toEqual({
+      rounds: 4,
+      workSec: 30,
+      restSec: 15,
+    })
+    expect(completed.entries.map(e => e.id)).toEqual([
+      'burpees',
+      'squats',
+      'pushups',
+    ])
+  })
+
   // planSec is live-session bookkeeping — the plan a hold displaced before it finished put aside
   // (Workout.startTimed). A finished session keeps only what was logged, so an unfinished row goes
   // back to recording its plan and the key never reaches S.workouts.

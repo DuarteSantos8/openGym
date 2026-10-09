@@ -1716,4 +1716,12 @@ export default {
   'Teal': 'أزرق مخضر',
   'Yellow': 'أصفر',
   'Enter how long it took — at least 1 minute.': 'أدخل المدة التي استغرقها — دقيقة واحدة على الأقل.',
+  "Normal": "عادي",
+  "Routine type": "نوع الروتين",
+  "Interval Training": "التدريب المتقطع",
+  "Interval configuration": "إعدادات الفترات",
+  "Rounds": "الجولات",
+  "Work": "العمل",
+  "sec": "ث",
+
 }

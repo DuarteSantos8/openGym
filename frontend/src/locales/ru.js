@@ -1663,4 +1663,12 @@ export default {
   'Teal': 'Бирюзовый',
   'Yellow': 'Жёлтый',
   'Enter how long it took — at least 1 minute.': 'Укажите, сколько это длилось — не меньше 1 минуты.',
+  "Normal": "Обычный",
+  "Routine type": "Тип программы",
+  "Interval Training": "Интервальная тренировка",
+  "Interval configuration": "Настройка интервалов",
+  "Rounds": "Раунды",
+  "Work": "Работа",
+  "sec": "сек.",
+
 }

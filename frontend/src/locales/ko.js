@@ -1663,4 +1663,12 @@ export default {
   'Teal': '청록',
   'Yellow': '노랑',
   'Enter how long it took — at least 1 minute.': '걸린 시간을 입력하세요 — 최소 1분.',
+  "Normal": "일반",
+  "Routine type": "루틴 유형",
+  "Interval Training": "인터벌 트레이닝",
+  "Interval configuration": "인터벌 설정",
+  "Rounds": "라운드",
+  "Work": "운동",
+  "sec": "초",
+
 }

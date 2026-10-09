@@ -1663,4 +1663,11 @@ export default {
   'Teal': 'Turquesa',
   'Yellow': 'Amarelo',
   'Enter how long it took — at least 1 minute.': 'Indica quanto tempo demorou — pelo menos 1 minuto.',
+  'Normal': 'Normal',
+  'Routine type': 'Tipo de rotina',
+  'Interval Training': 'Treino intervalado',
+  'Interval configuration': 'Configuração dos intervalos',
+  'Rounds': 'Rondas',
+  'Work': 'Trabalho',
+  'sec': 's',
 }

@@ -1663,4 +1663,12 @@ export default {
   'Teal': '青色',
   'Yellow': '黄色',
   'Enter how long it took — at least 1 minute.': '请输入用时 — 至少 1 分钟。',
+  "Normal": "普通",
+  "Routine type": "训练计划类型",
+  "Interval Training": "间歇训练",
+  "Interval configuration": "间歇设置",
+  "Rounds": "轮次",
+  "Work": "训练",
+  "sec": "秒",
+
 }

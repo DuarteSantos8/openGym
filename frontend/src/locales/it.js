@@ -1663,4 +1663,12 @@ export default {
   'Teal': 'Turchese',
   'Yellow': 'Giallo',
   'Enter how long it took — at least 1 minute.': 'Inserisci quanto è durato — almeno 1 minuto.',
+  "Normal": "Normale",
+  "Routine type": "Tipo di routine",
+  "Interval Training": "Allenamento a intervalli",
+  "Interval configuration": "Configurazione degli intervalli",
+  "Rounds": "Round",
+  "Work": "Lavoro",
+  "sec": "sec",
+
 }

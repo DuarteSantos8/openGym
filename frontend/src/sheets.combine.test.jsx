@@ -47,6 +47,51 @@ describe('beginWorkout with a routine-id list', () => {
     expect(a.entries.every(e => e.rid === 'strength')).toBe(true)
   })
 
+  it('does not add interval state to a normal routine', () => {
+    act(() => beginWorkout(['strength'], null))
+    const a = useStore.getState().S.active
+
+    expect(a).not.toHaveProperty('interval')
+  })
+
+  it('creates interval state for a single interval routine', () => {
+    const intervalRoutine = {
+      id: 'hiit',
+      name: 'HIIT',
+      type: 'interval',
+      interval: {
+        rounds: 4,
+        workSec: 30,
+        restSec: 15,
+      },
+      ex: [
+        { id: ids[0] },
+        { id: ids[1] },
+        { id: ids[2] },
+      ],
+    }
+
+    useStore.getState().update(s => {
+      s.routines.push(intervalRoutine)
+    })
+
+    act(() => beginWorkout(['hiit'], null))
+
+    const a = useStore.getState().S.active
+
+    expect(a.routineIds).toEqual(['hiit'])
+    expect(a.name).toBe('HIIT')
+    expect(a.interval).toEqual({
+      round: 0,
+      exercise: 0,
+      phase: 'work',
+      rounds: 4,
+      exerciseCount: 3,
+      workSec: 30,
+      restSec: 15,
+    })
+  })
+
   it('an empty list is a freestyle session — no entries, no rid', () => {
     act(() => beginWorkout([], null))
     const a = useStore.getState().S.active

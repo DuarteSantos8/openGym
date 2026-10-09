@@ -1674,4 +1674,12 @@ export default {
   'Teal': 'เขียวน้ำทะเล',
   'Yellow': 'เหลือง',
   'Enter how long it took — at least 1 minute.': 'ใส่ระยะเวลาที่ใช้ — อย่างน้อย 1 นาที',
+  "Normal": "ปกติ",
+  "Routine type": "ประเภทกิจวัตร",
+  "Interval Training": "การฝึกแบบอินเทอร์วัล",
+  "Interval configuration": "การตั้งค่าอินเทอร์วัล",
+  "Rounds": "รอบ",
+  "Work": "ช่วงออกกำลัง",
+  "sec": "วินาที",
+
 }

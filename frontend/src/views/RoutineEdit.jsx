@@ -448,6 +448,7 @@ export default function RoutineEdit() {
             ...intervalConfigOf(routine),
             [key]: value,
           }
+
         })
 
         return (
