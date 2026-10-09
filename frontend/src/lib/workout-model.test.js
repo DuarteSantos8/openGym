@@ -6,7 +6,7 @@ import {
   nextDropWeight, nextBurstReps, splitBurstReps,
   isSideSet, makeSideSet, syncSideAggregate, setSideField, toggleSide, WEIGHT_ORIGIN_MANUAL,
   addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt,
-  holdPosition,
+  holdPosition, nextUndoneAfter,
 } from './workout-model.js'
 
 describe('phaseForSet / isWarmupRow', () => {
@@ -394,6 +394,19 @@ describe('holdPosition', () => {
   it('is null for a row that does not exist', () => {
     expect(holdPosition(sets, 9)).toBe(null)
     expect(holdPosition(undefined, 0)).toBe(null)
+  })
+})
+
+// A timed exercise that runs itself starts the first unfinished set after the one just held.
+describe('nextUndoneAfter', () => {
+  it('hands over to the first unfinished set after this one', () => {
+    expect(nextUndoneAfter([{ done: true }, { done: false }, { done: false }], 0)).toBe(1)
+    expect(nextUndoneAfter([{ done: true }, { done: true }, { done: false }], 0)).toBe(2)
+  })
+  it('does not go back to an earlier set left unticked, and stops at the end', () => {
+    expect(nextUndoneAfter([{ done: false }, { done: true }, { done: true }], 1)).toBe(-1)
+    expect(nextUndoneAfter([{ done: true }], 0)).toBe(-1)
+    expect(nextUndoneAfter(undefined, 0)).toBe(-1)
   })
 })
 

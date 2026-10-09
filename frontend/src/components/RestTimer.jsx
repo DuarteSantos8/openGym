@@ -34,7 +34,8 @@ const holdLabel = (S, work) => {
 }
 
 // The clock is a button: a tap opens the wheel at the time that is left, for a rest that wants
-// to be a round 2:00 rather than eight taps of +15. 0:00 ends the rest, like Skip. What is left
+// to be a round 2:00 rather than eight taps of +15. 0:00 ends the rest, like Skip, and hands
+// over what Skip would (useUI.skipRest: a timed exercise's next hold). What is left
 // is read again at Done, since the rest kept counting while the wheel was open. Done on a wheel
 // nobody turned changes nothing: the rest keeps the seconds it counted down meanwhile, and one
 // that ran out (or a switch-sides pause that ended) is not started again.
@@ -57,8 +58,10 @@ export function applyRestLeft(v, opened) {
   if (opened !== undefined && v === opened) return
   const ui = useUI.getState()
   const now = ui.timer
-  if (!now) { if (v > 0) ui.startRest(v); return }
-  if (v <= 0) { ui.stopRest(); return }
+  // Nothing running: a fresh rest, unless a hold took over while the wheel was open (a timed
+  // exercise that runs itself), which a rest would cut off.
+  if (!now) { if (v > 0 && !ui.work) ui.startRest(v); return }
+  if (v <= 0) { ui.skipRest(); return }
   if (now.ready) { ui.addRest(v); return }
   if (v !== now.left) ui.addRest(v - now.left)
 }
@@ -105,7 +108,7 @@ function useSkipFits(actsRef, deps) {
 export default function RestTimer() {
   const timer = useUI(s => s.timer)
   const work = useUI(s => s.work)
-  const { addRest, stopRest, pauseRest, resumeRest, finishWorkEarly, stopWork } = useUI()
+  const { addRest, skipRest, pauseRest, resumeRest, finishWorkEarly, stopWork } = useUI()
   const holdLbl = useStore(s => (work ? holdLabel(s.S, work) : ''))
   const on = work || timer
   const actsRef = useRef(null)
@@ -162,7 +165,7 @@ export default function RestTimer() {
           : <Button size="sm" className="pause" icon={timer.paused ? 'play' : 'pause'}
             aria-label={t(timer.paused ? 'Resume' : 'Pause')} aria-pressed={!!timer.paused}
             onClick={timer.paused ? resumeRest : pauseRest} />}
-        <button type="button" className={'btn primary sm skip' + (skipFits ? '' : ' icon-only')} onClick={stopRest}
+        <button type="button" className={'btn primary sm skip' + (skipFits ? '' : ' icon-only')} onClick={() => skipRest()}
           aria-label={skipFits ? undefined : t(timer.ready ? 'Dismiss' : 'Skip')}>
           {skipFits
             ? <span><span className="on">{t(timer.ready ? 'Dismiss' : 'Skip')}</span>
