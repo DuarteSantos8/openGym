@@ -71,7 +71,8 @@ const setTimbre = (ctx, o, name) => {
 // One tone. The defaults are every beep the app has always made: a sine that reaches 0.35 and
 // fades from there at once. `peak`, `hold` (the share of the tone kept at its peak before the
 // fade), `timbre` (one of TIMBRES; `bright: true` is the chime's) and `glide` (a frequency the
-// tone slides to by its end, for the whistle) exist for the end-of-rest sounds below.
+// tone slides to by its end, for the whistle) exist for the end-of-rest sounds below. Returns the
+// oscillator, so a burst scheduled ahead can still be called off (see hush).
 const tone = (freq, dur, when, { peak = 0.35, hold = 0, bright = false, timbre = bright ? 'bright' : null, glide = 0 } = {}) => {
   const ctx = wake()
   const o = ctx.createOscillator(), g = ctx.createGain()
@@ -86,6 +87,7 @@ const tone = (freq, dur, when, { peak = 0.35, hold = 0, bright = false, timbre =
   g.gain.exponentialRampToValueAtTime(0.001, t0 + dur)
   o.start(t0); o.stop(t0 + dur + 0.05)
   sleepAfter(when + dur + 0.05)
+  return o
 }
 
 export function beep(enabled, freq, dur, when) {
@@ -130,6 +132,34 @@ export function chime(enabled, kind) {
       tone(freq, dur, when, snd === REST_SOUNDS.classic ? {} : { peak: snd.peak, hold: snd.hold, timbre: snd.timbre, glide })
     }
   } catch (e) { /* */ }
+}
+
+// The last seconds of a timer, ticked out loud so you can put the phone down and still be ready.
+// Scheduled as one burst the moment the timer starts, not beeped a tick at a time: setInterval is
+// throttled to a crawl (often to once a minute) in a backgrounded tab or behind a locked screen,
+// which is exactly where a phone spends a rest, so the tick-by-tick count-in was heard only by
+// someone already watching the screen. Audio queued inside the tap that started the timer keeps
+// its own clock and plays regardless. Five ticks a second apart, the last a second before the
+// end, each the 660 Hz, 0.1 s tick the old count-in beeped; a timer shorter than five seconds
+// counts down from what it has. `secLeft` is the time really left, fractions included: a tick
+// placed against a rounded second could land on the end sound.
+//
+// hush() is what makes queuing ahead safe: every way a timer ends early (Skip, Done, Cancel, a new
+// timer, the workout discarded) goes through store/useUI.js stopRest or stopWork, which call it,
+// so ticks for a timer that is already over never arrive late.
+export const COUNTDOWN_SEC = 5
+let ticks = []
+export function countdown(enabled, secLeft) {
+  hush()
+  if (!enabled) return
+  const left = Math.max(0, Number(secLeft) || 0)
+  try {
+    for (let n = Math.min(COUNTDOWN_SEC, Math.floor(left)); n >= 1; n--) ticks.push(tone(660, 0.1, left - n))
+  } catch (e) { /* */ }
+}
+export function hush() {
+  for (const o of ticks) { try { o.stop(0) } catch (e) { /* */ } }
+  ticks = []
 }
 
 // Call from inside a tap. Gets the context created and running while the browser still counts

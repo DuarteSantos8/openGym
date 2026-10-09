@@ -10,7 +10,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const sound = vi.hoisted(() => ({ canVibrate: true, iPhone: false }))
 vi.mock('../lib/sound.js', () => ({
-  unlock: vi.fn(), beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(),
+  unlock: vi.fn(), beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), countdown: vi.fn(), hush: vi.fn(),
   vibrateSupported: () => sound.canVibrate, appleTouchDevice: () => sound.iPhone,
 }))
 vi.mock('../lib/wakelock.js', () => ({ wakeLockSupported: () => true }))
@@ -51,6 +51,18 @@ const row = title => [...host.querySelectorAll('.lrow')].find(r => r.querySelect
 const S = () => useStore.getState().S
 
 describe('the in-workout settings sheet', () => {
+  // A rest already counting had its count-in queued when it started (useUI.restartCountdown).
+  it('Play a sound mid-rest queues the count-in again, and off calls it off', async () => {
+    const { countdown } = await import('../lib/sound.js')
+    act(() => useUI.getState().startRest(60, 0))
+    countdown.mockClear()
+    act(() => row('Play a sound').querySelector('[role=switch]').click())
+    expect(countdown).toHaveBeenLastCalledWith(true, expect.closeTo(60, 0))   // the time really left
+    act(() => row('Play a sound').querySelector('[role=switch]').click())
+    expect(countdown).toHaveBeenLastCalledWith(false, expect.closeTo(60, 0))
+    act(() => useUI.getState().stopRest())
+  })
+
   it('has the rows people change at the gym, then All settings', () => {
     expect([...host.querySelectorAll('.lrow-t')].map(e => e.textContent)).toEqual([
       'Rest timer', 'Play a sound', 'Vibrate', 'Flash the screen', 'Keep screen awake',

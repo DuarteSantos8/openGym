@@ -40,8 +40,10 @@ export function WorkoutSettings({ close }) {
           onDone: v => update(s => { s.restSec = v }),
         })} />
       <Row icon="speaker" iconTint="var(--pink)" title={t('Play a sound')}>
-        {/* A tap: unlock the audio now so a rest ending before the next tick can sound (iOS, #152). */}
-        <Switch checked={!!S.sound} onChange={v => { if (v) unlock(true); update(s => { s.sound = v }) }} />
+        {/* A tap: unlock the audio now so a rest ending before the next tick can sound (iOS, #152).
+            A rest or hold already running had its count-in queued when it started: queue it again,
+            or call it off (useUI.restartCountdown). */}
+        <Switch checked={!!S.sound} onChange={v => { if (v) unlock(true); update(s => { s.sound = v }); useUI.getState().restartCountdown() }} />
       </Row>
       <Row icon="vibrate" iconTint="var(--indigo)" title={t('Vibrate')} className={canVibrate ? '' : 'dis'}
         subtitle={canVibrate ? null : iPhone ? t('Not on iPhone') : t('Not supported in this browser.')}>

@@ -8,7 +8,7 @@ import { chime, unlock } from '../lib/sound.js'
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const mocks = vi.hoisted(() => {
-  const state = { S: null, openSheet: null }
+  const state = { S: null, openSheet: null, restartCountdown: null }
   state.snapshot = () => ({
     S: state.S,
     user: null,
@@ -28,7 +28,7 @@ vi.mock('../store/useStore.js', () => {
   return { useStore, DEF: { reminder: { time: '17:30' } }, hasData: () => false }
 })
 vi.mock('../store/useUI.js', () => {
-  const snap = () => ({ toast: vi.fn(), openSheet: mocks.openSheet || vi.fn() })
+  const snap = () => ({ toast: vi.fn(), openSheet: mocks.openSheet || vi.fn(), restartCountdown: mocks.restartCountdown || vi.fn() })
   const useUI = selector => selector ? selector(snap()) : snap()
   useUI.getState = snap
   return { useUI }
@@ -129,6 +129,15 @@ describe('Settings — Play a sound unlocks audio from the tap', () => {
     act(() => { switchIn(rowTitled('Play a sound')).click() })
     expect(mocks.S.sound).toBe(false)
     expect(unlock).not.toHaveBeenCalled()
+  })
+
+  // A timer already counting picks up a Sounds change straight away (store/useUI.js).
+  it('a timer already counting has its count-in queued again, or called off', () => {
+    mocks.restartCountdown = vi.fn()
+    mount()
+    act(() => { switchIn(rowTitled('Play a sound')).click() })
+    expect(mocks.restartCountdown).toHaveBeenCalledTimes(1)
+    mocks.restartCountdown = null
   })
 })
 
