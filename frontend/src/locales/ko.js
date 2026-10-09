@@ -2241,4 +2241,11 @@ export default {
   'Your sports watch, calling you back.': '스포츠 시계가 다시 부르고 있어요.',
   'Coach wants you back on the bar.': '코치가 바 앞으로 돌아오래요.',
   'Gentle, for headphones or a quiet room.': '이어폰이나 조용한 곳에 어울려요.',
+  // --- a sound for each kind of rest (#165) ---
+  'A sound for each kind of rest': '휴식 종류마다 다른 소리',
+  'Hear what comes next without looking. Until you pick one, each plays the sound above, as holds and the switch-sides pause always do.': '화면을 보지 않아도 다음이 무엇인지 들을 수 있어요. 고르기 전까지는 각각 위의 소리가 나요. 버티기와 방향 바꾸기 휴식도 늘 그래요.',
+  'Next round': '다음 라운드',
+  'Next exercise': '다음 운동',
+  'Same as above': '위와 같음',
+  'Same as {0}': '같은 소리: {0}',
 }

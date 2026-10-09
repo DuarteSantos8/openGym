@@ -2252,4 +2252,11 @@ export default {
   'Your sports watch, calling you back.': 'นาฬิกาสปอร์ตเรียกคุณกลับมาแล้ว',
   'Coach wants you back on the bar.': 'โค้ชอยากให้คุณกลับมาที่บาร์',
   'Gentle, for headphones or a quiet room.': 'เบา ๆ สำหรับหูฟังหรือห้องที่เงียบ',
+  // --- a sound for each kind of rest (#165) ---
+  'A sound for each kind of rest': 'เสียงแยกตามประเภทการพัก',
+  'Hear what comes next without looking. Until you pick one, each plays the sound above, as holds and the switch-sides pause always do.': 'รู้ว่าต่อไปคืออะไรโดยไม่ต้องมอง จนกว่าคุณจะเลือก แต่ละแบบจะเล่นเสียงด้านบน เหมือนที่การค้างท่าและช่วงพักสลับข้างเล่นเสมอ',
+  'Next round': 'รอบถัดไป',
+  'Next exercise': 'ท่าถัดไป',
+  'Same as above': 'เหมือนด้านบน',
+  'Same as {0}': 'เหมือน {0}',
 }

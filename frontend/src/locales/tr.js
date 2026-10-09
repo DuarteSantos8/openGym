@@ -2241,4 +2241,11 @@ export default {
   'Your sports watch, calling you back.': 'Spor saatin seni geri çağırıyor.',
   'Coach wants you back on the bar.': 'Koç seni bara geri bekliyor.',
   'Gentle, for headphones or a quiet room.': 'Sakin, kulaklık ya da sessiz bir oda için.',
+  // --- a sound for each kind of rest (#165) ---
+  'A sound for each kind of rest': 'Her dinlenme türüne ayrı ses',
+  'Hear what comes next without looking. Until you pick one, each plays the sound above, as holds and the switch-sides pause always do.': 'Bakmadan sırada ne olduğunu duy. Sen seçene kadar her biri yukarıdaki sesi çalar; tutuşlar ve taraf değiştirme molası da hep öyle yapar.',
+  'Next round': 'Sonraki tur',
+  'Next exercise': 'Sonraki egzersiz',
+  'Same as above': 'Yukarıdakiyle aynı',
+  'Same as {0}': '{0} ile aynı',
 }

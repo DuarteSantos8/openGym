@@ -2238,4 +2238,11 @@ export default {
   'Your sports watch, calling you back.': 'Ваш спортивний годинник кличе вас назад.',
   'Coach wants you back on the bar.': 'Тренер чекає вас назад біля штанги.',
   'Gentle, for headphones or a quiet room.': 'Тихий, для навушників або спокійної кімнати.',
+  // --- a sound for each kind of rest (#165) ---
+  'A sound for each kind of rest': 'Окремий звук для кожного виду відпочинку',
+  'Hear what comes next without looking. Until you pick one, each plays the sound above, as holds and the switch-sides pause always do.': 'Почуєте, що далі, не дивлячись на екран. Доки ви не оберете звук, кожен вид грає звук вище, як завжди роблять утримання й пауза для зміни сторони.',
+  'Next round': 'Наступне коло',
+  'Next exercise': 'Наступна вправа',
+  'Same as above': 'Як вище',
+  'Same as {0}': 'Як {0}',
 }

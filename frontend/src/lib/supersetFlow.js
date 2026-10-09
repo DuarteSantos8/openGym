@@ -50,6 +50,23 @@ export function restAfterSet({ unitDone, lastUnit }) {
 }
 
 /**
+ * What the rest after this set leads into, which picks its end sound when Settings → Sound gives
+ * a kind of rest a sound of its own (lib/rest-sounds.js restSoundFor):
+ *
+ *   'set'   — the exercise has more sets: stay where you are.
+ *   'round' — a superset round is over: back to the first exercise of the group. Also the
+ *             only rest a superset takes before it is finished, so a mid-group re-check gets it.
+ *   'block' — this exercise or superset is finished and another one follows: move on.
+ *
+ * Decided here, next to restAfterSet, so the places that start a rest agree on what the sound
+ * means. Whether a rest starts at all is still restAfterSet / restOnRecheck's call.
+ */
+export function restKind({ unitDone, superset }) {
+  if (unitDone) return 'block'
+  return superset ? 'round' : 'set'
+}
+
+/**
  * Whether re-checking an already-completed set should start a rest.
  *
  * The high-water rule deliberately swallows a re-check so that unchecking and re-checking

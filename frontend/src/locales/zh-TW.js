@@ -2234,4 +2234,11 @@ export default {
   'Your sports watch, calling you back.': '你的運動手錶在叫你回來。',
   'Coach wants you back on the bar.': '教練等你回到槓鈴前。',
   'Gentle, for headphones or a quiet room.': '輕柔，適合耳機或安靜的房間。',
+  // --- a sound for each kind of rest (#165) ---
+  'A sound for each kind of rest': '每種休息各有提示音',
+  'Hear what comes next without looking. Until you pick one, each plays the sound above, as holds and the switch-sides pause always do.': '不用看就知道接下來做什麼。在你選擇之前，每種都播放上方的聲音，支撐和換邊的暫停也一向如此。',
+  'Next round': '下一輪',
+  'Next exercise': '下一個動作',
+  'Same as above': '同上',
+  'Same as {0}': '與{0}相同',
 }

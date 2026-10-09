@@ -3,6 +3,9 @@
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 import { useUI } from './useUI.js'
 import { useStore } from './useStore.js'
+import { chime } from '../lib/sound.js'
+
+vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn() }))
 
 // "Off" has to hold at the timer itself, not at the four places that start one — the same
 // reason the rest-after-a-set rule is a shared condition rather than four copies.
@@ -303,3 +306,72 @@ describe('addRest adjustments', () => {
   })
 })
 
+// The sound a rest ends with is the profile's (Settings → Sound) unless that kind of rest has one
+// of its own (S.restSoundByKind, lib/rest-sounds.js restSoundFor). The kind travels with the
+// timer, so the sound at zero is the one the set that started the rest earned.
+describe('the sound a rest ends with, by its kind', () => {
+  let originalSettings
+  const pick = over => useStore.setState({ S: { ...useStore.getState().S, ...over } })
+  beforeEach(() => {
+    vi.useFakeTimers()
+    chime.mockClear()
+    originalSettings = useStore.getState().S
+    useStore.setState({ S: { ...originalSettings, sound: true, timerFlash: false, restSound: 'bell', classicChime: false, restSoundByKind: undefined } })
+    useUI.setState({ timer: null, work: null })
+  })
+  afterEach(() => { useUI.getState().stopRest(); useUI.getState().stopWork(); useStore.setState({ S: originalSettings }); vi.useRealTimers() })
+
+  it('keeps the kind on the running timer, and drops one it does not know', () => {
+    useUI.getState().startRest(90, 2, { kind: 'round' })
+    expect(useUI.getState().timer).toMatchObject({ forIdx: 2, kind: 'round' })
+    useUI.getState().startRest(90, 2, { kind: 'nonsense' })
+    expect(useUI.getState().timer.kind).toBeUndefined()
+  })
+
+  it('plays the kind\'s own sound when the rest ends', () => {
+    pick({ restSoundByKind: { block: 'whistle' } })
+    useUI.getState().startRest(1, 0, { kind: 'block' })
+    vi.advanceTimersByTime(1000)
+    expect(chime).toHaveBeenCalledTimes(1)
+    expect(chime).toHaveBeenCalledWith(true, 'whistle')
+  })
+
+  it('a kind without one, and a rest with no kind, play the profile\'s sound', () => {
+    pick({ restSoundByKind: { block: 'whistle' } })
+    useUI.getState().startRest(1, 0, { kind: 'set' })
+    vi.advanceTimersByTime(1000)
+    useUI.getState().startRest(1)
+    vi.advanceTimersByTime(1000)
+    expect(chime.mock.calls).toEqual([[true, 'bell'], [true, 'bell']])
+  })
+
+  it('a hold and a switch-sides pause play the profile\'s sound, whatever the kinds have', () => {
+    pick({ restSoundByKind: { set: 'beep', round: 'beep', block: 'beep' } })
+    useUI.getState().startWork(1, 'Plank', vi.fn())
+    vi.advanceTimersByTime(1000)
+    useUI.getState().startRest(1, 0, { kind: 'switch' })
+    vi.advanceTimersByTime(1000)
+    expect(chime.mock.calls).toEqual([[true, 'bell'], [true, 'bell']])
+  })
+
+  it('passes the Sounds setting through, so off stays off', () => {
+    pick({ sound: false, restSoundByKind: { set: 'beep' } })
+    useUI.getState().startRest(1, 0, { kind: 'set' })
+    vi.advanceTimersByTime(1000)
+    expect(chime).toHaveBeenCalledWith(false, 'beep')
+  })
+
+  it('keeps the kind when the rest is extended, started again from Ready, or followed from the Android notification', () => {
+    useUI.getState().startRest(60, 1, { kind: 'set' })
+    useUI.getState().addRest(30)
+    expect(useUI.getState().timer.kind).toBe('set')
+    useUI.getState().startRest(1, 1, { kind: 'round', forSet: 2 })
+    vi.advanceTimersByTime(1000)
+    expect(useUI.getState().timer).toMatchObject({ ready: true, kind: 'round' })
+    useUI.getState().addRest(15)
+    expect(useUI.getState().timer).toMatchObject({ left: 15, forIdx: 1, forSet: 2, kind: 'round' })
+    expect(useUI.getState().timer.ready).toBeUndefined()
+    useUI.getState().followNativeRest({ endsAt: Date.now() + 40_000, left: 40, total: 60, paused: false })
+    expect(useUI.getState().timer).toMatchObject({ left: 40, kind: 'round', forSet: 2 })
+  })
+})

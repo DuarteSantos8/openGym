@@ -64,6 +64,20 @@ describe('vibrate on silent', () => {
     expect(armRestAlert).toHaveBeenLastCalledWith(expect.any(Number), expect.objectContaining({ sound: true, classic: false, tone: 'bell' }))
   })
 
+  // A kind of rest with a sound of its own (Settings → Sound) rings that one on a locked phone
+  // too. The switch-sides pause is no kind of rest and keeps the profile's.
+  it('tells the native alarm the sound of this kind of rest', () => {
+    withSettings({ sound: true, restSound: 'bell', restSoundByKind: { round: 'whistle', block: 'classic' } })
+    useUI.getState().startRest(60, 0, { kind: 'round' })
+    expect(armRestAlert).toHaveBeenLastCalledWith(expect.any(Number), expect.objectContaining({ tone: 'whistle', classic: false }))
+    useUI.getState().startRest(60, 0, { kind: 'block' })
+    expect(armRestAlert).toHaveBeenLastCalledWith(expect.any(Number), expect.objectContaining({ tone: 'classic', classic: true }))
+    useUI.getState().startRest(60, 0, { kind: 'set' })
+    expect(armRestAlert).toHaveBeenLastCalledWith(expect.any(Number), expect.objectContaining({ tone: 'bell', classic: false }))
+    useUI.getState().startRest(10, 0, { kind: 'switch' })
+    expect(armRestAlert).toHaveBeenLastCalledWith(expect.any(Number), expect.objectContaining({ tone: 'bell' }))
+  })
+
   // #306: the page plays the picked sound too, on screen, at the end of a rest.
   it('chimes the sound Settings → Sound picked', async () => {
     withSettings({ sound: true, restSound: 'soft' })

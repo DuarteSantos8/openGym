@@ -2241,4 +2241,11 @@ export default {
   'Your sports watch, calling you back.': 'Zegarek sportowy wzywa z powrotem.',
   'Coach wants you back on the bar.': 'Trener czeka przy sztandze.',
   'Gentle, for headphones or a quiet room.': 'Cichy, do słuchawek albo spokojnego pomieszczenia.',
+  // --- a sound for each kind of rest (#165) ---
+  'A sound for each kind of rest': 'Osobny dźwięk dla każdego rodzaju odpoczynku',
+  'Hear what comes next without looking. Until you pick one, each plays the sound above, as holds and the switch-sides pause always do.': 'Usłyszysz, co dalej, bez patrzenia. Dopóki nie wybierzesz, każdy gra dźwięk z góry, tak jak zawsze izometria i przerwa na zmianę strony.',
+  'Next round': 'Następna runda',
+  'Next exercise': 'Następne ćwiczenie',
+  'Same as above': 'Jak wyżej',
+  'Same as {0}': 'Jak {0}',
 }
