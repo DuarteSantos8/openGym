@@ -40,9 +40,14 @@ export const isDumbbellLift = id => (LIB_BY_ID.get(id)?.eq || '').toLowerCase() 
    a review has to be able to name what it is talking about. */
 export const MAX_LIBRARY = 160;
 
-// What one library entry tells the model: enough to pick it, nothing more. The taxonomy
-// fields beyond body part never appear in a rationale and cost ~30 tokens an entry.
-const slim = e => ({ id: e.id, n: e.n, bp: e.bp, ...(e.custom ? { custom: true } : {}) });
+// Reviews and plan creation only need the broad body part. A live workout can ask for a
+// close substitute, so its smaller slice also carries target muscle and equipment.
+const slim = (e, detail) => ({
+  id: e.id, n: e.n, bp: e.bp,
+  ...(detail && e.tg ? { tg: e.tg } : {}),
+  ...(detail && e.eq ? { eq: e.eq } : {}),
+  ...(e.custom ? { custom: true } : {})
+});
 
 /* Mobility work is not what a plan is built from, and at an even share per body part the
    catalogue's 57 stretches crowded out the lifts that are: a first plan for someone who
@@ -74,7 +79,7 @@ const LANE_WEIGHT = {
 };
 const laneWeight = bp => LANE_WEIGHT[bp] ?? 1;
 
-export function librarySlice(S, equipment, { keep = [], max = MAX_LIBRARY } = {}) {
+export function librarySlice(S, equipment, { keep = [], focus = [], max = MAX_LIBRARY, detail = false } = {}) {
   const wanted = (equipment || []).map(x => String(x).toLowerCase());
   // A custom exercise's name and body part are whatever the person typed, and its id is
   // whatever the client wrote; all three ride into every prompt. Cut to the bounds payload.js
@@ -95,12 +100,41 @@ export function librarySlice(S, equipment, { keep = [], max = MAX_LIBRARY } = {}
   const lifts = equipped.filter(e => !isStretch(e));
   const base = lifts.length ? lifts : equipped;
 
-  const pinned = new Set(keep.filter(id => LIB_BY_ID.has(id)));
+  const pinned = new Set([...keep, ...focus].filter(id => LIB_BY_ID.has(id)));
   const out = [];
   const taken = new Set();
   const add = e => { if (!taken.has(e.id)) { taken.add(e.id); out.push(e); } };
   // What the user already trains comes first, filter or no filter.
   for (const id of pinned) add(LIB_BY_ID.get(id));
+
+  // A live question is usually anchored to one exercise. Put a compact, equipment-diverse
+  // set of close substitutes near it so the model does not have to guess from the balanced
+  // catalogue sample. Exact target matches come before broader body-part matches.
+  // A custom exercise is focused through what it says it trains (the slice above keeps only its
+  // name), so its substitutes come from the catalogue too.
+  const ownCustom = id => {
+    const c = (Array.isArray(S.customEx) ? S.customEx : []).find(x => x && x.id === id);
+    return c && { tg: cut(c.tg, 40) || null, bp: cut(c.bp, 40) };
+  };
+  const focusRows = focus.map(id => LIB_BY_ID.get(id) || ownCustom(id)).filter(Boolean);
+  const addDiverse = (rows, limit) => {
+    const before = out.length;
+    const equipmentSeen = new Set();
+    for (const e of rows) {
+      if (out.length - before >= limit || out.length >= max) break;
+      if (!equipmentSeen.has(e.eq)) { equipmentSeen.add(e.eq); add(e); }
+    }
+    for (const e of rows) {
+      if (out.length - before >= limit || out.length >= max) break;
+      add(e);
+    }
+  };
+  if (focusRows.length && out.length < max) {
+    const targets = new Set(focusRows.map(e => e.tg).filter(Boolean));
+    const parts = new Set(focusRows.map(e => e.bp).filter(Boolean));
+    addDiverse(base.filter(e => targets.has(e.tg)), 12);
+    addDiverse(base.filter(e => parts.has(e.bp) && !targets.has(e.tg)), 8);
+  }
   if (base.length + out.length <= max) {
     base.forEach(add);
   } else {
@@ -127,5 +161,5 @@ export function librarySlice(S, equipment, { keep = [], max = MAX_LIBRARY } = {}
       }
     }
   }
-  return [...customs, ...out].map(slim);
+  return [...customs, ...out].map(e => slim(e, detail));
 }

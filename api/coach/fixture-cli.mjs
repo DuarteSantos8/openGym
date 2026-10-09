@@ -119,6 +119,27 @@ if (kind === 'debrief') {
   });
 }
 
+// workout: the exercise asked about swapped for another library exercise over its remaining
+// sets and, when the session has one, longer rest on another unfinished exercise, so a browser
+// run has two different kinds of change to apply
+if (kind === 'workout') {
+  const entries = P.active?.entries || [];
+  const open = en => (en.sets || []).filter(x => !x.done && !x.warmup).length;
+  const at = entries.find(en => en.key === P.active?.anchorKey && open(en)) || entries.find(open);
+  const alt = (P.library || []).find(e => !entries.some(en => en.id === e.id));
+  const next = entries.find(en => en !== at && open(en));
+  out({
+    coach_contract: 1,
+    reply: at && alt ? 'Use a different movement for the remaining sets.' + (next ? ' Take a little longer between sets on the next exercise.' : '') : 'Nothing left to change, so carry on.',
+    reason: /busy|taken/i.test(P.userNote || '') ? 'equipment' : 'discomfort',
+    actions: at && alt ? [
+      { id: 'a1', type: 'swap-exercise', target: { entryKey: at.key, exerciseId: at.id }, after: { id: alt.id, sets: open(at) }, why: 'Same session, a movement that avoids the problem.' },
+      ...(next ? [{ id: 'a2', type: 'adjust-exercise', target: { entryKey: next.key, exerciseId: next.id }, after: { restSec: 120 }, why: 'A little more rest keeps the rest of the session clean.' }] : []),
+      { id: 'a3', type: 'note', after: { text: 'The first exercise did not feel right today; swapped the remaining sets for a pain-free movement.' }, why: 'Worth knowing before the next session.' }
+    ] : []
+  });
+}
+
 // review
 const routine = (P.plan?.routines || [])[0];
 const first = routine?.ex?.[0];

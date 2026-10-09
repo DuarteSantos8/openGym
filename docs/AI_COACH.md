@@ -217,6 +217,16 @@ score out of ten, what went well, what to watch, and what to do next time, each 
 session's own numbers. A debrief cannot carry a change; an answer that tries is refused by the
 validator rather than trimmed. The card is kept in the Coach's history like everything else.
 
+### The workout you are doing
+
+From an exercise's ⋯ menu, or the sparkles beside it, **Ask Coach about this exercise** opens a
+short conversation about the session in progress: this hurts, the equipment is busy, I need to
+finish sooner, I feel great. The answer is advice plus, at most, six explicit changes to the
+unfinished part of the workout — swap, move, add, adjust (downward only), skip — and sometimes
+one line it proposes for the session note. Nothing applies until you tick it; a logged set is
+never touched; the routine is never changed by this answer. The conversation and the changes
+you accepted stay in the Coach's history like any other proposal.
+
 ### Comparing with others on the instance
 
 Off unless the admin turns it on (**Settings → Account → Admin dashboard**, the **AI Coach** card →

@@ -108,6 +108,11 @@ export const localAsk = async (S, text, today) => {
   return start(S, 'ask', { note: String(text || '').slice(0, coachLimits(d).maxMessageLen), today: today || null })
 }
 
+export const localWorkout = async (S, note, session) => {
+  const d = await loadCoachDevice()
+  return start(S, 'workout', { note: String(note || '').slice(0, coachLimits(d).maxMessageLen), session })
+}
+
 /* Automatic reviews. On a server the cadence tick runs them (api/coach/cadence.js); a phone with
    its own key has no server, and for a long time nothing ran them at all: the setting saved, the
    reviews never came (Discord, 10-19). So the phone asks the same question, with the same rule
@@ -187,7 +192,7 @@ async function start(S, kind, opts) {
 async function run(S, kind, opts, d, adapter) {
   const key = await getApiKey()
   const payload = payloadLib.build(S, {
-    handle: await handle(), kind, intake: opts.intake, note: opts.note, refine: opts.refine, previous: opts.previous, workoutId: opts.workoutId, today: opts.today,
+    handle: await handle(), kind, intake: opts.intake, note: opts.note, refine: opts.refine, previous: opts.previous, workoutId: opts.workoutId, today: opts.today, session: opts.session,
     lang: getLang()   // what the app shows, which a profile that never picked a language does not store (#303)
   })
   const model = d.model || HTTP_PROVIDERS[d.provider].defaultModel
@@ -223,6 +228,7 @@ async function run(S, kind, opts, d, adapter) {
     planHash: planHash(S), iteration: opts.iteration || 1,
     ...(kind === 'debrief' ? { workout: workoutMetaOf(S, opts.workoutId) } : {}),
     ...(kind === 'ask' ? { prev: waitingProposal((await loadCoachDevice()).pending) } : {}),
+    ...(kind === 'workout' ? { activeId: payload.active?.id || null, anchorKey: payload.active?.anchorKey || null } : {}),
     ...attempt.result
   }
   await saveCoachDevice({ pending, ...(kind === 'review' ? { reviewedAt: Date.now() } : {}) })

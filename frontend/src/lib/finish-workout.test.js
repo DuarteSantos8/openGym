@@ -128,6 +128,17 @@ describe('completed workout boundary', () => {
     expect(b.noProg).toBe(true)
   })
 
+  it('drops the Coach chat and the entry keys at finish', () => {
+    const active = {
+      id: 'w', d: '2026-10-08', start: 1, coachChat: [{ role: 'user', text: 'My shoulder hurts.' }],
+      entries: [{ id: '0025', key: 'k1', sets: [{ done: true, w: 60, r: 8 }], target: { sets: 1, reps: 8 } }],
+    }
+    const w = buildCompletedWorkout(active)
+    expect(w.entries.map(e => e.id)).toEqual(['0025'])
+    expect('coachChat' in w).toBe(false)
+    expect('key' in w.entries[0]).toBe(false)
+  })
+
   it('keeps the plan each entry was built from, next to the target the prescription moved', () => {
     const active = {
       id: 'w', d: '2026-08-08', start: 1, routineIds: ['strength'],

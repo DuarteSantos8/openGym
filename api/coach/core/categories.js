@@ -7,6 +7,7 @@
 export const DATA_CATEGORIES = Object.freeze([
   'plan',        // routines, exercises, sets/reps, schedule, progression settings
   'training',    // logged sets, targets, effort ratings, durations, PRs, session notes in the review window
+  'active',      // the unfinished workout and the short conversation used to adapt it
   'bodyweight',  // weigh-ins in the window and your goal weight
   'profile',     // the intake answers you gave the Coach, including any limitations
   'prefs'        // unit, language, effort scale

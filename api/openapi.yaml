@@ -2898,6 +2898,40 @@ paths:
         '429': { $ref: '#/components/responses/CoachRefused' }
         '503': { $ref: '#/components/responses/CoachOff' }
 
+  /api/coach/workout:
+    post:
+      tags: [coach]
+      operationId: postCoachWorkout
+      summary: Ask the Coach to adapt the workout in progress
+      description: |
+        Queues a `workout` job with an allowlisted snapshot of the active session. The
+        validated answer may describe changes to unfinished work; the client applies only
+        the actions the person explicitly selects. Completed sets are never changed.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message, session]
+              properties:
+                message:
+                  type: string
+                  maxLength: 4000
+                session:
+                  type: object
+                  description: The active workout, with stable keys on its exercise entries.
+                lang:
+                  type: string
+                  pattern: '^[A-Za-z]{2,3}([-_][A-Za-z0-9]{2,8})?$'
+      responses:
+        '202': { $ref: '#/components/responses/CoachJobQueued' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/CoachRefused' }
+        '409': { $ref: '#/components/responses/CoachRefused' }
+        '429': { $ref: '#/components/responses/CoachRefused' }
+        '503': { $ref: '#/components/responses/CoachOff' }
+
   /api/coach/debrief:
     post:
       tags: [coach]

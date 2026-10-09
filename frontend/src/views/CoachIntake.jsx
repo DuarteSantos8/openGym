@@ -9,7 +9,7 @@
 // `?edit=1` reuses every screen as the profile editor: consent is skipped, answers are
 // prefilled, and the last button saves instead of building.
 import { useEffect, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
@@ -60,6 +60,8 @@ export default function CoachIntake() {
   const nav = useNavigate()
   const [params] = useSearchParams()
   const editing = params.get('edit') === '1'
+  // Sent from a workout to renew consent: either way out goes straight back to it.
+  const fromWorkout = useLocation().state?.fromWorkout === true
   const S = useStore(s => s.S)
   const user = useStore(s => s.user)
   const config = useStore(s => s.config)
@@ -92,7 +94,7 @@ export default function CoachIntake() {
   const optional = ['equipment', 'limits', 'extras'].includes(key)
 
   const next = () => (last ? finish() : setStep(step + 1))
-  const back = () => (step ? setStep(step - 1) : nav(editing ? '/coach' : '/plan'))
+  const back = () => (step ? setStep(step - 1) : fromWorkout ? nav(-1) : nav(editing ? '/coach' : '/plan'))
 
   const agree = info => {
     // This screen just named the provider and listed what goes there, which is the question the
@@ -102,7 +104,7 @@ export default function CoachIntake() {
     const target = !DEMO && consentTarget(info, coachVia())
     if (target && !target.local) allowAi(target).catch(() => {})
     update(s => { s.coach = { ...(s.coach || emptyCoach()), consent: { agreedAt: new Date().toISOString(), version: CONSENT_VERSION } } })
-    if (reconsentOnly) nav('/coach', { replace: true })
+    if (reconsentOnly) fromWorkout ? nav(-1) : nav('/coach', { replace: true })
     else setStep(step + 1)
   }
 
@@ -160,7 +162,7 @@ export default function CoachIntake() {
     </div>
 
     <div className="ob-body">
-      {key === 'consent' && <Consent onAgree={agree} onDecline={() => nav('/plan')} />}
+      {key === 'consent' && <Consent onAgree={agree} onDecline={() => (fromWorkout ? nav(-1) : nav('/plan'))} />}
 
       {key === 'goal' && <>
         <div className="ob-eyebrow">{t('Your goal')}</div>
