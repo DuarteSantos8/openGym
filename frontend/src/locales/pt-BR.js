@@ -1008,6 +1008,28 @@ export const PT_BR_OVERRIDES = {
   'Teal': 'Turquesa',
   'Yellow': 'Amarelo',
   'Enter how long it took — at least 1 minute.': 'Informe quanto tempo levou — pelo menos 1 minuto.',
+  // --- Strava (components/Strava.jsx) ---
+  'Already on Strava': 'Já está no Strava',
+  'Connect Strava': 'Conectar ao Strava',
+  'Could not connect Strava — try again': 'Não foi possível conectar ao Strava — tente de novo',
+  'Could not disconnect': 'Não foi possível desconectar',
+  'Disconnect Strava': 'Desconectar do Strava',
+  'Finished workouts are posted to Strava as Weight Training activities. Nothing is read from Strava.': 'Os treinos concluídos são publicados no Strava como atividades de musculação. Nada é lido do Strava.',
+  'On Strava': 'No Strava',
+  'Reconnect Strava': 'Reconectar ao Strava',
+  'Strava account': 'Conta do Strava',
+  'Strava connected — new workouts upload automatically': 'Strava conectado — os novos treinos são enviados automaticamente',
+  'Strava connection cancelled': 'Conexão com o Strava cancelada',
+  'Strava disconnected': 'Strava desconectado',
+  'Strava is not set up on this server': 'O Strava não está configurado neste servidor',
+  'Strava needs permission to upload activities — tick the box and try again': 'O Strava precisa de permissão para enviar atividades — marque a caixa e tente de novo',
+  'Strava stopped accepting this connection. Reconnect to resume uploads.': 'O Strava deixou de aceitar esta conexão. Reconecte para retomar os envios.',
+  'Upload failed': 'Falha no envio',
+  'Upload new workouts automatically': 'Enviar novos treinos automaticamente',
+  'Upload to Strava': 'Enviar para o Strava',
+  'Uploaded to Strava': 'Enviado para o Strava',
+  'Uploading…': 'Enviando…',
+  '{0} workouts uploaded. Disconnecting only forgets the connection here; it does not touch other apps on your Strava account.': '{0} treinos enviados. Desconectar só esquece a conexão aqui; os outros apps da sua conta do Strava não são afetados.',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
