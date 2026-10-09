@@ -14,7 +14,7 @@ export const RULE_COACH_QUESTIONS = [
 
 const asSentence = why => {
   if (!Array.isArray(why) || !why.length) return ''
-  return String(why[0]).replace(/\\{(\\d+)\\}/g, (_, i) => String(why[Number(i) + 1] ?? ''))
+  return why.slice(1).reduce((sentence, value, i) => sentence.split('{' + i + '}').join(String(value ?? '')), String(why[0]))
 }
 const hasPlan = S => (S?.routines || []).length > 0
 const latestWeight = S => (S?.bodyweight || []).filter(x => Number.isFinite(Number(x?.w)) && x?.d).slice().sort((a, b) => a.d.localeCompare(b.d)).at(-1)
