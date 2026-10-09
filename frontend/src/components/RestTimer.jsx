@@ -1,5 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useUI } from '../store/useUI.js'
+import { useStore } from '../store/useStore.js'
+import { holdPosition } from '../lib/workout-model.js'
 import { t } from '../lib/i18n.js'
 import { REST_MAX } from '../lib/duration.js'
 import { durationSheet } from './DurationWheel.jsx'
@@ -8,6 +10,28 @@ import { Button } from './ui.jsx'
 import Icon from './Icon.jsx'
 
 const clock = sec => Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0')
+
+// What a rest leads into, under the clock where "Rest" was: the kind decided where the rest
+// started (timer.kind, supersetFlow.restKind), the same kind that picks the sound it ends with
+// when Settings → Sound gives that kind one of its own. One word, and no exercise name: the label
+// line is only as wide as the clock's widest face (index.css #timer .lbl). A rest with no kind
+// (one started from the wheel with nothing running) says "Rest". A rest before a warm-up (ramp)
+// set says "Warm-up" instead of "Set" (timer.phase, decided where the rest started from the set
+// it leads into, supersetFlow.restSetPhase). Rounds do not: a superset's members can be at
+// different phases.
+const KIND_LABEL = { set: 'Set', round: 'Round', block: 'Exercise' }
+const restLabel = timer => timer.kind === 'set' && timer.phase === 'warmup' ? 'Warm-up' : KIND_LABEL[timer.kind] || 'Rest'
+// The hold's label follows the same rule: what is timed, short. Which hold of the exercise it is,
+// warm-up holds counted apart and a per-side pair as one set, as the set rows number them. Read
+// off the hold's owner (work.owner, the row it writes to, kept current when rows move), so a hold
+// restored after a reload says it too.
+const holdLabel = (S, work) => {
+  const o = work?.owner
+  const e = o ? S.active?.entries?.[o.idx] : null
+  const pos = e && e.id === o.id ? holdPosition(e.sets, o.i) : null
+  if (!pos) return t('Hold')
+  return pos.phase === 'warmup' ? t('Warm-up hold {0} of {1}', pos.n, pos.of) : t('Hold {0} of {1}', pos.n, pos.of)
+}
 
 // The clock is a button: a tap opens the wheel at the time that is left, for a rest that wants
 // to be a round 2:00 rather than eight taps of +15. 0:00 ends the rest, like Skip. What is left
@@ -82,6 +106,7 @@ export default function RestTimer() {
   const timer = useUI(s => s.timer)
   const work = useUI(s => s.work)
   const { addRest, stopRest, pauseRest, resumeRest, finishWorkEarly, stopWork } = useUI()
+  const holdLbl = useStore(s => (work ? holdLabel(s.S, work) : ''))
   const on = work || timer
   const actsRef = useRef(null)
   const skipFits = useSkipFits(actsRef, [!!timer && !work, t('Skip'), t('Dismiss')])
@@ -105,7 +130,7 @@ export default function RestTimer() {
       <div className="bar" aria-hidden="true"><i style={{ width: pct + '%' }} /></div>
       <div className="tclock">
         <span className="t">{work.left <= 0 && work.overtime ? '+' + clock(-work.left) : clock(work.left)}</span>
-        {work.label && <span className="lbl">{work.label}</span>}
+        <span className="lbl">{holdLbl}</span>
       </div>
       <div className="acts">
         <Button size="sm" onClick={stopWork}>{t('Cancel')}</Button>
@@ -120,7 +145,7 @@ export default function RestTimer() {
   // (both labels share one cell, one of them hidden), and the clock keeps room for the other of
   // its two faces (data-alt, a hidden line in index.css): the row never reflows when the rest
   // turns Ready, so a thumb on +15 never lands on −15.
-  const label = timer.kind === 'switch' ? t('Switch sides') : timer.paused ? t('Paused') : t('Rest')
+  const label = timer.kind === 'switch' ? t('Switch sides') : timer.paused ? t('Paused') : t(restLabel(timer))
   return (
     <div id="timer" className={'rest' + (timer.paused ? ' paused' : '') + (timer.kind === 'switch' ? ' switch' : '') + (timer.ready ? ' ready' : '')}>
       <div className="bar" aria-hidden="true"><i style={{ width: pct + '%' }} /></div>

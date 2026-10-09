@@ -6,6 +6,7 @@ import {
   nextDropWeight, nextBurstReps, splitBurstReps,
   isSideSet, makeSideSet, syncSideAggregate, setSideField, toggleSide, WEIGHT_ORIGIN_MANUAL,
   addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt,
+  holdPosition,
 } from './workout-model.js'
 
 describe('phaseForSet / isWarmupRow', () => {
@@ -369,3 +370,30 @@ describe('addSideCluster / removeSideClusterAt / setSideClusterAt', () => {
     expect(s.type).toBeUndefined()
   })
 })
+
+// The hold bar says which set is running (RestTimer.jsx holdLabel).
+describe('holdPosition', () => {
+  const sets = [
+    { sec: 20, done: true, phase: 'warmup' },
+    { sec: 30, done: true, phase: 'warmup' },
+    { sec: 45, done: true },
+    { sec: 45, done: false },
+    { sec: 45, done: false },
+  ]
+  it('numbers warm-up and working holds separately, like the set rows', () => {
+    expect(holdPosition(sets, 1)).toEqual({ phase: 'warmup', n: 2, of: 2 })
+    expect(holdPosition(sets, 2)).toEqual({ phase: 'work', n: 1, of: 3 })
+    expect(holdPosition(sets, 4)).toEqual({ phase: 'work', n: 3, of: 3 })
+  })
+  it('counts a per-side hold\'s left and right rows as one set, like the set rows', () => {
+    const sides = [{ sec: 30, side: 'L' }, { sec: 30, side: 'R' }, { sec: 30, side: 'L' }, { sec: 30, side: 'R' }]
+    expect(holdPosition(sides, 0)).toEqual({ phase: 'work', n: 1, of: 2 })
+    expect(holdPosition(sides, 1)).toEqual({ phase: 'work', n: 1, of: 2 })
+    expect(holdPosition(sides, 3)).toEqual({ phase: 'work', n: 2, of: 2 })
+  })
+  it('is null for a row that does not exist', () => {
+    expect(holdPosition(sets, 9)).toBe(null)
+    expect(holdPosition(undefined, 0)).toBe(null)
+  })
+})
+

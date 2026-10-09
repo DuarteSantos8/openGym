@@ -2248,4 +2248,10 @@ export default {
   'Next exercise': '다음 운동',
   'Same as above': '위와 같음',
   'Same as {0}': '같은 소리: {0}',
+  // --- what the timer bar says it times (#165) ---
+  'Set': '세트',
+  'Round': '라운드',
+  'Hold': '유지',
+  'Hold {0} of {1}': '유지 {0}/{1}',
+  'Warm-up hold {0} of {1}': '워밍업 유지 {0}/{1}',
 }

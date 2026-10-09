@@ -72,16 +72,17 @@ describe('the rest timer across a reload', () => {
     expect(useUI.getState().timer.left).toBe(33)
   })
 
-  // The kind picks the sound the rest ends with (Settings → Sound): a reload keeps it.
+  // The kind picks the sound the rest ends with (Settings → Sound), and with the phase the bar's
+  // word: a reload keeps both.
   it('keeps what the rest leads into across a reload, and ends with that kind\'s sound', () => {
     useStore.setState({ S: { ...useStore.getState().S, restSound: 'bell', restSoundByKind: { block: 'whistle' } } })
-    useUI.getState().startRest(90, 2, { kind: 'block' })
-    expect(saved()).toMatchObject({ kind: 'block' })
+    useUI.getState().startRest(90, 2, { kind: 'block', phase: 'work' })
+    expect(saved()).toMatchObject({ kind: 'block', phase: 'work' })
     const kept = saved()
     useUI.setState({ timer: null })
     localStorage.setItem(REST_KEY, JSON.stringify(kept))
     expect(restoreRest()).toBe(true)
-    expect(useUI.getState().timer).toMatchObject({ kind: 'block', forIdx: 2 })
+    expect(useUI.getState().timer).toMatchObject({ kind: 'block', phase: 'work', forIdx: 2 })
     vi.advanceTimersByTime(91_000)
     expect(chime).toHaveBeenCalledWith(true, 'whistle')
   })

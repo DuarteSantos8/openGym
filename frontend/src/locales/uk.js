@@ -2245,4 +2245,10 @@ export default {
   'Next exercise': 'Наступна вправа',
   'Same as above': 'Як вище',
   'Same as {0}': 'Як {0}',
+  // --- what the timer bar says it times (#165) ---
+  'Set': 'Підхід',
+  'Round': 'Коло',
+  'Hold': 'Утримання',
+  'Hold {0} of {1}': 'Утримання {0} з {1}',
+  'Warm-up hold {0} of {1}': 'Розминкове утримання {0} з {1}',
 }

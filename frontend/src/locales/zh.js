@@ -2248,4 +2248,10 @@ export default {
   'Next exercise': '下一个动作',
   'Same as above': '同上',
   'Same as {0}': '与{0}相同',
+  // --- what the timer bar says it times (#165) ---
+  'Set': '组',
+  'Round': '轮',
+  'Hold': '保持',
+  'Hold {0} of {1}': '保持 {0}/{1}',
+  'Warm-up hold {0} of {1}': '热身保持 {0}/{1}',
 }

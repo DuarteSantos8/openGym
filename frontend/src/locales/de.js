@@ -2268,4 +2268,10 @@ export default {
   'Next exercise': 'Nächste Übung',
   'Same as above': 'Wie oben',
   'Same as {0}': 'Wie {0}',
+  // --- what the timer bar says it times (#165) ---
+  'Set': 'Satz',
+  'Round': 'Runde',
+  'Hold': 'Halten',
+  'Hold {0} of {1}': 'Halten {0} von {1}',
+  'Warm-up hold {0} of {1}': 'Aufwärm-Halten {0} von {1}',
 }

@@ -1405,6 +1405,8 @@ export const PT_BR_OVERRIDES = {
   'Hear what comes next without looking. Until you pick one, each plays the sound above, as holds and the switch-sides pause always do.': 'Ouça o que vem a seguir sem olhar. Até você escolher um, cada um toca o som acima, como sempre fazem as isometrias e a pausa para trocar de lado.',
   'Next round': 'Próxima rodada',
   'Next exercise': 'Próximo exercício',
+  // --- what the timer bar says it times (#165) ---
+  'Round': 'Rodada',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

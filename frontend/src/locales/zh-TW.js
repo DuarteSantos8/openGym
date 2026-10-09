@@ -2241,4 +2241,10 @@ export default {
   'Next exercise': '下一個動作',
   'Same as above': '同上',
   'Same as {0}': '與{0}相同',
+  // --- what the timer bar says it times (#165) ---
+  'Set': '組',
+  'Round': '輪',
+  'Hold': '保持',
+  'Hold {0} of {1}': '保持 {0}/{1}',
+  'Warm-up hold {0} of {1}': '熱身保持 {0}/{1}',
 }

@@ -2251,4 +2251,10 @@ export default {
   'Next exercise': 'Következő gyakorlat',
   'Same as above': 'Mint fent',
   'Same as {0}': 'Mint: {0}',
+  // --- what the timer bar says it times (#165) ---
+  'Set': 'Sorozat',
+  'Round': 'Kör',
+  'Hold': 'Tartás',
+  'Hold {0} of {1}': 'Tartás {0}/{1}',
+  'Warm-up hold {0} of {1}': 'Bemelegítő tartás {0}/{1}',
 }
