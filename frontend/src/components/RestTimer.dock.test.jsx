@@ -133,6 +133,14 @@ describe('the docked rest bar', () => {
     expect(useUI.getState().timer.ready).toBeUndefined()
   })
 
+  // A fresh rest from Ready keeps what the old one led into, and so the sound it ends with.
+  it('a fresh rest from Ready keeps the kind of rest and the set it belongs to', () => {
+    act(() => useUI.getState().startRest(1, 2, { kind: 'block', forSet: 1 }))
+    act(() => vi.advanceTimersByTime(1000))
+    act(() => applyRestLeft(60))
+    expect(useUI.getState().timer).toMatchObject({ left: 60, forIdx: 2, forSet: 1, kind: 'block' })
+  })
+
   it('Done on an untouched wheel leaves the rest alone', () => {
     // still counting: the seconds that passed while the wheel was open are not given back
     act(() => useUI.getState().startRest(60, 0))

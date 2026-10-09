@@ -116,7 +116,7 @@ describe('a per-side hold', () => {
     holdRow(1)
     expect(doneOf()).toEqual([true, true, false, false])
     const tm = useUI.getState().timer
-    expect(tm.kind).toBeUndefined()
+    expect(tm.kind).toBe('set')             // the rest before the next set, not a switch
     expect(tm.total).toBe(useStore.getState().S.restSec)
   })
 

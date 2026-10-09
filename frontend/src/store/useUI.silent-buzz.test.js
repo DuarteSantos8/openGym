@@ -16,7 +16,7 @@ vi.mock('../lib/rest-alert.js', () => ({
 vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn() }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({ ok: true })) }))
 
-import { useUI } from './useUI.js'
+import { useUI, bindAuto } from './useUI.js'
 import { useStore } from './useStore.js'
 import { armRestAlert } from '../lib/rest-alert.js'
 import { alertBuzz, chime, vibrate } from '../lib/sound.js'
@@ -64,6 +64,34 @@ describe('vibrate on silent', () => {
     withSettings({ sound: true, restSound: 'bell' })
     useUI.getState().startRest(60)
     expect(armRestAlert).toHaveBeenLastCalledWith(expect.any(Number), expect.objectContaining({ sound: true, classic: false, tone: 'bell' }))
+  })
+
+  // A kind of rest with a sound of its own (Settings → Sound) rings that one on a locked phone
+  // too. The switch-sides pause is no kind of rest and keeps the profile's.
+  it('tells the native alarm the sound of this kind of rest', () => {
+    withSettings({ sound: true, restSound: 'bell', restSoundByKind: { round: 'whistle', block: 'classic' } })
+    useUI.getState().startRest(60, 0, { kind: 'round' })
+    expect(armRestAlert).toHaveBeenLastCalledWith(expect.any(Number), expect.objectContaining({ tone: 'whistle', classic: false }))
+    useUI.getState().startRest(60, 0, { kind: 'block' })
+    expect(armRestAlert).toHaveBeenLastCalledWith(expect.any(Number), expect.objectContaining({ tone: 'classic', classic: true }))
+    useUI.getState().startRest(60, 0, { kind: 'set' })
+    expect(armRestAlert).toHaveBeenLastCalledWith(expect.any(Number), expect.objectContaining({ tone: 'bell', classic: false }))
+    useUI.getState().startRest(10, 0, { kind: 'switch' })
+    expect(armRestAlert).toHaveBeenLastCalledWith(expect.any(Number), expect.objectContaining({ tone: 'bell' }))
+  })
+
+  // A rest before a hold that starts by itself (lib/auto-holds.js) books the chain with it: the
+  // hold's Go and its end ring with the same tone, and on screen that rest ends in the count-in,
+  // not a sound of its own. So it keeps the profile's sound, as a hold does.
+  it('books the chain after a rest with the profile\'s sound, whatever the kind\'s', () => {
+    withSettings({ sound: true, restSound: 'bell', restSoundByKind: { set: 'whistle' } })
+    const unbind = bindAuto({ peek: () => ({ idx: 0, i: 1, id: 'plank', plan: 30, label: 'Plank' }), focus: () => {}, startHold: () => {}, forecast: () => [] })
+    try {
+      useUI.getState().startRest(60, 0, { kind: 'set' })
+      expect(armRestAlert).toHaveBeenLastCalledWith(expect.any(Number), expect.objectContaining({ tone: 'bell', classic: false, cues: expect.any(Array) }))
+    } finally { unbind() }
+    useUI.getState().startRest(60, 0, { kind: 'set' })
+    expect(armRestAlert).toHaveBeenLastCalledWith(expect.any(Number), expect.objectContaining({ tone: 'whistle' }))
   })
 
   // #306: the page plays the picked sound too, on screen, at the end of a rest.

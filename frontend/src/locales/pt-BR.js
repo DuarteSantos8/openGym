@@ -1539,6 +1539,8 @@ export const PT_BR_OVERRIDES = {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'Este dispositivo tem 1 treino que não está neste backup. Substituir exclui esse treino.',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'Este dispositivo tem {0} treinos que não estão neste backup. Substituir exclui esses treinos.',
+  'Hear what comes next without looking. Until you pick one, each plays the sound above, as holds and the switch-sides pause always do.': 'Ouça o que vem a seguir sem olhar. Até você escolher um, cada um toca o som acima, como sempre fazem as isometrias e a pausa para trocar de lado.',
+  'Next round': 'Próxima rodada',
   // --- PDF exports and the performance report ---
   'Your training on paper: totals, charts, new bests and every set. Frame it, print it or send it to your coach.': 'Seu treino no papel: totais, gráficos, novos recordes e cada série. Coloque num quadro, imprima ou envie para o seu treinador.',
   'Save as PDF': 'Salvar como PDF',
