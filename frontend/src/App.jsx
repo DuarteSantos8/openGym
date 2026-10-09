@@ -37,9 +37,7 @@ import Library from './views/Library.jsx'
 import StructuralBalance from './views/StructuralBalance.jsx'
 import Settings from './views/Settings.jsx'
 import Admin from './views/Admin.jsx'
-import CoachChat from './views/CoachChat.jsx'
-import CoachIntake from './views/CoachIntake.jsx'
-import CoachSetup from './views/CoachSetup.jsx'
+import CoachChat from './views/RuleCoach.jsx'
 import TestPage from './views/TestPage.jsx'
 
 // last known scrollY per route, so back-navigation can put the page where it was
@@ -190,13 +188,12 @@ function Shell() {
               <Route path="/library" element={<Library />} />
               <Route path="/structural-balance" element={<StructuralBalance />} />
               <Route path="/settings" element={<Settings />} />
-              {/* The Coach screens gate themselves on the instance config; the routes exist
-                  unconditionally so a deep link from a notification lands somewhere sane
-                  rather than on the catch-all. */}
+              {/* The rule-based Coach is local-only and available without provider setup. Old AI
+                  Coach deep links stay valid but now land on the fixed-question experience. */}
               <Route path="/coach" element={<CoachChat />} />
-              <Route path="/coach/intake" element={<CoachIntake />} />
+              <Route path="/coach/intake" element={<Navigate to="/coach" replace />} />
               <Route path="/coach/proposal" element={<Navigate to="/coach" replace />} />
-              <Route path="/coach/setup" element={<CoachSetup />} />
+              <Route path="/coach/setup" element={<Navigate to="/coach" replace />} />
               <Route path="/admin" element={user?.admin ? <Admin /> : <Navigate to="/home" replace />} />
               <Route path="*" element={<Navigate to="/home" replace />} />
             </Routes>
