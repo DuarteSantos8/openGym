@@ -8,7 +8,7 @@ import { useStore } from '../store/useStore.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
-vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn() }))
+vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), countdown: vi.fn(), hush: vi.fn() }))
 
 let host, root, originalS
 

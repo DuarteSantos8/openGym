@@ -12,7 +12,7 @@ import { closeOpenRow } from '../lib/use-swipe-row.js'
 // copies it. These cover the store paths the swipe, the set menu and the Undo share, the guards
 // (last set, timers), and the gesture on a real rendered row.
 
-vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn() }))
+vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn(), countdown: vi.fn(), hush: vi.fn() }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})), beacon: vi.fn(), appBase: () => '/' }))
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true

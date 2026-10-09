@@ -5,7 +5,8 @@
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({ ok: true })) }))
-vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn() }))
+const { countdown } = vi.hoisted(() => ({ countdown: vi.fn() }))
+vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), countdown, hush: vi.fn() }))
 
 import { useUI, restoreWork, WORK_KEY } from './useUI.js'
 import { useStore } from './useStore.js'
@@ -85,5 +86,14 @@ describe('a hold across a reload', () => {
     useStore.getState().update(s => { s.active.entries[1].sets[0].done = true }, false)
     localStorage.setItem(WORK_KEY, JSON.stringify({ endsAt: Date.now() + 30_000, total: 45, label: 'Plank', overtime: false, owner }))
     expect(restoreWork()).toBe(false)
+  })
+})
+
+describe('the count-in of a hold across a reload', () => {
+  it('is queued again for the time that is left', () => {
+    localStorage.setItem(WORK_KEY, JSON.stringify({ endsAt: Date.now() + 30_000, total: 45, label: 'Plank', overtime: false, owner }))
+    countdown.mockClear()
+    expect(restoreWork()).toBe(true)
+    expect(countdown).toHaveBeenLastCalledWith(true, 30)
   })
 })
