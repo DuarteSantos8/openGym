@@ -327,10 +327,10 @@ export default function Settings() {
     {!user && !DEMO && !MOBILE && <p className="sect-f" style={{ marginTop: -18, marginBottom: 22 }}>{t('Guest mode — data lives only in this browser.')}</p>}
 
     {/* ---------- the Coach on a phone: through the paired server, or with the user's own key ---------- */}
-    {MOBILE && <Section title={t('AI Coach')}>
-      <Row icon="sparkles" iconTint="var(--acc)" title={t('AI Coach')} accessory="chevron"
-        subtitle={coachLocal?.mode === 'server' ? t('Runs on your openGym server') : coachLocal?.mode === 'byok' ? t('Runs on this phone with your own API key') : t('Off — choose how the Coach should run.')}
-        onClick={() => nav('/coach/setup')} />
+    {MOBILE && <Section title={t('Coach')}>
+      <Row icon="sparkles" iconTint="var(--acc)" title={t('Open Coach')} accessory="chevron"
+        subtitle={t('Fixed questions answered from your saved training data. No AI account or API key needed.')}
+        onClick={() => nav('/coach')} />
     </Section>}
 
     {/* ---------- general ---------- */}
