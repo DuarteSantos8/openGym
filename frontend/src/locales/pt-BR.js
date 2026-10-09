@@ -292,6 +292,7 @@ export const PT_BR_OVERRIDES = {
   // Regional wording inherited from pt-PT would otherwise leak into pt-BR.
   'Log set': 'Registrar série',
   'Next exercise': 'Próximo exercício',
+  'Round': 'Rodada',
   'Skip rest': 'Pular descanso',
   'Open openGym for the next set': 'Abra o openGym para a próxima série',
   'Next': 'Próximo',

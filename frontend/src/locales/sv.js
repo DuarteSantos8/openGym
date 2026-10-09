@@ -2385,6 +2385,8 @@ export default {
   'Next exercise': 'Nästa övning',
   'Same as above': 'Samma som ovan',
   'Same as {0}': 'Samma som {0}',
+  'Set': 'Set',
+  'Round': 'Varv',
   'Skip rest': 'Hoppa över vilan',
   'Open openGym for the next set': 'Öppna openGym för nästa set',
   'On the watch': 'På klockan',
@@ -2580,6 +2582,8 @@ export default {
 
   // --- one set's own rest (#609) ---
   'Rest after this set': 'Vila efter det här setet',
+  'Hold {0} of {1}': 'Hållning {0} av {1}',
+  'Warm-up hold {0} of {1}': 'Uppvärmningshållning {0} av {1}',
 
   // --- custom measurement units (#699) ---
   'Measurement unit': 'Måttenhet',
