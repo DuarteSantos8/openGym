@@ -1,11 +1,12 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { effectiveRoutines, effectiveRoutineIds, nextTrainingDay, streakWeeks, lastBW, setsDoneActive } from '../lib/history.js'
 import { fmtNum, fmtDate, todayISO, isoOf, weekStartOf, weekDayOffset, DAYS, DAYN } from '../lib/format.js'
-import { t, tn, dateLocale } from '../lib/i18n.js'
-import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, startFlow, starterPlanSheet, bwDeltaColor, weighInsSheet } from '../sheets.jsx'
+import { t, tn, dateLocale, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
+import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, startFlow, starterPlanSheet, bwDeltaColor, weighInsSheet, exerciseHistorySheet } from '../sheets.jsx'
 import LineChart from '../components/LineChart.jsx'
+import Sparkline from '../components/Sparkline.jsx'
 import Icon from '../components/Icon.jsx'
 import QueueRow from '../components/QueueRow.jsx'
 import { queueOf, queueView, weekTally, pinState } from '../lib/queue.js'
@@ -14,6 +15,9 @@ import { useConnectionTrouble } from '../components/SyncBanner.jsx'
 import { Button } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { glyphOf } from '../lib/glyphs.js'
+import { favouriteStrength, GAIN_DAYS } from '../lib/favourite-strength.js'
+import { favIds } from '../lib/favourites.js'
+import { exOr } from '../lib/exercises.js'
 
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
 export default function Home() {
@@ -38,6 +42,9 @@ export default function Home() {
   const bw = lastBW(S)
   const prevBW = S.bodyweight.length > 1 ? S.bodyweight[S.bodyweight.length - 2] : null
   const delta = bw && prevBW ? bw.w - prevBW.w : null
+  // Favourite lifts: the best estimated 1RM per favourite, derived only when the log or the
+  // favourites change, not on every store tick.
+  const strength = useMemo(() => favouriteStrength(S), [S.workouts, S.favEx])
 
   const ws = weekStartOf(S)
   // The first day of the shown week. Named for the role, not for Monday — which day that is
@@ -219,6 +226,36 @@ export default function Home() {
       </> : <div className="muted small">{S.weighIn === false
         ? t('No weigh-ins yet. Log your weight to start the curve.')
         : t("No weigh-ins yet. Log your weight to start the curve (we also ask before every workout).")}</div>}
+    </div>}
+
+    {/* Favourite lifts: the best estimated 1RM of each favourite exercise, next to body weight.
+        Only for profiles with favourites; a tap opens that exercise's history on its 1RM curve. */}
+    {S.showStrengthCard !== false && favIds(S).length > 0 && <div className="card">
+      <div className="row between" style={{ marginBottom: 6, alignItems: 'baseline' }}>
+        <h2 style={{ margin: 0 }}>{t('Favourite lifts')}</h2>
+        <span className="dim small">{t('Best est. 1RM')}</span>
+      </div>
+      {strength.length ? <div className="list">
+        {strength.map(({ id, best, gain, trend }) => {
+          const ex = exOr(id)
+          return <div key={id} className="item tappable" style={{ cursor: 'pointer' }} {...tappable(() => exerciseHistorySheet(id, { curve: 'e1rm' }))}>
+            <div className="grow" style={{ minWidth: 0 }}>
+              <div className={`tt ${exerciseNameClass(ex)}`}>{exerciseNameFor(ex)}</div>
+              <div className="row" style={{ gap: 8, marginTop: 3 }}>
+                <Sparkline points={trend} w={56} h={18} />
+                <div className="ss" style={{ marginTop: 0, whiteSpace: 'nowrap' }}>{fmtNum(best.w)} {S.unit} × {best.r} · {fmtDate(best.d)}</div>
+              </div>
+            </div>
+            <div style={{ textAlign: 'end', flexShrink: 0 }}>
+              <b className="accent nocap" style={{ whiteSpace: 'nowrap' }}>{fmtNum(best.est)} {S.unit}</b>
+              {gain != null && <div className="small row" style={{ gap: 2, justifyContent: 'flex-end', fontWeight: 500, color: 'var(--green)' }}>
+                <Icon name="arrowUp" style={{ fontSize: 12 }} />
+                {t('{0} in {1} days', fmtNum(gain), GAIN_DAYS)}
+              </div>}
+            </div>
+          </div>
+        })}
+      </div> : <div className="muted small">{t('Log a weighted set of a favourite exercise to see its estimated 1RM here.')}</div>}
     </div>}
 
     <div className="card tappable" style={{ cursor: 'pointer' }} {...tappable(() => calendarSheet())}>

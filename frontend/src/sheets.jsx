@@ -933,11 +933,11 @@ export const exerciseDetailSheet = ex => ui().openSheet(close => <ExerciseDetail
 // without leaving the workout for Stats. Derived once per log change — the sheet re-renders on
 // every store tick while a session runs, and LineChart drops its hover whenever `points`
 // changes identity, so a series rebuilt per render would lose the tooltip under your finger.
-function ExerciseHistory({ exId }) {
+function ExerciseHistory({ exId, curve: initialCurve = 'top' }) {
   const st = useStore(s => s.S)
   const ex = exOr(exId)
   const h = useMemo(() => exerciseHistory(st, exId), [st.workouts, exId])
-  const [curve, setCurve] = useState('top')
+  const [curve, setCurve] = useState(initialCurve)
   const onE1 = curve === 'e1rm' && h.e1rmPoints.length > 0
   const unit = h.metric === 'weight' ? st.unit : h.metric === 'reps' ? t('reps') : h.metric === 'sec' ? 's' : t('min')
   const e1Best = useMemo(() => Math.max(0, ...h.e1rmPoints.map(p => p.y)), [h])
@@ -975,7 +975,8 @@ function ExerciseHistory({ exId }) {
     </div>
   </>
 }
-export const exerciseHistorySheet = exId => ui().openSheet(close => <ExerciseHistory exId={exId} close={close} />)
+// `curve: 'e1rm'` opens on the estimated-1RM curve (Home's favourite lifts); the default is the top set.
+export const exerciseHistorySheet = (exId, { curve } = {}) => ui().openSheet(close => <ExerciseHistory exId={exId} curve={curve} close={close} />)
 
 /* ============================ add to routine ============================ */
 function AddToRoutine({ ex, close }) {

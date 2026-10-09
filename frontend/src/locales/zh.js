@@ -1950,4 +1950,10 @@ export default {
   'Greys show darker in light mode, so buttons don’t look switched off.': '浅色模式下灰色会调暗一些，免得按钮看起来像被停用了。',
   'custom color picker': '自定义颜色 自己的颜色 取色器 调色板',
   'Signed in from another tab. Your workout came along, keep going here.': '已在另一个标签页登录。你的训练也一起带过去了，在这里继续吧。',
+  // --- Home: favourite lifts ---
+  'Favourite lifts': '收藏动作',
+  'Best est. 1RM': '最佳预估 1RM',
+  '{0} in {1} days': '{1} 天内 {0}',
+  'Log a weighted set of a favourite exercise to see its estimated 1RM here.': '记录一组收藏动作的负重组，即可在此看到预估 1RM。',
+  'Show the best estimated 1RM of your favourite exercises on Home.': '在首页显示收藏动作的最佳预估 1RM。',
 }

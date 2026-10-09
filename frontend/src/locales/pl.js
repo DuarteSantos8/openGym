@@ -1950,4 +1950,10 @@ export default {
   'Greys show darker in light mode, so buttons don’t look switched off.': 'Szarości są ciemniejsze w trybie jasnym, żeby przyciski nie wyglądały na wyłączone.',
   'custom color picker': 'własny kolor niestandardowy próbnik wybór koloru',
   'Signed in from another tab. Your workout came along, keep going here.': 'Zalogowano w innej karcie. Twój trening przeszedł razem z kontem, kontynuuj tutaj.',
+  // --- Home: favourite lifts ---
+  'Favourite lifts': 'Ulubione ćwiczenia',
+  'Best est. 1RM': 'Najlepszy szac. 1RM',
+  '{0} in {1} days': '{0} w {1} dni',
+  'Log a weighted set of a favourite exercise to see its estimated 1RM here.': 'Zapisz serię z obciążeniem w ulubionym ćwiczeniu, aby zobaczyć tutaj jego szacowany 1RM.',
+  'Show the best estimated 1RM of your favourite exercises on Home.': 'Pokazuje na ekranie głównym najlepszy szacowany 1RM ulubionych ćwiczeń.',
 }

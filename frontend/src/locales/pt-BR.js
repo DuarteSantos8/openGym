@@ -1212,6 +1212,11 @@ export const PT_BR_OVERRIDES = {
   'Greys show lighter in dark mode, so buttons don’t look switched off.': 'Os cinzas ficam mais claros no modo escuro, para os botões não parecerem desligados.',
   'Greys show darker in light mode, so buttons don’t look switched off.': 'Os cinzas ficam mais escuros no modo claro, para os botões não parecerem desligados.',
   'Signed in from another tab. Your workout came along, keep going here.': 'Login feito em outra aba. Seu treino veio junto, continue por aqui.',
+  'Favourite lifts': 'Exercícios favoritos',
+  'Best est. 1RM': 'Melhor 1RM est.',
+  '{0} in {1} days': '{0} em {1} dias',
+  'Log a weighted set of a favourite exercise to see its estimated 1RM here.': 'Registre uma série com carga de um exercício favorito para ver aqui o 1RM estimado dele.',
+  'Show the best estimated 1RM of your favourite exercises on Home.': 'Mostra no Início o melhor 1RM estimado dos seus exercícios favoritos.',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

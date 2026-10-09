@@ -1950,4 +1950,10 @@ export default {
   'Greys show darker in light mode, so buttons don’t look switched off.': 'लाइट मोड में ग्रे रंग गहरे दिखते हैं, ताकि बटन बंद जैसे न लगें।',
   'custom color picker': 'अपना रंग कस्टम रंग चुनने वाला',
   'Signed in from another tab. Your workout came along, keep going here.': 'दूसरे टैब से साइन इन हुआ। आपका वर्कआउट साथ आ गया, यहीं जारी रखें।',
+  // --- Home: favourite lifts ---
+  'Favourite lifts': 'पसंदीदा लिफ़्ट',
+  'Best est. 1RM': 'सर्वश्रेष्ठ अनु. 1RM',
+  '{0} in {1} days': '{1} दिनों में {0}',
+  'Log a weighted set of a favourite exercise to see its estimated 1RM here.': 'यहाँ अनुमानित 1RM देखने के लिए किसी पसंदीदा व्यायाम का वज़न वाला सेट दर्ज करें।',
+  'Show the best estimated 1RM of your favourite exercises on Home.': 'होम पर अपने पसंदीदा व्यायामों का सर्वश्रेष्ठ अनुमानित 1RM दिखाएँ।',
 }

@@ -2003,4 +2003,10 @@ export default {
   'Greys show darker in light mode, so buttons don’t look switched off.': 'تظهر الألوان الرمادية أغمق في الوضع الفاتح، حتى لا تبدو الأزرار مُعطّلة.',
   'custom color picker': 'لون خاص مخصص منتقي الألوان',
   'Signed in from another tab. Your workout came along, keep going here.': 'تم تسجيل الدخول من علامة تبويب أخرى. تمرينك انتقل معك، تابعه هنا.',
+  // --- Home: favourite lifts ---
+  'Favourite lifts': 'التمارين المفضلة',
+  'Best est. 1RM': 'أفضل 1RM تقديري',
+  '{0} in {1} days': '{0} خلال {1} يومًا',
+  'Log a weighted set of a favourite exercise to see its estimated 1RM here.': 'سجّل مجموعة بوزن لتمرين مفضل لترى 1RM التقديري هنا.',
+  'Show the best estimated 1RM of your favourite exercises on Home.': 'اعرض أفضل 1RM تقديري لتمارينك المفضلة في الرئيسية.',
 }

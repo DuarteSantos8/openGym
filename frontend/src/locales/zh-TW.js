@@ -1943,4 +1943,10 @@ export default {
   'Greys show darker in light mode, so buttons don’t look switched off.': '淺色模式下灰色會調暗一些，免得按鈕看起來像被停用了。',
   'custom color picker': '自訂顏色 自己的顏色 取色器 調色盤',
   'Signed in from another tab. Your workout came along, keep going here.': '已在另一個分頁登入。你的訓練也一起帶過去了，在這裡繼續吧。',
+  // --- Home: favourite lifts ---
+  'Favourite lifts': '最愛動作',
+  'Best est. 1RM': '最佳預估 1RM',
+  '{0} in {1} days': '{1} 天內 {0}',
+  'Log a weighted set of a favourite exercise to see its estimated 1RM here.': '記錄一組最愛動作的負重組，即可在此看到預估 1RM。',
+  'Show the best estimated 1RM of your favourite exercises on Home.': '在首頁顯示最愛動作的最佳預估 1RM。',
 }
