@@ -210,6 +210,47 @@ export function stampWorkout(w, now = Date.now()) {
 
 const stampOf = v => (v && typeof v === 'object' ? Number(v._ts) || 0 : 0)
 const isMap = v => !!v && typeof v === 'object' && !Array.isArray(v)
+const PROGRAMME_LISTS = {
+  programmeDefinitions: 'definitions',
+  programmeCycles: 'cycles',
+  programmeLegacyEntries: 'legacyEntries',
+}
+const entriesOf = (S, field) => {
+  const nested = PROGRAMME_LISTS[field]
+  return list(nested ? S?.programmes?.[nested] : S?.[field])
+}
+const setEntries = (S, field, entries) => {
+  const nested = PROGRAMME_LISTS[field]
+  if (!nested) { S[field] = entries; return }
+  S.programmes = isMap(S.programmes) ? { ...S.programmes, [nested]: entries } : { version: 1, [nested]: entries }
+}
+const programmeTime = item => {
+  const value = item?.updatedAt ?? item?.createdAt ?? item?.startedAt ?? item?._ts
+  const number = Number(value)
+  return Number.isFinite(number) ? number : Date.parse(value) || 0
+}
+
+function mergeProgrammeEntries(newer, older, prefer) {
+  const other = new Map(list(older).filter(item => item?.id != null).map(item => [item.id, item]))
+  return unionById(newer, older).map(item => {
+    const alternate = item?.id != null ? other.get(item.id) : null
+    if (!alternate || prefer || programmeTime(item) >= programmeTime(alternate)) return clone(item)
+    return clone(alternate)
+  })
+}
+
+function mergeProgrammes(newer, older, prefer) {
+  const n = isMap(newer?.programmes) ? newer.programmes : null
+  const o = isMap(older?.programmes) ? older.programmes : null
+  if (!n && !o) return null
+  const out = { ...(o ? clone(o) : {}), ...(n ? clone(n) : {}) }
+  out.definitions = mergeProgrammeEntries(n?.definitions, o?.definitions, prefer)
+  out.cycles = mergeProgrammeEntries(n?.cycles, o?.cycles, prefer)
+  if (Array.isArray(n?.legacyEntries) || Array.isArray(o?.legacyEntries)) {
+    out.legacyEntries = mergeProgrammeEntries(n?.legacyEntries, o?.legacyEntries, prefer)
+  }
+  return out
+}
 
 // ---- Entries merged field by field ----------------------------------------------------------
 //
@@ -396,6 +437,7 @@ const bodyweightKey = e => `${e?.d}|${e?.t ?? ''}`
 const RESET_LISTS = {
   workouts: workoutKey, routines: x => x?.id, customEx: x => x?.id, bodyweight: bodyweightKey,
   gymCards: x => x?.id, equipProfiles: x => x?.id, favEx: x => x,
+  programmeDefinitions: x => x?.id, programmeCycles: x => x?.id, programmeLegacyEntries: x => x?.id,
 }
 const RESET_MAPS = ['exNotes', 'barWeights', 'balanceOverrides', 'loadKind', 'plates']
 /** An entry's name in resetIds: a workout's id (or day and start), a weigh-in's day and time, … */
@@ -421,7 +463,7 @@ export function resetIdsOf(...copies) {
   for (const S of copies) {
     if (!S || typeof S !== 'object') continue
     const one = {}
-    for (const [f, key] of Object.entries(RESET_LISTS)) one[f] = list(S[f]).filter(x => x != null).map(key)
+    for (const [f, key] of Object.entries(RESET_LISTS)) one[f] = entriesOf(S, f).filter(x => x != null).map(key)
     for (const f of RESET_MAPS) one[f] = Object.keys(isMap(S[f]) ? S[f] : {})
     out = mergeResetIds(out, one)
   }
@@ -438,7 +480,9 @@ export function sinceReset(S, at, ids) {
   if (ids && typeof ids === 'object') {
     for (const [f, key] of Object.entries(RESET_LISTS)) {
       const gone = new Set(list(ids[f]).map(String))
-      if (Array.isArray(S[f])) out[f] = clone(S[f].filter(x => x == null || !gone.has(String(key(x)))))
+      if (Array.isArray(PROGRAMME_LISTS[f] ? S?.programmes?.[PROGRAMME_LISTS[f]] : S[f])) {
+        setEntries(out, f, clone(entriesOf(S, f).filter(x => x == null || !gone.has(String(key(x))))))
+      }
     }
     for (const f of RESET_MAPS) {
       const gone = new Set(list(ids[f]).map(String))
@@ -450,6 +494,9 @@ export function sinceReset(S, at, ids) {
     out.routines = list(S.routines).filter(r => r && after(r._ts))
     out.customEx = list(S.customEx).filter(c => c && after(c._ts))
     out.bodyweight = list(S.bodyweight).filter(e => e && after(e.t))
+    setEntries(out, 'programmeDefinitions', entriesOf(S, 'programmeDefinitions').filter(item => item && after(programmeTime(item))))
+    setEntries(out, 'programmeCycles', entriesOf(S, 'programmeCycles').filter(item => item && after(programmeTime(item))))
+    setEntries(out, 'programmeLegacyEntries', entriesOf(S, 'programmeLegacyEntries').filter(item => item && after(programmeTime(item))))
     // No time of their own: taken for what they were before the reset, which cleared them.
     out.equipProfiles = []
     out.gymCards = []
@@ -492,6 +539,7 @@ export function sinceReset(S, at, ids) {
 const DEL_LISTS = {
   workouts: workoutKey, routines: x => x?.id, customEx: x => x?.id, bodyweight: e => e?.d,
   gymCards: x => x?.id, equipProfiles: x => x?.id, favEx: x => x,
+  programmeDefinitions: x => x?.id, programmeCycles: x => x?.id, programmeLegacyEntries: x => x?.id,
 }
 // When an entry was last edited, to hold against a removal. Entries with no time of their own
 // (favourites, and cards and profiles saved before they were stamped) count as older than any
@@ -499,6 +547,7 @@ const DEL_LISTS = {
 const DEL_TIME = {
   workouts: workoutTime, routines: x => Number(x?._ts) || 0, customEx: x => Number(x?._ts) || 0,
   bodyweight: e => Number(e?.t) || 0, gymCards: x => Number(x?._ts) || 0, equipProfiles: x => Number(x?._ts) || 0,
+  programmeDefinitions: programmeTime, programmeCycles: programmeTime, programmeLegacyEntries: programmeTime,
 }
 // Per field, the most stamps kept; past it the oldest go first.
 export const DELETED_MAX = 5000
@@ -520,7 +569,7 @@ export function stampDeletions(prev, next, now = Date.now()) {
   const del = isMap(next.deleted) ? next.deleted : {}
   let touched = false
   for (const [f, key] of Object.entries(DEL_LISTS)) {
-    const before = list(prev?.[f]), after = list(next[f])
+    const before = entriesOf(prev, f), after = entriesOf(next, f)
     if (before === after) continue
     const have = new Set(after.filter(x => x != null).map(x => String(key(x))))
     const m = isMap(del[f]) ? del[f] : {}
@@ -579,15 +628,17 @@ function applyDeletions(S, deleted) {
   if (!deleted) return gone
   for (const [f, key] of Object.entries(DEL_LISTS)) {
     const m = deleted[f]
-    if (!isMap(m) || !Array.isArray(S[f])) continue
+    const nested = PROGRAMME_LISTS[f]
+    if (!isMap(m) || !Array.isArray(nested ? S?.programmes?.[nested] : S[f])) continue
     const time = DEL_TIME[f] || (() => 0)
-    S[f] = S[f].filter(x => {
+    const kept = entriesOf(S, f).filter(x => {
       if (x == null) return true
       const at = Number(m[String(key(x))]) || 0
       const drop = at > 0 && at >= time(x)
       if (drop && f === 'workouts') gone.push(x)
       return !drop
     })
+    setEntries(S, f, kept)
   }
   return gone
 }
@@ -605,7 +656,7 @@ function applyDeletions(S, deleted) {
 const OWN_MERGE = new Set([
   '_ts', '_rev', '_wid', '_wids', '_unstamped', '_prior', 'active', 'unit', 'unitSet', 'resetAt', 'resetIds', 'deleted', 'edited', 'undone', 'routineOrder',
   'workouts', 'routines', 'customEx', 'equipProfiles', 'gymCards', 'bodyweight', 'favEx',
-  'exWeights', 'balanceOverrides', 'loadKind', 'plates',
+  'exWeights', 'balanceOverrides', 'loadKind', 'plates', 'programmes',
 ])
 // Stamped per key instead of whole: one day of the plan, one exercise's note or bar.
 const PER_KEY = new Set(['week', 'dayPlan', 'exNotes', 'barWeights'])
@@ -786,6 +837,8 @@ export function mergeStates(a0, b0, { prefer } = {}) {
   for (const f of ['routines', 'customEx', 'equipProfiles', 'gymCards']) {
     if (list(n[f]).length || list(o[f]).length) out[f] = (f === 'routines' ? unionByNeighbours : unionById)(n[f], o[f]).map(clone)
   }
+  const programmes = mergeProgrammes(n, o, prefer)
+  if (programmes) out.programmes = programmes
   // The routines in the order chosen last (`edited.routineOrder`), the newer copy's without a
   // stamp to tell; one only the other copy has still goes next to its neighbour there. Each entry
   // is still the newer copy's version here, merged with the other's below.
@@ -910,7 +963,7 @@ export function stampRestore(next, others = [], now = Date.now()) {
   for (const [f, key] of Object.entries(DEL_LISTS)) {
     const m = del[f]
     if (!isMap(m)) continue
-    for (const x of list(next[f])) {
+    for (const x of entriesOf(next, f)) {
       if (x == null) continue
       const k = String(key(x))
       if (Number(m[k]) > 0) m[k] = -now
@@ -942,12 +995,12 @@ export function stampRestore(next, others = [], now = Date.now()) {
 export function stampReplace(next, others = [], now = Date.now()) {
   if (!next || typeof next !== 'object') return next
   const known = {}
-  for (const f of Object.keys(DEL_LISTS)) known[f] = others.flatMap(o => list(o?.[f])).filter(x => x != null)
+  for (const f of Object.keys(DEL_LISTS)) setEntries(known, f, others.flatMap(o => entriesOf(o, f)).filter(x => x != null))
   stampDeletions(known, next, now)
   for (const f of ['workouts', 'routines', 'customEx', 'equipProfiles', 'gymCards']) {
     const versions = new Map()
     for (const o of others) for (const x of list(o?.[f])) if (x && typeof x === 'object' && x.id != null) versions.set(x.id, [...(versions.get(x.id) || []), x])
-    for (const x of list(next[f])) {
+    for (const x of entriesOf(next, f)) {
       if (!x || typeof x !== 'object' || x.id == null || !versions.has(x.id)) continue
       const fields = isMap(x._f) ? { ...x._f } : {}
       let moved = false
@@ -999,6 +1052,7 @@ export function highestStamp(S) {
       if (isMap(x._f)) for (const v of Object.values(x._f)) see(v)
     }
   }
+  for (const f of Object.keys(PROGRAMME_LISTS)) for (const item of entriesOf(S, f)) see(programmeTime(item))
   for (const f of ['balanceOverrides', 'loadKind', 'plates']) if (isMap(S[f])) for (const v of Object.values(S[f])) see(stampOf(v))
   for (const e of list(S.bodyweight)) if (e && typeof e === 'object') see(e.t)
   return m
@@ -1114,11 +1168,15 @@ export function localExtras(local, server) {
     .filter(([k, v]) => v != null && !(Array.isArray(v) && !v.length) && !(isMap(server?.[f]) && k in server[f])).length
   const setup = ['gymCards', 'equipProfiles'].reduce((n, f) => n + list(local?.[f]).filter(x => x && x.id != null && !ids(f).has(x.id)).length, 0) +
     keysNew('week') + keysNew('dayPlan') + keysNew('exNotes')
+  const programmeIds = field => new Set(entriesOf(server, field).map(item => item?.id))
+  const programmes = Object.keys(PROGRAMME_LISTS).reduce((count, field) => count + entriesOf(local, field)
+    .filter(item => item && item.id != null && !programmeIds(field).has(item.id)).length, 0)
   return {
     workouts: list(local?.workouts).filter(w => !have.has(workoutKey(w))).length,
     bodyweight: list(local?.bodyweight).filter(e => e && e.d != null && (!days.has(e.d) || differs(e, days.get(e.d)))).length,
     customEx: list(local?.customEx).filter(e => e && !ex.has(e.id)).length,
     ...(routines ? { routines } : {}),
     ...(setup ? { setup } : {}),
+    ...(programmes ? { programmes } : {}),
   }
 }

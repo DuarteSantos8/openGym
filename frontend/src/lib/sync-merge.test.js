@@ -256,6 +256,46 @@ describe('sign-in adoption helpers', () => {
   })
 })
 
+describe('Programme sync', () => {
+  const definition = (id, name, updatedAt) => ({ id, name, updatedAt, weeks: [] })
+  const cycle = (id, programmeId, updatedAt) => ({ id, programmeId, name: id, status: 'active', updatedAt })
+  const withProgrammes = (over = {}, definitions = [], cycles = []) => base({
+    programmes: { version: 1, definitions, cycles }, ...over,
+  })
+
+  it('keeps separate device additions and the latest version of a shared identity', () => {
+    const phone = withProgrammes({ _ts: 300 }, [
+      definition('phone', 'Phone', '2026-10-01T08:00:00.000Z'),
+      definition('shared', 'Old name', '2026-10-01T09:00:00.000Z'),
+    ], [cycle('phone-cycle', 'phone', '2026-10-01T08:00:00.000Z')])
+    const desktop = withProgrammes({ _ts: 200 }, [
+      definition('desktop', 'Desktop', '2026-10-01T10:00:00.000Z'),
+      definition('shared', 'New name', '2026-10-01T11:00:00.000Z'),
+    ], [cycle('desktop-cycle', 'desktop', '2026-10-01T10:00:00.000Z')])
+
+    for (const merged of [mergeStates(phone, desktop), mergeStates(desktop, phone)]) {
+      expect(ids(merged.programmes.definitions).sort()).toEqual(['desktop', 'phone', 'shared'])
+      expect(merged.programmes.definitions.find(item => item.id === 'shared').name).toBe('New name')
+      expect(ids(merged.programmes.cycles).sort()).toEqual(['desktop-cycle', 'phone-cycle'])
+    }
+  })
+
+  it('treats an empty namespace as stale absence, but honours a recorded deletion', () => {
+    const original = withProgrammes({ _ts: 100 }, [definition('block', 'Block', '2026-10-01T08:00:00.000Z')])
+    const emptyNewer = withProgrammes({ _ts: 200 })
+    expect(ids(mergeStates(emptyNewer, original).programmes.definitions)).toEqual(['block'])
+
+    const removed = clone(original)
+    removed.programmes.definitions = []
+    removed._ts = stampChange(original, removed, Date.parse('2026-10-02T08:00:00.000Z'))
+    const stale = withProgrammes({ _ts: removed._ts + 100, restSec: 45 }, original.programmes.definitions)
+    for (const merged of [mergeStates(removed, stale), mergeStates(stale, removed)]) {
+      expect(merged.programmes.definitions).toEqual([])
+      expect(merged.deleted.programmeDefinitions.block).toBeGreaterThan(0)
+    }
+  })
+})
+
 // A conflict used to hand every routine both sides had to the copy whose WHOLE state was newer.
 // The phone edits the push day, then the desktop toggles a setting: the desktop's copy is newer,
 // and the phone's edit was gone. Each routine now carries its own edit time.

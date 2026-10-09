@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { effectiveRoutines, effectiveRoutineIds, nextTrainingDay, streakWeeks, lastBW, setsDoneActive } from '../lib/history.js'
 import { fmtNum, fmtDate, todayISO, isoOf, weekStartOf, weekDayOffset, DAYS, DAYN } from '../lib/format.js'
 import { t, tn, dateLocale } from '../lib/i18n.js'
-import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, startFlow, starterPlanSheet, bwDeltaColor, weighInsSheet } from '../sheets.jsx'
+import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, startFlow, startProgrammeFlow, starterPlanSheet, bwDeltaColor, weighInsSheet, confirmSheet } from '../sheets.jsx'
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
 import QueueRow from '../components/QueueRow.jsx'
@@ -14,10 +14,14 @@ import { useConnectionTrouble } from '../components/SyncBanner.jsx'
 import { Button } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { glyphOf } from '../lib/glyphs.js'
+import { activeProgrammeCycles, completeProgrammeCycleInState, currentProgrammeProjection, programmeSessionsForStart } from '../lib/programmes.js'
+import { ActiveProgrammeCard, COLOUR_CSS } from '../components/ProgrammeCard.jsx'
+import ActiveProgrammeDetail from '../components/ActiveProgrammeDetail.jsx'
 
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
 export default function Home() {
   const nav = useNavigate()
+  const [search, setSearch] = useSearchParams()
   const S = useStore(s => s.S)
   const user = useStore(s => s.user)
   // The banner switched off and the sync stuck: a dot on the gear (Settings → Show connection status).
@@ -25,9 +29,18 @@ export default function Home() {
   const [weekOffset, setWeekOffset] = useState(0)
 
   const today = new Date()
+  const activeCycles = S.programmeMode ? activeProgrammeCycles(S) : []
+  const projection = S.programmeMode ? currentProgrammeProjection(S) : { cycles: {}, items: [] }
+  const programmeToday = S.programmeMode ? programmeSessionsForStart(S, todayISO()) : []
+  const selectedCycle = activeCycles.find(cycle => cycle.id === search.get('cycle'))
+  const requestedWeek = Number(search.get('week'))
   // A weekday can hold several routines. `todayRoutines` is the whole day; `routine` is the
   // first, kept for the one-routine glyph. The derived session name joins them (§9).
-  const todayRoutines = effectiveRoutines(S, todayISO())
+  const scheduledTodayRoutines = effectiveRoutines(S, todayISO())
+  const programmeRoutineIds = new Set(programmeToday.map(item => String(item.routineId)))
+  const todayRoutines = S.programmeMode && programmeToday.length
+    ? scheduledTodayRoutines.filter(routine => !programmeRoutineIds.has(String(routine.id)))
+    : scheduledTodayRoutines
   const routine = todayRoutines[0] || null
   const todayName = todayRoutines.map(r => r.name).join(' + ')
   // A fulfilled pin (a coach session pinned to today and since done) reads as no override.
@@ -54,7 +67,10 @@ export default function Home() {
   const loggedToday = S.workouts.filter(w => w.d === todayISO())
   const queueIds = queueOf(S)?.ids || []
   const coveredToday = id => !queueIds.includes(id) && loggedToday.some(w => (Array.isArray(w.routineIds) ? w.routineIds : [w.routineId]).includes(id))
-  const doneToday = (todayRoutines.every(r => coveredToday(r.id)) && loggedToday.at(-1)) || null
+  const suppressingProgrammeDuplicate = S.programmeMode && programmeToday.length > 0
+  const doneToday = ((!suppressingProgrammeDuplicate || todayRoutines.length > 0) && todayRoutines.every(r => coveredToday(r.id)) && loggedToday.at(-1)) || null
+  const activeProgrammeId = S.active?.programmeInstance?.instanceId || S.active?.programmeInstanceId
+  const showClassicToday = !programmeToday.length || todayRoutines.length > 0 || (!!S.active && !activeProgrammeId) || !!doneToday
   const strip = []
   for (let i = 0; i < 7; i++) {
     const d = new Date(wkStart); d.setDate(wkStart.getDate() + i)
@@ -124,7 +140,7 @@ export default function Home() {
           routine name behind a green Start tag and read as still outstanding (issue #4).
           An in-progress session still wins — that one is happening right now. Tapping the
           row keeps working, so a second session in one day is a tap away, just not urged. */}
-      <div className="today-row" {...tappable(onToday)}>
+      {showClassicToday && <div className="today-row" {...tappable(onToday)}>
         <div className="row" style={{ gap: 9, minWidth: 0 }}>
           <span className="lrow-i" style={{ background: S.active ? 'var(--orange)' : doneToday ? 'var(--surface-3)' : routine ? 'var(--acc)' : 'var(--surface-3)' }}>
             <Icon name={S.active ? (editingSaved ? 'pencil' : 'play') : doneToday ? 'checkCircle' : routine ? glyphOf(routine.emoji) : 'moon'}
@@ -142,20 +158,42 @@ export default function Home() {
           : doneToday ? <span className="tag" style={{ color: 'var(--green)', background: 'color-mix(in srgb,var(--green) 16%,transparent)' }}>{t('Done')}</span>
           : routine ? <span className="tag acc">{t('Start')}</span>
           : <Icon name="plus" className="chev" />}
-      </div>
+      </div>}
       {/* The row above starts today's plan in one tap, and so does the Start button in the tab
           bar — which is the whole problem when you want something else. Both jump straight into
           the planned session whenever there is one, so the Start screen (a freestyle session,
           and your other routines) is only reachable on a day with nothing planned. The one other
           way in, "Choose a different workout" on the weigh-in sheet, does not exist when the
           weigh-in is switched off. This is that door, and it starts nothing on its own. */}
-      {!S.active && <div style={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
+      {programmeToday.map(item => {
+        const activeId = S.active?.programmeInstance?.instanceId || S.active?.programmeInstanceId
+        const resume = activeId === item.instanceId
+        return <div key={item.instanceId} className="today-row" data-testid="home-programme-session" style={{ borderTop: 'var(--hair) solid var(--sep)' }}>
+          <button type="button" className="programme-ready-open" onClick={() => setSearch({ cycle: item.cycleId })} aria-label={item.programmeName + ' · ' + item.routineSnapshot?.name}>
+            <span className="lrow-i" style={{ background: COLOUR_CSS[item.colour] || 'var(--acc)' }}><Icon name={glyphOf(item.routineSnapshot?.emoji)} /></span>
+            <span style={{ minWidth: 0 }}><span className="lbl2">{item.programmeName}</span><span className="ttl" style={{ display: 'block' }}>{item.routineSnapshot?.name || item.routineId}</span></span>
+          </button>
+          {resume ? <Button size="sm" variant="primary" onClick={() => nav('/workout')}>{t('Resume')}</Button>
+            : item.status === 'completed' ? <span className="tag">{t('Done')}</span>
+            : <Button size="sm" variant="primary" onClick={() => startProgrammeFlow(item)}>{t('Start')}</Button>}
+        </div>
+      })}      {!S.active && <div style={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
         <Button size="sm" variant="ghost" className="dim" icon="swap" onClick={() => nav('/workout')}>
           {t('Choose a different workout')}
         </Button>
       </div>}
     </div>
 
+    {!!activeCycles.length && <section className="home-programmes" aria-label={t('Active programmes')}>
+      <h4 className="sec">{t('Active programmes')}</h4>
+      {activeCycles.map(cycle => selectedCycle?.id === cycle.id ? <ActiveProgrammeDetail key={cycle.id} state={S} cycle={cycle}
+        initialWeek={requestedWeek} onWeekChange={week => setSearch({ cycle: cycle.id, week }, { replace: true })}
+        projection={projection.cycles[cycle.id]} onStartSession={startProgrammeFlow}
+        onClose={() => setSearch({}, { replace: true })}
+        onComplete={() => confirmSheet({ title: t('Complete programme early?'), message: t('This ends the current cycle and removes its remaining sessions from the active schedule. Your recorded workouts are kept.'), confirmText: t('Complete'), onConfirm: () => { useStore.getState().update(state => completeProgrammeCycleInState(state, cycle.id, { reason: 'early' })); setSearch({}, { replace: true }) } })}
+        onEdit={() => nav('/programme/new', { state: { mode: 'edit-cycle', cycleId: cycle.id, programmeDetailReturn: { kind: 'cycle', id: cycle.id, week: requestedWeek || projection.cycles[cycle.id]?.currentWeek || 1 } } })} />
+        : <ActiveProgrammeCard key={cycle.id} cycle={cycle} projection={projection.cycles[cycle.id]} onOpen={() => setSearch({ cycle: cycle.id })} />)}
+    </section>}
     {/* Jump to the gym check-in cards (QR membership codes). Shown here as a quick tap on
         arrival at the gym; folds away per user via the "Gym check-in" switch in Settings. */}
     {S.checkIn !== false && (

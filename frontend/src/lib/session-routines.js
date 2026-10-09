@@ -139,3 +139,30 @@ export function saveSessionAsRoutine(state, session, name) {
   state.routines.push(routine)
   return routine.id
 }
+
+export const sourceRoutineIds = session => [...new Set([].concat(session?.routineIds?.length ? session.routineIds : session?.routineId || []).filter(Boolean))]
+
+export function sessionForRoutine(session, routine) {
+  const routineId = routine.id
+  const chosen = (session?.resumeEntries || session?.entries || []).filter(entry => entry.rid ? entry.rid === routineId : sourceRoutineIds(session).length <= 1)
+  const { resumeEntries, ...scoped } = session
+  return { ...scoped, entries: chosen }
+}
+
+export function sessionChangeFields(state, session, routineId) {
+  const routine = state.routines.find(item => item.id === routineId)
+  if (!routine) return []
+  const next = routineFromSession(sessionForRoutine(session, routine), routine.name, [routine])
+  const fields = { id: 'Exercises / order', sets: 'Sets', reps: 'Repetitions', weight: 'Weight', sec: 'Duration', min: 'Duration', speed: 'Speed', warmupSets: 'Warm-up sets', prog: 'Progression', restSec: 'Rest', sg: 'Groups' }
+  const value = (entry, key) => ({ ...defaultConfig(entry.id), warmupSets: 0, ...entry })[key]
+  return Object.entries(fields)
+    .filter(([key]) => JSON.stringify(routine.ex.map(entry => value(entry, key))) !== JSON.stringify(next.ex.map(entry => value(entry, key))))
+    .map(([, label]) => label)
+}
+export function applySessionToRoutine(state, session, routineId = sourceRoutineIds(session).length === 1 ? sourceRoutineIds(session)[0] : null) {
+  const routine = state.routines.find(item => item.id === routineId)
+  if (!routine) throw new Error('The source routine is no longer available.')
+  const updated = routineFromSession(sessionForRoutine(session, routine), routine.name, [routine])
+  routine.ex = updated.ex
+  return routine.id
+}

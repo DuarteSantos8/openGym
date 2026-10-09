@@ -141,7 +141,8 @@ export function Segmented({ options, value, onChange, className = '' }) {
 // `min` and `max` hold for the buttons at once, but for typing only once the field is left:
 // clamped on every keystroke, a field emptied to type a new number snapped to the minimum, and
 // the digits typed next landed after it (a 48 retyped as 75 saved 175).
-export function Stepper({ value, step = 1, min = 0, max = Infinity, onChange, decimal = true, className = '', label, unit, invalid = false }) {
+export function Stepper({ value, step = 1, min = 0, max = Infinity, onChange, decimal = true, className = '', label, ariaLabel, unit, invalid = false }) {
+  const fieldName = ariaLabel || (typeof label === 'string' ? label : undefined)
   const clamp = v => Math.min(max, Math.max(min, v))
   const set = v => onChange(clamp(Math.round((v || 0) * 100) / 100))
   // Holding a button repeats the step; the latest value/step live in a ref so
@@ -181,10 +182,10 @@ export function Stepper({ value, step = 1, min = 0, max = Infinity, onChange, de
     onClick: () => click(dir),
   })
   const inner = (
-    <div className={'stp ' + className}>
+    <div className={'stp ' + className} role="group" aria-label={fieldName}>
       <button {...holdProps(-1)} aria-label={t('Decrease')}><Icon name="minus" /></button>
       <span className="val" onBlur={() => { const v = +value || 0; if (clamp(v) !== v) onChange(clamp(v)) }}>
-        <NumberField value={value} decimal={decimal} onChange={onChange} aria-invalid={invalid ? 'true' : undefined} />
+        <NumberField value={value} decimal={decimal} onChange={onChange} aria-label={fieldName} aria-invalid={invalid ? 'true' : undefined} />
         {unit && <i>{unit}</i>}
       </span>
       <button {...holdProps(1)} aria-label={t('Increase')}><Icon name="plus" /></button>

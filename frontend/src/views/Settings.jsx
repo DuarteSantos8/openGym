@@ -628,6 +628,10 @@ export default function Settings({ page = null, find = null, via = null }) {
             options={[{ value: MONDAY, label: t('Monday') }, { value: SUNDAY, label: t('Sunday') }]}
             value={weekStartOf(S)} onChange={v => update(s => { s.weekStart = v })} />
         </Row>
+        <Row icon="calendar" iconTint="var(--acc)" title={t('Programme mode')}
+          subtitle={t('Create and run multi-week programmes. Saved Programme data remains when this is off.')}>
+          <Switch checked={S.programmeMode === true} onChange={v => update(s => { s.programmeMode = v })} />
+        </Row>
       </Section>
       <Section>
         <Row icon="clipboard" iconTint="var(--green)" title={t('Load starter plan')} accessory="chevron" onClick={starterPlanSheet} />

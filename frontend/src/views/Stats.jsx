@@ -1,3 +1,4 @@
+import CompletedProgrammeRow from '../components/CompletedProgrammeRow.jsx'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
@@ -650,5 +651,9 @@ export default function Stats() {
       </div>
       <div className="list">{[...workouts].reverse().slice(0, 6).map(w => <WorkoutRow key={w.id} w={w} onClick={() => workoutDetailSheet(w)} />)}</div>
     </>}
+    {S.programmeMode && (S.programmes?.cycles || []).some(cycle=>cycle.status==='completed') && <section>
+      <h4 className="sec">{t('Completed programmes')}</h4>
+      <div className="list">{S.programmes.cycles.filter(cycle=>cycle.status==='completed').slice().sort((a,b)=>String(b.completedAt||'').localeCompare(String(a.completedAt||''))).map(cycle=><CompletedProgrammeRow key={cycle.id} cycle={cycle} state={S} onRepeat={item=>nav('/programme/pickup',{state:{repeatCycleId:item.id}})} />)}</div>
+    </section>}
   </>
 }

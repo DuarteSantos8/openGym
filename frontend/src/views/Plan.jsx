@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { Fragment, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
@@ -18,6 +18,12 @@ import { useListReorder, moved } from '../lib/use-list-reorder.js'
 import { glyphOf, DEFAULT_GLYPH } from '../lib/glyphs.js'
 import { DEMO } from '../lib/demo.js'
 import { MOBILE } from '../lib/mobile.js'
+import ReadyProgrammeDetail from '../components/ReadyProgrammeDetail.jsx'
+import { programmeShareSheet, importProgrammeFile } from '../programme-sheets.jsx'
+import CompletedProgrammeRow from '../components/CompletedProgrammeRow.jsx'
+import { ReadyProgrammeRow } from '../components/ProgrammeCard.jsx'
+import { effortOf } from '../lib/history.js'
+import { readyProgrammeDefinitions } from '../lib/programmes.js'
 import { coachAvailable } from '../lib/coach.js'
 import { queueOf, queueView } from '../lib/queue.js'
 import { deriveSessionName } from '../lib/session-merge.js'
@@ -27,12 +33,11 @@ import {
   chooseRotation, chooseFixedWeek,
 } from '../lib/rotation.js'
 
-// Plan has two views (v1.3.11): Schedule (how you train, and when) and Routines (what you
-// train). The last one you looked at comes back: a per-device convenience, never synced, so it
+// Plan separates Schedule (how you train, and when), opt-in Programmes, and Routines. The last one you looked at comes back: a per-device convenience, never synced, so it
 // lives in this browser's storage and not in S.
 export const PLAN_VIEW_KEY = 'gym_plan_view'
 const readView = () => {
-  try { return localStorage.getItem(PLAN_VIEW_KEY) === 'routines' ? 'routines' : 'schedule' } catch { return 'schedule' }
+  try { return ['programmes', 'routines'].includes(localStorage.getItem(PLAN_VIEW_KEY)) ? localStorage.getItem(PLAN_VIEW_KEY) : 'schedule' } catch { return 'schedule' }
 }
 
 /* Undo for Plan's two removals (v1.3.11). Both go through the store's normal update, so sync
@@ -129,6 +134,7 @@ export default function Plan() {
   const coachMode = useStore(s => s.coachLocal?.mode)
   const user = useStore(s => s.user)
   const fileRef = useRef(null)
+  const programmeFileRef = useRef(null)
   const [view, setViewState] = useState(readView)
   const setView = v => {
     setViewState(v)
@@ -148,6 +154,7 @@ export default function Plan() {
       title: t('Plan'),
       subtitle: has ? null : t('Add an exercise to a routine first. An empty plan has nothing to share.'),
       items: [
+        S.programmeMode && { icon: 'download', label: t('Import a programme file'), onClick: () => programmeFileRef.current?.click() },
         { icon: 'share', label: t('Export plan file'), sub: t('A small file a friend can import into their own openGym. Routines only, none of your workouts or weigh-ins.'), disabled: !has, onClick: exportPlanFile },
         { icon: 'note', label: t('Print / Save as PDF'), disabled: !has, onClick: printWholePlan },
         { icon: 'download', label: t('Import a plan file'), onClick: () => fileRef.current?.click() },
@@ -159,18 +166,43 @@ export default function Plan() {
   const pickFile = ev => { const f = ev.target.files[0]; ev.target.value = ''; importPlanFile(f) }
 
   const mode = scheduleModeOf(S)
+  const currentView = view === 'programmes' && !S.programmeMode ? 'schedule' : view
+  const viewOptions = [{ value: 'schedule', label: t('Schedule') }, ...(S.programmeMode ? [{ value: 'programmes', label: t('Programmes') }] : []), { value: 'routines', label: t('Routines') }]
 
   return <div className="narrow plan">
     <div className="hdr">
-      <div><h1>{t('Plan')}</h1><div className="sub">{mode === 'rotation' ? t('Your routines in a loop') : t('Your weekly routine')}</div></div>
+      <div><h1>{t('Plan')}</h1><div className="sub">{currentView === 'programmes' ? t('Routines & reusable plans') : mode === 'rotation' ? t('Your routines in a loop') : t('Your weekly routine')}</div></div>
       <button className="iconbtn" onClick={openMenu} aria-label={t('Plan options')} title={t('Plan options')}><Icon name="share" /></button>
     </div>
     <input ref={fileRef} type="file" accept="application/json,.json" onChange={pickFile} hidden />
-    <Segmented className="plan-views" value={view} onChange={setView}
-      options={[{ value: 'schedule', label: t('Schedule') }, { value: 'routines', label: t('Routines') }]} />
-    {view === 'routines'
-      ? <Routines S={S} update={update} nav={nav} />
-      : <Schedule S={S} update={update} nav={nav} mode={mode} />}
+    <input ref={programmeFileRef} type="file" accept="application/json,.json" aria-label={t('Import a programme file')} onChange={ev => {
+      const file = ev.target.files[0]; ev.target.value = ''
+      importProgrammeFile(file, () => setView('programmes'))
+    }} hidden />
+    <Segmented className="plan-views" value={currentView} onChange={setView} options={viewOptions} />
+    {currentView === 'routines' ? <Routines S={S} update={update} nav={nav} />
+      : currentView === 'programmes' ? <Programmes S={S} nav={nav} />
+        : <Schedule S={S} update={update} nav={nav} mode={mode} />}
+  </div>
+}
+
+function Programmes({ S, nav }) {
+  const [selectedId, setSelectedId] = useState(null)
+  const ready = readyProgrammeDefinitions(S)
+  const completed = (S.programmes?.cycles || []).filter(cycle => cycle.status === 'completed').slice().sort((a, b) => String(b.completedAt || '').localeCompare(String(a.completedAt || '')))
+  const selected = ready.find(definition => definition.id === selectedId)
+  const go = (path, state) => nav(path, { state })
+  return <div className="programme-plan-page">
+    <div className="row between" style={{ margin: '18px 0 10px' }}><h4 className="sec" style={{ margin: 0 }}>{t('Ready programmes')}</h4><Button size="sm" variant="tinted" icon="plus" onClick={() => nav('/programme/new')}>{t('New programme')}</Button></div>
+    {ready.length ? <div className="list programme-ready-list">{ready.map(definition => <Fragment key={definition.id}>
+      <ReadyProgrammeRow definition={definition} onOpen={() => setSelectedId(definition.id)} onStart={() => go('/programme/pickup', { programmeId: definition.id })} />
+      {selected?.id === definition.id && <ReadyProgrammeDetail definition={selected} effortKind={effortOf(S)} customEx={S.customEx || []}
+        onClose={() => setSelectedId(null)} onEdit={() => go('/programme/new', { mode: 'edit', programmeId: selected.id })}
+        onDuplicate={() => go('/programme/new', { mode: 'duplicate', programmeId: selected.id })}
+        onShare={() => programmeShareSheet(selected)}
+        onStart={() => go('/programme/pickup', { programmeId: selected.id })} />}
+    </Fragment>)}</div> : <div className="small dim">{t('No ready programmes')}</div>}
+    {!!completed.length && <><h4 className="sec">{t('Completed programmes')}</h4><div className="list">{completed.map(cycle => <CompletedProgrammeRow key={cycle.id} cycle={cycle} state={S} onRepeat={() => go('/programme/pickup', { repeatCycleId: cycle.id })} />)}</div></>}
   </div>
 }
 
