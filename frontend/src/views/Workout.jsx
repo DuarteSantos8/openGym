@@ -783,6 +783,12 @@ let flashSeq = 0
 // UI state written from here and from effects; a test that stubs the UI store without setState
 // simply does not see it.
 const setUI = patch => useUI.setState?.(patch)
+// An exercise added at `at` moves every exercise from there down by one, and a running hold's
+// row with them: in the List layout the hold can be on an exercise below where the new one goes
+// (after the current unit). Its saved owner moves in useUI.shiftRestOwner, called beside this.
+const shiftHoldExercise = (at, by) => {
+  if (holdAt && holdAt.idx >= at) holdAt = { ...holdAt, idx: holdAt.idx + by }
+}
 const shiftRowRefs = (idx, from, by) => {
   if (holdAt && holdAt.idx === idx && holdAt.i >= from) holdAt = { ...holdAt, i: holdAt.i + by }
   // The hold's saved owner (useUI.work.owner, what a reload brings it back to) moves with it.
@@ -866,6 +872,11 @@ export function copyActiveSet(idx, i) {
 }
 
 /* ---------- active workout ---------- */
+// The newest render's handlers, for callbacks that fire long after the render that made them: a
+// hold's end must judge the workout as it is then, not as it was when play was tapped (an
+// exercise added since has moved the rows), and if the view was left and re-entered in between,
+// the instance that is on screen now must answer.
+let latest = {}
 export function removeActiveExercise(idx) {
   // Clear the work callback before indexes can shift. This also protects a confirmation sheet
   // that was opened first and confirmed after a timed hold started.
@@ -1404,6 +1415,7 @@ function ActiveWorkout() {
         s.active.entries.splice(insertAt, 0, joinSessionNoProg(s.active, { id: ex.id, ...built, ...(curRid ? { rid: curRid } : {}), ...(noProg ? { noProg: true } : {}) }))
         s.active.cur = insertAt
         useUI.getState().shiftRestOwner(insertAt, 1)
+        shiftHoldExercise(insertAt, 1)
       })
     }
     // The "+" on a picker row reads as "add this now" — routed through the same detail
@@ -1576,7 +1588,7 @@ function ActiveWorkout() {
     // the row is held to the end, ticked, or given a duration you typed yourself, and it never
     // reaches S.workouts (lib/finish-workout.js).
     const plan = (!e.sets[i].done && e.sets[i].planSec) || e.sets[i].sec || 45
-    const owner = { idx, i }
+    const owner = { idx, i, id: e.id }
     useUI.getState().startWork(plan, exerciseNameText(exOr(e.id)), holdDone(owner, plan, onFocusProgress), { idx, i, id: e.id })
     // After startWork: a hold it displaced has already written its seconds to its own row.
     holdAt = { owner, idx, i }
@@ -1584,12 +1596,17 @@ function ActiveWorkout() {
   // What a hold hands back to its row: on its end, its Done, or a rest displacing it. Also bound
   // again to a hold restored after a reload (useUI.bindWork, below).
   const holdDone = (owner, plan, onFocusProgress) => (elapsed, { abandoned = false, chimed = false, endedAt } = {}) => {
-    const { idx } = owner
-    // The row may have moved while the hold ran (a set copied or removed above it): write to
-    // where it is now. holdAt is that place (deleteActiveSet, copyActiveSet).
+    // The row may have moved while the hold ran (a set copied or removed above it, an exercise
+    // added above its own): write to where it is now. holdAt is that place (deleteActiveSet,
+    // copyActiveSet, shiftHoldExercise).
     const mine = holdAt?.owner === owner
+    const idx = mine ? holdAt.idx : owner.idx
     const i = mine ? holdAt.i : owner.i
     if (mine) holdAt = null
+    // Checked by id: the list may have been edited while the hold ran, and a hold must never be
+    // written onto a different exercise.
+    const held = useStore.getState().S.active?.entries[idx]
+    if (!held || (owner.id != null && held.id !== owner.id) || !held.sets[i]) return
     // A hold a rest displaced (useUI.abandonWork: a set ticked on another row, or another
     // exercise) keeps its seconds and nothing else. It is not a finish: the row stays unticked
     // and starts no rest, because the rest that displaced the hold is already counting down —
@@ -1604,7 +1621,7 @@ function ActiveWorkout() {
     }
     mutEntry(idx, en => { en.sets[i].sec = elapsed; delete en.sets[i].planSec })
     // `since`: it ran out while the page was hidden, and the rest it earned has been counting since.
-    if (!useStore.getState().S.active.entries[idx].sets[i].done) toggle(idx, i, undefined, { quiet: chimed, onFocusProgress, since: endedAt })
+    if (!useStore.getState().S.active.entries[idx].sets[i].done) latest.toggle(idx, i, undefined, { quiet: chimed, onFocusProgress, since: endedAt })
   }
   // A hold that came back from a reload has no handler yet: this screen gives it its own.
   const holdDoneRef = useRef(holdDone)
@@ -1613,7 +1630,7 @@ function ActiveWorkout() {
     useUI.getState().bindWork?.(wk => {
       // From here on it is tracked like a hold started on this screen (holdAt), so a set copied or
       // removed above it moves it along.
-      const owner = { idx: wk.owner.idx, i: wk.owner.i }
+      const owner = { idx: wk.owner.idx, i: wk.owner.i, id: wk.owner.id }
       holdAt = { owner, idx: owner.idx, i: owner.i }
       return (...a) => holdDoneRef.current(owner, wk.total)(...a)
     })
@@ -1751,6 +1768,8 @@ function ActiveWorkout() {
       onFocusProgress?.({ unitDone: freshUnitDone })
     }
   }
+
+  latest = { toggle }
 
   // After the finished exercise folded away (toggle, above): the new current one is the next thing
   // to do, so if it now sits under the header or low on the screen with little more than its title

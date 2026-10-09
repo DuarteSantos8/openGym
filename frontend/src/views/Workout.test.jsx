@@ -894,6 +894,49 @@ describe('a hold that ran out unseen', () => {
   })
 })
 
+// In the List layout an exercise goes in after the current unit, and a hold can be running on an
+// exercise further down. The hold's end used to write its seconds to whatever sat at its old index
+// (the added exercise) and tick that.
+describe('a hold on an exercise below where one is added', () => {
+  const timed = (id, sec = 30) => exercise(id, [false, false], {
+    target: { mode: 'time', sec, weight: 0, bodyweight: true },
+    sets: [{ sec, w: 0, done: false }, { sec, w: 0, done: false }],
+  })
+  const pressStart = async (index = 0) => {
+    const button = container.querySelectorAll('button.setgo')[index]
+    expect(button).toBeTruthy()
+    await act(async () => { button.dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    await rerender()
+  }
+
+  it('writes its seconds to its own moved row and ticks that, not the added exercise', async () => {
+    await mount([exercise('first', [false]), timed('held', 45)], 0, { workoutView: 'list' })
+    await pressStart(0)                                          // the plank's first hold, cur stays on 'first'
+    const holdDone = mocks.startWork.mock.calls[0][2]
+    await addExerciseThroughSheets({ id: 'inserted' })
+    expect(mocks.S.active.entries.map(e => e.id)).toEqual(['first', 'inserted', 'held'])
+    await rerender()
+
+    await act(async () => { holdDone(30, { chimed: true }) })   // the countdown ran out
+
+    const added = mocks.S.active.entries[1].sets[0]
+    expect(added.done).toBe(false)
+    expect(added.sec).toBeUndefined()
+    expect(mocks.S.active.entries[2].sets[0]).toMatchObject({ sec: 30, done: true })
+  })
+
+  it('a hold whose row now belongs to another exercise writes nothing', async () => {
+    await mount([timed('held', 45), exercise('other', [false])], 0)
+    await pressStart(0)
+    const holdDone = mocks.startWork.mock.calls[0][2]
+    mocks.storeSnapshot().update(s => { s.active.entries.reverse() })   // the list changed under it, unseen
+    await act(async () => { holdDone(30, { chimed: true }) })
+    expect(mocks.S.active.entries[0]).toMatchObject({ id: 'other' })
+    expect(mocks.S.active.entries[0].sets[0].sec).toBeUndefined()
+    expect(mocks.S.active.entries[0].sets[0].done).toBeFalsy()
+  })
+})
+
 describe('Workout discard timer lifecycle', () => {
   it('preserves active timers while discard is awaiting confirmation', async () => {
     const timer = { left: 30, total: 90, endsAt: Date.now() + 30_000 }
