@@ -36,6 +36,29 @@ const wake = () => {
   return ctx
 }
 
+// While a timer runs the context is held open (holdSession), for the phone's volume buttons: a
+// suspended context is not "playing media", so iOS points the hardware buttons at the RINGER
+// instead of the media channel the timer actually plays on. Pressing volume-up between two beeps
+// turned up the wrong thing, and a phone whose media volume was low had no way to fix it, which
+// is what a timer that stays quiet however loud it plays looks like. Held, the buttons do what you
+// expect for as long as the rest lasts. The cost is the one Settings → "Play even on silent"
+// already names: under 'playback' the phone's own music stays paused for the whole rest, not just
+// across each beep. store/useUI.js holds it only while Sounds is on.
+let held = false
+export function holdSession(on) {
+  held = !!on
+  if (held) { try { wake() } catch (e) { /* */ } return }
+  // Letting go has to override the deadline the queued count-in left behind: its last tick was
+  // scheduled for the END of the rest, so sleepAfter's "keep the later deadline" kept the context
+  // (and, under 'playback', the phone's music paused) running to the end of a rest skipped halfway.
+  // hush() has already called those ticks off. The new deadline is the one the longest end-of-rest
+  // sound would set, since that sound is played just before the timer lets go.
+  clearTimeout(idleTm); idleTm = null; idleAt = 0
+  sleepAfter(LONGEST_END_SEC)
+}
+// How long the longest end-of-rest sound lasts (the bell's ring), plus the 0.05 s tone() keeps.
+const LONGEST_END_SEC = Math.max(...Object.values(REST_SOUNDS).flatMap(snd => snd.notes.map(([, dur, when]) => when + dur))) + 0.05
+
 // Suspend once every scheduled tone is over. A burst schedules several tones in one go; the
 // latest end wins, and a tone scheduled while the timer is pending pushes it out.
 const sleepAfter = endSec => {
@@ -45,6 +68,7 @@ const sleepAfter = endSec => {
   clearTimeout(idleTm)
   idleTm = setTimeout(() => {
     idleTm = null
+    if (held) return          // a timer is running; holdSession(false) schedules the sleep instead
     try { if (audioCtx && audioCtx.state === 'running') { const p = audioCtx.suspend(); if (p && p.catch) p.catch(() => {}) } } catch (e) { /* */ }
   }, at - Date.now())
 }
