@@ -533,7 +533,15 @@ export function validateReview(data, plan, ctx = {}) {
     const have = (routines.get(rid)?.ex || []).length;
     if (have + n > MAX_EX_PER_ROUTINE) errors.push(`routine "${routines.get(rid)?.name || rid}" would end up with ${have + n} exercises, more than the ${MAX_EX_PER_ROUTINE} allowed`);
   });
-  if (routines.size + addedRoutines - removedRoutines.size > MAX_ROUTINES) {
+  // The cap is on what a review may grow the plan to, not on the plan it was handed. The app has
+  // no routine limit of its own, and accepting a created plan adds its routines next to the ones
+  // already there (applyCreatedPlan → mergePlan never replaces), so a returning lifter is often
+  // past seven before the Coach reviews anything. Counting those refused every answer it could
+  // give them, a single swap included, and no repair round could fix it short of deleting
+  // routines nobody asked to lose (#471). Past the cap, a review may change and shrink the plan;
+  // it still may not leave it any bigger.
+  const routinesAfter = routines.size + addedRoutines - removedRoutines.size;
+  if (routinesAfter > MAX_ROUTINES && routinesAfter > routines.size) {
     errors.push(`the plan would end up with more than the ${MAX_ROUTINES} routines allowed`);
   }
 
