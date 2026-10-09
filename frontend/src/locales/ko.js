@@ -1,5 +1,13 @@
 // Korean UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Share with the server": "서버에 공유",
+  "Everyone on this server can use this exercise. Only administrators can edit it.": "이 서버의 모든 사용자가 이 운동을 사용할 수 있습니다. 관리자만 수정할 수 있습니다.",
+  "Saving…": "저장 중…",
+  "This shared exercise changed. Reopen it before saving.": "이 공유 운동이 변경되었습니다. 저장하기 전에 다시 여세요.",
+  "An exercise with this name is already shared.": "같은 이름의 운동이 이미 공유되어 있습니다.",
+  "Could not update the server exercise. Your changes have not been saved.": "서버의 운동을 업데이트하지 못했습니다. 변경 사항이 저장되지 않았습니다.",
+  "Shared with this server": "이 서버에 공유됨",
+  "No longer shared on this server": "이 서버에서 더 이상 공유되지 않음",
   'Confirm': '확인',
   'Cancel': '취소',
   'Press back again to exit': '뒤로를 한 번 더 누르면 종료됩니다',

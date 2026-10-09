@@ -17,6 +17,7 @@ import CustomMediaField from './components/CustomMediaField.jsx'
 import WorkoutMediaSection, { workoutMediaCount } from './components/WorkoutMedia.jsx'
 import { mediaOf, normalizeMediaRef, cleanUrl, workoutMediaOf } from './lib/media-refs.js'
 import { syncMedia } from './lib/media-sync.js'
+import { canEditExercise, exerciseAccountGuard, publishServerExercise, unpublishServerExercise, privateExercise, refreshServerExercises } from './lib/server-exercises.js'
 import LineChart from './components/LineChart.jsx'
 import Stepper from './components/Stepper.jsx'
 import { durationSheet } from './components/DurationWheel.jsx'
@@ -993,11 +994,12 @@ function ExerciseDetail({ ex, close }) {
     <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '10px 0' }}>
       {detailTags(ex).map(tg => <span key={tg.key} className={'tag' + (tg.acc ? ' acc' : '')}>{tg.icon && <Icon name={tg.icon} />}{tg.label}</span>)}
     </div>
+    {ex.serverShared && <div className="small dim" style={{ marginBottom: 8 }}>{t(ex.serverRetired ? 'No longer shared on this server' : 'Shared with this server')}</div>}
     {descFor(ex) && <div className="exnote">{descFor(ex)}</div>}
     {best > 0 && <div className="small row" style={{ marginBottom: 6, gap: 5 }}><Icon name="trophy" style={{ fontSize: 14, color: 'var(--yellow)' }} />{t('Best:')} <b className="accent" style={{ whiteSpace: 'nowrap' }}>{fmtNum(best)} {st.unit}</b>{last ? ` · ${t('last')} ${fmtDate(last.d)}: ${last.sets.map(s => setLabel(ex.id, s, last.target, speedUnitOf(st))).join(', ')}` : ''}</div>}
     <Button variant="primary" icon="plus" style={{ margin: '10px 0 4px' }} onClick={() => addToRoutineSheet(ex)}>{t('Add to my plan')}</Button>
     {last && <Button icon="history" style={{ marginTop: 4 }} onClick={() => exerciseHistorySheet(ex.id)}>{t('History')}</Button>}
-    {isCustomEx(ex) && <div className="row" style={{ gap: 8, marginTop: 8 }}>
+    {canEditExercise(ex, useStore.getState().user) && <div className="row" style={{ gap: 8, marginTop: 8 }}>
       <Button icon="pencil" style={{ flex: 1 }} onClick={() => { close(); customExSheet(ex) }}>{t('Edit')}</Button>
       <Button variant="danger" icon="trash" style={{ flex: 1 }} onClick={() => deleteCustomEx(ex, close)}>{t('Delete')}</Button>
     </div>}
@@ -1115,6 +1117,10 @@ export const addToRoutineSheet = ex => ui().openSheet(close => <AddToRoutine ex=
 // guide, are optional (components/CustomMediaField.jsx): the state keeps a small reference to the
 // file, never the file itself, and the link is cleaned on save and again whenever it is opened.
 function CustomExForm({ existing, prefill, onDone, close }) {
+  const user = useStore(s => s.user)
+  const serverSharing = useStore(s => s.config?.shared_exercises === true)
+  const [shared, setShared] = useState(!!existing?.serverShared && !existing?.serverRetired)
+  const [saving, setSaving] = useState(false)
   const nameRef = useRef(null)
   const onNameFocus = useSheetKeyboard(nameRef)
   const [n, setN] = useState(existing ? existing.n : (prefill || ''))
@@ -1154,7 +1160,9 @@ function CustomExForm({ existing, prefill, onDone, close }) {
     setPrimaries(current => current.includes(value) ? current.filter(m => m !== value) : [...current, value])
   }
   const toggleSecondary = value => setSecondaries(current => current.includes(value) ? current.filter(m => m !== value) : [...current, value])
-  const save = () => {
+  const save = async () => {
+    if (saving || (existing && !canEditExercise(existing, useStore.getState().user))) return
+    const guard = exerciseAccountGuard(useStore)
     const name = n.trim()
     if (!name) { toast(t('Give it a name')); return }
     if (!bp) { toast(t('Pick a body part')); return }
@@ -1187,21 +1195,37 @@ function CustomExForm({ existing, prefill, onDone, close }) {
       if (!keepMedia) { if (ref) c.media = ref; else delete c.media }
       if (link) c.url = link; else delete c.url
     }
-    if (existing) update(s => { const c = (s.customEx || []).find(x => x.id === id); if (c) {
-      c.n = name; c.bp = bp; c.desc = d; c.tg = tg; c.sm = sm; c.muscleGroups = groups; c.primaries = prim; c.secondaries = sm; c.eq = eq
-      extra(c)
-    } })
-    else {
-      id = 'c' + uid()
-      update(s => { const c = { id, n: name, bp, desc: d, tg, sm, muscleGroups: groups, primaries: prim, secondaries: sm, eq, custom: true }; extra(c); (s.customEx = s.customEx || []).push(c) })
-    }
-    // The file goes to the server now rather than after the state's own debounce: another device
-    // that sees the reference first shows a tile until it arrives.
-    if (ref) syncMedia({ force: true })
-    close()
-    toast(existing ? t('Saved') : t('“{0}” created', name))
-    onDone && onDone(EXIDX[id])
+    id ||= 'c' + uid()
+    let exercise = { ...(existing || {}), id, n: name, bp, desc: d, tg, sm, muscleGroups: groups,
+      primaries: prim, secondaries: sm, eq, custom: true }
+    extra(exercise)
+    setSaving(true)
+    try {
+      if (shared && useStore.getState().user?.admin) exercise = await publishServerExercise(exercise, guard)
+      else if (existing?.serverShared) {
+        await unpublishServerExercise(exercise, { guard })
+        exercise = privateExercise(exercise)
+      }
+      guard()
+      update(s => {
+        s.customEx ||= []
+        const index = s.customEx.findIndex(c => c.id === id)
+        if (index >= 0) s.customEx[index] = exercise
+        else s.customEx.push(exercise)
+      })
+      if (ref) syncMedia({ force: true })
+      close()
+      toast(existing ? t('Saved') : t('“{0}” created', name))
+      onDone && onDone(EXIDX[id])
+      refreshServerExercises(useStore)
+    } catch (error) {
+      const message = error.data?.code === 'shared-exercise-conflict' ? t('This shared exercise changed. Reopen it before saving.')
+        : error.data?.code === 'shared-exercise-duplicate' ? t('An exercise with this name is already shared.')
+        : t('Could not update the server exercise. Your changes have not been saved.')
+      toast(message)
+    } finally { setSaving(false) }
   }
+
   return <>
     <h3>{existing ? t('Edit custom exercise') : t('Create your own exercise')}</h3>
     <div className="muted small" style={{ marginBottom: 12 }}>{t('Name it and pick a body part. It works just like any other exercise.')}</div>
@@ -1230,20 +1254,34 @@ function CustomExForm({ existing, prefill, onDone, close }) {
     <textarea className="input" rows={4} maxLength={1000} placeholder={t('Description (optional): setup, cues, anything you want to remember')}
       value={desc} onChange={e => setDesc(e.target.value)} />
     <CustomMediaField media={media} url={url} onChange={onMedia} />
+    {user?.admin && serverSharing && <Row title={t('Share with the server')}
+      subtitle={t('Everyone on this server can use this exercise. Only administrators can edit it.')}
+      ><Switch checked={shared} onChange={setShared} disabled={saving} aria-label={t('Share with the server')} /></Row>}
     <div style={{ height: 14 }} />
-    <Button variant="primary" onClick={save}>{existing ? t('Save') : t('Create exercise')}</Button>
-    {existing && <><div style={{ height: 8 }} /><Button variant="danger" icon="trash" onClick={() => { close(); deleteCustomEx(existing) }}>{t('Delete exercise')}</Button></>}
+    <Button variant="primary" disabled={saving} onClick={save}>{saving ? t('Saving…') : existing ? t('Save') : t('Create exercise')}</Button>
+    {existing && <><div style={{ height: 8 }} /><Button variant="danger" icon="trash" disabled={saving} onClick={() => { close(); deleteCustomEx(existing) }}>{t('Delete exercise')}</Button></>}
   </>
 }
-export const customExSheet = (existing, onDone, prefill) => ui().openSheet(close => <CustomExForm existing={existing} prefill={prefill} onDone={onDone} close={close} />)
+export const customExSheet = (existing, onDone, prefill) => {
+  if (existing && !canEditExercise(existing, useStore.getState().user)) return
+  ui().openSheet(close => <CustomExForm existing={existing} prefill={prefill} onDone={onDone} close={close} />)
+}
 
 export function deleteCustomEx(ex, afterDelete) {
+  if (!canEditExercise(ex, useStore.getState().user)) return
   if (S().active?.entries.some(e => e.id === ex.id)) { toast(t('Finish your current workout first')); return }
+  const guard = exerciseAccountGuard(useStore)
   confirmSheet({
     title: t('Delete “{0}”?', ex.n),
     message: t('It will be removed from your routines. Already-logged workouts keep their sets.'),
     confirmText: t('Delete'), danger: true,
-    onConfirm: () => {
+    onConfirm: async () => {
+      try {
+        guard()
+        if (!canEditExercise(ex, useStore.getState().user)) return
+        if (ex.serverShared) await unpublishServerExercise(ex, { keepPrivate: false, guard })
+        guard()
+      } catch { toast(t('Could not update the server exercise. Your changes have not been saved.')); return }
       update(s => {
         // Keep display and muscle metadata in history before the custom catalogue row disappears.
         const snapshot = exerciseMuscleSnapshot(ex)
@@ -1763,6 +1801,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
       {!cardio && (ex.secondaries?.length ? ex.secondaries : smOf(ex)).filter(trainedBy(ex)).slice(0, 3)
         .map((s, i) => <span key={i} className="tag dim">{t(MUSCLE_NAME[s] || s)}</span>)}
     </div>
+    {ex.serverShared && <div className="small dim" style={{ marginBottom: 8 }}>{t(ex.serverRetired ? 'No longer shared on this server' : 'Shared with this server')}</div>}
     {descFor(ex) && <div className="exnote">{descFor(ex)}</div>}
     {!cardio && <div style={{ marginBottom: 14 }}>
       <Segmented className="seg-range" value={mode} onChange={setMode}
@@ -2000,7 +2039,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         Replace (#110) seeds this sheet with the slot it replaces, and saving puts the exercise
         into that slot. */}
     <Button variant="primary" disabled={progressionStepInvalid} onClick={save}>{saveLabel || (existing ? t('Save') : t('Add to routine'))}</Button>
-    {isCustomEx(ex) && <><div style={{ height: 8 }} /><Button icon="pencil" onClick={() => { close(); customExSheet(ex) }}>{t('Edit or delete this exercise')}</Button></>}
+    {canEditExercise(ex, useStore.getState().user) && <><div style={{ height: 8 }} /><Button icon="pencil" onClick={() => { close(); customExSheet(ex) }}>{t('Edit or delete this exercise')}</Button></>}
     {/* The routine editor's counterpart to a workout's Swap (#110): another exercise in this
         slot, with the slot's sets, reps, weight, rule and note kept (lib/routines.js). What was
         changed on this sheet and not saved is left behind, as closing it would. */}

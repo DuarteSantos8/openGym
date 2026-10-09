@@ -1,5 +1,13 @@
 // Simplified Chinese UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Share with the server": "共享到服务器",
+  "Everyone on this server can use this exercise. Only administrators can edit it.": "此服务器的所有用户都可以使用此动作。只有管理员可以编辑。",
+  "Saving…": "正在保存…",
+  "This shared exercise changed. Reopen it before saving.": "此共享动作已更改。请重新打开后再保存。",
+  "An exercise with this name is already shared.": "已有同名的共享动作。",
+  "Could not update the server exercise. Your changes have not been saved.": "无法更新服务器上的动作。更改尚未保存。",
+  "Shared with this server": "已共享到此服务器",
+  "No longer shared on this server": "不再在此服务器上共享",
   'Confirm': '确认',
   'Cancel': '取消',
   'Press back again to exit': '再按一次返回退出',

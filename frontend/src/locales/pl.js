@@ -1,5 +1,13 @@
 // Polish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Share with the server": "Udostępnij na serwerze",
+  "Everyone on this server can use this exercise. Only administrators can edit it.": "Wszyscy użytkownicy tego serwera mogą korzystać z tego ćwiczenia. Tylko administratorzy mogą je edytować.",
+  "Saving…": "Zapisywanie…",
+  "This shared exercise changed. Reopen it before saving.": "To udostępnione ćwiczenie zostało zmienione. Otwórz je ponownie przed zapisaniem.",
+  "An exercise with this name is already shared.": "Ćwiczenie o tej nazwie jest już udostępnione.",
+  "Could not update the server exercise. Your changes have not been saved.": "Nie udało się zaktualizować ćwiczenia na serwerze. Zmiany nie zostały zapisane.",
+  "Shared with this server": "Udostępnione na tym serwerze",
+  "No longer shared on this server": "Nie jest już udostępniane na tym serwerze",
   'Confirm': 'Potwierdź',
   'Cancel': 'Anuluj',
   'Press back again to exit': 'Naciśnij wstecz ponownie, aby wyjść',

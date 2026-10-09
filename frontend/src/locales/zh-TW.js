@@ -1,4 +1,13 @@
 export default {
+  "Share with the server": "分享至伺服器",
+  "Everyone on this server can use this exercise. Only administrators can edit it.": "此伺服器上的所有使用者都能使用此動作，只有管理員可以編輯。",
+  "Saving…": "儲存中…",
+  "This shared exercise changed. Reopen it before saving.": "此共享動作已變更，請重新開啟後再儲存。",
+  "An exercise with this name is already shared.": "已有相同名稱的共享動作。",
+  "Could not update the server exercise. Your changes have not been saved.": "無法更新伺服器上的動作，您的變更尚未儲存。",
+  "Shared with this server": "已分享到此伺服器",
+  "No longer shared on this server": "已停止在此伺服器上分享",
+
   'Confirm': '確認',
   'Cancel': '取消',
   'Press back again to exit': '再按一次返回以退出',

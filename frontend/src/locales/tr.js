@@ -1,5 +1,13 @@
 // Turkish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Share with the server": "Sunucuyla paylaş",
+  "Everyone on this server can use this exercise. Only administrators can edit it.": "Bu sunucudaki tüm kullanıcılar bu egzersizi kullanabilir. Yalnızca yöneticiler düzenleyebilir.",
+  "Saving…": "Kaydediliyor…",
+  "This shared exercise changed. Reopen it before saving.": "Bu paylaşılan egzersiz değişti. Kaydetmeden önce yeniden açın.",
+  "An exercise with this name is already shared.": "Bu adla bir egzersiz zaten paylaşılmış.",
+  "Could not update the server exercise. Your changes have not been saved.": "Sunucudaki egzersiz güncellenemedi. Değişiklikleriniz kaydedilmedi.",
+  "Shared with this server": "Bu sunucuyla paylaşılıyor",
+  "No longer shared on this server": "Artık bu sunucuyla paylaşılmıyor",
   'Confirm': 'Onayla',
   'Cancel': 'İptal',
   'Press back again to exit': 'Çıkmak için geri tuşuna tekrar basın',

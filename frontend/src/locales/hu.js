@@ -1,5 +1,13 @@
 // Hungarian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Share with the server": "Megosztás a szerveren",
+  "Everyone on this server can use this exercise. Only administrators can edit it.": "A szerver minden felhasználója használhatja ezt a gyakorlatot. Csak az adminisztrátorok szerkeszthetik.",
+  "Saving…": "Mentés…",
+  "This shared exercise changed. Reopen it before saving.": "Ez a megosztott gyakorlat megváltozott. Mentés előtt nyisd meg újra.",
+  "An exercise with this name is already shared.": "Ilyen nevű gyakorlat már meg van osztva.",
+  "Could not update the server exercise. Your changes have not been saved.": "Nem sikerült frissíteni a gyakorlatot a szerveren. A módosítások nem lettek mentve.",
+  "Shared with this server": "Megosztva ezen a szerveren",
+  "No longer shared on this server": "Már nincs megosztva ezen a szerveren",
   // --- generic ---
   'Confirm': 'Megerősítés',
   'Cancel': 'Mégse',

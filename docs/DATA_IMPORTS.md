@@ -55,6 +55,12 @@ in, and keeps one weigh-in per day. Days that already have a weigh-in are left a
 
 A CSV with a date column and a weight column works the same way.
 
+## Shared server exercises
+
+Administrators can publish custom exercises for everyone on the instance using **Share with the
+server** in the exercise editor. Other accounts can use them but cannot edit the shared catalogue.
+See [Server exercise catalogue](SERVER_EXERCISES.md).
+
 ## Sharing a plan
 
 On the **Plan** screen, tap the share icon:
