@@ -84,6 +84,12 @@ export default defineConfig({
   define: { __APP_VERSION__: JSON.stringify(appVersion) },
   plugins: [react(), umami, flavor, swStamp],
   base: './',
+  // Preview serves the packaged img/ and gif/ files; Vite otherwise inherits the dev proxies.
+  preview: {
+    proxy: {
+      '/api': { target: backend, changeOrigin: true, headers: { Origin: apiOrigin } }
+    }
+  },
   server: {
     // The Coach's core (payload, validator, prompts, HTTP adapters) lives in ../api/coach/core
     // and is imported by the phone build. vite build and vitest already reach it; the dev

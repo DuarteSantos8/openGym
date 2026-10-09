@@ -41,6 +41,85 @@ afterEach(() => {
 
 const mount = props => act(() => root.render(<Media ex={EX} {...props} />))
 
+describe('Media local GIF fallback', () => {
+  const src = () => host.querySelector('.exmedia img')?.getAttribute('src')
+  const fail = () => act(() => { host.querySelector('.exmedia img').dispatchEvent(new Event('error')) })
+  const tap = () => act(() => { host.querySelector('.exmedia').click() })
+  const CDN = 'https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@7455efae41b330c265e7cd4b78dfa848e7ce5ebd/videos/'
+  const IMG_CDN = 'https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@7455efae41b330c265e7cd4b78dfa848e7ce5ebd/images/'
+
+  it('uses the local GIF, and pause/resume keeps it local after a successful load', () => {
+    mount({})
+    expect(src()).toBe('gif/bench.gif')
+    act(() => { host.querySelector('img').dispatchEvent(new Event('load')) })
+    tap()
+    expect(src()).toBe('img/bench.jpg')
+    tap()
+    expect(src()).toBe('gif/bench.gif')
+  })
+
+  it('tries the CDN only after the local GIF fails, and retains it across pause/resume', () => {
+    mount({})
+    fail()
+    expect(src()).toBe(CDN + 'bench.gif')
+    tap()
+    expect(src()).toBe('img/bench.jpg')
+    tap()
+    expect(src()).toBe(CDN + 'bench.gif')
+  })
+
+  it('tries the local and CDN still before the tile, and retries both media types locally', () => {
+    mount({})
+    fail()
+    fail()
+    expect(src()).toBe('img/bench.jpg')
+    fail()
+    expect(src()).toBe(IMG_CDN + 'bench.jpg')
+    fail()
+    expect(host.querySelector('.exmedia.broken .exmedia-x')).toBeTruthy()
+    expect(host.querySelector('img')).toBeNull()
+    tap()
+    expect(src()).toBe('gif/bench.gif')
+    tap()
+    expect(src()).toBe('img/bench.jpg')
+  })
+
+  it('tries a local still when paused, then retains its CDN fallback across pause/resume', () => {
+    mount({})
+    tap()
+    expect(src()).toBe('img/bench.jpg')
+    fail()
+    expect(src()).toBe(IMG_CDN + 'bench.jpg')
+    tap()
+    expect(src()).toBe('gif/bench.gif')
+    tap()
+    expect(src()).toBe(IMG_CDN + 'bench.jpg')
+  })
+
+  it('starts another exercise locally after a CDN fallback or complete failure', () => {
+    mount({})
+    fail()
+    mount({ ex: { ...EX, id: 'squat', gif: 'squat.gif', img: 'squat.jpg' } })
+    expect(src()).toBe('gif/squat.gif')
+    fail()
+    fail()
+    fail()
+    fail()
+    expect(host.querySelector('.exmedia.broken')).toBeTruthy()
+    mount({})
+    expect(src()).toBe('gif/bench.gif')
+  })
+
+  it('starts a changed still locally even when the exercise id and GIF did not change', () => {
+    mount({})
+    tap()
+    fail()
+    mount({ ex: { ...EX, img: 'bench-new.jpg' } })
+    tap()
+    expect(src()).toBe('img/bench-new.jpg')
+  })
+})
+
 describe('Media gifSize', () => {
   it('renders the full animation by default and toggles to mini in the workout', () => {
     mount({ minimizable: true })

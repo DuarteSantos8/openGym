@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { imgSrc, gifSrc, isCustomEx } from '../lib/exercises.js'
+import { imgSrc, imgCdnSrc, gifSrc, gifCdnSrc, isCustomEx } from '../lib/exercises.js'
 import { useStore } from '../store/useStore.js'
 import { t, exerciseNameFor } from '../lib/i18n.js'
 import Icon from './Icon.jsx'
@@ -10,7 +10,7 @@ import CustomMedia, { CustomThumb } from './CustomMedia.jsx'
 // name files of the shipped dataset (a stray img/gif on a custom exercise, written by a fork, is
 // ignored). The split is by component, not by branch, so each side keeps its own hooks in order.
 export default function Media(p) {
-  return isCustomEx(p.ex) ? <CustomMedia {...p} /> : <BuiltinMedia {...p} />
+  return isCustomEx(p.ex) ? <CustomMedia {...p} /> : <BuiltinMedia key={p.ex.id + ':' + p.ex.gif + ':' + p.ex.img} {...p} />
 }
 
 // Big autoplaying animation; tap toggles to the still frame. `compact` shrinks it (superset cards).
@@ -21,11 +21,10 @@ export default function Media(p) {
 // an exercise without media. Any other/legacy value behaves as 'full'.
 function BuiltinMedia({ ex, id, compact, minimizable }) {
   const [playing, setPlaying] = useState(true)
-  // 'gif' → the animation failed, the still is showing; 'all' → the still failed too. Media is
-  // fetched from wherever the build points (a mount, a CDN): a dropped connection, an expired
-  // session on a gated instance or a CDN hiccup used to leave the browser's broken-image glyph
-  // on a white block. Now the still stands in for the animation, a neutral tile stands in for
-  // both, and a tap tries again — no text, so nothing new to translate.
+  const [useGifCdn, setUseGifCdn] = useState(false)
+  const [useImgCdn, setUseImgCdn] = useState(false)
+  // 'gif' means both animation sources failed; 'all' means both still sources failed too.
+  // A tap after failure retries from the local file, so a newly available file gets a chance.
   const [failed, setFailed] = useState(null)
   const gifSize = useStore(s => s.S.gifSize)
   const update = useStore(s => s.update)
@@ -34,16 +33,23 @@ function BuiltinMedia({ ex, id, compact, minimizable }) {
   const mini = minimizable && gifSize === 'mini'
   const toggleSize = e => { e.stopPropagation(); update(s => { s.gifSize = mini ? 'full' : 'mini' }) }
   const showGif = playing && failed == null
-  const onError = () => setFailed(showGif ? 'gif' : 'all')
+  const src = showGif
+    ? (useGifCdn ? gifCdnSrc(ex) : gifSrc(ex))
+    : (useImgCdn ? imgCdnSrc(ex) : imgSrc(ex))
+  const onError = () => {
+    if (showGif && !useGifCdn && gifCdnSrc(ex) !== gifSrc(ex)) { setUseGifCdn(true); return }
+    if (!showGif && !useImgCdn && imgCdnSrc(ex) !== imgSrc(ex)) { setUseImgCdn(true); return }
+    setFailed(showGif ? 'gif' : 'all')
+  }
   const onTap = () => {
-    if (failed) { setFailed(null); setPlaying(true); return }
+    if (failed) { setFailed(null); setUseGifCdn(false); setUseImgCdn(false); setPlaying(true); return }
     setPlaying(p => !p)
   }
   return (
     <div className={'exmedia' + (compact ? ' compact' : '') + (mini ? ' mini' : '') + (failed === 'all' ? ' broken' : '')} id={id} onClick={onTap}>
       {failed === 'all'
         ? <div className="exmedia-x"><Icon name="dumbbell" /></div>
-        : <img decoding="async" draggable={false} src={showGif ? gifSrc(ex) : imgSrc(ex)} alt={exerciseNameFor(ex)} onError={onError} />}
+        : <img key={src} decoding="async" draggable={false} src={src} alt={exerciseNameFor(ex)} onError={onError} />}
       {minimizable && (
         <button className="giftoggle" onClick={toggleSize}>
           <Icon name={mini ? 'expand' : 'minimize'} />{mini ? t('Expand') : t('Minimize')}
@@ -58,16 +64,19 @@ function BuiltinMedia({ ex, id, compact, minimizable }) {
   )
 }
 
-// A still that will not load (offline and never cached, a lapsed session on a gated instance, a
-// CDN hiccup) gets the same neutral tile as an exercise without media, instead of the browser's
-// broken-image glyph in a list of them (#281). The failure is remembered per image, so a list
-// that re-renders does not ask again; a new exercise in the same slot tries its own.
+// Thumbnails try the local still before the CDN, then show a neutral tile if both fail.
+// Switching exercises resets the source and failure state.
 export function Thumb(p) {
-  return isCustomEx(p.ex) ? <CustomThumb {...p} /> : <BuiltinThumb {...p} />
+  return isCustomEx(p.ex) ? <CustomThumb {...p} /> : <BuiltinThumb key={p.ex.id + ':' + p.ex.img} {...p} />
 }
 function BuiltinThumb({ ex }) {
-  const src = ex.img ? imgSrc(ex) : null
-  const [broken, setBroken] = useState(null)
-  if (!src || broken === src) return <div className="thumb thumb-x"><Icon name="dumbbell" /></div>
-  return <img className="thumb" loading="lazy" decoding="async" draggable={false} src={src} alt="" onError={() => setBroken(src)} />
+  const [useCdn, setUseCdn] = useState(false)
+  const [broken, setBroken] = useState(false)
+  if (!ex.img || broken) return <div className="thumb thumb-x"><Icon name="dumbbell" /></div>
+  const src = useCdn ? imgCdnSrc(ex) : imgSrc(ex)
+  const onError = () => {
+    if (!useCdn && imgCdnSrc(ex) !== imgSrc(ex)) { setUseCdn(true); return }
+    setBroken(true)
+  }
+  return <img key={src} className="thumb" loading="lazy" decoding="async" draggable={false} src={src} alt="" onError={onError} />
 }

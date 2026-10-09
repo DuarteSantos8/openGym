@@ -33,14 +33,18 @@ describe('planMediaUrls', () => {
     expect(planMediaUrls({ routines: [{ ex: [{ id: bench.id }] }] }, undefined)).toEqual([])
   })
 
-  it('leaves out media a build points at another origin, which never passes through the worker', async () => {
-    // The demo build's media comes from a CDN (VITE_IMG_BASE/VITE_GIF_BASE, read at load).
+  it('prefetches the local image and GIF while leaving both CDN fallbacks out', async () => {
     vi.resetModules()
     vi.stubEnv('VITE_IMG_BASE', 'https://cdn.test/images/')
     vi.stubEnv('VITE_GIF_BASE', 'https://cdn.test/videos/')
     try {
       const fresh = await import('./media-prefetch.js')
-      expect(fresh.planMediaUrls({ routines: [{ ex: [{ id: bench.id }] }] }, BASE)).toEqual([])
+      const sources = await import('./exercises.js')
+      expect(sources.imgSrc(bench)).toBe('img/' + bench.img)
+      expect(sources.imgCdnSrc(bench)).toBe('https://cdn.test/images/' + bench.img)
+      expect(sources.gifSrc(bench)).toBe('gif/' + bench.gif)
+      expect(sources.gifCdnSrc(bench)).toBe('https://cdn.test/videos/' + bench.gif)
+      expect(fresh.planMediaUrls({ routines: [{ ex: [{ id: bench.id }] }] }, BASE).sort()).toEqual([abs('gif/' + bench.gif), abs('img/' + bench.img)].sort())
     } finally { vi.unstubAllEnvs(); vi.resetModules() }
   })
 })

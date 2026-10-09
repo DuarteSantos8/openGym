@@ -5,8 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
-// A still that will not load (offline and never cached, a lapsed session on a gated instance)
-// gets the neutral tile an exercise without media has, not the browser's broken-image glyph (#281).
+// Built-in stills try local first, then CDN, and use a neutral tile when neither loads.
 vi.mock('../store/useStore.js', () => ({ useStore: () => null }))
 const { Thumb } = await import('./Media.jsx')
 
@@ -22,11 +21,15 @@ function mount(el) {
 afterEach(() => { act(() => { mounted.splice(0).forEach(({ root, host }) => { root.unmount(); host.remove() }) }) })
 
 describe('Thumb', () => {
-  it('shows the still, and the neutral tile once it fails to load', () => {
+  const CDN = 'https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@7455efae41b330c265e7cd4b78dfa848e7ce5ebd/images/'
+
+  it('shows the local still, tries the CDN on failure, then uses the neutral tile', () => {
     const { host } = mount(<Thumb ex={{ id: 'a', img: 'a.jpg' }} />)
     const img = host.querySelector('img.thumb')
-    expect(img.getAttribute('src')).toMatch(/a\.jpg$/)
+    expect(img.getAttribute('src')).toBe('img/a.jpg')
     act(() => { img.dispatchEvent(new Event('error')) })
+    expect(host.querySelector('img.thumb').getAttribute('src')).toBe(CDN + 'a.jpg')
+    act(() => { host.querySelector('img.thumb').dispatchEvent(new Event('error')) })
     expect(host.querySelector('img')).toBeNull()
     expect(host.querySelector('.thumb.thumb-x')).toBeTruthy()
   })
@@ -34,8 +37,24 @@ describe('Thumb', () => {
   it('another exercise in the same place tries its own still', () => {
     const { host, root } = mount(<Thumb ex={{ id: 'a', img: 'a.jpg' }} />)
     act(() => { host.querySelector('img').dispatchEvent(new Event('error')) })
+    act(() => { host.querySelector('img').dispatchEvent(new Event('error')) })
     act(() => root.render(<Thumb ex={{ id: 'b', img: 'b.jpg' }} />))
-    expect(host.querySelector('img.thumb').getAttribute('src')).toMatch(/b\.jpg$/)
+    expect(host.querySelector('img.thumb').getAttribute('src')).toBe('img/b.jpg')
+  })
+
+  it('keeps a successful local still when the same exercise renders again', () => {
+    const ex = { id: 'a', img: 'a.jpg' }
+    const { host, root } = mount(<Thumb ex={ex} />)
+    act(() => { host.querySelector('img').dispatchEvent(new Event('load')) })
+    act(() => root.render(<Thumb ex={ex} />))
+    expect(host.querySelector('img.thumb').getAttribute('src')).toBe('img/a.jpg')
+  })
+
+  it('starts a changed image locally even when its exercise id stays the same', () => {
+    const { host, root } = mount(<Thumb ex={{ id: 'a', img: 'a.jpg' }} />)
+    act(() => { host.querySelector('img').dispatchEvent(new Event('error')) })
+    act(() => root.render(<Thumb ex={{ id: 'a', img: 'b.jpg' }} />))
+    expect(host.querySelector('img.thumb').getAttribute('src')).toBe('img/b.jpg')
   })
 
   it('an exercise without media has the tile from the start', () => {
