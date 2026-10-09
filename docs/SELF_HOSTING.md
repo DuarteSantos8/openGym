@@ -514,8 +514,11 @@ Anyone signed in can give an exercise they made one photo, GIF or short video (a
 a link, which the server never fetches), and attach up to six photos or videos to a logged
 workout — a progress photo, a form-check clip. Both kinds share one quota and one set of limits.
 The file is uploaded to this server and stored under
-`./data/uploads/<profile id>/`, named by its SHA-256. Only its owner can download it again — no
-admin route, no Coach and no shared plan reads it. It is on by default, with these limits, all
+`./data/uploads/<profile id>/`, named by its SHA-256. Private files can only be downloaded by
+their owner. If an administrator explicitly publishes
+an exercise in the [server catalogue](SERVER_EXERCISES.md), its media is copied into separate
+shared storage and becomes accessible to signed-in users while the exercise is published.
+Workout media remains private. Uploads are on by default, with these limits, all
 set in `.env`:
 
 | Variable | Default | Meaning |

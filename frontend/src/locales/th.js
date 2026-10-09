@@ -1,5 +1,13 @@
 // Thai UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Share with the server": "แชร์กับเซิร์ฟเวอร์",
+  "Everyone on this server can use this exercise. Only administrators can edit it.": "ผู้ใช้ทุกคนบนเซิร์ฟเวอร์นี้ใช้ท่าออกกำลังกายนี้ได้ เฉพาะผู้ดูแลระบบเท่านั้นที่แก้ไขได้",
+  "Saving…": "กำลังบันทึก…",
+  "This shared exercise changed. Reopen it before saving.": "ท่าออกกำลังกายที่แชร์นี้มีการเปลี่ยนแปลง โปรดเปิดอีกครั้งก่อนบันทึก",
+  "An exercise with this name is already shared.": "มีท่าออกกำลังกายที่แชร์ด้วยชื่อนี้อยู่แล้ว",
+  "Could not update the server exercise. Your changes have not been saved.": "อัปเดตท่าออกกำลังกายบนเซิร์ฟเวอร์ไม่ได้ ยังไม่ได้บันทึกการเปลี่ยนแปลง",
+  "Shared with this server": "แชร์กับเซิร์ฟเวอร์นี้แล้ว",
+  "No longer shared on this server": "ไม่ได้แชร์บนเซิร์ฟเวอร์นี้อีกต่อไป",
   // --- generic ---
   'Confirm': 'ยืนยัน',
   'Cancel': 'ยกเลิก',

@@ -1,5 +1,13 @@
 // Ukrainian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Share with the server": "Поділитися на сервері",
+  "Everyone on this server can use this exercise. Only administrators can edit it.": "Усі користувачі цього сервера можуть використовувати вправу. Редагувати її можуть лише адміністратори.",
+  "Saving…": "Збереження…",
+  "This shared exercise changed. Reopen it before saving.": "Ця спільна вправа змінилася. Відкрийте її знову перед збереженням.",
+  "An exercise with this name is already shared.": "Вправу з такою назвою вже опубліковано.",
+  "Could not update the server exercise. Your changes have not been saved.": "Не вдалося оновити вправу на сервері. Зміни не збережено.",
+  "Shared with this server": "Доступно на цьому сервері",
+  "No longer shared on this server": "Більше не доступно на цьому сервері",
   'Confirm': 'Підтвердити',
   'Cancel': 'Скасувати',
   'Press back again to exit': 'Натисни «Назад» ще раз, щоб вийти',

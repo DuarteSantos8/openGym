@@ -1,5 +1,13 @@
 // Hindi UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Share with the server": "सर्वर पर साझा करें",
+  "Everyone on this server can use this exercise. Only administrators can edit it.": "इस सर्वर के सभी उपयोगकर्ता यह व्यायाम इस्तेमाल कर सकते हैं। केवल व्यवस्थापक इसे संपादित कर सकते हैं।",
+  "Saving…": "सहेजा जा रहा है…",
+  "This shared exercise changed. Reopen it before saving.": "यह साझा व्यायाम बदल गया है। सहेजने से पहले इसे फिर खोलें।",
+  "An exercise with this name is already shared.": "इस नाम का व्यायाम पहले से साझा है।",
+  "Could not update the server exercise. Your changes have not been saved.": "सर्वर पर व्यायाम अपडेट नहीं हो सका। आपके बदलाव सहेजे नहीं गए।",
+  "Shared with this server": "इस सर्वर पर साझा है",
+  "No longer shared on this server": "अब इस सर्वर पर साझा नहीं है",
   'Confirm': 'पुष्टि करें',
   'Cancel': 'रद्द करें',
   'Press back again to exit': 'बाहर निकलने के लिए फिर से बैक दबाएँ',

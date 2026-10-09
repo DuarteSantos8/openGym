@@ -1,5 +1,13 @@
 // Russian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Share with the server": "Поделиться на сервере",
+  "Everyone on this server can use this exercise. Only administrators can edit it.": "Все пользователи этого сервера могут использовать упражнение. Редактировать его могут только администраторы.",
+  "Saving…": "Сохранение…",
+  "This shared exercise changed. Reopen it before saving.": "Это общее упражнение изменилось. Откройте его снова перед сохранением.",
+  "An exercise with this name is already shared.": "Упражнение с таким названием уже опубликовано.",
+  "Could not update the server exercise. Your changes have not been saved.": "Не удалось обновить упражнение на сервере. Изменения не сохранены.",
+  "Shared with this server": "Доступно на этом сервере",
+  "No longer shared on this server": "Больше не доступно на этом сервере",
   'Confirm': 'Подтвердить',
   'Cancel': 'Отмена',
   'Press back again to exit': 'Нажмите «Назад» ещё раз, чтобы выйти',

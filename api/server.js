@@ -31,6 +31,7 @@ import {
 } from './passkeys-store.js';
 import { createDeviceLink, findDeviceLink, burnDeviceLink, dropDeviceLinks } from './device-link.js';
 import { createMediaStore, mediaLimits, mediaConfig, MediaError, HASH_RE } from './media.js';
+import { createSharedExercises } from './shared-exercises.js';
 import { effectiveRoutineId } from './queue.js';
 import { stampPut } from './sync-stamps.js';
 import { atomicWrite as durableWrite } from './durable.js';
@@ -1826,6 +1827,29 @@ async function sendMediaFile(res, f, hash) {
   catch { res.destroy(); }   // the client went away mid-download; nothing left to answer
 }
 
+const sharedExercises = createSharedExercises({ data: DATA, media: MEDIA_ON ? MEDIA : null, atomicWrite });
+
+const sharedExerciseRoutes = {
+  'GET /api/shared-exercises': async (req, res) => {
+    if (!readSession(req)) return json(res, 401, { error: 'not signed in' });
+    json(res, 200, { exercises: sharedExercises.list() });
+  },
+  'PUT /api/admin/shared-exercises': async (req, res) => {
+    const admin = requireAdmin(req, res); if (!admin) return;
+    const body = await readBody(req);
+    const exercise = sharedExercises.put(body?.exercise, admin, body?.baseRevision);
+    audit(req, 'admin.exercise.share', { user: admin });
+    json(res, 200, { exercise });
+  },
+  'DELETE /api/admin/shared-exercises': async (req, res) => {
+    const admin = requireAdmin(req, res); if (!admin) return;
+    const body = await readBody(req);
+    sharedExercises.remove(body?.id, body?.baseRevision);
+    audit(req, 'admin.exercise.unshare', { user: admin });
+    json(res, 200, { ok: true });
+  }
+};
+
 const mediaRoutes = {
   // The raw bytes of one file, named by the sha256 the client computed. media.js checks the
   // hash, the magic bytes, the caps, the quota and the free disk; this route only adds the
@@ -1841,9 +1865,9 @@ const mediaRoutes = {
   'GET /api/media/{hash}': async (req, res) => {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
-    // Only ever the caller's own folder: another profile's file is exactly as missing as one
-    // that was never uploaded.
-    const f = MEDIA.file(user.id, req.mediaHash);
+    // A private upload is only readable by its owner. The only exception is the separate
+    // copy explicitly published in the server exercise catalogue.
+    const f = MEDIA.file(user.id, req.mediaHash) || sharedExercises.file(req.mediaHash);
     if (!f) throw new MediaError(404, 'media-missing');
     await sendMediaFile(res, f, req.mediaHash);
   },
@@ -1857,7 +1881,9 @@ const mediaRoutes = {
     if (!Array.isArray(hashes) || hashes.length > 1000 || !hashes.every(h => typeof h === 'string' && HASH_RE.test(h))) {
       throw new MediaError(400, 'bad-request', { error: 'hashes must be a list of at most 1000 lowercase sha256 hex strings' });
     }
-    json(res, 200, MEDIA.missing(user.id, hashes));
+    const result = MEDIA.missing(user.id, hashes);
+    if (body.privateOnly !== true) result.missing = result.missing.filter(hash => !sharedExercises.file(hash));
+    json(res, 200, result);
   },
   // "Reset everything": every file the caller's current state does not reference goes now,
   // without the grace. A state that cannot be read removes nothing.
@@ -1933,7 +1959,7 @@ const routes = {
     // were not signed in when you asked", and would re-ask on every sign-in on every instance
     // that has no Coach. The key's absence is that answer.
     json(res, 200, {
-      invite_only: INVITE_ONLY, allow_guest: ALLOW_GUEST,
+      invite_only: INVITE_ONLY, allow_guest: ALLOW_GUEST, shared_exercises: true,
       // Only when on, so an instance without passwords answers exactly as it did before (#118).
       ...(PASSWORD_LOGIN ? { password_login: true } : {}),
       // Public: the sign-in screen is the first thing that reads it.
@@ -2568,6 +2594,8 @@ const routes = {
     audit(req, 'admin.audit.clear', { user: admin });
     json(res, 200, { ok: true });
   },
+
+  ...sharedExerciseRoutes,
 
   /* ---------- AI Coach ---------- */
   // Routes live in coach/routes.js and are handed the helpers above rather than importing

@@ -1320,7 +1320,7 @@ export const useStore = create((set, get) => {
 
     // Mutate a draft of S via producer fn, then persist + schedule sync. Every routine the change
     // touched carries the time of it, for a conflict to keep the version edited last.
-    update(mut, push = true) {
+    update(mut, push = true, { stampExercises = true } = {}) {
       const prev = get().S
       const S = clone(prev)
       mut(S)
@@ -1328,7 +1328,8 @@ export const useStore = create((set, get) => {
       // each with one time that comes after every stamp the copy already carries: a conflict then
       // keeps a removal and the edit made last, even from a device whose clock runs behind
       // (lib/sync-merge.js stampChange).
-      S._ts = stampChange(prev, S, Date.now())
+      // Catalogue refreshes are derived data, not personal edits or removals.
+      S._ts = stampChange(stampExercises ? prev : { ...prev, customEx: S.customEx }, S, Date.now())
       persist(S, push)
       // A photo or video added to a workout is a change worth the day's backup too: the one
       // finishing wrote went before the finish screen's pictures (autoBackupNow). Not a removal,

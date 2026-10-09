@@ -1,5 +1,13 @@
 // Arabic UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Share with the server": "مشاركة مع الخادم",
+  "Everyone on this server can use this exercise. Only administrators can edit it.": "يمكن لجميع مستخدمي هذا الخادم استخدام هذا التمرين. يمكن للمسؤولين فقط تعديله.",
+  "Saving…": "جارٍ الحفظ…",
+  "This shared exercise changed. Reopen it before saving.": "تم تغيير هذا التمرين المشترك. أعد فتحه قبل الحفظ.",
+  "An exercise with this name is already shared.": "يوجد تمرين مشترك بهذا الاسم بالفعل.",
+  "Could not update the server exercise. Your changes have not been saved.": "تعذر تحديث التمرين على الخادم. لم يتم حفظ تغييراتك.",
+  "Shared with this server": "مشترك مع هذا الخادم",
+  "No longer shared on this server": "لم يعد مشتركًا على هذا الخادم",
   'Confirm': 'تأكيد',
   'Cancel': 'إلغاء',
   'Press back again to exit': 'اضغط زر الرجوع مرة أخرى للخروج',

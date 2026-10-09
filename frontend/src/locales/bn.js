@@ -1,5 +1,13 @@
 // Bengali UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  'Share with the server': 'সার্ভারে শেয়ার করুন',
+  'Everyone on this server can use this exercise. Only administrators can edit it.': 'এই সার্ভারের সবাই এই ব্যায়ামটি ব্যবহার করতে পারবেন। শুধু প্রশাসকেরা এটি সম্পাদনা করতে পারবেন।',
+  'Saving…': 'সেভ করা হচ্ছে…',
+  'This shared exercise changed. Reopen it before saving.': 'এই শেয়ার করা ব্যায়ামটি বদলে গেছে। সেভ করার আগে আবার খুলুন।',
+  'An exercise with this name is already shared.': 'এই নামে একটি ব্যায়াম ইতিমধ্যেই শেয়ার করা আছে।',
+  'Could not update the server exercise. Your changes have not been saved.': 'সার্ভারের ব্যায়ামটি আপডেট করা যায়নি। আপনার পরিবর্তনগুলি সেভ হয়নি।',
+  'Shared with this server': 'এই সার্ভারে শেয়ার করা',
+  'No longer shared on this server': 'এই সার্ভারে আর শেয়ার করা নেই',
   'Confirm': 'নিশ্চিত করুন',
   'Cancel': 'বাতিল',
   'Press back again to exit': 'বের হতে আবার ব্যাক চাপুন',

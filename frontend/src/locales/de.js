@@ -1,5 +1,13 @@
 // German UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Share with the server": "Mit dem Server teilen",
+  "Everyone on this server can use this exercise. Only administrators can edit it.": "Alle Benutzer dieses Servers können diese Übung verwenden. Nur Administratoren können sie bearbeiten.",
+  "Saving…": "Speichern…",
+  "This shared exercise changed. Reopen it before saving.": "Diese geteilte Übung wurde geändert. Öffne sie vor dem Speichern erneut.",
+  "An exercise with this name is already shared.": "Eine Übung mit diesem Namen wird bereits geteilt.",
+  "Could not update the server exercise. Your changes have not been saved.": "Die Übung konnte auf dem Server nicht aktualisiert werden. Deine Änderungen wurden nicht gespeichert.",
+  "Shared with this server": "Mit diesem Server geteilt",
+  "No longer shared on this server": "Nicht mehr auf diesem Server geteilt",
   // --- generic ---
   'Confirm': 'Bestätigen',
   'Cancel': 'Abbrechen',

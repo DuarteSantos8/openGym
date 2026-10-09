@@ -249,6 +249,10 @@ paths:
                     description: >-
                       When false, the client hides "continue without account".
                       Guest mode is purely client-side and never calls this API.
+                  shared_exercises:
+                    type: boolean
+                    const: true
+                    description: This instance supports the administrator-managed exercise catalogue.
                   coach:
                     description: >-
                       Present for a signed-in caller and absent otherwise; `null` when this
@@ -286,15 +290,16 @@ paths:
                   media:
                     $ref: '#/components/schemas/MediaConfig'
               examples:
-                anonymous: { value: { invite_only: true, allow_guest: false } }
-                signedInNoCoach: { value: { invite_only: true, allow_guest: false, coach: null } }
+                anonymous: { value: { invite_only: true, allow_guest: false, shared_exercises: true } }
+                signedInNoCoach: { value: { invite_only: true, allow_guest: false, shared_exercises: true, coach: null } }
                 signedIn:
                   value:
                     invite_only: true
                     allow_guest: false
+                    shared_exercises: true
                     coach: { enabled: true, provider: compatible, providerLabel: "OpenAI-compatible endpoint", authMode: instance, community: false }
-                passwordLogin: { value: { invite_only: true, allow_guest: false, password_login: true } }
-                media: { value: { invite_only: false, allow_guest: true, media: { imageMB: 2, gifMB: 8, videoMB: 40, videoSec: 60, quotaMB: 200, workouts: true } } }
+                passwordLogin: { value: { invite_only: true, allow_guest: false, shared_exercises: true, password_login: true } }
+                media: { value: { invite_only: false, allow_guest: true, shared_exercises: true, media: { imageMB: 2, gifMB: 8, videoMB: 40, videoSec: 60, quotaMB: 200, workouts: true } } }
 
   /api/me:
     get:
@@ -1410,6 +1415,83 @@ paths:
               example: { error: "credential already registered", code: "credential-exists" }
         '429': { $ref: '#/components/responses/TooManyRequests' }
 
+  /api/shared-exercises:
+    get:
+      tags: [data]
+      summary: Published custom exercises on this server
+      description: Requires a signed-in account. Returns the catalogue to cache for offline use; profile uploads cannot publish exercises.
+      responses:
+        '200':
+          description: Shared exercises with stable ids, metadata, optional media references and serverRevision.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  exercises:
+                    type: array
+                    items:
+                      type: object
+                      required: [id, n, bp, eq, custom, serverShared, serverRevision]
+                      properties:
+                        id: { type: string }
+                        n: { type: string }
+                        bp: { type: string }
+                        eq: { type: string }
+                        custom: { type: boolean, const: true }
+                        serverShared: { type: boolean, const: true }
+                        serverRevision: { type: integer }
+        '401': { description: Not signed in }
+  /api/admin/shared-exercises:
+    put:
+      tags: [admin]
+      summary: Publish or update a shared custom exercise
+      description: Admin only. Uploaded exercise media is copied to shared storage. Existing exercises require their current serverRevision as baseRevision. The catalogue has a maximum of 1000 exercises.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [exercise]
+              properties:
+                baseRevision: { type: integer }
+                exercise:
+                  type: object
+                  required: [id, n, bp, eq]
+                  properties:
+                    id: { type: string, pattern: '^c[a-zA-Z0-9_-]{1,95}$' }
+                    n: { type: string, maxLength: 200 }
+                    bp: { type: string }
+                    eq: { type: string }
+                    desc: { type: string, maxLength: 1000 }
+                    media: { type: object }
+      responses:
+        '200': { description: Published exercise in the exercise property }
+        '400': { description: Invalid metadata, missing media or full catalogue }
+        '401': { description: Not signed in }
+        '403': { description: Not an administrator }
+        '409': { description: Stale exercise revision or duplicate published name }
+    delete:
+      tags: [admin]
+      summary: Withdraw an exercise from the server catalogue
+      description: Admin only. Already cached definitions used by existing routines and history are retained by clients. Media is no longer readable by other accounts through the shared catalogue.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, baseRevision]
+              properties:
+                id: { type: string }
+                baseRevision: { type: integer }
+      responses:
+        '200': { description: Withdrawn, or already absent }
+        '401': { description: Not signed in }
+        '403': { description: Not an administrator }
+        '409': { description: Stale exercise revision }
+
   /api/data:
     get:
       tags: [data]
@@ -1590,8 +1672,8 @@ paths:
       operationId: getMedia
       summary: Download one of your photos or videos
       description: |
-        The stored file, whole, from the caller's own folder only: another profile's file
-        answers exactly like one that was never uploaded (404). The body is the file, not
+        The stored file, whole, from the caller's own folder or the separate copy referenced
+        by a currently published server exercise. Other private files answer 404. The body is the file, not
         JSON, with headers that keep a browser from ever treating it as a page:
         `Content-Type` from the sniffed type (never `text/*` or SVG),
         `X-Content-Type-Options: nosniff`, `Content-Security-Policy: default-src 'none'; sandbox`,
@@ -1618,7 +1700,7 @@ paths:
             video/webm: { schema: { type: string, format: binary } }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
-          description: Not in the caller's folder. Never uploaded, removed by the sweep, or someone else's.
+          description: Neither owned by the caller nor currently shared. Never uploaded, withdrawn, removed by the sweep, or private to someone else.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
@@ -1746,7 +1828,7 @@ paths:
         The app sends every hash its state references and uploads only what comes back, so the
         same call moves a guest's files into a new account, a phone's into its pairing, a
         backup's into the server, and re-sends a file the sweep removed while a device still
-        had it. Answered from the caller's own folder only.
+        had it. Published exercise media counts as available unless `privateOnly` is true.
       requestBody:
         required: true
         content:
@@ -1755,6 +1837,10 @@ paths:
               type: object
               required: [hashes]
               properties:
+                privateOnly:
+                  type: boolean
+                  default: false
+                  description: Count only files in the caller's own uploads, ignoring shared exercise copies.
                 hashes:
                   type: array
                   maxItems: 1000
