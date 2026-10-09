@@ -1950,4 +1950,10 @@ export default {
   'Greys show darker in light mode, so buttons don’t look switched off.': '라이트 모드에서는 버튼이 꺼진 것처럼 보이지 않게 회색을 어둡게 표시해요.',
   'custom color picker': '나만의 색상 사용자 지정 색상 선택기',
   'Signed in from another tab. Your workout came along, keep going here.': '다른 탭에서 로그인했어요. 운동도 함께 넘어왔으니 여기서 이어서 하세요.',
+  // --- Home: favourite lifts ---
+  'Favourite lifts': '즐겨찾는 운동',
+  'Best est. 1RM': '최고 추정 1RM',
+  '{0} in {1} days': '{1}일 동안 {0}',
+  'Log a weighted set of a favourite exercise to see its estimated 1RM here.': '즐겨찾는 운동의 중량 세트를 기록하면 여기에 추정 1RM이 표시됩니다.',
+  'Show the best estimated 1RM of your favourite exercises on Home.': '홈에 즐겨찾는 운동의 최고 추정 1RM을 표시합니다.',
 }

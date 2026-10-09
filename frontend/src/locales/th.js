@@ -1961,4 +1961,10 @@ export default {
   'Greys show darker in light mode, so buttons don’t look switched off.': 'สีเทาจะเข้มขึ้นในโหมดสว่าง ปุ่มจะได้ไม่ดูเหมือนถูกปิดอยู่',
   'custom color picker': 'สีเอง กำหนดเอง ตัวเลือกสี',
   'Signed in from another tab. Your workout came along, keep going here.': 'ลงชื่อเข้าใช้จากแท็บอื่นแล้ว การออกกำลังกายของคุณมาด้วย ทำต่อที่นี่ได้เลย',
+  // --- Home: favourite lifts ---
+  'Favourite lifts': 'ท่าโปรด',
+  'Best est. 1RM': '1RM โดยประมาณสูงสุด',
+  '{0} in {1} days': '{0} ใน {1} วัน',
+  'Log a weighted set of a favourite exercise to see its estimated 1RM here.': 'บันทึกเซ็ตที่มีน้ำหนักของท่าโปรดเพื่อดู 1RM โดยประมาณที่นี่',
+  'Show the best estimated 1RM of your favourite exercises on Home.': 'แสดง 1RM โดยประมาณสูงสุดของท่าโปรดบนหน้าหลัก',
 }

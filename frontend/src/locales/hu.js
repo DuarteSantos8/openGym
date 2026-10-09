@@ -1953,4 +1953,10 @@ export default {
   'Greys show darker in light mode, so buttons don’t look switched off.': 'A szürkék világos módban sötétebbek, hogy a gombok ne tűnjenek kikapcsoltnak.',
   'custom color picker': 'saját szín egyéni színválasztó',
   'Signed in from another tab. Your workout came along, keep going here.': 'Bejelentkeztél egy másik lapon. Az edzésed is jött vele, folytasd itt.',
+  // --- Home: favourite lifts ---
+  'Favourite lifts': 'Kedvenc gyakorlatok',
+  'Best est. 1RM': 'Legjobb becs. 1RM',
+  '{0} in {1} days': '{0} {1} nap alatt',
+  'Log a weighted set of a favourite exercise to see its estimated 1RM here.': 'Rögzíts egy súlyos sorozatot egy kedvenc gyakorlatból, hogy itt lásd a becsült 1RM-jét.',
+  'Show the best estimated 1RM of your favourite exercises on Home.': 'A kedvenc gyakorlataid legjobb becsült 1RM-je a Kezdőlapon.',
 }

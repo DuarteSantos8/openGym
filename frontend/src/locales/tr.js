@@ -1950,4 +1950,10 @@ export default {
   'Greys show darker in light mode, so buttons don’t look switched off.': 'Griler aydınlık modda daha koyu görünür, düğmeler kapalıymış gibi durmasın diye.',
   'custom color picker': 'kendi renk özel renk seçici',
   'Signed in from another tab. Your workout came along, keep going here.': 'Başka bir sekmede giriş yapıldı. Antrenmanın da geldi, buradan devam et.',
+  // --- Home: favourite lifts ---
+  'Favourite lifts': 'Favori egzersizler',
+  'Best est. 1RM': 'En iyi tah. 1RM',
+  '{0} in {1} days': '{1} günde {0}',
+  'Log a weighted set of a favourite exercise to see its estimated 1RM here.': 'Tahmini 1RM’ini burada görmek için favori bir egzersizden ağırlıklı bir set kaydet.',
+  'Show the best estimated 1RM of your favourite exercises on Home.': 'Favori egzersizlerinin en iyi tahmini 1RM’ini Ana sayfada göster.',
 }

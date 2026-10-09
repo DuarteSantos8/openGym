@@ -1954,4 +1954,10 @@ export default {
   'Greys show darker in light mode, so buttons don’t look switched off.': 'Серые оттенки в светлой теме темнее, чтобы кнопки не казались выключенными.',
   'custom color picker': 'свой цвет пользовательский палитра выбор цвета',
   'Signed in from another tab. Your workout came along, keep going here.': 'Вход выполнен в другой вкладке. Тренировка сохранилась, продолжай здесь.',
+  // --- Home: favourite lifts ---
+  'Favourite lifts': 'Избранные упражнения',
+  'Best est. 1RM': 'Лучший расч. 1ПМ',
+  '{0} in {1} days': '{0} за {1} дн.',
+  'Log a weighted set of a favourite exercise to see its estimated 1RM here.': 'Запишите подход с весом в избранном упражнении, чтобы увидеть здесь его расчётный 1ПМ.',
+  'Show the best estimated 1RM of your favourite exercises on Home.': 'Показывать на главной лучший расчётный 1ПМ избранных упражнений.',
 }
