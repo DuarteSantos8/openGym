@@ -150,6 +150,54 @@ describe('the context sleeps between beeps', () => {
   })
 })
 
+// A suspended context is not "playing media", and iOS then points the hardware volume buttons at
+// the ringer rather than at the media channel the timer uses. Holding the context open for the
+// length of a rest is what lets someone in a gym simply turn the phone up.
+describe('the context is held open while a timer runs', () => {
+  it('does not sleep between the beeps of a held burst', () => {
+    sound.beep(true, 880, 0.15)
+    sound.holdSession(true)
+    vi.advanceTimersByTime(60000)
+    expect(ctx().state).toBe('running')
+    expect(ctx().suspends).toBe(0)
+  })
+
+  it('sleeps once the timer lets go, after the longest end-of-rest sound has rung out', () => {
+    sound.beep(true, 880, 0.15)
+    sound.holdSession(true)
+    vi.advanceTimersByTime(60000)
+    sound.chime(true, 'bell')                 // the rest's end, played just before letting go: rings 1.75 s
+    sound.holdSession(false)
+    vi.advanceTimersByTime(2700)
+    expect(ctx().state).toBe('running')
+    vi.advanceTimersByTime(100)
+    expect(ctx().state).toBe('suspended')
+  })
+
+  it('letting go early overrides the deadline the queued count-in left', () => {
+    // A 90 s rest queues its last tick for 0:89, and that used to keep the context running to
+    // the end of the rest after a Skip at 0:30, with the page awake behind a locked phone.
+    sound.holdSession(true)
+    sound.countdown(true, 90)
+    vi.advanceTimersByTime(30000)
+    sound.hush()
+    sound.holdSession(false)
+    vi.advanceTimersByTime(2800)
+    expect(ctx().state).toBe('suspended')
+    expect(ctx().suspends).toBe(1)
+  })
+
+  it('holding gets the context running even when nothing has played yet', () => {
+    sound.holdSession(true)
+    expect(ctx().state).toBe('running')
+    expect(ctx().tones).toHaveLength(0)
+  })
+
+  it('letting go without a context, or twice over, is harmless', () => {
+    expect(() => { sound.holdSession(false); sound.holdSession(false) }).not.toThrow()
+  })
+})
+
 describe('unlock from a tap', () => {
   it('gets the context created and running, without a tone', () => {
     sound.unlock(true)

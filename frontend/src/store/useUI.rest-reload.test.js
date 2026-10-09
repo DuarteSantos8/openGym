@@ -5,7 +5,7 @@ import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({ ok: true })) }))
 const { chime, countdown } = vi.hoisted(() => ({ chime: vi.fn(), countdown: vi.fn() }))
-vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime, vibrate: vi.fn(), alertBuzz: vi.fn(), countdown, hush: vi.fn() }))
+vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime, vibrate: vi.fn(), alertBuzz: vi.fn(), countdown, hush: vi.fn(), holdSession: vi.fn() }))
 
 import { api } from '../lib/api.js'
 import { useUI, restoreRest, REST_KEY } from './useUI.js'

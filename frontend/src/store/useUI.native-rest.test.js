@@ -14,14 +14,14 @@ vi.mock('../lib/rest-alert.js', () => ({
   disarmRestAlert: vi.fn(),
   bindNativeRest: vi.fn(cb => { h.native = cb }),
 }))
-vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), countdown: vi.fn(), hush: vi.fn() }))
+vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), countdown: vi.fn(), hush: vi.fn(), holdSession: vi.fn() }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({ ok: true })) }))
 
 import { useUI } from './useUI.js'
 import { useStore } from './useStore.js'
 import { api } from '../lib/api.js'
 import { armRestAlert, disarmRestAlert, holdRestAlert } from '../lib/rest-alert.js'
-import { beep, chime, countdown } from '../lib/sound.js'
+import { beep, chime, countdown, holdSession } from '../lib/sound.js'
 
 const hide = hidden => {
   Object.defineProperty(document, 'hidden', { configurable: true, get: () => hidden })
@@ -209,6 +209,23 @@ describe('the notification’s own buttons', () => {
     h.native({ type: 'pause', leftMs: 400, totalMs: 10_000, endsAt: 0, paused: true })
     vi.advanceTimersByTime(5_000)
     expect(useUI.getState().timer).toMatchObject({ left: 1, paused: true })
+  })
+
+  // A rest over in the pocket lets the audio session go there and then (useUI runRest), once: the
+  // notification's +15 s brings its end back, and the new end must let go again.
+  it('+15 s on a rest that ran out while the app was hidden counts on, and lets go again at its new end', () => {
+    useUI.getState().startRest(2)
+    hide(true)
+    vi.advanceTimersByTime(3000)
+    holdSession.mockClear()
+    fromNotification('adjust', 15, 17)
+    expect(holdSession).toHaveBeenLastCalledWith(true)
+    vi.advanceTimersByTime(14_000)
+    expect(holdSession).toHaveBeenLastCalledWith(true)
+    vi.advanceTimersByTime(2000)
+    expect(holdSession).toHaveBeenLastCalledWith(false)
+    hide(false)
+    expect(useUI.getState().timer).toMatchObject({ left: 0, ready: true })
   })
 
   it('Skip ends the rest in the app', () => {

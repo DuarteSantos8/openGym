@@ -3,9 +3,11 @@
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 import { useUI } from './useUI.js'
 import { useStore } from './useStore.js'
-import { beep, chime, countdown, hush } from '../lib/sound.js'
+import { beep, chime, countdown, holdSession, hush } from '../lib/sound.js'
 
-vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn(), countdown: vi.fn(), hush: vi.fn() }))
+vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn(), countdown: vi.fn(), hush: vi.fn(), holdSession: vi.fn() }))
+// A signed-in rest books the server push; nothing here should reach a network.
+vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({ ok: true })) }))
 
 // "Off" has to hold at the timer itself, not at the four places that start one — the same
 // reason the rest-after-a-set rule is a shared condition rather than four copies.
@@ -525,6 +527,268 @@ describe('the count-in a timer queues', () => {
     vi.advanceTimersByTime(5 * 60_000)
     useUI.getState().resumeRest()
     expect(countdown).toHaveBeenLastCalledWith(true, 60)
+  })
+})
+
+// The audio session is held for the length of a timer (lib/sound.js holdSession), so the phone's
+// volume buttons reach the channel the timer plays on instead of the ringer. Only while Sounds is
+// on: with nothing to play it would only keep the phone's music paused.
+describe('the audio session a timer holds', () => {
+  let originalSettings
+  beforeEach(() => {
+    vi.useFakeTimers()
+    holdSession.mockClear(); hush.mockClear(); countdown.mockClear()
+    originalSettings = useStore.getState().S
+    useStore.setState({ S: { ...originalSettings, sound: true, timerFlash: false } })
+    useUI.setState({ timer: null, work: null })
+  })
+  afterEach(() => {
+    useUI.getState().stopRest(); useUI.getState().stopWork()
+    useStore.setState({ S: originalSettings }); vi.useRealTimers()
+  })
+
+  it('is held for the length of a rest or a hold, and let go when it ends', () => {
+    useUI.getState().startRest(90, 0, { kind: 'set' })
+    expect(holdSession).toHaveBeenLastCalledWith(true)
+    useUI.getState().stopRest()
+    expect(holdSession).toHaveBeenLastCalledWith(false)
+    holdSession.mockClear()
+    useUI.getState().startWork(45, 'Plank', () => {})
+    expect(holdSession).toHaveBeenLastCalledWith(true)
+    useUI.getState().stopWork()
+    expect(holdSession).toHaveBeenLastCalledWith(false)
+  })
+
+  it('is not taken with Sounds off', () => {
+    useStore.setState({ S: { ...useStore.getState().S, sound: false } })
+    useUI.getState().startRest(90, 0, { kind: 'set' })
+    useUI.getState().pauseRest()
+    useUI.getState().resumeRest()
+    useUI.getState().addRest(15)
+    useUI.getState().stopRest()
+    useUI.getState().startWork(45, 'Plank', () => {})
+    expect(holdSession).not.toHaveBeenCalledWith(true)
+  })
+
+  it('switching Sounds mid-timer takes it or lets it go with the count-in', () => {
+    useUI.getState().startRest(90, 0, { kind: 'set' })
+    useStore.setState({ S: { ...useStore.getState().S, sound: false } })
+    useUI.getState().restartCountdown()
+    expect(holdSession).toHaveBeenLastCalledWith(false)
+    useStore.setState({ S: { ...useStore.getState().S, sound: true } })
+    useUI.getState().restartCountdown()
+    expect(holdSession).toHaveBeenLastCalledWith(true)
+  })
+
+  it('stopping the hold mid-rest leaves the rest\'s session alone, and stopping the rest mid-hold the hold\'s', () => {
+    useUI.getState().startRest(90, 0, { kind: 'set' })
+    holdSession.mockClear()
+    useUI.getState().stopWork()
+    useUI.getState().abandonWork()
+    expect(holdSession).not.toHaveBeenCalled()
+    useUI.getState().stopRest()
+    useUI.getState().startWork(45, 'Plank', () => {})
+    holdSession.mockClear()
+    useUI.getState().stopRest()
+    expect(holdSession).not.toHaveBeenCalled()
+  })
+
+  it('a pause lets it go and a resume takes it again', () => {
+    useUI.getState().startRest(90, 0, { kind: 'set' })
+    holdSession.mockClear()
+    useUI.getState().pauseRest()
+    expect(holdSession).toHaveBeenLastCalledWith(false)
+    useUI.getState().resumeRest()
+    expect(holdSession).toHaveBeenLastCalledWith(true)
+  })
+
+  // A hold counting on past its target (Settings → timed-set overtime) has sounded its end, and
+  // nothing more will sound: the session goes at the target, on screen as it does when hidden.
+  it('a hold counting on past its target lets it go at the target, and Sounds switched off there keeps it let go', () => {
+    useStore.setState({ S: { ...useStore.getState().S, timedSetOvertime: true } })
+    useUI.getState().startWork(2, 'Plank', vi.fn())
+    holdSession.mockClear()
+    vi.advanceTimersByTime(2000)
+    expect(useUI.getState().work).toMatchObject({ overtime: true, left: 0 })
+    expect(holdSession.mock.calls).toEqual([[false]])
+    vi.advanceTimersByTime(3000)
+    expect(holdSession.mock.calls).toEqual([[false]])           // once, not every second
+    useStore.setState({ S: { ...useStore.getState().S, sound: false } })
+    useUI.getState().restartCountdown()
+    expect(holdSession).toHaveBeenLastCalledWith(false)
+    useStore.setState({ S: { ...useStore.getState().S, sound: true } })
+    useUI.getState().restartCountdown()
+    expect(holdSession).toHaveBeenLastCalledWith(false)         // nothing left to count past the end
+  })
+
+  it('a rest that runs out to Ready lets it go, and so does a switch-sides pause at its end', () => {
+    useUI.getState().startRest(1, 0, { kind: 'set' })
+    holdSession.mockClear()
+    vi.advanceTimersByTime(1000)
+    expect(useUI.getState().timer).toMatchObject({ ready: true })
+    expect(holdSession).toHaveBeenLastCalledWith(false)
+    useUI.getState().startRest(1, 0, { kind: 'switch' })
+    holdSession.mockClear()
+    vi.advanceTimersByTime(1000)
+    expect(holdSession).toHaveBeenLastCalledWith(false)
+  })
+})
+
+// Holding the audio session keeps a page running behind a locked iPhone, where it used to be
+// frozen. A hidden page still changes nothing on screen: the end of a rest or a hold happens on
+// the first tick back, and only the alert (and letting go of the session) happens while hidden.
+describe('a timer that runs while the page is hidden', () => {
+  let originalSettings, originalUser, shown
+  const goHidden = () => { Object.defineProperty(document, 'hidden', { value: true, configurable: true }); document.dispatchEvent(new Event('visibilitychange')) }
+  const goVisible = () => { Object.defineProperty(document, 'hidden', { value: false, configurable: true }); document.dispatchEvent(new Event('visibilitychange')) }
+  const flush = async () => { for (let i = 0; i < 5; i++) await Promise.resolve() }
+  beforeEach(() => {
+    vi.useFakeTimers()
+    originalSettings = useStore.getState().S
+    originalUser = useStore.getState().user
+    useStore.setState({ S: { ...originalSettings, sound: false, timerFlash: false } })
+    useUI.setState({ timer: null, work: null, toastMsg: '' })
+    shown = vi.fn()
+    // A granted permission and a service worker to show through: the local notification's path,
+    // and a push subscription, since the local alert follows the Push switch (issue #239).
+    globalThis.Notification = { permission: 'granted', requestPermission: vi.fn(async () => 'granted') }
+    Object.defineProperty(navigator, 'serviceWorker', { configurable: true, value: { getRegistration: async () => ({ showNotification: shown, pushManager: { getSubscription: async () => ({ endpoint: 'https://push.example/x' }) } }) } })
+  })
+  afterEach(() => {
+    goVisible(); useUI.getState().stopRest(); useUI.getState().stopWork()
+    useStore.setState({ S: originalSettings, user: originalUser })
+    delete globalThis.Notification
+    delete navigator.serviceWorker
+    vi.useRealTimers()
+  })
+
+  it('a hidden rest neither ticks nor finishes; it all happens on the first tick back', () => {
+    useUI.getState().startRest(3, 0, { kind: 'block' })
+    goHidden()
+    vi.advanceTimersByTime(10_000)
+    const tm = useUI.getState().timer
+    expect(tm).not.toBe(null)
+    expect(tm.left).toBe(3)                          // not a single re-render while hidden
+    expect(useUI.getState().toastMsg).toBe('')
+    goVisible()
+    expect(useUI.getState().timer).toMatchObject({ left: 0, ready: true })
+    expect(useUI.getState().toastMsg).toBe('Rest’s over. Next set!')
+  })
+
+  it('signed in, a hidden rest leaves the alert to the server push: no local notification', async () => {
+    useStore.setState({ user: { id: 'u1' } })
+    useUI.getState().startRest(2, 0, { kind: 'set' })
+    goHidden()
+    vi.advanceTimersByTime(6000)
+    await flush()
+    expect(shown).not.toHaveBeenCalled()
+    goVisible()
+    await flush()
+    expect(shown).not.toHaveBeenCalled()             // back on screen there is nothing to notify
+  })
+
+  it('a hidden rest that runs out notifies once, not once per tick', async () => {
+    useStore.setState({ user: null })
+    useUI.getState().startRest(2, 0, { kind: 'set' })
+    useUI.getState().addRest(15); useUI.getState().addRest(-15)   // ±15 s moves endsAt; still one rest
+    goHidden()
+    vi.advanceTimersByTime(6000)                     // four ticks past zero
+    await flush()
+    expect(shown).toHaveBeenCalledTimes(1)
+    expect(shown).toHaveBeenCalledWith('Rest’s over. Next set!', expect.objectContaining({ tag: 'rest-timer' }))   // the push's tag: one tray entry
+    expect(useUI.getState().timer).not.toBe(null)    // the rest itself still waits for the screen
+  })
+
+  // Nothing on screen changes, but the audio session is no screen: held past the end it keeps the
+  // volume buttons on a timer with nothing left to count and, under 'playback', the phone's music
+  // paused, for as long as the phone stays in the pocket. It goes at the end, once.
+  it('a hidden rest that runs out lets go of the audio session then, not when the page is back', () => {
+    useUI.getState().startRest(2, 0, { kind: 'set' })
+    goHidden()
+    holdSession.mockClear()
+    vi.advanceTimersByTime(1000)
+    expect(holdSession).not.toHaveBeenCalled()
+    vi.advanceTimersByTime(1000)
+    expect(holdSession.mock.calls).toEqual([[false]])
+    vi.advanceTimersByTime(10_000)                    // and once: each call pushes the sleep out again
+    expect(holdSession.mock.calls).toEqual([[false]])
+    expect(useUI.getState().timer).toMatchObject({ left: 2 })   // the rest itself still waits for the screen
+    goVisible()
+    expect(useUI.getState().timer).toMatchObject({ left: 0, ready: true })
+  })
+
+  // Letting go leaves the ticking alone: a page back on screen without a visibilitychange to say
+  // so still has its rest finished by the next tick.
+  it('and the rest keeps ticking, so a page back without a visibilitychange still finishes it', () => {
+    useUI.getState().startRest(2, 0, { kind: 'set' })
+    goHidden()
+    vi.advanceTimersByTime(3000)
+    Object.defineProperty(document, 'hidden', { value: false, configurable: true })   // back, no event
+    vi.advanceTimersByTime(1000)
+    expect(useUI.getState().timer).toMatchObject({ left: 0, ready: true })
+  })
+
+  it('so does a switch-sides pause', () => {
+    useUI.getState().startRest(2, 0, { kind: 'switch' })
+    goHidden()
+    holdSession.mockClear()
+    vi.advanceTimersByTime(5000)
+    expect(holdSession.mock.calls).toEqual([[false]])
+  })
+
+  // The same goes for a hold: nothing is left to count once it has run out (its end only sounds
+  // on screen), so the session goes then, once, and the hold still finishes on return.
+  it('a hidden hold that runs out lets go of the audio session then, not when the page is back', () => {
+    const done = vi.fn()
+    useUI.getState().startWork(2, 'Plank', done)
+    goHidden()
+    holdSession.mockClear(); hush.mockClear()
+    vi.advanceTimersByTime(1000)
+    expect(holdSession).not.toHaveBeenCalled()
+    vi.advanceTimersByTime(1000)
+    expect(holdSession.mock.calls).toEqual([[false]])
+    expect(hush).toHaveBeenCalledTimes(1)
+    vi.advanceTimersByTime(10_000)
+    expect(holdSession.mock.calls).toEqual([[false]])
+    expect(done).not.toHaveBeenCalled()
+    goVisible()
+    expect(useUI.getState().work).toBe(null)
+    expect(done).toHaveBeenCalledTimes(1)
+  })
+
+  it('and so does the next hold that runs out hidden: once per hold, not once ever', () => {
+    useUI.getState().startWork(2, 'Plank', vi.fn())
+    goHidden()
+    vi.advanceTimersByTime(3000)
+    goVisible()
+    useUI.getState().startWork(2, 'Plank', vi.fn())
+    goHidden()
+    holdSession.mockClear()
+    vi.advanceTimersByTime(3000)
+    expect(holdSession.mock.calls).toEqual([[false]])
+  })
+
+  it('and one counting on past its target (overtime) lets go there too: nothing more sounds while hidden', () => {
+    useStore.setState({ S: { ...useStore.getState().S, timedSetOvertime: true } })
+    useUI.getState().startWork(2, 'Plank', vi.fn())
+    goHidden()
+    holdSession.mockClear()
+    vi.advanceTimersByTime(5000)
+    expect(holdSession.mock.calls).toEqual([[false]])
+    goVisible()
+    expect(useUI.getState().work).toMatchObject({ overtime: true, left: -3 })
+  })
+
+  it('a hidden hold finishes on the first tick back, at its full length and without its chime', () => {
+    const done = vi.fn()
+    useUI.getState().startWork(2, 'Plank', done)
+    goHidden()
+    vi.advanceTimersByTime(10_000)
+    expect(useUI.getState().work).not.toBe(null)
+    expect(done).not.toHaveBeenCalled()
+    goVisible()
+    expect(useUI.getState().work).toBe(null)
+    expect(done).toHaveBeenCalledWith(2, { chimed: false })
   })
 })
 
