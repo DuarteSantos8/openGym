@@ -8,11 +8,15 @@ import { auditCat, auditLabel, auditReason, auditLine, auditAct, fmtWhen } from 
 // If a new one is added there without a label here, the first test fails rather than the
 // dashboard quietly printing a dotted identifier at a person.
 const SERVER = readFileSync(new URL('../../../api/server.js', import.meta.url), 'utf8')
-const EVENTS = [...new Set([...SERVER.matchAll(/audit\(req, '([a-z.]+)'/g)].map(m => m[1]))]
+// Every quoted auth./admin./media. name, not only `audit(req, '…'`: a name with a hyphen
+// ('admin.first-user') or one picked by a ternary slipped past that pattern and reached the
+// dashboard raw.
+const EVENTS = [...new Set([...SERVER.matchAll(/['"`]((?:auth|admin|media)\.[a-z0-9.-]+)['"`]/g)].map(m => m[1]))]
 const REASONS = [...new Set([...SERVER.matchAll(/msg: '([a-z-]+)'/g)].map(m => m[1]))]
 
 describe('auditLabel', () => {
   it('has a sentence for every event the server emits', () => {
+    expect(EVENTS).toContain('admin.first-user')
     for (const ev of EVENTS) {
       expect(auditLabel(ev), ev).not.toBe(ev)
       expect(auditLabel(ev)).toMatch(/^[A-Z]/)

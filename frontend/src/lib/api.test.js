@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { webauthnOK, bio, vault, BIO, VAULT } from './api.js'
+import { webauthnOK, bio, vault, BIO, VAULT, passkeyError } from './api.js'
+import de from '../locales/de.js'
 import { _setLangState } from './i18n-core.js'
 
 const originalPublicKeyCredential = window.PublicKeyCredential
@@ -183,5 +184,23 @@ describe('bio / vault', () => {
     _setLangState('de', { [BIO]: 'BIO-de', [VAULT]: 'VAULT-de' }, null, null)
     expect(bio()).toBe('BIO-de')
     expect(vault()).toBe('VAULT-de')
+  })
+})
+
+// The passkey routes answer in English with a stable `code`; the toast used to show the English
+// line ("unknown passkey, create a profile first") in every language.
+describe('passkeyError', () => {
+  afterEach(() => _setLangState('en', {}, null, null))
+  const refused = (code, message) => Object.assign(new Error(message), { status: 400, data: { error: message, code } })
+  it('says each refusal in the UI language', () => {
+    _setLangState('de', de, null, null)
+    expect(passkeyError(refused('invite', 'a valid invite code is required'), 'x')).toBe(de['That invite code is not valid.'])
+    expect(passkeyError(refused('unknown-credential', 'unknown passkey, create a profile first'), 'x')).toBe(de['This server doesn’t know that passkey. Make a profile first.'])
+    expect(passkeyError(refused('disabled', 'this account has been disabled'), 'x')).toBe(de['This account has been disabled.'])
+    expect(passkeyError(refused('challenge-expired', 'challenge expired, try again'), 'x')).toBe(de['That took a little too long. Give it another go.'])
+  })
+  it('an answer without a code is shown as it came, and nothing at all falls back', () => {
+    expect(passkeyError(refused(undefined, 'credential already registered'), 'Sign-in failed')).toBe('credential already registered')
+    expect(passkeyError({}, 'Sign-in failed')).toBe('Sign-in failed')
   })
 })

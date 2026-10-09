@@ -8,8 +8,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('../lib/api.js', () => ({ api: vi.fn(), setRemoteAuth: vi.fn() }))
-const { toast } = vi.hoisted(() => ({ toast: vi.fn() }))
-vi.mock('./useUI.js', () => ({ useUI: { getState: () => ({ toast }) } }))
+const { toast, stopRest, abandonWork } = vi.hoisted(() => ({ toast: vi.fn(), stopRest: vi.fn(), abandonWork: vi.fn() }))
+vi.mock('./useUI.js', () => ({ useUI: { getState: () => ({ toast, stopRest, abandonWork }) } }))
 
 import { api } from '../lib/api.js'
 import { DEF, useStore } from './useStore.js'
@@ -250,6 +250,48 @@ describe('signing out never loses a change silently', () => {
     expect(await useStore.getState().signOutAll()).toEqual({ owed: true, count: 1 })
     expect(paths()).toEqual(['PUT /api/data'])
     expect(useStore.getState().user).toEqual(USER)
+  })
+
+  it('a workout running with nothing owed is kept on this device and back on the next sign-in', async () => {
+    owedCopy()
+    await new Promise(r => setTimeout(r, 10))
+    useStore.getState().update(s => { s.active = { id: 'run', start: 5, entries: [{ id: 'squat', sets: [{ w: 100, r: 5, done: true }] }] } })
+    api.mockReset()
+    api.mockResolvedValue({ ok: true, rev: 1 })
+    expect(useStore.getState().unsyncedChanges().owed).toBe(false)
+    expect(await useStore.getState().signOut()).toEqual({ owed: false })
+    expect(useStore.getState().S.active).toBeNull()
+    const stash = Object.values(JSON.parse(localStorage.getItem('gym_stash')))
+    expect(stash.map(e => [e.uid, e.state.active?.id, ids(e.state.workouts)])).toEqual([[USER.id, 'run', []]])
+
+    api.mockReset()
+    api.mockImplementation(async (path, o) => (o?.method === 'PUT' ? { ok: true, rev: 3 } : { state: { ...clone(DEF), _ts: 200, workouts: [workout('w1')], _rev: 2 }, rev: 2 }))
+    useStore.getState().setUser(USER)
+    await useStore.getState().adoptProfile(async () => false)
+    expect(useStore.getState().S.active?.id).toBe('run')
+    expect(useStore.getState().S.active.entries[0].sets[0].done).toBe(true)
+    expect(ids(useStore.getState().S.workouts)).toEqual(['w1'])
+    expect(localStorage.getItem('gym_stash')).toBeNull()
+  })
+
+  it('stops the rest and the hold before the logout request, so the push can still be called off', async () => {
+    owedCopy()
+    await new Promise(r => setTimeout(r, 10))
+    api.mockReset(); stopRest.mockClear(); abandonWork.mockClear()
+    api.mockResolvedValue({ ok: true, rev: 1 })
+    await useStore.getState().signOut()
+    expect(stopRest).toHaveBeenCalledTimes(1)
+    expect(abandonWork).toHaveBeenCalledTimes(1)
+    const logout = api.mock.calls.findIndex(([p]) => p === '/api/logout')
+    expect(stopRest.mock.invocationCallOrder[0]).toBeLessThan(api.mock.invocationCallOrder[logout])
+
+    owedCopy()
+    await new Promise(r => setTimeout(r, 10))
+    api.mockReset(); stopRest.mockClear()
+    api.mockResolvedValue({ ok: true, rev: 1 })
+    await useStore.getState().signOutAll()
+    const all = api.mock.calls.findIndex(([p]) => p === '/api/logout/all')
+    expect(stopRest.mock.invocationCallOrder[0]).toBeLessThan(api.mock.invocationCallOrder[all])
   })
 
   it('unsyncedChanges says nothing is owed when nothing is', async () => {

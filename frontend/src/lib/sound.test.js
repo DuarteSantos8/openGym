@@ -289,6 +289,41 @@ describe('the chime at the end of a rest or a hold', () => {
   })
 })
 
+// Settings → "Classic timer sound": the exact three beeps this replaced, picked back with a
+// second argument rather than reviving the old inline beep() calls at the call sites.
+describe('chime(enabled, classic) — the original three beeps', () => {
+  it('makes no sound with sounds off, classic or not', () => {
+    sound.chime(false, true)
+    expect(FakeCtx.instances).toHaveLength(0)
+  })
+
+  it('is the same three tones and timing as the original beep() calls: 880, 880, 1320 Hz', () => {
+    sound.chime(true, true)
+    const tones = ctx().tones
+    expect(tones.map(tn => tn.freq)).toEqual([880, 880, 1320])
+    expect(tones.map(tn => tn.at)).toEqual([0, 0.25, 0.5])
+  })
+
+  it('peaks at a plain beep\'s level, not the louder chime\'s', () => {
+    sound.chime(true, true)
+    const peakOf = events => Math.max(...events.map(([, v]) => v))
+    for (const gain of ctx().gains) expect(peakOf(gain)).toBe(0.35)
+  })
+
+  it('fades from the start instead of holding its peak', () => {
+    sound.chime(true, true)
+    const first = ctx().gains[0]
+    const held = first.find(([kind, v, at]) => kind === 'set' && v === 0.35 && at > 0.05)
+    expect(held).toBeFalsy()
+  })
+
+  it('is a plain sine, not the brighter periodic wave', () => {
+    sound.chime(true, true)
+    expect(ctx().waves).toBe(0)
+    expect(ctx().oscs.every(o => o.type === 'sine' && o.wave === null)).toBe(true)
+  })
+})
+
 // Discord (asierlama): vibration on or off on its own, the way sound is.
 describe('vibrate switch', () => {
   let calls
@@ -325,5 +360,54 @@ describe('vibrate switch', () => {
     Object.defineProperty(navigator, 'vibrate', { value: undefined, configurable: true, writable: true })
     expect(sound.vibrateSupported()).toBe(false)
     expect(() => sound.vibrate(30)).not.toThrow()
+  })
+})
+
+// #375: the end of a rest or a hold, with "Vibrate when the phone is on silent" on in the Android
+// app, buzzes through the native alarm buzz App.jsx hands in; anything else is an ordinary buzz.
+describe('alertBuzz', () => {
+  let calls
+  const flush = async () => { for (let i = 0; i < 5; i++) await Promise.resolve() }
+  beforeEach(() => {
+    calls = []
+    Object.defineProperty(navigator, 'vibrate', { value: p => { calls.push(p); return true }, configurable: true, writable: true })
+  })
+  afterEach(() => { delete navigator.vibrate; sound.setAlarmBuzzer(null) })
+
+  it('without a native buzzer it is the ordinary buzz', () => {
+    sound.alertBuzz([200, 100, 200])
+    expect(calls).toEqual([[200, 100, 200]])
+  })
+
+  it('with one it goes there, and not also the ordinary way', async () => {
+    const native = vi.fn(async () => true)
+    sound.setAlarmBuzzer(native)
+    sound.alertBuzz([200, 100, 200])
+    await flush()
+    expect(native).toHaveBeenCalledWith([200, 100, 200])
+    expect(calls).toEqual([])
+  })
+
+  it('falls back to the ordinary buzz when the native one could not, or threw', async () => {
+    sound.setAlarmBuzzer(async () => false)
+    sound.alertBuzz([200])
+    await flush()
+    sound.setAlarmBuzzer(() => { throw new Error('bridge gone') })
+    sound.alertBuzz([300])
+    await flush()
+    sound.setAlarmBuzzer(() => Promise.reject(new Error('no plugin')))
+    sound.alertBuzz([400])
+    await flush()
+    expect(calls).toEqual([[200], [300], [400]])
+  })
+
+  it('Vibrate off is off for it too', async () => {
+    const native = vi.fn(async () => true)
+    sound.setAlarmBuzzer(native)
+    sound.setVibrate(false)
+    sound.alertBuzz([200, 100, 200])
+    await flush()
+    expect(native).not.toHaveBeenCalled()
+    expect(calls).toEqual([])
   })
 })

@@ -48,6 +48,7 @@ vi.mock('react-router-dom', () => ({
 vi.mock('../lib/coach-api.js', () => ({
   requestPlan: vi.fn(() => Promise.resolve({})),
   disclosure: vi.fn(() => Promise.resolve(null)),
+  JOB_ERRORS: { busy: 'the app’s busy line' },
 }))
 vi.mock('../coach.css', () => ({}))
 
@@ -145,6 +146,28 @@ describe('CoachIntake — the consent screen', () => {
     tap('button', 'Not now')
     expect(mocks.S.coach).toBeUndefined()
     expect(mocks.nav).toHaveBeenCalledWith('/plan')
+  })
+
+  it('a returning athlete whose consent is out of date reads the new terms only, then goes back to the Coach', () => {
+    // CONSENT_VERSION moved (the training line now names the session notes). The chat's redirect
+    // used to replay all seven questions and end in a new plan request.
+    mocks.S.coach = { consent: { agreedAt: '2026-09-01T00:00:00Z', version: CONSENT_VERSION - 1 }, profile: { goal: 'strength', experience: 'intermediate', daysPerWeek: 3 }, chat: [] }
+    mount()
+    expect(eyebrow()).toBe('Before we start')
+    expect(all('.ob-dot')).toHaveLength(0)
+    tap('button', 'I understand')
+    expect(mocks.S.coach.consent.version).toBe(CONSENT_VERSION)
+    expect(mocks.S.coach.profile.goal).toBe('strength')            // the answers stay as they were
+    expect(mocks.nav).toHaveBeenCalledWith('/coach', { replace: true })
+    expect(vi.mocked(requestPlan)).not.toHaveBeenCalled()
+  })
+
+  it('the training line names the session notes, which the Coach reads', () => {
+    // api/coach/core/payload.js sends each recent session's note (cleanWorkout). The consent
+    // screen listed weights, reps, times, effort and durations, and never said so.
+    mount()
+    const training = all('.ob-consent-row').find(r => r.querySelector('b').textContent === 'Your logged training')
+    expect(training.textContent).toContain('your session notes')
   })
 
   it('lists the built-in categories first, then whatever the server says actually goes', async () => {
@@ -372,6 +395,14 @@ describe('CoachIntake — building the plan', () => {
     // be guarded by `editing`, so a first-time retry opened the thread with the questionnaire twice.
     expect(mocks.S.coach.chat).toHaveLength(1)
     expect(mocks.S.coach.chat[0]).toMatchObject({ role: 'user', kind: 'intake' })
+  })
+
+  // The server's refusal is English; the class beside it picks the app's own, translated line.
+  it('a refusal the server names a class for says the app\'s line for it, not the server\'s English', async () => {
+    vi.mocked(requestPlan).mockRejectedValueOnce(Object.assign(new Error('the Coach is already thinking about your training'), { status: 409, data: { error: 'the Coach is already thinking about your training', code: 'busy' } }))
+    mount(); walkTo('Almost there')
+    cont(); await settle()
+    expect(mocks.toast).toHaveBeenCalledWith('the app’s busy line')
   })
 
   it('falls back to a generic message when the failure carries none', async () => {

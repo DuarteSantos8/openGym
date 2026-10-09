@@ -26,7 +26,7 @@ describe('workoutText', () => {
 
   it('reads as the heading, each exercise with its work sets, supersets together, then the note', () => {
     expect(workoutText(w, { unit: 'kg', nameOf })).toBe([
-      `Push — ${fmtDate('2026-09-03', true, true)}`,
+      `Push · ${fmtDate('2026-09-03', true, true)}`,
       '58 min · 1,790 kg · Body weight 80 kg',
       '',
       'Barbell Bench Press',
@@ -54,7 +54,7 @@ describe('workoutText', () => {
     ] }
     // no clock, no weigh-in, no note; an exercise with only a warm-up drops out, and a superset
     // with one member left trained is just that exercise
-    expect(workoutText(bare, { unit: 'lb', nameOf })).toBe(`Legs — ${fmtDate('2026-09-03', true, true)}\n120 lb\n\nDumbbell Curl\n12×10`)
+    expect(workoutText(bare, { unit: 'lb', nameOf })).toBe(`Legs · ${fmtDate('2026-09-03', true, true)}\n120 lb\n\nDumbbell Curl\n12×10`)
   })
 })
 

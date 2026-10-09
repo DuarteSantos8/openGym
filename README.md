@@ -4,7 +4,7 @@
 
 **A self-hosted gym and body-weight tracker you actually own.**
 
-Plan your week, run guided workouts, log every set and your body weight —<br>
+Plan your week, run guided workouts, log every set and your body weight,<br>
 on your phone, synced across your devices, behind your own passkey login.
 
 [![Discord](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fdiscord.com%2Fapi%2Finvites%2Fe62jY6fwVb%3Fwith_counts%3Dtrue&query=%24.approximate_member_count&suffix=%20members&label=Discord&logo=discord&logoColor=white&color=5865F2&style=for-the-badge)](https://discord.gg/e62jY6fwVb)
@@ -23,6 +23,8 @@ on your phone, synced across your devices, behind your own passkey login.
 [Self-hosting guide](docs/SELF_HOSTING.md) ·
 [Roadmap](ROADMAP.md) ·
 [Changelog](CHANGELOG.md)
+
+<a href="https://buymeacoffee.com/duartesantos" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="45" width="163"></a>
 
 </div>
 
@@ -57,6 +59,8 @@ if you want to try it before installing anything.
   editable routines.
 - Move a session to another day without touching the weekly plan. The week starts on Monday or
   Sunday, your choice.
+- Or skip the weekdays altogether: a **rotation** (A, B, C, A, ...) where the next session is
+  simply the next one you haven't done, however the week went.
 - Supersets, warm-up sets, drop sets and rest-pause, timed exercises (planks, hangs, carries),
   cardio by time and speed, rest time per exercise, planned deloads.
 - Your own exercises, with your own photo, GIF or short video. Location data is stripped on the
@@ -74,6 +78,8 @@ if you want to try it before installing anything.
 - Bodyweight exercises know they carry no load: log reps, add a dip belt if you use one.
 - Per-side reps for lunges and single-arm work, the screen stays awake while you train, and a
   rest-timer alert can flash the screen for loud gyms.
+- Swipe a set left to delete it (with Undo) or right to copy it. Pyramid sets with their own reps
+  and rest per set, and a scroll wheel for any rest time up to 15 minutes.
 
 **Progress**
 
@@ -84,7 +90,8 @@ if you want to try it before installing anything.
   ATG), a year-long activity heatmap.
 - A muscle map in three modes: where your volume went, what is still recovering, and what has gone
   untrained.
-- Body-weight chart against a goal line.
+- Body-weight chart against a goal line, and progress photos on a timeline with a before/after
+  slider.
 - Edit any saved workout after the fact, log one you did on paper, or move it to the right date.
   Records are re-read from the corrected history.
 
@@ -92,13 +99,14 @@ if you want to try it before installing anything.
 
 - Passkeys (Face ID, Touch ID, fingerprint) with per-profile data synced across devices. Password
   sign-in can be switched on per instance; new devices pair with a one-time code or QR.
-- Two devices editing at once merge instead of overwriting each other (see [sync](#how-sync-works)).
+- Two devices editing at once merge field by field instead of overwriting each other (see
+  [sync](#how-sync-works)).
 - Import from FitNotes, Strong, Hevy (CSV or API key) and Apple Health weight exports. Export
   everything as one JSON file whenever you like.
 - Share a plan as a small file or print it as a PDF.
 - Optional admin dashboard with invite-only signup and an activity log.
-- 17 languages, including right-to-left Arabic. Exercise names and instructions are translated
-  for most of them.
+- 18 languages, including right-to-left Arabic and Traditional Chinese. Exercise names and
+  instructions are translated for most of them.
 
 **Optional extras, off by default**
 
@@ -150,6 +158,7 @@ Traefik and nginx, and there are separate guides for
 | `RP_NAME` | Name shown in the passkey prompt | `openGym` |
 | `SESSION_DAYS` | How long a sign-in lasts, in days | `90` |
 | `ADMIN_UIDS` | User ids that get the admin dashboard, comma-separated | *(none)* |
+| `FIRST_USER_ADMIN` | `1`: the first profile created on an empty instance becomes its admin | *(off)* |
 | `INVITE_ONLY` | Require an invite code to create a profile | *(off)* |
 | `ALLOW_GUEST` | Offer "Continue without account"; `0` requires a profile | *(on)* |
 | `PASSWORD_LOGIN` | Offer name-and-password sign-in next to passkeys | *(off)* |
@@ -205,7 +214,9 @@ OpenAPI spec in [`api/openapi.yaml`](api/openapi.yaml), browsable at
 
 Each profile's data is one document with a server revision. A device sends the revision it last
 saw along with its changes; if another device wrote in between, the server refuses and returns the
-current document so the device can merge and retry.
+current document so the device can merge and retry. Every change carries its own stamp, down to a
+single setting or routine field, so the merge keeps the newest edit of each one and a deletion stays
+deleted.
 
 <p align="center">
 <picture>
@@ -224,6 +235,7 @@ Everything lives in `./data` on your host:
 | File | Contents |
 |---|---|
 | `db.json` | Profiles and public passkey data |
+| `db.json.bak` | A copy of the last good `db.json`, used if the main file can't be read |
 | `state-<user>.json` | Each user's plan, workouts, body weight and settings |
 | `audit.log` | Admin activity log (no IP addresses unless you turn that on) |
 | `secret` | Session-cookie signing key |
@@ -249,17 +261,19 @@ The [documentation index](docs/README.md) sorts every guide by who it's for. The
 
 A release roughly every two weeks, each small and themed. The full plan is in
 [ROADMAP.md](ROADMAP.md), and the issues sit in the
-[GitHub milestones](https://github.com/DuarteSantos8/openGym/milestones).
+[GitHub milestones](https://github.com/DuarteSantos8/openGym/milestones). The next two releases
+finish the community wishes, then comes a new exercise database and a themed release every
+two weeks after it.
 
-| Release | Planned | Theme |
+| Release | When | Theme |
 |---|---|---|
-| v1.3.10 | Oct 2026 | Session queue and rotation |
-| v1.3.11 | Nov 2026 | Programmes and phases |
-| v1.3.12–13 | Nov–Dec 2026 | Progression engine: AMRAP, %1RM, 5/3/1 |
-| v1.3.14 | Dec 2026 | Cardio, exercise alternatives, groups |
-| v1.4.0 | Jan 2027 | Database storage (the one compatibility break) |
-| v1.4.1–3 | Jan–Feb 2027 | Search, OIDC login, trainer role |
-| v1.4.4–7 | Mar–Apr 2027 | iOS app, Health Connect, catalogue, skins |
+| v1.3.10 | released Oct 2026 | New design, rotation, swipe actions, safer sync |
+| v1.3.11 | next | Fixes, about thirty community pull requests, Health Connect, measurements |
+| v1.3.12 | Nov 2026 | Community features: focus view, widget, timer rework |
+| v1.4.0 | Nov 2026 | A new exercise database |
+| v1.4.1 to v1.4.4 | Dec 2026 and Jan 2027 | Programmes, the progression engine, cardio |
+| v1.4.5 to v1.4.10 | Jan to Apr 2027 | Search, accounts, the iOS app, Android and health, looks |
+| later | | Database storage |
 
 ## Community
 

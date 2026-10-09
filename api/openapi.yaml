@@ -1,4 +1,4 @@
-# openGym HTTP API — hand-written OpenAPI 3.1 spec.
+# openGym HTTP API: hand-written OpenAPI 3.1 spec.
 # Source of truth: api/server.js (a single framework-free Node file). Every route the
 # server registers is documented here; if you add a route there, add it here too.
 # Browsable version: https://opengym.duarte-santos.ch/api.html
@@ -6,10 +6,10 @@ openapi: 3.1.0
 
 info:
   title: openGym API
-  version: 1.3.9
+  version: 1.3.10
   summary: Passkey (WebAuthn) auth + per-user state storage for openGym
   description: |
-    The backend of [openGym](https://opengym.duarte-santos.ch) — a free, open-source
+    The backend of [openGym](https://opengym.duarte-santos.ch), a free, open-source
     gym & body-weight tracker. A plain Node server, no framework, JSON-file storage,
     HMAC-signed session cookies.
 
@@ -30,17 +30,18 @@ info:
     ### Throttling
     The `password` routes are counted per client address: at most 60 requests a minute
     across them, and wrong answers (a password, a reset code, an invite code on password
-    signup, an e-mail address already in use) pause the address after 20 for 30 s,
+    signup, an e-mail address already in use) pause the address from the 21st on, for 30 s,
     doubling up to 15 min. Wrong passwords also pause the *account* they were tried
-    against after 5, for 1 min doubling up to 1 h — the same pause whether the account
-    was named by its name or its e-mail — and an identifier that names no account is
+    against from the 6th on, for 1 min doubling up to 1 h (the same pause whether the account
+    was named by its name or its e-mail), and an identifier that names no account is
     paused the same way, as typed. A password check counts from the moment it
     starts, so checks sent at once get no more tries than checks sent one by one. A
     paused caller gets `429 {"error": …, "code": "locked", "retryAfter": <s>}` with a
     `Retry-After` header. Passkey sign-up and sign-in and the pairing routes are not
-    throttled. The two routes that redeem a one-time device link (tag `passkeys`) share
+    throttled (their failures reach the audit log at most ten a minute per address).
+    The two routes that redeem a one-time device link (tag `passkeys`) share
     the per-address budget, and wrong codes pause the address for link redemption only,
-    after 20, the way wrong reset codes do. Adding or removing a passkey in Settings
+    from the 21st on, the way wrong reset codes do. Adding or removing a passkey in Settings
     (`POST /api/account/passkeys/options`, `DELETE /api/account/passkeys`) and making a
     device code (`POST /api/account/device-link`) spend the per-address budget too, and a
     current password given there as proof counts like one given at sign-in.
@@ -69,26 +70,29 @@ info:
     the only one a passkey can be created for.
 
     ### Environment-dependent behavior
-    - `INVITE_ONLY=1` — registration requires a valid invite code (minted by an admin).
-    - `ALLOW_GUEST=0` — hides the client-side "continue without account" mode; the
+    - `INVITE_ONLY=1`: registration requires a valid invite code (minted by an admin).
+    - `ALLOW_GUEST=0`: hides the client-side "continue without account" mode; the
       server merely reports the flag via `GET /api/config` (guest mode never talks to
       this API at all).
-    - `ADMIN_UIDS=<uid>,<uid>` — user ids treated as admins (a `"admin": true` flag on
+    - `ADMIN_UIDS=<uid>,<uid>`: user ids treated as admins (a `"admin": true` flag on
       the user record in `db.json` works too). Admins get the `/api/admin/*` routes.
+    - `FIRST_USER_ADMIN` (default off; `1` turns it on): the first profile registered
+      on an instance with no profiles gets that `"admin": true` flag. Decided at
+      registration only, never applied to an instance that already has profiles.
     - `AUDIT_LOG` (default on), `AUDIT_MAX` (default 5000 events), `AUDIT_DAYS`
-      (default 90), `AUDIT_IP` (`off` | `net` | `full`, default off) — shape the audit
+      (default 90), `AUDIT_IP` (`off` | `net` | `full`, default off) shape the audit
       log served by `GET /api/admin/audit`.
-    - `PASSWORD_LOGIN=1` — adds the `password` routes and `password_login: true` in
+    - `PASSWORD_LOGIN=1`: adds the `password` routes and `password_login: true` in
       `GET /api/config`. Off by default.
-    - `DEFAULT_LANG` (e.g. `pt-BR`; unset by default) — `default_lang` in `GET /api/config`,
+    - `DEFAULT_LANG` (e.g. `pt-BR`; unset by default): `default_lang` in `GET /api/config`,
       the language of the sign-in screen and of every profile that never picked one.
-    - `TRUST_PROXY=1` — the throttle reads the client address from proxy headers (set by
+    - `TRUST_PROXY=1`: the throttle reads the client address from proxy headers (set by
       the bundled `docker-compose.yml`, where only the web container can reach the API).
     - `MEDIA_UPLOADS` (default on; `0` removes the `media` routes and the `media` block of
       `GET /api/config`), `MEDIA_QUOTA_MB` (200 per profile, `0` = no cap),
       `MEDIA_IMAGE_MAX_MB` (2), `MEDIA_GIF_MAX_MB` (8), `MEDIA_VIDEO_MAX_MB` (40),
       `MEDIA_VIDEO_MAX_SEC` (60), `MEDIA_GC_GRACE_DAYS` (14), `MEDIA_UPLOADS_PER_HOUR` (600
-      per profile), `MEDIA_MIN_FREE_MB` (512, `0` = no floor) — photos and videos of custom
+      per profile), `MEDIA_MIN_FREE_MB` (512, `0` = no floor): photos and videos of custom
       exercises (tag `media`). Every MB here is 2^20 bytes.
 
     ### Conventions
@@ -105,7 +109,7 @@ info:
       as `{}`. A body over 5 MiB is `413 {"error":"body too large"}`; the rest of the
       upload is discarded so the answer reaches the client.
     - CORS: the request's `Origin` is reflected in `Access-Control-Allow-Origin`
-      **without** `Allow-Credentials` — cross-origin callers can only ever
+      **without** `Allow-Credentials`, so cross-origin callers can only ever
       authenticate with a Bearer token, never with the cookie.
   license:
     name: AGPL-3.0-or-later
@@ -133,7 +137,7 @@ tags:
       while the flag is off.
   - name: passkeys
     description: >-
-      More than one passkey on a profile: list, add, rename, remove — and one-time device
+      More than one passkey on a profile: list, add, rename, remove, plus one-time device
       links, which let another device of the same person add a passkey of its own.
   - name: data
     description: Per-user state sync (the whole app state as one JSON blob)
@@ -142,7 +146,7 @@ tags:
   - name: activity
     description: Live-workout presence heartbeat
   - name: admin
-    description: Admin dashboard — requires an admin session (`ADMIN_UIDS` or `admin:true`)
+    description: Admin dashboard. Requires an admin session (`ADMIN_UIDS` or `admin:true`)
   - name: media
     description: >-
       The photo, GIF or video of a user's own custom exercise, and the photos and videos
@@ -153,7 +157,7 @@ tags:
     description: Upload finished workouts to Strava (optional, STRAVA_CLIENT_ID / STRAVA_CLIENT_SECRET)
   - name: coach
     description: >-
-      AI Coach — plans, reviews and debriefs. Every route here answers 503 unless the
+      AI Coach: plans, reviews and debriefs. Every route here answers 503 unless the
       instance has the Coach switched on and a provider connected.
 
 security:
@@ -199,7 +203,7 @@ paths:
 
         A caller with a valid session also gets a `coach` key: the block when the
         instance has the AI Coach switched on **and** a provider connected, and `null`
-        when it has not. A caller with no session gets no key at all — the block names
+        when it has not. A caller with no session gets no key at all. The block names
         the provider this instance talks to, which is the same fact
         `GET /api/coach/disclosure` will not hand out unauthenticated.
 
@@ -247,7 +251,7 @@ paths:
                     const: true
                     description: >-
                       Present (and true) only when the instance runs with
-                      PASSWORD_LOGIN=1 — the client then offers name-and-password
+                      PASSWORD_LOGIN=1; the client then offers name-and-password
                       sign-in next to passkeys.
                   default_lang:
                     type: string
@@ -289,7 +293,7 @@ paths:
                 type: object
                 properties:
                   user: { $ref: '#/components/schemas/SessionUser' }
-                  token: { type: string, description: 'Bearer sessions past half their lifetime only — the renewed token.' }
+                  token: { type: string, description: 'Bearer sessions past half their lifetime only: the renewed token.' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
   /api/register/options:
@@ -322,7 +326,7 @@ paths:
                 code:
                   type: string
                   description: >-
-                    Invite code — required (and validated) only when the instance
+                    Invite code, required (and validated) only when the instance
                     runs with INVITE_ONLY. Compared case-insensitively.
             example: { name: "Ada", code: "3F9C21A07B54D688" }
       responses:
@@ -349,7 +353,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
-              example: { error: "a valid invite code is required" }
+              example: { error: "a valid invite code is required", code: "invite" }
 
   /api/register/verify:
     post:
@@ -397,13 +401,13 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
-              example: { error: "challenge expired — try again" }
+              example: { error: "challenge expired, try again", code: "challenge-expired" }
         '403':
           description: Invite-only and the code became invalid since step 1.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
-              example: { error: "invite code is no longer valid — ask for a new one" }
+              example: { error: "invite code is no longer valid, ask for a new one", code: "invite" }
         '409':
           description: This credential id is already registered.
           content:
@@ -418,7 +422,7 @@ paths:
       summary: 'Start passkey login (WebAuthn ceremony, step 1)'
       description: |
         Returns `PublicKeyCredentialRequestOptions`
-        (`generateAuthenticationOptions` with an empty `allowCredentials` — discoverable
+        (`generateAuthenticationOptions` with an empty `allowCredentials`; discoverable
         credentials / resident keys are required at registration, so the browser offers
         the user their passkeys itself) plus a one-shot challenge id `cid`.
         CSRF-exempt. Takes no request body.
@@ -481,13 +485,13 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
-              example: { error: "this account has been disabled" }
+              example: { error: "this account has been disabled", code: "disabled" }
         '404':
           description: The passkey's credential id is unknown to this instance.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
-              example: { error: "unknown passkey — create a profile first" }
+              example: { error: "unknown passkey, create a profile first", code: "unknown-credential" }
         '500':
           description: Credential exists but its user record is missing (corrupt db).
           content:
@@ -501,7 +505,7 @@ paths:
       operationId: logout
       summary: Sign out (this device)
       description: >-
-        Clears the session cookie. Always succeeds — an invalid or missing session is
+        Clears the session cookie. Always succeeds: an invalid or missing session is
         a no-op. The token itself stays cryptographically valid until it expires; use
         /api/logout/all to revoke tokens.
       security: []
@@ -523,7 +527,7 @@ paths:
       summary: Sign out everywhere
       description: |
         Bumps the account's session version, which invalidates **every** cookie and
-        Bearer token ever issued for it — on every device, including a copy someone
+        Bearer token ever issued for it, on every device, including a copy someone
         walked off with. Passkeys are untouched; signing back in works immediately.
         Also clears the caller's own cookie. Unredeemed pairing codes for the account
         are voided too.
@@ -547,7 +551,8 @@ paths:
       description: |
         Called from an already signed-in browser tab (Settings → "Pair the mobile
         app"). Returns an 8-character code (alphabet without 0/O/1/I) the phone
-        redeems within 5 minutes via /api/pair/redeem. One-shot.
+        redeems within 5 minutes via /api/pair/redeem. One-shot. One live code per
+        profile: minting a new one retires the previous one.
       responses:
         '200':
           description: A fresh pairing code.
@@ -569,7 +574,7 @@ paths:
       summary: Redeem a pairing code for a Bearer token
       description: |
         Called from the mobile app with the code shown in the browser. No session
-        required — the code *is* the credential (one-shot, 5-minute TTL). Returns the
+        required: the code *is* the credential (one-shot, 5-minute TTL). Returns the
         same HMAC-signed session token the cookie would carry; the app sends it as
         `Authorization: Bearer <token>` from then on. CSRF-exempt.
       security: []
@@ -599,12 +604,12 @@ paths:
                   user: { $ref: '#/components/schemas/SessionUser' }
         '400':
           description: >-
-            Code unknown, already used, expired — or the account behind it is gone or
+            Code unknown, already used, expired, or the account behind it is gone or
             disabled (deliberately the same message for all of these).
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
-              example: { error: "invalid or expired code" }
+              example: { error: "invalid or expired code", code: "pair-invalid" }
 
   /api/login/password:
     post:
@@ -622,7 +627,7 @@ paths:
         the same `401` after the same scrypt work, so neither the answer nor its timing says
         which names exist. So does a password that was right when its check started but
         was changed, reset or removed before the check finished. Five wrong passwords for an
-        account pause it, whichever identifier they named it by (see *Throttling*); passkey
+        account are free and the sixth pauses it, whichever identifier they named it by (see *Throttling*); passkey
         sign-in is never paused by this. Sets the
         same session cookie as `/api/login/verify`. **Not** CSRF-exempt.
       security: []
@@ -663,7 +668,7 @@ paths:
               schema: { $ref: '#/components/schemas/Error' }
               example: { error: "name and password required", code: "missing" }
         '401':
-          description: Wrong name or password — deliberately one answer for every cause.
+          description: Wrong name or password. Deliberately one answer for every cause.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
@@ -690,8 +695,8 @@ paths:
         of the passwords guessing scripts try first; no two profiles with a password may
         share a name. An optional `email` is stored as the profile's sign-in e-mail (see
         `POST /api/account/email`); one that is not an address is refused with `400
-        email-invalid`, one that is in use with `409 email-taken` — asked only after the
-        hash and the second invite check, so without a valid code it is never answered —
+        email-invalid`, one that is in use with `409 email-taken`. Both are asked only after the
+        hash and the second invite check, so without a valid code it is never answered,
         which counts against the caller's address like a wrong invite code. **Not**
         CSRF-exempt.
       security: []
@@ -723,8 +728,8 @@ paths:
                   user: { $ref: '#/components/schemas/SessionUser' }
         '400':
           description: >-
-            The password breaks the policy — `too-short` (under 10 characters), `too-long`
-            (over 256) or `too-common` — a field is `missing`, or `email-invalid`: the
+            The password breaks the policy with `too-short` (under 10 characters), `too-long`
+            (over 256) or `too-common`; a field is `missing`; or `email-invalid`: the
             `email` given is not an e-mail address.
           content:
             application/json:
@@ -740,7 +745,7 @@ paths:
               example: { error: "a valid invite code is required", code: "invite" }
         '409':
           description: >-
-            `name-taken` (see NameTaken) or `email-taken` — the e-mail is in use by another
+            `name-taken` (see NameTaken) or `email-taken`: the e-mail is in use by another
             profile.
           content:
             application/json:
@@ -791,7 +796,7 @@ paths:
                   user: { $ref: '#/components/schemas/SessionUser' }
         '400':
           description: >-
-            `reset-invalid` (wrong, used or expired code — one answer for all),
+            `reset-invalid` (wrong, used or expired code; one answer for all),
             `missing`, or a password-policy code.
           content:
             application/json:
@@ -839,7 +844,7 @@ paths:
       description: |
         Proof first: `current` when the profile has a password, or a passkey assertion made
         for this request (`cid` from `POST /api/login/options`, `credential` signed by one of
-        *this* profile's passkeys) — the only way to set a first password, and the way to
+        *this* profile's passkeys). The passkey is the only way to set a first password, and the way to
         replace a forgotten one. A session alone is never enough. Wrong `current` values
         count toward the same pause as wrong sign-ins. On success the session version is
         bumped, which ends every other session and pending pairing code of the account; the
@@ -869,7 +874,7 @@ paths:
                 type: object
                 properties:
                   ok: { type: boolean, const: true }
-                  token: { type: string, description: 'Bearer callers only — the token to use from now on.' }
+                  token: { type: string, description: 'Bearer callers only: the token to use from now on.' }
         '400': { $ref: '#/components/responses/PasswordPolicy' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
@@ -890,7 +895,7 @@ paths:
       summary: Remove this profile's password
       description: >-
         Refused while the profile has no passkey: the password would be its last way in.
-        Otherwise the body carries the same proof setting one takes — `current`, the
+        Otherwise the body carries the same proof setting one takes: `current`, the
         password itself, or a passkey assertion made for this request (`cid` from
         `POST /api/login/options`, `credential` signed by one of *this* profile's
         passkeys). A session alone is never enough: a stolen cookie must not take away
@@ -928,8 +933,8 @@ paths:
       summary: Set, change or remove the e-mail this profile may sign in with
       description: |
         An e-mail address to type at `POST /api/login/password` instead of the profile
-        name. No mail is ever sent to it — there is no verification and no reset mail;
-        resets stay the admin's one-time code — so it is only an identifier. Stored
+        name. No mail is ever sent to it (there is no verification and no reset mail;
+        resets stay the admin's one-time code), so it is only an identifier. Stored
         trimmed, NFKC-normalised and lower-cased; at most 254 characters; unique across
         every profile, and never another password-holding profile's name. An empty or null
         `email` removes it (as `DELETE` does).
@@ -938,7 +943,7 @@ paths:
         alone is never enough. Saving the address the profile already has answers 200 with
         no proof asked. An address in use by another profile is refused only after the
         proof, with `409 email-taken`, and counts against the caller's address and account
-        (20 free, then 30 s doubling to 15 min) — so the answer never costs less than a
+        (20 free, then 30 s doubling to 15 min), so the answer never costs less than a
         passkey prompt or a password check, and runs out after a few tries. It says an
         address is in use somewhere on this instance, never by whom. Audited as
         `auth.email.set` / `auth.email.change` with the address masked (`a…@e…`).
@@ -1020,7 +1025,7 @@ paths:
         `POST /api/login/password-reset`. Issuing it removes the profile's current password
         and bumps its session version (every session and pending pairing code ends);
         passkeys keep working. A newer code replaces an older one. Admin accounts are
-        refused — an admin sets their own password in Settings. Audited as
+        refused; an admin sets their own password in Settings. Audited as
         `admin.password.reset`.
       requestBody:
         required: true
@@ -1141,7 +1146,7 @@ paths:
         everywhere". The body carries the same proof `POST /api/account/password` takes:
         a passkey assertion made for this request (`cid` from `POST /api/login/options`,
         `credential` signed by one of *this* profile's passkeys), or `current`, the
-        profile's password — only while `PASSWORD_LOGIN` is on. With it off, a password
+        profile's password, only while `PASSWORD_LOGIN` is on. With it off, a password
         kept from before is not checked at all and the answer is `passkey-required`, so a
         password-only profile has to move onto a passkey while the flag is still on. Wrong
         passwords count toward the sign-in pause.
@@ -1206,10 +1211,10 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
-              example: { error: "challenge expired — try again" }
+              example: { error: "challenge expired, try again", code: "challenge-expired" }
         '401':
           description: >-
-            Not signed in — including a session that was ended ("sign out everywhere", a
+            Not signed in, including a session that was ended ("sign out everywhere", a
             new password) after step 1.
           content:
             application/json:
@@ -1338,7 +1343,7 @@ paths:
       description: |
         Verifies the attestation against the challenge from step 1 (which must have been
         made for this very code), stores the passkey on the code's profile, burns the code
-        and sets the session cookie — the passkey just made is what signs the device in.
+        and sets the session cookie; the passkey just made is what signs the device in.
         Of two requests racing with one code, one wins. Audited as `auth.link.ok`, and every
         refusal as `auth.link.fail`. **Not** CSRF-exempt.
       security: []
@@ -1416,16 +1421,39 @@ paths:
       summary: Push the account's app state
       description: |
         Replaces the stored state wholesale (atomic write; there is no merge on the
-        server). The `active` field — an in-progress workout — is stripped before
+        server). The `active` field (an in-progress workout) is stripped before
         saving: a running session belongs to the device running it. Body limit 5 MiB.
 
         With `baseRev` the write is conditional: it goes through only when `baseRev`
         equals the document's current revision, and answers 409 with the current
-        document otherwise — the client merges the two and pushes again with the
+        document otherwise; the client merges the two and pushes again with the
         revision it was given. Without `baseRev` the write is unconditional (clients
         from before revisions, and deliberate replaces such as a backup import). The
         server stamps the new revision into the document as `_rev`; a `_rev` sent by
         the client is ignored.
+
+        The records of removals (`deleted`) and of edits (`edited`) never shrink: the
+        stored ones are joined into the write (a reset keeps its own). A writer that does
+        not stamp its own changes (no `stamped: true`; an API script, an older app) and
+        sends the current `baseRev` gets them stamped by the server, at the server's time:
+        every entry it removed (a workout, routine, custom exercise, weigh-in, card,
+        profile or favourite), every setting and plan day it changed (`queue`,
+        `week.<day>`, …), and every entry it edited (`_ts`, per field `_f`). That keeps a
+        planner's new week, or a routine it removed, from being undone by a phone that
+        reconnects later with an older change. A setting, plan day or entry field whose
+        stored stamp (`edited`, `_f`) is later than the one the writer sends back keeps the
+        stored value: the writer never saw that change, so send back the `edited` and `_f`
+        you read. A writer that sends no `edited` at all is not held to it. An entry the document holds while a
+        removal on record says it was deleted after its last edit is kept and marked as
+        added back.
+
+        Such a writer also cannot delete what it does not know: a field of the stored
+        document, of a stored routine, workout, custom exercise, card or profile, of a
+        routine's exercise, or of a logged exercise or set that its copy leaves out comes
+        back from the stored copy (an older app rebuilds an exercise from the fields it
+        knows, which dropped pyramid sets made on an updated device). Only the fields
+        v1.3.9 itself removes (a superset link, a note, a cleared set value, …) can be
+        removed this way. Send `stamped: true` to remove anything else.
 
         Every accepted write also starts the grace period of each stored file (tag `media`)
         the new state no longer references, and stops it for each one it references again.
@@ -1444,6 +1472,18 @@ paths:
                   description: >-
                     The revision this client last read or wrote. Omit or null for an
                     unconditional overwrite.
+                baseWid:
+                  type: string
+                  description: >-
+                    The write id (`_wid`) of the document this client last read or wrote. With
+                    `baseRev`, a write over a different document at the same revision (the data
+                    directory went back in time and the number was reached again) answers 409.
+                stamped:
+                  type: boolean
+                  description: >-
+                    True when the client stamps its own changes in `deleted`, `edited` and
+                    each entry's `_ts`/`_f`, as the app does. Omit it to have the server
+                    stamp what changed against the stored document.
       responses:
         '200':
           description: Saved.
@@ -1458,10 +1498,17 @@ paths:
                     description: Echo of the pushed state's `_ts`, if present.
                   rev:
                     type: integer
-                    description: The revision the write produced.
+                    description: >-
+                      The revision the write produced. For a writer that does not stamp, when the
+                      server put back something it left out or set back, the document is stored one
+                      revision further, so the writer's next check of the revision reads it again.
+                      `wid` is the stored document's either way.
+                  wid:
+                    type: string
+                    description: The write id (`_wid`) of the stored document.
         '409':
           description: >-
-            `baseRev` is not the current revision — another client wrote since this one
+            `baseRev` is not the current revision: another client wrote since this one
             last read. Carries the current document so the client can merge and retry.
           content:
             application/json:
@@ -1477,7 +1524,7 @@ paths:
         '400':
           description: >-
             `state` missing or not an object, `state` an array or an object with nothing of
-            the profile in it (`_rev`/`_ts` do not count — both would empty the profile), or
+            the profile in it (`_rev`/`_ts` do not count; both would empty the profile), or
             `workouts`/`routines` set to anything other than an array or null. Entries inside
             those two arrays that are not objects (`null`, numbers, nested arrays) are dropped
             before the write rather than refused, so a client with a damaged copy still syncs.
@@ -1506,6 +1553,7 @@ paths:
                 type: object
                 properties:
                   rev: { type: integer }
+                  wid: { type: string, description: 'The write id (`_wid`) of the stored document; absent before its first write.' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
   /api/media/{hash}:
@@ -1526,7 +1574,7 @@ paths:
         `Content-Type` from the sniffed type (never `text/*` or SVG),
         `X-Content-Type-Options: nosniff`, `Content-Security-Policy: default-src 'none'; sandbox`,
         `Cross-Origin-Resource-Policy: same-origin`, `Content-Disposition: inline`,
-        `X-Robots-Tag: noindex` and `Cache-Control: private, no-store` — the app keeps its own
+        `X-Robots-Tag: noindex` and `Cache-Control: private, no-store`. The app keeps its own
         verified copy, and an HTTP-cache copy would outlive signing out.
 
         No `Range` and no `ETag`: the app downloads a file once, checks it against its hash and
@@ -1548,7 +1596,7 @@ paths:
             video/webm: { schema: { type: string, format: binary } }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
-          description: Not in the caller's folder — never uploaded, removed by the sweep, or someone else's.
+          description: Not in the caller's folder. Never uploaded, removed by the sweep, or someone else's.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
@@ -1564,7 +1612,7 @@ paths:
         Idempotent: uploading a file the server already has answers 200 with `existed: true`.
 
         What is stored is decided by the file's first bytes, not by the declared type. The
-        declared type only has to be in the same category — a still (JPEG, PNG, WebP, GIF) or a
+        declared type only has to be in the same category, a still (JPEG, PNG, WebP, GIF) or a
         video (MP4, MOV, WebM): a JPEG declared as a GIF is stored as the JPEG it is, a video
         declared as an image is refused. The cap of the kind the bytes turned out to be applies
         (`MEDIA_IMAGE_MAX_MB`, `MEDIA_GIF_MAX_MB`, `MEDIA_VIDEO_MAX_MB`), and an MP4 or MOV must
@@ -1627,9 +1675,9 @@ paths:
               example: { error: "the upload stalled", code: "timeout" }
         '413':
           description: |
-            - `media-too-large` — over the cap of its kind; `maxMB` says the cap.
-            - `media-quota` — the profile's space is full; `usedMB` and `quotaMB` say how full.
-            - `media-too-long` — a video longer than `maxSec` seconds.
+            - `media-too-large`: over the cap of its kind; `maxMB` says the cap.
+            - `media-quota`: the profile's space is full; `usedMB` and `quotaMB` say how full.
+            - `media-too-long`: a video longer than `maxSec` seconds.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
@@ -1639,8 +1687,8 @@ paths:
                 tooLong: { value: { error: "that video is too long", code: "media-too-long", maxSec: 60 } }
         '415':
           description: >-
-            `media-type` — the declared type is not one of the seven, the bytes are none of
-            them, or they are a video declared as an image (or the reverse). `media-invalid` —
+            `media-type`: the declared type is not one of the seven, the bytes are none of
+            them, or they are a video declared as an image (or the reverse). `media-invalid`:
             an MP4 or MOV whose boxes do not add up.
           content:
             application/json:
@@ -1650,7 +1698,7 @@ paths:
                 invalid: { value: { error: "that video could not be read", code: "media-invalid" } }
         '429':
           description: >-
-            `locked` — more than `MEDIA_UPLOADS_PER_HOUR` uploads this hour; `busy` — two
+            `locked`: more than `MEDIA_UPLOADS_PER_HOUR` uploads this hour; `busy`: two
             uploads of this profile are already in flight (`retryAfter` 5).
           headers:
             Retry-After: { schema: { type: integer } }
@@ -1658,8 +1706,8 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
               examples:
-                locked: { value: { error: "too many uploads — try again later", code: "locked", retryAfter: 1740 } }
-                busy: { value: { error: "too many uploads at once — try again in a moment", code: "busy", retryAfter: 5 } }
+                locked: { value: { error: "too many uploads, try again later", code: "locked", retryAfter: 1740 } }
+                busy: { value: { error: "too many uploads at once, try again in a moment", code: "busy", retryAfter: 5 } }
         '507':
           description: The server's disk has less than `MEDIA_MIN_FREE_MB` free (`storage-full`).
           content:
@@ -1728,7 +1776,7 @@ paths:
 
         Without this call nothing is lost either: the hourly sweep removes a file once the
         state has not referenced it for `MEDIA_GC_GRACE_DAYS` days (14), and only for profiles
-        whose state reads — a missing or unreadable state, or a profile missing from `db.json`,
+        whose state reads. A missing or unreadable state, or a profile missing from `db.json`,
         never deletes anything.
       requestBody:
         content:
@@ -1760,7 +1808,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
-              example: { error: "too many uploads — try again later", code: "locked", retryAfter: 1200 }
+              example: { error: "too many uploads, try again later", code: "locked", retryAfter: 1200 }
 
   /api/push/public-key:
     get:
@@ -1790,11 +1838,11 @@ paths:
       summary: Register a Web-Push subscription
       description: |
         Stores the browser's `PushSubscription` for this account. Only `endpoint` and
-        the two protocol keys are kept. The endpoint must be a public `https://` URL —
+        the two protocol keys are kept. The endpoint must be a public `https://` URL;
         private/loopback/link-local addresses are refused (here and again at send
         time, against DNS rebinding). At most 20 subscriptions per user; the oldest
         are dropped first. Re-subscribing an existing endpoint replaces it and keeps
-        its original `created` — the client re-sends its subscription on every
+        its original `created`. The client re-sends its subscription on every
         signed-in boot, so a row the instance lost comes back on its own.
       requestBody:
         required: true
@@ -1811,7 +1859,8 @@ paths:
                   description: >-
                     A token the browser made up for itself (stored in its localStorage),
                     so rest-timer pushes can be aimed at the device that started the
-                    rest. Optional; anything that is not a short token is ignored.
+                    rest. Optional; anything that is not a short token is ignored, and a
+                    re-send of an endpoint without one keeps the id its row already has.
       responses:
         '200':
           description: Stored.
@@ -1836,9 +1885,13 @@ paths:
       description: >-
         Whether the caller's account has a stored subscription with exactly this
         `endpoint`. The browser's `PushManager.getSubscription()` says nothing about
-        the server's side — a row pruned after a dead send (404/410/403) leaves the
-        browser subscribed to nowhere — so the client asks here before showing the
-        notifications switch as on, and re-registers when the answer is no.
+        the server's side: a row pruned after a dead send (404/410/403) leaves the
+        browser subscribed to nowhere. So the client asks here before showing the
+        notifications switch as on, and re-registers when the answer is no. A stored
+        subscription also names the `deviceId` it is stored with, and the client
+        re-registers when that is not its own: a row stored without one (from before
+        device ids) sends that device's rest-timer alerts to every subscription of the
+        account.
       parameters:
         - in: query
           name: endpoint
@@ -1851,8 +1904,18 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [subscribed]
                 properties:
                   subscribed: { type: boolean }
+                  deviceId:
+                    type: ['string', 'null']
+                    description: >-
+                      Present when `subscribed` is true: the device id the subscription is
+                      stored with, `null` when it has none.
+              examples:
+                stored: { value: { subscribed: true, deviceId: "3f9c1d2e7b0a4c6d9e8f1a2b3c4d5e6f" } }
+                storedWithoutDevice: { value: { subscribed: true, deviceId: null } }
+                notStored: { value: { subscribed: false } }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
   /api/push/unsubscribe:
@@ -1886,7 +1949,7 @@ paths:
       description: >-
         Sends a test push to all of the caller's subscriptions (localized with the
         `lang` in their synced state). Returns 200 even if delivery to individual
-        endpoints fails — dead endpoints (404/410, and 403 for a subscription made
+        endpoints fails; dead endpoints (404/410, and 403 for a subscription made
         against a VAPID key the instance no longer has) are pruned as a side effect.
       responses:
         '200':
@@ -1904,11 +1967,11 @@ paths:
       description: |
         Schedules one push after `seconds` (a number or numeric string ≥ 1, clamped to
         3600). One pending timer per
-        device — `deviceId`, the same token the subscription was registered with; a
+        device, keyed by `deviceId`, the same token the subscription was registered with; a
         new call from the same device replaces it, and the push goes only to that
         device's subscriptions. Without a `deviceId` there is one timer per account
         and the push goes to every subscription, as before. The client schedules this
-        on rest start/extend and cancels on skip or on-screen completion — the push
+        on rest start/extend and cancels on skip or on-screen completion. The push
         only actually fires when the tab was backgrounded/suspended and never got to
         cancel it. Timers live in memory: an API restart drops them.
       requestBody:
@@ -2039,7 +2102,7 @@ paths:
                   password_login: { type: boolean, description: Present (true) with PASSWORD_LOGIN=1. }
                   now:
                     type: number
-                    description: Server time (ms) — for rendering relative times.
+                    description: Server time (ms), for rendering relative times.
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
@@ -2049,7 +2112,7 @@ paths:
       operationId: adminUser
       summary: 'Admin: one user in detail'
       description: >-
-        Drill-down — full workout history (newest first) and body-weight log for one
+        Drill-down: full workout history (newest first) and body-weight log for one
         user. Admin only. Anything in `routines`, `bodyweight` or `workouts` that is not
         an object is left out, and a list that is not an array reads as empty: PUT
         /api/data drops those entries now, but a state file written before it did still
@@ -2130,7 +2193,7 @@ paths:
         Removes the account for good: the user record, their passkeys, their push
         subscriptions, their live presence, their training history file, their uploaded
         photos and videos (`DATA_DIR/uploads/<uid>/`) and any Coach credential stored for
-        them. Not reversible — `/api/admin/user/disable` is the
+        them. Not reversible; `/api/admin/user/disable` is the
         reversible one. An admin cannot delete their own account, and the last admin
         cannot be deleted. Audited by name, since the id stops meaning anything.
       requestBody:
@@ -2194,7 +2257,7 @@ paths:
       operationId: adminInviteNew
       summary: 'Admin: mint an invite code'
       description: >-
-        Creates a fresh single-use invite code (16 hex chars = 64 bits — the code
+        Creates a fresh single-use invite code (16 hex chars = 64 bits; the code
         itself is the thing that isn't worth guessing; rate limiting is the reverse
         proxy's job). Audited.
       requestBody:
@@ -2246,7 +2309,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
-              example: { error: "already used — cannot revoke" }
+              example: { error: "already used, cannot revoke" }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404':
@@ -2263,7 +2326,7 @@ paths:
       summary: 'Admin: read the activity log'
       description: |
         The audit log (sign-ins, failed attempts, admin actions), newest first, paged
-        by event id (`before` cursor — offset paging would repeat rows as new events
+        by event id (`before` cursor; offset paging would repeat rows as new events
         land). Retention (`AUDIT_MAX` events / `AUDIT_DAYS` days) is applied on read
         as well as on the hourly compaction. When `AUDIT_LOG` is off the route still
         answers, with `enabled: false` and whatever was logged before.
@@ -2282,7 +2345,7 @@ paths:
             type: string
             enum: [auth, admin, fail]
           description: >-
-            Filter — `fail` keeps only failed events; any other value keeps events
+            Filter: `fail` keeps only failed events; any other value keeps events
             whose name starts with `<cat>.` (in practice `auth` or `admin`).
       responses:
         '200':
@@ -2324,7 +2387,7 @@ paths:
       summary: 'Admin: clear the activity log'
       description: >-
         Deletes the log file. The clear is itself the first event of the fresh log,
-        and event ids are never reset — a wipe always leaves a visible id gap.
+        and event ids are never reset, so a wipe always leaves a visible id gap.
       responses:
         '200':
           description: Cleared.
@@ -2336,7 +2399,7 @@ paths:
 
   # ---------------------------------------------------------------- AI Coach
   # The routes live in api/coach/routes.js and are mixed into the same route table as
-  # everything above; they are inert — 503 — while the instance has no Coach enabled
+  # everything above; they are inert (503) while the instance has no Coach enabled
   # and connected.
 
   /api/strava/status:
@@ -2415,7 +2478,7 @@ paths:
       summary: What the consent screen must say
       description: |
         The categories of data a Coach job would send, and the provider it would go to,
-        read straight from the module that builds the payload — so the consent screen
+        read straight from the module that builds the payload, so the consent screen
         cannot drift from what actually leaves the box.
 
         Needs a session but *not* a connected Coach: the screen that collects consent
@@ -2449,7 +2512,7 @@ paths:
       summary: The running job, the waiting proposal and today's budget
       description: |
         What the Coach screen polls. Also the only place a proposal past its 14-day
-        expiry is retired — a phone that stays closed never polls, so nothing else
+        expiry is retired. A phone that stays closed never polls, so nothing else
         would notice.
       responses:
         '200':
@@ -2468,7 +2531,7 @@ paths:
       description: |
         Queues a `create` job. With `intake` it builds a plan from the answers given on
         the intake screen; with `refine` it reworks the proposal already waiting, in the
-        words of the person reading it. The answer is 202 and a job id — the result
+        words of the person reading it. The answer is 202 and a job id; the result
         arrives through `GET /api/coach/status`.
       requestBody:
         required: false
@@ -2506,7 +2569,7 @@ paths:
       operationId: postCoachReview
       summary: Ask for a review of the training since the last one
       description: |
-        Queues a `review` job — the same job the weekly cadence queues on its own. The
+        Queues a `review` job, the same job the weekly cadence queues on its own. The
         answer is either a change-set to accept or reject, or "nothing to change" with
         the reason, both delivered through `GET /api/coach/status`.
       requestBody:
@@ -2542,7 +2605,7 @@ paths:
       operationId: postCoachDebrief
       summary: Ask for a read of one session
       description: |
-        Queues a `debrief` job: one workout, read closely. It changes nothing — the card
+        Queues a `debrief` job: one workout, read closely. It changes nothing; the card
         it produces is kept in the profile's log. With no `workoutId` the most recent
         session is read.
       requestBody:
@@ -2613,7 +2676,7 @@ paths:
       description: |
         Medians only, and only when at least three profiles on the instance share. Nothing
         at all for a profile that does not share itself, or on an instance where the admin
-        has not switched the comparison on — each of those is a 200 saying which it is.
+        has not switched the comparison on. Each of those is a 200 saying which it is.
       responses:
         '200':
           description: The comparison, or the reason there isn't one.
@@ -2681,7 +2744,7 @@ paths:
                   connected: { type: boolean }
                   reason:
                     oneOf: [{ type: string }, { type: 'null' }]
-                    description: Why not, when `connected` is false — e.g. `shared-account`.
+                    description: Why not, when `connected` is false (e.g. `shared-account`).
                   message:
                     oneOf: [{ type: string }, { type: 'null' }]
                     description: The refusal in the app's own voice, ready to show.
@@ -2698,7 +2761,7 @@ paths:
         for a sync to carry the news. A job already running is cancelled where the adapter
         allows it and writes nothing back either way.
 
-        Today's job count is the one thing that survives — it is the spending record the
+        Today's job count is the one thing that survives. It is the spending record the
         daily cap reads, and forgetting must not hand out a fresh cap.
 
         Needs a session only: a profile must be able to be forgotten on an instance whose
@@ -2718,11 +2781,11 @@ paths:
       summary: 'Admin: the Coach card'
       description: |
         Everything the admin screen renders in one round trip, including a live check of
-        the configured provider — for a runtime provider "is the runtime there", for an
+        the configured provider: for a runtime provider "is the runtime there", for an
         HTTPS one the model list its stored key can see.
 
         Counts and outcomes only: no intake answers, no payloads, no proposals, and never
-        a credential — only whether one is filed and what it is labelled.
+        a credential, only whether one is filed and what it is labelled.
       responses:
         '200':
           description: The card.
@@ -2738,7 +2801,7 @@ paths:
       operationId: postAdminCoachConfig
       summary: 'Admin: change the Coach settings'
       description: |
-        A patch — every field is optional and only what is sent is changed. Model,
+        A patch: every field is optional and only what is sent is changed. Model,
         endpoint and credential are all keyed by provider, so switching provider never
         drops any of them.
       requestBody:
@@ -2796,7 +2859,7 @@ paths:
       summary: 'Admin: run one round trip against the provider'
       description: |
         Checks the runtime, then asks the model for one fixed JSON object and validates
-        the shape that comes back — the whole path a job takes, on nobody's profile.
+        the shape that comes back. That is the whole path a job takes, on nobody's profile.
 
         Always 200: the outcome is in the body, because "the provider refused" is an
         answer to the question the button asks, not a failure of the request. It brings
@@ -2816,7 +2879,7 @@ paths:
                     description: What the runtime reported, when it could be asked.
                   error:
                     type: string
-                    description: Present when `ok` is false — the provider's own words, trimmed.
+                    description: Present when `ok` is false. The provider's own words, trimmed.
               examples:
                 ok: { value: { ok: true, version: "1.2.3" } }
                 refused: { value: { ok: false, error: "401 invalid x-api-key" } }
@@ -2878,7 +2941,7 @@ paths:
                 account:
                   type: string
                   maxLength: 120
-                  description: A label for whose account this is — shown on the card.
+                  description: A label for whose account this is, shown on the card.
             example: { type: apikey, token: "sk-…", account: "team@example.com" }
       responses:
         '200':
@@ -2941,7 +3004,7 @@ components:
       description: >-
         The same signed session token, carried as `Authorization: Bearer <token>` by
         the paired mobile app (obtained from `POST /api/pair/redeem`). Bearer requests
-        skip the CSRF origin check — a browser never attaches this header on its own.
+        skip the CSRF origin check; a browser never attaches this header on its own.
 
   responses:
     Unauthorized:
@@ -2958,13 +3021,19 @@ components:
           example: { error: "forbidden" }
     CoachOff:
       description: >-
-        The Coach is not set up on this instance — switched off, or no provider connected.
+        The Coach is not set up on this instance (switched off, or no provider connected).
         Every Coach route answers this rather than pretending, so an unconfigured instance
-        renders exactly the app it was before the feature existed.
+        renders exactly the app it was before the feature existed. `code` is `off`, the
+        class a job refused at enqueue for the same reason carries; the app shows its own
+        line for it.
       content:
         application/json:
-          schema: { $ref: '#/components/schemas/Error' }
-          example: { error: "the Coach is not set up on this instance" }
+          schema:
+            type: object
+            properties:
+              error: { type: string }
+              code: { type: string, enum: [off] }
+          example: { error: "the Coach is not set up on this instance", code: off }
     CoachJobQueued:
       description: >-
         Queued. The job runs in the background; its outcome arrives through
@@ -2983,11 +3052,11 @@ components:
       description: |
         The Coach will not take this job, and says which reason in `code`:
 
-        - `busy` (409) — a job for this profile is already running.
-        - `shared` (409) — instance mode, and the credential belongs to another profile.
-        - `cap` (429) — this profile's or the instance's daily limit is spent.
-        - `consent` (403) — no consent recorded for this profile.
-        - `unprivileged` (503) — the privilege drop cannot be performed, so no job runs.
+        - `busy` (409): a job for this profile is already running.
+        - `shared` (409): instance mode, and the credential belongs to another profile.
+        - `cap` (429): this profile's or the instance's daily limit is spent.
+        - `consent` (403): no consent recorded for this profile.
+        - `unprivileged` (503): the privilege drop cannot be performed, so no job runs.
 
         The message is the one to show; the raw provider detail never reaches the user.
       content:
@@ -3009,7 +3078,7 @@ components:
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
-          example: { error: "too many attempts — try again later", code: "locked", retryAfter: 60 }
+          example: { error: "too many attempts, try again later", code: "locked", retryAfter: 60 }
     Busy:
       description: Every password check slot and the short queue behind them are taken.
       headers:
@@ -3018,11 +3087,11 @@ components:
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
-          example: { error: "the server is busy — try again in a moment", code: "busy" }
+          example: { error: "the server is busy, try again in a moment", code: "busy" }
     PasswordPolicy:
       description: >-
-        The new password breaks the policy — `too-short` (under 10 characters),
-        `too-long` (over 256) or `too-common` — or a field is `missing`.
+        The new password breaks the policy (`too-short` under 10 characters,
+        `too-long` over 256, or `too-common`), or a field is `missing`.
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
@@ -3039,7 +3108,7 @@ components:
     ProofRefused:
       description: >-
         No acceptable proof that the owner is here: `passkey-required` (no password that
-        counts — none is set, or `PASSWORD_LOGIN` is off — so a passkey has to confirm),
+        counts, because none is set or `PASSWORD_LOGIN` is off, so a passkey has to confirm),
         `passkey` (the assertion did not verify, belongs to another profile, or was made
         for another challenge, one handed out for another ceremony or one already used),
         `current-required` or `current-wrong`.
@@ -3055,7 +3124,7 @@ components:
           example: { error: "a profile can have at most 20 passkeys", code: "passkey-limit" }
     LinkInvalid:
       description: >-
-        The code is wrong, used, replaced or expired, or its profile is gone or disabled —
+        The code is wrong, used, replaced or expired, or its profile is gone or disabled:
         one answer for all of them.
       content:
         application/json:
@@ -3079,7 +3148,7 @@ components:
             `quotaMB`).
         retryAfter:
           type: integer
-          description: 429 only — the same number of seconds as the Retry-After header.
+          description: 429 only. The same number of seconds as the Retry-After header.
 
     Ok:
       type: object
@@ -3116,7 +3185,7 @@ components:
       type: object
       description: >-
         Either a passkey assertion made for this request (`cid` + `credential`), or the
-        profile's current password (`current`) — which counts only while `PASSWORD_LOGIN`
+        profile's current password (`current`), which counts only while `PASSWORD_LOGIN`
         is on. Each assertion is good for one request: its challenge is spent by it.
       properties:
         cid: { type: string, description: 'From POST /api/login/options.' }
@@ -3135,12 +3204,12 @@ components:
     # ------------------------------------------------------------------ WebAuthn
     # These mirror @simplewebauthn/server v13's JSON shapes (themselves the W3C
     # WebAuthn Level 3 JSON serialization). Clients normally never build them by
-    # hand — @simplewebauthn/browser converts them to/from the navigator.credentials
+    # hand; @simplewebauthn/browser converts them to/from the navigator.credentials
     # calls. Documented loosely on purpose; the library owns the details.
     WebAuthnRegistrationOptions:
       type: object
       description: >-
-        PublicKeyCredentialCreationOptionsJSON — pass to
+        PublicKeyCredentialCreationOptionsJSON. Pass to
         `startRegistration()` (@simplewebauthn/browser) or decode for
         `navigator.credentials.create()`. Resident keys are required; attestation
         is `none`.
@@ -3169,7 +3238,7 @@ components:
     WebAuthnRegistrationCredential:
       type: object
       description: >-
-        RegistrationResponseJSON — the value `startRegistration()` resolves with
+        RegistrationResponseJSON: the value `startRegistration()` resolves with
         (the created credential plus the authenticator's attestation response),
         sent back verbatim.
       properties:
@@ -3184,14 +3253,14 @@ components:
             transports:
               type: array
               items: { type: string }
-              description: e.g. ["internal", "hybrid"] — stored for later logins.
+              description: e.g. ["internal", "hybrid"], stored for later logins.
           additionalProperties: true
       additionalProperties: true
 
     WebAuthnAuthenticationOptions:
       type: object
       description: >-
-        PublicKeyCredentialRequestOptionsJSON — pass to `startAuthentication()`.
+        PublicKeyCredentialRequestOptionsJSON. Pass to `startAuthentication()`.
         `allowCredentials` is empty: the browser offers the user's discoverable
         passkeys itself.
       properties:
@@ -3204,7 +3273,7 @@ components:
     WebAuthnAuthenticationCredential:
       type: object
       description: >-
-        AuthenticationResponseJSON — the value `startAuthentication()` resolves
+        AuthenticationResponseJSON: the value `startAuthentication()` resolves
         with, sent back verbatim.
       properties:
         id: { type: string, description: base64url credential id }
@@ -3226,7 +3295,7 @@ components:
       description: |
         The whole app state as one blob. The server treats it as opaque (it only
         strips `active` on save and reads a few fields for reminders and the admin
-        dashboard) — the schema below is **representative, not enforced** (except
+        dashboard). The schema below is **representative, not enforced** (except
         `workouts` and `routines`, which must be arrays (or null) when present), and grows
         with the app. Concurrent writes are caught by the server's revision (`_rev`,
         see PUT /api/data); the client merges the two documents and decides by `_ts`
@@ -3239,10 +3308,32 @@ components:
           type: integer
           readOnly: true
           description: Server-set revision, incremented on every accepted PUT. Ignored when sent by a client.
+        _wid:
+          type: string
+          readOnly: true
+          description: Server-set id of this write (16 hex characters), new on every accepted PUT.
+        _wids:
+          type: array
+          readOnly: true
+          items: { type: string }
+          description: The write ids of the documents this one descends from, oldest first (up to 50).
+        deleted:
+          type: object
+          description: >-
+            When entries were removed, per list and entry key ({ workouts: { <id>: ms } }, weigh-ins
+            by day, favourites by exercise id). A negative stamp is an add-back after a removal.
+            Never shrinks on the server; stamped for writers that do not stamp (see PUT /api/data).
+          additionalProperties: { type: object, additionalProperties: { type: number } }
+        edited:
+          type: object
+          description: >-
+            When each setting and plan day was last changed, ms ({ queue: ms, 'week.3': ms, … }).
+            Never shrinks on the server; stamped for writers that do not stamp (see PUT /api/data).
+          additionalProperties: { type: number }
         unit: { type: string, enum: [kg, lb] }
         lang:
           type: string
-          description: UI language code ("en", "de", "pt", …) — also localizes pushes.
+          description: UI language code ("en", "de", "pt", …); also localizes pushes.
         theme: { type: string }
         accent: { type: string }
         workouts:
@@ -3252,6 +3343,10 @@ components:
         routines:
           type: array
           items: { $ref: '#/components/schemas/Routine' }
+        queue:
+          type: object
+          nullable: true
+          description: A planner's floating week {ids, since, startsOn, label}. The week's sessions as an ordered queue, the first undone one is today's. Written by an API client or by the app's own rotation feature, read by the reminder tick.
         week:
           type: object
           description: 'Weekly plan: weekday (0=Sunday … 6) → routine id.'
@@ -3313,9 +3408,9 @@ components:
           format: uri
           maxLength: 2048
           description: >-
-            One link — a video or a guide. http(s) only, no credentials. Neither the app nor
+            One link: a video or a guide. http(s) only, no credentials. Neither the app nor
             the server ever fetches it: the app opens it in a new browsing context on a tap.
-        _ts: { type: number, description: 'When this entry was last edited, ms — for merging two devices'' copies.' }
+        _ts: { type: number, description: 'When this entry was last edited, ms, for merging two devices'' copies.' }
       additionalProperties: true
 
     MediaRef:
@@ -3337,7 +3432,7 @@ components:
         codec: { type: string, enum: [avc1, hvc1, av01, vp09, vp8, vp9, other], description: Videos only. }
         poster:
           type: object
-          description: A still of at most 480 px — always for images and GIFs, when possible for videos.
+          description: A still of at most 480 px, always for images and GIFs, when possible for videos.
           properties:
             hash: { type: string, pattern: '^[0-9a-f]{64}$' }
             mime: { type: string, enum: [image/webp, image/jpeg] }
@@ -3378,7 +3473,7 @@ components:
       properties:
         ok: { type: boolean, const: true }
         hash: { type: string }
-        mime: { type: string, description: 'What the bytes are — not necessarily what was declared.' }
+        mime: { type: string, description: 'What the bytes are, not necessarily what was declared.' }
         size: { type: integer }
         existed: { type: boolean, description: The server already had this file. }
 
@@ -3423,11 +3518,11 @@ components:
           items:
             $ref: '#/components/schemas/MediaRef'
           description: >-
-            Photos and videos attached to this workout (a progress photo, a form-check clip) —
+            Photos and videos attached to this workout (a progress photo, a form-check clip),
             at most six in the app. Refs only; the bytes are behind `/api/media/{hash}`, and the
             server keeps every file any entry here names (the GC walks this list as it walks
             each custom exercise's `media`).
-        _ts: { type: number, description: 'When this workout was last edited after it was logged, ms — for merging two devices'' copies.' }
+        _ts: { type: number, description: 'When this workout was last edited after it was logged, ms, for merging two devices'' copies.' }
       additionalProperties: true
 
     Routine:
@@ -3454,7 +3549,7 @@ components:
     # ------------------------------------------------------------------ push
     PushSubscription:
       type: object
-      description: The browser's PushSubscription.toJSON() — only these fields are stored.
+      description: The browser's PushSubscription.toJSON(); only these fields are stored.
       required: [endpoint, keys]
       properties:
         endpoint:
@@ -3493,10 +3588,10 @@ components:
           description: Currently training, or null.
         password:
           type: boolean
-          description: PASSWORD_LOGIN instances only — the profile has a password.
+          description: PASSWORD_LOGIN instances only. The profile has a password.
         email:
           oneOf: [{ type: string }, { type: 'null' }]
-          description: PASSWORD_LOGIN instances only — the e-mail the profile signs in with, if any.
+          description: PASSWORD_LOGIN instances only. The e-mail the profile signs in with, if any.
 
     Presence:
       type: object
@@ -3525,10 +3620,10 @@ components:
             password: { type: boolean, description: PASSWORD_LOGIN instances only. }
             email:
               oneOf: [{ type: string }, { type: 'null' }]
-              description: PASSWORD_LOGIN instances only — the sign-in e-mail, if any.
+              description: PASSWORD_LOGIN instances only. The sign-in e-mail, if any.
             resetUntil:
               oneOf: [{ type: number }, { type: 'null' }]
-              description: PASSWORD_LOGIN instances only — expiry (ms) of an unused reset code.
+              description: PASSWORD_LOGIN instances only. Expiry (ms) of an unused reset code.
         unit: { type: string, enum: [kg, lb] }
         lastSync: { oneOf: [{ type: number }, { type: 'null' }] }
         routines:
@@ -3571,7 +3666,7 @@ components:
       properties:
         id:
           type: integer
-          description: Monotonic, never reset — a cleared log leaves a visible id gap.
+          description: Monotonic, never reset; a cleared log leaves a visible id gap.
         ts: { type: number, description: ms since epoch. }
         ev:
           type: string
@@ -3589,13 +3684,13 @@ components:
         msg:
           type: string
           description: >-
-            Short detail — a failure reason code, or the invite code involved.
+            Short detail: a failure reason code, or the invite code involved.
             Rejected invite guesses and unknown credential ids are deliberately
             never recorded.
         ip:
           type: string
           description: >-
-            Only when AUDIT_IP is on — the full address (`full`) or just the
+            Only when AUDIT_IP is on: the full address (`full`) or just the
             network, /24 or /48 (`net`).
       example:
         id: 421
@@ -3650,7 +3745,7 @@ components:
                   oneOf: [{ type: string }, { type: 'null' }]
                   description: e.g. `provider`, `unusable`, `restart`, `forgotten`, `consent`, `noworkout`.
                 at: { type: integer, description: Epoch ms. }
-                reading: { type: string, description: "Present on `nochange` — why there was nothing to change." }
+                reading: { type: string, description: "Present on `nochange`: why there was nothing to change." }
             - type: 'null'
 
     CoachProposal:
@@ -3659,13 +3754,13 @@ components:
         The answer waiting for a decision, from whichever kind of job produced it. It
         expires 14 days after it was made; the first status poll after that retires it.
         `changes` comes from a review, `bundle` from a plan, `score`/`highlights` from a
-        debrief — one of the three, never more.
+        debrief. One of the three, never more.
       properties:
         id: { type: string, description: The job's id. }
         kind: { type: string, enum: [create, review, debrief] }
         createdAt: { type: integer, description: Epoch ms. }
         expiresAt: { type: integer, description: Epoch ms. }
-        planHash: { type: string, description: The plan this was written against — a later edit makes it stale. }
+        planHash: { type: string, description: The plan this was written against. A later edit makes it stale. }
         iteration: { type: integer, description: "1, or higher after a refine." }
         summary: { type: string, maxLength: 1200 }
         changes:
@@ -3681,7 +3776,7 @@ components:
                        sec, cardio, reorder, superset, routine-prog, exercise-prog, inc,
                        add-routine, remove-routine, rename-routine, week]
               why: { type: string }
-              before: { description: What the plan says now — the client checks it before applying. }
+              before: { description: What the plan says now. The client checks it before applying. }
               after: { description: What it would say. }
             additionalProperties: true
         evidence:
@@ -3696,7 +3791,7 @@ components:
           items: { type: string }
         bundle:
           type: object
-          description: A whole plan, from a `create` job — routines, week and any custom exercises.
+          description: A whole plan, from a `create` job (routines, week and any custom exercises).
           properties:
             opengym_plan: { type: integer, const: 1 }
             name: { type: string, maxLength: 40 }
@@ -3745,7 +3840,7 @@ components:
         sharing: { type: boolean }
         people: { type: integer }
         minPeople: { type: integer, description: Three. Below it nothing is computed at all. }
-        unit: { type: string, enum: [kg, lb], description: The reader's own unit — every number below is in it. }
+        unit: { type: string, enum: [kg, lb], description: The reader's own unit. Every number below is in it. }
         sessionsPerWeek:
           type: object
           properties:
@@ -3767,7 +3862,7 @@ components:
 
     AdminCoach:
       type: object
-      description: The whole admin card in one answer. Never a credential — only whether one is filed.
+      description: The whole admin card in one answer. Never a credential, only whether one is filed.
       properties:
         disabledByEnv: { type: boolean, description: "COACH_DISABLED is set, so nothing the admin toggles matters." }
         enabled: { type: boolean }
@@ -3791,7 +3886,7 @@ components:
               defaultModel: { oneOf: [{ type: string }, { type: 'null' }] }
               connected: { type: boolean, description: Whether a credential is already filed for it. }
         model: { type: string, description: The model in force for the active provider. }
-        models: { type: object, description: Model per provider — switching provider keeps them all. }
+        models: { type: object, description: Model per provider. Switching provider keeps them all. }
         baseUrl: { oneOf: [{ type: string }, { type: 'null' }] }
         knownModels:
           oneOf: [{ type: array, items: { type: string } }, { type: 'null' }]
@@ -3819,7 +3914,7 @@ components:
           type: object
           description: >-
             Whether a credential is filed, and whose. `unreadable` is its own state because it
-            has a specific cause and a specific fix — ./data restored without its `secret`.
+            has a specific cause and a specific fix: ./data restored without its `secret`.
           properties:
             state: { type: string, enum: [not-required, none, optional, connected, unreadable] }
             type: { oneOf: [{ type: string }, { type: 'null' }] }
@@ -3839,7 +3934,7 @@ components:
         lastError: { description: "The last failure the instance log recorded, or null." }
         recent:
           type: array
-          description: The last 20 jobs, newest first — counts and outcomes only, never contents.
+          description: The last 20 jobs, newest first. Counts and outcomes only, never contents.
           items:
             type: object
             properties:

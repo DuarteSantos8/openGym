@@ -47,12 +47,12 @@ function fmtIn(sec) {
 // English message (api/openapi.yaml, Error.code); an answer without one is shown as it came.
 export function passwordError(e) {
   const code = e?.data?.code
-  if (e?.status === 429 || code === 'locked') return t('Too many attempts — try again {0}.', fmtIn(e?.data?.retryAfter || 60))
+  if (e?.status === 429 || code === 'locked') return t('Too many attempts. Try again {0}.', fmtIn(e?.data?.retryAfter || 60))
   switch (code) {
     case 'bad-credentials': return t('Wrong name, e-mail or password.')
     case 'too-short': return t('Use at least {0} characters.', MIN_PASSWORD)
     case 'too-long': return t('That password is too long.')
-    case 'too-common': return t('That password is too easy to guess — try a longer one, or a few unrelated words.')
+    case 'too-common': return t('That password is too easy to guess. Try a longer one, or a few random words strung together.')
     case 'name-taken': return t('Another profile already signs in with this name.')
     case 'email-invalid': return t('That is not an e-mail address.')
     case 'email-taken': return t('Another profile already uses this e-mail address.')
@@ -60,9 +60,9 @@ export function passwordError(e) {
     case 'current-required': case 'current-wrong': return t('Your current password is not right.')
     case 'passkey': case 'passkey-required': return t('Your passkey could not be confirmed.')
     case 'last-way-in': return t('This password is the only way into your profile, so it cannot be removed.')
-    case 'reset-invalid': return t('That reset code is wrong or has expired — ask your admin for a new one.')
+    case 'reset-invalid': return t('That reset code is wrong or has expired. Ask your admin for a new one.')
     case 'disabled': return t('This account has been disabled.')
-    case 'busy': return t('The server is busy — try again in a moment.')
+    case 'busy': return t('The server is busy. Try again in a moment.')
   }
   return e?.message || t('Sign-in failed')
 }
@@ -118,7 +118,7 @@ export function PasswordSignInSheet({ close, onPasskey }) {
     <h3>{reset ? t('Reset your password') : t('Sign in with password')}</h3>
     <div className="muted small" style={{ marginBottom: 14 }}>{reset
       ? t('Enter the code your admin gave you and choose a new password. It signs you out everywhere else.')
-      : t('Use your profile name — or the e-mail you added to it — and your password.')}</div>
+      : t('Use your profile name (or the e-mail you added to it) and your password.')}</div>
     <form onSubmit={submit} noValidate>
       {/* One field for both: the server looks an entry with an "@" up as an e-mail first. Not
           type="email", which would refuse a plain name. */}
@@ -146,7 +146,7 @@ export function PasswordSignInSheet({ close, onPasskey }) {
       {reset ? t('Sign in with password') : t('Have a reset code from your admin?')}</Button>
     {onPasskey && !reset && webauthnOK() && <>
       <div style={{ height: 8 }} />
-      <Button type="button" icon="person" onClick={() => { close(); onPasskey() }}>{t('Sign in with passkey')}</Button>
+      <Button type="button" icon="fingerprint" onClick={() => { close(); onPasskey() }}>{t('Sign in with passkey')}</Button>
     </>}
   </>
 }
@@ -177,7 +177,7 @@ export function PasswordRegisterForm({ close, inviteOnly, name, setName, code, s
       const u = await passwordRegister(n, pw, code.trim(), mail)
       const st = useStore.getState()
       st.setUser(u); close()
-      if (hasData(useStore.getState().S)) { await st.pushState(); toast(t('Profile created — data from this device moved into it')) }
+      if (hasData(useStore.getState().S)) { await st.pushState(); toast(t('Profile created, and this device’s data moved into it')) }
       else { await st.pullState(); toast(t('Welcome, {0}', u.name)) }
     } catch (e) { setErr(passwordError(e)) }
     finally { setBusy(false) }
@@ -193,7 +193,7 @@ export function PasswordRegisterForm({ close, inviteOnly, name, setName, code, s
       <div style={{ height: 10 }} />
       <input className="input" placeholder={t('Invite code')} maxLength={40} value={code}
         onChange={e => setCode(e.target.value.toUpperCase())} style={codeStyle} />
-      <div className="dim small" style={{ marginTop: 6 }}>{t('This app is invite-only — enter the code you were given.')}</div>
+      <div className="dim small" style={{ marginTop: 6 }}>{t('This app is invite-only. Enter the code you were given.')}</div>
     </>}
     <div style={{ height: 10 }} />
     <input className="input" type="password" name="new-password" autoComplete="new-password" placeholder={t('Password')}
@@ -270,7 +270,7 @@ export function ProveOwner({ passkey, password, onProof, explain = passwordError
   // A removal's buttons are red whichever proof carries it: each of them removes.
   const main = danger ? 'danger' : 'primary'
   return <>
-    {withPasskey && <Button variant={main} icon="lock" disabled={busy} onClick={() => run(signal => passkeyAssertion({ signal }))}>{t('Confirm with a passkey')}</Button>}
+    {withPasskey && <Button variant={main} icon="fingerprint" disabled={busy} onClick={() => run(signal => passkeyAssertion({ signal }))}>{t('Confirm with a passkey')}</Button>}
     {password && <form onSubmit={withPassword} noValidate>
       {withPasskey && <div className="dim small" style={{ margin: '14px 0 8px', textAlign: 'center' }}>{t('or with your password')}</div>}
       {/* Tells a password manager which account the password belongs to. */}
@@ -320,7 +320,7 @@ export function PasswordRow({ version = 0 }) {
   const blocked = !st.set && st.nameTaken
   const subtitle = blocked ? t('Another profile already signs in with this name.')
     : st.set ? t('Set · sign in as “{0}”', st.name)
-    : t('Not set — lets you sign in where passkeys do not work.')
+    : t('Not set. Handy for signing in where passkeys don’t work.')
   return <>
     <Row icon="key" iconTint="var(--orange)" title={t('Password')} subtitle={subtitle} accessory={blocked ? 'none' : 'chevron'}
       onClick={blocked ? undefined : () => ui().openSheet(close => <PasswordSheet status={st} close={close} done={load} />)} />
@@ -348,7 +348,7 @@ export function PasswordSheet({ status, close, done }) {
       const proof = withPasskey ? await passkeyAssertion() : { current }
       await api('/api/account/password', { method: 'POST', body: JSON.stringify({ next, ...proof }) })
       close(); done()
-      toast(t('Password saved — you are signed out everywhere else.'))
+      toast(t('Password saved. You’re now signed out everywhere else.'))
     } catch (e) { if (!dismissed(e)) setErr(passwordError(e)) }
     finally { setBusy(false) }
   }
@@ -418,7 +418,7 @@ function RemovePasswordSheet({ status, close, done }) {
 export function EmailRow({ status, done }) {
   const subtitle = status.email && !status.set ? t('“{0}” is saved, but signs in only once this profile has a password.', status.email)
     : status.email ? t('Sign in with “{0}” instead of your name', status.email)
-    : t('Not set — sign in with an e-mail instead of your name.')
+    : t('Not set. Lets you sign in with an e-mail instead of your name.')
   return <Row icon="envelope" iconTint="var(--blue)" title={t('Sign-in e-mail')} subtitle={subtitle} accessory="chevron"
     onClick={() => ui().openSheet(close => <EmailSheet status={status} close={close} done={done} />)} />
 }
@@ -448,7 +448,7 @@ export function EmailSheet({ status, close, done }) {
   return <>
     <h3>{status.email ? t('Change sign-in e-mail') : t('Add a sign-in e-mail')}</h3>
     <div className="muted small" style={{ marginBottom: 14 }}>
-      {t('Type it at “Sign in with password” instead of your profile name. Nothing is ever sent to it — a forgotten password is still reset by your admin.')}
+      {t('Type it at “Sign in with password” instead of your profile name. We never send anything to it; a forgotten password is still reset by your admin.')}
     </div>
     {step === 'edit' ? <>
       <form onSubmit={next} noValidate>

@@ -1,12 +1,12 @@
 // Behaviour for the openGym site: the header's navigation sheet, the contents
 // drawer and its scrollspy, the scroll reveals, the demo frame, and the two things
 // that come from the GitHub API (repo counts, release timeline).
-// Every one of them fails soft — the page is complete without any of this running.
+// Every one of them fails soft: the page is complete without any of this running.
 
 const GH_REPO = 'https://api.github.com/repos/DuarteSantos8/openGym'
 
 // Discord publishes an invite's guild counts to anyone who asks for the invite with
-// ?with_counts=1 — no bot token, no widget to enable, and the API reflects the caller's
+// ?with_counts=1. No bot token, no widget to enable, and the API reflects the caller's
 // Origin, so the browser is allowed to read it. The code is the permanent invite in the
 // nav; if that invite is ever revoked this returns 404 and the count simply stays blank.
 const DC_INVITE = 'https://discord.com/api/v10/invites/e62jY6fwVb?with_counts=1'
@@ -21,7 +21,7 @@ const whenIdle = (fn) => ('requestIdleCallback' in window ? requestIdleCallback(
    way the two of them can stay indistinguishable to a reader.
 
    Both are CLOSED in CSS, so a panel is shut on first paint whatever this script
-   does — and nothing is read back from storage to reopen one. */
+   does, and nothing is read back from storage to reopen one. */
 const FOCUSABLE = 'a[href],button:not([disabled]),input,select,textarea,[tabindex]:not([tabindex="-1"])'
 
 function panel({ opener, panelEl, flag, closeBtn }) {
@@ -51,10 +51,10 @@ function panel({ opener, panelEl, flag, closeBtn }) {
 
   opener.addEventListener('click', e => { e.stopPropagation(); set(!isOpen()) })
   panelEl.querySelector(closeBtn)?.addEventListener('click', () => set(false))
-  // Tapping a link inside navigates, so the panel has to get out of the way —
+  // Tapping a link inside navigates, so the panel has to get out of the way,
   // in-page anchors especially, which do not reload anything.
   panelEl.addEventListener('click', e => { if (e.target.closest('a')) set(false) })
-  // The scrim is body::after, so it has no element of its own to listen on — a click
+  // The scrim is body::after, so it has no element of its own to listen on. A click
   // that lands outside both the panel and its opener is a click on the scrim.
   document.addEventListener('click', e => {
     if (!isOpen()) return
@@ -222,7 +222,7 @@ function panel({ opener, panelEl, flag, closeBtn }) {
 
   const mount = () => {
     if (slot.dataset.mounted) return
-    if (!slot.offsetParent) return                 // frame hidden — phone layout
+    if (!slot.offsetParent) return                 // frame hidden: phone layout
     slot.dataset.mounted = '1'
     const f = document.createElement('iframe')
     f.src = slot.dataset.demo
@@ -242,7 +242,7 @@ function panel({ opener, panelEl, flag, closeBtn }) {
 })()
 
 /* ------------------------------------------------------- repo counts (nav + specs)
-   Back on api.github.com since 2026-09-11 — GitHub is the home of the project again and
+   Back on api.github.com since 2026-09-11. GitHub is the home of the project again and
    GitLab only mirrors it. Unauthenticated, 60 requests an hour per IP, which the
    sessionStorage cache keeps us well under.
 
@@ -258,7 +258,7 @@ function panel({ opener, panelEl, flag, closeBtn }) {
       const r = await fetch(GH_REPO)
       if (!r.ok) return
       const j = await r.json()
-      // open_issues_count counts open pull requests too — GitHub's own repo header does the
+      // open_issues_count counts open pull requests too. GitHub's own repo header does the
       // same, so the number matches what a visitor sees over there.
       d = { stars_count: j.stargazers_count, forks_count: j.forks_count, open_issues_count: j.open_issues_count }
       sessionStorage.setItem('repo_meta_gh2', JSON.stringify(d))
@@ -268,7 +268,7 @@ function panel({ opener, panelEl, flag, closeBtn }) {
     set('forks-n', d.forks_count)
     // Leave the placeholder standing rather than writing an empty box.
     if (d.open_issues_count !== '' && d.open_issues_count != null) set('issues-n', d.open_issues_count)
-  } catch (e) { /* offline / rate-limited — leave placeholders */ }
+  } catch (e) { /* offline / rate-limited, leave placeholders */ }
 })
 
 /* --------------------------------------------------- Discord members (nav + specs)
@@ -293,7 +293,7 @@ function panel({ opener, panelEl, flag, closeBtn }) {
     const fmt = n.toLocaleString('en-US')
     set('members', fmt)
     set('members-n', fmt)
-  } catch (e) { /* offline / blocked — the link keeps its plain label */ }
+  } catch (e) { /* offline / blocked, the link keeps its plain label */ }
 })
 
 /* -------------------------------------------------------------- about timeline
@@ -333,7 +333,7 @@ function panel({ opener, panelEl, flag, closeBtn }) {
       const li = document.createElement('li')
       const title = x.name && x.name !== x.tag ? x.name : x.tag
       li.innerHTML = '<b></b><span class="when"></span><p></p>'
-      li.querySelector('b').textContent = title.startsWith(x.tag) ? title : x.tag + ' — ' + title
+      li.querySelector('b').textContent = title.startsWith(x.tag) ? title : x.tag + ': ' + title
       li.querySelector('.when').textContent = fmt(x.at)
       const p = li.querySelector('p')
       p.textContent = blurb(x.body) + ' '
@@ -369,7 +369,7 @@ function panel({ opener, panelEl, flag, closeBtn }) {
   }
 })()
 
-/* The hero intro is armed in the inline <head> script, before the first paint — a deferred
+/* The hero intro is armed in the inline <head> script, before the first paint. A deferred
    script would arm it too late and the hero would flash. All this does is take the class off
    once the last element has landed, so nothing stays mid-animation. */
 ;(() => {

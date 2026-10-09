@@ -151,7 +151,7 @@ test('the poll really is reading through the stat cache', async t => {
 
   // And a PUT evicts, so the poll is back in step with the file immediately.
   const put = await fetch(`${h.api}/api/data`, {
-    method: 'PUT', headers, body: JSON.stringify({ state: { _ts: 1, workouts: [], routines: [] } })
+    method: 'PUT', headers, body: JSON.stringify({ state: { _ts: 1, workouts: [], routines: [] }, stamped: true })
   }).then(r => r.json());
   assert.equal(await rev(), put.rev, 'a write through the app is on the very next poll');
 });
@@ -175,6 +175,7 @@ test('the three hot-path state reads all go through readStateCached', () => {
   }
   // GET /api/data hands out the document itself and PUT compares against it — both want the real
   // thing, uncached.
-  assert.match(handler('GET /api/data'), /readState\(user\.id\)/);
-  assert.match(handler('PUT /api/data'), /readState\(user\.id\)/);
+  // (readStateStrict: a file that cannot be read is a 503, not an empty profile.)
+  assert.match(handler('GET /api/data'), /readStateStrict\(user\.id\)/);
+  assert.match(handler('PUT /api/data'), /readStateStrict\(user\.id\)/);
 });

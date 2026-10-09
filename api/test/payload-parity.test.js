@@ -14,10 +14,17 @@ import assert from 'node:assert/strict';
 import { tempData, sampleState } from './helpers.mjs';
 import { isWarmupRow } from '../../frontend/src/lib/workout-model.js';
 import { readSession as frontendReadSession } from '../../frontend/src/lib/progression.js';
+import { NOTE_MAX as frontendNoteMax } from '../../frontend/src/lib/history.js';
 
 tempData();
 const payload = await import('../coach/core/payload.js');
 const { handleFor } = await import('../coach/handle.js');
+
+/* The payload bounds a session note at the app's own cap, so a note the app let the athlete write
+   is never cut on its way to the model. */
+test('the payload\'s NOTE_MAX is the app\'s NOTE_MAX', () => {
+  assert.equal(payload.NOTE_MAX, frontendNoteMax);
+});
 
 test('isWarmupSet agrees with the frontend isWarmupRow', () => {
   const cases = [
@@ -84,4 +91,17 @@ test('readSession agrees with the frontend on a bonus set logged beyond the plan
   const tooFew = entry([set(10), set(10)]);
   assert.equal(frontendReadSession(tooFew, PLAN).ok, false);
   assert.equal(exOf(reviewFor([passing, passing, tooFew])).lastOk, false);
+});
+
+// An entry with no target of its own (a Hevy or CSV import, anything logged before v1.2.2) is
+// never sliced on either side: grading it against the routine's set count TODAY would read the
+// warm-up end of a session nobody planned that way. Here the fourth set falls short, and with
+// no plan to say it was extra, it counts.
+test('readSession agrees with the frontend on an imported session with no plan of its own', () => {
+  const passing = entry([set(10), set(10), set(10)]);
+  const imported = { id: EX_ID, sets: [set(10), set(10), set(10), set(5)] };
+
+  assert.equal(frontendReadSession(imported, PLAN).ok, false, 'the frontend reads all four sets');
+  assert.equal(exOf(reviewFor([passing, passing, imported])).lastOk, false, 'and so does the payload');
+  assert.equal(exOf(reviewFor([passing, passing, imported])).stalls, 1);
 });

@@ -34,14 +34,21 @@ same app, not a different build or download.
 
 Passkeys can't be used for this: the app's WebView runs at its own origin, which never
 matches the real hostname WebAuthn needs. Instead you *pair* the device from a browser
-that's already signed in: Settings → **"Pair the mobile app"** shows a one-time code (valid
+that's already signed in: Settings → Account → **"Pair the mobile app"** shows a one-time code (valid
 5 minutes); enter your server's address and that code in the app (same first-launch screen,
-or Settings → **"Connect to my server"** later) to finish. Notes:
+or Settings → Account → **"Connect to my server"** later) to finish. Notes:
 
 - Works offline too: the phone keeps its copy (and the file mirror) while connected, and
   changes made without a network go to the server as soon as it is reachable again.
-- Use an HTTPS address if at all possible: the connection carries a bearer token instead of
-  a cookie, and that token would otherwise cross the network in plain text.
+- Use an `https://` address. The app's WebView is an https page, so the phone blocks a plain
+  `http://` server before anything is sent, and pairing says so. It also keeps the bearer token
+  (the connection carries one instead of a cookie) off the network in plain text.
+- Pairing says your server "refused the app's request (CORS)", or that "a login page or proxy
+  rule replied instead of openGym", or fails with "Failed to fetch" on an older version, while
+  the browser works? Something in front of openGym is answering the app instead: a reverse proxy
+  handling the CORS preflight itself, adding a second `Access-Control-Allow-Origin`, or SSO /
+  forward-auth on `/api/`. openGym answers the preflight and does its own sign-in; see
+  [Phone app and CORS](SELF_HOSTING.md#phone-app-and-cors) for the fixes and a `curl` self-check.
 - The token lasts `SESSION_DAYS` (90 by default, see `docs/SELF_HOSTING.md`) and renews
   itself: every time the app starts, a token past half its life is swapped for a fresh one.
   A phone that is used at all never runs out; one left unopened for longer than
@@ -51,7 +58,7 @@ or Settings → **"Connect to my server"** later) to finish. Notes:
   of a cookie. The phone has no passkey to sign back in with, so it has to be **paired
   again**; nothing on it is lost meanwhile (see below). See `/api/pair/create` and
   `/api/pair/redeem` in `api/server.js` for the exchange itself.
-- Settings → "Disconnect" first checks that your server has every change. If it has, the
+- Settings → Account → "Disconnect" first checks that your server has every change. If it has, the
   phone drops cleanly back to local mode. If not, it says how many changes are missing and
   offers **Try again**, **Export backup**, or **Disconnect anyway** — which keeps those
   changes on the phone and adds them back the next time it is paired with the same server
@@ -59,7 +66,7 @@ or Settings → **"Connect to my server"** later) to finish. Notes:
 
 ### Connection states
 
-Settings → **Server & sync** shows the server, the account, how things stand, when the phone
+Settings → Account → **Server & sync** shows the server, the account, how things stand, when the phone
 last held exactly what the server holds, how many changes are still waiting, and a **Sync
 now** button that says how it went. Whenever the app is *not* connected, a line under the
 status bar says so on every screen, and stays until the condition is gone:
@@ -71,7 +78,13 @@ status bar says so on every screen, and stays until the condition is gone:
 | *Your server's address answered with something other than openGym (HTTP 200)…* | Something else answered in the server's place — typically a proxy's sign-in page or a catch-all that serves the web app for `/api/*`. | Let `/api/*` through to the openGym API unchanged, including the `Authorization` header. |
 | *Your server no longer accepts this phone…* | The server refused the phone's token (401): "sign out everywhere", the account disabled, a `data/secret` that was replaced, a token older than `SESSION_DAYS`, or a proxy with its own login that rejects `Authorization: Bearer`. | **Pair again**: in a signed-in browser open Settings → "Pair the mobile app" and enter the new code. The address is already filled in. |
 | *This phone is no longer paired with your server…* | A phone that an earlier version of the app unpaired by itself after its token was refused. The address is gone. | **Pair again**, typing the address. |
-| *On this phone only — not connected to a server* | Local mode, chosen at first launch or after Disconnect. Said quietly. | Nothing, or **Connect** to pair with a server. |
+| *On this phone only, not connected to a server* | Local mode, chosen at first launch or after Disconnect. Said quietly. | Nothing, or **Connect** to pair with a server. |
+
+Don't want the line? Settings → Look & Home → **Show connection status** turns it off (it is on
+by default, and the setting travels with your profile). A phone kept local on purpose then shows
+nothing at all. On a phone with a server, a problem — offline, an error, a refused phone, or
+changes still waiting after a few seconds — puts a small orange dot on the **Home** tab and on
+the Settings gear instead; Settings → Account → Server & sync says what it is.
 
 In every one of these states the phone keeps its data and every change you make. Pairing
 again with the **same account** merges what the phone kept with what the server has — new
@@ -87,14 +100,20 @@ Where the phone keeps things, in case you ever need them by hand:
   belongs to: a paired phone only ever takes the file back for that account.
 - `opengym-stash.json`, same directory — changes kept by "Disconnect anyway" or by another
   account pairing, waiting for their server and account.
-- `Documents/openGym/opengym-backup-YYYY-MM-DD.json` — only with Settings → **Auto-backup on
+- `Documents/openGym/opengym-backup-YYYY-MM-DD.json` — only with Settings → Data & backup → **Auto-backup on
   changes** switched on: a dated copy after every finished workout or edited routine, in a
   folder of its own under the phone's Documents folder, where a file manager or a sync app
   (Syncthing, a cloud folder) can reach it without taking the rest of Documents along. One
   file per day; each new copy deletes all but the newest 14 of these dated files in that
   folder. Nothing else is deleted, in that folder or anywhere: other files you keep there, and
   the copies versions before 1.3.9 wrote straight into `Documents/`, stay until you remove
-  them yourself. Settings → **Import backup** reads any of them back, wherever it is.
+  them yourself. Settings → Data & backup → **Import backup** reads any of them back, wherever it is.
+  On Android, Settings → Data & backup → **Backup folder** (under Auto-backup) picks another folder with the
+  system folder picker — a sync app's folder, an SD card — and the copies go there instead,
+  pruned to the same 14. The choice belongs to this phone and does not sync. If the folder
+  stops accepting copies (the permission revoked, the folder deleted), they go to
+  `Documents/openGym` again and Settings says so until you choose the folder again or tap
+  **Use default folder**.
 
 ### Photos and videos of your own exercises
 
@@ -110,12 +129,12 @@ never stored.
   `index.json`. The state keeps only a reference of a few hundred bytes. A MOV is stored with
   an `.mp4` name so the WebView plays it.
 - **Local mode:** that folder is the only copy. **Export with photos & videos (.zip)** in
-  Settings → Data writes a zip with the usual JSON backup and every file, through the share
+  Settings → Data & backup writes a zip with the usual JSON backup and every file, through the share
   sheet; **Import backup** takes that zip back. The daily auto-backup stays JSON only.
 - **Paired with a server:** files go up to the server (`PUT /api/media/{hash}`) and come down
   with the phone's token into the same folder, so they show offline too. A file that has not
   reached the server yet is owed like an unsynced change: **Disconnect** says so and keeps it.
-  Big files wait for Wi-Fi unless you tap Settings → **Photos & videos**.
+  Big files wait for Wi-Fi unless you tap Settings → Data & backup → **Photos & videos**.
 - **Backups:** Android's cloud backup leaves `opengym-media/` out
   (`res/xml/backup_rules.xml`, `res/xml/data_extraction_rules.xml`) — Auto Backup drops an
   app's whole backup past 25 MB, and a few videos would take the state file down with them. A
@@ -257,7 +276,10 @@ membership, the distribution certificate and profile as protected file variables
 - The app requests notification permission when the workout-day reminder is switched on,
   and again at the first rest if it is still unanswered. On Android it declares
   `SCHEDULE_EXACT_ALARM` so the reminder fires to the minute where the user allows exact
-  alarms (Android 14 no longer grants it at install). The rest countdown does not depend on
+  alarms (Android 14 no longer grants it at install). The opt-in missed-workout nudge is
+  scheduled the same way, beside the reminder: one notification on the evening (20:00–21:30) of
+  each upcoming planned day, at most 3 past the last workout, rescheduled whenever a workout is
+  logged. The rest countdown does not depend on
   it: a foreground service (`specialUse`) keeps the countdown in the notification and holds a
   wake lock until the end, so the end of a rest sounds on time with the screen locked; the
   rest-over alarm is only its fallback.

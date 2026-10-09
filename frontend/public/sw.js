@@ -5,6 +5,11 @@
    every deploy is a new worker with its own cache and the previous build's files are dropped on
    activate; the media cache (`MEDIA`) is kept across builds. */
 const CACHE = 'opengym-rt-__BUILD__'
+// Where the page leaves this browser's push device id (lib/push.js shareDeviceId) for the
+// pushsubscriptionchange handler below, which has no localStorage to read it from. Not a build
+// cache, so activate's sweep leaves it alone.
+const DEVICE_CACHE = 'opengym-device'
+const DEVICE_URL = '/opengym-device-id'
 
 /* Exercise media (img/, gif/) lives in a cache of its own that outlives builds (#281). It used to
    share the build's cache, so every update swept every animation along with the old bundle, and
@@ -29,6 +34,12 @@ const MEDIA_GUESS_BYTES = 64 * 1024
 // than after each one, and once when a new worker activates.
 const MEDIA_TRIM_EVERY = 20
 const isMediaPath = p => p.includes('/img/') || p.includes('/gif/')
+
+// The code the app loads only when it needs it (the photo and video ingest, the QR reader...),
+// listed by the build (vite.config.js, scripts/sw-stamp.mjs). Without it the first photo added
+// offline after an update had no ingest to run. Unstamped (a dev server, a test) it is empty.
+const LAZY = '__LAZY__'
+const lazyAssets = () => { try { const a = JSON.parse(LAZY); return Array.isArray(a) ? a : [] } catch { return [] } }
 
 // What the shell needs to boot without a network: index.html plus every script/style/icon it
 // references. Read from the served index.html so the list follows the build, not a hand-kept
@@ -63,6 +74,14 @@ async function precache() {
     await c.put(u, r)
   }))
   await Promise.all(refs.filter(u => !code.includes(u)).map(u => c.add(u).catch(() => {})))
+  // Best effort, like the icons: a chunk missing here is fetched when it is needed, as before, and
+  // must not keep a working build from installing. Fetched by hand for the same redirect reason.
+  await Promise.all(lazyAssets().filter(u => !code.includes(u)).map(async u => {
+    try {
+      const r = await fetch(u, { cache: 'no-cache' })
+      if (r.ok && !r.redirected) await c.put(u, r)
+    } catch { /* fetched on demand instead */ }
+  }))
   // The shell goes in last, so activate's guard — an index.html in THIS build's cache — means the
   // whole shell is there rather than just its first file.
   await c.put('index.html', new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8' } }))
@@ -79,7 +98,9 @@ self.addEventListener('activate', e => {
     // next load with a network.
     const c = await caches.open(CACHE)
     if (await c.match('index.html')) {
-      const old = (await caches.keys()).filter(k => k !== CACHE && k !== MEDIA)
+      // DEVICE_CACHE holds this browser's device id (the push re-register below needs it): not a
+      // build, so an update never sweeps it.
+      const old = (await caches.keys()).filter(k => k !== CACHE && k !== MEDIA && k !== DEVICE_CACHE)
       // A build from before MEDIA existed kept its media in its own cache: move it across first,
       // so the first update to this worker does not cost what the device already had offline.
       await Promise.all(old.map(k => adoptMedia(k).catch(() => {})))
@@ -179,14 +200,17 @@ self.addEventListener('notificationclick', e => {
   }))
 })
 // The push service rotated the subscription (key change, expiry): subscribe again with the same
-// server key and tell the server, so the row it holds keeps pointing at this browser.
+// server key and tell the server, so the row it holds keeps pointing at this browser. With the
+// device id the page registers with: without one, this browser's rest-timer alert goes to every
+// device of the account until the page's next boot sync sees the missing id and sends it again.
 self.addEventListener('pushsubscriptionchange', e => {
   e.waitUntil((async () => {
     const old = e.oldSubscription || (await self.registration.pushManager.getSubscription())
     const key = e.newSubscription?.options?.applicationServerKey || old?.options?.applicationServerKey
     if (!key) return
     const sub = e.newSubscription || await self.registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key })
-    await fetch('api/push/subscribe', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ subscription: sub.toJSON() }) }).catch(() => {})
+    const deviceId = await caches.open(DEVICE_CACHE).then(c => c.match(DEVICE_URL)).then(r => r ? r.text() : undefined).catch(() => undefined)
+    await fetch('api/push/subscribe', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ subscription: sub.toJSON(), deviceId }) }).catch(() => {})
   })())
 })
 

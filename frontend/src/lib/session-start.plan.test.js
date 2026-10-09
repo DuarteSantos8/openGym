@@ -50,7 +50,7 @@ describe('a planned session opens at the plan\'s reps', () => {
     // plan asks 60 where B's asked 40 — a heavy day and a light day — so it opens at its own 60,
     // not at the light day's load.
     expect(work(a).map(s => s.w)).toEqual([60, 60])
-    expect(a.plan.why[0]).toBe('First time in this routine — starting from its own target.')
+    expect(a.plan.why[0]).toBe('First time in this routine, so starting from its own target.')
     // From then on A progresses on its own line, whatever B does.
     train(st, ['A'])
     train(st, ['B'], { r: 9 })
@@ -156,7 +156,7 @@ describe('a routine whose only history is freestyle or imported', () => {
     st.workouts.push({ id: 'imp', d: '2026-09-01', routineId: null, entries: [{ id: BENCH, sets: [{ w: 30, r: 15, done: true }, { w: 30, r: 15, done: true }, { w: 30, r: 15, done: true }] }] })
     const [e] = start(st, ['A'])
     expect(work(e).map(s => [s.w, s.r])).toEqual([[30, 10], [30, 10]])
-    expect(e.plan.why[0]).toBe('First time in this routine — starting from its own target.')
+    expect(e.plan.why[0]).toBe('First time in this routine, so starting from its own target.')
   })
 })
 
@@ -167,7 +167,7 @@ describe('an edited routine starts again from its new plan', () => {
     cfgOf(st, 'A').reps = 10
     const [e] = start(st, ['A'])
     expect(work(e).map(s => [s.w, s.r])).toEqual([[50, 10], [50, 10]])
-    expect(e.plan.why[0]).toBe('Plan changed — starting from your new target.')
+    expect(e.plan.why[0]).toBe('Plan changed, so starting from your new target.')
     train(st, ['A'])
     expect(start(st, ['A'])[0].plan.kind).toBe('up')   // and progresses from there
   })
@@ -182,7 +182,7 @@ describe('an edited routine starts again from its new plan', () => {
     Object.assign(cfgOf(st, 'A'), { reps: 10, weight: 70 })
     const [e] = start(st, ['A'])
     expect(work(e).map(s => [s.w, s.r])).toEqual([[70, 10], [70, 10], [70, 10]])
-    expect(e.plan.why[0]).toBe('Plan changed — starting from your new target.')
+    expect(e.plan.why[0]).toBe('Plan changed, so starting from your new target.')
     train(st, ['A'])
     expect(work(start(st, ['A'])[0]).map(s => [s.w, s.r])).toEqual([[72.5, 10], [72.5, 10], [72.5, 10]])
   })

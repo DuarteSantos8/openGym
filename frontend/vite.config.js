@@ -1,7 +1,10 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { createHash } from 'node:crypto'
+import { join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { lazyAssets, stampSw } from './scripts/sw-stamp.mjs'
 
 const backend = process.env.API_TARGET || 'http://127.0.0.1:3000'
 // The API refuses a state-changing request that a browser sent from anywhere other than its own
@@ -34,15 +37,34 @@ const umami = {
 // placeholder): a deploy is then a new worker with its own cache, and the previous build's
 // shell and chunks are dropped on activate instead of piling up under one fixed name. The
 // stamp is a hash of the built index.html — it changes exactly when the bundle does.
+// The directory is the one this build wrote to (`--outDir` included), not a fixed ./dist/: a
+// build into a private outDir left `__BUILD__` unstamped in its sw.js.
+// The worker also gets the build's code that loads on demand (`__LAZY__`, scripts/sw-stamp.mjs),
+// so it is there offline before the page has ever needed it.
+let outDir = fileURLToPath(new URL('./dist/', import.meta.url))
+let lazy = []
 const swStamp = {
   name: 'opengym-sw-stamp',
   apply: 'build',
+  configResolved(config) { outDir = resolve(config.root, config.build.outDir) },
+  generateBundle(_, bundle) { lazy = lazyAssets(bundle) },
   closeBundle() {
-    const dir = new URL('./dist/', import.meta.url)
-    const html = new URL('index.html', dir), sw = new URL('sw.js', dir)
+    const html = join(outDir, 'index.html'), sw = join(outDir, 'sw.js')
     if (!existsSync(html) || !existsSync(sw)) return
     const stamp = createHash('sha256').update(readFileSync(html)).digest('hex').slice(0, 10)
-    writeFileSync(sw, readFileSync(sw, 'utf8').replace('__BUILD__', stamp))
+    writeFileSync(sw, stampSw(readFileSync(sw, 'utf8'), { stamp, lazy }))
+  }
+}
+
+// The phone flavour says so in its index.html. A web build that ran into the same dist/ between
+// the mobile build and `cap sync` (two builds in one worktree) shipped the web shell inside an
+// APK: no Android-only settings, a service worker, the passkey login. scripts/check-mobile-bundle.mjs
+// reads this tag in the synced copy after `cap sync` and fails the build without it.
+const flavor = {
+  name: 'opengym-flavor',
+  transformIndexHtml() {
+    if (process.env.VITE_MOBILE !== '1') return
+    return [{ tag: 'meta', attrs: { name: 'opengym-flavor', content: 'mobile' }, injectTo: 'head' }]
   }
 }
 
@@ -60,7 +82,7 @@ const appVersion = process.env.APP_BUILD ? `${pkgVersion}+${process.env.APP_BUIL
 
 export default defineConfig({
   define: { __APP_VERSION__: JSON.stringify(appVersion) },
-  plugins: [react(), umami, swStamp],
+  plugins: [react(), umami, flavor, swStamp],
   base: './',
   server: {
     // The Coach's core (payload, validator, prompts, HTTP adapters) lives in ../api/coach/core

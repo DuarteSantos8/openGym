@@ -1,10 +1,10 @@
 // @vitest-environment happy-dom
 import React, { act } from 'react'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createRoot } from 'react-dom/client'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
-import { bwSheet } from './sheets.jsx'
+import { bwSheet, goalSheet } from './sheets.jsx'
 
 // The big weight read-out (body weight, goal, top weight after an exercise) used to be text:
 // the only ways to a number were the slider, ±0.1 and the ±0.5/±1 chips, so 72.3 → 85.7 was a
@@ -37,7 +37,7 @@ describe('weight read-out is a typable field', () => {
   beforeEach(() => {
     globalThis.IS_REACT_ACT_ENVIRONMENT = true
     useUI.setState({ sheets: [] })
-    useStore.setState(s => ({ S: { ...s.S, unit: 'kg', bodyweight: [] } }))
+    useStore.setState(s => ({ S: { ...s.S, unit: 'kg', bodyweight: [], targetW: null } }))
     document.body.innerHTML = ''
   })
 
@@ -88,6 +88,34 @@ describe('weight read-out is a typable field', () => {
 
     act(() => button('Save').click())
     expect(useStore.getState().S.bodyweight[0].w).toBe(320)
+  })
+
+  // 9999 typed into the field saved, and the chart and goal lines read like it was real.
+  it('refuses a typed weight no person has, says the limit, and keeps the sheet open', () => {
+    const toast = vi.fn()
+    useUI.setState({ toast })
+    const { input, button } = renderBw()
+    act(() => type(input, '9999'))
+    act(() => button('Save').click())
+    expect(useStore.getState().S.bodyweight).toHaveLength(0)
+    expect(useUI.getState().sheets).toHaveLength(1)
+    expect(toast).toHaveBeenCalledWith('That looks too heavy. Keep it at 700 kg or less.')
+  })
+
+  it('the goal sheet refuses the same', () => {
+    const toast = vi.fn()
+    useUI.setState({ toast })
+    goalSheet()
+    const sheet = useUI.getState().sheets.at(-1)
+    const host = document.createElement('div')
+    document.body.appendChild(host)
+    const root = createRoot(host)
+    mounted.push(root)
+    act(() => root.render(sheet.render(() => useUI.getState().closeSheet(sheet.id))))
+    act(() => type(host.querySelector('.bw-read input'), '9999'))
+    act(() => [...host.querySelectorAll('button')].find(b => b.textContent.trim() === 'Save goal').click())
+    expect(useStore.getState().S.targetW ?? null).toBe(null)
+    expect(toast).toHaveBeenCalledWith('That looks too heavy. Keep it at 700 kg or less.')
   })
 
   it('still refuses to save an empty field', () => {
