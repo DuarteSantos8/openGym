@@ -159,6 +159,25 @@ describe('the server push in the Android app', () => {
   })
 })
 
+// The rest after a hold that ran out while the app was hidden has been counting since the hold
+// ended (useUI startRest's `since`): the alarm is set for that end, and not at all once it passed.
+describe('the rest after a hold that ran out unseen', () => {
+  it('is armed for its true end, with its whole length', () => {
+    const since = Date.now() - 30_000
+    useUI.getState().startRest(90, 0, { kind: 'set', since })
+    expect(armRestAlert).toHaveBeenCalledTimes(1)
+    expect(armRestAlert.mock.calls[0][0]).toBe(since + 90_000)
+    expect(armRestAlert.mock.calls[0][1]).toMatchObject({ totalSec: 90 })
+  })
+
+  it('is not armed at all when it is over too', () => {
+    useUI.getState().startRest(90, 0, { kind: 'set', since: Date.now() - 120_000 })
+    expect(useUI.getState().timer).toMatchObject({ ready: true })
+    expect(armRestAlert).not.toHaveBeenCalled()
+    expect(api).not.toHaveBeenCalledWith('/api/push/rest-timer', expect.anything())
+  })
+})
+
 describe('the notification’s own buttons', () => {
   it('Pause holds the bar in the app, and Resume runs it out from the notification’s end', () => {
     useUI.getState().startRest(90, 2)

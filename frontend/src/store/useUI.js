@@ -168,7 +168,9 @@ const runWork = (set, get) => {
       get().stopWork()
       // `chimed` tells the set's own tick that this end has already sounded and buzzed — not
       // so when overtime ran out, whose end chime played when the target was reached.
-      if (done) done(wk.total - left, { chimed: seenLive && !wk.alerted })
+      // `endedAt`, only for an end nobody saw: when it really was, so the rest it earned can have
+      // been counting since (startRest's `since`) rather than start in full now the page is back.
+      if (done) done(wk.total - left, { chimed: seenLive && !wk.alerted, ...(seenLive ? {} : { endedAt: wk.endsAt - left * 1000 }) })
       return
     }
     set({ work: { ...wk, left } })
@@ -345,7 +347,7 @@ export const useUI = create((set, get) => ({
     if (get().toastMsg) runToast(set)
   },
 
-  startRest(sec, forIdx, { kind, forSet } = {}) {
+  startRest(sec, forIdx, { kind, forSet, since } = {}) {
     get().stopRest()
     // Rest timer set to Off. Stopping and returning rather than starting a zero-length timer
     // keeps every caller honest: the four places that start a rest do not each need to know.
@@ -365,8 +367,23 @@ export const useUI = create((set, get) => ({
     // with no beep, no vibration and no flash. Each timer starts from where the page is now.
     pageHiddenAt = document.hidden ? Date.now() : null
     hiddenOver = false
-    const endsAt = Date.now() + sec * 1000
+    // `since`: when the rest really began, if that was while the page was away: the end of a hold
+    // that ran out hidden, which is only finished on the first tick back (runWork's `endedAt`).
+    // That rest has been counting all along (owner's call). So it is started as one that began
+    // then, on a page that was away, and this is its first tick back: what is left is counted in
+    // and booked as for any rest, and one that is over too ends here the way a rest that ran out
+    // unseen does (Ready and its toast; a switch-sides pause just goes), with nothing counted in or
+    // booked for an end that has passed.
+    const late = since != null && since < Date.now()
+    if (late) pageHiddenAt = since
+    const endsAt = (late ? since : Date.now()) + sec * 1000
     set({ timer: { left: sec, total: sec, endsAt, forIdx, ...(forSet != null ? { forSet } : {}), ...(knownKind(kind) ? { kind } : {}) } })
+    if (late) {
+      if (Math.round((endsAt - Date.now()) / 1000) > 0) { holdAudio(); bookRestEnd(endsAt, sec, kind) }
+      runRest(set, get)
+      timerTick()
+      return
+    }
     // The last seconds are queued now, inside the tap that finished the set, rather than beeped by
     // the ticks below: those stop running once the phone goes in a pocket (lib/sound.js countdown).
     // Every exit from this timer goes through stopRest, which calls them off; a pause does too, and
@@ -496,11 +513,12 @@ export const useUI = create((set, get) => ({
      purpose: the two mean opposite things, they must never run together, and a work set is
      something you are watching — so it gets no server push (that endpoint says "rest over",
      and a plank does not need a notification you are staring at anyway).
-     `onDone(elapsedSec, { chimed, abandoned })` is called both when the countdown reaches zero and
-     on an early finish; the elapsed time is what actually gets logged, so stopping at 0:38 of a
-     0:45 hold records 0:38 rather than crediting the full target. `chimed` is true when the
+     `onDone(elapsedSec, { chimed, abandoned, endedAt })` is called both when the countdown reaches
+     zero and on an early finish; the elapsed time is what actually gets logged, so stopping at 0:38
+     of a 0:45 hold records 0:38 rather than crediting the full target. `chimed` is true when the
      countdown ran out in front of you and the end chime and buzz have just played; `abandoned`
-     when a rest displaced the hold (abandonWork).
+     when a rest displaced the hold (abandonWork); `endedAt` when it ran out while the page was
+     hidden and is only finished now the page is back: the moment it really ended.
      `owner` ({ idx, i, id }: the active entry and set being held) lets a hold outlive a reload or
      the app being killed (restoreWork below). onDone is a closure and cannot be kept, so the owner
      says where the time goes, and the workout screen binds its handler again (bindWork). */
