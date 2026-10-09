@@ -1,0 +1,23 @@
+{
+  "id": "9316",
+  "name": "ring elevated pike push up from deficit",
+  "bodyPart": "shoulders",
+  "equipment": "suspension trainer",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A pike push up with feet elevated and hands on rings, so you go deeper. It builds strong overhead pressing.",
+  "instructions": [
+    "Set the rings low and put your hands on them with your feet on a box.",
+    "Raise your hips into a pike shape.",
+    "Lower your head between the rings.",
+    "Keep the rings steady and close to your body.",
+    "Press back up to straight arms.",
+    "Keep your core tight."
+  ],
+  "textSource": "opengym"
+}

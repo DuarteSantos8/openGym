@@ -1,0 +1,22 @@
+{
+  "id": "4735",
+  "name": "dumbbell decline sit up",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A decline sit-up with a dumbbell held on your chest to add resistance for the abs.",
+  "instructions": [
+    "Secure your feet on a decline bench and hold a dumbbell against your chest.",
+    "Lie back until your torso is just above the bench.",
+    "Curl up until your torso is upright.",
+    "Keep your neck relaxed and avoid pulling on your head.",
+    "Lower slowly to the start."
+  ],
+  "textSource": "opengym"
+}

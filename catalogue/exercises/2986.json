@@ -1,0 +1,24 @@
+{
+  "id": "2986",
+  "name": "weighted hammer grip pull up on dip cage",
+  "bodyPart": "back",
+  "equipment": "weighted",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "brachialis",
+    "upper back",
+    "forearms",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A weighted pull-up with a neutral hammer grip on a dip cage. It builds the lats and arms with extra load.",
+  "instructions": [
+    "Attach a belt or vest with weight and grip the neutral handles of the cage.",
+    "Hang with your arms straight and your core braced.",
+    "Pull your chest up until your chin passes the handles.",
+    "Pause briefly.",
+    "Lower slowly to a full hang and repeat."
+  ],
+  "textSource": "opengym"
+}

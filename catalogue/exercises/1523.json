@@ -1,0 +1,24 @@
+{
+  "id": "1523",
+  "name": "barbell hang snatch below the knees",
+  "bodyPart": "full body",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "trapezius",
+    "shoulders",
+    "core"
+  ],
+  "category": "olympic",
+  "description": "A hang snatch started from below the knees. It lengthens the pull for more power.",
+  "instructions": [
+    "Hold the bar just below your knees with a wide grip and a flat back.",
+    "Brace your core and keep the bar close to your body.",
+    "Extend your hips and knees powerfully and shrug your shoulders.",
+    "Pull under the bar and catch it overhead with locked arms in a squat.",
+    "Stand tall to finish, then lower the bar with control."
+  ],
+  "textSource": "opengym"
+}

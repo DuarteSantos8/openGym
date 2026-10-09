@@ -1,0 +1,22 @@
+{
+  "id": "6789",
+  "name": "leg length test",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower back"
+  ],
+  "category": "mobility",
+  "description": "A lying check comparing the length of both legs. It is done gently and with a relaxed body.",
+  "instructions": [
+    "Lie flat on your back with legs straight and feet together.",
+    "Relax your hips and arms.",
+    "Compare the position of your heels or ankles.",
+    "Bend your knees and lift your hips, then lower and straighten again.",
+    "Check again for any difference.",
+    "Stay relaxed throughout."
+  ],
+  "textSource": "opengym"
+}

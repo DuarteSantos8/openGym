@@ -1,0 +1,21 @@
+{
+  "id": "1606",
+  "name": "cable reverse grip triceps pushdown (sz bar)",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "forearms",
+    "wrist extensors"
+  ],
+  "category": "strength",
+  "description": "A triceps pushdown with an underhand grip on an SZ bar. The reverse grip shifts the feel slightly and works the forearms too.",
+  "instructions": [
+    "Attach an SZ bar to a high pulley and grip it palms up with hands shoulder-width apart.",
+    "Keep your elbows tucked at your sides.",
+    "Push the bar down until your arms are straight.",
+    "Squeeze your triceps at the bottom.",
+    "Return slowly without letting your elbows drift forward."
+  ],
+  "textSource": "opengym"
+}

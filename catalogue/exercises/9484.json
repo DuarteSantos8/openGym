@@ -1,0 +1,23 @@
+{
+  "id": "9484",
+  "name": "dumbbell romanian deadlift to squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A combo that links a Romanian deadlift with a squat in one fluid rep. It works the hamstrings, glutes and quads together.",
+  "instructions": [
+    "Stand holding a dumbbell in each hand in front of your thighs.",
+    "Push your hips back and lower the weights along your legs with a flat back.",
+    "Feel the hamstring stretch, then drive your hips forward to stand.",
+    "Bend your knees and sit down into a squat with your chest up.",
+    "Stand back up and repeat the sequence."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "10913",
+  "name": "lying single leg raise",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core",
+    "lower abs"
+  ],
+  "category": "calisthenics",
+  "description": "A lying leg raise on one leg. It strengthens the thigh and hip flexors.",
+  "instructions": [
+    "Lie on your back with one knee bent and that foot flat.",
+    "Straighten the other leg and tighten the thigh.",
+    "Raise it to the height of your bent knee.",
+    "Pause briefly.",
+    "Lower slowly. Finish your reps and switch legs."
+  ],
+  "femaleVariant": "3267",
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "10733",
+  "name": "balance board single leg balance",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "core",
+    "glutes"
+  ],
+  "category": "mobility",
+  "description": "A single-leg stand on a balance board. It trains ankle stability and control.",
+  "instructions": [
+    "Place a balance board on a flat floor next to a wall for safety.",
+    "Step on with one foot and find your centre.",
+    "Lift the other foot off the floor.",
+    "Hold steady for 20-30 seconds.",
+    "Keep your hips level.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

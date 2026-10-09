@@ -1,0 +1,22 @@
+{
+  "id": "1189",
+  "name": "weighted v crunch (on bosu ball)",
+  "bodyPart": "waist",
+  "equipment": "bosu ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A V-shaped crunch on a bosu ball with added weight, which challenges the abs and balance together.",
+  "instructions": [
+    "Sit on a bosu ball and lean back slightly, holding a weight in front of you.",
+    "Lift your feet off the floor with your legs bent or straight.",
+    "Bring your chest and knees toward each other in a V shape.",
+    "Lower back with control, keeping your spine long.",
+    "Stay stable on the ball throughout."
+  ],
+  "textSource": "opengym"
+}

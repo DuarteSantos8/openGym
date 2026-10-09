@@ -1,0 +1,22 @@
+{
+  "id": "0642",
+  "name": "outside leg kick push-up",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up where you kick one leg out to the side at the top. Adds core and hip work to the chest and arm effort.",
+  "instructions": [
+    "Start in a push-up position with your hands slightly wider than shoulder-width apart and your feet together.",
+    "Lower your body towards the ground by bending your elbows, keeping your back straight and core engaged.",
+    "As you push back up, kick one leg out to the side, extending it fully and engaging your glutes.",
+    "Return your leg to the starting position and repeat the push-up, alternating legs with each repetition.",
+    "Continue alternating leg kicks and push-ups for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

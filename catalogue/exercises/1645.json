@@ -1,0 +1,21 @@
+{
+  "id": "1645",
+  "name": "cable two arm curl on incline bench",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A two-arm cable curl on an incline bench. The incline puts the biceps in a stretched position.",
+  "instructions": [
+    "Sit on an incline bench with your back against the pad and your feet flat on the ground.",
+    "Grasp the cable handles with an underhand grip, palms facing up, and your arms fully extended.",
+    "Keeping your upper arms stationary, exhale and curl the handles towards your shoulders while contracting your biceps.",
+    "Pause for a moment at the top of the movement, squeezing your biceps.",
+    "Inhale and slowly lower the handles back to the starting position, fully extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

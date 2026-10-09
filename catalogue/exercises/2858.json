@@ -1,0 +1,21 @@
+{
+  "id": "2858",
+  "name": "roll up v. 2",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core"
+  ],
+  "category": "pilates",
+  "description": "A slow roll up from lying to sitting, training abdominal control and spine flexibility.",
+  "instructions": [
+    "Lie on your back with arms overhead.",
+    "Lift your arms and curl your head and chest up.",
+    "Roll up one vertebra at a time.",
+    "Reach over your legs.",
+    "Roll back down slowly."
+  ],
+  "textSource": "opengym"
+}

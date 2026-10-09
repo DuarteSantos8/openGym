@@ -1,0 +1,25 @@
+{
+  "id": "3113",
+  "name": "split jacks",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "hip flexors",
+    "shoulders"
+  ],
+  "category": "cardio",
+  "description": "A jumping move where your legs split front and back while your arms swing. It's a light, fast cardio burst.",
+  "instructions": [
+    "Stand tall with your arms at your sides.",
+    "Jump one foot forward and the other back as you swing opposite arms.",
+    "Land softly with soft knees.",
+    "Jump again and switch legs.",
+    "Keep your torso upright.",
+    "Continue at a steady pace for 30-45 seconds."
+  ],
+  "femaleVariant": "0780",
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4080",
+  "name": "band kneeling crunch",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Kneeling crunch against a band anchored overhead. It trains the abs with steady resistance.",
+  "instructions": [
+    "Anchor the band high and kneel facing it, holding the ends beside your head.",
+    "Keep your hips still.",
+    "Crunch your ribs toward your hips.",
+    "Pause and squeeze your abs.",
+    "Return slowly."
+  ],
+  "femaleVariant": "0904",
+  "textSource": "opengym"
+}

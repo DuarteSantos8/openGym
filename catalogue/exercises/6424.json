@@ -1,0 +1,22 @@
+{
+  "id": "6424",
+  "name": "dumbbell good morning",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A hip hinge holding a dumbbell at your chest, training hamstrings, glutes and lower back.",
+  "instructions": [
+    "Stand with feet hip-width apart, holding one dumbbell against your chest.",
+    "Soften your knees slightly.",
+    "Push your hips back and lean your torso forward with a flat back.",
+    "Stop when you feel a stretch in your hamstrings.",
+    "Drive your hips forward to stand tall."
+  ],
+  "textSource": "opengym"
+}

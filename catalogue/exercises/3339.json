@@ -1,0 +1,23 @@
+{
+  "id": "3339",
+  "name": "dumbbell one arm lunge",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A lunge holding a dumbbell in one hand. The uneven load makes your core work to keep you balanced.",
+  "instructions": [
+    "Stand tall holding a dumbbell in one hand at your side.",
+    "Step forward into a long stride.",
+    "Lower your back knee toward the floor, keeping your torso upright.",
+    "Push through your front foot to return to standing.",
+    "Alternate legs and switch the dumbbell hand halfway."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "5068",
+  "name": "weighted incline svend press",
+  "bodyPart": "chest",
+  "equipment": "weighted",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "shoulders",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "Squeeze a weight plate between your palms and push it forward while on an incline. It hits the inner chest with a constant squeeze.",
+  "instructions": [
+    "Set a bench to an incline and sit back with a weight plate held between your palms at chest height.",
+    "Squeeze the plate hard with both hands.",
+    "Push it straight out until your arms are extended.",
+    "Pull it back to your chest while still squeezing.",
+    "Keep your back against the pad and shoulders down."
+  ],
+  "textSource": "opengym"
+}

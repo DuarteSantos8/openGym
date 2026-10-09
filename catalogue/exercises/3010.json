@@ -1,0 +1,22 @@
+{
+  "id": "3010",
+  "name": "ez bar lying bent arms pullover",
+  "bodyPart": "back",
+  "equipment": "ez barbell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "triceps",
+    "chest"
+  ],
+  "category": "strength",
+  "description": "A lying EZ bar pullover with slightly bent arms. Works the lats and chest.",
+  "instructions": [
+    "Lie flat on a bench with your head at one end and your feet on the floor.",
+    "Hold the EZ barbell with a pronated grip (palms facing away from you) and your hands shoulder-width apart.",
+    "Extend your arms straight above your chest, keeping a slight bend in your elbows.",
+    "Lower the barbell in an arc motion behind your head, maintaining the slight bend in your elbows.",
+    "Pause for a moment, then return the barbell to the starting position by reversing the arc motion.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "4500",
+  "name": "bodyweight front plank to downward dog",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "hamstrings",
+    "core",
+    "calves"
+  ],
+  "category": "mobility",
+  "description": "Moves between a plank and downward dog. Builds core strength and opens up the hamstrings and shoulders.",
+  "instructions": [
+    "Start in a straight-arm plank with hands under shoulders.",
+    "Brace your core and squeeze your glutes.",
+    "Push your hips up and back into an inverted V.",
+    "Press your heels toward the floor and lengthen your spine.",
+    "Return to plank with control.",
+    "Keep moving smoothly for reps."
+  ],
+  "textSource": "opengym"
+}

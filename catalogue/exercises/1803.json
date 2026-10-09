@@ -1,0 +1,22 @@
+{
+  "id": "1803",
+  "name": "sitting lower trunk extensor stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "lower back",
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "Seated and folding forward, you stretch the muscles along your lower back. A gentle way to ease lower back tightness.",
+  "instructions": [
+    "Sit on the floor or a bench with your knees slightly bent and your feet flat.",
+    "Round your back and fold your chest toward your thighs, letting your arms hang down.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

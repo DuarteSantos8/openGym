@@ -1,0 +1,22 @@
+{
+  "id": "7622",
+  "name": "lying single leg hamstring stretch against wall",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "glutes",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "Lie by a wall and rest one leg up against it to stretch the hamstring. Easy to relax into and good after leg days.",
+  "instructions": [
+    "Lie on your back with your hips close to a wall.",
+    "Rest one heel on the wall with your leg as straight as feels comfortable.",
+    "Keep the other leg flat on the floor.",
+    "Relax and breathe, letting the hamstring lengthen.",
+    "Hold for 20-30 seconds, then switch legs."
+  ],
+  "textSource": "opengym"
+}

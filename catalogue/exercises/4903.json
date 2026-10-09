@@ -1,0 +1,22 @@
+{
+  "id": "4903",
+  "name": "resistance band seated leg curl",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A seated hamstring curl using a resistance band anchored in front of you. It isolates the back of the thigh.",
+  "instructions": [
+    "Anchor the band at foot height and sit facing it.",
+    "Loop the band around your heels.",
+    "Extend your legs straight in front of you.",
+    "Curl your heels back under the seat against the tension.",
+    "Squeeze the hamstrings at the end.",
+    "Return slowly without letting the band snap."
+  ],
+  "textSource": "opengym"
+}

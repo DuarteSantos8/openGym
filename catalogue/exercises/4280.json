@@ -1,0 +1,21 @@
+{
+  "id": "4280",
+  "name": "ceiling look stretch v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core"
+  ],
+  "category": "stretching",
+  "description": "A standing stretch where you reach up and look toward the ceiling to open the front of the body. It opens the hips and thighs.",
+  "instructions": [
+    "Stand tall with your feet hip-width apart.",
+    "Reach both arms overhead and slightly back.",
+    "Tilt your head back to look at the ceiling while pressing your hips forward.",
+    "Keep your core engaged so your lower back is not over-arched.",
+    "Hold for 20-30 seconds, breathing steadily, then relax."
+  ],
+  "textSource": "opengym"
+}

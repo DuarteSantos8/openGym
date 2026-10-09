@@ -1,0 +1,22 @@
+{
+  "id": "3798",
+  "name": "resistance band punch",
+  "bodyPart": "chest",
+  "equipment": "resistance band",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A standing forward punch against a resistance band. It trains your chest, shoulders and triceps.",
+  "instructions": [
+    "Anchor the band behind you and hold a handle in each hand at your shoulders.",
+    "Stand in a staggered stance with a braced core.",
+    "Punch one hand forward and rotate your torso slightly.",
+    "Return the hand and punch with the other side.",
+    "Keep the movement quick but controlled."
+  ],
+  "textSource": "opengym"
+}

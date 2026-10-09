@@ -1,0 +1,22 @@
+{
+  "id": "1173",
+  "name": "barbell incline wide reverse grip bench press",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "shoulders",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "An incline bench press with a wide underhand grip that emphasizes the upper chest.",
+  "instructions": [
+    "Lie on an incline bench and grip the bar wide with palms facing you.",
+    "Unrack and hold the bar over your upper chest.",
+    "Lower it to the upper chest with elbows slightly tucked.",
+    "Press back up to lockout.",
+    "Use a spotter, as this grip is less stable."
+  ],
+  "textSource": "opengym"
+}

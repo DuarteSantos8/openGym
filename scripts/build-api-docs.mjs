@@ -480,23 +480,25 @@ const html = `<!DOCTYPE html>
 <link rel="preconnect" href="https://stats.duarte-santos.ch">
 <meta property="og:title" content="openGym API reference">
 <meta property="og:description" content="The complete openGym HTTP API as an OpenAPI spec: passkey auth, state sync, push notifications, pairing and admin routes.">
-<meta property="og:image" content="https://opengym.duarte-santos.ch/img/social.jpg">
+<meta property="og:image" content="https://opengym.ch/img/social.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="openGym: your training, your data, your server. Two phones showing the home and workout screens.">
-<meta property="og:url" content="https://opengym.duarte-santos.ch/api.html">
+<meta property="og:url" content="https://opengym.ch/api.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="openGym">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="openGym API reference">
-<meta name="twitter:image" content="https://opengym.duarte-santos.ch/img/social.jpg">
-<link rel="canonical" href="https://opengym.duarte-santos.ch/api.html">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
-<link rel="icon" type="image/png" sizes="180x180" href="icon-180.png">
+<meta name="twitter:image" content="https://opengym.ch/img/social.jpg">
+<link rel="canonical" href="https://opengym.ch/api.html">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="96x96" href="/icon-96.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="styles.css?v=23">
+<link rel="stylesheet" href="styles.css?v=24">
 <script>document.documentElement.className += ' js'</script>
-<!-- Umami web analytics for opengym.duarte-santos.ch (self-hosted, cookieless). -->
+<!-- Umami web analytics for opengym.ch (self-hosted, cookieless). -->
 <script defer src="https://stats.duarte-santos.ch/script.js" data-website-id="db36019e-50f4-453c-9c56-d0588aefe233"></script>
 <style>${css}</style>
 </head>
@@ -624,7 +626,7 @@ ${schemaCards}
   </div>
 </div></footer>
 
-<script src="site.js?v=23" defer></script>
+<script src="site.js?v=24" defer></script>
 <script>${js}</script>
 </body>
 </html>

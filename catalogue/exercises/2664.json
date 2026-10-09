@@ -1,0 +1,22 @@
+{
+  "id": "2664",
+  "name": "lever seated row (plate loaded)",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "biceps",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A plate-loaded seated row machine with a chest pad that builds the mid back and lats.",
+  "instructions": [
+    "Adjust the seat so the handles line up with your mid chest.",
+    "Sit with your chest against the pad and grip the handles.",
+    "Pull your elbows back and squeeze the shoulder blades.",
+    "Pause briefly, then return slowly.",
+    "Keep your torso tight against the pad."
+  ],
+  "textSource": "opengym"
+}

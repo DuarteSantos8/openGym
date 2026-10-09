@@ -1,0 +1,23 @@
+{
+  "id": "4043",
+  "name": "inverted shrug (on parallel bars)",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "traps",
+  "secondaryMuscles": [
+    "upper back",
+    "rhomboids",
+    "shoulders",
+    "grip muscles"
+  ],
+  "category": "calisthenics",
+  "description": "Hanging from parallel bars, you shrug your shoulder blades up and down. It builds the traps and shoulder control.",
+  "instructions": [
+    "Grip the parallel bars and hang in an inverted position with arms straight.",
+    "Keep your body stable and your elbows locked.",
+    "Draw your shoulder blades down and together, pulling your body up a little.",
+    "Lower back to a full hang under control.",
+    "Repeat for controlled reps."
+  ],
+  "textSource": "opengym"
+}

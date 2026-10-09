@@ -1,0 +1,22 @@
+{
+  "id": "10916",
+  "name": "bodyweight single leg deadlift toe touch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A single-leg hinge where you reach to touch your toes. It trains balance and the hamstrings.",
+  "instructions": [
+    "Stand on one leg with a soft knee.",
+    "Hinge forward as the free leg lifts behind you.",
+    "Reach your hands toward the toes of the standing foot.",
+    "Keep your back flat and hips square.",
+    "Stand back up with control. Finish your reps and switch legs."
+  ],
+  "textSource": "opengym"
+}

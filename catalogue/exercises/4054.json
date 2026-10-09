@@ -1,0 +1,21 @@
+{
+  "id": "4054",
+  "name": "dumbbell one arm triceps extension on stability ball",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Overhead triceps extension with one dumbbell while seated on a stability ball. The ball adds a core challenge.",
+  "instructions": [
+    "Sit tall on a stability ball and hold a dumbbell overhead in one hand.",
+    "Keep your upper arm close to your head.",
+    "Bend your elbow and lower the dumbbell behind your head.",
+    "Extend your arm back up.",
+    "Finish the reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

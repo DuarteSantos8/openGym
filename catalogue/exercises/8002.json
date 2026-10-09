@@ -1,0 +1,23 @@
+{
+  "id": "8002",
+  "name": "resistance band wide stance anti rotation chop",
+  "bodyPart": "waist",
+  "equipment": "resistance band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "shoulders",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A band chop in a wide stance where you resist twisting. It strengthens the abs and obliques.",
+  "instructions": [
+    "Anchor the band at one side and stand sideways with your feet wide.",
+    "Hold the handle with both hands.",
+    "Brace your core.",
+    "Press or chop diagonally while keeping your torso square.",
+    "Return slowly. Switch sides after your set."
+  ],
+  "textSource": "opengym"
+}

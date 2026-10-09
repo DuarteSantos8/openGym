@@ -1,0 +1,24 @@
+{
+  "id": "10108",
+  "name": "medicine ball overhead toss",
+  "bodyPart": "full body",
+  "equipment": "medicine ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "glutes",
+    "hip flexors"
+  ],
+  "category": "plyometrics",
+  "description": "An explosive throw of a medicine ball from behind the head forward. It builds power from hips to arms.",
+  "instructions": [
+    "Stand holding a medicine ball overhead.",
+    "Reach back slightly and brace your abs.",
+    "Throw the ball forward powerfully.",
+    "Follow through with your arms.",
+    "Pick up the ball and reset.",
+    "Keep your back neutral."
+  ],
+  "textSource": "opengym"
+}

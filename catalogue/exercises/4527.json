@@ -1,0 +1,23 @@
+{
+  "id": "4527",
+  "name": "kettlebell single arm swing",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A hip-driven swing with one hand on a kettlebell. It builds explosive posterior chain power.",
+  "instructions": [
+    "Stand with feet slightly wider than your shoulders and the kettlebell in front of you.",
+    "Hinge back and swing the bell between your legs.",
+    "Snap your hips forward to swing it to chest height.",
+    "Let the arm stay relaxed; the hips do the work.",
+    "Let the bell fall back and hinge again. Switch hands after your set."
+  ],
+  "textSource": "opengym"
+}

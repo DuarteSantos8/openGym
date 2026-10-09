@@ -1,0 +1,22 @@
+{
+  "id": "1686",
+  "name": "squat to overhead reach with twist",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A squat with an overhead reach and a twist. It trains the legs and mobilizes the torso.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and toes slightly turned out.",
+    "Lower your body into a squat position by bending your knees and pushing your hips back.",
+    "As you come up from the squat, raise your arms overhead and twist your torso to one side.",
+    "Return to the starting position and repeat the squat, this time twisting your torso to the opposite side.",
+    "Continue alternating sides with each squat repetition."
+  ],
+  "textSource": "exercisedb"
+}

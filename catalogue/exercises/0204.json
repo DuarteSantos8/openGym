@@ -1,0 +1,21 @@
+{
+  "id": "0204",
+  "name": "cable rear drive",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "back"
+  ],
+  "category": "strength",
+  "description": "A cable move where you drive the handle back behind you with the arms extended. It works the triceps and rear shoulders.",
+  "instructions": [
+    "Attach a handle to a low pulley cable machine and stand facing away from the machine.",
+    "Grasp the handle with an overhand grip and extend your arms straight out in front of you.",
+    "Keeping your elbows stationary, pull the handle back towards your body, squeezing your triceps at the end of the movement.",
+    "Slowly return the handle to the starting position and repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3059",
+  "textSource": "exercisedb"
+}

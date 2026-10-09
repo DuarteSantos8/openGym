@@ -1,0 +1,22 @@
+{
+  "id": "7565",
+  "name": "barbell bent arm pullover v. 2",
+  "bodyPart": "back",
+  "equipment": "barbell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "chest",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Pullover with slightly bent arms using a barbell for lats and chest.",
+  "instructions": [
+    "Lie on a bench holding a barbell above your chest.",
+    "Keep a slight elbow bend.",
+    "Lower the bar behind your head.",
+    "Pull it back over your chest.",
+    "Keep your ribs down."
+  ],
+  "textSource": "opengym"
+}

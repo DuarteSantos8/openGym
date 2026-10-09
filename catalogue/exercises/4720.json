@@ -1,0 +1,21 @@
+{
+  "id": "4720",
+  "name": "band kneeling crunch v. 2",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A kneeling crunch against band resistance. It strengthens the abs through a loaded crunch.",
+  "instructions": [
+    "Anchor the band overhead and kneel facing it.",
+    "Hold the band beside your head.",
+    "Crunch down, bringing your elbows toward your thighs.",
+    "Round your spine and tighten your abs.",
+    "Return slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

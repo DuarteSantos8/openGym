@@ -1,0 +1,22 @@
+{
+  "id": "6354",
+  "name": "lever outdoor seated leg press",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "Seated leg press on an outdoor lever machine, pushing the pads away with your legs to train thighs and glutes.",
+  "instructions": [
+    "Sit on the seat with your back against the pad.",
+    "Place your feet on the footplates, shoulder-width apart.",
+    "Push the plates away until your legs are nearly straight.",
+    "Do not lock your knees at the top.",
+    "Bend your knees to return slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

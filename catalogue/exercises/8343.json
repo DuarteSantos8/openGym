@@ -1,0 +1,23 @@
+{
+  "id": "8343",
+  "name": "bodyweight standing t spine press",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "upper back",
+    "shoulders",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "A standing movement that presses the arms overhead to open up the thoracic spine. It improves upper back extension.",
+  "instructions": [
+    "Stand with your feet hip width apart.",
+    "Clasp your hands in front of your chest.",
+    "Press your arms up and slightly back while lifting your chest.",
+    "Extend through your upper back without flaring your ribs.",
+    "Return to the start under control.",
+    "Repeat for smooth, slow reps."
+  ],
+  "textSource": "opengym"
+}

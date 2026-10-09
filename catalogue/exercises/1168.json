@@ -1,0 +1,22 @@
+{
+  "id": "1168",
+  "name": "lying (prone) abdominal stretch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "A face-down stretch that lengthens the abdominals, similar to a cobra position.",
+  "instructions": [
+    "Lie face down with your hands under your shoulders.",
+    "Press up slowly, straightening your arms as far as is comfortable.",
+    "Keep your hips on the floor and relax your glutes.",
+    "Look forward and feel the stretch along your belly.",
+    "Hold for 20-30 seconds, then lower down."
+  ],
+  "femaleVariant": "1055",
+  "textSource": "opengym"
+}

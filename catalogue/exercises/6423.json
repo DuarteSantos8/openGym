@@ -1,0 +1,21 @@
+{
+  "id": "6423",
+  "name": "bodyweight triceps extension from plank position",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "From a plank, you bend and straighten your elbows to hinge forward and press back, a tough bodyweight move for the triceps.",
+  "instructions": [
+    "Start in a forearm-height plank with your hands under your shoulders.",
+    "Keep your body in a straight line.",
+    "Lean forward and bend your elbows to lower your head toward your hands.",
+    "Press back up by straightening your arms.",
+    "Keep your core tight and repeat."
+  ],
+  "textSource": "opengym"
+}

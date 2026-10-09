@@ -1,0 +1,22 @@
+{
+  "id": "1292",
+  "name": "dumbbell one leg fly on exercise ball",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A dumbbell fly on a stability ball with one leg lifted, which makes balance harder. It works the chest and trains core stability.",
+  "instructions": [
+    "Sit on an exercise ball with a dumbbell in each hand, palms facing each other.",
+    "Place one foot on the ground and extend the other leg straight out in front of you.",
+    "Lean forward slightly and bring your arms out to the sides, keeping a slight bend in your elbows.",
+    "Slowly lower the dumbbells down and out to the sides, feeling a stretch in your chest.",
+    "Pause for a moment at the bottom, then squeeze your chest muscles to bring the dumbbells back up to the starting position.",
+    "Repeat for the desired number of repetitions, then switch legs and repeat."
+  ],
+  "textSource": "exercisedb"
+}

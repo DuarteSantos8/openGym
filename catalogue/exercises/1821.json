@@ -1,0 +1,22 @@
+{
+  "id": "1821",
+  "name": "elbow extension and supination pronation forearm stretch",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "wrist extensors",
+    "biceps"
+  ],
+  "category": "stretching",
+  "description": "Straightening your elbow and rotating your forearm stretches the muscles on both sides of the lower arm.",
+  "instructions": [
+    "Extend one arm in front of you with your elbow straight.",
+    "Slowly rotate your palm up and down and let your other hand add gentle pressure at each end.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

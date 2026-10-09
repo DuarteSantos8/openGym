@@ -1,0 +1,23 @@
+{
+  "id": "8479",
+  "name": "bosu ball balance counterbalanced skater squat",
+  "bodyPart": "upper legs",
+  "equipment": "bosu ball",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "ankles"
+  ],
+  "category": "strength",
+  "description": "A single-leg squat on a bosu ball with the free leg reaching back for balance, challenging the legs and stability.",
+  "instructions": [
+    "Stand on one foot on the bosu ball and hold your arms in front for balance.",
+    "Reach the free leg back behind you.",
+    "Sit your hips back and lower into a single-leg squat.",
+    "Drive through the standing foot to rise.",
+    "Finish the reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

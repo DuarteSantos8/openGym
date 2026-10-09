@@ -1,0 +1,21 @@
+{
+  "id": "0161",
+  "name": "cable forward raise",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A cable raise in front of you. Works the front delts.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and your knees slightly bent.",
+    "Hold the cable handle with an overhand grip, palms facing down, and your arms fully extended in front of you.",
+    "Keeping your arms straight, raise the cable handle up to shoulder level.",
+    "Pause for a moment at the top, then slowly lower the cable handle back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

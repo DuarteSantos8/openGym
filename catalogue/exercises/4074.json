@@ -1,0 +1,22 @@
+{
+  "id": "4074",
+  "name": "band low chest press",
+  "bodyPart": "chest",
+  "equipment": "band",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "Pressing a band upward from a low anchor. It trains the upper chest and triceps.",
+  "instructions": [
+    "Anchor the band low behind you and hold the ends at chest level.",
+    "Step forward into a staggered stance.",
+    "Press your hands up and forward.",
+    "Pause, then return slowly.",
+    "Keep your core braced."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "1813",
+  "name": "standing back rotation stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "obliques",
+    "upper back",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "Rotating through your trunk while standing stretches your back and obliques. It is a quick way to loosen up your torso.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and your arms at chest height.",
+    "Rotate your upper body to one side, keeping your hips facing forward.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "femaleVariant": "4316",
+  "textSource": "opengym"
+}

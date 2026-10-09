@@ -1,0 +1,23 @@
+{
+  "id": "3912",
+  "name": "cable bent over one arm lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A bent-over one-arm cable raise that hits the rear delts.",
+  "instructions": [
+    "Stand next to a low pulley and bend forward at the hips with a flat back.",
+    "Grab the handle with the far hand.",
+    "Raise your arm out to the side with a soft elbow.",
+    "Lift to shoulder height.",
+    "Lower slowly.",
+    "Switch sides after your reps."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "10539",
+  "name": "weighted seated single leg knee extension v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "weighted",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A seated knee extension with a light weight on the ankle. It adds load to build thigh strength.",
+  "instructions": [
+    "Strap a light ankle weight on and sit tall on a chair.",
+    "Hold the seat edge for support.",
+    "Straighten the knee until your leg is level.",
+    "Hold for a second and squeeze your thigh.",
+    "Lower slowly, then switch legs after your reps."
+  ],
+  "textSource": "opengym"
+}

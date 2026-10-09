@@ -1,0 +1,21 @@
+{
+  "id": "4350",
+  "name": "cable lying regular grip curl",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A biceps curl performed lying on your back with a cable. The lying position keeps constant tension on the biceps.",
+  "instructions": [
+    "Lie on your back with your feet toward a low pulley and grab the bar with an underhand grip.",
+    "Pin your upper arms to the floor beside you.",
+    "Curl the bar up toward your shoulders.",
+    "Squeeze your biceps at the top.",
+    "Lower the bar slowly until your arms are straight and repeat."
+  ],
+  "textSource": "opengym"
+}

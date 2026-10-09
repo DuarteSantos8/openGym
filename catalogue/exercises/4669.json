@@ -1,0 +1,22 @@
+{
+  "id": "4669",
+  "name": "kneeling hip thrust",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "A hip thrust from a kneeling position. It works the glutes and teaches strong hip extension.",
+  "instructions": [
+    "Kneel upright with your hips over your knees and your arms by your sides.",
+    "Sit your hips back toward your heels.",
+    "Drive your hips forward, squeezing your glutes.",
+    "Stand tall at the top without leaning back.",
+    "Return slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

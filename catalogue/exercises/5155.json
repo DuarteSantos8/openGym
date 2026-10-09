@@ -1,0 +1,22 @@
+{
+  "id": "5155",
+  "name": "lateral step up with knee drive",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Step sideways onto a box and drive the other knee up. It adds balance and hip flexion to the lateral step up.",
+  "instructions": [
+    "Stand sideways next to a box with one foot on top.",
+    "Press through that foot to step up.",
+    "Drive your other knee up toward your chest.",
+    "Lower back down with control.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

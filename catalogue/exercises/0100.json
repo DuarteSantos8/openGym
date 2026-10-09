@@ -1,0 +1,22 @@
+{
+  "id": "0100",
+  "name": "barbell skier",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A shoulder exercise in which you swing the barbell through a skiing-like pattern. Trains the delts and core.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold a barbell in front of your thighs with an overhand grip.",
+    "Bend your knees slightly and hinge forward at the hips, keeping your back straight and chest up.",
+    "Simultaneously lift the barbell up towards your shoulders while jumping slightly off the ground.",
+    "As you reach the top of the movement, quickly reverse the motion and lower the barbell back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2817",
+  "textSource": "exercisedb"
+}

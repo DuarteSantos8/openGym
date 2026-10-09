@@ -1,0 +1,22 @@
+{
+  "id": "1278",
+  "name": "dumbbell incline fly on exercise ball",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Dumbbell fly with your upper back on an incline bench and your hips supported by a stability ball. It hits the upper chest and challenges balance.",
+  "instructions": [
+    "Set up an incline bench at a 45-degree angle.",
+    "Sit on an exercise ball and roll forward until your upper back is resting on the incline bench.",
+    "Hold a dumbbell in each hand with your palms facing each other and your arms extended above your chest.",
+    "Lower the dumbbells out to the sides in a wide arc until you feel a stretch in your chest.",
+    "Pause for a moment, then squeeze your chest muscles to bring the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2626",
+  "textSource": "exercisedb"
+}

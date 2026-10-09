@@ -1,0 +1,38 @@
+{
+  "id": "0066",
+  "name": "barbell one arm side deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A deadlift variation where the bar is lowered along one side of the body. Works the glutes and hips.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a barbell in one hand with an overhand grip.",
+    "Keep your back straight and your core engaged.",
+    "Bend at the hips and lower the barbell towards the outside of your leg, keeping your arm straight and your chest up.",
+    "Lower the barbell as far as you can while maintaining good form.",
+    "Pause for a moment, then slowly return to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides."
+  ],
+  "muscleMap": {
+    "bodyPart": "full body",
+    "primaries": [
+      "gluteal",
+      "hamstring",
+      "lower-back"
+    ],
+    "secondaries": [
+      "quadriceps",
+      "adductors",
+      "calves",
+      "abs",
+      "obliques"
+    ]
+  },
+  "textSource": "exercisedb"
+}

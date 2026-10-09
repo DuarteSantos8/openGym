@@ -1,0 +1,21 @@
+{
+  "id": "0309",
+  "name": "dumbbell front raise v. 2",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A dumbbell front raise lifting the weights in front to shoulder level. It trains the front delts.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in each hand with your palms facing your thighs.",
+    "Keep your back straight and engage your core.",
+    "Slowly lift the dumbbells in front of you, with your arms straight, until they are at shoulder level.",
+    "Pause for a moment at the top, then slowly lower the dumbbells back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

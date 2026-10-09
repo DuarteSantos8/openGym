@@ -1,0 +1,22 @@
+{
+  "id": "4729",
+  "name": "dumbbell bench dip with legs elevated",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A weighted bench dip with your feet raised on a second bench, which makes the triceps work harder.",
+  "instructions": [
+    "Place two benches facing each other, hands on one and heels on the other.",
+    "Set a dumbbell on your lap and keep your legs straight.",
+    "Lower your hips by bending your elbows to about 90 degrees.",
+    "Keep your chest up and your elbows pointing back.",
+    "Press up until your arms are straight again."
+  ],
+  "textSource": "opengym"
+}

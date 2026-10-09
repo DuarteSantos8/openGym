@@ -1,0 +1,23 @@
+{
+  "id": "7884",
+  "name": "lever push up with towels",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up with your hands on towels, adding instability for the chest and shoulders.",
+  "instructions": [
+    "Place your hands on towels on the floor in a plank.",
+    "Keep your body in a straight line.",
+    "Lower your chest toward the floor.",
+    "Press back up.",
+    "Keep your elbows at about 45 degrees.",
+    "Repeat for the planned reps."
+  ],
+  "textSource": "opengym"
+}

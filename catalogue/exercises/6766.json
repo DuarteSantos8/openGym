@@ -1,0 +1,23 @@
+{
+  "id": "6766",
+  "name": "roll ball posterior tibialis (single leg) side lying on floor",
+  "bodyPart": "lower legs",
+  "equipment": "roller",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "shins",
+    "ankles"
+  ],
+  "category": "mobility",
+  "description": "Rolling a ball under the inner lower leg while lying on your side. It releases the deep calf muscle that supports the arch.",
+  "instructions": [
+    "Lie on your side with a small ball under the inside of your lower leg.",
+    "Support yourself with your hands and the other leg.",
+    "Slowly roll the leg along the ball from calf toward ankle.",
+    "Pause on tender spots with light pressure.",
+    "Breathe and relax the leg.",
+    "Roll for 30-60 seconds, then switch legs."
+  ],
+  "textSource": "opengym"
+}

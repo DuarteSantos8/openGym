@@ -1,0 +1,21 @@
+{
+  "id": "1833",
+  "name": "neck extension stretch",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "sternocleidomastoid",
+    "trapezius"
+  ],
+  "category": "stretching",
+  "description": "Tilting your head back stretches the front of the neck. Go slowly and stay within a comfortable range.",
+  "instructions": [
+    "Sit or stand tall with your shoulders relaxed.",
+    "Slowly tilt your head back to look up at the ceiling, keeping your jaw relaxed.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

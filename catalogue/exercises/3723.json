@@ -1,0 +1,24 @@
+{
+  "id": "3723",
+  "name": "barbell curtsey lunge",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "adductors",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A lunge where you step diagonally behind you with a barbell on your back. It works the glutes and outer hips.",
+  "instructions": [
+    "Rest a barbell across your upper back and stand tall.",
+    "Step one leg back and across behind the other, like a curtsey.",
+    "Lower until your front thigh is near parallel.",
+    "Push through your front heel to stand.",
+    "Alternate sides or finish one side first."
+  ],
+  "femaleVariant": "8190",
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "1520",
+  "name": "barbell hang clean",
+  "bodyPart": "full body",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "trapezius",
+    "shoulders",
+    "core"
+  ],
+  "category": "olympic",
+  "description": "A clean that starts from the hang at the thighs. It trains the explosive hip drive and the catch.",
+  "instructions": [
+    "Stand holding the bar at mid-thigh with a grip just outside your legs and a flat back.",
+    "Brace your core and keep the bar close to your body.",
+    "Extend your hips and knees powerfully and shrug your shoulders.",
+    "Pull yourself under the bar and catch it on your front shoulders in a squat.",
+    "Stand tall to finish, then lower the bar with control."
+  ],
+  "textSource": "opengym"
+}

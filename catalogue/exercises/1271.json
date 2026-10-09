@@ -1,0 +1,22 @@
+{
+  "id": "1271",
+  "name": "chest and front of shoulder stretch",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "deltoids"
+  ],
+  "category": "stretching",
+  "description": "A stretch for the chest and the fronts of the shoulders with the hands clasped. It loosens the chest.",
+  "instructions": [
+    "Stand tall with your feet shoulder-width apart.",
+    "Extend your arms straight out in front of you at shoulder height.",
+    "Cross your arms in front of your body, with your right arm on top of your left arm.",
+    "Interlace your fingers and press your palms together.",
+    "Gently squeeze your shoulder blades together and push your hands forward, feeling a stretch in your chest and front of your shoulders.",
+    "Hold the stretch for 20-30 seconds, then release.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

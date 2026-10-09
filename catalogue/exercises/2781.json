@@ -1,0 +1,21 @@
+{
+  "id": "2781",
+  "name": "shoulder transverse abduction",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids"
+  ],
+  "category": "mobility",
+  "description": "Moving the arm backward in a horizontal arc, working the rear delts and upper back.",
+  "instructions": [
+    "Stand or sit tall with a relaxed posture and the joint in a neutral starting position.",
+    "Stand tall with one arm held out in front at shoulder height.",
+    "Sweep the arm out and back in a horizontal arc as far as is comfortable.",
+    "Keep the arm at shoulder height, pause, then return.",
+    "Repeat for 10-15 smooth reps, then switch sides if you are working one side at a time."
+  ],
+  "textSource": "opengym"
+}

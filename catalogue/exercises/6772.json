@@ -1,0 +1,22 @@
+{
+  "id": "6772",
+  "name": "standing peroneus muscles stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "feet"
+  ],
+  "category": "stretching",
+  "description": "A standing stretch for the muscles on the outside of the lower leg. It helps ankle mobility.",
+  "instructions": [
+    "Stand near a wall for balance.",
+    "Cross one foot behind and turn the sole so the outer edge presses into the floor.",
+    "Gently shift your weight onto that foot.",
+    "Feel the stretch along the outside of the lower leg.",
+    "Hold for 20-30 seconds, breathing calmly.",
+    "Switch feet."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "10860",
+  "name": "cable side leg kick from back",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A standing cable kick that sweeps the leg out and back. It works the outer hip and glutes.",
+  "instructions": [
+    "Attach an ankle cuff to a low pulley and strap it to one ankle.",
+    "Stand side-on to the machine and hold the frame for balance.",
+    "Kick the working leg out and slightly behind you, keeping the knee mostly straight.",
+    "Pause, then return slowly without letting the weight stack touch down.",
+    "Keep your torso still. Finish all reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

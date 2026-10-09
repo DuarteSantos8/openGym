@@ -1,0 +1,22 @@
+{
+  "id": "1306",
+  "name": "plyo push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A push-up that you drive explosively so your hands leave the floor. It builds fast pressing power in the chest, shoulders and triceps.",
+  "instructions": [
+    "Start in a high plank position with your hands slightly wider than shoulder-width apart.",
+    "Lower your chest towards the ground by bending your elbows, keeping your body in a straight line.",
+    "Push explosively off the ground, using your chest muscles to propel your upper body off the ground.",
+    "Land softly with your hands back in the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

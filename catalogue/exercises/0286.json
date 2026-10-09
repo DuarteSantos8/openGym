@@ -1,0 +1,21 @@
+{
+  "id": "0286",
+  "name": "dumbbell alternate side press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A standing dumbbell shoulder press that alternates arms. One arm presses overhead while the other stays at the shoulder.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in each hand at shoulder height.",
+    "Press one dumbbell overhead while keeping the other dumbbell at shoulder height.",
+    "Lower the pressed dumbbell back to shoulder height while pressing the other dumbbell overhead.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "femaleVariant": "2592",
+  "textSource": "exercisedb"
+}

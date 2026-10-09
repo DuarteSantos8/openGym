@@ -1,0 +1,21 @@
+{
+  "id": "5774",
+  "name": "single leg thrusts",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Hip thrusts done on one leg with your upper back on a support. Builds glute strength and hip stability.",
+  "instructions": [
+    "Rest your upper back on a bench with one foot flat and the other leg lifted.",
+    "Keep your arms out for balance.",
+    "Drive through your heel to lift your hips until level.",
+    "Squeeze your glute at the top.",
+    "Lower with control and switch legs after your reps."
+  ],
+  "textSource": "opengym"
+}

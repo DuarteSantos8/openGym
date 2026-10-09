@@ -1,0 +1,23 @@
+{
+  "id": "6961",
+  "name": "uneven pull up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "forearms",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A pull-up with the hands at different heights or one hand doing more work. It gently trains one-arm pulling strength.",
+  "instructions": [
+    "Hang from the bar with one hand higher or on a towel and the other lower.",
+    "Brace your core and pull your chest up.",
+    "Lead with the working arm and pull your chin toward the bar.",
+    "Lower yourself under control.",
+    "Switch the hand positions on the next set."
+  ],
+  "textSource": "opengym"
+}

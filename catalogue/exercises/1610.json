@@ -1,0 +1,21 @@
+{
+  "id": "1610",
+  "name": "barbell behind back finger curl",
+  "bodyPart": "lower arms",
+  "equipment": "barbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A forearm exercise where you hold the bar behind your back and roll it down to your fingertips. It builds grip and forearm strength.",
+  "instructions": [
+    "Stand holding a barbell behind your back with an overhand grip, arms straight.",
+    "Let the bar roll down to your fingertips.",
+    "Curl your fingers closed and lift the bar back into your palms.",
+    "Curl your wrists up a little at the top.",
+    "Lower with control and repeat."
+  ],
+  "textSource": "opengym"
+}

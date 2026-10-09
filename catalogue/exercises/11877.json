@@ -1,0 +1,22 @@
+{
+  "id": "11877",
+  "name": "hanging l sit",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs",
+    "forearms"
+  ],
+  "category": "isometric",
+  "description": "A hanging hold with legs straight out in front that challenges the abs and grip.",
+  "instructions": [
+    "Hang from a bar with straight arms.",
+    "Lift your legs straight in front until they are parallel to the floor.",
+    "Keep your toes pointed and your knees locked.",
+    "Avoid swinging.",
+    "Hold for 10-20 seconds, then lower."
+  ],
+  "textSource": "opengym"
+}

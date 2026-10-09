@@ -1,0 +1,23 @@
+{
+  "id": "4213",
+  "name": "lever banded chest press",
+  "bodyPart": "chest",
+  "equipment": "leverage machine",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A machine chest press with bands adding extra resistance at the top. It builds the chest and triceps with a stable path.",
+  "instructions": [
+    "Adjust the seat so the handles line up with your mid chest.",
+    "Sit back with your shoulder blades pinned to the pad.",
+    "Grip the handles and press forward until your arms are nearly straight.",
+    "Feel the band tension build as you lock out.",
+    "Lower slowly until you feel a stretch across your chest.",
+    "Keep your wrists straight."
+  ],
+  "textSource": "opengym"
+}

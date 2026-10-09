@@ -16,36 +16,13 @@ spec:
       labels:
         app: opengym
     spec:
-      initContainers:
-        # The exercise images and GIFs, one time (~140 MB) — the same download as the media
-        # service in docker-compose.yml. They are © Gym visual (https://gymvisual.com/), used
-        # under the exercises-dataset's terms and fetched from upstream, not redistributed by
-        # openGym; see NOTICE.md.
-        - name: media-download
-          image: alpine/git:2.52.0
-          command: ["/bin/sh", "-c"]
-          args:
-            - |
-              mkdir -p /out/img /out/gif
-              if [ -z "$(ls -A /out/img 2>/dev/null)" ]; then
-                git clone --depth 1 https://github.com/hasaneyldrm/exercises-dataset /tmp/ds
-                cp /tmp/ds/images/*.jpg /out/img/ && cp /tmp/ds/videos/*.gif /out/gif/
-              fi
-          volumeMounts:
-            - name: opengym-media
-              mountPath: /out
-          resources:
-            requests:
-              memory: 128Mi
-            limits:
-              memory: 256Mi
       containers:
         - name: api
           # Pin both images to one release and move them together: a tag names what you run and
           # what you roll back to, where :latest changes under a pod whenever it is rescheduled.
           # The API and the web image of one version belong together. The published tags are
-          # the version (1.3.10) and its minor line (1.3); see the release notes before a bump.
-          image: ghcr.io/duartesantos8/opengym-api:1.3.10
+          # the version (1.4.0) and its minor line (1.4); see the release notes before a bump.
+          image: ghcr.io/duartesantos8/opengym-api:1.4.0
           imagePullPolicy: IfNotPresent
           env:
             - name: PORT
@@ -87,11 +64,14 @@ spec:
             limits:
               memory: 512Mi
         - name: web
-          image: ghcr.io/duartesantos8/opengym-web:1.3.10   # same version as the api container
+          image: ghcr.io/duartesantos8/opengym-web:1.4.0   # same version as the api container
           imagePullPolicy: IfNotPresent
           env:
+            # Not the image's default 80: the image runs as uid 101, which can bind a port below
+            # 1024 only where the runtime sets net.ipv4.ip_unprivileged_port_start=0 (Docker
+            # does, most Kubernetes runtimes do not). The Service targets this port by name.
             - name: NGINX_PORT
-              value: "80"
+              value: "8080"
             # Both containers share the pod's network, so the API is on localhost. An IP here
             # also means nginx never needs RESOLVER (Docker's DNS by default) to find it.
             - name: BACKEND
@@ -99,25 +79,20 @@ spec:
             - name: PORT
               value: "3000"
           ports:
-            - containerPort: 80
+            - containerPort: 8080
               name: web
               protocol: TCP
           readinessProbe:
             httpGet:
               path: /
-              port: 80
+              port: web
           livenessProbe:
             httpGet:
               path: /
-              port: 80
+              port: web
             initialDelaySeconds: 30
-          volumeMounts:
-            - name: opengym-media
-              mountPath: /usr/share/nginx/html/img
-              subPath: img
-            - name: opengym-media
-              mountPath: /usr/share/nginx/html/gif
-              subPath: gif
+          # No volume: the exercise stills and animations (180 px) are part of the web image since
+          # v1.4.0. They are licensed from Gym visual for openGym only; see NOTICE.md.
           resources:
             requests:
               memory: 32Mi
@@ -127,6 +102,3 @@ spec:
         - name: opengym-data
           persistentVolumeClaim:
             claimName: opengym-data
-        - name: opengym-media
-          persistentVolumeClaim:
-            claimName: opengym-media

@@ -1,0 +1,24 @@
+{
+  "id": "3448",
+  "name": "dumbbell side lunge v. 3",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A side lunge with dumbbells that works the thighs and inner thighs.",
+  "instructions": [
+    "Hold a dumbbell in each hand.",
+    "Step wide to one side.",
+    "Sit your hips back and bend that knee.",
+    "Keep your other leg straight.",
+    "Push off to return to center.",
+    "Alternate sides."
+  ],
+  "femaleVariant": "3447",
+  "textSource": "opengym"
+}

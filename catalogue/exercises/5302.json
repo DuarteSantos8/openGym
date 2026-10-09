@@ -1,0 +1,23 @@
+{
+  "id": "5302",
+  "name": "balance board v. 2",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "feet",
+    "core"
+  ],
+  "category": "rehab",
+  "description": "Standing on a balance board to train stability. It strengthens the ankles and the small stabilisers in the feet.",
+  "instructions": [
+    "Place the board on a flat, non-slip surface.",
+    "Step onto it with your feet shoulder-width apart.",
+    "Keep your knees soft and your core tight.",
+    "Tilt gently without letting the edges touch the floor.",
+    "Balance for 30-60 seconds."
+  ],
+  "femaleVariant": "6694",
+  "textSource": "opengym"
+}

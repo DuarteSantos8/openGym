@@ -1,0 +1,22 @@
+{
+  "id": "4470",
+  "name": "roll ball adductors",
+  "bodyPart": "upper legs",
+  "equipment": "roller",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "inner thighs",
+    "groin"
+  ],
+  "category": "mobility",
+  "description": "Self-massage with a small ball to ease tension in the inner thigh (adductors). A simple way to loosen tight spots before or after training.",
+  "instructions": [
+    "Place the ball under your inner thigh (adductors) while lying face down with your thigh turned out.",
+    "Shift your weight onto the ball until you feel moderate, tolerable pressure.",
+    "Roll slowly back and forth over a short range, about 2-3 cm at a time.",
+    "When you find a tender spot, pause on it and breathe for 20-30 seconds.",
+    "Keep your breathing steady and avoid rolling over bone or joints.",
+    "Repeat on the other side if needed."
+  ],
+  "textSource": "opengym"
+}

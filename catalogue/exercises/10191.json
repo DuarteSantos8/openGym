@@ -1,0 +1,23 @@
+{
+  "id": "10191",
+  "name": "clock goblet squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A goblet squat that steps around an imaginary clock, training the legs from several directions.",
+  "instructions": [
+    "Hold a dumbbell at your chest and picture a clock on the floor around you.",
+    "Step to 12 o'clock and squat down with your chest up.",
+    "Stand up and return to the center.",
+    "Step to the next position on the clock and squat again.",
+    "Work your way around the clock with control and switch direction on the next set."
+  ],
+  "textSource": "opengym"
+}

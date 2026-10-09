@@ -1,0 +1,22 @@
+{
+  "id": "5134",
+  "name": "seated ballerina",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper back",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "A seated arm movement like a ballet arm sweep. It loosens the shoulders and warms up the upper body.",
+  "instructions": [
+    "Sit tall with arms by your sides.",
+    "Sweep your arms out and up in a wide arc.",
+    "Bring your hands overhead.",
+    "Lower them back with control.",
+    "Keep the movement graceful.",
+    "Repeat at an easy pace."
+  ],
+  "textSource": "opengym"
+}

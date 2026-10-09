@@ -1,0 +1,22 @@
+{
+  "id": "5476",
+  "name": "barbell staggered stance hip thrust",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A hip thrust with one foot set slightly ahead of the other. Shifts more load to one side and challenges hip stability.",
+  "instructions": [
+    "Sit with your upper back against a bench and a barbell over your hips.",
+    "Place one foot slightly ahead of the other.",
+    "Drive through your feet to lift your hips until your torso is level.",
+    "Squeeze your glutes at the top, keeping your chin tucked.",
+    "Lower under control, and swap the foot position on the next set."
+  ],
+  "textSource": "opengym"
+}

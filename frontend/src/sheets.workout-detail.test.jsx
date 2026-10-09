@@ -150,3 +150,32 @@ describe('workout detail', () => {
     delete document.execCommand
   })
 })
+
+// #447: the workout as a Garmin .fit activity, saved as a download in the browser.
+describe('export as .fit', () => {
+  it('saves the saved record as a .fit file named after its day and time', async () => {
+    const blobs = []
+    const createObjectURL = vi.fn(blob => { blobs.push(blob); return 'blob:fit' })
+    vi.stubGlobal('URL', Object.assign(Object.create(URL), { createObjectURL, revokeObjectURL: vi.fn() }))
+    const clicked = []
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function () { clicked.push(this.download) })
+    const w = workout([{ id: lifts[0], target: { mode: 'reps' }, sets: [done(60, 5), done(60, 5)] }])
+    useStore.setState(s => ({ S: { ...s.S, workouts: [w] } }))
+    workoutDetailSheet(w)
+    const host = mountTopSheet()
+    await act(async () => { button(host, 'Export as .fit file').click() })
+    expect(clicked).toHaveLength(1)
+    expect(clicked[0]).toMatch(/^opengym-2026-09-15-\d{4}\.fit$/)
+    const bytes = new Uint8Array(await blobs[0].arrayBuffer())
+    expect(String.fromCharCode(...bytes.slice(8, 12))).toBe('.FIT')
+    expect(toast).toHaveBeenCalledWith('Saved. Garmin Connect can take it from here.')
+    click.mockRestore()
+  })
+
+  it('says so when the workout cannot be written', async () => {
+    workoutDetailSheet({ id: 'x', name: 'Nowhen', entries: [], prs: [] })
+    const host = mountTopSheet()
+    await act(async () => { button(host, 'Export as .fit file').click() })
+    expect(toast).toHaveBeenCalledWith('Could not create the file')
+  })
+})

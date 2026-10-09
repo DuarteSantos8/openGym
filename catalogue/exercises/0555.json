@@ -1,0 +1,21 @@
+{
+  "id": "0555",
+  "name": "kick out sit",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A seated core move where you lean back and kick your legs out and in. Works the abs and hip flexors without any equipment.",
+  "instructions": [
+    "Sit on the edge of a bench or chair with your feet flat on the ground and your knees bent at a 90-degree angle.",
+    "Lean back slightly and place your hands on the edge of the bench or chair for support.",
+    "Engaging your hamstrings, lift your feet off the ground and extend your legs straight out in front of you.",
+    "Pause for a moment at the top, then slowly bend your knees and bring your feet back towards your body.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

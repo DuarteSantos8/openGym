@@ -1,0 +1,21 @@
+{
+  "id": "7864",
+  "name": "lever overhead triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "leverage machine",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A machine overhead triceps extension. The lever path keeps the movement smooth and the focus on the triceps.",
+  "instructions": [
+    "Adjust the seat and sit with your back supported.",
+    "Grip the handles overhead with your elbows pointing up.",
+    "Extend your arms until they are almost straight.",
+    "Squeeze your triceps at the top.",
+    "Lower slowly behind your head."
+  ],
+  "textSource": "opengym"
+}

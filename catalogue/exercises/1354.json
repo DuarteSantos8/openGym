@@ -1,0 +1,22 @@
+{
+  "id": "1354",
+  "name": "medicine ball overhead slam",
+  "bodyPart": "back",
+  "equipment": "medicine ball",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "Lift a medicine ball overhead and slam it into the floor with force. It builds full body power and trains the lats, core and shoulders.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a medicine ball with both hands above your head.",
+    "Engage your core and keep your back straight.",
+    "Bend your knees slightly and forcefully slam the medicine ball down to the ground in front of you.",
+    "As you slam the ball down, use your entire body to generate power, including your shoulders and core.",
+    "Catch the ball on the bounce and repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2545",
+  "textSource": "exercisedb"
+}

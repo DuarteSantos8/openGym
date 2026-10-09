@@ -1,0 +1,23 @@
+{
+  "id": "4782",
+  "name": "seated commando pull up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "forearms",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A seated pull-up with a staggered grip, pulling your head to alternating sides of the bar. It trains the lats and grip.",
+  "instructions": [
+    "Sit under a bar and grab it with one hand in front of the other.",
+    "Extend your legs in front of you.",
+    "Pull your body up and bring your head to one side.",
+    "Lower under control.",
+    "Alternate sides each rep or each set."
+  ],
+  "textSource": "opengym"
+}

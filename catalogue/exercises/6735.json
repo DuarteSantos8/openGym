@@ -1,0 +1,22 @@
+{
+  "id": "6735",
+  "name": "dumbbell banded hip thrust",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A hip thrust with a dumbbell on the hips and a band around the thighs. The band keeps the glutes working to hold the knees out.",
+  "instructions": [
+    "Put a band around your thighs and rest your upper back on a bench.",
+    "Place a dumbbell across your hips and hold it steady.",
+    "Plant your feet and push your knees out against the band.",
+    "Drive your hips up until your torso is level.",
+    "Squeeze the glutes at the top.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4206",
+  "name": "band assisted chin up (from knee)",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "rhomboids"
+  ],
+  "category": "calisthenics",
+  "description": "A chin-up with a band under one knee to lighten the load. It builds lats and biceps on the way to full chin-ups.",
+  "instructions": [
+    "Attach a band to a pull-up bar and place one knee in the loop.",
+    "Grab the bar with an underhand, shoulder-width grip.",
+    "Hang with your arms straight and your core tight.",
+    "Pull your chest up until your chin clears the bar.",
+    "Lower yourself slowly until your arms are straight.",
+    "Switch knees halfway through your sets."
+  ],
+  "textSource": "opengym"
+}

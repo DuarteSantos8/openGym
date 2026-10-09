@@ -1,0 +1,22 @@
+{
+  "id": "3332",
+  "name": "weighted stability ball crunch (full range)",
+  "bodyPart": "waist",
+  "equipment": "stability ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "lower abs"
+  ],
+  "category": "strength",
+  "description": "A crunch over a stability ball while holding a weight, using the ball for a longer range of motion in your abs.",
+  "instructions": [
+    "Sit on a stability ball and walk your feet out until your back is supported.",
+    "Hold a weight against your chest.",
+    "Let your torso drape back over the ball for a full stretch.",
+    "Curl up until your upper back clears the ball.",
+    "Lower slowly back into the stretch and repeat."
+  ],
+  "textSource": "opengym"
+}

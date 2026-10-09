@@ -1,0 +1,21 @@
+{
+  "id": "5174",
+  "name": "wall pulse",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "Small pulses in a wall push-up position. It keeps constant tension on your triceps.",
+  "instructions": [
+    "Stand facing a wall and place your hands on it, close together at chest height.",
+    "Step your feet back so your body leans in a straight line.",
+    "Bend your elbows slightly to bring your chest toward the wall.",
+    "Pulse in short, controlled movements.",
+    "Keep your elbows tucked and your core tight."
+  ],
+  "textSource": "opengym"
+}

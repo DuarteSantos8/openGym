@@ -1,0 +1,25 @@
+{
+  "id": "3502",
+  "name": "back forward leg swings",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "hip flexors",
+    "glutes",
+    "adductors",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "A dynamic warm-up swinging one leg forward and back. It loosens the hips and hamstrings.",
+  "instructions": [
+    "Stand tall beside a wall or support and hold it for balance.",
+    "Shift your weight onto the inside leg.",
+    "Swing the outside leg forward and back in a controlled arc.",
+    "Keep your torso upright.",
+    "Increase the range gradually.",
+    "Switch legs after your reps."
+  ],
+  "femaleVariant": "2573",
+  "textSource": "opengym"
+}

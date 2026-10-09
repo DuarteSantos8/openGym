@@ -1,0 +1,22 @@
+{
+  "id": "10909",
+  "name": "seated feet circle",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "feet",
+    "shins"
+  ],
+  "category": "mobility",
+  "description": "Circling both feet while seated. A simple way to mobilise the ankles.",
+  "instructions": [
+    "Sit tall on a chair with both feet lifted off the floor.",
+    "Keep your knees still.",
+    "Circle both feet in the same direction, as wide as feels comfortable.",
+    "Reverse the direction after several turns.",
+    "Keep your breathing relaxed."
+  ],
+  "textSource": "opengym"
+}

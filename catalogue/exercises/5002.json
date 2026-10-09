@@ -1,0 +1,22 @@
+{
+  "id": "5002",
+  "name": "dumbbell one arm y elevation",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rotator cuff",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A light dumbbell raise along a Y-shaped path. It trains the shoulders and the muscles of the upper back.",
+  "instructions": [
+    "Hold a light dumbbell in one hand and hinge slightly or lie chest down on an incline bench.",
+    "Start with your arm hanging down.",
+    "Raise your arm diagonally overhead to form a Y with your thumb up.",
+    "Pause at the top.",
+    "Lower slowly, finish your reps, and switch sides."
+  ],
+  "textSource": "opengym"
+}

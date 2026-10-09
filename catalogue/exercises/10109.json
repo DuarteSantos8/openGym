@@ -1,0 +1,24 @@
+{
+  "id": "10109",
+  "name": "medicine ball backward overhead toss",
+  "bodyPart": "full body",
+  "equipment": "medicine ball",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "shoulders",
+    "quadriceps"
+  ],
+  "category": "plyometrics",
+  "description": "A backward throw of a medicine ball over the head from a squat. It builds hip and back power.",
+  "instructions": [
+    "Stand holding a medicine ball in front of your thighs.",
+    "Squat down and swing the ball between your legs.",
+    "Drive up and extend your hips.",
+    "Throw the ball up and backward over your head.",
+    "Retrieve the ball and reset.",
+    "Keep your arms long and make sure the space behind you is clear."
+  ],
+  "textSource": "opengym"
+}

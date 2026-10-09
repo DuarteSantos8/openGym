@@ -1,0 +1,23 @@
+{
+  "id": "2950",
+  "name": "lever belt squat",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A squat on a machine where the weight hangs from a belt at your hips. It loads the legs without stressing your spine.",
+  "instructions": [
+    "Step into the belt and stand on the platforms with the belt snug on your hips.",
+    "Stand tall and brace your abs.",
+    "Squat down until your thighs are about parallel.",
+    "Push through your heels to stand back up.",
+    "Keep your chest up and knees tracking over your toes."
+  ],
+  "textSource": "opengym"
+}

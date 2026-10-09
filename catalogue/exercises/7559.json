@@ -1,0 +1,22 @@
+{
+  "id": "7559",
+  "name": "dumbbell goblet wall sit",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "Wall sit holding a dumbbell at the chest for extra load.",
+  "instructions": [
+    "Hold a dumbbell at your chest and lean on a wall.",
+    "Slide down until thighs are parallel.",
+    "Keep your knees above your ankles.",
+    "Hold for 20-45 seconds.",
+    "Stand up slowly."
+  ],
+  "textSource": "opengym"
+}

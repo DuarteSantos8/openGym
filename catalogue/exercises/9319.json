@@ -1,0 +1,23 @@
+{
+  "id": "9319",
+  "name": "lying floor negative half dragon flag",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "core",
+    "lats"
+  ],
+  "category": "calisthenics",
+  "description": "A gentler dragon flag lowering with your knees bent. It builds the strength needed for the full move.",
+  "instructions": [
+    "Lie on a mat and hold something fixed behind your head.",
+    "Lift your hips and tuck your knees.",
+    "Brace your core.",
+    "Lower your body slowly with bent knees.",
+    "Stop just above the floor.",
+    "Reset and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "10043",
+  "name": "dumbbell single arm z press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "core",
+    "obliques",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A seated overhead press on the floor with legs straight, using one arm. It removes leg drive and challenges your trunk.",
+  "instructions": [
+    "Sit on the floor with legs straight out and back tall.",
+    "Hold a dumbbell at shoulder height in one hand.",
+    "Press the dumbbell overhead until your arm is straight.",
+    "Lower back to your shoulder with control.",
+    "Finish your reps and switch arms.",
+    "Brace your abs and don't lean back."
+  ],
+  "textSource": "opengym"
+}

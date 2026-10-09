@@ -1,0 +1,24 @@
+{
+  "id": "1003",
+  "name": "band squat row",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "back"
+  ],
+  "category": "strength",
+  "description": "A squat combined with a band row, pulling the handles as you stand. It works the legs and back.",
+  "instructions": [
+    "Attach the band to a sturdy anchor point at waist height.",
+    "Stand facing the anchor point with your feet shoulder-width apart.",
+    "Hold the band handles with your palms facing each other and your arms extended in front of you.",
+    "Bend your knees and lower into a squat position, keeping your back straight and chest lifted.",
+    "From the squat position, pull the band handles towards your body, squeezing your shoulder blades together.",
+    "Pause for a moment at the top, then slowly release the tension and return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

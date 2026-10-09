@@ -1,0 +1,23 @@
+{
+  "id": "11715",
+  "name": "bodyweight rope inverted row",
+  "bodyPart": "back",
+  "equipment": "rope",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rhomboids",
+    "grip muscles"
+  ],
+  "category": "calisthenics",
+  "description": "A horizontal row hanging under rope handles that works the back and grip.",
+  "instructions": [
+    "Set ropes at about waist height and lie under them, holding the ends.",
+    "Keep your body straight from heels to head, heels on the floor.",
+    "Pull your chest toward your hands, squeezing your shoulder blades.",
+    "Keep your elbows close to your body.",
+    "Lower slowly until your arms are straight."
+  ],
+  "textSource": "opengym"
+}

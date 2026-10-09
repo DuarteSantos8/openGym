@@ -1,0 +1,24 @@
+{
+  "id": "4228",
+  "name": "cable half kneeling push pull",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "upper back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "From a half kneeling stance you press one handle forward and pull another back at the same time. It challenges core stability and coordination.",
+  "instructions": [
+    "Kneel on one knee between two cable stations, holding a handle in each hand.",
+    "Keep your torso tall and your core braced.",
+    "Press one handle forward while pulling the other toward your ribs.",
+    "Return to the start under control.",
+    "Do not let your torso twist.",
+    "Switch your kneeling leg after a set."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "4446",
+  "name": "kettlebell half kneeling one arm bottoms up press",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "core",
+    "forearms",
+    "grip muscles",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "A one-arm overhead press with the kettlebell held upside down from a half-kneeling stance. Challenges shoulder stability, grip and core.",
+  "instructions": [
+    "Kneel on one knee with the opposite foot flat in front, back upright.",
+    "Hold a kettlebell by the handle with the bell pointing up, at shoulder height.",
+    "Squeeze the handle tight and brace your core.",
+    "Press straight overhead while keeping the bell balanced.",
+    "Lower under control back to the shoulder.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

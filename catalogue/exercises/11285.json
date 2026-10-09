@@ -1,0 +1,22 @@
+{
+  "id": "11285",
+  "name": "resistance band lying floor chest press",
+  "bodyPart": "chest",
+  "equipment": "resistance band",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A floor chest press using a resistance band. It trains the chest and triceps with tension that increases at the top.",
+  "instructions": [
+    "Lie on your back with the band under your upper back and a handle in each hand.",
+    "Start with your hands at chest level.",
+    "Press your hands straight up until your arms extend.",
+    "Squeeze your chest.",
+    "Lower slowly back to the start."
+  ],
+  "textSource": "opengym"
+}

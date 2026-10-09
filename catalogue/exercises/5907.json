@@ -1,0 +1,23 @@
+{
+  "id": "5907",
+  "name": "warrior iii pose",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core",
+    "calves"
+  ],
+  "category": "yoga",
+  "description": "A one-leg balance with the torso and back leg parallel to the floor. Builds balance and strength.",
+  "instructions": [
+    "Stand on one leg with your arms overhead.",
+    "Hinge forward and lift the back leg behind you.",
+    "Bring your torso and back leg level with the floor.",
+    "Hold for 5 slow breaths with your hips square.",
+    "Lower and switch legs."
+  ],
+  "textSource": "opengym"
+}

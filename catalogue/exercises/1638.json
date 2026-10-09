@@ -1,0 +1,24 @@
+{
+  "id": "1638",
+  "name": "cable pulldown bicep curl",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A curl at a high pulley that begins with a pulldown. It builds the biceps and also the lats.",
+  "instructions": [
+    "Attach a straight bar to the cable machine at the highest setting.",
+    "Stand facing the machine with your feet shoulder-width apart.",
+    "Grasp the bar with an underhand grip, hands shoulder-width apart.",
+    "Keep your elbows close to your sides and your upper arms stationary.",
+    "Exhale and slowly curl the bar down towards your thighs, keeping your wrists straight.",
+    "Pause for a moment at the bottom of the movement, squeezing your biceps.",
+    "Inhale and slowly return the bar to the starting position, fully extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3057",
+  "textSource": "exercisedb"
+}

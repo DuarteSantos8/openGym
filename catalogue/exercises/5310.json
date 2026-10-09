@@ -1,0 +1,24 @@
+{
+  "id": "5310",
+  "name": "elevated side lunge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "adductors",
+    "hamstrings",
+    "inner thighs"
+  ],
+  "category": "calisthenics",
+  "description": "A side lunge performed with the lunging foot on a raised platform for extra range. Works glutes and inner thighs.",
+  "instructions": [
+    "Stand tall next to a low step or platform.",
+    "Step one foot sideways onto the platform.",
+    "Push your hips back and bend that knee while the other leg stays straight.",
+    "Keep your chest up and the planted foot flat.",
+    "Push back to the start.",
+    "Complete your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

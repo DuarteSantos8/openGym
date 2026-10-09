@@ -1,0 +1,23 @@
+{
+  "id": "5344",
+  "name": "v up hold",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "Hold a V-shaped position with legs and torso lifted. Builds strong abs and balance.",
+  "instructions": [
+    "Sit on the floor with knees bent and lean back slightly.",
+    "Lift your legs and straighten them to form a V.",
+    "Reach your arms forward alongside your legs.",
+    "Hold for 15-30 seconds.",
+    "Keep your chest open and back from rounding.",
+    "Lower with control."
+  ],
+  "textSource": "opengym"
+}

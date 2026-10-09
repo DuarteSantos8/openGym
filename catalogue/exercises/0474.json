@@ -1,0 +1,20 @@
+{
+  "id": "0474",
+  "name": "hanging straight leg hip raise",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "Hanging from a bar, you lift your straight legs and raise the hips. It trains the lower abs.",
+  "instructions": [
+    "Hang from a pull-up bar with your arms fully extended and your palms facing away from you.",
+    "Engage your core and lift your legs up in front of you until they are parallel to the ground.",
+    "Pause for a moment at the top, then slowly lower your legs back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3604",
+  "textSource": "exercisedb"
+}

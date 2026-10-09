@@ -1,0 +1,23 @@
+{
+  "id": "1707",
+  "name": "prone twist on stability ball",
+  "bodyPart": "waist",
+  "equipment": "stability ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "A twisting motion lying face down on a stability ball. It trains the abs and obliques.",
+  "instructions": [
+    "Start by lying face down on a stability ball with your feet shoulder-width apart and your toes touching the ground.",
+    "Place your hands behind your head or cross them over your chest.",
+    "Engage your core muscles and slowly lift your upper body off the ball, keeping your back straight.",
+    "Rotate your torso to one side, bringing your shoulder towards your hip. Keep your hips and legs stable throughout the movement.",
+    "Pause for a moment, then return to the starting position.",
+    "Repeat the rotation to the other side.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

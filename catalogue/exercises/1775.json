@@ -1,0 +1,22 @@
+{
+  "id": "1775",
+  "name": "side plank hip adduction",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes"
+  ],
+  "category": "calisthenics",
+  "description": "A side plank with a top leg raise. Challenges the inner and outer thighs while keeping the core braced.",
+  "instructions": [
+    "Start by lying on your side with your legs extended and stacked on top of each other.",
+    "Prop yourself up on your forearm, keeping your elbow directly below your shoulder.",
+    "Engage your core and lift your hips off the ground, creating a straight line from your head to your feet.",
+    "While maintaining the side plank position, lift your top leg towards the ceiling, keeping it straight.",
+    "Slowly lower your leg back down to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides."
+  ],
+  "textSource": "exercisedb"
+}

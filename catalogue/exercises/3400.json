@@ -1,0 +1,24 @@
+{
+  "id": "3400",
+  "name": "dumbbell clean and press",
+  "bodyPart": "full body",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "glutes",
+    "quadriceps",
+    "upper back"
+  ],
+  "category": "olympic",
+  "description": "A dumbbell clean followed by an overhead press for total-body power.",
+  "instructions": [
+    "Stand over two dumbbells and grip them with a flat back.",
+    "Pull the weights up explosively and catch them at your shoulders.",
+    "Dip slightly and drive them overhead.",
+    "Lock out your arms.",
+    "Lower to your shoulders, then to the floor with control.",
+    "Keep the weights close to your body."
+  ],
+  "textSource": "opengym"
+}

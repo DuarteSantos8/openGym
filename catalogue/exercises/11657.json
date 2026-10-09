@@ -1,0 +1,23 @@
+{
+  "id": "11657",
+  "name": "weighted plate overhead reverse lunge",
+  "bodyPart": "upper legs",
+  "equipment": "weight plate",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A reverse lunge while holding a plate overhead, which trains the legs and challenges shoulder and core stability.",
+  "instructions": [
+    "Hold a weight plate overhead with straight arms.",
+    "Stand tall with feet hip-width apart.",
+    "Step one foot back and lower until both knees are about 90 degrees.",
+    "Keep your ribs down and the plate stable over your head.",
+    "Push through the front foot to return, then alternate legs."
+  ],
+  "textSource": "opengym"
+}

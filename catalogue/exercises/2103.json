@@ -1,0 +1,22 @@
+{
+  "id": "2103",
+  "name": "separation between fingers stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "feet",
+    "ankles"
+  ],
+  "category": "stretching",
+  "description": "Spreads the toes apart to wake up and loosen the small muscles of the foot.",
+  "instructions": [
+    "Sit comfortably and bring one foot up to rest on the opposite knee.",
+    "Hold the foot with your hand.",
+    "Slide your fingers between the toes and gently spread them apart.",
+    "Keep the movement slow and easy.",
+    "Hold the spread for 15-20 seconds.",
+    "Release and switch feet."
+  ],
+  "textSource": "opengym"
+}

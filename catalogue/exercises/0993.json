@@ -1,0 +1,22 @@
+{
+  "id": "0993",
+  "name": "band reverse fly",
+  "bodyPart": "shoulders",
+  "equipment": "band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper back",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A reverse fly with a band, opening the arms to the sides. It trains the rear delts and upper back.",
+  "instructions": [
+    "Attach the band to a stationary object at chest height.",
+    "Stand with your feet shoulder-width apart and hold the band with both hands in front of you.",
+    "Keep your arms straight and lift them out to the sides until they are parallel to the ground.",
+    "Squeeze your shoulder blades together at the top of the movement.",
+    "Slowly lower your arms back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

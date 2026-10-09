@@ -1,0 +1,22 @@
+{
+  "id": "10200",
+  "name": "dumbbell kneeling around head rotation",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "core",
+    "upper back"
+  ],
+  "category": "mobility",
+  "description": "A kneeling dumbbell halo that circles the weight around your head to warm up and mobilize the shoulders.",
+  "instructions": [
+    "Kneel tall holding a dumbbell by one end at chest level.",
+    "Circle the dumbbell around your head, keeping it close.",
+    "Keep your ribs down and your hips still.",
+    "Complete the circle back to the front.",
+    "Do a few reps one way, then reverse direction."
+  ],
+  "textSource": "opengym"
+}

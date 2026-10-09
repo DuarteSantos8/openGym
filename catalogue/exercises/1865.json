@@ -1,0 +1,23 @@
+{
+  "id": "1865",
+  "name": "hammer grip pull up on dip cage",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "brachialis",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "Pull-up with palms facing each other on the dip cage handles, hitting the lats and arms.",
+  "instructions": [
+    "Grab the neutral grip handles with your palms facing each other.",
+    "Hang with your arms fully extended.",
+    "Pull your chest toward the handles by driving your elbows down.",
+    "Pause with your chin above the bars.",
+    "Lower slowly to a full hang."
+  ],
+  "femaleVariant": "3898",
+  "textSource": "opengym"
+}

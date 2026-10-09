@@ -1,0 +1,21 @@
+{
+  "id": "3120",
+  "name": "standing calf raise with support",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles"
+  ],
+  "category": "calisthenics",
+  "description": "A calf raise holding on for balance, so you can focus on the calves.",
+  "instructions": [
+    "Stand holding a wall or rail for balance.",
+    "Place your feet hip-width apart.",
+    "Rise up on your toes as high as you can.",
+    "Pause and squeeze your calves.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

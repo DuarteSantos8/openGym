@@ -1,0 +1,22 @@
+{
+  "id": "3270",
+  "name": "run and jack jump",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "calves",
+    "shoulders",
+    "glutes"
+  ],
+  "category": "cardio",
+  "description": "Run in place and throw in a jumping jack every few steps for a full-body cardio burst.",
+  "instructions": [
+    "Stand tall and start jogging on the spot.",
+    "After a few steps, jump your feet wide while raising your arms overhead.",
+    "Jump your feet back together and lower the arms.",
+    "Resume running and repeat the pattern.",
+    "Keep your landings soft and keep going for 30-60 seconds."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "5997",
+  "name": "lay down push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up that starts from lying flat on the floor each rep, so every rep begins from a dead stop and builds pressing strength.",
+  "instructions": [
+    "Lie face down with your hands under your shoulders.",
+    "Brace your core and glutes.",
+    "Push your body up into a straight plank.",
+    "Lower yourself all the way down until your chest rests on the floor.",
+    "Relax briefly, then push up again."
+  ],
+  "femaleVariant": "6029",
+  "textSource": "opengym"
+}

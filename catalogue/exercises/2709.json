@@ -1,0 +1,23 @@
+{
+  "id": "2709",
+  "name": "strongman arm over arm",
+  "bodyPart": "back",
+  "equipment": "rope",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms",
+    "core",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A heavy rope pull where you move hand over hand, training pulling strength and grip.",
+  "instructions": [
+    "Face the load with the rope in both hands and feet set wide.",
+    "Lean back slightly with a braced core.",
+    "Pull the rope with one arm and then the other.",
+    "Keep a steady rhythm.",
+    "Reach and pull smoothly while keeping your back flat."
+  ],
+  "textSource": "opengym"
+}

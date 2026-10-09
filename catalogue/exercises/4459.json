@@ -1,0 +1,24 @@
+{
+  "id": "4459",
+  "name": "lying ab press",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A lying core move where you press your arms and legs together to crunch the abs. Targets the front of the trunk.",
+  "instructions": [
+    "Lie on your back with arms and legs extended.",
+    "Brace your abs and press your lower back to the floor.",
+    "Lift your shoulders and bring your knees toward your chest.",
+    "Reach your hands to your knees and squeeze.",
+    "Return slowly without letting your feet touch down.",
+    "Repeat for reps."
+  ],
+  "femaleVariant": "4460",
+  "textSource": "opengym"
+}

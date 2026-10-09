@@ -1,0 +1,22 @@
+{
+  "id": "1650",
+  "name": "dumbbell alternating seated bicep curl on exercise ball",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Alternating dumbbell curls seated on an exercise ball. It trains the biceps while the core keeps you upright.",
+  "instructions": [
+    "Sit on an exercise ball with your feet flat on the ground and your back straight.",
+    "Hold a dumbbell in each hand with your palms facing forward and your arms fully extended.",
+    "Keeping your upper arms stationary, exhale and curl one dumbbell while rotating your forearm until your palm is facing your shoulder.",
+    "Inhale and slowly lower the dumbbell back to the starting position.",
+    "Repeat the curl with the other arm.",
+    "Continue alternating curls for the desired number of repetitions."
+  ],
+  "femaleVariant": "2698",
+  "textSource": "exercisedb"
+}

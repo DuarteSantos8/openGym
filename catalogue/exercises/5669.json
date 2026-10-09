@@ -1,0 +1,22 @@
+{
+  "id": "5669",
+  "name": "barbell strict curl",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A barbell curl done with no body swing, so the biceps do all of the work. It is a simple way to build the front of the upper arm.",
+  "instructions": [
+    "Stand tall holding a barbell with an underhand shoulder-width grip.",
+    "Keep your elbows pinned to your sides and your torso still.",
+    "Curl the bar up toward your shoulders.",
+    "Squeeze your biceps at the top.",
+    "Lower slowly until your arms are fully straight."
+  ],
+  "textSource": "opengym"
+}

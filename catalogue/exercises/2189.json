@@ -1,0 +1,20 @@
+{
+  "id": "2189",
+  "name": "dumbbells seated triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A seated overhead extension with one dumbbell held in both hands. Builds the back of the upper arms.",
+  "instructions": [
+    "Sit on a bench with your back straight and feet flat on the ground.",
+    "Hold a dumbbell in both hands with an overhand grip, and raise it above your head.",
+    "Bend your elbows and lower the dumbbell behind your head, keeping your upper arms close to your ears.",
+    "Extend your arms and raise the dumbbell back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

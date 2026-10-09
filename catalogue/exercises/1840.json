@@ -1,0 +1,20 @@
+{
+  "id": "1840",
+  "name": "neck flexor and rotational stretch",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "sternocleidomastoid"
+  ],
+  "category": "stretching",
+  "description": "Stretches the front and side of the neck by combining a head tilt back with a turn.",
+  "instructions": [
+    "Sit or stand tall with your shoulders down.",
+    "Turn your head slightly to one side.",
+    "Tilt your chin up and back until you feel a stretch along the front of your neck.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

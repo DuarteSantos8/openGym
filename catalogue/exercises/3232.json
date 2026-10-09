@@ -1,0 +1,24 @@
+{
+  "id": "3232",
+  "name": "cable standing rear delt horizontal row (with rope)",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids",
+    "upper back",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A standing cable row with a rope that pulls the elbows wide. It targets the rear delts.",
+  "instructions": [
+    "Attach a rope to a cable at chest height.",
+    "Hold the ends and step back.",
+    "Stand with your knees slightly bent.",
+    "Pull the rope toward your face with your elbows high and wide.",
+    "Squeeze your rear shoulders.",
+    "Return slowly."
+  ],
+  "textSource": "opengym"
+}

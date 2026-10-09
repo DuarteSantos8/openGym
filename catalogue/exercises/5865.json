@@ -1,0 +1,23 @@
+{
+  "id": "5865",
+  "name": "wide stance jump squat to narrow stance jump squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "Jump squats that alternate between a wide and a narrow stance. It builds explosive leg power and gets your heart rate up.",
+  "instructions": [
+    "Stand with your feet wide and squat down.",
+    "Jump up, bringing your feet together mid-air.",
+    "Land softly in a narrow stance and squat.",
+    "Jump again, landing back in the wide stance.",
+    "Keep your chest up and move at a steady pace."
+  ],
+  "textSource": "opengym"
+}

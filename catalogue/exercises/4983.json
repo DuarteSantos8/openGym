@@ -1,0 +1,23 @@
+{
+  "id": "4983",
+  "name": "top pull up hold",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms",
+    "grip muscles"
+  ],
+  "category": "isometric",
+  "description": "Holding the top of a pull-up with your chin above the bar. It builds strength and grip in the finish position.",
+  "instructions": [
+    "Grab a pull-up bar and pull yourself up.",
+    "Bring your chin above the bar.",
+    "Squeeze your shoulder blades down and back.",
+    "Hold for 5-15 seconds.",
+    "Lower yourself slowly.",
+    "Keep your body still."
+  ],
+  "textSource": "opengym"
+}

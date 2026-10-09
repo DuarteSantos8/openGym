@@ -1,0 +1,21 @@
+{
+  "id": "11095",
+  "name": "sitting cat cow stretch on a chair",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "core",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "A gentle spinal stretch you can do on a chair. It moves your back through flexion and extension to ease stiffness.",
+  "instructions": [
+    "Sit tall on a chair with your hands on your knees and feet flat.",
+    "Inhale, arch your back and lift your chest.",
+    "Exhale, round your spine and tuck your chin.",
+    "Move slowly between the two positions.",
+    "Repeat for 8-10 breaths."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "2393",
+  "name": "dumbbell one arm bent over row",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "rhomboids",
+    "biceps",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A one-arm row in a bent-over position that works the back and arm.",
+  "instructions": [
+    "Hinge forward with a flat back, one hand on a bench or knee for support.",
+    "Hold a dumbbell in the other hand with your arm hanging straight.",
+    "Pull the dumbbell toward your hip, keeping your elbow close.",
+    "Squeeze your shoulder blade toward your spine.",
+    "Lower slowly until your arm is straight.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

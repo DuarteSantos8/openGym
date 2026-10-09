@@ -1,0 +1,22 @@
+{
+  "id": "3443",
+  "name": "dip on floor with chair",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "chest"
+  ],
+  "category": "calisthenics",
+  "description": "A seated dip with your hands on a chair behind you.",
+  "instructions": [
+    "Sit on the floor with hands on a chair behind you.",
+    "Lift your hips off the floor.",
+    "Bend your elbows to lower your body.",
+    "Keep elbows pointing back.",
+    "Press up.",
+    "Brace the chair against a wall."
+  ],
+  "textSource": "opengym"
+}

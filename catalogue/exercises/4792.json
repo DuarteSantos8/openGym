@@ -1,0 +1,22 @@
+{
+  "id": "4792",
+  "name": "single leg hip thrust v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A one-legged hip thrust with your upper back on a bench, a second variation. It hits the glutes hard without any equipment.",
+  "instructions": [
+    "Rest your upper back on a bench with one foot flat on the floor.",
+    "Lift the other leg off the floor, knee bent or straight.",
+    "Drive through the planted heel and raise your hips.",
+    "Squeeze your glute at the top until your torso is level.",
+    "Lower your hips under control.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

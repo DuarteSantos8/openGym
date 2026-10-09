@@ -1,0 +1,23 @@
+{
+  "id": "1540",
+  "name": "barbell squat to shoulder press",
+  "bodyPart": "full body",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "shoulders",
+    "glutes",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A squat that flows straight into an overhead press. It trains legs and shoulders together in one fluid rep.",
+  "instructions": [
+    "Hold the barbell at your upper chest with your elbows slightly forward and feet shoulder-width apart.",
+    "Squat down until your thighs are about parallel to the floor, keeping your chest up.",
+    "Drive up through your heels and use that momentum to press the bar overhead.",
+    "Lock out the press with the bar over your mid-foot, then lower it back to your chest.",
+    "Keep your core braced the whole time and avoid arching your lower back."
+  ],
+  "textSource": "opengym"
+}

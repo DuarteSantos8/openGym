@@ -1,0 +1,23 @@
+{
+  "id": "6231",
+  "name": "knee push up chest pullback",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A knee push-up followed by a pullback of the hips. It trains the chest and adds a mobility element.",
+  "instructions": [
+    "Start in a knee push-up position.",
+    "Lower your chest to the floor.",
+    "Press back up.",
+    "Push your hips back toward your heels.",
+    "Return to the start.",
+    "Keep your core tight."
+  ],
+  "textSource": "opengym"
+}

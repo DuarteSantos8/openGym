@@ -1,0 +1,21 @@
+{
+  "id": "0520",
+  "name": "kettlebell alternating press",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "You press kettlebells overhead one after the other. It builds the shoulders and triceps.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a kettlebell in each hand at shoulder height.",
+    "Press one kettlebell overhead, fully extending your arm.",
+    "Lower the kettlebell back to shoulder height.",
+    "Repeat with the other arm.",
+    "Continue alternating arms for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

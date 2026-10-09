@@ -1,0 +1,22 @@
+{
+  "id": "2711",
+  "name": "strongman duck walk",
+  "bodyPart": "upper legs",
+  "equipment": "weight plate",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A low squat-walk holding a load, building leg endurance and hip strength.",
+  "instructions": [
+    "Hold the weight in front of you and lower into a deep squat.",
+    "Keep your chest up.",
+    "Take small steps while staying low.",
+    "Keep your core braced and your knees tracking over your toes.",
+    "Walk the full distance, then stand and rest."
+  ],
+  "textSource": "opengym"
+}

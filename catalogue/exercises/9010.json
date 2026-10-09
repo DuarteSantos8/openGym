@@ -1,0 +1,22 @@
+{
+  "id": "9010",
+  "name": "medicine ball crunch on stability ball",
+  "bodyPart": "waist",
+  "equipment": "medicine ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "Crunching on a stability ball while holding a medicine ball adds range and load to the abs.",
+  "instructions": [
+    "Sit on the ball and roll down until your lower back is supported.",
+    "Hold the medicine ball against your chest or overhead.",
+    "Brace your core and crunch your ribs toward your hips.",
+    "Pause at the top.",
+    "Lower back over the ball with control.",
+    "Keep your feet firmly on the floor."
+  ],
+  "textSource": "opengym"
+}

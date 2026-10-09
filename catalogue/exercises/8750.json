@@ -1,0 +1,22 @@
+{
+  "id": "8750",
+  "name": "ring pullover",
+  "bodyPart": "back",
+  "equipment": "suspension trainer",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "chest",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "An advanced ring move that sweeps the body over the rings, working the lats and core.",
+  "instructions": [
+    "Hang from the rings with an overhand grip.",
+    "Pull your hips up and bring your knees to your chest.",
+    "Rotate backward, pulling the body over the rings.",
+    "Lower under control.",
+    "Keep the movement smooth."
+  ],
+  "textSource": "opengym"
+}

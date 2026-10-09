@@ -1,0 +1,22 @@
+{
+  "id": "11783",
+  "name": "explosive fingers",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "hands",
+    "wrist extensors",
+    "grip muscles"
+  ],
+  "category": "mobility",
+  "description": "A quick open-and-close finger drill that warms up the hands and forearms.",
+  "instructions": [
+    "Hold your hands out in front of you.",
+    "Close both hands into tight fists.",
+    "Open them fast, spreading your fingers as wide as possible.",
+    "Repeat quickly for 20-30 reps.",
+    "Keep your wrists relaxed."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "2851",
+  "name": "lying double leg kick",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "upper back"
+  ],
+  "category": "pilates",
+  "description": "A face-down Pilates move that opens the chest and strengthens the back.",
+  "instructions": [
+    "Lie face down with your hands clasped behind your back.",
+    "Kick both heels toward your glutes.",
+    "Lift your chest and extend your arms back.",
+    "Lower down.",
+    "Repeat smoothly."
+  ],
+  "textSource": "opengym"
+}

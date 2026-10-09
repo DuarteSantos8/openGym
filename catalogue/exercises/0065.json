@@ -1,0 +1,21 @@
+{
+  "id": "0065",
+  "name": "barbell one arm floor press",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A floor press with one hand on the bar. Limits range of motion to be gentle on the shoulder and trains the triceps.",
+  "instructions": [
+    "Lie flat on your back on the floor with your knees bent and feet flat on the ground.",
+    "Hold the barbell with one hand, palm facing up, and extend your arm straight up over your chest.",
+    "Slowly lower the barbell towards your chest, keeping your elbow close to your body.",
+    "Pause for a moment at the bottom, then push the barbell back up to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms."
+  ],
+  "textSource": "exercisedb"
+}

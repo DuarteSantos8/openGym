@@ -1,0 +1,23 @@
+{
+  "id": "9677",
+  "name": "plank side jump",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "quadriceps",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "From a plank, you hop your feet side to side. It challenges the core and gets your heart rate up.",
+  "instructions": [
+    "Start in a high plank with hands under your shoulders.",
+    "Brace your abs and keep your back flat.",
+    "Jump both feet a short way to one side.",
+    "Jump them back through the centre to the other side.",
+    "Keep a steady rhythm for 20-30 seconds."
+  ],
+  "textSource": "opengym"
+}

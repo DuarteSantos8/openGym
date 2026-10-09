@@ -1,0 +1,22 @@
+{
+  "id": "4931",
+  "name": "single leg calf stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles"
+  ],
+  "category": "stretching",
+  "description": "A calf stretch done on one leg at a time. It lengthens the lower leg muscles.",
+  "instructions": [
+    "Stand facing a wall with one foot back and heel on the floor.",
+    "Place your hands on the wall.",
+    "Lean forward with a straight back leg.",
+    "Feel the stretch in the calf.",
+    "Hold for 20-30 seconds.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

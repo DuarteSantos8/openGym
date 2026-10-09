@@ -1,0 +1,23 @@
+{
+  "id": "4031",
+  "name": "band hip abduction",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "hip flexors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Standing leg raise to the side against a band. It targets the outer hip and glute muscles.",
+  "instructions": [
+    "Anchor the band low and loop it around the ankle farthest from the anchor.",
+    "Stand tall and hold a support for balance.",
+    "Lift the working leg out to the side without leaning.",
+    "Pause, then lower slowly against the band.",
+    "Finish all reps, then switch legs."
+  ],
+  "femaleVariant": "0899",
+  "textSource": "opengym"
+}

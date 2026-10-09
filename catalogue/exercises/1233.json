@@ -1,0 +1,21 @@
+{
+  "id": "1233",
+  "name": "dumbbell incline alternate hammer curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Hammer curls on an incline bench, one arm at a time. The stretched position makes the biceps and brachialis work hard.",
+  "instructions": [
+    "Sit back on an incline bench holding dumbbells with palms facing in.",
+    "Let your arms hang straight down.",
+    "Curl one dumbbell up without twisting your wrist.",
+    "Lower it slowly and repeat with the other arm.",
+    "Keep your upper arms still."
+  ],
+  "textSource": "opengym"
+}

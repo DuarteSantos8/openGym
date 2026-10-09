@@ -7,11 +7,11 @@ import {
   fmt, setLabel, exLine, muscleName, policyName, friendlyDuration, ratio, muscleOrder
 } from './labels.js'
 import {
-  modeOf, workoutVolume, setsDone, effectiveRoutine, effectiveRoutineIds, lastEntryFor
+  modeOf, workoutVolume, setsDone, effectiveRoutine, effectiveRoutineIds, lastEntryFor, workoutAt
 } from '../../frontend/src/lib/history.js'
 import { queueView, queueNext, pinState } from '../../frontend/src/lib/queue.js'
-import { exOr } from '../../frontend/src/lib/exercises.js'
-import { isWarmupRow } from '../../frontend/src/lib/workout-model.js'
+import { exOr, registerCustom } from '../../frontend/src/lib/exercises.js'
+import { isWarmupRow, isFailureSet } from '../../frontend/src/lib/workout-model.js'
 import {
   bestSetOf, best1RM, e1rmSeries, DEFAULT_FORMULA, REP_CAP
 } from '../../frontend/src/lib/onerm.js'
@@ -41,6 +41,15 @@ const customOf = (id, S) => (S.customEx || []).find(ex => ex.id === id)
 // exOr's miss is a placeholder object, not null — callers that only need a name are fine
 // with it, callers feeding muscle resolution are NOT. Use customOf directly there.
 const exerciseOf = (id, S) => customOf(id, S) || exOr(id)
+// The session builder, though, reads each exercise's equipment and body part from that global
+// index, so preview_session built a custom leg lift with the small load step where the app (which
+// registers its customs) takes the larger one. It registers the profile's customs for the length
+// of one synchronous build and takes them back out in the same call: nothing else, and no other
+// profile's read, can run in between.
+function withCustomsIndexed(S, build) {
+  registerCustom(Array.isArray(S.customEx) ? S.customEx : [])
+  try { return build() } finally { registerCustom([]) }
+}
 
 function entryView(e, S) {
   const ex = exerciseOf(e.id, S)
@@ -58,6 +67,8 @@ function entryView(e, S) {
     sets: (e.sets || []).map(s => ({
       done: !!s.done,
       label: setLabel(e.id, { ...s, done: undefined }, cfg),
+      // Taken to failure (the app's "F"): RIR 0 for effort when nothing was rated by hand.
+      ...(isFailureSet(s) ? { failure: true } : {}),
       w: Number(s.w) || 0,
       r: Number(s.r) || 0,
       sec: Number(s.sec) || 0,
@@ -122,7 +133,7 @@ export const listRoutines = {
 /** get_routine — the full exercise list for one routine, including set/rep targets. */
 export const getRoutine = {
   name: 'get_routine',
-  description: 'Get the full exercise list for a single routine (the same view the routine editor shows). Returns mode (reps/time/cardio), set/rep/weight targets (a `pyramid` list of per-set rep targets, \'max\' meaning as many reps as possible, when the exercise uses pyramid sets), superset links, any per-exercise custom increment or Epley deload factor, and each exercise\'s own rest in seconds (absent means it inherits the global rest timer). Use routine_id from list_routines.',
+  description: 'Get the full exercise list for a single routine (the same view the routine editor shows). Returns mode (reps/time/cardio), set/rep/weight targets (a `pyramid` list of per-set rep targets, \'max\' meaning as many reps as possible, when the exercise uses pyramid sets, with `pyramid_rest_sec` and `pyramid_weight` per set where planned, 0 meaning the exercise\'s rest or last time\'s weight), superset links, any per-exercise custom increment or Epley deload factor, and each exercise\'s own rest in seconds (absent means it inherits the global rest timer). Use routine_id from list_routines.',
   schema: { routine_id: z.string().min(1) },
   handler: ({ routine_id }) => {
     const S = getState()
@@ -154,6 +165,8 @@ export const getRoutine = {
           pyramid: mode === 'reps' && Array.isArray(cfg.pyramid) && cfg.pyramid.length ? cfg.pyramid : undefined,
           // Each pyramid set's own rest in seconds, 0 meaning the exercise's rest.
           pyramid_rest_sec: mode === 'reps' && Array.isArray(cfg.pyramid) && cfg.pyramid.length && Array.isArray(cfg.pyramidRest) && cfg.pyramidRest.length ? cfg.pyramidRest : undefined,
+          // Each pyramid set's own planned weight (#445), 0 meaning it starts from that set last time.
+          pyramid_weight: mode === 'reps' && Array.isArray(cfg.pyramid) && cfg.pyramid.length && Array.isArray(cfg.pyramidWeight) && cfg.pyramidWeight.length ? cfg.pyramidWeight : undefined,
           sec: mode === 'time' ? (cfg.sec || 0) : undefined,
           min: mode === 'cardio' ? (cfg.min || 0) : undefined,
           speed: mode === 'cardio' ? (cfg.speed || 0) : undefined,
@@ -466,7 +479,7 @@ export const muscleBalance = {
     const cutoff = period === 'week' ? midnightDaysBack(6)
       : period === 'month' ? midnightDaysBack(29)
         : Number.NEGATIVE_INFINITY
-    const workouts = (S.workouts || []).filter(w => (w.start || new Date(w.d + 'T12:00:00').getTime()) >= cutoff)
+    const workouts = (S.workouts || []).filter(w => workoutAt(w) >= cutoff)
     // loadOf() resolves each entry through EXIDX, which holds the catalogue only, so a
     // custom exercise's sets score zero here. Attaching the custom itself lets loadOf's own
     // `historical` branch resolve it. Only a *found* custom: exOr's miss placeholder carries
@@ -555,7 +568,7 @@ export const previewSession = {
     // The same builder the app starts a session with (sheets.jsx beginWorkout → session-start.js):
     // prescription, step, progression-off targets, deload routines and warm-up ramps all come from
     // there, so the preview cannot drift from what the screen shows.
-    const built = buildSessionEntries(S, r)
+    const built = withCustomsIndexed(S, () => buildSessionEntries(S, r))
     const exercises = (r.ex || []).map((cfg, i) => {
       const ex = exerciseOf(cfg.id, S)
       const mode = modeOf({ ...cfg, id: cfg.id })
@@ -588,12 +601,15 @@ export const previewSession = {
           weight: plan.weight != null ? plan.weight : undefined,
           reps: plan.reps != null ? plan.reps : undefined,
           sets: plan.sets != null ? plan.sets : undefined,
+          // Triple progression aims each set on its own ("12, 12, 12, 9"); `reps` is the first set's.
+          row_reps: Array.isArray(plan.rowReps) ? plan.rowReps : undefined,
           sec: plan.sec != null ? plan.sec : undefined,
           why: plan.why ? fmt(plan.why[0], plan.why.slice(1)) : null
         },
         opening_sets: rows.map(s => ({
           phase: isWarmupRow(s) ? 'warmup' : 'work',
           type: s.type || 'straight',
+          ...(isFailureSet(s) ? { failure: true } : {}),
           label: setLabel(cfg.id, { ...s, done: undefined }, { ...cfg, id: cfg.id }),
           w: Number(s.w) || 0,
           r: Number(s.r) || 0,

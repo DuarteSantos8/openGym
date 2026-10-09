@@ -1,0 +1,22 @@
+{
+  "id": "4099",
+  "name": "medicine ball half kneeling chest push",
+  "bodyPart": "chest",
+  "equipment": "medicine ball",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A half kneeling chest pass motion with a medicine ball that trains pushing power and core stability.",
+  "instructions": [
+    "Kneel on one knee with the other foot forward and hold a medicine ball at your chest.",
+    "Brace your core and stay tall.",
+    "Push the ball forward explosively or against a wall.",
+    "Catch it or bring it back to your chest.",
+    "Switch the kneeling leg after your set."
+  ],
+  "textSource": "opengym"
+}

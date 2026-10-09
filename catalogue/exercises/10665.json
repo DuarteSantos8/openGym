@@ -1,0 +1,24 @@
+{
+  "id": "10665",
+  "name": "elbow planche",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "core",
+    "chest",
+    "triceps",
+    "wrist flexors"
+  ],
+  "category": "isometric",
+  "description": "A planche hold with your elbows tucked into your waist. It is an early step toward a full planche.",
+  "instructions": [
+    "Place your hands on the floor and tuck your elbows into your waist.",
+    "Lean forward over your hands.",
+    "Lift your feet off the floor one at a time.",
+    "Hold your body level with a tight core.",
+    "Keep your shoulders pressed forward.",
+    "Lower down after the hold."
+  ],
+  "textSource": "opengym"
+}

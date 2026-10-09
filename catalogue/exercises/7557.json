@@ -1,0 +1,22 @@
+{
+  "id": "7557",
+  "name": "wall sit (narrow stance)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "Wall sit with feet close together to focus on the quads.",
+  "instructions": [
+    "Lean your back on a wall with feet close together.",
+    "Slide down until your thighs are about parallel.",
+    "Keep knees over ankles.",
+    "Hold for 20-60 seconds.",
+    "Slide back up slowly."
+  ],
+  "textSource": "opengym"
+}

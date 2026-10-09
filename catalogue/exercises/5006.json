@@ -1,0 +1,23 @@
+{
+  "id": "5006",
+  "name": "suspension underhand grip inverted row",
+  "bodyPart": "back",
+  "equipment": "suspension trainer",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "rhomboids"
+  ],
+  "category": "calisthenics",
+  "description": "An inverted row on suspension straps with an underhand grip. It builds the back and biceps.",
+  "instructions": [
+    "Hold the handles palms up and lean back with a straight body.",
+    "Brace your core.",
+    "Pull your chest toward your hands.",
+    "Squeeze your shoulder blades together.",
+    "Lower yourself slowly.",
+    "Walk your feet forward to make it harder."
+  ],
+  "textSource": "opengym"
+}

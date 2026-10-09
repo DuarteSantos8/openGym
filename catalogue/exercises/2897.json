@@ -1,0 +1,22 @@
+{
+  "id": "2897",
+  "name": "front plank with arm and leg lift (push up position)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "A high plank holding the opposite arm and leg in the air, which tests balance and core strength.",
+  "instructions": [
+    "Start in a high plank with hands under shoulders.",
+    "Lift one arm and the opposite leg at the same time.",
+    "Hold them in line with your body for a moment.",
+    "Lower them back to the floor with control.",
+    "Switch to the other arm and leg and repeat."
+  ],
+  "textSource": "opengym"
+}

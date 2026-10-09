@@ -1,0 +1,22 @@
+{
+  "id": "5892",
+  "name": "lizard pose",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "hip flexors",
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "yoga",
+  "description": "A low lunge with both hands inside the front foot. Opens the hips and groin.",
+  "instructions": [
+    "Start in a low lunge with your back knee down or lifted.",
+    "Walk your front foot to the outer edge of your mat.",
+    "Place both hands inside the front foot.",
+    "Hold for 5 slow breaths.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

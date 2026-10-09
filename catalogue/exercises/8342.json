@@ -1,0 +1,23 @@
+{
+  "id": "8342",
+  "name": "bodyweight standing scapular external rotation",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "rear deltoids",
+    "upper back"
+  ],
+  "category": "mobility",
+  "description": "A standing drill that rotates the arms outward while drawing the shoulder blades back. It wakes up the rotator cuff and upper back.",
+  "instructions": [
+    "Stand tall with your elbows bent at your sides.",
+    "Keep your palms facing forward.",
+    "Rotate your forearms outward and squeeze your shoulder blades together.",
+    "Hold for a second.",
+    "Return slowly to the start.",
+    "Keep your ribs down and your shoulders away from your ears."
+  ],
+  "textSource": "opengym"
+}

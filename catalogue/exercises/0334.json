@@ -1,0 +1,20 @@
+{
+  "id": "0334",
+  "name": "dumbbell lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "traps"
+  ],
+  "category": "strength",
+  "description": "The standard standing dumbbell lateral raise. Lifting the arms out to the sides builds the side delts.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold a dumbbell in each hand, palms facing your body.",
+    "Keep your back straight and engage your core.",
+    "Raise your arms out to the sides until they are parallel to the floor, keeping a slight bend in your elbows.",
+    "Pause for a moment at the top, then slowly lower your arms back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

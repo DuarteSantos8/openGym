@@ -1,0 +1,22 @@
+{
+  "id": "5514",
+  "name": "twist crunch (legs up)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower abs"
+  ],
+  "category": "calisthenics",
+  "description": "Crunch with legs raised and a rotation at the top that hits the abs and obliques.",
+  "instructions": [
+    "Lie on your back with knees bent and legs raised.",
+    "Place your hands lightly behind your head.",
+    "Crunch up and rotate one shoulder toward the opposite knee.",
+    "Lower with control and repeat to the other side.",
+    "Do not pull on your neck."
+  ],
+  "femaleVariant": "0819",
+  "textSource": "opengym"
+}

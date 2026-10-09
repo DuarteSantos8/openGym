@@ -1,0 +1,22 @@
+{
+  "id": "0238",
+  "name": "cable straight arm pulldown",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "shoulders",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A straight-arm pulldown with a bar on a high pulley. Sweeping the bar to the thighs isolates the lats.",
+  "instructions": [
+    "Attach a straight bar to the high pulley of a cable machine.",
+    "Stand facing the machine with your feet shoulder-width apart.",
+    "Grasp the bar with an overhand grip, keeping your arms straight and your palms facing down.",
+    "Engage your lats and pull the bar down towards your thighs, keeping your arms straight throughout the movement.",
+    "Pause for a moment at the bottom, then slowly return the bar to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "3958",
+  "name": "side step front plank",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Walk your hands and feet sideways in a front plank to train the core and shoulders.",
+  "instructions": [
+    "Start in a high plank.",
+    "Step one hand and foot out to the side.",
+    "Bring the other hand and foot to meet them.",
+    "Keep your hips level.",
+    "Repeat in one direction, then reverse."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "3373",
+  "name": "battling ropes inside circle",
+  "bodyPart": "shoulders",
+  "equipment": "rope",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper back",
+    "core",
+    "forearms"
+  ],
+  "category": "cardio",
+  "description": "Drawing circles with the ropes toward each other. It builds shoulder endurance.",
+  "instructions": [
+    "Stand with knees bent and a rope end in each hand.",
+    "Move your arms in circles that turn inward.",
+    "Keep the circles even and large.",
+    "Brace your core and keep your chest up.",
+    "Continue for a set time then rest."
+  ],
+  "textSource": "opengym"
+}

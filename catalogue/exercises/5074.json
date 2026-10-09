@@ -1,0 +1,22 @@
+{
+  "id": "5074",
+  "name": "landmine press",
+  "bodyPart": "shoulders",
+  "equipment": "landmine",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Press the end of an angled barbell up and forward. The arc is friendly to the shoulder and trains pressing and trunk stability.",
+  "instructions": [
+    "Anchor one end of a barbell and hold the other end at your shoulder with both hands.",
+    "Stand with feet staggered and core braced.",
+    "Press the bar up and forward until your arms are straight.",
+    "Lower it back to your shoulder under control.",
+    "Keep your ribs down and avoid leaning back."
+  ],
+  "textSource": "opengym"
+}

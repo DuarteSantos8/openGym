@@ -1,0 +1,22 @@
+{
+  "id": "1034",
+  "name": "lever side hip abduction",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A machine move that presses the leg out to the side, working the outer hips.",
+  "instructions": [
+    "Stand next to the machine and place the outer side of your leg against the pad.",
+    "Hold the support for balance.",
+    "Push your leg out to the side in a smooth motion.",
+    "Pause briefly, then return slowly.",
+    "Keep your torso upright. Finish the reps, then switch legs."
+  ],
+  "femaleVariant": "2759",
+  "textSource": "opengym"
+}

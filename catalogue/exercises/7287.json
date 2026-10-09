@@ -1,0 +1,23 @@
+{
+  "id": "7287",
+  "name": "trap bar overhead press",
+  "bodyPart": "shoulders",
+  "equipment": "trap bar",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "trapezius",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Overhead press using a trap bar, giving a neutral grip that can be easier on the shoulders.",
+  "instructions": [
+    "Stand inside the trap bar and hold it at shoulder height with a neutral grip.",
+    "Brace your core and squeeze your glutes.",
+    "Press the bar overhead until your arms lock out.",
+    "Pause, then lower to your shoulders.",
+    "Keep your ribs down and avoid leaning back."
+  ],
+  "textSource": "opengym"
+}

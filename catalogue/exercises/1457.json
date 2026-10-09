@@ -1,0 +1,32 @@
+{
+  "id": "1457",
+  "name": "barbell standing wide military press",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A standing barbell overhead press with a wide grip, which shifts more work to the shoulders. Keep your ribs down and your core tight.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold the barbell with an overhand grip, slightly wider than shoulder-width.",
+    "Lift the barbell to shoulder height, keeping your elbows slightly in front of the bar.",
+    "Press the barbell overhead, extending your arms fully.",
+    "Lower the barbell back to shoulder height and repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "deltoids"
+    ],
+    "secondaries": [
+      "chest",
+      "triceps",
+      "trapezius",
+      "serratus"
+    ]
+  },
+  "femaleVariant": "3032",
+  "textSource": "exercisedb"
+}

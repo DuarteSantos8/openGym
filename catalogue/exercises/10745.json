@@ -1,0 +1,22 @@
+{
+  "id": "10745",
+  "name": "seated single leg half circle",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "A seated hip mobility drill where you sweep one leg in a half circle. It warms up the hips.",
+  "instructions": [
+    "Sit tall on the floor with hands behind you for support.",
+    "Lift one leg slightly with the knee straight.",
+    "Draw a half circle with your foot from one side to the other.",
+    "Keep your torso steady.",
+    "Repeat for the reps.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

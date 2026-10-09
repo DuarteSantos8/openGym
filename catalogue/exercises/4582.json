@@ -1,0 +1,23 @@
+{
+  "id": "4582",
+  "name": "boxing jab (with boxing bag)",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "chest",
+    "core"
+  ],
+  "category": "combat",
+  "description": "A quick straight punch with your lead hand thrown at a heavy bag.",
+  "instructions": [
+    "Stand in a boxing stance facing the bag with your hands up.",
+    "Extend your lead hand straight toward the bag.",
+    "Rotate your fist so the palm faces down on impact.",
+    "Keep your rear hand guarding your chin.",
+    "Snap the punch back to your guard right away.",
+    "Stay light on your feet and repeat."
+  ],
+  "textSource": "opengym"
+}

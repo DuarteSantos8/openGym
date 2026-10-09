@@ -1,0 +1,22 @@
+{
+  "id": "2744",
+  "name": "cable standing hip thrust",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "A standing hip thrust against cable resistance, training hip extension and the glutes.",
+  "instructions": [
+    "Attach a belt or strap to a low cable and stand facing away from the stack.",
+    "Hold the cable at your hips with feet shoulder width apart.",
+    "Hinge slightly, then thrust your hips forward.",
+    "Squeeze your glutes at the top.",
+    "Return slowly and keep your ribs down."
+  ],
+  "textSource": "opengym"
+}

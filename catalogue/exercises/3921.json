@@ -1,0 +1,23 @@
+{
+  "id": "3921",
+  "name": "landmine kneeling squeeze press",
+  "bodyPart": "chest",
+  "equipment": "landmine",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A kneeling landmine press with the hands squeezed together, working the chest and core.",
+  "instructions": [
+    "Kneel facing the landmine and hold the bar end close to your chest with both hands pressed together.",
+    "Brace your core.",
+    "Press the bar forward and up.",
+    "Squeeze your hands together as you press.",
+    "Lower it slowly.",
+    "Keep your torso upright."
+  ],
+  "textSource": "opengym"
+}

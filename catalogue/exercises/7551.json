@@ -1,0 +1,22 @@
+{
+  "id": "7551",
+  "name": "bodyweight heel elevated bulgarian split squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "Split squat with the front heel raised, loading the quads more directly.",
+  "instructions": [
+    "Place your rear foot on a bench and front heel on a small plate.",
+    "Hold your hands at your chest.",
+    "Lower straight down.",
+    "Keep your front knee over your toes.",
+    "Push up and switch legs."
+  ],
+  "textSource": "opengym"
+}

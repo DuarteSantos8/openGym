@@ -1,0 +1,21 @@
+{
+  "id": "10912",
+  "name": "seated single leg squeezing toes",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "feet",
+    "ankles"
+  ],
+  "category": "mobility",
+  "description": "A one-foot toe curl while seated. It trains the muscles under the foot.",
+  "instructions": [
+    "Sit on a chair and place one foot flat on the floor.",
+    "Curl your toes down and squeeze.",
+    "Hold for a second or two.",
+    "Relax and spread the toes.",
+    "Finish your reps, then switch feet."
+  ],
+  "textSource": "opengym"
+}

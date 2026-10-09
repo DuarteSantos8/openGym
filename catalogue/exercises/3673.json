@@ -1,0 +1,21 @@
+{
+  "id": "3673",
+  "name": "standing pose (form check) front view",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "core",
+    "glutes"
+  ],
+  "category": "isometric",
+  "description": "A front-view form check showing a correct standing posture.",
+  "instructions": [
+    "Stand with feet hip width apart.",
+    "Keep your knees soft and hips level.",
+    "Stack your shoulders over your hips.",
+    "Look straight ahead.",
+    "Compare yourself to the correct posture."
+  ],
+  "textSource": "opengym"
+}

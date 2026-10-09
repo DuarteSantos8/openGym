@@ -13,6 +13,7 @@ import { t, tn } from './i18n-core.js'
 import { isoOf, todayISO } from './format.js'
 import { effectiveRoutineIds } from './history.js'
 import { NUDGE_COPY, lineIndex, nudgeFor, nudgeMinute, toneOf } from './nudge.js'
+import { excusedOn } from './day-notes.js'
 
 export const MOBILE = import.meta.env.VITE_MOBILE === '1'
 
@@ -108,7 +109,8 @@ export function buildReminderNotifications(S, now = new Date()) {
     const day = new Date(date)
     day.setDate(date.getDate() + offset)
     const iso = isoOf(day)
-    if (completed.has(iso)) continue
+    // A day you noted as sick or away (lib/day-notes.js) is off the hook, reminder included.
+    if (completed.has(iso) || excusedOn(S, iso)) continue
     // A weekday can hold several routines; name them all, or fall back to a count. Each day is
     // asked as if it were today: a coach week's next session is due every day until it is done,
     // so it is reminded every day (the app re-syncs these after every workout and on open).
@@ -201,9 +203,12 @@ export function initReminderSync(getState) {
     syncReminder(getState()).catch(() => {})
   }
   document.addEventListener('visibilitychange', resync)
-  import('@capacitor/app').then(({ App }) => {
+  // addListener is a promise of its own — it rejects when the App plugin is not behind the bridge
+  // (a native project cap sync never updated, a custom platform) — so it is returned into the
+  // catch below. Dropped inside a block, as it was before, that rejection went unhandled.
+  import('@capacitor/app').then(({ App }) =>
     App.addListener('appStateChange', ({ isActive }) => { if (isActive) resync() })
-  }).catch(() => {})
+  ).catch(() => {})
 }
 
 // Runs cb whenever the native shell returns to the foreground — the store pulls the account's
@@ -211,9 +216,10 @@ export function initReminderSync(getState) {
 // off mobile; the store's own visibility/focus listeners cover the browser.
 export function onAppActive(cb) {
   if (!MOBILE) return
-  import('@capacitor/app').then(({ App }) => {
+  // Returned, not dropped, for the same reason as in initReminderSync.
+  import('@capacitor/app').then(({ App }) =>
     App.addListener('appStateChange', ({ isActive }) => { if (isActive) cb() })
-  }).catch(() => {})
+  ).catch(() => {})
 }
 
 // WKWebView can't do blob-URL downloads, so the backup goes out through the OS share sheet

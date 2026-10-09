@@ -1,0 +1,24 @@
+{
+  "id": "1692",
+  "name": "sagittal plane lunge with overhead medicine ball press",
+  "bodyPart": "upper legs",
+  "equipment": "medicine ball",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "shoulders",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A forward lunge combined with an overhead medicine ball press that links leg strength with shoulder work.",
+  "instructions": [
+    "Hold a medicine ball at chest height and stand tall.",
+    "Step forward into a lunge and lower your back knee toward the floor.",
+    "Press the ball overhead as you rise.",
+    "Lower the ball and step back to the start.",
+    "Alternate legs for the planned reps."
+  ],
+  "textSource": "opengym"
+}

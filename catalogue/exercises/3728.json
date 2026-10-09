@@ -1,0 +1,22 @@
+{
+  "id": "3728",
+  "name": "barbell front step up",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A step up with a barbell racked on your front shoulders, which keeps your torso upright and works the quads.",
+  "instructions": [
+    "Rack a barbell across your front shoulders and stand facing a box.",
+    "Place one foot fully on the box.",
+    "Drive through that heel to step up and stand tall.",
+    "Lower back down slowly.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

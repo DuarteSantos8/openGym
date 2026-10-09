@@ -1,0 +1,24 @@
+{
+  "id": "7233",
+  "name": "standing scapular rotation (front pov)",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "trapezius",
+    "rhomboids",
+    "rotator cuff",
+    "shoulders"
+  ],
+  "category": "mobility",
+  "description": "A standing shoulder blade rotation that warms up the upper back and improves control of the scapulae.",
+  "instructions": [
+    "Stand tall with your arms at your sides.",
+    "Lift your shoulders gently up.",
+    "Roll them back and down in a smooth circle.",
+    "Reverse the direction.",
+    "Keep your neck relaxed.",
+    "Repeat for the planned reps."
+  ],
+  "textSource": "opengym"
+}

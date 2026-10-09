@@ -1,0 +1,23 @@
+{
+  "id": "0783",
+  "name": "squat (arms overhead)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight squat with arms reaching overhead. It trains the legs and challenges shoulder mobility and trunk stability.",
+  "instructions": [
+    "Stand with feet shoulder-width apart and reach both arms overhead.",
+    "Keep your arms in line with your ears and your ribs down.",
+    "Sit your hips back and down until your thighs are about parallel to the floor.",
+    "Keep your heels down and knees tracking over your toes.",
+    "Drive up through your feet to stand tall."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "2767",
+  "name": "hip abduction",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes"
+  ],
+  "category": "mobility",
+  "description": "Lifting the leg out to the side away from the body, working the outer hip and glutes.",
+  "instructions": [
+    "Stand or sit tall with a relaxed posture and the joint in a neutral starting position.",
+    "Stand tall holding a support, with your weight on one leg.",
+    "Lift the other leg straight out to the side, toes pointing forward.",
+    "Pause briefly, then lower slowly without leaning your torso.",
+    "Repeat for 10-15 smooth reps, then switch sides if you are working one side at a time."
+  ],
+  "textSource": "opengym"
+}

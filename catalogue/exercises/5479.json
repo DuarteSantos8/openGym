@@ -1,0 +1,23 @@
+{
+  "id": "5479",
+  "name": "close grip pull up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "brachialis",
+    "upper back",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "Pull-up using a narrow overhand grip to emphasise the lower lats and arms.",
+  "instructions": [
+    "Grip the bar with hands a few centimetres apart, palms facing away.",
+    "Hang with straight arms and engage your shoulders.",
+    "Pull yourself up until your chin passes the bar.",
+    "Lower slowly to a full hang.",
+    "Keep your core tight and avoid swinging."
+  ],
+  "textSource": "opengym"
+}

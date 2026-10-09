@@ -1,0 +1,21 @@
+{
+  "id": "2186",
+  "name": "ez barbell decline triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "ez barbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A decline EZ bar triceps extension lowering the bar toward your forehead. Builds triceps strength.",
+  "instructions": [
+    "Lie on a decline bench with your head lower than your feet and your feet secured.",
+    "Hold the ez barbell with an overhand grip, hands shoulder-width apart.",
+    "Extend your arms fully, keeping your elbows close to your head.",
+    "Lower the barbell slowly towards your forehead, bending your elbows.",
+    "Pause for a moment, then extend your arms back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

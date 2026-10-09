@@ -1,0 +1,24 @@
+{
+  "id": "2990",
+  "name": "barbell walk calves activation",
+  "bodyPart": "lower legs",
+  "equipment": "barbell",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Walking on the balls of your feet with a barbell on your back to wake up the calves before heavy lower body training.",
+  "instructions": [
+    "Rest a light barbell across your upper back and hold it with both hands.",
+    "Stand tall with your core braced and rise onto the balls of your feet.",
+    "Walk forward in small, controlled steps without letting your heels drop.",
+    "Keep your ankles steady and your hips level.",
+    "Walk 10-15 metres, rest, then repeat for a few rounds.",
+    "Use a light load so you can stay high on your toes."
+  ],
+  "textSource": "opengym"
+}

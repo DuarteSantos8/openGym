@@ -1,0 +1,24 @@
+{
+  "id": "0172",
+  "name": "cable incline pushdown",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "An incline cable pushdown with straight arms. Targets the lats.",
+  "instructions": [
+    "Attach a straight bar to a high pulley cable machine.",
+    "Stand facing away from the machine with your feet shoulder-width apart.",
+    "Grasp the bar with an overhand grip, hands slightly wider than shoulder-width apart.",
+    "Lean forward slightly and keep your back straight.",
+    "Pull the bar down towards your thighs by extending your elbows.",
+    "Pause for a moment at the bottom, then slowly return the bar to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3051",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "4881",
+  "name": "bridge hip abduction",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A glute bridge where you press the knees apart at the top. It fires up the outer hips and glutes.",
+  "instructions": [
+    "Lie on your back with knees bent and feet flat on the floor.",
+    "Drive through your heels and lift your hips into a bridge.",
+    "Keeping the hips high, open both knees out to the sides.",
+    "Bring the knees back together without dropping the hips.",
+    "Lower slowly to the floor and repeat.",
+    "Keep your ribs down so your lower back does not arch."
+  ],
+  "femaleVariant": "0144",
+  "textSource": "opengym"
+}

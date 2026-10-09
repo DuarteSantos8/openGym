@@ -1,0 +1,25 @@
+{
+  "id": "2980",
+  "name": "dumbbell renegade row",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "rhomboids",
+    "biceps",
+    "core",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A row from a plank position with dumbbells. It builds the back while your core fights rotation.",
+  "instructions": [
+    "Start in a high plank with a dumbbell in each hand and your feet wide.",
+    "Brace your core.",
+    "Row one dumbbell to your ribs without twisting your hips.",
+    "Lower it with control.",
+    "Repeat on the other side."
+  ],
+  "femaleVariant": "2981",
+  "textSource": "opengym"
+}

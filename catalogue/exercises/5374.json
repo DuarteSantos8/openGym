@@ -1,0 +1,23 @@
+{
+  "id": "5374",
+  "name": "roll biceps lying on floor",
+  "bodyPart": "upper arms",
+  "equipment": "roller",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "mobility",
+  "description": "Self-massage with a foam roller to ease tightness in the biceps. Good before training or on rest days to loosen up.",
+  "instructions": [
+    "Lie face down with the roller under one upper arm.",
+    "Place the roller under the biceps and let your body weight settle onto it.",
+    "Roll slowly from the elbow toward the shoulder.",
+    "Pause on tender spots and breathe slowly for 20-30 seconds.",
+    "Keep your core braced and avoid rolling over joints or bone.",
+    "Roll for 30-60 seconds, then switch sides if needed."
+  ],
+  "femaleVariant": "5413",
+  "textSource": "opengym"
+}

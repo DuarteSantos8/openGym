@@ -1,0 +1,24 @@
+{
+  "id": "5388",
+  "name": "roll kneeling upper back rotation",
+  "bodyPart": "back",
+  "equipment": "roller",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rhomboids",
+    "obliques",
+    "shoulders"
+  ],
+  "category": "mobility",
+  "description": "Self-massage with a foam roller to ease tightness in the upper back. Good before training or on rest days to loosen up.",
+  "instructions": [
+    "Kneel beside the roller and place one hand on it.",
+    "Place the roller under the upper back and let your body weight settle onto it.",
+    "Slide the roller forward as you rotate your chest open.",
+    "Pause on tender spots and breathe slowly for 20-30 seconds.",
+    "Keep your core braced and avoid rolling over joints or bone.",
+    "Roll for 30-60 seconds, then switch sides if needed."
+  ],
+  "femaleVariant": "5433",
+  "textSource": "opengym"
+}

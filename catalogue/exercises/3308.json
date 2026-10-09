@@ -1,0 +1,23 @@
+{
+  "id": "3308",
+  "name": "barbell weighted deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "grip muscles",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "A classic deadlift lifting a loaded barbell from the floor to hip height. It trains the whole posterior chain and your grip.",
+  "instructions": [
+    "Stand with feet hip width apart and the bar over your mid foot.",
+    "Hinge down, grip the bar just outside your legs and brace your core.",
+    "Push the floor away and keep the bar close as you stand up.",
+    "Lock out with hips and knees extended and shoulders back.",
+    "Lower the bar along your legs with a flat back to the floor."
+  ],
+  "textSource": "opengym"
+}

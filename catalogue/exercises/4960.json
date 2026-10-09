@@ -1,0 +1,22 @@
+{
+  "id": "4960",
+  "name": "cable high triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A triceps extension performed from a high cable position. It builds the triceps.",
+  "instructions": [
+    "Set the cable high and face it.",
+    "Hold the attachment with elbows bent.",
+    "Press down by extending your elbows.",
+    "Squeeze at the bottom.",
+    "Return slowly.",
+    "Keep your elbows near your sides."
+  ],
+  "textSource": "opengym"
+}

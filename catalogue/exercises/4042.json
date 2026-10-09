@@ -1,0 +1,22 @@
+{
+  "id": "4042",
+  "name": "cable seated cross arm twist",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Seated trunk rotation pulling a cable across the body. It works the obliques and deep core.",
+  "instructions": [
+    "Sit next to a cable machine set at chest height and grab the handle with both hands.",
+    "Start with your arms extended in front of you.",
+    "Rotate your torso away from the stack, pulling the handle across your body.",
+    "Pause, then return slowly.",
+    "Keep your hips still, finish the reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

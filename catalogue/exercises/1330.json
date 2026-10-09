@@ -1,0 +1,28 @@
+{
+  "id": "1330",
+  "name": "dumbbell reverse grip incline bench one arm row",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A one-arm row with an underhand grip, supported on an incline bench. It works the upper back and biceps one side at a time.",
+  "instructions": [
+    "Set up an incline bench at a 45-degree angle.",
+    "Place a dumbbell on the floor next to the bench.",
+    "Stand facing the bench with your feet shoulder-width apart.",
+    "Bend at the waist and place your left knee and left hand on the bench for support.",
+    "Pick up the dumbbell with your right hand using a reverse grip (palm facing down).",
+    "Keep your back straight and your core engaged.",
+    "Pull the dumbbell up towards your chest, keeping your elbow close to your body.",
+    "Squeeze your back muscles at the top of the movement.",
+    "Lower the dumbbell back down to the starting position in a controlled manner.",
+    "Repeat for the desired number of repetitions.",
+    "Switch sides and repeat the exercise with your left arm."
+  ],
+  "femaleVariant": "2623",
+  "textSource": "exercisedb"
+}

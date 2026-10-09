@@ -1,0 +1,22 @@
+{
+  "id": "2720",
+  "name": "strongman squats with platform",
+  "bodyPart": "upper legs",
+  "equipment": "weight plate",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A squat while holding a heavy platform, building leg strength and trunk stability.",
+  "instructions": [
+    "Stand with the platform loaded on your shoulders and feet shoulder width apart.",
+    "Brace your core.",
+    "Squat down with your chest up and knees tracking over toes.",
+    "Drive back up through your heels.",
+    "Stand tall and lock out at the top."
+  ],
+  "textSource": "opengym"
+}

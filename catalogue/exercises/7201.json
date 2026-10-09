@@ -1,0 +1,23 @@
+{
+  "id": "7201",
+  "name": "resistance band lying leg raise v. 2",
+  "bodyPart": "waist",
+  "equipment": "resistance band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "A leg raise with band tension that challenges the lower abs and hip flexors.",
+  "instructions": [
+    "Lie on your back with the band around your feet or anchored behind your head.",
+    "Press your lower back into the floor.",
+    "Raise your legs together toward the ceiling.",
+    "Lower them slowly without arching your back.",
+    "Stop just above the floor.",
+    "Repeat for the planned reps."
+  ],
+  "textSource": "opengym"
+}

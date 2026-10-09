@@ -1,0 +1,24 @@
+{
+  "id": "3184",
+  "name": "barbell squat (with hanging band technique)",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A barbell squat with bands hanging weights from the bar. The wobble forces you to stay stable.",
+  "instructions": [
+    "Set up the bar with bands hanging kettlebells or weights from each end.",
+    "Rest the bar across your upper back and step out.",
+    "Stand with your feet shoulder width apart.",
+    "Squat down with a braced core.",
+    "Drive up through your feet.",
+    "Use a lighter load and move slowly."
+  ],
+  "textSource": "opengym"
+}

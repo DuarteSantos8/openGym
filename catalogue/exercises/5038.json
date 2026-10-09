@@ -1,0 +1,22 @@
+{
+  "id": "5038",
+  "name": "double jump rope",
+  "bodyPart": "cardio",
+  "equipment": "rope",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "calves",
+    "shoulders",
+    "forearms"
+  ],
+  "category": "cardio",
+  "description": "Jumping rope with two passes of the rope per jump. It is great conditioning that builds coordination.",
+  "instructions": [
+    "Hold a jump rope with the handles at your hips.",
+    "Jump slightly higher than normal.",
+    "Spin the rope fast with your wrists so it passes twice under your feet.",
+    "Land softly on the balls of your feet.",
+    "Rest between short rounds as needed."
+  ],
+  "textSource": "opengym"
+}

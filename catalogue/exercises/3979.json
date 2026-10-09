@@ -1,0 +1,22 @@
+{
+  "id": "3979",
+  "name": "cross body push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A push up where one hand crosses over toward the other side. It adds an uneven challenge for the chest and core.",
+  "instructions": [
+    "Start in a high plank.",
+    "Lower into a push up.",
+    "Push up and cross one hand over toward the other side.",
+    "Place it down and repeat.",
+    "Alternate the crossing hand."
+  ],
+  "textSource": "opengym"
+}

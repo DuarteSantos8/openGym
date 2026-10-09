@@ -1,0 +1,22 @@
+{
+  "id": "0857",
+  "name": "wheel rollerout",
+  "bodyPart": "waist",
+  "equipment": "wheel roller",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "An ab wheel rollout from the knees, rolling forward and back with control. It builds a strong core and abs.",
+  "instructions": [
+    "Kneel on the floor and place the wheel roller in front of you.",
+    "Place your hands on the handles of the wheel roller and extend your arms straight out in front of you.",
+    "Engage your core muscles and slowly roll the wheel forward, keeping your back straight and your abs tight.",
+    "Continue rolling forward until your body is fully extended and your arms are overhead.",
+    "Pause for a moment, then slowly roll the wheel back towards your knees, maintaining control and keeping your abs engaged.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2332",
+  "textSource": "exercisedb"
+}

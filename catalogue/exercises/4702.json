@@ -1,0 +1,22 @@
+{
+  "id": "4702",
+  "name": "alternating superman",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "rear deltoids",
+    "hamstrings"
+  ],
+  "category": "calisthenics",
+  "description": "A face-down lift of opposite arm and leg to strengthen the lower back and glutes.",
+  "instructions": [
+    "Lie face down with arms extended in front.",
+    "Lift one arm and the opposite leg together.",
+    "Hold for a second.",
+    "Lower and switch to the other side.",
+    "Keep your neck neutral and move with control."
+  ],
+  "textSource": "opengym"
+}

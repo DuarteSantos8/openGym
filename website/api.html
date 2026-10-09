@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- GENERATED FILE - do not edit by hand.
-     Built by scripts/build-api-docs.mjs from api/openapi.yaml (openGym API v1.3.10).
+     Built by scripts/build-api-docs.mjs from api/openapi.yaml (openGym API v1.4.0).
      Regenerate with: node scripts/build-api-docs.mjs -->
 <html lang="en">
 <head>
@@ -13,23 +13,25 @@
 <link rel="preconnect" href="https://stats.duarte-santos.ch">
 <meta property="og:title" content="openGym API reference">
 <meta property="og:description" content="The complete openGym HTTP API as an OpenAPI spec: passkey auth, state sync, push notifications, pairing and admin routes.">
-<meta property="og:image" content="https://opengym.duarte-santos.ch/img/social.jpg">
+<meta property="og:image" content="https://opengym.ch/img/social.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="openGym: your training, your data, your server. Two phones showing the home and workout screens.">
-<meta property="og:url" content="https://opengym.duarte-santos.ch/api.html">
+<meta property="og:url" content="https://opengym.ch/api.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="openGym">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="openGym API reference">
-<meta name="twitter:image" content="https://opengym.duarte-santos.ch/img/social.jpg">
-<link rel="canonical" href="https://opengym.duarte-santos.ch/api.html">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
-<link rel="icon" type="image/png" sizes="180x180" href="icon-180.png">
+<meta name="twitter:image" content="https://opengym.ch/img/social.jpg">
+<link rel="canonical" href="https://opengym.ch/api.html">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="96x96" href="/icon-96.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="styles.css?v=23">
+<link rel="stylesheet" href="styles.css?v=24">
 <script>document.documentElement.className += ' js'</script>
-<!-- Umami web analytics for opengym.duarte-santos.ch (self-hosted, cookieless). -->
+<!-- Umami web analytics for opengym.ch (self-hosted, cookieless). -->
 <script defer src="https://stats.duarte-santos.ch/script.js" data-website-id="db36019e-50f4-453c-9c56-d0588aefe233"></script>
 <style>
 /* ------------------------------------------------------------- API reference
@@ -242,7 +244,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
-    <span>openGym v1.3.10</span>
+    <span>openGym v1.4.0</span>
     <span>69 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
@@ -303,6 +305,8 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </summary>
   <div class="ep-body">
 <p>Always public. Also reports how many user accounts exist.</p>
+<p>The check writes: it creates and removes one empty file under <code>DATA_DIR</code>, because a server whose data directory is full or read-only has every write path broken while the port still answers. It is a 503 when that fails — the container healthcheck (<code>wget --spider</code>) reads the status and nothing else.</p>
+<p>The probe runs at most once every five seconds and the answer in between is the last one, so a poll can be that stale. The route is unauthenticated, and one disk write per request is not something to leave open to anyone.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public: no authentication required.</span></p>
 
 
@@ -310,7 +314,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <div class="ptab">
   <div class="prow rrow">
     <span class="r-code s2">200</span>
-    <span class="p-desc">The server is up.<span class="r-sig">{ ok: always true, users: integer }</span></span>
+    <span class="p-desc">The server is up and its data directory is writable.<span class="r-sig">{ ok: always true, users: integer, writable: always true }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">503</span>
+    <span class="p-desc">The data directory could not be written — a full disk, or a mount that came back read-only. Nothing that stores anything will work until it is fixed; the reason is in the container log.</span>
   </div>
     </div>
   </div>
@@ -1812,14 +1820,19 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Live-workout presence heartbeat</span>
   </summary>
   <div class="ep-body">
-<p>The client pings this every ~20 s while a workout is on screen; the admin dashboard reads who is training right now. Purely ephemeral, in-memory, never persisted; entries expire ~70 s after the last ping. <code>{&quot;active&quot;: false}</code> drops the caller's entry immediately.</p>
+<p>The client pings this every ~20 s while a workout is on screen; the admin dashboard reads who is training right now. Purely ephemeral, in-memory, never persisted; entries expire 70 s after the last ping. <code>{&quot;active&quot;: false}</code> is the &quot;left&quot; signal: with <code>reason</code> <code>navigated</code> or <code>closed</code>, or with no reason, it drops the caller's entry immediately. With <code>reason: hidden</code> (the page went to the background) it marks the entry away instead, and the entry stops being listed 45 s after that mark unless a heartbeat arrives first; a heartbeat clears the mark. The 70 s expiry applies either way.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
 
 <p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
   <div class="prow">
     <span class="p-name">active</span>
     <span class="p-type">boolean</span>
-    <span class="p-desc">false ends the presence; true (with the fields below) updates it.</span>
+    <span class="p-desc">false ends the presence (see <code>reason</code>); true (with the fields below) updates it.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">reason</span>
+    <span class="p-type">&quot;navigated&quot; | &quot;closed&quot; | &quot;hidden&quot;</span>
+    <span class="p-desc">Why the client sent <code>active: false</code>: <code>navigated</code> (an in-app route change), <code>closed</code> (the page is going away) or <code>hidden</code> (the page went to the background). <code>navigated</code> and <code>closed</code> drop the entry at once, as no reason does; <code>hidden</code> marks it away rather than dropping it. Ignored with <code>active: true</code>.</span>
   </div>
   <div class="prow">
     <span class="p-name">name</span>
@@ -2991,7 +3004,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </summary>
   <div class="ep-body">
 <p>Checks the runtime, then asks the model for one fixed JSON object and validates the shape that comes back. That is the whole path a job takes, on nobody's profile.</p>
-<p>Always 200: the outcome is in the body, because &quot;the provider refused&quot; is an answer to the question the button asks, not a failure of the request. It brings the two short upstream retry pauses rather than <code>COACH_RETRY_DELAYS_MS</code>, since an admin is watching it through a proxy with a timeout of its own.</p>
+<p>Always 200: the outcome is in the body, because &quot;the provider refused&quot; is an answer to the question the button asks, not a failure of the request. An HTTPS provider gets the same retries as a job: a 429, 500, 502, 503, 504 or 529 is tried twice more, after pauses of 2 and 5 seconds, and only then reported. A runtime provider is asked once.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only: a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
 
 
@@ -5113,7 +5126,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
 </div></footer>
 
-<script src="site.js?v=23" defer></script>
+<script src="site.js?v=24" defer></script>
 <script>
 /* Jumping to an anchor inside a collapsed card opens the card and re-aligns, since
    the browser scrolled to where the target was while it was still collapsed. */

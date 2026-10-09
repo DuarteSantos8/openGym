@@ -1,0 +1,21 @@
+{
+  "id": "0453",
+  "name": "ez barbell seated triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "ez barbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Seated, you lower an EZ bar behind your head and extend your arms. It builds the back of the upper arm.",
+  "instructions": [
+    "Sit on a bench with your back straight and feet flat on the ground.",
+    "Hold the ez barbell with an overhand grip, hands shoulder-width apart.",
+    "Raise the barbell overhead, fully extending your arms.",
+    "Keeping your upper arms stationary, lower the barbell behind your head by bending your elbows.",
+    "Pause for a moment, then raise the barbell back to the starting position by extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

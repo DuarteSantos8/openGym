@@ -1,0 +1,22 @@
+{
+  "id": "4082",
+  "name": "band overhead side bend",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Standing side bend with a band stretched overhead, training the obliques.",
+  "instructions": [
+    "Stand on the band and hold the ends overhead.",
+    "Keep your core braced.",
+    "Bend sideways at your waist.",
+    "Return to upright.",
+    "Finish the reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

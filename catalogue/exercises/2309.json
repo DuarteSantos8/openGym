@@ -1,0 +1,23 @@
+{
+  "id": "2309",
+  "name": "heel push kick",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hip flexors",
+    "core"
+  ],
+  "category": "combat",
+  "description": "A pushing front kick that drives the heel forward to create distance, working hips and quads.",
+  "instructions": [
+    "Stand in a fighting stance with your hands up.",
+    "Lift the knee and point the toes up.",
+    "Push your heel straight forward, leaning back slightly.",
+    "Keep your supporting foot grounded.",
+    "Bring the leg back and set it down.",
+    "Repeat, then switch legs."
+  ],
+  "textSource": "opengym"
+}

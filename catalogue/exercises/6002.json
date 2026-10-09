@@ -1,0 +1,22 @@
+{
+  "id": "6002",
+  "name": "lying toe tap",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "From a tabletop position, alternate lowering a foot to tap the floor while keeping the lower back steady.",
+  "instructions": [
+    "Lie on your back with your knees bent at 90 degrees over your hips.",
+    "Press your lower back into the floor.",
+    "Lower one foot to tap the floor.",
+    "Bring it back to tabletop.",
+    "Alternate legs with control."
+  ],
+  "femaleVariant": "6003",
+  "textSource": "opengym"
+}

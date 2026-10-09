@@ -1,0 +1,22 @@
+{
+  "id": "3966",
+  "name": "static lunge kick",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "hip flexors"
+  ],
+  "category": "plyometrics",
+  "description": "A lunge held in place that ends with a kick from the back leg. It works the legs and balance.",
+  "instructions": [
+    "Step into a lunge with your front knee over your ankle.",
+    "Lower down until both knees are bent.",
+    "Drive up through the front foot.",
+    "Swing the back leg forward in a kick.",
+    "Return to the lunge and repeat, then switch legs."
+  ],
+  "textSource": "opengym"
+}

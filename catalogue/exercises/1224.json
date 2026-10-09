@@ -1,0 +1,21 @@
+{
+  "id": "1224",
+  "name": "smith standing shoulder press",
+  "bodyPart": "shoulders",
+  "equipment": "smith machine",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A standing overhead press on the Smith machine. The fixed bar path lets you focus on pushing.",
+  "instructions": [
+    "Set the bar at shoulder height and stand under it with a shoulder width grip.",
+    "Unrack the bar and hold it at your collarbone.",
+    "Press up until your arms are straight.",
+    "Lower the bar back to your shoulders slowly.",
+    "Brace your core and keep your ribs down."
+  ],
+  "textSource": "opengym"
+}

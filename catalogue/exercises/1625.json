@@ -1,0 +1,23 @@
+{
+  "id": "1625",
+  "name": "smith machine decline close grip bench press",
+  "bodyPart": "upper arms",
+  "equipment": "smith machine",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A close grip bench press on a decline bench in the smith machine. It builds the triceps and lower chest.",
+  "instructions": [
+    "Adjust the bench on the smith machine to a decline position.",
+    "Lie down on the bench with your feet firmly planted on the ground.",
+    "Grasp the barbell with a close grip, slightly narrower than shoulder-width apart.",
+    "Unrack the barbell and lower it slowly towards your chest, keeping your elbows close to your body.",
+    "Pause for a moment when the barbell is just above your chest.",
+    "Push the barbell back up to the starting position, fully extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

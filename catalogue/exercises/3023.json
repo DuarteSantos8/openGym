@@ -1,0 +1,21 @@
+{
+  "id": "3023",
+  "name": "band lying hip internal rotation v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "adductors",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "Lying hip internal rotation against a band to build control through the hip.",
+  "instructions": [
+    "Lie on your back with a band around your lower leg anchored to the side.",
+    "Bend your knees with your feet on the floor.",
+    "Rotate your lower leg outward against the band, turning the hip inward.",
+    "Return slowly to the start.",
+    "Complete your reps and switch legs."
+  ],
+  "textSource": "opengym"
+}

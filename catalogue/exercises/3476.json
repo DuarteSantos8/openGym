@@ -1,0 +1,23 @@
+{
+  "id": "3476",
+  "name": "lying leg tuck hip twist stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower back",
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "A lying stretch with a spinal twist to open the hips and back.",
+  "instructions": [
+    "Lie on your back and pull your knees in.",
+    "Drop both knees to one side.",
+    "Keep your shoulders on the floor.",
+    "Hold for 20-30 seconds.",
+    "Return to the center.",
+    "Switch sides."
+  ],
+  "textSource": "opengym"
+}

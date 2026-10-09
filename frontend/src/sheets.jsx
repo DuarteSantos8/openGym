@@ -1,15 +1,15 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
-import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, smOf, searchExercises, exOr, isAssisted, betterWeight, beatsWeight, isCustomEx } from './lib/exercises.js'
-import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile } from './lib/equipment.js'
+import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, smOf, searchExercises, similarExercises, exOr, isAssisted, betterWeight, beatsWeight, isCustomEx } from './lib/exercises.js'
+import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile, profileEquipment, ACC_V } from './lib/equipment.js'
 import { fmtDate, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
 import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutDay, workoutVolume, setsDone, setsDoneActive, setUnitsTotal, lastBW, sessionSections, setLabel, defaultConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX } from './lib/history.js'
 import { usesBar, defaultBarWeight, hasBarOverride, isNoBar } from './lib/bar.js'
 import { PLATE_SIZES, pairsOf, ownsPlates, withPlatePairs, withStandardPlates, withLoadKind, loadKindFor, baseWeightFor, dropGrid } from './lib/plates.js'
 import { toScale, rirOf, EFFORT_PRESETS, effortColor } from './lib/effort.js'
 import { beep, vibrate } from './lib/sound.js'
-import { t, tn, dateLocale, instrFor, exerciseNameFor, exerciseNameClass, getLang, INSTR_LANGS } from './lib/i18n.js'
+import { t, tn, dateLocale, instrFor, instrTranslated, descFor, exerciseNameFor, exerciseNameClass, getLang, useLang } from './lib/i18n.js'
 import { nav, closeThenNav, navToWorkout } from './lib/nav.js'
 import { buildStarterPlan, starterPlanDays, starterPlanOptions } from './lib/starter.js'
 import Media, { Thumb } from './components/Media.jsx'
@@ -21,22 +21,27 @@ import { syncMedia } from './lib/media-sync.js'
 import LineChart from './components/LineChart.jsx'
 import Stepper from './components/Stepper.jsx'
 import { durationSheet } from './components/DurationWheel.jsx'
+import { SG_NAME_MAX } from './lib/superset-meta.js'
 import { REST_MAX, fmtRest } from './lib/duration.js'
 import Icon from './components/Icon.jsx'
 import { Button, Slider, Switch, Segmented, SelectRow, Row, TextField, NumberField, MultiSelectRow } from './components/ui.jsx'
 import { glyphOf, GLYPH_GROUPS, DEFAULT_GLYPH } from './lib/glyphs.js'
 import BodyMap from './components/BodyMap.jsx'
 import MuscleExplorer from './components/MuscleExplorer.jsx'
+import ExerciseViewToggle from './components/ExerciseViewToggle.jsx'
+import { sameMuscleFirst, swapMuscleOf } from './lib/similar-exercises.js'
 import { exerciseMuscleSnapshot, loadOfWorkouts, MUSCLES, MUSCLE_NAME, muscleWeightsOf, normalizeMuscleGroups, hasExplicitMuscleMetadata, inMuscleOrder } from './lib/muscles.js'
 import { parseImport, mergeImport } from './lib/import-csv.js'
 import { importHevyData, HevyApiError, HEVY_DEV_SETTINGS, mergeHevyRoutines } from './lib/import-hevy.js'
 import { buildPlanBundle, parsePlan, mergePlan, printPlan, planPrintHTML } from './lib/plan-share.js'
-import { estimate1RM, best1RM, is1RMRecord, REP_CAP } from './lib/onerm.js'
+import { estimate1RM, best1RM, is1RMRecord, REP_CAP, formulaOf, FORMULA_NAMES } from './lib/onerm.js'
 import { exerciseHistory } from './lib/exercise-history.js'
-import { policyFor, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC, MAX_BW_SETS, weightIncrement } from './lib/progression.js'
+import { isBellEx, dbLoadOf, dbLoadFor, withDbLoad, withMeaning, historyAs, entryDbLoad, currentDbLoad, isOneArm, ownedWeightsFor, dumbbellsOf, ownsDumbbells, withDumbbells, presetWeights, cleanWeights } from './lib/dumbbells.js'
+import { policyFor, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC, MAX_BW_SETS, MAX_TRIPLE_SETS, weightIncrement } from './lib/progression.js'
 import { normalizeRepRange } from './lib/rep-range.js'
-import { isPyramid, normalizePyramid, normalizePyramidRest, pyramidFromFlat, flatFromPyramid, pyramidLabel, PYRAMID_MAX, MAX_PYRAMID_SETS, PYRAMID_PRESETS } from './lib/pyramid.js'
-import { MOBILE, shareExport, printHtml } from './lib/mobile.js'
+import { isBackoff, backoffWeights } from './lib/backoff.js'
+import { isPyramid, normalizePyramid, normalizePyramidRest, normalizePyramidWeight, pyramidFromFlat, flatFromPyramid, pyramidLabel, PYRAMID_MAX, MAX_PYRAMID_SETS, PYRAMID_PRESETS } from './lib/pyramid.js'
+import { MOBILE, shareExport, shareExportBlob, printHtml } from './lib/mobile.js'
 import { speedUnitOf, toSpeed, fromSpeed } from './lib/speed.js'
 import { buildCompletedWorkout, sessionEnd } from './lib/finish-workout.js'
 import { refillAfter } from './lib/rotation.js'
@@ -45,8 +50,11 @@ import { saveSessionAsRoutine } from './lib/session-routines.js'
 import { repeatSessionEntries } from './lib/session-repeat.js'
 import { swapActiveExercise } from './lib/active-exercise-swap.js'
 import { useSheetKeyboard, useRevealActiveChip, tappable } from './lib/use-sheet-keyboard.js'
+import { useAutoMore } from './lib/use-auto-more.js'
 import { isFav, toggleFav, sortFavouritesFirst } from './lib/favourites.js'
 import { buildSessionEntries, buildPlannedEntry, builtOutOfProgression } from './lib/session-start.js'
+import { finishCompare, finishCardio } from './lib/finish-compare.js'
+import { workoutFit, fitFileName } from './lib/fit-export.js'
 import { joinSessionNoProg } from './lib/session-noprog.js'
 import { buildCombinedEntries, deriveSessionName } from './lib/session-merge.js'
 import { workoutsOn, backfillStart, backfillEnd, completeBackfill, historyAsOf, sessionHistory } from './lib/backfill.js'
@@ -55,8 +63,10 @@ import { editCompletedSession, editLeftEmpty, editedRecord, editChangesNothing }
 import { stampWorkout } from './lib/sync-merge.js'
 import { weeklyWeights } from './lib/bodyweight.js'
 import { workoutText } from './lib/workout-text.js'
+import { workoutCardModel, layoutWorkoutCard, drawWorkoutCard, viewAspect, CARD_FONT } from './lib/workout-card.js'
 import { copyText } from './lib/clipboard.js'
 import { queueRemaining, pinState } from './lib/queue.js'
+import { DAY_NOTE_TAGS, DAY_NOTE_LABEL, DAY_NOTE_ICON, dayNoteOf, dayNoteLine, canNoteDay, withDayNote } from './lib/day-notes.js'
 
 const S = () => useStore.getState().S
 const update = (...a) => useStore.getState().update(...a)
@@ -167,21 +177,24 @@ const PLAN_COPY = {
 // and only the weekdays the plan asks for are reassigned; an id with no plan behind it changes
 // nothing at all. planId is deliberately required — a default invites `onClick={loadStarterPlan}`,
 // which hands the click event in as the plan and silently loads nothing.
-export function loadStarterPlan(planId) {
-  const plan = buildStarterPlan(planId)
+export function loadStarterPlan(planId, profile) {
+  const plan = buildStarterPlan(planId, profile ? profileEquipment(profile) : undefined)
   if (!plan) return false
   update(st => {
-    // Loading the same plan again reuses the routines it added last time (same name) for the
-    // weekdays instead of a second Upper A, Lower A, ... under the same names.
+    // Loading the same plan again reuses the routines it added last time (same name, same
+    // exercises) for the weekdays instead of a second Upper A, Lower A, ... under the same names.
+    // A plan fitted to different equipment has other exercises, so it is added alongside.
     const idOf = {}
+    const sameLift = (a, b) => a.ex.length === b.ex.length && a.ex.every((e, i) => e.id === b.ex[i].id)
     plan.routines.forEach(r => {
-      const have = st.routines.find(x => x.name === r.name)
+      const have = st.routines.find(x => x.name === r.name && sameLift(x, r))
       if (have) idOf[r.id] = have.id
       else { st.routines.push(r); idOf[r.id] = r.id }
     })
     plan.schedule.forEach(({ day, routineId }) => { st.week[day] = [idOf[routineId]] })
   })
-  toast(t('{0} loaded', PLAN_COPY[planId]().name))
+  if (plan.fit) toast(t('{0} loaded, fitted to "{1}": {2} swapped, {3} dropped', PLAN_COPY[planId]().name, profile.name, plan.fit.swapped, plan.fit.dropped))
+  else toast(t('{0} loaded', PLAN_COPY[planId]().name))
   return true
 }
 
@@ -191,22 +204,33 @@ const dayList = days => new Intl.ListFormat(dateLocale()).format(days.map(d => t
 function StarterPlanChooser({ close }) {
   const week = useStore(s => s.S.week)
   const routines = useStore(s => s.S.routines)
+  const profiles = useStore(s => s.S.equipProfiles) || []
+  // Fitting starts on for the profile you already filter by; '' leaves the plan as written.
+  const [fitId, setFitId] = useState(() => activeProfile(useStore.getState().S)?.id || '')
+  const fit = profiles.find(p => p.id === fitId) || null
   const choose = (id, name) => {
     const days = starterPlanDays(id)
     close()
     // A confirmation is only worth showing when one of those days is actually occupied — by a
     // routine that still exists, not by a stale id the Plan already shows as "Rest".
     const taken = day => [].concat(week[day] || []).some(id => routines.some(r => r.id === id))
-    if (!days.some(taken)) { loadStarterPlan(id); return }
+    if (!days.some(taken)) { loadStarterPlan(id, fit); return }
     confirmSheet({
       title: t('Load {0}?', name),
       message: t('The new plan goes on {0}. Your existing routines stay; only those days of the weekly plan change.', dayList(days)),
       confirmText: t('Load plan'),
-      onConfirm: () => loadStarterPlan(id)
+      onConfirm: () => loadStarterPlan(id, fit)
     })
   }
   return <>
     <h3>{t('Choose starter plan')}</h3>
+    {profiles.length > 0
+      ? <div className="chips" style={{ margin: '0 0 10px' }}>
+          <div className="small dim" style={{ width: '100%' }}>{t('Fit to my equipment')}</div>
+          <button className={'chip nocap' + (!fit ? ' on' : '')} onClick={() => setFitId('')}>{t('As written')}</button>
+          {profiles.map(p => <button key={p.id} className={'chip nocap' + (fit?.id === p.id ? ' on' : '')} onClick={() => setFitId(p.id)}>{p.name}</button>)}
+        </div>
+      : <div className="small dim" style={{ margin: '0 0 10px' }}>{t('Add an equipment profile in Settings to fit a plan to what you own.')}</div>}
     <div className="list">
       {starterPlanOptions().map(({ id, days }) => {
         const { name, about } = PLAN_COPY[id]()
@@ -471,7 +495,7 @@ export function importFromApp(file, onDone) {
   const rd = new FileReader()
   rd.onload = () => {
     let parsed
-    try { parsed = parseImport(String(rd.result), { unit: S().unit }) }
+    try { parsed = parseImport(String(rd.result), { unit: S().unit, customEx: S().customEx }) }
     catch (e) { toast(t('Could not read that file')); return }
     if (parsed.error === 'empty') { toast(t('That file is empty')); return }
     if (parsed.error) { toast(t("We don't recognise that file's columns. Check the docs for supported apps.")); return }
@@ -527,7 +551,7 @@ function HevyImportSheet({ close }) {
     setProgress({ stage: 'templates', page: 1, pageCount: 1 })
     setPayload(null)
     try {
-      const data = await importHevyData(key, { unit: st.unit, onProgress: setProgress })
+      const data = await importHevyData(key, { unit: st.unit, customEx: st.customEx, onProgress: setProgress })
       wipeKey()
       const empty = !data.workouts.workouts.length && !data.routines.routines.length && !data.bodyweight.bodyweight.length
       if (empty) {
@@ -787,6 +811,23 @@ function BarWeightEditor({ ex, cfg, extra }) {
   </>
 }
 
+// What a dumbbell or kettlebell weight means (issue #474, lib/dumbbells.js): as entered (the
+// default, how every set before this was counted), one bell, or both together. `value` is the
+// meaning in force and `onChange` stores a pick; the caller decides where (the routine's slot or
+// the exercise's own default). The line under it says what the pick does to the numbers.
+function DbLoadPicker({ ex, cfg, value, onChange }) {
+  const one = isOneArm({ ...(cfg || {}), id: ex.id })
+  return <>
+    <Segmented className="seg-inline" value={value} onChange={onChange}
+      options={[{ value: 'as', label: t('As entered') }, { value: 'each', label: t('Each') }, { value: 'total', label: t('Both') }]} />
+    <div className="small dim" style={{ margin: '8px 0 18px' }}>
+      {value === 'each' ? (one ? t('The weight of the one you hold. One arm, so it counts once.') : t('The weight of one, so 20 means 20 in each hand. Volume counts both.'))
+        : value === 'total' ? t('Both together, so 40 means two 20s.')
+          : t('Counted as you type it, the way it always was.')}
+    </div>
+  </>
+}
+
 // Mid-workout sheet behind the ⋯ menu's "Plate loading" — same values, same editor.
 function BarWeightSheet({ exId, cfg, close }) {
   const ex = exOr(exId)
@@ -828,6 +869,49 @@ function PlateInventorySheet({ close }) {
 }
 export const plateInventorySheet = () => ui().openSheet(close => <PlateInventorySheet close={close} />)
 
+// The dumbbells you own, for the profile's unit (Settings → Equipment → Dumbbells, issue #376):
+// a list of single bells, kept per unit like the plates (lib/dumbbells.js). With one, progression,
+// deloads, warm-ups, drops and the stepper of every dumbbell lift land on these; an empty list
+// puts them back on the increment. Tapping a weight takes it off, the field adds one, and the
+// quick fill writes the usual rack for the unit to edit from. Every change is stamped.
+function DumbbellInventorySheet({ close }) {
+  const st = useStore(s => s.S)
+  const unit = st.unit === 'lb' ? 'lb' : 'kg'
+  const list = dumbbellsOf(st)
+  const [draft, setDraft] = useState(null)
+  const save = ws => update(s => { s.dumbbells = withDumbbells(s, ws) })
+  const preset = presetWeights(unit)
+  const add = () => {
+    const w = cleanWeights([draft])[0]
+    if (!w) { toast(t('Enter a valid weight')); return }
+    save([...list, w])
+    setDraft(null)
+  }
+  return <>
+    <h3>{t('Dumbbells')}</h3>
+    <div className="muted small" style={{ marginBottom: 14 }}>
+      {t('The weights you own, one bell each. Progression, deloads, warm-ups and the + and − buttons of dumbbell lifts land only on these.')}
+    </div>
+    {list.length > 0
+      ? <div className="chips" style={{ flexWrap: 'wrap', overflow: 'visible', touchAction: 'auto', marginBottom: 12 }}>
+        {list.map(w => <button key={w} className="chip on nocap" aria-label={t('Remove {0}', fmtPlate(w) + ' ' + unit)}
+          onClick={() => save(list.filter(x => x !== w))}>{fmtPlate(w)} <Icon name="xmark" /></button>)}
+      </div>
+      : <div className="small dim" style={{ marginBottom: 12 }}>{t('No list yet, so dumbbell lifts step by their increment as usual.')}</div>}
+    <div className="row" style={{ gap: 8, marginBottom: 12 }}>
+      <NumberField className="input" decimal value={draft ?? ''} onChange={v => setDraft(v)}
+        aria-label={t('Weight ({0})', unit)} placeholder={t('Weight ({0})', unit)} onKeyDown={e => { if (e.key === 'Enter') add() }} />
+      <Button icon="plus" onClick={add} style={{ flex: '0 0 auto', width: 'auto' }}>{t('Add')}</Button>
+    </div>
+    <Button onClick={() => save(preset)} style={{ marginBottom: 8 }}>
+      {t('Fill in {0} to {1} {2}, every {3}', fmtPlate(preset[0]), fmtPlate(preset.at(-1)), unit, fmtPlate(preset[1] - preset[0]))}
+    </Button>
+    {list.length > 0 && <Button variant="danger" onClick={() => save([])} style={{ marginBottom: 8 }}>{t('Clear the list')}</Button>}
+    <Button variant="primary" onClick={close}>{t('Done')}</Button>
+  </>
+}
+export const dumbbellInventorySheet = () => ui().openSheet(close => <DumbbellInventorySheet close={close} />)
+
 /* ============================ exercise detail ============================ */
 // Estimated 1RM for one exercise (issue #18): what the log already implies, plus a calculator
 // for a set you have not done — so the number is reachable before there is any history.
@@ -836,7 +920,7 @@ function OneRM({ ex }) {
   const best = best1RM(st, ex.id)
   const [w, setW] = useState(best ? best.w : (st.exWeights[ex.id] || {}).w || 20)
   const [r, setR] = useState(best ? best.r : 5)
-  const est = estimate1RM(w, r)
+  const est = estimate1RM(w, r, formulaOf(st))
   return <>
     <h4 className="sec">{t('Estimated 1RM')}</h4>
     {best && <div className="small" style={{ marginBottom: 8 }}>
@@ -853,7 +937,9 @@ function OneRM({ ex }) {
     </div>
     <div className="small dim">{est === null
       ? t('Enter a weight and 1–{0} reps. Beyond that it’s basically guesswork.', REP_CAP)
-      : t('Epley formula: calculated from one set, not a tested max.')}</div>
+      : formulaOf(st) === 'weighted'
+        ? t('A blend of seven formulas: calculated from one set, not a tested max.')
+        : t('{0} formula: calculated from one set, not a tested max.', FORMULA_NAMES[formulaOf(st)])}</div>
   </>
 }
 
@@ -886,9 +972,10 @@ export function detailTags(ex) {
 }
 
 function ExerciseDetail({ ex, close }) {
+  useLang() // the description and steps arrive in their own chunk the first time a sheet asks
   const st = useStore(s => s.S)
   const last = lastEntryFor(st, ex.id)
-  const best = bestWeightFor(st, ex.id)
+  const best = bestWeightFor(st, ex.id, currentDbLoad(st, ex.id))
   const fav = isFav(st, ex.id)
   const flipFav = () => {
     let on = false
@@ -907,7 +994,7 @@ function ExerciseDetail({ ex, close }) {
     <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '10px 0' }}>
       {detailTags(ex).map(tg => <span key={tg.key} className={'tag' + (tg.acc ? ' acc' : '')}>{tg.icon && <Icon name={tg.icon} />}{tg.label}</span>)}
     </div>
-    {ex.desc && <div className="exnote">{ex.desc}</div>}
+    {descFor(ex) && <div className="exnote">{descFor(ex)}</div>}
     {best > 0 && <div className="small row" style={{ marginBottom: 6, gap: 5 }}><Icon name="trophy" style={{ fontSize: 14, color: 'var(--yellow)' }} />{t('Best:')} <b className="accent" style={{ whiteSpace: 'nowrap' }}>{fmtNum(best)} {st.unit}</b>{last ? ` · ${t('last')} ${fmtDate(last.d)}: ${last.sets.map(s => setLabel(ex.id, s, last.target, speedUnitOf(st))).join(', ')}` : ''}</div>}
     <Button variant="primary" icon="plus" style={{ margin: '10px 0 4px' }} onClick={() => addToRoutineSheet(ex)}>{t('Add to my plan')}</Button>
     {last && <Button icon="history" style={{ marginTop: 4 }} onClick={() => exerciseHistorySheet(ex.id)}>{t('History')}</Button>}
@@ -919,11 +1006,23 @@ function ExerciseDetail({ ex, close }) {
       <h4 className="sec">{t('Plate loading')}</h4>
       <BarWeightEditor ex={ex} extra={t('You still log the total weight. This only feeds the plate line under each set.')} />
     </>}
+    {/* The exercise's own default meaning of its weight (S.dbLoad), stamped like the loading
+        above. A routine can still pick its own on the exercise's settings. */}
+    {isBellEx(ex) && <>
+      <h4 className="sec">{t('Weight means')}</h4>
+      <DbLoadPicker ex={ex} value={dbLoadFor(st, ex.id)}
+        onChange={v => update(s => { s.dbLoad = withDbLoad(s.dbLoad, ex.id, v) })} />
+    </>}
     {/* No one-rep max on an assistance machine: the load is the help you were given, so the
         calculator would answer "your 1RM is 23 kg" about a number that gets smaller as you get
         stronger (issue #232). Cardio has none for the same kind of reason. */}
     {!isCardio(ex) && !isAssisted(ex) && <OneRM ex={ex} />}
-    {instrFor(ex).length > 0 &&<><h4 className="sec">{t('How to')}{!INSTR_LANGS.includes(getLang()) && <span className="dim" style={{ textTransform: 'none', letterSpacing: 0 }}> · {t('instructions in English')}</span>}</h4><ol className="steps-list">{instrFor(ex).map((s, i) => <li key={i}>{s}</li>)}</ol></>}
+    {instrFor(ex).length > 0 &&<><h4 className="sec">{t('How to')}{getLang() !== 'en' && !instrTranslated(ex) && <span className="dim" style={{ textTransform: 'none', letterSpacing: 0 }}> · {t('instructions in English')}</span>}</h4><ol className="steps-list">{instrFor(ex).map((s, i) => <li key={i}>{s}</li>)}</ol></>}
+    {/* The catalogue is community-edited (catalogue/README.md): a wrong muscle, a clumsy step or a
+        missing translation is one tap from an issue that already names the exercise. */}
+    {!isCustomEx(ex) && !ex.missing && <a className="small dim exfix-link" target="_blank" rel="noopener"
+      href={'https://github.com/DuarteSantos8/openGym/issues/new?template=exercise.yml&exercise=' + encodeURIComponent(ex.id + ', ' + ex.n)}>
+      <Icon name="pencil" /> {t('Suggest a fix for this exercise')}</a>}
   </>
 }
 export const exerciseDetailSheet = ex => ui().openSheet(close => <ExerciseDetail ex={ex} close={close} />)
@@ -1173,11 +1272,22 @@ function usageMap(st) {
   st.workouts.forEach(w => w.entries.forEach(e => { u[e.id] = (u[e.id] || 0) + 1 }))
   return u
 }
-function ExercisePicker({ onPick, title, close }) {
+// The swap pickers' own scope (#473): exercises sharing the swapped exercise's target muscle.
+const SAME = '≈'
+function ExercisePicker({ onPick, title, close, like }) {
   const st = useStore(s => s.S)
   const usage = usageMap(st)
   const [q, setQ] = useState('')
-  const [bp, setBp] = useState('')          // '' = all, '★' = chosen, '☆' = favourites, else a body part
+  // What a swap is away from: the picker opens on what trains the same muscle, if anything you
+  // can use does, and "All" is one tap back to everything.
+  const likeEx = like ? (EXIDX[like] || allExercises(st).find(e => e.id === like) || null) : null
+  // A muscle nothing else trains gets no chip at all rather than one that lists nothing.
+  const likeTg = swapMuscleOf(likeEx) && sameMuscleFirst(allExercises(st), likeEx).length ? swapMuscleOf(likeEx) : ''
+  const [bp, setBp] = useState(() => {
+    if (!likeTg) return ''
+    const prof = activeProfile(st)
+    return sameMuscleFirst(allExercises(st), likeEx).some(e => !prof || exAvailable(st, e)) ? SAME : ''
+  })                                        // '' = all, '★' = chosen, '☆' = favourites, '≈' = same muscle, else a body part
   const [eq, setEq] = useState('')          // '' = any equipment
   const [showAll, setShowAll] = useState(false)
   const [shown, setShown] = useState(50)
@@ -1185,17 +1295,21 @@ function ExercisePicker({ onPick, title, close }) {
   const searchRef = useRef(null)
   const bpStrip = useRef(null), eqStrip = useRef(null)
   const onSearchFocus = useSheetKeyboard(searchRef)
+  const moreRef = useAutoMore(() => setShown(s => s + 50))
   const all = allExercises(st)
   const profile = activeProfile(st)
   const inScope = e => bp === '★' ? usage[e.id] : bp === '☆' ? isFav(st, e.id) : (!bp || e.bp === bp)
-  let base = searchExercises(all.filter(inScope), q)
+  let base = searchExercises(bp === SAME ? sameMuscleFirst(all, likeEx) : all.filter(inScope), q)
   if (bp === '★') base = [...base].sort((a, b) => (usage[b.id] - usage[a.id]) || exerciseNameFor(a).localeCompare(exerciseNameFor(b)))
   const eqFiltered = (profile && !showAll) ? base.filter(e => exAvailable(st, e)) : base
   const eqOpts = equipmentOf(eqFiltered)
   // Drop the equipment filter if the search narrowed it away, so you never hit a dead end.
   const eqOn = eqOpts.includes(eq) ? eq : ''
   // Favourites float to the top of whatever the filters left (issue #6), the rest keeps its order.
-  const f = sortFavouritesFirst(eqOn ? eqFiltered.filter(e => e.eq === eqOn) : eqFiltered, st)
+  // On the same-muscle list the equipment order wins: what is on the same kit comes first,
+  // favourites leading within each half.
+  const ranked = sortFavouritesFirst(eqOn ? eqFiltered.filter(e => e.eq === eqOn) : eqFiltered, st)
+  const f = bp === SAME ? sameMuscleFirst(ranked, likeEx) : ranked
   const chosenCount = Object.keys(usage).length
   const favCount = (st.favEx || []).length
   const special = bp === '★' || bp === '☆'
@@ -1203,6 +1317,25 @@ function ExercisePicker({ onPick, title, close }) {
   const narrowed = !!(q.trim() || bp || eqOn)
   useRevealActiveChip(bpStrip, bp)
   useRevealActiveChip(eqStrip, eqOn)
+  // Close but not exact (a typo too many, most of the words, a similar name), listed under the
+  // results once you have scrolled to their end, so a search almost never ends on nothing.
+  // Worked out a beat behind the typing (useDeferredValue): the list itself never waits for it.
+  const qLate = useDeferredValue(q)
+  const similar = q.trim() && qLate === q && !special && f.length <= shown
+    ? similarExercises((profile && !showAll ? all.filter(e => exAvailable(st, e)) : all).filter(e => bp === SAME || !bp || e.bp === bp), q, f, f.length ? 12 : 30)
+    : []
+  const pickRow = e => <div key={e.id} className="item" {...tappable(() => onPick(e))}>
+        <Thumb ex={e} /><div className="grow"><div className={`tt ${exerciseNameClass(e)}`}>{isFav(st, e.id) && <Icon name="starFill" className="fav-star" />}{exerciseNameFor(e)}</div><div className="ss capitalize">{t(MUSCLE_NAME[e.tg] || e.tg || e.bp)} · {t(e.eq)}</div></div>
+        {/* Accent tag = already in a routine/log ("Chosen"); the yellow star by the name = favourite. */}
+        {usage[e.id] && <span className="tag acc"><Icon name="starFill" /></span>}
+        {/* A "+" glyph reads as "add this now" — it used to just open the same detail sheet as
+            tapping the row, so it added nothing until you'd scrolled past the sets/reps config
+            and found the real button. Now it does what it looks like: adds with the default
+            config right away. Tapping the row itself still opens the detail/config sheet, for
+            when you want to set sets/reps before adding. */}
+        <button className="iconbtn chev" aria-label={t('Add “{0}”', exerciseNameFor(e))} style={{ padding: 8, margin: -8 }}
+          onClick={ev => { ev.stopPropagation(); onPick(e, true) }}><Icon name="plus" /></button>
+      </div>
   if (byMuscle) return <>
     <div className="row between" style={{ marginBottom: 10 }}><h3>{title || t('Add exercise')}</h3>
       <Button size="sm" variant="ghost" onClick={() => setByMuscle(false)}>{t('All')}</Button>
@@ -1216,10 +1349,11 @@ function ExercisePicker({ onPick, title, close }) {
     </div>
     {/* .picker-search is what index.css keys the keyboard-aware sheet layout on: the sheet
         lifts above the keys and the search stays put while the list scrolls under it. */}
-    <div className="picker-search"><div className={'search' + (narrowed ? ' has-count' : '') + (q ? ' has-clear' : '')}><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+    <div className="picker-search"><div className="search-row"><div className={'search' + (narrowed ? ' has-count' : '') + (q ? ' has-clear' : '')}><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
       <input ref={searchRef} className="input" placeholder={t('Search {0} exercises…', all.length)} value={q} onFocus={onSearchFocus} onChange={e => { setQ(e.target.value); setShown(50) }} />
       {narrowed && <span className="search-count" role="status" aria-label={exCount(f.length)}>{fmtNum(f.length)}</span>}
-      {q && <button className="clear" onClick={() => { setQ(''); setShown(50) }} aria-label={t('Clear')}><Icon name="xmark" /></button>}</div></div>
+      {q && <button className="clear" onClick={() => { setQ(''); setShown(50) }} aria-label={t('Clear')}><Icon name="xmark" /></button>}</div>
+      <ExerciseViewToggle /></div></div>
     {profile && <div className="small dim row" style={{ margin: '8px 0 2px', gap: 6, alignItems: 'center' }}>
       <Icon name="kettlebell" style={{ fontSize: 13 }} />
       {showAll ? t('Showing all equipment') : t('Showing what you have in "{0}"', profile.name)}
@@ -1232,6 +1366,7 @@ function ExercisePicker({ onPick, title, close }) {
         without forgetting the choice (issue #71). The favourites/chosen chips still clear it —
         those are cross-body-part views where a stale equipment filter would be confusing. */}
     <div className="chips" ref={bpStrip} style={{ margin: eqOpts.length > 1 ? '10px 0 6px' : '10px 0' }}>
+      {likeTg && <button className={'chip nocap' + (bp === SAME ? ' on' : '')} onClick={() => { setBp(SAME); setShown(50) }}><Icon name="figureStrength" style={{ fontSize: 12, display: 'inline-block', marginInlineEnd: 4, verticalAlign: '-1px' }} />{t('Same muscle: {0}', t(MUSCLE_NAME[likeTg] || likeTg))}</button>}
       {favCount > 0 && <button className={'chip' + (bp === '☆' ? ' on' : '')} onClick={() => { setBp('☆'); setEq(''); setShown(50) }}><Icon name="starFill" className="fav-star" />{t('Favourites')} ({favCount})</button>}
       {chosenCount > 0 && <button className={'chip' + (bp === '★' ? ' on' : '')} onClick={() => { setBp('★'); setEq(''); setShown(50) }}><Icon name="starFill" style={{ fontSize: 12, display: 'inline-block', marginInlineEnd: 4, verticalAlign: '-1px' }} />{t('Chosen')} ({chosenCount})</button>}
       <button className={'chip nocap' + (!bp ? ' on' : '')} onClick={() => { setBp(''); setShown(50) }}>{t('All')}</button>
@@ -1241,31 +1376,24 @@ function ExercisePicker({ onPick, title, close }) {
       <button className={'chip nocap' + (!eqOn ? ' on' : '')} onClick={() => { setEq(''); setShown(50) }}>{t('Any equipment')}</button>
       {eqOpts.map(x => <button key={x} className={'chip' + (eqOn === x ? ' on' : '')} onClick={() => { setEq(x); setShown(50) }}>{t(x)}</button>)}
     </div>}
-    <div className="list">
-      {!special && <div className="item" {...tappable(() => customExSheet(null, ex => onPick(ex), q.trim()))}>
+    <div className={'list' + (st.exerciseView === 'cards' ? ' ex-grid' : '')}>
+      {!special && <div className="item ex-new" {...tappable(() => customExSheet(null, ex => onPick(ex), q.trim()))}>
         <div className="thumb thumb-x"><Icon name="plusCircle" /></div>
         <div className="grow"><div className="tt">{t('Create your own exercise')}</div><div className="ss">{t('name + body part, and a photo or video if you like')}</div></div><Icon name="plus" className="chev" />
       </div>}
-      {f.slice(0, shown).map(e => <div key={e.id} className="item" {...tappable(() => onPick(e))}>
-        <Thumb ex={e} /><div className="grow"><div className={`tt ${exerciseNameClass(e)}`}>{isFav(st, e.id) && <Icon name="starFill" className="fav-star" />}{exerciseNameFor(e)}</div><div className="ss capitalize">{t(MUSCLE_NAME[e.tg] || e.tg || e.bp)} · {t(e.eq)}</div></div>
-        {/* Accent tag = already in a routine/log ("Chosen"); the yellow star by the name = favourite. */}
-        {usage[e.id] && <span className="tag acc"><Icon name="starFill" /></span>}
-        {/* A "+" glyph reads as "add this now" — it used to just open the same detail sheet as
-            tapping the row, so it added nothing until you'd scrolled past the sets/reps config
-            and found the real button. Now it does what it looks like: adds with the default
-            config right away. Tapping the row itself still opens the detail/config sheet, for
-            when you want to set sets/reps before adding. */}
-        <button className="iconbtn chev" aria-label={t('Add “{0}”', exerciseNameFor(e))} style={{ padding: 8, margin: -8 }}
-          onClick={ev => { ev.stopPropagation(); onPick(e, true) }}><Icon name="plus" /></button>
-      </div>)}
+      {f.slice(0, shown).map(pickRow)}
       {f.length === 0 && bp === '★' && <div className="empty">{t('Nothing picked yet. Add some exercises and they’ll show up here.')}</div>}
       {f.length === 0 && bp === '☆' && <div className="empty">{t('No favourites yet. Tap the star on an exercise to add one.')}</div>}
+      {similar.length > 0 && <h4 className="sec similar-label">{f.length ? t('Similar exercises') : t('No exact match. These come close:')}</h4>}
+      {similar.map(pickRow)}
     </div>
-    {f.length > shown && <><div style={{ height: 8 }} /><Button onClick={() => setShown(s => s + 50)}>{t('Show more')}</Button></>}
+    {f.length > shown && <><div style={{ height: 8 }} /><Button ref={moreRef} onClick={() => setShown(s => s + 50)}>{t('Show more')}</Button></>}
   </>
 }
 // `title` names what the pick is for when it is not an add — the routine editor's Replace (#110).
-export const exercisePicker = (onPick, { title } = {}) => ui().openSheet(close => <ExercisePicker onPick={onPick} title={title} close={close} />)
+// `like` is the exercise a swap or a replace is away from: the picker then opens on the ones that
+// train the same muscle, same equipment first (#473).
+export const exercisePicker = (onPick, { title, like } = {}) => ui().openSheet(close => <ExercisePicker onPick={onPick} title={title} like={like} close={close} />)
 
 /** Start a safe swap for one exact active-workout occurrence. */
 export function swapActiveWorkoutExercise(index) {
@@ -1275,7 +1403,7 @@ export function swapActiveWorkoutExercise(index) {
   // The "+" on a picker row commits with the default config, exactly as it does in the add
   // flows; tapping the row still opens the config sheet first.
   // Worded for the session, not the routine: a swap changes today's workout only.
-  const picker = exercisePicker((ex, quick) => quick ? swapTo(ex, defaultConfig(ex.id)) : exConfigSheet(ex, null, cfg => swapTo(ex, cfg), null, null, null, null, t('Use in this workout')), { title: t('Swap exercise') })
+  const picker = exercisePicker((ex, quick) => quick ? swapTo(ex, defaultConfig(ex.id)) : exConfigSheet(ex, null, cfg => swapTo(ex, cfg), null, null, null, null, t('Use in this workout')), { title: t('Swap exercise'), like: active.entries[index].id })
   function swapTo(ex, cfg) {
     // The picker is a chooser here, not a stack you keep adding from: one swap, then back to
     // the workout. (The add flow deliberately leaves it open.)
@@ -1294,8 +1422,10 @@ export function swapActiveWorkoutExercise(index) {
     // Built from what came before the session's day when it is logged into the past (sessionHistory).
     const step = modeOf(full) === 'reps' ? weightIncrement(full, st.unit) : defaultIncrement(ex.id, st.unit)
     const past = sessionHistory(st)
+    // A freestyle swap logs dumbbell weights the way the exercise means them now, and starts
+    // from last time read in that meaning (lib/dumbbells.js), as a planned one does.
     const built = freestyle
-      ? { target: { ...cfg }, plan: null, sets: applyIntensifierPlan(buildSets(past, full, { step, preferLast: true }), full, dropGrid(st, full)) }
+      ? { target: withMeaning(st, cfg, ex.id), plan: null, sets: applyIntensifierPlan(buildSets(historyAs(past, ex.id, dbLoadFor(st, full)), full, { step: (modeOf(full) === 'reps' && ownedWeightsFor(st, full)) || step, preferLast: true }), full, dropGrid(st, full)) }
       : buildPlannedEntry(past, full, slotRoutine, { noProg: builtOutOfProgression(current, slotRoutine) })
     const replacement = {
       id: ex.id,
@@ -1350,7 +1480,7 @@ export function swapActiveWorkoutExercise(index) {
 function EquipmentProfileSheet({ profile, close }) {
   const update = useStore(s => s.update)
   const nameRef = useRef(null)
-  const [checked, setChecked] = useState(new Set(profile?.equipment || []))
+  const [checked, setChecked] = useState(new Set(profile ? profileEquipment(profile) : []))
   const toggle = k => setChecked(s => { const n = new Set(s); n.has(k) ? n.delete(k) : n.add(k); return n })
   const save = () => {
     const name = (nameRef.current.value || '').trim()
@@ -1360,7 +1490,7 @@ function EquipmentProfileSheet({ profile, close }) {
       const equipment = [...checked]
       if (profile) {
         const p = s.equipProfiles.find(x => x.id === profile.id)
-        if (p) { p.name = name; p.equipment = equipment }
+        if (p) { p.name = name; p.equipment = equipment; p.accV = ACC_V }
       } else {
         const p = newProfile(name); p.equipment = equipment
         s.equipProfiles.push(p)
@@ -1382,7 +1512,7 @@ function EquipmentProfileSheet({ profile, close }) {
       ))}
     </div>
     <div className="dim small" style={{ marginTop: 10 }}>
-      {t('Body-weight exercises are always available, in every profile.')}
+      {t('Body-weight exercises are always available, unless they need a pull-up bar or a bench.')}
     </div>
     <div style={{ height: 14 }} /><Button variant="primary" onClick={save}>{t('Save')}</Button>
   </>
@@ -1395,25 +1525,53 @@ export const equipmentProfileSheet = profile => ui().openSheet(close => <Equipme
 // on "follow the routine" it inherits, so most people never touch it.
 const progressionStepOf = (c, mode, ex, unit) =>
   c.inc >= 0 ? c.inc : (mode === 'time' ? 5 : defaultIncrement(ex.id, unit))
-const progressionStepIsValid = (step, policy) =>
-  policy === 'off' || (Number.isFinite(step) && step > 0)
+// Back-off sets step down by the same Step, so a plan using them needs one even with no rule.
+const progressionStepIsValid = (step, policy, backoff = false) =>
+  (policy === 'off' && !backoff) || (Number.isFinite(step) && step > 0)
+// Back-off sets (lib/backoff.js) are offered where there is a load to step down: rep work on a
+// loaded exercise, not a pyramid (it owns each set), not a rest-pause (one work set), not an
+// assistance machine (less load is harder there).
+const backoffOffered = (c, mode, ex, bw) => mode === 'reps' && !bw && !isAssisted({ ...c, id: ex.id })
+  && !(Array.isArray(c.pyramid) && c.pyramid.length) && c.intensifier?.type !== 'restpause'
 
-function ProgressionFields({ ex, mode, c, setC, routine, unit, perSide }) {
-  const options = POLICIES_FOR[mode] || ['off']
+// Double and triple progression both climb a rep range (`repsMin`..`reps`), so the sheet keeps it
+// normalised for either.
+const climbsRange = policy => policy === 'double' || policy === 'triple'
+// Triple progression's set ceiling while it is being edited: never below the starting sets.
+const setsMaxOf = c => Math.max(Math.max(1, Math.round(c.sets) || 1), Math.min(MAX_TRIPLE_SETS, Math.round(c.setsMax) || 0))
+
+function ProgressionFields({ ex, mode, c, setC, routine, unit, perSide, bw }) {
+  // Triple progression adds sets and then load. Bodyweight work with nothing added already climbs
+  // reps and then sets on its own (the rep ceiling below), and has no load to finish the cycle
+  // with, so it is not offered there.
+  const options = (POLICIES_FOR[mode] || ['off']).filter(p => p !== 'triple' || !bw || c.weight > 0 || c.prog === 'triple')
   if (options.length < 2) return null
   const inherited = policyFor({ id: ex.id }, routine, mode)
   const active = policyFor({ ...c, id: ex.id }, routine, mode)
   const inc = progressionStepOf(c, mode, ex, unit)
-  const invalid = !progressionStepIsValid(inc, active)
+  const canBackoff = backoffOffered(c, mode, ex, bw)
+  const backoff = canBackoff && c.backoff === true
+  const invalid = !progressionStepIsValid(inc, active, backoff)
+  // "26 → 24 → 22 kg": what the sets will open at, from the weight and step typed above.
+  const preview = backoff && c.weight > 0 && inc > 0
+    ? backoffWeights(c.weight, Math.max(1, Math.round(c.sets) || 1), inc).map(fmtNum).join(' → ') + ' ' + unit
+    : ''
   const stride = mode === 'reps' && perSide ? 2 : 1
-  const range = active === 'double' ? normalizeRepRange(c.reps, c.repsMin, stride) : null
-  const epleyEligible = mode === 'reps' && !isBw({ ...c, id: ex.id }) && (active === 'linear' || active === 'double')
+  const range = climbsRange(active) ? normalizeRepRange(c.reps, c.repsMin, stride) : null
+  const epleyEligible = mode === 'reps' && !isBw({ ...c, id: ex.id }) && (active === 'linear' || climbsRange(active))
   // What is typed is shown as typed, 0 for an emptied field included: shown as the default 90
   // instead, the field could not be emptied to type a new percentage.
   const deloadPercent = Math.round((c.deloadFactor != null && Number.isFinite(Number(c.deloadFactor)) ? Number(c.deloadFactor) : 0.9) * 100)
   const setRule = v => setC(x => {
     const next = { ...x, prog: v || undefined }
-    return policyFor({ ...next, id: ex.id }, routine, mode) === 'double'
+    // Greyskull's final set is taken to failure by design, so choosing it here switches "Last set
+    // to failure" on too, unless it was already decided. Only the sheet's draft: nothing is
+    // written until Save, and a plan saved before stays what it was.
+    if (v === 'greyskull' && next.lastToFailure == null) next.lastToFailure = true
+    const picked = policyFor({ ...next, id: ex.id }, routine, mode)
+    // Triple progression opens with room for two more sets, the usual 3 to 5.
+    if (picked === 'triple' && !(next.setsMax > 0)) next.setsMax = Math.min(MAX_TRIPLE_SETS, Math.max(1, Math.round(next.sets) || 1) + 2)
+    return climbsRange(picked)
       ? { ...next, ...normalizeRepRange(next.reps, next.repsMin, stride) }
       : next
   })
@@ -1427,11 +1585,11 @@ function ProgressionFields({ ex, mode, c, setC, routine, unit, perSide }) {
     <div className="small dim" style={{ marginBottom: active === 'off' ? 18 : 10 }}>{t(POLICY_DESC[active])}</div>
     {/* Double progression on a weighted exercise fills this row with four steppers; `cfgrow-4`
         lets it wrap into two pairs on phones, where four abreast left the inputs a few px wide. */}
-    {active !== 'off' && <div className={'row cfgrow' + (active === 'double' && epleyEligible ? ' cfgrow-4' : '')} style={{ marginBottom: 18 }}>
+    {(active !== 'off' || backoff) && <div className={'row cfgrow' + ((active === 'double' && epleyEligible) || active === 'triple' ? ' cfgrow-4' : '')} style={{ marginBottom: 18 }}>
       <Stepper label={mode === 'time' ? t('Step (seconds)') : t('Step ({0})', unit)} value={inc}
         step={mode === 'time' ? 5 : 1.25} decimal={mode !== 'time'} invalid={invalid} className={invalid ? 'invalid' : ''}
         onChange={v => setC(x => ({ ...x, inc: v }))} />
-      {active === 'double' && <>
+      {climbsRange(active) && <>
         {/* The draft stays as typed: normalising on every keystroke turned "12" into 92 (the
             "1" was pulled above the lower bound first). Save and the engine normalise anyway. */}
         <Stepper label={t('Reps from')} value={c.repsMin ?? range.repsMin} step={stride} decimal={false}
@@ -1439,12 +1597,30 @@ function ProgressionFields({ ex, mode, c, setC, routine, unit, perSide }) {
         <Stepper label={t('Reps up to')} value={c.reps ?? range.reps} step={stride} decimal={false}
           onChange={v => setC(x => ({ ...x, reps: v }))} />
       </>}
+      {/* Where triple progression stops adding sets; the Sets above are where it starts. */}
+      {active === 'triple' && <Stepper label={t('Sets up to')} value={c.setsMax ?? setsMaxOf(c)} step={1} decimal={false}
+        onChange={v => setC(x => ({ ...x, setsMax: v }))} />}
       {epleyEligible && <Stepper label={t('Deload 1RM (%)')} value={deloadPercent} step={5} min={50} max={95} decimal={false}
         onChange={v => setC(x => ({ ...x, deloadFactor: Number(v) / 100 }))} />}
     </div>}
     {invalid && <div className="small" role="alert" style={{ color: 'var(--red)', marginTop: -10, marginBottom: 18 }}>
       {t('Enter a positive step to use this progression rule.')}
     </div>}
+    {/* Off by default and only written when on, so every plan saved before it stays the shape
+        it was. The step is the one above: the gear's own increment, set once per exercise. */}
+    {canBackoff && <>
+      <div className="sect-b" style={{ marginBottom: 8 }}>
+        <Row icon="steps" iconTint="var(--acc)" title={t('Back-off sets')}
+          subtitle={t('Each set one step lighter than the one before. The weight above is the first set.')}>
+          <Switch checked={backoff} onChange={v => setC(x => ({ ...x, backoff: v || undefined }))} />
+        </Row>
+      </div>
+      <div className="small dim" style={{ marginBottom: 18 }}>
+        {backoff
+          ? (preview ? t('Sets open at {0}. The first set goes up when every set reaches its reps, and the rest follow it.', preview) : t('The first set goes up when every set reaches its reps, and the rest follow it.'))
+          : t('All sets at the same weight.')}
+      </div>
+    </>}
   </>
 }
 
@@ -1464,7 +1640,10 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   const seed = existing || initial || defaultConfig(ex.id)
   const [c, setC] = useState(() => {
     const cfg = { ...seed }
-    return policyFor({ ...cfg, id: ex.id }, routine, modeOf({ ...cfg, id: ex.id })) === 'double'
+    // A session's target carries the meaning of its dumbbell weight as a stamp (lib/dumbbells.js);
+    // one that only repeats the exercise's own default is not the slot's choice, so it is not kept.
+    if (cfg.dbLoad != null && dbLoadOf(cfg.dbLoad) === dbLoadFor(st, ex.id)) delete cfg.dbLoad
+    return climbsRange(policyFor({ ...cfg, id: ex.id }, routine, modeOf({ ...cfg, id: ex.id })))
       ? { ...cfg, ...normalizeRepRange(cfg.reps, cfg.repsMin, isPerSide(cfg) ? 2 : 1) }
       : cfg
   })
@@ -1478,13 +1657,15 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   const pyramid = mode === 'reps' && isPyramid({ ...c, mode })
   const setPyramidAt = (i, v) => setC(x => ({ ...x, pyramid: x.pyramid.map((p, j) => (j === i ? v : p)) }))
   const progressionPolicy =policyFor({ ...c, id: ex.id }, routine, mode)
-  const progressionStepInvalid = !progressionStepIsValid(progressionStepOf(c, mode, ex, st.unit), progressionPolicy)
+  const progressionStepInvalid = !progressionStepIsValid(progressionStepOf(c, mode, ex, st.unit), progressionPolicy, c.backoff === true && backoffOffered(c, mode, ex, bw))
   const activePolicy = policyFor({ ...c, id: ex.id }, routine, mode)
-  const double = mode === 'reps' && activePolicy === 'double'
+  // Both climb a range: the flat Reps stepper gives way to "Reps from" / "Reps up to".
+  const ranged = mode === 'reps' && climbsRange(activePolicy)
+  const triple = mode === 'reps' && activePolicy === 'triple'
   // Keep whatever the other mode already had (sets, weight) and fill only what is missing.
   const setMode = m => setC(x => {
     const next = { ...defaultConfig(ex.id, m), ...x, mode: m }
-    return m === 'reps' && policyFor({ ...next, id: ex.id }, routine, 'reps') === 'double'
+    return m === 'reps' && climbsRange(policyFor({ ...next, id: ex.id }, routine, 'reps'))
       ? { ...next, ...normalizeRepRange(next.reps, next.repsMin, isPerSide(next) ? 2 : 1) }
       : next
   })
@@ -1499,7 +1680,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     if (c.inc > 0) prog.inc = c.inc
     // Epley deloading is configurable per occurrence, but the default stays omitted so older
     // plans retain their compact shape and keep the existing 90% behaviour.
-    if (mode === 'reps' && !bw && (activePolicy === 'linear' || activePolicy === 'double')) {
+    if (mode === 'reps' && !bw && (activePolicy === 'linear' || climbsRange(activePolicy))) {
       const deloadFactor = Math.max(0.5, Math.min(0.95, Number(c.deloadFactor) || 0.9))
       if (deloadFactor !== 0.9) prog.deloadFactor = deloadFactor
     }
@@ -1525,8 +1706,14 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     // was. Mode-independent — a heavy triple, a plank and a cardio interval all rest.
     const restSec = Math.max(0, Math.round(c.restSec) || 0)
     const withRest = restSec ? { restSec } : {}
+    // What a dumbbell weight means in this slot (lib/dumbbells.js): written only when the slot
+    // picked its own, so every other config stays the shape it was.
+    const dbLoad = isBellEx(ex) && !bw ? dbLoadOf(c.dbLoad) : null
+    const withMeant = dbLoad ? { dbLoad } : {}
+    // "Last set to failure": written only when on, so a plan that never asked keeps its shape.
+    const withFailure = c.lastToFailure === true ? { lastToFailure: true } : {}
     if (cardio) onSave({ sets, min: Math.max(1, Math.round(c.min) || 20), speed: Math.max(0, c.speed || 8), ...withNote, ...withRest })
-    else if (mode === 'time') onSave({ sets, mode: 'time', sec: Math.max(1, Math.round(c.sec) || 45), weight: Math.max(0, c.weight || 0), ...flags, ...(perSide ? { side: true } : {}), ...prog, ...withNote, ...withWarmups, ...withRest })
+    else if (mode === 'time') onSave({ sets, mode: 'time', sec: Math.max(1, Math.round(c.sec) || 45), weight: Math.max(0, c.weight || 0), ...flags, ...(perSide ? { side: true } : {}), ...prog, ...withNote, ...withWarmups, ...withRest, ...withMeant, ...withFailure })
     else {
       // A unilateral target is stored even: the split has to divide, and a typed 15 would
       // otherwise plan seven reps on one side and eight on the other, every session.
@@ -1534,23 +1721,32 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
       const stride = perSide ? 2 : 1
       let reps = perSide ? Math.ceil(typed / stride) * stride : typed
       let range = null
-      if (double) {
+      if (ranged) {
         range = normalizeRepRange(reps, c.repsMin, stride)
         reps = range.reps
       }
-      const out = { sets, mode: 'reps', reps, weight: Math.max(0, c.weight || 0), ...flags, ...(perSide ? { side: true } : {}), ...prog, ...withNote, ...withWarmups, ...withRest }
+      const out = { sets, mode: 'reps', reps, weight: Math.max(0, c.weight || 0), ...flags, ...(perSide ? { side: true } : {}), ...prog, ...withNote, ...withWarmups, ...withRest, ...withMeant }
       // The list is the prescription; sets and reps follow it, so everything that reads the
       // flat target (a config sheet reopened with the toggle off, older builds) still makes sense.
       const list = pyramid ? normalizePyramid(c.pyramid, stride) : []
       if (list.length) Object.assign(out, flatFromPyramid(list), { pyramid: list })
       const pyramidRest = list.length ? normalizePyramidRest(c.pyramidRest, list.length) : []
       if (pyramidRest.length) out.pyramidRest = pyramidRest
-      if (double) out.repsMin = range.repsMin
+      const pyramidWeight = list.length && !bw ? normalizePyramidWeight(c.pyramidWeight, list.length) : []
+      if (pyramidWeight.length) out.pyramidWeight = pyramidWeight
+      if (ranged) out.repsMin = range.repsMin
+      // Triple progression's set ceiling, written only when it is above the starting sets: at the
+      // same number it would add nothing, and the plan keeps the shape it had.
+      if (triple && !list.length && setsMaxOf(c) > sets) out.setsMax = setsMaxOf(c)
       // A ceiling below the working reps would tell you to add a set on day one.
       if (bw && !(out.weight > 0) && c.repsMax > 0) out.repsMax = Math.max(reps, Math.round(c.repsMax))
       // Every set in this exercise becomes a drop-set/rest-pause (buildSets stamps the rows) —
       // decided here, in the plan, not re-decided live each time you train it.
       if (!list.length && c.intensifier && c.intensifier.type) out.intensifier = intensifierToSave(c.intensifier)
+      // Back-off sets: written only when on, and only where the sheet offered them.
+      if (c.backoff === true && backoffOffered(out, 'reps', ex, bw) && isBackoff({ ...out, backoff: true })) out.backoff = true
+      // A pyramid has its own Max set for this, so the flag is not offered (or kept) there.
+      if (!list.length) Object.assign(out, withFailure)
       onSave(out)
     }
   }
@@ -1568,7 +1764,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
       {!cardio && (ex.secondaries?.length ? ex.secondaries : smOf(ex)).filter(trainedBy(ex)).slice(0, 3)
         .map((s, i) => <span key={i} className="tag dim">{t(MUSCLE_NAME[s] || s)}</span>)}
     </div>
-    {ex.desc && <div className="exnote">{ex.desc}</div>}
+    {descFor(ex) && <div className="exnote">{descFor(ex)}</div>}
     {!cardio && <div style={{ marginBottom: 14 }}>
       <Segmented className="seg-range" value={mode} onChange={setMode}
         options={[{ value: 'reps', label: t('Reps') }, { value: 'time', label: t('Time') }]} />
@@ -1590,20 +1786,21 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         {/* Rest-pause always trains as exactly two rows — a warm-up at this rep count, then one
             rest-pause work set — so "Sets" has nothing left to mean and only invites a mismatch. */}
         {c.intensifier?.type !== 'restpause' && !pyramid &&
-          <Stepper label={t('Sets')} value={c.sets} step={1} decimal={false} onChange={v => setC(x => ({ ...x, sets: v }))} />}
-        {!double && !pyramid && <Stepper label={t('Reps')} value={c.reps} step={perSide ? 2 : 1} decimal={false} onChange={v => setC(x => ({ ...x, reps: v }))} />}
+          <Stepper label={triple ? t('Sets from') : t('Sets')} value={c.sets} step={1} decimal={false} onChange={v => setC(x => ({ ...x, sets: v }))} />}
+        {!ranged && !pyramid && <Stepper label={t('Reps')} value={c.reps} step={perSide ? 2 : 1} decimal={false} onChange={v => setC(x => ({ ...x, reps: v }))} />}
         {/* On bodyweight work the weight stepper is the click #32 is about, so it is not here
             until there is a belt to describe — see the added-weight row below. */}
         {!bw && !pyramid && <Stepper label={t('Weight ({0})', st.unit)} value={c.weight} step={2.5} onChange={v => setC(x => ({ ...x, weight: v }))} />}
       </>}
     </div>
-    {/* Pyramid sets: a row per set, each with its own reps or Max. No weight — that is picked
-        set by set while training, seeded from the same set last time (buildSets). */}
+    {/* Pyramid sets: a row per set, each with its own reps or Max, rest and weight. A set left
+        at 0 weight starts from that same set last time (buildSets). */}
     {pyramid && <div style={{ marginTop: -10, marginBottom: 18 }}>
-      {/* Presets replace the list (and its rests) in one tap; the sheet is not saved until Save. */}
+      {/* Presets replace the list (and its rests and weights) in one tap; the sheet is not saved
+          until Save. */}
       <div className="chips" style={{ marginBottom: 10 }}>
         {PYRAMID_PRESETS.map((preset, k) => <button key={k} type="button" className="chip"
-          onClick={() => setC(x => ({ ...x, pyramid: [...preset], pyramidRest: undefined }))}>{pyramidLabel(preset)}</button>)}
+          onClick={() => setC(x => ({ ...x, pyramid: [...preset], pyramidRest: undefined, pyramidWeight: undefined }))}>{pyramidLabel(preset)}</button>)}
       </div>
       {c.pyramid.map((p, i) => <div key={i} style={{ marginBottom: 10 }}>
         <div className="row cfgrow" style={{ marginBottom: 4 }}>
@@ -1617,11 +1814,20 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
               return { ...x, pyramidRest: rest }
             })} />
         </div>
+        {/* Bodyweight work has its one "Added" load below instead. */}
+        {!bw && <div className="row cfgrow" style={{ marginBottom: 4 }}>
+          <Stepper label={t('Weight ({0})', st.unit)} value={(c.pyramidWeight || [])[i] || 0} step={2.5}
+            onChange={v => setC(x => {
+              const weight = Array.from({ length: x.pyramid.length }, (_, j) => (x.pyramidWeight || [])[j] || 0)
+              weight[i] = v
+              return { ...x, pyramidWeight: weight }
+            })} />
+        </div>}
         <div className="row" style={{ justifyContent: 'flex-end', gap: 8 }}>
           <Button size="sm" variant={p === PYRAMID_MAX ? 'primary' : 'plain'} aria-pressed={p === PYRAMID_MAX}
             onClick={() => setPyramidAt(i, p === PYRAMID_MAX ? (c.reps || 10) : PYRAMID_MAX)}>{t('Max')}</Button>
           {c.pyramid.length > 1 && <Button size="sm" icon="trash" aria-label={t('Remove set')} title={t('Remove set')}
-            onClick={() => setC(x => ({ ...x, pyramid: x.pyramid.filter((_, j) => j !== i), pyramidRest: x.pyramidRest?.filter((_, j) => j !== i) }))} />}
+            onClick={() => setC(x => ({ ...x, pyramid: x.pyramid.filter((_, j) => j !== i), pyramidRest: x.pyramidRest?.filter((_, j) => j !== i), pyramidWeight: x.pyramidWeight?.filter((_, j) => j !== i) }))} />}
         </div>
       </div>)}
       <Button size="sm" icon="plus" disabled={c.pyramid.length >= MAX_PYRAMID_SETS}
@@ -1630,8 +1836,10 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
           pyramid: [...x.pyramid, x.pyramid[x.pyramid.length - 1]],
           // The new set copies the last one's rest too, like its target.
           pyramidRest: x.pyramidRest?.length ? [...x.pyramid.map((_, j) => x.pyramidRest[j] || 0), x.pyramidRest[x.pyramid.length - 1] || 0] : x.pyramidRest,
+          pyramidWeight: x.pyramidWeight?.length ? [...x.pyramid.map((_, j) => x.pyramidWeight[j] || 0), x.pyramidWeight[x.pyramid.length - 1] || 0] : x.pyramidWeight,
         }))}>{t('Add set')}</Button>
       <div className="small dim" style={{ marginTop: 8 }}>{t('A set left at 0 rest uses the exercise’s rest.')}</div>
+      {!bw && <div className="small dim" style={{ marginTop: 4 }}>{t('A set left at 0 weight starts from that set’s weight last time.')}</div>}
     </div>}
     {c.intensifier?.type === 'restpause' && <div className="small dim" style={{ marginTop: -10, marginBottom: 18 }}>
       {t('Rest-pause always trains as one warm-up set at this rep count, then one rest-pause work set. "Sets" isn’t used here.')}
@@ -1646,7 +1854,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
       </div>
       <div className="small dim" style={{ marginBottom: 18 }}>
         {(c.warmupSets || 0) > 0
-          ? t('Added before your work sets and left out of volume, records and progression. Each one closes half the gap to the work weight, and you can still change any of them mid-session.')
+          ? t('Added before your work sets and left out of volume, records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.')
           : t('Ramp-up sets added before the work sets, so you do not have to add them by hand each session.')}
       </div>
     </>}
@@ -1689,13 +1897,20 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         <Switch checked={perSide} onChange={v => setC(x => {
           if (mode === 'time') return { ...x, side: v || undefined }
           const next = { ...x, side: v || undefined, reps: v ? Math.ceil((x.reps || 0) / 2) * 2 : x.reps }
-          return policyFor({ ...next, id: ex.id }, routine, 'reps') === 'double'
+          return climbsRange(policyFor({ ...next, id: ex.id }, routine, 'reps'))
             ? { ...next, ...normalizeRepRange(next.reps, next.repsMin, v ? 2 : 1) }
             : next
         })} />
       </Row>}
       {/* Off keeps the list as `pyramidDraft`, so a stray tap does not lose it before Save
           (save writes neither field unless the toggle is on). */}
+      {/* The last work set of every session is marked as taken to failure, like Greyskull's
+          final AMRAP set (workout-model isFailureSet, history.js applyFailurePlan). A pyramid
+          already has its Max set for that. */}
+      {!pyramid && <Row icon="gauge" iconTint="var(--purple)" title={t('Last set to failure')}
+        subtitle={c.lastToFailure ? t('The last set goes until nothing is left, and counts as all-out effort unless you rate it.') : t('Plan the final set as an all-out one.')}>
+        <Switch checked={c.lastToFailure === true} onChange={v => setC(x => ({ ...x, lastToFailure: v || undefined }))} />
+      </Row>}
       {mode === 'reps' && <Row icon="steps" iconTint="var(--acc)" title={t('Pyramid sets')}
         subtitle={t('A different rep target for each set, e.g. 12 · 8 · 6 · Max · 12.')}>
         <Switch checked={pyramid} onChange={v => setC(x => (v
@@ -1763,6 +1978,13 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
           : t('Every set becomes rest-pause: {0} reps to start, then {1} more split into short bursts, {2}s rest before each, roughly halving each time.', c.reps || 0, c.intensifier.totalReps, c.intensifier.restSec)}
       </div>}
     </>}
+    {/* What a dumbbell weight means, for this routine's slot (cfg.dbLoad). Picking what the
+        exercise already means drops the key, so the slot follows the exercise's default again. */}
+    {isBellEx(ex) && !bw && mode !== 'cardio' && <>
+      <h4 className="sec">{t('Weight means')}</h4>
+      <DbLoadPicker ex={ex} cfg={c} value={dbLoadFor(st, { ...c, id: ex.id })}
+        onChange={v => setC(x => ({ ...x, dbLoad: v === dbLoadFor(st, ex.id) ? undefined : v }))} />
+    </>}
     {/* How the weight is plate-loaded and what the bar weighs — per exercise, not per plan, so
         it sits apart from the config fields above and writes straight to S.barWeights/S.loadKind. */}
     {mode === 'reps' && <>
@@ -1771,7 +1993,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     </>}
     {pyramid
       ? <div className="small dim" style={{ marginBottom: 18 }}>{t('Weight is up to you: pyramid sets are not progressed automatically.')}</div>
-      : <ProgressionFields ex={ex} mode={mode} c={c} setC={setC} routine={routine} unit={st.unit} perSide={perSide} />}
+      : <ProgressionFields ex={ex} mode={mode} c={c} setC={setC} routine={routine} unit={st.unit} perSide={perSide} bw={bw} />}
     <textarea className="input" rows={3} maxLength={500} style={{ marginBottom: 18 }}
       placeholder={t('Note (optional): loading cues, "bar only, then +1 plate/side each set", anything worth remembering')}
       value={c.note || ''} onChange={e => setC(x => ({ ...x, note: e.target.value }))} />
@@ -2003,6 +2225,10 @@ function DayOverride({ iso, close }) {
   // that date with the day's routines picked, where the time and the duration can still change.
   const missed = iso < todayISO() && effIds.length > 0 && !workoutsOn(st, iso).length
   const logIt = () => { close(); logPastWorkoutSheet({ iso, routineIds: effIds }) }
+  // A note on a day off (#261, lib/day-notes.js): offered on today and past days with nothing
+  // logged, kept in view on any day that already has one. Quiet on purpose: a row, not a button.
+  const note = dayNoteOf(st, iso)
+  const canNote = !!note || (canNoteDay(iso) && !workoutsOn(st, iso).length)
   // The coach week's sessions still to do come first, in slot order: picking one here pins it
   // to this day — the same per-date override, read back by queueNext (lib/queue.js). A session
   // already pinned to another day says so in place of its exercise count. Done sessions and
@@ -2028,6 +2254,15 @@ function DayOverride({ iso, close }) {
     <h3>{fmtDate(iso, true)}</h3>
     <div className="muted small" style={{ marginBottom: 12 }}>{t('Weekly plan:')} {weeklyNames.length ? deriveSessionName(weeklyNames) : t('Rest')}{changed && <span style={{ color: 'var(--orange)' }}> · {t('changed for this day')}</span>}<br />{t('Sick, missed a day or want a different session? Pick what to train instead.')}</div>
     {missed && <div style={{ marginBottom: 14 }}><Button variant="primary" icon="checkCircle" onClick={logIt}>{t('Log this workout')}</Button></div>}
+    {canNote && <div className="day-note" style={{ marginBottom: 14 }}>
+      <div className="item day-note-row" {...tappable(() => dayNoteSheet(iso))}>
+        <span className="lrow-i" style={{ background: 'var(--surface-3)' }}><Icon name={note?.tag ? DAY_NOTE_ICON[note.tag] : 'note'} /></span>
+        <div className="grow">{note
+          ? <><div className="tt">{note.tag ? t(DAY_NOTE_LABEL[note.tag]) : t('Day note')}</div>{note.text && <div className="ss" style={{ whiteSpace: 'pre-wrap' }}>{note.text}</div>}</>
+          : <div className="tt">{t('Add a note for this day')}</div>}</div>
+        <Icon name={note ? 'pencil' : 'plus'} className="chev" />
+      </div>
+    </div>}
     {coach.length > 0 && <>
       <h4 className="sec" style={{ marginTop: 0 }}>{ownLoop ? t('Your loop') : t('Coach week')}</h4>
       <div className="list" style={{ marginBottom: 8 }}>{coach.map(row)}</div>
@@ -2040,6 +2275,43 @@ function DayOverride({ iso, close }) {
   </>
 }
 export const dayOverrideSheet = iso => ui().openSheet(close => <DayOverride iso={iso} close={close} />)
+
+// Why a day went without training (#261): one quick pick, a line of text, or both. Saving an
+// empty note takes it away (a stamped clear, lib/day-notes.js withDayNote), and so does Remove.
+function DayNote({ iso, close }) {
+  const noteRef = useRef(null)
+  const onNoteFocus = useSheetKeyboard(noteRef)
+  const st = useStore(s => s.S)
+  const had = dayNoteOf(st, iso)
+  const [tag, setTag] = useState(had?.tag || null)
+  const [text, setText] = useState(had?.text || '')
+  const write = v => {
+    update(s => { s.dayNotes = withDayNote(s.dayNotes, iso, v) })
+    close()
+  }
+  const save = () => {
+    const clean = text.trim().slice(0, NOTE_MAX)
+    if (!tag && !clean && !had) { close(); return }
+    write({ tag, text: clean })
+    toast(tag || clean ? t('Noted. See you next session!') : t('Note removed'))
+  }
+  const remove = () => { write(null); toast(t('Note removed')) }
+  return <>
+    <h3>{fmtDate(iso, true)}</h3>
+    <div className="muted small" style={{ marginBottom: 12 }}>{t('Life happens. Leave yourself a note, and the missed-day nudge lets this one go.')}</div>
+    <div className="chips" style={{ margin: '0 0 12px' }}>
+      {DAY_NOTE_TAGS.map(k => <button key={k} className={'chip nocap' + (tag === k ? ' on' : '')} aria-pressed={tag === k}
+        onClick={() => setTag(tag === k ? null : k)}><Icon name={DAY_NOTE_ICON[k]} /> {t(DAY_NOTE_LABEL[k])}</button>)}
+    </div>
+    <textarea ref={noteRef} className="input" rows={3} maxLength={NOTE_MAX} value={text}
+      placeholder={t('Anything else? (optional)')}
+      onFocus={onNoteFocus} onChange={e => setText(e.target.value)} />
+    <div style={{ height: 18 }} />
+    <Button variant="primary" onClick={save}>{t('Save')}</Button>
+    {had && <><div style={{ height: 10 }} /><Button variant="ghost" icon="trash" onClick={remove}>{t('Remove note')}</Button></>}
+  </>
+}
+export const dayNoteSheet = iso => ui().openSheet(close => <DayNote iso={iso} close={close} />)
 
 // Plan → Schedule → a weekday. One sheet for the whole day: tap routines to put them on it or
 // take them off (two or more make a combined day, docs/dev/COMBINE_ROUTINES.md), in the order
@@ -2214,6 +2486,18 @@ function WorkoutDetail({ w, close }) {
     const rec = { ...(st.workouts.find(x => sameWorkout(x, w)) || w), note: note.trim() }
     toast(await copyText(workoutText(rec, { unit: st.unit, nameOf, speedUnit: speedUnitOf(st) })) ? t('Copied') : t('Could not copy'))
   }
+  // A Garmin .fit activity (#447) of the saved record, for Garmin Connect's Import Data.
+  const exportFit = () => {
+    const rec = st.workouts.find(x => sameWorkout(x, w)) || w
+    let bytes
+    try { bytes = workoutFit(rec, { unit: st.unit, version: __APP_VERSION__ }) }
+    catch (e) { toast(t('Could not create the file')); return }
+    saveFitFile(new Blob([bytes], { type: 'application/vnd.ant.fit' }), fitFileName(rec))
+  }
+  const shareAsImage = () => {
+    const rec = st.workouts.find(x => sameWorkout(x, w)) || w
+    ui().openSheet(c2 => <ShareWorkoutImage w={rec} nameOf={nameOf} close={c2} />)
+  }
   // A combined session's entries carry a `rid`; group them into per-routine sections in merge
   // order, with each section's supersets paired inside it (sessionSections, which "Copy as text"
   // reads the workout through too). A legacy single-routine workout (one routineIds, or no rid
@@ -2289,11 +2573,100 @@ function WorkoutDetail({ w, close }) {
     <div style={{ height: 8 }} />
     <StravaUploadButton w={w} />
     <Button icon="copy" onClick={copyAsText}>{t('Copy as text')}</Button>
+    <div style={{ height: 8 }} />
+    <Button icon="share" onClick={shareAsImage}>{t('Share as image')}</Button>
+    <div style={{ height: 8 }} />
+    <Button icon="download" onClick={exportFit}>{t('Export as .fit file')}</Button>
     <div style={{ height: 10 }} />
     {/* Matched the way the edits above are, not by id: a workout from before ids has none, and
         filtering on `x.id !== undefined` took every other one of them with it. */}
     <Button variant="danger" onClick={() => confirmSheet({ title: t('Delete workout?'), message: t('This removes it from your history for good.') + mediaGoesToo(S().workouts.find(x => sameWorkout(x, w))), confirmText: t('Delete'), danger: true, onConfirm: () => { update(s => { s.workouts = s.workouts.filter(x => !sameWorkout(x, w)) }); close(); toast(t('Workout deleted')) } })}>{t('Delete workout')}</Button>
   </>
+}
+// "Share as image" (#453): the card lib/workout-card.js lays out, painted in the theme and accent
+// the app is showing right now, previewed before it goes anywhere. The muscle map is the finish
+// summary's, for this one session; whether the card carries it is remembered with the profile.
+function ShareWorkoutImage({ w, nameOf, close }) {
+  const st = useStore(s => s.S)
+  const update = useStore(s => s.update)
+  const withMap = st.shareMap !== false
+  const model = useMemo(() => workoutCardModel(w, { unit: st.unit, nameOf }), [w, st.unit])
+  // The last picture stays up while the next one is drawn, so the toggle never blanks the sheet.
+  const [img, setImg] = useState(null)
+  const [busy, setBusy] = useState(false)
+  const shown = useRef(null)
+  useEffect(() => {
+    let alive = true
+    workoutCardImage(model, { map: withMap, body: st.body })
+      .then(blob => {
+        if (!alive) return
+        if (!blob) { setImg(prev => ({ ...prev, failed: true })); return }
+        if (shown.current) URL.revokeObjectURL(shown.current)
+        shown.current = URL.createObjectURL(blob)
+        setImg({ blob, url: shown.current })
+      })
+      .catch(() => { if (alive) setImg(prev => ({ ...prev, failed: true })) })
+    return () => { alive = false }
+  }, [model, withMap, st.body])
+  useEffect(() => () => { if (shown.current) URL.revokeObjectURL(shown.current) }, [])
+  const name = 'opengym-workout-' + (workoutDay(w) || todayISO()) + '.png'
+  const share = async () => {
+    setBusy(true)
+    await shareImage(img.blob, name, w.name || 'openGym')
+    setBusy(false)
+    close()
+  }
+  return <>
+    <h3>{t('Share workout')}</h3>
+    <div className="share-card">
+      {img?.url
+        ? <img src={img.url} alt={t('Preview of the image to share')} />
+        : img?.failed ? <div className="share-card-ph small muted">{t('Could not create the image')}</div>
+          : <div className="share-card-ph" aria-hidden="true" />}
+    </div>
+    {model.levels && <div className="sect-b" style={{ marginBottom: 12 }}>
+      <Row icon="figureStrength" iconTint="var(--acc)" title={t('Muscle map')} subtitle={t('Show which muscles this workout trained.')}>
+        <Switch checked={withMap} aria-label={t('Muscle map')} onChange={v => update(s => { s.shareMap = v })} />
+      </Row>
+    </div>}
+    <Button variant="primary" icon="share" disabled={!img?.blob || busy} onClick={share}>{t('Share')}</Button>
+  </>
+}
+async function workoutCardImage(model, { map, body }) {
+  const root = getComputedStyle(document.documentElement)
+  const css = (name, fallback) => root.getPropertyValue(name).trim() || fallback
+  const colors = { bg: css('--bg', '#000'), surface: css('--surface', '#1c1c1e'), tile: css('--surface-2', '#2c2c2e'), label: css('--label', '#fff'), label2: css('--label-2', '#999'), acc: css('--acc', '#30d158') }
+  // The body geometry is ~90 KB and lazy everywhere else too (components/BodyMap.jsx).
+  const geometry = map && model.levels ? (await import('./lib/body-paths.js')).default : null
+  const shape = geometry && (geometry[body] || geometry.male)
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return null
+  const measure = (text, weight, size) => { ctx.font = `${weight} ${size}px ${CARD_FONT}`; return ctx.measureText(text).width }
+  const layout = layoutWorkoutCard(model, { measure, rtl: document.documentElement.dir === 'rtl', map: shape ? { aspect: viewAspect(shape.front) } : null })
+  canvas.width = layout.width
+  canvas.height = layout.height
+  drawWorkoutCard(ctx, layout, colors, shape ? { body: shape, levels: model.levels } : null)
+  return new Promise(resolve => canvas.toBlob(resolve, 'image/png'))
+}
+// The .fit file goes out the way a backup does: the share sheet in the phone app (Files, Drive,
+// Garmin Connect itself), a download in the browser.
+async function saveFitFile(blob, name) {
+  if (MOBILE) { try { await shareExportBlob(blob, name) } catch (e) { /* share sheet dismissed */ } return }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); URL.revokeObjectURL(a.href)
+  toast(t('Saved. Garmin Connect can take it from here.'))
+}
+// The phone app goes through the OS share sheet the way a backup does; a browser that can share
+// files (most phones) opens its own; anything else saves the picture as a download.
+async function shareImage(blob, name, title) {
+  if (MOBILE) { try { await shareExportBlob(blob, name) } catch (e) { /* share sheet dismissed */ } return }
+  const file = typeof File === 'function' ? new File([blob], name, { type: 'image/png' }) : null
+  if (file && navigator.canShare?.({ files: [file] })) {
+    try { await navigator.share({ files: [file], title }) } catch (e) { /* dismissed */ }
+    return
+  }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); URL.revokeObjectURL(a.href)
+  toast(t('Image saved'))
 }
 // The sentence a workout's Delete adds when its photos and videos go with it — every file the
 // record lists, shown or not. Empty when it has none.
@@ -2326,8 +2699,12 @@ function Calendar({ start, close }) {
     const iso = y + '-' + String(mo + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0')
     // A fulfilled pin (a coach session pinned here and since done) reads as no override, as it does everywhere else.
     const ws = byDay[iso], planned = effectiveRoutineIds(st, iso).length > 0, ovr = st.dayPlan[iso] !== undefined && pinState(st, st.dayPlan[iso]) !== 'done'
-    const dotCls = ws ? 'done' : ovr && planned ? 'ovr' : planned ? 'plan' : ''
-    cells.push(<button key={d} className={'cal-d' + (ws ? ' has' : '') + (iso === todayISO() ? ' today' : '')} onClick={() => {
+    // A day off with a note on it (#261) shows the note's dot instead of the plan's, and its
+    // note as the tooltip; tapping it opens the day sheet, where the note is.
+    const note = !ws && dayNoteOf(st, iso)
+    const dotCls = ws ? 'done' : note ? 'noted' : ovr && planned ? 'ovr' : planned ? 'plan' : ''
+    cells.push(<button key={d} className={'cal-d' + (ws ? ' has' : '') + (note ? ' noted' : '') + (iso === todayISO() ? ' today' : '')}
+      title={note ? dayNoteLine(note, t) : undefined} onClick={() => {
       if (!ws) { close(); dayOverrideSheet(iso); return }
       if (ws.length === 1) { close(); workoutDetailSheet(ws[0]); return }
       close(); ui().openSheet(c2 => <><h3>{fmtDate(iso, true)}</h3><div className="list">{ws.map(w => <WorkoutRow key={w.id} w={w} onClick={() => { c2(); workoutDetailSheet(w) }} />)}</div></>)
@@ -2345,6 +2722,8 @@ function Calendar({ start, close }) {
       <span><i style={{ background: 'var(--acc)' }} />{t('Trained')}</span>
       <span><i style={{ background: 'var(--label-3)' }} />{t('Planned')}</span>
       <span><i style={{ background: 'var(--orange)' }} />{t('Rescheduled')}</span>
+      {Object.keys(st.dayNotes || {}).some(k => k.startsWith(y + '-' + String(mo + 1).padStart(2, '0')) && dayNoteOf(st, k)) &&
+        <span><i style={{ background: 'var(--indigo)' }} />{t('Day note')}</span>}
     </div>
     <div className="small dim" style={{ textAlign: 'center', marginTop: 10 }}>{t('Tap a trained day for details · tap any other day to plan a session')}</div>
   </>
@@ -2362,6 +2741,16 @@ export function WorkoutRow({ w, onClick }) {
       <div className="ss">{[fmtDate(w.d, true), ...durPart(w.end - w.start), tn('{0} set', '{0} sets', setsDone(w)), fmtVol(w.vol, st.unit)].join(' · ')}</div></div>
     {mediaN > 0 && <span className="wrow-media" title={tn('{0} photo or video', '{0} photos or videos', mediaN)} aria-label={tn('{0} photo or video', '{0} photos or videos', mediaN)}><Icon name="image" />{mediaN}</span>}
     {w.prs && w.prs.length > 0 && <span className="pr"><Icon name="trophy" />{w.prs.length} PR</span>}
+    <Icon name="chevronRight" className="chev" />
+  </div>
+}
+
+/* a day off with a note (#261), as History lists it between the workouts */
+export function DayNoteRow({ iso, note }) {
+  return <div className="item day-note-row" {...tappable(() => dayNoteSheet(iso))}>
+    <span className="lrow-i" style={{ width: 34, height: 34, borderRadius: 8, fontSize: 19, background: 'var(--surface-3)' }}><Icon name={note.tag ? DAY_NOTE_ICON[note.tag] : 'note'} /></span>
+    <div className="grow"><div className="tt">{note.tag ? t(DAY_NOTE_LABEL[note.tag]) : t('Day note')}</div>
+      <div className="ss">{[fmtDate(iso, true), note.text].filter(Boolean).join(' · ')}</div></div>
     <Icon name="chevronRight" className="chev" />
   </div>
 }
@@ -2644,6 +3033,40 @@ function ExerciseNote({ entryIdx, close }) {
 }
 export const exerciseNoteSheet = entryIdx => ui().openSheet(close => <ExerciseNote entryIdx={entryIdx} close={close} />)
 
+function SetNote({ entryIdx, setIdx, close }) {
+  const noteRef = useRef(null)
+  const onNoteFocus = useSheetKeyboard(noteRef)
+  const row = useStore(s => s.S.active?.entries?.[entryIdx]?.sets?.[setIdx])
+  const update = useStore(s => s.update)
+  const [note, setNote] = useState(row?.note || '')
+
+  useEffect(() => { if (!row) close() }, [!row])
+  if (!row) return null
+
+  const save = () => {
+    const text = note.trim().slice(0, NOTE_MAX)
+    update(s => {
+      const set = s.active?.entries?.[entryIdx]?.sets?.[setIdx]
+      if (!set) return
+      if (text) set.note = text
+      else delete set.note
+    }, true)
+    close()
+  }
+
+  return <>
+    <h3>{t('Set note')}</h3>
+    <textarea ref={noteRef} className="input" rows={4} maxLength={NOTE_MAX} value={note}
+      placeholder={t('Anything specific to remember about this set.')}
+      onFocus={onNoteFocus} onChange={event => setNote(event.target.value)} />
+    <div style={{ height: 18 }} />
+    <Button variant="primary" onClick={save}>{t('Save')}</Button>
+  </>
+}
+
+export const setNoteSheet = (entryIdx, setIdx) =>
+  ui().openSheet(close => <SetNote entryIdx={entryIdx} setIdx={setIdx} close={close} />)
+
 /* The session note: how the whole workout went, as opposed to how one exercise went. It lives
    on the active session, so buildCompletedWorkout carries it onto the finished workout and it
    shows up again in history — where it stays editable. Written here rather than only after the
@@ -2710,6 +3133,31 @@ function RenameWorkout({ close }) {
   </>
 }
 export const renameWorkoutSheet = () => ui().openSheet(close => <RenameWorkout close={close} />)
+
+// A superset's own name and rest between rounds (#292), from the routine editor.
+function SupersetSettings({ meta, onSave, close }) {
+  const inputRef = useRef(null)
+  const onFocus = useSheetKeyboard(inputRef)
+  const [name, setName] = useState(meta.name || '')
+  const [rest, setRest] = useState(meta.rest || 0)
+  const save = () => { onSave({ name: name.trim().slice(0, SG_NAME_MAX), rest }); close() }
+  return <>
+    <h3>{t('Superset')}</h3>
+    <input ref={inputRef} className="input" type="text" maxLength={SG_NAME_MAX} value={name}
+      placeholder={t('Name, e.g. Arm finisher')} onFocus={onFocus} onChange={e => setName(e.target.value)}
+      onKeyDown={e => { if (e.key === 'Enter') save() }} />
+    <div style={{ height: 12 }} />
+    <div className="list">
+      <Row icon="timer" iconTint="var(--orange)" title={t('Rest after each round')}
+        value={rest > 0 ? fmtRest(rest) : t('Longest exercise rest')} accessory="chevron"
+        onClick={() => durationSheet({ title: t('Rest after each round'), value: rest, max: REST_MAX, off: t('Longest exercise rest'),
+          footer: t('Without one, the superset rests as long as its longest exercise rest.'), onDone: setRest })} />
+    </div>
+    <div style={{ height: 18 }} />
+    <Button variant="primary" onClick={save}>{t('Save')}</Button>
+  </>
+}
+export const supersetSheet = (meta, onSave) => ui().openSheet(close => <SupersetSettings meta={meta} onSave={onSave} close={close} />)
 
 /* Drop-set drops and rest-pause bursts are edited inline on the set row itself (Workout.jsx) —
    no sheet, no timer. A planned exercise (see the "Intensifier" config below) arrives with them
@@ -2796,6 +3244,58 @@ export function exitWorkoutEdit(onExit = () => nav('/history')) {
   savePrompt = prompt
 }
 
+// "60 kg × 5, 5, 4", or "60×5 · 62.5×5" when the weight changed between sets; a bodyweight lift
+// without load is just its reps. A set taken to failure keeps its "F", as it does in the history.
+export function setsLine(sets, unit) {
+  const ws = new Set(sets.map(s => s.w))
+  const reps = s => s.r + (s.f ? ' ' + t('F') : '')
+  if (ws.size === 1) {
+    const w0 = sets[0].w
+    return (w0 > 0 ? fmtNum(w0) + ' ' + unit + ' × ' : '') + sets.map(reps).join(', ')
+  }
+  return sets.map(s => (s.w > 0 ? fmtNum(s.w) + '×' : '') + reps(s)).join(' · ')
+}
+const TREND = { 1: ['arrowUp', 'var(--green)'], 0: ['minus', 'var(--text-2)'], [-1]: ['arrowDown', 'var(--orange)'] }
+function LastAndNext({ st, w }) {
+  const rows = finishCompare(st, w)
+  if (!rows.length) return null
+  const nextWord = { up: t('step up'), hold: t('same again'), down: t('lighter'), deload: t('deload') }
+  return <div style={{ textAlign: 'start', marginBottom: 14 }}>
+    <h4 className="sec">{t('Last time and next time')}</h4>
+    <div className="list">{rows.map(row => {
+      const ex = EXIDX[row.id]
+      const tr = row.trend == null ? null : TREND[row.trend]
+      return <div key={row.id} className="item" style={{ display: 'block' }}>
+        <div className="row between" style={{ gap: 8 }}>
+          <span className={'tt ' + exerciseNameClass(ex)} style={{ fontWeight: 600 }}>{ex ? exerciseNameFor(ex) : row.id}</span>
+          {tr ? <span style={{ color: tr[1], display: 'inline-flex' }} aria-label={row.trend > 0 ? t('Up on last time') : row.trend < 0 ? t('Down on last time') : t('Same as last time')}><Icon name={tr[0]} /></span>
+            : <span className="tag nocap">{t('First time')}</span>}
+        </div>
+        <div className="small">{t('Today')}: {setsLine(row.today, st.unit)}</div>
+        {row.last && <div className="small dim">{t('Last time')}: {setsLine(row.last, st.unit)}</div>}
+        {row.next && <div className="small accent">{t('Next time')}: {row.next.w != null ? fmtNum(row.next.w) + ' ' + st.unit : ''}{row.next.w != null && row.next.r != null ? ' × ' : ''}{row.next.r != null ? row.next.r : ''} · {nextWord[row.next.kind]}</div>}
+      </div>
+    })}</div>
+  </div>
+}
+
+// The cardio of the session, which "Last time and next time" leaves out: minutes, speed and the
+// treadmill's incline as they were logged.
+function CardioDone({ st, w }) {
+  const rows = finishCardio(w)
+  if (!rows.length) return null
+  return <div style={{ textAlign: 'start', marginBottom: 14 }}>
+    <h4 className="sec">{t('Cardio')}</h4>
+    <div className="list">{rows.map((row, i) => {
+      const ex = EXIDX[row.id]
+      return <div key={i} className="item" style={{ display: 'block' }}>
+        <span className={'tt ' + exerciseNameClass(ex)} style={{ fontWeight: 600 }}>{ex ? exerciseNameFor(ex) : row.id}</span>
+        <div className="small">{row.sets.map(x => setLabel(row.id, x, row.target, speedUnitOf(st))).join('  ·  ')}</div>
+      </div>
+    })}</div>
+  </div>
+}
+
 function FinishSummary({ w, prs, e1prs = [], close }) {
   const st = useStore(s => s.S)
   return <div style={{ textAlign: 'center', padding: '8px 0' }}>
@@ -2814,6 +3314,8 @@ function FinishSummary({ w, prs, e1prs = [], close }) {
     <h4 className="sec" style={{ textAlign: 'start' }}>{t('What you just trained')}</h4>
     <BodyMap load={loadOfWorkouts([w])} body={st.body} />
     <div style={{ height: 14 }} />
+    <LastAndNext st={st} w={w} />
+    <CardioDone st={st} w={w} />
     {/* The moment for a progress photo or the clip of a set: the workout is already saved, so
         what is added here goes straight onto its record. */}
     <div style={{ textAlign: 'start' }}><WorkoutMediaSection w={w} hint /></div>
@@ -2864,7 +3366,8 @@ function doFinishWorkout() {
   if (!past) A.entries.forEach(e => {
     const loads = e.sets.filter(s => s.done && !isWarmupRow(s)).map(s => s.w).filter(w => w > 0)
     const mx = loads.length ? loads.reduce((a, b) => betterWeight(e.id, a, b)) : 0
-    if (beatsWeight(e.id, mx, bestWeightFor(st, e.id))) prs.push(e.id)
+    // Held against history read the way this session logged a dumbbell weight (lib/dumbbells.js).
+    if (beatsWeight(e.id, mx, bestWeightFor(st, e.id, entryDbLoad(e)))) prs.push(e.id)
     // A heavier estimate without a heavier top set is its own kind of progress —
     // same weight for more reps. Reported separately so it can't be read as a load PR.
     const rec = is1RMRecord(st, e.id, e)

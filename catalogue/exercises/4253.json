@@ -1,0 +1,23 @@
+{
+  "id": "4253",
+  "name": "medicine ball crunch v. 2",
+  "bodyPart": "waist",
+  "equipment": "medicine ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "core",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A crunch holding a medicine ball for extra resistance. It targets the abs with a simple, adjustable load.",
+  "instructions": [
+    "Lie on your back with knees bent and feet flat.",
+    "Hold a medicine ball against your chest or overhead.",
+    "Curl your shoulders off the floor.",
+    "Reach the ball toward your knees.",
+    "Lower slowly.",
+    "Keep your lower back on the floor."
+  ],
+  "textSource": "opengym"
+}

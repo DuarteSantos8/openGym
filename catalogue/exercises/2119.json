@@ -1,0 +1,23 @@
+{
+  "id": "2119",
+  "name": "standing side stretch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lats",
+    "shoulders"
+  ],
+  "category": "stretching",
+  "description": "Reaches an arm overhead and leans to the side to lengthen the flank, lats and obliques.",
+  "instructions": [
+    "Stand tall with feet hip-width apart.",
+    "Raise one arm overhead with the palm facing inward.",
+    "Lean your torso sideways away from the raised arm.",
+    "Keep both hips level and your chest facing forward.",
+    "Hold for 20-30 seconds.",
+    "Return upright and repeat on the other side."
+  ],
+  "textSource": "opengym"
+}

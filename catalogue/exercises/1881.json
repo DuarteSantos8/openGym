@@ -1,0 +1,21 @@
+{
+  "id": "1881",
+  "name": "standing leg under abductor stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "Tuck one leg under the other in standing to stretch the outer hip.",
+  "instructions": [
+    "Stand tall near a support.",
+    "Pass one leg behind and under the other.",
+    "Push your hips gently to the side of the back leg.",
+    "Keep your torso upright.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

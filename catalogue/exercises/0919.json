@@ -1,0 +1,22 @@
+{
+  "id": "0919",
+  "name": "band single stiff leg deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A single-leg stiff-leg deadlift with a band. It builds the hamstrings and balance.",
+  "instructions": [
+    "Stand on the band on one leg and hold the ends.",
+    "Keep a slight bend in the standing knee.",
+    "Hinge forward with a flat back and kick the free leg back.",
+    "Return by driving your hips forward.",
+    "Finish reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

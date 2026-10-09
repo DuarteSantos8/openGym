@@ -1,0 +1,23 @@
+{
+  "id": "9604",
+  "name": "bodyweight poliquin step from stepbox",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A box step-down drill that builds knee strength and control in the quads and glutes.",
+  "instructions": [
+    "Stand on a step box on one leg.",
+    "Lower the other foot toward the floor with control.",
+    "Keep your torso upright.",
+    "Lightly tap the floor.",
+    "Press up through your working leg.",
+    "Do your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

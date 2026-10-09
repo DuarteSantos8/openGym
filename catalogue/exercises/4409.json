@@ -1,0 +1,23 @@
+{
+  "id": "4409",
+  "name": "barbell front rack walking lunge",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A walking lunge with the barbell in a front rack, challenging the legs, balance and core.",
+  "instructions": [
+    "Rest the barbell across your front shoulders with elbows high.",
+    "Step forward into a long stride.",
+    "Lower until both knees reach about 90 degrees.",
+    "Push through the front foot and bring the back leg through into the next step.",
+    "Keep walking, alternating legs, with an upright torso."
+  ],
+  "textSource": "opengym"
+}

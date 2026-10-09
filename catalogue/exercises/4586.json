@@ -1,0 +1,24 @@
+{
+  "id": "4586",
+  "name": "front kick kickboxing (with boxing bag)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "glutes",
+    "core",
+    "calves"
+  ],
+  "category": "combat",
+  "description": "A front push kick aimed at a bag that builds leg power, balance and hip flexibility.",
+  "instructions": [
+    "Stand in a fighting stance facing the bag.",
+    "Lift your rear knee up in front of you.",
+    "Extend your leg and push your heel or ball of your foot into the bag.",
+    "Lean back slightly and keep your guard up.",
+    "Pull the leg back to bend it.",
+    "Plant your foot and switch sides."
+  ],
+  "textSource": "opengym"
+}

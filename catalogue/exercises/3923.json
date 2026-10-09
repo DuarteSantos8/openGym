@@ -1,0 +1,23 @@
+{
+  "id": "3923",
+  "name": "landmine floor one arm chest fly",
+  "bodyPart": "chest",
+  "equipment": "landmine",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A one-arm fly on the floor with a landmine bar, training the chest and stability.",
+  "instructions": [
+    "Lie on the floor holding the landmine bar end with one hand.",
+    "Extend the arm above your chest.",
+    "Lower the bar out to the side in an arc.",
+    "Stop when your arm touches the floor.",
+    "Squeeze your chest to bring the bar back up.",
+    "Switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "2732",
+  "name": "strongman dumbbell one arm clean and jerk",
+  "bodyPart": "full body",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "glutes",
+    "quadriceps",
+    "core",
+    "trapezius"
+  ],
+  "category": "olympic",
+  "description": "A one arm dumbbell clean followed by a jerk overhead. Trains explosive power from the legs through the shoulder.",
+  "instructions": [
+    "Stand over a dumbbell with feet shoulder width apart and grab it with one hand.",
+    "Pull it explosively to your shoulder with a hip drive, dipping slightly under it.",
+    "Dip your knees, then drive up and press the dumbbell overhead to a locked arm.",
+    "Lower it back to the shoulder and then the floor with control, then switch arms."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "3982",
+  "name": "leg lift to chest front plank",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "shoulders",
+    "glutes"
+  ],
+  "category": "plyometrics",
+  "description": "From a front plank, drive one knee to the chest and alternate. It trains the core and hip flexors.",
+  "instructions": [
+    "Start in a high plank.",
+    "Draw one knee toward your chest.",
+    "Return it to the floor.",
+    "Alternate legs.",
+    "Keep your hips level."
+  ],
+  "textSource": "opengym"
+}

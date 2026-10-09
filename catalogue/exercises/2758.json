@@ -1,0 +1,22 @@
+{
+  "id": "2758",
+  "name": "cable stand up",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Rising from a low squat against cable tension to train the glutes and legs.",
+  "instructions": [
+    "Hold the cable handle at your chest and sit back into a deep squat.",
+    "Keep your chest tall.",
+    "Push through your heels to stand fully.",
+    "Squeeze your glutes at the top.",
+    "Lower with control."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4250",
+  "name": "dumbbell v up v. 2",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A V-up holding a dumbbell, raising your torso and legs together. It trains the whole abdominal wall.",
+  "instructions": [
+    "Lie on your back with your legs straight, holding a dumbbell overhead.",
+    "Brace your core.",
+    "Lift your legs and torso together, reaching the dumbbell toward your feet.",
+    "Form a V at the top.",
+    "Lower slowly with control.",
+    "Keep your lower back pressed down."
+  ],
+  "textSource": "opengym"
+}

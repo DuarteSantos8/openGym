@@ -1,0 +1,23 @@
+{
+  "id": "3477",
+  "name": "lying leg tuck hip back to right stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower back",
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "A lying tuck stretch with the knees guided to the right.",
+  "instructions": [
+    "Lie on your back and tuck your knees.",
+    "Lower your knees to the right.",
+    "Keep both shoulders down.",
+    "Hold for 20-30 seconds.",
+    "Breathe slowly.",
+    "Return to center."
+  ],
+  "textSource": "opengym"
+}

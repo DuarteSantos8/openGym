@@ -1,0 +1,23 @@
+{
+  "id": "3972",
+  "name": "dumbbell alternate shoulder press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Press dumbbells overhead one arm at a time. It builds the shoulders and triceps.",
+  "instructions": [
+    "Stand or sit with dumbbells at shoulder height.",
+    "Press one dumbbell overhead until the arm is straight.",
+    "Lower it back to your shoulder.",
+    "Press with the other arm.",
+    "Brace your core and avoid leaning back."
+  ],
+  "femaleVariant": "3073",
+  "textSource": "opengym"
+}

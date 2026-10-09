@@ -1,0 +1,21 @@
+{
+  "id": "1783",
+  "name": "standing chest stretch (with training wall bars)",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "stretching",
+  "description": "Holding a wall bar and turning away from it stretches your chest and shoulder. The bars let you pick the exact height that suits you.",
+  "instructions": [
+    "Stand beside wall bars and grip a bar at about shoulder height with one hand.",
+    "Slowly turn your body away from the bars until you feel a stretch across your chest.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "4391",
+  "name": "cable low row with rope attachment",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "rhomboids",
+    "biceps",
+    "rear deltoids",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A seated cable row using a rope that lets your hands travel close to your body. It targets the lats and mid back.",
+  "instructions": [
+    "Sit at the low pulley with the rope attached, feet on the platform and knees slightly bent.",
+    "Grab the rope ends with a neutral grip and sit tall.",
+    "Pull the rope toward your lower stomach, driving your elbows back.",
+    "Squeeze your shoulder blades together.",
+    "Return slowly until your arms are straight without rounding your back."
+  ],
+  "textSource": "opengym"
+}

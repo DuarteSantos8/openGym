@@ -1,0 +1,22 @@
+{
+  "id": "5158",
+  "name": "plank jack slide with towel",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "adductors",
+    "groin"
+  ],
+  "category": "calisthenics",
+  "description": "From a plank, slide your feet apart and together on towels. It works the core and hips without any impact.",
+  "instructions": [
+    "Put your feet on towels on a smooth floor and get into a high plank.",
+    "Brace your core.",
+    "Slide your feet wide apart.",
+    "Slide them back together.",
+    "Keep your hips level and repeat."
+  ],
+  "textSource": "opengym"
+}

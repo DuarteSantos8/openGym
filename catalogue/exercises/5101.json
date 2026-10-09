@@ -1,0 +1,23 @@
+{
+  "id": "5101",
+  "name": "dumbbell single power clean",
+  "bodyPart": "full body",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "trapezius",
+    "shoulders",
+    "quadriceps"
+  ],
+  "category": "olympic",
+  "description": "Explosively pull one dumbbell from the floor to your shoulder. It builds power through the hips and legs.",
+  "instructions": [
+    "Stand over a dumbbell with feet hip-width apart.",
+    "Hinge down and grip it with a flat back.",
+    "Explode up through your hips and shrug.",
+    "Pull the dumbbell up and catch it at your shoulder.",
+    "Lower it back down under control, then switch arms."
+  ],
+  "textSource": "opengym"
+}

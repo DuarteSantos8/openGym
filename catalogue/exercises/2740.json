@@ -1,0 +1,22 @@
+{
+  "id": "2740",
+  "name": "wide push up (wall)",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A beginner-friendly standing push-up against a wall with a wide hand position to emphasise the chest.",
+  "instructions": [
+    "Stand facing a wall and place your hands on it, wider than your shoulders.",
+    "Step your feet back so your body leans in a straight line.",
+    "Bend your elbows to bring your chest toward the wall.",
+    "Push back to the start.",
+    "Keep your hips in line with your shoulders."
+  ],
+  "textSource": "opengym"
+}

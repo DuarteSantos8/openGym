@@ -1,0 +1,24 @@
+{
+  "id": "4974",
+  "name": "inverted row slide on floor",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rear deltoids",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "An inverted row where you pull your body along the floor on sliders. It trains the back with core demand.",
+  "instructions": [
+    "Lie under a bar or lower support with sliders under your heels.",
+    "Grab the bar overhand.",
+    "Pull your chest toward the bar.",
+    "Keep your body straight.",
+    "Lower slowly.",
+    "Keep your hips up."
+  ],
+  "textSource": "opengym"
+}

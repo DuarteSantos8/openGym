@@ -1,0 +1,23 @@
+{
+  "id": "8130",
+  "name": "moving child pose",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "lower back",
+    "shoulders",
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "A flowing version of child's pose that rocks the body to stretch the back, hips and shoulders.",
+  "instructions": [
+    "Start on all fours with your knees slightly wider than your hips.",
+    "Sit your hips back toward your heels and reach your arms forward.",
+    "Let your chest sink toward the floor.",
+    "Rock forward and back slowly, then walk your hands to each side.",
+    "Breathe deeply and relax your neck.",
+    "Move gently for 30 to 60 seconds."
+  ],
+  "textSource": "opengym"
+}

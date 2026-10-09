@@ -1,0 +1,22 @@
+{
+  "id": "1502",
+  "name": "band pushdown",
+  "bodyPart": "upper arms",
+  "equipment": "band",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "forearms",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A band version of the triceps pushdown that isolates the back of the arm.",
+  "instructions": [
+    "Anchor the band high and hold the ends with your elbows at your sides.",
+    "Stand tall with a slight forward lean.",
+    "Push your hands down until your arms are straight.",
+    "Pause and squeeze your triceps.",
+    "Return slowly while keeping your elbows pinned to your sides."
+  ],
+  "femaleVariant": "0916",
+  "textSource": "opengym"
+}

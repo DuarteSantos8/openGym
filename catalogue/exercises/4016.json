@@ -1,0 +1,22 @@
+{
+  "id": "4016",
+  "name": "barbell seated shrug",
+  "bodyPart": "back",
+  "equipment": "barbell",
+  "target": "traps",
+  "secondaryMuscles": [
+    "upper back",
+    "forearms",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A shrug with a barbell while seated. It builds the upper traps.",
+  "instructions": [
+    "Sit upright holding the barbell at thigh level.",
+    "Keep your arms straight.",
+    "Lift your shoulders to your ears.",
+    "Pause.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

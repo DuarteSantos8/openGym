@@ -1,0 +1,22 @@
+{
+  "id": "1926",
+  "name": "plantar flexor and foot everter stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "feet",
+    "shins"
+  ],
+  "category": "stretching",
+  "description": "A seated ankle stretch that lengthens the calf and the outer side of the lower leg.",
+  "instructions": [
+    "Sit with one leg extended and hold the foot with your hand.",
+    "Point the foot down and turn the sole slightly outward.",
+    "Gently press the foot until you feel a stretch along the front and outer ankle.",
+    "Move slowly and stop at a mild stretch.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

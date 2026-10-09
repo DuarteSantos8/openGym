@@ -1,0 +1,22 @@
+{
+  "id": "9942",
+  "name": "standing cross legs core stretch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "A standing stretch with your legs crossed that lengthens the sides of the trunk. It loosens the obliques and waist.",
+  "instructions": [
+    "Stand tall and cross one leg in front of the other.",
+    "Raise the arm on the same side as the back leg overhead.",
+    "Reach and lean gently toward the opposite side.",
+    "Feel the stretch along your side and abs.",
+    "Hold for 20-30 seconds while breathing steadily.",
+    "Return to standing and repeat on the other side."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "2475",
+  "name": "glute bridge one leg on floor (bent knee)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "A single-leg bridge with the free knee bent toward your chest.",
+  "instructions": [
+    "Lie on your back with one foot on the floor and the other knee pulled up.",
+    "Place your arms by your sides.",
+    "Push through the planted heel to lift your hips.",
+    "Keep your pelvis level.",
+    "Squeeze your glute at the top.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

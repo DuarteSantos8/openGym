@@ -1,0 +1,22 @@
+{
+  "id": "5105",
+  "name": "cross jump jack",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "calves",
+    "glutes",
+    "shoulders"
+  ],
+  "category": "plyometrics",
+  "description": "A jumping jack where your arms and legs cross over each other at the center. It raises your heart rate and warms up the whole body.",
+  "instructions": [
+    "Stand with your feet together and arms by your sides.",
+    "Jump your feet apart while raising your arms overhead.",
+    "Jump again, crossing your legs and your arms in front of you.",
+    "Land softly on the balls of your feet.",
+    "Keep a steady rhythm and continue for 30-60 seconds."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,32 @@
+{
+  "id": "0253",
+  "name": "chin-ups (narrow parallel grip)",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A chin-up on a bar with a narrow parallel grip and the palms facing in. It works the lats, upper back and biceps.",
+  "instructions": [
+    "Hang from a pull-up bar with a narrow parallel grip, palms facing towards you.",
+    "Engage your back muscles and pull your body up towards the bar, keeping your elbows close to your body.",
+    "Continue pulling until your chin is above the bar.",
+    "Pause for a moment at the top, then slowly lower your body back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm"
+    ]
+  },
+  "femaleVariant": "3600",
+  "textSource": "exercisedb"
+}

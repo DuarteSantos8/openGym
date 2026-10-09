@@ -1,0 +1,21 @@
+{
+  "id": "0332",
+  "name": "dumbbell iron cross",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "chest"
+  ],
+  "category": "strength",
+  "description": "A dumbbell lateral raise to a T position, like an iron cross. It strengthens the delts and the upper back.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in each hand at your sides.",
+    "Raise your arms out to the sides until they are parallel to the ground, forming a T shape with your body.",
+    "Pause for a moment, then slowly lower your arms back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3601",
+  "textSource": "exercisedb"
+}

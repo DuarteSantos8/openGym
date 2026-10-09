@@ -1,0 +1,24 @@
+{
+  "id": "4749",
+  "name": "dumbbell rdl and bent over row",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes",
+    "upper back",
+    "lower back",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A Romanian deadlift combined with a bent-over row. It trains the hamstrings, glutes and back in one rep.",
+  "instructions": [
+    "Stand holding dumbbells in front of your thighs, knees soft.",
+    "Hinge at the hips, pushing them back, until the dumbbells are below your knees.",
+    "Keep your back flat and row both dumbbells to your ribs.",
+    "Lower them, then drive your hips forward to stand.",
+    "Repeat the full sequence for each rep."
+  ],
+  "textSource": "opengym"
+}

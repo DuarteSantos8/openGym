@@ -162,6 +162,28 @@ describe('Modals sheet history accounting', () => {
   })
 })
 
+describe('Modals scroll restoration', () => {
+  it('uses the body offset corrected by a workout layout change', async () => {
+    await setSheets([sheet('layout')])
+    document.body.style.top = '-240px'
+    await setSheets([])
+    expect(window.scrollTo).toHaveBeenLastCalledWith(0, 240)
+  })
+
+  it('does not undo a newer workout scroll anchor with its delayed keyboard restore', async () => {
+    vi.useFakeTimers()
+    try {
+      await setSheets([sheet('layout')])
+      document.body.style.top = '-800px'
+      await setSheets([])
+      window.scrollTo.mockClear()
+      window.dispatchEvent(new dom.Event('workout-scroll-anchor'))
+      await act(async () => { vi.advanceTimersByTime(350) })
+      expect(window.scrollTo).not.toHaveBeenCalled()
+    } finally { vi.useRealTimers() }
+  })
+})
+
 describe('Modals mouse dragging', () => {
   it('leaves range sliders opted out of sheet dragging', async () => {
     await setSheets([sheet('slider', {

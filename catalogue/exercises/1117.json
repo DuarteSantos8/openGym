@@ -1,0 +1,23 @@
+{
+  "id": "1117",
+  "name": "suspender jump squat",
+  "bodyPart": "upper legs",
+  "equipment": "suspension trainer",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hamstrings"
+  ],
+  "category": "plyometrics",
+  "description": "Holding the straps for balance, you squat and jump explosively to build leg power.",
+  "instructions": [
+    "Hold the handles with slightly bent arms and stand tall.",
+    "Lower into a squat with your chest up.",
+    "Drive through your feet and jump up.",
+    "Land softly on the balls of your feet and sink into the next squat.",
+    "Use the straps for balance only.",
+    "Keep knees tracking over toes."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "3708",
+  "name": "cardio lunge",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "cardio",
+  "description": "Lunges done at a brisk pace to lift your heart rate while working the legs.",
+  "instructions": [
+    "Stand tall with your hands on your hips or swinging with the movement.",
+    "Step forward and lower into a lunge.",
+    "Push off the front foot and return to standing.",
+    "Switch legs and keep a quick rhythm.",
+    "Keep your torso upright throughout."
+  ],
+  "textSource": "opengym"
+}

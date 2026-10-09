@@ -1,0 +1,22 @@
+{
+  "id": "3300",
+  "name": "lean planche",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "chest",
+    "triceps"
+  ],
+  "category": "isometric",
+  "description": "A leaning plank where the shoulders move forward past the hands. It trains the shoulders, wrists and core on the way to the planche.",
+  "instructions": [
+    "Start in a push-up position with your hands shoulder-width apart and your body straight.",
+    "Engage your core and slowly shift your weight forward, bringing your shoulders past your hands.",
+    "Keep your elbows slightly bent and your body straight as you lean forward.",
+    "Hold this position for a few seconds, then slowly return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

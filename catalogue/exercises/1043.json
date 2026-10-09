@@ -1,0 +1,21 @@
+{
+  "id": "1043",
+  "name": "weighted lying neck flexion",
+  "bodyPart": "neck",
+  "equipment": "weighted",
+  "target": "traps",
+  "secondaryMuscles": [
+    "sternocleidomastoid",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "Lying on your back, you lift your head against a light load. It strengthens the muscles at the front of the neck.",
+  "instructions": [
+    "Lie on your back on a bench with your head past the edge and a light weight on your forehead.",
+    "Hold the weight with a hand for control.",
+    "Slowly curl your head up, tucking your chin.",
+    "Pause briefly, then lower with control.",
+    "Keep the load light and avoid jerking."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,28 @@
+{
+  "id": "1394",
+  "name": "smith reverse calf raises",
+  "bodyPart": "lower legs",
+  "equipment": "smith machine",
+  "target": "calves",
+  "secondaryMuscles": [
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A smith machine calf raise done with the bar in front of you. It targets the calves and the muscles around the shin.",
+  "instructions": [
+    "Adjust the smith machine bar to a height just below your shoulders.",
+    "Stand facing the bar with your feet hip-width apart and toes pointing forward.",
+    "Place the balls of your feet on the edge of a step or platform, with your heels hanging off.",
+    "Hold onto the bar for support.",
+    "Raise your heels as high as possible, lifting your body up onto your toes.",
+    "Pause for a moment at the top, then slowly lower your heels back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "calves"
+    ],
+    "secondaries": []
+  },
+  "textSource": "exercisedb"
+}

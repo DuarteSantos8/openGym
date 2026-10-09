@@ -1,0 +1,22 @@
+{
+  "id": "5659",
+  "name": "barbell anderson squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Squat starting from the bottom position, pausing each rep to build strength.",
+  "instructions": [
+    "Set the bar in safety pins at the bottom of a squat.",
+    "Get under it and brace.",
+    "Drive up from a dead stop.",
+    "Lower back to the pins.",
+    "Reset on every rep."
+  ],
+  "textSource": "opengym"
+}

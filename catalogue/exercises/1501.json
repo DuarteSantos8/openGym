@@ -1,0 +1,23 @@
+{
+  "id": "1501",
+  "name": "band side plank row with partner",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "lats",
+  "secondaryMuscles": [
+    "obliques",
+    "rhomboids",
+    "biceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A side plank with a rowing motion against a band held by a partner. It trains the lats and trunk stability.",
+  "instructions": [
+    "Get into a side plank on one forearm, with a partner holding the band in front of you.",
+    "Grip the band with your top hand and keep your hips lifted.",
+    "Row your hand back toward your ribs, squeezing the shoulder blade.",
+    "Return slowly without letting your hips drop.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

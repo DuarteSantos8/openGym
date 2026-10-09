@@ -1,0 +1,22 @@
+{
+  "id": "2485",
+  "name": "dumbbell hammer curl v. 3",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A curl with a neutral grip that works the biceps and forearms.",
+  "instructions": [
+    "Stand holding dumbbells at your sides with palms facing in.",
+    "Keep your elbows close to your torso.",
+    "Curl the dumbbells up toward your shoulders.",
+    "Keep your wrists straight.",
+    "Squeeze at the top.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "9066",
+  "name": "4 way single leg hop",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "ankles"
+  ],
+  "category": "plyometrics",
+  "description": "Hopping on one leg forward, back and side to side trains balance, ankle stability and power.",
+  "instructions": [
+    "Stand on one leg with a soft knee.",
+    "Hop forward and land softly.",
+    "Hop back to the start, then hop to each side.",
+    "Hold each landing for a moment.",
+    "Keep your chest up and your knee over your foot.",
+    "Repeat the pattern, then switch legs."
+  ],
+  "textSource": "opengym"
+}

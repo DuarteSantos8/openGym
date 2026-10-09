@@ -1,0 +1,22 @@
+{
+  "id": "0560",
+  "name": "kneeling hip flexor",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "A kneeling lunge stretch that opens the front of the hip and thigh. Good after sitting or leg training.",
+  "instructions": [
+    "Kneel on one knee with the other foot flat in front of you.",
+    "Place a pad under your back knee if needed.",
+    "Tuck your pelvis and squeeze the glute of the back leg.",
+    "Shift your hips gently forward until you feel a stretch at the front of the hip.",
+    "Hold for 20-30 seconds.",
+    "Switch legs and repeat."
+  ],
+  "textSource": "opengym"
+}

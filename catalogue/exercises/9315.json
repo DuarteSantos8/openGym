@@ -1,0 +1,23 @@
+{
+  "id": "9315",
+  "name": "elevated split squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors"
+  ],
+  "category": "calisthenics",
+  "description": "A split squat with the rear foot on a bench builds leg strength and balance, one leg at a time.",
+  "instructions": [
+    "Stand a stride length in front of a bench and rest your back foot on it.",
+    "Keep your torso upright.",
+    "Lower your back knee toward the floor.",
+    "Keep your front knee over your foot.",
+    "Drive through the front heel to stand.",
+    "Finish the reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

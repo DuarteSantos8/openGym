@@ -1,0 +1,22 @@
+{
+  "id": "2880",
+  "name": "swimming all fours",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "rear deltoids",
+    "core"
+  ],
+  "category": "pilates",
+  "description": "A quadruped Pilates move with opposite arm and leg lifts for back stability.",
+  "instructions": [
+    "Start on all fours with hands under shoulders and knees under hips.",
+    "Reach one arm forward and the opposite leg back.",
+    "Flutter them in small, quick pulses.",
+    "Keep your spine neutral and your hips level.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

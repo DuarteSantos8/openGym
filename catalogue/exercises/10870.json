@@ -1,0 +1,22 @@
+{
+  "id": "10870",
+  "name": "resistance band glute bridge walk",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A glute bridge held with a band while stepping sideways. It targets glutes and outer hips.",
+  "instructions": [
+    "Lie on your back with a band above your knees and feet flat.",
+    "Lift your hips into a bridge.",
+    "Step your feet out and in sideways.",
+    "Keep the band tight.",
+    "Keep your hips high.",
+    "Lower after the set."
+  ],
+  "textSource": "opengym"
+}

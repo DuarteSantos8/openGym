@@ -1,0 +1,23 @@
+{
+  "id": "3481",
+  "name": "split sprinter low lunge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A low lunge hold in a sprinter stance for the legs and hips.",
+  "instructions": [
+    "Step into a long lunge.",
+    "Lower your back knee near the floor.",
+    "Keep your torso tall.",
+    "Hold the low position briefly.",
+    "Push up.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

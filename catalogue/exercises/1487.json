@@ -1,0 +1,22 @@
+{
+  "id": "1487",
+  "name": "shoulder stand yoga pose",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "shoulders",
+    "core",
+    "trapezius"
+  ],
+  "category": "yoga",
+  "description": "An inverted yoga pose balanced on the shoulders. It builds shoulder and core control and stretches the neck-side muscles.",
+  "instructions": [
+    "Lie on your back and lift your legs overhead, supporting your lower back with your hands.",
+    "Walk your hands up toward your shoulder blades.",
+    "Raise your legs straight up so your body forms a line over your shoulders.",
+    "Keep your neck long and still, and do not turn your head.",
+    "Hold for 15-30 seconds, then lower slowly."
+  ],
+  "textSource": "opengym"
+}

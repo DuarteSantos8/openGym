@@ -1,0 +1,23 @@
+{
+  "id": "7129",
+  "name": "bodyweight lying alternate legs curl",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A floor hamstring curl using your own weight, alternating legs to keep it easy on the joints.",
+  "instructions": [
+    "Lie face down with your legs straight and your forehead on your hands.",
+    "Bend one knee and bring the heel toward your glute.",
+    "Squeeze the back of your thigh at the top.",
+    "Lower the leg slowly.",
+    "Repeat with the other leg.",
+    "Alternate for the planned reps."
+  ],
+  "textSource": "opengym"
+}

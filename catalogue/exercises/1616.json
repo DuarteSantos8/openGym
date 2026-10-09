@@ -1,0 +1,30 @@
+{
+  "id": "1616",
+  "name": "lever reverse grip preacher curl",
+  "bodyPart": "upper arms",
+  "equipment": "leverage machine",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A preacher curl on a lever machine with an overhand grip. It shifts work to the forearms and brachialis.",
+  "instructions": [
+    "Adjust the seat height and position yourself on the leverage machine.",
+    "Grasp the handles with an underhand grip, palms facing up.",
+    "Rest your upper arms on the preacher pad, ensuring your elbows are fully extended.",
+    "Keeping your upper arms stationary, exhale and curl the handles towards your shoulders.",
+    "Pause for a moment at the top of the movement, squeezing your biceps.",
+    "Inhale and slowly lower the handles back to the starting position, fully extending your elbows.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "biceps"
+    ],
+    "secondaries": [
+      "forearm"
+    ]
+  },
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "3388",
+  "name": "inverted row between chairs",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rhomboids",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight row under a sturdy support between two chairs for the upper back and arms.",
+  "instructions": [
+    "Set a sturdy bar or table edge between two stable chairs and lie under it.",
+    "Grip the support with straight arms and your body in a plank line.",
+    "Pull your chest toward the support.",
+    "Squeeze your shoulder blades together at the top.",
+    "Lower slowly until your arms are straight.",
+    "Keep your hips up the whole time."
+  ],
+  "femaleVariant": "3520",
+  "textSource": "opengym"
+}

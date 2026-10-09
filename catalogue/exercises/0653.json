@@ -1,0 +1,23 @@
+{
+  "id": "0653",
+  "name": "push-up (bosu ball)",
+  "bodyPart": "chest",
+  "equipment": "bosu ball",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up with your hands on a bosu ball. The unstable surface trains the chest, arms and core stabilizers.",
+  "instructions": [
+    "Place the bosu ball on the ground with the flat side facing up.",
+    "Position yourself in a push-up position with your hands on the outer edges of the bosu ball.",
+    "Engage your core and lower your body down towards the bosu ball by bending your elbows.",
+    "Push yourself back up to the starting position by extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "8097",
+  "textSource": "exercisedb"
+}

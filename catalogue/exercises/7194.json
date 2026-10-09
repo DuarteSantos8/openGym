@@ -1,0 +1,24 @@
+{
+  "id": "7194",
+  "name": "criss cross stepback hops",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "calves",
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A quick hopping drill that crosses the feet and steps back, building agility and leg power.",
+  "instructions": [
+    "Stand tall with your feet hip-width apart and your knees soft.",
+    "Hop and cross one foot in front of the other.",
+    "Hop back out, then step one foot back behind you.",
+    "Land softly on the balls of your feet each time.",
+    "Keep a quick, rhythmic pace.",
+    "Alternate sides for the planned time."
+  ],
+  "textSource": "opengym"
+}

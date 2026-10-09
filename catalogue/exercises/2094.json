@@ -1,0 +1,21 @@
+{
+  "id": "2094",
+  "name": "thumb stretch",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "hands",
+    "wrist flexors"
+  ],
+  "category": "stretching",
+  "description": "A gentle stretch for the thumb and the muscles at its base.",
+  "instructions": [
+    "Extend one arm with the palm facing up.",
+    "Use your other hand to hold the thumb.",
+    "Gently pull the thumb back and away from the palm.",
+    "Stop at a mild stretch.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "1903",
+  "name": "hip abduction with flexion in front stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "hip flexors"
+  ],
+  "category": "stretching",
+  "description": "Brings the leg forward and out to open the outer hip.",
+  "instructions": [
+    "Sit on the floor with one leg bent in front of you.",
+    "Place the other leg to the side.",
+    "Lean your torso forward over the front shin.",
+    "Keep your hips grounded.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

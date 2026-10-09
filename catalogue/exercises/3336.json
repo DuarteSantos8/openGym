@@ -1,0 +1,23 @@
+{
+  "id": "3336",
+  "name": "dumbbell v up",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A v up while holding a dumbbell, raising your arms and legs together to challenge the abs.",
+  "instructions": [
+    "Lie flat with legs straight and a dumbbell held in both hands overhead.",
+    "Brace your core.",
+    "Lift your arms and legs together, forming a V shape.",
+    "Touch the dumbbell near your shins.",
+    "Lower back down slowly without dropping your legs."
+  ],
+  "femaleVariant": "3446",
+  "textSource": "opengym"
+}

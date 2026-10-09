@@ -2,8 +2,8 @@
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import Settings from './Settings.jsx'
-import { unlock } from '../lib/sound.js'
+import Settings, { RestSoundSheet } from './Settings.jsx'
+import { chime, unlock } from '../lib/sound.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -49,7 +49,7 @@ vi.mock('../sheets.jsx', () => ({
 // unlock is spied on so the Sounds switch can be checked for its tap-time side effect.
 vi.mock('../lib/sound.js', async importOriginal => {
   const real = await importOriginal()
-  return { ...real, unlock: vi.fn() }
+  return { ...real, unlock: vi.fn(), chime: vi.fn() }
 })
 
 globalThis.__APP_VERSION__ ??= 'test'
@@ -64,6 +64,7 @@ beforeEach(() => {
   setAudioSession({ type: 'auto' })
   Object.defineProperty(navigator, 'userAgent', { value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148', configurable: true })
   unlock.mockClear()
+  chime.mockClear()
   host = document.createElement('div')
   document.body.appendChild(host)
   root = createRoot(host)
@@ -210,5 +211,43 @@ describe('Settings — which sound', () => {
     mocks.S.sound = false
     mount()
     expect(rowTitled('Sound')).toBeUndefined()
+  })
+
+  // #306: a few sounds to pick from, each heard as it is picked.
+  it('names the picked sound on the row; an older app\'s classic switch still reads as Classic', () => {
+    mocks.S.restSound = 'whistle'
+    mount()
+    expect(rowTitled('Sound').querySelector('.lrow-v').textContent).toBe('Whistle')
+    mocks.S.classicChime = true
+    mount()
+    expect(rowTitled('Sound').querySelector('.lrow-v').textContent).toBe('Classic beeps')
+  })
+
+  it('the sheet lists every sound, ticks the current one, and plays and stores each one tapped', () => {
+    const close = vi.fn()
+    // the mocked store does not re-render on its own: render again to read the new tick
+    const render = () => act(() => root.render(<RestSoundSheet close={close} />))
+    render()
+    expect([...host.querySelectorAll('.lrow-t')].map(e => e.textContent)).toEqual(['Chime (louder)', 'Classic beeps', 'Bell', 'Beep-beep', 'Whistle', 'Soft'])
+    expect(rowTitled('Chime (louder)').querySelector('.lrow-k')).toBeTruthy()
+
+    act(() => { rowTitled('Bell').click() })
+    expect(mocks.S).toMatchObject({ restSound: 'bell', classicChime: false })
+    expect(chime).toHaveBeenLastCalledWith(true, 'bell')
+    expect(unlock).toHaveBeenCalled()
+    render()
+    expect(rowTitled('Bell').querySelector('.lrow-k')).toBeTruthy()
+    expect(rowTitled('Chime (louder)').querySelector('.lrow-k')).toBeNull()
+    expect(close).not.toHaveBeenCalled()
+
+    // Classic keeps the old switch in step, so an app from before #306 plays it too
+    act(() => { rowTitled('Classic beeps').click() })
+    expect(mocks.S).toMatchObject({ restSound: 'classic', classicChime: true })
+    expect(chime).toHaveBeenLastCalledWith(true, 'classic')
+    act(() => { rowTitled('Soft').click() })
+    expect(mocks.S).toMatchObject({ restSound: 'soft', classicChime: false })
+
+    act(() => { [...host.querySelectorAll('button')].find(b => b.textContent === 'Done').click() })
+    expect(close).toHaveBeenCalled()
   })
 })

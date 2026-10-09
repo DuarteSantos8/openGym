@@ -1,0 +1,22 @@
+{
+  "id": "5234",
+  "name": "wall walks",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "core",
+    "upper chest"
+  ],
+  "category": "calisthenics",
+  "description": "Walk your feet up a wall into a handstand-like position, then walk back down. It builds shoulder strength and trunk control.",
+  "instructions": [
+    "Lie face down with your feet against a wall.",
+    "Place your hands beside your chest and push up into a plank.",
+    "Walk your feet up the wall as your hands walk toward it.",
+    "Stop where you can keep your body straight and braced.",
+    "Walk back down slowly with control."
+  ],
+  "textSource": "opengym"
+}

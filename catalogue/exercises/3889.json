@@ -1,0 +1,23 @@
+{
+  "id": "3889",
+  "name": "frog sit up",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "obliques",
+    "inner thighs"
+  ],
+  "category": "calisthenics",
+  "description": "A sit-up with the legs in a frog position that works the abs and hip flexors.",
+  "instructions": [
+    "Lie on your back with the soles of your feet together and knees falling out.",
+    "Place your hands behind your head or reach forward.",
+    "Curl up and sit all the way up.",
+    "Reach your hands toward your feet at the top.",
+    "Lower with control.",
+    "Avoid pulling on your neck."
+  ],
+  "textSource": "opengym"
+}

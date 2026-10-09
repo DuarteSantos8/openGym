@@ -1,0 +1,22 @@
+{
+  "id": "3254",
+  "name": "standing two side bend",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lats",
+    "shoulders"
+  ],
+  "category": "mobility",
+  "description": "A standing side bend with both arms overhead for a longer reach through the trunk.",
+  "instructions": [
+    "Stand with feet shoulder-width apart.",
+    "Clasp your hands overhead.",
+    "Bend to one side, keeping your hips still.",
+    "Return to the center.",
+    "Bend to the other side and repeat."
+  ],
+  "textSource": "opengym"
+}

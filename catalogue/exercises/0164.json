@@ -1,0 +1,22 @@
+{
+  "id": "0164",
+  "name": "cable front shoulder raise",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A cable front raise for the shoulders.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and grasp the cable handle with an overhand grip.",
+    "Keep your back straight and your core engaged.",
+    "Raise the cable handle in front of you, keeping your arms straight and your palms facing down.",
+    "Continue lifting until your arms are parallel to the floor.",
+    "Pause for a moment at the top, then slowly lower the cable handle back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "0719",
+  "name": "side stretch crunch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A side crunch that combines a side stretch and a contraction. It works the obliques.",
+  "instructions": [
+    "Lie on your side with your bottom arm extended overhead.",
+    "Place your top hand behind your head.",
+    "Stretch along your side.",
+    "Crunch your top elbow toward your hip.",
+    "Return to the stretch.",
+    "Switch sides."
+  ],
+  "textSource": "opengym"
+}

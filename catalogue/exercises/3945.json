@@ -1,0 +1,22 @@
+{
+  "id": "3945",
+  "name": "smith single arm bent over row",
+  "bodyPart": "back",
+  "equipment": "smith machine",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "rhomboids",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A one-arm row against the Smith bar for a stable path. It builds the lats and upper back, one side at a time.",
+  "instructions": [
+    "Set the bar at a low height and hinge at the hips with a flat back.",
+    "Grip the bar with one hand and brace the other on your thigh.",
+    "Pull the bar toward your lower ribs.",
+    "Lower it under control.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

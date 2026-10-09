@@ -1,0 +1,22 @@
+{
+  "id": "4737",
+  "name": "dumbbell floor wiper",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "Lying on your back with a dumbbell held overhead, you swing your legs side to side like a wiper. It challenges the obliques.",
+  "instructions": [
+    "Lie on your back holding a dumbbell above your chest with straight arms.",
+    "Lift your legs straight up over your hips.",
+    "Lower both legs to one side without touching the floor.",
+    "Bring them back to the middle.",
+    "Repeat to the other side, keeping your shoulders flat."
+  ],
+  "textSource": "opengym"
+}

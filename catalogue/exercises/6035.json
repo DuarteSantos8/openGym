@@ -1,0 +1,23 @@
+{
+  "id": "6035",
+  "name": "cable rear delt row (parallel bar)",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rhomboids",
+    "upper back",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A cable row with a parallel bar that targets the rear delts and upper back.",
+  "instructions": [
+    "Sit facing a low cable with a parallel bar attachment.",
+    "Hold the handles with your elbows flared.",
+    "Lean back slightly with a straight spine.",
+    "Pull the handles toward your chest.",
+    "Squeeze your shoulder blades.",
+    "Return slowly."
+  ],
+  "textSource": "opengym"
+}

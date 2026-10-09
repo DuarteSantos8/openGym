@@ -1,0 +1,24 @@
+{
+  "id": "4800",
+  "name": "table top bridge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "triceps",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "Face-up bridge on hands and feet that lifts the hips into a table shape. It builds the glutes, hamstrings and shoulder stability.",
+  "instructions": [
+    "Sit on the floor with knees bent and feet flat, hands behind you with fingers pointing toward your feet.",
+    "Press through your hands and heels to lift your hips.",
+    "Raise until your torso and thighs are level like a tabletop.",
+    "Squeeze your glutes and keep your head in line with your spine.",
+    "Hold briefly, then lower your hips back to the floor under control."
+  ],
+  "femaleVariant": "7172",
+  "textSource": "opengym"
+}

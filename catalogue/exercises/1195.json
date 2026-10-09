@@ -1,0 +1,23 @@
+{
+  "id": "1195",
+  "name": "lever incline hammer chest press",
+  "bodyPart": "chest",
+  "equipment": "leverage machine",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Pressing on an incline chest machine with neutral hammer handles. It builds the upper chest and is gentle on the shoulders.",
+  "instructions": [
+    "Adjust the seat so the handles sit at upper chest height.",
+    "Sit back with your shoulder blades pinned to the pad and grip the neutral handles.",
+    "Press the handles up and forward until your arms are almost straight.",
+    "Lower slowly until you feel a stretch across the chest.",
+    "Keep your wrists straight and your back against the pad."
+  ],
+  "femaleVariant": "3608",
+  "textSource": "opengym"
+}

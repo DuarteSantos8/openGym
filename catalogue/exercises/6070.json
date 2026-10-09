@@ -1,0 +1,23 @@
+{
+  "id": "6070",
+  "name": "bottle weighted reverse curl",
+  "bodyPart": "lower arms",
+  "equipment": "weighted",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "brachialis",
+    "biceps",
+    "wrist extensors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A curl with an overhand grip holding bottles. It trains the forearms and brachialis.",
+  "instructions": [
+    "Stand tall holding a bottle in each hand with palms facing down.",
+    "Keep your elbows at your sides.",
+    "Curl the bottles up with straight wrists.",
+    "Pause at the top.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

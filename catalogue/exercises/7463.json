@@ -1,0 +1,23 @@
+{
+  "id": "7463",
+  "name": "spider mountain climber",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "shoulders",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "Mountain climber where each knee drives toward the same-side elbow, adding side work for the core.",
+  "instructions": [
+    "Start in a high plank, hands under shoulders.",
+    "Drive one knee toward the outside of your elbow.",
+    "Return that foot and switch legs.",
+    "Keep your hips low and your core braced.",
+    "Move at a quick, controlled pace."
+  ],
+  "textSource": "opengym"
+}

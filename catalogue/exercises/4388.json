@@ -1,0 +1,22 @@
+{
+  "id": "4388",
+  "name": "prisoner get up",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight get-up with your hands behind your head. It builds leg strength, balance and hip control.",
+  "instructions": [
+    "Kneel on the floor, with your hands behind your head.",
+    "Keep your chest tall and your core braced.",
+    "Step one foot forward and drive up through it to stand.",
+    "Lower back down with control to kneeling.",
+    "Alternate the leading leg on each rep."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "3251",
+  "name": "side two front toe touching",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "mobility",
+  "description": "A wide-stance toe touch reaching both hands toward one side to loosen the trunk and legs.",
+  "instructions": [
+    "Stand with feet wide apart.",
+    "Turn your torso slightly to one side.",
+    "Reach both hands to the foot on that side.",
+    "Rise, then turn to the other side.",
+    "Repeat at a steady pace."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "10730",
+  "name": "weighted sandbag romanian deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "sandbag",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "grip muscles",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A hip hinge with a sandbag held in front of your thighs. It builds the hamstrings and glutes.",
+  "instructions": [
+    "Hold a sandbag in front of your thighs with a firm grip.",
+    "Stand with feet hip-width apart and knees slightly bent.",
+    "Push your hips back and slide the bag down your legs.",
+    "Lower until you feel a stretch in your hamstrings.",
+    "Drive your hips forward to stand tall.",
+    "Keep your back flat."
+  ],
+  "textSource": "opengym"
+}

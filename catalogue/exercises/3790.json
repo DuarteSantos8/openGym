@@ -1,0 +1,23 @@
+{
+  "id": "3790",
+  "name": "resistance band side step with horizontal pallof hold",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "obliques",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Side steps in a half squat while holding the band out in front of you. It works your hips and resists rotation through the core.",
+  "instructions": [
+    "Anchor the band at chest height and stand side-on to it.",
+    "Press the handle straight out and sink into a quarter squat.",
+    "Take small steps sideways away from the anchor, keeping your torso square.",
+    "Step back in under control.",
+    "Repeat for your set, then switch sides."
+  ],
+  "textSource": "opengym"
+}

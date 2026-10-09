@@ -1,0 +1,22 @@
+{
+  "id": "1914",
+  "name": "seated knee flexor and hip adductor stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "adductors",
+    "groin",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "Seated wide leg stretch that opens the inner thighs while lengthening the hamstrings.",
+  "instructions": [
+    "Sit on the floor with your legs spread wide and knees straight.",
+    "Sit tall with your toes pointing up.",
+    "Hinge forward from the hips, walking your hands out in front of you.",
+    "Stop when you feel a stretch along the inner thighs and backs of the legs.",
+    "Hold for 20-30 seconds, breathing slowly, then sit back up."
+  ],
+  "textSource": "opengym"
+}

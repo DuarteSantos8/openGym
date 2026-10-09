@@ -1,0 +1,22 @@
+{
+  "id": "3403",
+  "name": "standing y raise",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "traps",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "shoulders",
+    "rhomboids"
+  ],
+  "category": "calisthenics",
+  "description": "Raise your arms into a Y shape to strengthen the lower traps and shoulder stabilisers.",
+  "instructions": [
+    "Stand tall with arms by your sides, thumbs pointing up.",
+    "Raise both arms diagonally overhead to form a Y.",
+    "Squeeze your shoulder blades down and back.",
+    "Pause briefly, then lower slowly.",
+    "Keep your neck long and avoid shrugging."
+  ],
+  "textSource": "opengym"
+}

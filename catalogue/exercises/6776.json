@@ -1,0 +1,23 @@
+{
+  "id": "6776",
+  "name": "cable standing single delt row",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "biceps",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A one-arm cable row with a high elbow. It focuses on the rear delts and upper back.",
+  "instructions": [
+    "Set a cable at chest height and grab the handle with one hand.",
+    "Stand with feet staggered and your torso slightly braced.",
+    "Pull the handle toward you with your elbow flared out.",
+    "Squeeze the rear shoulder at the end.",
+    "Extend slowly, then switch arms after your reps."
+  ],
+  "textSource": "opengym"
+}

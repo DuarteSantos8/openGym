@@ -1,0 +1,22 @@
+{
+  "id": "1894",
+  "name": "standing wide knees adductor stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "groin",
+    "inner thighs",
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "A standing wide-stance stretch for the inner thighs.",
+  "instructions": [
+    "Stand with your feet wide apart and toes pointing slightly out.",
+    "Bend your knees and place your hands on your thighs.",
+    "Shift your weight from side to side, sinking into the stretch.",
+    "Keep your chest tall and your back flat.",
+    "Hold for 20-30 seconds on each side."
+  ],
+  "textSource": "opengym"
+}

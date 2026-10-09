@@ -1,0 +1,22 @@
+{
+  "id": "5407",
+  "name": "stick overhead full sumo squat stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "glutes",
+    "quadriceps",
+    "shoulders"
+  ],
+  "category": "stretching",
+  "description": "A deep wide-stance squat while holding a stick overhead. Opens the inner thighs and hips and challenges shoulder mobility.",
+  "instructions": [
+    "Stand with your feet wider than your shoulders and toes turned out.",
+    "Raise the stick overhead with straight arms.",
+    "Sit down between your legs, keeping your chest tall and knees tracking over your toes.",
+    "Hold the bottom position for 20-30 seconds.",
+    "Press up through your feet to stand."
+  ],
+  "textSource": "opengym"
+}

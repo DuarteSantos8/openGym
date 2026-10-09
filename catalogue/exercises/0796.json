@@ -1,0 +1,22 @@
+{
+  "id": "0796",
+  "name": "standing wheel rollerout",
+  "bodyPart": "waist",
+  "equipment": "wheel roller",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower back",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A standing ab wheel rollout, rolling the wheel out in front while hinging at the waist. It is a tough core exercise for the abs.",
+  "instructions": [
+    "Start by standing tall with your feet shoulder-width apart and the wheel roller in front of you.",
+    "Bend at your waist and slowly roll the wheel forward, keeping your back straight and your core engaged.",
+    "Continue rolling forward until you feel a stretch in your abs and your body is extended as far as possible.",
+    "Pause for a moment, then slowly roll the wheel back towards your body, returning to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "4324",
+  "textSource": "exercisedb"
+}

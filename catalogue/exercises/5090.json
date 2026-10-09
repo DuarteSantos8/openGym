@@ -1,0 +1,23 @@
+{
+  "id": "5090",
+  "name": "cable standing row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rhomboids",
+    "biceps",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "Pull a cable handle toward your torso from a standing position. It trains the mid-back and teaches a strong, upright posture.",
+  "instructions": [
+    "Set a cable at chest height and hold the handle, stepping back until there is tension.",
+    "Stand tall with your core braced.",
+    "Pull the handle toward your ribs, driving your elbows back.",
+    "Squeeze your shoulder blades together.",
+    "Return slowly until your arms are straight."
+  ],
+  "textSource": "opengym"
+}

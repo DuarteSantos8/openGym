@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { imgSrc, gifSrc, isCustomEx } from '../lib/exercises.js'
+import { imgSrc, gifSrc, isVideoSrc, isCustomEx, figureOf } from '../lib/exercises.js'
 import { useStore } from '../store/useStore.js'
 import { t, exerciseNameFor } from '../lib/i18n.js'
 import Icon from './Icon.jsx'
@@ -28,6 +28,7 @@ function BuiltinMedia({ ex, id, compact, minimizable }) {
   // both, and a tap tries again — no text, so nothing new to translate.
   const [failed, setFailed] = useState(null)
   const gifSize = useStore(s => s.S.gifSize)
+  const body = useStore(s => figureOf(s.S))
   const update = useStore(s => s.update)
   if (!ex.gif) return null
   if (minimizable && gifSize === 'off') return null
@@ -43,7 +44,10 @@ function BuiltinMedia({ ex, id, compact, minimizable }) {
     <div className={'exmedia' + (compact ? ' compact' : '') + (mini ? ' mini' : '') + (failed === 'all' ? ' broken' : '')} id={id} onClick={onTap}>
       {failed === 'all'
         ? <div className="exmedia-x"><Icon name="dumbbell" /></div>
-        : <img decoding="async" draggable={false} src={showGif ? gifSrc(ex) : imgSrc(ex)} alt={exerciseNameFor(ex)} onError={onError} />}
+        : showGif && isVideoSrc(gifSrc(ex, body))
+          ? <video ref={autoplayMuted} className="catvid" src={gifSrc(ex, body)} poster={imgSrc(ex, body)} autoPlay muted loop playsInline disablePictureInPicture
+              aria-label={exerciseNameFor(ex)} onError={onError} />
+          : <img decoding="async" draggable={false} src={showGif ? gifSrc(ex, body) : imgSrc(ex, body)} alt={exerciseNameFor(ex)} onError={onError} />}
       {minimizable && (
         <button className="giftoggle" onClick={toggleSize}>
           <Icon name={mini ? 'expand' : 'minimize'} />{mini ? t('Expand') : t('Minimize')}
@@ -58,6 +62,19 @@ function BuiltinMedia({ ex, id, compact, minimizable }) {
   )
 }
 
+// React sets `muted` as a property only, never as the attribute, and Android's WebView (the phone
+// app) allows autoplay only for a video that carries the attribute: the loop sat on its first frame
+// there while every desktop browser played it. Set it before the first frame and start playback
+// ourselves; a refusal leaves the still showing, which a tap can still start.
+export function autoplayMuted(el) {
+  if (!el) return
+  el.muted = true
+  el.defaultMuted = true
+  el.setAttribute('muted', '')
+  const p = el.play?.()
+  if (p && typeof p.catch === 'function') p.catch(() => {})
+}
+
 // A still that will not load (offline and never cached, a lapsed session on a gated instance, a
 // CDN hiccup) gets the same neutral tile as an exercise without media, instead of the browser's
 // broken-image glyph in a list of them (#281). The failure is remembered per image, so a list
@@ -66,7 +83,8 @@ export function Thumb(p) {
   return isCustomEx(p.ex) ? <CustomThumb {...p} /> : <BuiltinThumb {...p} />
 }
 function BuiltinThumb({ ex }) {
-  const src = ex.img ? imgSrc(ex) : null
+  const body = useStore(s => figureOf(s.S))
+  const src = ex.img ? imgSrc(ex, body) : null
   const [broken, setBroken] = useState(null)
   if (!src || broken === src) return <div className="thumb thumb-x"><Icon name="dumbbell" /></div>
   return <img className="thumb" loading="lazy" decoding="async" draggable={false} src={src} alt="" onError={() => setBroken(src)} />

@@ -1,0 +1,21 @@
+{
+  "id": "3745",
+  "name": "overhead triceps extension with bed sheet",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A home triceps exercise that uses a bed sheet as resistance.",
+  "instructions": [
+    "Hold a bed sheet with both hands behind your head, one hand pulling up, one down.",
+    "Keep your elbows pointing forward.",
+    "Press your top hand overhead against the resistance.",
+    "Return slowly to the start.",
+    "Finish your reps, then swap hand positions."
+  ],
+  "textSource": "opengym"
+}

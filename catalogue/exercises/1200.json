@@ -1,0 +1,23 @@
+{
+  "id": "1200",
+  "name": "push press",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "quadriceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "An overhead press helped by a quick leg dip and drive. It lets you handle heavier loads for the shoulders and triceps.",
+  "instructions": [
+    "Hold the barbell at your upper chest with your elbows slightly in front of the bar.",
+    "Dip a few inches by bending your knees, keeping your torso upright.",
+    "Drive up through your legs and press the bar overhead.",
+    "Lock out with the bar over your mid foot, then lower it back to your chest.",
+    "Brace your core and avoid leaning back."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "1876",
+  "name": "lever lateral raise (plate loaded)",
+  "bodyPart": "shoulders",
+  "equipment": "leverage machine",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "Plate-loaded machine raise that targets the side of the shoulders.",
+  "instructions": [
+    "Adjust the seat and place your arms against the pads.",
+    "Sit upright.",
+    "Raise your arms out to the sides until about shoulder height.",
+    "Pause at the top.",
+    "Lower slowly to the start."
+  ],
+  "textSource": "opengym"
+}

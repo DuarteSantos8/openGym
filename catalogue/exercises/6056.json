@@ -1,0 +1,23 @@
+{
+  "id": "6056",
+  "name": "bottle weighted squatting alternate waves",
+  "bodyPart": "full body",
+  "equipment": "weighted",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "core",
+    "hamstrings"
+  ],
+  "category": "plyometrics",
+  "description": "A squat with arms swinging like waves while holding bottles. It raises your heart rate and works legs and shoulders.",
+  "instructions": [
+    "Stand with feet shoulder-width apart, a bottle in each hand.",
+    "Squat down with your hips back.",
+    "As you stand, raise one arm up and the other down in a wave motion.",
+    "Switch arms on the next squat.",
+    "Move at a steady, controlled pace."
+  ],
+  "textSource": "opengym"
+}

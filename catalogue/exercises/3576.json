@@ -1,0 +1,23 @@
+{
+  "id": "3576",
+  "name": "kettlebell farmers carry",
+  "bodyPart": "full body",
+  "equipment": "kettlebell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "grip muscles",
+    "trapezius",
+    "core",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "Walk while holding heavy kettlebells at your sides to build grip, posture and total body stability.",
+  "instructions": [
+    "Stand between two kettlebells and pick them up with a flat back.",
+    "Stand tall with shoulders back and arms straight.",
+    "Walk with short, controlled steps.",
+    "Keep your core braced and avoid leaning.",
+    "Set the weights down carefully after the distance."
+  ],
+  "textSource": "opengym"
+}

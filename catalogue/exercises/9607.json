@@ -1,0 +1,23 @@
+{
+  "id": "9607",
+  "name": "isometric mid thighs pull",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "upper back",
+    "grip muscles"
+  ],
+  "category": "isometric",
+  "description": "A max-effort pull against a fixed bar at mid-thigh height. It builds force production through the hips and back.",
+  "instructions": [
+    "Set a bar in a rack at mid-thigh height and grip it just outside your legs.",
+    "Stand with a flat back and slightly bent knees.",
+    "Brace your core and chest up.",
+    "Pull up on the bar as hard as you can without it moving.",
+    "Hold for 5 seconds, then release gradually."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "1516",
+  "name": "barbell clean from blocks",
+  "bodyPart": "full body",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "trapezius",
+    "shoulders",
+    "core"
+  ],
+  "category": "olympic",
+  "description": "A clean started from blocks at about knee height. It trains the explosive pull and the catch without the first pull from the floor.",
+  "instructions": [
+    "Set the bar on blocks and grip it just outside your knees with a flat back.",
+    "Brace your core and keep the bar close to your body.",
+    "Extend your hips and knees powerfully and shrug your shoulders.",
+    "Pull yourself under the bar and catch it on your front shoulders in a full squat.",
+    "Stand tall to finish, then lower the bar with control."
+  ],
+  "textSource": "opengym"
+}

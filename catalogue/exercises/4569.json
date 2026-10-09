@@ -1,0 +1,24 @@
+{
+  "id": "4569",
+  "name": "resistance band one arm bent over row",
+  "bodyPart": "back",
+  "equipment": "resistance band",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "biceps",
+    "rhomboids",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A single-arm row using a resistance band, working the lats and mid-back.",
+  "instructions": [
+    "Stand on the band with a staggered stance and hinge forward.",
+    "Hold the handle in one hand with your arm extended.",
+    "Brace your core and keep your back flat.",
+    "Pull your elbow back toward your hip.",
+    "Squeeze your shoulder blade at the top.",
+    "Lower slowly, then switch sides."
+  ],
+  "textSource": "opengym"
+}

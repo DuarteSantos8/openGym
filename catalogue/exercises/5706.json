@@ -1,0 +1,24 @@
+{
+  "id": "5706",
+  "name": "barbell jefferson deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "adductors",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A deadlift with the bar between your legs and a split stance. It loads the legs and hips and trains the back to stay braced.",
+  "instructions": [
+    "Stand straddling the bar with one foot forward and one back.",
+    "Squat down and grip the bar with one hand in front and one behind.",
+    "Brace your core and lift your chest.",
+    "Stand up by driving through both legs.",
+    "Lower the bar with control and switch your stance on the next set."
+  ],
+  "textSource": "opengym"
+}

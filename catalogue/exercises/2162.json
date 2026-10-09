@@ -1,0 +1,24 @@
+{
+  "id": "2162",
+  "name": "resistance band plank march",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "core",
+    "hip flexors",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "Marching the knees while holding a plank with a band around the legs, which challenges the core and hips together.",
+  "instructions": [
+    "Place a loop band around your thighs or ankles and get into a forearm or high plank.",
+    "Keep a straight line from head to heels.",
+    "Lift one knee toward your chest against the band.",
+    "Return it quietly and lift the other knee.",
+    "Keep your hips from rocking side to side.",
+    "Alternate for the planned time or reps."
+  ],
+  "femaleVariant": "2557",
+  "textSource": "opengym"
+}

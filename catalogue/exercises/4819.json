@@ -1,0 +1,22 @@
+{
+  "id": "4819",
+  "name": "ring leg curl",
+  "bodyPart": "upper legs",
+  "equipment": "suspension trainer",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "Lying on your back with heels in the rings, you bridge up and curl your feet in. It hits the hamstrings hard.",
+  "instructions": [
+    "Lie on your back with your heels in the ring straps and legs extended.",
+    "Lift your hips into a bridge.",
+    "Bend your knees to pull your heels toward your glutes.",
+    "Keep your hips high the whole time.",
+    "Extend your legs slowly to return."
+  ],
+  "textSource": "opengym"
+}

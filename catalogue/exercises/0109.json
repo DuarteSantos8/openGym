@@ -1,0 +1,21 @@
+{
+  "id": "0109",
+  "name": "barbell standing overhead triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A standing overhead triceps extension with the barbell. Isolates the triceps.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold a barbell with an overhand grip.",
+    "Raise the barbell overhead, fully extending your arms.",
+    "Keeping your upper arms close to your head, slowly lower the barbell behind your head by bending your elbows.",
+    "Pause for a moment, then raise the barbell back to the starting position by extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2605",
+  "textSource": "exercisedb"
+}

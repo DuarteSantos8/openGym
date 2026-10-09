@@ -1,0 +1,23 @@
+{
+  "id": "1158",
+  "name": "suspender side stretch",
+  "bodyPart": "upper legs",
+  "equipment": "suspension trainer",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "groin",
+    "inner thighs",
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "Using the straps for support, you sink into a wide side stance to stretch the inner thighs.",
+  "instructions": [
+    "Hold the handles and step your legs wide.",
+    "Shift your weight to one side and bend that knee.",
+    "Keep the other leg straight.",
+    "Sit back into the stretch.",
+    "Hold for 20-30 seconds.",
+    "Switch sides."
+  ],
+  "textSource": "opengym"
+}

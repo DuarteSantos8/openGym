@@ -1,0 +1,23 @@
+{
+  "id": "6077",
+  "name": "bottle weighted halo",
+  "bodyPart": "shoulders",
+  "equipment": "weighted",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "trapezius",
+    "core",
+    "triceps"
+  ],
+  "category": "mobility",
+  "description": "A circular movement of a bottle around your head. It warms up the shoulders and upper back.",
+  "instructions": [
+    "Stand tall holding a bottle at chest height with both hands.",
+    "Circle it around your head, staying close.",
+    "Keep your core braced and ribs down.",
+    "Complete the circle back to the front.",
+    "Reverse direction on the next set."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4985",
+  "name": "band assisted floor glute ham raise",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "Floor glute ham raise where a band helps you come back up. It builds the hamstrings and glutes with a manageable load.",
+  "instructions": [
+    "Anchor a band at head height and loop it around your chest or hold it to your chest.",
+    "Kneel with your feet held firmly under a stable object.",
+    "Lower your torso forward slowly with a straight line from knees to head.",
+    "Pull yourself back up with your hamstrings and glutes, using the band to help.",
+    "Keep your hips extended throughout."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "0950",
+  "name": "fish pose matsyasana",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "hip flexors",
+    "upper back",
+    "core"
+  ],
+  "category": "yoga",
+  "description": "Lie on your back and lift your chest into a gentle arch. It opens the chest and front of the neck and shoulders.",
+  "instructions": [
+    "Lie on your back with legs straight and arms at your sides, palms down.",
+    "Press your forearms into the floor and lift your chest.",
+    "Arch your upper back and lower the crown of your head lightly toward the floor.",
+    "Keep your legs relaxed and breathe deeply into the chest.",
+    "Hold for 15-30 seconds, then lower slowly."
+  ],
+  "textSource": "opengym"
+}

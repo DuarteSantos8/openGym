@@ -1,0 +1,22 @@
+{
+  "id": "2358",
+  "name": "plank butt (form check)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "shoulders",
+    "glutes"
+  ],
+  "category": "isometric",
+  "description": "A side-by-side form check for hip position in a plank, showing the common mistake next to the correct technique so you can spot it in your own sets.",
+  "instructions": [
+    "Set your forearms on the floor with elbows under the shoulders and legs extended.",
+    "Compare the faulty version with the correct one: your butt stays level with your shoulders, not piked up or sagging down.",
+    "Perform the lift slowly with a light load and keep the correct position throughout.",
+    "Use a mirror or film a set from the side to check your own position.",
+    "Fix the cue before adding weight, and rest between sets so form stays clean."
+  ],
+  "textSource": "opengym"
+}

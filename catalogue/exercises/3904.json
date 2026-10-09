@@ -1,0 +1,24 @@
+{
+  "id": "3904",
+  "name": "pike press (between benches)",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "trapezius",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A pike push-up with the hands on two benches so you can lower deeper, building the shoulders.",
+  "instructions": [
+    "Place your hands on two benches shoulder-width apart and your feet on the floor.",
+    "Lift your hips into a pike shape.",
+    "Bend your elbows and lower your head between the benches.",
+    "Press back up to straight arms.",
+    "Keep your core tight.",
+    "Keep your hips high throughout."
+  ],
+  "textSource": "opengym"
+}

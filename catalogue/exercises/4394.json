@@ -1,0 +1,22 @@
+{
+  "id": "4394",
+  "name": "alternate shoulder flexion back to wall",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "upper back",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "A wall-supported drill to improve overhead reach, one arm at a time, while keeping the back flat against the wall.",
+  "instructions": [
+    "Stand with your back, head and hips against a wall.",
+    "Keep your ribs down and your lower back near the wall.",
+    "Raise one arm forward and overhead as far as you can without arching.",
+    "Lower it with control.",
+    "Alternate arms for the set."
+  ],
+  "textSource": "opengym"
+}

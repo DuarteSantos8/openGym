@@ -1,0 +1,22 @@
+{
+  "id": "4521",
+  "name": "kettlebell press up",
+  "bodyPart": "chest",
+  "equipment": "kettlebell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up with your hands on kettlebell handles for a deeper range of motion. It builds the chest and arms.",
+  "instructions": [
+    "Place two kettlebells on the floor shoulder-width apart and grip the handles.",
+    "Extend your legs into a plank position.",
+    "Lower your chest between the handles with elbows at about 45 degrees.",
+    "Keep your body in a straight line.",
+    "Press back up until your arms are straight and repeat."
+  ],
+  "textSource": "opengym"
+}

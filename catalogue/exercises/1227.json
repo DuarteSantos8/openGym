@@ -1,0 +1,21 @@
+{
+  "id": "1227",
+  "name": "cable standing one arm triceps pushdown (overhand grip)",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "forearms",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A single-arm pushdown with an overhand grip. It isolates one triceps at a time.",
+  "instructions": [
+    "Attach a handle to a high pulley and stand facing it.",
+    "Hold the handle with an overhand grip and tuck your elbow to your side.",
+    "Push down until your arm is fully straight.",
+    "Squeeze your triceps, then let the handle rise slowly.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

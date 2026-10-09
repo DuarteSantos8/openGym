@@ -68,13 +68,13 @@ describe('the rest the app starts, pauses and ends', () => {
     expect(disarmRestAlert.mock.calls.length).toBe(disarms)   // the notification stays, paused
 
     useUI.getState().addRest(15)   // time added while paused: held again at the new figure
-    expect(holdRestAlert).toHaveBeenLastCalledWith(75, 105)
+    expect(holdRestAlert).toHaveBeenLastCalledWith(75, 90)
 
     vi.advanceTimersByTime(5 * 60_000)
     const arms = armRestAlert.mock.calls.length
     useUI.getState().resumeRest()
     expect(armRestAlert.mock.calls.length).toBe(arms + 1)
-    expect(armRestAlert).toHaveBeenLastCalledWith(Date.now() + 75_000, expect.objectContaining({ totalSec: 105 }))
+    expect(armRestAlert).toHaveBeenLastCalledWith(Date.now() + 75_000, expect.objectContaining({ totalSec: 90 }))
   })
 
   it('keeps the alarm when the countdown ends, including while the app is hidden', () => {

@@ -1,0 +1,23 @@
+{
+  "id": "11656",
+  "name": "hydrotherapy walking on spot",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "calves",
+    "hip flexors",
+    "core"
+  ],
+  "category": "rehab",
+  "description": "Gentle walking in place in chest-deep water, a low-impact way to move the legs and raise your heart rate.",
+  "instructions": [
+    "Stand in waist-to-chest-deep water with your feet hip width apart.",
+    "Lift one knee up in front of you, then lower it and lift the other.",
+    "Swing your arms naturally and keep your posture tall.",
+    "Walk at a relaxed, steady pace without leaning forward.",
+    "Continue for 2-5 minutes at an easy to moderate effort."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4693",
+  "name": "kneeling leg half circle",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A kneeling leg arc that works the glutes and outer hip through a half circle.",
+  "instructions": [
+    "Start on all fours, hands under shoulders.",
+    "Lift one leg out straight behind you.",
+    "Sweep it in a half circle out to the side.",
+    "Return the same way.",
+    "Keep your hips square and switch sides."
+  ],
+  "femaleVariant": "4814",
+  "textSource": "opengym"
+}

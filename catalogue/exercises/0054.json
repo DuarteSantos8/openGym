@@ -1,0 +1,23 @@
+{
+  "id": "0054",
+  "name": "barbell lunge",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A walking-style lunge with the bar on the upper back. Works the glutes and quads, one leg at a time.",
+  "instructions": [
+    "Start by standing with your feet shoulder-width apart and a barbell resting on your upper back.",
+    "Take a step forward with your right foot, keeping your torso upright.",
+    "Lower your body by bending your right knee until your thigh is parallel to the ground.",
+    "Push through your right heel to return to the starting position.",
+    "Repeat with your left leg, alternating legs for the desired number of repetitions."
+  ],
+  "femaleVariant": "2478",
+  "textSource": "exercisedb"
+}

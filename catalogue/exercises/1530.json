@@ -1,0 +1,25 @@
+{
+  "id": "1530",
+  "name": "barbell power snatch",
+  "bodyPart": "full body",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "trapezius",
+    "shoulders",
+    "core"
+  ],
+  "category": "olympic",
+  "description": "A snatch caught overhead above parallel. It builds explosive power and speed.",
+  "instructions": [
+    "Hold the bar at your shins with a wide grip, flat back and chest up.",
+    "Brace your core and keep the bar close to your body.",
+    "Extend your hips and knees powerfully and shrug your shoulders.",
+    "Pull under and catch the bar overhead with locked arms in a quarter squat.",
+    "Stand tall to finish, then lower the bar with control."
+  ],
+  "femaleVariant": "10984",
+  "textSource": "opengym"
+}

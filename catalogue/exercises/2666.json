@@ -1,0 +1,21 @@
+{
+  "id": "2666",
+  "name": "lever seated calf raise (plate loaded) v. 2",
+  "bodyPart": "lower legs",
+  "equipment": "leverage machine",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles"
+  ],
+  "category": "strength",
+  "description": "A seated plate-loaded calf raise that focuses on the soleus under the calf.",
+  "instructions": [
+    "Sit with the balls of your feet on the platform and the pad over your thighs.",
+    "Release the safety and lower your heels for a stretch.",
+    "Press up through the balls of your feet as high as you can.",
+    "Pause and squeeze the calves.",
+    "Lower slowly to full stretch."
+  ],
+  "textSource": "opengym"
+}

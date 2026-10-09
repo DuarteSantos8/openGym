@@ -1,0 +1,23 @@
+{
+  "id": "0794",
+  "name": "standing lateral stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "shoulders",
+    "obliques"
+  ],
+  "category": "stretching",
+  "description": "A standing side bend that stretches the lats and the muscles along the side of the torso. It loosens up the sides and improves mobility.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and your knees slightly bent.",
+    "Extend your arms straight out to the sides, parallel to the ground.",
+    "Slowly lean your upper body to one side, feeling a stretch in your side and lats.",
+    "Hold the stretch for 15-30 seconds.",
+    "Return to the starting position and repeat on the other side.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "4320",
+  "textSource": "exercisedb"
+}

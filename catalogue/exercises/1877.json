@@ -1,0 +1,22 @@
+{
+  "id": "1877",
+  "name": "standing hip out aductor stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "inner thighs",
+    "groin"
+  ],
+  "category": "stretching",
+  "description": "Standing stretch that pushes the hip out to the side to lengthen the inner thigh.",
+  "instructions": [
+    "Stand tall with your feet wider than hip width.",
+    "Shift your weight onto one leg and bend that knee.",
+    "Keep the other leg straight, foot flat.",
+    "Push your hip out until you feel a stretch in the inner thigh.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

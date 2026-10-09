@@ -1,0 +1,21 @@
+{
+  "id": "1779",
+  "name": "assisted seated chest stretch",
+  "bodyPart": "chest",
+  "equipment": "assisted",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "stretching",
+  "description": "Seated with a partner pulling your arms back, you stretch your chest and the front of your shoulders. Sitting keeps your trunk stable.",
+  "instructions": [
+    "Sit upright on a bench or chair with your hands behind your head or arms out wide.",
+    "Have your partner stand behind you and gently draw your elbows or wrists back.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "3454",
+  "name": "dumbbell superman",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A loaded superman hold with dumbbells for the lower back and glutes.",
+  "instructions": [
+    "Lie face down holding light dumbbells with arms extended.",
+    "Lift your chest, arms and legs.",
+    "Squeeze your glutes.",
+    "Hold for a moment.",
+    "Lower with control.",
+    "Keep your neck neutral."
+  ],
+  "femaleVariant": "3455",
+  "textSource": "opengym"
+}

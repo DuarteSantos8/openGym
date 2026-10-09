@@ -1,0 +1,22 @@
+{
+  "id": "4929",
+  "name": "lying calf stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles"
+  ],
+  "category": "stretching",
+  "description": "A calf stretch done lying on your back. It stretches the lower leg with little effort from the rest of your body.",
+  "instructions": [
+    "Lie on your back and lift one leg toward the ceiling.",
+    "Hold behind the thigh or use a strap on your foot.",
+    "Pull your toes toward your shin.",
+    "Keep the knee as straight as you comfortably can.",
+    "Hold for 20-30 seconds.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

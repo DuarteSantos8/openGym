@@ -1,0 +1,21 @@
+{
+  "id": "1496",
+  "name": "sledge hammer",
+  "bodyPart": "waist",
+  "equipment": "hammer",
+  "target": "abs",
+  "secondaryMuscles": [
+    "forearms",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Swinging a sledgehammer down onto a tire in a controlled arc. It trains the abs and obliques and also the shoulders and grip.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold the sledge hammer with both hands.",
+    "Engage your core and keep your back straight.",
+    "Swing the sledge hammer down towards the ground, using your core and upper body strength.",
+    "As you swing down, pivot your hips and transfer the force to the hammer.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

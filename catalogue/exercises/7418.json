@@ -1,0 +1,23 @@
+{
+  "id": "7418",
+  "name": "staggered leg glute bridge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "A glute bridge with one foot placed forward to shift more load to one side.",
+  "instructions": [
+    "Lie on your back with your knees bent, one foot forward of the other.",
+    "Press through both heels to lift your hips.",
+    "Squeeze your glutes at the top.",
+    "Keep your hips level.",
+    "Lower slowly.",
+    "Switch the foot position halfway through."
+  ],
+  "textSource": "opengym"
+}

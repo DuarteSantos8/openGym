@@ -1,0 +1,23 @@
+{
+  "id": "7512",
+  "name": "ring archer pull up",
+  "bodyPart": "back",
+  "equipment": "suspension trainer",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "core",
+    "grip muscles"
+  ],
+  "category": "calisthenics",
+  "description": "Pull-up on rings where you pull toward one hand with the other arm extended.",
+  "instructions": [
+    "Hang from rings with a wide grip.",
+    "Pull up toward one hand, leaving the other arm straight.",
+    "Reach the top with your chin by that hand.",
+    "Lower under control.",
+    "Alternate sides each rep."
+  ],
+  "textSource": "opengym"
+}

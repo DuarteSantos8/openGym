@@ -1,0 +1,22 @@
+{
+  "id": "1095",
+  "name": "suspension self assisted triceps dip",
+  "bodyPart": "upper arms",
+  "equipment": "suspension trainer",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A triceps dip with your feet on the floor for help. It trains the triceps.",
+  "instructions": [
+    "Hold the handles with arms straight and feet on the floor.",
+    "Keep your torso upright.",
+    "Bend your elbows to lower.",
+    "Use your legs for light help.",
+    "Press back up.",
+    "Keep your elbows close."
+  ],
+  "textSource": "opengym"
+}

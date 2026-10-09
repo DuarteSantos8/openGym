@@ -1,0 +1,22 @@
+{
+  "id": "5059",
+  "name": "heel press",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "stretching",
+  "description": "Pressing the heel down toward the floor to lengthen the calf. It helps ankle flexibility.",
+  "instructions": [
+    "Stand with the ball of one foot on a low step or wall, heel on the floor.",
+    "Hold something for balance.",
+    "Press your heel gently down and back.",
+    "Keep your knee straight for the calf.",
+    "Hold for 20-30 seconds, then switch legs."
+  ],
+  "textSource": "opengym"
+}

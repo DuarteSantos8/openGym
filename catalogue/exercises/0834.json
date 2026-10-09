@@ -1,0 +1,20 @@
+{
+  "id": "0834",
+  "name": "weighted front raise",
+  "bodyPart": "shoulders",
+  "equipment": "weighted",
+  "target": "delts",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A front raise with weights, lifting straight arms to shoulder height. It builds the front delts.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in each hand with your palms facing your thighs.",
+    "Keeping your arms straight, exhale and lift the dumbbells in front of you until they are at shoulder level.",
+    "Pause for a moment at the top, then inhale and slowly lower the dumbbells back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

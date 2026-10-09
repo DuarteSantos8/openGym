@@ -1,0 +1,22 @@
+{
+  "id": "1807",
+  "name": "sitting cross legged reach forward stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "lower back",
+    "glutes",
+    "hip flexors"
+  ],
+  "category": "stretching",
+  "description": "Sitting cross-legged and reaching forward opens your lower back and hips. It is a calm stretch that suits cooldowns.",
+  "instructions": [
+    "Sit on the floor with your legs crossed and your back tall.",
+    "Walk your hands forward along the floor and fold from your hips until you feel a stretch.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

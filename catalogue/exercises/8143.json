@@ -1,0 +1,22 @@
+{
+  "id": "8143",
+  "name": "triceps dip on high parallel bars",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A dip on high parallel bars with an upright torso. It builds the triceps and chest.",
+  "instructions": [
+    "Grip the bars and lift yourself with straight arms.",
+    "Keep your body upright and elbows close.",
+    "Lower until your upper arms are about parallel to the floor.",
+    "Press back up to straight arms.",
+    "Avoid shrugging your shoulders."
+  ],
+  "textSource": "opengym"
+}

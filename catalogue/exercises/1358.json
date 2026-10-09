@@ -1,0 +1,22 @@
+{
+  "id": "1358",
+  "name": "side lying floor stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "Lie on your side and reach overhead to open up the side of your torso. It stretches the lats and the muscles between your ribs.",
+  "instructions": [
+    "Lie on your side with your legs straight and your bottom arm extended straight overhead.",
+    "Bend your top knee and place your foot on the ground in front of your bottom leg.",
+    "Reach your top arm over your head and grab onto something stable, like a wall or a piece of furniture.",
+    "Slowly lift your bottom leg off the ground, keeping it straight, until you feel a stretch in your side.",
+    "Hold the stretch for 20-30 seconds, then slowly lower your leg back down.",
+    "Repeat on the other side."
+  ],
+  "textSource": "exercisedb"
+}

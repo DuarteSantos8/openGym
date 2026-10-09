@@ -1,0 +1,24 @@
+{
+  "id": "3384",
+  "name": "battling ropes power slam",
+  "bodyPart": "cardio",
+  "equipment": "rope",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "shoulders",
+    "core",
+    "lats",
+    "glutes"
+  ],
+  "category": "cardio",
+  "description": "An explosive overhead rope slam that builds conditioning and power through the whole body.",
+  "instructions": [
+    "Hold a rope end in each hand and stand in an athletic stance.",
+    "Raise both ropes overhead while rising onto your toes.",
+    "Slam them down hard while dropping into a squat.",
+    "Keep your back flat and your core braced.",
+    "Reset and repeat at a steady, powerful pace.",
+    "Work in bursts of 15-30 seconds."
+  ],
+  "textSource": "opengym"
+}

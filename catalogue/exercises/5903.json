@@ -1,0 +1,22 @@
+{
+  "id": "5903",
+  "name": "standing half bend",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "lower back",
+    "calves",
+    "glutes"
+  ],
+  "category": "yoga",
+  "description": "A halfway forward fold with a flat back. Lengthens the back of the legs.",
+  "instructions": [
+    "Stand with your feet hip-width apart.",
+    "Hinge forward from your hips and bring your hands to your shins or thighs.",
+    "Lengthen your spine until your back is flat.",
+    "Hold for 5 slow breaths.",
+    "Roll up slowly to stand."
+  ],
+  "textSource": "opengym"
+}

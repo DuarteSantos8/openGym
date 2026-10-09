@@ -1,0 +1,23 @@
+{
+  "id": "3474",
+  "name": "lying leg tuck hip stretch with overhead hands",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower back",
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "A lying knee-tuck stretch with arms extended overhead for a longer line.",
+  "instructions": [
+    "Lie on your back with your arms overhead.",
+    "Pull one knee toward your chest.",
+    "Keep your arms reaching.",
+    "Hold for 20-30 seconds.",
+    "Release slowly.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

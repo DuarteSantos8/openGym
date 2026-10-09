@@ -1,0 +1,24 @@
+{
+  "id": "10662",
+  "name": "ring rocky pull up pulldown",
+  "bodyPart": "back",
+  "equipment": "suspension trainer",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "core",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A ring pull-up variation where you pull up, then press down toward the hips. It builds pulling strength and shoulder control.",
+  "instructions": [
+    "Hang from the rings with arms straight and shoulders engaged.",
+    "Pull your chest up toward the rings.",
+    "At the top, drive the rings down toward your hips.",
+    "Pause with your arms close to your sides.",
+    "Return to the top, then lower slowly.",
+    "Keep your core braced."
+  ],
+  "textSource": "opengym"
+}

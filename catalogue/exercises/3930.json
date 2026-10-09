@@ -1,0 +1,23 @@
+{
+  "id": "3930",
+  "name": "plank jack",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "glutes",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A plank where your feet jump apart and together like a jumping jack. It trains the core and raises your heart rate.",
+  "instructions": [
+    "Start in a forearm or high plank with your body in a straight line.",
+    "Jump both feet out wide.",
+    "Jump them back together.",
+    "Keep your hips level and your abs tight throughout.",
+    "Continue for the planned reps or time."
+  ],
+  "femaleVariant": "4642",
+  "textSource": "opengym"
+}

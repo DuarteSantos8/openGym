@@ -1,0 +1,23 @@
+{
+  "id": "1805",
+  "name": "sitting bent over back stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "lower back",
+    "hamstrings",
+    "upper back"
+  ],
+  "category": "stretching",
+  "description": "Sitting and bending over lets your upper body hang to stretch your whole back. A relaxed stretch to release tension.",
+  "instructions": [
+    "Sit on a bench or chair with your feet flat and your knees apart.",
+    "Bend forward from your hips and let your head and arms hang between your knees.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "femaleVariant": "4311",
+  "textSource": "opengym"
+}

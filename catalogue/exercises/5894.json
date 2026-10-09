@@ -1,0 +1,20 @@
+{
+  "id": "5894",
+  "name": "meditation",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "core"
+  ],
+  "category": "yoga",
+  "description": "Seated stillness with a tall spine. Calms the mind and trains upright posture.",
+  "instructions": [
+    "Sit comfortably cross-legged, with hips slightly higher than your knees.",
+    "Lengthen your spine and relax your shoulders.",
+    "Rest your hands on your knees.",
+    "Close your eyes and settle into easy breathing.",
+    "Stay for 3-10 minutes."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "6026",
+  "name": "side plank pull",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "glutes"
+  ],
+  "category": "isometric",
+  "description": "A side plank with a pulling arm motion, to build core stability and shoulder strength.",
+  "instructions": [
+    "Get into a side plank on your forearm with your body in a straight line.",
+    "Reach your top arm overhead.",
+    "Pull your elbow down toward your ribs.",
+    "Keep your hips lifted.",
+    "Finish your reps, then switch sides."
+  ],
+  "femaleVariant": "6093",
+  "textSource": "opengym"
+}

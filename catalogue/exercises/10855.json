@@ -1,0 +1,23 @@
+{
+  "id": "10855",
+  "name": "pilates machine chest expansion",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "triceps",
+    "core"
+  ],
+  "category": "pilates",
+  "description": "A reformer move pulling the straps behind you. It opens the chest and works the upper back.",
+  "instructions": [
+    "Kneel facing the straps with your torso upright.",
+    "Hold the straps with straight arms.",
+    "Pull the straps back behind your body.",
+    "Turn your head gently to each side.",
+    "Return slowly to the start.",
+    "Keep your chest lifted and ribs down."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "1119",
+  "name": "suspender lunge back crossover",
+  "bodyPart": "upper legs",
+  "equipment": "suspension trainer",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A rear lunge where the back leg crosses behind the front one, hitting the glutes and outer hips.",
+  "instructions": [
+    "Hold the handles and stand facing the anchor.",
+    "Step one leg back and across behind the other.",
+    "Lower until the front thigh is near parallel.",
+    "Keep your chest tall and front knee over the ankle.",
+    "Push through the front heel to stand.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

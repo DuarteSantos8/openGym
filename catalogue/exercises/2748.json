@@ -1,0 +1,21 @@
+{
+  "id": "2748",
+  "name": "lever kneeling reverse hyperextension",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A kneeling machine kickback that extends the hip and works the glutes.",
+  "instructions": [
+    "Kneel on the machine pad and hold the handles.",
+    "Place the back of your working leg against the lever pad.",
+    "Press the leg back and up until your hip is fully extended.",
+    "Squeeze your glute at the top.",
+    "Lower slowly and switch legs."
+  ],
+  "textSource": "opengym"
+}

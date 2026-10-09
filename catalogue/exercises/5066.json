@@ -1,0 +1,23 @@
+{
+  "id": "5066",
+  "name": "dumbbell squat to overhead press",
+  "bodyPart": "full body",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Squat with dumbbells at your shoulders, then press them overhead as you stand. A full-body move that links leg drive into a press.",
+  "instructions": [
+    "Stand with feet shoulder-width apart, dumbbells at your shoulders.",
+    "Sit your hips back and down into a squat with your chest up.",
+    "Drive up through your feet to stand.",
+    "Use that momentum to press the dumbbells overhead until your arms are straight.",
+    "Lower them to your shoulders and go into the next squat."
+  ],
+  "textSource": "opengym"
+}

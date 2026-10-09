@@ -1,0 +1,22 @@
+{
+  "id": "0178",
+  "name": "cable lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "traps",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "Standing cable lateral raise: arms lift out to the sides against constant cable tension. It targets the side delts for broader shoulders.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and grasp the cable handles with an overhand grip.",
+    "Keep your arms straight and your core engaged.",
+    "Raise your arms out to the sides until they are parallel to the floor.",
+    "Pause for a moment at the top, then slowly lower your arms back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3054",
+  "textSource": "exercisedb"
+}

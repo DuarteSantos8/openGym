@@ -1,0 +1,23 @@
+{
+  "id": "9043",
+  "name": "hanging tucked front lever hold",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lats",
+    "core",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "Hanging from a bar, you hold your body horizontal with your knees tucked. It builds lats and core strength.",
+  "instructions": [
+    "Hang from a pull-up bar with an overhand grip.",
+    "Pull your shoulder blades down and tuck your knees to your chest.",
+    "Lean back and raise your hips until your back is horizontal.",
+    "Keep your arms straight.",
+    "Hold for 5-15 seconds.",
+    "Lower back down with control."
+  ],
+  "textSource": "opengym"
+}

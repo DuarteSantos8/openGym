@@ -1,0 +1,22 @@
+{
+  "id": "0248",
+  "name": "cambered bar lying row",
+  "bodyPart": "back",
+  "equipment": "barbell",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A barbell row done lying face down on a bench. The bench removes lower back strain so the upper back does the pulling.",
+  "instructions": [
+    "Set up a barbell on the floor and lie face down on a bench with your chest just off the edge.",
+    "Reach down and grab the barbell with an overhand grip, slightly wider than shoulder-width apart.",
+    "With your legs straight and feet on the ground, lift the barbell off the floor by extending your arms.",
+    "Pull the barbell towards your chest, squeezing your shoulder blades together.",
+    "Lower the barbell back down to the starting position and repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "5267",
+  "textSource": "exercisedb"
+}

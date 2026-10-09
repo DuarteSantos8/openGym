@@ -1,0 +1,23 @@
+{
+  "id": "2939",
+  "name": "kettlebell around head rotation",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "core",
+    "upper back",
+    "forearms",
+    "triceps"
+  ],
+  "category": "mobility",
+  "description": "Circling a kettlebell around your head, also called a halo. It loosens the shoulders and warms up the upper back.",
+  "instructions": [
+    "Hold a kettlebell by the horns at chest height.",
+    "Stand tall with your abs braced.",
+    "Circle the bell around your head, keeping it close.",
+    "Keep your hips and ribs still.",
+    "Finish the reps, then reverse direction."
+  ],
+  "textSource": "opengym"
+}

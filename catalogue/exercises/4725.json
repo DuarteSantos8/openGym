@@ -1,0 +1,23 @@
+{
+  "id": "4725",
+  "name": "chin up (isometric and negative)",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "forearms",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "A chin-up variation focused on holding at the top and lowering slowly to build strength.",
+  "instructions": [
+    "Jump or step up so your chin is above the bar.",
+    "Hold the top position for a few seconds.",
+    "Lower yourself slowly over several seconds.",
+    "Reset on the floor.",
+    "Repeat for the reps."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "0342",
+  "name": "dumbbell lying one arm press v. 2",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A one-arm lying dumbbell press. The weight lowers to the chest side and presses up, working the pecs and triceps.",
+  "instructions": [
+    "Lie flat on a bench with your back supported and feet flat on the ground.",
+    "Hold a dumbbell in one hand with your palm facing towards your feet.",
+    "Extend your arm straight up towards the ceiling, keeping your elbow slightly bent.",
+    "Slowly lower the dumbbell down towards your chest, keeping your elbow close to your body.",
+    "Pause for a moment at the bottom, then push the dumbbell back up to the starting position.",
+    "Repeat for the desired number of repetitions, then switch to the other arm."
+  ],
+  "textSource": "exercisedb"
+}

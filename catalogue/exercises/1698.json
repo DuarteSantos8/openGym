@@ -1,0 +1,23 @@
+{
+  "id": "1698",
+  "name": "forward hops",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "calves",
+    "glutes",
+    "hamstrings",
+    "ankles"
+  ],
+  "category": "plyometrics",
+  "description": "Short, springy hops forward that build leg power, elasticity and coordination.",
+  "instructions": [
+    "Stand on both feet with your knees slightly bent.",
+    "Swing your arms and hop forward a short distance.",
+    "Land softly on the balls of your feet.",
+    "Reset your posture and hop again.",
+    "Keep your hops controlled and your chest tall."
+  ],
+  "textSource": "opengym"
+}

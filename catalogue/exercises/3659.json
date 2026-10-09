@@ -1,0 +1,22 @@
+{
+  "id": "3659",
+  "name": "static position standing",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "core",
+    "glutes"
+  ],
+  "category": "isometric",
+  "description": "Hold a tall standing posture as a reference position.",
+  "instructions": [
+    "Stand with feet hip width apart.",
+    "Keep your knees soft.",
+    "Stack ribs over hips and shoulders back.",
+    "Let your arms hang.",
+    "Hold and breathe steadily."
+  ],
+  "femaleVariant": "3138",
+  "textSource": "opengym"
+}

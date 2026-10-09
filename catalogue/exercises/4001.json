@@ -1,0 +1,21 @@
+{
+  "id": "4001",
+  "name": "alternate leg raise with head up",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs"
+  ],
+  "category": "calisthenics",
+  "description": "Raise one leg at a time while lying with your head lifted. It works the lower abs.",
+  "instructions": [
+    "Lie on your back with your head slightly lifted.",
+    "Raise one leg to vertical.",
+    "Lower it without touching the floor.",
+    "Raise the other leg.",
+    "Keep your lower back pressed down."
+  ],
+  "textSource": "opengym"
+}

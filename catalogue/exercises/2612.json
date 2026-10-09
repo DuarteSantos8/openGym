@@ -1,0 +1,24 @@
+{
+  "id": "2612",
+  "name": "jump rope",
+  "bodyPart": "cardio",
+  "equipment": "rope",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "calves",
+    "quadriceps",
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "cardio",
+  "description": "Skipping over a rope at a steady pace. Classic cardio that builds endurance and coordination.",
+  "instructions": [
+    "Hold the handles of the jump rope with your hands, palms facing inward.",
+    "Stand with your feet shoulder-width apart and knees slightly bent.",
+    "Swing the rope over your head and jump over it as it comes towards your feet.",
+    "Land softly on the balls of your feet and repeat the jump as the rope comes around again.",
+    "Continue jumping for the desired duration or number of repetitions."
+  ],
+  "femaleVariant": "0511",
+  "textSource": "exercisedb"
+}

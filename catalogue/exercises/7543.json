@@ -1,0 +1,23 @@
+{
+  "id": "7543",
+  "name": "forward backward hop",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A light hop forward and back that builds ankle spring and coordination.",
+  "instructions": [
+    "Stand tall with your feet together.",
+    "Hop forward a short distance on the balls of your feet.",
+    "Hop back to the start.",
+    "Land softly with your knees slightly bent.",
+    "Keep a quick tempo.",
+    "Repeat for the planned time."
+  ],
+  "textSource": "opengym"
+}

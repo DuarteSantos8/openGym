@@ -1,0 +1,24 @@
+{
+  "id": "3906",
+  "name": "bodyweight kneeling push up row",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper back",
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A kneeling push-up combined with a row that works the chest and back together.",
+  "instructions": [
+    "Start in a kneeling push-up position with your hands on the floor, or on light dumbbells.",
+    "Lower your chest to the floor.",
+    "Push back up.",
+    "Pull one elbow toward your ribs.",
+    "Return that hand to the floor and alternate sides.",
+    "Keep your hips level."
+  ],
+  "textSource": "opengym"
+}

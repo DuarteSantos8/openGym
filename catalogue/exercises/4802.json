@@ -1,0 +1,22 @@
+{
+  "id": "4802",
+  "name": "toe walk",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "shins",
+    "feet",
+    "ankles"
+  ],
+  "category": "calisthenics",
+  "description": "Walking on the balls of your feet with heels lifted. It works the calves and the small stabilisers of the feet and ankles.",
+  "instructions": [
+    "Stand tall with feet hip-width apart and rise onto the balls of your feet.",
+    "Keep your heels lifted as high as you comfortably can.",
+    "Walk forward with small, controlled steps.",
+    "Keep your core tight and your gaze forward.",
+    "Walk for 20-30 steps, rest, and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "6152",
+  "name": "dumbbell one arm snatch (left)",
+  "bodyPart": "full body",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "shoulders",
+    "core",
+    "quadriceps"
+  ],
+  "category": "olympic",
+  "description": "A single-arm snatch that takes a dumbbell from the floor to overhead in one motion. This version uses the left arm.",
+  "instructions": [
+    "Stand over a dumbbell with your feet shoulder-width apart.",
+    "Grip it with your left hand and hinge at the hips.",
+    "Drive up with your legs and hips.",
+    "Pull the dumbbell up close to your body and punch it overhead.",
+    "Lock out the arm.",
+    "Lower the weight back to the floor with control."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "3551",
+  "name": "side shuttle",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "calves",
+    "adductors"
+  ],
+  "category": "cardio",
+  "description": "A lateral shuttle run at speed to raise the heart rate.",
+  "instructions": [
+    "Stand with knees bent in an athletic stance.",
+    "Shuffle to one side in quick steps.",
+    "Touch the floor or change direction.",
+    "Shuffle back the other way.",
+    "Keep your chest up.",
+    "Keep up the pace for 30-60 seconds."
+  ],
+  "textSource": "opengym"
+}

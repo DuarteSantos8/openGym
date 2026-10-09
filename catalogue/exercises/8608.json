@@ -1,0 +1,22 @@
+{
+  "id": "8608",
+  "name": "resistance band sumo squat",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "adductors",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A wide-stance squat with a band adding resistance to the glutes and inner thighs.",
+  "instructions": [
+    "Stand on the band with feet wider than shoulders and toes angled out.",
+    "Hold the band at your chest or shoulders.",
+    "Sit down between your legs, keeping your chest up.",
+    "Push your knees out over your toes.",
+    "Drive up through your heels and squeeze your glutes."
+  ],
+  "textSource": "opengym"
+}

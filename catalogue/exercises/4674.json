@@ -1,0 +1,22 @@
+{
+  "id": "4674",
+  "name": "hip flexor stretch (rear foot elevated)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "A deep lunge stretch with the back foot raised on a bench, targeting the quads and hip flexors.",
+  "instructions": [
+    "Place the top of your back foot on a bench behind you.",
+    "Step your front foot forward into a lunge.",
+    "Tuck your pelvis and push your hips forward.",
+    "Keep your chest tall and hold for 20-30 seconds.",
+    "Switch sides."
+  ],
+  "femaleVariant": "2568",
+  "textSource": "opengym"
+}

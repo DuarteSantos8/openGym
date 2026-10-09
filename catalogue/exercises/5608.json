@@ -1,0 +1,22 @@
+{
+  "id": "5608",
+  "name": "band standing chest press v. 2",
+  "bodyPart": "chest",
+  "equipment": "band",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "Standing chest press against a band anchored behind you.",
+  "instructions": [
+    "Anchor a band behind you and hold the ends at chest height.",
+    "Stand in a split stance for balance.",
+    "Press your hands forward until arms are straight.",
+    "Return slowly.",
+    "Keep your core braced."
+  ],
+  "textSource": "opengym"
+}

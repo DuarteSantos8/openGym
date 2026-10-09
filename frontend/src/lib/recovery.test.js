@@ -1,37 +1,49 @@
 import { describe, expect, it } from 'vitest'
 import {
-  FATIGUE_HALF_LIFE_MS,
-  FATIGUE_MIN_SESSIONS,
-  FATIGUE_REF_VOLUME,
-  FATIGUE_SCAN_MS,
-  FATIGUE_STATES,
   BODYWEIGHT_REF_LOAD,
-  CARDIO_TONNAGE_PER_MIN,
+  FATIGUE_CHRONIC_WINDOW_MS,
+  FATIGUE_MAX_SETS_PER_SESSION,
+  FATIGUE_NOVICE_WEEKLY_SETS,
+  FATIGUE_RATIO_MAX,
+  FATIGUE_RATIO_MIN,
+  FATIGUE_RIR_FLOOR_WEIGHT,
+  FATIGUE_SCAN_MS,
+  FATIGUE_SETS_PER_UNIT,
+  FATIGUE_STATES,
   STRENGTH_FLOOR,
   STRENGTH_FULL_MS,
   STRENGTH_HALF_LIFE_MS,
   detrainedMuscles,
+  anchorsByWorkout,
+  estimateSetRir,
   fatiguedMuscles,
+  fatigueHalfLifeOf,
   fatigueOf,
   halfLifeDecay,
+  resolveSetRir,
+  rirWeightFor,
   strengthOf,
 } from './recovery.js'
 import { EXDB, registerCustom } from './exercises.js'
 import { MUSCLES, exerciseMuscleSnapshot, musclesOf } from './muscles.js'
 import { fatigueStateOf } from './recovery-view.js'
+import { estimate1RM } from './onerm.js'
 
 const HOUR = 60 * 60 * 1000
 const DAY = 24 * HOUR
 const NOW = Date.UTC(2026, 0, 1, 12)
 
 // Keep fixtures tied to the shipped catalogue while making the expected stimulus explicit.
+// Drawable only: a cardio drill's primary is the "cardiovascular system" pseudo-muscle, which
+// carries no fatigue, and since v1.4 such drills also sit outside the cardio body part.
+const drawable = ex => ex.bp !== 'cardio' && Object.keys(musclesOf(ex)).every(slug => MUSCLES.includes(slug))
 const SINGLE = EXDB.find(ex => {
   const weights = musclesOf(ex)
-  return ex.bp !== 'cardio' && Object.keys(weights).length === 1 && Object.values(weights)[0] === 1
+  return drawable(ex) && Object.keys(weights).length === 1 && Object.values(weights)[0] === 1
 })
 const WEIGHTED = EXDB.find(ex => {
   const weights = musclesOf(ex)
-  return ex.bp !== 'cardio' && Object.values(weights).includes(0.4)
+  return drawable(ex) && Object.values(weights).includes(0.4)
 })
 if (!SINGLE || !WEIGHTED) throw new Error('recovery tests require single- and secondary-weight fixtures')
 
@@ -47,8 +59,8 @@ const workoutAt = (id, start, sets = [{ done: true }]) => ({
   start,
   entries: [{ id, sets: sets.map(set => ({ ...set })) }],
 })
-const V = 640 * (30 / 38) ** 1.5  // intensity-weighted tonnage of one 80x8 fixture set (its own Epley estimate implies intensity 30/38)
-
+// One completed set at the entry's own best load scores exactly 1 effective set;
+// a full session of FATIGUE_SETS_PER_UNIT such sets is the 1.0 raw unit.
 const doneWorkoutAt = (id, start, count = 1) =>
   workoutAt(id, start, Array.from({ length: count }, () => ({ done: true, w: 80, r: 8 })))
 const zeroFatigue = () => Object.fromEntries(MUSCLES.map(slug => [slug, 0]))
@@ -56,33 +68,41 @@ const floorStrength = () => Object.fromEntries(MUSCLES.map(slug => [slug, STRENG
 
 // Numeric fatigue remains the math API; the UI boundary selector is imported from production.
 const stableFloat = value => Number(value.toFixed(12))
-const referenceAfter = (reference, stimulus) => Math.min(
-  reference,
-  reference + (stimulus - reference) / FATIGUE_MIN_SESSIONS,
-)
 
-const expectedFatigue = sessions => {
-  let reference = FATIGUE_REF_VOLUME
-  let normalised = 0
-  for (const { stimulus, age = 0 } of sessions) {
-    normalised += stimulus / reference * halfLifeDecay(age, FATIGUE_HALF_LIFE_MS)
-    reference = referenceAfter(reference, stimulus)
-  }
-  return 1 - Math.exp(-normalised)
-}
+// Expected saturated fatigue for uniform-load sessions (every set its entry's best,
+// so RIR is 0 and sets count full). Mirrors the production gain: the acute:chronic
+// ratio over the same session list, novice prior included, clamped like production.
+const effGain = eff => Math.min(
+  FATIGUE_RATIO_MAX,
+  Math.max(FATIGUE_RATIO_MIN, (eff + FATIGUE_NOVICE_WEEKLY_SETS) / (eff / 4 + FATIGUE_NOVICE_WEEKLY_SETS)),
+);
+const expectedSets = (sets, weight, slug, age = 0, gainEff = null) => {
+  const eff = Math.min(sets * weight, FATIGUE_MAX_SETS_PER_SESSION)
+  const gain = gainEff === null ? effGain(eff) : gainEff
+  return 1 - Math.exp(-eff / FATIGUE_SETS_PER_UNIT * gain * halfLifeDecay(age, fatigueHalfLifeOf(slug)))
+};
 
 describe('recovery constants', () => {
   it('exports the pinned windows, half-lives, floor, and state labels', () => {
-    expect(FATIGUE_REF_VOLUME).toBe(2000)
+    expect(FATIGUE_SETS_PER_UNIT).toBe(8)
+    expect(FATIGUE_MAX_SETS_PER_SESSION).toBe(12)
     expect(FATIGUE_SCAN_MS).toBe(30 * DAY)
-    expect(FATIGUE_HALF_LIFE_MS).toBe(36 * HOUR)
-    expect(BODYWEIGHT_REF_LOAD).toBe(75)
-    expect(CARDIO_TONNAGE_PER_MIN).toBe(50)
     expect(STRENGTH_FULL_MS).toBe(14 * DAY)
     expect(STRENGTH_HALF_LIFE_MS).toBe(28 * DAY)
     expect(STRENGTH_FLOOR).toBe(0.5)
     expect(FATIGUE_STATES).toEqual({ READY: 'ready', RECOVERING: 'recovering', FATIGUED: 'fatigued' })
-    expect(halfLifeDecay(FATIGUE_HALF_LIFE_MS, FATIGUE_HALF_LIFE_MS)).toBe(0.5)
+    expect(halfLifeDecay(DAY, DAY)).toBe(0.5)
+  })
+
+  it('recovers small upper-body muscles faster than legs and lower back', () => {
+    expect(fatigueHalfLifeOf('biceps')).toBe(24 * HOUR)
+    expect(fatigueHalfLifeOf('deltoids')).toBe(24 * HOUR)
+    expect(fatigueHalfLifeOf('chest')).toBe(30 * HOUR)
+    expect(fatigueHalfLifeOf('upper-back')).toBe(30 * HOUR)
+    expect(fatigueHalfLifeOf('quadriceps')).toBe(48 * HOUR)
+    expect(fatigueHalfLifeOf('hamstring')).toBe(48 * HOUR)
+    expect(fatigueHalfLifeOf('lower-back')).toBe(48 * HOUR)
+    expect(fatigueHalfLifeOf('not-a-muscle')).toBe(30 * HOUR)
   })
 })
 
@@ -109,23 +129,22 @@ describe('fatigueOf and strengthOf', () => {
 
     for (const slug of MUSCLES) {
       const weight = WEIGHTED_WEIGHTS[slug] || 0
-      expect(fatigue[slug]).toBeCloseTo(1 - Math.exp(-V * weight / FATIGUE_REF_VOLUME), 10)
+      expect(fatigue[slug]).toBeCloseTo(expectedSets(1, weight, slug), 10)
       expect(strength[slug]).toBe(weight ? 1 : STRENGTH_FLOOR)
     }
-    // one set (80 x 8) never crosses the fatigued threshold on the saturating curve
+    // one set (whatever the load) never crosses the fatigued threshold
     expect(fatiguedMuscles(workouts, NOW)).toEqual([])
 
-    // pure volume: one high-rep set at medium weight registers real tonnage (weighted by
-    // its intensity - its own Epley estimate with the 12-rep cap is 50 x 40/30 = 70 kg)
+    // set count, not reps or load, drives fatigue: a 50-rep grinder scores exactly
+    // like the plain 80x8 set - one set is one set.
     const highRep = [doneWorkoutAt(SINGLE.id, NOW, 1)]
     highRep[0].entries[0].sets[0].w = 50
     highRep[0].entries[0].sets[0].r = 50
-    const weighted = 2500 * (50 / (50 * (1 + 12 / 30))) ** 1.5
     expect(fatigueOf(highRep, NOW)[SINGLE_SLUG]).toBeCloseTo(
-      1 - Math.exp(-weighted / FATIGUE_REF_VOLUME),
+      fatigueOf([doneWorkoutAt(SINGLE.id, NOW)], NOW)[SINGLE_SLUG],
       10,
     )
-    expect(fatigueOf(highRep, NOW)[SINGLE_SLUG]).toBeGreaterThan(0.5)
+    expect(fatigueOf(highRep, NOW)[SINGLE_SLUG]).toBeLessThan(0.25)
   })
 
   it('uses a deleted exercise snapshot for the same bounded primary and secondary fatigue', () => {
@@ -164,31 +183,18 @@ describe('fatigueOf and strengthOf', () => {
     expect(strength[untouchedSlug]).toBe(STRENGTH_FLOOR)
   })
 
-  it('gives explicit zero snapshot weights no fatigue or retained-strength stimulus', () => {
-    const workouts = [workoutAt('deleted-zero-mapped', NOW, [{ done: true, w: 80, r: 8 }])]
-    workouts[0].entries[0].muscleSnapshot = {
-      n: 'Zero mapped', muscleWeights: { chest: 1, biceps: 0 },
-    }
-
-    const fatigue = fatigueOf(workouts, NOW)
-    const strength = strengthOf(workouts, NOW)
-    expect(fatigue.chest).toBeGreaterThan(0)
-    expect(fatigue.biceps).toBe(0)
-    expect(strength.chest).toBe(1)
-    expect(strength.biceps).toBe(STRENGTH_FLOOR)
-  })
-
-  it('raises starting fatigue with volume, never pins, and fades without a cliff', () => {
+  it('raises starting fatigue with sets, never pins, and fades without a cliff', () => {
     const at0 = count => fatigueOf([doneWorkoutAt(SINGLE.id, NOW, count)], NOW)[SINGLE_SLUG]
-    expect(at0(1)).toBeCloseTo(1 - Math.exp(-V / FATIGUE_REF_VOLUME), 10)
-    expect(at0(5)).toBeCloseTo(1 - Math.exp(-5 * V / FATIGUE_REF_VOLUME), 10)
-    expect(at0(12)).toBeCloseTo(1 - Math.exp(-12 * V / FATIGUE_REF_VOLUME), 10)
+    expect(at0(1)).toBeCloseTo(expectedSets(1, 1, SINGLE_SLUG), 10)
+    expect(at0(5)).toBeCloseTo(expectedSets(5, 1, SINGLE_SLUG), 10)
+    expect(at0(12)).toBeCloseTo(expectedSets(12, 1, SINGLE_SLUG), 10)
     expect(at0(12)).toBeGreaterThan(at0(5))
     expect(at0(5)).toBeGreaterThan(at0(1))
     expect(at0(12)).toBeLessThan(1)
     // one half-life later the gradient is still visible at any volume
-    const later = fatigueOf([doneWorkoutAt(SINGLE.id, NOW - FATIGUE_HALF_LIFE_MS, 12)], NOW)[SINGLE_SLUG]
-    expect(later).toBeCloseTo(1 - Math.exp(-6 * V / FATIGUE_REF_VOLUME), 10)
+    const halfLife = fatigueHalfLifeOf(SINGLE_SLUG)
+    const later = fatigueOf([doneWorkoutAt(SINGLE.id, NOW - halfLife, 12)], NOW)[SINGLE_SLUG]
+    expect(later).toBeCloseTo(expectedSets(12, 1, SINGLE_SLUG, halfLife), 10)
     expect(later).toBeLessThan(at0(12))
     // no cliff: 72h keeps decaying instead of snapping to zero
     const old = fatigueOf([doneWorkoutAt(SINGLE.id, NOW - 72 * HOUR)], NOW)[SINGLE_SLUG]
@@ -196,29 +202,21 @@ describe('fatigueOf and strengthOf', () => {
     expect(old).toBeLessThan(0.25)
   })
 
-  it('decays each weighted stimulus exactly at 36 hours and by sqrt-half at 18 hours', () => {
-    for (const age of [FATIGUE_HALF_LIFE_MS, FATIGUE_HALF_LIFE_MS / 2]) {
+  it('decays each weighted stimulus at its own muscle half-life', () => {
+    const halfLife = fatigueHalfLifeOf(WEIGHTED_PRIMARY_SLUG)
+    for (const age of [halfLife, halfLife / 2]) {
       const fatigue = fatigueOf([doneWorkoutAt(WEIGHTED.id, NOW - age)], NOW)
-      const expectedDecay = 0.5 ** (age / FATIGUE_HALF_LIFE_MS)
       for (const [slug, weight] of Object.entries(WEIGHTED_WEIGHTS)) {
-        expect(fatigue[slug]).toBeCloseTo(
-          1 - Math.exp(-V * weight * expectedDecay / FATIGUE_REF_VOLUME),
-          10,
-        )
-      }
-      if (age === FATIGUE_HALF_LIFE_MS) {
-        expect(fatigue[WEIGHTED_PRIMARY_SLUG]).toBeCloseTo(
-          1 - Math.exp(-V * 0.5 / FATIGUE_REF_VOLUME),
-          10,
-        )
-      }
-      if (age === FATIGUE_HALF_LIFE_MS / 2) {
-        expect(fatigue[WEIGHTED_PRIMARY_SLUG]).toBeCloseTo(
-          1 - Math.exp(-V * (0.5 ** 0.5) / FATIGUE_REF_VOLUME),
-          10,
-        )
+        expect(fatigue[slug]).toBeCloseTo(expectedSets(1, weight, slug, age), 10)
       }
     }
+    // a secondary mover fades on its own clock, not the primary's
+    const secondaryHl = fatigueHalfLifeOf(SECONDARY_SLUG)
+    const aged = fatigueOf([doneWorkoutAt(WEIGHTED.id, NOW - secondaryHl)], NOW)
+    expect(aged[SECONDARY_SLUG]).toBeCloseTo(
+      expectedSets(1, WEIGHTED_WEIGHTS[SECONDARY_SLUG], SECONDARY_SLUG, secondaryHl),
+      10,
+    )
   })
 
   it('fades a 72-hour-old set below the ready threshold instead of hard-cutting', () => {
@@ -237,17 +235,49 @@ describe('fatigueOf and strengthOf', () => {
     expect(fatiguedMuscles(workouts, NOW)).toEqual([])
     expect(detrainedMuscles(workouts, NOW)).toEqual(MUSCLES)
   })
+
+  it('gives explicit zero snapshot weights no fatigue or retained-strength stimulus', () => {
+    const workouts = [workoutAt('deleted-zero-mapped', NOW, [{ done: true, w: 80, r: 8 }])]
+    workouts[0].entries[0].muscleSnapshot = {
+      n: 'Zero mapped', muscleWeights: { chest: 1, biceps: 0 },
+    }
+
+    const fatigue = fatigueOf(workouts, NOW)
+    const strength = strengthOf(workouts, NOW)
+    expect(fatigue.chest).toBeGreaterThan(0)
+    expect(fatigue.biceps).toBe(0)
+    expect(strength.chest).toBe(1)
+    expect(strength.biceps).toBe(STRENGTH_FLOOR)
+  })
+
+  it('discounts ramp-up rows through the RIR anchor instead of charging full sets', () => {
+    const ramped = workoutAt(SINGLE.id, NOW, [
+      { done: true, w: 40, r: 8 },
+      { done: true, w: 80, r: 8 },
+    ])
+    const plain = doneWorkoutAt(SINGLE.id, NOW, 2)
+    const rampedValue = fatigueOf([ramped], NOW)[SINGLE_SLUG]
+    const plainValue = fatigueOf([plain], NOW)[SINGLE_SLUG]
+    // The 80 kg top set anchors at ~101 kg, so the 40 kg row reads RIR 10 and costs
+    // the floor weight: 1 + 0.3 effective sets against 2 full ones.
+    expect(rampedValue).toBeCloseTo(expectedSets(1 + FATIGUE_RIR_FLOOR_WEIGHT, 1, SINGLE_SLUG), 10)
+    expect(rampedValue).toBeLessThan(plainValue)
+    expect(rampedValue).toBeGreaterThan(fatigueOf([doneWorkoutAt(SINGLE.id, NOW)], NOW)[SINGLE_SLUG])
+  })
 })
 
 describe('fatigue state boundaries', () => {
-  // Inverse of the saturation curve: raw stimulus needed to land exactly on a target level.
-  const rawAt = target => -FATIGUE_REF_VOLUME * Math.log(1 - target)
+  // Inverse of the saturation curve: normalised stimulus needed for a target level.
+  const rawAt = target => -Math.log(1 - target)
 
   it('classifies exactly .25 as recovering and .2499 as ready', () => {
+    const halfLife = fatigueHalfLifeOf(SECONDARY_SLUG)
     const weight = WEIGHTED_WEIGHTS[SECONDARY_SLUG]
-    const sets = 4
+    const sets = 8
+    const eff = sets * weight
+    const gain = effGain(eff)
     const valueAt = target => {
-      const age = FATIGUE_HALF_LIFE_MS * Math.log2(sets * V * weight / rawAt(target))
+      const age = halfLife * Math.log2(eff / FATIGUE_SETS_PER_UNIT * gain / rawAt(target))
       const value = fatigueOf([doneWorkoutAt(WEIGHTED.id, NOW - age, sets)], NOW)[SECONDARY_SLUG]
       expect(value).toBeCloseTo(target, 10)
       return stableFloat(value)
@@ -258,16 +288,18 @@ describe('fatigue state boundaries', () => {
   })
 
   it('classifies exactly .5 as recovering, .5001 as fatigued, and hooks only fatigued muscles', () => {
-    const sets = 4
+    const halfLife = fatigueHalfLifeOf(SINGLE_SLUG)
+    const sets = 8
+    const gain = effGain(sets)
     const atHalf = [doneWorkoutAt(
       SINGLE.id,
-      NOW - FATIGUE_HALF_LIFE_MS * Math.log2(sets * V / rawAt(0.4999)),
+      NOW - halfLife * Math.log2(sets / FATIGUE_SETS_PER_UNIT * gain / rawAt(0.4999)),
       sets,
     )]
     const aboveHalf = [
       doneWorkoutAt(
         SINGLE.id,
-        NOW - FATIGUE_HALF_LIFE_MS * Math.log2(sets * V / rawAt(0.5001)),
+        NOW - halfLife * Math.log2(sets / FATIGUE_SETS_PER_UNIT * gain / rawAt(0.5001)),
         sets,
       ),
     ]
@@ -284,27 +316,28 @@ describe('fatigue state boundaries', () => {
 })
 
 
-describe('causal fatigue reference', () => {
+describe('causal session scoring', () => {
   const loadedWorkout = (start, weight, count = 8) => workoutAt(
     '1254',
     start,
     Array.from({ length: count }, () => ({ done: true, w: weight, r: 8 })),
   )
 
-  it('scores each session against only the reference left by strictly earlier sessions', () => {
+  it('adds each session on top of decayed earlier ones, each with its own acute:chronic gain', () => {
+    const halfLife = fatigueHalfLifeOf(SINGLE_SLUG)
     const old = doneWorkoutAt(SINGLE.id, NOW - DAY)
     const today = doneWorkoutAt(SINGLE.id, NOW)
-    const earlierReference = referenceAfter(FATIGUE_REF_VOLUME, V)
+    // The old session trained alone (gain over its own single set); today sees both
+    // sets in its acute window, hence the higher gain: adaptation is history-dependent.
+    const oldGain = effGain(1)
+    const todayGain = (2 + FATIGUE_NOVICE_WEEKLY_SETS) / (0.5 + FATIGUE_NOVICE_WEEKLY_SETS)
     const expected = 1 - Math.exp(-(
-      V / FATIGUE_REF_VOLUME * halfLifeDecay(DAY, FATIGUE_HALF_LIFE_MS)
-      + V / earlierReference
+      1 / FATIGUE_SETS_PER_UNIT * oldGain * halfLifeDecay(DAY, halfLife)
+      + 1 / FATIGUE_SETS_PER_UNIT * todayGain
     ))
 
     expect(fatigueOf([old, today], NOW)[SINGLE_SLUG]).toBeCloseTo(expected, 10)
-    expect(fatigueOf([today], NOW)[SINGLE_SLUG]).toBeCloseTo(
-      1 - Math.exp(-V / FATIGUE_REF_VOLUME),
-      10,
-    )
+    expect(fatigueOf([today], NOW)[SINGLE_SLUG]).toBeCloseTo(expectedSets(1, 1, SINGLE_SLUG), 10)
   })
 
   it('keeps the 8x100x8 ten-day reproduction non-increasing as sessions leave the scan', () => {
@@ -322,7 +355,7 @@ describe('causal fatigue reference', () => {
     }
   })
 
-  it('ignores imports older than the scan, including their heavier 1RM data', () => {
+  it('ignores imports older than the scan', () => {
     const today = loadedWorkout(NOW, 100, 5)
     const baseline = fatigueOf([today], NOW).chest
     const heavyImport = loadedWorkout(NOW - 90 * DAY, 140, 10)
@@ -332,7 +365,11 @@ describe('causal fatigue reference', () => {
     expect(fatigueOf([highVolumeImport, today], NOW).chest).toBe(baseline)
   })
 
-  it('never increases fatigue when any one workout is deleted', () => {
+  // Phase-2 contract: anchors and gains are history-dependent by design, so only the
+  // latest session's deletion is monotonic. Deleting mid-history may re-score later
+  // sessions (a removed PR lowers their anchors and raises their gains) - documented
+  // in docs/dev/FATIGUE_SETS_MODEL.md rather than forbidden.
+  it('never increases fatigue when the latest workout is deleted', () => {
     const workouts = [
       loadedWorkout(NOW - 40 * DAY, 100, 15),
       loadedWorkout(NOW - 3 * DAY, 100, 8),
@@ -341,11 +378,38 @@ describe('causal fatigue reference', () => {
       loadedWorkout(NOW, 120, 10),
     ]
     const before = fatigueOf(workouts, NOW)
+    const after = fatigueOf(workouts.slice(0, -1), NOW)
+    for (const slug of MUSCLES) expect(after[slug]).toBeLessThanOrEqual(before[slug] + Number.EPSILON)
+  })
 
-    workouts.forEach((_, deletedIndex) => {
-      const after = fatigueOf(workouts.filter((__, index) => index !== deletedIndex), NOW)
-      for (const slug of MUSCLES) expect(after[slug]).toBeLessThanOrEqual(before[slug] + Number.EPSILON)
-    })
+  it('documents that deleting an old PR session can raise current fatigue', () => {
+    // A 100x5 PR ten days ago anchors today's 80x8 at RIR ~6 (discounted); without it
+    // the same session anchors at its own best (RIR 0, full). The old session itself
+    // has decayed to ~nothing, so removing history reads as harder training now.
+    const pr = loadedWorkout(NOW - 10 * DAY, 100, 1)
+    pr.entries[0].sets[0].r = 5
+    const today = loadedWorkout(NOW, 80, 1)
+    const withHistory = fatigueOf([pr, today], NOW).chest
+    const withoutHistory = fatigueOf([today], NOW).chest
+    expect(withHistory).toBeGreaterThan(0)
+    expect(withoutHistory).toBeGreaterThan(withHistory)
+  })
+
+  it('rates a back-off session below repeating the full load', () => {
+    // Same athlete, same exercise: 4 work sets + 4 half-weight back-offs costs less
+    // than 8 work sets. The 100x8 top set anchors at ~127 kg, so each 50x8 back-off
+    // reads RIR 10 and costs the floor weight - while absolute loads across sessions
+    // stay comparable only through anchors and gains, never through raw tonnage.
+    const backOff = workoutAt(SINGLE.id, NOW, [
+      ...Array.from({ length: 4 }, () => ({ done: true, w: 100, r: 8 })),
+      ...Array.from({ length: 4 }, () => ({ done: true, w: 50, r: 8 })),
+    ])
+    const repeated = doneWorkoutAt(SINGLE.id, NOW, 8)
+    // doneWorkoutAt uses w:80 for every set, so each set is its entry's best.
+    const fullLoad = workoutAt(SINGLE.id, NOW, Array.from({ length: 8 }, () => ({ done: true, w: 100, r: 8 })))
+
+    expect(fatigueOf([backOff], NOW)[SINGLE_SLUG]).toBeLessThan(fatigueOf([fullLoad], NOW)[SINGLE_SLUG])
+    expect(fatigueOf([repeated], NOW)[SINGLE_SLUG]).toBeCloseTo(fatigueOf([fullLoad], NOW)[SINGLE_SLUG], 10)
   })
 
   it('rates a lighter current week below repeating the established load', () => {
@@ -356,16 +420,60 @@ describe('causal fatigue reference', () => {
     expect(lighter).toBeLessThan(repeated)
   })
 
-  it('uses the last registered bodyweight for bodyweight exercises', () => {
-    const bwEx = EXDB.find(ex => ex.eq === 'body weight' && ex.bp !== 'cardio')
-    if (!bwEx) throw new Error('test requires a bodyweight exercise fixture')
-    const slug = Object.keys(musclesOf(bwEx))[0]
-    const workout = { d: new Date(NOW).toISOString(), start: NOW, entries: [{ id: bwEx.id, sets: [{ done: true, r: 10 }] }] }
-    const at80 = fatigueOf([workout], NOW, { bodyweightKg: 80 })[slug]
-    const at90 = fatigueOf([workout], NOW, { bodyweightKg: 90 })[slug]
-    expect(at80).toBeCloseTo(1 - Math.exp(-800 / FATIGUE_REF_VOLUME), 10)
-    expect(at90).toBeCloseTo(1 - Math.exp(-900 / FATIGUE_REF_VOLUME), 10)
-    expect(at90).toBeGreaterThan(at80)
+  it('scores identical structures at different absolute loads equally', () => {
+    // Session-local intensity is relative by design (see above): 8x50 and 8x100 with
+    // no RIR data are both "8 hard sets". kg/lb equivalence falls out for free.
+    const light = loadedWorkout(NOW, 50, 8)
+    const heavy = loadedWorkout(NOW, 100, 8)
+    expect(fatigueOf([light], NOW).chest).toBeCloseTo(fatigueOf([heavy], NOW).chest, 10)
+  })
+})
+
+describe('RIR quality weighting', () => {
+  it('maps RIR to set weights: full at failure, floor when far', () => {
+    expect(rirWeightFor(null)).toBe(1)
+    expect(rirWeightFor(0)).toBe(1)
+    expect(rirWeightFor(3)).toBe(1)
+    expect(rirWeightFor(4)).toBeCloseTo(1 - (1 - FATIGUE_RIR_FLOOR_WEIGHT) / 3, 10)
+    expect(rirWeightFor(6)).toBe(FATIGUE_RIR_FLOOR_WEIGHT)
+    expect(rirWeightFor(10)).toBe(FATIGUE_RIR_FLOOR_WEIGHT)
+  })
+
+  it('estimates RIR against the anchor via Epley inverse', () => {
+    // 80x8 against a 110 max: 30*(110/80-1)-8 = 3.25
+    expect(estimateSetRir({ w: 80, r: 8 }, 110)).toMatchObject({ rir: 3.25, source: 'estimated' })
+    // The same set against its own estimate reads failure, clamped at zero.
+    expect(estimateSetRir({ w: 80, r: 8 }, 80 * (1 + 8 / 30)).rir).toBe(0)
+    // Far above capacity still clamps: a 40x8 warm-up against 101 reads RIR 10.
+    expect(estimateSetRir({ w: 40, r: 8 }, 80 * (1 + 8 / 30)).rir).toBe(10)
+    // Mixed units anchor in kg: 176.37 lb ~= 80 kg reads ~failure against an 80 kg max.
+    expect(estimateSetRir({ w: 176.3696, r: 8, unit: 'lb' }, 80 * (1 + 8 / 30)).rir).toBeCloseTo(0, 4)
+    // Dishonest inputs stay null: no anchor, no load, no reps, above the rep cap.
+    expect(estimateSetRir({ w: 80, r: 8 }, null)).toBeNull()
+    expect(estimateSetRir({ w: 0, r: 8 }, 100)).toBeNull()
+    expect(estimateSetRir({ w: 80 }, 100)).toBeNull()
+    expect(estimateSetRir({ w: 50, r: 20 }, 100)).toBeNull()
+  })
+
+  it('prefers a logged RIR over any estimate', () => {
+    // A grinder logged at RIR 5 counts 0.53 even with a low anchor that would estimate 0.
+    const logged = workoutAt(SINGLE.id, NOW, [{ done: true, w: 80, r: 8, rir: 5 }])
+    expect(fatigueOf([logged], NOW)[SINGLE_SLUG]).toBeCloseTo(
+      expectedSets(rirWeightFor(5), 1, SINGLE_SLUG), 10,
+    )
+  })
+
+  it('scores a deload week below the work weeks that anchor it', () => {
+    // Three weeks of 8x100 anchor at ~127 kg; the 8x50 deload then reads RIR 10
+    // (floor weight) instead of 8 full sets - the case session-local intensity
+    // could never see, since every deload set is its own session's best.
+    const work = [-21, -14, -7].map(days => workoutAt(
+      SINGLE.id, NOW + days * DAY, Array.from({ length: 8 }, () => ({ done: true, w: 100, r: 8 })),
+    ))
+    const deload = workoutAt(SINGLE.id, NOW, Array.from({ length: 8 }, () => ({ done: true, w: 50, r: 8 })))
+    const repeat = workoutAt(SINGLE.id, NOW, Array.from({ length: 8 }, () => ({ done: true, w: 100, r: 8 })))
+    expect(fatigueOf([...work, deload], NOW)[SINGLE_SLUG])
+      .toBeLessThan(fatigueOf([...work, repeat], NOW)[SINGLE_SLUG])
   })
 })
 
@@ -393,30 +501,23 @@ describe('strengthOf', () => {
 
 describe('accumulation and purity', () => {
   it('matches the saturated sum of independently decayed stimuli in chronological order', () => {
+    const halfLife = fatigueHalfLifeOf(SINGLE_SLUG)
     const ages = [64 * HOUR, 40 * HOUR]
     const workouts = ages.map(age => doneWorkoutAt(SINGLE.id, NOW - age))
-    const raw = ages.reduce(
-      (sum, age) => sum + V * 0.5 ** (age / FATIGUE_HALF_LIFE_MS),
-      0,
-    )
-    const firstAge = ages[0]
-    const secondAge = ages[1]
-    const expected = expectedFatigue([
-      { stimulus: V, age: firstAge },
-      { stimulus: V, age: secondAge },
-    ])
+    // The older session trained alone; the newer one sees both sets in its windows.
+    const firstGain = effGain(1)
+    const secondGain = (2 + FATIGUE_NOVICE_WEEKLY_SETS) / (0.5 + FATIGUE_NOVICE_WEEKLY_SETS)
+    const raw = 1 / FATIGUE_SETS_PER_UNIT * firstGain * halfLifeDecay(ages[0], halfLife)
+      + 1 / FATIGUE_SETS_PER_UNIT * secondGain * halfLifeDecay(ages[1], halfLife)
+    const expected = 1 - Math.exp(-raw)
 
-    expect(raw).toBeLessThan(FATIGUE_REF_VOLUME)
     expect(fatigueOf(workouts, NOW)[SINGLE_SLUG]).toBeCloseTo(expected, 10)
     expect(fatigueOf([...workouts].reverse(), NOW)[SINGLE_SLUG]).toBeCloseTo(expected, 10)
   })
 
   it('saturates without pinning and returns identical results without mutating inputs or sharing state', () => {
     const saturated = [doneWorkoutAt(SINGLE.id, NOW, 2)]
-    expect(fatigueOf(saturated, NOW)[SINGLE_SLUG]).toBeCloseTo(
-      1 - Math.exp(-2 * V / FATIGUE_REF_VOLUME),
-      10,
-    )
+    expect(fatigueOf(saturated, NOW)[SINGLE_SLUG]).toBeCloseTo(expectedSets(2, 1, SINGLE_SLUG), 10)
     expect(fatigueOf(saturated, NOW)[SINGLE_SLUG]).toBeLessThan(1)
 
     const workouts = [
@@ -451,17 +552,30 @@ describe('warm-up flag in strength and fatigue', () => {
     const fatigue = fatigueOf(workouts, now)
     expect(fatigue.chest).toBeGreaterThan(0)
   })
+
+  it('charges a flagged warm-up the floor weight even before any anchor exists', () => {
+    // First session ever: no anchor, so an unflagged row would count full. The flag says
+    // the row was a ramp, so it costs the floor, like an estimated far-from-failure set.
+    const warm = workoutAt(SINGLE.id, NOW, [
+      { done: true, warmup: true, w: 0, r: 10 },
+      { done: true, w: 80, r: 8 },
+    ])
+    expect(fatigueOf([warm], NOW)[SINGLE_SLUG])
+      .toBeCloseTo(expectedSets(1 + FATIGUE_RIR_FLOOR_WEIGHT, 1, SINGLE_SLUG), 10)
+    // A logged effort on the warm-up row still wins over the flag.
+    const rated = workoutAt(SINGLE.id, NOW, [{ done: true, warmup: true, w: 0, r: 10, rir: 2 }])
+    expect(fatigueOf([rated], NOW)[SINGLE_SLUG]).toBeCloseTo(expectedSets(1, 1, SINGLE_SLUG), 10)
+  })
 })
 
-describe('drop-set drops add fatigue tonnage on top of the main set', () => {
-  // Same within-session Epley baseline setTonnage derives from the row's own w/r (8 reps,
-  // under REP_CAP), so a drop is weighted against the same 1RM as the main set.
-  const oneRm = 80 * (1 + 8 / 30)
+describe('drop-set drops add discounted fatigue sets on top of the main set', () => {
+  // The drop carries its own (lighter) load against the 90-day anchor: a 60 kg drop
+  // after an 80 kg top set reads RIR 10 and costs the floor weight on top of the full set.
+  const dropShare = FATIGUE_RIR_FLOOR_WEIGHT
 
-  it('a drop-set drop adds its own intensity-weighted tonnage', () => {
+  it('a drop-set drop adds its own RIR-weighted sets', () => {
     const dropRow = { done: true, type: 'dropset', w: 80, r: 8, drops: [{ w: 60, r: 6 }] }
-    const dropTonnage = 60 * 6 * Math.min(1, 60 / oneRm) ** 1.5
-    const expected = expectedFatigue([{ stimulus: V + dropTonnage }])
+    const expected = expectedSets(1 + dropShare, 1, SINGLE_SLUG)
 
     expect(fatigueOf([workoutAt(SINGLE.id, NOW, [dropRow])], NOW)[SINGLE_SLUG]).toBeCloseTo(expected, 8)
     // strictly more than the plain 80x8 set alone — the drop is real extra work
@@ -472,13 +586,13 @@ describe('drop-set drops add fatigue tonnage on top of the main set', () => {
   it('leaves fatigue unchanged for a straight set with no drops', () => {
     const plain = { done: true, w: 80, r: 8 }
     expect(fatigueOf([workoutAt(SINGLE.id, NOW, [plain])], NOW)[SINGLE_SLUG])
-      .toBeCloseTo(expectedFatigue([{ stimulus: V }]), 8)
+      .toBeCloseTo(expectedSets(1, 1, SINGLE_SLUG), 8)
   })
 })
 
-describe('a rest-pause row\'s clusters add no extra fatigue tonnage', () => {
+describe('a rest-pause row\'s clusters add no extra fatigue sets', () => {
   // Its own r is already the total across every burst (see applyIntensifierPlan/history.js),
-  // so setTonnage's main w x r term already covers all of it — clusters are a breakdown only.
+  // so the main set term already covers all of it — clusters are a breakdown only.
   it('matches a plain set of the same w/r exactly, regardless of how the clusters break it down', () => {
     const burstRow = { done: true, type: 'restpause', w: 80, r: 8, clusters: [{ r: 4, restSec: 15 }] }
     const plainRow = { done: true, w: 80, r: 8 }
@@ -494,13 +608,13 @@ describe('a rest-pause row\'s clusters add no extra fatigue tonnage', () => {
   })
 })
 
-describe('canonical loads and configured bodyweight', () => {
+describe('loads are relative, units are irrelevant', () => {
   const loaded = EXDB.find(ex => {
     const weights = musclesOf(ex)
-    return ex.bp !== 'cardio' && ex.eq !== 'body weight'
+    return drawable(ex) && ex.eq !== 'body weight'
       && Object.keys(weights).length === 1 && Object.values(weights)[0] === 1
   })
-  const bodyweight = EXDB.find(ex => ex.bp !== 'cardio' && ex.eq === 'body weight')
+  const bodyweight = EXDB.find(ex => drawable(ex) && ex.eq === 'body weight')
   if (!loaded || !bodyweight) throw new Error('recovery tests require loaded and bodyweight fixtures')
   const loadedSlug = Object.keys(musclesOf(loaded))[0]
   const bodyweightSlug = Object.keys(musclesOf(bodyweight))[0]
@@ -517,7 +631,7 @@ describe('canonical loads and configured bodyweight', () => {
       .toBeCloseTo(fatigueOf([kg], NOW, { unit: 'kg' })[loadedSlug], 6)
   })
 
-  it('normalizes mixed stamped units before computing the causal reference volume', () => {
+  it('normalizes mixed stamped units before scoring', () => {
     const starts = [NOW - 3 * DAY, NOW - 2 * DAY, NOW - DAY, NOW]
     const kg = starts.map(start => stampedWorkout({ id: loaded.id, start, unit: 'kg', weight: 80 }))
     const mixed = starts.map((start, i) => stampedWorkout({
@@ -528,7 +642,7 @@ describe('canonical loads and configured bodyweight', () => {
       .toBeCloseTo(fatigueOf(kg, NOW, { unit: 'kg' })[loadedSlug], 6)
   })
 
-  it('treats an unstamped legacy history as being in the profile unit', () => {
+  it('treats an unstamped legacy history as one hard set', () => {
     const kg = stampedWorkout({ id: loaded.id, start: NOW, unit: 'kg', weight: 80 })
     const legacyLb = { ...kg, unit: undefined, entries: [{ ...kg.entries[0], sets: [{ done: true, w: 176.3696, r: 8 }] }] }
 
@@ -536,7 +650,9 @@ describe('canonical loads and configured bodyweight', () => {
       .toBeCloseTo(fatigueOf([kg], NOW, { unit: 'kg' })[loadedSlug], 6)
   })
 
-  it('uses configured bodyweight for a non-catalogue bodyweight target', () => {
+  it('scores heavier and lighter bodyweight sessions by their relative intensity', () => {
+    // Both sessions are single-set histories, so each set is its entry's best and
+    // scores full: relative intensity is session-local by design (body mass cancels).
     const workout = stampedWorkout({
       id: loaded.id, start: NOW, unit: 'kg', weight: 0,
       target: { bodyweight: true }, bw: 80,
@@ -546,13 +662,50 @@ describe('canonical loads and configured bodyweight', () => {
     expect(strengthOf([workout], NOW, { unit: 'kg' })[loadedSlug]).toBe(1)
   })
 
-  it('adds external load to bodyweight instead of replacing the body mass', () => {
+  it('scores an unloaded and a loaded bodyweight set equally when each is its own best', () => {
     const unloaded = stampedWorkout({ id: bodyweight.id, start: NOW, unit: 'kg', weight: 0, bw: 80 })
     const loadedSet = { done: true, w: 10, r: 8 }
     const added = { ...unloaded, entries: [{ ...unloaded.entries[0], sets: [loadedSet] }] }
 
     expect(fatigueOf([added], NOW, { unit: 'kg' })[bodyweightSlug])
-      .toBeGreaterThan(fatigueOf([unloaded], NOW, { unit: 'kg' })[bodyweightSlug])
+      .toBeCloseTo(fatigueOf([unloaded], NOW, { unit: 'kg' })[bodyweightSlug], 10)
+  })
+
+  // Relative intensity needs the load the body actually moved: for bodyweight work that is body
+  // mass plus the added load, never the added load alone.
+  it('estimates a weighted bodyweight back-off against the body-mass-inclusive anchor', () => {
+    const weight = musclesOf(bodyweight)[bodyweightSlug]
+    const workout = {
+      d: new Date(NOW).toISOString(), start: NOW, unit: 'kg', bw: 80,
+      entries: [{ id: bodyweight.id, sets: [{ done: true, w: 20, r: 8 }, { done: true, w: 10, r: 8 }] }],
+    }
+    // 100 kg x 8 anchors the session; the 90 kg back-off is RIR ~4.2, not RIR 10 against a
+    // "20 kg max" that would only see the plates.
+    const anchor = estimate1RM(100, 8)
+    const backOffRir = 30 * (anchor / 90 - 1) - 8
+    expect(backOffRir).toBeGreaterThan(4)
+    expect(backOffRir).toBeLessThan(5)
+    expect(fatigueOf([workout], NOW, { unit: 'kg' })[bodyweightSlug])
+      .toBeCloseTo(expectedSets(1 + rirWeightFor(backOffRir), weight, bodyweightSlug), 10)
+    expect(rirWeightFor(backOffRir)).toBeGreaterThan(FATIGUE_RIR_FLOOR_WEIGHT)
+  })
+
+  it('anchors bodyweight work on the stamped, then profile, then reference body mass', () => {
+    const at = (bw) => ({
+      d: new Date(NOW).toISOString(), start: NOW, unit: 'kg', bw,
+      entries: [{ id: bodyweight.id, sets: [{ done: true, w: 0, r: 10 }] }],
+    })
+    const stamped = at(90)
+    const unstamped = at(undefined)
+    expect(anchorsByWorkout([stamped], { bodyweightKg: 70 }).get(stamped).get(bodyweight.id))
+      .toBeCloseTo(estimate1RM(90, 10), 6)
+    expect(anchorsByWorkout([unstamped], { bodyweightKg: 70 }).get(unstamped).get(bodyweight.id))
+      .toBeCloseTo(estimate1RM(70, 10), 6)
+    expect(anchorsByWorkout([unstamped]).get(unstamped).get(bodyweight.id))
+      .toBeCloseTo(estimate1RM(BODYWEIGHT_REF_LOAD, 10), 6)
+    // A pound-stamped bodyweight is canonicalised like any other load.
+    const lb = { ...at(176.3696), unit: 'lb' }
+    expect(anchorsByWorkout([lb]).get(lb).get(bodyweight.id)).toBeCloseTo(estimate1RM(80, 10), 1)
   })
 
   it('lets explicitly configured custom bodyweight work reset strength', () => {
@@ -579,7 +732,7 @@ describe('canonical loads and configured bodyweight', () => {
     expect(futureValue).toBeLessThan(1)
   })
 
-  it('counts a default custom zero-load ring push-up for fatigue and load-blind strength', () => {
+  it('counts a default custom zero-load ring push-up as two hard sets', () => {
     const id = 'recovery-ring-push-up'
     registerCustom([{ id, n: 'Ring push-up', bp: 'chest', tg: 'chest', eq: 'custom', sm: [] }])
     try {
@@ -587,10 +740,40 @@ describe('canonical loads and configured bodyweight', () => {
         { done: true, w: 0, r: 20 },
         { done: true, w: 0, r: 20 },
       ])
-      expect(fatigueOf([workout], NOW).chest).toBeCloseTo(1 - Math.exp(-2 / 3), 10)
+      // No load recorded means intensity is unknown, so sets count full.
+      expect(fatigueOf([workout], NOW).chest).toBeCloseTo(expectedSets(2, 1, 'chest'), 10)
       expect(strengthOf([workout], NOW).chest).toBe(1)
     } finally {
       registerCustom([])
     }
+  })
+})
+
+describe('anchorsByWorkout and resolveSetRir', () => {
+  const at = (id, start, sets) => ({
+    d: new Date(start).toISOString(), start, entries: [{ id, sets }],
+  })
+
+  it('anchors each workout at the 90-day rolling best, never from the future', () => {
+    const old = at(SINGLE.id, NOW - 100 * DAY, [{ done: true, w: 120, r: 5 }])
+    const mid = at(SINGLE.id, NOW - 10 * DAY, [{ done: true, w: 100, r: 5 }])
+    const now = at(SINGLE.id, NOW, [{ done: true, w: 90, r: 5 }])
+    const anchors = anchorsByWorkout([old, mid, now])
+    // The 100-day-old PR is outside the window; the mid session anchors at its own
+    // best, today at the mid session's best.
+    expect(anchors.get(old).get(SINGLE.id)).toBeCloseTo(120 * (1 + 5 / 30), 1)
+    expect(anchors.get(mid).get(SINGLE.id)).toBeCloseTo(100 * (1 + 5 / 30), 1)
+    expect(anchors.get(now).get(SINGLE.id)).toBeCloseTo(100 * (1 + 5 / 30), 1)
+  })
+
+  it('resolves logged effort first, estimates second, null when unknowable', () => {
+    const anchors = new Map([['e1', 110]])
+    const entry = { id: 'e1' }
+    const workout = {}
+    expect(resolveSetRir({ done: true, w: 40, r: 8, rir: 7 }, null, entry, workout, anchors, {}))
+      .toEqual({ rir: 7, source: 'logged' })
+    expect(resolveSetRir({ done: true, w: 80, r: 8 }, null, entry, workout, anchors, {}).source).toBe('estimated')
+    expect(resolveSetRir({ done: true, w: 80, r: 8 }, null, { id: 'unknown' }, workout, anchors, {}))
+      .toBeNull()
   })
 })

@@ -1,0 +1,22 @@
+{
+  "id": "3470",
+  "name": "forward lunge (male)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight lunge stepping forward and pushing back, alternating legs. It builds the glutes, quads and balance.",
+  "instructions": [
+    "Stand with your feet hip-width apart and hands on your hips.",
+    "Take a big step forward with your right foot, lowering your body into a lunge position.",
+    "Bend your right knee to about 90 degrees, keeping your knee aligned with your ankle.",
+    "Push off with your right foot and return to the starting position.",
+    "Repeat with your left leg, alternating sides for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

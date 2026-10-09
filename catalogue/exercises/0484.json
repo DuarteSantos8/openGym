@@ -1,0 +1,22 @@
+{
+  "id": "0484",
+  "name": "hip raise (bent knee)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "calisthenics",
+  "description": "Lying on your back with bent knees, you raise your hips toward the ceiling. It works the lower abs and glutes.",
+  "instructions": [
+    "Lie flat on your back with your knees bent and feet flat on the ground.",
+    "Place your hands by your sides, palms facing down.",
+    "Engage your core and glutes, then lift your hips off the ground until your body forms a straight line from your knees to your shoulders.",
+    "Pause for a moment at the top, then slowly lower your hips back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2653",
+  "textSource": "exercisedb"
+}

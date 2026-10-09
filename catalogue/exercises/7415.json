@@ -1,0 +1,23 @@
+{
+  "id": "7415",
+  "name": "planche dip on parallel bars",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "chest",
+    "core",
+    "hands"
+  ],
+  "category": "calisthenics",
+  "description": "Dip with a leaning body angle that loads the shoulders and triceps hard.",
+  "instructions": [
+    "Support yourself on parallel bars with straight arms.",
+    "Lean forward and shift your weight over your hands.",
+    "Bend your elbows to lower your body under control.",
+    "Keep your core tight and elbows close.",
+    "Press back up to straight arms."
+  ],
+  "textSource": "opengym"
+}

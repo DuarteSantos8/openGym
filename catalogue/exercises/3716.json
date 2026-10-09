@@ -1,0 +1,22 @@
+{
+  "id": "3716",
+  "name": "split squat with roll",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A split squat paired with a backward roll to challenge your control and leg strength.",
+  "instructions": [
+    "Start in a split stance with your torso upright.",
+    "Lower into a split squat until the front thigh is parallel.",
+    "Sit back and roll onto your back with control.",
+    "Roll up and return to the split stance.",
+    "Stand and repeat, then switch legs."
+  ],
+  "textSource": "opengym"
+}

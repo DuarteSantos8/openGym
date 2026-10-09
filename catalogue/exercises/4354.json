@@ -1,0 +1,21 @@
+{
+  "id": "4354",
+  "name": "alternate oblique crunch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A crunch that alternates elbow-to-knee across the body, hitting the obliques.",
+  "instructions": [
+    "Lie on your back with knees bent and hands behind your head.",
+    "Lift your shoulders off the floor.",
+    "Twist and bring one elbow toward the opposite knee.",
+    "Return to center and switch sides.",
+    "Move slowly and avoid pulling on your neck."
+  ],
+  "textSource": "opengym"
+}

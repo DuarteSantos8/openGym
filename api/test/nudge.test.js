@@ -2,7 +2,7 @@
 // in server.js is covered end to end in server-nudge.test.js; the rules themselves are here.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { nudgeFor, nudgeMinute, nudgeWindowOpen, toneOf, lineIndex } from '../nudge.js';
+import { excusedOn, nudgeFor, nudgeMinute, nudgeWindowOpen, toneOf, lineIndex } from '../nudge.js';
 import { nudgePush } from '../push-messages.js';
 import { NUDGE_COPY } from '../nudge-copy.js';
 
@@ -59,6 +59,18 @@ test('coach week / rotation: the day right after a workout is rest, the second d
   const s = S({ week: {}, queue, workouts: [{ id: 'a', d: '2026-09-07', routineId: 'push', start: 1 }] });
   assert.equal(nudgeFor(s, '2026-09-08'), null, 'the day after a session');
   assert.equal(nudgeFor(s, '2026-09-09'), 'pull', 'two days off in a row');
+});
+
+// #261, the mirror of frontend/src/lib/nudge.test.js: a day with a note on it is excused.
+test('a noted day is excused: not nudged, and not counted towards the back-off', () => {
+  const notes = { '2026-09-07': { tag: 'sick', _ts: 1 } };
+  assert.equal(nudgeFor(S({ workouts: [w('2026-09-04')], dayNotes: notes }), '2026-09-07'), null);
+  assert.equal(nudgeFor(S({ workouts: [w('2026-09-04')], dayNotes: { '2026-09-07': { text: 'Flight to Lisbon', _ts: 1 } } }), '2026-09-07'), null);
+  assert.equal(nudgeFor(S({ workouts: [w('2026-09-04')], dayNotes: { '2026-09-07': { _ts: 2 } } }), '2026-09-07'), 'push', 'a cleared note is no excuse');
+  const s = S({ workouts: [w('2026-09-04')], dayNotes: notes });
+  assert.deepEqual(['2026-09-09', '2026-09-11', '2026-09-14', '2026-09-16'].map(d => !!nudgeFor(s, d)), [true, true, true, false]);
+  assert.equal(excusedOn(S({ dayNotes: { '2026-09-07': { tag: 'nope', text: '  ' } } }), '2026-09-07'), false);
+  assert.equal(excusedOn({ dayNotes: 'x' }, '2026-09-07'), false);
 });
 
 test('a malformed state reads as nothing to nudge about', () => {

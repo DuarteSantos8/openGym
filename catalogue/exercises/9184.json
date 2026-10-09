@@ -1,0 +1,22 @@
+{
+  "id": "9184",
+  "name": "stick shoulder mobilization in abduction",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "lats"
+  ],
+  "category": "mobility",
+  "description": "Using a stick, you guide one arm out and up to the side. It opens up shoulder range overhead.",
+  "instructions": [
+    "Hold a stick with both hands in front of you.",
+    "Keep one arm relaxed and guide it with the other.",
+    "Raise the stick sideways and up.",
+    "Keep your torso upright.",
+    "Pause at the top.",
+    "Lower and switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "4352",
+  "name": "bench dip on floor v. 2",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "chest"
+  ],
+  "category": "calisthenics",
+  "description": "A dip where your hands rest on a bench behind you and your feet stay on the floor. It builds the back of the upper arms.",
+  "instructions": [
+    "Sit on the floor with your back to a bench and place your hands on its edge.",
+    "Lift your hips and extend your legs slightly in front.",
+    "Bend your elbows and lower your body.",
+    "Press back up until your arms are straight.",
+    "Keep your shoulders away from your ears."
+  ],
+  "textSource": "opengym"
+}

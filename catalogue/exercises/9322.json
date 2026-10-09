@@ -1,0 +1,23 @@
+{
+  "id": "9322",
+  "name": "lying floor single leg negative dragon flag",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "core",
+    "lats"
+  ],
+  "category": "calisthenics",
+  "description": "A dragon flag lowering with one leg extended and one tucked. It's a step between the half and full versions.",
+  "instructions": [
+    "Lie on a mat and hold something fixed behind your head.",
+    "Raise your body into a straight line with one leg tucked.",
+    "Extend the other leg straight.",
+    "Lower slowly while keeping your hips level.",
+    "Stop just above the floor.",
+    "Reset and switch legs."
+  ],
+  "textSource": "opengym"
+}

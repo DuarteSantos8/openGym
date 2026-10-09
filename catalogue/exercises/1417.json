@@ -1,0 +1,24 @@
+{
+  "id": "1417",
+  "name": "exercise ball one legged diagonal kick hamstring curl",
+  "bodyPart": "upper legs",
+  "equipment": "stability ball",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "Lie on your back with your heels on a stability ball and curl one leg toward you while kicking diagonally. It works the hamstrings, glutes and core.",
+  "instructions": [
+    "Start by lying on your back with your legs extended and your heels resting on top of the stability ball.",
+    "Place your arms by your sides for stability.",
+    "Engage your glutes and core muscles to lift your hips off the ground, creating a straight line from your shoulders to your heels.",
+    "Bend your right knee and bring it towards your chest, keeping your left leg extended and your foot flexed.",
+    "Kick your right leg diagonally across your body, extending it fully and engaging your hamstrings.",
+    "Slowly return your right leg to the starting position, maintaining control and stability.",
+    "Repeat the movement with your left leg, alternating sides for the desired number of repetitions."
+  ],
+  "femaleVariant": "2825",
+  "textSource": "exercisedb"
+}

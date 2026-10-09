@@ -12,6 +12,7 @@ import { t } from './i18n-core.js'
 import { argb } from './format.js'
 import { accentPair } from './accent.js'
 import { MOBILE, isAndroid } from './mobile.js'
+import { REST_SOUNDS } from './rest-sounds.js'
 
 export const REST_ALERT_ID = 42
 export const REST_CHANNEL_ID = 'rest-over'
@@ -28,8 +29,10 @@ export function accentColors(key) {
   return { accent: argb(accent), ink: argb(ink) }
 }
 
-export function buildRestAlert({ at, title, countdownTitle, totalSec, accent, sound = true, vibrate = true, alarmBuzz = false, now = Date.now() } = {}) {
+export function buildRestAlert({ at, title, countdownTitle, totalSec, accent, sound = true, classic = false, tone = null, vibrate = true, alarmBuzz = false, now = Date.now() } = {}) {
   if (typeof at !== 'number' || !(at > now)) return null
+  // Settings → Sound (#306): one of lib/sound.js REST_SOUNDS; without one, `classic` decides, as before.
+  const kind = Object.hasOwn(REST_SOUNDS, tone) ? tone : classic === true ? 'classic' : 'chime'
   const totalMs = Math.max(1000, Math.round((totalSec > 0 ? totalSec : (at - now) / 1000) * 1000))
   const colors = accentColors(accent)
   return {
@@ -48,6 +51,11 @@ export function buildRestAlert({ at, title, countdownTitle, totalSec, accent, so
     at,
     allowWhileIdle: true,
     sound: !!sound,
+    // Settings → Sound: the native side plays the same end tone the page does (RestTone.java).
+    // `tone` names it; `classic` stays for an app shell from before #306, which reads only that
+    // and plays the chime for every other pick.
+    tone: kind,
+    classic: kind === 'classic',
     vibrate: !!vibrate,
     // Settings → "Vibrate when the phone is on silent" (#375): the end buzzes as an alarm, which
     // silent mode lets through, instead of through the notification channel, which it mutes.
@@ -87,7 +95,7 @@ const restPlugin = () => pluginP || (pluginP = (async () => {
 export function armRestAlert(at, opts = {}) {
   if (!MOBILE) return Promise.resolve(false)
   const mine = ++token
-  const alert = buildRestAlert({ at, title: opts.title, countdownTitle: opts.countdownTitle, totalSec: opts.totalSec, accent: opts.accent, sound: opts.sound, vibrate: opts.vibrate !== false, alarmBuzz: !!opts.alarmBuzz })
+  const alert = buildRestAlert({ at, title: opts.title, countdownTitle: opts.countdownTitle, totalSec: opts.totalSec, accent: opts.accent, sound: opts.sound, classic: opts.classic === true, tone: opts.tone, vibrate: opts.vibrate !== false, alarmBuzz: !!opts.alarmBuzz })
   if (!alert) return Promise.resolve(false)
   // Outside the chain and never awaited: the alarm, its tone and the alarm buzz do not need the
   // notification permission, and a dialog left open while the phone is put away must not hold
@@ -204,6 +212,8 @@ async function deliver(alert) {
     at: alert.at,
     title: alert.title,
     sound: alert.sound,
+    classic: alert.classic,
+    tone: alert.tone,
     // The end of a rest the app is not in front for: the notification, or the buzz standing in
     // for it where notifications are off. With the app in front the page buzzes (lib/sound.js).
     vibrate: alert.vibrate,

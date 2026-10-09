@@ -1,0 +1,21 @@
+{
+  "id": "4680",
+  "name": "band standing triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "band",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A standing triceps pressdown using a band. It isolates the back of the arms.",
+  "instructions": [
+    "Anchor the band overhead and hold the ends with both hands.",
+    "Keep your elbows tucked at your sides.",
+    "Press your hands down until your arms are straight.",
+    "Squeeze your triceps at the bottom.",
+    "Let your hands rise slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

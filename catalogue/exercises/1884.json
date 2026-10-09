@@ -1,0 +1,22 @@
+{
+  "id": "1884",
+  "name": "lying leg hang abductor stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "hip flexors"
+  ],
+  "category": "stretching",
+  "description": "Lie on a bench and let one leg hang across for a gravity-assisted hip stretch.",
+  "instructions": [
+    "Lie on your back on a bench.",
+    "Cross one leg over your body and let it hang off the side.",
+    "Keep your shoulders flat.",
+    "Let gravity lower the leg slowly.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

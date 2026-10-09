@@ -1,0 +1,21 @@
+{
+  "id": "0580",
+  "name": "lever gripless shrug",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "traps",
+  "secondaryMuscles": [
+    "shoulders",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A machine shrug without gripping a bar, so you lift your shoulders straight up. Focuses on the upper traps.",
+  "instructions": [
+    "Adjust the seat height and position yourself on the leverage machine.",
+    "Grasp the handles with your palms facing inwards and your arms fully extended.",
+    "Keeping your back straight, exhale and elevate your shoulders as high as possible.",
+    "Hold the contraction for a brief moment, then inhale and slowly lower your shoulders back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

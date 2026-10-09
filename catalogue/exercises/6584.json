@@ -1,0 +1,21 @@
+{
+  "id": "6584",
+  "name": "barbell feet flat bench press",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A bench press with your feet flat on the bench or surface instead of the floor, limiting leg drive and focusing on the chest.",
+  "instructions": [
+    "Lie on a bench and place your feet flat on it, knees bent.",
+    "Grip the bar slightly wider than your shoulders.",
+    "Lower the bar to your mid-chest.",
+    "Press it back up until your arms are straight.",
+    "Keep your lower back flat and your core tight."
+  ],
+  "textSource": "opengym"
+}

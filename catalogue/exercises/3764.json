@@ -1,0 +1,21 @@
+{
+  "id": "3764",
+  "name": "dumbbell incline biceps curl v. 2",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Curling from an incline bench stretches the biceps at the bottom for a deep contraction.",
+  "instructions": [
+    "Sit back on an incline bench with a dumbbell in each hand, arms hanging.",
+    "Keep your shoulders against the bench.",
+    "Curl both dumbbells toward your shoulders.",
+    "Pause and squeeze.",
+    "Lower slowly to a full stretch."
+  ],
+  "textSource": "opengym"
+}

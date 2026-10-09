@@ -1,0 +1,23 @@
+{
+  "id": "9986",
+  "name": "standing towel foot crunch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "feet",
+    "shins",
+    "ankles"
+  ],
+  "category": "strength",
+  "description": "A foot exercise where you scrunch a towel on the floor with your toes. It strengthens the muscles of the foot and arch.",
+  "instructions": [
+    "Stand with one foot flat on a towel laid on a smooth floor.",
+    "Keep your heel down.",
+    "Curl your toes to pull the towel toward you.",
+    "Release and repeat until the towel is bunched under your foot.",
+    "Hold on to a support if you need balance.",
+    "Do your reps, then switch feet."
+  ],
+  "textSource": "opengym"
+}

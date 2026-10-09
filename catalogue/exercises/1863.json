@@ -1,0 +1,22 @@
+{
+  "id": "1863",
+  "name": "lever cable rear pulldown",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "rhomboids",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "Machine pulldown behind the line of the body that trains the lats and upper back.",
+  "instructions": [
+    "Adjust the seat and grip the handles overhead.",
+    "Sit tall with your chest up.",
+    "Pull the handles down, driving your elbows toward your sides.",
+    "Squeeze your shoulder blades together at the bottom.",
+    "Return slowly to full stretch."
+  ],
+  "textSource": "opengym"
+}

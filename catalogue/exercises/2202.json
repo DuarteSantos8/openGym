@@ -1,0 +1,24 @@
+{
+  "id": "2202",
+  "name": "roller hip stretch",
+  "bodyPart": "upper legs",
+  "equipment": "roller",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps"
+  ],
+  "category": "mobility",
+  "description": "A roller-assisted hip opener for the glutes. Helps loosen tight hips with a controlled rolling motion.",
+  "instructions": [
+    "Start by sitting on the ground with your legs extended in front of you.",
+    "Place the roller under your glutes, just above your knees.",
+    "Lean back and place your hands on the ground behind you for support.",
+    "Engage your glutes and slowly roll the roller forward, bending your knees and bringing them towards your chest.",
+    "Pause for a moment at the end of the movement, feeling a stretch in your glutes.",
+    "Slowly roll the roller back to the starting position, extending your legs.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "5434",
+  "textSource": "exercisedb"
+}

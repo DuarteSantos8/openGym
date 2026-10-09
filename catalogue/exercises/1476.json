@@ -1,0 +1,23 @@
+{
+  "id": "1476",
+  "name": "one leg squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A squat on a single leg that challenges strength and balance. It targets the glutes and quads on one side at a time.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart.",
+    "Extend one leg forward, keeping it off the ground.",
+    "Bend your standing leg and lower your body down as if sitting back into a chair.",
+    "Keep your chest up and your back straight.",
+    "Push through your heel to return to the starting position.",
+    "Repeat with the other leg."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "1991",
+  "name": "internal shoulder rotation stretch",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "rear deltoids"
+  ],
+  "category": "stretching",
+  "description": "A stretch that eases the shoulder into inward rotation.",
+  "instructions": [
+    "Stand tall and place one hand behind your lower back with the elbow bent.",
+    "Use the other hand or a towel to gently draw the hand up your back until the back of the shoulder stretches.",
+    "Keep your shoulders level and do not twist.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

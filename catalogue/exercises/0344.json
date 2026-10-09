@@ -1,0 +1,21 @@
+{
+  "id": "0344",
+  "name": "dumbbell lying one arm pronated triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A lying one-arm triceps extension with an overhand grip. It isolates the triceps, one side at a time.",
+  "instructions": [
+    "Lie flat on a bench with your back and head supported, and your feet flat on the ground.",
+    "Hold a dumbbell in one hand with your palm facing down, and extend your arm straight up above your shoulder.",
+    "Keeping your upper arm stationary, slowly lower the dumbbell behind your head by bending your elbow.",
+    "Pause for a moment at the bottom, then extend your arm back up to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms."
+  ],
+  "femaleVariant": "2588",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "0531",
+  "name": "kettlebell extended range one arm press on floor",
+  "bodyPart": "chest",
+  "equipment": "kettlebell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Lying on the floor, you press a kettlebell straight up with one arm. A simple way to work the chest and shoulder one side at a time.",
+  "instructions": [
+    "Start by lying on your back on the floor with your knees bent and feet flat on the ground.",
+    "Hold a kettlebell in one hand, with your palm facing towards your feet.",
+    "Extend your arm straight up towards the ceiling, keeping your elbow locked and your wrist straight.",
+    "Slowly lower the kettlebell back down to the starting position, maintaining control throughout the movement.",
+    "Repeat for the desired number of repetitions, then switch to the other arm."
+  ],
+  "textSource": "exercisedb"
+}

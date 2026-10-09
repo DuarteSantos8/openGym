@@ -1,0 +1,25 @@
+{
+  "id": "2996",
+  "name": "band single arm shoulder press",
+  "bodyPart": "shoulders",
+  "equipment": "band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A one-arm overhead press against a band. It trains the shoulders and makes your core resist twisting.",
+  "instructions": [
+    "Stand on the band with your feet hip width apart and hold the other end at shoulder height.",
+    "Brace your core and keep your ribs down.",
+    "Press the hand straight overhead until your arm is almost straight.",
+    "Lower under control back to your shoulder.",
+    "Complete your reps without leaning sideways.",
+    "Switch arms and repeat."
+  ],
+  "femaleVariant": "2995",
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "5096",
+  "name": "single arm overhead dumbbell squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "core",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "Squat while holding a dumbbell overhead with one arm. It builds leg strength and demands good shoulder and trunk control.",
+  "instructions": [
+    "Press a dumbbell overhead with one arm and keep it locked out.",
+    "Stand with feet shoulder-width apart.",
+    "Sit your hips back and down into a squat.",
+    "Keep your ribs down and the weight over your shoulder.",
+    "Drive up to standing, then switch arms after your reps."
+  ],
+  "textSource": "opengym"
+}

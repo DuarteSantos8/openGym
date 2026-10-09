@@ -1,0 +1,21 @@
+{
+  "id": "3761",
+  "name": "dumbbell seated alternate biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Seated curls, alternating arms, to build the biceps.",
+  "instructions": [
+    "Sit upright holding a dumbbell in each hand with arms hanging.",
+    "Keep your elbows by your sides.",
+    "Curl one dumbbell up to shoulder height.",
+    "Lower slowly.",
+    "Alternate arms and avoid swinging."
+  ],
+  "textSource": "opengym"
+}

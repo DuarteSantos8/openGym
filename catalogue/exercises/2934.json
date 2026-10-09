@@ -1,0 +1,23 @@
+{
+  "id": "2934",
+  "name": "kettlebell half kneeling shoulder press",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "core",
+    "glutes",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A one-arm kettlebell press from a half-kneeling stance. The position teaches hip stability while you press.",
+  "instructions": [
+    "Kneel on one knee with the other foot forward and a kettlebell racked at your shoulder.",
+    "Brace your abs and squeeze the glute of the kneeling leg.",
+    "Press the bell straight overhead.",
+    "Lower it back under control.",
+    "Finish the reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

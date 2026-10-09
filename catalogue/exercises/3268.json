@@ -1,0 +1,21 @@
+{
+  "id": "3268",
+  "name": "lying leg raise to side",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "Lower your legs to the side from a raised position to hit the lower abs and obliques.",
+  "instructions": [
+    "Lie on your back with arms out to the sides and legs raised straight up.",
+    "Keep your shoulders on the floor.",
+    "Lower both legs toward one side, stopping just above the floor.",
+    "Bring them back up through the middle.",
+    "Repeat to the other side and keep alternating."
+  ],
+  "textSource": "opengym"
+}

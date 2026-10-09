@@ -1,0 +1,22 @@
+{
+  "id": "3654",
+  "name": "barbell lying row on rack",
+  "bodyPart": "back",
+  "equipment": "barbell",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "Lie under a barbell on a rack and pull your chest up to it for the back muscles.",
+  "instructions": [
+    "Set a barbell on a rack at a height you can reach lying down.",
+    "Lie under it and grip the bar overhand.",
+    "Pull your chest toward the bar.",
+    "Squeeze your shoulder blades.",
+    "Lower slowly to full extension."
+  ],
+  "textSource": "opengym"
+}

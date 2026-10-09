@@ -1,0 +1,22 @@
+{
+  "id": "5637",
+  "name": "incline push up (on bench)",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Push-up with hands elevated on a bench, an easier version of the push-up.",
+  "instructions": [
+    "Place hands on a bench slightly wider than shoulders.",
+    "Walk your feet back into a straight line.",
+    "Lower your chest to the bench.",
+    "Press back up.",
+    "Keep your core tight."
+  ],
+  "textSource": "opengym"
+}

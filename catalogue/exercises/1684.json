@@ -1,0 +1,24 @@
+{
+  "id": "1684",
+  "name": "dumbbell step up single leg balance with bicep curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A single leg step up combined with a bicep curl. It trains the biceps, glutes and balance.",
+  "instructions": [
+    "Stand in front of a step or platform with a dumbbell in each hand, palms facing your body.",
+    "Place your right foot on the step, ensuring your entire foot is in contact with the surface.",
+    "Engage your core and push through your right heel to lift your body up onto the step, bringing your left knee up towards your chest.",
+    "At the top of the movement, perform a bicep curl by bending your elbows and bringing the dumbbells towards your shoulders.",
+    "Lower the dumbbells back down and simultaneously lower your left foot back to the ground.",
+    "Repeat the movement on the opposite side, stepping up with your left foot and curling the dumbbells.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

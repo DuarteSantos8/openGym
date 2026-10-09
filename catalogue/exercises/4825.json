@@ -1,0 +1,21 @@
+{
+  "id": "4825",
+  "name": "superman chest stretch",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "stretching",
+  "description": "A face-down stretch with arms reaching out, opening the chest and front of the shoulders.",
+  "instructions": [
+    "Lie face down on the floor with your arms extended out wide.",
+    "Gently lift your chest off the floor.",
+    "Draw your shoulder blades together and back.",
+    "Keep your neck in a neutral position.",
+    "Hold for 20-30 seconds, then relax."
+  ],
+  "textSource": "opengym"
+}

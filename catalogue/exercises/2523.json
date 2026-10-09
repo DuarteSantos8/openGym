@@ -1,0 +1,23 @@
+{
+  "id": "2523",
+  "name": "decline twisting sit up",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "lower abs"
+  ],
+  "category": "calisthenics",
+  "description": "A sit up on a decline bench with a twist to work the abs and obliques.",
+  "instructions": [
+    "Lie on a decline bench with your feet secured.",
+    "Place your hands lightly behind your head.",
+    "Sit up while rotating your torso to one side.",
+    "Pause at the top.",
+    "Lower with control.",
+    "Alternate sides each rep."
+  ],
+  "textSource": "opengym"
+}

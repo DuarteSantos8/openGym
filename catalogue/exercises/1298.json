@@ -1,0 +1,21 @@
+{
+  "id": "1298",
+  "name": "kettlebell one arm floor press",
+  "bodyPart": "chest",
+  "equipment": "kettlebell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Lying on the floor, press a kettlebell straight up with one arm. The floor limits the range, which is gentle on the shoulder while building the chest and triceps.",
+  "instructions": [
+    "Lie flat on your back on the floor with your knees bent and feet flat on the ground.",
+    "Hold the kettlebell in one hand with your palm facing towards your feet and your arm extended straight up towards the ceiling.",
+    "Slowly lower the kettlebell towards your chest by bending your elbow, keeping your upper arm close to your body.",
+    "Pause for a moment when the kettlebell is just above your chest, then push it back up to the starting position by extending your elbow.",
+    "Repeat for the desired number of repetitions, then switch to the other arm."
+  ],
+  "textSource": "exercisedb"
+}

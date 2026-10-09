@@ -1,0 +1,24 @@
+{
+  "id": "4288",
+  "name": "middle back stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rhomboids",
+    "lats",
+    "trapezius"
+  ],
+  "category": "stretching",
+  "description": "A stretch that rounds the middle back and spreads the shoulder blades. It relieves tension from sitting or rowing.",
+  "instructions": [
+    "Stand or sit and clasp your hands in front of you.",
+    "Straighten your arms and push them forward.",
+    "Round your upper back and tuck your chin.",
+    "Feel the stretch between your shoulder blades.",
+    "Hold for 20-30 seconds.",
+    "Release slowly and repeat."
+  ],
+  "femaleVariant": "0626",
+  "textSource": "opengym"
+}

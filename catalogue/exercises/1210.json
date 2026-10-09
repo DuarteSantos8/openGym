@@ -1,0 +1,23 @@
+{
+  "id": "1210",
+  "name": "cable twisting standing high row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rear deltoids",
+    "biceps",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A standing cable row at a high angle with a torso twist. It hits the upper back and rear shoulders.",
+  "instructions": [
+    "Set a cable at about head height and stand facing it with the handle in one hand.",
+    "Take a split stance and lean back slightly.",
+    "Pull the handle toward your upper chest, turning your torso as you go.",
+    "Squeeze your shoulder blade, then return slowly.",
+    "Complete the set and switch sides."
+  ],
+  "textSource": "opengym"
+}

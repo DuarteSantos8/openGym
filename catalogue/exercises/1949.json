@@ -1,0 +1,21 @@
+{
+  "id": "1949",
+  "name": "standing hip flexor stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "A standing lunge-style stretch for the front of the hip and thigh.",
+  "instructions": [
+    "Stand and step one foot forward and the other back into a staggered stance.",
+    "Tuck your pelvis and squeeze the glute of the back leg.",
+    "Shift your hips slightly forward until you feel a stretch at the front of the back hip.",
+    "Keep your torso upright.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

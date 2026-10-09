@@ -1,0 +1,22 @@
+{
+  "id": "11568",
+  "name": "smith unilateral bulgarian split squat from deficit",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A Bulgarian split squat on a Smith machine with the front foot raised, giving extra depth for quads and glutes.",
+  "instructions": [
+    "Set the bar on your upper back and stand with the front foot on a low plate or step.",
+    "Place the rear foot on a bench behind you.",
+    "Lower straight down until the front thigh is about parallel or deeper.",
+    "Keep your torso upright and the front knee tracking over the toes.",
+    "Push through the front heel to stand, then switch legs."
+  ],
+  "textSource": "opengym"
+}

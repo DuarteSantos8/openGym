@@ -1,0 +1,21 @@
+{
+  "id": "0984",
+  "name": "band lying hip internal rotation",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps"
+  ],
+  "category": "mobility",
+  "description": "A lying hip rotation with a band around the feet or legs, rotating the knees out and back. It works the glutes and hips.",
+  "instructions": [
+    "Lie on your back with your legs straight and a resistance band looped around your feet.",
+    "Bend your knees and bring them towards your chest, keeping your feet together.",
+    "Slowly rotate your knees outwards, away from each other, while keeping your feet together.",
+    "Pause for a moment at the end of the rotation, then slowly return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

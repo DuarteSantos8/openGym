@@ -1,0 +1,23 @@
+{
+  "id": "1723",
+  "name": "cable one arm tricep pushdown",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A one-arm triceps pushdown on a cable. It isolates the triceps on one side at a time.",
+  "instructions": [
+    "Stand facing a cable machine with a straight bar attachment at chest height.",
+    "Grasp the bar with an overhand grip and step back to create tension in the cable.",
+    "Position your feet shoulder-width apart and slightly bend your knees.",
+    "Keep your back straight and core engaged throughout the exercise.",
+    "Start with your arm fully extended and perpendicular to the floor.",
+    "Keeping your upper arm stationary, exhale and push the bar down until your arm is fully extended.",
+    "Pause for a moment, then inhale and slowly return to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms."
+  ],
+  "textSource": "exercisedb"
+}

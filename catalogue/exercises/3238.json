@@ -1,0 +1,25 @@
+{
+  "id": "3238",
+  "name": "kneeling plank",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "shoulders",
+    "glutes",
+    "lower abs"
+  ],
+  "category": "isometric",
+  "description": "A plank held on the knees. It's an easier version that builds core strength.",
+  "instructions": [
+    "Kneel and place your forearms on the floor under your shoulders.",
+    "Lift your hips so your body is in a line from your knees to your head.",
+    "Brace your core and squeeze your glutes.",
+    "Keep your neck neutral.",
+    "Hold for 20-45 seconds.",
+    "Lower and rest."
+  ],
+  "femaleVariant": "4996",
+  "textSource": "opengym"
+}

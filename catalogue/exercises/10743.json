@@ -1,0 +1,23 @@
+{
+  "id": "10743",
+  "name": "kneeling to box jump",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "An explosive move that goes from kneeling straight into a box jump. It trains hip drive and power.",
+  "instructions": [
+    "Kneel in front of a sturdy box.",
+    "Swing your arms back and drive your hips forward.",
+    "Pop up from your knees onto your feet.",
+    "Jump onto the box in one motion.",
+    "Land softly and stand tall.",
+    "Step down and reset."
+  ],
+  "textSource": "opengym"
+}

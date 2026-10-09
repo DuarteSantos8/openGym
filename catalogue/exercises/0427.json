@@ -1,0 +1,21 @@
+{
+  "id": "0427",
+  "name": "dumbbell standing palms in press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "chest"
+  ],
+  "category": "strength",
+  "description": "Standing, you press dumbbells overhead with palms facing each other. It builds the shoulders and triceps.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in each hand at shoulder level with your palms facing inwards.",
+    "Keeping your core engaged and your back straight, press the dumbbells upwards until your arms are fully extended overhead.",
+    "Pause for a moment at the top, then slowly lower the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2599",
+  "textSource": "exercisedb"
+}

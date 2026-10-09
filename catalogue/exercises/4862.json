@@ -1,0 +1,23 @@
+{
+  "id": "4862",
+  "name": "barbell standing snatch grip shrug",
+  "bodyPart": "back",
+  "equipment": "barbell",
+  "target": "traps",
+  "secondaryMuscles": [
+    "upper back",
+    "grip muscles",
+    "forearms",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A shrug with a wide snatch grip. It trains the traps and grip.",
+  "instructions": [
+    "Hold a barbell with a wide snatch grip at your thighs.",
+    "Stand tall with your chest up.",
+    "Shrug your shoulders straight up.",
+    "Pause at the top.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

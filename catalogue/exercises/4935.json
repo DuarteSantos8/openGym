@@ -1,0 +1,23 @@
+{
+  "id": "4935",
+  "name": "around the world superman",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "rear deltoids",
+    "hamstrings"
+  ],
+  "category": "calisthenics",
+  "description": "A superman hold where the arms sweep in a circle. It works the lower back, glutes and shoulders.",
+  "instructions": [
+    "Lie face down with your arms extended overhead.",
+    "Lift your chest, arms and legs off the floor.",
+    "Sweep your arms out to the sides toward your hips.",
+    "Return them overhead in a wide arc.",
+    "Keep your legs lifted.",
+    "Lower to the floor to rest."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "5131",
+  "name": "seated neck tap",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "sternocleidomastoid",
+    "upper back"
+  ],
+  "category": "mobility",
+  "description": "A seated move tapping toward your neck area. It gently mobilises the neck and shoulders.",
+  "instructions": [
+    "Sit tall with your shoulders relaxed.",
+    "Bring one hand up toward the side of your neck.",
+    "Tap lightly.",
+    "Switch to the other hand.",
+    "Keep your head level.",
+    "Continue at a gentle pace."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "1588",
+  "name": "side to side box shuffle",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "calves",
+    "quadriceps",
+    "glutes"
+  ],
+  "category": "plyometrics",
+  "description": "A quick-footed drill where you hop side to side over a box. It builds agility, lower leg stamina and conditioning.",
+  "instructions": [
+    "Stand next to a low box or step on one side.",
+    "Place the foot closest to it on top.",
+    "Hop across, landing the other foot on the box as the first foot goes down.",
+    "Keep your steps light and quick.",
+    "Continue shuffling side to side at a steady pace."
+  ],
+  "textSource": "opengym"
+}

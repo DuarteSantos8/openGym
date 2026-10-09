@@ -1,0 +1,21 @@
+{
+  "id": "3963",
+  "name": "dumbbell single spider curl with chest support",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A one-arm curl done lying chest down on an incline bench. It isolates the biceps with no swinging.",
+  "instructions": [
+    "Lie chest down on an incline bench with one arm hanging, dumbbell in hand.",
+    "Keep your upper arm vertical.",
+    "Curl the weight up toward your shoulder.",
+    "Squeeze, then lower fully.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

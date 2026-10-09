@@ -1,0 +1,22 @@
+{
+  "id": "2891",
+  "name": "flutter kicks (hands under hips head up)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "quadriceps"
+  ],
+  "category": "calisthenics",
+  "description": "Fast alternating leg lifts with your head raised that fire up the lower abs.",
+  "instructions": [
+    "Lie on your back with hands tucked under your hips.",
+    "Lift your head and shoulders slightly off the floor.",
+    "Raise both legs a few inches above the ground.",
+    "Kick your legs up and down in small alternating pulses.",
+    "Keep your lower back pressed down and breathe steadily."
+  ],
+  "textSource": "opengym"
+}

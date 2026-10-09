@@ -1,0 +1,23 @@
+{
+  "id": "2925",
+  "name": "dumbbell single leg step up",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Stepping up onto a bench with one leg while holding dumbbells. It builds single-leg strength in the quads and glutes.",
+  "instructions": [
+    "Hold a dumbbell in each hand and stand facing a box or bench.",
+    "Place one foot fully on the box.",
+    "Drive through that heel to stand up tall.",
+    "Lower back down under control without bouncing off the floor foot.",
+    "Finish the reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

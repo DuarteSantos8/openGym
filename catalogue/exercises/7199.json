@@ -1,0 +1,22 @@
+{
+  "id": "7199",
+  "name": "resistance band lying bent knee hip abduction",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A lying hip abduction with bent knees that targets the outer hip and glutes.",
+  "instructions": [
+    "Lie on your side with the band above your knees and your knees bent.",
+    "Stack your hips and rest your head on your arm.",
+    "Lift your top knee up against the band without rolling back.",
+    "Pause, then lower slowly.",
+    "Keep your feet together like a clamshell.",
+    "Finish all reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

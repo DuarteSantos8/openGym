@@ -1,0 +1,28 @@
+{
+  "id": "1383",
+  "name": "hack calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "sled machine",
+  "target": "calves",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A calf raise on a hack machine, pushing through the balls of your feet. It builds the calves under a supported load.",
+  "instructions": [
+    "Adjust the sled machine to a comfortable weight.",
+    "Stand on the sled machine with your toes on the platform and your heels hanging off.",
+    "Hold onto the handles for stability.",
+    "Raise your heels as high as possible by pushing through the balls of your feet.",
+    "Pause for a moment at the top, then slowly lower your heels back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "calves"
+    ],
+    "secondaries": []
+  },
+  "textSource": "exercisedb"
+}

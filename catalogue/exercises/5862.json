@@ -1,0 +1,21 @@
+{
+  "id": "5862",
+  "name": "kettlebell wrist curl",
+  "bodyPart": "lower arms",
+  "equipment": "kettlebell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "Curl a kettlebell with only your wrists while your forearm rests on your thigh. It builds forearm strength and grip.",
+  "instructions": [
+    "Sit with your forearm on your thigh, palm up, holding a kettlebell.",
+    "Let your wrist extend downward.",
+    "Curl your hand up toward you.",
+    "Squeeze at the top.",
+    "Lower slowly and switch arms."
+  ],
+  "textSource": "opengym"
+}

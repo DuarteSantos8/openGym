@@ -1,0 +1,23 @@
+{
+  "id": "7275",
+  "name": "suspension trainer front plank",
+  "bodyPart": "waist",
+  "equipment": "suspension trainer",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "shoulders",
+    "glutes"
+  ],
+  "category": "isometric",
+  "description": "Front plank with feet in straps, making the hold wobbly and demanding for the whole core.",
+  "instructions": [
+    "Set your feet in the straps and place your forearms or hands on the floor.",
+    "Form a straight line from head to heels.",
+    "Squeeze your glutes and brace your abs.",
+    "Hold without letting your hips sag or rise.",
+    "Keep breathing steadily for the whole hold."
+  ],
+  "femaleVariant": "1114",
+  "textSource": "opengym"
+}

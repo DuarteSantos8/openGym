@@ -1,0 +1,31 @@
+{
+  "id": "0598",
+  "name": "lever seated hip adduction",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "Seated on a machine, you squeeze your knees together against pads. Trains the inner thighs.",
+  "instructions": [
+    "Adjust the seat height and position yourself on the machine with your back against the backrest.",
+    "Place your feet on the footrests and grasp the handles for stability.",
+    "Engage your adductor muscles and slowly bring your legs together, squeezing your inner thighs.",
+    "Pause for a moment at the peak contraction, then slowly return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "adductors"
+    ],
+    "secondaries": [
+      "gluteal",
+      "hamstring"
+    ]
+  },
+  "femaleVariant": "3612",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4333",
+  "name": "bench reverse crunch circle",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A bench reverse crunch where your knees trace a circle. It works the lower abs and obliques.",
+  "instructions": [
+    "Lie on a bench and grip behind your head for support.",
+    "Bring your knees up over your hips.",
+    "Curl your hips up and draw a small circle with your knees.",
+    "Reverse the circle on the next rep.",
+    "Lower your hips slowly each time."
+  ],
+  "textSource": "opengym"
+}

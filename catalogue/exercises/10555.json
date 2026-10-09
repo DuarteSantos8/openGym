@@ -1,0 +1,22 @@
+{
+  "id": "10555",
+  "name": "seated neck flexion to extension on chair",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "sternocleidomastoid",
+    "upper back",
+    "trapezius"
+  ],
+  "category": "mobility",
+  "description": "Seated, you slowly nod your head forward and back. It loosens the neck.",
+  "instructions": [
+    "Sit tall on a chair with your shoulders relaxed.",
+    "Slowly lower your chin toward your chest.",
+    "Gently lift your head and look slightly upward.",
+    "Keep the motion smooth and pain free.",
+    "Repeat for several slow reps."
+  ],
+  "textSource": "opengym"
+}

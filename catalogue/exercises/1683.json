@@ -1,0 +1,23 @@
+{
+  "id": "1683",
+  "name": "smith machine bicep curl",
+  "bodyPart": "upper arms",
+  "equipment": "smith machine",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A biceps curl in the smith machine. The fixed bar path makes it easy to focus on the biceps.",
+  "instructions": [
+    "Adjust the height of the smith machine bar to be at waist level.",
+    "Stand facing the smith machine with your feet shoulder-width apart.",
+    "Grasp the bar with an underhand grip, hands slightly wider than shoulder-width apart.",
+    "Keep your elbows close to your sides and your upper arms stationary.",
+    "Exhale and curl the bar up towards your shoulders, contracting your biceps.",
+    "Pause for a moment at the top of the movement, squeezing your biceps.",
+    "Inhale and slowly lower the bar back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

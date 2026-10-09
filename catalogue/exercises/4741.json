@@ -1,0 +1,23 @@
+{
+  "id": "4741",
+  "name": "dumbbell head supported row",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rhomboids",
+    "rear deltoids",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A row with your forehead resting on a bench pad so your lower back stays relaxed. It focuses on the upper back.",
+  "instructions": [
+    "Set a bench at a slight incline and lie chest down on it with a dumbbell in each hand.",
+    "Rest your forehead on the top and let your arms hang.",
+    "Row both dumbbells toward your ribs.",
+    "Squeeze your shoulder blades together at the top.",
+    "Lower slowly to straight arms."
+  ],
+  "textSource": "opengym"
+}

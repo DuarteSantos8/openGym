@@ -1,0 +1,22 @@
+{
+  "id": "4566",
+  "name": "cable neutral grip kickback",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A cable kickback with palms facing in, isolating the triceps.",
+  "instructions": [
+    "Set a low cable with a neutral grip handle and hinge forward at the hips.",
+    "Pin your upper arm against your side.",
+    "Hold the handle with your palm facing in.",
+    "Extend your elbow back until your arm is straight.",
+    "Squeeze your triceps for a moment.",
+    "Return slowly and switch arms after the set."
+  ],
+  "textSource": "opengym"
+}

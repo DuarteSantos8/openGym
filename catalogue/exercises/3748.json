@@ -1,0 +1,21 @@
+{
+  "id": "3748",
+  "name": "biceps curl with bed sheet",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms",
+    "brachialis"
+  ],
+  "category": "strength",
+  "description": "A bicep curl using a bed sheet and your own opposing arm for resistance.",
+  "instructions": [
+    "Hold a bed sheet with both hands, one arm pulling down, the other curling up.",
+    "Keep your elbow at your side.",
+    "Curl the working hand toward your shoulder against the resistance.",
+    "Lower slowly.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

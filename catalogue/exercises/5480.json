@@ -1,0 +1,21 @@
+{
+  "id": "5480",
+  "name": "resistance band seated calf stretch",
+  "bodyPart": "lower legs",
+  "equipment": "resistance band",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "A seated stretch where you pull the foot toward you with a band. Lengthens the calf and the back of the leg.",
+  "instructions": [
+    "Sit on the floor with one leg straight and loop the band around the ball of that foot.",
+    "Hold the band ends with both hands and sit tall.",
+    "Gently pull your toes toward you.",
+    "Hold for 20-30 seconds, keeping your knee straight.",
+    "Release and switch legs."
+  ],
+  "textSource": "opengym"
+}

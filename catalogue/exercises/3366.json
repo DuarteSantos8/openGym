@@ -1,0 +1,22 @@
+{
+  "id": "3366",
+  "name": "shrimp squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A single-leg squat with the back foot held behind you, demanding strong quads and good balance.",
+  "instructions": [
+    "Stand on one leg and bend the other knee, holding that foot behind you.",
+    "Reach your free arm forward for balance.",
+    "Lower slowly until the back knee lightly touches the floor.",
+    "Drive through the front foot to stand.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

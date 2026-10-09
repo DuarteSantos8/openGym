@@ -1,0 +1,21 @@
+{
+  "id": "1001",
+  "name": "band single leg split squat",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A single-leg split squat with a band. It trains the quads and glutes.",
+  "instructions": [
+    "Stand with your feet hip-width apart and place a resistance band around your ankles.",
+    "Take a big step forward with your right foot and a smaller step back with your left foot.",
+    "Bend your knees and lower your body until your right thigh is parallel to the ground, keeping your left knee slightly above the ground.",
+    "Push through your right heel to return to the starting position.",
+    "Repeat on the other side."
+  ],
+  "textSource": "exercisedb"
+}

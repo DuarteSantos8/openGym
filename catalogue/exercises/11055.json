@@ -1,0 +1,23 @@
+{
+  "id": "11055",
+  "name": "lever belt sumo deadlift (v bar)",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "adductors",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A sumo deadlift on a belt squat style lever machine holding a V bar. It loads the legs and hips with less strain on the back.",
+  "instructions": [
+    "Stand wide on the platform with toes angled out and grip the V bar.",
+    "Sit your hips back, chest up, and keep your arms straight.",
+    "Push through your heels to stand fully upright.",
+    "Squeeze your glutes at the top.",
+    "Lower under control, letting your knees track over your toes."
+  ],
+  "textSource": "opengym"
+}

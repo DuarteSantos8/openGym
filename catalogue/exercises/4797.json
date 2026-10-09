@@ -1,0 +1,23 @@
+{
+  "id": "4797",
+  "name": "supported squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A squat where you hold onto something for balance. It is a friendly way to practise depth and build leg strength.",
+  "instructions": [
+    "Stand holding a stable support at about chest height, feet shoulder width apart.",
+    "Brace your core and keep your chest up.",
+    "Sit your hips back and bend your knees to lower down.",
+    "Go as deep as you can with your heels down.",
+    "Push through your feet to stand back up.",
+    "Use the support for balance, not to pull yourself up."
+  ],
+  "textSource": "opengym"
+}

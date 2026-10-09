@@ -1,0 +1,22 @@
+{
+  "id": "2729",
+  "name": "strongman deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "grip muscles",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A heavy deadlift in strongman style, pulling a loaded bar from the floor to a full stand. Builds total posterior chain and grip strength.",
+  "instructions": [
+    "Stand with feet hip width apart and the bar over mid foot.",
+    "Hinge down and grip the bar just outside your knees, chest up and back flat.",
+    "Brace your core and push the floor away, keeping the bar close to your legs.",
+    "Stand tall by driving your hips forward, then lower the bar under control."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "4282",
+  "name": "feet and ankles stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "feet",
+    "shins"
+  ],
+  "category": "stretching",
+  "description": "A gentle stretch for the feet and ankles. It helps loosen stiff joints and the muscles around them.",
+  "instructions": [
+    "Sit on a chair or the floor with one leg extended.",
+    "Point your toes away from you.",
+    "Hold for 15 seconds.",
+    "Pull your toes back toward your shin.",
+    "Hold for another 15 seconds.",
+    "Switch legs and repeat."
+  ],
+  "femaleVariant": "3247",
+  "textSource": "opengym"
+}

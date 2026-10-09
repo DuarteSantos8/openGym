@@ -1,0 +1,23 @@
+{
+  "id": "1113",
+  "name": "suspender face pull",
+  "bodyPart": "shoulders",
+  "equipment": "suspension trainer",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "A strap row to the face with elbows high that targets the rear shoulders and upper back.",
+  "instructions": [
+    "Hold the handles with palms facing in and lean back.",
+    "Keep your body straight and arms extended.",
+    "Pull the handles toward your forehead, elbows flaring high.",
+    "Squeeze your shoulder blades together at the end.",
+    "Lower slowly to full arm extension.",
+    "Do not let your hips drop."
+  ],
+  "textSource": "opengym"
+}

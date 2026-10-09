@@ -1,0 +1,23 @@
+{
+  "id": "4950",
+  "name": "bodyweight forward lunge (smaller stance upright torso)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A forward lunge with a shorter step and an upright torso. It emphasizes the quads.",
+  "instructions": [
+    "Stand tall with hands on your hips.",
+    "Take a short step forward.",
+    "Lower straight down, keeping your torso upright.",
+    "Keep the front knee over the ankle.",
+    "Push through the front foot to stand.",
+    "Alternate legs."
+  ],
+  "textSource": "opengym"
+}

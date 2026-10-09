@@ -1,0 +1,21 @@
+{
+  "id": "0813",
+  "name": "triceps dip (between benches)",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A triceps dip with the hands on one bench and the feet on another. It trains the triceps and shoulders.",
+  "instructions": [
+    "Sit on a bench with your hands gripping the edge of the bench, fingers pointing forward.",
+    "Slide your butt off the bench, supporting your weight with your hands.",
+    "Bend your elbows and lower your body towards the ground, keeping your back close to the bench.",
+    "Pause for a moment at the bottom, then push yourself back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

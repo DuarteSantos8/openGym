@@ -1,0 +1,24 @@
+{
+  "id": "1022",
+  "name": "band standing rear delt row",
+  "bodyPart": "shoulders",
+  "equipment": "band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rhomboids",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A standing rear delt row with a band, pulling the handles toward the chest. It trains the rear delts.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and place the band under your feet.",
+    "Hold the band handles with your palms facing each other and your arms extended in front of you.",
+    "Bend your knees slightly and hinge forward at the hips, keeping your back straight.",
+    "Pull the band towards your chest, squeezing your shoulder blades together.",
+    "Pause for a moment at the top, then slowly release the tension and return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3976",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "2974",
+  "name": "lever one arm chest press (plate loaded)",
+  "bodyPart": "chest",
+  "equipment": "leverage machine",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A single-arm chest press on a plate-loaded machine. It lets each side work on its own.",
+  "instructions": [
+    "Sit on the machine with your back against the pad and grip one handle.",
+    "Set your feet flat on the floor.",
+    "Press the handle forward until your arm is nearly straight.",
+    "Pause briefly.",
+    "Return slowly, finish the reps, then switch arms."
+  ],
+  "femaleVariant": "2975",
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "3349",
+  "name": "cable front squat",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A squat with a cable held at your chest, keeping you upright while the quads and glutes work.",
+  "instructions": [
+    "Set the cable low and hold the handle at your chest.",
+    "Step back to create tension and stand with feet shoulder width apart.",
+    "Sit down and back into a squat with your chest tall.",
+    "Descend until your thighs are parallel.",
+    "Drive up through your heels."
+  ],
+  "textSource": "opengym"
+}

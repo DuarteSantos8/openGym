@@ -1,0 +1,24 @@
+{
+  "id": "3771",
+  "name": "band deadlift with single arm row",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "lats",
+    "upper back",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A hip hinge paired with a one-arm band row. It works your posterior chain and your upper back.",
+  "instructions": [
+    "Anchor the band at a low point and hold the handle in one hand.",
+    "Stand with soft knees and the band under light tension.",
+    "Push your hips back and lower your torso with a flat back.",
+    "Drive your hips forward to stand, then row the handle to your ribs.",
+    "Lower the handle under control. Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "5623",
+  "name": "biceps curl front step",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "shoulders"
+  ],
+  "category": "plyometrics",
+  "description": "A rhythm drill pairing an arm curl with a quick step forward. Raises the heart rate while working the arms and legs.",
+  "instructions": [
+    "Stand tall with your elbows at your sides and palms up.",
+    "Step one foot forward while curling your hands up to your shoulders.",
+    "Step back as you lower your arms.",
+    "Alternate legs at a brisk, steady pace.",
+    "Keep your elbows pinned and your core tight."
+  ],
+  "textSource": "opengym"
+}

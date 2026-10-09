@@ -51,10 +51,6 @@ variables:
   DOCKER_IMAGE: "docker:28-cli"
   DOCKER_DIND_IMAGE: "docker:28-dind"
   TRIVY_IMAGE: "aquasec/trivy:0.74.0"
-  # The demo build has no backend and no local media: the exercise images/GIFs (~140 MB)
-  # are never committed, so it points at the upstream dataset on jsDelivr, pinned to a
-  # commit so the CDN can cache it forever.
-  DATASET: "https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@7455efae41b330c265e7cd4b78dfa848e7ce5ebd"
   GIT_DEPTH: "50"
   # npm's own progress bars and funding notices are noise in a job log.
   npm_config_fund: "false"
@@ -478,10 +474,13 @@ build:web-check:
   script:
     - docker build -f web/Dockerfile -t opengym-web:check .
     # It serves the app shell, and the shell is this build (the Coach setup is in the bundle).
+    # The master is uid 101, on port 80 — not the base image's EXPOSE 8080.
     - |
       set -eu
       docker run -d --name web-check -e BACKEND=127.0.0.1 -e PORT=3000 opengym-web:check
       sleep 2
+      [ "$(docker exec web-check id -u)" = 101 ]
+      docker exec web-check grep -q '^Uid:[[:space:]]*101[[:space:]]' /proc/1/status
       docker exec web-check wget -qO- http://127.0.0.1/ | grep -q '<div id="root">'
       docker exec web-check sh -c 'grep -l "coach" /usr/share/nginx/html/assets/index-*.js >/dev/null'
       docker rm -f web-check
@@ -534,7 +533,8 @@ build:apk:
       cd frontend
       npm ci
       # VITE_MOBILE build + `cap sync` into android/. The mobile flavor talks to no
-      # backend at all: no sign-in, no sync, media straight from the CDN.
+      # backend at all: no sign-in, no sync. The 180 px exercise media from catalogue/media are
+      # packed into the app; a release built locally sets APP_MEDIA_DIR for larger ones.
       npm run build:mobile
       VER="$(node -p "require('./package.json').version")"
       cd android
@@ -706,7 +706,7 @@ verify:stack:
           pull_policy: always
       EOF
       docker compose -f docker-compose.yml -f ci-images.override.yml config --quiet
-      # --no-deps skips the `media` service (a 140 MB clone the smoke test does not need).
+      # --no-deps: start api and web only, from the images just built, nothing else from the file.
       docker compose -f docker-compose.yml -f ci-images.override.yml up -d --no-deps --no-build api web
       NET="$(docker network ls --filter name=opengym --format '{{.Name}}' | head -1)"
       curl() { docker run --rm --network "$NET" curlimages/curl:8.12.1 "$@"; }
@@ -809,8 +809,9 @@ pages:
   script:
     - cd frontend
     - npm ci --cache .npm --prefer-offline --ignore-scripts
-    - VITE_IMG_BASE="$DATASET/images/" VITE_GIF_BASE="$DATASET/videos/" npm run build
+    - npm run build
     - cd ..
+    - node scripts/catalogue/stage-media.mjs frontend/dist
     - rm -rf public && mv frontend/dist public
   artifacts:
     paths:

@@ -1,0 +1,23 @@
+{
+  "id": "3677",
+  "name": "high knee jump rope",
+  "bodyPart": "cardio",
+  "equipment": "rope",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "hip flexors",
+    "calves",
+    "quadriceps"
+  ],
+  "category": "cardio",
+  "description": "Jump rope while driving your knees high for a hard cardio effort.",
+  "instructions": [
+    "Hold the rope handles and swing the rope overhead.",
+    "Run over the rope.",
+    "Lift your knees to hip height.",
+    "Stay on the balls of your feet.",
+    "Keep your torso upright."
+  ],
+  "femaleVariant": "8370",
+  "textSource": "opengym"
+}

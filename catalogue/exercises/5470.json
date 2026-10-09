@@ -1,0 +1,21 @@
+{
+  "id": "5470",
+  "name": "cable medius kickback",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Standing cable kickback angled out to the side that targets the upper glutes (gluteus medius) and hip stability.",
+  "instructions": [
+    "Attach an ankle strap to a low pulley and clip it to one ankle.",
+    "Stand side-on to the stack, hold the frame and keep your torso tall.",
+    "Sweep the working leg out and slightly back, leading with the heel.",
+    "Pause briefly, then return slowly without leaning.",
+    "Finish all reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "2155",
+  "name": "resistance band kneeling side plank",
+  "bodyPart": "waist",
+  "equipment": "resistance band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "A side plank from the knees with a band, training the sides of the waist and the hips with less load than a full plank.",
+  "instructions": [
+    "Wrap a band around your thighs and lie on one side with your knees bent.",
+    "Place your elbow under your shoulder.",
+    "Lift your hips so your body forms a straight line from knees to head.",
+    "Push your top knee gently out against the band.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

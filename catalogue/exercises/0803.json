@@ -1,0 +1,22 @@
+{
+  "id": "0803",
+  "name": "superman push-up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "core",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up in which you lift the opposite arm and leg at the top, like Superman. It trains the chest, back and core stability.",
+  "instructions": [
+    "Start in a high plank position with your hands slightly wider than shoulder-width apart and your feet together.",
+    "Engage your core and lower your body towards the ground, keeping your elbows close to your sides.",
+    "As you lower your body, simultaneously lift your right arm and left leg off the ground, extending them straight out.",
+    "Pause for a moment at the top, then lower your arm and leg back down while pushing yourself back up to the starting position.",
+    "Repeat the movement, this time lifting your left arm and right leg.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

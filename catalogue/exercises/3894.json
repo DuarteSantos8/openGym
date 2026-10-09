@@ -1,0 +1,23 @@
+{
+  "id": "3894",
+  "name": "dumbbell stiff leg deadlift v. 3",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A hip hinge with nearly straight legs that stretches and strengthens the hamstrings.",
+  "instructions": [
+    "Stand holding a dumbbell in each hand in front of your thighs.",
+    "Keep your knees almost straight.",
+    "Hinge at the hips and slide the weights down your legs.",
+    "Stop when you feel a stretch in the hamstrings.",
+    "Drive your hips forward to stand, keeping your back flat."
+  ],
+  "textSource": "opengym",
+  "maleVariant": "3340"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "1545",
+  "name": "barbell full zercher squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A squat with the bar held in the crooks of your elbows at full depth. It hits the quads, glutes and upper back.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and toes slightly turned out.",
+    "Hold the barbell in the crooks of your elbows, with your hands gripping the barbell for stability.",
+    "Engage your core and keep your chest lifted as you lower your hips back and down into a squat position.",
+    "Keep your knees in line with your toes and your weight in your heels.",
+    "Lower until your thighs are parallel to the ground, or as low as you can comfortably go.",
+    "Drive through your heels to stand back up, squeezing your glutes at the top of the movement.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

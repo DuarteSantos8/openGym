@@ -1,0 +1,23 @@
+{
+  "id": "4034",
+  "name": "band standing hip extension",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Standing kick-back against a band that works the glutes and the back of the thigh.",
+  "instructions": [
+    "Anchor the band low and loop it around one ankle.",
+    "Stand facing the anchor, holding a support and keeping your torso upright.",
+    "Press the working leg straight back.",
+    "Squeeze your glute at the top without arching your back.",
+    "Return slowly, finish the reps, then switch legs."
+  ],
+  "femaleVariant": "0922",
+  "textSource": "opengym"
+}

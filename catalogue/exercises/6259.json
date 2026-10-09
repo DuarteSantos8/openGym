@@ -1,0 +1,23 @@
+{
+  "id": "6259",
+  "name": "ring single arm rear delt row",
+  "bodyPart": "shoulders",
+  "equipment": "suspension trainer",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "biceps"
+  ],
+  "category": "calisthenics",
+  "description": "A one-arm row on a ring that focuses on the rear delt. It builds shoulder strength.",
+  "instructions": [
+    "Hold one ring and lean back.",
+    "Extend your arm.",
+    "Pull your elbow out and back.",
+    "Squeeze the rear delt.",
+    "Lower slowly.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

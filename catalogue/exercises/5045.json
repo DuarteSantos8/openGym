@@ -1,0 +1,23 @@
+{
+  "id": "5045",
+  "name": "reverse plank on elbows",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "shoulders",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "A hold with your back to the floor, supported on your elbows. It strengthens the entire back of the body.",
+  "instructions": [
+    "Sit with legs extended and elbows under your shoulders.",
+    "Press into your elbows and lift your hips.",
+    "Form a straight line from head to heels.",
+    "Squeeze your glutes and breathe steadily.",
+    "Hold for 20-40 seconds."
+  ],
+  "textSource": "opengym"
+}

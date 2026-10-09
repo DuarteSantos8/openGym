@@ -1,0 +1,22 @@
+{
+  "id": "10710",
+  "name": "weight plate lying crunch",
+  "bodyPart": "waist",
+  "equipment": "weight plate",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "core",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "Crunch while holding a plate. It works the abs.",
+  "instructions": [
+    "Lie on your back with knees bent.",
+    "Hold the plate on your chest.",
+    "Curl your shoulders up.",
+    "Pause and squeeze.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

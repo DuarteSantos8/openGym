@@ -1,0 +1,21 @@
+{
+  "id": "10920",
+  "name": "seated single leg toes press",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "feet",
+    "ankles"
+  ],
+  "category": "mobility",
+  "description": "Pressing the toes into the floor while seated. It activates the foot and calf muscles.",
+  "instructions": [
+    "Sit on a chair with one foot on the floor.",
+    "Lift your heel slightly and press your toes into the floor.",
+    "Hold briefly.",
+    "Lower your heel again.",
+    "Finish your reps, then switch feet."
+  ],
+  "textSource": "opengym"
+}

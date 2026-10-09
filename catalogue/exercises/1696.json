@@ -1,0 +1,23 @@
+{
+  "id": "1696",
+  "name": "transverse plane dumbbell lunge",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "adductors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A lunge that steps diagonally or rotates, loading the legs from a different angle.",
+  "instructions": [
+    "Hold a dumbbell in each hand and stand tall.",
+    "Step diagonally back or across your body into a lunge.",
+    "Lower until both knees are bent, keeping your chest upright.",
+    "Push through the front foot to return to the start.",
+    "Alternate sides for the planned reps."
+  ],
+  "textSource": "opengym"
+}

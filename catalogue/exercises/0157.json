@@ -1,0 +1,39 @@
+{
+  "id": "0157",
+  "name": "cable deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A deadlift using the cable stack. Trains the glutes, hamstrings and lower back.",
+  "instructions": [
+    "Stand facing the cable machine with your feet shoulder-width apart.",
+    "Bend at the hips and knees, lowering your torso until your back is parallel to the ground.",
+    "Grasp the cable handles with an overhand grip, keeping your arms straight and your shoulders back.",
+    "Engage your glutes and hamstrings to lift the cable handles, extending your hips and standing up straight.",
+    "Pause for a moment at the top, then slowly lower the cable handles back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "bodyPart": "full body",
+    "primaries": [
+      "gluteal",
+      "hamstring",
+      "lower-back"
+    ],
+    "secondaries": [
+      "quadriceps",
+      "adductors",
+      "calves",
+      "abs",
+      "obliques"
+    ]
+  },
+  "femaleVariant": "3045",
+  "textSource": "exercisedb"
+}

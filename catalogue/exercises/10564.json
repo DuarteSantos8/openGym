@@ -1,0 +1,22 @@
+{
+  "id": "10564",
+  "name": "seated pronation supination foot",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "feet",
+    "shins"
+  ],
+  "category": "mobility",
+  "description": "Seated, you roll the foot inward and outward. It mobilizes the ankle and foot.",
+  "instructions": [
+    "Sit on a chair with one foot lifted slightly off the floor.",
+    "Roll the sole of your foot inward.",
+    "Roll it outward as far as is comfortable.",
+    "Keep the lower leg still.",
+    "Finish your reps, then switch feet."
+  ],
+  "textSource": "opengym"
+}

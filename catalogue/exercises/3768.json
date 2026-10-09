@@ -1,0 +1,23 @@
+{
+  "id": "3768",
+  "name": "lever seated horizontal leg press",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A seated leg press on a lever machine that builds the quads and glutes.",
+  "instructions": [
+    "Sit on the machine with your back against the pad and feet on the platform.",
+    "Release the safety and press the platform away.",
+    "Stop just before your knees lock.",
+    "Lower the weight slowly until your knees are bent about 90 degrees.",
+    "Keep your hips down and your back flat on the pad."
+  ],
+  "textSource": "opengym"
+}

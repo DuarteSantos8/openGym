@@ -1,0 +1,24 @@
+{
+  "id": "2402",
+  "name": "dumbbell hammer curls (with arm blaster)",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A standing hammer curl with an arm blaster to prevent swinging. Targets the biceps and brachialis.",
+  "instructions": [
+    "Stand up straight with a dumbbell in each hand, palms facing your torso.",
+    "Keep your elbows close to your torso and rotate the palms of your hands until they are facing forward.",
+    "This will be your starting position.",
+    "Now, while holding your upper arm stationary, exhale and curl the weights while contracting your biceps.",
+    "Continue to raise the weights until your biceps are fully contracted and the dumbbells are at shoulder level.",
+    "Hold the contracted position for a brief pause as you squeeze your biceps.",
+    "Then, inhale and slowly begin to lower the dumbbells back to the starting position.",
+    "Repeat for the recommended amount of repetitions."
+  ],
+  "femaleVariant": "3077",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4910",
+  "name": "dumbbell bent arm iso hold",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "A static hold with the elbows bent and the dumbbells held in place. It builds endurance in the arms.",
+  "instructions": [
+    "Stand tall with a dumbbell in each hand.",
+    "Curl the weights until your elbows are bent about 90 degrees.",
+    "Keep your elbows pinned to your sides.",
+    "Hold the position without letting the weights drop.",
+    "Breathe steadily during the hold.",
+    "Hold for 20-30 seconds, then lower under control."
+  ],
+  "textSource": "opengym"
+}

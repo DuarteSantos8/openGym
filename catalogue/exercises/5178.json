@@ -1,0 +1,20 @@
+{
+  "id": "5178",
+  "name": "lever single leg extension (plate loaded)",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A plate-loaded machine extension done one leg at a time. It isolates the quads and evens out left-right differences.",
+  "instructions": [
+    "Sit in the machine and adjust the pad to rest on your lower shin.",
+    "Place one foot under the pad and keep the other planted.",
+    "Extend your knee until your leg is almost straight.",
+    "Pause briefly and squeeze your quads.",
+    "Lower slowly, finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

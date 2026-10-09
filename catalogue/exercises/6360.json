@@ -1,0 +1,21 @@
+{
+  "id": "6360",
+  "name": "cable standing wrist curl",
+  "bodyPart": "lower arms",
+  "equipment": "cable",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "Wrist curls using a low cable for steady tension through the whole range, working the inside of your forearms.",
+  "instructions": [
+    "Face a low cable pulley and grab the handle with an underhand grip.",
+    "Step back and let your arms hang with elbows tucked.",
+    "Curl your wrists upward against the cable.",
+    "Squeeze at the top.",
+    "Lower with control and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4848",
+  "name": "barbell pin front squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "adductors",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A front squat starting from pins in a rack, removing the stretch reflex. It builds strength out of the bottom.",
+  "instructions": [
+    "Set pins at the bottom depth and place the bar on them.",
+    "Get under the bar in a front rack position.",
+    "Brace and drive up to stand.",
+    "Lower back to the pins under control.",
+    "Pause and reset between reps."
+  ],
+  "textSource": "opengym"
+}

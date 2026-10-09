@@ -1,0 +1,23 @@
+{
+  "id": "1184",
+  "name": "weighted inverted row",
+  "bodyPart": "back",
+  "equipment": "weighted",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rhomboids",
+    "rear deltoids"
+  ],
+  "category": "calisthenics",
+  "description": "An inverted row with extra weight placed on your body for added back challenge.",
+  "instructions": [
+    "Set a bar at waist height and lie under it with extra weight on your torso.",
+    "Grip the bar just wider than shoulders.",
+    "Keep your body straight from heels to head.",
+    "Pull your chest to the bar.",
+    "Lower under control."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "0055",
+  "name": "barbell lying close-grip press",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A close-grip press from a lying position. Targets the triceps with chest involvement.",
+  "instructions": [
+    "Lie flat on a bench with your feet flat on the ground and your back pressed against the bench.",
+    "Grasp the barbell with a close grip, hands shoulder-width apart, palms facing towards your feet.",
+    "Lift the barbell off the rack and hold it directly above your chest with your arms fully extended.",
+    "Slowly lower the barbell towards your chest, keeping your elbows close to your body.",
+    "Pause for a moment when the barbell touches your chest, then push it back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

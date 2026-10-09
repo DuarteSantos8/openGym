@@ -1,0 +1,23 @@
+{
+  "id": "4573",
+  "name": "band half kneeling chop",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A band chop from a half kneeling position, building core stability and rotation.",
+  "instructions": [
+    "Anchor a band high and kneel on one knee side-on to the anchor.",
+    "Hold the band with both hands near your high shoulder.",
+    "Pull the band diagonally down across your body.",
+    "Rotate your torso and keep your hips square.",
+    "Return slowly to the start.",
+    "Complete your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

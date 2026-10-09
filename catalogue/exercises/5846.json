@@ -1,0 +1,21 @@
+{
+  "id": "5846",
+  "name": "cross standing crunch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A standing crunch that brings your elbow across to the opposite knee. It trains the abs and obliques.",
+  "instructions": [
+    "Stand tall with your hands behind your head.",
+    "Lift one knee and rotate your torso.",
+    "Bring the opposite elbow toward that knee.",
+    "Return to standing.",
+    "Alternate sides for the set."
+  ],
+  "textSource": "opengym"
+}

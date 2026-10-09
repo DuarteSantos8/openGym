@@ -1,0 +1,22 @@
+{
+  "id": "7746",
+  "name": "nordic hamstring curl",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Kneel with your feet anchored and lower your body forward slowly. It is a demanding hamstring strengthener.",
+  "instructions": [
+    "Kneel on a pad with your ankles held down firmly.",
+    "Keep your body straight from knees to head.",
+    "Lower forward as slowly as you can.",
+    "Catch yourself with your hands at the bottom.",
+    "Push back up and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4984",
+  "name": "kneeling modified hindu push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "An easier knee-supported version of the hindu push up. The flowing dip and sweep trains the chest, shoulders and triceps and opens the spine.",
+  "instructions": [
+    "Start on your knees and hands with hips high, like a pike.",
+    "Bend your elbows and swoop your chest down and forward close to the floor.",
+    "Push through your arms to glide your chest up and forward, arching slightly.",
+    "Reverse the path, pushing your hips back up to the start.",
+    "Move smoothly and keep your core engaged."
+  ],
+  "textSource": "opengym"
+}

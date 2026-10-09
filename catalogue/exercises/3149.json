@@ -1,0 +1,24 @@
+{
+  "id": "3149",
+  "name": "chin tuck",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "sternocleidomastoid",
+    "upper back",
+    "trapezius"
+  ],
+  "category": "mobility",
+  "description": "Drawing your chin straight back to line up your head over your shoulders. It's a simple neck posture exercise.",
+  "instructions": [
+    "Sit or stand tall with your eyes level.",
+    "Place a finger on your chin if it helps.",
+    "Draw your chin straight back as if making a double chin.",
+    "Keep your head level without tilting.",
+    "Hold for 3-5 seconds.",
+    "Release and repeat 8-10 times."
+  ],
+  "femaleVariant": "3151",
+  "textSource": "opengym"
+}

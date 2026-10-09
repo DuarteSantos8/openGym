@@ -1,0 +1,23 @@
+{
+  "id": "6801",
+  "name": "dumbbell seated military press in out leg raise on floor",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "hip flexors",
+    "lower abs"
+  ],
+  "category": "strength",
+  "description": "A seated overhead press combined with in and out leg movements. It works the shoulders and the lower abs together.",
+  "instructions": [
+    "Sit on the floor leaning back slightly, dumbbells at your shoulders.",
+    "Press the dumbbells overhead.",
+    "Pull your knees in, then extend the legs out as the weights stay up.",
+    "Lower the dumbbells to your shoulders.",
+    "Repeat, keeping your back long and core braced."
+  ],
+  "textSource": "opengym"
+}

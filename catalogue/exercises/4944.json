@@ -1,0 +1,23 @@
+{
+  "id": "4944",
+  "name": "standing bent knee figure 8",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core",
+    "adductors"
+  ],
+  "category": "mobility",
+  "description": "A standing hip mobility move where you draw a figure eight with the bent knee. It loosens the hips.",
+  "instructions": [
+    "Stand tall and hold a support if needed.",
+    "Lift one knee in front of you.",
+    "Trace a slow figure eight with your knee.",
+    "Keep your standing leg steady.",
+    "Keep your torso upright.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

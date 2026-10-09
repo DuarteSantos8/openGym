@@ -1,0 +1,23 @@
+{
+  "id": "10868",
+  "name": "bosu ball squat",
+  "bodyPart": "upper legs",
+  "equipment": "bosu ball",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Squat standing on a Bosu ball. The unstable surface adds a balance challenge.",
+  "instructions": [
+    "Stand on the Bosu with feet shoulder width apart.",
+    "Hold your arms forward.",
+    "Sit your hips back and bend your knees.",
+    "Keep your chest lifted.",
+    "Stand tall.",
+    "Keep your knees tracking over your toes."
+  ],
+  "textSource": "opengym"
+}

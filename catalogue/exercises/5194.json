@@ -1,0 +1,23 @@
+{
+  "id": "5194",
+  "name": "bodyweight muscle up v. 2",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "triceps",
+    "chest",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "An advanced pull-up that transitions into a dip above a bar. It builds serious pulling and pushing strength.",
+  "instructions": [
+    "Hang from a pull-up bar with a false or standard grip.",
+    "Pull explosively, bringing the bar toward your lower chest.",
+    "Lean forward and rotate your wrists over the bar.",
+    "Press up until your arms are fully straight.",
+    "Lower yourself back down with control."
+  ],
+  "textSource": "opengym"
+}

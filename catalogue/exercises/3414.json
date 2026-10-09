@@ -1,0 +1,22 @@
+{
+  "id": "3414",
+  "name": "lying upper body rotation",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "upper back"
+  ],
+  "category": "mobility",
+  "description": "Rotate your upper body while lying down to loosen the mid-back.",
+  "instructions": [
+    "Lie on your side with knees bent and arms stretched in front of you.",
+    "Keep your knees stacked.",
+    "Lift the top arm and open it across to the other side, following it with your eyes.",
+    "Return the arm to the start.",
+    "Do 10 reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

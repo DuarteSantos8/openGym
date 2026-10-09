@@ -1,0 +1,21 @@
+{
+  "id": "1017",
+  "name": "band y-raise",
+  "bodyPart": "shoulders",
+  "equipment": "band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "traps",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A Y-raise with a band, lifting the arms into a Y shape. It trains the delts and upper back.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold the band in front of your thighs with your palms facing inwards.",
+    "Keep your arms straight and lift them up and out to the sides, forming a 'Y' shape with your body.",
+    "Squeeze your shoulder blades together at the top of the movement.",
+    "Slowly lower your arms back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

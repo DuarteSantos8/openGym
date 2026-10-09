@@ -1,0 +1,23 @@
+{
+  "id": "7281",
+  "name": "resistance band leg kickback",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Standing band kickback that isolates the glutes.",
+  "instructions": [
+    "Loop a band around your ankles or anchor it low and loop it on one foot.",
+    "Stand tall holding something for balance.",
+    "Kick the working leg straight back.",
+    "Squeeze your glute at the top without arching your back.",
+    "Return slowly, then switch legs."
+  ],
+  "femaleVariant": "2156",
+  "textSource": "opengym"
+}

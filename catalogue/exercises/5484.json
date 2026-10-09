@@ -1,0 +1,21 @@
+{
+  "id": "5484",
+  "name": "weighted seated single calf raise v. 2",
+  "bodyPart": "lower legs",
+  "equipment": "weighted",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles"
+  ],
+  "category": "strength",
+  "description": "One-leg seated calf raise with weight on the knee, working the soleus with extra focus on each side.",
+  "instructions": [
+    "Sit with one forefoot on a raised edge and weight on that knee.",
+    "Lower the heel for a full stretch.",
+    "Press up onto the ball of your foot as high as possible.",
+    "Pause, then lower under control.",
+    "Finish your reps and switch legs."
+  ],
+  "textSource": "opengym"
+}

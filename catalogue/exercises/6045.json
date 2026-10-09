@@ -1,0 +1,23 @@
+{
+  "id": "6045",
+  "name": "bottle weighted sumo squat",
+  "bodyPart": "upper legs",
+  "equipment": "weighted",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "adductors",
+    "quadriceps",
+    "hamstrings",
+    "inner thighs"
+  ],
+  "category": "strength",
+  "description": "A wide-stance squat holding a weighted bottle between your legs. It hits the glutes and inner thighs.",
+  "instructions": [
+    "Stand with feet wide and toes turned out, holding a bottle with both hands in front of you.",
+    "Bend your knees and lower your hips straight down.",
+    "Keep your knees pushing out over your toes.",
+    "Stop when your thighs are about parallel.",
+    "Drive up through your heels and squeeze your glutes."
+  ],
+  "textSource": "opengym"
+}

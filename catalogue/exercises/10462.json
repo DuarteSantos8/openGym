@@ -1,0 +1,21 @@
+{
+  "id": "10462",
+  "name": "seated hamstring stretch on a chair",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "A gentle seated stretch for the back of the thigh, done on a chair. It helps loosen tight hamstrings.",
+  "instructions": [
+    "Sit near the front edge of a chair.",
+    "Extend one leg straight with your heel on the floor and toes up.",
+    "Hinge forward from your hips with a flat back until you feel a stretch.",
+    "Hold for 20-30 seconds, breathing steadily.",
+    "Switch legs and repeat."
+  ],
+  "textSource": "opengym"
+}

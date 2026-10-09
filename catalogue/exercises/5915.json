@@ -1,0 +1,23 @@
+{
+  "id": "5915",
+  "name": "3 leg chaturanga pose",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders",
+    "core",
+    "glutes"
+  ],
+  "category": "yoga",
+  "description": "A low plank with one leg lifted. Adds a balance challenge to the arms and core.",
+  "instructions": [
+    "Start in a high plank and lift one leg behind you.",
+    "Keep your hips level.",
+    "Bend your elbows back and lower.",
+    "Hold briefly with your body in line.",
+    "Press up, lower the leg and switch."
+  ],
+  "textSource": "opengym"
+}

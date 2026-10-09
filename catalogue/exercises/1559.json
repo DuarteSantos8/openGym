@@ -1,0 +1,21 @@
+{
+  "id": "1559",
+  "name": "exercise ball hip flexor stretch",
+  "bodyPart": "upper legs",
+  "equipment": "stability ball",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "You kneel with a stability ball for support and push the hips forward. It stretches the hip flexors at the front of the hip.",
+  "instructions": [
+    "Place the stability ball on the ground and kneel in front of it.",
+    "Place your right foot on top of the stability ball, with your knee bent at a 90-degree angle.",
+    "Extend your left leg behind you, keeping it straight.",
+    "Lean forward, pushing your hips towards the stability ball, until you feel a stretch in your right hip flexor.",
+    "Hold the stretch for 20-30 seconds, then switch sides and repeat."
+  ],
+  "textSource": "exercisedb"
+}

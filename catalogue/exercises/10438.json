@@ -1,0 +1,23 @@
+{
+  "id": "10438",
+  "name": "alternating dead hang",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "forearms",
+    "grip muscles",
+    "shoulders",
+    "core"
+  ],
+  "category": "stretching",
+  "description": "Hang from a bar and shift your weight from side to side. It decompresses the shoulders and stretches the lats.",
+  "instructions": [
+    "Grab a pull-up bar with an overhand grip, hands about shoulder width apart.",
+    "Hang with your arms long and your body relaxed.",
+    "Shift your weight toward one hand, letting that side stretch.",
+    "Shift to the other side and keep alternating.",
+    "Hold the hang for 20-30 seconds in total."
+  ],
+  "textSource": "opengym"
+}

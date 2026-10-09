@@ -1,0 +1,22 @@
+{
+  "id": "6019",
+  "name": "lying hyperextension hold",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "isometric",
+  "description": "A prone hold that lifts the chest and legs, building lower back endurance.",
+  "instructions": [
+    "Lie face down with your arms extended.",
+    "Lift your chest, arms and legs a few inches.",
+    "Keep your neck neutral.",
+    "Squeeze your glutes and hold for 15-30 seconds.",
+    "Lower slowly."
+  ],
+  "femaleVariant": "6018",
+  "textSource": "opengym"
+}

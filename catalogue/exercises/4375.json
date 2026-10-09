@@ -1,0 +1,22 @@
+{
+  "id": "4375",
+  "name": "medicine ball around head rotation",
+  "bodyPart": "shoulders",
+  "equipment": "medicine ball",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper back",
+    "core",
+    "obliques"
+  ],
+  "category": "mobility",
+  "description": "Circle a medicine ball around your head to warm up the shoulders and challenge your core and balance.",
+  "instructions": [
+    "Stand tall with feet hip-width apart, holding a medicine ball at chest height.",
+    "Brace your core and keep your hips still.",
+    "Pass the ball around your head in a smooth circle, keeping it close.",
+    "Complete several circles, then reverse the direction.",
+    "Keep your ribs down and avoid leaning back as the ball passes behind you."
+  ],
+  "textSource": "opengym"
+}

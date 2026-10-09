@@ -1,0 +1,22 @@
+{
+  "id": "1646",
+  "name": "dumbbell alternate hammer preacher curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Alternating hammer curls on a preacher bench. It builds the brachialis and the biceps with strict form.",
+  "instructions": [
+    "Sit on a preacher bench with a dumbbell in each hand, palms facing your torso and arms fully extended.",
+    "Keep your upper arms stationary and exhale as you curl the weights while contracting your biceps.",
+    "Continue to raise the dumbbells until your biceps are fully contracted and the dumbbells are at shoulder level.",
+    "Hold the contracted position for a brief pause as you squeeze your biceps.",
+    "Inhale and slowly begin to lower the dumbbells back to the starting position.",
+    "Repeat for the recommended amount of repetitions."
+  ],
+  "femaleVariant": "2641",
+  "textSource": "exercisedb"
+}

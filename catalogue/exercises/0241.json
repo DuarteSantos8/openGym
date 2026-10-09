@@ -1,0 +1,23 @@
+{
+  "id": "0241",
+  "name": "cable triceps pushdown (v-bar)",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A triceps pushdown with a v-bar on a high pulley. The angled grip lets you press hard and squeeze the triceps.",
+  "instructions": [
+    "Attach a v-bar attachment to the cable machine at the highest setting.",
+    "Stand facing the cable machine with your feet shoulder-width apart.",
+    "Grasp the v-bar with an overhand grip, palms facing down, and your hands shoulder-width apart.",
+    "Keep your elbows close to your sides and your upper arms stationary throughout the exercise.",
+    "Engage your triceps and exhale as you push the v-bar down until your arms are fully extended.",
+    "Pause for a moment at the bottom of the movement, squeezing your triceps.",
+    "Inhale as you slowly return the v-bar to the starting position, maintaining control.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "1908",
+  "name": "standing toe down hamstring stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "Stretches the back of the thigh with the toes lowered.",
+  "instructions": [
+    "Stand with one heel on the floor in front of you.",
+    "Point your toes down.",
+    "Hinge forward from the hips with a flat back.",
+    "Keep the front leg nearly straight.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

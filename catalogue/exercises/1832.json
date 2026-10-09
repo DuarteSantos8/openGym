@@ -1,0 +1,21 @@
+{
+  "id": "1832",
+  "name": "diagonal flexion neck stretch",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "trapezius",
+    "sternocleidomastoid"
+  ],
+  "category": "stretching",
+  "description": "Tilting your head diagonally forward stretches the back and side of the neck. It targets the muscle running from the neck to the shoulder blade.",
+  "instructions": [
+    "Sit tall and gently turn your head about 45 degrees to one side.",
+    "Drop your chin diagonally toward your chest, using your hand for light added pressure.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

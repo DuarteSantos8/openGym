@@ -1,0 +1,22 @@
+{
+  "id": "1280",
+  "name": "dumbbell incline one arm fly on exercise ball",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "One-arm incline fly with your back supported on a stability ball. The unstable base adds a core challenge to the upper chest stretch.",
+  "instructions": [
+    "Sit on an exercise ball with a dumbbell in one hand.",
+    "Walk your feet forward and roll your body down until your head, neck, and upper back are supported on the ball.",
+    "Hold the dumbbell with your arm extended straight up over your chest, palm facing inwards.",
+    "Slowly lower the dumbbell out to the side, keeping a slight bend in your elbow.",
+    "Pause for a moment when your arm is parallel to the ground.",
+    "Engage your chest muscles to bring the dumbbell back up to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms."
+  ],
+  "textSource": "exercisedb"
+}

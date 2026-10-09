@@ -1,0 +1,23 @@
+{
+  "id": "8222",
+  "name": "dumbbell underhand renegade row",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "core",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A renegade row with an underhand grip on the dumbbells. It builds core stability and works the lats and biceps.",
+  "instructions": [
+    "Set up in a plank with your hands on dumbbells, palms facing forward.",
+    "Widen your feet for balance.",
+    "Row one dumbbell up to your ribs.",
+    "Keep your hips level.",
+    "Lower and alternate arms."
+  ],
+  "textSource": "opengym"
+}

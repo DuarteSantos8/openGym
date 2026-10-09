@@ -1,0 +1,23 @@
+{
+  "id": "1149",
+  "name": "suspender triceps extension push up",
+  "bodyPart": "upper arms",
+  "equipment": "suspension trainer",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "chest",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Lowering your head toward the handles then pushing out, a strap extension that hammers the triceps.",
+  "instructions": [
+    "Hold the handles and lean forward with arms straight.",
+    "Keep your body in a straight line.",
+    "Bend your elbows and lower your forehead between the hands.",
+    "Keep elbows pointing forward.",
+    "Press back up to straight arms.",
+    "Move your feet back for more challenge."
+  ],
+  "textSource": "opengym"
+}

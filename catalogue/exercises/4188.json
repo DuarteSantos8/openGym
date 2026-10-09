@@ -1,0 +1,22 @@
+{
+  "id": "4188",
+  "name": "ez bar reverse crunch",
+  "bodyPart": "waist",
+  "equipment": "ez barbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A reverse crunch holding an EZ bar behind your head. It targets the lower abs.",
+  "instructions": [
+    "Lie on your back holding an EZ bar overhead.",
+    "Lift your legs with knees bent.",
+    "Curl your hips off the floor.",
+    "Pause at the top.",
+    "Lower slowly.",
+    "Keep your arms steady."
+  ],
+  "textSource": "opengym"
+}

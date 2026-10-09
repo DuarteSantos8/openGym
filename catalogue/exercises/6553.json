@@ -1,0 +1,23 @@
+{
+  "id": "6553",
+  "name": "landmine single leg romanian deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "landmine",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A one-leg hip hinge holding a landmine bar. It builds hamstring and glute strength along with balance.",
+  "instructions": [
+    "Hold the end of a landmine bar at your chest and stand on one leg.",
+    "Keep a soft bend in the standing knee.",
+    "Hinge at the hip and send the free leg back for balance.",
+    "Lower the bar toward the floor with a flat back.",
+    "Squeeze your glute and return to standing.",
+    "Complete the reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

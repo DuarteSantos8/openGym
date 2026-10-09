@@ -1,0 +1,22 @@
+{
+  "id": "1483",
+  "name": "full lotus yoga pose",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "groin",
+    "ankles",
+    "hip flexors"
+  ],
+  "category": "yoga",
+  "description": "A seated yoga posture with both feet resting on opposite thighs. It opens the hips and needs good flexibility.",
+  "instructions": [
+    "Sit tall on the floor with your legs extended.",
+    "Bring one foot onto the opposite thigh, then the other foot on top of the other thigh.",
+    "Only go as far as your hips allow, and never force your knees.",
+    "Rest your hands on your knees and lengthen your spine.",
+    "Hold for 20-30 seconds with calm breathing, then switch the leg order next time."
+  ],
+  "textSource": "opengym"
+}

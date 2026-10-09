@@ -1,0 +1,40 @@
+{
+  "id": "1300",
+  "name": "lever decline chest press",
+  "bodyPart": "chest",
+  "equipment": "leverage machine",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A machine press that travels along a decline path. It focuses on the lower chest and triceps in a fixed, stable motion.",
+  "instructions": [
+    "Adjust the seat height and backrest of the leverage machine to a comfortable position.",
+    "Sit on the machine with your back against the backrest and your feet flat on the floor.",
+    "Grasp the handles with an overhand grip and position your hands slightly wider than shoulder-width apart.",
+    "Push the handles forward and away from your body until your arms are fully extended.",
+    "Slowly lower the handles back towards your chest, keeping your elbows slightly bent.",
+    "Pause for a moment at the bottom, then push the handles back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "chest"
+    ],
+    "secondaries": [
+      "deltoids",
+      "triceps",
+      "biceps"
+    ],
+    "weights": {
+      "chest": 1,
+      "deltoids": 0.4,
+      "triceps": 0.4,
+      "biceps": 0
+    }
+  },
+  "femaleVariant": "2454",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "3180",
+  "name": "incline reverse hyperextension",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A reverse hyperextension on an incline bench that trains the glutes and lower back.",
+  "instructions": [
+    "Lie face down on an incline bench with hips at the edge.",
+    "Hold the sides of the bench.",
+    "Raise both legs until they are in line with your torso.",
+    "Squeeze your glutes at the top.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

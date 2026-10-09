@@ -1,0 +1,22 @@
+{
+  "id": "2147",
+  "name": "lever hip thrust with resistance band",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "adductors",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "A machine hip thrust with a band around the thighs, adding hip abductor work to the glute drive.",
+  "instructions": [
+    "Sit on the machine with your upper back on the pad and a band around your thighs above the knees.",
+    "Place your feet flat and push your knees gently out against the band.",
+    "Drive through your heels and lift your hips until your torso and thighs are in line.",
+    "Squeeze your glutes at the top.",
+    "Lower slowly and repeat, keeping the knees pressed out."
+  ],
+  "textSource": "opengym"
+}

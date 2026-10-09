@@ -1,0 +1,22 @@
+{
+  "id": "4850",
+  "name": "barbell single leg good morning",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A single-leg barbell hip hinge. It trains the hamstrings and balance.",
+  "instructions": [
+    "Rest a barbell on your upper back and stand on one leg.",
+    "Keep your standing knee slightly bent.",
+    "Hinge forward while your free leg extends behind you.",
+    "Lower until your torso is near parallel.",
+    "Return and switch legs after your reps."
+  ],
+  "textSource": "opengym"
+}

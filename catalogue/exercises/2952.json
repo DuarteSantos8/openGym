@@ -1,0 +1,22 @@
+{
+  "id": "2952",
+  "name": "smith kneeling rear kick (with partner)",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "A kneeling glute kick using a Smith machine with a partner helping. It works the glutes with a steady guided path.",
+  "instructions": [
+    "Get on all fours and place the sole of one foot on the Smith bar, with your partner steadying you if needed.",
+    "Brace your core.",
+    "Press the bar up by extending your hip.",
+    "Squeeze your glute at the top.",
+    "Lower slowly, finish the reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

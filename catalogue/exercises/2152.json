@@ -1,0 +1,22 @@
+{
+  "id": "2152",
+  "name": "resistance band front plank with kicked leg",
+  "bodyPart": "waist",
+  "equipment": "resistance band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "core",
+    "shoulders",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A plank hold while one leg kicks back against a band, working the glutes and core together.",
+  "instructions": [
+    "Place a band around your feet or ankles and get into a forearm or high plank.",
+    "Brace your core so your body forms a straight line.",
+    "Kick one leg back and up against the band without shifting your hips.",
+    "Return the leg with control.",
+    "Alternate legs, keeping your hips level throughout."
+  ],
+  "textSource": "opengym"
+}

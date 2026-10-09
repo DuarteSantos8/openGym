@@ -1,0 +1,22 @@
+{
+  "id": "0829",
+  "name": "walk (high knees)",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "hip flexors",
+    "quadriceps",
+    "calves"
+  ],
+  "category": "cardio",
+  "description": "Walking while lifting your knees high. It warms up the legs and gets your heart pumping.",
+  "instructions": [
+    "Stand tall with your arms relaxed.",
+    "Lift one knee to hip height.",
+    "Step down and lift the other knee.",
+    "Swing your arms naturally.",
+    "Keep a steady rhythm for the set duration."
+  ],
+  "textSource": "opengym"
+}

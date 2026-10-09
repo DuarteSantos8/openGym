@@ -1,0 +1,23 @@
+{
+  "id": "11782",
+  "name": "lateral jump",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "quadriceps",
+    "calves",
+    "adductors"
+  ],
+  "category": "plyometrics",
+  "description": "A side-to-side jump that develops lateral power, balance and leg stability.",
+  "instructions": [
+    "Stand on both feet with your knees slightly bent and your arms ready.",
+    "Push off and jump sideways, covering a comfortable distance.",
+    "Land softly on both feet with your knees tracking over your toes.",
+    "Immediately jump back to the starting side.",
+    "Keep your chest up and repeat for the planned reps or time."
+  ],
+  "textSource": "opengym"
+}

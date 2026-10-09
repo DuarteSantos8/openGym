@@ -1,0 +1,23 @@
+{
+  "id": "4579",
+  "name": "bodyweight step up on stepbox",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A basic step-up onto a box that builds leg and hip strength and single-leg control.",
+  "instructions": [
+    "Stand facing a step box with feet hip-width apart.",
+    "Place one foot fully on the box.",
+    "Push through your heel to step up and stand tall.",
+    "Bring the other foot up to meet it.",
+    "Step down with control.",
+    "Finish your reps, then switch the lead leg."
+  ],
+  "textSource": "opengym"
+}

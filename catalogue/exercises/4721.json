@@ -1,0 +1,21 @@
+{
+  "id": "4721",
+  "name": "bar biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A standard bar curl for building the biceps with a steady, controlled lift.",
+  "instructions": [
+    "Stand holding a bar with an underhand shoulder-width grip.",
+    "Keep your elbows at your sides.",
+    "Curl the bar up to shoulder height.",
+    "Squeeze your biceps.",
+    "Lower slowly without swinging."
+  ],
+  "textSource": "opengym"
+}

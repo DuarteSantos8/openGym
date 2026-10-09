@@ -1,0 +1,22 @@
+{
+  "id": "0410",
+  "name": "dumbbell single leg split squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A split squat with a dumbbell where the rear foot is raised or the body shifts to one leg. It builds the thighs and glutes and challenges balance.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in each hand.",
+    "Take a step forward with one foot and position your feet so that your front foot is flat on the ground and your back foot is elevated on a bench or step.",
+    "Lower your body by bending your front knee and hip, keeping your back knee slightly bent and your back heel off the ground.",
+    "Continue lowering until your front thigh is parallel to the ground, then push through your front heel to return to the starting position.",
+    "Repeat for the desired number of repetitions, then switch legs and repeat."
+  ],
+  "textSource": "exercisedb"
+}

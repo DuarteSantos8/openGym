@@ -1,0 +1,22 @@
+{
+  "id": "5172",
+  "name": "arm crossover",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "mobility",
+  "description": "A dynamic arm swing across the chest that warms up the pecs and shoulders.",
+  "instructions": [
+    "Stand tall with your arms out to the sides at shoulder height.",
+    "Swing both arms forward and cross them in front of your chest.",
+    "Open them back out and squeeze your shoulder blades slightly.",
+    "Alternate which arm is on top.",
+    "Keep a steady, relaxed rhythm."
+  ],
+  "femaleVariant": "4664",
+  "textSource": "opengym"
+}

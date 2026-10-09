@@ -1,0 +1,22 @@
+{
+  "id": "5097",
+  "name": "dumbbell single arm alternate decline bench press",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Press dumbbells on a decline bench one arm at a time. It hits the lower chest and keeps your core working to stay balanced.",
+  "instructions": [
+    "Lie on a decline bench holding a dumbbell in each hand over your chest.",
+    "Lower one dumbbell to the side of your chest.",
+    "Press it back up until your arm is straight.",
+    "Repeat with the other arm.",
+    "Keep your core tight and the bench-side arm steady."
+  ],
+  "textSource": "opengym"
+}

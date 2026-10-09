@@ -1,0 +1,23 @@
+{
+  "id": "1245",
+  "name": "lying leg raise and hold",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Raising your legs from the floor and holding them up. It targets the lower abs.",
+  "instructions": [
+    "Lie on your back with your legs straight and your hands by your sides.",
+    "Press your lower back into the floor.",
+    "Raise your legs until they are vertical.",
+    "Lower them to just above the floor and hold for a couple of seconds.",
+    "Repeat without letting your back arch."
+  ],
+  "femaleVariant": "7118",
+  "textSource": "opengym"
+}

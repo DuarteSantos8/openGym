@@ -1,0 +1,23 @@
+{
+  "id": "9313",
+  "name": "ring isometric hold reverse ab rollout",
+  "bodyPart": "waist",
+  "equipment": "suspension trainer",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "lats",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "Holding a reverse rollout position on rings challenges the abs and shoulders. A tough anti-extension hold.",
+  "instructions": [
+    "Hang or set yourself up with the rings under your forearms.",
+    "Brace your core and tuck your pelvis.",
+    "Move into the rollout position and stop.",
+    "Keep your body in a straight line.",
+    "Hold for 10-20 seconds.",
+    "Return slowly."
+  ],
+  "textSource": "opengym"
+}

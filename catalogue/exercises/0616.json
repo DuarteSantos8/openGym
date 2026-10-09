@@ -1,0 +1,21 @@
+{
+  "id": "0616",
+  "name": "lying hip flexor stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "stretching",
+  "description": "Lying near the edge of a surface, you let one leg hang to stretch the front of the hip. It eases tightness from sitting.",
+  "instructions": [
+    "Lie on your back near the edge of a bench or bed.",
+    "Pull one knee toward your chest and hold it.",
+    "Let the other leg hang down relaxed over the edge.",
+    "Keep your lower back flat.",
+    "Hold for 20-30 seconds.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

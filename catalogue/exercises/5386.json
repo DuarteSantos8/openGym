@@ -1,0 +1,24 @@
+{
+  "id": "5386",
+  "name": "roll around the world lying on floor",
+  "bodyPart": "back",
+  "equipment": "roller",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "shoulders",
+    "trapezius",
+    "rhomboids"
+  ],
+  "category": "mobility",
+  "description": "Self-massage with a foam roller to ease tightness in the upper back and shoulders. Good before training or on rest days to loosen up.",
+  "instructions": [
+    "Lie on your back with the roller under your upper back.",
+    "Place the roller under the upper back and shoulders and let your body weight settle onto it.",
+    "Sweep your arms in a wide arc overhead, like a snow angel.",
+    "Pause on tender spots and breathe slowly for 20-30 seconds.",
+    "Keep your core braced and avoid rolling over joints or bone.",
+    "Roll for 30-60 seconds, then switch sides if needed."
+  ],
+  "femaleVariant": "5425",
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4365",
+  "name": "animal resting yoga pose",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "lats",
+    "shoulders",
+    "hip flexors"
+  ],
+  "category": "yoga",
+  "description": "A resting yoga pose that gently stretches the back and hips, similar to child pose.",
+  "instructions": [
+    "Kneel on a mat and sit back toward your heels.",
+    "Fold forward and stretch your arms ahead.",
+    "Rest your forehead on the floor.",
+    "Breathe deeply and hold for 30-60 seconds.",
+    "Release slowly."
+  ],
+  "textSource": "opengym"
+}

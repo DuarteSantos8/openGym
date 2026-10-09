@@ -1,0 +1,23 @@
+{
+  "id": "5071",
+  "name": "kettlebell single arm overhead lunge",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "core",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "Lunge while holding one kettlebell locked out overhead. The overhead load challenges balance, shoulder stability and the legs.",
+  "instructions": [
+    "Press a kettlebell overhead with one arm and keep that arm straight.",
+    "Step forward into a lunge and lower your back knee toward the floor.",
+    "Keep your ribs down and the weight stacked over your shoulder.",
+    "Push back to standing.",
+    "Finish your reps, then switch the kettlebell to the other arm."
+  ],
+  "textSource": "opengym"
+}

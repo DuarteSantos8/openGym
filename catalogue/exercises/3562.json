@@ -1,0 +1,22 @@
+{
+  "id": "3562",
+  "name": "barbell glute bridge two legs on bench (male)",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A barbell glute bridge with your upper back on a bench and a bar across the hips. It builds the glutes and hamstrings.",
+  "instructions": [
+    "Start by sitting on the edge of a bench with your upper back resting against it and your feet flat on the ground, hip-width apart.",
+    "Place a barbell across your hips, holding it securely with both hands.",
+    "Engage your glutes and core muscles, then press through your heels to lift your hips off the bench, creating a straight line from your knees to your shoulders.",
+    "Pause for a moment at the top, squeezing your glutes.",
+    "Slowly lower your hips back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4860",
+  "name": "push up with knee drive",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "triceps",
+    "hip flexors",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up followed by a knee drive toward the chest. It combines upper-body strength with core work.",
+  "instructions": [
+    "Start in a high plank.",
+    "Lower into a push-up.",
+    "Push back up.",
+    "Drive one knee toward your chest.",
+    "Return and alternate legs."
+  ],
+  "textSource": "opengym"
+}

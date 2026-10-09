@@ -1,0 +1,22 @@
+{
+  "id": "2285",
+  "name": "lever pullover",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "lats",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A machine pullover that sweeps the handles toward you. Works the lats with a long range of motion.",
+  "instructions": [
+    "Adjust the seat and handles of the leverage machine to a comfortable position.",
+    "Sit on the machine with your back against the pad and grasp the handles with an overhand grip.",
+    "Keep your arms slightly bent and your core engaged.",
+    "Slowly pull the handles towards your chest, squeezing your lats.",
+    "Pause for a moment at the peak contraction, then slowly return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

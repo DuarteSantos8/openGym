@@ -1,0 +1,22 @@
+{
+  "id": "4742",
+  "name": "dumbbell hip thrust",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A hip thrust with a dumbbell across your hips. It is a direct way to build the glutes.",
+  "instructions": [
+    "Sit on the floor with your upper back against a bench and a dumbbell across your hips.",
+    "Plant your feet hip-width apart, knees bent.",
+    "Drive through your heels and lift your hips until your torso is level.",
+    "Squeeze your glutes at the top with your chin tucked.",
+    "Lower your hips under control."
+  ],
+  "textSource": "opengym"
+}

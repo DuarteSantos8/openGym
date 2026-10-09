@@ -1,0 +1,21 @@
+{
+  "id": "1859",
+  "name": "cable kneeling triceps extension v. 2",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Kneeling cable extension that isolates the triceps by pushing the handle down from head height.",
+  "instructions": [
+    "Attach a rope or bar to a high pulley and kneel facing away.",
+    "Hold it overhead with your elbows bent behind your head.",
+    "Keep your upper arms still and straighten your elbows.",
+    "Squeeze your triceps at full extension.",
+    "Return slowly to the start."
+  ],
+  "textSource": "opengym"
+}

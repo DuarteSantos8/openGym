@@ -1,0 +1,22 @@
+{
+  "id": "10540",
+  "name": "lying bent knee tibialis press",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "shins",
+    "ankles",
+    "feet"
+  ],
+  "category": "strength",
+  "description": "Lying on your back with knees bent, you press your foot toward your shin. It targets the front of the lower leg.",
+  "instructions": [
+    "Lie on your back with your knees bent and feet flat.",
+    "Slide one foot under the other for light resistance.",
+    "Lift the toes of the lower foot toward your shin.",
+    "Pause at the top, then lower slowly.",
+    "Finish your reps, then switch feet."
+  ],
+  "textSource": "opengym"
+}

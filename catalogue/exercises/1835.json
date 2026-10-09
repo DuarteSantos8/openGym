@@ -1,0 +1,21 @@
+{
+  "id": "1835",
+  "name": "sitting neck flexion stretch",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "upper back",
+    "trapezius"
+  ],
+  "category": "stretching",
+  "description": "Seated chin-to-chest stretch for the muscles along the back of the neck.",
+  "instructions": [
+    "Sit tall on a chair with your hands resting in your lap.",
+    "Slowly lower your chin toward your chest.",
+    "Let the weight of your head do the work, without forcing it.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Lift your head back to neutral slowly."
+  ],
+  "textSource": "opengym"
+}

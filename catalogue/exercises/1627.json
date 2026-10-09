@@ -1,0 +1,21 @@
+{
+  "id": "1627",
+  "name": "ez barbell close grip preacher curl",
+  "bodyPart": "upper arms",
+  "equipment": "ez barbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A preacher curl with an EZ bar and a close grip. It emphasizes the outer biceps.",
+  "instructions": [
+    "Sit on a preacher curl bench and place your upper arms on the pad, gripping the ez barbell with an underhand grip.",
+    "Rest your triceps on the pad and fully extend your arms, keeping your back straight.",
+    "Slowly curl the barbell towards your shoulders, contracting your biceps.",
+    "Pause for a moment at the top, squeezing your biceps.",
+    "Lower the barbell back to the starting position, fully extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

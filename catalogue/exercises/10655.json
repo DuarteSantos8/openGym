@@ -1,0 +1,21 @@
+{
+  "id": "10655",
+  "name": "pilates machine lying knee extension",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "calves",
+    "core"
+  ],
+  "category": "pilates",
+  "description": "Straighten your knees on a reformer with feet flat. It trains the front thighs.",
+  "instructions": [
+    "Lie on the carriage with feet on the bar.",
+    "Bend your knees.",
+    "Press out until legs are straight.",
+    "Return slowly.",
+    "Keep your lower back stable."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "7564",
+  "name": "cable split stance single arm row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "biceps",
+    "rear deltoids",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Single-arm cable row in a split stance for stable pulling.",
+  "instructions": [
+    "Stand in a split stance facing a low cable.",
+    "Grab the handle with one hand.",
+    "Row to your hip, squeezing the shoulder blade.",
+    "Keep your torso steady.",
+    "Return slowly and switch sides."
+  ],
+  "textSource": "opengym"
+}

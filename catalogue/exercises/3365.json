@@ -1,0 +1,22 @@
+{
+  "id": "3365",
+  "name": "hawaiian squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors"
+  ],
+  "category": "calisthenics",
+  "description": "A deep bodyweight squat variation that builds leg strength and hip mobility.",
+  "instructions": [
+    "Stand with feet slightly wider than your shoulders and toes turned out.",
+    "Brace your core and keep your chest up.",
+    "Sit your hips down and back into a deep squat.",
+    "Pause at the bottom without rounding your back.",
+    "Drive through your feet to stand up."
+  ],
+  "textSource": "opengym"
+}

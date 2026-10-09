@@ -1,0 +1,20 @@
+{
+  "id": "0837",
+  "name": "weighted lying hip abduction",
+  "bodyPart": "upper legs",
+  "equipment": "weighted",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A side-lying leg lift with added weight. It strengthens the outer hip and glutes.",
+  "instructions": [
+    "Lie on your side with a weight on your top thigh or ankle.",
+    "Keep your body in a straight line.",
+    "Lift the top leg up and slightly back.",
+    "Lower with control.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

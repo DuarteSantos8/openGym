@@ -1,0 +1,22 @@
+{
+  "id": "3508",
+  "name": "resistance band seated single leg curl",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A seated leg curl with a band around the foot. It isolates the hamstrings.",
+  "instructions": [
+    "Sit on the floor with a band anchored in front and looped around one foot.",
+    "Extend your leg with a slight tension on the band.",
+    "Curl your heel toward your glutes, pulling against the band.",
+    "Squeeze the hamstring briefly.",
+    "Return with control.",
+    "Complete your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

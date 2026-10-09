@@ -1,0 +1,23 @@
+{
+  "id": "1112",
+  "name": "suspender crunch",
+  "bodyPart": "waist",
+  "equipment": "suspension trainer",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "From a plank with feet in the straps, you pull the knees in and curl the hips up, a direct ab move.",
+  "instructions": [
+    "Put your feet in the straps and set a straight-arm plank.",
+    "Keep shoulders over hands.",
+    "Pull your knees toward your chest while rounding your spine slightly.",
+    "Squeeze your abs at the top.",
+    "Extend your legs back to plank slowly.",
+    "Avoid dropping the hips as you return."
+  ],
+  "textSource": "opengym"
+}

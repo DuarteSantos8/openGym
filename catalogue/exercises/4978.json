@@ -1,0 +1,23 @@
+{
+  "id": "4978",
+  "name": "ring kneeling ab rollout",
+  "bodyPart": "waist",
+  "equipment": "suspension trainer",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lats",
+    "shoulders",
+    "lower abs",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "Kneeling ab rollout on gymnastic rings. The unstable rings make your core work hard to keep the body straight as you extend.",
+  "instructions": [
+    "Kneel and hold the rings at about knee height with a firm grip.",
+    "Brace your abs and keep a straight line from head to knees.",
+    "Roll the rings forward by extending your arms until you are long but still in control.",
+    "Pull the rings back toward your knees by contracting your abs.",
+    "Do not let your lower back sag at any point."
+  ],
+  "textSource": "opengym"
+}

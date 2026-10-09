@@ -1,0 +1,24 @@
+{
+  "id": "7994",
+  "name": "dumbbell glute bridge chest press",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A dumbbell chest press done lying in a glute bridge. It works the chest and triceps while the glutes hold your hips up.",
+  "instructions": [
+    "Lie on your back holding dumbbells at chest level, knees bent.",
+    "Lift your hips into a bridge.",
+    "Press the dumbbells up over your chest.",
+    "Lower with control while holding your hips high.",
+    "Finish your reps, then lower your hips."
+  ],
+  "textSource": "opengym"
+}

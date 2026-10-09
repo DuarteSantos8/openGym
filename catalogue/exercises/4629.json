@@ -1,0 +1,24 @@
+{
+  "id": "4629",
+  "name": "dumbbell renegade row to squat",
+  "bodyPart": "full body",
+  "equipment": "dumbbell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "core",
+    "quadriceps",
+    "glutes",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A demanding combo of a plank row and a squat that builds back strength, core stability and leg power.",
+  "instructions": [
+    "Start in a high plank with your hands on dumbbells.",
+    "Row one dumbbell to your hip, keeping hips level.",
+    "Lower it, then hop or step your feet toward your hands.",
+    "Stand up with the dumbbells and squat down.",
+    "Return to plank and alternate the rowing arm."
+  ],
+  "textSource": "opengym"
+}

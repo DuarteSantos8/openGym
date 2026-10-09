@@ -1,0 +1,22 @@
+{
+  "id": "2656",
+  "name": "cable one arm biceps curl v. 2",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A one-arm curl using a cable for constant tension, great for working each biceps on its own.",
+  "instructions": [
+    "Stand facing the cable with the handle at low height and grip it with one hand, palm up.",
+    "Keep your elbow tucked at your side.",
+    "Curl the handle toward your shoulder and squeeze the biceps.",
+    "Lower slowly until the arm is nearly straight.",
+    "Finish all reps, then switch arms."
+  ],
+  "femaleVariant": "2657",
+  "textSource": "opengym"
+}

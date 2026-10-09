@@ -1,0 +1,22 @@
+{
+  "id": "8363",
+  "name": "resistance band standing 90 degrees shoulder external rotation",
+  "bodyPart": "shoulders",
+  "equipment": "resistance band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "rear deltoids",
+    "upper back"
+  ],
+  "category": "rehab",
+  "description": "A band rotation with the upper arm raised to shoulder height, building rotator cuff strength for overhead positions.",
+  "instructions": [
+    "Anchor the band at shoulder height and hold the handle with your elbow raised to shoulder level, bent 90 degrees.",
+    "Keep the upper arm still.",
+    "Rotate your hand up and back until the forearm points to the ceiling.",
+    "Return slowly to the start.",
+    "Do all reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "1370",
+  "name": "barbell floor calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "barbell",
+  "target": "calves",
+  "secondaryMuscles": [
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "Stand with a barbell across your back and raise onto your toes from the floor. It works the calves, with the full range limited to flat ground.",
+  "instructions": [
+    "Place a barbell on the floor in front of you.",
+    "Stand with the balls of your feet on the edge of the barbell, with your heels hanging off.",
+    "Hold onto a stable object for balance if needed.",
+    "Raise your heels as high as possible, using your calves to lift your body.",
+    "Pause for a moment at the top, then slowly lower your heels back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

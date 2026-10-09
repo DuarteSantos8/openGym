@@ -1,0 +1,23 @@
+{
+  "id": "4166",
+  "name": "trap bar jump squat",
+  "bodyPart": "upper legs",
+  "equipment": "trap bar",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "An explosive jump squat holding a trap bar. It develops lower body power.",
+  "instructions": [
+    "Stand inside a trap bar with feet shoulder width apart.",
+    "Grip the handles and stand tall.",
+    "Squat down quickly with your chest up.",
+    "Jump up explosively off the floor.",
+    "Land softly with bent knees.",
+    "Reset before the next rep."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "10537",
+  "name": "seated single leg knee extension",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "rehab",
+  "description": "Seated on a chair, you straighten one knee to lift your foot. A gentle move that wakes up the thigh.",
+  "instructions": [
+    "Sit tall on a chair with your feet flat.",
+    "Slowly straighten one knee to lift your foot.",
+    "Squeeze your thigh at the top for a second.",
+    "Lower the foot back to the floor with control.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

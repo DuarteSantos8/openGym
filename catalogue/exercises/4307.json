@@ -1,0 +1,23 @@
+{
+  "id": "4307",
+  "name": "seated twist (straight arm)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back",
+    "shoulders"
+  ],
+  "category": "stretching",
+  "description": "A seated rotation with your arms held straight out, loosening the spine and working the waist gently.",
+  "instructions": [
+    "Sit tall on the floor with your legs crossed or extended.",
+    "Extend both arms straight out to the sides at shoulder height.",
+    "Rotate your torso slowly to one side, keeping your spine long.",
+    "Hold for a moment, then rotate to the other side.",
+    "Repeat for 8-10 slow rotations each way."
+  ],
+  "femaleVariant": "0695",
+  "textSource": "opengym"
+}

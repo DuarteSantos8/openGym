@@ -1,0 +1,23 @@
+{
+  "id": "3515",
+  "name": "oblique v up on floor",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A side-lying V-up that targets the obliques.",
+  "instructions": [
+    "Lie on one side with legs together and an arm extended overhead.",
+    "Lift your legs and upper body at the same time.",
+    "Reach your top hand toward your feet.",
+    "Lower with control, not resting.",
+    "Keep your movement smooth.",
+    "Do your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

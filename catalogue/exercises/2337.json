@@ -1,0 +1,23 @@
+{
+  "id": "2337",
+  "name": "dumbbell chest fly arms (form check)",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A chest fly form check that shows how to keep a soft elbow bend and a wide, smooth arc through the movement.",
+  "instructions": [
+    "Lie on a bench with a dumbbell in each hand above your chest.",
+    "Keep a slight bend in your elbows.",
+    "Lower your arms out to the sides in a wide arc.",
+    "Stop when you feel a gentle stretch across the chest.",
+    "Bring the dumbbells back together above your chest.",
+    "Repeat for the planned reps."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "10866",
+  "name": "lever bent over single arm lats focused row",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "lats",
+  "secondaryMuscles": [
+    "rhomboids",
+    "biceps",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A one-arm machine row done from a bent-over stance. It targets the lats with a strong squeeze.",
+  "instructions": [
+    "Set the machine and lean forward from the hips with a flat back.",
+    "Grip the handle with one hand and let the arm reach forward.",
+    "Pull the elbow back and down toward your hip.",
+    "Squeeze your lat at the end of the pull.",
+    "Return slowly, then switch sides after your reps."
+  ],
+  "textSource": "opengym"
+}

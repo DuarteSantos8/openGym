@@ -1,0 +1,23 @@
+{
+  "id": "1346",
+  "name": "kneeling lat stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "stretching",
+  "description": "Kneel and reach your arms overhead, then lean to one side. It stretches the lat and the side of your torso.",
+  "instructions": [
+    "Kneel on the ground with your knees hip-width apart and your toes pointing back.",
+    "Extend your arms overhead and interlace your fingers.",
+    "Keeping your back straight, slowly lean to the right side, feeling a stretch in your left lat muscle.",
+    "Hold the stretch for 20-30 seconds, then return to the starting position.",
+    "Repeat the stretch on the left side, leaning to the left and feeling a stretch in your right lat muscle.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "femaleVariant": "4298",
+  "textSource": "exercisedb"
+}

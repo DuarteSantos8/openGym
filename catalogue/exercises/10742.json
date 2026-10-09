@@ -1,0 +1,23 @@
+{
+  "id": "10742",
+  "name": "lying single arm slide from y to t",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "traps",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids",
+    "shoulders"
+  ],
+  "category": "mobility",
+  "description": "A prone shoulder drill where one arm slides from a Y shape to a T shape. It wakes up the mid back and shoulder blades.",
+  "instructions": [
+    "Lie face down with your arms overhead in a Y.",
+    "Lift one arm slightly off the floor.",
+    "Slide it out and down into a T position.",
+    "Hold for a moment.",
+    "Slide it back to the Y.",
+    "Switch arms after each set."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "0500",
+  "name": "isometric wipers",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "Lying on your back, you hold your arms up and move them like windshield wipers. It works the chest, shoulders and core.",
+  "instructions": [
+    "Start by lying flat on your back on a mat or bench.",
+    "Extend your arms straight out to the sides, perpendicular to your body.",
+    "Engage your core and lift both legs off the ground, keeping them together and straight.",
+    "Slowly lower your legs to one side, aiming to touch the ground with your feet while maintaining control.",
+    "Pause for a moment, then use your core to lift your legs back to the starting position.",
+    "Repeat the movement, this time lowering your legs to the opposite side.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

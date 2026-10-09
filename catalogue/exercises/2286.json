@@ -1,0 +1,20 @@
+{
+  "id": "2286",
+  "name": "lever hip extension v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A machine hip extension that drives your leg back against resistance. Targets the glutes and hamstrings.",
+  "instructions": [
+    "Adjust the machine to fit your body and sit on it with your back against the backrest.",
+    "Place your feet on the footrests and grip the handles for stability.",
+    "Engage your glutes and hamstrings, then push against the footrests to extend your hips and raise your legs backward.",
+    "Pause for a moment at the top, then slowly lower your legs back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "1363",
+  "name": "spine stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "Sit with your legs out in front of you and lean back on your hands. It gives the spine and front of the torso a gentle stretch.",
+  "instructions": [
+    "Sit on the ground with your legs extended in front of you.",
+    "Place your hands on the ground behind you, fingers pointing towards your body.",
+    "Engage your core and slowly lean back, keeping your back straight.",
+    "Continue leaning back until you feel a stretch in your spine.",
+    "Hold the stretch for a few seconds, then slowly return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "4313",
+  "textSource": "exercisedb"
+}

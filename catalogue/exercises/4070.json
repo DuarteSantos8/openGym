@@ -1,0 +1,22 @@
+{
+  "id": "4070",
+  "name": "barbell bench press with 1 board",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "Bench press with a single board, shortening the range just a little. It builds pressing power near lockout.",
+  "instructions": [
+    "Lie on a bench with a single board on your chest.",
+    "Grip the bar slightly wider than shoulders.",
+    "Lower the bar until it touches the board.",
+    "Press back up to full extension.",
+    "Keep your feet planted and shoulder blades pinched."
+  ],
+  "textSource": "opengym"
+}

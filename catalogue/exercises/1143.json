@@ -1,0 +1,23 @@
+{
+  "id": "1143",
+  "name": "suspender squat",
+  "bodyPart": "upper legs",
+  "equipment": "suspension trainer",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight squat where you hold the straps for balance and can lean back for depth.",
+  "instructions": [
+    "Hold the handles with arms extended.",
+    "Stand with feet shoulder width apart.",
+    "Sit your hips back and bend your knees.",
+    "Lower until your thighs are parallel to the floor.",
+    "Push through the heels to stand.",
+    "Keep your chest tall and knees tracking over toes."
+  ],
+  "textSource": "opengym"
+}

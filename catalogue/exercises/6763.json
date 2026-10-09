@@ -1,0 +1,21 @@
+{
+  "id": "6763",
+  "name": "seated forearms stretch",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "wrist extensors"
+  ],
+  "category": "stretching",
+  "description": "A seated stretch for the muscles of the forearm. It eases tight wrists after typing or gripping.",
+  "instructions": [
+    "Sit tall and extend one arm in front of you, palm up.",
+    "With the other hand, gently pull the fingers back toward you.",
+    "Keep the elbow straight and shoulders relaxed.",
+    "Hold for 20-30 seconds.",
+    "Turn the palm down to stretch the other side, then switch arms."
+  ],
+  "textSource": "opengym"
+}

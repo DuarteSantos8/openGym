@@ -1,0 +1,21 @@
+{
+  "id": "2706",
+  "name": "dumbbell lying supination on floor",
+  "bodyPart": "lower arms",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "biceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A lying dumbbell forearm supination on the floor. Works the forearm muscles.",
+  "instructions": [
+    "Lie flat on your back on the floor with your legs extended and your arms by your sides, holding a dumbbell in each hand.",
+    "Rotate your palms to face up, keeping your elbows close to your sides.",
+    "Slowly curl the dumbbells towards your shoulders, squeezing your forearms.",
+    "Pause for a moment at the top, then slowly lower the dumbbells back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

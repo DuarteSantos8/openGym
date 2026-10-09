@@ -1,0 +1,24 @@
+{
+  "id": "10185",
+  "name": "dumbbell bear plank alternating row",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lats",
+    "upper back",
+    "obliques",
+    "shoulders",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A row from a bear plank position that builds back strength while the core fights to stop hip rotation.",
+  "instructions": [
+    "Start on all fours with a dumbbell in each hand and knees hovering just off the floor.",
+    "Brace your core and keep your back flat.",
+    "Row one dumbbell to your ribs without twisting your hips.",
+    "Lower it back to the floor with control.",
+    "Row with the other arm and keep alternating at a steady pace."
+  ],
+  "textSource": "opengym"
+}

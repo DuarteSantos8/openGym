@@ -1,0 +1,22 @@
+{
+  "id": "11059",
+  "name": "resistance band kneeling leg kickback on bench",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Kneeling on a bench, you kick one leg back against band tension to work the glutes.",
+  "instructions": [
+    "Anchor the band and loop it around one foot, then kneel on a bench with hands on the front.",
+    "Brace your core and keep your back flat.",
+    "Kick the working leg back and up until the hip is fully extended.",
+    "Squeeze the glute for a moment at the top.",
+    "Lower slowly under control without letting the band yank your leg.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

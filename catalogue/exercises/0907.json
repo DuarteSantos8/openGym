@@ -1,0 +1,21 @@
+{
+  "id": "0907",
+  "name": "band lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "A lateral raise with a band. It builds the side delts.",
+  "instructions": [
+    "Stand on the band and hold the ends at your sides.",
+    "Keep a slight bend in your elbows.",
+    "Raise your arms out to shoulder height.",
+    "Lower slowly under control.",
+    "Avoid shrugging."
+  ],
+  "textSource": "opengym"
+}

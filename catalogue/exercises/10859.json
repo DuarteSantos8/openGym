@@ -1,0 +1,21 @@
+{
+  "id": "10859",
+  "name": "standing floor tibialis raise wall supported",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "shins",
+    "ankles"
+  ],
+  "category": "calisthenics",
+  "description": "Standing with your back against a wall, you lift your toes off the floor. It strengthens the muscles on the front of the shin.",
+  "instructions": [
+    "Stand with your back and hips against a wall, feet a little way out in front.",
+    "Keep your legs straight and your heels planted on the floor.",
+    "Pull your toes up toward your shins as high as you can.",
+    "Pause briefly at the top.",
+    "Lower your toes slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

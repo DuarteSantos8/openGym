@@ -1,0 +1,23 @@
+{
+  "id": "4895",
+  "name": "standing calf raise circle",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "calisthenics",
+  "description": "A calf raise that finishes with a small circle of the heels. It works the calves and the ankle control.",
+  "instructions": [
+    "Stand tall with feet hip width apart and hold a support if needed.",
+    "Rise onto the balls of your feet.",
+    "Trace a small circle with your heels while staying high.",
+    "Lower your heels slowly to the floor.",
+    "Reverse the circle direction on the next rep.",
+    "Keep your knees straight and your balance steady."
+  ],
+  "textSource": "opengym"
+}

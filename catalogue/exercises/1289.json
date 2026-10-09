@@ -1,0 +1,22 @@
+{
+  "id": "1289",
+  "name": "dumbbell one arm incline chest press",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "Press one dumbbell up on an incline bench to train the upper chest and front shoulder. Working one arm at a time helps balance both sides.",
+  "instructions": [
+    "Adjust the incline bench to a 45-degree angle.",
+    "Sit on the bench with your back against the pad and feet flat on the ground.",
+    "Hold a dumbbell in one hand with an overhand grip, resting it on your shoulder.",
+    "Push the dumbbell up and away from your body, extending your arm fully.",
+    "Pause for a moment at the top, then slowly lower the dumbbell back down to the starting position.",
+    "Repeat for the desired number of repetitions, then switch to the other arm."
+  ],
+  "textSource": "exercisedb"
+}

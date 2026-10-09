@@ -1,0 +1,22 @@
+{
+  "id": "8084",
+  "name": "negative biceps leg concentration curl",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A seated concentration curl braced against the thigh with a slow lowering phase. It emphasises the biceps through the negative.",
+  "instructions": [
+    "Sit with your legs apart and hold a weight in one hand.",
+    "Rest the back of your upper arm against your inner thigh.",
+    "Curl the weight up with help from your other hand if needed.",
+    "Lower it very slowly over about 3 to 4 seconds.",
+    "Keep your upper arm still against your leg.",
+    "Do your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

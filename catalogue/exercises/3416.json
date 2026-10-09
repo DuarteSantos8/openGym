@@ -1,0 +1,21 @@
+{
+  "id": "3416",
+  "name": "standing shoulder circling",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rotator cuff",
+    "upper back"
+  ],
+  "category": "mobility",
+  "description": "Circle your shoulders to loosen the joint and ease tension in the upper back.",
+  "instructions": [
+    "Stand tall with arms relaxed at your sides.",
+    "Lift your shoulders up and roll them back in a large circle.",
+    "Keep your neck relaxed.",
+    "Do 10 circles, then reverse the direction."
+  ],
+  "textSource": "opengym"
+}

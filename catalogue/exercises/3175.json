@@ -1,0 +1,24 @@
+{
+  "id": "3175",
+  "name": "dumbbell fly (knees at 90 degrees)",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "biceps",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A dumbbell fly with your feet lifted and knees at 90 degrees. It stretches the chest and keeps your back flat.",
+  "instructions": [
+    "Lie on a bench holding dumbbells above your chest.",
+    "Lift your feet so your knees are bent to 90 degrees.",
+    "Keep a slight bend in your elbows.",
+    "Open your arms out wide until you feel a chest stretch.",
+    "Bring the dumbbells back together over your chest.",
+    "Move slowly and keep your back flat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "5658",
+  "name": "cable seated face pull (with rope)",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rotator cuff",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "Seated rope face pull for the rear delts.",
+  "instructions": [
+    "Sit facing a cable with a rope attachment.",
+    "Sit tall.",
+    "Pull the rope toward your face.",
+    "Squeeze your shoulder blades.",
+    "Return slowly."
+  ],
+  "textSource": "opengym"
+}

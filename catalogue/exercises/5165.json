@@ -1,0 +1,22 @@
+{
+  "id": "5165",
+  "name": "plank pike slide with towel",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "hip flexors",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "From a plank with your feet on towels, slide your feet in to lift the hips into a pike. It hits your abs hard and challenges shoulder stability.",
+  "instructions": [
+    "Put your toes on towels on a smooth floor and get into a straight-arm plank.",
+    "Brace your abs and keep your arms straight.",
+    "Slide your feet toward your hands as your hips rise into a pike.",
+    "Pause briefly at the top.",
+    "Slide your feet back to the plank without letting your hips drop."
+  ],
+  "textSource": "opengym"
+}

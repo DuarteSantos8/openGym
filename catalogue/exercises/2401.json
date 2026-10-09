@@ -1,0 +1,23 @@
+{
+  "id": "2401",
+  "name": "dumbbell biceps curl (with arm blaster)",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A standing dumbbell curl with an arm blaster to keep your upper arms still. Isolates the biceps.",
+  "instructions": [
+    "Stand up straight with a dumbbell in each hand, palms facing forward.",
+    "Keep your elbows close to your torso and your upper arms stationary.",
+    "Exhale and curl the weights while contracting your biceps.",
+    "Continue to raise the weights until your biceps are fully contracted and the dumbbells are at shoulder level.",
+    "Hold the contracted position for a brief pause as you squeeze your biceps.",
+    "Inhale and slowly begin to lower the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3074",
+  "textSource": "exercisedb"
+}

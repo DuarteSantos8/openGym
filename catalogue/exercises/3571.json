@@ -1,0 +1,23 @@
+{
+  "id": "3571",
+  "name": "kettlebell full swing",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "An explosive hip hinge that swings the kettlebell overhead, training the glutes, hamstrings and shoulders.",
+  "instructions": [
+    "Stand with feet shoulder width apart, kettlebell on the floor in front.",
+    "Hinge at the hips and grip the handle with both hands.",
+    "Hike the bell back, then drive your hips forward to swing it overhead.",
+    "Let it fall back between your legs while hinging again.",
+    "Keep your back flat and repeat in a smooth rhythm."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "1544",
+  "name": "barbell wide stance stiff leg deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A stiff-legged deadlift with a wide stance that brings in the inner thighs and glutes. It also keeps the hamstrings under a deep stretch.",
+  "instructions": [
+    "Take a wide stance, toes slightly out, with the barbell held in front of your thighs.",
+    "Keep your knees nearly straight and push your hips back.",
+    "Lower the bar between your legs while keeping your back flat.",
+    "Stop when you feel a strong stretch in the hamstrings and inner thighs.",
+    "Squeeze your glutes to rise back to standing."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "2905",
+  "name": "power sled rear fly",
+  "bodyPart": "shoulders",
+  "equipment": "sled machine",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A rear fly done with a power sled for resistance. Works the rear shoulders and upper back.",
+  "instructions": [
+    "Hold the sled handles with arms out in front and hinge slightly at the hips.",
+    "Keep a slight bend in your elbows.",
+    "Sweep your arms out to the sides, squeezing your shoulder blades.",
+    "Pause briefly.",
+    "Return slowly."
+  ],
+  "textSource": "opengym"
+}

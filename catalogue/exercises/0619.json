@@ -1,0 +1,23 @@
+{
+  "id": "0619",
+  "name": "lying hip straight leg raise",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "hip flexors",
+    "glutes",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Lying on your back, you raise a straight leg toward the ceiling. It trains the hip muscles and leg control.",
+  "instructions": [
+    "Lie on your back with both legs straight.",
+    "Brace your abs and press your lower back down.",
+    "Lift one straight leg to about hip height.",
+    "Lower it slowly toward the floor.",
+    "Keep the other leg flat.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

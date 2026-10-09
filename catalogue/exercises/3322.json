@@ -1,0 +1,24 @@
+{
+  "id": "3322",
+  "name": "kettlebell deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "quadriceps",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A beginner friendly deadlift with a kettlebell between your feet. It teaches the hip hinge and builds glutes and hamstrings.",
+  "instructions": [
+    "Stand with feet hip width apart and the kettlebell between your feet.",
+    "Push your hips back and bend your knees to grab the handle with both hands.",
+    "Keep your chest up and back flat.",
+    "Drive through your feet and stand tall, squeezing your glutes.",
+    "Hinge back down to set the kettlebell on the floor and repeat."
+  ],
+  "femaleVariant": "3902",
+  "textSource": "opengym"
+}

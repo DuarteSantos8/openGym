@@ -1,0 +1,23 @@
+{
+  "id": "4939",
+  "name": "superman row",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "lower back",
+    "rhomboids"
+  ],
+  "category": "calisthenics",
+  "description": "A prone superman with a rowing motion of the arms. It targets the upper back and the muscles along the spine.",
+  "instructions": [
+    "Lie face down with arms extended in front.",
+    "Lift your chest and arms slightly off the floor.",
+    "Pull your elbows back toward your ribs as if rowing.",
+    "Squeeze your shoulder blades together.",
+    "Extend your arms forward again.",
+    "Keep your neck neutral."
+  ],
+  "textSource": "opengym"
+}

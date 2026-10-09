@@ -1,0 +1,22 @@
+{
+  "id": "4364",
+  "name": "single leg dip on floor",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "chest",
+    "glutes"
+  ],
+  "category": "calisthenics",
+  "description": "A floor dip with one leg raised for extra challenge. It targets the triceps and core balance.",
+  "instructions": [
+    "Sit on the floor with hands behind you and knees bent.",
+    "Lift your hips and extend one leg out.",
+    "Bend your elbows to lower.",
+    "Press back up.",
+    "Switch legs after your reps."
+  ],
+  "textSource": "opengym"
+}

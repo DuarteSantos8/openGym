@@ -1,0 +1,21 @@
+{
+  "id": "4685",
+  "name": "band standing side bend",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A side bend with a band for oblique resistance. It strengthens the sides of the waist.",
+  "instructions": [
+    "Stand on one end of the band and hold the other end at your side.",
+    "Keep your feet shoulder-width apart.",
+    "Bend sideways at the waist away from the band.",
+    "Squeeze your obliques and return upright.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

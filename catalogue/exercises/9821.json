@@ -1,0 +1,23 @@
+{
+  "id": "9821",
+  "name": "plank leg lift mountain climber",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A plank with a leg lift into a mountain climber. It trains the core and raises the heart rate.",
+  "instructions": [
+    "Start in a high plank with hands under your shoulders.",
+    "Lift one leg straight back.",
+    "Bring that knee in toward your chest.",
+    "Return and switch legs.",
+    "Keep your hips level and your core tight."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "0788",
+  "name": "standing behind neck press",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A standing barbell press from behind the neck to overhead. It builds the shoulders and triceps and calls for good shoulder mobility.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold the barbell behind your neck with an overhand grip.",
+    "Keep your back straight and core engaged.",
+    "Press the barbell overhead by extending your arms, fully extending your elbows.",
+    "Pause for a moment at the top, then slowly lower the barbell back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

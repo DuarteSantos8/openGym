@@ -1,0 +1,22 @@
+{
+  "id": "3272",
+  "name": "run and semi squat jump",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "calves"
+  ],
+  "category": "cardio",
+  "description": "Combine running in place with a half squat jump for a cardio drill that also trains the legs.",
+  "instructions": [
+    "Stand tall and run on the spot for a few steps.",
+    "Drop into a half squat with your chest up.",
+    "Jump up, swinging your arms.",
+    "Land softly with bent knees and go back to running.",
+    "Repeat for 30-60 seconds."
+  ],
+  "textSource": "opengym"
+}

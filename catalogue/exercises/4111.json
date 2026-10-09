@@ -1,0 +1,22 @@
+{
+  "id": "4111",
+  "name": "cable seated horizontal shrug",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "traps",
+  "secondaryMuscles": [
+    "trapezius",
+    "upper back",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A seated shrug using a horizontal cable pull, keeping steady tension on the traps.",
+  "instructions": [
+    "Sit facing a low cable with a handle in each hand.",
+    "Start with arms straight and shoulders forward.",
+    "Pull your shoulders back and up.",
+    "Squeeze your traps at the end.",
+    "Return slowly to the start."
+  ],
+  "textSource": "opengym"
+}

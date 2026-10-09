@@ -1,0 +1,21 @@
+{
+  "id": "0928",
+  "name": "band straight arm pulldown",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "lats",
+  "secondaryMuscles": [
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A pulldown with straight arms using a band. It isolates the lats.",
+  "instructions": [
+    "Anchor the band overhead and stand facing it.",
+    "Hold the ends with straight arms.",
+    "Pull your hands down toward your thighs.",
+    "Squeeze your lats.",
+    "Return slowly."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "1902",
+  "name": "sitting wide leg adductor stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "inner thighs",
+    "groin",
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "Seated straddle that stretches the inner thighs.",
+  "instructions": [
+    "Sit on the floor with your legs spread wide.",
+    "Keep your knees pointing up.",
+    "Hinge forward from the hips with a long spine.",
+    "Walk your hands forward until you feel the stretch.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Come up slowly."
+  ],
+  "textSource": "opengym"
+}

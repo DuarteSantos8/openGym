@@ -1,0 +1,21 @@
+{
+  "id": "5860",
+  "name": "kettlebell overhead triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "kettlebell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Hold a kettlebell behind your head and straighten your arms overhead. It isolates the triceps.",
+  "instructions": [
+    "Hold a kettlebell by the horns with both hands overhead.",
+    "Keep your elbows pointing forward.",
+    "Lower the weight behind your head by bending your elbows.",
+    "Extend your arms until they are straight.",
+    "Repeat without flaring your elbows."
+  ],
+  "textSource": "opengym"
+}

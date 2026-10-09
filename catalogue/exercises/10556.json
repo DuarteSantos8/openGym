@@ -1,0 +1,22 @@
+{
+  "id": "10556",
+  "name": "seated side to side neck twist on chair",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "sternocleidomastoid",
+    "upper back",
+    "trapezius"
+  ],
+  "category": "mobility",
+  "description": "Seated, you turn your head from side to side. It restores easy neck rotation.",
+  "instructions": [
+    "Sit tall on a chair with your shoulders relaxed.",
+    "Slowly turn your head to look over one shoulder.",
+    "Return to the centre.",
+    "Turn to the other side.",
+    "Repeat for several slow reps."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,38 @@
+{
+  "id": "3281",
+  "name": "smith full squat",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A full-depth back squat on the smith machine, where the fixed bar path gives extra stability. It trains the glutes, quads and thighs.",
+  "instructions": [
+    "Set up the smith machine with the barbell at shoulder height.",
+    "Stand with your feet shoulder-width apart, toes slightly turned out.",
+    "Step under the bar and position it across your upper back, resting on your traps.",
+    "Grip the bar with your hands slightly wider than shoulder-width apart.",
+    "Unrack the bar and take a step back, maintaining a stable stance.",
+    "Keeping your chest up and core engaged, initiate the squat by pushing your hips back and bending your knees.",
+    "Lower your body until your thighs are parallel to the ground, or as low as your flexibility allows.",
+    "Pause for a moment at the bottom, then drive through your heels to return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "adductors"
+    ],
+    "secondaries": [
+      "hamstring",
+      "calves"
+    ]
+  },
+  "femaleVariant": "11305",
+  "textSource": "exercisedb"
+}

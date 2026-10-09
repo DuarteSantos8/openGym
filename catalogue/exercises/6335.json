@@ -1,0 +1,22 @@
+{
+  "id": "6335",
+  "name": "side kick through",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A floor move where you sweep one leg under your body from a side-facing support, working your obliques, shoulders and coordination.",
+  "instructions": [
+    "Start in a high plank, then rotate onto one hand with your chest turned to the side.",
+    "Lift your hips and keep your core tight.",
+    "Sweep your top leg under your body and through the gap.",
+    "Return the leg to the start with control.",
+    "Repeat, then switch sides."
+  ],
+  "textSource": "opengym"
+}

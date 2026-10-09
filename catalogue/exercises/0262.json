@@ -1,0 +1,21 @@
+{
+  "id": "0262",
+  "name": "cross body crunch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A crunch where you rotate to bring one elbow toward the opposite knee. It targets the abs and the obliques.",
+  "instructions": [
+    "Lie flat on your back with your knees bent and feet flat on the ground.",
+    "Place your hands behind your head with your elbows pointing outwards.",
+    "Engaging your abs, lift your upper body off the ground and twist to bring your right elbow towards your left knee.",
+    "Pause for a moment at the top, then slowly lower your upper body back down to the starting position.",
+    "Repeat on the other side, bringing your left elbow towards your right knee.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

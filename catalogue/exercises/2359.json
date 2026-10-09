@@ -1,0 +1,22 @@
+{
+  "id": "2359",
+  "name": "barbell squat knees end position (form check)",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A side-by-side form check for knee position at the bottom of a barbell squat, showing the common mistake next to the correct technique so you can spot it in your own sets.",
+  "instructions": [
+    "Set the bar on your upper back and descend into a full squat.",
+    "Compare the faulty version with the correct one: your knees push out over your toes and do not cave inward.",
+    "Perform the lift slowly with a light load and keep the correct position throughout.",
+    "Use a mirror or film a set from the side to check your own position.",
+    "Fix the cue before adding weight, and rest between sets so form stays clean."
+  ],
+  "textSource": "opengym"
+}

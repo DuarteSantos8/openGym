@@ -1,0 +1,21 @@
+{
+  "id": "5876",
+  "name": "suspension triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "suspension trainer",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Lean into suspension straps and straighten your arms from a bent position. It trains the triceps using your body weight.",
+  "instructions": [
+    "Hold the handles and lean forward with a straight body.",
+    "Start with your arms overhead and elbows bent.",
+    "Extend your arms, keeping your upper arms still.",
+    "Pause when your arms are straight.",
+    "Lower back slowly."
+  ],
+  "textSource": "opengym"
+}

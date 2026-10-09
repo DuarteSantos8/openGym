@@ -1,0 +1,24 @@
+{
+  "id": "0261",
+  "name": "corkscrew push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up where you twist the hips and body as you descend. It adds trunk rotation to a standard chest exercise.",
+  "instructions": [
+    "Start in a high plank with your hands under your shoulders.",
+    "Lower your chest toward the floor while rotating your hips slightly to one side.",
+    "Push up and return to the centre.",
+    "Repeat to the other side.",
+    "Keep your core braced and your legs together.",
+    "Move smoothly and do not let your hips sag."
+  ],
+  "textSource": "opengym"
+}

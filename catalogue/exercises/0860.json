@@ -1,0 +1,23 @@
+{
+  "id": "0860",
+  "name": "cable kickback",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A cable triceps kickback, hinging forward and extending the forearm back. It isolates the triceps.",
+  "instructions": [
+    "Stand facing a cable machine with your feet shoulder-width apart.",
+    "Hold the cable handle with your right hand and step back to create tension in the cable.",
+    "Bend your knees slightly and hinge forward at the hips, keeping your back straight.",
+    "Keep your upper arm close to your body and your elbow bent at a 90-degree angle.",
+    "Extend your forearm backward, straightening your arm fully.",
+    "Pause for a moment, then slowly return to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides."
+  ],
+  "femaleVariant": "2640",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "5667",
+  "name": "dumbbell z press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "core",
+    "upper chest",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A seated overhead press done on the floor with legs straight out. With no back support, it trains the shoulders and demands a strong core.",
+  "instructions": [
+    "Sit on the floor with your legs extended in front of you.",
+    "Hold the dumbbells at shoulder height, palms facing forward.",
+    "Brace your core and sit tall without leaning back.",
+    "Press the weights overhead until your arms are straight.",
+    "Lower them back to your shoulders with control."
+  ],
+  "textSource": "opengym"
+}

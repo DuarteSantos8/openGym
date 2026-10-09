@@ -1,0 +1,22 @@
+{
+  "id": "3737",
+  "name": "kettlebell seated one arm military press",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A seated overhead press with one kettlebell, which removes leg drive and keeps the work on the shoulder.",
+  "instructions": [
+    "Sit on a bench with a kettlebell held at your shoulder.",
+    "Sit tall with your core braced.",
+    "Press the bell straight overhead until your arm is straight.",
+    "Lower it slowly to your shoulder.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "5193",
+  "name": "power sled rear drag v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "sled machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "Dragging a weighted sled backward while walking. It builds thigh strength with very little joint impact.",
+  "instructions": [
+    "Load the sled and grip the handles or strap in front of you.",
+    "Lean slightly back with your chest up.",
+    "Walk backward in small, powerful steps.",
+    "Keep your knees soft and your core tight.",
+    "Cover your distance, then rest and repeat."
+  ],
+  "textSource": "opengym"
+}

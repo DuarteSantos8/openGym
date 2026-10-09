@@ -1,0 +1,22 @@
+{
+  "id": "9867",
+  "name": "cable 45 degrees reverse grip reverse fly",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A cable reverse fly with a palms-up grip, angled at 45 degrees to hit the rear delts and upper back.",
+  "instructions": [
+    "Stand at a cable station and grab the handles with palms up.",
+    "Hinge forward about 45 degrees.",
+    "Pull your arms out and back in a wide arc.",
+    "Squeeze your shoulder blades.",
+    "Return slowly."
+  ],
+  "textSource": "opengym"
+}

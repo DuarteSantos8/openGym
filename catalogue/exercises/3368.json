@@ -1,0 +1,24 @@
+{
+  "id": "3368",
+  "name": "dumbbell swing",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A hip driven swing using a dumbbell, building power in your glutes and hamstrings.",
+  "instructions": [
+    "Stand with feet wider than hips and hold one dumbbell in both hands.",
+    "Hinge at the hips and swing the dumbbell between your legs.",
+    "Snap your hips forward to swing it to chest height.",
+    "Let your arms stay relaxed.",
+    "Guide it back down and hinge into the next rep."
+  ],
+  "femaleVariant": "3445",
+  "textSource": "opengym"
+}

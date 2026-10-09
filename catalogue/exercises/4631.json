@@ -1,0 +1,22 @@
+{
+  "id": "4631",
+  "name": "scorpion stretch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "obliques",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "A face-down rotational stretch that opens the hips, chest and lower back.",
+  "instructions": [
+    "Lie face down with your arms out to the sides.",
+    "Bend one knee and swing that foot up and across your body.",
+    "Reach toward the opposite hand and keep shoulders on the floor.",
+    "Hold for 20-30 seconds.",
+    "Return and switch sides."
+  ],
+  "textSource": "opengym"
+}

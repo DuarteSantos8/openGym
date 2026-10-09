@@ -1,0 +1,21 @@
+{
+  "id": "5162",
+  "name": "seated neck stretch",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "sternocleidomastoid",
+    "trapezius"
+  ],
+  "category": "stretching",
+  "description": "A gentle seated stretch for the back of the neck. It helps ease tension from desk time.",
+  "instructions": [
+    "Sit tall on a chair with your shoulders relaxed.",
+    "Place one hand on the back of your head.",
+    "Gently guide your chin toward your chest until you feel a stretch.",
+    "Hold for 20-30 seconds while breathing slowly.",
+    "Release slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

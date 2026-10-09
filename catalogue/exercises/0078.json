@@ -1,0 +1,23 @@
+{
+  "id": "0078",
+  "name": "barbell rear lunge",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A reverse lunge with the bar across the back. Easy on the knees and strong for the glutes.",
+  "instructions": [
+    "Start by standing with your feet shoulder-width apart and a barbell resting on your upper back.",
+    "Take a step backward with your right foot, landing on the ball of your foot.",
+    "Bend both knees to lower your body until your left thigh is parallel to the ground.",
+    "Push through your left heel to return to the starting position.",
+    "Repeat with the other leg."
+  ],
+  "femaleVariant": "2226",
+  "textSource": "exercisedb"
+}

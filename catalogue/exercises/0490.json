@@ -1,0 +1,21 @@
+{
+  "id": "0490",
+  "name": "incline close-grip push-up",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "An incline push-up with a narrow hand position. It targets the triceps and chest.",
+  "instructions": [
+    "Place your hands on an elevated surface, such as a bench or step, slightly wider than shoulder-width apart.",
+    "Extend your legs behind you, resting on the balls of your feet, with your body forming a straight line from head to heels.",
+    "Lower your chest towards the elevated surface by bending your elbows, keeping them close to your sides.",
+    "Pause for a moment at the bottom, then push yourself back up to the starting position by straightening your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

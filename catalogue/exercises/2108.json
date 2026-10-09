@@ -1,0 +1,21 @@
+{
+  "id": "2108",
+  "name": "standing lean back stomach stretch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs"
+  ],
+  "category": "stretching",
+  "description": "A standing lean back that stretches the abdominal wall.",
+  "instructions": [
+    "Stand tall with your hands on your hips.",
+    "Gently lean back and push your hips slightly forward until you feel a stretch across the stomach.",
+    "Keep your movement small and avoid cranking your lower back.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

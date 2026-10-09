@@ -1,0 +1,23 @@
+{
+  "id": "2487",
+  "name": "dumbbell rear delt fly",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A bent-over fly that targets the rear of the shoulders.",
+  "instructions": [
+    "Hinge forward with a flat back, holding dumbbells below your chest.",
+    "Keep a slight bend in your elbows.",
+    "Raise the dumbbells out to the sides.",
+    "Squeeze your shoulder blades together.",
+    "Lower slowly to the start.",
+    "Keep your neck neutral."
+  ],
+  "textSource": "opengym"
+}

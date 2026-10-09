@@ -1,0 +1,23 @@
+{
+  "id": "5518",
+  "name": "cable kneeling leaning forward one arm row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "rhomboids",
+    "biceps",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "One-arm cable row from a kneeling position, leaning forward to give a long pull for the lats and mid back.",
+  "instructions": [
+    "Kneel facing a low cable with a handle in one hand.",
+    "Lean your torso forward and brace your core.",
+    "Pull your elbow back toward your hip.",
+    "Squeeze your shoulder blade, then return slowly.",
+    "Finish reps and switch sides."
+  ],
+  "textSource": "opengym"
+}

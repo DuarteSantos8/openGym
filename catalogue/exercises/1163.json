@@ -1,0 +1,22 @@
+{
+  "id": "1163",
+  "name": "lying leg raise",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A floor exercise that raises straight legs to hit the lower abs.",
+  "instructions": [
+    "Lie on your back with legs straight and hands under your hips.",
+    "Press your lower back gently into the floor.",
+    "Lift your legs together until they point at the ceiling.",
+    "Lower them slowly, stopping just above the floor.",
+    "Keep your back from arching throughout."
+  ],
+  "femaleVariant": "3262",
+  "textSource": "opengym"
+}

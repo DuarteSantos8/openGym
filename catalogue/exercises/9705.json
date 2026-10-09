@@ -1,0 +1,21 @@
+{
+  "id": "9705",
+  "name": "cable lying floor front raise",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Lying on the floor, you lift a cable handle up in front of you to isolate the front delts.",
+  "instructions": [
+    "Lie on your back with your feet toward a low pulley and hold the handle.",
+    "Start with your arm by your thigh.",
+    "Raise your arm up over your chest with a slight elbow bend.",
+    "Pause at the top.",
+    "Lower slowly and repeat, then switch arms."
+  ],
+  "textSource": "opengym"
+}

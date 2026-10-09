@@ -1,0 +1,23 @@
+{
+  "id": "3883",
+  "name": "lever seated right side crunch",
+  "bodyPart": "waist",
+  "equipment": "leverage machine",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A seated machine crunch to the right side that trains the obliques.",
+  "instructions": [
+    "Sit in the machine with the pads positioned for a right side crunch.",
+    "Hold the handles and brace your core.",
+    "Exhale and crunch your torso toward the right.",
+    "Squeeze your side at the bottom.",
+    "Return slowly to the start.",
+    "Avoid using momentum."
+  ],
+  "textSource": "opengym"
+}

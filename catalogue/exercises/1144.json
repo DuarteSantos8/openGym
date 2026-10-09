@@ -1,0 +1,23 @@
+{
+  "id": "1144",
+  "name": "suspender standing ab rollout",
+  "bodyPart": "waist",
+  "equipment": "suspension trainer",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "lats",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Standing with the straps, you lean forward and roll out with straight arms, a challenging core move.",
+  "instructions": [
+    "Hold the handles in front of you and lean forward.",
+    "Brace your abs and tuck the pelvis.",
+    "Extend your arms overhead as your body leans out.",
+    "Stop before your lower back arches.",
+    "Pull back to the start with your abs.",
+    "Take a smaller range if you need."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4468",
+  "name": "roll ball rectus femoris",
+  "bodyPart": "upper legs",
+  "equipment": "roller",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "quadriceps"
+  ],
+  "category": "mobility",
+  "description": "Self-massage with a small ball to ease tension in the front of the thigh (rectus femoris). A simple way to loosen tight spots before or after training.",
+  "instructions": [
+    "Place the ball under your front of the thigh (rectus femoris) while lying face down on the floor.",
+    "Shift your weight onto the ball until you feel moderate, tolerable pressure.",
+    "Roll slowly back and forth over a short range, about 2-3 cm at a time.",
+    "When you find a tender spot, pause on it and breathe for 20-30 seconds.",
+    "Keep your breathing steady and avoid rolling over bone or joints.",
+    "Repeat on the other side if needed."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,32 @@
+{
+  "id": "0292",
+  "name": "dumbbell one arm bent-over row",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A one-arm dumbbell row from a hinged stance. It trains the upper back one side at a time.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in one hand with your palm facing your body.",
+    "Bend your knees slightly and hinge forward at the hips, keeping your back straight and your core engaged.",
+    "Let the dumbbell hang straight down towards the floor, with your arm fully extended.",
+    "Pull the dumbbell up towards your chest, keeping your elbow close to your body and squeezing your shoulder blades together.",
+    "Pause for a moment at the top, then slowly lower the dumbbell back down to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm"
+    ]
+  },
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "7892",
+  "name": "dumbbell seated triceps extension v. 2",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "forearms",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A seated overhead extension with a dumbbell that builds the triceps.",
+  "instructions": [
+    "Sit on a bench with back support, holding one dumbbell overhead with both hands.",
+    "Keep your upper arms close to your head.",
+    "Lower the weight behind your head by bending your elbows.",
+    "Extend your arms back up.",
+    "Keep your core tight.",
+    "Repeat for the planned reps."
+  ],
+  "textSource": "opengym"
+}

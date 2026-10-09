@@ -1,0 +1,23 @@
+{
+  "id": "11252",
+  "name": "cable overhead squat v. 3",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A squat while holding a cable overhead. It trains the legs and challenges shoulder stability and core control.",
+  "instructions": [
+    "Set a cable low and hold the handle overhead with straight arms, standing tall.",
+    "Brace your core and keep your ribs down.",
+    "Squat down by pushing your hips back and bending your knees.",
+    "Keep the handle over your head and chest up.",
+    "Drive through your heels to stand."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "3253",
+  "name": "standing side bend",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lats"
+  ],
+  "category": "mobility",
+  "description": "A standing side bend that loosens the trunk and works the obliques.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart.",
+    "Raise one arm overhead.",
+    "Bend sideways, reaching over to the other side.",
+    "Return to upright.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

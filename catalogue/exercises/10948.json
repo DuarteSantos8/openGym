@@ -1,0 +1,23 @@
+{
+  "id": "10948",
+  "name": "scapular pull up swing",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "trapezius",
+    "grip muscles",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A scapular pull-up with a gentle swing. It builds shoulder blade control and grip.",
+  "instructions": [
+    "Hang from a pull-up bar with straight arms.",
+    "Pull your shoulder blades down without bending your elbows.",
+    "Swing your body forward and back in a small arc.",
+    "Keep the motion controlled.",
+    "Lower to a full hang and repeat."
+  ],
+  "textSource": "opengym"
+}

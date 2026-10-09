@@ -1,0 +1,23 @@
+{
+  "id": "3706",
+  "name": "squat tuck jump",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A squat that explodes into a tuck jump. It trains explosive leg power and fast landings.",
+  "instructions": [
+    "Stand with your feet shoulder width apart.",
+    "Lower into a squat with your arms back.",
+    "Explode upward and pull your knees toward your chest.",
+    "Land softly with bent knees.",
+    "Sink straight into the next squat and repeat."
+  ],
+  "textSource": "opengym"
+}

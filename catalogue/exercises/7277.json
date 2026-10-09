@@ -1,0 +1,23 @@
+{
+  "id": "7277",
+  "name": "resistance band hip thrusts on knees",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "Kneeling hip thrust against a band that targets the glutes without any bench.",
+  "instructions": [
+    "Kneel with a band anchored low in front and looped around your hips.",
+    "Start with your hips back and chest up.",
+    "Drive your hips forward, squeezing your glutes hard.",
+    "Pause at full hip extension.",
+    "Return slowly and repeat."
+  ],
+  "textSource": "opengym",
+  "femaleVariant": "3236"
+}

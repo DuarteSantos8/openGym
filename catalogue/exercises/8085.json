@@ -1,0 +1,23 @@
+{
+  "id": "8085",
+  "name": "resistance band standing balance hip abduction",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "ankles"
+  ],
+  "category": "strength",
+  "description": "A standing hip abduction with a band that also challenges your balance. It targets the outer hips.",
+  "instructions": [
+    "Put a band around your ankles and stand on one leg.",
+    "Hold something for balance if needed.",
+    "Lift the free leg out to the side.",
+    "Keep your torso upright.",
+    "Lower slowly and switch legs after your set."
+  ],
+  "femaleVariant": "6736",
+  "textSource": "opengym"
+}

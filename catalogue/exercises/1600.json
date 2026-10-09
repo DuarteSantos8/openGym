@@ -1,0 +1,23 @@
+{
+  "id": "1600",
+  "name": "standing long jump",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hamstrings"
+  ],
+  "category": "plyometrics",
+  "description": "A jump for distance from a standing start. It builds explosive power in the hips and legs.",
+  "instructions": [
+    "Stand with feet shoulder-width apart at a clear starting line.",
+    "Swing your arms back and bend your knees.",
+    "Swing your arms forward and jump as far as you can.",
+    "Land on both feet with your knees bent to absorb the impact.",
+    "Reset and repeat."
+  ],
+  "femaleVariant": "2548",
+  "textSource": "opengym"
+}

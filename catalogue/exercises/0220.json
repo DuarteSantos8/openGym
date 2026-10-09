@@ -1,0 +1,21 @@
+{
+  "id": "0220",
+  "name": "cable shrug",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "traps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A cable shrug with the arms hanging in front. You lift the shoulders toward the ears to train the traps.",
+  "instructions": [
+    "Stand facing the cable machine with your feet shoulder-width apart.",
+    "Grasp the cable handles with an overhand grip and let your arms hang down in front of you.",
+    "Keeping your arms straight, shrug your shoulders up towards your ears.",
+    "Hold the contraction for a moment, then slowly lower your shoulders back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2579",
+  "textSource": "exercisedb"
+}

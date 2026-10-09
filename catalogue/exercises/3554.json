@@ -1,0 +1,23 @@
+{
+  "id": "3554",
+  "name": "bottle hammer curl",
+  "bodyPart": "upper arms",
+  "equipment": "weighted",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A hammer curl with water bottles as light weights. It trains the biceps and forearms.",
+  "instructions": [
+    "Hold a filled bottle in each hand with palms facing each other.",
+    "Keep your elbows by your sides.",
+    "Curl the bottles toward your shoulders.",
+    "Squeeze at the top.",
+    "Lower with control.",
+    "Avoid swinging."
+  ],
+  "textSource": "opengym"
+}

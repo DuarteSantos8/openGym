@@ -1,0 +1,21 @@
+{
+  "id": "2787",
+  "name": "spine (lumbar) lateral flexion",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "mobility",
+  "description": "Bending the trunk sideways, working the obliques and mobilising the spine.",
+  "instructions": [
+    "Stand or sit tall with a relaxed posture and the joint in a neutral starting position.",
+    "Stand with feet hip width apart and your arms at your sides.",
+    "Slide one hand down the outside of your leg as you bend sideways.",
+    "Keep your hips level, return to upright, then bend to the other side.",
+    "Repeat for 10-15 smooth reps, then switch sides if you are working one side at a time."
+  ],
+  "textSource": "opengym"
+}

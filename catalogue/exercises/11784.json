@@ -1,0 +1,22 @@
+{
+  "id": "11784",
+  "name": "explosive hang squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "A squat jump while hanging from a bar that lets you focus on explosive leg drive.",
+  "instructions": [
+    "Hang from a bar with arms straight and knees slightly bent.",
+    "Lower into a deep squat position.",
+    "Explode upward through your legs.",
+    "Absorb the movement softly and return to the start.",
+    "Keep your core tight and repeat."
+  ],
+  "textSource": "opengym"
+}

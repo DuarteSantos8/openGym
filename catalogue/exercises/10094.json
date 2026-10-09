@@ -1,0 +1,25 @@
+{
+  "id": "10094",
+  "name": "dumbbell standing cross clean",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "glutes",
+    "hamstrings",
+    "core",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A one-arm clean where the dumbbell travels across your body to the opposite shoulder.",
+  "instructions": [
+    "Stand with a dumbbell hanging in front of your thigh, hips hinged slightly.",
+    "Drive your hips forward and shrug.",
+    "Pull the dumbbell up and across your body.",
+    "Catch it at the opposite shoulder.",
+    "Lower it back to the hang.",
+    "Finish reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

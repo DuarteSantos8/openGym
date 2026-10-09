@@ -1,0 +1,21 @@
+{
+  "id": "3657",
+  "name": "static position lying back with pad",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "core"
+  ],
+  "category": "isometric",
+  "description": "Hold a lying position on your back with a pad as a reference for setup and posture.",
+  "instructions": [
+    "Place a pad on the floor or bench.",
+    "Lie on your back with your head supported.",
+    "Keep your spine neutral.",
+    "Relax your arms at your sides.",
+    "Hold the position and breathe."
+  ],
+  "femaleVariant": "3136",
+  "textSource": "opengym"
+}

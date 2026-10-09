@@ -1,0 +1,22 @@
+{
+  "id": "3676",
+  "name": "skip jump rope",
+  "bodyPart": "cardio",
+  "equipment": "rope",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "calves",
+    "quadriceps",
+    "shoulders"
+  ],
+  "category": "cardio",
+  "description": "Jump rope with an alternating skip step for a lighter, rhythmic cardio workout.",
+  "instructions": [
+    "Hold the rope handles and swing the rope overhead.",
+    "Skip over the rope, alternating feet.",
+    "Land softly on the balls of your feet.",
+    "Keep your elbows near your sides.",
+    "Continue at a steady pace."
+  ],
+  "textSource": "opengym"
+}

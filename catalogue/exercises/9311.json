@@ -1,0 +1,23 @@
+{
+  "id": "9311",
+  "name": "isometric hold wide hand push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "A wide-grip push-up held halfway down. It builds chest strength under tension.",
+  "instructions": [
+    "Start in a push-up position with hands wider than your shoulders.",
+    "Lower your chest until your elbows are bent.",
+    "Hold this position for 10 to 20 seconds.",
+    "Keep your body in a straight line.",
+    "Press back up to the start.",
+    "Rest and repeat."
+  ],
+  "textSource": "opengym"
+}

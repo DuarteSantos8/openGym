@@ -1,0 +1,23 @@
+{
+  "id": "9068",
+  "name": "box drop 2 foot land",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hamstrings"
+  ],
+  "category": "plyometrics",
+  "description": "You step off a box and land on both feet to practise soft landings. It builds impact control.",
+  "instructions": [
+    "Stand at the edge of a low box.",
+    "Step off without jumping.",
+    "Land on both feet at the same time.",
+    "Bend your hips and knees to absorb the impact.",
+    "Hold the landing for a second.",
+    "Step back up and repeat."
+  ],
+  "textSource": "opengym"
+}

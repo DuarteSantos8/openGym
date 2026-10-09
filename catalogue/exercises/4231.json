@@ -1,0 +1,22 @@
+{
+  "id": "4231",
+  "name": "weighted seated supination",
+  "bodyPart": "lower arms",
+  "equipment": "weighted",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "biceps",
+    "wrist flexors"
+  ],
+  "category": "strength",
+  "description": "Seated forearm rotation holding a weight to turn your palm upward. It builds forearm strength and wrist control.",
+  "instructions": [
+    "Sit with your forearm resting on your thigh, hand over the knee.",
+    "Hold a weighted handle or dumbbell end in your hand.",
+    "Start with your palm facing down.",
+    "Rotate your forearm slowly until your palm faces up.",
+    "Return slowly to the start.",
+    "Switch arms after your reps."
+  ],
+  "textSource": "opengym"
+}

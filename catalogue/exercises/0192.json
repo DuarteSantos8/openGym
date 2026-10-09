@@ -1,0 +1,22 @@
+{
+  "id": "0192",
+  "name": "cable one arm lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "traps",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A one-arm cable lateral raise. You lift the arm out to the side until it is level, targeting the side delt.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, facing the cable machine.",
+    "Hold the cable handle with one hand, palm facing down, and stand far enough away from the machine so that there is tension on the cable.",
+    "Keep your arm straight and slowly raise it out to the side until it is parallel to the ground.",
+    "Pause for a moment at the top, then slowly lower your arm back down to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides."
+  ],
+  "femaleVariant": "2231",
+  "textSource": "exercisedb"
+}

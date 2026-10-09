@@ -1,0 +1,22 @@
+{
+  "id": "1556",
+  "name": "dumbbell stiff leg deadlift on bench",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A stiff-legged deadlift with dumbbells while standing on a bench for extra depth. It targets the hamstrings and lower back.",
+  "instructions": [
+    "Stand on a sturdy bench holding a dumbbell in each hand in front of your thighs.",
+    "Keep your knees nearly straight and push your hips back.",
+    "Lower the dumbbells down your legs and below the bench level with a flat back.",
+    "Pause when you feel a deep hamstring stretch.",
+    "Squeeze your glutes to return to standing."
+  ],
+  "textSource": "opengym"
+}

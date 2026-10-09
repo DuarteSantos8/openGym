@@ -1,0 +1,22 @@
+{
+  "id": "0386",
+  "name": "dumbbell rotation reverse fly",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A reverse fly with a rotation of the arms at the top. It works the rear shoulders, rotator cuff and upper back.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold a dumbbell in each hand, palms facing inwards.",
+    "Bend your knees slightly and hinge forward at the hips, keeping your back straight and chest up.",
+    "Raise your arms out to the sides, keeping a slight bend in your elbows, until they are parallel to the floor.",
+    "Rotate your arms so that your palms are facing downwards.",
+    "Slowly lower your arms back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "1386",
+  "name": "one leg donkey calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A one-leg donkey calf raise where you bend forward and rise onto your toes. It trains the calf with a deep stretch at the bottom.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, toes pointing forward.",
+    "Place your hands on a stable surface for support, such as a wall or a bar.",
+    "Lift one leg off the ground, keeping your knee slightly bent.",
+    "Raise your heel as high as possible, using your calf muscles.",
+    "Pause for a moment at the top, then slowly lower your heel back down.",
+    "Repeat for the desired number of repetitions, then switch legs."
+  ],
+  "textSource": "exercisedb"
+}

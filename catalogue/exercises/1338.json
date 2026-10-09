@@ -1,0 +1,22 @@
+{
+  "id": "1338",
+  "name": "exercise ball hug",
+  "bodyPart": "back",
+  "equipment": "stability ball",
+  "target": "spine",
+  "secondaryMuscles": [
+    "shoulders",
+    "chest"
+  ],
+  "category": "stretching",
+  "description": "Sit on a stability ball and lean back into it while hugging the ball. It gently opens up the back and stretches the spine.",
+  "instructions": [
+    "Sit on the stability ball with your feet flat on the ground and your back straight.",
+    "Hold the stability ball with both hands, hugging it close to your chest.",
+    "Engage your core muscles and slowly lean back, keeping your back straight and your feet planted on the ground.",
+    "Continue leaning back until you feel a stretch in your back muscles.",
+    "Hold the position for a few seconds, then slowly return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

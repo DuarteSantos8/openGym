@@ -1,0 +1,23 @@
+{
+  "id": "1127",
+  "name": "suspender pull up v. 2",
+  "bodyPart": "back",
+  "equipment": "suspension trainer",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A strap-based pull-up variation that builds the lats and arms, with an angled body you can adjust.",
+  "instructions": [
+    "Hold the handles overhead and hang with arms straight.",
+    "Brace your core.",
+    "Pull your chest up toward the handles, elbows down.",
+    "Squeeze your back at the top.",
+    "Lower slowly to full extension.",
+    "Bend your knees or lean back to make it easier."
+  ],
+  "textSource": "opengym"
+}

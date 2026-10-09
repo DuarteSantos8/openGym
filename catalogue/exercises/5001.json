@@ -1,0 +1,21 @@
+{
+  "id": "5001",
+  "name": "dumbbell seated external shoulder rotation",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "Seated rotation with a light dumbbell that trains the muscles on the back of the shoulder. It supports healthy shoulders.",
+  "instructions": [
+    "Sit holding a light dumbbell with your elbow bent to 90 degrees and tucked to your side.",
+    "Rest your arm on your thigh or a pad for support.",
+    "Rotate your forearm upward and outward, keeping the elbow in place.",
+    "Pause briefly at the top.",
+    "Lower slowly, then switch arms after your reps."
+  ],
+  "textSource": "opengym"
+}

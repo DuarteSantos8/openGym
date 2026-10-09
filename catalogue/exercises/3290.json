@@ -1,0 +1,22 @@
+{
+  "id": "3290",
+  "name": "weighted one hand pull up",
+  "bodyPart": "back",
+  "equipment": "weighted",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "An advanced one arm pull-up with added weight. It builds the lats and biceps and needs great pulling strength.",
+  "instructions": [
+    "Grab the pull-up bar with an overhand grip, slightly wider than shoulder-width apart.",
+    "Hang from the bar with your arm fully extended and your body straight.",
+    "Engage your core and pull your body up towards the bar by bending your elbow and squeezing your back muscles.",
+    "Continue pulling until your chin is above the bar.",
+    "Lower your body back down to the starting position with control.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

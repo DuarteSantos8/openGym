@@ -1,0 +1,21 @@
+{
+  "id": "0792",
+  "name": "standing hip extension (bent knee)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "Driving a bent knee back behind you while standing. It targets the glutes with a short, controlled range.",
+  "instructions": [
+    "Stand tall holding a support, with your core tight.",
+    "Shift onto one leg and bend the other knee.",
+    "Press that heel back and up, squeezing your glute.",
+    "Do not arch your lower back.",
+    "Lower with control, then switch legs after your reps."
+  ],
+  "textSource": "opengym"
+}

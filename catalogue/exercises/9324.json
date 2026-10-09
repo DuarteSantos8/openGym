@@ -1,0 +1,23 @@
+{
+  "id": "9324",
+  "name": "long lever standing hip extension",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "Standing on one leg, you extend the straight leg behind you. It strengthens the glutes and trains balance.",
+  "instructions": [
+    "Stand tall holding a support if needed.",
+    "Keep your leg straight.",
+    "Lift it back behind you.",
+    "Stop when your hips begin to tilt.",
+    "Squeeze your glute at the top.",
+    "Lower it slowly and switch legs."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "1699",
+  "name": "medicine ball rotational throw",
+  "bodyPart": "waist",
+  "equipment": "medicine ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "glutes",
+    "hip flexors"
+  ],
+  "category": "plyometrics",
+  "description": "A powerful rotational throw that trains the core, hips and shoulders to work together.",
+  "instructions": [
+    "Stand sideways to a wall holding a medicine ball at your hip.",
+    "Rotate away from the wall and load your back hip.",
+    "Explosively rotate and throw the ball into the wall.",
+    "Catch it on the rebound and repeat.",
+    "Switch sides after the planned reps."
+  ],
+  "textSource": "opengym"
+}

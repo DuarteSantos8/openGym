@@ -1,0 +1,22 @@
+{
+  "id": "3580",
+  "name": "kettlebell deep push up",
+  "bodyPart": "chest",
+  "equipment": "kettlebell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up with hands on kettlebell handles to lower the chest deeper than the floor allows.",
+  "instructions": [
+    "Place two kettlebells shoulder width apart and grip the handles.",
+    "Set up in a straight plank position.",
+    "Lower your chest below your hands with elbows at about 45 degrees.",
+    "Press back up to straight arms.",
+    "Keep your body in a straight line."
+  ],
+  "textSource": "opengym"
+}

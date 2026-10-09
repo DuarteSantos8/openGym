@@ -1,0 +1,21 @@
+{
+  "id": "0347",
+  "name": "dumbbell lying pronation",
+  "bodyPart": "lower arms",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "biceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A lying forearm rotation with a dumbbell, turning the palm from facing in to facing down. It works the muscles that control forearm rotation.",
+  "instructions": [
+    "Lie flat on a bench with your chest facing down and your arms extended straight down, holding a dumbbell in each hand.",
+    "Rotate your palms so they are facing up.",
+    "Keeping your upper arms stationary, exhale and curl the dumbbells as you rotate your palms to face down.",
+    "Inhale and slowly lower the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

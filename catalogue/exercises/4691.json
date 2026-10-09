@@ -1,0 +1,22 @@
+{
+  "id": "4691",
+  "name": "kneeling side leg to kick",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "core",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A kneeling side kick that works the glutes and outer hips while challenging balance.",
+  "instructions": [
+    "Kneel on all fours with hands under shoulders.",
+    "Lift one leg out to the side, bent.",
+    "Extend it into a kick out to the side.",
+    "Bend it back in and lower.",
+    "Finish the reps and switch legs."
+  ],
+  "femaleVariant": "4813",
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "10747",
+  "name": "quick feet in out run",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "calves",
+    "core"
+  ],
+  "category": "cardio",
+  "description": "Run in place with feet moving in and out quickly. It boosts your heart rate.",
+  "instructions": [
+    "Stand tall with feet together.",
+    "Jog in place.",
+    "Quickly move your feet in and out.",
+    "Stay light on your toes.",
+    "Continue for the set time."
+  ],
+  "textSource": "opengym"
+}

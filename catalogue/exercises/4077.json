@@ -1,0 +1,22 @@
+{
+  "id": "4077",
+  "name": "band low alternate chest press",
+  "bodyPart": "chest",
+  "equipment": "band",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "Alternating band presses from a low anchor. It trains the upper chest.",
+  "instructions": [
+    "Anchor the band low behind you and hold both ends.",
+    "Stand in a staggered stance.",
+    "Press one hand up and forward.",
+    "Return, then press the other hand.",
+    "Keep your core braced."
+  ],
+  "textSource": "opengym"
+}

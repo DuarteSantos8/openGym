@@ -1,0 +1,35 @@
+{
+  "id": "1756",
+  "name": "barbell single leg deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A one-leg hip hinge holding a barbell. Trains the glutes and hamstrings while challenging balance and core stability.",
+  "instructions": [
+    "Stand with your feet hip-width apart, holding a barbell in front of your thighs with an overhand grip.",
+    "Shift your weight onto your left foot and lift your right foot slightly off the ground.",
+    "Hinge forward at the hips, keeping your back straight and your right leg extended behind you for balance.",
+    "Lower the barbell towards the ground, keeping it close to your body and your left leg slightly bent.",
+    "Pause for a moment at the bottom, then engage your glutes and hamstrings to lift your torso back up to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "gluteal",
+      "hamstring"
+    ],
+    "secondaries": [
+      "lower-back",
+      "quadriceps",
+      "adductors",
+      "calves"
+    ]
+  },
+  "femaleVariant": "2634",
+  "textSource": "exercisedb"
+}

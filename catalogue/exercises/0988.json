@@ -1,0 +1,33 @@
+{
+  "id": "0988",
+  "name": "band one arm standing low row",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A standing one-arm low row with a band. It trains the back and biceps.",
+  "instructions": [
+    "Attach the band to a stable anchor point at waist height.",
+    "Stand facing the anchor point with your feet shoulder-width apart.",
+    "Hold the band with one hand, palm facing inward, and step back to create tension in the band.",
+    "Bend your knees slightly and hinge forward at the hips, keeping your back straight.",
+    "Pull the band towards your waist, squeezing your shoulder blades together.",
+    "Pause for a moment at the top of the movement, then slowly release the band back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm"
+    ]
+  },
+  "textSource": "exercisedb"
+}

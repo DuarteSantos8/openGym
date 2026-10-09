@@ -1,0 +1,23 @@
+{
+  "id": "1006",
+  "name": "band rear delt row",
+  "bodyPart": "shoulders",
+  "equipment": "band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "Pull a band toward you with elbows flared wide. It targets the rear delts and upper back.",
+  "instructions": [
+    "Anchor a band at chest height and hold the ends with arms extended.",
+    "Step back until the band is taut.",
+    "Pull your hands toward your chest with elbows high.",
+    "Squeeze your shoulder blades together.",
+    "Return slowly without letting your shoulders round forward."
+  ],
+  "textSource": "opengym"
+}

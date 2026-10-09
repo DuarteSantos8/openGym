@@ -1,0 +1,22 @@
+{
+  "id": "5965",
+  "name": "1 2 stick drill",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A quick footwork drill that builds agility and coordination with fast, light steps.",
+  "instructions": [
+    "Stand in an athletic stance with knees slightly bent.",
+    "Take quick steps in the set pattern, one then two.",
+    "Stay on the balls of your feet.",
+    "Keep your arms bent and swinging naturally.",
+    "Repeat for 20-30 seconds with sharp, light steps."
+  ],
+  "textSource": "opengym"
+}

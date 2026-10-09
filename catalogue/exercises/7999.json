@@ -1,0 +1,22 @@
+{
+  "id": "7999",
+  "name": "resistance band 45 degree hip extension glute focused",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A hip extension on a 45 degree bench with a band added for extra glute load. It builds the glutes and the back of the thighs.",
+  "instructions": [
+    "Set up on a 45 degree hip extension bench with the band anchored under your feet and held across your upper back.",
+    "Cross your arms or hold the band at your shoulders.",
+    "Hinge forward at the hips with a flat back until you feel your hamstrings stretch.",
+    "Drive your hips forward and squeeze your glutes to come back up.",
+    "Stop when your body is in a straight line.",
+    "Do not over-arch your lower back at the top."
+  ],
+  "textSource": "opengym"
+}

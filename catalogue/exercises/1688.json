@@ -1,0 +1,23 @@
+{
+  "id": "1688",
+  "name": "lunge with twist",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "calisthenics",
+  "description": "A lunge with a torso twist. It works the legs and the obliques.",
+  "instructions": [
+    "Start by standing with your feet shoulder-width apart.",
+    "Take a step forward with your right foot, lowering your body into a lunge position.",
+    "As you lunge, twist your torso to the right, bringing your left elbow towards your right knee.",
+    "Pause for a moment, then return to the starting position.",
+    "Repeat on the other side, stepping forward with your left foot and twisting your torso to the left.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "5067",
+  "name": "dumbbell incline squeeze press",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Press two dumbbells held together up from an incline bench. The constant squeeze keeps the chest working through the whole rep.",
+  "instructions": [
+    "Set a bench to a low incline and lie back with dumbbells pressed together over your chest.",
+    "Keep squeezing them against each other the whole set.",
+    "Lower them slowly to your upper chest.",
+    "Press back up until your arms are straight.",
+    "Keep your shoulder blades pinched back and feet planted."
+  ],
+  "femaleVariant": "8000",
+  "textSource": "opengym"
+}

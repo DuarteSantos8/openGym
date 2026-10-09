@@ -1,0 +1,23 @@
+{
+  "id": "9411",
+  "name": "standing bent knee alternating calf raise with a chair support",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "calisthenics",
+  "description": "An alternating calf raise with the knees bent, using a chair for balance. It works the soleus one side at a time.",
+  "instructions": [
+    "Stand behind a chair and hold it with both hands.",
+    "Bend your knees slightly.",
+    "Raise one heel as high as possible.",
+    "Lower it slowly.",
+    "Raise the other heel.",
+    "Keep alternating without locking your knees."
+  ],
+  "textSource": "opengym"
+}

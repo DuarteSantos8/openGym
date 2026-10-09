@@ -1,0 +1,22 @@
+{
+  "id": "0838",
+  "name": "weighted lying side lifting head (with head harness)",
+  "bodyPart": "neck",
+  "equipment": "weighted",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "sternocleidomastoid",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A side-lying neck raise using a head harness with a weight. It builds strength in the muscles at the side of the neck.",
+  "instructions": [
+    "Lie on your side on a bench with your head just past the edge, wearing a head harness with a light weight.",
+    "Let your head hang slightly toward the floor.",
+    "Lift your head up toward the ceiling, moving only your neck.",
+    "Pause briefly at the top.",
+    "Lower slowly and repeat, then switch sides.",
+    "Use a light weight and a controlled pace."
+  ],
+  "textSource": "opengym"
+}

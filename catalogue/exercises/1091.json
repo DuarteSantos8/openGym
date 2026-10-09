@@ -1,0 +1,23 @@
+{
+  "id": "1091",
+  "name": "suspension rollout",
+  "bodyPart": "waist",
+  "equipment": "suspension trainer",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "shoulders",
+    "lats"
+  ],
+  "category": "calisthenics",
+  "description": "A rollout using suspension handles. It challenges the abs and shoulders.",
+  "instructions": [
+    "Kneel holding the handles close to your chest.",
+    "Brace your core.",
+    "Push your arms forward as you lean out.",
+    "Keep your back flat.",
+    "Pull back to the start.",
+    "Do not let your hips sag."
+  ],
+  "textSource": "opengym"
+}

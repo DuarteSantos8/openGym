@@ -1,0 +1,43 @@
+{
+  "id": "0776",
+  "name": "snatch pull",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes",
+    "calves"
+  ],
+  "category": "olympic",
+  "description": "An Olympic lifting pull that drives the barbell from the floor to chest height with a powerful extension and shrug. It builds explosive power in the hips, legs and back.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and the barbell on the ground in front of you.",
+    "Bend your knees and hinge at the hips to lower into a squat position, gripping the barbell with an overhand grip.",
+    "Keep your back straight and chest up as you drive through your heels to lift the barbell off the ground, extending your hips and knees.",
+    "As the barbell reaches hip level, explosively pull it upwards, shrugging your shoulders and pulling your elbows high and to the sides.",
+    "As the barbell reaches its highest point, quickly drop underneath it, pulling yourself into a deep squat position.",
+    "Catch the barbell overhead with your arms fully extended and your knees bent.",
+    "Stand up by extending your hips and knees, keeping the barbell overhead.",
+    "Lower the barbell back down to the starting position by reversing the movement.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "bodyPart": "full body",
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "hamstring",
+      "trapezius"
+    ],
+    "secondaries": [
+      "calves",
+      "forearm",
+      "deltoids",
+      "lower-back",
+      "abs",
+      "obliques"
+    ]
+  },
+  "textSource": "exercisedb"
+}

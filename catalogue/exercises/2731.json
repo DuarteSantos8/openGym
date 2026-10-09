@@ -1,0 +1,23 @@
+{
+  "id": "2731",
+  "name": "strongman weight for height",
+  "bodyPart": "full body",
+  "equipment": "weighted",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "shoulders",
+    "glutes",
+    "quadriceps",
+    "core",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "Throwing a heavy weight up and over a high bar. It is an explosive power move that trains hips, back and shoulders together.",
+  "instructions": [
+    "Hold the weight with both hands low in front of you, feet shoulder width apart.",
+    "Swing it back between your legs while hinging at the hips.",
+    "Drive your hips and legs up hard and swing the weight up and overhead.",
+    "Release it over the bar, then step back and reset for the next throw."
+  ],
+  "textSource": "opengym"
+}

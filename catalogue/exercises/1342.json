@@ -1,0 +1,21 @@
+{
+  "id": "1342",
+  "name": "exercise ball lying side lat stretch",
+  "bodyPart": "back",
+  "equipment": "stability ball",
+  "target": "lats",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "stretching",
+  "description": "Lie on your side with a stability ball supporting you and reach overhead. It stretches the lat and the side of your torso.",
+  "instructions": [
+    "Lie on your side with your legs extended and your head supported by the stability ball.",
+    "Place your top arm on the ball for stability.",
+    "Reach your top arm overhead and allow your torso to rotate slightly.",
+    "Feel the stretch in your lat muscles on the side of your body.",
+    "Hold the stretch for 20-30 seconds, then switch sides and repeat."
+  ],
+  "textSource": "exercisedb"
+}

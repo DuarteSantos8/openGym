@@ -1,0 +1,33 @@
+{
+  "id": "0188",
+  "name": "cable middle fly",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "deltoids",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A standing cable fly at chest height. You bring the handles together in front of you to squeeze the chest.",
+  "instructions": [
+    "Attach cables to both sides of a cable machine at chest height.",
+    "Stand in the center of the machine with one foot slightly in front of the other.",
+    "Grasp the handles with an overhand grip and extend your arms out to the sides.",
+    "Keep a slight bend in your elbows and maintain a slight forward lean.",
+    "Engage your chest muscles and bring your arms forward in a sweeping motion.",
+    "Pause for a moment at the center, then slowly return your arms back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "chest"
+    ],
+    "secondaries": [
+      "upper-back",
+      "trapezius"
+    ]
+  },
+  "femaleVariant": "2439",
+  "textSource": "exercisedb"
+}

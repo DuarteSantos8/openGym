@@ -1,0 +1,23 @@
+{
+  "id": "1420",
+  "name": "kneeling jump squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "Start on your knees and explosively swing your arms to jump up onto your feet. It builds power in the glutes and hips.",
+  "instructions": [
+    "Start by kneeling on the ground with your feet hip-width apart and your toes pointing forward.",
+    "Hold a barbell across your upper back, resting it on your shoulders.",
+    "Engage your core and glutes, then explosively jump up into the air, extending your hips and knees.",
+    "As you jump, push through your toes and fully extend your ankles, knees, and hips.",
+    "Land softly back on the ground, bending your knees to absorb the impact.",
+    "Immediately go into the next repetition, repeating the jump squat motion."
+  ],
+  "textSource": "exercisedb"
+}

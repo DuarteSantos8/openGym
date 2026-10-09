@@ -1,0 +1,21 @@
+{
+  "id": "4007",
+  "name": "90 degree heel touch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "Lie with legs raised and reach toward your heels. It works the abs and obliques.",
+  "instructions": [
+    "Lie with your legs up and knees bent at 90 degrees.",
+    "Lift your shoulders.",
+    "Reach one hand toward the heel.",
+    "Switch sides.",
+    "Keep your legs still."
+  ],
+  "textSource": "opengym"
+}

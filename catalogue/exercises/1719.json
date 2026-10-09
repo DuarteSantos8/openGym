@@ -1,0 +1,24 @@
+{
+  "id": "1719",
+  "name": "barbell incline close grip bench press",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A close grip bench press on an incline. It targets the triceps and the upper chest.",
+  "instructions": [
+    "Set up an incline bench at a 45-degree angle.",
+    "Lie down on the bench with your feet flat on the ground.",
+    "Grasp the barbell with a close grip, slightly narrower than shoulder-width apart.",
+    "Unrack the barbell and lower it slowly towards your chest, keeping your elbows close to your body.",
+    "Pause for a moment when the barbell touches your chest.",
+    "Push the barbell back up to the starting position, fully extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2519",
+  "textSource": "exercisedb"
+}

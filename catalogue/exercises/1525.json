@@ -1,0 +1,23 @@
+{
+  "id": "1525",
+  "name": "barbell jerk dip squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "core",
+    "shoulders"
+  ],
+  "category": "olympic",
+  "description": "The dip and drive part of the jerk, practised with a barbell on the shoulders. It trains a vertical dip and strong leg drive.",
+  "instructions": [
+    "Rack the bar on your front shoulders and stand with feet hip-width apart.",
+    "Keep your torso upright and your core tight.",
+    "Dip a short way by bending your knees straight down.",
+    "Drive up explosively through your whole foot.",
+    "Settle back to standing and reset."
+  ],
+  "textSource": "opengym"
+}

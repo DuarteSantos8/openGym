@@ -1,0 +1,24 @@
+{
+  "id": "0878",
+  "name": "barbell full squat (with rack)",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A deep back squat performed in a power rack for safety. It builds strength across the legs and hips.",
+  "instructions": [
+    "Set the bar at upper chest height in a rack and step under it, resting it on your upper back.",
+    "Unrack and step back with your feet shoulder width apart.",
+    "Bend your hips and knees and squat down as deep as you comfortably can.",
+    "Keep your chest up and knees tracking over your toes.",
+    "Drive through your whole foot to stand back up.",
+    "Set the safety pins just below your lowest depth."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "5080",
+  "name": "palm up palm down rotation",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "forearms"
+  ],
+  "category": "mobility",
+  "description": "Hold your arms out and rotate your palms up and down. A simple warm-up for the shoulders and forearms.",
+  "instructions": [
+    "Stand tall and raise your arms out to your sides at shoulder height.",
+    "Turn your palms up so your thumbs point back.",
+    "Rotate them down so your thumbs point forward.",
+    "Keep your shoulders relaxed and your arms level.",
+    "Repeat smoothly for 10-15 rotations."
+  ],
+  "femaleVariant": "4666",
+  "textSource": "opengym"
+}

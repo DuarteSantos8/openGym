@@ -1,0 +1,23 @@
+{
+  "id": "5119",
+  "name": "dumbbell deadlift v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "grip muscles",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "Lift dumbbells from the floor by hinging at the hips. It strengthens your glutes, hamstrings and back.",
+  "instructions": [
+    "Stand with feet hip-width apart, dumbbells at your sides or in front of your thighs.",
+    "Hinge at the hips and bend your knees slightly.",
+    "Lower the dumbbells along your legs with a flat back.",
+    "Drive your hips forward to stand tall.",
+    "Squeeze your glutes at the top."
+  ],
+  "textSource": "opengym"
+}

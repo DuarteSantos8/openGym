@@ -1,0 +1,22 @@
+{
+  "id": "1480",
+  "name": "biceps stretch behind the back",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms",
+    "chest",
+    "shoulders"
+  ],
+  "category": "stretching",
+  "description": "A stretch that opens the front of the arm and chest by reaching the arms behind you.",
+  "instructions": [
+    "Stand tall and reach both arms behind your back.",
+    "Straighten your elbows and turn your palms down or clasp your hands.",
+    "Lift your hands slightly away from your body until you feel a stretch in the biceps.",
+    "Keep your chest open and your neck relaxed.",
+    "Hold for 20-30 seconds, breathing steadily, then release slowly."
+  ],
+  "textSource": "opengym"
+}

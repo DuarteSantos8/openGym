@@ -1,0 +1,22 @@
+{
+  "id": "6805",
+  "name": "dumbbell alternate v up",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "obliques",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A V-up where one arm and the opposite leg meet, holding a dumbbell. It trains the abs through a big range.",
+  "instructions": [
+    "Lie on your back with a dumbbell in each hand, arms overhead.",
+    "Lift your torso and one leg at the same time.",
+    "Reach the weights toward your raised foot.",
+    "Lower slowly to the floor.",
+    "Alternate legs each rep."
+  ],
+  "textSource": "opengym"
+}

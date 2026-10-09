@@ -1,0 +1,20 @@
+{
+  "id": "0345",
+  "name": "dumbbell lying one arm rear lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "traps",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A face-down one-arm rear lateral raise on a bench. It works the rear delts and the upper back.",
+  "instructions": [
+    "Lie face down on a flat bench with a dumbbell in one hand, hanging towards the floor.",
+    "Keep your arm straight and lift the dumbbell out to the side, away from your body.",
+    "Pause for a moment at the top, then slowly lower the dumbbell back down to the starting position.",
+    "Repeat for the desired number of repetitions, then switch to the other arm."
+  ],
+  "textSource": "exercisedb"
+}

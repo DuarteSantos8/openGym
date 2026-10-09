@@ -1,0 +1,23 @@
+{
+  "id": "4918",
+  "name": "alternate high hop",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "calves",
+    "quadriceps",
+    "glutes"
+  ],
+  "category": "plyometrics",
+  "description": "Springy hops from one foot to the other with a high knee. It raises your heart rate and trains leg power.",
+  "instructions": [
+    "Stand tall with your arms ready to swing.",
+    "Hop off one foot and drive the opposite knee up.",
+    "Land softly on the ball of your foot.",
+    "Switch legs on the next hop.",
+    "Swing your arms in rhythm with your legs.",
+    "Keep a quick, bouncy pace."
+  ],
+  "textSource": "opengym"
+}

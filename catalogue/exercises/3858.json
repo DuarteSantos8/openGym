@@ -1,0 +1,24 @@
+{
+  "id": "3858",
+  "name": "resistance band bent over row",
+  "bodyPart": "back",
+  "equipment": "resistance band",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rhomboids",
+    "biceps",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A hinged rowing move with a band that works the muscles between and around the shoulder blades.",
+  "instructions": [
+    "Stand on the middle of the band with feet hip-width apart and hold an end in each hand.",
+    "Hinge at the hips with a flat back until your torso is nearly parallel to the floor.",
+    "Let your arms hang straight down.",
+    "Pull your elbows back toward your hips, squeezing your shoulder blades together.",
+    "Pause briefly, then lower with control.",
+    "Keep your neck neutral throughout."
+  ],
+  "textSource": "opengym"
+}

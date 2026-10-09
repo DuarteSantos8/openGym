@@ -1,0 +1,24 @@
+{
+  "id": "4451",
+  "name": "suspension wide grip inverted row on floor",
+  "bodyPart": "back",
+  "equipment": "suspension trainer",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rhomboids",
+    "biceps",
+    "core",
+    "rear deltoids"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight row hanging under suspension straps with a wide grip. It builds the upper back and shoulders.",
+  "instructions": [
+    "Hold the handles with a wide, overhand grip and lie back with your body straight.",
+    "Keep your heels on the floor and your core tight.",
+    "Pull your chest toward the handles, squeezing your shoulder blades.",
+    "Pause briefly at the top.",
+    "Lower yourself slowly until your arms are straight and repeat."
+  ],
+  "textSource": "opengym"
+}

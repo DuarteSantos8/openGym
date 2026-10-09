@@ -1,0 +1,23 @@
+{
+  "id": "1116",
+  "name": "suspender incline push up",
+  "bodyPart": "chest",
+  "equipment": "suspension trainer",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up with the hands in the straps and the body angled upward, a gentler version that builds the chest.",
+  "instructions": [
+    "Hold the handles and walk your feet back so your body is at a slant.",
+    "Keep your body straight and core tight.",
+    "Lower your chest to the handles by bending the elbows.",
+    "Keep elbows at about 45 degrees.",
+    "Press up to straight arms.",
+    "Walk your feet back to make it harder."
+  ],
+  "textSource": "opengym"
+}

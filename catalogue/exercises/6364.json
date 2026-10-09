@@ -1,0 +1,21 @@
+{
+  "id": "6364",
+  "name": "ez barbell seated wrist reverse curl",
+  "bodyPart": "lower arms",
+  "equipment": "ez barbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist extensors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "Seated reverse wrist curl with your forearms supported on your thighs, isolating the top of your forearms.",
+  "instructions": [
+    "Sit and rest your forearms on your thighs, holding an EZ bar overhand.",
+    "Let your wrists hang past your knees.",
+    "Extend your wrists to lift the bar.",
+    "Squeeze at the top.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

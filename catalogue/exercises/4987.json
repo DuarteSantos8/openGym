@@ -1,0 +1,23 @@
+{
+  "id": "4987",
+  "name": "lying leg figure eight",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "obliques",
+    "adductors"
+  ],
+  "category": "calisthenics",
+  "description": "Lying on your back, you trace a figure eight in the air with your legs. It keeps the lower abs and hip flexors under tension.",
+  "instructions": [
+    "Lie on your back with your hands under your hips and legs lifted.",
+    "Press your lower back into the floor.",
+    "Trace a figure eight in the air with your feet, slowly and in control.",
+    "Keep your legs close together.",
+    "Change direction halfway through the set."
+  ],
+  "textSource": "opengym"
+}

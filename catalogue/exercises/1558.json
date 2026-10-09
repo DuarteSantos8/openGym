@@ -1,0 +1,22 @@
+{
+  "id": "1558",
+  "name": "dumbbell wall squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A wall squat made harder by holding dumbbells. It keeps your back supported while loading the legs.",
+  "instructions": [
+    "Hold a dumbbell in each hand and lean your back against a wall.",
+    "Walk your feet forward so your knees stay over your ankles when you squat.",
+    "Slide down until your thighs are about parallel to the floor.",
+    "Keep your back flat against the wall.",
+    "Press through your heels to slide back up."
+  ],
+  "textSource": "opengym"
+}

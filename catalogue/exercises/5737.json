@@ -1,0 +1,22 @@
+{
+  "id": "5737",
+  "name": "suspension fly",
+  "bodyPart": "chest",
+  "equipment": "suspension trainer",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "core",
+    "biceps"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight chest fly using suspension straps. You open your arms wide while leaning forward to stretch and load the chest.",
+  "instructions": [
+    "Hold the handles and lean forward with your body in a straight line.",
+    "Start with your arms out in front of you, slightly bent.",
+    "Open your arms out to the sides, lowering your chest between the handles.",
+    "Keep a slight bend in your elbows.",
+    "Squeeze your chest to bring your arms back together."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "2425",
+  "name": "resistance band calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "band",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "strength",
+  "description": "A calf raise with a band that builds lower leg strength.",
+  "instructions": [
+    "Sit or stand with the band under the balls of your feet.",
+    "Hold the ends firmly.",
+    "Press up onto your toes against the band.",
+    "Pause at the top and squeeze your calves.",
+    "Lower your heels slowly.",
+    "Repeat for the planned reps."
+  ],
+  "textSource": "opengym"
+}

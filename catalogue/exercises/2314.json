@@ -1,0 +1,23 @@
+{
+  "id": "2314",
+  "name": "lever lying crunch v. 2",
+  "bodyPart": "waist",
+  "equipment": "leverage machine",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A machine crunch performed lying back, targeting the abdominal muscles with adjustable resistance.",
+  "instructions": [
+    "Lie back on the machine and set your feet or hands as the machine requires.",
+    "Grip the handles lightly and set your lower back against the pad.",
+    "Curl your ribs toward your hips to crunch up.",
+    "Exhale and squeeze your abs at the top.",
+    "Lower slowly without letting the weight stack rest.",
+    "Repeat for the planned reps."
+  ],
+  "textSource": "opengym"
+}

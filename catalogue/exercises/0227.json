@@ -1,0 +1,34 @@
+{
+  "id": "0227",
+  "name": "cable standing fly",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "deltoids",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A standing cable fly where you bring the handles together in front of the chest. It trains the pecs with constant tension.",
+  "instructions": [
+    "Attach the handles to the cables at chest height.",
+    "Stand with your feet shoulder-width apart, facing away from the cable machine.",
+    "Grasp the handles with an overhand grip, palms facing forward.",
+    "Step forward slightly to create tension in the cables.",
+    "Keep your core engaged and your back straight throughout the exercise.",
+    "With a slight bend in your elbows, slowly bring your arms forward and together in front of your chest.",
+    "Squeeze your chest muscles at the peak of the movement.",
+    "Slowly reverse the movement, returning your arms to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "chest"
+    ],
+    "secondaries": [
+      "upper-back",
+      "trapezius"
+    ]
+  },
+  "textSource": "exercisedb"
+}

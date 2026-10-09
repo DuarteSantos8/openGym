@@ -1,0 +1,21 @@
+{
+  "id": "3645",
+  "name": "single leg bridge with outstretched leg",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps"
+  ],
+  "category": "calisthenics",
+  "description": "A single leg glute bridge with the other leg held straight out. It trains the glutes and hamstrings and tests the core.",
+  "instructions": [
+    "Lie on your back with your knees bent and feet flat on the ground.",
+    "Extend one leg straight out in front of you.",
+    "Engage your glutes and lift your hips off the ground, forming a straight line from your knees to your shoulders.",
+    "Hold for a moment at the top, then slowly lower your hips back down to the starting position.",
+    "Repeat for the desired number of repetitions, then switch legs."
+  ],
+  "textSource": "exercisedb"
+}

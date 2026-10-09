@@ -1,0 +1,21 @@
+{
+  "id": "5010",
+  "name": "barbell pause decline bench press",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Decline bench press with a stop on your chest. The pause removes bounce and builds strength out of the bottom.",
+  "instructions": [
+    "Lie on a decline bench and grip the bar slightly wider than shoulders.",
+    "Unrack the bar and lower it to your lower chest.",
+    "Hold the bar still on your chest for a full second.",
+    "Press the bar up powerfully until your arms are straight.",
+    "Keep your feet secured and shoulder blades tight."
+  ],
+  "textSource": "opengym"
+}

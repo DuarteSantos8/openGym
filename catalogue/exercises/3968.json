@@ -1,0 +1,22 @@
+{
+  "id": "3968",
+  "name": "dumbbell flat around the world",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "chest",
+    "upper back",
+    "lats"
+  ],
+  "category": "strength",
+  "description": "Sweep dumbbells from your hips to overhead in a wide arc on a flat bench. It works the shoulders and chest through a long range.",
+  "instructions": [
+    "Lie on a flat bench with dumbbells over your chest.",
+    "Keep your arms nearly straight.",
+    "Lower them out and back in a wide arc.",
+    "Take them down toward your hips.",
+    "Reverse the arc with control."
+  ],
+  "textSource": "opengym"
+}

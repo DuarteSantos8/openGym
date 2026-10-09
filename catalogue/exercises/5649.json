@@ -1,0 +1,22 @@
+{
+  "id": "5649",
+  "name": "hollow rock",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Rocking on your back in a hollow body position to challenge your core.",
+  "instructions": [
+    "Lie on your back and lift your arms and legs into a hollow position.",
+    "Press your lower back into the floor.",
+    "Rock back and forth like a boat.",
+    "Keep your body rigid.",
+    "Continue for reps or time."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,39 @@
+{
+  "id": "0841",
+  "name": "weighted pull-up",
+  "bodyPart": "back",
+  "equipment": "weighted",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A pull-up with added weight on a belt or vest. It builds the lats and biceps and increases strength.",
+  "instructions": [
+    "Grab the pull-up bar with an overhand grip, slightly wider than shoulder-width apart.",
+    "Hang from the bar with your arms fully extended and your body straight.",
+    "Engage your back muscles and pull your body up towards the bar, keeping your elbows close to your body.",
+    "Continue pulling until your chin is above the bar.",
+    "Pause for a moment at the top, then slowly lower your body back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm"
+    ],
+    "weights": {
+      "upper-back": 1,
+      "biceps": 0.4,
+      "deltoids": 0.4,
+      "forearm": 0.4,
+      "triceps": 0
+    }
+  },
+  "textSource": "exercisedb"
+}

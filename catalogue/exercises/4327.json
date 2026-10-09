@@ -1,0 +1,23 @@
+{
+  "id": "4327",
+  "name": "sled vertical leg press",
+  "bodyPart": "upper legs",
+  "equipment": "sled machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A leg press on a sled that moves straight up, pressing the weight vertically. It loads the thighs and glutes heavily.",
+  "instructions": [
+    "Lie on your back under the sled and place your feet shoulder-width on the platform.",
+    "Release the safety catches and lower the platform until your knees are deeply bent.",
+    "Keep your lower back flat on the pad.",
+    "Press the platform up without locking your knees.",
+    "Lower under control for each rep."
+  ],
+  "textSource": "opengym"
+}

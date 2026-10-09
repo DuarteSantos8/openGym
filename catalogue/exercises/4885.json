@@ -1,0 +1,22 @@
+{
+  "id": "4885",
+  "name": "lying incline hip raise",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A hip raise done lying on an incline. It trains the lower abs by curling your pelvis toward your ribs.",
+  "instructions": [
+    "Lie back on an incline surface and hold the top with your hands.",
+    "Bring your legs up with knees slightly bent.",
+    "Curl your pelvis and lift your hips off the surface.",
+    "Pause with your feet pointing toward the ceiling.",
+    "Lower your hips slowly.",
+    "Avoid swinging your legs."
+  ],
+  "textSource": "opengym"
+}

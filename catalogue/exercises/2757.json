@@ -1,0 +1,22 @@
+{
+  "id": "2757",
+  "name": "frog hip thrust",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "adductors",
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A hip thrust with the soles of the feet together and knees out, which shifts work to the glutes and inner thighs.",
+  "instructions": [
+    "Lie on your back with the soles of your feet together and knees falling out.",
+    "Keep your heels near your hips.",
+    "Drive through the feet to lift your hips.",
+    "Squeeze your glutes at the top.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

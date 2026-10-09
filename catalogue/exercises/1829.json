@@ -1,0 +1,21 @@
+{
+  "id": "1829",
+  "name": "triceps stretch against wall",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "lats"
+  ],
+  "category": "stretching",
+  "description": "Leaning into a wall with your elbow bent overhead stretches the triceps. The wall gives a steady anchor.",
+  "instructions": [
+    "Stand next to a wall and place your bent elbow on it above head height.",
+    "Lean your body forward and down until you feel the stretch along the back of your upper arm.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

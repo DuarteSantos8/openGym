@@ -1,0 +1,24 @@
+{
+  "id": "7598",
+  "name": "dumbbell contralateral glute dominant bulgarian split squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "adductors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A Bulgarian split squat with one dumbbell held in the opposite hand to the front leg.",
+  "instructions": [
+    "Hold one dumbbell in the hand opposite your front leg.",
+    "Put your back foot on a bench and step the front foot forward.",
+    "Lean your torso forward slightly.",
+    "Lower until the front thigh is parallel.",
+    "Drive up through the front heel.",
+    "Finish all reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

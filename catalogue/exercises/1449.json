@@ -1,0 +1,22 @@
+{
+  "id": "1449",
+  "name": "dumbbell incline 30 degrees flye hold",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "shoulders",
+    "biceps"
+  ],
+  "category": "isometric",
+  "description": "A static hold at the bottom of an incline flye. It teaches chest tension and builds control in the stretched position.",
+  "instructions": [
+    "Set a bench to about 30 degrees and lie back with a dumbbell in each hand above your chest.",
+    "Open your arms wide with soft elbows until the dumbbells are level with your chest.",
+    "Keep your shoulder blades pinned back and down.",
+    "Hold the stretched position for 15-30 seconds without sagging.",
+    "Bring the weights back together over your chest and set them down carefully."
+  ],
+  "textSource": "opengym"
+}

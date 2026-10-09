@@ -1,0 +1,23 @@
+{
+  "id": "2423",
+  "name": "resistance band floor hyperextension",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A floor back extension with band resistance for the lower back and glutes.",
+  "instructions": [
+    "Lie face down and anchor a band under your hands or around your upper back.",
+    "Squeeze your glutes and lift your chest slightly off the floor.",
+    "Keep your neck neutral.",
+    "Pause for a second at the top.",
+    "Lower slowly to the floor.",
+    "Repeat without overarching."
+  ],
+  "textSource": "opengym"
+}

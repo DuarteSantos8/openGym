@@ -1,0 +1,20 @@
+{
+  "id": "0361",
+  "name": "dumbbell one arm shoulder press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "You press one dumbbell from shoulder height to overhead. It builds the shoulders and triceps one side at a time.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold a dumbbell in one hand at shoulder level, palm facing forward.",
+    "Press the dumbbell upward until your arm is fully extended overhead.",
+    "Pause for a moment at the top, then slowly lower the dumbbell back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch to the other arm."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "11262",
+  "name": "cable lying alternating bent leg jackknife v. 3",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A lying leg-raise style core move against cable resistance, alternating legs. It hits the lower abs.",
+  "instructions": [
+    "Lie on your back with your feet attached to a low cable and hands by your sides.",
+    "Press your lower back into the floor.",
+    "Bring one bent knee toward your chest.",
+    "Lower it slowly and switch legs.",
+    "Keep a controlled alternating rhythm."
+  ],
+  "textSource": "opengym"
+}

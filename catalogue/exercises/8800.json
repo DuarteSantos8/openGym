@@ -1,0 +1,23 @@
+{
+  "id": "8800",
+  "name": "smith staggered stance romanian deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A Romanian deadlift in a staggered stance on the smith machine. It focuses on the hamstrings and glutes of the front leg.",
+  "instructions": [
+    "Stand under the smith bar with one foot slightly behind the other.",
+    "Grip the bar and unrack it.",
+    "Hinge at the hips with a flat back and the bar close to your legs.",
+    "Lower until you feel a stretch in the hamstrings.",
+    "Drive your hips forward to stand tall.",
+    "Switch which foot is forward after your set."
+  ],
+  "textSource": "opengym"
+}

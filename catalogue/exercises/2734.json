@@ -1,0 +1,23 @@
+{
+  "id": "2734",
+  "name": "strongman barbell farmers walk",
+  "bodyPart": "full body",
+  "equipment": "barbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "grip muscles",
+    "trapezius",
+    "core",
+    "glutes",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Walking while carrying a heavy loaded bar at your sides. Builds grip strength, upper back and trunk stability.",
+  "instructions": [
+    "Stand inside the loaded bar and grip the handle, then lift it to hang at your sides.",
+    "Keep your chest tall, shoulders back and core braced.",
+    "Walk forward with short, quick steps for a set distance.",
+    "Stop, lower the weights to the floor with a flat back, and rest."
+  ],
+  "textSource": "opengym"
+}

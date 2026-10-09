@@ -1,0 +1,21 @@
+{
+  "id": "1778",
+  "name": "assisted standing chest stretch",
+  "bodyPart": "chest",
+  "equipment": "assisted",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "stretching",
+  "description": "A partner draws your arms back while you stand, opening up your chest. It is a deeper stretch than you can usually reach alone.",
+  "instructions": [
+    "Stand tall with your arms out to the sides and your hands at shoulder height or slightly lower.",
+    "Have your partner hold your wrists and slowly pull your arms back until you feel a stretch across your chest.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

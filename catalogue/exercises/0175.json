@@ -1,0 +1,21 @@
+{
+  "id": "0175",
+  "name": "cable kneeling crunch",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "Kneeling cable crunch with a rope behind the head. Crunching down against the pulley loads the abs with steady tension.",
+  "instructions": [
+    "Attach a rope handle to a high pulley and kneel down facing away from the machine.",
+    "Hold the rope handle with both hands and place it behind your head, keeping your elbows out to the sides.",
+    "Keeping your hips stationary, flex your waist and crunch your torso down towards your thighs.",
+    "Pause for a moment at the bottom, then slowly return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2369",
+  "textSource": "exercisedb"
+}

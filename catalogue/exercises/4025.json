@@ -1,0 +1,22 @@
+{
+  "id": "4025",
+  "name": "resistance band standing down warming up",
+  "bodyPart": "shoulders",
+  "equipment": "resistance band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "lats",
+    "rotator cuff",
+    "upper back"
+  ],
+  "category": "mobility",
+  "description": "A gentle band warm-up that pulls the arms down from overhead to prepare the shoulders and upper back.",
+  "instructions": [
+    "Stand tall and hold the band overhead with both hands, a little wider than shoulder width.",
+    "Keep your ribs down and core braced.",
+    "Pull your hands down in front of you toward your chest.",
+    "Return slowly overhead keeping tension.",
+    "Repeat for 10 to 15 easy reps."
+  ],
+  "textSource": "opengym"
+}

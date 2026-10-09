@@ -1,0 +1,22 @@
+{
+  "id": "2856",
+  "name": "rocker with open legs",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "hamstrings",
+    "core"
+  ],
+  "category": "pilates",
+  "description": "A balance and rolling move with the legs open in a V shape.",
+  "instructions": [
+    "Sit and hold your ankles with your legs in a V.",
+    "Balance on your tailbone.",
+    "Roll back onto your shoulders.",
+    "Roll up to balance again.",
+    "Keep your back rounded."
+  ],
+  "textSource": "opengym"
+}

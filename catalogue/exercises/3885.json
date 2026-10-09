@@ -1,0 +1,24 @@
+{
+  "id": "3885",
+  "name": "double under jump rope",
+  "bodyPart": "cardio",
+  "equipment": "rope",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "calves",
+    "forearms",
+    "shoulders",
+    "core"
+  ],
+  "category": "cardio",
+  "description": "A skipping move where the rope passes twice under your feet for each jump, great for conditioning and coordination.",
+  "instructions": [
+    "Hold the rope handles at your hips with your elbows close.",
+    "Stand tall and start with a few normal jumps.",
+    "Jump a little higher and spin the rope faster with your wrists.",
+    "Let the rope pass twice under your feet before landing.",
+    "Land softly on the balls of your feet.",
+    "Keep your jumps small and your body upright."
+  ],
+  "textSource": "opengym"
+}

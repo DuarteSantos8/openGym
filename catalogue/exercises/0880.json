@@ -1,0 +1,21 @@
+{
+  "id": "0880",
+  "name": "cable standing hip extension v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A cable kickback for the glutes with an ankle strap. This is a second version of the move.",
+  "instructions": [
+    "Attach an ankle strap to a low cable and stand facing the stack.",
+    "Hold the frame for support.",
+    "Keep your core tight and kick the strapped leg back.",
+    "Squeeze your glute at the top.",
+    "Return slowly, then switch legs after your reps."
+  ],
+  "textSource": "opengym"
+}

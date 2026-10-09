@@ -1,0 +1,22 @@
+{
+  "id": "5029",
+  "name": "kneeling back rotation",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "shoulders"
+  ],
+  "category": "mobility",
+  "description": "Rotating the upper back from a kneeling position. It improves spinal rotation and loosens the mid back.",
+  "instructions": [
+    "Kneel on all fours with one hand behind your head.",
+    "Keep your hips still and your core lightly braced.",
+    "Rotate your elbow down toward the other arm, then open toward the ceiling.",
+    "Follow the elbow with your eyes.",
+    "Do your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

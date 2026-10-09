@@ -1,0 +1,23 @@
+{
+  "id": "6136",
+  "name": "dumbbell bent over scapula row",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rhomboids",
+    "trapezius",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A bent-over movement where you pull the shoulder blades together with straight arms. It builds the mid-back muscles that stabilize the shoulders.",
+  "instructions": [
+    "Hold dumbbells and hinge forward with a flat back.",
+    "Let your arms hang straight down.",
+    "Squeeze your shoulder blades together without bending the elbows.",
+    "Hold for a moment.",
+    "Release the blades and let the weights drop slightly.",
+    "Keep your neck neutral throughout."
+  ],
+  "textSource": "opengym"
+}

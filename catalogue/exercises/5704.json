@@ -1,0 +1,24 @@
+{
+  "id": "5704",
+  "name": "barbell hang power clean",
+  "bodyPart": "upper legs",
+  "equipment": "olympic barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "trapezius",
+    "quadriceps",
+    "shoulders",
+    "forearms"
+  ],
+  "category": "olympic",
+  "description": "An explosive lift from the hang position that brings the bar to the shoulders. It trains power through the hips, legs and traps.",
+  "instructions": [
+    "Hold the bar at mid-thigh with an overhand grip and a flat back.",
+    "Hinge slightly so the bar sits just above your knees.",
+    "Jump and shrug explosively, extending hips and knees.",
+    "Pull yourself under the bar and catch it on your shoulders in a quarter squat.",
+    "Stand tall, then lower the bar back to the hang."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "6890",
+  "name": "dumbbell z press v. 2",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "core",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "An overhead press done seated on the floor with legs straight. The position removes leg drive and demands a strong core.",
+  "instructions": [
+    "Sit on the floor with legs extended and dumbbells at your shoulders.",
+    "Brace your core and keep your back tall.",
+    "Press both dumbbells overhead until your arms are straight.",
+    "Lower them to your shoulders under control.",
+    "Avoid leaning back during the press."
+  ],
+  "textSource": "opengym"
+}

@@ -142,8 +142,11 @@ describe('title-casing per exercise-name pack', () => {
   const packFor = lang => packs[`../exercise-names/${lang}.js`]
   // Share of names that start with a lower-case letter. A lower-case pack still has a few that
   // start upper-case for a reason of their own (EZ-rudas, L-sit, SkiErg), German has none.
+  // Share of names that do not start with a capital. A script without case (Arabic, Devanagari,
+  // Thai, Han...) has nothing to title-case, so such a name counts as lower-case: the capitalize
+  // class stays on and does nothing to it.
   const lowerShare = names => {
-    const firsts = Object.values(names).map(n => [...n][0]).filter(c => c && c.toLocaleLowerCase() !== c.toLocaleUpperCase())
+    const firsts = Object.values(names).map(n => [...n][0]).filter(Boolean)
     return firsts.filter(c => c === c.toLocaleLowerCase()).length / firsts.length
   }
 

@@ -1,0 +1,29 @@
+{
+  "id": "1391",
+  "name": "sled calf press on leg press",
+  "bodyPart": "lower legs",
+  "equipment": "sled machine",
+  "target": "calves",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "A calf press done on a leg press sled using only your toes. It builds the calves under a supported load.",
+  "instructions": [
+    "Adjust the seat of the leg press machine so that your knees are slightly bent when your feet are on the sled.",
+    "Place your feet shoulder-width apart on the sled, with your toes pointing forward.",
+    "Release the safety handles and push the sled away from you by extending your knees and ankles.",
+    "Pause for a moment at the top of the movement, then slowly lower the sled back down by bending your knees and ankles.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "weights": {
+      "calves": 1,
+      "quadriceps": 0.4,
+      "hamstring": 0
+    }
+  },
+  "femaleVariant": "2212",
+  "textSource": "exercisedb"
+}

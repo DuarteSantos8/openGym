@@ -1,0 +1,23 @@
+{
+  "id": "4181",
+  "name": "weighted hang chin up",
+  "bodyPart": "back",
+  "equipment": "weighted",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A chin up from a dead hang with added weight. It builds lats and biceps strength.",
+  "instructions": [
+    "Attach weight and hang from the bar with palms facing you.",
+    "Start from straight arms.",
+    "Pull your chest toward the bar.",
+    "Get your chin over the bar.",
+    "Lower fully with control.",
+    "Avoid swinging."
+  ],
+  "textSource": "opengym"
+}

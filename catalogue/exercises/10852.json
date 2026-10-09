@@ -1,0 +1,23 @@
+{
+  "id": "10852",
+  "name": "pilates machine russian split",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "pilates",
+  "description": "A reformer split stance with the carriage sliding. It works the legs, glutes and balance.",
+  "instructions": [
+    "Place one foot on the carriage and one on the platform.",
+    "Stand tall with your core braced.",
+    "Slide the carriage back while lowering into a split squat.",
+    "Pause.",
+    "Press back to the start.",
+    "Switch sides after your set."
+  ],
+  "textSource": "opengym"
+}

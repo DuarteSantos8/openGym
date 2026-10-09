@@ -1,0 +1,22 @@
+{
+  "id": "1387",
+  "name": "one leg floor calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "feet"
+  ],
+  "category": "calisthenics",
+  "description": "A one-leg calf raise on the floor with a hand on a wall for balance. It builds calf strength and ankle stability.",
+  "instructions": [
+    "Stand with your feet hip-width apart and place your hands on a wall or sturdy object for balance.",
+    "Lift one foot off the ground and balance on the other foot.",
+    "Slowly raise your heel off the ground, lifting your body up onto the ball of your foot.",
+    "Pause for a moment at the top, then slowly lower your heel back down to the starting position.",
+    "Repeat for the desired number of repetitions, then switch legs and repeat."
+  ],
+  "femaleVariant": "2625",
+  "textSource": "exercisedb"
+}

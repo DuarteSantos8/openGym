@@ -1,0 +1,24 @@
+{
+  "id": "0163",
+  "name": "cable front seated row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rhomboids",
+    "biceps",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A seated row facing a cable stack. It builds the mid back and lats with smooth constant tension.",
+  "instructions": [
+    "Sit at a cable row station with your feet on the platform and your knees slightly bent.",
+    "Grab the handle with both hands and sit tall.",
+    "Pull the handle toward your lower ribs, squeezing your shoulder blades together.",
+    "Pause briefly at the end.",
+    "Return slowly until your arms are straight.",
+    "Keep your chest up and avoid rocking back."
+  ],
+  "textSource": "opengym"
+}

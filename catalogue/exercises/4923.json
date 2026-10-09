@@ -1,0 +1,23 @@
+{
+  "id": "4923",
+  "name": "ring reverse fly",
+  "bodyPart": "shoulders",
+  "equipment": "suspension trainer",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids"
+  ],
+  "category": "calisthenics",
+  "description": "A reverse fly using rings while leaning back. It trains the rear shoulders and upper back.",
+  "instructions": [
+    "Hold the rings with arms straight and lean back.",
+    "Keep your body in a straight line.",
+    "Open your arms out to the sides.",
+    "Squeeze your shoulder blades together.",
+    "Return slowly to the start.",
+    "Keep your elbows only slightly bent."
+  ],
+  "textSource": "opengym"
+}

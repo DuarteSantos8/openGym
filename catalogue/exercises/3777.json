@@ -1,0 +1,23 @@
+{
+  "id": "3777",
+  "name": "band front plank with single arm pulldown",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "lats",
+    "core",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A front plank with a one-arm band pulldown. It trains core stability while your arm works against the band.",
+  "instructions": [
+    "Anchor the band overhead and set up in a forearm or high plank.",
+    "Brace your abs and keep your hips level.",
+    "Pull the band down with one hand toward your hip without twisting.",
+    "Return the arm slowly to the start.",
+    "Alternate arms and keep your body in one straight line."
+  ],
+  "textSource": "opengym"
+}

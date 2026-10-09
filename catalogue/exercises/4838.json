@@ -1,0 +1,22 @@
+{
+  "id": "4838",
+  "name": "cable unilateral bicep curl",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A one-arm cable curl that keeps constant tension on the biceps. Train each arm on its own to even out strength.",
+  "instructions": [
+    "Attach a handle to a low cable and stand facing the machine.",
+    "Hold the handle with one hand, elbow at your side.",
+    "Curl the handle toward your shoulder.",
+    "Squeeze your biceps at the top.",
+    "Lower slowly and switch arms."
+  ],
+  "femaleVariant": "10776",
+  "textSource": "opengym"
+}

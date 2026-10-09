@@ -1,0 +1,22 @@
+{
+  "id": "2846",
+  "name": "hundred",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "core"
+  ],
+  "category": "pilates",
+  "description": "The classic Pilates warm-up where you pump your arms while holding your legs up, building abdominal endurance.",
+  "instructions": [
+    "Lie on your back and lift your head and shoulders.",
+    "Raise your legs to a tabletop or extend them.",
+    "Pump your arms up and down in small beats.",
+    "Breathe in for five beats and out for five.",
+    "Aim for one hundred beats."
+  ],
+  "textSource": "opengym"
+}

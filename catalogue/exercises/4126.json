@@ -1,0 +1,23 @@
+{
+  "id": "4126",
+  "name": "barbell deadstop row with rack",
+  "bodyPart": "back",
+  "equipment": "barbell",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rhomboids",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A row starting from the rack pins, resetting every rep for strict pulling.",
+  "instructions": [
+    "Set the bar on pins at knee height.",
+    "Hinge forward and grip the bar.",
+    "Row it to your lower ribs.",
+    "Lower it back to the pins and pause.",
+    "Reset your back before the next rep."
+  ],
+  "textSource": "opengym"
+}

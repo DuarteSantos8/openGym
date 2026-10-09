@@ -1,0 +1,22 @@
+{
+  "id": "0632",
+  "name": "narrow leg bench bridge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A glute bridge with your feet close together on a bench. It places more load on the glutes and hamstrings.",
+  "instructions": [
+    "Lie on your back with your feet close together on a bench.",
+    "Bend your knees and keep arms by your sides.",
+    "Drive through your heels and lift your hips.",
+    "Squeeze your glutes at the top.",
+    "Hold briefly.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

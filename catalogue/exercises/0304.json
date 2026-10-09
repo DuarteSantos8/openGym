@@ -1,0 +1,22 @@
+{
+  "id": "0304",
+  "name": "dumbbell decline shrug v. 2",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "traps",
+  "secondaryMuscles": [
+    "shoulders",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A shrug performed lying face down on a bench. Pulling the shoulders up trains the traps without the lower back.",
+  "instructions": [
+    "Set up a decline bench at a 45-degree angle.",
+    "Lie face down on the bench with your chest and stomach resting on it.",
+    "Hold a dumbbell in each hand with your palms facing each other and your arms fully extended.",
+    "Keeping your arms straight, raise your shoulders as high as possible while squeezing your shoulder blades together.",
+    "Hold the contraction for a brief pause, then lower the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

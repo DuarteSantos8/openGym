@@ -1,0 +1,22 @@
+{
+  "id": "5816",
+  "name": "dumbbell one arm side lying bench press",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A one-arm press done lying on your side on a bench. It targets the chest while the core resists rolling.",
+  "instructions": [
+    "Lie on your side on a flat bench with a dumbbell in the top hand.",
+    "Bring the weight to your chest.",
+    "Press the dumbbell up until your arm is straight.",
+    "Lower it slowly to the chest.",
+    "Complete your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

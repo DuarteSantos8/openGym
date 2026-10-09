@@ -1,0 +1,22 @@
+{
+  "id": "4689",
+  "name": "resistance band split squat",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A split squat with band resistance, building the quads and glutes one leg at a time.",
+  "instructions": [
+    "Stand in a split stance with the band under your front foot and handles at your shoulders.",
+    "Keep your torso upright.",
+    "Lower your back knee toward the floor.",
+    "Press through the front heel to rise.",
+    "Complete your reps and switch legs."
+  ],
+  "textSource": "opengym"
+}

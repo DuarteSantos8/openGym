@@ -1,0 +1,21 @@
+{
+  "id": "1035",
+  "name": "lever side hip adduction",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "inner thighs",
+    "groin"
+  ],
+  "category": "strength",
+  "description": "A machine move that pulls the leg across the body, working the inner thighs.",
+  "instructions": [
+    "Stand next to the machine with the inner side of your leg against the pad.",
+    "Hold the support for balance.",
+    "Pull your leg across your body, squeezing your inner thigh.",
+    "Return slowly to the start.",
+    "Keep your hips level and avoid leaning. Finish the reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

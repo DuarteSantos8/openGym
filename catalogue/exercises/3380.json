@@ -1,0 +1,24 @@
+{
+  "id": "3380",
+  "name": "battling ropes low waves",
+  "bodyPart": "cardio",
+  "equipment": "rope",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "shoulders",
+    "core",
+    "forearms",
+    "glutes"
+  ],
+  "category": "cardio",
+  "description": "Alternating or double low waves with heavy ropes that spike your heart rate and work the shoulders, arms and core.",
+  "instructions": [
+    "Hold one rope end in each hand and stand in a quarter squat.",
+    "Brace your core and keep your chest up.",
+    "Whip the ropes down and up so waves travel low along the floor.",
+    "Keep the waves even and your hips stable.",
+    "Work for 20-30 seconds at a hard pace.",
+    "Rest, then repeat for several rounds."
+  ],
+  "textSource": "opengym"
+}

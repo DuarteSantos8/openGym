@@ -1,0 +1,24 @@
+{
+  "id": "1199",
+  "name": "sumo deadlift high pull",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "trapezius",
+    "shoulders",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A wide-stance deadlift finished with an upright row. It works the thighs, glutes and shoulders in one smooth motion.",
+  "instructions": [
+    "Stand with a wide stance and grip the barbell between your legs with hands close together.",
+    "Keep your back flat and drive through your legs to stand up.",
+    "As the bar passes your hips, pull it up to chest height with your elbows high.",
+    "Lower the bar back along the same path.",
+    "Keep the bar close to your body throughout."
+  ],
+  "textSource": "opengym"
+}

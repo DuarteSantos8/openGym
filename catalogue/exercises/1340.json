@@ -1,0 +1,22 @@
+{
+  "id": "1340",
+  "name": "exercise ball lower back prone stretch",
+  "bodyPart": "back",
+  "equipment": "stability ball",
+  "target": "spine",
+  "secondaryMuscles": [
+    "lats",
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "Lying face down over a stability ball to stretch the lower back.",
+  "instructions": [
+    "Kneel by a stability ball and lay your torso over it.",
+    "Roll forward so your hips rest on the ball.",
+    "Let your arms and head hang down in a relaxed way.",
+    "Breathe slowly and let your lower back release.",
+    "Hold for 20-30 seconds."
+  ],
+  "textSource": "opengym"
+}

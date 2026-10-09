@@ -66,7 +66,7 @@ On the **Plan** screen, tap the share icon:
 - **Print / Save as PDF** gives you a clean printout.
 
 An export always contains every routine. To share only some of them, import the file into the
-[demo](https://opengym.duarte-santos.ch/demo/), delete what you don't want, and export again. The
+[demo](https://opengym.ch/demo/), delete what you don't want, and export again. The
 demo keeps everything in your browser; nothing is uploaded. The same trick works for building a plan
 on a computer and then importing it into the phone app.
 

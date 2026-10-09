@@ -1,0 +1,24 @@
+{
+  "id": "0468",
+  "name": "grasshopper push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up where one knee swings under the body toward the opposite elbow. It combines chest work with core and hip mobility.",
+  "instructions": [
+    "Start in a high plank with your hands under your shoulders.",
+    "Lower your chest toward the floor and bring one knee toward the opposite elbow.",
+    "Push back up while returning the leg.",
+    "Repeat with the other leg.",
+    "Keep your core tight.",
+    "Move at a steady pace."
+  ],
+  "textSource": "opengym"
+}

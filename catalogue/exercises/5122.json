@@ -1,0 +1,24 @@
+{
+  "id": "5122",
+  "name": "barbell clean and jerk",
+  "bodyPart": "full body",
+  "equipment": "olympic barbell",
+  "target": "traps",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "shoulders",
+    "triceps",
+    "hamstrings"
+  ],
+  "category": "olympic",
+  "description": "Lift a barbell from the floor to your shoulders, then drive it overhead. A technical full-body lift for power and speed.",
+  "instructions": [
+    "Set up over the bar with a flat back and hands outside your knees.",
+    "Pull the bar off the floor and catch it at your shoulders in a squat.",
+    "Stand up with the bar racked.",
+    "Dip slightly and drive the bar overhead, splitting your feet.",
+    "Recover your feet, stand tall and lower the bar under control."
+  ],
+  "textSource": "opengym"
+}

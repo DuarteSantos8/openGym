@@ -1,0 +1,22 @@
+{
+  "id": "4908",
+  "name": "dumbbell over bench reverse wrist curl with mat",
+  "bodyPart": "lower arms",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist extensors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A reverse wrist curl with your forearms resting on a padded bench. It builds the muscles on top of the forearm.",
+  "instructions": [
+    "Kneel by a bench with forearms on it, palms down, wrists over the edge.",
+    "Hold a dumbbell in each hand.",
+    "Let your wrists lower gently.",
+    "Curl the weights up by extending your wrists.",
+    "Pause at the top, then lower slowly.",
+    "Keep your forearms still on the bench."
+  ],
+  "textSource": "opengym"
+}

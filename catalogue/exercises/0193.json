@@ -1,0 +1,37 @@
+{
+  "id": "0193",
+  "name": "cable one arm straight back high row (kneeling)",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A kneeling one-arm cable row at a higher pulley, pulling straight back to the chest. It targets the upper back, one side at a time.",
+  "instructions": [
+    "Attach a handle to a cable machine at waist height.",
+    "Kneel down facing the cable machine and grab the handle with one hand.",
+    "Keep your back straight and your core engaged.",
+    "Pull the handle towards your chest, squeezing your shoulder blades together.",
+    "Pause for a moment at the top of the movement.",
+    "Slowly release the handle back to the starting position.",
+    "Repeat for the desired number of repetitions.",
+    "Switch sides and repeat the exercise with the other arm."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm",
+      "trapezius",
+      "chest",
+      "triceps"
+    ]
+  },
+  "textSource": "exercisedb"
+}

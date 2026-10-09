@@ -1,0 +1,22 @@
+{
+  "id": "1258",
+  "name": "barbell wide reverse grip bench press",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A wide reverse-grip bench press. It trains the chest and triceps.",
+  "instructions": [
+    "Lie flat on a bench with your feet flat on the ground and your back pressed against the bench.",
+    "Grasp the barbell with a wide reverse grip, slightly wider than shoulder-width apart.",
+    "Lift the barbell off the rack and hold it directly above your chest with your arms fully extended.",
+    "Lower the barbell slowly towards your chest, keeping your elbows tucked in and your wrists straight.",
+    "Pause for a moment when the barbell touches your chest, then push it back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

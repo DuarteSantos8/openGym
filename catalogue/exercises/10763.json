@@ -1,0 +1,22 @@
+{
+  "id": "10763",
+  "name": "lever seated single leg curl (plate loaded)",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A one-leg seated hamstring curl on a plate-loaded machine. It builds each hamstring separately.",
+  "instructions": [
+    "Sit on the machine and set the pad above your ankle.",
+    "Hold the handles and keep your back against the seat.",
+    "Curl one leg down and back.",
+    "Squeeze at the bottom.",
+    "Return slowly.",
+    "Finish the reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

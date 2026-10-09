@@ -1,0 +1,22 @@
+{
+  "id": "6058",
+  "name": "bottle weighted svend press",
+  "bodyPart": "chest",
+  "equipment": "weighted",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A standing press with a bottle squeezed between your palms. It keeps constant tension on the chest.",
+  "instructions": [
+    "Stand tall and press your palms together around a bottle at your chest.",
+    "Squeeze inward the whole time.",
+    "Push the bottle straight out in front of you.",
+    "Pause with your arms extended.",
+    "Bring it back to your chest slowly."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "0337",
+  "name": "dumbbell lying extension (across face)",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A lying dumbbell triceps extension that moves across the face. It isolates the triceps.",
+  "instructions": [
+    "Lie flat on a bench with your feet flat on the ground and your head at the end of the bench.",
+    "Hold a dumbbell with both hands and extend your arms straight up above your chest, palms facing each other.",
+    "Keeping your upper arms stationary, slowly lower the dumbbell in an arc behind your head until your forearms are parallel to the ground.",
+    "Pause for a moment, then contract your triceps to bring the dumbbell back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2586",
+  "textSource": "exercisedb"
+}

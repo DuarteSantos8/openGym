@@ -1,0 +1,23 @@
+{
+  "id": "1309",
+  "name": "smith wide grip decline bench press",
+  "bodyPart": "chest",
+  "equipment": "smith machine",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A smith machine bench press on a decline bench with a wide grip. It targets the lower chest along a guided bar path.",
+  "instructions": [
+    "Adjust the decline bench to the desired angle.",
+    "Lie down on the bench with your feet secured under the foot pads.",
+    "Grasp the barbell with a wide grip, slightly wider than shoulder-width apart.",
+    "Unrack the barbell and lower it slowly towards your chest, keeping your elbows pointed outwards.",
+    "Pause for a moment when the barbell touches your chest.",
+    "Push the barbell back up to the starting position, fully extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

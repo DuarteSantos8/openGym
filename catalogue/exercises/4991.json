@@ -1,0 +1,23 @@
+{
+  "id": "4991",
+  "name": "side plank rotation",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "core",
+    "glutes"
+  ],
+  "category": "calisthenics",
+  "description": "A side plank with an arm rotation under the body. It builds the obliques and shoulder stability.",
+  "instructions": [
+    "Set up in a side plank on one forearm or hand with your top arm raised.",
+    "Lift your hips so your body is in a straight line.",
+    "Thread your top arm under your torso, rotating your chest toward the floor.",
+    "Rotate back and reach the arm up to the ceiling.",
+    "Complete your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

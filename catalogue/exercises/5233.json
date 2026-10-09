@@ -1,0 +1,23 @@
+{
+  "id": "5233",
+  "name": "cross body punch in squat position",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "obliques",
+    "shoulders",
+    "core"
+  ],
+  "category": "combat",
+  "description": "Punching across the body from a low squat. It builds leg endurance and trunk rotation.",
+  "instructions": [
+    "Stand in a wide stance and sink into a half squat.",
+    "Keep your fists up near your chin.",
+    "Punch one arm across your body, rotating your torso.",
+    "Pull it back and punch with the other arm.",
+    "Stay low and keep a quick, controlled rhythm."
+  ],
+  "textSource": "opengym"
+}

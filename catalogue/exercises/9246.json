@@ -1,0 +1,23 @@
+{
+  "id": "9246",
+  "name": "wide stance thoracic rotation",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "upper back"
+  ],
+  "category": "mobility",
+  "description": "In a wide stance you rotate your upper back to loosen the thoracic spine. It helps with trunk twisting.",
+  "instructions": [
+    "Stand with your feet wide and your knees slightly bent.",
+    "Hinge slightly forward with your hands behind your head.",
+    "Rotate your chest to one side as far as you can.",
+    "Keep your hips facing forward.",
+    "Return to the center.",
+    "Rotate to the other side and repeat."
+  ],
+  "textSource": "opengym"
+}

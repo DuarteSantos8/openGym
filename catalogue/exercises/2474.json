@@ -1,0 +1,23 @@
+{
+  "id": "2474",
+  "name": "glute bridge one leg on floor (straight leg)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "A single-leg bridge with the free leg straight, working the glutes and core.",
+  "instructions": [
+    "Lie on your back with one knee bent and the other leg straight up.",
+    "Keep your arms by your sides.",
+    "Push through your planted heel to lift your hips.",
+    "Keep your hips level.",
+    "Squeeze your glute at the top.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

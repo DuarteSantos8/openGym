@@ -1,0 +1,22 @@
+{
+  "id": "0363",
+  "name": "dumbbell one arm upright row",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "traps",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "You pull one dumbbell up along your body toward chin height with the elbow leading. It trains the side shoulders and upper traps.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in one hand with an overhand grip.",
+    "Let the dumbbell hang at arm's length in front of your thighs, with your palm facing your body.",
+    "Keeping your back straight and your core engaged, exhale and lift the dumbbell straight up towards your chin, leading with your elbow.",
+    "Pause for a moment at the top, then inhale and slowly lower the dumbbell back down to the starting position.",
+    "Repeat for the desired number of repetitions, then switch to the other arm."
+  ],
+  "femaleVariant": "2600",
+  "textSource": "exercisedb"
+}

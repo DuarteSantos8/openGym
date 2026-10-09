@@ -1,0 +1,24 @@
+{
+  "id": "4892",
+  "name": "elevated single leg squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A one legged squat with the working foot raised on a step. It builds leg strength and balance.",
+  "instructions": [
+    "Stand on a bench or box on one leg with the other leg hanging off the edge.",
+    "Reach your arms forward for balance.",
+    "Sit your hips back and bend the standing knee to lower.",
+    "Go as deep as you can while the knee tracks over your toes.",
+    "Push through the foot to stand back up.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

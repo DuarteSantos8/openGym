@@ -1,0 +1,24 @@
+{
+  "id": "1533",
+  "name": "barbell snatch",
+  "bodyPart": "full body",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "trapezius",
+    "shoulders",
+    "core"
+  ],
+  "category": "olympic",
+  "description": "The full snatch, lifting the bar from the floor to overhead in one motion and catching it in a deep squat.",
+  "instructions": [
+    "Grip the bar wide, with it over your mid-foot, flat back and chest up.",
+    "Brace your core and keep the bar close to your body.",
+    "Extend your hips and knees powerfully and shrug your shoulders.",
+    "Pull under the bar and catch it overhead in a full squat, then stand up.",
+    "Stand tall to finish, then lower the bar with control."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "7560",
+  "name": "bodyweight single leg squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "Squat on one leg, building strength and balance.",
+  "instructions": [
+    "Stand on one leg with the other lifted in front.",
+    "Extend your arms for balance.",
+    "Lower down with control.",
+    "Keep your knee over your toes.",
+    "Push up and switch legs."
+  ],
+  "textSource": "opengym"
+}

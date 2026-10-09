@@ -1,0 +1,22 @@
+{
+  "id": "5204",
+  "name": "resistance band single arm overhead shoulder press",
+  "bodyPart": "shoulders",
+  "equipment": "resistance band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A one-arm overhead press with a resistance band. It trains each shoulder separately and challenges your trunk.",
+  "instructions": [
+    "Stand on the band with the handle in one hand at shoulder height.",
+    "Brace your core and keep your ribs down.",
+    "Press the handle straight overhead.",
+    "Pause at the top without leaning.",
+    "Lower with control, finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

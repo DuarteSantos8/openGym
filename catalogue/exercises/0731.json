@@ -1,0 +1,23 @@
+{
+  "id": "0731",
+  "name": "single leg sit (wall)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "isometric",
+  "description": "A one-legged wall sit that doubles the load on each leg and challenges balance and quad endurance.",
+  "instructions": [
+    "Lean your back against a wall and slide down into a wall sit.",
+    "Shift your weight onto one foot.",
+    "Lift the other leg and extend it in front of you.",
+    "Hold for 10-30 seconds while keeping your back flat on the wall.",
+    "Lower the leg and rest, then switch sides.",
+    "Keep your standing knee over your ankle."
+  ],
+  "textSource": "opengym"
+}

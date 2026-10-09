@@ -1,0 +1,22 @@
+{
+  "id": "4100",
+  "name": "sled wide hack squat",
+  "bodyPart": "upper legs",
+  "equipment": "sled machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A hack squat on a sled with a wide foot position, stressing the quads, glutes and inner thighs.",
+  "instructions": [
+    "Set your back on the pad and place your feet wide and slightly turned out on the platform.",
+    "Release the safety handles.",
+    "Lower by bending your knees until your thighs are parallel to the platform.",
+    "Press through your feet to extend your legs without locking out.",
+    "Keep your hips and back against the pad."
+  ],
+  "textSource": "opengym"
+}

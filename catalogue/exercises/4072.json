@@ -1,0 +1,23 @@
+{
+  "id": "4072",
+  "name": "bodyweight single leg wall squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "One leg squat with your back against a wall for balance. It builds single leg strength.",
+  "instructions": [
+    "Lean your back on a wall and lift one foot off the floor.",
+    "Place your standing foot forward.",
+    "Slide down into a squat as far as you can control.",
+    "Press through your heel to rise.",
+    "Finish the reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

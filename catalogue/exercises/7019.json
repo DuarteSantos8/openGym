@@ -1,0 +1,24 @@
+{
+  "id": "7019",
+  "name": "stability ball rollout on knees",
+  "bodyPart": "waist",
+  "equipment": "stability ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower back",
+    "shoulders",
+    "lats",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A kneeling rollout with the forearms on a stability ball. It builds deep core strength.",
+  "instructions": [
+    "Kneel facing a stability ball with your forearms resting on top.",
+    "Brace your abs and keep your hips in line with your back.",
+    "Roll the ball forward, extending your body.",
+    "Stop before your lower back sags.",
+    "Pull the ball back in using your abs."
+  ],
+  "femaleVariant": "2295",
+  "textSource": "opengym"
+}

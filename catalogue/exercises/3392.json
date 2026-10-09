@@ -1,0 +1,23 @@
+{
+  "id": "3392",
+  "name": "narrow squat from deficit",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A close-stance squat with your heels raised on a small step to emphasize the quads.",
+  "instructions": [
+    "Stand with your heels on a low platform and your feet close together.",
+    "Hold your arms in front for balance.",
+    "Squat down, keeping your knees over your toes.",
+    "Go as deep as comfortable with your chest up.",
+    "Drive up through your feet.",
+    "Stand tall without locking out hard."
+  ],
+  "textSource": "opengym"
+}

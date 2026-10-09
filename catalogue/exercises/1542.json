@@ -1,0 +1,22 @@
+{
+  "id": "1542",
+  "name": "barbell stiff leg deadlift on bench",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A stiff-legged deadlift performed while standing on a bench, giving you extra range of motion. It stretches and strengthens the hamstrings and lower back.",
+  "instructions": [
+    "Stand on a sturdy bench holding a barbell at thigh level, feet hip-width apart.",
+    "Keep your knees almost straight and push your hips back.",
+    "Lower the bar toward your toes with a flat back as far as your hamstrings allow.",
+    "Pause briefly, then squeeze your glutes to stand back up.",
+    "Keep the bar close to your legs and stay in control throughout."
+  ],
+  "textSource": "opengym"
+}

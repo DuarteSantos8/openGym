@@ -1,0 +1,24 @@
+{
+  "id": "4379",
+  "name": "resistance band inverted row",
+  "bodyPart": "back",
+  "equipment": "resistance band",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rhomboids",
+    "rear deltoids",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight row with a band added for extra load. It builds the upper back and biceps while your core keeps the body straight.",
+  "instructions": [
+    "Anchor the band to a sturdy bar or rack and hold it while lying under the anchor point.",
+    "Keep your body in a straight line with heels on the floor.",
+    "Pull your chest up toward your hands, squeezing your shoulder blades together.",
+    "Pause briefly at the top.",
+    "Lower yourself under control until your arms are straight."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "2278",
+  "name": "lever decline chest press v. 2",
+  "bodyPart": "chest",
+  "equipment": "leverage machine",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A decline-angle machine press that emphasises the lower part of the chest.",
+  "instructions": [
+    "Adjust the seat and sit with your back against the pad.",
+    "Grip the handles with elbows bent.",
+    "Press forward and slightly downward until your arms are almost straight.",
+    "Keep your shoulders down and your chest up.",
+    "Return slowly under control.",
+    "Repeat for the planned reps."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "1008",
+  "name": "band step-up",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A step-up with a band around the thighs. It trains the glutes and quads.",
+  "instructions": [
+    "Place a band around your thighs, just above your knees.",
+    "Stand facing a step or platform with your feet hip-width apart.",
+    "Step up onto the platform with your right foot, pushing through your heel.",
+    "Extend your left leg behind you, keeping it straight.",
+    "Lower your left foot back down to the ground.",
+    "Repeat with your left foot stepping up onto the platform.",
+    "Continue alternating legs for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

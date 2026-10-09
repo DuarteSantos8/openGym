@@ -1,0 +1,22 @@
+{
+  "id": "10910",
+  "name": "seated single leg foot side to side",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "feet",
+    "shins"
+  ],
+  "category": "mobility",
+  "description": "A seated ankle move that sweeps the foot from side to side. It improves ankle mobility.",
+  "instructions": [
+    "Sit tall and lift one foot slightly off the floor.",
+    "Keep your lower leg still.",
+    "Turn your foot inward, then outward, in a smooth motion.",
+    "Move through a comfortable range.",
+    "Repeat for your reps, then switch feet."
+  ],
+  "textSource": "opengym"
+}

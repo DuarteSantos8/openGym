@@ -1,0 +1,21 @@
+{
+  "id": "6272",
+  "name": "dumbbell larsen press",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Dumbbell bench press done with your legs held out in the air, so your chest and triceps do all the work without help from the lower body.",
+  "instructions": [
+    "Sit on a bench with a dumbbell in each hand and lie back.",
+    "Press the dumbbells up and lift your feet off the floor, legs extended.",
+    "Lower the weights to the sides of your chest with control.",
+    "Press them back up until your arms are straight.",
+    "Keep your core braced so your lower back does not arch."
+  ],
+  "textSource": "opengym"
+}

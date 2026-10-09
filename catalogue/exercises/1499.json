@@ -1,0 +1,22 @@
+{
+  "id": "1499",
+  "name": "band behind neck shoulder press",
+  "bodyPart": "shoulders",
+  "equipment": "band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "trapezius",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A band-resisted overhead press from behind the neck. It trains the shoulders and triceps with rising tension.",
+  "instructions": [
+    "Stand on the band and hold the ends at the back of your shoulders.",
+    "Brace your core and keep your head forward.",
+    "Press your hands straight up until your arms are extended.",
+    "Lower slowly back behind your head to shoulder level.",
+    "Only use this variation if your shoulders move comfortably in that position."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "6811",
+  "name": "stick subscapularis muscle relax",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "shoulders"
+  ],
+  "category": "stretching",
+  "description": "A gentle release for the muscle under the shoulder blade using a stick for leverage. It helps the shoulder feel looser.",
+  "instructions": [
+    "Hold a stick in one hand and bend your elbow to 90 degrees.",
+    "Place the other hand on the stick and rotate the arm outward.",
+    "Gently push into a comfortable stretch.",
+    "Hold for 20-30 seconds.",
+    "Release and repeat on the other arm."
+  ],
+  "textSource": "opengym"
+}

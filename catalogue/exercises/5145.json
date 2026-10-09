@@ -1,0 +1,21 @@
+{
+  "id": "5145",
+  "name": "posterior neck isometric",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "upper back",
+    "trapezius"
+  ],
+  "category": "isometric",
+  "description": "Press the back of your head into your hands without moving. It strengthens the muscles at the back of the neck.",
+  "instructions": [
+    "Sit or stand tall with your hands clasped behind your head.",
+    "Keep your chin level.",
+    "Press your head back into your hands without letting it move.",
+    "Hold for 5-10 seconds.",
+    "Relax and repeat a few times."
+  ],
+  "textSource": "opengym"
+}

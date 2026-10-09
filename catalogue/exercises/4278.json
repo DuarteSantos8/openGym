@@ -1,0 +1,21 @@
+{
+  "id": "4278",
+  "name": "circles knee stretch v. 2",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "hamstrings"
+  ],
+  "category": "mobility",
+  "description": "Gentle knee circles with the leg slightly bent that loosen up the knee area and calves. Handy as a warm-up or a loosening drill.",
+  "instructions": [
+    "Stand with your feet together and bend your knees slightly.",
+    "Place your hands on your knees for support.",
+    "Slowly rotate your knees in a circle in one direction.",
+    "Keep the movement smooth and controlled.",
+    "Switch to the other direction after 8 to 10 circles."
+  ],
+  "textSource": "opengym"
+}

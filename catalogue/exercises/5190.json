@@ -1,0 +1,24 @@
+{
+  "id": "5190",
+  "name": "barbell clean and jerk v. 2",
+  "bodyPart": "full body",
+  "equipment": "olympic barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "shoulders",
+    "triceps",
+    "upper back"
+  ],
+  "category": "olympic",
+  "description": "The classic Olympic lift. You clean the bar to your shoulders, then jerk it overhead.",
+  "instructions": [
+    "Grip the bar just outside your knees with a flat back.",
+    "Pull explosively and drop under the bar, catching it on your shoulders.",
+    "Stand up fully and reset your feet.",
+    "Dip, drive, and split your legs as you punch the bar overhead.",
+    "Recover your feet and lower the bar with control."
+  ],
+  "textSource": "opengym"
+}

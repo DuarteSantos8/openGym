@@ -1,0 +1,23 @@
+{
+  "id": "3635",
+  "name": "dumbbell contralateral forward lunge",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A dumbbell lunge stepping forward with the opposite arm movement. It trains the glutes, quads and balance.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in each hand.",
+    "Take a step forward with your right foot, keeping your back straight and core engaged.",
+    "Lower your body by bending both knees until your right thigh is parallel to the ground.",
+    "Push through your right heel to return to the starting position.",
+    "Repeat with your left leg.",
+    "Alternate legs for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

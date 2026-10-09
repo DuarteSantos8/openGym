@@ -1,0 +1,21 @@
+{
+  "id": "1000",
+  "name": "band single leg reverse calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "band",
+  "target": "calves",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A single-leg calf raise with a band, rising onto the ball of the foot. It trains the calves.",
+  "instructions": [
+    "Stand with your feet hip-width apart and place the band around the ball of your foot.",
+    "Hold onto a stable object for balance.",
+    "Slowly raise your heel off the ground, lifting your body weight onto the ball of your foot.",
+    "Pause for a moment at the top, then slowly lower your heel back down to the starting position.",
+    "Repeat for the desired number of repetitions, then switch to the other leg."
+  ],
+  "textSource": "exercisedb"
+}

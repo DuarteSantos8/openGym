@@ -1,0 +1,24 @@
+{
+  "id": "3035",
+  "name": "bent leg side kick (kneeling)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "obliques",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "From all fours, you lift one bent leg out to the side. It works the outer hip and glutes.",
+  "instructions": [
+    "Start on hands and knees with a flat back.",
+    "Keep your knee bent at about 90 degrees.",
+    "Lift the bent leg out to the side to hip height.",
+    "Squeeze your outer hip at the top without rotating your torso.",
+    "Lower under control.",
+    "Finish your reps, then switch legs."
+  ],
+  "femaleVariant": "1475",
+  "textSource": "opengym"
+}

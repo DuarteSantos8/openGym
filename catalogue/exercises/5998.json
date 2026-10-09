@@ -1,0 +1,23 @@
+{
+  "id": "5998",
+  "name": "side lying hip adduction (left)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "inner thighs",
+    "glutes",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A lying leg lift that trains the inner thigh of the left leg.",
+  "instructions": [
+    "Lie on your left side with your legs straight.",
+    "Bend your right knee and place that foot in front of you.",
+    "Raise your left leg a few inches off the floor.",
+    "Pause at the top.",
+    "Lower slowly and repeat, then switch sides."
+  ],
+  "femaleVariant": "5999",
+  "textSource": "opengym"
+}

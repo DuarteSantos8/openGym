@@ -1,0 +1,23 @@
+{
+  "id": "5278",
+  "name": "kneeling staggered push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up from your knees with hands set at staggered heights. It builds the chest in a more manageable way.",
+  "instructions": [
+    "Kneel and place your hands on the floor, one slightly forward of the other.",
+    "Keep your body straight from knees to head.",
+    "Lower your chest toward the floor.",
+    "Press back up.",
+    "Keep your elbows at about 45 degrees.",
+    "Switch hand positions on the next set."
+  ],
+  "textSource": "opengym"
+}

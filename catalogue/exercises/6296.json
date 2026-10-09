@@ -1,0 +1,23 @@
+{
+  "id": "6296",
+  "name": "bird of paradise pose svarga dvijasana",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "adductors",
+    "glutes",
+    "shoulders",
+    "core"
+  ],
+  "category": "yoga",
+  "description": "A standing bind pose that straightens one leg upward. It demands balance and flexibility in the hamstrings.",
+  "instructions": [
+    "Stand and bind one arm behind your back around your bent knee.",
+    "Grab your hand with the other arm.",
+    "Step in and stand tall on the grounded leg.",
+    "Slowly straighten the lifted leg.",
+    "Hold for a few breaths, then switch."
+  ],
+  "textSource": "opengym"
+}

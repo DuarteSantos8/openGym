@@ -1,0 +1,23 @@
+{
+  "id": "0297",
+  "name": "dumbbell concentration curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A seated one-arm curl with the elbow braced on the inner thigh. The brace stops cheating and focuses on the biceps.",
+  "instructions": [
+    "Sit on a bench with your legs spread apart and a dumbbell in one hand, resting your elbow on the inside of your thigh.",
+    "Fully extend your arm and hold the dumbbell with an underhand grip.",
+    "Keeping your upper arm stationary, exhale and curl the weight up towards your shoulder while contracting your biceps.",
+    "Continue to raise the dumbbell until your biceps are fully contracted and the dumbbell is at shoulder level.",
+    "Hold the contracted position for a brief pause as you squeeze your biceps.",
+    "Inhale and slowly lower the dumbbell back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms."
+  ],
+  "femaleVariant": "2372",
+  "textSource": "exercisedb"
+}

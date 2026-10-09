@@ -1,0 +1,21 @@
+{
+  "id": "0488",
+  "name": "hyperextension (on bench)",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "calisthenics",
+  "description": "Lying face-down on a bench, you raise your torso and lower it. It builds the lower back, glutes and hamstrings.",
+  "instructions": [
+    "Adjust the hyperextension bench so that your hips are resting comfortably on the pad and your feet are secured.",
+    "Cross your arms over your chest or place your hands behind your head.",
+    "Slowly lower your upper body towards the ground while keeping your back straight.",
+    "Pause for a moment at the bottom, then raise your upper body back up until it is in line with your legs.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

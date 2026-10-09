@@ -1,0 +1,22 @@
+{
+  "id": "6464",
+  "name": "bodyweight frog hip thrust",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "adductors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A glute bridge with the soles of your feet together and knees open, which shifts the focus onto your glutes.",
+  "instructions": [
+    "Lie on your back with the soles of your feet together and knees falling out.",
+    "Keep your feet close to your hips.",
+    "Push through your feet to lift your hips.",
+    "Squeeze your glutes at the top.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

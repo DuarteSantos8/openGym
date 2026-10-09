@@ -1,0 +1,24 @@
+{
+  "id": "4618",
+  "name": "band deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A hip hinge using a band under your feet for rising tension, working the glutes and hamstrings.",
+  "instructions": [
+    "Stand on the band with feet hip-width apart and grab it with both hands.",
+    "Hinge at the hips with a flat back and slightly bent knees.",
+    "Lower your hands along your legs until you feel a hamstring stretch.",
+    "Drive your hips forward to stand tall and squeeze your glutes.",
+    "Keep the band close to your body."
+  ],
+  "femaleVariant": "0895",
+  "textSource": "opengym"
+}

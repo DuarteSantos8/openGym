@@ -1,0 +1,24 @@
+{
+  "id": "3769",
+  "name": "curtsey squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A squat where the leg steps diagonally behind and across the body, like a curtsy. It trains the glutes and outer thighs.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart.",
+    "Take a step diagonally behind and across your body with your right foot, crossing it behind your left leg.",
+    "Bend both knees as if you were curtsying, lowering your body towards the ground.",
+    "Keep your torso upright and your weight on your front foot.",
+    "Push through your front foot to return to the starting position.",
+    "Repeat on the other side, stepping diagonally behind and across your body with your left foot."
+  ],
+  "femaleVariant": "5177",
+  "textSource": "exercisedb"
+}

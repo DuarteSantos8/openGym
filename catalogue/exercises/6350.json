@@ -1,0 +1,22 @@
+{
+  "id": "6350",
+  "name": "lying prone y raise",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "trapezius",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "Lying face down, you lift your arms into a Y shape to strengthen the muscles that stabilise your shoulder blades.",
+  "instructions": [
+    "Lie face down with your arms stretched overhead in a Y shape.",
+    "Keep your forehead near the floor and your neck long.",
+    "Lift your arms off the floor by squeezing your shoulder blades.",
+    "Pause for a second at the top.",
+    "Lower your arms slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

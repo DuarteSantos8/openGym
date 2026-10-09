@@ -1,0 +1,22 @@
+{
+  "id": "5151",
+  "name": "kipping handstand push up",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Use a leg kick to help drive yourself up from a handstand push-up. It lets you handle more reps and volume overhead.",
+  "instructions": [
+    "Kick up into a handstand against a wall.",
+    "Lower your head toward the floor under control.",
+    "Bend your hips and knees slightly, then drive them back out as you press.",
+    "Press up to lockout.",
+    "Keep your core tight and move carefully."
+  ],
+  "textSource": "opengym"
+}

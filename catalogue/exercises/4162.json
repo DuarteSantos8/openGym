@@ -1,0 +1,23 @@
+{
+  "id": "4162",
+  "name": "push up to knee tap",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A push up where you pull a knee toward your elbow after each rep. It adds a core challenge to a standard push up.",
+  "instructions": [
+    "Start in a push up position with a straight body.",
+    "Lower your chest toward the floor.",
+    "Press back up to straight arms.",
+    "Bring one knee toward the same side elbow.",
+    "Return the foot and repeat on the other side.",
+    "Keep your hips level and your core braced."
+  ],
+  "textSource": "opengym"
+}

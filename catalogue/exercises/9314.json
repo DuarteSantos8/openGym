@@ -1,0 +1,22 @@
+{
+  "id": "9314",
+  "name": "45 degree hip extension glute focused v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "A hip extension on a 45 degree bench that emphasises the glutes. It strengthens the posterior chain.",
+  "instructions": [
+    "Set the pad at hip height and lock your heels in.",
+    "Cross your arms over your chest.",
+    "Hinge forward at the hips with a straight back.",
+    "Drive your hips forward and squeeze your glutes.",
+    "Stop when your body is in a straight line.",
+    "Lower slowly each rep."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "3305",
+  "name": "barbell thruster",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "olympic",
+  "description": "A front squat followed by an overhead press in one fluid movement with a barbell. It trains the legs, shoulders and heart rate.",
+  "instructions": [
+    "Start by standing with your feet shoulder-width apart, holding a barbell at shoulder height with an overhand grip.",
+    "Lower into a squat position by bending your knees and pushing your hips back.",
+    "As you reach the bottom of the squat, explosively drive through your heels to stand up, simultaneously pressing the barbell overhead.",
+    "Lower the barbell back to shoulder height as you lower back into the squat position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "4593",
+  "name": "boxing right uppercut (with partner)",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "biceps",
+    "chest",
+    "obliques",
+    "core"
+  ],
+  "category": "combat",
+  "description": "A rising rear-hand punch thrown to a partner's pad, driven by the legs and hips.",
+  "instructions": [
+    "Face your partner, who holds a pad low in front of them.",
+    "Stand in a boxing stance and bend your knees slightly.",
+    "Drive up through your legs and rotate your hips.",
+    "Bring your right fist up in a tight arc to the pad.",
+    "Keep your left hand guarding.",
+    "Reset your stance."
+  ],
+  "textSource": "opengym"
+}

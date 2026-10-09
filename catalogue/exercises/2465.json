@@ -1,0 +1,24 @@
+{
+  "id": "2465",
+  "name": "resistance band jumping jack",
+  "bodyPart": "cardio",
+  "equipment": "band",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "calves",
+    "quadriceps"
+  ],
+  "category": "cardio",
+  "description": "A jumping jack with a band that raises your heart rate and adds a challenge to the hips and shoulders.",
+  "instructions": [
+    "Stand with a loop band around your thighs or ankles.",
+    "Keep your knees soft and your core tight.",
+    "Jump your feet apart while raising your arms overhead.",
+    "Push against the band as you land.",
+    "Jump back to the start with your arms down.",
+    "Keep a steady rhythm."
+  ],
+  "textSource": "opengym"
+}

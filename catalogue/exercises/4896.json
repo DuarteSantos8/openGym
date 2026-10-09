@@ -1,0 +1,22 @@
+{
+  "id": "4896",
+  "name": "kneeling straight leg side kick",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A kneeling side kick with a straight leg. It works the outer hip and glutes.",
+  "instructions": [
+    "Get on all fours with hands under shoulders and knees under hips.",
+    "Extend one leg out to the side with the knee straight.",
+    "Lift the leg to about hip height.",
+    "Keep your hips and back steady.",
+    "Lower with control without touching down.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "10669",
+  "name": "lever stack seated incline chest press",
+  "bodyPart": "chest",
+  "equipment": "leverage machine",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A seated press on an incline lever machine with a weight stack. It emphasises the upper chest.",
+  "instructions": [
+    "Adjust the seat so the handles are at upper-chest height.",
+    "Sit back with your feet flat and shoulder blades pinched.",
+    "Press the handles forward and up until your arms are almost straight.",
+    "Pause briefly.",
+    "Return slowly to a stretch across your chest.",
+    "Keep your back against the pad."
+  ],
+  "textSource": "opengym"
+}

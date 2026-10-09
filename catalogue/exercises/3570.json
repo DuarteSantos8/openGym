@@ -1,0 +1,21 @@
+{
+  "id": "3570",
+  "name": "roll ball upper trapezius release",
+  "bodyPart": "back",
+  "equipment": "roller",
+  "target": "traps",
+  "secondaryMuscles": [
+    "upper back",
+    "shoulders"
+  ],
+  "category": "mobility",
+  "description": "Roll a ball against a wall under the top of your shoulder to relieve tight upper trapezius muscles.",
+  "instructions": [
+    "Stand with your back to a wall and place a ball on top of one shoulder.",
+    "Lean into the wall to press the ball into the muscle.",
+    "Move slowly by bending your knees.",
+    "Pause on tender spots and breathe.",
+    "Switch to the other shoulder."
+  ],
+  "textSource": "opengym"
+}

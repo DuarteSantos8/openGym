@@ -1,0 +1,22 @@
+{
+  "id": "10168",
+  "name": "bodyweight box squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A squat that lightly touches a box behind you to teach depth, hip hinge and control.",
+  "instructions": [
+    "Place a box behind you and stand with feet a bit wider than shoulders.",
+    "Push your hips back and bend your knees to lower toward the box.",
+    "Lightly touch the box without dropping onto it.",
+    "Drive through your heels to stand back up.",
+    "Keep your chest up and knees tracking over your toes."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "3522",
+  "name": "kettlebell single leg glute bridge pullover",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lats",
+    "core",
+    "chest"
+  ],
+  "category": "strength",
+  "description": "A one-leg glute bridge with a kettlebell pullover, working glutes and lats.",
+  "instructions": [
+    "Lie on your back with one foot flat, other leg raised.",
+    "Hold a kettlebell by the horns above your chest.",
+    "Lift your hips into a bridge.",
+    "Lower the kettlebell back overhead in an arc.",
+    "Bring it back up as you hold the bridge.",
+    "Lower your hips, then switch legs."
+  ],
+  "textSource": "opengym"
+}

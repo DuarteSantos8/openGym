@@ -1,0 +1,23 @@
+{
+  "id": "1472",
+  "name": "forward jump",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "calves",
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "plyometrics",
+  "description": "A bodyweight jump forward with a soft landing. It builds explosive power in the quads and glutes.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart.",
+    "Bend your knees and lower your body into a squat position.",
+    "Swing your arms back for momentum.",
+    "Jump forward explosively, extending your hips, knees, and ankles.",
+    "Land softly on the balls of your feet and immediately go into the next jump.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

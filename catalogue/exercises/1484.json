@@ -1,0 +1,22 @@
+{
+  "id": "1484",
+  "name": "locust yoga pose (iron man pose)",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "upper back"
+  ],
+  "category": "yoga",
+  "description": "A yoga pose on your belly where you lift legs and chest at once. It strengthens the lower back and glutes.",
+  "instructions": [
+    "Lie face down with your arms along your sides and palms facing up.",
+    "Press your pelvis into the floor and engage your glutes.",
+    "Lift your chest, arms and legs off the floor together.",
+    "Look slightly forward and keep your neck long.",
+    "Hold for 10-20 seconds, then lower slowly and rest."
+  ],
+  "textSource": "opengym"
+}

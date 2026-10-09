@@ -1,0 +1,22 @@
+{
+  "id": "6771",
+  "name": "kneeling iliopsoas stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core"
+  ],
+  "category": "stretching",
+  "description": "A kneeling lunge stretch for the deep hip flexor. It helps loosen the front of the hip.",
+  "instructions": [
+    "Kneel on one knee with the other foot forward.",
+    "Tuck your pelvis and brace your abs.",
+    "Shift your weight forward until you feel the stretch at the front of the hip.",
+    "Raise the arm on the kneeling side overhead.",
+    "Hold for 20-30 seconds, breathing calmly.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

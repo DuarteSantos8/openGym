@@ -1,0 +1,23 @@
+{
+  "id": "0486",
+  "name": "hip raise bridge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "A hip bridge that lifts the hips off the floor from a lying position. It builds the glutes and hamstrings.",
+  "instructions": [
+    "Lie on your back with your knees bent and your feet flat.",
+    "Place your arms at your sides.",
+    "Drive through your heels to lift your hips.",
+    "Squeeze your glutes at the top.",
+    "Lower slowly.",
+    "Keep your ribs down and your neck relaxed."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "2933",
+  "name": "rear lunge with battling ropes",
+  "bodyPart": "full body",
+  "equipment": "rope",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "shoulders",
+    "core",
+    "upper back"
+  ],
+  "category": "cardio",
+  "description": "Alternating rear lunges while making waves with heavy ropes. It combines leg work with a hard cardio effort.",
+  "instructions": [
+    "Stand holding the ends of the battle ropes, feet hip-width apart.",
+    "Step one foot back into a lunge while making a wave with the ropes.",
+    "Push through your front heel to return to standing.",
+    "Alternate legs, keeping the rope waves going.",
+    "Work for a set time, then rest."
+  ],
+  "textSource": "opengym"
+}

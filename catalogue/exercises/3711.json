@@ -1,0 +1,22 @@
+{
+  "id": "3711",
+  "name": "single leg step up v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "Step up onto a box or bench with one leg to build single-leg strength.",
+  "instructions": [
+    "Stand facing a sturdy box or bench.",
+    "Place one foot fully on it.",
+    "Drive through that heel to stand tall on the box.",
+    "Lower slowly back down.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

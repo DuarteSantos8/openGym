@@ -1,0 +1,22 @@
+{
+  "id": "2555",
+  "name": "resistance band glute bridge v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A glute bridge with a band around the thighs that adds hip activation.",
+  "instructions": [
+    "Lie on your back with a loop band around your thighs.",
+    "Bend your knees with feet flat.",
+    "Push your knees out against the band.",
+    "Lift your hips until your body forms a straight line.",
+    "Squeeze your glutes at the top.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

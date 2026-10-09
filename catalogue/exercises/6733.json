@@ -1,0 +1,22 @@
+{
+  "id": "6733",
+  "name": "lever good morning on the hack squat machine",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A good morning done on a hack squat machine. The machine supports your back while you hinge at the hips.",
+  "instructions": [
+    "Set up under the shoulder pads with feet shoulder-width apart.",
+    "Unlock the machine and stand tall.",
+    "Push your hips back and lean your torso forward with a flat back.",
+    "Lower until you feel a hamstring stretch.",
+    "Drive your hips forward to stand.",
+    "Keep your knees slightly bent throughout."
+  ],
+  "textSource": "opengym"
+}

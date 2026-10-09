@@ -1,0 +1,23 @@
+{
+  "id": "1132",
+  "name": "suspender side lunge",
+  "bodyPart": "upper legs",
+  "equipment": "suspension trainer",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "Stepping wide to the side while holding the straps works the thighs, glutes and inner legs.",
+  "instructions": [
+    "Hold the handles and stand with feet together.",
+    "Step out wide to one side.",
+    "Bend that knee and push your hips back, keeping the other leg straight.",
+    "Keep your chest up and heel down.",
+    "Push off to return to the start.",
+    "Alternate sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "5036",
+  "name": "exercise ball leg curl",
+  "bodyPart": "upper legs",
+  "equipment": "stability ball",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Hamstring curl with your heels on a stability ball. It also challenges balance and the core.",
+  "instructions": [
+    "Lie on your back with your heels on a stability ball.",
+    "Lift your hips into a bridge.",
+    "Curl the ball toward your glutes by bending your knees.",
+    "Extend your legs again slowly.",
+    "Keep your hips high the whole time."
+  ],
+  "textSource": "opengym"
+}

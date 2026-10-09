@@ -1,0 +1,23 @@
+{
+  "id": "3517",
+  "name": "spine backbend stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core",
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "A gentle backbend that stretches the spine, hips and abs.",
+  "instructions": [
+    "Stand tall with feet hip-width apart.",
+    "Place your hands on your lower back.",
+    "Squeeze your glutes and push your hips forward.",
+    "Lean back gently, lifting your chest.",
+    "Hold for 20-30 seconds.",
+    "Return upright slowly."
+  ],
+  "textSource": "opengym"
+}

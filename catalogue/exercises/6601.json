@@ -1,0 +1,21 @@
+{
+  "id": "6601",
+  "name": "lever glute press",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "A glute press on a lever machine that targets your glutes by pushing your hips and legs back against resistance.",
+  "instructions": [
+    "Position yourself on the machine and set your feet on the platform.",
+    "Brace your core.",
+    "Press the platform away by driving through your heels.",
+    "Squeeze your glutes at the end.",
+    "Return slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

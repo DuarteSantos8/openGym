@@ -1,0 +1,21 @@
+{
+  "id": "1844",
+  "name": "extension and inclination neck stretch",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "sternocleidomastoid",
+    "trapezius"
+  ],
+  "category": "stretching",
+  "description": "Tilts the head back and to the side to stretch the front and side of the neck.",
+  "instructions": [
+    "Sit or stand tall with your shoulders down.",
+    "Tilt your head back slightly.",
+    "Lower one ear toward the same shoulder.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

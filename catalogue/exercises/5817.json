@@ -1,0 +1,21 @@
+{
+  "id": "5817",
+  "name": "dumbbell side lying external rotation (on a bench)",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "rear deltoids"
+  ],
+  "category": "rehab",
+  "description": "A gentle shoulder rotation lying on your side with a light dumbbell. It strengthens the rotator cuff for joint stability.",
+  "instructions": [
+    "Lie on your side on a bench with a light dumbbell in the top hand.",
+    "Keep your elbow bent at 90 degrees and tucked to your side.",
+    "Rotate your forearm upward, keeping your elbow still.",
+    "Pause at the top.",
+    "Lower slowly and switch sides after your set."
+  ],
+  "textSource": "opengym"
+}

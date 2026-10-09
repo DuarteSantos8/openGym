@@ -1,0 +1,23 @@
+{
+  "id": "0307",
+  "name": "dumbbell decline twist fly",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A decline fly with a twist of the wrists. The rotating action adds a squeeze to the chest.",
+  "instructions": [
+    "Lie down on a decline bench with your head lower than your hips.",
+    "Hold a dumbbell in each hand with your palms facing each other and your arms extended straight up over your chest.",
+    "Lower the dumbbells out to the sides in a wide arc until you feel a stretch in your chest.",
+    "As you lower the dumbbells, twist your wrists so that your palms face forward at the bottom of the movement.",
+    "Reverse the motion and bring the dumbbells back up to the starting position, squeezing your chest muscles at the top.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2585",
+  "textSource": "exercisedb"
+}

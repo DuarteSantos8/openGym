@@ -1,0 +1,23 @@
+{
+  "id": "4592",
+  "name": "boxing right hook (with partner)",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "chest",
+    "obliques",
+    "core"
+  ],
+  "category": "combat",
+  "description": "A curved rear-hand punch thrown to a partner's pad, using torso rotation for power.",
+  "instructions": [
+    "Face your partner, who holds a pad out to the side.",
+    "Stand in a boxing stance with hands up.",
+    "Bend your right elbow and rotate your hips and torso.",
+    "Swing the fist in an arc into the pad.",
+    "Pivot your rear foot as you turn.",
+    "Return to your guard."
+  ],
+  "textSource": "opengym"
+}

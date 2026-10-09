@@ -1,0 +1,22 @@
+{
+  "id": "0556",
+  "name": "kicks leg bent v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "On hands and knees, you press one bent leg up toward the ceiling. It targets the glutes with a simple, controlled kickback.",
+  "instructions": [
+    "Start on all fours with hands under shoulders and knees under hips.",
+    "Keep your core tight and your back flat.",
+    "Lift one leg with the knee bent at 90 degrees.",
+    "Press the sole of your foot toward the ceiling until your thigh is in line with your back.",
+    "Squeeze your glute at the top.",
+    "Lower with control and finish all reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

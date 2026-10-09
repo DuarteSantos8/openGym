@@ -1,0 +1,21 @@
+{
+  "id": "8873",
+  "name": "weighted dumbbell lying knee raise",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs"
+  ],
+  "category": "strength",
+  "description": "A lying knee raise holding a dumbbell between your feet or legs, challenging the lower abs.",
+  "instructions": [
+    "Lie on your back with a dumbbell secured between your feet.",
+    "Keep your lower back pressed down.",
+    "Bring your knees toward your chest.",
+    "Lower your feet slowly without touching the floor.",
+    "Repeat for controlled reps."
+  ],
+  "textSource": "opengym"
+}

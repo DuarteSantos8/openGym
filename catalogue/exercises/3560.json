@@ -1,0 +1,27 @@
+{
+  "id": "3560",
+  "name": "dumbbell standing alternate hammer curl and press",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A standing dumbbell sequence that alternates hammer curls with overhead presses. It trains the biceps and shoulders.",
+  "instructions": [
+    "Stand up straight with a dumbbell in each hand, palms facing your body.",
+    "Keep your elbows close to your torso and your back straight.",
+    "Exhale and curl the dumbbell in your right hand towards your shoulder, keeping your upper arm stationary.",
+    "Continue to raise the dumbbell until your biceps are fully contracted and the dumbbell is at shoulder level.",
+    "Inhale and slowly lower the dumbbell back to the starting position.",
+    "Repeat the curl with your left hand.",
+    "After completing the curl with your left hand, exhale and press the dumbbell in your right hand overhead.",
+    "Extend your arm fully and hold for a moment at the top.",
+    "Inhale and slowly lower the dumbbell back to the starting position.",
+    "Repeat the press with your left hand.",
+    "Continue alternating between curls and presses for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

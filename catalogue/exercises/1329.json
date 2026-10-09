@@ -1,0 +1,25 @@
+{
+  "id": "1329",
+  "name": "dumbbell palm rotational bent over row",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A bent over dumbbell row where your palms rotate as you pull. It works the upper back, lats and biceps through a varied path.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in each hand with an overhand grip.",
+    "Bend forward at the hips, keeping your back straight and your knees slightly bent.",
+    "Let your arms hang straight down, palms facing your body.",
+    "Engage your core and pull the dumbbells up towards your chest, keeping your elbows close to your body.",
+    "As you pull the dumbbells up, rotate your palms so they face away from your body.",
+    "Squeeze your shoulder blades together at the top of the movement.",
+    "Slowly lower the dumbbells back down to the starting position, rotating your palms back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2622",
+  "textSource": "exercisedb"
+}

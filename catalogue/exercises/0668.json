@@ -1,0 +1,21 @@
+{
+  "id": "0668",
+  "name": "rear decline bridge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "isometric",
+  "description": "Lying on your back, you lift your hips and hold with your feet on the floor. Works the glutes, hamstrings and lower back.",
+  "instructions": [
+    "Lie on your back with your feet flat on the ground and your knees bent.",
+    "Place your arms by your sides with your palms facing down.",
+    "Engage your glutes and hamstrings, and lift your hips off the ground until your body forms a straight line from your knees to your shoulders.",
+    "Hold this position for a few seconds, then slowly lower your hips back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

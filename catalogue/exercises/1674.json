@@ -1,0 +1,24 @@
+{
+  "id": "1674",
+  "name": "dumbbell prone incline hammer curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A hammer curl lying chest down on an incline bench. It trains the brachialis and biceps.",
+  "instructions": [
+    "Adjust the bench to a 45-degree incline.",
+    "Lie face down on the bench with a dumbbell in each hand, palms facing each other.",
+    "Allow your arms to hang straight down towards the floor, keeping your elbows slightly bent.",
+    "Keeping your upper arms stationary, exhale and curl the weights while contracting your biceps.",
+    "Continue to raise the dumbbells until your biceps are fully contracted and the dumbbells are at shoulder level.",
+    "Hold the contracted position for a brief pause as you squeeze your biceps.",
+    "Inhale and slowly begin to lower the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2495",
+  "textSource": "exercisedb"
+}

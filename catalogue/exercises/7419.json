@@ -1,0 +1,23 @@
+{
+  "id": "7419",
+  "name": "straight leg glute bridge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A bridge with straight legs that shifts more work to the hamstrings and glutes.",
+  "instructions": [
+    "Lie on your back with your legs straight and your heels on the floor.",
+    "Press your heels down and lift your hips.",
+    "Squeeze your glutes at the top.",
+    "Keep your ribs down.",
+    "Lower slowly.",
+    "Repeat for the planned reps."
+  ],
+  "textSource": "opengym"
+}

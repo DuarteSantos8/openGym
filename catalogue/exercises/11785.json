@@ -1,0 +1,20 @@
+{
+  "id": "11785",
+  "name": "internal rotation shoulders mobilization",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff"
+  ],
+  "category": "mobility",
+  "description": "A gentle shoulder mobility drill that trains internal rotation.",
+  "instructions": [
+    "Stand or sit tall with one elbow bent to 90 degrees at your side.",
+    "Rotate your forearm across your belly.",
+    "Move slowly through a comfortable range.",
+    "Return to the start and repeat 8-12 times.",
+    "Switch arms."
+  ],
+  "textSource": "opengym"
+}

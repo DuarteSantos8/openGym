@@ -1,0 +1,23 @@
+{
+  "id": "3813",
+  "name": "starfish crunch (beginner)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A crunch where your arms and legs spread like a starfish and then come together. It is a beginner-friendly ab move.",
+  "instructions": [
+    "Lie on your back with your arms and legs spread wide.",
+    "Brace your abs and press your lower back down.",
+    "Crunch up, bringing your elbows toward your knees as they pull in.",
+    "Lower back to the starfish position under control.",
+    "Breathe out as you crunch."
+  ],
+  "femaleVariant": "2888",
+  "textSource": "opengym"
+}

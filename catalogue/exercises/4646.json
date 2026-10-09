@@ -1,0 +1,22 @@
+{
+  "id": "4646",
+  "name": "russian twist with hands on chest",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "A seated twist with your hands crossed on your chest. It trains the obliques and core rotation.",
+  "instructions": [
+    "Sit on the floor with your knees bent and lean back slightly.",
+    "Cross your hands over your chest.",
+    "Lift your feet slightly off the floor if you can.",
+    "Rotate your torso to one side, then to the other.",
+    "Move with control and keep your chest lifted."
+  ],
+  "textSource": "opengym"
+}

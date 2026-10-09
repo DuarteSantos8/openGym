@@ -1,0 +1,23 @@
+{
+  "id": "5663",
+  "name": "barbell behind the back deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "forearms",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "Deadlift with the bar held behind you, a quad-friendly lift.",
+  "instructions": [
+    "Stand in front of the bar behind your legs.",
+    "Squat down and grip the bar behind you.",
+    "Stand up by driving your hips forward.",
+    "Lower the bar under control.",
+    "Keep your back flat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "5498",
+  "name": "weighted plate overhead march",
+  "bodyPart": "upper legs",
+  "equipment": "weight plate",
+  "target": "quads",
+  "secondaryMuscles": [
+    "core",
+    "shoulders",
+    "hip flexors",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "Marching in place while holding a plate overhead, building leg strength, balance and shoulder stability.",
+  "instructions": [
+    "Hold a weight plate overhead with straight arms.",
+    "Stand tall with ribs down and core braced.",
+    "Lift one knee toward hip height.",
+    "Lower it and lift the other knee in a controlled march.",
+    "Keep the plate steady and avoid leaning back."
+  ],
+  "textSource": "opengym"
+}

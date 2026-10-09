@@ -1,0 +1,24 @@
+{
+  "id": "0504",
+  "name": "jack press",
+  "bodyPart": "cardio",
+  "equipment": "dumbbell",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "calves",
+    "glutes"
+  ],
+  "category": "cardio",
+  "description": "A jumping jack combined with an overhead press. It raises your heart rate and works the shoulders and legs together.",
+  "instructions": [
+    "Stand tall with a dumbbell in each hand at shoulder height.",
+    "Jump your feet out wide as you press the dumbbells overhead.",
+    "Lock out the arms without arching your back.",
+    "Jump your feet together as you lower the weights to your shoulders.",
+    "Land softly on the balls of your feet.",
+    "Keep a steady rhythm for the set."
+  ],
+  "textSource": "opengym"
+}

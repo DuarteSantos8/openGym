@@ -1,0 +1,23 @@
+{
+  "id": "3144",
+  "name": "resistance band seated straight back row",
+  "bodyPart": "back",
+  "equipment": "resistance band",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A seated straight-back row using a resistance band. Builds the upper back and lats.",
+  "instructions": [
+    "Sit on the floor with your legs extended and loop the resistance band around your feet.",
+    "Hold the ends of the resistance band with your hands, palms facing each other.",
+    "Keep your back straight and lean slightly back, engaging your core.",
+    "Pull the resistance band towards your chest, squeezing your shoulder blades together.",
+    "Pause for a moment at the top, then slowly release the tension and return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3143",
+  "textSource": "exercisedb"
+}

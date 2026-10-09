@@ -1,0 +1,23 @@
+{
+  "id": "5983",
+  "name": "vinyasa",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders",
+    "core",
+    "lower back"
+  ],
+  "category": "yoga",
+  "description": "A short flow of plank, chaturanga, upward dog and downward dog. Used to link poses together.",
+  "instructions": [
+    "Start in plank pose.",
+    "Lower to chaturanga with your elbows by your ribs.",
+    "Roll forward into upward dog with an open chest.",
+    "Lift your hips to downward dog.",
+    "Hold for a breath or two and repeat."
+  ],
+  "textSource": "opengym"
+}

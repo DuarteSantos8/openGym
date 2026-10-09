@@ -1,0 +1,24 @@
+{
+  "id": "3731",
+  "name": "barbell sumo romanian deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A romanian deadlift in a wide stance, hitting the hamstrings, glutes and inner thighs.",
+  "instructions": [
+    "Hold a barbell in front of your thighs with a wide stance and toes turned out.",
+    "Push your hips back, keeping your knees slightly bent.",
+    "Lower the bar along your legs until you feel a hamstring stretch.",
+    "Keep your back flat.",
+    "Drive your hips forward to stand tall."
+  ],
+  "femaleVariant": "5775",
+  "textSource": "opengym"
+}

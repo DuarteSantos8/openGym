@@ -1,0 +1,24 @@
+{
+  "id": "7202",
+  "name": "resistance band side lunge",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A side lunge with band tension that works the legs and hips from a different angle.",
+  "instructions": [
+    "Stand with the band under your feet or around your thighs, feet together.",
+    "Step wide to one side.",
+    "Sit your hips back and bend that knee, keeping the other leg straight.",
+    "Keep your chest up and your heel down.",
+    "Push back to the start.",
+    "Finish all reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

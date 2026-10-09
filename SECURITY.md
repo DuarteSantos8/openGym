@@ -55,7 +55,7 @@ in the thread; there's no objection, and no request to sit on it indefinitely.
   expired, or for a profile it was not made for (`api/passkeys-store.js`, `api/device-link.js`).
 - **Frontend** — XSS in the React app, or anything that lets a page on another origin read or
   change a signed-in user's data.
-- **Shipped deployment config** — `docker-compose.yml`, `web/nginx.conf`, the two Dockerfiles:
+- **Shipped deployment config** — `docker-compose.yml`, `web/nginx.conf.template`, the two Dockerfiles:
   a default that exposes something a self-hoster wouldn't expect to be exposed.
 - **The published images** `registry.gitlab.com/duartesantos8/opengym/{api,web}` and
   `ghcr.io/duartesantos8/opengym-{api,web}`.
@@ -97,7 +97,7 @@ Read this before hosting openGym for anyone other than yourself.
 - **Passkeys by default.** No email addresses, no email reset flow. Registration and login are
   verified server-side by `@simplewebauthn/server` against `expectedOrigin: ORIGIN` and
   `expectedRPID: RP_ID`, and the authenticator's signature counter is stored and updated on every
-  login.
+  login (the `POST /api/register/verify` and `POST /api/login/verify` handlers in `api/server.js`).
 - **Passwords only if the instance asks for them.** With `PASSWORD_LOGIN=1` a profile may also
   set a password (nobody has one until they do). It is hashed with scrypt (N=2^15, r=8, p=1,
   16-byte random salt, parameters stored with the hash) and compared in constant time; a name
@@ -154,26 +154,26 @@ Read this before hosting openGym for anyone other than yourself.
   owner (`GET /api/account/password`) and to admins (`GET /api/admin/users`, `/api/admin/user`);
   it is not in `/api/me`, Coach payloads, the MCP bridge or plan sharing.
 - **Sessions are a signed cookie.** It carries `<uid>:<expiry>:<version>` plus an
-  HMAC-SHA256 tag over it, compared in constant time (`api/server.js:230-243`). The key is 32
-  random bytes generated on first run and written to `./data/secret` with mode `0600`
-  (`api/server.js:40-43`). The cookie is `HttpOnly` and `SameSite=Lax`, and gets `Secure` **only
-  when `ORIGIN` starts with `https:`** (`api/server.js:36`, `api/server.js:316-322`). On an https
+  HMAC-SHA256 tag over it, compared in constant time (`sign` and `verifySig` in `api/server.js`).
+  The key is 32 random bytes generated on first run and written to `./data/secret` with mode
+  `0600` (`SECRET`). The cookie is `HttpOnly` and `SameSite=Lax`, and gets `Secure` **only
+  when `ORIGIN` starts with `https:`** (`SECURE`, `sessionCookie`). On an https
   instance it is named `__Host-gymsid`: the prefix makes the *browser* enforce that the cookie is
   host-only, which is what stops a sibling subdomain from planting a second session cookie on the
   shared parent domain and having it shadow the real one. Over plain `http://localhost` the
   prefix is not allowed, so the old name `gymsid` stays; both are accepted on the way in, so
   upgrading signs nobody out. If one name ever arrives twice with different values, both are
-  refused rather than guessing which is the real session (`api/server.js:261`).
+  refused rather than guessing which is the real session (`cookieToken`).
 - **Any user can end every session they have.** `POST /api/logout/all` increments that account's
-  session version, and every authenticated request checks the version in the cookie against the
-  one on the user record (`api/server.js:249`, `api/server.js:302-303`), so every cookie ever
+  session version, and every request a session authenticates checks the version in it against the
+  one on the user record (`sessionVersion`, `sessionOf`), so every cookie ever
   issued for the account — on every device, including a copy someone walked off with — stops
   verifying at once. Passkeys are untouched; signing back in works immediately.
 - **Data is isolated per user by the session's uid.** `GET`/`PUT /api/data` only ever touch
-  `state-<uid>.json` for the caller (`api/server.js:727-748`); no route lets a normal user name
-  another user.
+  `state-<uid>.json` for the caller (both resolve it with `readSession`); no route lets a normal
+  user name another user.
 - **Disabling an account takes effect immediately.** Every authenticated request and every login
-  is rejected for a disabled user (`api/server.js:299`, `api/server.js:667`).
+  is rejected for a disabled user (`sessionOf`, the `POST /api/login/verify` handler).
 - **Push endpoints cannot be aimed at your network.** A subscription's `endpoint` is a URL the
   server connects out to and it comes from whoever is signed in, so `/api/push/*` would otherwise
   be a request-forgery lever from inside the Docker network. It must be `https:`, and the
@@ -181,10 +181,12 @@ Read this before hosting openGym for anyone other than yourself.
   (including cloud metadata) or CGNAT address — enforced in the agent's DNS lookup for hostnames,
   so there is no rebinding window, and for literal IP addresses — which never go through that
   lookup — by the same address check at subscribe time and again before every send, applied to
-  every textual form of the address (`api/server.js:93-223`). Sends have a 10 s timeout
-  (a stalling endpoint used to hang the request handler indefinitely), run at most 6 at a time,
+  every textual form of the address (`isPrivateAddr`, `guardedLookup` and `pushEndpointError` in
+  `api/server.js`). Sends have a 10 s timeout
+  (a stalling endpoint used to hang the request handler indefinitely), run at most 6 at a time
+  per notification,
   and each account is capped at 20 subscriptions, so one small request cannot become an unbounded
-  burst of outbound connections (`api/server.js:108-110`).
+  burst of outbound connections (`PUSH_TIMEOUT_MS`, `PUSH_CONCURRENCY`, `MAX_SUBS_PER_USER`).
 - **An uploaded photo or video can only be one of seven file types, and only its owner gets it
   back.** People can attach one photo, GIF or short video to an exercise they made, and up to
   six to a workout they logged. The server
@@ -210,9 +212,12 @@ Read this before hosting openGym for anyone other than yourself.
 
 ### What it does not do
 
-- **Nothing in `./data` is encrypted.** It holds `db.json` (users, passkey public keys, push
-  subscriptions, invite codes), one `state-<uid>.json` per user with their complete workout
-  history and body-weight log, `audit.log`, `secret`, and `vapid.json`. Anyone who can read that folder — you,
+- **Nothing in `./data` is encrypted against someone who can read it.** It holds `db.json` (users,
+  passkey public keys, push subscriptions, invite codes), one `state-<uid>.json` per user with
+  their complete workout history and body-weight log, `audit.log`, `secret`, and `vapid.json`, and
+  once the Coach is set up `coach.json`. The Coach's provider credential is the one thing stored
+  encrypted there, with a key derived from `secret` in the same folder, so it is no safer from
+  whoever holds the folder. Anyone who can read that folder — you,
   whoever holds the backups, whoever gets into the host — can read every user's data, and with
   `secret` can mint a valid session cookie for any account. **If you host openGym for other
   people, they are trusting you exactly as much as they'd trust any server operator.** With the
@@ -227,13 +232,14 @@ Read this before hosting openGym for anyone other than yourself.
   client other than the app can upload a file with its metadata intact — readable, still, only by
   that same profile.
 - **Admins can read everything.** A user listed in `ADMIN_UIDS` (or flagged `admin: true` in
-  `db.json`) gets every user's full history and body weight, can disable accounts, and can create
-  or revoke invite codes (`api/server.js:825-947`). Off by default — a fresh instance has no admin.
+  `db.json`) gets every user's full history and body weight, can disable or delete accounts, and
+  can create or revoke invite codes (the `/api/admin/*` routes in `api/server.js`). Off by
+  default — a fresh instance has no admin.
 - **Sessions can't be revoked one device at a time.** Revocation is per *account*, not per
   session: `POST /api/logout/all` kills all of them at once and there is no device list to pick
-  from. `POST /api/logout` on its own only clears the cookie in that one browser
-  (`api/server.js:677-681`) — a copy taken beforehand keeps working. Sessions last **90 days** by
-  default, settable with `SESSION_DAYS` (`api/server.js:33`); each cookie carries the lifetime it
+  from. `POST /api/logout` on its own only clears the cookie in that one browser — a copy taken
+  beforehand keeps working. Sessions last **90 days** by default, settable with `SESSION_DAYS`;
+  each cookie carries the lifetime it
   was issued with, so changing the setting doesn't reach cookies that are already out. Deleting
   `./data/secret` and restarting still works as the instance-wide reset, and disabling an account
   still locks out one user completely.
@@ -242,16 +248,17 @@ Read this before hosting openGym for anyone other than yourself.
   a sibling subdomain (`gym.example.com` vs anything else under `example.com` — one domain, one
   reverse proxy, several apps, i.e. the usual self-hosting layout) is the *same* site and does
   get the cookie. So every state-changing request that a browser sent must also be
-  `Sec-Fetch-Site: same-origin`, or carry an `Origin` equal to `ORIGIN` where that header is
-  missing (`api/server.js:344`). Requests authenticated with a Bearer token skip the check —
+  `Sec-Fetch-Site: same-origin` (or `none`, which only the user's own navigation produces), or
+  carry an `Origin` equal to `ORIGIN` where that header is missing (`csrfOk`). Requests
+  authenticated with a Bearer token skip the check —
   a browser never attaches one by itself, so there is no ambient authority to borrow — as do the
   register/login/pair handshakes, which carry their own credential in the body and act on no
-  existing session (`api/server.js:338`). The device-code routes are not exempt: a code is
+  existing session (`CSRF_EXEMPT`). The device-code routes are not exempt: a code is
   redeemed on the app's own origin, the only one a passkey for it can be created on.
 - **User verification is preferred, not required.** Both handshakes pass
-  `requireUserVerification: false` (`api/server.js:575`, `api/server.js:644`), so a passkey
-  released without a biometric or PIN is still accepted. In practice: unlocked device ≈ account
-  access.
+  `requireUserVerification: false` (the `POST /api/register/verify` and `POST /api/login/verify`
+  handlers), so a passkey released without a biometric or PIN is still accepted. In practice:
+  unlocked device ≈ account access.
 - **Recovery is another passkey, or an admin.** A profile can hold several passkeys, and a
   signed-in device can give a new one its own with a device code; there is no email path. Lose
   every passkey (and every signed-in device) and that profile is unreachable — unless the
@@ -284,16 +291,20 @@ Read this before hosting openGym for anyone other than yourself.
   account is refused at the session check, so nothing it does produces an entry except the failed
   sign-ins it keeps attempting.
 - **HTTPS is required and the app doesn't provide it.** The API container speaks plain HTTP and
-  nginx listens on `:80` (`web/nginx.conf`); TLS is your reverse proxy's job. Without it,
+  nginx listens on `:80` by default (`NGINX_PORT`, `web/nginx.conf.template`); TLS is your reverse
+  proxy's job. Without it,
   browsers won't do passkeys at all (except on `http://localhost`) and the session cookie is sent
   in the clear.
-- **Rate limiting covers password sign-in and device codes only.** The throttle above applies to
+- **Rate limiting covers password sign-in and device codes only, apart from the Coach's own daily
+  job cap.** The throttle above applies to
   the password routes and to device-code redemption; passkey sign-in and signup, pairing, writes
   and everything else behind a session are not limited, so an instance on the open internet should have a rate limit in front of it. `POST
   /api/register/options` still answers whether an invite code is valid, unthrottled. New invite
   codes are 16 hex characters — 64 bits — which makes guessing one impractical even unthrottled;
   codes generated by earlier versions are 8 characters / 32 bits and still work, so revoke and
-  reissue any that are still unused. The other hard limit in the app is a 5 MB request body.
+  reissue any that are still unused. With the Coach on, its jobs are capped separately
+  (`perProfileDaily`, 10 by default; `instanceDaily`, unlimited by default). The other hard limit
+  in the app is a 5 MB request body (`MAX_BODY`).
 - **The activity log is not an audit archive, and it records less than you might assume.** No IP
   address unless you set `AUDIT_IP` (`net` truncates to a /24 or /48; the default is `off`). When it is on, the
   address comes from `CF-Connecting-IP`, `X-Forwarded-For`, `X-Real-IP` or, failing all three,
@@ -308,16 +319,18 @@ Read this before hosting openGym for anyone other than yourself.
   handle for one device, and storing it would let an admin follow an unknown device from attempt
   to attempt. So a failed sign-in from a passkey this instance doesn't know is recorded as a time
   and nothing else. Retention is a cap, not an archive: old events are dropped, not exported. Any
-  admin can clear the whole log from the dashboard. And four of the paths that write to it —
-  the invite check on `POST /api/register/options`, and the expired-challenge and unknown-passkey
-  branches of the register/login handshakes (and, with passwords on, the failed password and
-  reset-code attempts, within their throttle) — are reachable **without a session**, so anyone
+  admin can clear the whole log from the dashboard. And several of the paths that write to it —
+  the invite check on `POST /api/register/options`, the expired-challenge and unknown-passkey
+  branches of the register/login handshakes, a pairing code that does not redeem, and, with
+  passwords on, the failed password and reset-code attempts (within their throttle) — are
+  reachable **without a session**, so anyone
   can fill the log with noise. It is an append of ~110 bytes per
   event to a capped file, never a rewrite of `db.json`, so the cost is a log full of noise rather
   than a full disk or a slow server.
 - **A few endpoints answer without a session:** `/api/health` (which includes the total user
   count), `/api/config` (whether invite-only and password sign-in are on), `/api/push/public-key`,
-  the register/login handshakes, the two device-code redemption routes (which name the profile a
+  the register/login handshakes, the mobile app's pairing redeem, `POST /api/logout` (which only
+  clears the cookie), the two device-code redemption routes (which name the profile a
   valid code belongs to), and with `PASSWORD_LOGIN=1` the password sign-in, password
   registration and reset-code routes. Password registration says when a name is already taken
   by a profile with a password, as any sign-up form with usernames does; on an invite-only

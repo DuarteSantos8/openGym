@@ -1,0 +1,22 @@
+{
+  "id": "10535",
+  "name": "seated single leg tibialis press",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "shins",
+    "ankles",
+    "feet"
+  ],
+  "category": "strength",
+  "description": "Press the top of your foot upward against resistance while seated. It strengthens the shin muscle.",
+  "instructions": [
+    "Sit with one foot resting flat and the other leg crossed over it.",
+    "Hook the toes of the lower foot under your other foot for light resistance.",
+    "Lift the toes and forefoot up toward your shin.",
+    "Pause at the top, then lower slowly.",
+    "Finish your reps, then switch feet."
+  ],
+  "textSource": "opengym"
+}

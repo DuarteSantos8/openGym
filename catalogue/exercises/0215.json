@@ -1,0 +1,21 @@
+{
+  "id": "0215",
+  "name": "cable seated rear lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "traps",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A seated cable rear raise: arms sweep out to the sides to the level of the shoulders. It trains the rear delts and upper back.",
+  "instructions": [
+    "Sit on a bench facing the cable machine with your feet flat on the ground.",
+    "Grasp the cable handles with an overhand grip and extend your arms straight in front of you.",
+    "Keeping your arms straight, slowly raise them out to the sides until they are parallel to the floor.",
+    "Pause for a moment at the top, then slowly lower your arms back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

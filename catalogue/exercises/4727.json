@@ -1,0 +1,21 @@
+{
+  "id": "4727",
+  "name": "crunch (arms on chest)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A basic crunch with your arms crossed over your chest. It trains the abs without pulling on the neck.",
+  "instructions": [
+    "Lie on your back with your knees bent and feet flat.",
+    "Cross your arms over your chest.",
+    "Curl your head and shoulders off the floor.",
+    "Squeeze your abs at the top.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

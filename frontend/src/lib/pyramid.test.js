@@ -2,11 +2,12 @@ import { describe, expect, it } from 'vitest'
 import {
   PYRAMID_MAX, MAX_PYRAMID_SETS, isPyramid, normalizePyramid, pyramidFromFlat,
   flatFromPyramid, pyramidLabel, pyramidTargetAt, PYRAMID_PRESETS, normalizePyramidRest, pyramidRestFor,
-  maxRecordAt, maxRepsSeries,
+  normalizePyramidWeight, pyramidWeightAt, maxRecordAt, maxRepsSeries,
 } from './pyramid.js'
 import { buildSets, setsRepsOf } from './history.js'
 import { policyFor } from './progression.js'
 import { buildPlanBundle, parsePlan } from './plan-share.js'
+import { convertWeight } from './units.js'
 
 // Pyramid sets (CONTEXT.md): one rep target per set, in order, a set's target being a number or
 // "max". No load is prescribed and the exercise is never progressed automatically.
@@ -208,6 +209,59 @@ describe('rest per set (pyramidRest)', () => {
     const stateWith = ex => ({ routines: [{ id: 'r1', name: 'Push', ex: [ex] }], week: {}, customEx: [] })
     const back = parsePlan(JSON.stringify(buildPlanBundle(stateWith(pyramidCfg({ pyramidRest: [60, 90, 180, 120, 0] })), 'Plan'))).routines[0].ex[0]
     expect(back.pyramidRest).toEqual([60, 90, 180, 120, 0])
+  })
+})
+
+describe('weight per set (pyramidWeight, #445)', () => {
+  const lastTime = {
+    exWeights: {},
+    workouts: [{ id: 'w1', d: '2026-09-28', entries: [{ id: LIFT, sets: [
+      { w: 60, r: 12, done: true }, { w: 70, r: 8, done: true }, { w: 80, r: 6, done: true },
+      { w: 85, r: 9, done: true, max: true }, { w: 50, r: 12, done: true },
+    ] }] }],
+  }
+  it('normalizePyramidWeight sizes the list, keeps decimals and drops an all-zero one', () => {
+    expect(normalizePyramidWeight([40, 52.5], 4)).toEqual([40, 52.5, 0, 0])
+    expect(normalizePyramidWeight([40, 50, 60, 70], 2)).toEqual([40, 50])
+    expect(normalizePyramidWeight([0, 0], 2)).toEqual([])
+    expect(normalizePyramidWeight(undefined, 3)).toEqual([])
+    expect(normalizePyramidWeight([-5, 'x', 61.256], 3)).toEqual([0, 0, 61.26])
+  })
+  it('pyramidWeightAt is the set’s own weight, the last one past the list, 0 without one', () => {
+    const cfg = pyramidCfg({ pyramidWeight: [40, 50, 60, 0, 40] })
+    expect(pyramidWeightAt(cfg, 1)).toBe(50)
+    expect(pyramidWeightAt(cfg, 3)).toBe(0)
+    expect(pyramidWeightAt(cfg, 7)).toBe(40)
+    expect(pyramidWeightAt(pyramidCfg(), 0)).toBe(0)
+    expect(pyramidWeightAt({ mode: 'reps', sets: 3, reps: 10, pyramidWeight: [40] }, 0)).toBe(0)
+  })
+  it('a first session opens each set at its planned weight', () => {
+    const rows = buildSets({ exWeights: {}, workouts: [] }, pyramidCfg({ pyramidWeight: [40, 50, 60, 70, 40] }))
+    expect(rows.map(r => r.w)).toEqual([40, 50, 60, 70, 40])
+  })
+  it('a planned session uses each set’s planned weight, and last time’s for a set left at 0', () => {
+    const rows = buildSets(lastTime, pyramidCfg({ pyramidWeight: [65, 0, 90, 0, 0] }), { useTarget: true, planReps: true })
+    expect(rows.map(r => r.w)).toEqual([65, 70, 90, 85, 50])
+  })
+  it('a hidden flat weight no longer overrides last time in a planned session', () => {
+    const rows = buildSets(lastTime, pyramidCfg({ weight: 100 }), { useTarget: true, planReps: true })
+    expect(rows.map(r => r.w)).toEqual([60, 70, 80, 85, 50])
+  })
+  it('the flat weight is still the first session’s fallback', () => {
+    const rows = buildSets({ exWeights: {}, workouts: [] }, pyramidCfg({ weight: 40 }), { useTarget: true, planReps: true })
+    expect(rows.map(r => r.w)).toEqual([40, 40, 40, 40, 40])
+  })
+  it('freestyle copies what you lifted, and the plan only when there is nothing to copy', () => {
+    const cfg = pyramidCfg({ pyramidWeight: [65, 75, 90, 95, 55] })
+    expect(buildSets(lastTime, cfg, { preferLast: true }).map(r => r.w)).toEqual([60, 70, 80, 85, 50])
+    expect(buildSets({ exWeights: {}, workouts: [] }, cfg, { preferLast: true }).map(r => r.w)).toEqual([65, 75, 90, 95, 55])
+  })
+  it('travels with a shared plan and converts between kg and lb', () => {
+    const stateWith = ex => ({ unit: 'kg', routines: [{ id: 'r1', name: 'Legs', ex: [ex] }], week: {}, customEx: [] })
+    const bundle = JSON.stringify(buildPlanBundle(stateWith(pyramidCfg({ pyramidWeight: [40, 60, 80, 0, 40] })), 'Plan'))
+    expect(parsePlan(bundle, 'kg').routines[0].ex[0].pyramidWeight).toEqual([40, 60, 80, 0, 40])
+    expect(parsePlan(bundle, 'lb').routines[0].ex[0].pyramidWeight)
+      .toEqual([40, 60, 80, 0, 40].map(w => (w > 0 ? convertWeight(w, 'kg', 'lb') : 0)))
   })
 })
 

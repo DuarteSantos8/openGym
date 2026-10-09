@@ -1,0 +1,23 @@
+{
+  "id": "4963",
+  "name": "kettlebell box squat",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A squat to a box holding a kettlebell at your chest. It trains the hips and legs.",
+  "instructions": [
+    "Stand in front of a box holding a kettlebell at your chest.",
+    "Push your hips back and sit onto the box.",
+    "Pause briefly.",
+    "Drive through your feet to stand.",
+    "Keep your chest up.",
+    "Keep your elbows close."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "2277",
+  "name": "lever chest press v. 4",
+  "bodyPart": "chest",
+  "equipment": "leverage machine",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A plate-loaded chest press that trains the pecs and triceps along a guided path.",
+  "instructions": [
+    "Adjust the seat so the handles are at mid-chest height.",
+    "Sit back with your shoulder blades pulled together.",
+    "Press the handles forward until your arms are almost straight.",
+    "Do not lock your elbows.",
+    "Return slowly until you feel a stretch in the chest.",
+    "Repeat for the planned reps."
+  ],
+  "textSource": "opengym"
+}

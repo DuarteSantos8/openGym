@@ -1,0 +1,22 @@
+{
+  "id": "4773",
+  "name": "narrow seated chin up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A seated chin-up with a narrow underhand grip, using your legs for some help. It builds the lats and biceps.",
+  "instructions": [
+    "Sit under a low bar with your hands close together, palms facing you.",
+    "Extend your legs in front with heels on the floor.",
+    "Pull your chest up toward the bar.",
+    "Squeeze your back and arms at the top.",
+    "Lower slowly until your arms are straight."
+  ],
+  "textSource": "opengym"
+}

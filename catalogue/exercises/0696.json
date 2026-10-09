@@ -1,0 +1,23 @@
+{
+  "id": "0696",
+  "name": "self assisted inverse leg curl (on floor)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "Lying on your back, you slide your heels toward your glutes to train the hamstrings. Uses only your body weight.",
+  "instructions": [
+    "Lie flat on your back with your legs extended and your arms by your sides.",
+    "Bend your knees and place your feet flat on the ground, hip-width apart.",
+    "Lift your hips off the ground, engaging your glutes and hamstrings.",
+    "Slowly curl your legs towards your glutes, keeping your hips lifted.",
+    "Pause for a moment at the top, then slowly extend your legs back to the starting position.",
+    "Lower your hips back down to the ground.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

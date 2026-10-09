@@ -1,0 +1,22 @@
+{
+  "id": "10819",
+  "name": "split stance single leg calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles"
+  ],
+  "category": "strength",
+  "description": "A calf raise in a split stance, with most work on the front leg. It trains the calf with balance support.",
+  "instructions": [
+    "Stand in a split stance, front foot flat and back toes lightly touching the floor.",
+    "Keep most weight on the front leg.",
+    "Rise onto the ball of the front foot.",
+    "Pause at the top.",
+    "Lower the heel slowly.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

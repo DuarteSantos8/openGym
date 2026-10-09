@@ -1,0 +1,22 @@
+{
+  "id": "1421",
+  "name": "modified push up to lower arms",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "triceps",
+    "chest",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A modified push-up variation where you shift your weight toward your wrists. It strengthens the forearms, chest and shoulders.",
+  "instructions": [
+    "Start in a push-up position with your hands directly under your shoulders and your body in a straight line.",
+    "Lower your body down towards the ground by bending your elbows, keeping them close to your sides.",
+    "Once your elbows are at a 90-degree angle, lower your forearms to the ground, keeping your elbows directly under your shoulders.",
+    "Pause for a moment, then push through your palms to lift your forearms back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

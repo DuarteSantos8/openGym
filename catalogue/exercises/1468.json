@@ -1,0 +1,21 @@
+{
+  "id": "1468",
+  "name": "crab twist toe touch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "From a crab position you twist and reach one hand to the opposite foot. It works the abs and obliques and gets the shoulders moving.",
+  "instructions": [
+    "Start by sitting on the ground with your knees bent and feet flat on the floor.",
+    "Place your hands behind you, fingers pointing towards your feet, and lift your hips off the ground.",
+    "Extend one leg straight out in front of you while simultaneously reaching your opposite hand towards your toes.",
+    "Return to the starting position and repeat on the other side.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

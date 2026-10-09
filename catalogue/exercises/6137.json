@@ -1,0 +1,23 @@
+{
+  "id": "6137",
+  "name": "bodyweight standing scapula row",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rhomboids",
+    "trapezius",
+    "rear deltoids"
+  ],
+  "category": "calisthenics",
+  "description": "A standing drill where you squeeze your shoulder blades together with no weight. It wakes up the mid back and helps posture.",
+  "instructions": [
+    "Stand tall with your arms out in front or at your sides.",
+    "Keep your arms mostly straight.",
+    "Pull your shoulder blades back and together.",
+    "Hold the squeeze for a second.",
+    "Release slowly.",
+    "Avoid shrugging your shoulders to your ears."
+  ],
+  "textSource": "opengym"
+}

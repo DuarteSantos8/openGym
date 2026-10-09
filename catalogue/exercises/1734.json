@@ -1,0 +1,21 @@
+{
+  "id": "1734",
+  "name": "dumbbell kickbacks on exercise ball",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "back"
+  ],
+  "category": "strength",
+  "description": "Triceps kickbacks on an exercise ball. It isolates the triceps and adds core demand.",
+  "instructions": [
+    "Sit on an exercise ball with your feet flat on the ground and your back straight.",
+    "Hold a dumbbell in each hand with your palms facing inwards and your arms bent at a 90-degree angle.",
+    "Extend your arms straight back, squeezing your triceps at the top of the movement.",
+    "Pause for a moment, then slowly lower the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

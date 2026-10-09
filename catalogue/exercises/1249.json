@@ -1,0 +1,22 @@
+{
+  "id": "1249",
+  "name": "wipers (straight leg)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower abs",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "Swinging straight legs from side to side like windshield wipers. It is a tough one for the obliques and lower abs.",
+  "instructions": [
+    "Lie on your back with your arms out to the sides.",
+    "Raise your legs straight up over your hips.",
+    "Lower both legs to one side with control.",
+    "Lift them back to the middle and lower to the other side.",
+    "Keep your shoulders flat on the floor."
+  ],
+  "textSource": "opengym"
+}

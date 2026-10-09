@@ -1,0 +1,23 @@
+{
+  "id": "9876",
+  "name": "lever belt romanian deadlift (straight bar)",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A Romanian deadlift on a belt-loaded lever machine using a straight bar. It builds the hamstrings and glutes while sparing the grip and spine from heavy free weight.",
+  "instructions": [
+    "Step into the machine, set the belt securely and hold the straight bar with an overhand grip.",
+    "Stand tall with your knees slightly bent and your chest up.",
+    "Push your hips back and slide the bar down along your thighs.",
+    "Lower until you feel a strong hamstring stretch while your back stays flat.",
+    "Drive your hips forward to stand back up.",
+    "Squeeze your glutes at the top without leaning back."
+  ],
+  "textSource": "opengym"
+}

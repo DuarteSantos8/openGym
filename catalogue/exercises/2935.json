@@ -1,0 +1,22 @@
+{
+  "id": "2935",
+  "name": "half kneeling pvc pec mobilization stretch",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest",
+    "biceps"
+  ],
+  "category": "stretching",
+  "description": "A chest opener using a PVC pipe from a half-kneeling position. It loosens tight pecs and the front of the shoulder.",
+  "instructions": [
+    "Kneel on one knee and grip a pipe or stick with one hand while the other arm reaches out.",
+    "Place the working forearm against a wall or post.",
+    "Gently rotate your torso away until you feel a stretch across your chest.",
+    "Hold for 20-30 seconds.",
+    "Switch sides."
+  ],
+  "textSource": "opengym"
+}

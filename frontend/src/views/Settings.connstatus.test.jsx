@@ -94,6 +94,15 @@ describe('Show connection status', () => {
     act(() => { row().querySelector('[role="switch"]').click() })
     expect(mocks.S.connStatus).toBe(true)
   })
+
+  // #454: the no-server line's × sets connLocal off; switching the status on is the way back.
+  it('switching it on brings back the no-server line its × hid', () => {
+    mocks.S = { ...mocks.S, connStatus: false, connLocal: false }
+    mount()
+    act(() => { row().querySelector('[role="switch"]').click() })
+    expect(mocks.S.connStatus).toBe(true)
+    expect(mocks.S.connLocal).toBe(true)
+  })
 })
 
 describe('guest footers', () => {
@@ -112,6 +121,12 @@ describe('guest footers', () => {
     expect(footers().filter(f => f.includes('Guest mode'))).toEqual([])
     mocks.S = { ...mocks.S, connStatus: false }
     act(() => root.render(<Settings key="off" page="account" />))
+    expect(footers().filter(f => f.includes('Guest mode'))).toHaveLength(1)
+  })
+
+  it('Account says guest mode in the footer once the banner\'s × hid it (#454)', () => {
+    mocks.S = { ...mocks.S, connLocal: false }
+    act(() => root.render(<Settings page="account" />))
     expect(footers().filter(f => f.includes('Guest mode'))).toHaveLength(1)
   })
 })

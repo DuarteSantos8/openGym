@@ -1,0 +1,23 @@
+{
+  "id": "4561",
+  "name": "bodyweight elevated heel squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A squat with the heels raised on a small platform, shifting more work to the quads and allowing a deeper knee bend.",
+  "instructions": [
+    "Place your heels on a small plate or wedge, feet shoulder-width apart.",
+    "Hold your arms in front for balance.",
+    "Bend your knees and sink down with your chest tall.",
+    "Let your knees travel forward over your toes.",
+    "Drive back up through your whole foot.",
+    "Keep your core tight throughout."
+  ],
+  "textSource": "opengym"
+}

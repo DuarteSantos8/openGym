@@ -1,0 +1,22 @@
+{
+  "id": "2842",
+  "name": "crab",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "hip flexors"
+  ],
+  "category": "pilates",
+  "description": "A rolling Pilates move in a seated crab shape that works the core and spine mobility.",
+  "instructions": [
+    "Sit with your legs crossed and hold your feet.",
+    "Roll back onto your shoulders.",
+    "Cross your legs the other way.",
+    "Roll back up.",
+    "Keep your movement smooth."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "2969",
+  "name": "dumbbell thruster v. 2",
+  "bodyPart": "full body",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A squat into overhead press with dumbbells that works the legs and shoulders in one flow.",
+  "instructions": [
+    "Hold a dumbbell in each hand at your shoulders.",
+    "Squat down with your chest tall and knees tracking over your toes.",
+    "Drive up through your heels as you stand.",
+    "Use that momentum to press the dumbbells overhead.",
+    "Lower them to your shoulders and go into the next squat."
+  ],
+  "textSource": "opengym"
+}

@@ -105,3 +105,16 @@ test('readSession agrees with the frontend on an imported session with no plan o
   assert.equal(exOf(reviewFor([passing, passing, imported])).lastOk, false, 'and so does the payload');
   assert.equal(exOf(reviewFor([passing, passing, imported])).stalls, 1);
 });
+
+// Triple progression (issue #179) asks each set for its own reps: a fourth set climbing from 8
+// is a hit at 8, though the top of the range is 12. Both copies grade by the session's own aims.
+test('readSession agrees with the frontend on per-set aims under triple progression', () => {
+  const passing = entry([set(10), set(10), set(10)]);
+  const triple = sets => ({ id: EX_ID, target: { sets: 4, reps: 12, rowReps: [12, 12, 12, 8] }, sets });
+  const hit = triple([set(12), set(12), set(12), set(8)]);
+  const miss = triple([set(12), set(12), set(12), set(7)]);
+  assert.equal(frontendReadSession(hit, PLAN).ok, true);
+  assert.equal(exOf(reviewFor([passing, passing, hit])).lastOk, true);
+  assert.equal(frontendReadSession(miss, PLAN).ok, false);
+  assert.equal(exOf(reviewFor([passing, passing, miss])).lastOk, false);
+});

@@ -1,0 +1,22 @@
+{
+  "id": "4419",
+  "name": "lying leg raise (modified)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "An easier lying leg raise that trains the lower abs. Bent knees reduce the strain on the lower back.",
+  "instructions": [
+    "Lie on your back with your hands by your sides.",
+    "Bend your knees slightly and press your lower back into the floor.",
+    "Raise your legs until your hips flex to about 90 degrees.",
+    "Lower them slowly without arching your back.",
+    "Stop short of the floor and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "0200",
+  "name": "cable pushdown (with rope attachment)",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A triceps pushdown with a rope. Splitting the rope at the bottom gives the triceps a strong squeeze.",
+  "instructions": [
+    "Attach a rope attachment to a high pulley on a cable machine.",
+    "Stand facing the machine with your feet shoulder-width apart and a slight bend in your knees.",
+    "Grasp the rope with an overhand grip, palms facing each other.",
+    "Keep your elbows close to your sides and your upper arms stationary throughout the exercise.",
+    "Exhale and push the rope downward by extending your elbows until your arms are fully extended.",
+    "Pause for a moment, then inhale and slowly return to the starting position by allowing your elbows to flex.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2438",
+  "textSource": "exercisedb"
+}

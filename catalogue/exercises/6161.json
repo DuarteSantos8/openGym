@@ -1,0 +1,22 @@
+{
+  "id": "6161",
+  "name": "dumbbell lying leg curl",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A leg curl lying on your front while holding a dumbbell between your feet. It targets the hamstrings.",
+  "instructions": [
+    "Lie face down on a bench.",
+    "Grip a dumbbell between your feet.",
+    "Curl your heels toward your glutes.",
+    "Squeeze the hamstrings at the top.",
+    "Lower with control.",
+    "Keep your hips on the bench."
+  ],
+  "textSource": "opengym"
+}

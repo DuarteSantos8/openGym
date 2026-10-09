@@ -1,0 +1,22 @@
+{
+  "id": "1975",
+  "name": "seated shoulder flexor depressor retractor stretch",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper back",
+    "rhomboids",
+    "chest"
+  ],
+  "category": "stretching",
+  "description": "A seated stretch that lengthens the shoulder and chest by pressing the arms back and down.",
+  "instructions": [
+    "Sit tall on a chair or bench.",
+    "Place your hands behind you on the seat, fingers pointing back.",
+    "Press your shoulders down and back, opening your chest.",
+    "Lean slightly forward until you feel the stretch.",
+    "Hold for 20-30 seconds, then relax."
+  ],
+  "textSource": "opengym"
+}

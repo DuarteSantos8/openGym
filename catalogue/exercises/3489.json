@@ -1,0 +1,24 @@
+{
+  "id": "3489",
+  "name": "kneeling cobra push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "lower back",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A kneeling version of the cobra push-up that is easier on the arms and core. It works the chest and gently extends the spine.",
+  "instructions": [
+    "Kneel on a mat and place your hands under your shoulders.",
+    "Keep a straight line from head to knees.",
+    "Lower your chest to the floor with elbows close.",
+    "Press up and let your hips sink forward, lifting your chest into a cobra.",
+    "Shift your hips back to the start.",
+    "Repeat smoothly."
+  ],
+  "textSource": "opengym"
+}

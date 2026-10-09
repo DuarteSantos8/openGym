@@ -1,0 +1,23 @@
+{
+  "id": "1580",
+  "name": "prisoner squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight squat with your hands behind your head. It keeps your chest open and builds leg strength.",
+  "instructions": [
+    "Stand with feet shoulder-width apart and place your hands behind your head.",
+    "Pull your elbows back and keep your chest up.",
+    "Push your hips back and bend your knees to lower down.",
+    "Go until your thighs are about parallel to the floor.",
+    "Drive through your heels to stand back up."
+  ],
+  "textSource": "opengym"
+}

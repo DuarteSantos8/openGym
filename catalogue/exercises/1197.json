@@ -1,0 +1,23 @@
+{
+  "id": "1197",
+  "name": "squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "The basic bodyweight squat. It trains the thighs and glutes and teaches solid lower body mechanics.",
+  "instructions": [
+    "Stand with your feet about shoulder width apart and toes slightly out.",
+    "Push your hips back and bend your knees to lower down.",
+    "Go as deep as you can while keeping your heels down and chest up.",
+    "Drive through your feet to stand back up.",
+    "Keep your knees tracking over your toes."
+  ],
+  "femaleVariant": "0787",
+  "textSource": "opengym"
+}

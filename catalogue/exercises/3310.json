@@ -1,0 +1,22 @@
+{
+  "id": "3310",
+  "name": "barbell weighted bench press",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "The standard flat bench press with a loaded barbell, the staple lift for chest size and pressing strength.",
+  "instructions": [
+    "Lie on the bench with eyes under the bar and feet flat on the floor.",
+    "Grip the bar slightly wider than shoulder width and unrack it over your chest.",
+    "Lower the bar under control to your mid chest.",
+    "Press it back up until your arms are straight.",
+    "Keep your shoulder blades pinched and your feet planted throughout."
+  ],
+  "textSource": "opengym"
+}

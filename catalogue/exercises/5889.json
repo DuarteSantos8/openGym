@@ -1,0 +1,18 @@
+{
+  "id": "5889",
+  "name": "corpse pose savasana",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [],
+  "category": "yoga",
+  "description": "The classic resting pose at the end of practice. Lets the body relax fully.",
+  "instructions": [
+    "Lie flat on your back with your legs extended and slightly apart.",
+    "Let your arms rest by your sides with palms up.",
+    "Close your eyes and let your whole body soften.",
+    "Breathe slowly for 2-5 minutes.",
+    "Roll to your side and sit up gently."
+  ],
+  "textSource": "opengym"
+}

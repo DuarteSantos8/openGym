@@ -1,0 +1,21 @@
+{
+  "id": "3234",
+  "name": "hyght dumbbell fly",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A flat-bench dumbbell fly done with a wide arc and a stretch across the chest. It isolates the pecs.",
+  "instructions": [
+    "Lie flat on a bench with a dumbbell in each hand, palms facing each other.",
+    "Extend your arms straight up over your chest, with a slight bend in your elbows.",
+    "Keeping a slight bend in your elbows, lower the dumbbells out to the sides in a wide arc until you feel a stretch in your chest.",
+    "Pause for a moment, then reverse the movement and bring the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3424",
+  "textSource": "exercisedb"
+}

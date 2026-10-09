@@ -1,0 +1,22 @@
+{
+  "id": "3559",
+  "name": "superman row with towel",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "lower back",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "Lie face down with a towel held taut overhead, lift your chest and pull the towel toward you, training the upper back and spine.",
+  "instructions": [
+    "Lie face down with arms extended overhead, holding a towel taut.",
+    "Lift your chest and arms slightly off the floor.",
+    "Pull the towel down toward your upper chest, squeezing your shoulder blades.",
+    "Extend your arms forward again with control.",
+    "Keep your neck neutral and repeat."
+  ],
+  "textSource": "opengym"
+}

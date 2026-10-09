@@ -1,0 +1,22 @@
+{
+  "id": "2937",
+  "name": "stability ball rounded rollout",
+  "bodyPart": "waist",
+  "equipment": "stability ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "lats",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A rollout on a stability ball with a rounded back that trains the abs hard.",
+  "instructions": [
+    "Kneel in front of a stability ball with forearms on top.",
+    "Round your back slightly and tuck your pelvis.",
+    "Roll the ball forward by extending your arms.",
+    "Pull it back using your abs.",
+    "Keep your hips from sagging and move slowly."
+  ],
+  "textSource": "opengym"
+}

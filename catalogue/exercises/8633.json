@@ -1,0 +1,21 @@
+{
+  "id": "8633",
+  "name": "seated shoulder press on a chair",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A seated overhead press without equipment that trains the shoulders and triceps.",
+  "instructions": [
+    "Sit tall near the front of a sturdy chair with your feet flat on the floor.",
+    "Brace your core and keep your shoulders relaxed.",
+    "Raise your hands to shoulder height with elbows bent.",
+    "Press them overhead until your arms are straight.",
+    "Lower back to your shoulders under control."
+  ],
+  "textSource": "opengym"
+}

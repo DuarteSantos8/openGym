@@ -1,0 +1,24 @@
+{
+  "id": "1060",
+  "name": "barbell hip thrust",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A bench-supported bridge with a barbell across your hips. It is a go-to move for building strong glutes.",
+  "instructions": [
+    "Sit on the floor with your upper back against a bench and a padded barbell over your hips.",
+    "Plant your feet hip-width apart and drive through your heels.",
+    "Lift your hips until your torso is level with the floor.",
+    "Squeeze your glutes at the top and keep your chin tucked.",
+    "Lower your hips under control.",
+    "Repeat without arching your lower back."
+  ],
+  "femaleVariant": "2216",
+  "textSource": "opengym"
+}

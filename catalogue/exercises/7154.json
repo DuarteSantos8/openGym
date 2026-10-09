@@ -1,0 +1,23 @@
+{
+  "id": "7154",
+  "name": "side shuffle high knee",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hip flexors",
+    "calves",
+    "glutes"
+  ],
+  "category": "cardio",
+  "description": "A lateral shuffle where each step brings the knee high. It raises your heart rate and builds agility.",
+  "instructions": [
+    "Stand with feet hip-width apart and knees slightly bent.",
+    "Shuffle sideways for a few steps.",
+    "Lift your knees high with each step.",
+    "Stay light on your feet and pump your arms.",
+    "Change direction and continue for 30-60 seconds."
+  ],
+  "textSource": "opengym"
+}

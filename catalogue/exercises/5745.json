@@ -1,0 +1,22 @@
+{
+  "id": "5745",
+  "name": "plyo squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hamstrings"
+  ],
+  "category": "plyometrics",
+  "description": "A squat followed by an explosive jump. Builds power and conditioning in the legs.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart.",
+    "Sit into a squat with your chest up.",
+    "Explode upward and jump as high as you can.",
+    "Land softly on bent knees and go straight into the next squat.",
+    "Keep your knees tracking over your toes."
+  ],
+  "textSource": "opengym"
+}

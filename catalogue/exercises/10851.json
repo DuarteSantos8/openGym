@@ -1,0 +1,23 @@
+{
+  "id": "10851",
+  "name": "pilates machine russian squat",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "pilates",
+  "description": "A reformer squat variation that builds the legs. It focuses on controlled bending and straightening.",
+  "instructions": [
+    "Set your feet on the carriage and platform.",
+    "Stand tall and brace your core.",
+    "Bend your knees into a squat.",
+    "Keep your chest lifted and knees over toes.",
+    "Press back up to standing.",
+    "Move with the carriage smoothly."
+  ],
+  "textSource": "opengym"
+}

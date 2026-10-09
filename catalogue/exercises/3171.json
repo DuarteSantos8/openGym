@@ -1,0 +1,24 @@
+{
+  "id": "3171",
+  "name": "boxing right hook",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "chest",
+    "calves"
+  ],
+  "category": "combat",
+  "description": "A right-handed hook punch thrown in a boxing stance. It trains rotation and power from the hips.",
+  "instructions": [
+    "Stand in a boxing stance with your hands up.",
+    "Bend your right elbow to about 90 degrees.",
+    "Pivot on your back foot and rotate your hips and torso.",
+    "Swing your fist in an arc to your target.",
+    "Snap back to guard position.",
+    "Keep your chin tucked and your left hand up."
+  ],
+  "textSource": "opengym"
+}

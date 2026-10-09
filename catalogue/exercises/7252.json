@@ -1,0 +1,22 @@
+{
+  "id": "7252",
+  "name": "dumbbell incline powell raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rotator cuff",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "Raise performed lying face down on an incline bench, hitting the rear delts and the small rotator muscles.",
+  "instructions": [
+    "Lie chest down on an incline bench holding a light dumbbell in one hand.",
+    "Let the arm hang straight below your shoulder.",
+    "Raise the dumbbell out to the side, leading with your elbow, up to shoulder height.",
+    "Pause, then lower with control.",
+    "Complete your reps and switch sides."
+  ],
+  "textSource": "opengym"
+}

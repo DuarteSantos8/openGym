@@ -1,0 +1,22 @@
+{
+  "id": "10744",
+  "name": "resistance band seated single leg hamstring stretch",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "A seated hamstring stretch with a band around your foot. The band lets you control the pull.",
+  "instructions": [
+    "Sit tall with one leg extended and a band around that foot.",
+    "Hold the band ends in both hands.",
+    "Keep your leg straight and gently pull your toes toward you.",
+    "Hinge forward until you feel a stretch.",
+    "Hold for 20-30 seconds.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

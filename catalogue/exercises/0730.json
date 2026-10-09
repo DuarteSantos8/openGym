@@ -1,0 +1,21 @@
+{
+  "id": "0730",
+  "name": "single leg platform slide",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "Standing on one foot on a slide board, you slide your other leg back and forth. Works the legs and glutes with a balance challenge.",
+  "instructions": [
+    "Start by standing with one foot on a platform or slide board.",
+    "Bend your knee slightly and slide the foot on the platform backward, extending your leg.",
+    "Keep your core engaged and maintain a straight posture throughout the movement.",
+    "Slowly return to the starting position by sliding your foot back to the initial position.",
+    "Repeat the movement for the desired number of repetitions, then switch legs."
+  ],
+  "textSource": "exercisedb"
+}

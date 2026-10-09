@@ -1,0 +1,23 @@
+{
+  "id": "6048",
+  "name": "bottle weighted rear lunge",
+  "bodyPart": "upper legs",
+  "equipment": "weighted",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "core",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A lunge stepping backward while holding bottles. It is easy on the knees and trains the glutes and quads.",
+  "instructions": [
+    "Stand tall holding a bottle in each hand.",
+    "Step one leg back and lower your back knee toward the floor.",
+    "Keep your front shin vertical and your chest up.",
+    "Push through the front heel to come back.",
+    "Alternate legs, or finish one side then switch."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4238",
+  "name": "dumbbell seated lateral to front raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "trapezius",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "A seated raise that combines a side raise and a front raise in one rep. It builds the delts from two angles.",
+  "instructions": [
+    "Sit tall on a bench holding light dumbbells at your sides.",
+    "Raise both arms out to the sides to shoulder height.",
+    "Lower them back to your sides.",
+    "Raise both arms to the front to shoulder height.",
+    "Lower and repeat.",
+    "Avoid leaning back or swinging."
+  ],
+  "textSource": "opengym"
+}

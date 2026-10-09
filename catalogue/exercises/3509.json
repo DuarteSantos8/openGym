@@ -1,0 +1,24 @@
+{
+  "id": "3509",
+  "name": "seated in out leg raise on floor",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A seated leg tuck, with legs pulled in then extended out. It trains the lower abs and hip flexors.",
+  "instructions": [
+    "Sit on the floor, hands behind you for support.",
+    "Lean back slightly with legs extended and lifted.",
+    "Pull your knees toward your chest.",
+    "Extend your legs back out without touching the floor.",
+    "Keep your back long and your core tight.",
+    "Breathe steadily."
+  ],
+  "femaleVariant": "4274",
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "1170",
+  "name": "45 degree one leg hyperextension (arms in front of chest)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A single-leg back extension on a 45 degree bench that trains the glutes, hamstrings and lower back one side at a time.",
+  "instructions": [
+    "Set the pad under your hips and hook one foot under the roller, with the other leg lifted off.",
+    "Cross your arms over your chest and keep your body in a straight line.",
+    "Lower your torso toward the floor with a flat back.",
+    "Raise back up by squeezing your glute until your body is level, without overarching.",
+    "Complete all reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

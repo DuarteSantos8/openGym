@@ -1,0 +1,23 @@
+{
+  "id": "1153",
+  "name": "suspender upper back stretch",
+  "bodyPart": "back",
+  "equipment": "suspension trainer",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rhomboids",
+    "trapezius"
+  ],
+  "category": "stretching",
+  "description": "Leaning back on the straps with your arms extended, you stretch the upper back and shoulders.",
+  "instructions": [
+    "Hold the handles and step back so your arms are straight.",
+    "Sit your hips back and lower your chest.",
+    "Round the upper back gently and push the straps away.",
+    "Feel the stretch between the shoulder blades.",
+    "Hold for 20-30 seconds.",
+    "Breathe slowly and return."
+  ],
+  "textSource": "opengym"
+}

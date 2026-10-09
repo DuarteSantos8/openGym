@@ -1,0 +1,23 @@
+{
+  "id": "3126",
+  "name": "resistance band foot plantar flexion",
+  "bodyPart": "lower legs",
+  "equipment": "resistance band",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "rehab",
+  "description": "Pointing the foot against a band to strengthen the calf and ankle.",
+  "instructions": [
+    "Sit with your leg straight and a band looped around the ball of your foot.",
+    "Hold the band ends in your hands.",
+    "Point your toes away from you against the band.",
+    "Pause at the end of the range.",
+    "Return slowly.",
+    "Finish your reps, then switch feet."
+  ],
+  "textSource": "opengym"
+}

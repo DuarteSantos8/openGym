@@ -1,0 +1,22 @@
+{
+  "id": "6752",
+  "name": "lying rectus abdominis activation crunch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A small, focused crunch from lying down. It helps you feel the front abdominal muscle working.",
+  "instructions": [
+    "Lie on your back with knees bent and feet flat.",
+    "Place your hands lightly on your abs or behind your head.",
+    "Exhale and curl your shoulders off the floor.",
+    "Feel the abs tighten at the top.",
+    "Lower back slowly.",
+    "Keep your neck relaxed."
+  ],
+  "textSource": "opengym"
+}

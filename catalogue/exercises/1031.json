@@ -1,0 +1,22 @@
+{
+  "id": "1031",
+  "name": "lever standing hip extension",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A standing machine move that drives one leg back to work the glutes.",
+  "instructions": [
+    "Stand facing the machine and rest your hands on the support.",
+    "Place the back of your working leg against the lever pad.",
+    "Push the leg back and slightly up by squeezing the glute.",
+    "Return slowly to the start.",
+    "Keep your torso upright without arching your back. Finish the reps, then switch legs."
+  ],
+  "femaleVariant": "3649",
+  "textSource": "opengym"
+}

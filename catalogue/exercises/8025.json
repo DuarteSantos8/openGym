@@ -1,0 +1,23 @@
+{
+  "id": "8025",
+  "name": "kettlebell wood chop",
+  "bodyPart": "waist",
+  "equipment": "kettlebell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "glutes",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A rotational chop holding a kettlebell from high to low across the body. It trains the obliques and builds rotational power.",
+  "instructions": [
+    "Hold a kettlebell with both hands and stand with your feet wide.",
+    "Start with it high beside one shoulder.",
+    "Rotate and chop down to the opposite knee.",
+    "Pivot your back foot as you turn.",
+    "Return with control and switch sides."
+  ],
+  "textSource": "opengym"
+}

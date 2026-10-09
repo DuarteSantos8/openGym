@@ -1,0 +1,24 @@
+{
+  "id": "4565",
+  "name": "dumbbell step up with knee raise",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hip flexors",
+    "core",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A loaded step-up that finishes with a knee drive, working the legs and balance.",
+  "instructions": [
+    "Hold dumbbells at your sides and stand facing a bench or box.",
+    "Place one foot fully on the box.",
+    "Push through that heel and step up.",
+    "Lift the other knee toward your chest at the top.",
+    "Step down with control.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

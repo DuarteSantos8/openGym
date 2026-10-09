@@ -1,0 +1,19 @@
+{
+  "id": "1664",
+  "name": "dumbbell high curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A dumbbell curl lifted high toward the shoulder. It trains the peak of the biceps contraction.",
+  "instructions": [
+    "Stand up straight with a dumbbell in each hand, palms facing forward.",
+    "Keep your upper arms stationary and curl the dumbbells as high as possible while contracting your biceps.",
+    "Pause for a moment at the top, then slowly lower the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

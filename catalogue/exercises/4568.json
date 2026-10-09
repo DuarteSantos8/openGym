@@ -1,0 +1,24 @@
+{
+  "id": "4568",
+  "name": "resistance band pull apart",
+  "bodyPart": "shoulders",
+  "equipment": "resistance band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A simple band pull-apart to strengthen the back of the shoulders and upper back.",
+  "instructions": [
+    "Hold a resistance band in front of you at chest height, arms straight.",
+    "Keep your hands about shoulder-width apart.",
+    "Pull the band apart by moving your hands out to the sides.",
+    "Squeeze your shoulder blades together.",
+    "Return slowly to the start.",
+    "Keep your ribs down and shoulders relaxed."
+  ],
+  "textSource": "opengym"
+}

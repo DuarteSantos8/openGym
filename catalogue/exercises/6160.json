@@ -1,0 +1,23 @@
+{
+  "id": "6160",
+  "name": "dumbbell frog hip thrust",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "adductors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A hip thrust with the soles of your feet together and knees out, holding a dumbbell on your hips. It focuses on the glutes.",
+  "instructions": [
+    "Lie on your back with the soles of your feet together and knees out.",
+    "Rest a dumbbell on your hips.",
+    "Drive your hips up by pressing through your feet.",
+    "Squeeze your glutes at the top.",
+    "Lower slowly.",
+    "Keep your ribs down."
+  ],
+  "textSource": "opengym"
+}

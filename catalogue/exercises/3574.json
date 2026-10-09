@@ -1,0 +1,23 @@
+{
+  "id": "3574",
+  "name": "kettlebell forward lunge",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A lunge stepping forward while holding a kettlebell, working the thighs and glutes.",
+  "instructions": [
+    "Hold a kettlebell at your chest or by your side.",
+    "Step forward with one leg into a long stride.",
+    "Lower until both knees are bent about 90 degrees.",
+    "Push through the front foot to return to standing.",
+    "Alternate legs for the set."
+  ],
+  "femaleVariant": "4525",
+  "textSource": "opengym"
+}

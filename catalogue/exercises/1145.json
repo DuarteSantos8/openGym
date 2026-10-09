@@ -1,0 +1,23 @@
+{
+  "id": "1145",
+  "name": "suspender star plank",
+  "bodyPart": "waist",
+  "equipment": "suspension trainer",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "glutes"
+  ],
+  "category": "isometric",
+  "description": "A plank with the feet in the straps spread wide like a star, challenging the core and hips.",
+  "instructions": [
+    "Put your feet in the straps and set a high plank.",
+    "Spread your legs wide.",
+    "Keep your hips level and body straight.",
+    "Brace the abs.",
+    "Hold for 20-30 seconds.",
+    "Breathe steadily and do not sag."
+  ],
+  "textSource": "opengym"
+}

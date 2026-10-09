@@ -1,0 +1,21 @@
+{
+  "id": "1761",
+  "name": "hanging oblique knee raise",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A hanging knee raise with a twist to each side. Targets the obliques and abs, and challenges your grip.",
+  "instructions": [
+    "Hang from a pull-up bar with your arms fully extended and your palms facing away from you.",
+    "Engage your core and lift your knees towards your chest, twisting your torso to the side as you do so.",
+    "Pause for a moment at the top, then slowly lower your legs back down to the starting position.",
+    "Repeat on the other side, twisting your torso in the opposite direction.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "femaleVariant": "3090",
+  "textSource": "exercisedb"
+}

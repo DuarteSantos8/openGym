@@ -1,0 +1,23 @@
+{
+  "id": "4160",
+  "name": "squat hold calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "soleus"
+  ],
+  "category": "isometric",
+  "description": "Hold a squat while lifting and lowering your heels. It combines quad endurance with calf work.",
+  "instructions": [
+    "Stand with feet shoulder width apart and lower into a half squat.",
+    "Hold that depth with your chest up.",
+    "Raise your heels as high as you can.",
+    "Lower your heels slowly.",
+    "Repeat while holding the squat position.",
+    "Keep your knees tracking over your toes."
+  ],
+  "textSource": "opengym"
+}

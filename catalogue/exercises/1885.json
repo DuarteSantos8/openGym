@@ -1,0 +1,22 @@
+{
+  "id": "1885",
+  "name": "standing toe up achilles stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles"
+  ],
+  "category": "stretching",
+  "description": "Stretches the calf and Achilles by lifting the toes against a wall.",
+  "instructions": [
+    "Stand facing a wall with one foot forward.",
+    "Place the ball of the forward foot against the wall, heel on the floor.",
+    "Lean your hips toward the wall.",
+    "Feel the stretch in the calf and Achilles.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

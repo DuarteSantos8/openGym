@@ -1,0 +1,23 @@
+{
+  "id": "5333",
+  "name": "lever trunk rotation",
+  "bodyPart": "waist",
+  "equipment": "leverage machine",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Rotate your torso against machine resistance. Trains the obliques and trunk rotation strength.",
+  "instructions": [
+    "Sit in the machine and adjust the pads so your hips are fixed.",
+    "Hold the handles or brace your arms on the pads.",
+    "Rotate your torso to one side in a smooth motion.",
+    "Pause briefly at the end.",
+    "Return to center slowly.",
+    "Complete your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

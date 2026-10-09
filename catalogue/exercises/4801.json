@@ -1,0 +1,23 @@
+{
+  "id": "4801",
+  "name": "table top bridge rotation",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "core",
+    "obliques",
+    "shoulders",
+    "hamstrings"
+  ],
+  "category": "calisthenics",
+  "description": "A table top bridge with an arm sweep and trunk rotation. It trains the glutes while opening the chest and challenging balance.",
+  "instructions": [
+    "Set up in a table top bridge with hips lifted and hands under your shoulders.",
+    "Shift your weight onto one hand and both feet.",
+    "Lift the free arm and reach it up and over your body as you rotate your chest.",
+    "Keep your hips high and level throughout.",
+    "Return the arm to the floor and repeat, then switch sides."
+  ],
+  "textSource": "opengym"
+}

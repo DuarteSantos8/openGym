@@ -1,0 +1,22 @@
+{
+  "id": "3760",
+  "name": "lever seated crunch v. 2",
+  "bodyPart": "waist",
+  "equipment": "leverage machine",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A second take on the seated machine crunch, curling forward against resistance. It trains the abs.",
+  "instructions": [
+    "Sit on the leverage machine with your back against the pad and your feet secured under the footpads.",
+    "Place your hands on the handles or the sides of the seat for support.",
+    "Engage your abs and slowly crunch forward, bringing your chest towards your knees.",
+    "Pause for a moment at the top of the movement, squeezing your abs.",
+    "Slowly return to the starting position, allowing your back to round slightly.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

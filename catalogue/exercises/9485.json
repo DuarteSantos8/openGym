@@ -1,0 +1,23 @@
+{
+  "id": "9485",
+  "name": "kettlebell romanian deadlift to squat",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A Romanian deadlift flowing straight into a squat while holding a kettlebell. It trains the hips and thighs with a nice rhythm.",
+  "instructions": [
+    "Hold a kettlebell with both hands in front of your thighs.",
+    "Hinge at the hips and slide the bell down your legs with a flat back.",
+    "Squeeze your glutes to return to standing.",
+    "Bend your knees and lower into a squat, keeping the bell close to your chest.",
+    "Stand up and repeat for the planned reps."
+  ],
+  "textSource": "opengym"
+}

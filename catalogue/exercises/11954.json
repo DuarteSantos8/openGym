@@ -1,0 +1,22 @@
+{
+  "id": "11954",
+  "name": "lying pretzel stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower back",
+    "quadriceps"
+  ],
+  "category": "stretching",
+  "description": "A lying twist that pulls one leg across and bends the other back, stretching the glutes, hips and thighs.",
+  "instructions": [
+    "Lie on your side with your hips stacked and your bottom leg bent in front.",
+    "Bend the top knee and bring that foot back toward your glutes, holding it with your hand.",
+    "Gently roll your top knee back and open your chest toward the floor.",
+    "Hold for 20-30 seconds while breathing slowly.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "1669",
+  "name": "dumbbell one arm seated hammer curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A one-arm seated hammer curl. It trains the brachialis and biceps on one side at a time.",
+  "instructions": [
+    "Sit on a bench with your back straight and feet flat on the ground.",
+    "Hold a dumbbell in one hand with a neutral grip (palms facing each other).",
+    "Rest your elbow on the inside of your thigh, just above the knee.",
+    "Keeping your upper arm stationary, exhale and curl the dumbbell up towards your shoulder.",
+    "Pause for a moment at the top, squeezing your biceps.",
+    "Inhale and slowly lower the dumbbell back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms."
+  ],
+  "textSource": "exercisedb"
+}

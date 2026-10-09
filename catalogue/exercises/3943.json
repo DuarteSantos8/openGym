@@ -1,0 +1,22 @@
+{
+  "id": "3943",
+  "name": "cable seated rear delt fly with chest support",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A reverse fly on a chest-supported seat using cables. It targets the rear delts with little help from momentum.",
+  "instructions": [
+    "Sit facing the stack with your chest against the pad and hold the handles.",
+    "Start with your arms forward and elbows slightly bent.",
+    "Sweep your arms out and back to shoulder height.",
+    "Pause, then return slowly.",
+    "Keep your neck relaxed."
+  ],
+  "textSource": "opengym"
+}

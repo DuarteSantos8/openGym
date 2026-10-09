@@ -1,0 +1,22 @@
+{
+  "id": "11271",
+  "name": "cable standing torso twist v. 3",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A standing cable rotation that trains the obliques. Turn through your torso with your arms staying in front.",
+  "instructions": [
+    "Stand side-on to a cable set at chest height and hold the handle with both hands.",
+    "Keep your arms straight and feet planted.",
+    "Rotate your torso away from the machine.",
+    "Pause, then return slowly.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "3750",
+  "name": "front plank side hop",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "core",
+    "hip flexors"
+  ],
+  "category": "plyometrics",
+  "description": "Hop your feet side to side from a high plank for a core and cardio challenge.",
+  "instructions": [
+    "Start in a high plank with hands under shoulders.",
+    "Brace your core.",
+    "Hop both feet a short way to one side.",
+    "Hop them back to the other side.",
+    "Keep your shoulders stable and your hips low."
+  ],
+  "textSource": "opengym"
+}

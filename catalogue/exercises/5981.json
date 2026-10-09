@@ -1,0 +1,24 @@
+{
+  "id": "5981",
+  "name": "sun salutation b",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hamstrings",
+    "shoulders",
+    "core",
+    "glutes",
+    "triceps"
+  ],
+  "category": "yoga",
+  "description": "A more powerful flow that adds chair pose and warrior I. Builds heat and leg strength.",
+  "instructions": [
+    "Stand in mountain pose and sit into a chair pose with your arms overhead.",
+    "Fold forward, step back to plank and flow through chaturanga.",
+    "Press to downward dog.",
+    "Step forward into warrior I on each side, then flow again.",
+    "Link every move to your breath."
+  ],
+  "textSource": "opengym"
+}

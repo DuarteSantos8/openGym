@@ -1,0 +1,21 @@
+{
+  "id": "1911",
+  "name": "raised leg knee flexor stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "A hamstring stretch with one leg raised onto a support, easing tension in the back of the thigh.",
+  "instructions": [
+    "Place one heel on a low bench or step in front of you with the leg straight.",
+    "Stand tall with the standing knee soft.",
+    "Hinge forward from the hips, keeping your back flat, until you feel a stretch behind the raised thigh.",
+    "Keep your toes pointing up and breathe slowly.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

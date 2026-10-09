@@ -1,0 +1,22 @@
+{
+  "id": "4340",
+  "name": "barbell wide pullover",
+  "bodyPart": "back",
+  "equipment": "barbell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "chest",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A pullover using a wider grip, which spreads the load across the lats and chest.",
+  "instructions": [
+    "Lie on a bench with a barbell held wider than shoulder-width above your chest.",
+    "Keep your elbows slightly bent.",
+    "Lower the bar behind your head in a smooth arc.",
+    "Pull the bar back over your chest.",
+    "Maintain a stable core and avoid arching your back."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "9849",
+  "name": "side plank clamshell",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "obliques",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A side plank where you open and close your top knee. It works the outer hips and the obliques.",
+  "instructions": [
+    "Lie on your side in a side plank, supported on your forearm with knees bent.",
+    "Lift your hips so your body is in a line.",
+    "Keep your feet together and open your top knee upward.",
+    "Close it under control.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

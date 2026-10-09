@@ -1,0 +1,22 @@
+{
+  "id": "1574",
+  "name": "lever seated wide squat",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A seated machine squat with a wide stance. It puts extra emphasis on the glutes and inner thighs.",
+  "instructions": [
+    "Sit in the machine with your back against the pad and shoulders under the supports.",
+    "Set both feet wide on the platform with toes slightly out.",
+    "Lower by bending your knees until your thighs are about parallel.",
+    "Keep your knees pointing in the same direction as your toes.",
+    "Press through your heels to stand back up."
+  ],
+  "textSource": "opengym"
+}

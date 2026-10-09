@@ -1,0 +1,24 @@
+{
+  "id": "3490",
+  "name": "decline kneeling push up on box",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A kneeling push-up with the hands on a box, so the body slopes downward. It's an easier push-up that still stresses the chest and shoulders.",
+  "instructions": [
+    "Place a sturdy box in front of you and kneel on the floor.",
+    "Put your hands on the box edge, slightly wider than your shoulders.",
+    "Form a straight line from head to knees.",
+    "Lower your chest to the box with elbows at about 45 degrees.",
+    "Press back up until your arms are straight.",
+    "Keep your hips from sagging."
+  ],
+  "textSource": "opengym"
+}

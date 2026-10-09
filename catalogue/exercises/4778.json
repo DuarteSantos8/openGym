@@ -1,0 +1,21 @@
+{
+  "id": "4778",
+  "name": "reverse crunch v. 3",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "Lying on your back, you curl your hips off the floor to bring your knees toward your chest. It targets the lower abs.",
+  "instructions": [
+    "Lie on your back with your arms by your sides.",
+    "Lift your knees to a tabletop position.",
+    "Curl your hips off the floor, bringing your knees toward your chest.",
+    "Pause at the top.",
+    "Lower slowly without swinging."
+  ],
+  "textSource": "opengym"
+}

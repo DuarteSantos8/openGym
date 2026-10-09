@@ -1,0 +1,23 @@
+{
+  "id": "0051",
+  "name": "barbell jefferson squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A squat straddling the bar, with one foot ahead of the other. Works the glutes, quads and core.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and toes slightly turned out.",
+    "Hold the barbell with an overhand grip, resting it on the front of your body, just below your waist.",
+    "Step your left foot forward and your right foot back, keeping your feet shoulder-width apart.",
+    "Bend your knees and lower your body down into a squat position, keeping your back straight and chest up.",
+    "Push through your heels to stand back up to the starting position.",
+    "Repeat the movement, alternating your forward and back foot with each repetition."
+  ],
+  "textSource": "exercisedb"
+}

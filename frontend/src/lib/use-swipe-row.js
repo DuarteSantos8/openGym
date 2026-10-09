@@ -172,7 +172,9 @@ export function useSwipeRow({ canDelete = true, canCopy = true, canSwipe, onComm
   const paint = useCallback((off, ms = 0) => {
     const outer = outerRef.current, front = frontRef.current
     if (!outer || !front) return
-    const w = outer.clientWidth || 1
+    // Mid-drag the row's width is the one read as the swipe locked: reading it again on every
+    // move, right after the last move wrote the panes' widths, forced a layout per frame (#431).
+    const w = g.current?.w || outer.clientWidth || 1
     const copy = props.current.canCopy !== false
     const prevArmed = armedFor(o.current, w, copy)
     o.current = off
@@ -317,6 +319,7 @@ export function useSwipeRow({ canDelete = true, canCopy = true, canSwipe, onComm
       if (axis === 'y') { g.current = null; return }
       if (props.current.canSwipe && !props.current.canSwipe()) { g.current = null; return }
       d.lock = 'x'
+      d.w = outerRef.current?.clientWidth || 1
       try { outerRef.current?.setPointerCapture?.(e.pointerId) } catch { /* the gesture still tracks */ }
       swallowNextClick()
       const a = typeof document !== 'undefined' ? document.activeElement : null
@@ -333,7 +336,7 @@ export function useSwipeRow({ canDelete = true, canCopy = true, canSwipe, onComm
     const now = e.timeStamp || Date.now()
     d.samples.push([now, logical])
     while (d.samples.length > 2 && now - d.samples[0][0] > 100) d.samples.shift()
-    const w = outerRef.current?.clientWidth || 1
+    const w = d.w || outerRef.current?.clientWidth || 1
     paint(Math.max(-w, Math.min(w, shapeOffset(d.o0 + logical, w, props.current.canCopy !== false))))
   }
   const end = (e, cancelled) => {

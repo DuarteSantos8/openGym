@@ -1,0 +1,22 @@
+{
+  "id": "3523",
+  "name": "glute bridge two legs on bench (male)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight glute bridge with the shoulders on a bench and both feet on the floor. It trains the glutes and hamstrings.",
+  "instructions": [
+    "Sit on the edge of a bench with your back against it and your feet flat on the ground.",
+    "Place your hands on the bench beside your hips for support.",
+    "Engage your glutes and hamstrings, then lift your hips off the bench until your body forms a straight line from your knees to your shoulders.",
+    "Pause for a moment at the top, then slowly lower your hips back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2472",
+  "textSource": "exercisedb"
+}

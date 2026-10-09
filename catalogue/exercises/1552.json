@@ -1,0 +1,22 @@
+{
+  "id": "1552",
+  "name": "dumbbell jumping squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hamstrings"
+  ],
+  "category": "plyometrics",
+  "description": "An explosive squat jump holding light dumbbells at your sides. It builds power in the legs and gets the heart pumping.",
+  "instructions": [
+    "Stand with feet shoulder-width apart, holding a dumbbell in each hand at your sides.",
+    "Squat down until your thighs are about parallel to the floor.",
+    "Explode upward and jump as high as you can.",
+    "Land softly on the balls of your feet and sink straight into the next squat.",
+    "Keep your chest up and your knees tracking your toes."
+  ],
+  "textSource": "opengym"
+}

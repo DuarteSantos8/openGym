@@ -1,0 +1,21 @@
+{
+  "id": "1822",
+  "name": "wrist ulnar deviator and extensor stretch",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist extensors",
+    "hands"
+  ],
+  "category": "stretching",
+  "description": "A forearm stretch that targets the wrist extensors with ulnar deviation, easing tightness after gripping or typing.",
+  "instructions": [
+    "Extend one arm in front of you with the palm down.",
+    "Bend the wrist so your fingers point down.",
+    "Gently tilt the hand toward the little finger side.",
+    "Use the other hand to apply light pressure.",
+    "Hold for 20-30 seconds, then switch arms."
+  ],
+  "textSource": "opengym"
+}

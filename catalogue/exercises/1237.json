@@ -1,0 +1,22 @@
+{
+  "id": "1237",
+  "name": "lever row (plate loaded)",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "biceps",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A plate-loaded machine row. The guided path lets you pull heavy with good back engagement.",
+  "instructions": [
+    "Adjust the seat and chest pad, then grab the handles.",
+    "Sit tall with your chest against the pad.",
+    "Pull the handles toward your torso, squeezing your shoulder blades.",
+    "Pause for a moment.",
+    "Return slowly until your arms are straight."
+  ],
+  "textSource": "opengym"
+}

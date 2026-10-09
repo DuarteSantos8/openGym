@@ -1,0 +1,22 @@
+{
+  "id": "3393",
+  "name": "lying leg hip raise on floor",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A floor leg raise that lifts the hips off the ground for a stronger lower-abs contraction.",
+  "instructions": [
+    "Lie on your back with arms by your sides or holding something behind your head.",
+    "Raise your legs to vertical.",
+    "Lift your hips off the floor, pushing your feet toward the ceiling.",
+    "Lower your hips slowly.",
+    "Lower your legs without arching your back.",
+    "Keep movements smooth, not swinging."
+  ],
+  "textSource": "opengym"
+}

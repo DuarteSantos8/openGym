@@ -1,0 +1,38 @@
+{
+  "id": "1436",
+  "name": "barbell high bar squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "strength",
+  "description": "The classic back squat with the bar sitting high on the traps and a more upright torso. It is a staple for quad and glute strength.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, toes slightly turned out.",
+    "Place the barbell on your upper back, resting it on your traps.",
+    "Engage your core and keep your chest up as you begin to squat down, pushing your hips back and bending your knees.",
+    "Lower yourself until your thighs are parallel to the ground, or as low as you can comfortably go.",
+    "Drive through your heels to stand back up, extending your hips and knees.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "adductors"
+    ],
+    "secondaries": [
+      "hamstring",
+      "calves",
+      "lower-back",
+      "abs",
+      "obliques"
+    ]
+  },
+  "textSource": "exercisedb"
+}

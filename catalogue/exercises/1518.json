@@ -1,0 +1,23 @@
+{
+  "id": "1518",
+  "name": "barbell decline bench lunge",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A split squat with the back foot on a decline bench and a barbell on your back. It builds single-leg strength.",
+  "instructions": [
+    "Place the bar on your upper back and rest one foot behind you on a decline bench.",
+    "Step the front foot out to set a stable stance.",
+    "Lower your back knee toward the floor, torso upright.",
+    "Drive through the front foot to rise.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

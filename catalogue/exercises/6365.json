@@ -1,0 +1,21 @@
+{
+  "id": "6365",
+  "name": "ez barbell standing back wrist curl",
+  "bodyPart": "lower arms",
+  "equipment": "ez barbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A wrist curl with the EZ bar held behind your back, training your forearms and grip.",
+  "instructions": [
+    "Stand holding an EZ bar behind your back with an underhand grip.",
+    "Keep your elbows still and your chest up.",
+    "Curl your wrists to raise the bar slightly.",
+    "Squeeze at the top.",
+    "Lower with control and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "0747",
+  "name": "smith behind neck press",
+  "bodyPart": "shoulders",
+  "equipment": "smith machine",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "On the smith machine, you press the bar overhead from behind your neck. Works the shoulders and triceps, so keep it controlled.",
+  "instructions": [
+    "Adjust the seat height of the smith machine so that the bar is at shoulder level.",
+    "Stand with your feet shoulder-width apart and your knees slightly bent.",
+    "Grasp the bar with an overhand grip, slightly wider than shoulder-width apart.",
+    "Lift the bar off the rack and step back, maintaining a stable stance.",
+    "Lower the bar down to the back of your neck, keeping your elbows pointing forward.",
+    "Press the bar up overhead until your arms are fully extended.",
+    "Pause for a moment at the top, then slowly lower the bar back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "11280",
+  "textSource": "exercisedb"
+}

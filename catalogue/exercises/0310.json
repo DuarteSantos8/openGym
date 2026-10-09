@@ -1,0 +1,21 @@
+{
+  "id": "0310",
+  "name": "dumbbell front raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "biceps",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A standing dumbbell front raise. You lift the weights to shoulder height to train the front delts.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in each hand with your palms facing your thighs.",
+    "Keeping your arms straight, exhale and lift the dumbbells in front of you until they are at shoulder level.",
+    "Pause for a moment at the top, then inhale and slowly lower the dumbbells back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2233",
+  "textSource": "exercisedb"
+}

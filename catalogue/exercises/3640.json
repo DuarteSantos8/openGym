@@ -1,0 +1,21 @@
+{
+  "id": "3640",
+  "name": "knee touch crunch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A crunch where the opposite hand reaches toward the knee on each rep. It trains the abs and obliques.",
+  "instructions": [
+    "Lie flat on your back with your knees bent and feet flat on the ground.",
+    "Place your hands behind your head with your elbows pointing outwards.",
+    "Engaging your abs, lift your shoulder blades off the ground and reach your right hand towards your left knee.",
+    "Return to the starting position and repeat, this time reaching your left hand towards your right knee.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "femaleVariant": "4269",
+  "textSource": "exercisedb"
+}

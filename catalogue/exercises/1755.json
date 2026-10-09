@@ -1,0 +1,23 @@
+{
+  "id": "1755",
+  "name": "weighted tricep dips",
+  "bodyPart": "upper arms",
+  "equipment": "weighted",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A weighted dip off a bench or chair with legs extended. Loads the triceps harder than the bodyweight version.",
+  "instructions": [
+    "Sit on the edge of a bench or chair with your hands gripping the edge next to your hips.",
+    "Slide your butt off the front of the bench with your legs extended in front of you.",
+    "Keep your back close to the bench and your elbows slightly bent.",
+    "Lower your body by bending your elbows until your upper arms are parallel to the floor.",
+    "Push yourself back up to the starting position by straightening your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "10585",
+  "textSource": "exercisedb"
+}

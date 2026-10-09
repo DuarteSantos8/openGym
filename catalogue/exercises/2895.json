@@ -1,0 +1,22 @@
+{
+  "id": "2895",
+  "name": "front plank with arm lift (push up position)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "A high plank where you lift one arm at a time, training anti-rotation core strength.",
+  "instructions": [
+    "Start in a high plank with hands under shoulders.",
+    "Set your feet slightly wider for balance.",
+    "Lift one hand and reach it forward without twisting your hips.",
+    "Place it down and switch arms.",
+    "Keep your core braced throughout."
+  ],
+  "textSource": "opengym"
+}

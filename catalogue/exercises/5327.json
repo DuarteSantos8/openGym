@@ -1,0 +1,24 @@
+{
+  "id": "5327",
+  "name": "lever t bar romanian deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "grip muscles",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A Romanian deadlift on a T-bar lever machine. Targets the hamstrings and glutes with a guided path.",
+  "instructions": [
+    "Stand at the T-bar lever and grip the handles.",
+    "Lift to stand with a slight bend in your knees.",
+    "Push your hips back and lower the bar along your thighs.",
+    "Stop when you feel a strong hamstring stretch.",
+    "Drive your hips forward to stand.",
+    "Keep your back flat all the way."
+  ],
+  "textSource": "opengym"
+}

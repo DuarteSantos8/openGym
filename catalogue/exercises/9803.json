@@ -1,0 +1,22 @@
+{
+  "id": "9803",
+  "name": "standing tibialis raise wall supported",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "shins",
+    "ankles",
+    "feet"
+  ],
+  "category": "strength",
+  "description": "Leaning against a wall, you lift your toes toward your shins to train the muscle at the front of your lower leg.",
+  "instructions": [
+    "Stand with your back against a wall and feet a little forward.",
+    "Keep your legs straight.",
+    "Lift your toes as high as you can, keeping your heels down.",
+    "Pause at the top.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

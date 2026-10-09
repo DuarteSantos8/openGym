@@ -19,7 +19,7 @@
  *
  * A provider is described by a spec (see anthropic.js etc.); this file owns the transport.
  */
-import { HTTP_PROVIDERS, baseUrlFor } from '../providers.js';
+import { HTTP_PROVIDERS, baseUrlFor, extraHeadersFor } from '../providers.js';
 
 export const MAX_OUTPUT_TOKENS = 16000;
 const DEFAULT_TIMEOUT_MS = 5 * 60000;
@@ -40,6 +40,16 @@ const hostOf = url => { try { return new URL(url).host; } catch { return url; } 
 // owner the traffic was encrypted when it was not.
 const schemeOf = url => { try { return new URL(url).protocol === 'http:' ? 'HTTP' : 'HTTPS'; } catch { return 'HTTPS'; } };
 const trim = (s, n = 300) => String(s == null ? '' : s).slice(0, n);
+
+// A base that already names its API version (OpenRouter's …/api/v1, Zhipu's …/paas/v4, Gemini's
+// …/v1beta/openai) is the whole prefix, so the spec's own leading version is dropped instead of
+// doubled into …/v4/v1/chat/completions (#437). A bare host still gets the spec's version.
+const VERSION_SEGMENT = /\/v\d+(?:(?:alpha|beta)\d*)?(?=\/|$)/i;
+export function endpointUrl(base, path) {
+  const basePath = base.replace(/^[a-z][a-z0-9+.-]*:\/\/[^/]*/i, '');
+  if (!VERSION_SEGMENT.test(basePath)) return base + path;
+  return base + path.replace(new RegExp('^' + VERSION_SEGMENT.source, 'i'), '');
+}
 
 /** A fetch, bounded by AbortController. Never throws for HTTP status; throws for transport. */
 async function call(fetchImpl, url, init, timeoutMs, signal) {
@@ -101,7 +111,7 @@ export function httpAdapter(spec) {
       if (!key && !meta.keyOptional) return { ok: false, error: 'no API key configured', models: [] };
       let res;
       try {
-        res = await call(fetchImpl, base + spec.modelsPath, { method: 'GET', headers: spec.headers(key) }, timeoutMs, signal);
+        res = await call(fetchImpl, endpointUrl(base, spec.modelsPath), { method: 'GET', headers: { ...extraHeadersFor(id, cfg), ...spec.headers(key) } }, timeoutMs, signal);
       } catch (e) {
         return { ok: false, error: e.name === 'AbortError' ? 'timed out' : `could not reach ${hostOf(base)}: ${trim(e.message, 120)}`, models: [] };
       }
@@ -119,7 +129,7 @@ export function httpAdapter(spec) {
      * native HTTP and a test can hand in a fake.
      */
     async invoke(opts = {}) {
-      const { cfg, prompt, system, schema, env, model, timeoutMs = DEFAULT_TIMEOUT_MS, fetch: fetchImpl = globalThis.fetch, signal } = opts;
+      const { cfg, prompt, system, schema, env, model, timeoutMs = DEFAULT_TIMEOUT_MS, maxTokens = MAX_OUTPUT_TOKENS, fetch: fetchImpl = globalThis.fetch, signal } = opts;
       const base = adapter.baseUrl(cfg);
       if (!base) return { code: -1, text: '', stderr: `no endpoint configured for ${id}`, spawnError: true };
       const key = keyOf(env);
@@ -127,15 +137,15 @@ export function httpAdapter(spec) {
       const chosen = model || meta.defaultModel;
       if (!chosen) return { code: 1, text: '', stderr: `no model chosen for ${id} (pick one from the list the endpoint serves)` };
 
-      let body = spec.body({ model: chosen, prompt, system: system || null, schema: schema || null, maxTokens: MAX_OUTPUT_TOKENS });
+      let body = spec.body({ model: chosen, prompt, system: system || null, schema: schema || null, maxTokens });
       let retriedWithoutJsonMode = false;
       let transientRetries = 0;
       for (;;) {
         let res;
         try {
-          res = await call(fetchImpl, base + spec.path(chosen), {
+          res = await call(fetchImpl, endpointUrl(base, spec.path(chosen)), {
             method: 'POST',
-            headers: { 'content-type': 'application/json', ...spec.headers(key) },
+            headers: { ...extraHeadersFor(id, cfg), 'content-type': 'application/json', ...spec.headers(key) },
             body: JSON.stringify(body)
           }, timeoutMs, signal);
         } catch (e) {

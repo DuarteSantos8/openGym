@@ -1,0 +1,24 @@
+{
+  "id": "4547",
+  "name": "good morning squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "lower back",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A combo of a hip hinge and a squat that warms up and strengthens the glutes, hamstrings and lower back.",
+  "instructions": [
+    "Stand with feet shoulder-width apart and hands behind your head.",
+    "Push your hips back and hinge forward with a flat back.",
+    "Come back up to standing.",
+    "Bend your knees and sink into a squat with your chest tall.",
+    "Stand up and repeat the hinge, then the squat.",
+    "Keep your core braced and your weight over your mid-foot."
+  ],
+  "textSource": "opengym"
+}

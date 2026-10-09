@@ -1,0 +1,22 @@
+{
+  "id": "6599",
+  "name": "bear crawl low hip",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "shoulders",
+    "quadriceps",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A low bear crawl with your hips kept down, which challenges your shoulders, legs and core.",
+  "instructions": [
+    "Start on hands and feet with your knees slightly off the floor.",
+    "Keep your hips low and your back flat.",
+    "Crawl forward with opposite hand and foot.",
+    "Stay controlled and quiet.",
+    "Crawl for 20-30 seconds."
+  ],
+  "textSource": "opengym"
+}

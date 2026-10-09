@@ -1,0 +1,24 @@
+{
+  "id": "8704",
+  "name": "burpee jump box",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "chest",
+    "shoulders",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A burpee that finishes with a jump onto a box, great for full-body conditioning.",
+  "instructions": [
+    "Stand facing a box.",
+    "Drop into a squat, kick your feet back and lower into a push-up.",
+    "Jump your feet back in.",
+    "Explode up and jump onto the box.",
+    "Step down carefully and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "10190",
+  "name": "landmine single arm push press",
+  "bodyPart": "shoulders",
+  "equipment": "landmine",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "core",
+    "quadriceps",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A one-arm push press with a landmine, using leg drive to move the bar up and the shoulder to control it.",
+  "instructions": [
+    "Stand facing the landmine end and hold it at your shoulder with one hand.",
+    "Dip a few inches by bending your knees.",
+    "Drive up with your legs and press the bar up and forward until your arm is straight.",
+    "Lower the end back to your shoulder with control.",
+    "Keep your ribs down and brace your core. Finish the reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

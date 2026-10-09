@@ -1,0 +1,24 @@
+{
+  "id": "3325",
+  "name": "band alternate low row with twist",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rhomboids",
+    "obliques",
+    "core"
+  ],
+  "category": "strength",
+  "description": "An alternating band row with a rotation, training your back and the muscles that twist your trunk.",
+  "instructions": [
+    "Anchor a band in front of you at low height and hold both handles.",
+    "Stand in a staggered stance with arms extended.",
+    "Pull one handle back toward your hip while rotating your torso.",
+    "Squeeze your shoulder blade, then return slowly.",
+    "Repeat with the other arm and keep alternating."
+  ],
+  "textSource": "opengym"
+}

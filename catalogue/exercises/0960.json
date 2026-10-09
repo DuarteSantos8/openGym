@@ -1,0 +1,22 @@
+{
+  "id": "0960",
+  "name": "stand spread leg forward fold",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "hamstrings",
+    "groin",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "Fold forward from a wide-legged stance to stretch the inner thighs and hamstrings.",
+  "instructions": [
+    "Stand with feet wide apart and toes pointing forward.",
+    "Hinge forward at the hips with a long spine.",
+    "Lower your hands to the floor or your shins.",
+    "Relax your head and neck.",
+    "Hold for 20-30 seconds while breathing slowly."
+  ],
+  "textSource": "opengym"
+}

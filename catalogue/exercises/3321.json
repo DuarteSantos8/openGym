@@ -1,0 +1,23 @@
+{
+  "id": "3321",
+  "name": "resistance band rear fly",
+  "bodyPart": "shoulders",
+  "equipment": "resistance band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A band version of the reverse fly that works the back of your shoulders and upper back, handy for posture.",
+  "instructions": [
+    "Hold the band in both hands in front of you with arms straight.",
+    "Stand tall with a soft knee bend and your core tight.",
+    "Pull your hands apart and out to the sides at shoulder height.",
+    "Squeeze your shoulder blades together at the end.",
+    "Return slowly to the start without letting the band snap back."
+  ],
+  "textSource": "opengym"
+}

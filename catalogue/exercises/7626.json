@@ -1,0 +1,23 @@
+{
+  "id": "7626",
+  "name": "landmine squat",
+  "bodyPart": "upper legs",
+  "equipment": "landmine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A squat holding the end of a landmine bar at your chest. The angled bar helps you stay upright and load the legs.",
+  "instructions": [
+    "Hold the end of the landmine bar against your chest with both hands.",
+    "Stand with your feet shoulder-width apart.",
+    "Sit your hips down and back, keeping your chest tall.",
+    "Squat until your thighs are about parallel to the floor.",
+    "Drive through your whole foot to stand back up."
+  ],
+  "textSource": "opengym"
+}

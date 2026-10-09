@@ -1,0 +1,22 @@
+{
+  "id": "3331",
+  "name": "oblique crunches with straight leg lift",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower abs",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A twisting crunch with your legs lifted straight, making your core work harder through the lever.",
+  "instructions": [
+    "Lie on your back with legs raised straight and hands by your head.",
+    "Lift your shoulders off the floor.",
+    "Rotate to bring one elbow toward the opposite hip.",
+    "Keep your legs steady and low back pressed down.",
+    "Return slowly and alternate sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "0754",
+  "name": "smith decline reverse-grip press",
+  "bodyPart": "chest",
+  "equipment": "smith machine",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "On a decline bench, you press the smith machine bar with a reverse grip. Works the chest and triceps.",
+  "instructions": [
+    "Adjust the smith machine to a decline position.",
+    "Lie down on the bench with your feet secured under the foot pads.",
+    "Grasp the barbell with a reverse grip, hands slightly wider than shoulder-width apart.",
+    "Unrack the barbell and lower it towards your chest, keeping your elbows tucked in.",
+    "Pause for a moment at the bottom, then push the barbell back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

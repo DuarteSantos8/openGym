@@ -1,0 +1,22 @@
+{
+  "id": "0688",
+  "name": "scapular pull-up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "traps",
+  "secondaryMuscles": [
+    "biceps",
+    "rhomboids",
+    "rear deltoids"
+  ],
+  "category": "calisthenics",
+  "description": "Hanging from a bar, you pull your shoulder blades down without bending your arms. Builds shoulder control and the lower traps.",
+  "instructions": [
+    "Start by hanging from a pull-up bar with your palms facing away from you and your arms fully extended.",
+    "Retract your shoulder blades by pulling them down and back.",
+    "Engage your back muscles and pull your body up towards the bar, focusing on squeezing your shoulder blades together.",
+    "Pause for a moment at the top of the movement, then slowly lower your body back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

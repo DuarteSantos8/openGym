@@ -1,0 +1,22 @@
+{
+  "id": "5402",
+  "name": "stick lunge with overhead raise stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "shoulders",
+    "core"
+  ],
+  "category": "stretching",
+  "description": "A lunge combined with a stick held overhead. Opens the hip flexors of the back leg and the shoulders at the same time.",
+  "instructions": [
+    "Hold a stick in both hands and step into a long lunge.",
+    "Lower your back knee toward the floor while keeping your torso upright.",
+    "Raise the stick overhead with straight arms.",
+    "Hold for 20-30 seconds, feeling the stretch at the front of the back hip.",
+    "Step back and repeat on the other leg."
+  ],
+  "textSource": "opengym"
+}

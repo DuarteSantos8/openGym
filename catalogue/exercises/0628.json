@@ -1,0 +1,21 @@
+{
+  "id": "0628",
+  "name": "monster walk",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "With a band around your ankles, you step sideways in a slight squat. Fires up the glutes and outer hips.",
+  "instructions": [
+    "Place a resistance band around your ankles.",
+    "Stand with your feet shoulder-width apart and slightly bend your knees.",
+    "Take a step to the side with your right foot, maintaining tension on the resistance band.",
+    "Follow with your left foot, stepping to the side to return to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides."
+  ],
+  "textSource": "exercisedb"
+}

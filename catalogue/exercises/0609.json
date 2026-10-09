@@ -1,0 +1,24 @@
+{
+  "id": "0609",
+  "name": "london bridge",
+  "bodyPart": "back",
+  "equipment": "rope",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "shoulders",
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Using a rope anchored high, you lean back and pull your body through a controlled swing. Trains the back, shoulders and core.",
+  "instructions": [
+    "Attach the rope to a high anchor point.",
+    "Stand facing away from the anchor point with your feet shoulder-width apart.",
+    "Grasp the rope with an overhand grip, palms facing down.",
+    "Lean forward slightly, keeping your back straight and core engaged.",
+    "Pull the rope towards your body, squeezing your shoulder blades together.",
+    "Pause for a moment at the peak of the movement, then slowly release the tension and return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

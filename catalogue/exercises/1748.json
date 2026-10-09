@@ -1,0 +1,20 @@
+{
+  "id": "1748",
+  "name": "ez bar lying close grip triceps extension behind head",
+  "bodyPart": "upper arms",
+  "equipment": "ez barbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A lying close-grip extension with an EZ bar, lowering the bar behind your head. Puts strong focus on the long head of the triceps.",
+  "instructions": [
+    "Lie flat on a bench with your feet flat on the ground and your head at the end of the bench.",
+    "Hold the ez barbell with a close grip, palms facing up, and extend your arms straight up over your chest.",
+    "Keeping your upper arms stationary, slowly lower the barbell behind your head by bending your elbows.",
+    "Pause for a moment, then extend your arms back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

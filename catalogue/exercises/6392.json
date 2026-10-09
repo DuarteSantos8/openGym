@@ -1,0 +1,22 @@
+{
+  "id": "6392",
+  "name": "cable lateral pulldown with mag grip",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "rhomboids",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A lat pulldown using a magnetic grip handle that builds the wide muscles of your back.",
+  "instructions": [
+    "Sit at the pulldown station and grab the grip overhead.",
+    "Lean back slightly and lift your chest.",
+    "Pull the grip down to your upper chest, driving your elbows down.",
+    "Squeeze your lats at the bottom.",
+    "Let the bar rise slowly to a full stretch and repeat."
+  ],
+  "textSource": "opengym"
+}

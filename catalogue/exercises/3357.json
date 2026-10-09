@@ -1,0 +1,23 @@
+{
+  "id": "3357",
+  "name": "cable seated on floor row with rope",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rhomboids",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A floor seated cable row using a rope, which lets you pull the hands apart and squeeze the mid back.",
+  "instructions": [
+    "Sit on the floor facing a low cable with legs extended and the rope in your hands.",
+    "Sit tall with a straight back.",
+    "Pull the rope toward your lower chest, spreading your hands.",
+    "Squeeze your shoulder blades together.",
+    "Extend your arms slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

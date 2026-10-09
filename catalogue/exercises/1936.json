@@ -1,0 +1,21 @@
+{
+  "id": "1936",
+  "name": "lying cross over knee pull down stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "lower back",
+    "hip flexors"
+  ],
+  "category": "stretching",
+  "description": "Lying on your back and guiding a crossed knee down across the body to stretch the outer hip and glutes.",
+  "instructions": [
+    "Lie on your back with your knees bent.",
+    "Cross one ankle over the opposite knee.",
+    "Use your hand to guide the crossed knee gently down and across your body.",
+    "Keep your shoulders on the floor.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

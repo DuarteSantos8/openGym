@@ -1,0 +1,23 @@
+{
+  "id": "3705",
+  "name": "squat thrust",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "core",
+    "chest",
+    "triceps"
+  ],
+  "category": "cardio",
+  "description": "A burpee without the push-up and jump. You drop to a plank and spring back to your feet for a steady conditioning move.",
+  "instructions": [
+    "Stand with your feet shoulder width apart.",
+    "Squat down and place your hands on the floor.",
+    "Kick your feet back into a plank.",
+    "Jump your feet back toward your hands.",
+    "Stand up and repeat at a steady pace."
+  ],
+  "textSource": "opengym"
+}

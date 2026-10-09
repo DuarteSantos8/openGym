@@ -1,0 +1,22 @@
+{
+  "id": "3675",
+  "name": "side to side jump rope",
+  "bodyPart": "cardio",
+  "equipment": "rope",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "calves",
+    "shoulders",
+    "quadriceps"
+  ],
+  "category": "cardio",
+  "description": "Jump rope while hopping side to side to raise your heart rate and improve agility.",
+  "instructions": [
+    "Hold the rope handles and stand tall.",
+    "Swing the rope overhead.",
+    "Hop side to side over the rope.",
+    "Land softly on the balls of your feet.",
+    "Keep a steady rhythm."
+  ],
+  "textSource": "opengym"
+}

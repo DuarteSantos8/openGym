@@ -1,0 +1,23 @@
+{
+  "id": "4766",
+  "name": "hanging flutter kick",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs",
+    "forearms",
+    "grip muscles"
+  ],
+  "category": "calisthenics",
+  "description": "Hanging from a bar, you alternate small, fast kicks with straight legs. It trains the lower abs and grip.",
+  "instructions": [
+    "Hang from a pull-up bar with arms straight.",
+    "Tighten your core and lift your legs slightly in front of you.",
+    "Kick your legs up and down in alternating small movements.",
+    "Keep your swing minimal.",
+    "Continue for the set time or reps."
+  ],
+  "textSource": "opengym"
+}

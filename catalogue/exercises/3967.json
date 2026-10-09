@@ -1,0 +1,22 @@
+{
+  "id": "3967",
+  "name": "dumbbell incline around the world",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "chest",
+    "upper chest",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "Swing dumbbells in a wide arc over your head while lying on an incline bench. It trains the shoulders and chest.",
+  "instructions": [
+    "Lie back on an incline bench holding dumbbells over your chest.",
+    "Keep your arms nearly straight.",
+    "Lower them out to the sides in a wide arc.",
+    "Continue down to your hips.",
+    "Reverse the arc to return."
+  ],
+  "textSource": "opengym"
+}

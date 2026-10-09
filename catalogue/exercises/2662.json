@@ -1,0 +1,22 @@
+{
+  "id": "2662",
+  "name": "lever high row (plate loaded) v. 2",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "biceps",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A plate-loaded high row machine that pulls from above to train the lats and upper back.",
+  "instructions": [
+    "Adjust the seat and chest pad so you can grip the handles with arms extended.",
+    "Sit tall with your chest on the pad.",
+    "Pull the handles down and back, driving the elbows toward your hips.",
+    "Squeeze the shoulder blades together.",
+    "Return slowly and keep your shoulders down."
+  ],
+  "textSource": "opengym"
+}

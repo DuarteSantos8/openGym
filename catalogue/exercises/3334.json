@@ -1,0 +1,22 @@
+{
+  "id": "3334",
+  "name": "dumbbell one arm floor fly",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A one arm fly lying on the floor, a safe way to stretch and load the chest with a limited range.",
+  "instructions": [
+    "Lie on the floor with knees bent and a dumbbell in one hand over your chest.",
+    "Keep a slight bend in your elbow.",
+    "Open your arm out to the side until your upper arm touches the floor.",
+    "Squeeze your chest to bring the dumbbell back above you.",
+    "Finish all reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

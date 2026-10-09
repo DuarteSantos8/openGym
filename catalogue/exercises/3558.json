@@ -1,0 +1,21 @@
+{
+  "id": "3558",
+  "name": "lying biceps curl with towel",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Lie on your back and curl a towel held in both hands toward your chest, using your own resistance to work the biceps.",
+  "instructions": [
+    "Lie on your back and hold a towel in both hands, arms extended.",
+    "Pull the towel taut and curl your hands toward your shoulders.",
+    "Keep your upper arms still and your elbows close to your sides.",
+    "Squeeze at the top, then lower slowly to the start.",
+    "Repeat for the planned reps."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,42 @@
+{
+  "id": "1425",
+  "name": "sled 45 degrees one leg press",
+  "bodyPart": "upper legs",
+  "equipment": "sled machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A one-leg press on a sled machine set at a 45 degree angle. It trains the glutes, quads and hamstrings one side at a time.",
+  "instructions": [
+    "Adjust the sled machine to a 45-degree angle.",
+    "Sit on the sled machine with your back against the pad and your feet on the footplate.",
+    "Place one foot on the footplate and extend your leg, pushing the sled away from you.",
+    "Slowly bend your knee and lower the sled back to the starting position.",
+    "Repeat with the other leg.",
+    "Continue alternating legs for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "adductors"
+    ],
+    "secondaries": [
+      "hamstring",
+      "calves"
+    ],
+    "weights": {
+      "quadriceps": 1,
+      "gluteal": 1,
+      "adductors": 1,
+      "hamstring": 0.4,
+      "calves": 0
+    }
+  },
+  "femaleVariant": "2609",
+  "textSource": "exercisedb"
+}

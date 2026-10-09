@@ -1,0 +1,21 @@
+{
+  "id": "0672",
+  "name": "reverse dip",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "You lower and press your body between parallel bars with your hands behind you. Works the triceps and shoulders.",
+  "instructions": [
+    "Position yourself between two parallel bars with your arms fully extended and your body straight.",
+    "Lower your body by bending your elbows until your upper arms are parallel to the ground.",
+    "Pause for a moment, then push yourself back up to the starting position by straightening your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "4302",
+  "textSource": "exercisedb"
+}

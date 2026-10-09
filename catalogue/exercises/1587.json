@@ -1,0 +1,25 @@
+{
+  "id": "1587",
+  "name": "seated wide angle pose sequence",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "quadriceps",
+    "calves"
+  ],
+  "category": "yoga",
+  "description": "A seated sequence with legs wide that stretches the inner thighs and hamstrings. Move slowly with the breath.",
+  "instructions": [
+    "Sit on the ground with your legs extended in a wide angle.",
+    "Flex your feet and engage your quadriceps.",
+    "Place your hands on the ground behind you for support.",
+    "Keeping your back straight, lean forward from your hips.",
+    "Continue leaning forward until you feel a stretch in your hamstrings.",
+    "Hold this position for a few breaths.",
+    "Slowly release the stretch and return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "4306",
+  "textSource": "exercisedb"
+}

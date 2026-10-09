@@ -1,0 +1,25 @@
+{
+  "id": "4456",
+  "name": "glute ham raise v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "calves",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A posterior chain exercise on a glute ham bench. Works the hamstrings and glutes through a long range of motion.",
+  "instructions": [
+    "Set your feet on the platform with your thighs against the pad and knees just behind it.",
+    "Start with your torso hanging down and your body straight.",
+    "Curl your body up by bending your knees and squeezing your hamstrings.",
+    "Finish with hips extended and torso upright.",
+    "Lower slowly with control, keeping your hips locked.",
+    "Repeat for reps."
+  ],
+  "femaleVariant": "5777",
+  "textSource": "opengym"
+}

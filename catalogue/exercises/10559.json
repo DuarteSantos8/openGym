@@ -1,0 +1,23 @@
+{
+  "id": "10559",
+  "name": "dumbbell full front raise catch",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "trapezius",
+    "core",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Raise a dumbbell in front of you all the way overhead and catch it with control. It trains the front shoulder.",
+  "instructions": [
+    "Stand tall holding a dumbbell with both hands in front of your thighs.",
+    "Raise it straight up in front of you to overhead.",
+    "Control it at the top and keep your core braced.",
+    "Lower it slowly back down.",
+    "Use a moderate weight and avoid arching your back."
+  ],
+  "textSource": "opengym"
+}

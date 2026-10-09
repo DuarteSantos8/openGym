@@ -1,0 +1,22 @@
+{
+  "id": "3852",
+  "name": "plank lateral raise",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "core",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A plank where you lift one arm out to the side. It challenges your core and shoulders.",
+  "instructions": [
+    "Start in a high plank with your hands under your shoulders.",
+    "Brace your abs and keep your hips level.",
+    "Lift one arm out to the side to shoulder height.",
+    "Lower it with control.",
+    "Alternate arms and avoid twisting."
+  ],
+  "textSource": "opengym"
+}

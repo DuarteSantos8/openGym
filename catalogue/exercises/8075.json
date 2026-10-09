@@ -1,0 +1,22 @@
+{
+  "id": "8075",
+  "name": "dumbbell single leg hip thrust v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "A one-leg hip thrust with a dumbbell across your hips. It hits the glutes hard and shows up strength imbalances.",
+  "instructions": [
+    "Sit with your upper back against a bench and a dumbbell on your hips.",
+    "Plant one foot and lift the other leg.",
+    "Drive your hips up until your body is straight.",
+    "Squeeze your glute at the top.",
+    "Lower slowly, finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

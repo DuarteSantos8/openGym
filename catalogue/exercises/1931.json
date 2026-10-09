@@ -1,0 +1,22 @@
+{
+  "id": "1931",
+  "name": "hip and knee flexion squatting stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "adductors",
+    "quadriceps",
+    "calves"
+  ],
+  "category": "stretching",
+  "description": "A deep squat hold that opens the hips and loosens the knees and ankles.",
+  "instructions": [
+    "Stand with your feet a little wider than your shoulders and toes turned slightly out.",
+    "Sink down into a deep squat and press your elbows against your inner knees to open the hips.",
+    "Keep your heels on the floor and your chest tall.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

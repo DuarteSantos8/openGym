@@ -1,0 +1,24 @@
+{
+  "id": "2951",
+  "name": "lever horizontal leg press",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A leg press on a horizontal lever machine. It builds the quads and glutes with back support.",
+  "instructions": [
+    "Sit on the machine with your back flat against the pad and feet on the platform.",
+    "Set your feet about shoulder-width apart.",
+    "Press the platform away until your legs are nearly straight.",
+    "Do not lock your knees.",
+    "Lower slowly until your knees are bent about 90 degrees and repeat."
+  ],
+  "femaleVariant": "2377",
+  "textSource": "opengym"
+}

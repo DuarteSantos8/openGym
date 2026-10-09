@@ -1,0 +1,23 @@
+{
+  "id": "5823",
+  "name": "barbell walking lunge",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "Lunge forward step by step with a barbell on your back. It builds the legs and glutes and challenges balance.",
+  "instructions": [
+    "Place a barbell on your upper back and stand tall.",
+    "Step forward and lower until both knees are bent about 90 degrees.",
+    "Keep your torso upright.",
+    "Push through your front foot and bring the back leg forward into the next step.",
+    "Continue alternating legs for the set distance."
+  ],
+  "textSource": "opengym"
+}

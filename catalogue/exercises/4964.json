@@ -1,0 +1,23 @@
+{
+  "id": "4964",
+  "name": "jump shrug",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "trapezius",
+    "quadriceps",
+    "calves"
+  ],
+  "category": "olympic",
+  "description": "An explosive jump with a shrug at the top. It builds hip power for the Olympic lifts.",
+  "instructions": [
+    "Stand holding a barbell at hip height.",
+    "Dip slightly with your knees.",
+    "Jump explosively and extend fully.",
+    "Shrug your shoulders at the top.",
+    "Land softly with bent knees.",
+    "Keep the bar close to your body."
+  ],
+  "textSource": "opengym"
+}

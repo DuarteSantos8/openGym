@@ -1,0 +1,24 @@
+{
+  "id": "3185",
+  "name": "barbell bench press (with hanging band technique)",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A bench press with bands hanging weights from the bar. The shaky load trains control and stability.",
+  "instructions": [
+    "Hang weights from each end of the bar with bands.",
+    "Lie on the bench and unrack the bar.",
+    "Hold it over your chest.",
+    "Lower the bar slowly to your mid chest.",
+    "Press up and keep the bar steady.",
+    "Use a lighter load than a normal bench press."
+  ],
+  "textSource": "opengym"
+}

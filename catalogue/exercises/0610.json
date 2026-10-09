@@ -1,0 +1,24 @@
+{
+  "id": "0610",
+  "name": "low jacks",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "calves",
+    "adductors"
+  ],
+  "category": "cardio",
+  "description": "Jumping jacks performed from a squat position. They raise your heart rate and burn the legs.",
+  "instructions": [
+    "Start in a half squat with hands in front of your chest.",
+    "Jump your feet out wide, staying low.",
+    "Jump them back together and keep your knees bent.",
+    "Keep your chest up and weight on your heels.",
+    "Stay in the squat throughout.",
+    "Keep a steady pace for 30-60 seconds."
+  ],
+  "textSource": "opengym"
+}

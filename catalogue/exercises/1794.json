@@ -1,0 +1,22 @@
+{
+  "id": "1794",
+  "name": "reach forward upper back stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rhomboids",
+    "lats",
+    "shoulders"
+  ],
+  "category": "stretching",
+  "description": "Reaching forward with rounded shoulders opens up the space between your shoulder blades. It helps relieve a tight upper back.",
+  "instructions": [
+    "Stand or sit and clasp your hands or hold a support in front of you at chest height.",
+    "Round your upper back and push your hands forward while dropping your head between your arms.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

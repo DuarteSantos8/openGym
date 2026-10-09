@@ -1,0 +1,21 @@
+{
+  "id": "1364",
+  "name": "standing pelvic tilt",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "abdominals"
+  ],
+  "category": "mobility",
+  "description": "Stand and tilt your pelvis back and forth to move your lower back. It loosens the lower back and teaches pelvic control.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and your knees slightly bent.",
+    "Place your hands on your hips or let them hang by your sides.",
+    "Engage your core muscles and tilt your pelvis forward, pushing your lower back towards the wall behind you.",
+    "Hold the position for a few seconds, then release and return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3406",
+  "textSource": "exercisedb"
+}

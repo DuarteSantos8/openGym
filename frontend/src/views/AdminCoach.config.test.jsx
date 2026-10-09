@@ -67,3 +67,21 @@ describe('AdminCoach keeps the app\'s own config current', () => {
     expect(mocks.refreshConfig).toHaveBeenCalledTimes(2)
   })
 })
+
+/* Extra-headers textarea helpers (issue #385): parse client-side, empty clears. */
+describe('AdminCoach extra headers', async () => {
+  const { parseHeadersText, headersToText } = await import('./AdminCoach.jsx')
+
+  it('round-trips a map through the textarea format', () => {
+    expect(headersToText({ 'x-opencode-session': 'sess-1' })).toBe('x-opencode-session: sess-1')
+    expect(headersToText(null)).toBe('')
+    expect(parseHeadersText('x-opencode-session: sess-1\nX-Title: demo')).toEqual({ headers: { 'x-opencode-session': 'sess-1', 'X-Title': 'demo' } })
+  })
+
+  it('treats empty as clear and junk as an error, not a request', () => {
+    expect(parseHeadersText('')).toEqual({ headers: null })
+    expect(parseHeadersText('   \n  ')).toEqual({ headers: null })
+    expect(parseHeadersText('no-colon-here').error).toBeTruthy()
+    expect(parseHeadersText('name-only:').error).toBeTruthy()
+  })
+})

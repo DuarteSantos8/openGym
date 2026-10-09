@@ -1,0 +1,22 @@
+{
+  "id": "3124",
+  "name": "resistance band seated chest press",
+  "bodyPart": "chest",
+  "equipment": "resistance band",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A seated chest press using a resistance band. Builds the chest, shoulders and triceps.",
+  "instructions": [
+    "Sit on a chair or bench with your back straight and feet flat on the ground.",
+    "Hold the resistance band handles in each hand, with your palms facing down and elbows bent at a 90-degree angle.",
+    "Extend your arms forward, pushing the resistance band away from your chest.",
+    "Pause for a moment at the end of the movement, then slowly return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3135",
+  "textSource": "exercisedb"
+}

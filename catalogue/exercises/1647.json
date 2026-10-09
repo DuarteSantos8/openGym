@@ -1,0 +1,23 @@
+{
+  "id": "1647",
+  "name": "dumbbell alternate preacher curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Alternating dumbbell curls on a preacher bench. It builds the biceps with no momentum.",
+  "instructions": [
+    "Sit on a preacher bench with a dumbbell in each hand, palms facing up.",
+    "Rest your upper arms on the pad of the preacher bench, allowing your arms to fully extend.",
+    "Keeping your upper arms stationary, exhale and curl the dumbbell in your right hand as you contract your biceps.",
+    "Continue to curl the dumbbell until your biceps are fully contracted and the dumbbell is at shoulder level.",
+    "Pause for a moment, then inhale and slowly lower the dumbbell back to the starting position.",
+    "Repeat the movement with your left arm.",
+    "Continue alternating arms for the desired number of repetitions."
+  ],
+  "femaleVariant": "2642",
+  "textSource": "exercisedb"
+}

@@ -2,12 +2,12 @@
 #
 # Dormant from 2026-08-19 to 2026-09-10 while the GitHub account was suspended; live again since.
 # The same build (same command, Vite's base is './') is also served from the project's own site at
-# https://opengym.duarte-santos.ch/demo/, so the demo has two addresses with identical content.
+# https://opengym.ch/demo/, so the demo has two addresses with identical content.
 #
 # Pages serves static files only, so this build has no backend — VITE_DEMO=1 makes the app
 # boot straight into guest mode with a seeded example history (see frontend/src/lib/demo.js).
-# The exercise images/GIFs (~140 MB) are never committed here; the demo build points at the
-# upstream dataset on jsDelivr instead, pinned to a commit so the CDN can cache it forever.
+# The exercise stills and animations (180 px) come from catalogue/media and are staged next to
+# the build by scripts/catalogue/stage-media.mjs, so the demo serves them from its own origin.
 name: Deploy demo to GitHub Pages
 
 on:
@@ -15,6 +15,8 @@ on:
     branches: [main]
     paths:
       - 'frontend/**'
+      - 'catalogue/**'
+      - 'scripts/catalogue/**'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
@@ -26,9 +28,6 @@ permissions:
 concurrency:
   group: pages
   cancel-in-progress: true
-
-env:
-  DATASET: https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@7455efae41b330c265e7cd4b78dfa848e7ce5ebd
 
 jobs:
   build:
@@ -46,8 +45,8 @@ jobs:
         working-directory: frontend
         env:
           VITE_DEMO: '1'
-          VITE_IMG_BASE: ${{ env.DATASET }}/images/
-          VITE_GIF_BASE: ${{ env.DATASET }}/videos/
+      # The 180 px stills and animations from catalogue/media, served next to the demo
+      - run: node scripts/catalogue/stage-media.mjs frontend/dist
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:

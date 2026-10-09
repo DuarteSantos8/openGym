@@ -1,0 +1,23 @@
+{
+  "id": "11716",
+  "name": "weighted stone standing power overhead press",
+  "bodyPart": "shoulders",
+  "equipment": "weighted",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back",
+    "core",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A strongman-style overhead press with a heavy stone, using a small leg drive for power.",
+  "instructions": [
+    "Lift the stone to your chest, hugging it close.",
+    "Stand with feet hip-width apart and brace your core.",
+    "Dip slightly and drive up through your legs.",
+    "Press the stone overhead to full lockout.",
+    "Lower it back to your chest with control."
+  ],
+  "textSource": "opengym"
+}

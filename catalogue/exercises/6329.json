@@ -1,0 +1,22 @@
+{
+  "id": "6329",
+  "name": "barbell low split squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A deep split squat with a barbell on your upper back that builds strong quads and glutes and tests your balance.",
+  "instructions": [
+    "Rest a barbell across your upper back and step into a long split stance.",
+    "Brace your core and keep your torso tall.",
+    "Lower your back knee toward the floor under control.",
+    "Press through your front foot to stand up.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

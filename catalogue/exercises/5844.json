@@ -1,0 +1,22 @@
+{
+  "id": "5844",
+  "name": "single arm side straight arm lat pulldown",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "triceps",
+    "core",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A straight-arm cable pulldown from the side, one arm at a time. It isolates the lats without bending the elbow much.",
+  "instructions": [
+    "Stand facing a high cable with one handle in your hand.",
+    "Keep your arm nearly straight and slightly angled.",
+    "Pull the handle down toward your thigh by squeezing your lat.",
+    "Hold briefly.",
+    "Let it rise slowly and switch sides after your set."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{{- range $name := list "data" }}
+{{- $p := index $.Values.persistence $name }}
+{{- if not $p.existingClaim }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "helm.fullname" $ }}-{{ $name }}
+  labels:
+    {{- include "helm.labels" $ | nindent 4 }}
+  annotations:
+    helm.sh/resource-policy: keep
+spec:
+  accessModes:
+    {{- toYaml $p.accessModes | nindent 4 }}
+  {{- with $p.storageClass }}
+  storageClassName: {{ . | quote }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ $p.size }}
+{{- end }}
+{{- end }}

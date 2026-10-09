@@ -1,0 +1,24 @@
+{
+  "id": "3524",
+  "name": "band horizontal pallof press with resistance band squat",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "obliques",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A squat combined with a Pallof press. It builds leg strength with anti-rotation core work.",
+  "instructions": [
+    "Anchor a band at chest height and stand side-on, holding it at your chest.",
+    "Squat down, keeping your torso tall.",
+    "Stand and press the band straight out in front.",
+    "Resist the band trying to rotate you.",
+    "Bring your hands back to your chest.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

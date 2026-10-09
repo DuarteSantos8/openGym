@@ -1,0 +1,20 @@
+{
+  "id": "0823",
+  "name": "twisting crunch (arms straight)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A crunch with straight arms reaching across to the side. It focuses on the abs and obliques.",
+  "instructions": [
+    "Lie on your back with knees bent and arms extended toward the ceiling.",
+    "Curl your shoulders off the floor.",
+    "Reach your straight arms toward one side of your knees.",
+    "Lower slowly.",
+    "Alternate sides, keeping your neck relaxed."
+  ],
+  "textSource": "opengym"
+}

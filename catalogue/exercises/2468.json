@@ -1,0 +1,24 @@
+{
+  "id": "2468",
+  "name": "dumbbell lateral step up",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A side-on step up with dumbbells that builds the legs and glutes.",
+  "instructions": [
+    "Stand beside a bench holding a dumbbell in each hand.",
+    "Place your near foot on the bench.",
+    "Drive through that heel to step up onto the bench.",
+    "Bring your other foot up to balance.",
+    "Step down with control.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

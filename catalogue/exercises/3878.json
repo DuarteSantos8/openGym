@@ -1,0 +1,24 @@
+{
+  "id": "3878",
+  "name": "resistance band jump squat",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A jump squat with a band adding resistance for a more powerful leg drive.",
+  "instructions": [
+    "Stand on a band with feet shoulder-width apart and hold the other end at your shoulders.",
+    "Squat down until your thighs are about parallel.",
+    "Jump up explosively against the band.",
+    "Land softly through your toes and heels.",
+    "Sink immediately into the next squat.",
+    "Keep your knees in line with your toes."
+  ],
+  "textSource": "opengym"
+}

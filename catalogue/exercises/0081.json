@@ -1,0 +1,22 @@
+{
+  "id": "0081",
+  "name": "barbell reverse preacher curl",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A preacher curl with an overhand grip, hitting the brachialis and forearms along with the biceps.",
+  "instructions": [
+    "Sit on a preacher bench with your chest against the pad and your arms extended straight down, holding a barbell with an overhand grip.",
+    "Keeping your upper arms stationary, exhale and curl the barbell upward while contracting your biceps.",
+    "Continue to raise the barbell until your biceps are fully contracted and the barbell is at shoulder level.",
+    "Hold the contracted position for a brief pause as you squeeze your biceps.",
+    "Inhale and slowly lower the barbell back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2508",
+  "textSource": "exercisedb"
+}

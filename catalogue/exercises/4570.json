@@ -1,0 +1,24 @@
+{
+  "id": "4570",
+  "name": "resistance band bent over neutral grip row",
+  "bodyPart": "back",
+  "equipment": "resistance band",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "biceps",
+    "rhomboids",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A two-handed bent-over band row with palms facing in, hitting the lats and mid-back.",
+  "instructions": [
+    "Stand on the band with feet hip-width apart and hinge forward.",
+    "Hold the handles with a neutral grip, arms straight.",
+    "Keep your back flat and neck neutral.",
+    "Pull both handles toward your lower ribs.",
+    "Squeeze your shoulder blades together.",
+    "Lower with control."
+  ],
+  "textSource": "opengym"
+}

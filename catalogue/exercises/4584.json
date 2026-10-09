@@ -1,0 +1,23 @@
+{
+  "id": "4584",
+  "name": "boxing right hook (with boxing bag)",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "chest",
+    "obliques",
+    "core"
+  ],
+  "category": "combat",
+  "description": "A curved punch thrown from the rear hand, rotating the torso to hit the side of the bag.",
+  "instructions": [
+    "Stand in a boxing stance facing the bag.",
+    "Bend your right elbow to about 90 degrees.",
+    "Rotate your hips and torso to swing the fist in an arc.",
+    "Pivot your rear foot as you turn.",
+    "Hit the bag and keep your left hand guarding.",
+    "Return to your guard and repeat."
+  ],
+  "textSource": "opengym"
+}

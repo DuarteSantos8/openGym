@@ -1,0 +1,21 @@
+{
+  "id": "1274",
+  "name": "deep push up",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A deep push-up with a longer range of motion. It trains the chest, shoulders and triceps.",
+  "instructions": [
+    "Start in a high plank position with your hands slightly wider than shoulder-width apart and your body in a straight line.",
+    "Lower your chest towards the ground by bending your elbows, keeping them close to your body.",
+    "Push through your palms to extend your arms and return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2823",
+  "textSource": "exercisedb"
+}

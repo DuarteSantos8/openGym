@@ -1,0 +1,22 @@
+{
+  "id": "3304",
+  "name": "skin the cat",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "A ring or bar move where you tuck up, pass the legs through the arms and then roll over the bar. It trains the back and shoulder mobility.",
+  "instructions": [
+    "Start by hanging from a bar with your arms fully extended and your body relaxed.",
+    "Engage your core and lift your legs up, bringing your knees towards your chest.",
+    "Continue to lift your legs up and over your head, allowing your body to pass through the arms.",
+    "Once your legs are fully extended over your head, begin to lower them back down towards the starting position.",
+    "As you lower your legs, allow your body to pass back through the arms until you are hanging with your arms fully extended again.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

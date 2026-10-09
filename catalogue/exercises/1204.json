@@ -1,0 +1,23 @@
+{
+  "id": "1204",
+  "name": "cable one arm lat pulldown",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A single-arm pulldown on a high cable. It lets each side of the lats work on its own.",
+  "instructions": [
+    "Attach a handle to a high pulley and sit facing the stack.",
+    "Grab the handle with one hand and sit tall.",
+    "Pull the handle down to the side of your chest, driving your elbow toward your hip.",
+    "Pause, then let your arm rise slowly.",
+    "Complete your reps and switch sides."
+  ],
+  "femaleVariant": "3596",
+  "textSource": "opengym"
+}

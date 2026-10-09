@@ -1,0 +1,22 @@
+{
+  "id": "5144",
+  "name": "medicine ball chest pass against wall",
+  "bodyPart": "chest",
+  "equipment": "medicine ball",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "Throw a medicine ball hard against a wall from your chest and catch it on the rebound. It builds explosive pressing power.",
+  "instructions": [
+    "Stand facing a wall with the ball held at your chest.",
+    "Take a small step back and set your feet.",
+    "Push the ball forcefully at the wall.",
+    "Catch it with soft elbows as it returns.",
+    "Bring it back to your chest and repeat."
+  ],
+  "textSource": "opengym"
+}

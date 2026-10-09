@@ -1,0 +1,22 @@
+{
+  "id": "4844",
+  "name": "depth jump",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "A drop from a box followed by a quick vertical jump. It develops reactive power.",
+  "instructions": [
+    "Stand at the edge of a low box.",
+    "Step off and land on both feet.",
+    "Rebound immediately into a maximum vertical jump.",
+    "Spend as little time on the ground as you can.",
+    "Land softly and reset for the next rep."
+  ],
+  "textSource": "opengym"
+}

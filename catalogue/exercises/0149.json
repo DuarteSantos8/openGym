@@ -1,0 +1,22 @@
+{
+  "id": "0149",
+  "name": "cable alternate triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A cable triceps extension alternating arms. Isolates the triceps.",
+  "instructions": [
+    "Stand facing the cable machine with your feet shoulder-width apart.",
+    "Hold the cable handle with your right hand and bring your arm up so that your upper arm is parallel to the ground and your elbow is bent at a 90-degree angle.",
+    "Keep your upper arm stationary and extend your forearm backward, fully straightening your arm.",
+    "Pause for a moment, then slowly return to the starting position.",
+    "Repeat with your left arm.",
+    "Continue alternating arms for the desired number of repetitions."
+  ],
+  "femaleVariant": "3039",
+  "textSource": "exercisedb"
+}

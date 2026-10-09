@@ -1,0 +1,22 @@
+{
+  "id": "3959",
+  "name": "forward step front plank",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "core",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "Walk forward in a front plank, stepping hands and feet to challenge the core and shoulders.",
+  "instructions": [
+    "Start in a high plank.",
+    "Step one hand forward, then the other.",
+    "Follow with your feet.",
+    "Keep your hips level.",
+    "Walk forward a few steps, then back."
+  ],
+  "textSource": "opengym"
+}

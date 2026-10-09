@@ -1,0 +1,23 @@
+{
+  "id": "4714",
+  "name": "air squat (version 2)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A basic bodyweight squat that trains the legs and hips and builds a solid movement pattern.",
+  "instructions": [
+    "Stand with feet shoulder-width apart, toes slightly out.",
+    "Push your hips back and bend your knees.",
+    "Lower until thighs are at least parallel with chest up.",
+    "Drive through your heels to stand.",
+    "Keep your knees tracking over your toes."
+  ],
+  "textSource": "opengym"
+}

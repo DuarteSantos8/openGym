@@ -1,0 +1,22 @@
+{
+  "id": "10184",
+  "name": "resistance band alternating split stance pallof press",
+  "bodyPart": "waist",
+  "equipment": "resistance band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "A Pallof press from a split stance that resists the band pull and trains anti-rotation strength.",
+  "instructions": [
+    "Anchor the band at chest height and stand sideways to it in a split stance.",
+    "Hold the handle at your chest with both hands.",
+    "Press the band straight out in front of you without letting your torso turn.",
+    "Hold for a second, then bring the hands back to your chest.",
+    "Switch which foot is forward on each set or rep and keep your hips square."
+  ],
+  "textSource": "opengym"
+}

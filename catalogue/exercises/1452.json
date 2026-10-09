@@ -1,0 +1,22 @@
+{
+  "id": "1452",
+  "name": "lever seated crunch",
+  "bodyPart": "waist",
+  "equipment": "leverage machine",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A seated machine crunch where you curl your torso toward your hips against resistance. It trains the abs with a controlled, fixed path.",
+  "instructions": [
+    "Sit on the leverage machine with your back against the pad and your feet flat on the floor.",
+    "Grasp the handles or place your hands on the side pads for support.",
+    "Engage your abs and slowly lean back, allowing the pad to move with you.",
+    "Once your upper body is at a 45-degree angle, contract your abs and crunch forward, bringing your chest towards your knees.",
+    "Pause for a moment at the top, then slowly release and return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2445",
+  "textSource": "exercisedb"
+}

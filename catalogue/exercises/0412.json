@@ -1,0 +1,23 @@
+{
+  "id": "0412",
+  "name": "dumbbell squat (back on stability ball wall)",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A dumbbell squat with a stability ball pinned between your back and a wall. The ball guides the movement and takes stress off your lower back.",
+  "instructions": [
+    "Place a stability ball between your lower back and a wall and hold a dumbbell in each hand.",
+    "Step your feet forward, shoulder width apart.",
+    "Bend your knees and sink down as the ball rolls up your back.",
+    "Lower until your thighs are about parallel to the floor.",
+    "Push through your heels to stand back up.",
+    "Keep your knees tracking over your toes."
+  ],
+  "textSource": "opengym"
+}

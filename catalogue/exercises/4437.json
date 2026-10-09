@@ -1,0 +1,24 @@
+{
+  "id": "4437",
+  "name": "alternating hamstring curl with punches",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "shoulders",
+    "core",
+    "triceps"
+  ],
+  "category": "cardio",
+  "description": "A cardio combination of heel-to-glute kicks and punches that works the hamstrings and arms together.",
+  "instructions": [
+    "Stand tall with your fists in front of your chin.",
+    "Curl one heel up toward your glute.",
+    "Punch forward as you curl the leg.",
+    "Lower the leg and repeat on the other side.",
+    "Keep a steady rhythm and stay light on your feet."
+  ],
+  "textSource": "opengym"
+}

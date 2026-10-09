@@ -1,0 +1,23 @@
+{
+  "id": "10411",
+  "name": "steel mace halo (weighted)",
+  "bodyPart": "shoulders",
+  "equipment": "macebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "upper back",
+    "core",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "Circle a steel mace around your head while standing tall. It trains shoulder control and stability under an awkward load.",
+  "instructions": [
+    "Stand tall with feet shoulder width apart and hold the mace upright near your chest.",
+    "Brace your core and keep your ribs down.",
+    "Circle the mace around your head in a smooth, controlled arc.",
+    "Keep your elbows close and your head still.",
+    "Do all reps, then reverse the direction."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "5451",
+  "name": "barbell kas glute bridge",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A glute bridge with a barbell across your hips and a knees-forward setup. Keeps tension on the glutes through the whole rep.",
+  "instructions": [
+    "Lie on your back with your knees bent and feet flat, loaded as the exercise requires.",
+    "Keep your shins roughly vertical with the knees kept slightly forward of the hips.",
+    "Squeeze your glutes and press your hips up until your body forms a line.",
+    "Pause for a second at the top without arching your back.",
+    "Lower under control and repeat."
+  ],
+  "textSource": "opengym"
+}

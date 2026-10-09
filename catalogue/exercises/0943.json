@@ -1,0 +1,23 @@
+{
+  "id": "0943",
+  "name": "chair pose utkatasana v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "shoulders",
+    "lower back"
+  ],
+  "category": "yoga",
+  "description": "A deeper version of chair pose where you sit lower with arms lifted. It builds leg strength and balance.",
+  "instructions": [
+    "Stand with feet together and arms at your sides.",
+    "Bend your knees and sit your hips back and down as if lowering into a chair.",
+    "Reach your arms up beside your ears and lengthen your spine.",
+    "Sink a little deeper while keeping your weight in your heels.",
+    "Hold for 5 slow breaths, then straighten your legs to stand."
+  ],
+  "textSource": "opengym"
+}

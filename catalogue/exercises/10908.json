@@ -1,0 +1,22 @@
+{
+  "id": "10908",
+  "name": "seated single leg foot circle",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "feet",
+    "shins"
+  ],
+  "category": "mobility",
+  "description": "Seated ankle circles on one leg. They loosen the ankle and warm up the lower leg.",
+  "instructions": [
+    "Sit tall on a chair and lift one foot slightly off the floor.",
+    "Keep your lower leg still.",
+    "Draw slow circles with your toes, as wide as is comfortable.",
+    "Do half your reps clockwise, then switch to counterclockwise.",
+    "Repeat on the other foot."
+  ],
+  "textSource": "opengym"
+}

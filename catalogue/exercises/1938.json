@@ -1,0 +1,21 @@
+{
+  "id": "1938",
+  "name": "seated hip stretch with slightly bent leg",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "hip flexors"
+  ],
+  "category": "stretching",
+  "description": "A relaxed seated hip stretch with the front leg slightly bent, easy on the knee.",
+  "instructions": [
+    "Sit on the floor with one leg slightly bent in front of you and the other leg folded comfortably.",
+    "Hinge forward from the hips with a long back until you feel the hip and buttock stretch.",
+    "Keep the knee of the front leg soft throughout.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "3351",
+  "name": "cable lunge",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A lunge with cable resistance, building leg strength with a constant load.",
+  "instructions": [
+    "Hold a cable handle at chest height and step away from the stack.",
+    "Step forward into a long stride.",
+    "Lower your back knee toward the floor.",
+    "Keep your torso upright and front heel down.",
+    "Push back to standing and alternate legs."
+  ],
+  "textSource": "opengym"
+}

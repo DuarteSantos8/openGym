@@ -1,0 +1,22 @@
+{
+  "id": "1102",
+  "name": "suspension straight hip leg curl",
+  "bodyPart": "upper legs",
+  "equipment": "suspension trainer",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A leg curl with your hips kept straight. It works the hamstrings.",
+  "instructions": [
+    "Lie on your back with heels in the straps.",
+    "Lift your hips into a straight line.",
+    "Curl your heels toward you.",
+    "Keep your hips high.",
+    "Extend slowly.",
+    "Repeat."
+  ],
+  "textSource": "opengym"
+}

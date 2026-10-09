@@ -1,0 +1,37 @@
+{
+  "id": "0751",
+  "name": "smith close-grip bench press",
+  "bodyPart": "upper arms",
+  "equipment": "smith machine",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "On the smith machine, you bench press with a close grip. Puts more focus on the triceps and inner chest.",
+  "instructions": [
+    "Adjust the seat height and position yourself on the bench with your feet flat on the ground.",
+    "Grasp the barbell with a close grip, slightly narrower than shoulder-width apart.",
+    "Lower the barbell towards your chest, keeping your elbows close to your body.",
+    "Pause for a moment at the bottom, then push the barbell back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "triceps"
+    ],
+    "secondaries": [
+      "chest",
+      "deltoids",
+      "biceps"
+    ],
+    "weights": {
+      "triceps": 1,
+      "chest": 0.4,
+      "deltoids": 0.4,
+      "biceps": 0
+    }
+  },
+  "textSource": "exercisedb"
+}

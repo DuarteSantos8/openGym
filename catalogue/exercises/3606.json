@@ -1,0 +1,22 @@
+{
+  "id": "3606",
+  "name": "leg extension crunch (with stability ball)",
+  "bodyPart": "waist",
+  "equipment": "stability ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "A crunch on a stability ball combined with extending the legs for a deep ab workout.",
+  "instructions": [
+    "Sit on a stability ball and walk your feet out until your back is supported.",
+    "Place your hands lightly behind your head.",
+    "Crunch up as you extend one leg.",
+    "Lower slowly and bend the knee.",
+    "Alternate legs for the set."
+  ],
+  "textSource": "opengym"
+}

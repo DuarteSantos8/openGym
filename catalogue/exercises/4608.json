@@ -1,0 +1,22 @@
+{
+  "id": "4608",
+  "name": "shin box switch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "adductors",
+    "groin"
+  ],
+  "category": "mobility",
+  "description": "A seated hip rotation drill where you switch both knees from one side to the other, loosening the hips.",
+  "instructions": [
+    "Sit on the floor with both knees bent at 90 degrees, one leg in front and one to the side.",
+    "Sit tall and keep your hands on the floor if needed.",
+    "Rotate your knees to the other side so the legs swap positions.",
+    "Move smoothly without using your hands to push too hard.",
+    "Repeat back and forth for the set."
+  ],
+  "textSource": "opengym"
+}

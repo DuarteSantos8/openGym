@@ -1,0 +1,23 @@
+{
+  "id": "3341",
+  "name": "dumbbell lunge v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A dumbbell lunge variation for leg strength and balance, working quads and glutes.",
+  "instructions": [
+    "Stand tall with a dumbbell in each hand at your sides.",
+    "Step forward into a long stride.",
+    "Bend both knees until your back knee nearly touches the floor.",
+    "Keep your front knee over your ankle and torso upright.",
+    "Push back to the start and switch legs."
+  ],
+  "textSource": "opengym"
+}

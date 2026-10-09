@@ -1,0 +1,22 @@
+{
+  "id": "6698",
+  "name": "weight plate standing biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "weight plate",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A standing curl holding a single plate. The plate grip also challenges your hands and forearms.",
+  "instructions": [
+    "Stand tall holding a plate at its sides with both hands, arms down.",
+    "Keep your elbows tucked against your ribs.",
+    "Curl the plate up toward your chest.",
+    "Squeeze your biceps at the top.",
+    "Lower the plate slowly to full arm extension."
+  ],
+  "textSource": "opengym"
+}

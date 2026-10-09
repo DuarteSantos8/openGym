@@ -1,0 +1,22 @@
+{
+  "id": "2845",
+  "name": "hip twist supported arms",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "hip flexors"
+  ],
+  "category": "pilates",
+  "description": "A seated twist with the legs lifted, working the obliques and core.",
+  "instructions": [
+    "Sit with your hands behind you and legs lifted.",
+    "Keep your chest open.",
+    "Rotate your hips to one side.",
+    "Circle your legs back to the centre.",
+    "Switch sides."
+  ],
+  "textSource": "opengym"
+}

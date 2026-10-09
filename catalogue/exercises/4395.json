@@ -1,0 +1,22 @@
+{
+  "id": "4395",
+  "name": "shoulder circle",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "trapezius",
+    "shoulders",
+    "rotator cuff"
+  ],
+  "category": "mobility",
+  "description": "A simple warm-up where you roll the shoulders in circles to loosen the upper back and shoulder joints.",
+  "instructions": [
+    "Stand tall with your arms relaxed by your sides.",
+    "Lift your shoulders up toward your ears.",
+    "Roll them back and down in a smooth circle.",
+    "Complete several slow circles.",
+    "Reverse the direction and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "0624",
+  "name": "march sit (wall)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "isometric",
+  "description": "With your back against a wall, you hold a seated position with knees bent to 90 degrees. Builds endurance in the quads and glutes.",
+  "instructions": [
+    "Stand with your back against a wall and your feet hip-width apart.",
+    "Slowly slide your back down the wall until your knees are bent at a 90-degree angle.",
+    "Lift your right foot off the ground and bring your knee towards your chest.",
+    "Lower your right foot back down and lift your left foot off the ground, bringing your knee towards your chest.",
+    "Continue alternating between lifting your right and left foot for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

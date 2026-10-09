@@ -1,0 +1,24 @@
+{
+  "id": "2258",
+  "name": "walking",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "cardio",
+  "description": "Plain walking at an easy to brisk pace, a simple way to build endurance and stay active.",
+  "instructions": [
+    "Stand tall with your shoulders relaxed and your gaze ahead.",
+    "Start walking with a natural stride.",
+    "Swing your arms gently opposite to your legs.",
+    "Land softly on your heel and roll through to the toes.",
+    "Keep a pace that lets you breathe comfortably.",
+    "Walk for 20-60 minutes."
+  ],
+  "femaleVariant": "2261",
+  "textSource": "opengym"
+}

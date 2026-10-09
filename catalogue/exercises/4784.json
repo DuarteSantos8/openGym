@@ -1,0 +1,22 @@
+{
+  "id": "4784",
+  "name": "seated pull up (low bar position)",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A seated pull-up on a low bar. It reduces the load compared with a full pull-up, which is good for building strength.",
+  "instructions": [
+    "Set a bar low and sit beneath it.",
+    "Grab it with an overhand grip, a little wider than your shoulders.",
+    "Extend your legs in front with heels on the floor.",
+    "Pull your chest to the bar.",
+    "Lower under control."
+  ],
+  "textSource": "opengym"
+}

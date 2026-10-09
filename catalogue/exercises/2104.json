@@ -1,0 +1,22 @@
+{
+  "id": "2104",
+  "name": "leaning heel back achilles stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles"
+  ],
+  "category": "stretching",
+  "description": "Targets the lower calf and Achilles tendon area by leaning into a wall with the back heel pressed down and the knee bent.",
+  "instructions": [
+    "Stand facing a wall and place your hands on it at chest height.",
+    "Step one foot back and keep that heel on the floor.",
+    "Bend both knees slightly and lean forward until you feel a pull low in the back calf.",
+    "Keep the back heel flat and the toes pointing forward.",
+    "Hold for 20-30 seconds.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

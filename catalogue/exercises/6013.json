@@ -1,0 +1,22 @@
+{
+  "id": "6013",
+  "name": "front leg kick",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "hip flexors",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A dynamic kick that warms up the hamstrings and hip flexors and builds coordination.",
+  "instructions": [
+    "Stand tall with your arms at your sides.",
+    "Kick one straight leg up in front of you.",
+    "Lower it under control.",
+    "Switch legs in a smooth rhythm.",
+    "Keep your torso upright."
+  ],
+  "textSource": "opengym"
+}

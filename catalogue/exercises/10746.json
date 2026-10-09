@@ -1,0 +1,22 @@
+{
+  "id": "10746",
+  "name": "resistance band seated single leg knee extension",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A seated knee extension against band tension. It isolates the quads one leg at a time.",
+  "instructions": [
+    "Sit on a bench and secure a band around one ankle.",
+    "Anchor the other end behind you.",
+    "Straighten your knee against the band.",
+    "Squeeze the front of your thigh at the top.",
+    "Lower slowly.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

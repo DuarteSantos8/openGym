@@ -1,0 +1,22 @@
+{
+  "id": "0938",
+  "name": "lever stepper",
+  "bodyPart": "cardio",
+  "equipment": "leverage machine",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "calves"
+  ],
+  "category": "cardio",
+  "description": "Climb on a lever stepper machine at a steady pace. It raises your heart rate and works the legs and glutes.",
+  "instructions": [
+    "Step onto the pedals and hold the handles lightly for balance.",
+    "Push one pedal down while the other rises, keeping a smooth rhythm.",
+    "Stand tall and keep your knees pointing forward.",
+    "Continue at a comfortable pace for several minutes, adjusting resistance as needed.",
+    "Slow down gradually before stepping off."
+  ],
+  "textSource": "opengym"
+}

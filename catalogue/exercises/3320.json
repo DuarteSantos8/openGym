@@ -1,0 +1,24 @@
+{
+  "id": "3320",
+  "name": "dumbbell hammer grip incline bench two arm row",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rear deltoids",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A chest supported row on an incline bench with a neutral grip. It targets the mid back with little strain on your lower back.",
+  "instructions": [
+    "Set a bench to a low incline and lie chest down on it with a dumbbell in each hand.",
+    "Let your arms hang with palms facing each other.",
+    "Row both dumbbells toward your hips, leading with your elbows.",
+    "Squeeze your shoulder blades together at the top.",
+    "Lower slowly to full arm extension and repeat."
+  ],
+  "femaleVariant": "3901",
+  "textSource": "opengym"
+}

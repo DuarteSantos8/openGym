@@ -1,0 +1,23 @@
+{
+  "id": "3872",
+  "name": "heel drops",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "mobility",
+  "description": "A controlled drop of the heels off a step that stretches and strengthens the calves and ankles.",
+  "instructions": [
+    "Stand on the edge of a step with the balls of your feet on it.",
+    "Hold a rail for balance.",
+    "Rise onto your toes.",
+    "Slowly lower your heels below the step level.",
+    "Pause and feel the stretch in your calves.",
+    "Raise up and repeat."
+  ],
+  "textSource": "opengym"
+}

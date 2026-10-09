@@ -1,0 +1,21 @@
+{
+  "id": "11047",
+  "name": "lying abduction",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A side-lying leg raise that targets the outer hip. It is a simple way to strengthen the muscles that keep your pelvis steady.",
+  "instructions": [
+    "Lie on your side with your legs straight and stacked.",
+    "Rest your head on your lower arm and keep your hips stacked.",
+    "Lift your top leg up and slightly back without rolling your torso.",
+    "Pause at the top, then lower with control.",
+    "Finish your reps, then roll over and do the other side."
+  ],
+  "textSource": "opengym"
+}

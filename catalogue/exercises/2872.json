@@ -1,0 +1,22 @@
+{
+  "id": "2872",
+  "name": "single leg stretch (bent knee) v. 2",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core",
+    "obliques"
+  ],
+  "category": "pilates",
+  "description": "A Pilates ab move with alternating knee pulls that builds core endurance and coordination.",
+  "instructions": [
+    "Lie on your back and curl your head and shoulders off the mat.",
+    "Pull one knee toward your chest, with hands on that shin.",
+    "Extend the other leg long at a low angle.",
+    "Switch legs in a steady rhythm.",
+    "Keep your lower back anchored to the mat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "10503",
+  "name": "cable reverse narrow grip lat pulldown",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "rhomboids",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A lat pulldown with an underhand, narrow grip. It uses the biceps more and works the lower lats.",
+  "instructions": [
+    "Sit at the pulldown station and secure your thighs.",
+    "Grab the bar with a narrow underhand grip.",
+    "Lean back a little and pull the bar to your upper chest.",
+    "Keep your elbows close to your sides.",
+    "Return slowly until your arms are fully extended."
+  ],
+  "textSource": "opengym"
+}

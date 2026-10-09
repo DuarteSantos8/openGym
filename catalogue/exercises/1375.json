@@ -1,0 +1,27 @@
+{
+  "id": "1375",
+  "name": "cable standing calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "cable",
+  "target": "calves",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A standing calf raise using a cable for resistance. It builds the calves with a steady pull through the whole movement.",
+  "instructions": [
+    "Stand facing a cable machine with your feet shoulder-width apart.",
+    "Hold onto the cable machine handles or attach a cable ankle strap to your ankles.",
+    "Raise your heels off the ground by extending your ankles as high as possible.",
+    "Pause for a moment at the top, then slowly lower your heels back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "calves"
+    ],
+    "secondaries": []
+  },
+  "textSource": "exercisedb"
+}

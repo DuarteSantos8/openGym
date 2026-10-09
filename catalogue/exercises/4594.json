@@ -1,0 +1,24 @@
+{
+  "id": "4594",
+  "name": "front kick kickboxing (with partner)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "glutes",
+    "core",
+    "calves"
+  ],
+  "category": "combat",
+  "description": "A front push kick aimed at a partner's pad, training leg power, balance and timing.",
+  "instructions": [
+    "Face your partner, who holds a kick pad at body height.",
+    "Stand in a fighting stance with hands up.",
+    "Raise your rear knee in front of you.",
+    "Extend your leg and push the ball of your foot into the pad.",
+    "Pull your leg back quickly.",
+    "Switch sides after your reps."
+  ],
+  "textSource": "opengym"
+}

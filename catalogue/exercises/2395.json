@@ -1,0 +1,23 @@
+{
+  "id": "2395",
+  "name": "air bike v. 2",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "lower abs"
+  ],
+  "category": "calisthenics",
+  "description": "A bicycle crunch variation that trains the abs and obliques through alternating twists.",
+  "instructions": [
+    "Lie on your back with your hands behind your head.",
+    "Lift your shoulders and bring your knees up.",
+    "Bring one elbow toward the opposite knee while extending the other leg.",
+    "Switch sides in a smooth pedalling motion.",
+    "Keep your lower back pressed down.",
+    "Continue for the planned reps or time."
+  ],
+  "textSource": "opengym"
+}

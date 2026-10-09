@@ -1,0 +1,22 @@
+{
+  "id": "2165",
+  "name": "resistance band side walk",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "quadriceps",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A lateral band walk that strengthens the outer hips and glutes.",
+  "instructions": [
+    "Place a band around your thighs or ankles and stand with your feet hip width apart.",
+    "Bend your knees slightly into a quarter squat.",
+    "Step sideways with the lead foot, keeping tension on the band.",
+    "Bring the trailing foot in without letting the feet touch.",
+    "Take 10-15 steps one way, then walk back the other way."
+  ],
+  "textSource": "opengym"
+}

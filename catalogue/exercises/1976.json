@@ -1,0 +1,21 @@
+{
+  "id": "1976",
+  "name": "one arm shoulder flexor stretch",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "biceps",
+    "chest"
+  ],
+  "category": "stretching",
+  "description": "Stretching one arm back and down to lengthen the front of the shoulder.",
+  "instructions": [
+    "Stand next to a wall or post and place one hand on it behind you with the arm straight.",
+    "Slowly turn your body away until you feel the front of the shoulder stretch.",
+    "Keep the arm straight and the shoulder relaxed.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

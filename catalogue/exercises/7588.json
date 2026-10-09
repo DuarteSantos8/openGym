@@ -1,0 +1,23 @@
+{
+  "id": "7588",
+  "name": "weighted front raise hold",
+  "bodyPart": "shoulders",
+  "equipment": "weight plate",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "trapezius",
+    "core",
+    "forearms"
+  ],
+  "category": "isometric",
+  "description": "Hold a weight plate out in front of you at shoulder height. It builds endurance in the front delts.",
+  "instructions": [
+    "Stand tall holding a weight plate with both hands at your thighs.",
+    "Raise it straight in front of you to shoulder height.",
+    "Keep your arms nearly straight and your ribs down.",
+    "Hold the position, breathing steadily, for 20-40 seconds.",
+    "Lower the plate slowly with control."
+  ],
+  "textSource": "opengym"
+}

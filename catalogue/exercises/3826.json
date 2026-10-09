@@ -1,0 +1,24 @@
+{
+  "id": "3826",
+  "name": "lying around the world",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper back",
+    "rear deltoids",
+    "chest",
+    "rotator cuff"
+  ],
+  "category": "mobility",
+  "description": "Lying on your back, you sweep your arms in a big arc overhead. It opens up your shoulders and chest.",
+  "instructions": [
+    "Lie on your back with your arms by your sides.",
+    "Raise your arms to the ceiling.",
+    "Sweep them in a wide arc overhead toward the floor.",
+    "Continue the arc back down to your sides.",
+    "Move slowly and keep your ribs down."
+  ],
+  "femaleVariant": "4943",
+  "textSource": "opengym"
+}

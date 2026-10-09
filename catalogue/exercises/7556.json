@@ -1,0 +1,22 @@
+{
+  "id": "7556",
+  "name": "squat jack",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "Jumping jack variation that stays in a squat for a leg-burning cardio move.",
+  "instructions": [
+    "Start in a squat with hands at your chest.",
+    "Jump your feet out wide.",
+    "Hop back to the narrow squat stance.",
+    "Stay low the whole time.",
+    "Land softly and keep your chest up."
+  ],
+  "textSource": "opengym"
+}

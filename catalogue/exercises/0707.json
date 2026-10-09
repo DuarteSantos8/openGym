@@ -1,0 +1,23 @@
+{
+  "id": "0707",
+  "name": "side crunch v. 2",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A side-lying crunch that brings the ribs toward the hip. It works the obliques.",
+  "instructions": [
+    "Lie on your side with your knees bent.",
+    "Place your hands lightly behind your head.",
+    "Lift your upper body and legs toward each other.",
+    "Squeeze your side.",
+    "Lower slowly.",
+    "Finish reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

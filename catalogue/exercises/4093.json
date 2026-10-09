@@ -1,0 +1,23 @@
+{
+  "id": "4093",
+  "name": "wheel rollout with wall support",
+  "bodyPart": "waist",
+  "equipment": "wheel roller",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lats",
+    "shoulders",
+    "core",
+    "lower abs"
+  ],
+  "category": "strength",
+  "description": "An ab wheel rollout where a wall stops the wheel, making it a safer way to train your abs and core.",
+  "instructions": [
+    "Kneel facing a wall with the ab wheel on the floor in front of you.",
+    "Grip the handles and tuck your pelvis under.",
+    "Roll forward until the wheel touches the wall.",
+    "Pull the wheel back by contracting your abs.",
+    "Keep your back flat and avoid sagging at the hips."
+  ],
+  "textSource": "opengym"
+}

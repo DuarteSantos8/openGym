@@ -1,0 +1,21 @@
+{
+  "id": "1721",
+  "name": "barbell reverse grip skullcrusher",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A skullcrusher with a reverse grip. It targets the triceps with a different wrist angle.",
+  "instructions": [
+    "Lie flat on a bench with your feet flat on the ground and your head at the end of the bench.",
+    "Hold the barbell with a reverse grip, palms facing towards your face, and your hands shoulder-width apart.",
+    "Extend your arms straight up over your chest, keeping your elbows in and your wrists straight.",
+    "Slowly lower the barbell towards your forehead by bending your elbows, keeping your upper arms stationary.",
+    "Pause for a moment at the bottom, then extend your arms back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

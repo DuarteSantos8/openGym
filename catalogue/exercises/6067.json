@@ -1,0 +1,22 @@
+{
+  "id": "6067",
+  "name": "bottle weighted overhead triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "weighted",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "An overhead extension with a bottle held in both hands. It stretches and strengthens the triceps.",
+  "instructions": [
+    "Stand or sit tall holding a bottle overhead with both hands.",
+    "Keep your elbows pointing forward.",
+    "Bend your elbows and lower the bottle behind your head.",
+    "Extend your arms to lift it back up.",
+    "Keep your upper arms still."
+  ],
+  "textSource": "opengym"
+}

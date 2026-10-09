@@ -1,0 +1,22 @@
+{
+  "id": "3660",
+  "name": "static position lying front",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "Hold a face-down position to practice setting up for prone exercises.",
+  "instructions": [
+    "Lie face down on a mat.",
+    "Extend your legs and rest your forehead down.",
+    "Keep your arms alongside your body.",
+    "Keep your hips relaxed.",
+    "Hold and breathe."
+  ],
+  "femaleVariant": "3139",
+  "textSource": "opengym"
+}

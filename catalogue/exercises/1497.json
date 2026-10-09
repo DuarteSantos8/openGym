@@ -1,0 +1,22 @@
+{
+  "id": "1497",
+  "name": "barbell reverse band bench press",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A bench press with bands that lighten the load at the bottom and add heavier tension near the top. It builds pressing strength.",
+  "instructions": [
+    "Set up on a bench with bands anchored to the rack and attached to the bar.",
+    "Lie back with your eyes under the bar and your shoulder blades pinched.",
+    "Lower the bar to your mid chest with control.",
+    "Press the bar back up to straight arms, feeling the band resistance change.",
+    "Keep your feet planted and your wrists stacked over your elbows."
+  ],
+  "textSource": "opengym"
+}

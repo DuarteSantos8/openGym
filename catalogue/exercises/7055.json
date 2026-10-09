@@ -1,0 +1,22 @@
+{
+  "id": "7055",
+  "name": "weight plate standing hands torsion",
+  "bodyPart": "lower arms",
+  "equipment": "weight plate",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "wrist extensors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A standing twisting move holding a plate that works the forearm rotators. It builds wrist and grip strength.",
+  "instructions": [
+    "Stand holding a plate at its sides in front of you.",
+    "Keep your elbows bent and close to your sides.",
+    "Rotate the plate left and right using your wrists and forearms.",
+    "Move slowly and under control.",
+    "Keep your shoulders relaxed."
+  ],
+  "textSource": "opengym"
+}

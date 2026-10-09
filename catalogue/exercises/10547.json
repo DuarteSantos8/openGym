@@ -1,0 +1,22 @@
+{
+  "id": "10547",
+  "name": "standing single leg calf rock",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "mobility",
+  "description": "Balance on one leg and rock between heel and toes. It warms up the calf and ankle.",
+  "instructions": [
+    "Stand on one leg next to a wall for balance.",
+    "Rock your weight back onto your heel, lifting the toes.",
+    "Roll forward onto the ball of your foot.",
+    "Keep the movement smooth and controlled.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

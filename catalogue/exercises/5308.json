@@ -1,0 +1,24 @@
+{
+  "id": "5308",
+  "name": "ez bar russian twist sit up",
+  "bodyPart": "waist",
+  "equipment": "ez barbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "lower abs",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A sit-up that adds a twist while holding an EZ bar. Works the abs and obliques together.",
+  "instructions": [
+    "Lie on your back with knees bent and hold the EZ bar over your chest.",
+    "Curl up into a sit-up position.",
+    "At the top, rotate your torso to one side, moving the bar with you.",
+    "Rotate back to center and lower yourself with control.",
+    "Alternate sides each rep.",
+    "Keep the weight light enough to move smoothly."
+  ],
+  "textSource": "opengym"
+}

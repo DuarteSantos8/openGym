@@ -1,0 +1,22 @@
+{
+  "id": "4036",
+  "name": "resistance band leg curl",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "Leg curl with a tube band around the ankle, building the hamstrings.",
+  "instructions": [
+    "Attach the band to a low anchor and loop the handle around one ankle.",
+    "Face the anchor and hold a support for balance.",
+    "Curl your heel toward your glute.",
+    "Keep your knees close and your hips steady.",
+    "Lower slowly, finish the reps, then switch legs."
+  ],
+  "femaleVariant": "2422",
+  "textSource": "opengym"
+}

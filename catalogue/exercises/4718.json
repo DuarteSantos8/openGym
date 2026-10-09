@@ -1,0 +1,23 @@
+{
+  "id": "4718",
+  "name": "band assisted chin up",
+  "bodyPart": "back",
+  "equipment": "assisted",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "forearms",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A chin-up with a band under your feet or knees to reduce the load. It helps you build toward unassisted reps.",
+  "instructions": [
+    "Hang from a bar with an underhand grip and the band looped under your feet.",
+    "Engage your lats and keep your core tight.",
+    "Pull your chin over the bar.",
+    "Pause at the top.",
+    "Lower slowly until your arms are straight and repeat."
+  ],
+  "textSource": "opengym"
+}

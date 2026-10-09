@@ -1,0 +1,22 @@
+{
+  "id": "0020",
+  "name": "balance board",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "calves",
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "mobility",
+  "description": "Standing on a balance board to challenge stability. Improves balance and wakes up the muscles of the legs and ankles.",
+  "instructions": [
+    "Place the balance board on a flat surface.",
+    "Step onto the balance board with one foot, ensuring it is centered.",
+    "Slowly shift your weight onto the foot on the balance board, keeping your core engaged.",
+    "Maintain your balance and stability as you hold the position for a desired amount of time.",
+    "Repeat the exercise with the other foot."
+  ],
+  "textSource": "exercisedb"
+}

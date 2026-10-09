@@ -1,0 +1,22 @@
+{
+  "id": "5152",
+  "name": "bodyweight kneeling hold to stand",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "core",
+    "hamstrings"
+  ],
+  "category": "calisthenics",
+  "description": "Rise from a half-kneeling position to standing. It is a bodyweight move for hip and leg strength and balance.",
+  "instructions": [
+    "Kneel on one knee with the other foot flat in front.",
+    "Hold your arms in front of you for balance.",
+    "Drive through the front foot to stand tall.",
+    "Lower back down under control.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

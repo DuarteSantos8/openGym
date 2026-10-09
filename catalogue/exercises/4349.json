@@ -1,0 +1,23 @@
+{
+  "id": "4349",
+  "name": "barbell single leg squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A one-legged squat with a barbell on your back. It builds leg strength and balance, so use light weight.",
+  "instructions": [
+    "Rest a barbell on your upper back and stand on one leg, other leg lifted in front.",
+    "Brace your core and keep your chest up.",
+    "Sit your hips back and lower as deep as you control.",
+    "Drive through your heel to stand.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "10748",
+  "name": "standing single leg front back side to side toe tap",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "adductors",
+    "core",
+    "calves"
+  ],
+  "category": "mobility",
+  "description": "Tap your toes in different directions while balancing. It works hip stability.",
+  "instructions": [
+    "Stand on one leg.",
+    "Tap the other toe forward.",
+    "Tap to the side, then back.",
+    "Keep your balance.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

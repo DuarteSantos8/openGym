@@ -1,0 +1,21 @@
+{
+  "id": "1314",
+  "name": "back extension on exercise ball",
+  "bodyPart": "back",
+  "equipment": "stability ball",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "Lie face down over a stability ball and lift your chest to extend your back. It strengthens the lower back and glutes in a supported way.",
+  "instructions": [
+    "Place the stability ball on the ground and lie face down on top of it, with your hips resting on the ball and your feet against a wall or other stable surface.",
+    "Position your hands behind your head or crossed over your chest.",
+    "Engage your core and slowly lift your upper body off the ball, extending your back until your body forms a straight line from your head to your heels.",
+    "Pause for a moment at the top, then slowly lower your upper body back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

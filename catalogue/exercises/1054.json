@@ -1,0 +1,22 @@
+{
+  "id": "1054",
+  "name": "lunging straight leg calf stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "hamstrings",
+    "ankles"
+  ],
+  "category": "stretching",
+  "description": "Lunge forward with the back leg straight to stretch the calf. It improves ankle mobility.",
+  "instructions": [
+    "Step into a lunge with hands on a wall or knee.",
+    "Keep the back leg straight with heel down.",
+    "Lean forward until you feel a stretch.",
+    "Keep your foot pointing forward.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

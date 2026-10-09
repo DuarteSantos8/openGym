@@ -1,0 +1,23 @@
+{
+  "id": "4255",
+  "name": "straight leg hip bridge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A hip bridge with your legs straight and heels on the floor. It shifts more work to the hamstrings and glutes.",
+  "instructions": [
+    "Lie on your back with your legs straight and heels on the floor.",
+    "Place your arms by your sides.",
+    "Press through your heels and lift your hips.",
+    "Form a straight line from shoulders to heels.",
+    "Squeeze your glutes at the top.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

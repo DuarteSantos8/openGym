@@ -1,0 +1,21 @@
+{
+  "id": "2409",
+  "name": "weighted lying neck flexion (with head harness)",
+  "bodyPart": "neck",
+  "equipment": "weighted",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "upper back",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "Lying on your back with a weighted head harness, you lift your chin toward your chest to train the neck flexors.",
+  "instructions": [
+    "Lie on your back on a bench with your head past the edge and the harness fitted.",
+    "Let your head hang back slightly in a comfortable range.",
+    "Curl your chin toward your chest slowly.",
+    "Pause briefly at the top.",
+    "Lower under control and keep the weight light with smooth reps."
+  ],
+  "textSource": "opengym"
+}

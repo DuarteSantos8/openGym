@@ -1,0 +1,22 @@
+{
+  "id": "1316",
+  "name": "barbell bent arm pullover",
+  "bodyPart": "back",
+  "equipment": "barbell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "triceps",
+    "chest"
+  ],
+  "category": "strength",
+  "description": "Lying on a bench, move a barbell in an arc behind your head and back over your chest with soft elbows. It works the lats and chest.",
+  "instructions": [
+    "Lie flat on a bench with your head at one end and your feet on the floor.",
+    "Hold a barbell with a shoulder-width grip and extend your arms straight above your chest.",
+    "Lower the barbell behind your head while keeping your arms slightly bent.",
+    "Pause for a moment, then raise the barbell back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "11441",
+  "textSource": "exercisedb"
+}

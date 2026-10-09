@@ -1,0 +1,23 @@
+{
+  "id": "3458",
+  "name": "side split",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "groin",
+    "hamstrings",
+    "inner thighs"
+  ],
+  "category": "stretching",
+  "description": "A wide-leg stretch for the inner thighs and groin.",
+  "instructions": [
+    "Sit or stand with your legs as wide as comfortable.",
+    "Keep your toes pointing up or forward.",
+    "Lower slowly into the split.",
+    "Keep your back long.",
+    "Hold for 20-30 seconds.",
+    "Come out gently."
+  ],
+  "textSource": "opengym"
+}

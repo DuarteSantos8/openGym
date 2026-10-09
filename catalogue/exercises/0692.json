@@ -1,0 +1,22 @@
+{
+  "id": "0692",
+  "name": "seated single leg hamstring stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "Sitting with one leg extended, you reach toward the foot. It stretches the back of the thigh.",
+  "instructions": [
+    "Sit on the floor with one leg straight and the other bent.",
+    "Keep your back long.",
+    "Hinge forward from the hips and reach toward your toes.",
+    "Stop when you feel a stretch.",
+    "Hold for 20-30 seconds.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

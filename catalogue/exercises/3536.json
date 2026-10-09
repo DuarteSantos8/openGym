@@ -1,0 +1,24 @@
+{
+  "id": "3536",
+  "name": "elevated inverted row between 3 chairs",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rhomboids",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A harder inverted row with the feet elevated on a third chair. It builds the back and arms.",
+  "instructions": [
+    "Set a bar across two stable chairs and place a third chair at your feet.",
+    "Lie under the bar and grip it overhand.",
+    "Put your heels on the third chair.",
+    "Pull your chest to the bar.",
+    "Lower slowly to straight arms.",
+    "Keep your body in a straight line."
+  ],
+  "textSource": "opengym"
+}

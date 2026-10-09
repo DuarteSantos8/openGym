@@ -1,0 +1,22 @@
+{
+  "id": "3303",
+  "name": "flag",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "A gymnastics hold where you grip a vertical pole and hold your body out to the side. It trains the obliques, shoulders and lats.",
+  "instructions": [
+    "Start by gripping a vertical pole with both hands, palms facing each other, and arms fully extended.",
+    "Engage your core and lift your legs off the ground, keeping them straight.",
+    "Using your core and upper body strength, raise your legs until they are parallel to the ground.",
+    "Hold this position for as long as you can, maintaining a straight body line.",
+    "Slowly lower your legs back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

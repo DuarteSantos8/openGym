@@ -1,0 +1,22 @@
+{
+  "id": "5166",
+  "name": "single leg box jump",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hamstrings"
+  ],
+  "category": "plyometrics",
+  "description": "A one-legged jump onto a box. It builds explosive power and single-leg control.",
+  "instructions": [
+    "Stand facing a sturdy box on one foot.",
+    "Swing your arms and dip into a short quarter squat.",
+    "Jump up and land softly on the box on the same foot.",
+    "Stand tall, then step down carefully.",
+    "Finish all reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

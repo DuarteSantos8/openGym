@@ -1,0 +1,23 @@
+{
+  "id": "7208",
+  "name": "resistance band kneeling back kick",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A kneeling donkey-kick style move with band resistance for the glutes.",
+  "instructions": [
+    "Start on hands and knees with the band around your foot and hands.",
+    "Keep your back flat and your core braced.",
+    "Kick one leg straight back and up.",
+    "Squeeze your glute at the top.",
+    "Lower slowly.",
+    "Finish all reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

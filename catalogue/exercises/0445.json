@@ -1,0 +1,21 @@
+{
+  "id": "0445",
+  "name": "ez barbell anti gravity press",
+  "bodyPart": "shoulders",
+  "equipment": "ez barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "chest"
+  ],
+  "category": "strength",
+  "description": "An EZ-bar press with a gravity-fighting path that works the shoulders and triceps. Keep the movement smooth and controlled.",
+  "instructions": [
+    "Start by standing with your feet shoulder-width apart and holding the ez barbell with an overhand grip.",
+    "Raise the barbell to shoulder height, keeping your elbows slightly bent and your palms facing forward.",
+    "Press the barbell overhead, extending your arms fully.",
+    "Lower the barbell back to shoulder height and repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3603",
+  "textSource": "exercisedb"
+}

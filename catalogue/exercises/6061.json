@@ -1,0 +1,23 @@
+{
+  "id": "6061",
+  "name": "bottle weighted bent over reverse fly",
+  "bodyPart": "shoulders",
+  "equipment": "weighted",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A bent-over fly with bottles that targets the rear shoulders and upper back.",
+  "instructions": [
+    "Hinge forward with a flat back, a bottle in each hand hanging below you.",
+    "Keep a slight bend in your elbows.",
+    "Raise your arms out to the sides to shoulder height.",
+    "Squeeze your shoulder blades.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

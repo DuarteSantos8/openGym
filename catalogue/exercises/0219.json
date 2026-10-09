@@ -1,0 +1,34 @@
+{
+  "id": "0219",
+  "name": "cable shoulder press",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A standing overhead press using cable handles. The constant tension challenges the shoulders and triceps all the way up.",
+  "instructions": [
+    "Adjust the cable machine so that the handles are at shoulder height.",
+    "Stand facing away from the machine with your feet shoulder-width apart.",
+    "Grasp the handles with an overhand grip and bring them up to shoulder level, with your elbows bent and pointing outwards.",
+    "Press the handles upwards until your arms are fully extended overhead.",
+    "Pause for a moment at the top, then slowly lower the handles back down to shoulder level.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "deltoids"
+    ],
+    "secondaries": [
+      "chest",
+      "triceps",
+      "trapezius",
+      "serratus"
+    ]
+  },
+  "femaleVariant": "3066",
+  "textSource": "exercisedb"
+}

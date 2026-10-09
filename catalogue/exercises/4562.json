@@ -1,0 +1,24 @@
+{
+  "id": "4562",
+  "name": "dumbbell cossack squats",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A side-to-side squat that trains the legs and loads the inner thighs through a big range of motion.",
+  "instructions": [
+    "Hold a dumbbell at your chest and stand with a wide stance.",
+    "Shift your weight to one side and bend that knee, keeping the other leg straight.",
+    "Sit deep with your chest up and the straight leg's toes pointing up.",
+    "Push through the bent leg to return to the center.",
+    "Move into the other side.",
+    "Alternate sides with control."
+  ],
+  "textSource": "opengym"
+}

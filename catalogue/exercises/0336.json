@@ -1,0 +1,24 @@
+{
+  "id": "0336",
+  "name": "dumbbell lunge",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A dumbbell lunge stepping forward with each leg in turn. It trains the glutes, quads and hamstrings.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in each hand.",
+    "Take a step forward with your right foot, lowering your body into a lunge position.",
+    "Keep your back straight and your chest up as you lower your body.",
+    "Push through your right heel to return to the starting position.",
+    "Repeat with your left leg.",
+    "Alternate legs for the desired number of repetitions."
+  ],
+  "femaleVariant": "2218",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "10557",
+  "name": "seated side to side neck bend on chair",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "sternocleidomastoid",
+    "upper back",
+    "trapezius"
+  ],
+  "category": "mobility",
+  "description": "Seated, you tilt your ear toward each shoulder. It eases side neck tightness.",
+  "instructions": [
+    "Sit tall on a chair with your shoulders relaxed.",
+    "Slowly tilt your head so your ear moves toward one shoulder.",
+    "Return to the centre.",
+    "Tilt toward the other shoulder.",
+    "Repeat for several slow reps."
+  ],
+  "textSource": "opengym"
+}

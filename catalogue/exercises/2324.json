@@ -1,0 +1,23 @@
+{
+  "id": "2324",
+  "name": "cable straight legs pull through (with rope)",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A cable hinge with straight legs that trains the glutes and hamstrings.",
+  "instructions": [
+    "Attach a rope to a low pulley and stand facing away from the stack.",
+    "Reach through your legs and grab the rope, then step forward to add tension.",
+    "Keep your legs nearly straight and hinge forward at the hips.",
+    "Drive your hips forward to stand tall while the rope passes between your legs.",
+    "Squeeze your glutes at the top.",
+    "Hinge back with control and repeat."
+  ],
+  "textSource": "opengym"
+}

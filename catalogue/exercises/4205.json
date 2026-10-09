@@ -1,0 +1,22 @@
+{
+  "id": "4205",
+  "name": "band assisted dip",
+  "bodyPart": "upper arms",
+  "equipment": "band",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "Dips with a band looped around the bars to take some of your weight. It builds triceps and chest strength while you work toward unassisted dips.",
+  "instructions": [
+    "Loop a band around the dip bars and set your knees or feet in it.",
+    "Grip the bars and straighten your arms with your chest up.",
+    "Lower your body until your upper arms are about parallel to the floor.",
+    "Keep your elbows close and your shoulders down.",
+    "Press back up until your arms are straight.",
+    "Use a thinner band as you get stronger."
+  ],
+  "textSource": "opengym"
+}

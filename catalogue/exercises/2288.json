@@ -1,0 +1,21 @@
+{
+  "id": "2288",
+  "name": "lever gripper hands",
+  "bodyPart": "lower arms",
+  "equipment": "leverage machine",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "biceps",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A machine gripper where you squeeze the handles closed. Strengthens the forearms and grip.",
+  "instructions": [
+    "Adjust the seat height and grip the handles of the leverage machine.",
+    "Keep your back straight and your feet flat on the ground.",
+    "Exhale and squeeze the handles, contracting your forearms.",
+    "Hold the contraction for a second, then slowly release and return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

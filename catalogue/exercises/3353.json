@@ -1,0 +1,21 @@
+{
+  "id": "3353",
+  "name": "cable one arm high pulley overhead tricep extension",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A single arm overhead extension on a high pulley that stretches and loads the long head of the triceps.",
+  "instructions": [
+    "Face away from a high pulley and hold the handle overhead with one hand.",
+    "Stand in a split stance with your elbow pointing up.",
+    "Extend your arm forward and up until it is straight.",
+    "Keep your upper arm still.",
+    "Return slowly and switch arms after the set."
+  ],
+  "textSource": "opengym"
+}

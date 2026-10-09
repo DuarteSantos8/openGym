@@ -44,26 +44,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-## Exercise data & media
+## Exercise media (stills and animations)
 
-openGym obtains both through
-[**hasaneyldrm/exercises-dataset**](https://github.com/hasaneyldrm/exercises-dataset), which
-licenses them differently. Neither is covered by openGym's AGPL license.
+The exercise stills and animations in `catalogue/media/` (and inside the published container
+images and app packages) are licensed to openGym by Gym visual. **They are not covered by
+openGym's AGPL** and not by any licence of the exercise text below.
 
-That dataset is itself a redistribution: the content originates from
-[**ExerciseDB v1**](https://exercisedb.dev/) by **AscendAPI**. This is verifiable from openGym's
-own data — the stored media filenames embed ExerciseDB's `exerciseId` (openGym's `0001` is
-`0001-2gPfomN.jpg`; `2gPfomN` is ExerciseDB's id for "3/4 sit-up"), every metadata field matches,
-and the instruction sentences are identical apart from stripped `Step:N ` prefixes. See
-[issue #5](https://github.com/hasaneyldrm/exercises-dataset/issues/5) on that dataset.
+> © Aliaksandr Makatserchyk, Gym visual, gymvisual.com (reuse is governed by Gym visual's Terms & Conditions; obtain your own license there before reusing the media). NOTICE TO DEVELOPERS: The exercise animations included in this project are provided strictly for use within the openGym application. Third parties have no rights to reuse, extract, or integrate these media assets into independent apps, websites, or commercial products. To use these animations for your own software, you must obtain a license directly from gymvisual.com.
 
-### Metadata & instruction text
+What that means in practice:
 
-The exercise names, attributes and instructions (English in `frontend/src/lib/exercises-data.js`,
-other languages in `frontend/src/instr/`, regenerated via `scripts/build-instructions.mjs`)
-originate from ExerciseDB v1 and reach openGym through the dataset above, which distributes them
-under the MIT license reproduced below. The translations into languages other than English are
-openGym's own derivative work and are covered by openGym's AGPL.
+- The repository, websites and self-hosted servers carry the media at 180×180 px at most. Larger
+  versions exist only inside the compiled openGym app packages.
+- There is no public API, CDN or downloadable media pack. Don't hotlink the files or copy them out
+  of this repository or a running instance.
+- A non-commercial fork of openGym may keep the unmodified 180 px media together with this notice.
+  A commercial fork, or any other use, needs its own licence from [gymvisual.com](https://gymvisual.com/).
+- The media may not be used to train, prompt or feed any AI system, or as a basis for generated
+  images, animations or video.
+
+## Exercise text (names, muscles, descriptions, instructions)
+
+The catalogue in `catalogue/` is openGym's own and is edited by its community (see
+`catalogue/README.md`). Entries marked `"textSource": "exercisedb"` (the 1,324 exercises openGym
+shipped before v1.4.0) keep names, muscles and instructions that originate from
+[**ExerciseDB v1**](https://exercisedb.dev/) by AscendAPI and reached openGym through
+[**hasaneyldrm/exercises-dataset**](https://github.com/hasaneyldrm/exercises-dataset), under the MIT
+licence reproduced below. Everything else in the catalogue (the newer exercises, every description,
+the muscle-map corrections and all translations) was written for openGym and is covered by
+openGym's AGPL.
 
 ```
 MIT License
@@ -89,36 +98,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-### Images & animations — third-party, not MIT and not AGPL
-
-The exercise thumbnails (180×180) and animations are **not** covered by the MIT license above and
-**not** by openGym's AGPL. Their ownership is currently **unresolved**, and openGym states this
-plainly rather than guessing:
-
-- The upstream dataset attributes them to **© [Gym visual](https://gymvisual.com/)**, redistributed
-  there with that rights holder's written permission — a permission granted to *that dataset* and
-  **not transferable**.
-- **ExerciseDB/AscendAPI** describes itself as "the original creator and owner" of this content and
-  publishes its own [terms](https://exercisedb.io/faq), which permit self-hosting, bundling and
-  commercial display, while prohibiting redistribution of the raw dataset or media as a standalone
-  or competing content package.
-
-These two claims contradict each other. A clarification has been requested from AscendAPI; this
-notice will be updated once the provenance is settled.
-
-**Until then, treat the media as third-party content licensed to neither openGym nor to you.**
-
-**openGym does not redistribute it.** It is not in this repository, not in its history, and not in
-the published container images or the Android APK. A self-hosted instance downloads it from the
-upstream source on first `docker compose up`; the mobile and demo builds load it from a CDN at
-runtime.
-
-If you want to reuse the media — in openGym or anywhere else, commercially or not — **clear it with
-the rights holder first**, and keep any attribution that accompanies it intact.
-
-Brazilian Portuguese exercise instructions under
-`scripts/instruction-sources/pt-BR.json` and exercise names under
-`scripts/exercise-name-sources/pt-BR.json` are original translations of that
+Brazilian Portuguese exercise instructions and names (now in `catalogue/i18n/pt-BR.json`) are original translations of that
 English source produced with OpenAI Codex and Anthropic Claude Code
 language-model assistance. They are not copied from a separate Portuguese
 dataset. Their review status and translation policy are documented alongside

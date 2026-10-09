@@ -1,0 +1,24 @@
+{
+  "id": "10673",
+  "name": "kettlebell squat",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A squat holding a kettlebell at your chest. The weight in front helps you stay upright and use your legs.",
+  "instructions": [
+    "Hold a kettlebell by the horns at your chest.",
+    "Stand with feet shoulder-width apart.",
+    "Sit your hips down and back while keeping your chest tall.",
+    "Lower until your thighs are parallel or lower.",
+    "Push through your heels to stand.",
+    "Keep your elbows close to your body."
+  ],
+  "textSource": "opengym"
+}

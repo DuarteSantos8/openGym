@@ -1,0 +1,24 @@
+{
+  "id": "5034",
+  "name": "landmine one arm bent over row v. 2",
+  "bodyPart": "back",
+  "equipment": "landmine",
+  "target": "lats",
+  "secondaryMuscles": [
+    "rhomboids",
+    "rear deltoids",
+    "biceps",
+    "lower back",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "One-arm row with the end of a landmine barbell. It builds the lats and upper back.",
+  "instructions": [
+    "Stand over the end of a landmine bar and hinge your hips back with a flat back.",
+    "Grab the bar end or attachment with one hand.",
+    "Pull the bar up toward your hip, leading with your elbow.",
+    "Squeeze your back at the top.",
+    "Lower slowly, then switch sides."
+  ],
+  "textSource": "opengym"
+}

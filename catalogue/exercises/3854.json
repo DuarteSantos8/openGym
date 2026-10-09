@@ -1,0 +1,23 @@
+{
+  "id": "3854",
+  "name": "front plank walkout",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "core",
+    "hip flexors",
+    "chest"
+  ],
+  "category": "calisthenics",
+  "description": "From standing, you walk your hands out to a plank and back. It trains your core, shoulders and hamstring flexibility.",
+  "instructions": [
+    "Stand tall with your feet hip width apart.",
+    "Hinge forward and place your hands on the floor.",
+    "Walk your hands out to a front plank.",
+    "Hold briefly with your hips level.",
+    "Walk your hands back and stand up."
+  ],
+  "textSource": "opengym"
+}

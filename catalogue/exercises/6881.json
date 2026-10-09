@@ -1,0 +1,22 @@
+{
+  "id": "6881",
+  "name": "lever cross lat pulldown",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "rhomboids",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A machine pulldown where the arms cross the body path. It builds the lats and upper back.",
+  "instructions": [
+    "Adjust the seat and thigh pad, then grab the handles.",
+    "Sit tall with your chest up.",
+    "Pull the handles down and across toward your torso.",
+    "Squeeze your lats at the bottom.",
+    "Return slowly to a full stretch."
+  ],
+  "textSource": "opengym"
+}

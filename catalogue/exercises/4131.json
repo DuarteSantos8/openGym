@@ -1,0 +1,23 @@
+{
+  "id": "4131",
+  "name": "battling ropes alternating waves with kneeling get up",
+  "bodyPart": "full body",
+  "equipment": "rope",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "shoulders",
+    "core",
+    "quadriceps",
+    "glutes"
+  ],
+  "category": "cardio",
+  "description": "Alternating rope waves mixed with standing up from kneeling for a full body conditioning move.",
+  "instructions": [
+    "Kneel holding the rope ends.",
+    "Make alternating waves with your arms.",
+    "Rise to a standing position while continuing.",
+    "Wave for a few more seconds.",
+    "Return to kneeling and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "3280",
+  "name": "floor twisting crunch feet on bench",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A crunch with a rotation, with the legs on a bench, to train the abs and the obliques.",
+  "instructions": [
+    "Lie on your back with your calves on a bench and knees bent.",
+    "Place your hands lightly behind your head.",
+    "Curl up and rotate so one shoulder moves toward the opposite knee.",
+    "Lower with control.",
+    "Alternate sides on each rep."
+  ],
+  "textSource": "opengym"
+}

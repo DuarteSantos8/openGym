@@ -1,0 +1,23 @@
+{
+  "id": "0102",
+  "name": "barbell squat (on knees)",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A squat performed from a kneeling position with the bar on the back. Trains the quads and glutes.",
+  "instructions": [
+    "Start by kneeling on the ground with your knees hip-width apart and your toes pointing forward.",
+    "Place a barbell across your shoulders, gripping it with an overhand grip and your hands slightly wider than shoulder-width apart.",
+    "Engage your core and keep your chest lifted as you slowly lower your body down by bending your knees, keeping your back straight.",
+    "Continue lowering until your thighs are parallel to the ground, or as low as you can comfortably go.",
+    "Pause for a moment at the bottom, then push through your heels to return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

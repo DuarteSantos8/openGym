@@ -1,0 +1,23 @@
+{
+  "id": "3401",
+  "name": "pike push up (between benches)",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A pike push-up with your feet on one bench and your hands between benches for extra depth.",
+  "instructions": [
+    "Put your feet on one bench and your hands on the floor or a second bench.",
+    "Raise your hips into a pike.",
+    "Lower your head between your hands.",
+    "Keep elbows at about 45 degrees.",
+    "Press back up to straight arms.",
+    "Keep your core tight."
+  ],
+  "textSource": "opengym"
+}

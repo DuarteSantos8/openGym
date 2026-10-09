@@ -1,0 +1,31 @@
+{
+  "id": "0584",
+  "name": "lever lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "leverage machine",
+  "target": "delts",
+  "secondaryMuscles": [
+    "traps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "On a lever machine, you raise your arms out to the sides against resistance. Isolates the side delts.",
+  "instructions": [
+    "Adjust the seat height and position yourself on the machine with your back against the pad.",
+    "Grasp the handles with an overhand grip and keep your arms straight.",
+    "Exhale and raise your arms out to the sides until they are parallel to the floor.",
+    "Pause for a moment at the top, then inhale and slowly lower your arms back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "deltoids"
+    ],
+    "secondaries": [
+      "trapezius",
+      "upper-back"
+    ]
+  },
+  "femaleVariant": "3629",
+  "textSource": "exercisedb"
+}

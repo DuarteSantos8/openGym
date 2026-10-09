@@ -1,0 +1,24 @@
+{
+  "id": "2989",
+  "name": "squat mobility complex",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "adductors",
+    "ankles"
+  ],
+  "category": "mobility",
+  "description": "A short flow of deep squat positions that opens up the hips, knees and ankles. Good as a warm-up before leg work.",
+  "instructions": [
+    "Stand with your feet a little wider than shoulder width and toes turned out slightly.",
+    "Sink into a deep squat and keep your heels on the floor.",
+    "Press your elbows against your knees to open the hips and hold for a moment.",
+    "Shift gently from side to side, then rock forward and back.",
+    "Stand up tall and repeat the flow for 6-8 rounds.",
+    "Keep your chest lifted and your back long throughout."
+  ],
+  "textSource": "opengym"
+}

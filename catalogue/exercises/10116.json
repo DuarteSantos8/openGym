@@ -1,0 +1,22 @@
+{
+  "id": "10116",
+  "name": "smith incline close grip bench press",
+  "bodyPart": "upper arms",
+  "equipment": "smith machine",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "upper chest",
+    "shoulders",
+    "chest"
+  ],
+  "category": "strength",
+  "description": "A close grip press on an incline bench using the guided Smith bar to hit the triceps and upper chest.",
+  "instructions": [
+    "Set an incline bench under the Smith bar and lie back with eyes under the bar.",
+    "Grip the bar slightly narrower than shoulder width and unrack it.",
+    "Lower the bar to your upper chest with elbows close to your sides.",
+    "Press the bar up until your arms are straight.",
+    "Keep your feet planted and your shoulder blades pulled back."
+  ],
+  "textSource": "opengym"
+}

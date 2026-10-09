@@ -1,0 +1,23 @@
+{
+  "id": "4392",
+  "name": "rowing boat yoga pose",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "quadriceps",
+    "core",
+    "lower back"
+  ],
+  "category": "yoga",
+  "description": "A seated V-shaped balance, also called boat pose, that works the abs and hip flexors.",
+  "instructions": [
+    "Sit with your knees bent and your feet on the floor.",
+    "Lean back slightly, keeping your chest lifted and back long.",
+    "Lift your feet and extend your legs into a V shape.",
+    "Reach your arms forward alongside your legs.",
+    "Hold for 20-30 seconds while breathing steadily."
+  ],
+  "textSource": "opengym"
+}

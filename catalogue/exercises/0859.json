@@ -1,0 +1,22 @@
+{
+  "id": "0859",
+  "name": "wrist rollerer",
+  "bodyPart": "lower arms",
+  "equipment": "weighted",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "biceps",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A wrist roller that winds a weight up on a rope or bar by turning the wrists. It builds the forearms and grip.",
+  "instructions": [
+    "Attach a weight to one end of a rope or bar.",
+    "Hold the other end of the rope or bar with both hands, palms facing down.",
+    "Stand with your feet shoulder-width apart and your arms fully extended in front of you.",
+    "Slowly roll the weight up towards your hands by flexing your wrists.",
+    "Pause for a moment at the top, then slowly lower the weight back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

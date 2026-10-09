@@ -1,0 +1,23 @@
+{
+  "id": "7389",
+  "name": "wall plank",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "glutes",
+    "obliques"
+  ],
+  "category": "isometric",
+  "description": "A standing plank against a wall, an easy way to learn core bracing.",
+  "instructions": [
+    "Stand facing a wall and place your forearms or hands on it.",
+    "Walk your feet back until your body is in a slanted line.",
+    "Brace your abs and squeeze your glutes.",
+    "Keep your head neutral.",
+    "Hold for 20-40 seconds.",
+    "Step in to finish."
+  ],
+  "textSource": "opengym"
+}

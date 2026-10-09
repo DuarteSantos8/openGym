@@ -1,0 +1,23 @@
+{
+  "id": "2198",
+  "name": "lever triceps extension v. 3",
+  "bodyPart": "upper arms",
+  "equipment": "leverage machine",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A machine-based triceps extension that lets you load the back of the arm with a steady, guided path.",
+  "instructions": [
+    "Adjust the seat and sit with your upper arms on the pad.",
+    "Grip the handles with your elbows bent.",
+    "Press down by straightening your elbows.",
+    "Squeeze your triceps at the bottom.",
+    "Return slowly to the start without lifting your shoulders.",
+    "Repeat for the planned reps."
+  ],
+  "femaleVariant": "2820",
+  "textSource": "opengym"
+}

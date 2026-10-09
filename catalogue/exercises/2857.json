@@ -1,0 +1,22 @@
+{
+  "id": "2857",
+  "name": "rocking",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "upper back"
+  ],
+  "category": "pilates",
+  "description": "A rocking move on the stomach that stretches the front and strengthens the back.",
+  "instructions": [
+    "Lie face down and reach back to hold your ankles.",
+    "Lift your chest and legs.",
+    "Rock forward and back.",
+    "Keep your movement smooth.",
+    "Lower down to finish."
+  ],
+  "textSource": "opengym"
+}

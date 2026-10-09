@@ -1,0 +1,20 @@
+{
+  "id": "8619",
+  "name": "seated arm crossover on a chair",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "mobility",
+  "description": "A seated arm crossover that works the chest and warms up the shoulders.",
+  "instructions": [
+    "Sit tall near the front of a sturdy chair with your feet flat on the floor.",
+    "Brace your core and keep your shoulders relaxed.",
+    "Open your arms wide to the sides at shoulder height.",
+    "Sweep them together so they cross in front of your chest.",
+    "Open back out and alternate which arm is on top."
+  ],
+  "textSource": "opengym"
+}

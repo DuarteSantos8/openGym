@@ -1,0 +1,22 @@
+{
+  "id": "4480",
+  "name": "roll ball erector spinae",
+  "bodyPart": "back",
+  "equipment": "roller",
+  "target": "spine",
+  "secondaryMuscles": [
+    "lower back",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "Self-massage with a small ball to ease tension in the muscles beside the lower spine (erector spinae). A simple way to loosen tight spots before or after training.",
+  "instructions": [
+    "Place the ball under your muscles beside the lower spine (erector spinae) while lying on your back.",
+    "Shift your weight onto the ball until you feel moderate, tolerable pressure.",
+    "Roll slowly back and forth over a short range, about 2-3 cm at a time.",
+    "When you find a tender spot, pause on it and breathe for 20-30 seconds.",
+    "Keep the ball beside the spine, never on it.",
+    "Repeat on the other side if needed."
+  ],
+  "textSource": "opengym"
+}

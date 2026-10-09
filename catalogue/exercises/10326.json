@@ -1,0 +1,23 @@
+{
+  "id": "10326",
+  "name": "plank jump in squat",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "shoulders",
+    "hamstrings"
+  ],
+  "category": "plyometrics",
+  "description": "A fast move from a plank to a squat jump position, raising the heart rate and training the legs and core.",
+  "instructions": [
+    "Start in a high plank with hands under shoulders.",
+    "Jump both feet forward, landing outside your hands in a wide squat.",
+    "Stand or hop up briefly if you like, then lower your hands.",
+    "Jump your feet back to the plank.",
+    "Keep a tight core and land softly."
+  ],
+  "textSource": "opengym"
+}

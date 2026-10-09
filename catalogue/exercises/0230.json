@@ -1,0 +1,22 @@
+{
+  "id": "0230",
+  "name": "cable standing lift",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A cable lift that sweeps the handle up and across the body with a rotating torso. It builds twisting core strength.",
+  "instructions": [
+    "Stand facing the cable machine with your feet shoulder-width apart.",
+    "Hold the cable handle with both hands and position it at waist height.",
+    "Engage your core and maintain a straight back throughout the exercise.",
+    "Keeping your arms straight, exhale and lift the cable handle up towards your opposite shoulder, rotating your torso.",
+    "Pause for a moment at the top, then inhale and slowly lower the cable handle back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides."
+  ],
+  "textSource": "exercisedb"
+}

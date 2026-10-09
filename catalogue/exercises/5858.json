@@ -1,0 +1,21 @@
+{
+  "id": "5858",
+  "name": "kettlebell floor fly",
+  "bodyPart": "chest",
+  "equipment": "kettlebell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "Lie on the floor and open your arms out with kettlebells, stopping when your elbows touch down. It trains the chest.",
+  "instructions": [
+    "Lie on your back holding a kettlebell in each hand above your chest.",
+    "Keep a slight bend in your elbows.",
+    "Lower your arms out to the sides until the elbows touch the floor.",
+    "Squeeze your chest to bring the weights back up.",
+    "Repeat with control."
+  ],
+  "textSource": "opengym"
+}

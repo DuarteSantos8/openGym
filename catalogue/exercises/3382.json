@@ -1,0 +1,22 @@
+{
+  "id": "3382",
+  "name": "inverted row bent knee under table",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "rhomboids",
+    "rear deltoids"
+  ],
+  "category": "calisthenics",
+  "description": "An easier inverted row with bent knees, pulling up to a sturdy table to build back strength.",
+  "instructions": [
+    "Lie under a sturdy table and grip the edge with both hands.",
+    "Bend your knees and plant your feet on the floor.",
+    "Lift your hips so your body forms a line from knees to shoulders.",
+    "Pull your chest to the table edge, squeezing your shoulder blades.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "5120",
+  "name": "cable kickback v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Kick one leg straight back against a cable with an ankle strap. It isolates the glutes.",
+  "instructions": [
+    "Attach an ankle strap to a low cable and hold the machine for support.",
+    "Stand tall with a slight bend in the standing knee.",
+    "Kick your working leg straight back.",
+    "Squeeze your glute at the top without arching your back.",
+    "Return slowly and switch legs after your reps."
+  ],
+  "textSource": "opengym"
+}

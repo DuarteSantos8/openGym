@@ -1,0 +1,23 @@
+{
+  "id": "4933",
+  "name": "standing leg circle",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "hip flexors",
+    "glutes",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "Circles with a straight leg while standing. It loosens the hips and warms up the glutes.",
+  "instructions": [
+    "Stand tall and hold a support for balance.",
+    "Lift one leg slightly off the floor.",
+    "Draw a smooth circle with the leg.",
+    "Keep your torso still.",
+    "Reverse the direction after several reps.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

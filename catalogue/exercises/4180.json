@@ -1,0 +1,23 @@
+{
+  "id": "4180",
+  "name": "cable seated pullover",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "chest",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A seated pullover using a cable. It isolates the lats with constant tension.",
+  "instructions": [
+    "Sit at a high pulley holding the rope or bar with straight arms.",
+    "Lean slightly forward.",
+    "Pull the handle down in an arc to your thighs.",
+    "Squeeze your lats.",
+    "Return slowly with arms straight.",
+    "Avoid bending your elbows."
+  ],
+  "textSource": "opengym"
+}

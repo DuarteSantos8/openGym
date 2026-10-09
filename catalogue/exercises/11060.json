@@ -1,0 +1,23 @@
+{
+  "id": "11060",
+  "name": "cable face pull with external rotation",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rotator cuff",
+    "rhomboids",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A face pull that finishes with a rotation of the arms. It hits the rear shoulders and rotator cuff for healthy shoulders.",
+  "instructions": [
+    "Set a rope at upper chest height and hold it with both hands, arms extended.",
+    "Pull the rope toward your face with elbows high.",
+    "At the end, rotate your fists upward so your hands finish above your elbows.",
+    "Squeeze your rear shoulders for a second.",
+    "Reverse the rotation and return slowly."
+  ],
+  "textSource": "opengym"
+}

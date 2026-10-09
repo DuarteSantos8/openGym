@@ -28,11 +28,11 @@ Requirements: [Docker](https://docs.docker.com/get-docker/) with the Compose plu
 git clone https://github.com/DuarteSantos8/openGym   # or https://gitlab.com/DuarteSantos8/opengym — same repo
 cd openGym
 cp .env.example .env
-docker compose pull   # prebuilt images from GitLab's registry (amd64 + arm64; the same images are on ghcr.io) — or skip and build from source
+docker compose pull   # prebuilt images from ghcr.io (amd64 + arm64; the same images are on GitLab's registry) — or skip and build from source
 docker compose up -d
 ```
 
-- First start downloads the exercise images/GIFs (~140 MB) once into `media/img` and `media/gif`.
+- The exercise stills and animations (180 px, ~80 MB) ship inside the web image; nothing is downloaded on first start. An old `media/` folder and its two volume lines from before v1.4.0 are no longer used: harmless if you keep them, safe to delete.
 - Open **http://localhost:8080** and create a profile with a passkey.
 - Rather build from source than pull prebuilt images? Skip `docker compose pull` and run
   `docker compose up -d --build` instead — no Node needed locally either way.
@@ -188,8 +188,10 @@ https://localhost` line. A `200` with no CORS headers, a `30x` or `401`, an HTML
 
 The app tells these cases apart since v1.3.10: when the server is reachable but the request is
 refused, pairing says so instead of "Failed to fetch", and when a login page or proxy rule
-answered in openGym's place, it says that too. The app also only pairs with an `https://` address:
-its WebView is an https page, so the phone blocks a plain `http://` server before anything is sent.
+answered in openGym's place, it says that too. Since v1.3.11 the Android app also pairs with a
+plain `http://` address on your LAN (type the `http://`; #428). Sign in on the web with a password
+to make the code, since passkeys need https. Over http the code and the app's token cross your
+network unencrypted, so keep it to a network you trust.
 
 ## 4. Multiple users
 
@@ -447,6 +449,11 @@ BASE_PATH=                 # subpath openGym is served under, e.g. /gym — see 
 SESSION_DAYS=90            # how long a sign-in lasts
 ```
 
+`NGINX_PORT` stays 80 under Docker. The web container runs as an unprivileged user (uid 101),
+which can bind a port below 1024 only because Docker sets `net.ipv4.ip_unprivileged_port_start=0`
+in the container. On another runtime (Kubernetes, rootless Podman) set `NGINX_PORT` to 1024 or
+higher, e.g. 8080, or set that sysctl yourself; the Helm chart and `kubernetes/` use 8080.
+
 `RESOLVER` only matters off Docker. nginx re-resolves `BACKEND` on every `/api` request so a
 recreated API container does not leave it proxying to a dead IP, and `127.0.0.11` is where
 Docker answers those lookups. Nothing listens there on another runtime, and an unreachable
@@ -631,6 +638,26 @@ Push services like a contact address for whoever runs the server, in case they e
 you about your pushes. openGym sends your `ORIGIN` by default; set `VAPID_SUBJECT=mailto:you@example.com`
 in `.env` if you would rather they had an inbox.
 
+### Push endpoints on private addresses (`ALLOWED_PRIVATE_IPS`)
+
+The api container resolves push service domains to the IPs. Private IPs are banned by default.
+But some DNS setups resolve public domains to private addresses on purpose, for example FakeDNS, a DNS-based proxy or a
+split-horizon resolver.
+Push then fails and the api log shows `refusing to connect to a private address`.
+
+Set `ALLOWED_PRIVATE_IPS` in `.env` to the private addresses that are safe to reach:
+
+```
+ALLOWED_PRIVATE_IPS=198.18.0.0/15
+ALLOWED_PRIVATE_IPS=10.0.0.0/8, 192.168.1.50, 172.16.0.1-172.16.0.9, fd00::/8
+```
+
+- Separate entries with commas or spaces.
+- An entry is a single IP address, a range (`first-last`) or a CIDR block. IPv4 and IPv6 both work.
+- An IPv4 entry also covers the same address written as IPv4-mapped IPv6 (`::ffff:10.1.2.3`).
+- The default is empty: every private address stays blocked. Keep the list as small as you can —
+  each address you allow is an address that a signed-in user can make the server connect to.
+
 ## 8. Updating
 
 Running prebuilt images:
@@ -648,8 +675,8 @@ git pull
 docker compose up -d --build
 ```
 
-The app shell is versioned (`?v=N`) so clients pick up changes on next load. Your `./data` and the
-downloaded media are untouched.
+The app shell is versioned (`?v=N`) so clients pick up changes on next load. Your `./data` is
+untouched; the exercise media come with the new image.
 
 ## Passkeys fail even though `RP_ID` looks right
 
@@ -769,7 +796,7 @@ browser (see section 2).
 |---|---|
 | No passkey prompt on my phone | You're on `http://` or an IP, not HTTPS. Set up a domain (section 3). |
 | "verification failed" on login | `RP_ID`/`ORIGIN` don't match the URL in the address bar. See the section above — start with what the server logged on startup. |
-| Media didn't download | `docker compose logs media`. Re-run `docker compose up -d`, or run `./scripts/fetch-media.sh`. |
+| Exercise pictures missing | You are on an image older than v1.4.0 or a custom build: `docker compose pull && docker compose up -d`. A source build needs `catalogue/media/` checked out. |
 | Port 8080 already used | Set `WEB_PORT=9090` in `.env` (and update `ORIGIN` for local testing). |
 | A photo or video will not upload ("refused as too large", or it stops partway) | A proxy in front caps the body or cuts the request off: see [Photos and videos](#photos-and-videos-of-custom-exercises) for the body size and timeouts it needs. |
 | No "Reminders" page in Settings | Requires a signed-in profile and HTTPS (or `localhost`) — guest mode and plain HTTP over LAN can't subscribe. |
@@ -781,7 +808,7 @@ browser (see section 2).
 | The app says "Your server answered with an error (HTTP …)" | The code is what the server or its proxy sent: 502/504 usually means the API container is down or unreachable from `web`, 413 that the proxy's upload limit is too small. Changes stay on the device and go through once the server answers. |
 | `docker compose pull` fails with "denied" / "unauthorized" | The prebuilt images aren't published yet, or need to be, or the GHCR package is still private — build from source instead (`docker compose up -d --build`). |
 | Exercise images/GIFs blank when a routine is open | Fixed in current images (issue #79). On an older build, see the note below. |
-| An exercise shows a plain tile instead of its animation when offline | The web app installed on the home screen keeps the media of every exercise in your plan and your current workout, fetched in the background once the app has settled (not on a cellular or Data Saver connection, where the browser says so), plus everything it has shown you, up to 150 MB, across updates. In an ordinary browser tab nothing is fetched ahead: only what it has shown you is kept. An exercise outside your plan that was never shown while online has nothing to show offline. The phone app loads media from a CDN and is not covered by this. |
+| An exercise shows a plain tile instead of its animation when offline | The web app installed on the home screen keeps the media of every exercise in your plan and your current workout, fetched in the background once the app has settled (not on a cellular or Data Saver connection, where the browser says so), plus everything it has shown you, up to 150 MB, across updates. In an ordinary browser tab nothing is fetched ahead: only what it has shown you is kept. An exercise outside your plan that was never shown while online has nothing to show offline. The phone app carries its exercise media inside the package, so it has them offline anyway. |
 
 ### `VITE_IMG_BASE` / `VITE_GIF_BASE` are build-time, not run-time
 

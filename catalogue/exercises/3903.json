@@ -1,0 +1,24 @@
+{
+  "id": "3903",
+  "name": "resistance band one leg kickback (bent position)",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A standing glute kickback with a band while leaning forward, isolating one hip at a time.",
+  "instructions": [
+    "Loop a resistance band around your ankle and anchor the other end low in front of you.",
+    "Hold a support and lean forward slightly.",
+    "Brace your core and keep your hips level.",
+    "Kick your leg back and up against the band.",
+    "Squeeze your glute at the top.",
+    "Return slowly, then switch legs after your reps."
+  ],
+  "femaleVariant": "2160",
+  "textSource": "opengym"
+}

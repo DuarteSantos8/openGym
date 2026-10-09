@@ -1,0 +1,23 @@
+{
+  "id": "9048",
+  "name": "mountain climber cross kick",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "shoulders"
+  ],
+  "category": "cardio",
+  "description": "A mountain climber variation where you bring each knee across toward the opposite elbow. It raises your heart rate and works the obliques.",
+  "instructions": [
+    "Start in a high plank with your hands under your shoulders.",
+    "Brace your core.",
+    "Drive one knee across your body toward the opposite elbow.",
+    "Return the foot and switch legs quickly.",
+    "Keep your hips low and level.",
+    "Keep up a steady pace for a set time."
+  ],
+  "textSource": "opengym"
+}

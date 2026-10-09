@@ -1,0 +1,23 @@
+{
+  "id": "0728",
+  "name": "single leg extension (on stability ball)",
+  "bodyPart": "upper legs",
+  "equipment": "stability ball",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "Balancing on a stability ball, you extend one leg at a time. It works the quads and balance.",
+  "instructions": [
+    "Sit on a stability ball with your feet flat.",
+    "Keep your torso tall.",
+    "Extend one leg until it is straight.",
+    "Hold briefly.",
+    "Lower the foot back down.",
+    "Finish reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "0532",
+  "name": "kettlebell figure 8",
+  "bodyPart": "waist",
+  "equipment": "kettlebell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "You pass a kettlebell in a figure 8 pattern around and between your legs. It trains the core, hips and grip while keeping you moving.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a kettlebell in one hand.",
+    "Bend your knees slightly and hinge forward at the hips, keeping your back straight.",
+    "Pass the kettlebell between your legs, switching hands as it reaches the back of your legs.",
+    "As the kettlebell comes forward, pass it to the other hand between your legs.",
+    "Continue passing the kettlebell between your legs in a figure 8 motion.",
+    "Maintain a steady pace and engage your core throughout the exercise.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2535",
+  "textSource": "exercisedb"
+}

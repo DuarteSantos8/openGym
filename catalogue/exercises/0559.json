@@ -1,0 +1,22 @@
+{
+  "id": "0559",
+  "name": "knee to chest stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "lower back",
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "Lying on your back, you hug one knee toward your chest. It stretches the glutes and eases the lower back.",
+  "instructions": [
+    "Lie on your back with both legs straight.",
+    "Bend one knee and clasp your hands around the shin or behind the thigh.",
+    "Gently pull the knee toward your chest.",
+    "Keep the other leg relaxed on the floor.",
+    "Hold for 20-30 seconds while breathing slowly.",
+    "Release and switch sides."
+  ],
+  "textSource": "opengym"
+}

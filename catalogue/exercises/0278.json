@@ -1,0 +1,24 @@
+{
+  "id": "0278",
+  "name": "decline push up (on stability ball)",
+  "bodyPart": "chest",
+  "equipment": "stability ball",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up with your feet on a stability ball, so your hands sit lower than your feet. It challenges the upper chest, shoulders and balance.",
+  "instructions": [
+    "Place your shins or feet on a stability ball and your hands on the floor under your shoulders.",
+    "Form a straight line from head to heels.",
+    "Lower your chest toward the floor.",
+    "Push back up without letting your hips sag.",
+    "Brace your core to keep the ball steady.",
+    "Keep your elbows at about 45 degrees."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "1205",
+  "name": "cable one arm twisting seated row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rhomboids",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A seated one-arm cable row with a rotation of the torso. It trains the back and gives the core a twist.",
+  "instructions": [
+    "Sit at a low cable with your feet braced and grab the handle with one hand.",
+    "Start with your torso turned slightly toward the cable.",
+    "Row the handle to your side while rotating your torso open.",
+    "Squeeze your shoulder blade back, then return slowly.",
+    "Do all reps, then change arms."
+  ],
+  "femaleVariant": "3597",
+  "textSource": "opengym"
+}

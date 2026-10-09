@@ -1,0 +1,22 @@
+{
+  "id": "2862",
+  "name": "scissors",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "hamstrings"
+  ],
+  "category": "pilates",
+  "description": "A leg-switching move lying on your back, building lower abdominal strength.",
+  "instructions": [
+    "Lie on your back with your hips lifted and hands supporting them.",
+    "Raise your legs up.",
+    "Lower one leg while the other stays up.",
+    "Switch legs.",
+    "Keep the movement steady."
+  ],
+  "textSource": "opengym"
+}

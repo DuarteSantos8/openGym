@@ -1,0 +1,22 @@
+{
+  "id": "0844",
+  "name": "weighted round arm",
+  "bodyPart": "shoulders",
+  "equipment": "weighted",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A bent-over lateral raise with weights, lifting the arms out to the sides. It trains the rear and side delts.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold a dumbbell in each hand.",
+    "Bend your knees slightly and hinge forward at the hips, keeping your back straight.",
+    "Raise your arms out to the sides, keeping a slight bend in your elbows.",
+    "Continue lifting your arms until they are parallel to the ground.",
+    "Pause for a moment at the top, then slowly lower your arms back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "4360",
+  "name": "bench dip with legs on bench",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "chest"
+  ],
+  "category": "calisthenics",
+  "description": "A harder bench dip with your feet on a second bench. It places greater load on the triceps.",
+  "instructions": [
+    "Place your hands on one bench behind you and your heels on another in front.",
+    "Straighten your legs and lift your hips.",
+    "Bend your elbows to lower your body.",
+    "Press back up.",
+    "Keep your back close to the bench."
+  ],
+  "textSource": "opengym"
+}

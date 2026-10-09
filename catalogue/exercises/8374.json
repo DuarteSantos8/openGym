@@ -1,0 +1,23 @@
+{
+  "id": "8374",
+  "name": "step out from squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A squat that steps one leg out to the side before returning. It works the legs and hips with a bit of lateral movement.",
+  "instructions": [
+    "Stand with your feet together.",
+    "Squat down by pushing your hips back.",
+    "Stand up while stepping one foot out to the side.",
+    "Bring that foot back in and squat again.",
+    "Alternate sides each rep.",
+    "Keep your chest up and knees tracking over your toes."
+  ],
+  "textSource": "opengym"
+}

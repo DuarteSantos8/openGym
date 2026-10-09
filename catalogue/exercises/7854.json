@@ -1,0 +1,22 @@
+{
+  "id": "7854",
+  "name": "side plank twist arm delt raise",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A side plank with a twist that ends in an arm raise. It challenges your obliques and shoulders.",
+  "instructions": [
+    "Set up in a side plank on your forearm.",
+    "Raise your top arm up toward the ceiling.",
+    "Rotate and thread your arm under your torso.",
+    "Open back up and raise the arm again.",
+    "Complete your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

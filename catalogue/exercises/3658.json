@@ -1,0 +1,21 @@
+{
+  "id": "3658",
+  "name": "static position seated back with pad",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "core"
+  ],
+  "category": "isometric",
+  "description": "Sit with your back against a pad to hold a proper seated posture.",
+  "instructions": [
+    "Sit on the seat with your back against the pad.",
+    "Keep your feet flat on the floor.",
+    "Press your back gently into the pad.",
+    "Keep your shoulders relaxed.",
+    "Hold the position and breathe."
+  ],
+  "femaleVariant": "3137",
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "3997",
+  "name": "standing side bend (bent arm)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lats"
+  ],
+  "category": "stretching",
+  "description": "Bend sideways with one arm overhead and bent. It stretches the side of the trunk.",
+  "instructions": [
+    "Stand tall with feet hip width apart.",
+    "Bend one arm overhead.",
+    "Lean to the opposite side.",
+    "Hold for 20-30 seconds.",
+    "Switch sides."
+  ],
+  "femaleVariant": "3255",
+  "textSource": "opengym"
+}

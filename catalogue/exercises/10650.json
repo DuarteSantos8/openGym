@@ -1,0 +1,23 @@
+{
+  "id": "10650",
+  "name": "resistance band explosive push up",
+  "bodyPart": "chest",
+  "equipment": "resistance band",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A push-up with a band across your back and a fast push at the top. It trains explosive chest and triceps power.",
+  "instructions": [
+    "Loop the band across your upper back and hold the ends under your palms.",
+    "Set up in a push-up position with a straight body.",
+    "Lower your chest to the floor with control.",
+    "Push up hard so your hands briefly leave the floor.",
+    "Land softly with elbows slightly bent.",
+    "Keep your hips in line."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "2368",
+  "name": "split squats",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight split squat with a long stance. Builds the quads and glutes one leg at a time.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart.",
+    "Take a step forward with one foot and place it about two feet in front of the other foot.",
+    "Lower your body by bending your knees and hips, keeping your back straight.",
+    "Continue lowering until your front thigh is parallel to the ground, and your back knee is hovering just above the ground.",
+    "Pause for a moment, then push through your front heel to return to the starting position.",
+    "Repeat for the desired number of repetitions, then switch legs and repeat."
+  ],
+  "textSource": "exercisedb"
+}

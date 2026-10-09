@@ -1,0 +1,24 @@
+{
+  "id": "1679",
+  "name": "dumbbell seated one arm bicep curl on exercise ball with leg raised",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A one-arm curl seated on an exercise ball with one leg raised. It trains the biceps and balance.",
+  "instructions": [
+    "Sit on an exercise ball with your feet flat on the ground and your back straight.",
+    "Hold a dumbbell in one hand with your palm facing up and your arm fully extended.",
+    "Place your other hand on your hip for stability.",
+    "Slowly curl the dumbbell towards your shoulder, keeping your upper arm stationary.",
+    "Pause for a moment at the top of the movement, squeezing your bicep.",
+    "Slowly lower the dumbbell back to the starting position.",
+    "Repeat for the desired number of repetitions.",
+    "Switch arms and repeat the exercise."
+  ],
+  "textSource": "exercisedb"
+}

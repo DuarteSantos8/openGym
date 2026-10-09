@@ -1,0 +1,21 @@
+{
+  "id": "5885",
+  "name": "lotus pose breathing",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "core",
+    "hip flexors"
+  ],
+  "category": "yoga",
+  "description": "A seated cross-legged breathing practice that calms the mind and lengthens the spine while the hips stay open.",
+  "instructions": [
+    "Sit on the floor with your legs crossed and each foot resting on the opposite thigh if comfortable.",
+    "Rest your hands on your knees and lengthen your spine.",
+    "Inhale slowly through your nose and fill your belly and chest.",
+    "Exhale slowly and fully.",
+    "Keep your shoulders relaxed and breathe steadily for 1-2 minutes."
+  ],
+  "textSource": "opengym"
+}

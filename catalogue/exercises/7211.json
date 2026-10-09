@@ -1,0 +1,22 @@
+{
+  "id": "7211",
+  "name": "resistance band lying hyperextension abduction",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "lower back",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A face-down hip extension combined with outward leg movement against a band.",
+  "instructions": [
+    "Lie face down with the band around your ankles.",
+    "Rest your forehead on your hands.",
+    "Lift both legs slightly off the floor.",
+    "Open your legs out against the band.",
+    "Bring them back together and lower slowly.",
+    "Keep the movement small and controlled."
+  ],
+  "textSource": "opengym"
+}

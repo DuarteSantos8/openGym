@@ -1,0 +1,22 @@
+{
+  "id": "3293",
+  "name": "archer pull up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A wide pull-up where you pull toward one hand while the other arm stays straight. It builds lat strength on the way to the one arm pull-up.",
+  "instructions": [
+    "Start by hanging from a pull-up bar with an overhand grip, slightly wider than shoulder-width apart.",
+    "Engage your core and pull your shoulder blades down and back.",
+    "As you pull yourself up, bend one arm and bring your elbow towards your side, while keeping the other arm straight.",
+    "Continue pulling until your chin is above the bar and your bent arm is fully flexed.",
+    "Lower yourself back down with control, straightening the bent arm and repeating the movement on the other side.",
+    "Alternate sides with each repetition."
+  ],
+  "textSource": "exercisedb"
+}

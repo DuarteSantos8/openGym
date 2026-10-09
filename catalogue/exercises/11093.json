@@ -1,0 +1,23 @@
+{
+  "id": "11093",
+  "name": "barbell 2 3 deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A deadlift variation with a two-thirds range of motion. It is a good way to drill the lower, hardest part of the lift.",
+  "instructions": [
+    "Stand with your feet hip width and the bar over your mid foot.",
+    "Grip the bar, brace your core, and keep your back flat.",
+    "Push the floor away and stand up.",
+    "Lower the bar back toward the floor under control.",
+    "Reset each rep and keep your back neutral."
+  ],
+  "textSource": "opengym"
+}

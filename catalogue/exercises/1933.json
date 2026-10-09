@@ -1,0 +1,21 @@
+{
+  "id": "1933",
+  "name": "seated knee up rotation stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "A seated twist with one knee raised that stretches the hip and buttock.",
+  "instructions": [
+    "Sit on the floor with one leg straight and the other knee bent, foot flat on the floor.",
+    "Cross the bent leg over the straight one, and rotate your torso toward the raised knee, hugging it with the opposite arm.",
+    "Sit tall and twist from the middle of your back.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

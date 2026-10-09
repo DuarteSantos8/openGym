@@ -1,0 +1,21 @@
+{
+  "id": "0546",
+  "name": "kettlebell seated press",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Seated on a bench, you press a kettlebell in each hand overhead. Takes the legs out so your shoulders and triceps do the work.",
+  "instructions": [
+    "Sit on a bench with your back straight and feet flat on the ground.",
+    "Hold a kettlebell in each hand at shoulder height, palms facing forward.",
+    "Press the kettlebells overhead, fully extending your arms.",
+    "Lower the kettlebells back to shoulder height.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

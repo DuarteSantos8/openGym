@@ -1,0 +1,22 @@
+{
+  "id": "8375",
+  "name": "lever angled leg press",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A plate-loaded angled press that works the thighs and glutes with a stable seated position.",
+  "instructions": [
+    "Sit in the machine with your back flat on the pad and feet on the platform shoulder-width apart.",
+    "Release the safety handles.",
+    "Lower the platform until your knees are bent about 90 degrees.",
+    "Press through your whole foot until your legs are nearly straight.",
+    "Do not lock your knees out."
+  ],
+  "textSource": "opengym"
+}

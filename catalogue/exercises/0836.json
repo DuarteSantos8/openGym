@@ -1,0 +1,21 @@
+{
+  "id": "0836",
+  "name": "weighted leg extension crunch",
+  "bodyPart": "waist",
+  "equipment": "weighted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "A crunch where your legs extend as you curl up, holding a weight. It hits the abs and lower abs hard.",
+  "instructions": [
+    "Lie on your back holding a weight at your chest.",
+    "Start with knees bent and lifted.",
+    "Curl up while straightening your legs forward.",
+    "Bring your knees back in as you lower.",
+    "Keep your lower back pressed to the floor."
+  ],
+  "textSource": "opengym"
+}

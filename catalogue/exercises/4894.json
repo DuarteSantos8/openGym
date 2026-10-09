@@ -1,0 +1,23 @@
+{
+  "id": "4894",
+  "name": "staggered leg side bridge",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "A side plank with the feet placed one in front of the other for a different base. It trains the obliques and hips.",
+  "instructions": [
+    "Lie on your side with your forearm under your shoulder.",
+    "Stagger your feet, top foot in front of the bottom one.",
+    "Lift your hips so your body forms a straight line.",
+    "Hold the position while breathing steadily.",
+    "Keep the hips high and avoid rolling forward.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

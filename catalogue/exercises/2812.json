@@ -1,0 +1,25 @@
+{
+  "id": "2812",
+  "name": "dumbbell step-up split squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A dumbbell step-up combined with a knee drive. Builds the quads and glutes.",
+  "instructions": [
+    "Stand in front of a bench or step with a dumbbell in each hand, palms facing your body.",
+    "Place your right foot on the bench or step, ensuring your entire foot is in contact with the surface.",
+    "Step up onto the bench or step with your right foot, pushing through your heel to lift your body up.",
+    "As you step up, simultaneously lift your left knee towards your chest.",
+    "Pause at the top of the movement, then slowly lower your left foot back to the ground while keeping your right foot on the bench or step.",
+    "Repeat the movement with your left foot on the bench or step.",
+    "Continue alternating between your right and left foot for the desired number of repetitions."
+  ],
+  "femaleVariant": "2813",
+  "textSource": "exercisedb"
+}

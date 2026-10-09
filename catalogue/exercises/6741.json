@@ -1,0 +1,22 @@
+{
+  "id": "6741",
+  "name": "resistance band kneeling leg half circle on bench",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A kneeling band move on a bench, sweeping the leg in a half circle. It works the glutes from several angles.",
+  "instructions": [
+    "Place a band around your thighs or ankles and kneel on a bench with hands on its edge.",
+    "Keep your back flat and hips level.",
+    "Lift one leg out behind you.",
+    "Sweep it in a half circle out to the side.",
+    "Return along the same path under control.",
+    "Finish the reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

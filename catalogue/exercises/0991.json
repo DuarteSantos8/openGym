@@ -1,0 +1,24 @@
+{
+  "id": "0991",
+  "name": "band pull through",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A hip hinge pulling a band through the legs. It trains the glutes and hamstrings.",
+  "instructions": [
+    "Attach a resistance band to a sturdy anchor point at ground level.",
+    "Stand facing away from the anchor point with your feet shoulder-width apart.",
+    "Step forward to create tension in the band, keeping your knees slightly bent.",
+    "Hinge at the hips and push your glutes back, maintaining a slight bend in your knees.",
+    "Lower your torso until it is parallel to the ground, feeling a stretch in your hamstrings.",
+    "Drive your hips forward and squeeze your glutes to return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3024",
+  "textSource": "exercisedb"
+}

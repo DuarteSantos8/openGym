@@ -1,0 +1,23 @@
+{
+  "id": "10853",
+  "name": "pilates machine long spine",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "spine",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "glutes"
+  ],
+  "category": "pilates",
+  "description": "A reformer roll-over that mobilises the spine. It stretches the back and works the abs.",
+  "instructions": [
+    "Lie on your back with your feet against the shoulder rests.",
+    "Press your legs straight up.",
+    "Roll your hips off the pad.",
+    "Lift your hips over your shoulders.",
+    "Roll down slowly one vertebra at a time.",
+    "Avoid pressing on your neck."
+  ],
+  "textSource": "opengym"
+}

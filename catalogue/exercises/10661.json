@@ -1,0 +1,24 @@
+{
+  "id": "10661",
+  "name": "ring resistance band assisted single arm pull up",
+  "bodyPart": "back",
+  "equipment": "suspension trainer",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "forearms",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A band-assisted single-arm pull-up on gymnastic rings. The rings add instability and grip demand.",
+  "instructions": [
+    "Hang a band from the rings or bar and place your foot in it.",
+    "Grip one ring with one hand and hold the other ring loosely or let it go.",
+    "Pull your chest toward the ring.",
+    "Keep your body tight and avoid swinging.",
+    "Lower slowly to a full hang.",
+    "Repeat, then switch sides."
+  ],
+  "textSource": "opengym"
+}

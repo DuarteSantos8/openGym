@@ -1,0 +1,24 @@
+{
+  "id": "2424",
+  "name": "resistance band lunge",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A lunge with band resistance that works the legs and glutes.",
+  "instructions": [
+    "Stand on the middle of a band and hold the ends at your shoulders.",
+    "Step forward into a lunge.",
+    "Lower your back knee toward the floor.",
+    "Keep your front knee over your ankle and your torso tall.",
+    "Push through your front heel to return.",
+    "Alternate legs for the planned reps."
+  ],
+  "textSource": "opengym"
+}

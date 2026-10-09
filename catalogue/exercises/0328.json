@@ -1,0 +1,22 @@
+{
+  "id": "0328",
+  "name": "dumbbell incline shoulder raise",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "serratus anterior",
+  "secondaryMuscles": [
+    "deltoids",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "An incline shoulder raise with dumbbells moving overhead. It works the shoulder blades and the serratus anterior.",
+  "instructions": [
+    "Set an incline bench to a 45-degree angle and sit on it with a dumbbell in each hand, palms facing down.",
+    "Rest the dumbbells on your thighs and lean back onto the bench.",
+    "Use your thighs to help raise the dumbbells to shoulder height, then rotate your wrists so that your palms are facing forward.",
+    "Exhale and slowly raise the dumbbells above your head, keeping a slight bend in your elbows.",
+    "Pause for a moment at the top, then inhale and slowly lower the dumbbells back to shoulder height.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

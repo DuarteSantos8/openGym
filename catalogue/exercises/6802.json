@@ -1,0 +1,23 @@
+{
+  "id": "6802",
+  "name": "dumbbell seated military hold alternate leg raise on floor",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "hip flexors",
+    "lower abs",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "You hold dumbbells overhead while raising the legs alternately. It trains the lower abs and shoulder stability.",
+  "instructions": [
+    "Sit on the floor leaning back a little and press the dumbbells overhead.",
+    "Keep your arms locked and steady.",
+    "Raise one leg off the floor.",
+    "Lower it and raise the other leg.",
+    "Keep alternating, then lower the weights."
+  ],
+  "textSource": "opengym"
+}

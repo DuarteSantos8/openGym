@@ -1,0 +1,24 @@
+{
+  "id": "1633",
+  "name": "cable one arm preacher curl",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A one-arm preacher curl on a cable. The pad blocks swinging, so the biceps take the load.",
+  "instructions": [
+    "Adjust the cable machine so that the preacher curl pad is at chest height.",
+    "Stand facing the cable machine with your feet shoulder-width apart.",
+    "Grasp the cable handle with an underhand grip and position your upper arm against the preacher curl pad.",
+    "Keep your back straight and your core engaged.",
+    "Slowly curl the cable handle towards your shoulder, keeping your upper arm against the pad.",
+    "Pause for a moment at the top of the movement, squeezing your biceps.",
+    "Slowly lower the cable handle back to the starting position.",
+    "Repeat for the desired number of repetitions.",
+    "Switch arms and repeat the exercise."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "5391",
+  "name": "roll glute twist lying on floor",
+  "bodyPart": "upper legs",
+  "equipment": "roller",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "lower back",
+    "hip flexors"
+  ],
+  "category": "mobility",
+  "description": "Self-massage with a foam roller to ease tightness in the glutes. Good before training or on rest days to loosen up.",
+  "instructions": [
+    "Lie on your back with the roller under one glute.",
+    "Place the roller under the glutes and let your body weight settle onto it.",
+    "Let the knees drop to one side and twist gently.",
+    "Pause on tender spots and breathe slowly for 20-30 seconds.",
+    "Keep your core braced and avoid rolling over joints or bone.",
+    "Roll for 30-60 seconds, then switch sides if needed."
+  ],
+  "femaleVariant": "5429",
+  "textSource": "opengym"
+}

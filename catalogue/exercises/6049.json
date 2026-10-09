@@ -1,0 +1,22 @@
+{
+  "id": "6049",
+  "name": "bottle weighted straight legs deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "weighted",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A near-straight-leg deadlift with bottles in your hands. It stretches and strengthens the hamstrings.",
+  "instructions": [
+    "Stand tall holding a bottle in each hand in front of your thighs.",
+    "Keep your legs almost straight, with a tiny knee bend.",
+    "Hinge forward, sliding the bottles down your legs.",
+    "Stop when you feel a firm hamstring stretch.",
+    "Squeeze your glutes to stand back up."
+  ],
+  "textSource": "opengym"
+}

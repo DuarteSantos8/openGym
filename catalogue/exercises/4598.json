@@ -1,0 +1,22 @@
+{
+  "id": "4598",
+  "name": "roll tensor fasciae latae",
+  "bodyPart": "upper legs",
+  "equipment": "roller",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "hip flexors"
+  ],
+  "category": "mobility",
+  "description": "A foam roller release for the outer front hip, easing tightness around the tensor fasciae latae.",
+  "instructions": [
+    "Lie on your side with the roller under the front of your outer hip.",
+    "Support yourself with your forearm and opposite foot.",
+    "Slowly roll up and down a few inches.",
+    "Pause on tender spots for a few seconds.",
+    "Breathe slowly and keep the movement gentle.",
+    "Roll for 30-60 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

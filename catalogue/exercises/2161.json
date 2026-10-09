@@ -1,0 +1,21 @@
+{
+  "id": "2161",
+  "name": "resistance band one leg kickback",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A standing or all fours kickback with a band that targets the glutes one leg at a time.",
+  "instructions": [
+    "Loop a band around your ankles or anchor it and loop it around one foot.",
+    "Stand holding a support, or get on all fours, with your core braced.",
+    "Kick one leg back against the band, keeping the knee straight.",
+    "Squeeze your glute and avoid arching your lower back.",
+    "Return slowly, finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

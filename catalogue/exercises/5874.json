@@ -1,0 +1,21 @@
+{
+  "id": "5874",
+  "name": "cable high pulley straight bar overhead triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Face away from a high pulley and extend your arms overhead holding a straight bar. It isolates the triceps.",
+  "instructions": [
+    "Attach a straight bar to a high pulley and face away from it.",
+    "Hold the bar behind your head with elbows bent.",
+    "Keep your elbows pointing forward.",
+    "Extend your arms forward and up.",
+    "Return slowly."
+  ],
+  "textSource": "opengym"
+}

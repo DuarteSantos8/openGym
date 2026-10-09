@@ -1,0 +1,24 @@
+{
+  "id": "10186",
+  "name": "dumbbell pullover to press bridge",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "chest",
+    "triceps",
+    "lats",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A glute bridge combined with a pullover and press, training the hips, chest and triceps in one flow.",
+  "instructions": [
+    "Lie on your back with knees bent and hold a dumbbell over your chest.",
+    "Drive through your heels to lift your hips into a bridge.",
+    "Lower the dumbbell back overhead in a pullover arc.",
+    "Pull it back over your chest and press it straight up.",
+    "Lower your hips with control and repeat, keeping your ribs down."
+  ],
+  "textSource": "opengym"
+}

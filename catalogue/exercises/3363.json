@@ -1,0 +1,22 @@
+{
+  "id": "3363",
+  "name": "cable standing close press",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A standing close grip cable press that focuses on the triceps.",
+  "instructions": [
+    "Set the cable at chest height and hold the handle with a narrow grip.",
+    "Stand in a split stance, core tight.",
+    "Press forward until your arms are straight.",
+    "Keep your elbows tucked in.",
+    "Return slowly to the start."
+  ],
+  "textSource": "opengym"
+}

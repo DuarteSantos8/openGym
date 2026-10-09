@@ -1,0 +1,24 @@
+{
+  "id": "2914",
+  "name": "barbell overhead carry",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "core",
+    "upper back",
+    "trapezius",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "Walking while holding a barbell locked out overhead. It trains shoulder stability and whole-body bracing.",
+  "instructions": [
+    "Press the barbell overhead with a grip just outside shoulder width.",
+    "Squeeze your glutes and keep your ribs down.",
+    "Walk with small, steady steps, keeping the bar over your mid-foot.",
+    "Cover the set distance without arching your back.",
+    "Lower the bar to your shoulders and set it down safely."
+  ],
+  "textSource": "opengym"
+}

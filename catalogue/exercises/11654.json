@@ -1,0 +1,22 @@
+{
+  "id": "11654",
+  "name": "seated knee down",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "hip flexors",
+    "groin",
+    "glutes"
+  ],
+  "category": "mobility",
+  "description": "A seated hip opener that lets one knee drop to the side to loosen the hips and inner thighs.",
+  "instructions": [
+    "Sit tall on the floor or a bench with the soles of your feet together or one leg crossed in.",
+    "Let one knee drop slowly out to the side toward the floor.",
+    "Keep your back straight and your chest lifted as the knee lowers.",
+    "Pause briefly at the end of the comfortable range, then lift the knee back up.",
+    "Repeat for 8-12 reps per side."
+  ],
+  "textSource": "opengym"
+}

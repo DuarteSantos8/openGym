@@ -1,0 +1,24 @@
+{
+  "id": "3773",
+  "name": "band single stiff leg deadlift with single arm row",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "lats",
+    "upper back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A single-leg hip hinge with a one-arm band row. It challenges your balance and trains hamstrings, glutes and back.",
+  "instructions": [
+    "Anchor the band at a low point and hold the handle in one hand.",
+    "Stand on one leg with a soft knee and the band under light tension.",
+    "Hinge forward at the hips while the free leg extends behind you.",
+    "Keep your back flat, then pull the handle to your ribs.",
+    "Lower the handle and stand tall again. Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

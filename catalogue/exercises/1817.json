@@ -1,0 +1,22 @@
+{
+  "id": "1817",
+  "name": "arms stretch on a support",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms",
+    "shoulders",
+    "chest"
+  ],
+  "category": "stretching",
+  "description": "Resting your arms on a support and sinking down stretches the biceps and front of the shoulders. The support does part of the work for you.",
+  "instructions": [
+    "Place your hands or forearms on a bench or other stable support behind you.",
+    "Lower your body slightly and lean away until you feel a stretch in the front of your arms.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

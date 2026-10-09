@@ -1,0 +1,24 @@
+{
+  "id": "3666",
+  "name": "walking on incline treadmill",
+  "bodyPart": "cardio",
+  "equipment": "leverage machine",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "cardio",
+  "description": "A walk on a treadmill with an incline, which makes the glutes and calves work harder. A steady, low impact cardio option.",
+  "instructions": [
+    "Adjust the incline level on the treadmill to your desired intensity.",
+    "Stand on the treadmill with your feet shoulder-width apart.",
+    "Start walking at a comfortable pace, ensuring that you maintain proper form.",
+    "Engage your core muscles and keep your back straight throughout the exercise.",
+    "Continue walking on the incline treadmill for the desired duration of your cardio workout.",
+    "Gradually decrease the incline and speed of the treadmill to cool down before stopping."
+  ],
+  "femaleVariant": "5209",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "6754",
+  "name": "bodyweight lying shoulder external rotation",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "rear deltoids"
+  ],
+  "category": "rehab",
+  "description": "A side-lying rotation that turns the forearm upward. It strengthens the rotator cuff without weights.",
+  "instructions": [
+    "Lie on your side with your elbow bent 90 degrees and tucked at your waist.",
+    "Rest your forearm across your stomach.",
+    "Rotate your forearm upward, keeping the elbow in.",
+    "Pause at the top.",
+    "Lower slowly.",
+    "Finish the reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

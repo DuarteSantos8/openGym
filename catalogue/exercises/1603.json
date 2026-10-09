@@ -1,0 +1,22 @@
+{
+  "id": "1603",
+  "name": "weighted exercise ball wall squat",
+  "bodyPart": "upper legs",
+  "equipment": "weighted",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A wall squat with a stability ball behind you while holding extra weight. It adds load to a back-supported squat.",
+  "instructions": [
+    "Place a stability ball between your lower back and a wall.",
+    "Hold your weight at chest level or at your sides.",
+    "Step your feet forward and squat as the ball rolls down your back.",
+    "Lower until your thighs are about parallel to the floor.",
+    "Press through your heels to rise back up."
+  ],
+  "textSource": "opengym"
+}

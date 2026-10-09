@@ -1,0 +1,40 @@
+{
+  "id": "0542",
+  "name": "kettlebell one arm snatch",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "forearms",
+    "core"
+  ],
+  "category": "olympic",
+  "description": "You swing a kettlebell from between your legs to overhead in one fluid motion with a single arm. A power exercise for hips, shoulders and back.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a kettlebell in one hand between your legs.",
+    "Bend your knees slightly and hinge at the hips, lowering the kettlebell towards the ground.",
+    "Explosively extend your hips and knees, using the momentum to swing the kettlebell up towards your shoulder.",
+    "As the kettlebell reaches shoulder height, rotate your hand and punch it straight up overhead, fully extending your arm.",
+    "Lower the kettlebell back down between your legs and repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "bodyPart": "full body",
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "hamstring",
+      "trapezius",
+      "deltoids"
+    ],
+    "secondaries": [
+      "calves",
+      "forearm",
+      "triceps",
+      "lower-back",
+      "abs",
+      "obliques"
+    ]
+  },
+  "textSource": "exercisedb"
+}

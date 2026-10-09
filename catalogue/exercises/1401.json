@@ -1,0 +1,23 @@
+{
+  "id": "1401",
+  "name": "muscle-up (on vertical bar)",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "triceps",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A muscle-up on a vertical bar, pulling up and then pressing over the top. It trains the lats, chest and triceps in one flowing move.",
+  "instructions": [
+    "Start by hanging from a vertical bar with your palms facing away from you and your arms fully extended.",
+    "Engage your core and pull your body up towards the bar, leading with your chest.",
+    "As you pull yourself up, lean back slightly and bring your elbows towards your sides.",
+    "Continue pulling until your chest reaches the bar and your elbows are fully bent.",
+    "Pause for a moment at the top, then slowly lower yourself back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

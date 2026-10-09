@@ -1,0 +1,34 @@
+{
+  "id": "0049",
+  "name": "barbell incline row",
+  "bodyPart": "back",
+  "equipment": "barbell",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Chest supported on an incline bench, you row the bar toward your chest. Works the upper back with little lower back stress.",
+  "instructions": [
+    "Set up an incline bench at a 45-degree angle.",
+    "Lie face down on the bench with your chest against the pad and your feet flat on the ground.",
+    "Grasp the barbell with an overhand grip, slightly wider than shoulder-width apart.",
+    "Keep your back straight and your core engaged.",
+    "Pull the barbell towards your chest, squeezing your shoulder blades together.",
+    "Pause for a moment at the top, then slowly lower the barbell back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm"
+    ]
+  },
+  "femaleVariant": "2503",
+  "textSource": "exercisedb"
+}

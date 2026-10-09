@@ -1,0 +1,22 @@
+{
+  "id": "0544",
+  "name": "kettlebell pistol squat",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A single leg squat holding a kettlebell at your chest as a counterweight. Builds leg strength, balance and mobility.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a kettlebell in front of your chest with both hands.",
+    "Lift your left foot off the ground and extend it forward, keeping it parallel to the ground.",
+    "Slowly lower your body down into a squat position, keeping your right foot flat on the ground and your left leg extended.",
+    "Pause for a moment at the bottom of the squat, then push through your right heel to return to the starting position.",
+    "Repeat for the desired number of repetitions, then switch legs."
+  ],
+  "textSource": "exercisedb"
+}

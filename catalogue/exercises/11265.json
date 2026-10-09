@@ -1,0 +1,21 @@
+{
+  "id": "11265",
+  "name": "cable standing hip flexion v. 3",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A standing cable knee raise that trains the hip flexors. It helps lifting your leg with control.",
+  "instructions": [
+    "Attach an ankle strap to a low pulley, face away from the machine, and hold on for balance.",
+    "Stand tall with your core braced.",
+    "Drive your working knee forward and up.",
+    "Pause at the top.",
+    "Lower slowly, finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

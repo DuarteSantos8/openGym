@@ -1,0 +1,22 @@
+{
+  "id": "1652",
+  "name": "dumbbell bicep curl on exercise ball with leg raised",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A dumbbell curl on an exercise ball with one leg raised. It trains the biceps while testing balance.",
+  "instructions": [
+    "Sit on an exercise ball with your feet flat on the ground and your back straight.",
+    "Hold a dumbbell in each hand with your palms facing forward and your arms fully extended.",
+    "Slowly curl the dumbbells towards your shoulders, keeping your elbows close to your sides.",
+    "Pause for a moment at the top of the movement, then slowly lower the dumbbells back to the starting position.",
+    "While performing the bicep curl, raise one leg off the ground and hold it in the air for the duration of the exercise.",
+    "Repeat for the desired number of repetitions, then switch legs and repeat."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "7177",
+  "name": "lever seated single calf press",
+  "bodyPart": "lower legs",
+  "equipment": "leverage machine",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus"
+  ],
+  "category": "strength",
+  "description": "A seated machine press working one calf at a time to build lower leg strength.",
+  "instructions": [
+    "Sit in the machine and place the ball of one foot on the platform.",
+    "Rest the other foot on the floor or the support.",
+    "Press up through your toes as high as you can.",
+    "Pause and squeeze your calf.",
+    "Lower your heel slowly for a full stretch.",
+    "Finish all reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

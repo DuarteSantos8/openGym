@@ -1,0 +1,23 @@
+{
+  "id": "8916",
+  "name": "side to side hop v. 2",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "calves",
+    "glutes"
+  ],
+  "category": "plyometrics",
+  "description": "You hop from one side to the other over an imaginary line. It builds lateral agility, leg power and conditioning.",
+  "instructions": [
+    "Stand on two feet with your knees slightly bent.",
+    "Hop sideways to one side, landing softly on the balls of your feet.",
+    "Immediately hop back to the other side.",
+    "Keep your chest up and your hips low.",
+    "Use your arms for balance and rhythm.",
+    "Go for a set time or a set number of reps."
+  ],
+  "textSource": "opengym"
+}

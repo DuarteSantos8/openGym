@@ -1,0 +1,21 @@
+{
+  "id": "0840",
+  "name": "weighted overhead crunch (on stability ball)",
+  "bodyPart": "waist",
+  "equipment": "weighted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A weighted crunch on a stability ball with the arms overhead. It trains the abs through a larger range of motion.",
+  "instructions": [
+    "Sit on a stability ball with your feet flat on the ground and your knees bent at a 90-degree angle.",
+    "Hold a weight plate or dumbbell with both hands and extend your arms overhead.",
+    "Engage your abs and slowly curl your torso forward, bringing your chest towards your knees.",
+    "Pause for a moment at the top, then slowly lower your torso back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

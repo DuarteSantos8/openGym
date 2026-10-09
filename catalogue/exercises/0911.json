@@ -1,0 +1,21 @@
+{
+  "id": "0911",
+  "name": "band lying leg curl",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A leg curl while lying down using a band. It targets the hamstrings.",
+  "instructions": [
+    "Lie face down with a band anchored to your ankles.",
+    "Keep your hips pressed down.",
+    "Curl your heels toward your glutes.",
+    "Squeeze your hamstrings.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

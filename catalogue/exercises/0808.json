@@ -1,0 +1,33 @@
+{
+  "id": "0808",
+  "name": "suspended row",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight row with suspension handles, leaning back and pulling the chest to the hands. It trains the back and biceps.",
+  "instructions": [
+    "Set up a suspension trainer at an appropriate height.",
+    "Stand facing the anchor point with your feet shoulder-width apart.",
+    "Hold the handles with an overhand grip, palms facing each other.",
+    "Lean back, keeping your body straight and your heels on the ground.",
+    "Pull your chest towards the handles, squeezing your shoulder blades together.",
+    "Pause for a moment at the top, then slowly lower yourself back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm"
+    ]
+  },
+  "textSource": "exercisedb"
+}

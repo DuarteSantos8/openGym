@@ -1,0 +1,22 @@
+{
+  "id": "1505",
+  "name": "band calf raise v. 3",
+  "bodyPart": "lower legs",
+  "equipment": "band",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "strength",
+  "description": "A calf raise using a band for resistance. It builds calf strength and ankle control.",
+  "instructions": [
+    "Secure the band under your feet or around your shoulders as set up.",
+    "Stand tall with your feet hip-width apart.",
+    "Rise onto the balls of your feet as high as you can.",
+    "Pause and squeeze your calves.",
+    "Lower slowly until your heels are back on the floor."
+  ],
+  "textSource": "opengym"
+}

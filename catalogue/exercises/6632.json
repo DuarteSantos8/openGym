@@ -1,0 +1,22 @@
+{
+  "id": "6632",
+  "name": "diagonal reach on chair",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "shoulders"
+  ],
+  "category": "mobility",
+  "description": "A seated reach across the body toward the opposite foot. It loosens the trunk and works the obliques gently.",
+  "instructions": [
+    "Sit tall on the front edge of a chair with feet flat.",
+    "Extend your arms out in front of you.",
+    "Reach one hand diagonally down toward the opposite foot, rotating your torso.",
+    "Return to upright with control.",
+    "Reach to the other side and keep alternating."
+  ],
+  "textSource": "opengym"
+}

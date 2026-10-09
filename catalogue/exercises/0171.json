@@ -1,0 +1,32 @@
+{
+  "id": "0171",
+  "name": "cable incline fly",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "deltoids",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "An incline cable fly. Targets the upper chest.",
+  "instructions": [
+    "Adjust the cable machine to a low position and attach the handles.",
+    "Sit on an incline bench with your back against the pad and feet flat on the floor.",
+    "Grasp the handles with an overhand grip and extend your arms straight out in front of you.",
+    "Keeping a slight bend in your elbows, open your arms out to the sides in a controlled motion.",
+    "Pause for a moment at the fully extended position, then slowly return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "chest"
+    ],
+    "secondaries": [
+      "upper-back",
+      "trapezius"
+    ]
+  },
+  "femaleVariant": "3050",
+  "textSource": "exercisedb"
+}

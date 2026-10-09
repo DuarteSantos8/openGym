@@ -1,0 +1,22 @@
+{
+  "id": "5073",
+  "name": "kettlebell sumo squat v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "adductors",
+    "quadriceps",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "Squat with a wide stance and a kettlebell hanging between your legs. It works the glutes, inner thighs and quads.",
+  "instructions": [
+    "Stand with feet wide and toes turned out, holding a kettlebell with both hands in front of you.",
+    "Keep your chest tall and back flat.",
+    "Sit down between your legs until your thighs are about parallel.",
+    "Push your knees out over your toes.",
+    "Drive through your heels to stand and squeeze your glutes."
+  ],
+  "textSource": "opengym"
+}

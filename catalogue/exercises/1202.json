@@ -1,0 +1,23 @@
+{
+  "id": "1202",
+  "name": "cable horizontal pallof press",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "Pressing a cable straight out from your chest while resisting the pull to rotate. It trains anti-rotation core strength.",
+  "instructions": [
+    "Set a cable at chest height and stand sideways to the stack.",
+    "Hold the handle at your chest with both hands and brace your core.",
+    "Press the handle straight out until your arms are extended.",
+    "Hold for a second without letting your torso twist.",
+    "Bring it back to your chest and finish the set, then switch sides."
+  ],
+  "femaleVariant": "8043",
+  "textSource": "opengym"
+}

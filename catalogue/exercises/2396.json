@@ -1,0 +1,21 @@
+{
+  "id": "2396",
+  "name": "cable lying biceps curl v. 2",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Lying on your back with a cable pulling from the floor, you curl the handle toward your shoulders to isolate the biceps under steady tension.",
+  "instructions": [
+    "Lie on your back on the floor facing the cable stack and hold the bar or handle with palms up.",
+    "Keep your upper arms still and pinned to the floor.",
+    "Curl the handle toward your shoulders, squeezing the biceps at the top.",
+    "Lower slowly until your arms are almost straight.",
+    "Keep your back flat and avoid lifting your shoulders as you curl."
+  ],
+  "textSource": "opengym"
+}

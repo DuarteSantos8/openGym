@@ -1,0 +1,24 @@
+{
+  "id": "4257",
+  "name": "shuffle",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "glutes",
+    "quadriceps",
+    "calves",
+    "adductors"
+  ],
+  "category": "plyometrics",
+  "description": "Quick lateral steps in an athletic stance. It builds agility, coordination and leg endurance.",
+  "instructions": [
+    "Stand with your feet slightly wider than your shoulders and knees bent.",
+    "Keep your chest up and your weight on your toes.",
+    "Step sideways without crossing your feet.",
+    "Move quickly for a few steps.",
+    "Change direction and shuffle back.",
+    "Stay low throughout."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "1888",
+  "name": "standing achilles stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles"
+  ],
+  "category": "stretching",
+  "description": "Simple standing stretch for the Achilles tendon and calf.",
+  "instructions": [
+    "Stand near a wall or support.",
+    "Step one foot back with the heel down.",
+    "Slightly bend the back knee to target the lower Achilles.",
+    "Keep your back foot pointing forward.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

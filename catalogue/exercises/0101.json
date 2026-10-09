@@ -1,0 +1,23 @@
+{
+  "id": "0101",
+  "name": "barbell speed squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A fast, light back squat. Builds explosive leg power and speed out of the hole.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, toes slightly turned out.",
+    "Hold the barbell across your upper back, resting it on your traps or rear delts.",
+    "Engage your core and keep your chest up as you lower your hips back and down, as if sitting into a chair.",
+    "Lower until your thighs are parallel to the ground, or as low as you can comfortably go.",
+    "Drive through your heels to stand back up, squeezing your glutes at the top.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

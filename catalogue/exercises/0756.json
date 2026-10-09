@@ -1,0 +1,22 @@
+{
+  "id": "0756",
+  "name": "smith hip raise",
+  "bodyPart": "waist",
+  "equipment": "smith machine",
+  "target": "abs",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "On the smith machine, you press your hips up with the bar across them. Works the glutes and hamstrings.",
+  "instructions": [
+    "Position yourself on the smith machine with your back against the pad and your feet shoulder-width apart.",
+    "Place your hands on the barbell, slightly wider than shoulder-width apart.",
+    "Engage your core and glutes, then push through your heels to raise your hips off the ground.",
+    "Continue lifting until your body forms a straight line from your knees to your shoulders.",
+    "Hold for a moment at the top, then slowly lower your hips back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

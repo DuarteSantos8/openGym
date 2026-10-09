@@ -1,0 +1,22 @@
+{
+  "id": "4232",
+  "name": "weighted seated reverse wrist curl",
+  "bodyPart": "lower arms",
+  "equipment": "weighted",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist extensors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "Wrist curls with palms down while seated, using a weight. They build the muscles on top of the forearm.",
+  "instructions": [
+    "Sit with your forearms on your thighs, palms facing down.",
+    "Let your hands hang over your knees holding weights.",
+    "Lower your wrists to stretch the forearms.",
+    "Curl your wrists up as high as you can.",
+    "Lower slowly.",
+    "Keep your forearms still on your thighs."
+  ],
+  "textSource": "opengym"
+}

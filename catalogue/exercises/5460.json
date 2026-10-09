@@ -1,0 +1,23 @@
+{
+  "id": "5460",
+  "name": "explosive push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A push-up pushed fast enough for your hands to leave the floor. Builds upper-body power.",
+  "instructions": [
+    "Start in a high plank with hands under shoulders.",
+    "Lower your chest toward the floor.",
+    "Push up explosively so your hands lift off.",
+    "Land softly with bent elbows.",
+    "Go straight into the next rep.",
+    "Keep your body in a straight line."
+  ],
+  "textSource": "opengym"
+}

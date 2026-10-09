@@ -1,0 +1,23 @@
+{
+  "id": "0703",
+  "name": "side bridge hip abduction (star)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A side plank with the top leg raised in a star shape. It works the outer hip and obliques.",
+  "instructions": [
+    "Start in a side plank on your forearm.",
+    "Keep your body straight.",
+    "Lift your top leg toward the ceiling.",
+    "Hold briefly.",
+    "Lower the leg with control.",
+    "Switch sides after your reps."
+  ],
+  "textSource": "opengym"
+}

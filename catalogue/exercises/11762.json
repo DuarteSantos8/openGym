@@ -1,0 +1,23 @@
+{
+  "id": "11762",
+  "name": "smith bent over row (chest supported)",
+  "bodyPart": "back",
+  "equipment": "smith machine",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rhomboids",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A chest-supported row on the Smith machine that takes stress off the lower back.",
+  "instructions": [
+    "Set an incline bench under the bar and lie chest down on it.",
+    "Grip the bar just wider than shoulder width.",
+    "Pull the bar toward your lower ribs.",
+    "Squeeze your shoulder blades together at the top.",
+    "Lower slowly until your arms are straight."
+  ],
+  "textSource": "opengym"
+}

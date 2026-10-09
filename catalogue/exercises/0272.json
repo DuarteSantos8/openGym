@@ -1,0 +1,21 @@
+{
+  "id": "0272",
+  "name": "crunch (on stability ball, arms straight)",
+  "bodyPart": "waist",
+  "equipment": "stability ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A stability ball crunch with the arms held straight. The extended arms make it harder for the abs.",
+  "instructions": [
+    "Sit on the stability ball with your feet flat on the ground and your knees bent at a 90-degree angle.",
+    "Lie back on the ball until your lower back is supported and your upper body is parallel to the floor.",
+    "Place your hands behind your head or cross them over your chest.",
+    "Engage your abs and lift your upper body off the ball, curling your shoulders towards your hips.",
+    "Pause for a moment at the top, then slowly lower your upper body back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

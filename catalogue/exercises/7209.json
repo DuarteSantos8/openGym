@@ -1,0 +1,23 @@
+{
+  "id": "7209",
+  "name": "resistance band kneeling leg half circle",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A kneeling leg sweep against a band that works the glutes and outer hips.",
+  "instructions": [
+    "Start on hands and knees with the band around your thighs or foot.",
+    "Lift one leg out to the side with a bent knee.",
+    "Sweep it in a half circle, back and up.",
+    "Keep your hips level and your core tight.",
+    "Reverse the circle to return.",
+    "Finish all reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

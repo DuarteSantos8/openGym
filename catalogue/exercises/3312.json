@@ -1,0 +1,24 @@
+{
+  "id": "3312",
+  "name": "weighted muscle up (on bar)",
+  "bodyPart": "back",
+  "equipment": "weighted",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "triceps",
+    "shoulders",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A weighted muscle up performed with the added load on a bar. An advanced pull and dip that trains the lats, chest and triceps.",
+  "instructions": [
+    "Start by hanging from a pull-up bar with your palms facing away from you and your hands slightly wider than shoulder-width apart.",
+    "Engage your core and pull your shoulder blades down and back.",
+    "Bend your elbows and pull your chest towards the bar, keeping your body straight.",
+    "Once your chest reaches the bar, push down with your hands and drive your elbows back, lifting your body above the bar.",
+    "Pause at the top of the movement, then slowly lower yourself back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "9932",
+  "name": "barbell banded weighted plate bench press",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A bench press with resistance bands and plates added to the bar so the load gets heavier as you lock out. It builds chest and triceps strength through the top range.",
+  "instructions": [
+    "Lie on a bench and make sure the bands and plates are secured on the barbell.",
+    "Unrack the bar and hold it over your chest with your arms extended.",
+    "Lower the bar to your mid chest under control.",
+    "Press it back up, fighting the rising band tension.",
+    "Lock out your elbows without losing shoulder position.",
+    "Keep your feet planted and shoulder blades pinched together."
+  ],
+  "textSource": "opengym"
+}

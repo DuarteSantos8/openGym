@@ -1,0 +1,22 @@
+{
+  "id": "2838",
+  "name": "bicycle",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "lower abs"
+  ],
+  "category": "pilates",
+  "description": "A pedalling leg movement lying on your back that works the abs and hip flexors.",
+  "instructions": [
+    "Lie on your back with your hands behind your head.",
+    "Lift your legs and curl your shoulders up.",
+    "Extend one leg while bringing the opposite elbow toward the other knee.",
+    "Switch sides in a slow pedalling motion.",
+    "Keep your lower back pressed down."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "5334",
+  "name": "cross twisting sit up v. 2",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A sit-up with a cross-body twist, a second variation. It works the abs and obliques together.",
+  "instructions": [
+    "Lie on your back with knees bent and hands behind your head.",
+    "Sit up while rotating your torso.",
+    "Bring one elbow toward the opposite knee.",
+    "Lower back down slowly.",
+    "Alternate sides each rep.",
+    "Avoid pulling on your neck."
+  ],
+  "textSource": "opengym"
+}

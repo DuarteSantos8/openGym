@@ -1,0 +1,22 @@
+{
+  "id": "4747",
+  "name": "dumbbell lying woodchop",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A woodchop done lying on your back, moving a dumbbell diagonally across your body. It works the obliques.",
+  "instructions": [
+    "Lie on your back with knees bent, holding a dumbbell with both hands beside one hip.",
+    "Keep your arms mostly straight.",
+    "Sweep the dumbbell diagonally up and across to above the opposite shoulder.",
+    "Rotate your torso with the movement.",
+    "Return under control and switch sides after the set."
+  ],
+  "textSource": "opengym"
+}

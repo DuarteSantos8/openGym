@@ -1,0 +1,22 @@
+{
+  "id": "4928",
+  "name": "seated calf stretch v. 2",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles"
+  ],
+  "category": "stretching",
+  "description": "A seated stretch for the calves, a second variation. It helps loosen tight lower legs.",
+  "instructions": [
+    "Sit with one leg straight in front of you.",
+    "Loop your hands or a strap around the ball of your foot.",
+    "Gently pull your toes toward you.",
+    "Feel the stretch in the calf.",
+    "Hold for 20-30 seconds.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

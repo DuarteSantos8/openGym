@@ -1,0 +1,23 @@
+{
+  "id": "4226",
+  "name": "cable lying shrug",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "traps",
+  "secondaryMuscles": [
+    "upper back",
+    "trapezius",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A shrug performed lying down with a cable pulling from your feet. It trains the upper traps with steady tension.",
+  "instructions": [
+    "Lie on your back with a low pulley near your feet.",
+    "Hold the handle with straight arms down by your sides.",
+    "Shrug your shoulders toward your ears.",
+    "Squeeze at the top for a second.",
+    "Lower slowly to a full stretch.",
+    "Keep your arms straight throughout."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "10565",
+  "name": "90 to 90 press stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "adductors",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "Sit in a 90-degree hip position and press forward to stretch the glutes and hips. It improves hip rotation.",
+  "instructions": [
+    "Sit on the floor with both knees bent at 90 degrees, one leg in front, one to the side.",
+    "Sit tall.",
+    "Hinge forward over the front shin with a flat back.",
+    "Hold for 20-30 seconds.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

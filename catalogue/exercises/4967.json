@@ -1,0 +1,22 @@
+{
+  "id": "4967",
+  "name": "lateral raise arms (form check)",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A form check drawing for the lateral raise, showing correct and incorrect technique. It reminds you how to train the side delts safely.",
+  "instructions": [
+    "Stand tall with dumbbells at your sides.",
+    "Raise your arms out to the sides.",
+    "Stop at shoulder height.",
+    "Lower slowly.",
+    "Keep a slight bend in your elbows.",
+    "Compare with the incorrect position to correct your form."
+  ],
+  "textSource": "opengym"
+}

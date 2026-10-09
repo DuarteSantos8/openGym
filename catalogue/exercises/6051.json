@@ -1,0 +1,23 @@
+{
+  "id": "6051",
+  "name": "bottle weighted kneeling squat",
+  "bodyPart": "upper legs",
+  "equipment": "weighted",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A squat from a kneeling position holding a bottle. It trains the glutes and hips without loading your feet.",
+  "instructions": [
+    "Kneel on a mat with hips over knees, holding a bottle at your chest.",
+    "Sit your hips back toward your heels.",
+    "Pause lightly, keeping your back straight.",
+    "Drive your hips forward to return to upright.",
+    "Squeeze your glutes at the top."
+  ],
+  "textSource": "opengym"
+}

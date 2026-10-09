@@ -1,0 +1,22 @@
+{
+  "id": "1179",
+  "name": "flutter kicks v. 2",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "Small alternating leg kicks that burn the lower abs.",
+  "instructions": [
+    "Lie on your back with hands under your hips.",
+    "Lift both legs a few inches off the floor.",
+    "Kick your legs up and down in small, quick alternating moves.",
+    "Press your lower back into the floor.",
+    "Continue for 20-40 seconds."
+  ],
+  "femaleVariant": "5734",
+  "textSource": "opengym"
+}

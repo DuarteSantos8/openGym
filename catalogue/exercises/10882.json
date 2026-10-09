@@ -1,0 +1,23 @@
+{
+  "id": "10882",
+  "name": "kneeling plyo push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "An explosive push-up from the knees. It builds pressing power.",
+  "instructions": [
+    "Kneel in a push-up position with hands under shoulders.",
+    "Keep a straight line from knees to head.",
+    "Lower your chest toward the floor.",
+    "Push up explosively so your hands leave the floor.",
+    "Land softly with bent elbows.",
+    "Go straight into the next rep."
+  ],
+  "textSource": "opengym"
+}

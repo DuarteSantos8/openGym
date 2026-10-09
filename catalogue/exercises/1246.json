@@ -1,0 +1,23 @@
+{
+  "id": "1246",
+  "name": "hollow hold",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "A gymnastics-style hold with your shoulders and legs lifted. It builds deep core strength.",
+  "instructions": [
+    "Lie on your back with your arms overhead and legs straight.",
+    "Press your lower back into the floor.",
+    "Lift your shoulders and legs a few inches off the ground.",
+    "Hold the shape and breathe steadily.",
+    "Hold for 20-30 seconds, then rest."
+  ],
+  "femaleVariant": "7157",
+  "textSource": "opengym"
+}

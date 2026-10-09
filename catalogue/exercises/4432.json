@@ -1,0 +1,21 @@
+{
+  "id": "4432",
+  "name": "weighted lying neck head twist",
+  "bodyPart": "neck",
+  "equipment": "weighted",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "sternocleidomastoid",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A lying neck twist with light resistance to work the muscles that rotate the head.",
+  "instructions": [
+    "Lie face up with a light weight resting on your forehead.",
+    "Keep your chin slightly tucked.",
+    "Rotate your head slowly to one side.",
+    "Return to the middle and rotate to the other side.",
+    "Keep the movement small and controlled."
+  ],
+  "textSource": "opengym"
+}

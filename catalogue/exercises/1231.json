@@ -1,0 +1,22 @@
+{
+  "id": "1231",
+  "name": "dumbbell seated one arm shoulder press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A seated overhead press with one dumbbell. Working one arm at a time shows any imbalances.",
+  "instructions": [
+    "Sit on a bench with back support, holding a dumbbell at your shoulder.",
+    "Brace your core.",
+    "Press the dumbbell up until your arm is straight.",
+    "Lower it slowly to your shoulder.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

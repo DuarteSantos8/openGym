@@ -1,0 +1,22 @@
+{
+  "id": "3329",
+  "name": "roman chair sit up",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A sit up on a roman chair that gives you a big range of motion for your abs and hip flexors.",
+  "instructions": [
+    "Sit on the roman chair with your feet locked under the pads.",
+    "Cross your arms over your chest and lean back slightly.",
+    "Curl your torso up until your chest nears your thighs.",
+    "Pause at the top and keep your neck relaxed.",
+    "Lower back slowly under control and repeat."
+  ],
+  "textSource": "opengym"
+}

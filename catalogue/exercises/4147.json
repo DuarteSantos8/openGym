@@ -1,0 +1,23 @@
+{
+  "id": "4147",
+  "name": "band narrow grip high row",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "biceps",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A high row with a narrow grip against a band. It targets the upper back and rear shoulders as you pull toward the face.",
+  "instructions": [
+    "Anchor the band at or above head height and grip it with hands close together.",
+    "Step back until there is tension and stand tall.",
+    "Pull your hands toward your upper chest, elbows high and out.",
+    "Squeeze your shoulder blades together.",
+    "Return slowly with control.",
+    "Keep your ribs down and avoid arching your back."
+  ],
+  "textSource": "opengym"
+}

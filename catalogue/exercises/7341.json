@@ -1,0 +1,22 @@
+{
+  "id": "7341",
+  "name": "hopping pendulum",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "calves",
+    "glutes",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "Side to side hopping that swings your legs like a pendulum, training balance and leg power.",
+  "instructions": [
+    "Stand on one leg with a slight knee bend.",
+    "Hop sideways to land on the other foot.",
+    "Swing the free leg across behind you for balance.",
+    "Land softly and stay controlled.",
+    "Keep alternating at a steady pace."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "2756",
+  "name": "cable hip abduction (toe in)",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A cable leg raise to the side with the toes turned in, shifting the work toward the outer glute.",
+  "instructions": [
+    "Attach an ankle cuff to a low cable and stand side-on to the stack.",
+    "Hold a support for balance.",
+    "Turn your toes inward slightly.",
+    "Lift the working leg out to the side.",
+    "Return slowly, then switch legs."
+  ],
+  "textSource": "opengym"
+}

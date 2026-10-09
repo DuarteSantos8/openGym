@@ -1,0 +1,22 @@
+{
+  "id": "1820",
+  "name": "ez bar preacher arms stretch",
+  "bodyPart": "upper arms",
+  "equipment": "ez barbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms",
+    "shoulders"
+  ],
+  "category": "stretching",
+  "description": "Resting your arms on a preacher bench while holding an EZ bar lets the arms extend fully, stretching the biceps.",
+  "instructions": [
+    "Sit at a preacher bench and rest your upper arms on the pad, holding an EZ bar.",
+    "Let the bar lower under control until your arms are fully extended, using a light load.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

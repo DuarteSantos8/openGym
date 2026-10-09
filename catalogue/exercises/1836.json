@@ -1,0 +1,21 @@
+{
+  "id": "1836",
+  "name": "forward flexion neck stretch",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "trapezius",
+    "upper back"
+  ],
+  "category": "stretching",
+  "description": "Bends the neck forward to lengthen the muscles at the back of the neck and upper shoulders.",
+  "instructions": [
+    "Stand or sit tall with your shoulders down.",
+    "Place both hands lightly behind your head.",
+    "Let your elbows drop forward and ease your head toward your chest.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Release your hands and return to neutral."
+  ],
+  "textSource": "opengym"
+}

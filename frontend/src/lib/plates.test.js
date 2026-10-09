@@ -252,3 +252,18 @@ describe('dropGrid', () => {
     expect(dropGrid(S, { id: db, inc: 2 })).toBe(2)
   })
 })
+
+describe('loads between quarter-unit boundaries', () => {
+  test.each([0.1, 2.4, 2.6, 7.4, 8.1])('never exceeds %s and reports the actual deficit', weight => {
+    const result = plateStack(weight, [{ w: 2.5, n: 3 }])
+    const loaded = result.plates.reduce((sum, w) => sum + w, 0)
+    expect(loaded).toBeLessThanOrEqual(weight)
+    expect(result.missing).toBeCloseTo(weight - loaded)
+  })
+
+  test('drop sets snap to a load the counted plates can make', () => {
+    const S = { unit: 'kg', plates: { kg: { 5: 3 } } }
+    const snap = dropGrid(S, { id: idOf('barbell') })
+    expect(snap(48.74)).toBe(40)
+  })
+})

@@ -1,0 +1,23 @@
+{
+  "id": "6290",
+  "name": "chaturanga dandasana (four limbed staff pose)",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "core",
+    "shoulders",
+    "glutes"
+  ],
+  "category": "yoga",
+  "description": "A low push-up hold from plank. It builds triceps, chest and core strength.",
+  "instructions": [
+    "Start in a high plank with hands under shoulders.",
+    "Shift forward slightly.",
+    "Bend your elbows straight back to about 90 degrees.",
+    "Keep your body in one line, elbows close to your ribs.",
+    "Hold briefly, then press back up."
+  ],
+  "textSource": "opengym"
+}

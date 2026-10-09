@@ -1,0 +1,24 @@
+{
+  "id": "10677",
+  "name": "weighted backpack running",
+  "bodyPart": "cardio",
+  "equipment": "weighted",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "calves",
+    "core"
+  ],
+  "category": "cardio",
+  "description": "Running with a loaded backpack to raise the effort. It builds endurance and leg strength.",
+  "instructions": [
+    "Strap a snug backpack with a modest load on your back.",
+    "Start with an easy jog on flat ground.",
+    "Keep your torso tall and your steps light.",
+    "Maintain a pace where you can breathe steadily.",
+    "Cut back the load if your form suffers.",
+    "Run for 10-20 minutes."
+  ],
+  "textSource": "opengym"
+}

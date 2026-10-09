@@ -1,0 +1,23 @@
+{
+  "id": "10055",
+  "name": "dumbbell narrow squat lunge",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A narrow-stance lunge holding a dumbbell in each hand to add load for the quads and glutes.",
+  "instructions": [
+    "Stand with feet close together, a dumbbell in each hand at your sides.",
+    "Step one foot back and lower into a lunge, keeping your feet in a narrow line.",
+    "Drop your back knee toward the floor.",
+    "Keep your front knee over your ankle and chest up.",
+    "Push through the front heel to stand back up.",
+    "Switch legs and repeat."
+  ],
+  "textSource": "opengym"
+}

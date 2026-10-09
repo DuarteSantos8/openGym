@@ -1,0 +1,23 @@
+{
+  "id": "3297",
+  "name": "back lever",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "A gymnastics hold hanging from a bar with the body horizontal and facing down. It trains the upper back, shoulders and core.",
+  "instructions": [
+    "Start by hanging from a pull-up bar with an overhand grip, hands slightly wider than shoulder-width apart.",
+    "Engage your core and pull your shoulder blades down and back.",
+    "Bend your knees and tuck them towards your chest.",
+    "Slowly lift your legs up, keeping them straight, until your body is parallel to the ground.",
+    "Hold this position for a few seconds, then slowly lower your legs back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

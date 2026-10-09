@@ -1,0 +1,24 @@
+{
+  "id": "5328",
+  "name": "barbell standing shoulders press",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "trapezius",
+    "core"
+  ],
+  "category": "strength",
+  "description": "An overhead press done standing. It builds shoulder strength and total-body stability.",
+  "instructions": [
+    "Hold the bar at shoulder height with hands just outside shoulder-width.",
+    "Stand tall with glutes and core braced.",
+    "Press the bar straight overhead, moving your head back slightly.",
+    "Lock out with the bar over mid-foot.",
+    "Lower the bar back to your shoulders.",
+    "Avoid leaning back."
+  ],
+  "textSource": "opengym"
+}

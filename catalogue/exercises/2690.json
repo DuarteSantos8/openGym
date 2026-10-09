@@ -1,0 +1,22 @@
+{
+  "id": "2690",
+  "name": "dumbbell one arm lateral raise v. 2",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "A one-sided raise out to the side that builds the middle part of the shoulder.",
+  "instructions": [
+    "Stand holding a dumbbell in one hand at your side.",
+    "Keep a soft bend in the elbow.",
+    "Raise the arm out to the side until it reaches shoulder height.",
+    "Lower slowly without swinging.",
+    "Do all reps, then switch sides."
+  ],
+  "textSource": "opengym",
+  "maleVariant": "0356"
+}

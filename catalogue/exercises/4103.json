@@ -1,0 +1,23 @@
+{
+  "id": "4103",
+  "name": "trap bar standing shrug",
+  "bodyPart": "back",
+  "equipment": "trap bar",
+  "target": "traps",
+  "secondaryMuscles": [
+    "trapezius",
+    "forearms",
+    "grip muscles",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A shrug done holding a trap bar at your sides, loading the traps with a neutral grip.",
+  "instructions": [
+    "Stand inside the trap bar and lift it, holding the handles at your sides.",
+    "Keep your arms straight and chest tall.",
+    "Shrug your shoulders straight up toward your ears.",
+    "Hold briefly at the top.",
+    "Lower slowly and do not roll your shoulders."
+  ],
+  "textSource": "opengym"
+}

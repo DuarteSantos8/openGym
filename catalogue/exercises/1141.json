@@ -1,0 +1,24 @@
+{
+  "id": "1141",
+  "name": "suspender squat arms overhead",
+  "bodyPart": "upper legs",
+  "equipment": "suspension trainer",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A squat while holding the straps overhead, working the legs and mobility of the shoulders and torso.",
+  "instructions": [
+    "Hold the handles overhead with arms straight.",
+    "Stand with feet shoulder width apart.",
+    "Sit back and down into a squat.",
+    "Keep your arms up and chest tall.",
+    "Drive through your heels to stand.",
+    "Do not let the lower back round."
+  ],
+  "textSource": "opengym"
+}

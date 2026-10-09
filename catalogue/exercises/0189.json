@@ -1,0 +1,32 @@
+{
+  "id": "0189",
+  "name": "cable one arm bent over row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A one-arm cable row from a hinged position. It trains the back one side at a time and shows up any strength imbalance.",
+  "instructions": [
+    "Stand facing a cable machine with your feet shoulder-width apart.",
+    "Bend your knees slightly and hinge forward at the hips, keeping your back straight.",
+    "Grasp the cable handle with one hand, palm facing inward, and extend your arm fully.",
+    "Pull the cable handle towards your body, keeping your elbow close to your side, until your hand reaches your lower chest.",
+    "Pause for a moment, then slowly extend your arm back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm"
+    ]
+  },
+  "textSource": "exercisedb"
+}

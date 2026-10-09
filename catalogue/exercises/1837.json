@@ -1,0 +1,21 @@
+{
+  "id": "1837",
+  "name": "neck extensor stretch",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "trapezius",
+    "upper back"
+  ],
+  "category": "stretching",
+  "description": "Lengthens the extensor muscles at the back of the neck by tucking the chin down.",
+  "instructions": [
+    "Sit tall with your back straight.",
+    "Tuck your chin toward your chest.",
+    "Rest one hand on the back of your head and add very light pressure down.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Remove your hand and lift your head slowly."
+  ],
+  "textSource": "opengym"
+}

@@ -1,6 +1,6 @@
 // The German exercise-name rules, in one place. Imported by translate-de-exercise-names.mjs,
 // which checks every batch during translation and sends violations back to the model as a
-// correction, and by frontend/src/lib/de-exercise-names.test.js, which fails the build. The two
+// correction, and by frontend/src/lib/exercise-names.test.js, which fails the build. The two
 // callers share this definition deliberately: inline copies are how a rule drifts unseen.
 //
 // Every `fix` quotes the offending word. A generic instruction ("use the German term") is

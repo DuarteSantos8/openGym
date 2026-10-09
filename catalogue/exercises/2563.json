@@ -1,0 +1,24 @@
+{
+  "id": "2563",
+  "name": "power sled pull row",
+  "bodyPart": "back",
+  "equipment": "sled machine",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "biceps",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A row performed while pulling a loaded sled for back and grip strength.",
+  "instructions": [
+    "Attach a rope or handles to a loaded sled.",
+    "Hold the rope with your knees slightly bent.",
+    "Pull the sled toward you with a rowing motion.",
+    "Squeeze your shoulder blades.",
+    "Keep your back flat.",
+    "Repeat for the planned distance."
+  ],
+  "textSource": "opengym"
+}

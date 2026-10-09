@@ -1,0 +1,24 @@
+{
+  "id": "10759",
+  "name": "high knee walk",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "glutes",
+    "core",
+    "calves"
+  ],
+  "category": "mobility",
+  "description": "A walking warm-up where you lift each knee high. It primes the hips and legs.",
+  "instructions": [
+    "Stand tall with your arms relaxed.",
+    "Lift one knee toward your chest.",
+    "Step forward and lower it to the floor.",
+    "Repeat on the other side.",
+    "Keep your torso upright.",
+    "Walk 10-20 steps per leg."
+  ],
+  "textSource": "opengym"
+}

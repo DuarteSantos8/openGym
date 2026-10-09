@@ -1,0 +1,21 @@
+{
+  "id": "5118",
+  "name": "cable twist v. 2",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Rotate your torso against a cable. It strengthens the obliques and builds control of your trunk rotation.",
+  "instructions": [
+    "Set a cable at chest height and stand sideways to it.",
+    "Hold the handle with both hands in front of your chest.",
+    "Rotate your torso away from the cable, arms extended.",
+    "Keep your hips facing forward.",
+    "Return slowly, then switch sides after your reps."
+  ],
+  "textSource": "opengym"
+}

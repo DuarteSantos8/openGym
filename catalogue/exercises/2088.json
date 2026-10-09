@@ -1,0 +1,21 @@
+{
+  "id": "2088",
+  "name": "shoulder stretch with towel behind the back",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "chest"
+  ],
+  "category": "stretching",
+  "description": "Using a towel behind the back to ease the shoulders into a deeper stretch.",
+  "instructions": [
+    "Hold a towel in one hand and raise that arm overhead, bending the elbow.",
+    "Reach the other hand up from behind your back and grab the towel.",
+    "Gently pull the towel down with the lower hand.",
+    "Keep your head upright.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

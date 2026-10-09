@@ -1,0 +1,25 @@
+{
+  "id": "3893",
+  "name": "assault bike run",
+  "bodyPart": "cardio",
+  "equipment": "stationary bike",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "hamstrings",
+    "shoulders",
+    "core"
+  ],
+  "category": "cardio",
+  "description": "A hard-effort ride on an air bike that gets your heart rate up and trains the legs and arms.",
+  "instructions": [
+    "Adjust the seat height and sit on the bike.",
+    "Grip the handles and push and pull with your arms.",
+    "Pedal at a steady, strong pace.",
+    "Increase the effort for intervals.",
+    "Keep your breathing controlled.",
+    "Ride for a set time or distance."
+  ],
+  "textSource": "opengym"
+}

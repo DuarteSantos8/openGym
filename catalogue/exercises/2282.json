@@ -1,0 +1,22 @@
+{
+  "id": "2282",
+  "name": "lever neck extension (plate loaded)",
+  "bodyPart": "neck",
+  "equipment": "leverage machine",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "trapezius",
+    "sternocleidomastoid"
+  ],
+  "category": "strength",
+  "description": "A plate-loaded machine movement that strengthens the muscles at the back of the neck.",
+  "instructions": [
+    "Set the weight light and adjust the pad to rest on the back of your head.",
+    "Sit tall and bring your chin slightly down.",
+    "Press your head back against the pad slowly.",
+    "Move only through a comfortable range.",
+    "Return slowly to the start.",
+    "Repeat for the planned reps with control."
+  ],
+  "textSource": "opengym"
+}

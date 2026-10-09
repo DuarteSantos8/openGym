@@ -1,0 +1,22 @@
+{
+  "id": "4728",
+  "name": "dumbbell bench dip",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A bench dip with a dumbbell resting on your lap for extra load. It hits the triceps and the front of the shoulders.",
+  "instructions": [
+    "Sit on a bench edge, hands beside your hips, and slide your hips off the front.",
+    "Rest a dumbbell on your thighs, holding it steady with your hips and legs.",
+    "Bend your elbows to lower until they reach about 90 degrees.",
+    "Keep your back close to the bench and shoulders down.",
+    "Press through your palms to straighten your arms."
+  ],
+  "textSource": "opengym"
+}

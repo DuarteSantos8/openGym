@@ -1,0 +1,24 @@
+{
+  "id": "3439",
+  "name": "medicine ball backward throw",
+  "bodyPart": "full body",
+  "equipment": "medicine ball",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "shoulders",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "An explosive overhead throw behind you that trains the hips and posterior chain.",
+  "instructions": [
+    "Stand with a medicine ball held between your legs.",
+    "Squat slightly, then explode up.",
+    "Swing the ball up and back over your head.",
+    "Release it behind you at full extension.",
+    "Retrieve the ball.",
+    "Reset your stance and repeat."
+  ],
+  "textSource": "opengym"
+}

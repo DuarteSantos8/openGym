@@ -9,8 +9,10 @@ import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import BodyMap from './BodyMap.jsx'
 import { Thumb } from './Media.jsx'
 import Icon from './Icon.jsx'
+import ExerciseViewToggle from './ExerciseViewToggle.jsx'
 import { Button } from './ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
+import { useAutoMore } from '../lib/use-auto-more.js'
 import { isFav, sortFavouritesFirst } from '../lib/favourites.js'
 
 // One explorer for the Library and every catalogue picker. Supplying `onPick` turns
@@ -23,6 +25,7 @@ export default function MuscleExplorer({ onPick, onDetail, onPlan }) {
   const [eq, setEq] = useState('')
   const [shown, setShown] = useState(40)
   const [showAll, setShowAll] = useState(false)   // ignore the active equipment profile for this session
+  const moreRef = useAutoMore(() => setShown(s => s + 40))
   // Same rule as the Library and the picker: the active equipment profile narrows the catalogue
   // (and the per-muscle counts) unless the user asks for everything.
   const profile = activeProfile(S)
@@ -70,11 +73,11 @@ export default function MuscleExplorer({ onPick, onDetail, onPlan }) {
         <h4 className="sec" style={{ margin: 0 }}>{t('Exercises for {0}', t(MUSCLE_NAME[selected]))}</h4>
         <Button size="sm" variant="ghost" onClick={() => pick(selected)}>{t('Clear selection')}</Button>
       </div>
-      <div className={'search' + (narrowed ? ' has-count' : '') + (q ? ' has-clear' : '')} style={{ marginBottom: 10 }}><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+      <div className="search-row" style={{ marginBottom: 10 }}><div className={'search' + (narrowed ? ' has-count' : '') + (q ? ' has-clear' : '')}><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
         <input className="input" placeholder={t('Search…')} value={q} onChange={e => { setQ(e.target.value); setShown(40) }} />
         {narrowed && <span className="search-count" role="status" aria-label={exCount(exercises.length)}>{fmtNum(exercises.length)}</span>}
         {q && <button className="clear" onClick={() => { setQ(''); setShown(40) }} aria-label={t('Clear')}><Icon name="xmark" /></button>}
-      </div>
+      </div><ExerciseViewToggle /></div>
       {/* Changing body part keeps the equipment filter (issue #71, same rule as Library): the
           eqOn fallback above drops it only for this view if the new body part has nothing under
           it, without forgetting the choice. "All" clears it, since it spans every body part. */}
@@ -86,7 +89,7 @@ export default function MuscleExplorer({ onPick, onDetail, onPlan }) {
         <button className={'chip nocap' + (!eqOn ? ' on' : '')} onClick={() => { setEq(''); setShown(40) }}>{t('Any equipment')}</button>
         {eqOpts.map(x => <button key={x} className={'chip' + (eqOn === x ? ' on' : '')} onClick={() => { setEq(x); setShown(40) }}>{t(x)}</button>)}
       </div>}
-      <div className="list">
+      <div className={'list' + (S.exerciseView === 'cards' ? ' ex-grid' : '')}>
         {exercises.slice(0, shown).map(e => {
           const best = bestWeightFor(S, e.id)
           const primary = musclesOf(e)[selected] === 1
@@ -101,7 +104,7 @@ export default function MuscleExplorer({ onPick, onDetail, onPlan }) {
         })}
         {exercises.length === 0 && <div className="empty"><div className="ico"><Icon name="magnifier" /></div>{t('No match')}</div>}
       </div>
-      {exercises.length > shown && <><div style={{ height: 10 }} /><Button onClick={() => setShown(s => s + 40)}>{t('Show more')}</Button></>}
+      {exercises.length > shown && <><div style={{ height: 10 }} /><Button ref={moreRef} onClick={() => setShown(s => s + 40)}>{t('Show more')}</Button></>}
     </>}
   </>
 }

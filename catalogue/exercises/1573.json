@@ -1,0 +1,22 @@
+{
+  "id": "1573",
+  "name": "lever seated one leg squat",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A seated machine squat done on one leg. It lets you load each leg separately with good support.",
+  "instructions": [
+    "Sit in the machine with your back against the pad and shoulders under the supports.",
+    "Place one foot on the platform at about shoulder width.",
+    "Lower under control by bending your knee.",
+    "Keep your heel flat and your knee in line with your toes.",
+    "Press back up, then switch legs after your reps."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "3452",
+  "name": "dumbbell svend press",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A plate-style squeeze press using a dumbbell held between your palms.",
+  "instructions": [
+    "Stand holding a dumbbell upright between your palms.",
+    "Hold it at chest level.",
+    "Squeeze your palms together.",
+    "Press the weight straight out.",
+    "Return to your chest.",
+    "Keep the squeeze all the time."
+  ],
+  "femaleVariant": "3453",
+  "textSource": "opengym"
+}

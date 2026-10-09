@@ -1,0 +1,23 @@
+{
+  "id": "4871",
+  "name": "dumbbell 6 ways raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rotator cuff",
+    "trapezius",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A series of six dumbbell raises in different directions. It thoroughly trains the shoulders.",
+  "instructions": [
+    "Hold light dumbbells at your sides.",
+    "Raise them to the side and lower.",
+    "Raise them to the front and lower.",
+    "Then bend forward and raise them out to the rear.",
+    "Complete all six variations as one rep."
+  ],
+  "textSource": "opengym"
+}

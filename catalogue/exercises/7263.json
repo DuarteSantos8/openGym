@@ -1,0 +1,22 @@
+{
+  "id": "7263",
+  "name": "sitting uppercut on chair",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "Seated punching move that fires the abs and shoulders with quick uppercut punches.",
+  "instructions": [
+    "Sit tall on the edge of a chair with your fists up by your chin.",
+    "Brace your core.",
+    "Rotate your torso and punch one fist upward in an uppercut.",
+    "Snap it back and punch with the other hand.",
+    "Keep a quick, steady rhythm for the set."
+  ],
+  "textSource": "opengym"
+}

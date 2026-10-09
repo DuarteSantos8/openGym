@@ -1,0 +1,23 @@
+{
+  "id": "3665",
+  "name": "power point plank",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "glutes"
+  ],
+  "category": "isometric",
+  "description": "A plank where you shift from your hands to your forearms and back, one arm at a time. It trains the abs and shoulders.",
+  "instructions": [
+    "Start in a high plank position with your hands directly under your shoulders and your body in a straight line from head to toe.",
+    "Engage your core and squeeze your glutes to maintain a stable position.",
+    "Lower your body down onto your forearms, one arm at a time, maintaining a straight line from head to toe.",
+    "Hold this position for the desired amount of time, keeping your core and glutes engaged.",
+    "To return to the starting position, push through your forearms and lift your body back up into a high plank position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

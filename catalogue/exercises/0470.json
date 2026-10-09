@@ -1,0 +1,22 @@
+{
+  "id": "0470",
+  "name": "hand opposite knee crunch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A crunch where you bring a hand toward the opposite knee. It works the abs and the obliques.",
+  "instructions": [
+    "Lie on your back with your knees bent and your hands behind your head.",
+    "Lift your shoulders and bring one knee up.",
+    "Reach the opposite hand toward that knee.",
+    "Lower and repeat on the other side.",
+    "Keep your lower back on the floor.",
+    "Do not pull on your neck."
+  ],
+  "textSource": "opengym"
+}

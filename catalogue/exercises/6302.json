@@ -1,0 +1,23 @@
+{
+  "id": "6302",
+  "name": "two legged inverted staff pose dwi pada viparita dandasana",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "shoulders",
+    "glutes",
+    "triceps",
+    "hip flexors"
+  ],
+  "category": "yoga",
+  "description": "A supported deep backbend resting on your forearms. It stretches the chest and spine.",
+  "instructions": [
+    "Start in a headstand or lie on your back with elbows on the floor.",
+    "Arch your back and bring your feet toward the floor.",
+    "Keep your forearms firm.",
+    "Stay in the backbend, breathing steadily.",
+    "Hold briefly, then come out carefully."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "4596",
+  "name": "front snap kick kickboxing (with partner)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "hamstrings",
+    "core",
+    "calves"
+  ],
+  "category": "combat",
+  "description": "A quick snapping front kick into a partner's pad that trains speed and leg control.",
+  "instructions": [
+    "Face your partner, who holds a pad at body height.",
+    "Raise your knee quickly.",
+    "Snap your lower leg out to hit the pad with the ball of your foot.",
+    "Recoil right away to bend the knee again.",
+    "Keep your hands up.",
+    "Set your foot down and switch sides."
+  ],
+  "textSource": "opengym"
+}

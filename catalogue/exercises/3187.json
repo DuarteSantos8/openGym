@@ -1,0 +1,22 @@
+{
+  "id": "3187",
+  "name": "kettlebell goblet squat jump",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A goblet squat that finishes with an explosive jump for leg power.",
+  "instructions": [
+    "Hold a kettlebell at your chest with both hands.",
+    "Squat down with your chest tall.",
+    "Explode upward into a jump.",
+    "Land softly with bent knees.",
+    "Reset and go into the next squat."
+  ],
+  "textSource": "opengym"
+}

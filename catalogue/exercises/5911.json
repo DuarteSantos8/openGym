@@ -1,0 +1,22 @@
+{
+  "id": "5911",
+  "name": "safety bar good morning",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A hip hinge with a safety squat bar resting on your shoulders, strengthening the hamstrings, glutes and lower back.",
+  "instructions": [
+    "Set the safety bar on your upper back and shoulders and hold the handles.",
+    "Stand with feet shoulder-width apart and knees slightly bent.",
+    "Push your hips back and lower your torso until it is near parallel to the floor.",
+    "Keep your back flat and neck neutral.",
+    "Drive your hips forward to stand tall."
+  ],
+  "textSource": "opengym"
+}

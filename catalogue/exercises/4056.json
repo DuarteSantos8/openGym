@@ -1,0 +1,24 @@
+{
+  "id": "4056",
+  "name": "dead bug with stability ball",
+  "bodyPart": "waist",
+  "equipment": "stability ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "lower abs",
+    "hip flexors",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Dead bug holding a stability ball between hands and knees. It builds deep core control.",
+  "instructions": [
+    "Lie on your back and hold the ball above your chest with your knees raised.",
+    "Press your lower back into the floor.",
+    "Extend your opposite arm and leg away, holding the ball with the rest.",
+    "Return to the center.",
+    "Alternate sides slowly."
+  ],
+  "femaleVariant": "8508",
+  "textSource": "opengym"
+}

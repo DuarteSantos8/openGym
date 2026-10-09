@@ -1,0 +1,23 @@
+{
+  "id": "3829",
+  "name": "lying floor hyperextension with towel",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "lower back",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A lying back extension while holding a towel taut. It builds your lower back and glutes with extra upper back work.",
+  "instructions": [
+    "Lie face down holding a taut towel in front of you.",
+    "Lift your chest and legs off the floor.",
+    "Keep pulling the towel apart.",
+    "Pause at the top.",
+    "Lower back down with control."
+  ],
+  "textSource": "opengym"
+}

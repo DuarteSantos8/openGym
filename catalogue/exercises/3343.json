@@ -1,0 +1,22 @@
+{
+  "id": "3343",
+  "name": "lever lateral raise v. 2",
+  "bodyPart": "shoulders",
+  "equipment": "leverage machine",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rotator cuff",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A machine lateral raise that isolates the side delts with smooth, guided resistance.",
+  "instructions": [
+    "Adjust the seat so your shoulders line up with the machine pivots.",
+    "Sit tall and place your arms against the pads.",
+    "Raise your arms out to the sides to shoulder height.",
+    "Pause briefly at the top.",
+    "Lower slowly without letting the weights rest."
+  ],
+  "textSource": "opengym"
+}

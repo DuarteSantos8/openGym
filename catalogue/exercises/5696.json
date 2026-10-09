@@ -1,0 +1,23 @@
+{
+  "id": "5696",
+  "name": "cheat curl",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A heavier biceps curl that uses a small hip swing to get the bar past the sticking point. It lets you overload the biceps on the way up.",
+  "instructions": [
+    "Stand holding a barbell with an underhand grip, arms straight.",
+    "Lean back slightly and swing your hips to start the lift.",
+    "Curl the bar up to your chest.",
+    "Lower the bar slowly, resisting its weight.",
+    "Reset your posture before the next rep."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "1535",
+  "name": "barbell snatch deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "lower back",
+    "upper back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A deadlift with a wide snatch grip. It strengthens the pulling position used in the snatch.",
+  "instructions": [
+    "Stand with the bar over your mid-foot and take a wide snatch grip.",
+    "Set your back flat and chest up.",
+    "Push the floor away to lift the bar, keeping it close.",
+    "Stand tall with your hips and knees extended.",
+    "Lower the bar with control along the same path."
+  ],
+  "textSource": "opengym"
+}

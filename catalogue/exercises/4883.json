@@ -1,0 +1,24 @@
+{
+  "id": "4883",
+  "name": "lying air cycles",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "quadriceps"
+  ],
+  "category": "plyometrics",
+  "description": "A floor cycling move that keeps the core working while the legs pedal in the air. It builds abdominal endurance.",
+  "instructions": [
+    "Lie on your back with your hands by your head or at your sides.",
+    "Lift your shoulders and legs slightly off the floor.",
+    "Pedal your legs as if riding a bicycle.",
+    "Keep your lower back pressed into the floor.",
+    "Breathe steadily and keep a smooth rhythm.",
+    "Lower your legs and rest when your form slips."
+  ],
+  "femaleVariant": "4925",
+  "textSource": "opengym"
+}

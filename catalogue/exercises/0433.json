@@ -1,0 +1,22 @@
+{
+  "id": "0433",
+  "name": "dumbbell straight arm pullover",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "latissimus dorsi",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "Lying on a bench, you move a dumbbell in an arc over your head with straight arms and bring it back over your chest. It works the chest and lats.",
+  "instructions": [
+    "Lie flat on a bench with your head at one end and your feet planted firmly on the ground.",
+    "Hold a dumbbell with both hands and extend your arms straight above your chest.",
+    "Keeping your arms straight, slowly lower the dumbbell behind your head in an arc-like motion.",
+    "Pause for a moment, then raise the dumbbell back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2241",
+  "textSource": "exercisedb"
+}

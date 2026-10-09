@@ -1,0 +1,21 @@
+{
+  "id": "3741",
+  "name": "lateral raise with towel",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "A no-equipment side raise using a towel for resistance, so you can train the delts at home.",
+  "instructions": [
+    "Hold a towel with both hands and stand on its middle with one foot, or pull its ends apart.",
+    "Keep your elbows slightly bent.",
+    "Raise your arms out to the sides to shoulder height.",
+    "Lower slowly.",
+    "Keep tension on the towel throughout."
+  ],
+  "textSource": "opengym"
+}

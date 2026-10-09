@@ -1,0 +1,22 @@
+{
+  "id": "3358",
+  "name": "cable parallel grip lat pulldown on floor",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A lat pulldown done from the floor with a neutral grip, focusing on the lats.",
+  "instructions": [
+    "Kneel or sit on the floor under a high cable with a parallel grip handle.",
+    "Sit tall and lean back slightly.",
+    "Pull the handle down to your upper chest.",
+    "Drive your elbows down and back.",
+    "Return slowly to full arm extension."
+  ],
+  "textSource": "opengym"
+}

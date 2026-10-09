@@ -1,0 +1,23 @@
+{
+  "id": "9877",
+  "name": "lever belt romanian deadlift (v bar)",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A belt-loaded lever machine Romanian deadlift using a V bar for a neutral grip. It targets the hamstrings and glutes with a comfortable hand position.",
+  "instructions": [
+    "Step into the machine, secure the belt and take the V bar with both hands.",
+    "Stand tall with soft knees and your shoulders back.",
+    "Hinge at the hips, pushing them back as the bar slides down your thighs.",
+    "Lower until your hamstrings are well stretched, keeping your back flat.",
+    "Drive your hips forward and stand up straight.",
+    "Squeeze your glutes at the top."
+  ],
+  "textSource": "opengym"
+}

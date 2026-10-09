@@ -1,0 +1,22 @@
+{
+  "id": "5450",
+  "name": "ez bar 21s",
+  "bodyPart": "upper arms",
+  "equipment": "ez barbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A curl format with seven bottom-half reps, seven top-half reps and seven full reps. Gives your biceps a burn.",
+  "instructions": [
+    "Stand holding an EZ bar with an underhand grip.",
+    "Curl from the bottom to halfway up for 7 reps.",
+    "Curl from halfway to the top for 7 reps.",
+    "Do 7 full-range curls.",
+    "Keep your elbows pinned to your sides.",
+    "Use a lighter weight than normal."
+  ],
+  "textSource": "opengym"
+}

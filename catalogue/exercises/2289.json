@@ -1,0 +1,28 @@
+{
+  "id": "2289",
+  "name": "lever calf press",
+  "bodyPart": "lower legs",
+  "equipment": "leverage machine",
+  "target": "calves",
+  "secondaryMuscles": [
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A machine calf press pushing the pad with your toes. Builds the calf muscles.",
+  "instructions": [
+    "Adjust the seat of the leverage machine so that your shoulders are aligned with the lever pad.",
+    "Place your toes on the lever pad, with your heels hanging off the edge.",
+    "Grasp the handles or side supports for stability.",
+    "Push the lever pad down by extending your ankles, contracting your calf muscles.",
+    "Pause for a moment at the bottom of the movement.",
+    "Slowly return to the starting position by allowing your heels to rise back up.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "weights": {
+      "calves": 1,
+      "hamstring": 0
+    }
+  },
+  "textSource": "exercisedb"
+}

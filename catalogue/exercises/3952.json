@@ -1,0 +1,22 @@
+{
+  "id": "3952",
+  "name": "high knees lunge",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "hip flexors"
+  ],
+  "category": "cardio",
+  "description": "Step into a lunge and drive the knee high to raise the heart rate.",
+  "instructions": [
+    "Stand tall.",
+    "Step forward into a lunge.",
+    "Push off and drive the back knee up high.",
+    "Step back and repeat on the other side.",
+    "Keep your pace steady for 30-60 seconds."
+  ],
+  "textSource": "opengym"
+}

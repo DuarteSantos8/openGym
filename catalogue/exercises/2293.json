@@ -1,0 +1,21 @@
+{
+  "id": "2293",
+  "name": "dumbbell standing zottman preacher curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A standing zottman curl against a preacher bench, curling up then turning your palms down to lower. Works the biceps and forearms.",
+  "instructions": [
+    "Stand up straight with a dumbbell in each hand, palms facing forward.",
+    "Place your upper arms against the preacher bench and keep your elbows slightly bent.",
+    "Curl the dumbbells up towards your shoulders while keeping your upper arms stationary.",
+    "At the top of the movement, rotate your wrists so that your palms are facing downward.",
+    "Slowly lower the dumbbells back to the starting position, rotating your wrists back to the starting position as well.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

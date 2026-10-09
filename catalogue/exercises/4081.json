@@ -1,0 +1,22 @@
+{
+  "id": "4081",
+  "name": "band reverse crunch",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Lying reverse crunch with a band for added resistance, focusing on the lower abs.",
+  "instructions": [
+    "Lie on your back with the band anchored overhead and held in your hands.",
+    "Bend your knees and lift your feet.",
+    "Curl your hips off the floor toward your chest.",
+    "Pause at the top.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

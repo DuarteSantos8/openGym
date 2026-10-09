@@ -1,0 +1,22 @@
+{
+  "id": "6514",
+  "name": "lever bent over neutral grip row (with chest support)",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rear deltoids",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A chest-supported row with palms facing each other, building your mid-back and lats.",
+  "instructions": [
+    "Lean your chest on the pad and take a neutral grip on the handles.",
+    "Start with your arms extended.",
+    "Pull the handles toward your ribs, elbows close to your body.",
+    "Squeeze at the end.",
+    "Return slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

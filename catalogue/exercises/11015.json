@@ -1,0 +1,23 @@
+{
+  "id": "11015",
+  "name": "scapular pull up v. 2",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rhomboids",
+    "trapezius",
+    "grip muscles"
+  ],
+  "category": "calisthenics",
+  "description": "Hang from a bar and move only your shoulder blades. It builds the shoulder control you need for solid pull-ups.",
+  "instructions": [
+    "Hang from a pull-up bar with an overhand grip, arms straight.",
+    "Let your shoulders relax up toward your ears.",
+    "Pull your shoulder blades down and together to lift your body a few centimetres.",
+    "Keep your elbows locked straight the whole time.",
+    "Pause briefly, then lower slowly back to the full hang."
+  ],
+  "textSource": "opengym"
+}

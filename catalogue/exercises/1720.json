@@ -1,0 +1,20 @@
+{
+  "id": "1720",
+  "name": "barbell lying back of the head tricep extension",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A lying barbell triceps extension that lowers the bar behind your head. It stretches and builds the triceps.",
+  "instructions": [
+    "Lie flat on a bench with your feet flat on the ground and your head at the end of the bench.",
+    "Hold a barbell with an overhand grip, hands shoulder-width apart, and extend your arms straight up over your chest.",
+    "Keeping your upper arms stationary, slowly lower the barbell behind your head by bending your elbows.",
+    "Pause for a moment, then extend your arms back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "3920",
+  "name": "cable triceps pushdown on floor",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "forearms",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A triceps pushdown performed while sitting or lying on the floor with the cable set low.",
+  "instructions": [
+    "Set a cable at a low or mid position and sit on the floor facing it.",
+    "Hold the handle with elbows tucked at your sides.",
+    "Press the handle down until your arms are straight.",
+    "Squeeze your triceps.",
+    "Return slowly to the start.",
+    "Keep your upper arms still."
+  ],
+  "textSource": "opengym"
+}

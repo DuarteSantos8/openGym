@@ -1,0 +1,22 @@
+{
+  "id": "5237",
+  "name": "single dumbbell decline overhead sit up",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "obliques",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A decline sit-up holding one dumbbell overhead. The load adds resistance for the abs.",
+  "instructions": [
+    "Lie on a decline bench with your feet secured.",
+    "Hold one dumbbell with both hands above your head.",
+    "Curl up and sit forward, keeping the weight overhead.",
+    "Pause at the top.",
+    "Lower slowly to the start."
+  ],
+  "textSource": "opengym"
+}

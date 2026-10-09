@@ -1,0 +1,23 @@
+{
+  "id": "6014",
+  "name": "arm raise step in place",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "shoulders",
+    "quadriceps",
+    "calves"
+  ],
+  "category": "cardio",
+  "description": "Stepping in place while raising your arms, a gentle cardio drill.",
+  "instructions": [
+    "Stand tall with your feet hip-width apart.",
+    "Step in place, lifting your knees.",
+    "Raise your arms overhead as you step.",
+    "Lower them as you continue.",
+    "Keep a steady rhythm for 30-60 seconds."
+  ],
+  "femaleVariant": "6015",
+  "textSource": "opengym"
+}

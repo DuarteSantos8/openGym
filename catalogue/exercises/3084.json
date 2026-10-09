@@ -1,0 +1,21 @@
+{
+  "id": "3084",
+  "name": "dumbbell single arm preacher curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A one-arm curl braced on a preacher pad for strict biceps isolation.",
+  "instructions": [
+    "Sit at a preacher bench with your upper arm on the pad.",
+    "Hold a dumbbell with your palm facing up.",
+    "Curl the weight toward your shoulder.",
+    "Squeeze at the top.",
+    "Lower slowly until nearly straight, then switch arms."
+  ],
+  "textSource": "opengym"
+}

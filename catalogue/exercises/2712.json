@@ -1,0 +1,23 @@
+{
+  "id": "2712",
+  "name": "strongman sandbag walk",
+  "bodyPart": "full body",
+  "equipment": "sandbag",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "upper back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "Carrying a heavy sandbag over a set distance to train grip, back and core.",
+  "instructions": [
+    "Lift the sandbag off the floor and hug it against your chest.",
+    "Stand tall with your core braced.",
+    "Walk forward at a steady pace with short steps.",
+    "Keep your posture upright and do not lean back.",
+    "Set the bag down under control at the end."
+  ],
+  "textSource": "opengym"
+}

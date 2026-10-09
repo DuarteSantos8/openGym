@@ -1,0 +1,22 @@
+{
+  "id": "0934",
+  "name": "band upright row",
+  "bodyPart": "shoulders",
+  "equipment": "band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "biceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "Pull a band up along your body toward chest height. It works the shoulders and upper traps with gentle, joint-friendly resistance.",
+  "instructions": [
+    "Stand on the middle of the band with feet hip-width apart and grip the ends with both hands.",
+    "Let your arms hang in front of your thighs with the band slightly taut.",
+    "Pull your hands up along your body, leading with the elbows, until they reach about chest height.",
+    "Pause briefly, then lower under control without letting the band snap back.",
+    "Keep your chest tall and your shoulders away from your ears."
+  ],
+  "textSource": "opengym"
+}

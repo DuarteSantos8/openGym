@@ -1,15 +1,15 @@
 # openGym HTTP API: hand-written OpenAPI 3.1 spec.
 # Source of truth: api/server.js (a single framework-free Node file). Every route the
 # server registers is documented here; if you add a route there, add it here too.
-# Browsable version: https://opengym.duarte-santos.ch/api.html
+# Browsable version: https://opengym.ch/api.html
 openapi: 3.1.0
 
 info:
   title: openGym API
-  version: 1.3.10
+  version: 1.4.0
   summary: Passkey (WebAuthn) auth + per-user state storage for openGym
   description: |
-    The backend of [openGym](https://opengym.duarte-santos.ch), a free, open-source
+    The backend of [openGym](https://opengym.ch), a free, open-source
     gym & body-weight tracker. A plain Node server, no framework, JSON-file storage,
     HMAC-signed session cookies.
 
@@ -170,11 +170,21 @@ paths:
       tags: [meta]
       operationId: getHealth
       summary: Health check
-      description: Always public. Also reports how many user accounts exist.
+      description: |
+        Always public. Also reports how many user accounts exist.
+
+        The check writes: it creates and removes one empty file under `DATA_DIR`,
+        because a server whose data directory is full or read-only has every write
+        path broken while the port still answers. It is a 503 when that fails — the
+        container healthcheck (`wget --spider`) reads the status and nothing else.
+
+        The probe runs at most once every five seconds and the answer in between is
+        the last one, so a poll can be that stale. The route is unauthenticated, and
+        one disk write per request is not something to leave open to anyone.
       security: []
       responses:
         '200':
-          description: The server is up.
+          description: The server is up and its data directory is writable.
           content:
             application/json:
               schema:
@@ -184,7 +194,21 @@ paths:
                   users:
                     type: integer
                     description: Number of registered user accounts.
-              example: { ok: true, users: 7 }
+                  writable: { type: boolean, const: true }
+              example: { ok: true, users: 7, writable: true }
+        '503':
+          description: >-
+            The data directory could not be written — a full disk, or a mount that
+            came back read-only. Nothing that stores anything will work until it is
+            fixed; the reason is in the container log.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: false }
+                  writable: { type: boolean, const: false }
+              example: { ok: false, writable: false }
 
   /api/config:
     get:
@@ -2039,8 +2063,12 @@ paths:
       description: |
         The client pings this every ~20 s while a workout is on screen; the admin
         dashboard reads who is training right now. Purely ephemeral, in-memory, never
-        persisted; entries expire ~70 s after the last ping. `{"active": false}`
-        drops the caller's entry immediately.
+        persisted; entries expire 70 s after the last ping. `{"active": false}` is the
+        "left" signal: with `reason` `navigated` or `closed`, or with no reason, it
+        drops the caller's entry immediately. With `reason: hidden` (the page went to
+        the background) it marks the entry away instead, and the entry stops being
+        listed 45 s after that mark unless a heartbeat arrives first; a heartbeat
+        clears the mark. The 70 s expiry applies either way.
       requestBody:
         required: true
         content:
@@ -2050,7 +2078,16 @@ paths:
               properties:
                 active:
                   type: boolean
-                  description: false ends the presence; true (with the fields below) updates it.
+                  description: false ends the presence (see `reason`); true (with the fields below) updates it.
+                reason:
+                  type: string
+                  enum: [navigated, closed, hidden]
+                  description: >-
+                    Why the client sent `active: false`: `navigated` (an in-app route
+                    change), `closed` (the page is going away) or `hidden` (the page went
+                    to the background). `navigated` and `closed` drop the entry at once,
+                    as no reason does; `hidden` marks it away rather than dropping it.
+                    Ignored with `active: true`.
                 name:
                   type: string
                   maxLength: 60
@@ -2862,9 +2899,10 @@ paths:
         the shape that comes back. That is the whole path a job takes, on nobody's profile.
 
         Always 200: the outcome is in the body, because "the provider refused" is an
-        answer to the question the button asks, not a failure of the request. It brings
-        the two short upstream retry pauses rather than `COACH_RETRY_DELAYS_MS`, since
-        an admin is watching it through a proxy with a timeout of its own.
+        answer to the question the button asks, not a failure of the request. An HTTPS
+        provider gets the same retries as a job: a 429, 500, 502, 503, 504 or 529 is
+        tried twice more, after pauses of 2 and 5 seconds, and only then reported. A
+        runtime provider is asked once.
       responses:
         '200':
           description: The result of the round trip.

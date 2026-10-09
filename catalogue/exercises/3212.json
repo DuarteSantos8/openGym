@@ -1,0 +1,21 @@
+{
+  "id": "3212",
+  "name": "basic toe touch (male)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "calves"
+  ],
+  "category": "mobility",
+  "description": "A simple standing forward fold to reach your toes. It loosens the hamstrings and lower back and gets the hips moving.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and your arms by your sides.",
+    "Bend forward at the waist, keeping your back straight and your knees slightly bent.",
+    "Reach down towards your toes with your hands, keeping your legs as straight as possible.",
+    "Pause for a moment at the bottom, then slowly return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

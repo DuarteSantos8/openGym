@@ -1,0 +1,22 @@
+{
+  "id": "1806",
+  "name": "sitting side reach stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back",
+    "shoulders"
+  ],
+  "category": "stretching",
+  "description": "Seated, reaching over to the side stretches your lats and obliques. It is easy on the hips and good for desk breaks.",
+  "instructions": [
+    "Sit tall with your legs crossed or your feet flat and place one hand on the floor beside you.",
+    "Reach your other arm up and over your head toward the side, lengthening along your flank.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "8327",
+  "name": "resistance band drag curl",
+  "bodyPart": "upper arms",
+  "equipment": "resistance band",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A curl variation where the elbows travel back as you pull, putting the biceps under steady band tension.",
+  "instructions": [
+    "Stand on the band with feet hip-width apart and hold the handles at your thighs.",
+    "Keep your chest up and core braced.",
+    "Curl by dragging your hands up your body while the elbows move behind you.",
+    "Squeeze at the top for a moment.",
+    "Lower under control until your arms are straight."
+  ],
+  "textSource": "opengym"
+}

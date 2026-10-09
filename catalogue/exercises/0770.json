@@ -1,0 +1,40 @@
+{
+  "id": "0770",
+  "name": "smith squat",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A back squat with the bar guided by the smith machine. It builds the thighs and glutes with extra stability.",
+  "instructions": [
+    "Set up the smith machine with the barbell at an appropriate height for your squat.",
+    "Stand with your feet shoulder-width apart, toes slightly turned out.",
+    "Position yourself under the barbell, resting it on your upper traps and shoulders.",
+    "Grip the barbell with a wide grip, slightly wider than shoulder-width apart.",
+    "Engage your core and unrack the barbell, stepping back to clear the rack.",
+    "Keeping your chest up and back straight, initiate the squat by bending at the hips and knees.",
+    "Lower your body until your thighs are parallel to the ground or slightly below.",
+    "Pause for a moment at the bottom, then drive through your heels to return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "adductors"
+    ],
+    "secondaries": [
+      "hamstring",
+      "calves",
+      "lower-back",
+      "abs",
+      "obliques"
+    ]
+  },
+  "textSource": "exercisedb"
+}

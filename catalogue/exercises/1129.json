@@ -1,0 +1,23 @@
+{
+  "id": "1129",
+  "name": "suspender rear lunge",
+  "bodyPart": "upper legs",
+  "equipment": "suspension trainer",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A reverse lunge with the hands on the straps for balance, working the thighs and glutes.",
+  "instructions": [
+    "Hold the handles and stand tall, facing the anchor.",
+    "Step one leg back and lower into a lunge.",
+    "Keep your front knee above the ankle.",
+    "Press through the front heel to return.",
+    "Use the straps for balance only.",
+    "Alternate legs or finish one side first."
+  ],
+  "textSource": "opengym"
+}

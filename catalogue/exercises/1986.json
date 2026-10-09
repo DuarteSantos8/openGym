@@ -1,0 +1,21 @@
+{
+  "id": "1986",
+  "name": "arm up rotator stretch",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "triceps"
+  ],
+  "category": "stretching",
+  "description": "An overhead stretch for the rotator cuff and back of the arm.",
+  "instructions": [
+    "Raise one arm overhead and bend the elbow, palm resting on your upper back.",
+    "Use your other hand to hold the elbow.",
+    "Gently press the elbow back and down.",
+    "Keep your ribs down and chest open.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

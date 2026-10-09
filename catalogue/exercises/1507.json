@@ -1,0 +1,22 @@
+{
+  "id": "1507",
+  "name": "band hip flexion",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A standing hip flexion with a band around the foot or leg. It trains the hip flexors and quads.",
+  "instructions": [
+    "Attach a band to a low anchor and loop it around one ankle.",
+    "Stand tall and hold a support for balance.",
+    "Lift the knee forward and up toward hip height.",
+    "Pause briefly, then lower with control.",
+    "Finish your reps and switch legs."
+  ],
+  "textSource": "opengym"
+}

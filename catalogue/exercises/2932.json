@@ -1,0 +1,23 @@
+{
+  "id": "2932",
+  "name": "kettlebell kneeling one arm shoulder press",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "core",
+    "upper chest",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A one-arm kettlebell press from a kneeling position. Kneeling takes the legs out of it and challenges your trunk.",
+  "instructions": [
+    "Kneel on both knees with a kettlebell racked at your shoulder.",
+    "Squeeze your glutes and brace your abs.",
+    "Press the kettlebell overhead until your arm is straight.",
+    "Lower it slowly back to your shoulder.",
+    "Finish the reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

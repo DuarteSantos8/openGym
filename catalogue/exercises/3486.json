@@ -1,0 +1,23 @@
+{
+  "id": "3486",
+  "name": "inverted chin curl with bent knee between chairs",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms",
+    "lats",
+    "brachialis"
+  ],
+  "category": "calisthenics",
+  "description": "An underhand-grip hang under a bar between two chairs, curling your body up with the biceps. Bent knees keep it manageable.",
+  "instructions": [
+    "Place a sturdy bar across two stable chairs and lie underneath it.",
+    "Grip the bar underhand, arms straight, knees bent.",
+    "Keep your hips up and body in a line.",
+    "Curl yourself up by bending the elbows, keeping them close.",
+    "Lower with control until the arms are straight.",
+    "Check the chairs are stable before each set."
+  ],
+  "textSource": "opengym"
+}

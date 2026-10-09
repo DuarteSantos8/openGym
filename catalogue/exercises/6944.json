@@ -1,0 +1,23 @@
+{
+  "id": "6944",
+  "name": "swimming crawl style",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "shoulders",
+    "lats",
+    "core",
+    "triceps"
+  ],
+  "category": "cardio",
+  "description": "A standing or floor drill that copies the front crawl arm stroke. It raises your heart rate and warms the shoulders.",
+  "instructions": [
+    "Stand with feet shoulder-width apart and knees slightly bent.",
+    "Swing one arm forward and over in a crawl stroke.",
+    "Alternate arms in a smooth, continuous rhythm.",
+    "Rotate your torso slightly with each stroke.",
+    "Keep going at a steady pace for 30-60 seconds."
+  ],
+  "textSource": "opengym"
+}

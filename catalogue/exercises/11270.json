@@ -1,0 +1,22 @@
+{
+  "id": "11270",
+  "name": "cable kneeling crunch v. 3",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "obliques",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A kneeling cable crunch that loads the abs. You curl your spine to bring your elbows toward your knees.",
+  "instructions": [
+    "Kneel under a high pulley and hold the rope beside your head.",
+    "Keep your hips still.",
+    "Curl your torso down, bringing elbows toward your knees.",
+    "Squeeze your abs at the bottom.",
+    "Return slowly to the upright start."
+  ],
+  "textSource": "opengym"
+}

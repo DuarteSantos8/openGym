@@ -1,0 +1,23 @@
+{
+  "id": "11088",
+  "name": "reverse lunge arm reach twist",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "obliques",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "A reverse lunge with an overhead reach and a twist. It warms up the legs, hips and spine together.",
+  "instructions": [
+    "Stand tall with your arms by your sides.",
+    "Step one leg back into a lunge and reach both arms overhead.",
+    "Twist your torso toward the front leg.",
+    "Untwist, then push through your front foot to stand.",
+    "Alternate legs for the set."
+  ],
+  "textSource": "opengym"
+}

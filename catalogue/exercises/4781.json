@@ -1,0 +1,22 @@
+{
+  "id": "4781",
+  "name": "seated chin up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A seated chin-up where your legs help a little while you pull up with an underhand grip. It builds back and arm strength.",
+  "instructions": [
+    "Sit under a bar with an underhand grip, shoulder-width apart.",
+    "Extend your legs in front of you.",
+    "Pull your chin toward the bar.",
+    "Squeeze your back and biceps at the top.",
+    "Lower slowly until your arms are straight."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "4008",
+  "name": "straight leg sit up",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A sit up with straight legs. It trains the abs and hip flexors.",
+  "instructions": [
+    "Lie on your back with legs straight.",
+    "Cross your arms over your chest.",
+    "Curl up to sitting.",
+    "Lower with control.",
+    "Do not pull on your neck."
+  ],
+  "femaleVariant": "5000",
+  "textSource": "opengym"
+}

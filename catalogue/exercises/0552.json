@@ -1,0 +1,38 @@
+{
+  "id": "0552",
+  "name": "kettlebell two arm clean",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "traps",
+    "forearms"
+  ],
+  "category": "olympic",
+  "description": "You pull a kettlebell from between your thighs up to the rack position with both hands. Trains hip power, back and shoulders.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a kettlebell in front of your thighs with both hands, palms facing towards you.",
+    "Bend your knees slightly and hinge at the hips, lowering the kettlebell towards the ground.",
+    "Explosively extend your hips and knees, using the momentum to pull the kettlebell up towards your shoulders.",
+    "As the kettlebell reaches shoulder height, rotate your wrists and catch the kettlebell in the rack position, with your elbows tucked in and the kettlebell resting on the back of your forearm.",
+    "Lower the kettlebell back down to the starting position and repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "bodyPart": "full body",
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "hamstring",
+      "trapezius"
+    ],
+    "secondaries": [
+      "calves",
+      "forearm",
+      "deltoids",
+      "lower-back",
+      "abs",
+      "obliques"
+    ]
+  },
+  "textSource": "exercisedb"
+}

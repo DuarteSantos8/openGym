@@ -1,0 +1,23 @@
+{
+  "id": "3650",
+  "name": "jump box",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hamstrings"
+  ],
+  "category": "plyometrics",
+  "description": "An explosive jump onto a box that builds leg power.",
+  "instructions": [
+    "Stand facing a sturdy box with feet shoulder width apart.",
+    "Swing your arms back and dip your hips.",
+    "Jump up and land softly on top of the box.",
+    "Stand fully upright.",
+    "Step down carefully and reset."
+  ],
+  "femaleVariant": "0509",
+  "textSource": "opengym"
+}

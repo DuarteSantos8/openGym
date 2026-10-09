@@ -1,0 +1,22 @@
+{
+  "id": "11049",
+  "name": "seated bent knee abduction feet floor off",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Seated knee abduction with the feet lifted. It trains the outer hips and core.",
+  "instructions": [
+    "Sit tall and lift your feet off the floor.",
+    "Hold the seat edge.",
+    "Open your knees outward.",
+    "Pause.",
+    "Close slowly.",
+    "Keep your back straight."
+  ],
+  "textSource": "opengym"
+}

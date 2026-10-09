@@ -1,0 +1,22 @@
+{
+  "id": "1097",
+  "name": "suspension side bend",
+  "bodyPart": "waist",
+  "equipment": "suspension trainer",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A side bend using a strap. It works the obliques.",
+  "instructions": [
+    "Hold a handle and stand sideways to the anchor.",
+    "Brace your core.",
+    "Bend sideways away from the anchor.",
+    "Return to upright using your side muscles.",
+    "Do all reps, then switch sides.",
+    "Keep your hips still."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,32 @@
+{
+  "id": "0997",
+  "name": "band shoulder press",
+  "bodyPart": "shoulders",
+  "equipment": "band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A shoulder press with a band under the feet. It builds the shoulders and triceps.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and place the band under your feet.",
+    "Hold the band with your palms facing forward and raise your hands to shoulder height, elbows bent.",
+    "Press the band overhead, fully extending your arms.",
+    "Pause for a moment at the top, then slowly lower the band back to shoulder height.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "deltoids"
+    ],
+    "secondaries": [
+      "chest",
+      "triceps",
+      "trapezius",
+      "serratus"
+    ]
+  },
+  "textSource": "exercisedb"
+}

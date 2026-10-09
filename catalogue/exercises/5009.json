@@ -1,0 +1,22 @@
+{
+  "id": "5009",
+  "name": "elevated standing calf raise v. 2",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "calisthenics",
+  "description": "Standing calf raise from a raised platform for a full range of motion. It builds the calves.",
+  "instructions": [
+    "Stand with the balls of your feet on a step and your heels hanging off.",
+    "Hold something for balance.",
+    "Rise high onto your toes.",
+    "Pause and squeeze your calves.",
+    "Lower your heels below the step slowly."
+  ],
+  "textSource": "opengym"
+}

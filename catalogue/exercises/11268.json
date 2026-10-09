@@ -1,0 +1,22 @@
+{
+  "id": "11268",
+  "name": "cable squat v. 3",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A squat holding a cable at the chest. The cable adds load and encourages an upright torso.",
+  "instructions": [
+    "Hold a cable handle at your chest and stand with feet shoulder width.",
+    "Brace your core and keep your chest up.",
+    "Sit down and back until your thighs are about parallel.",
+    "Keep your knees tracking over your toes.",
+    "Drive through your heels to stand."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "10562",
+  "name": "kettlebell ipsilateral reverse lunge high knee",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "core",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A reverse lunge holding a kettlebell on the same side as the working leg, ending with a high knee. It trains balance and leg drive.",
+  "instructions": [
+    "Hold a kettlebell in one hand and stand tall.",
+    "Step back with the leg on the same side as the bell.",
+    "Lower into a lunge.",
+    "Drive up and lift that knee high as you stand.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

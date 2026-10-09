@@ -1,0 +1,22 @@
+{
+  "id": "2760",
+  "name": "resistance band hip thrust",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A hip thrust with a resistance band over the hips, adding load that increases toward the top.",
+  "instructions": [
+    "Sit with your upper back against a bench and the band over your hips, anchored at both sides.",
+    "Plant your feet flat.",
+    "Drive your hips up against the band.",
+    "Squeeze your glutes at the top.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

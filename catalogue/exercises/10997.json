@@ -1,0 +1,23 @@
+{
+  "id": "10997",
+  "name": "wall assisted handstand to tuck planche negative",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "core",
+    "triceps",
+    "upper back",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "Lowering from a wall handstand into a tuck planche. It builds advanced shoulder strength.",
+  "instructions": [
+    "Kick up into a handstand with your heels on the wall.",
+    "Brace your core and keep your arms straight.",
+    "Slowly lower your body forward.",
+    "Tuck your knees as you reach the planche position.",
+    "Control the descent and then reset."
+  ],
+  "textSource": "opengym"
+}

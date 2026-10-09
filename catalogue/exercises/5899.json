@@ -1,0 +1,23 @@
+{
+  "id": "5899",
+  "name": "revolved chair",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "obliques",
+    "core",
+    "shoulders"
+  ],
+  "category": "yoga",
+  "description": "A chair squat with a twist. Strengthens the legs while rotating the spine.",
+  "instructions": [
+    "Stand and sink your hips back into a chair pose.",
+    "Bring your palms together at your chest.",
+    "Twist and hook one elbow outside the opposite knee.",
+    "Hold for 5 slow breaths with your knees together.",
+    "Untwist and repeat on the other side."
+  ],
+  "textSource": "opengym"
+}

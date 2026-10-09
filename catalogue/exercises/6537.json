@@ -1,0 +1,22 @@
+{
+  "id": "6537",
+  "name": "push up pull",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "lats"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up combined with a pulling motion, adding upper-back work to a classic chest exercise.",
+  "instructions": [
+    "Start in a high plank with your hands under your shoulders.",
+    "Lower your chest to the floor in a push-up.",
+    "Press back up to the top.",
+    "Drag one hand across the floor as if pulling yourself forward.",
+    "Alternate sides and keep your core tight."
+  ],
+  "textSource": "opengym"
+}

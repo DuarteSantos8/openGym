@@ -1,0 +1,23 @@
+{
+  "id": "4770",
+  "name": "inverted wide row",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rhomboids",
+    "rear deltoids",
+    "biceps"
+  ],
+  "category": "calisthenics",
+  "description": "An inverted row with a wide grip. The wide hands shift the work to the upper back and rear shoulders.",
+  "instructions": [
+    "Lie under a bar and grab it with a wide overhand grip.",
+    "Keep your body in a straight line, heels on the floor.",
+    "Pull your chest up toward the bar.",
+    "Squeeze your shoulder blades together.",
+    "Lower under control to straight arms."
+  ],
+  "textSource": "opengym"
+}

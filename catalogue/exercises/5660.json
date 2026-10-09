@@ -1,0 +1,22 @@
+{
+  "id": "5660",
+  "name": "barbell pin chest press",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "Bench press from pins in the rack, starting from a dead stop at the chest.",
+  "instructions": [
+    "Set the pins just above your chest.",
+    "Lie under the bar with a firm grip.",
+    "Press the bar up.",
+    "Lower to the pins and pause.",
+    "Repeat."
+  ],
+  "textSource": "opengym"
+}

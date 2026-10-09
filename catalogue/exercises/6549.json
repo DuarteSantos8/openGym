@@ -1,0 +1,23 @@
+{
+  "id": "6549",
+  "name": "weighted plate standing around the world",
+  "bodyPart": "shoulders",
+  "equipment": "weight plate",
+  "target": "delts",
+  "secondaryMuscles": [
+    "core",
+    "upper back",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Passing a plate in a circle around the body while standing. It works the shoulders and trunk through many angles.",
+  "instructions": [
+    "Stand tall and hold a weight plate with both hands at your waist.",
+    "Brace your core and keep your feet planted.",
+    "Raise the plate up and over to one side in a wide circle, then around your head.",
+    "Bring it back down on the other side.",
+    "Keep your hips still as the plate travels.",
+    "Do half the reps in each direction."
+  ],
+  "textSource": "opengym"
+}

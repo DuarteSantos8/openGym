@@ -1,0 +1,21 @@
+{
+  "id": "8614",
+  "name": "cable standing single arm horizontal triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A one-arm cable pushdown in a horizontal path, isolating the triceps.",
+  "instructions": [
+    "Set the cable at chest height and stand facing away holding the handle by your shoulder.",
+    "Take a split stance for balance.",
+    "Extend your arm forward until it is straight.",
+    "Return slowly while keeping the elbow still.",
+    "Finish the reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

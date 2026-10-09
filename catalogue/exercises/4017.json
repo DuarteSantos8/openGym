@@ -1,0 +1,21 @@
+{
+  "id": "4017",
+  "name": "dumbbell standing single spider curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A standing one-arm spider curl bent forward. It isolates the biceps.",
+  "instructions": [
+    "Stand and hinge forward, bracing against a support.",
+    "Let one arm hang with a dumbbell.",
+    "Curl up.",
+    "Squeeze.",
+    "Lower and switch arms."
+  ],
+  "textSource": "opengym"
+}

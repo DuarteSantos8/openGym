@@ -1,0 +1,19 @@
+{
+  "id": "2567",
+  "name": "seated piriformis stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "A seated stretch for the piriformis and glute muscles. Helps loosen tight hips.",
+  "instructions": [
+    "Sit on the ground with your legs extended in front of you.",
+    "Bend your right knee and place your right foot on the outside of your left knee.",
+    "Place your left elbow on the outside of your right knee and gently twist your torso to the right.",
+    "Hold the stretch for 20-30 seconds, then switch sides and repeat."
+  ],
+  "textSource": "exercisedb"
+}

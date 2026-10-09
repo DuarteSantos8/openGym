@@ -1,0 +1,24 @@
+{
+  "id": "10329",
+  "name": "dumbbell kroc row",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "biceps",
+    "forearms",
+    "grip muscles",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A heavy, high rep one-arm row with a little body momentum, great for lat and grip strength.",
+  "instructions": [
+    "Stand beside a bench with one hand and knee supported on it and hold a heavy dumbbell.",
+    "Let the weight hang with a stretch in the lat.",
+    "Row the dumbbell to your hip using controlled momentum.",
+    "Lower slowly to a full stretch.",
+    "Keep your back flat. Finish the reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

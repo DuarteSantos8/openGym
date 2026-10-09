@@ -1,0 +1,21 @@
+{
+  "id": "2762",
+  "name": "ankle plantar flexion",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles"
+  ],
+  "category": "mobility",
+  "description": "Pointing the foot away from the shin, engaging the calf. Good for warming up and mobilising the ankle.",
+  "instructions": [
+    "Stand or sit tall with a relaxed posture and the joint in a neutral starting position.",
+    "Sit with one leg out and your foot relaxed.",
+    "Point your toes down and away from you, as if pressing a gas pedal.",
+    "Pause briefly at the end, then return to the neutral position.",
+    "Repeat for 10-15 smooth reps, then switch sides if you are working one side at a time."
+  ],
+  "textSource": "opengym"
+}

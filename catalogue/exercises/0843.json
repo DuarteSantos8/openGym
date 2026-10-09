@@ -1,0 +1,21 @@
+{
+  "id": "0843",
+  "name": "weighted reduction triangle",
+  "bodyPart": "upper legs",
+  "equipment": "weighted",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "inner thighs",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A weighted inner-thigh squeeze, bringing the legs together in a triangle shape. It works the adductors.",
+  "instructions": [
+    "Sit or lie with knees bent and a weight resting on your thighs.",
+    "Let your knees open into a triangle.",
+    "Squeeze your knees together against the weight.",
+    "Pause briefly.",
+    "Open slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "1466",
+  "name": "twist hip lift",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "obliques",
+    "hamstrings"
+  ],
+  "category": "calisthenics",
+  "description": "Lying on your back, you lift your hips and add a gentle twist. It wakes up the glutes and obliques.",
+  "instructions": [
+    "Lie on your back with your knees bent and feet flat on the ground.",
+    "Place your hands by your sides for support.",
+    "Engage your glutes and lift your hips off the ground, forming a straight line from your knees to your shoulders.",
+    "While keeping your hips lifted, twist your lower body to the right side, bringing your knees towards the ground.",
+    "Return to the starting position and repeat the twist to the left side.",
+    "Continue alternating twists for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

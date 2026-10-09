@@ -1,0 +1,23 @@
+{
+  "id": "11090",
+  "name": "negative front lever raise",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lats",
+    "lower abs",
+    "grip muscles",
+    "upper back"
+  ],
+  "category": "calisthenics",
+  "description": "An advanced hanging move where you lower slowly toward a front lever. It builds serious core and lat strength.",
+  "instructions": [
+    "Hang from a bar and pull your body up so your hips and legs are above you.",
+    "Straighten your body and keep your arms locked.",
+    "Lower slowly toward a horizontal position, keeping your body in a straight line.",
+    "Stop when you cannot hold the line, then bend your knees to come back up.",
+    "Rest and repeat for a few careful reps."
+  ],
+  "textSource": "opengym"
+}

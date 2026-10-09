@@ -1,0 +1,21 @@
+{
+  "id": "10138",
+  "name": "standing isometric biceps hold",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "isometric",
+  "description": "A static curl hold where you keep the elbows bent and the biceps working without moving.",
+  "instructions": [
+    "Stand tall with feet hip width apart and your elbows at your sides.",
+    "Bend your elbows to about 90 degrees with palms facing up.",
+    "Squeeze your fists and flex your biceps hard.",
+    "Hold the position for 20-30 seconds, breathing steadily.",
+    "Keep your shoulders relaxed and elbows pinned, then rest and repeat."
+  ],
+  "textSource": "opengym"
+}

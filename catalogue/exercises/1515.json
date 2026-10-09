@@ -1,0 +1,24 @@
+{
+  "id": "1515",
+  "name": "barbell clean deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "lower back",
+    "upper back",
+    "grip muscles"
+  ],
+  "category": "olympic",
+  "description": "A deadlift performed with a clean-style setup and path. It trains the pulling position used in the clean.",
+  "instructions": [
+    "Stand with the bar over your mid-foot and grip just outside your knees.",
+    "Set a flat back, chest up and shoulders over the bar.",
+    "Push the floor away to lift the bar, keeping it close to your legs.",
+    "Stand tall with hips and knees fully extended.",
+    "Lower the bar back down with control along the same path."
+  ],
+  "textSource": "opengym"
+}

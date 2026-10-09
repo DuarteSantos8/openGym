@@ -1,0 +1,23 @@
+{
+  "id": "6762",
+  "name": "diagonal bend hold",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "obliques",
+    "lats",
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "A standing diagonal bend held for a stretch through the back and side of the body.",
+  "instructions": [
+    "Stand with feet wider than your hips.",
+    "Reach one arm overhead and toward the opposite foot.",
+    "Bend diagonally, keeping your hips facing forward.",
+    "Reach only as far as is comfortable.",
+    "Hold for 20-30 seconds, breathing calmly.",
+    "Return to standing and switch sides."
+  ],
+  "textSource": "opengym"
+}

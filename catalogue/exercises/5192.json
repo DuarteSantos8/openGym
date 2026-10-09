@@ -1,0 +1,24 @@
+{
+  "id": "5192",
+  "name": "cluster",
+  "bodyPart": "full body",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "hamstrings",
+    "triceps",
+    "core"
+  ],
+  "category": "olympic",
+  "description": "A weightlifting combo where a clean flows into a front squat and a push press. It trains power and stamina together.",
+  "instructions": [
+    "Start with the barbell on the floor and pull it to your shoulders in a clean.",
+    "Stand up with the bar racked on your shoulders.",
+    "Squat down into a deep front squat.",
+    "Drive up and press the bar overhead.",
+    "Lower the bar to your shoulders and repeat."
+  ],
+  "textSource": "opengym"
+}

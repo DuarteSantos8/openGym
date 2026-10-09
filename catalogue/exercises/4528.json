@@ -1,0 +1,23 @@
+{
+  "id": "4528",
+  "name": "kettlebell farmers walk",
+  "bodyPart": "full body",
+  "equipment": "kettlebell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "grip muscles",
+    "trapezius",
+    "core",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "Walking while carrying a heavy kettlebell in each hand. It builds grip, posture and core stability.",
+  "instructions": [
+    "Pick up a kettlebell in each hand and stand tall.",
+    "Pull your shoulders back and brace your core.",
+    "Walk forward in controlled steps.",
+    "Keep the kettlebells from swinging.",
+    "Walk for a set distance or time, then set them down carefully."
+  ],
+  "textSource": "opengym"
+}

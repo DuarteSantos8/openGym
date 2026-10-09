@@ -1,0 +1,38 @@
+{
+  "id": "0652",
+  "name": "pull-up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "You hang from a bar with an overhand grip and pull your chin above it. A classic builder for the lats and upper back.",
+  "instructions": [
+    "Hang from a pull-up bar with your palms facing away from you and your arms fully extended.",
+    "Engage your core and squeeze your shoulder blades together.",
+    "Pull your body up towards the bar by bending your elbows and bringing your chest towards the bar.",
+    "Pause at the top of the movement, then slowly lower your body back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm"
+    ],
+    "weights": {
+      "upper-back": 1,
+      "biceps": 0.4,
+      "deltoids": 0.4,
+      "forearm": 0.4,
+      "triceps": 0
+    }
+  },
+  "textSource": "exercisedb"
+}

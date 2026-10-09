@@ -1,0 +1,23 @@
+{
+  "id": "4173",
+  "name": "barbell banded romanian deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A Romanian deadlift with a band adding resistance as you stand. It builds the hamstrings and glutes.",
+  "instructions": [
+    "Stand on the band with it attached to the barbell and hold the bar at your thighs.",
+    "Push your hips back with soft knees.",
+    "Lower the bar along your legs to mid shin.",
+    "Drive your hips forward to stand tall.",
+    "Squeeze your glutes at the top.",
+    "Keep your back flat throughout."
+  ],
+  "textSource": "opengym"
+}

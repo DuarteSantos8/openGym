@@ -1,0 +1,22 @@
+{
+  "id": "2800",
+  "name": "barbell sitted alternate leg raise (female)",
+  "bodyPart": "waist",
+  "equipment": "barbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "A seated alternate leg raise with a barbell across the thighs and hands on the bench. Works the abs and hip flexors.",
+  "instructions": [
+    "Sit on a bench with your back straight and hold a barbell across your thighs.",
+    "Place your hands on the sides of the bench for support.",
+    "Keeping your legs straight, lift one leg up as high as possible while keeping it parallel to the ground.",
+    "Lower the leg back down and repeat with the other leg.",
+    "Continue alternating legs for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb",
+  "maleVariant": "2799"
+}

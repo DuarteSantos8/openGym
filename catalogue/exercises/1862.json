@@ -1,0 +1,21 @@
+{
+  "id": "1862",
+  "name": "lever cable shoulder press",
+  "bodyPart": "shoulders",
+  "equipment": "leverage machine",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "Seated machine press that builds the shoulders and triceps along a guided path.",
+  "instructions": [
+    "Adjust the seat so the handles are at shoulder height.",
+    "Sit back with your feet flat and grip the handles.",
+    "Press upward until your arms are nearly straight.",
+    "Pause briefly at the top.",
+    "Lower slowly back to the start."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "2764",
+  "name": "elbow flexion",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "mobility",
+  "description": "Bending the elbow to bring the hand toward the shoulder, working the front of the upper arm.",
+  "instructions": [
+    "Stand or sit tall with a relaxed posture and the joint in a neutral starting position.",
+    "Start with your arm straight down at your side, palm forward.",
+    "Bend the elbow to bring your hand up toward your shoulder.",
+    "Pause briefly, then lower back down slowly without swinging.",
+    "Repeat for 10-15 smooth reps, then switch sides if you are working one side at a time."
+  ],
+  "textSource": "opengym"
+}

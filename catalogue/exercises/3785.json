@@ -1,0 +1,21 @@
+{
+  "id": "3785",
+  "name": "incline push-up (on box)",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "An incline push-up with the hands on a box. It trains the chest, shoulders and triceps with less load than a floor push-up.",
+  "instructions": [
+    "Place your hands on the edge of a box or elevated surface, slightly wider than shoulder-width apart.",
+    "Extend your legs behind you, resting on the balls of your feet, creating a straight line from your head to your heels.",
+    "Lower your chest towards the box by bending your elbows, keeping your body in a straight line.",
+    "Pause for a moment at the bottom, then push yourself back up to the starting position by straightening your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

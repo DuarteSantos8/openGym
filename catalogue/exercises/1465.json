@@ -1,0 +1,22 @@
+{
+  "id": "1465",
+  "name": "45 degree hyperextension (arms in front of chest) (side pov)",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A back extension on a 45 degree bench viewed from the side, targeting the lower back, glutes and hamstrings.",
+  "instructions": [
+    "Set the pad at hip height and hook your heels under the roller.",
+    "Cross your arms over your chest and keep your body straight.",
+    "Lower your torso with a flat back until you feel a hamstring stretch.",
+    "Raise back up until your body is in line, without overarching.",
+    "Move slowly and squeeze your glutes at the top."
+  ],
+  "textSource": "opengym"
+}

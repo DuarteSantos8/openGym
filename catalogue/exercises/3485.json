@@ -1,0 +1,24 @@
+{
+  "id": "3485",
+  "name": "inverted row with bent knee between chairs",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rhomboids",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A home row where you hang under a bar or broom handle set across two chairs, knees bent to make it easier. It trains the back and biceps.",
+  "instructions": [
+    "Set a sturdy bar across two stable chairs and lie underneath it.",
+    "Grip the bar overhand, arms straight, knees bent and feet flat.",
+    "Keep your body in a straight line from shoulders to knees.",
+    "Pull your chest up toward the bar, squeezing your shoulder blades.",
+    "Lower slowly until your arms are straight again.",
+    "Make sure the chairs cannot slide."
+  ],
+  "textSource": "opengym"
+}

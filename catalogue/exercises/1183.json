@@ -1,0 +1,22 @@
+{
+  "id": "1183",
+  "name": "smith kneeling rear kick",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A glute kickback done kneeling with one foot pressing against a smith machine bar, a focused move for the glutes.",
+  "instructions": [
+    "Set the bar at a low height and kneel on all fours facing it, with the sole of one foot under the bar.",
+    "Brace your abs and keep your back flat.",
+    "Press your foot up and back against the bar until your hip is fully extended.",
+    "Squeeze your glute at the top, then lower under control.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

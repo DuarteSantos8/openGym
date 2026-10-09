@@ -1,0 +1,29 @@
+{
+  "id": "0773",
+  "name": "smith standing leg calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "smith machine",
+  "target": "calves",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A standing calf raise with the smith bar resting across the shoulders. It loads the calves for strength and size.",
+  "instructions": [
+    "Adjust the smith machine bar to a height that allows you to stand with your feet flat on the ground and your shoulders under the bar.",
+    "Position yourself under the bar with your feet shoulder-width apart and your toes pointing forward.",
+    "Place your hands on the bar for stability.",
+    "Engage your calves and slowly raise your heels off the ground, lifting your body up onto your toes.",
+    "Pause for a moment at the top, then slowly lower your heels back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "calves"
+    ],
+    "secondaries": []
+  },
+  "femaleVariant": "2655",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "6797",
+  "name": "barbell bench lateral step up",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A sideways step up onto a bench with a barbell on the back. It builds single-leg strength in the quads and glutes.",
+  "instructions": [
+    "Place the bar on your upper back and stand beside a bench.",
+    "Put the inside foot flat on the bench.",
+    "Press through that heel and stand up on the bench.",
+    "Lower the other foot back down under control.",
+    "Complete your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

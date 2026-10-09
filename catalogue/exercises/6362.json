@@ -1,0 +1,21 @@
+{
+  "id": "6362",
+  "name": "dumbbell standing wrist reverse curl",
+  "bodyPart": "lower arms",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist extensors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "Standing reverse wrist curls with dumbbells to strengthen the extensor muscles on top of your forearms.",
+  "instructions": [
+    "Stand with a dumbbell in each hand, palms facing down.",
+    "Keep your upper arms still.",
+    "Lift the backs of your hands up by extending your wrists.",
+    "Pause at the top.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

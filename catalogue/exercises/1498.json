@@ -1,0 +1,22 @@
+{
+  "id": "1498",
+  "name": "band decline sit up",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A decline sit-up with a band adding resistance. It trains the abs through a long range.",
+  "instructions": [
+    "Anchor a band behind you and hold the other end at your chest.",
+    "Lie on a decline bench with your feet secured.",
+    "Curl your torso up toward your knees, keeping tension on the band.",
+    "Pause at the top without pulling on your neck.",
+    "Lower back down slowly under control."
+  ],
+  "femaleVariant": "3840",
+  "textSource": "opengym"
+}

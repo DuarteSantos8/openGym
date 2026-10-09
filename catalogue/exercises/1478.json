@@ -1,0 +1,23 @@
+{
+  "id": "1478",
+  "name": "jack plank",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "core",
+    "hip flexors",
+    "quadriceps"
+  ],
+  "category": "calisthenics",
+  "description": "A plank where your feet jump in and out like a jumping jack, combining core stability with cardio.",
+  "instructions": [
+    "Start in a high plank with your hands under your shoulders.",
+    "Brace your core and keep your hips level.",
+    "Jump your feet apart, then jump them back together.",
+    "Keep your upper body steady and your hips from rising.",
+    "Continue at a steady pace for the planned time."
+  ],
+  "textSource": "opengym"
+}

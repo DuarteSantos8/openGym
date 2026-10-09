@@ -1,0 +1,24 @@
+{
+  "id": "5369",
+  "name": "cable kneeling one arm row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "rhomboids",
+    "biceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Row a cable handle with one arm from a kneeling position. Builds the lats and mid back.",
+  "instructions": [
+    "Kneel facing the cable stack and grab the handle with one hand.",
+    "Keep your torso upright and core braced.",
+    "Pull your elbow back toward your hip.",
+    "Squeeze your shoulder blade at the end.",
+    "Return slowly to the start.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

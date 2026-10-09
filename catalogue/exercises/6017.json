@@ -1,0 +1,23 @@
+{
+  "id": "6017",
+  "name": "stepback pulldown",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "core",
+    "quadriceps"
+  ],
+  "category": "plyometrics",
+  "description": "A step back with a downward arm pull that fires up the lats and legs.",
+  "instructions": [
+    "Stand tall with your arms overhead.",
+    "Step one foot back.",
+    "Pull your elbows down and in as if doing a pulldown.",
+    "Return your arms and foot to start.",
+    "Alternate legs at a steady pace."
+  ],
+  "femaleVariant": "5766",
+  "textSource": "opengym"
+}

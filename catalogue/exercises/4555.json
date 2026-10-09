@@ -1,0 +1,23 @@
+{
+  "id": "4555",
+  "name": "dynamic 90 90 hip twist",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "adductors",
+    "hip flexors",
+    "obliques"
+  ],
+  "category": "mobility",
+  "description": "A flowing hip rotation drill that moves the hips through internal and external rotation.",
+  "instructions": [
+    "Sit on the floor with both knees bent at 90 degrees, feet wide.",
+    "Lean back a little and support yourself with your hands.",
+    "Rotate both knees to one side so they drop toward the floor.",
+    "Rotate smoothly to the other side.",
+    "Keep your movements slow and controlled.",
+    "Continue for 10-12 reps per side."
+  ],
+  "textSource": "opengym"
+}

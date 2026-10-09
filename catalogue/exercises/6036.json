@@ -1,0 +1,21 @@
+{
+  "id": "6036",
+  "name": "cable straight arm pulldown v. 2",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A straight-arm pulldown variation that isolates the lats by keeping the elbows nearly straight.",
+  "instructions": [
+    "Stand facing a high cable and grab the bar with straight arms.",
+    "Hinge slightly at the hips.",
+    "Pull the bar down in an arc to your thighs.",
+    "Squeeze your lats.",
+    "Return slowly to the start."
+  ],
+  "textSource": "opengym"
+}

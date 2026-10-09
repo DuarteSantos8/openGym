@@ -1,0 +1,23 @@
+{
+  "id": "4510",
+  "name": "calves stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles"
+  ],
+  "category": "stretching",
+  "description": "A standing wall stretch for the calf muscles. Helps with ankle mobility and tight lower legs.",
+  "instructions": [
+    "Stand facing a wall with your hands on it.",
+    "Step one foot back with the heel on the floor.",
+    "Bend your front knee and lean forward.",
+    "Feel the stretch in the back calf.",
+    "Hold for 20-30 seconds.",
+    "Switch legs and repeat."
+  ],
+  "femaleVariant": "0937",
+  "textSource": "opengym"
+}

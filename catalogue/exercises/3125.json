@@ -1,0 +1,23 @@
+{
+  "id": "3125",
+  "name": "resistance band foot external rotation",
+  "bodyPart": "lower legs",
+  "equipment": "resistance band",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "shins",
+    "feet"
+  ],
+  "category": "rehab",
+  "description": "A seated ankle drill where you turn the foot outward against a band. It strengthens the outer ankle muscles.",
+  "instructions": [
+    "Sit with one leg out and a band looped around the forefoot.",
+    "Anchor the other end to a fixed point on the inside.",
+    "Keep your heel still on the floor.",
+    "Turn your foot outward against the band.",
+    "Return slowly to the start.",
+    "Complete your reps, then switch feet."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "2938",
+  "name": "band upper body resistance dead bug",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "lower abs",
+    "shoulders",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A dead bug with a band resisting your arms. It adds shoulder and trunk demand to a classic core drill.",
+  "instructions": [
+    "Lie on your back holding a band overhead and bring your knees up at 90 degrees.",
+    "Press your lower back into the floor.",
+    "Lower the opposite arm and leg while keeping band tension.",
+    "Return to the start and switch sides.",
+    "Keep your ribs down and move slowly."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "2774",
+  "name": "knee flexion",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "glutes"
+  ],
+  "category": "mobility",
+  "description": "Bending the knee to bring the heel toward the glutes, working the back of the thigh.",
+  "instructions": [
+    "Stand or sit tall with a relaxed posture and the joint in a neutral starting position.",
+    "Stand tall holding a support, with your weight on one leg.",
+    "Bend the other knee to bring your heel up toward your glutes.",
+    "Keep your thighs side by side, pause, then lower slowly.",
+    "Repeat for 10-15 smooth reps, then switch sides if you are working one side at a time."
+  ],
+  "textSource": "opengym"
+}

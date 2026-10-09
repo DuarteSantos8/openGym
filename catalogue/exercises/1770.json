@@ -1,0 +1,20 @@
+{
+  "id": "1770",
+  "name": "biceps leg concentration curl",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A seated curl with your elbow braced on your inner thigh. Isolates the biceps and cuts out swinging.",
+  "instructions": [
+    "Sit on a bench with your legs spread apart and your feet flat on the ground.",
+    "Hold a dumbbell in one hand and place your elbow on the inside of your thigh, just above the knee.",
+    "With your palm facing up, curl the dumbbell towards your shoulder while keeping your upper arm stationary.",
+    "Squeeze your biceps at the top of the movement, then slowly lower the dumbbell back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms."
+  ],
+  "textSource": "exercisedb"
+}

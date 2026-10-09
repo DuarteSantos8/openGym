@@ -1,0 +1,21 @@
+{
+  "id": "4143",
+  "name": "band triceps kickback",
+  "bodyPart": "upper arms",
+  "equipment": "band",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A kickback with a band for the back of the arm.",
+  "instructions": [
+    "Stand on the band and hinge forward holding the other end.",
+    "Pin your upper arm to your side.",
+    "Extend your elbow straight back.",
+    "Squeeze your triceps.",
+    "Return slowly, then switch arms."
+  ],
+  "textSource": "opengym"
+}

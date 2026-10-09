@@ -1,0 +1,41 @@
+{
+  "id": "0017",
+  "name": "assisted pull-up",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A pull-up on an assisted machine that takes some of your weight, so you can build up to full pull-ups.",
+  "instructions": [
+    "Adjust the machine to your desired weight and height settings.",
+    "Grasp the handles with an overhand grip, slightly wider than shoulder-width apart.",
+    "Hang with your arms fully extended and your feet off the ground.",
+    "Engage your back muscles and pull your body up towards the handles, keeping your elbows close to your body.",
+    "Continue pulling until your chin is above the handles.",
+    "Pause for a moment at the top, then slowly lower your body back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm"
+    ],
+    "weights": {
+      "upper-back": 1,
+      "biceps": 0.4,
+      "deltoids": 0.4,
+      "forearm": 0.4,
+      "triceps": 0
+    }
+  },
+  "femaleVariant": "2529",
+  "textSource": "exercisedb"
+}

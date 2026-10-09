@@ -1,0 +1,24 @@
+{
+  "id": "3672",
+  "name": "back and forth step",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "glutes",
+    "calves"
+  ],
+  "category": "cardio",
+  "description": "A stepping drill moving forward and back with the legs alternating. It raises the heart rate and warms up the legs.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart.",
+    "Step forward with your right foot, bending your knee and lowering your body into a lunge position.",
+    "Push off with your right foot and step back to the starting position.",
+    "Repeat the movement with your left foot, alternating legs with each step.",
+    "Continue stepping back and forth, maintaining a steady pace.",
+    "Repeat for the desired duration or number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

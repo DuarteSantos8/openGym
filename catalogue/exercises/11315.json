@@ -1,0 +1,22 @@
+{
+  "id": "11315",
+  "name": "incline close grip push up with chair against wall",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A close grip incline push-up with your hands on a chair. It is a good way to build triceps strength.",
+  "instructions": [
+    "Brace a chair against a wall and place your hands close together on the seat.",
+    "Walk your feet back until your body is in a straight line.",
+    "Lower your chest toward the chair, elbows close to your body.",
+    "Press back up until your arms are straight.",
+    "Keep your hips in line."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "6442",
+  "name": "bear plank kickback",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "From a hovering bear plank position, you kick one leg back to fire up your glutes while your core stays steady.",
+  "instructions": [
+    "Start on hands and knees, then lift your knees a few centimetres off the floor.",
+    "Keep your back flat and core braced.",
+    "Extend one leg back and up, squeezing your glute.",
+    "Bring the knee back in without touching down.",
+    "Repeat, then switch legs."
+  ],
+  "textSource": "opengym"
+}

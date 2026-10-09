@@ -1,0 +1,23 @@
+{
+  "id": "1651",
+  "name": "dumbbell bicep curl lunge with bowling motion",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A lunge combined with a bicep curl in a bowling-style motion. It trains the biceps, glutes and legs together.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in each hand with your palms facing forward.",
+    "Take a step forward with your right foot, bending your right knee and lowering your body into a lunge position.",
+    "As you lunge forward, curl the dumbbells up towards your shoulders, keeping your elbows close to your body.",
+    "At the bottom of the lunge, rotate your torso to the right, as if you were bowling a ball.",
+    "Reverse the motion, stepping back with your right foot and returning to the starting position while lowering the dumbbells back down.",
+    "Repeat the lunge and curl motion, this time rotating your torso to the left.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4744",
+  "name": "dumbbell incline head supported row",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rhomboids",
+    "rear deltoids",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A chest-supported row on an incline bench with your head resting on the pad. It targets the upper back without loading the spine.",
+  "instructions": [
+    "Lie chest down on an incline bench with a dumbbell in each hand.",
+    "Rest your head on the top of the bench and let your arms hang.",
+    "Pull your elbows back and the dumbbells toward your ribs.",
+    "Pause and squeeze your shoulder blades.",
+    "Lower slowly to full arm extension."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "10731",
+  "name": "l sit rope climb",
+  "bodyPart": "back",
+  "equipment": "rope",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms",
+    "core",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A rope climb done with your legs held out in an L shape. It is a tough test for the lats, grip and abs.",
+  "instructions": [
+    "Grip the rope and hang with your legs raised in front of you.",
+    "Keep your legs straight and together.",
+    "Pull with one hand over the other while staying in the L position.",
+    "Reach up and repeat.",
+    "Lower under control.",
+    "Stop if your legs drop."
+  ],
+  "textSource": "opengym"
+}

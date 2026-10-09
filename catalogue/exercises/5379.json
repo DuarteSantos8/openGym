@@ -1,0 +1,24 @@
+{
+  "id": "5379",
+  "name": "roll posterior shoulder lying on floor",
+  "bodyPart": "shoulders",
+  "equipment": "roller",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rotator cuff",
+    "lats"
+  ],
+  "category": "mobility",
+  "description": "Self-massage with a foam roller to ease tightness in the back of the shoulder. Good before training or on rest days to loosen up.",
+  "instructions": [
+    "Lie on your side with the roller under your rear shoulder.",
+    "Place the roller under the back of the shoulder and let your body weight settle onto it.",
+    "Roll slowly along the back of the shoulder.",
+    "Pause on tender spots and breathe slowly for 20-30 seconds.",
+    "Keep your core braced and avoid rolling over joints or bone.",
+    "Roll for 30-60 seconds, then switch sides if needed."
+  ],
+  "femaleVariant": "5418",
+  "textSource": "opengym"
+}

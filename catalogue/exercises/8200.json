@@ -1,0 +1,21 @@
+{
+  "id": "8200",
+  "name": "sitting prayer chest squeeze on a chair",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "isometric",
+  "description": "Seated, you press your palms together in front of your chest. It trains the chest with no equipment.",
+  "instructions": [
+    "Sit tall on a chair.",
+    "Bring your palms together in front of your chest.",
+    "Press your palms firmly into each other.",
+    "Hold for 10-15 seconds.",
+    "Release and repeat."
+  ],
+  "textSource": "opengym"
+}

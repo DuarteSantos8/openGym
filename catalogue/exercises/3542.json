@@ -1,0 +1,21 @@
+{
+  "id": "3542",
+  "name": "dumbbell incline t-raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "traps",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A dumbbell raise on an incline bench, lifting the arms into a T shape. It trains the rear delts and upper back.",
+  "instructions": [
+    "Set an incline bench to a 45-degree angle and sit on it with a dumbbell in each hand, palms facing inwards.",
+    "Lean forward and let your arms hang straight down, perpendicular to the floor.",
+    "Keeping your arms straight, raise them out to the sides until they are parallel to the floor, forming a 'T' shape with your body.",
+    "Pause for a moment at the top, then slowly lower your arms back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

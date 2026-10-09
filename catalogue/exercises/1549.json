@@ -1,0 +1,22 @@
+{
+  "id": "1549",
+  "name": "double leg butt kick",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "A bouncy jump where both heels flick up toward your glutes. It gets your heart rate up and warms up the hamstrings.",
+  "instructions": [
+    "Stand tall with your feet hip-width apart and arms relaxed.",
+    "Jump up off both feet.",
+    "Kick both heels up toward your glutes while you are in the air.",
+    "Land softly on the balls of your feet with slightly bent knees.",
+    "Go straight into the next jump at a steady rhythm."
+  ],
+  "textSource": "opengym"
+}

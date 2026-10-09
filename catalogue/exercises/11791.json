@@ -1,0 +1,21 @@
+{
+  "id": "11791",
+  "name": "single arm fingers press with ball",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "hands",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A hand-strengthening drill pressing the fingers into a ball.",
+  "instructions": [
+    "Hold a small ball in one palm.",
+    "Press down on it with your fingers.",
+    "Spread and squeeze with control, keeping your wrist neutral.",
+    "Hold the press for 2-3 seconds.",
+    "Repeat for reps, then switch hands."
+  ],
+  "textSource": "opengym"
+}

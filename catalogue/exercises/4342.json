@@ -1,0 +1,22 @@
+{
+  "id": "4342",
+  "name": "dumbbell twisted fly",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A dumbbell fly where you rotate your wrists through the movement for a stronger chest squeeze.",
+  "instructions": [
+    "Lie on a bench with a dumbbell in each hand above your chest, palms facing in.",
+    "Open your arms wide in an arc with elbows slightly bent.",
+    "Rotate your wrists as you lower until you feel a chest stretch.",
+    "Bring the dumbbells back together, twisting them to finish with palms inward.",
+    "Control the weight on the way down."
+  ],
+  "textSource": "opengym"
+}

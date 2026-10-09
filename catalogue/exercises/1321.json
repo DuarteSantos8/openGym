@@ -1,0 +1,36 @@
+{
+  "id": "1321",
+  "name": "cable rope elevated seated row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A seated cable row using a rope from an elevated seat position. It trains the upper back, lats and biceps with a neutral grip.",
+  "instructions": [
+    "Sit on the elevated seat facing the cable machine.",
+    "Grab the cable rope handles with an overhand grip, palms facing each other.",
+    "Keep your back straight and lean slightly back, maintaining a slight bend in your knees.",
+    "Pull the cable towards your body by retracting your shoulder blades and squeezing your back muscles.",
+    "Pause for a moment at the fully contracted position.",
+    "Slowly release the tension and extend your arms back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm",
+      "trapezius",
+      "chest",
+      "triceps"
+    ]
+  },
+  "textSource": "exercisedb"
+}

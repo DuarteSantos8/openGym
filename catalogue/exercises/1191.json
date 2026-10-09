@@ -1,0 +1,21 @@
+{
+  "id": "1191",
+  "name": "triceps press (head below bench)",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A triceps extension lying with your head off the bench edge for an extra stretch.",
+  "instructions": [
+    "Lie on a bench with your head just past the end, holding a weight overhead.",
+    "Keep your upper arms still and pointing up.",
+    "Bend your elbows to lower the weight toward your head.",
+    "Extend your arms to straight.",
+    "Keep your elbows tucked in."
+  ],
+  "textSource": "opengym"
+}

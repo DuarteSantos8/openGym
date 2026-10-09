@@ -1,0 +1,20 @@
+{
+  "id": "3929",
+  "name": "standing side leg raise",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "Lift one leg out to the side while standing. It works the outer hip and helps with balance.",
+  "instructions": [
+    "Stand tall, hands on your hips or on a support.",
+    "Keep your toes pointing forward and lift one leg out to the side.",
+    "Raise it as high as you can without leaning your torso.",
+    "Lower with control and repeat, then switch legs."
+  ],
+  "textSource": "opengym"
+}

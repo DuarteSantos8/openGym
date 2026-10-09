@@ -45,7 +45,8 @@ function openReplace() {
   act(() => onReplace())
   expect(sheets.exercisePicker).toHaveBeenCalledOnce()
   const [onPick, opts] = sheets.exercisePicker.mock.calls[0]
-  expect(opts).toEqual({ title: 'Replace exercise' })
+  // #473: the picker is told what it replaces, so it opens on the same muscle.
+  expect(opts).toEqual({ title: 'Replace exercise', like: BENCH })
   return onPick
 }
 

@@ -1,0 +1,22 @@
+{
+  "id": "7449",
+  "name": "dumbbell standing front and lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "trapezius",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Combined raise that hits the front and side delts in one rep.",
+  "instructions": [
+    "Stand holding dumbbells at your sides.",
+    "Raise both arms to the front up to shoulder height.",
+    "Lower them back down.",
+    "Raise them out to your sides to shoulder height.",
+    "Lower with control and repeat."
+  ],
+  "textSource": "opengym"
+}

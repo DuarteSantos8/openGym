@@ -1,0 +1,21 @@
+{
+  "id": "4344",
+  "name": "barbell incline triceps extension skull crusher",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "An incline version of the skull crusher, lowering a barbell behind your head to hit the long head of the triceps.",
+  "instructions": [
+    "Lie back on an incline bench holding a barbell above your chest, arms straight.",
+    "Keep your upper arms still.",
+    "Bend your elbows and lower the bar toward your forehead.",
+    "Extend your arms to return to the start.",
+    "Keep your elbows pointing forward."
+  ],
+  "textSource": "opengym"
+}

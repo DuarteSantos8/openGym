@@ -1,0 +1,23 @@
+{
+  "id": "9989",
+  "name": "stick assisted standing shoulder internal rotation",
+  "bodyPart": "shoulders",
+  "equipment": "assisted",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "chest",
+    "lats"
+  ],
+  "category": "mobility",
+  "description": "A mobility drill where you use a stick behind your back to help rotate the shoulder inward. It improves reach and range.",
+  "instructions": [
+    "Stand tall holding a stick behind your back, one hand low and the other high.",
+    "Let the lower hand grip the stick as the working arm.",
+    "With the top hand, gently pull the stick up so the lower hand rises along your back.",
+    "Go until you feel a mild stretch.",
+    "Hold for 2 seconds, then release.",
+    "Keep your shoulders level, then switch sides."
+  ],
+  "textSource": "opengym"
+}

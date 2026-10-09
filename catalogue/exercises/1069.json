@@ -1,0 +1,22 @@
+{
+  "id": "1069",
+  "name": "cable twist v. 3",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Rotate your torso against a cable. It works the obliques.",
+  "instructions": [
+    "Stand sideways to the pulley and hold the handle with both hands.",
+    "Keep your arms extended.",
+    "Rotate your torso away from the stack.",
+    "Return slowly.",
+    "Switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,36 @@
+{
+  "id": "1010",
+  "name": "band straight leg deadlift",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "spine",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A straight-leg deadlift with a band, hinging forward at the hips. It trains the lower back and hamstrings.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and place the band around your feet.",
+    "Hold the band with both hands, palms facing your body, and keep your arms straight.",
+    "Engage your core and maintain a slight bend in your knees.",
+    "Slowly hinge forward at your hips, keeping your back straight and chest lifted.",
+    "Lower the band towards the ground while keeping your legs straight.",
+    "Pause for a moment at the bottom, then squeeze your glutes and hamstrings to return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "bodyPart": "upper legs",
+    "primaries": [
+      "gluteal",
+      "hamstring"
+    ],
+    "secondaries": [
+      "lower-back",
+      "quadriceps",
+      "adductors",
+      "calves"
+    ]
+  },
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "1312",
+  "name": "medicine ball chest push with run release",
+  "bodyPart": "chest",
+  "equipment": "medicine ball",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "Push a medicine ball forward from your chest, then sprint after it and catch it. It trains explosive chest power plus quick acceleration.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a medicine ball at chest level.",
+    "Step forward with your right foot and simultaneously push the medicine ball forward, extending your arms fully.",
+    "As you push the ball forward, release it and let it roll forward.",
+    "Quickly run forward and catch the ball before it hits the ground.",
+    "Once you catch the ball, bring it back to your chest and repeat the movement with your left foot forward.",
+    "Continue alternating legs and repeating the exercise for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

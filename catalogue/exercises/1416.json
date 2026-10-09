@@ -1,0 +1,25 @@
+{
+  "id": "1416",
+  "name": "exercise ball one leg prone lower body rotation",
+  "bodyPart": "upper legs",
+  "equipment": "stability ball",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Lie face down over a stability ball with one leg lifted and rotate it slightly. It strengthens the glutes and hips while your core balances.",
+  "instructions": [
+    "Lie face down on the stability ball with your hips resting on the ball and your legs extended straight behind you.",
+    "Place your hands on the ground in front of you for support.",
+    "Engage your glutes and core muscles to stabilize your body.",
+    "Slowly lift one leg off the ground, keeping it straight and parallel to the floor.",
+    "Rotate your leg outward, away from your body, while keeping your hips and upper body stable.",
+    "Pause for a moment at the end of the rotation, then slowly return your leg to the starting position.",
+    "Repeat the rotation with the other leg.",
+    "Continue alternating legs for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

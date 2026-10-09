@@ -1,0 +1,23 @@
+{
+  "id": "6793",
+  "name": "posterior chain flexibility test",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "lower back",
+    "calves",
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "A forward-fold style check of how flexible the back of your body is, from calves up to your lower back.",
+  "instructions": [
+    "Stand with your feet together and your knees straight.",
+    "Hinge at the hips and slowly reach down toward your toes.",
+    "Let your head and arms hang relaxed without bouncing.",
+    "Note how far your fingertips reach.",
+    "Hold for 20-30 seconds, breathing calmly.",
+    "Rise slowly, rolling up one vertebra at a time."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "5332",
+  "name": "svend bench press",
+  "bodyPart": "chest",
+  "equipment": "weight plate",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "Press a weight plate away from your chest while squeezing it. A chest isolation move with constant tension.",
+  "instructions": [
+    "Lie on a bench holding a plate between your palms at chest level.",
+    "Squeeze your palms together hard.",
+    "Press the plate straight up until your arms extend.",
+    "Keep squeezing the plate throughout.",
+    "Lower it back to your chest slowly.",
+    "Keep your feet planted."
+  ],
+  "textSource": "opengym"
+}

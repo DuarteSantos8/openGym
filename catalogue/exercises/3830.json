@@ -1,0 +1,22 @@
+{
+  "id": "3830",
+  "name": "lying double legs hammer curl with towel",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "Lying on your back, you loop a towel around your feet and curl it with a hammer grip. It trains your biceps.",
+  "instructions": [
+    "Lie on your back and loop a towel around both feet.",
+    "Hold the ends with palms facing each other.",
+    "Pull the towel toward your chest while pushing your feet against it.",
+    "Pause, then slowly extend your arms.",
+    "Keep your elbows near your sides."
+  ],
+  "textSource": "opengym"
+}

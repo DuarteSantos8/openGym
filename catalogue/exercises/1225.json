@@ -1,0 +1,22 @@
+{
+  "id": "1225",
+  "name": "standing plate presses",
+  "bodyPart": "shoulders",
+  "equipment": "weight plate",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Pressing a weight plate overhead with both hands. A simple way to train the shoulders and arms.",
+  "instructions": [
+    "Stand tall holding a plate at the sides with both hands at chest height.",
+    "Brace your core and keep your elbows slightly forward.",
+    "Press the plate overhead until your arms are straight.",
+    "Lower it slowly to your chest.",
+    "Keep your ribs down and avoid arching."
+  ],
+  "textSource": "opengym"
+}

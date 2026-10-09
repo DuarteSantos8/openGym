@@ -1,0 +1,22 @@
+{
+  "id": "5553",
+  "name": "cable seated lats focused row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "biceps",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "Seated cable row set up to emphasise the lats with a pull toward the hips.",
+  "instructions": [
+    "Sit at the cable row with feet on the platform and knees slightly bent.",
+    "Grab the handle and lean back slightly.",
+    "Pull your elbows down and back toward your hips.",
+    "Squeeze your lats, then extend slowly.",
+    "Keep your chest up."
+  ],
+  "textSource": "opengym"
+}

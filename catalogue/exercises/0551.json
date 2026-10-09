@@ -1,0 +1,26 @@
+{
+  "id": "0551",
+  "name": "kettlebell turkish get up (squat style)",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A Turkish get up where you come up through a squat style transition while keeping the kettlebell overhead. Trains full body control, stability and strength.",
+  "instructions": [
+    "Start by lying on your back with your legs extended and the kettlebell held in your right hand, arm fully extended above your shoulder.",
+    "Bend your right knee and place your right foot flat on the ground, keeping your left leg extended.",
+    "Pressing through your right foot, lift your hips off the ground, coming into a bridge position.",
+    "Slide your left leg underneath your body, bending your left knee and placing your left foot flat on the ground.",
+    "Rotate your torso to the left, bringing your left hand to the ground for support.",
+    "Pressing through your right foot and left hand, lift your torso off the ground, coming into a kneeling position.",
+    "From the kneeling position, stand up, keeping the kettlebell extended overhead.",
+    "Reverse the movement to return to the starting position.",
+    "Repeat the exercise on the other side, starting with the kettlebell in your left hand."
+  ],
+  "textSource": "exercisedb"
+}

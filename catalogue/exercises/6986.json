@@ -1,0 +1,22 @@
+{
+  "id": "6986",
+  "name": "downward dog push up against wall",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A wall-assisted version of a downward dog push-up with a push off at the top. It trains the shoulders in a bent-hip position.",
+  "instructions": [
+    "Stand facing a wall and place your hands on it with hips back.",
+    "Lower your head toward the wall, bending the elbows.",
+    "Push explosively away from the wall.",
+    "Land softly back into the start position.",
+    "Keep your core braced and back flat."
+  ],
+  "textSource": "opengym"
+}

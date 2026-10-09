@@ -1,0 +1,23 @@
+{
+  "id": "1550",
+  "name": "dumbbell bench one leg squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A single-leg squat with the other foot resting on a bench behind you, holding dumbbells. It hammers the quads and glutes and challenges balance.",
+  "instructions": [
+    "Hold a dumbbell in each hand and stand a step in front of a bench, facing away from it.",
+    "Rest the top of one foot on the bench behind you.",
+    "Lower your back knee toward the floor by bending your front leg.",
+    "Keep your front knee over your toes and your chest up.",
+    "Push through your front heel to stand, then switch legs after your reps."
+  ],
+  "textSource": "opengym"
+}

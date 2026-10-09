@@ -1,0 +1,41 @@
+{
+  "id": "0525",
+  "name": "kettlebell bottoms up clean from the hang position",
+  "bodyPart": "upper arms",
+  "equipment": "kettlebell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms",
+    "shoulders"
+  ],
+  "category": "olympic",
+  "description": "You clean a kettlebell upside down from a hang to the rack. It builds grip, shoulders and forearm control.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a kettlebell in one hand with an overhand grip.",
+    "Bend your knees slightly and hinge forward at the hips, keeping your back straight and chest up.",
+    "Allow the kettlebell to hang down between your legs, with your arm fully extended.",
+    "In one fluid motion, explosively extend your hips and knees while pulling the kettlebell up towards your shoulder.",
+    "As the kettlebell reaches shoulder height, rotate your wrist so that the bottom of the kettlebell is facing up.",
+    "Catch the kettlebell at shoulder height with your elbow bent and your palm facing up.",
+    "Lower the kettlebell back down to the starting position by reversing the movement.",
+    "Repeat for the desired number of repetitions, then switch sides."
+  ],
+  "muscleMap": {
+    "bodyPart": "full body",
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "hamstring",
+      "trapezius"
+    ],
+    "secondaries": [
+      "calves",
+      "forearm",
+      "deltoids",
+      "lower-back",
+      "abs",
+      "obliques"
+    ]
+  },
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "0276",
+  "name": "dead bug",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "A core drill where you extend opposite arm and leg while keeping the lower back pressed to the floor. It builds stability in the abs.",
+  "instructions": [
+    "Lie flat on your back with your arms extended towards the ceiling.",
+    "Bend your knees and lift your legs off the ground, creating a 90-degree angle at your hips and knees.",
+    "Engage your core and lower back to press your lower back into the ground.",
+    "Slowly lower your right arm and left leg towards the ground, keeping them straight and hovering just above the floor.",
+    "Pause for a moment, then return to the starting position.",
+    "Repeat the movement with your left arm and right leg.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "femaleVariant": "3071",
+  "textSource": "exercisedb"
+}

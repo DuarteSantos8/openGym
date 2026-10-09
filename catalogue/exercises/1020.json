@@ -1,0 +1,21 @@
+{
+  "id": "1020",
+  "name": "band side crunch",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Crunch sideways against a band. It works the obliques.",
+  "instructions": [
+    "Anchor a band overhead and kneel or stand beside it.",
+    "Hold the band at your shoulder with the near hand.",
+    "Bend sideways toward your hip.",
+    "Return to upright under control.",
+    "Finish all reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

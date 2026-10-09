@@ -1,0 +1,24 @@
+{
+  "id": "3899",
+  "name": "band bent over row",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rhomboids",
+    "biceps",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A bent-over row with a band that strengthens the mid back and lats.",
+  "instructions": [
+    "Stand on the band with feet hip-width apart and hold the ends.",
+    "Hinge forward at the hips with a flat back.",
+    "Let your arms hang straight down.",
+    "Pull your elbows back toward your hips.",
+    "Squeeze your shoulder blades together, then lower slowly.",
+    "Keep your neck neutral."
+  ],
+  "textSource": "opengym"
+}

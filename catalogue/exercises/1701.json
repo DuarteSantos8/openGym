@@ -1,0 +1,20 @@
+{
+  "id": "1701",
+  "name": "medicine ball close grip push up",
+  "bodyPart": "upper arms",
+  "equipment": "medicine ball",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A close grip push-up with your hands on a medicine ball. It hits the triceps and challenges stability.",
+  "instructions": [
+    "Start in a high plank position with your hands on the medicine ball, shoulder-width apart.",
+    "Lower your body towards the ground by bending your elbows, keeping them close to your sides.",
+    "Push back up to the starting position, fully extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

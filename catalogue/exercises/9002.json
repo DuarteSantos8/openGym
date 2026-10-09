@@ -1,0 +1,23 @@
+{
+  "id": "9002",
+  "name": "bird dog plank",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "glutes",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "A plank where you extend an opposite arm and leg to challenge balance. It builds trunk stability.",
+  "instructions": [
+    "Get into a plank on your hands or forearms with your body in a line.",
+    "Brace your core and squeeze your glutes.",
+    "Lift one arm forward and the opposite leg back.",
+    "Keep your hips level and do not twist.",
+    "Hold for a few seconds.",
+    "Return and switch sides."
+  ],
+  "textSource": "opengym"
+}

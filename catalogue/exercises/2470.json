@@ -1,0 +1,21 @@
+{
+  "id": "2470",
+  "name": "dumbbell lying on floor rear delt raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A rear delt raise performed lying face down on the floor. Targets the rear shoulders and upper back.",
+  "instructions": [
+    "Lie face down on the floor with a dumbbell in each hand, palms facing each other.",
+    "Extend your arms straight out in front of you, keeping a slight bend in your elbows.",
+    "Engaging your shoulder muscles, lift your arms up and out to the sides, squeezing your shoulder blades together.",
+    "Pause for a moment at the top, then slowly lower your arms back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

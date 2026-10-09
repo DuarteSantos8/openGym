@@ -1,0 +1,22 @@
+{
+  "id": "4108",
+  "name": "dumbbell standing arnold press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "The rotating shoulder press popularized by Arnold, hitting all heads of the delts.",
+  "instructions": [
+    "Stand holding dumbbells at chest height with palms facing you.",
+    "Press up while rotating your palms to face forward.",
+    "Fully extend your arms overhead.",
+    "Lower while rotating back to palms facing you.",
+    "Keep your core tight and avoid arching."
+  ],
+  "textSource": "opengym"
+}

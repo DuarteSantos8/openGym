@@ -1,0 +1,34 @@
+{
+  "id": "0218",
+  "name": "cable seated wide-grip row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A seated cable row with a wide grip handle. The wide hold puts more emphasis on the upper back and rear shoulders.",
+  "instructions": [
+    "Sit on the cable row machine with your feet flat on the footrests and your knees slightly bent.",
+    "Grasp the handle with a wide overhand grip, palms facing down.",
+    "Keep your back straight and lean slightly forward from the hips.",
+    "Pull the handle towards your lower chest, squeezing your shoulder blades together.",
+    "Pause for a moment at the peak of the contraction.",
+    "Slowly release the handle back to the starting position, fully extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm"
+    ]
+  },
+  "femaleVariant": "3598",
+  "textSource": "exercisedb"
+}

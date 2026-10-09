@@ -1,0 +1,22 @@
+{
+  "id": "0166",
+  "name": "cable hammer curl",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A hammer-grip curl using a low cable. The neutral grip works the biceps and the forearm muscles together.",
+  "instructions": [
+    "Attach a rope or handle to a low pulley and hold it with palms facing each other.",
+    "Stand tall with your elbows at your sides.",
+    "Curl the handles up toward your shoulders.",
+    "Squeeze at the top.",
+    "Lower slowly until your arms are straight.",
+    "Keep your upper arms still and avoid swinging."
+  ],
+  "textSource": "opengym"
+}

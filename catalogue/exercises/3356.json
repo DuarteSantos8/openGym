@@ -1,0 +1,22 @@
+{
+  "id": "3356",
+  "name": "cable forward lunge",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A forward stepping lunge with cable tension, working quads and glutes.",
+  "instructions": [
+    "Hold a low cable handle at your chest and stand facing away from the stack.",
+    "Take a big step forward.",
+    "Drop your back knee toward the floor.",
+    "Keep your front knee stable over the ankle.",
+    "Push back to the start and switch legs."
+  ],
+  "textSource": "opengym"
+}

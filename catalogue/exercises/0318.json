@@ -1,0 +1,22 @@
+{
+  "id": "0318",
+  "name": "dumbbell incline curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "The incline dumbbell curl. You sit back on an inclined bench and curl up, stretching the biceps at the start.",
+  "instructions": [
+    "Set an incline bench to a 45-degree angle and sit on it with a dumbbell in each hand, palms facing forward.",
+    "Rest your upper arms on the incline bench and let your elbows hang down, fully extending your arms.",
+    "Keeping your upper arms stationary, exhale and curl the weights while contracting your biceps.",
+    "Continue to raise the dumbbells until your biceps are fully contracted and the dumbbells are at shoulder level.",
+    "Hold the contracted position for a brief pause as you squeeze your biceps.",
+    "Inhale and slowly begin to lower the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "10387",
+  "name": "weighted sandbag carry (bear hug)",
+  "bodyPart": "full body",
+  "equipment": "sandbag",
+  "target": "abs",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "glutes",
+    "forearms",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A walking carry with a sandbag held to the chest, taxing the core, arms and grip.",
+  "instructions": [
+    "Lift the sandbag and hug it against your chest.",
+    "Stand tall with your core braced.",
+    "Walk forward with steady steps.",
+    "Keep your arms squeezing the bag tight.",
+    "Carry for a set distance or time, then lower the bag with care."
+  ],
+  "textSource": "opengym"
+}

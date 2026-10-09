@@ -1,0 +1,23 @@
+{
+  "id": "4190",
+  "name": "ez bar up down twist",
+  "bodyPart": "waist",
+  "equipment": "ez barbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Move the EZ bar in an arc with a twist. It trains the obliques.",
+  "instructions": [
+    "Stand holding the EZ bar in front of you.",
+    "Raise it overhead.",
+    "Lower it diagonally across your body, twisting.",
+    "Return overhead.",
+    "Alternate sides.",
+    "Move with control."
+  ],
+  "textSource": "opengym"
+}

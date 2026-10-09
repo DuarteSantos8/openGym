@@ -1,13 +1,17 @@
 import { describe, expect, test } from 'vitest'
 import { BAR_EQ, DEFAULT_BAR_KG, DEFAULT_BAR_LB, usesBar, defaultBarWeight, barWeightFor, hasBarOverride, plateSplit } from './bar.js'
 import { EXDB } from './exercises-data.js'
+import V13_IDS from './catalogue-v13-ids.json' with { type: 'json' }
 
 const idOf = eq => EXDB.find(e => e.eq === eq).id
 
 describe('bar equipment', () => {
-  test('covers the five bar types and the 228 catalogue exercises they carry', () => {
+  // 228 is the v1.3 catalogue's count; the v1.4 additions only add to it.
+  test('covers the five bar types and the 228 v1.3 catalogue exercises they carry', () => {
     expect([...BAR_EQ].sort()).toEqual(['barbell', 'ez barbell', 'olympic barbell', 'smith machine', 'trap bar'])
-    expect(EXDB.filter(e => BAR_EQ.has(e.eq)).length).toBe(228)
+    const legacy = new Set(V13_IDS)
+    expect(EXDB.filter(e => legacy.has(e.id) && BAR_EQ.has(e.eq)).length).toBe(228)
+    for (const eq of BAR_EQ) expect(EXDB.some(e => e.eq === eq), eq).toBe(true)
   })
 
   test('usesBar answers for ids and exercise objects alike', () => {

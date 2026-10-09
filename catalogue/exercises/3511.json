@@ -1,0 +1,22 @@
+{
+  "id": "3511",
+  "name": "resistance band bird dog",
+  "bodyPart": "waist",
+  "equipment": "resistance band",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A bird dog with a band for extra resistance, training the lower back, glutes and core stability.",
+  "instructions": [
+    "Start on hands and knees with a band looped under one hand and around the opposite foot.",
+    "Brace your core and keep your back flat.",
+    "Extend that arm forward and the opposite leg back against the band.",
+    "Pause, then return under control.",
+    "Do all reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

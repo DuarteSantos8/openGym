@@ -1,0 +1,23 @@
+{
+  "id": "10040",
+  "name": "dumbbell standing alternating cross raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "chest",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A raise where each dumbbell sweeps across the front of your body. It trains the front delts and upper chest.",
+  "instructions": [
+    "Stand tall with a dumbbell in each hand at your sides.",
+    "Raise one arm up and across your body toward the opposite shoulder, elbow slightly bent.",
+    "Pause at the top.",
+    "Lower with control.",
+    "Repeat with the other arm, alternating.",
+    "Keep your torso steady and avoid swinging."
+  ],
+  "textSource": "opengym"
+}

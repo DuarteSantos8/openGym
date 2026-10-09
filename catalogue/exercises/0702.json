@@ -1,0 +1,24 @@
+{
+  "id": "0702",
+  "name": "side bridge (knee tuck)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "hip flexors",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A side plank with a knee tuck for extra core work. It trains the obliques and hip flexors.",
+  "instructions": [
+    "Start in a side plank on your forearm.",
+    "Raise your top leg slightly.",
+    "Pull your top knee toward your chest.",
+    "Extend the leg back.",
+    "Keep your hips lifted.",
+    "Finish reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "5313",
+  "name": "dumbbell good morning squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Blend a good morning hinge with a squat while holding a dumbbell. Builds the posterior chain and legs.",
+  "instructions": [
+    "Hold a dumbbell at your chest and stand with feet shoulder-width apart.",
+    "Hinge at your hips with a flat back until you feel a hamstring stretch.",
+    "Stand back up and then sit down into a squat.",
+    "Drive up through your heels.",
+    "Repeat the hinge and squat as one rep.",
+    "Keep your chest up throughout."
+  ],
+  "textSource": "opengym"
+}

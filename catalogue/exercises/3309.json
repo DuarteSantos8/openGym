@@ -1,0 +1,23 @@
+{
+  "id": "3309",
+  "name": "barbell weighted front chest squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "upper back",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A squat with the barbell racked across the front of your shoulders. The front load keeps you upright and hits the quads hard.",
+  "instructions": [
+    "Rest the bar on your front shoulders with elbows high and hands steadying it.",
+    "Stand with feet shoulder width apart and brace your core.",
+    "Sit down between your hips, keeping your chest tall.",
+    "Descend until your thighs are at least parallel to the floor.",
+    "Drive up through your whole foot and keep your elbows up the whole way."
+  ],
+  "textSource": "opengym"
+}

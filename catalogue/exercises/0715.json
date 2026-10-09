@@ -1,0 +1,23 @@
+{
+  "id": "0715",
+  "name": "side plank",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "A sideways plank balanced on one forearm. It builds strength in the obliques and the muscles that stabilise your trunk.",
+  "instructions": [
+    "Lie on your side with your elbow under your shoulder and legs stacked.",
+    "Lift your hips so your body forms a straight line from head to feet.",
+    "Keep your hips high and your neck neutral.",
+    "Hold for 20-45 seconds.",
+    "Lower with control and switch sides.",
+    "Don't let your hips drop or roll forward."
+  ],
+  "textSource": "opengym"
+}

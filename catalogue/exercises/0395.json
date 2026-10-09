@@ -1,0 +1,22 @@
+{
+  "id": "0395",
+  "name": "dumbbell seated lateral raise v. 2",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "traps",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A seated lateral raise, second variation. It builds the side of the shoulders with strict form.",
+  "instructions": [
+    "Sit on a bench with your feet flat on the ground and a dumbbell in each hand, resting on your thighs.",
+    "Keep your back straight and core engaged.",
+    "Raise the dumbbells to your sides with a slight bend in your elbows, until your arms are parallel to the ground.",
+    "Pause for a moment at the top, then slowly lower the dumbbells back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2236",
+  "textSource": "exercisedb"
+}

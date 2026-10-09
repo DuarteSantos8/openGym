@@ -1,0 +1,21 @@
+{
+  "id": "2772",
+  "name": "hip medial rotation (internal rotation)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors"
+  ],
+  "category": "mobility",
+  "description": "Rotating the thigh inward at the hip, working the muscles that turn the leg in.",
+  "instructions": [
+    "Stand or sit tall with a relaxed posture and the joint in a neutral starting position.",
+    "Sit tall on a bench or chair, one knee bent at 90 degrees.",
+    "Keep your thigh still and swing your lower leg outward, which rotates the hip inward.",
+    "Pause briefly, then return to the starting position under control.",
+    "Repeat for 10-15 smooth reps, then switch sides if you are working one side at a time."
+  ],
+  "textSource": "opengym"
+}

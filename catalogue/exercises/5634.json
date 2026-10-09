@@ -1,0 +1,23 @@
+{
+  "id": "5634",
+  "name": "dumbbell narrow stance squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Narrow stance squat holding dumbbells to build the quads.",
+  "instructions": [
+    "Hold dumbbells at your sides with feet close together.",
+    "Brace your core.",
+    "Squat down with your chest up.",
+    "Drive up to stand.",
+    "Keep your heels down."
+  ],
+  "textSource": "opengym"
+}

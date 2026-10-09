@@ -1,0 +1,23 @@
+{
+  "id": "3736",
+  "name": "kettlebell standing bottoms up one arm shoulder press",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "forearms",
+    "grip muscles",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A one-arm overhead press holding the kettlebell upside down, which demands wrist and shoulder control.",
+  "instructions": [
+    "Hold a kettlebell upside down by the handle at shoulder height.",
+    "Squeeze the handle and brace your core.",
+    "Press the bell straight overhead, keeping it balanced.",
+    "Lower it back to your shoulder with control.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

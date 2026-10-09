@@ -1,0 +1,22 @@
+{
+  "id": "1353",
+  "name": "medicine ball catch and overhead throw",
+  "bodyPart": "back",
+  "equipment": "medicine ball",
+  "target": "lats",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "Squat down, then explode up and throw a medicine ball overhead and catch it again. It trains power through the hips, back and shoulders.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a medicine ball in both hands at chest level.",
+    "Bend your knees slightly and engage your core.",
+    "Lower your body into a squat position, keeping your back straight and chest up.",
+    "Explosively extend your hips and legs, while simultaneously throwing the medicine ball overhead.",
+    "Release the ball at the top of the movement and catch it on the way down.",
+    "Lower your body back into the squat position and repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

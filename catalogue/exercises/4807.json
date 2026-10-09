@@ -1,0 +1,22 @@
+{
+  "id": "4807",
+  "name": "wide to narrow push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up where the hands move from a wide to a narrow position between reps. It shifts the load from chest to triceps.",
+  "instructions": [
+    "Start in a high plank with your hands wider than your shoulders.",
+    "Lower your chest to the floor with your body in a straight line.",
+    "Push back up to the top.",
+    "Walk your hands in to a narrow, close position.",
+    "Repeat a push-up, then step your hands back out wide."
+  ],
+  "textSource": "opengym"
+}

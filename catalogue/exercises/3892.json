@@ -1,0 +1,24 @@
+{
+  "id": "3892",
+  "name": "jump on fit box",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A box jump that builds explosive power in the legs and hips.",
+  "instructions": [
+    "Stand facing a plyo box with feet shoulder-width apart.",
+    "Swing your arms back and bend your knees.",
+    "Jump up and land softly on top of the box with both feet.",
+    "Stand fully upright at the top.",
+    "Step down carefully.",
+    "Reset and repeat."
+  ],
+  "textSource": "opengym"
+}

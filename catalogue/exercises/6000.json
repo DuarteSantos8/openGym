@@ -1,0 +1,23 @@
+{
+  "id": "6000",
+  "name": "single leg bridge with outstretched leg (left)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A bridge on one leg with the other leg stretched out, to strengthen the glutes and hamstrings and test hip stability.",
+  "instructions": [
+    "Lie on your back with your knees bent and feet flat.",
+    "Extend your left leg straight out.",
+    "Drive through your right heel to lift your hips.",
+    "Keep your hips level.",
+    "Pause at the top.",
+    "Lower slowly, finish your reps and switch legs."
+  ],
+  "textSource": "opengym"
+}

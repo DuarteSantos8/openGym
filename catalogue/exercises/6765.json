@@ -1,0 +1,22 @@
+{
+  "id": "6765",
+  "name": "neck stretch with hand assisted",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "sternocleidomastoid",
+    "trapezius"
+  ],
+  "category": "stretching",
+  "description": "A neck stretch where your hand adds gentle pressure. It eases the side and back of the neck.",
+  "instructions": [
+    "Sit or stand tall with your shoulders relaxed.",
+    "Place one hand on the side of your head.",
+    "Gently tilt your head toward the shoulder, using light pressure.",
+    "Keep the opposite shoulder down.",
+    "Hold for 20-30 seconds, breathing calmly.",
+    "Release slowly and switch sides."
+  ],
+  "textSource": "opengym"
+}

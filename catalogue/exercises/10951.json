@@ -1,0 +1,22 @@
+{
+  "id": "10951",
+  "name": "l sit leg raise",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "triceps",
+    "lower abs"
+  ],
+  "category": "calisthenics",
+  "description": "A raise from an L-sit position. It builds strong abs and hip flexors.",
+  "instructions": [
+    "Sit on the floor with your hands on parallettes or flat beside you.",
+    "Press down to lift your hips.",
+    "Extend your legs in front of you.",
+    "Raise your legs higher and lower them back to the L position.",
+    "Keep your arms straight and shoulders down."
+  ],
+  "textSource": "opengym"
+}

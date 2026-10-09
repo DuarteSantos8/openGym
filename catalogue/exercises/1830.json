@@ -1,0 +1,21 @@
+{
+  "id": "1830",
+  "name": "elbow extensor anconeus stretch",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "forearms",
+    "wrist extensors"
+  ],
+  "category": "stretching",
+  "description": "A forearm and elbow stretch for the small muscle at the back of the elbow along with the triceps. Useful after pressing or typing.",
+  "instructions": [
+    "Extend one arm forward and bend the elbow fully with your palm down.",
+    "Use your other hand to press your forearm toward your upper arm, then rotate it gently.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "5867",
+  "name": "kettlebell bent over alternate twist row",
+  "bodyPart": "back",
+  "equipment": "kettlebell",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rhomboids",
+    "biceps",
+    "obliques",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A bent over kettlebell row with a rotation as you pull. It trains the back and challenges the core.",
+  "instructions": [
+    "Hinge forward with a flat back holding a kettlebell in each hand.",
+    "Row one kettlebell toward your hip.",
+    "Rotate your torso slightly as you pull.",
+    "Lower the weight and repeat on the other side.",
+    "Alternate sides for the set."
+  ],
+  "textSource": "opengym"
+}

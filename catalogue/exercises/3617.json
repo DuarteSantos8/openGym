@@ -1,0 +1,23 @@
+{
+  "id": "3617",
+  "name": "sled 45 degrees wide stance leg press",
+  "bodyPart": "upper legs",
+  "equipment": "sled machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A 45 degree sled leg press with a wide foot position that brings in the inner thighs and glutes.",
+  "instructions": [
+    "Sit in the sled with your back flat on the pad and feet wide on the platform, toes slightly out.",
+    "Release the safety handles.",
+    "Lower the sled with your knees tracking over your toes.",
+    "Press back up without locking your knees.",
+    "Keep your hips on the seat."
+  ],
+  "textSource": "opengym"
+}

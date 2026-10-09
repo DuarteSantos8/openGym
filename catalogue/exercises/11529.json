@@ -1,0 +1,22 @@
+{
+  "id": "11529",
+  "name": "lever belt single leg romanian deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A single-leg hip hinge on a belt-loaded lever machine that trains hamstrings and glutes with extra balance support.",
+  "instructions": [
+    "Fasten the belt and stand on one leg on the platform with a slight knee bend.",
+    "Hinge at the hips and push them back as your torso lowers.",
+    "Let the free leg extend behind you for balance.",
+    "Lower until you feel a hamstring stretch, keeping your back flat.",
+    "Drive your hips forward to stand tall, then switch legs after your reps."
+  ],
+  "textSource": "opengym"
+}

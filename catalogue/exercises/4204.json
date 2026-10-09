@@ -1,0 +1,23 @@
+{
+  "id": "4204",
+  "name": "resistance band assisted nordic hamstring curl",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A nordic curl using a band for assistance.",
+  "instructions": [
+    "Kneel with ankles secured.",
+    "Hold the band.",
+    "Lower your body forward.",
+    "Use the band to help.",
+    "Pull back up.",
+    "Keep hips extended."
+  ],
+  "textSource": "opengym"
+}

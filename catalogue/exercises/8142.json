@@ -1,0 +1,22 @@
+{
+  "id": "8142",
+  "name": "resistance band lying leg press",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A leg press performed lying on your back using a band around your feet. It works the quads and glutes.",
+  "instructions": [
+    "Lie on your back and loop a band around your feet, holding the ends.",
+    "Bring your knees toward your chest.",
+    "Press your feet away until your legs are almost straight.",
+    "Control the band as it pulls you back.",
+    "Repeat for your reps."
+  ],
+  "textSource": "opengym"
+}

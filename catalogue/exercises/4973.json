@@ -1,0 +1,22 @@
+{
+  "id": "4973",
+  "name": "dumbbell incline biceps curl (70 degrees)",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A biceps curl seated on a bench set to 70 degrees. The slight lean keeps the arms hanging for a good stretch.",
+  "instructions": [
+    "Set a bench to 70 degrees and sit back with a dumbbell in each hand.",
+    "Let your arms hang by your sides, palms forward.",
+    "Curl the weights up without moving your elbows.",
+    "Squeeze your biceps at the top.",
+    "Lower slowly to a full stretch.",
+    "Keep your back against the bench."
+  ],
+  "textSource": "opengym"
+}

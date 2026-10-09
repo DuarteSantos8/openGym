@@ -1,0 +1,23 @@
+{
+  "id": "2107",
+  "name": "cow stretch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "core",
+    "lower back",
+    "hip flexors"
+  ],
+  "category": "stretching",
+  "description": "Lets the belly sink and the chest lift from all fours to stretch the front of the trunk and mobilise the spine.",
+  "instructions": [
+    "Start on all fours with hands under shoulders and knees under hips.",
+    "Inhale and let your belly drop toward the floor.",
+    "Lift your chest and tailbone while looking slightly forward.",
+    "Keep your arms straight and shoulders away from your ears.",
+    "Hold for a couple of seconds, then return to neutral.",
+    "Repeat for 8-10 slow reps."
+  ],
+  "textSource": "opengym"
+}

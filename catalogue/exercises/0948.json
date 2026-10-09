@@ -1,0 +1,22 @@
+{
+  "id": "0948",
+  "name": "default pose",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "core",
+    "glutes",
+    "calves"
+  ],
+  "category": "yoga",
+  "description": "A relaxed, tall standing posture with arms by your sides. It is the neutral starting point for standing moves.",
+  "instructions": [
+    "Stand with feet about hip-width apart and weight even on both feet.",
+    "Let your arms hang naturally at your sides.",
+    "Lengthen your spine and gently draw your ribs down.",
+    "Relax your shoulders and look straight ahead.",
+    "Breathe calmly for a few breaths."
+  ],
+  "textSource": "opengym"
+}

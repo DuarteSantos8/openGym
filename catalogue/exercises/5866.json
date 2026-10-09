@@ -1,0 +1,22 @@
+{
+  "id": "5866",
+  "name": "decline diamond push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A diamond push-up with your feet raised. It shifts the load toward the triceps and upper chest.",
+  "instructions": [
+    "Place your feet on a bench and your hands close together under your chest.",
+    "Form a diamond with your thumbs and index fingers.",
+    "Lower your chest toward your hands.",
+    "Keep your body in a straight line.",
+    "Push back up to straight arms."
+  ],
+  "textSource": "opengym"
+}

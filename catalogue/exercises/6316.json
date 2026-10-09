@@ -1,0 +1,23 @@
+{
+  "id": "6316",
+  "name": "basic to cross donkey kick",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "shoulders",
+    "glutes"
+  ],
+  "category": "calisthenics",
+  "description": "A quadruped kick that goes up behind you, then crosses over. It hits the glutes from two angles.",
+  "instructions": [
+    "Start on hands and knees.",
+    "Lift one leg back with a bent knee, sole toward the ceiling.",
+    "Lower it, then kick it across behind your other leg.",
+    "Alternate basic and cross kicks.",
+    "Keep your hips level, then switch legs."
+  ],
+  "textSource": "opengym"
+}

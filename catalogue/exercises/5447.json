@@ -1,0 +1,24 @@
+{
+  "id": "5447",
+  "name": "lever pronated grip seated row (plate loaded)",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rhomboids",
+    "biceps",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A plate-loaded seated row with an overhand grip. Targets the upper back and lats.",
+  "instructions": [
+    "Sit at the machine with your chest on the pad.",
+    "Grab the handles with palms facing down.",
+    "Pull your elbows back and squeeze your shoulder blades together.",
+    "Pause briefly.",
+    "Return slowly until your arms extend.",
+    "Keep your torso steady."
+  ],
+  "textSource": "opengym"
+}

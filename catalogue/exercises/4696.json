@@ -1,0 +1,22 @@
+{
+  "id": "4696",
+  "name": "band down to up twist",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A diagonal twisting movement with a band from low to high. It trains the obliques and core.",
+  "instructions": [
+    "Anchor the band low and stand sideways to it, holding the end with both hands.",
+    "Start with your hands near the low hip.",
+    "Pull diagonally upward across your body as you rotate your torso.",
+    "Pivot your back foot and keep your arms long.",
+    "Return slowly, repeat, then switch sides."
+  ],
+  "textSource": "opengym"
+}

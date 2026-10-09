@@ -1,0 +1,24 @@
+{
+  "id": "6100",
+  "name": "bodyweight skipping",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "calves",
+    "quadriceps",
+    "hip flexors"
+  ],
+  "category": "plyometrics",
+  "description": "Skipping without a rope, with light hops and big arm swings. It lifts your heart rate and warms up the legs.",
+  "instructions": [
+    "Stand tall with your feet together.",
+    "Step and hop on one foot while driving the opposite knee up.",
+    "Swing the opposite arm forward as you hop.",
+    "Switch sides in a rhythmic skip.",
+    "Land softly on the balls of your feet.",
+    "Keep going for 30-60 seconds."
+  ],
+  "femaleVariant": "6101",
+  "textSource": "opengym"
+}

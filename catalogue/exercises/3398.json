@@ -1,0 +1,23 @@
+{
+  "id": "3398",
+  "name": "dumbbell front rack lunge",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A lunge with dumbbells held at your shoulders, which challenges your legs and trunk.",
+  "instructions": [
+    "Hold a dumbbell in each hand at shoulder height.",
+    "Step forward into a long stride.",
+    "Lower your back knee toward the floor.",
+    "Keep your torso upright and your front knee over your ankle.",
+    "Push back to the start.",
+    "Alternate legs for each rep."
+  ],
+  "textSource": "opengym"
+}

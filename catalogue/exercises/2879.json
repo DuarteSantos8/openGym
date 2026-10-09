@@ -1,0 +1,22 @@
+{
+  "id": "2879",
+  "name": "mermaid",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lats",
+    "shoulders"
+  ],
+  "category": "pilates",
+  "description": "A seated Pilates side stretch that opens the sides of the torso and ribs.",
+  "instructions": [
+    "Sit with your legs folded to one side in a comfortable position.",
+    "Place one hand on the mat beside you.",
+    "Reach the other arm overhead and bend sideways over the supporting hand.",
+    "Hold for a breath, feeling the side stretch.",
+    "Return to tall sitting and switch sides."
+  ],
+  "textSource": "opengym"
+}

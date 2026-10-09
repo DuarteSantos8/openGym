@@ -1,0 +1,22 @@
+{
+  "id": "2871",
+  "name": "teaser",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs",
+    "core"
+  ],
+  "category": "pilates",
+  "description": "A classic Pilates V-sit that challenges abdominal strength and balance.",
+  "instructions": [
+    "Lie on your back with legs extended and arms overhead.",
+    "Roll up while lifting your legs to form a V shape.",
+    "Reach your arms parallel to your legs and balance on your sit bones.",
+    "Hold briefly with a flat, strong back.",
+    "Roll down slowly with control and repeat."
+  ],
+  "textSource": "opengym"
+}

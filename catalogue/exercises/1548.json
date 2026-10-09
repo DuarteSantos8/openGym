@@ -1,0 +1,21 @@
+{
+  "id": "1548",
+  "name": "chair leg extended stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hamstrings",
+    "calves"
+  ],
+  "category": "stretching",
+  "description": "Using a chair for support, you extend one leg to stretch the thigh and hip. It loosens up the quads.",
+  "instructions": [
+    "Sit on the edge of a chair with your back straight and feet flat on the ground.",
+    "Extend one leg straight out in front of you, keeping your heel on the ground.",
+    "Lean forward slightly, feeling a stretch in your quadriceps.",
+    "Hold this position for 20-30 seconds.",
+    "Switch legs and repeat the stretch."
+  ],
+  "textSource": "exercisedb"
+}

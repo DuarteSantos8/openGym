@@ -1,0 +1,22 @@
+{
+  "id": "2860",
+  "name": "rollover",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "hamstrings"
+  ],
+  "category": "pilates",
+  "description": "A controlled move where the legs travel overhead and back, challenging the abs.",
+  "instructions": [
+    "Lie on your back with legs raised.",
+    "Roll your legs overhead.",
+    "Open them to hip width.",
+    "Roll down slowly.",
+    "Keep your arms pressing down."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "1804",
+  "name": "seated lower trunk extensor lateral flexor stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "lower back",
+    "obliques",
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "Seated, you fold forward and sideways to stretch both the lower back and the side of your trunk. It targets one side at a time.",
+  "instructions": [
+    "Sit tall on a chair or bench with your feet flat on the floor.",
+    "Fold forward and reach your hands toward one foot, letting your trunk bend slightly to that side.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

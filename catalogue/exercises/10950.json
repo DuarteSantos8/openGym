@@ -1,0 +1,23 @@
+{
+  "id": "10950",
+  "name": "ring long arms push up hold",
+  "bodyPart": "chest",
+  "equipment": "suspension trainer",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "core",
+    "upper back"
+  ],
+  "category": "isometric",
+  "description": "A push-up hold on rings with arms fully extended. It demands shoulder stability and core tension.",
+  "instructions": [
+    "Set the rings low and take a plank with your hands on them.",
+    "Keep your arms straight and rings close to your sides.",
+    "Squeeze your glutes and abs.",
+    "Hold for 15-30 seconds.",
+    "Lower to the floor to rest."
+  ],
+  "textSource": "opengym"
+}

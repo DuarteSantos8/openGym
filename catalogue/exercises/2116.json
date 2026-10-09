@@ -1,0 +1,23 @@
+{
+  "id": "2116",
+  "name": "lying knee roll over stretch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back",
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "Rolls the knees to one side while lying on your back to twist the lower spine and loosen the hips and sides.",
+  "instructions": [
+    "Lie on your back with arms out to the sides and knees bent.",
+    "Keep your shoulders flat on the floor.",
+    "Slowly lower both knees to one side.",
+    "Turn your head the other way if it feels comfortable.",
+    "Hold for 20-30 seconds.",
+    "Bring the knees back to centre and roll to the other side."
+  ],
+  "textSource": "opengym"
+}

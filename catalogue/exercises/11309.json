@@ -1,0 +1,23 @@
+{
+  "id": "11309",
+  "name": "lever single arm reverse grip lateral pulldown (plate loaded)",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A one-arm pulldown on a plate-loaded machine using an underhand grip. It trains the lats and biceps one side at a time.",
+  "instructions": [
+    "Sit in the machine and grab one handle with an underhand grip.",
+    "Sit tall and brace your core.",
+    "Pull the handle down, driving your elbow toward your side.",
+    "Squeeze your lat at the bottom.",
+    "Return slowly, finish your reps, then switch arms."
+  ],
+  "femaleVariant": "11308",
+  "textSource": "opengym"
+}

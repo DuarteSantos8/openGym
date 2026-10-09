@@ -1,0 +1,24 @@
+{
+  "id": "1088",
+  "name": "suspension pull up",
+  "bodyPart": "back",
+  "equipment": "suspension trainer",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "forearms",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A pull-up using suspension handles. It builds the lats and arms.",
+  "instructions": [
+    "Hang from the handles with arms extended.",
+    "Brace your core.",
+    "Pull your chest up between the handles.",
+    "Lead with your elbows.",
+    "Pause at the top.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

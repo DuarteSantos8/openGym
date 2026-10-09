@@ -1,0 +1,22 @@
+{
+  "id": "3347",
+  "name": "dumbbell curl to press",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "brachialis"
+  ],
+  "category": "strength",
+  "description": "Curl the dumbbells and keep going into an overhead press, training the arms and shoulders in one smooth rep.",
+  "instructions": [
+    "Stand tall holding a dumbbell in each hand, palms forward.",
+    "Curl both weights up to shoulder height without swinging.",
+    "Rotate your wrists slightly and press the weights overhead.",
+    "Lower to your shoulders, then back down to your sides.",
+    "Brace your core and keep your ribs down."
+  ],
+  "textSource": "opengym"
+}

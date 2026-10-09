@@ -1,0 +1,23 @@
+{
+  "id": "2671",
+  "name": "smith narrow row v. 2",
+  "bodyPart": "back",
+  "equipment": "smith machine",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "biceps",
+    "rhomboids",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A bent-over row on the smith machine with a narrow grip, working the lats and mid back.",
+  "instructions": [
+    "Set the bar at knee height and grip it with hands close together.",
+    "Hinge forward at the hips with a flat back and slightly bent knees.",
+    "Pull the bar toward your lower ribs, keeping elbows close to your body.",
+    "Squeeze your back at the top.",
+    "Lower the bar under control to full arm extension."
+  ],
+  "textSource": "opengym"
+}

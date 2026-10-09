@@ -1,0 +1,21 @@
+{
+  "id": "1932",
+  "name": "assisted lying hip stretch in supine position",
+  "bodyPart": "upper legs",
+  "equipment": "assisted",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "A partner guides your bent knee toward your chest to stretch the hips and glutes while you stay relaxed.",
+  "instructions": [
+    "Lie on your back with your legs straight and relax.",
+    "Have a partner bring one knee slowly toward your chest.",
+    "Tell them to stop when you feel a stretch in the hip and buttock.",
+    "Keep the other leg flat on the floor.",
+    "Hold for 20-30 seconds, then switch legs."
+  ],
+  "textSource": "opengym"
+}

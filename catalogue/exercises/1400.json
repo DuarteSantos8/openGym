@@ -1,0 +1,22 @@
+{
+  "id": "1400",
+  "name": "squat side kick",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Squatting down and then kicking one leg out to the side. It trains the thighs and glutes.",
+  "instructions": [
+    "Stand with your feet shoulder width apart.",
+    "Squat down with your chest up.",
+    "Stand up and kick your right leg out to the side.",
+    "Return the foot to the floor and drop into the next squat.",
+    "Alternate sides each rep."
+  ],
+  "textSource": "opengym"
+}

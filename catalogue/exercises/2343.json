@@ -1,0 +1,22 @@
+{
+  "id": "2343",
+  "name": "bent over row back (form check)",
+  "bodyPart": "back",
+  "equipment": "barbell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "biceps",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A side-by-side form check for back position during a bent over row, showing the common mistake next to the correct technique so you can spot it in your own sets.",
+  "instructions": [
+    "Hold the bar and hinge forward at the hips with soft knees.",
+    "Compare the faulty version with the correct one: your spine stays long and flat, not rounded.",
+    "Perform the lift slowly with a light load and keep the correct position throughout.",
+    "Use a mirror or film a set from the side to check your own position.",
+    "Fix the cue before adding weight, and rest between sets so form stays clean."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "3775",
+  "name": "band split squat with horizontal pallof hold",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A split squat done while holding the band out in front of you. It builds single-leg strength and core stability.",
+  "instructions": [
+    "Anchor the band at chest height and stand side-on to it.",
+    "Take a split stance and press the handle straight out with both hands.",
+    "Lower your back knee toward the floor without letting the band twist you.",
+    "Push through your front foot to rise.",
+    "Finish your reps, then switch legs and anchor side."
+  ],
+  "textSource": "opengym"
+}

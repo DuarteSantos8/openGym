@@ -1,0 +1,24 @@
+{
+  "id": "3236",
+  "name": "resistance band hip thrusts on knees (female)",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "A kneeling hip thrust against a resistance band around the thighs. It trains the glutes with a hip extension.",
+  "instructions": [
+    "Start by kneeling on the ground with your knees hip-width apart and your feet flexed.",
+    "Wrap the resistance band around your thighs, just above your knees.",
+    "Place your hands on your hips or extend them out in front of you for balance.",
+    "Engage your glutes and core muscles.",
+    "Push your hips forward and squeeze your glutes as you lift your knees off the ground, extending your hips until your thighs are parallel to the ground.",
+    "Hold the position for a moment, then slowly lower your knees back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb",
+  "maleVariant": "7277"
+}

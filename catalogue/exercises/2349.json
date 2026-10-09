@@ -1,0 +1,24 @@
+{
+  "id": "2349",
+  "name": "side plank butt (form check)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "glutes",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "A side plank form check that compares a piked butt with a straight body line.",
+  "instructions": [
+    "Lie on your side with your forearm on the floor and elbow under your shoulder.",
+    "Stack your feet and lift your hips off the floor.",
+    "Make a straight line from your head to your feet.",
+    "Avoid letting your butt stick out or your hips drop.",
+    "Squeeze your abs and glutes to stay level.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

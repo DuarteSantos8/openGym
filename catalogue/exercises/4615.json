@@ -1,0 +1,23 @@
+{
+  "id": "4615",
+  "name": "hip swirls",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "obliques",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "Standing hip circles that loosen the hip joints and warm up the pelvis.",
+  "instructions": [
+    "Stand with feet shoulder-width apart and hands on your hips.",
+    "Slightly bend your knees.",
+    "Move your hips in a large smooth circle, as if drawing it with your belt buckle.",
+    "Do several circles one way, then switch direction.",
+    "Keep your shoulders still and relaxed."
+  ],
+  "femaleVariant": "5114",
+  "textSource": "opengym"
+}

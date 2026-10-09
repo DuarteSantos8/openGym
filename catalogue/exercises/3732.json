@@ -1,0 +1,23 @@
+{
+  "id": "3732",
+  "name": "kettlebell goblet curtsey lunge",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "adductors",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A curtsey lunge holding a kettlebell at your chest. It targets the glutes and outer hips.",
+  "instructions": [
+    "Hold a kettlebell by the horns at your chest and stand tall.",
+    "Step one leg back and across behind the other.",
+    "Lower until your front thigh is near parallel.",
+    "Push through your front heel to return.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

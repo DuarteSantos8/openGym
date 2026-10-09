@@ -1,0 +1,23 @@
+{
+  "id": "9041",
+  "name": "smith front leg elevated split squat",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "With the front foot raised on a step and the bar on your back, you sink into a deep split squat. It loads the quads and glutes.",
+  "instructions": [
+    "Set a low platform under the smith bar and put your front foot on it.",
+    "Place the bar across your upper back and unrack it.",
+    "Step the back foot behind you.",
+    "Lower your back knee toward the floor.",
+    "Press through the front heel to stand.",
+    "Do all reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

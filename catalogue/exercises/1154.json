@@ -1,0 +1,23 @@
+{
+  "id": "1154",
+  "name": "suspender calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "suspension trainer",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "strength",
+  "description": "Holding the straps for balance, you rise onto your toes to train the calves.",
+  "instructions": [
+    "Hold the handles and stand with feet hip width apart.",
+    "Keep your body upright.",
+    "Rise onto the balls of your feet as high as you can.",
+    "Pause and squeeze the calves.",
+    "Lower the heels slowly below the start if comfortable.",
+    "Use the straps only for balance."
+  ],
+  "textSource": "opengym"
+}

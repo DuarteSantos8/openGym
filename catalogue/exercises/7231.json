@@ -1,0 +1,22 @@
+{
+  "id": "7231",
+  "name": "dumbbell incline single arm y raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rear deltoids",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A chest-supported raise on an incline bench to a Y position with one arm. It builds the lower traps and rear delts.",
+  "instructions": [
+    "Lie face down on an incline bench with a dumbbell in one hand.",
+    "Let the arm hang straight down.",
+    "Raise your arm forward and up in a Y shape, thumb up.",
+    "Squeeze at the top.",
+    "Lower slowly and switch arms after your reps."
+  ],
+  "textSource": "opengym"
+}

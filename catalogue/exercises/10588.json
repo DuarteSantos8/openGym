@@ -1,0 +1,22 @@
+{
+  "id": "10588",
+  "name": "barbell lying front raise",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "trapezius",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "Lying on a bench, you raise a barbell from your thighs to above your chest. It builds the front shoulder.",
+  "instructions": [
+    "Lie on a bench holding a barbell at arm's length over your thighs.",
+    "Keep your arms straight with a soft elbow.",
+    "Raise the bar in an arc until it is above your chest.",
+    "Lower it slowly back down.",
+    "Use a light weight and keep your back flat."
+  ],
+  "textSource": "opengym"
+}

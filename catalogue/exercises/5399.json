@@ -1,0 +1,21 @@
+{
+  "id": "5399",
+  "name": "stick assisted isometric core",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "isometric",
+  "description": "Holding a stick overhead or in front while you brace your midsection. Builds trunk stability and teaches you to keep the ribs down.",
+  "instructions": [
+    "Stand tall with your feet hip-width apart and hold a stick in both hands.",
+    "Raise the stick to the position you are cued for and keep your arms steady.",
+    "Brace your abs as if preparing for a light punch and tuck the ribs down.",
+    "Hold for 20-30 seconds while breathing steadily.",
+    "Lower the stick slowly and shake out your arms."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,19 @@
+openGym {{ .Chart.AppVersion }} is installed.
+{{- if .Values.ingress.enabled }}
+{{- range $host := .Values.ingress.hosts }}
+  {{- range .paths }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  {{- end }}
+{{- end }}
+{{- else if .Values.httpRoute.enabled }}
+{{- range .Values.httpRoute.hostnames }}
+  https://{{ . }}/
+{{- end }}
+{{- else }}
+  No Ingress or HTTPRoute. To try it locally (passkeys work on localhost only):
+  kubectl --namespace {{ .Release.Namespace }} port-forward svc/{{ include "helm.fullname" . }} 8080:{{ .Values.service.port }}
+  then set api.env.RP_ID=localhost and api.env.ORIGIN=http://localhost:8080
+{{- end }}
+
+Passkeys need HTTPS and RP_ID ({{ .Values.api.env.RP_ID }}) equal to the hostname people open.
+Back up the {{ .Values.persistence.data.existingClaim | default (printf "%s-data" (include "helm.fullname" .)) }} volume: it is the whole instance.

@@ -1,0 +1,24 @@
+{
+  "id": "4117",
+  "name": "kneeling scapular push up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "serratus anterior",
+  "secondaryMuscles": [
+    "upper back",
+    "chest",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A kneeling push up that moves only the shoulder blades, strengthening the muscles that stabilize them.",
+  "instructions": [
+    "Kneel in a plank position with straight arms.",
+    "Keep your elbows locked.",
+    "Let your chest sink by pinching your shoulder blades together.",
+    "Push the floor away to spread them apart.",
+    "Keep your core braced."
+  ],
+  "femaleVariant": "9760",
+  "textSource": "opengym"
+}

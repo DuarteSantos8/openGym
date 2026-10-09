@@ -1,0 +1,23 @@
+{
+  "id": "10761",
+  "name": "resistance band toe side walk",
+  "bodyPart": "lower legs",
+  "equipment": "band",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "hip flexors",
+    "feet"
+  ],
+  "category": "strength",
+  "description": "A sideways walk on your toes against band tension. It works calves, ankles and outer hips.",
+  "instructions": [
+    "Place a band around your ankles.",
+    "Rise onto your toes with knees slightly bent.",
+    "Step sideways in small steps.",
+    "Keep tension on the band.",
+    "Do not let your heels drop.",
+    "Walk one way, then back."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4989",
+  "name": "v sit cross punch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "shoulders",
+    "triceps"
+  ],
+  "category": "calisthenics",
+  "description": "Hold a V sit and punch across your body. You train the abs and obliques while balancing.",
+  "instructions": [
+    "Sit with knees bent and lean back, lifting your feet off the floor.",
+    "Raise your fists in front of your chest.",
+    "Punch one arm across your body while twisting your torso.",
+    "Return to center and punch with the other arm.",
+    "Keep your chest tall and your balance steady."
+  ],
+  "textSource": "opengym"
+}

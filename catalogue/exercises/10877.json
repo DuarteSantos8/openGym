@@ -1,0 +1,22 @@
+{
+  "id": "10877",
+  "name": "weighted plate crunch (hands overhead) v. 2",
+  "bodyPart": "waist",
+  "equipment": "weight plate",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A second take on the overhead plate crunch. It trains the abs with a long, loaded lever.",
+  "instructions": [
+    "Lie on your back with knees bent and feet planted.",
+    "Hold a plate with straight arms overhead.",
+    "Crunch up, lifting your shoulder blades off the floor.",
+    "Keep your arms by your ears as you rise.",
+    "Lower back down slowly and repeat."
+  ],
+  "femaleVariant": "10878",
+  "textSource": "opengym"
+}

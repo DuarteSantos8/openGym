@@ -1,0 +1,24 @@
+{
+  "id": "4976",
+  "name": "mountain climber jump",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "core",
+    "quadriceps",
+    "shoulders",
+    "hip flexors"
+  ],
+  "category": "plyometrics",
+  "description": "A mountain climber with a jump between the feet. It raises your heart rate and works the core.",
+  "instructions": [
+    "Start in a high plank.",
+    "Drive one knee toward your chest.",
+    "Switch legs with a small jump.",
+    "Keep your hips low.",
+    "Maintain a fast, steady pace.",
+    "Rest when your form slips."
+  ],
+  "textSource": "opengym"
+}

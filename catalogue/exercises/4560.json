@@ -1,0 +1,23 @@
+{
+  "id": "4560",
+  "name": "body extension",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A kneeling lean-back that stretches and strengthens the front of the thighs and the core.",
+  "instructions": [
+    "Kneel with your knees hip-width apart and your body upright.",
+    "Cross your arms or put your hands on your hips.",
+    "Squeeze your glutes and lean back from the knees as one straight line.",
+    "Go back as far as you can control.",
+    "Pull yourself back up to the start.",
+    "Keep your hips forward."
+  ],
+  "textSource": "opengym"
+}

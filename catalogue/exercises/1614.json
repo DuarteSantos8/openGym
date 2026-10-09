@@ -1,0 +1,30 @@
+{
+  "id": "1614",
+  "name": "lever preacher curl v. 2",
+  "bodyPart": "upper arms",
+  "equipment": "leverage machine",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A preacher curl on a lever machine, version 2. The pad locks your upper arms in place so the biceps do the work.",
+  "instructions": [
+    "Adjust the seat height and position yourself on the machine with your upper arms resting on the pad and your chest against the support.",
+    "Grasp the handles with an underhand grip, slightly wider than shoulder-width apart.",
+    "Keep your upper arms stationary and exhale as you curl the handles towards your shoulders, contracting your biceps.",
+    "Pause for a moment at the top of the movement, squeezing your biceps.",
+    "Inhale as you slowly lower the handles back to the starting position, fully extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "biceps"
+    ],
+    "secondaries": [
+      "forearm"
+    ]
+  },
+  "femaleVariant": "2819",
+  "textSource": "exercisedb"
+}

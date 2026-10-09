@@ -1,0 +1,22 @@
+{
+  "id": "6145",
+  "name": "dumbbell reverse hyperextension on bench",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A bench-supported reverse hyper with a dumbbell held between your feet. It strengthens the glutes and hamstrings.",
+  "instructions": [
+    "Lie face down on a bench with your hips at the edge.",
+    "Hold a dumbbell between your feet.",
+    "Hold the bench for support.",
+    "Raise your legs until they align with your body.",
+    "Squeeze your glutes at the top.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "1695",
+  "name": "stability ball single leg squat",
+  "bodyPart": "upper legs",
+  "equipment": "stability ball",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "ankles"
+  ],
+  "category": "strength",
+  "description": "A single-leg squat with a stability ball between your back and a wall for support, building one-sided leg strength.",
+  "instructions": [
+    "Place a stability ball between your lower back and a wall.",
+    "Lift one foot and balance on the other leg.",
+    "Lower into a squat while the ball rolls down the wall.",
+    "Press through your heel to stand back up.",
+    "Complete the reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "1402",
+  "name": "l sit",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "triceps",
+    "shoulders",
+    "quadriceps"
+  ],
+  "category": "isometric",
+  "description": "An isometric hold where your body is supported by your arms and your legs stay straight out in front, forming an L.",
+  "instructions": [
+    "Sit between two supports or on the floor and place your hands beside your hips.",
+    "Press down through your hands to lift your hips and legs off the floor.",
+    "Extend your legs straight in front of you.",
+    "Keep your shoulders pressed down and your core tight.",
+    "Hold for as long as you can with good form, then lower."
+  ],
+  "textSource": "opengym"
+}

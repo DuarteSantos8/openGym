@@ -1,0 +1,22 @@
+{
+  "id": "8613",
+  "name": "dumbbell preacher swing curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A preacher curl with a little controlled swing to push past the sticking point.",
+  "instructions": [
+    "Rest your upper arms on a preacher pad and hold dumbbells with an underhand grip.",
+    "Keep your shoulders down.",
+    "Curl the weights up with a small drive from the bottom.",
+    "Squeeze at the top.",
+    "Lower slowly until your arms are almost straight."
+  ],
+  "textSource": "opengym"
+}

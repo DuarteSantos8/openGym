@@ -1,0 +1,22 @@
+{
+  "id": "5195",
+  "name": "seated neck side stretch",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "trapezius",
+    "sternocleidomastoid"
+  ],
+  "category": "stretching",
+  "description": "A seated lateral neck stretch. It loosens the side of the neck and upper traps.",
+  "instructions": [
+    "Sit tall and relax your shoulders.",
+    "Tilt your ear toward one shoulder.",
+    "Rest your hand lightly on your head for a gentle added stretch.",
+    "Hold for 20-30 seconds.",
+    "Return to centre and switch sides."
+  ],
+  "femaleVariant": "7824",
+  "textSource": "opengym"
+}

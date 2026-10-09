@@ -1,0 +1,23 @@
+{
+  "id": "7548",
+  "name": "kettlebell swing to goblet squat",
+  "bodyPart": "full body",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "core",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "Kettlebell swing flowing into a goblet squat for hips, legs and grip.",
+  "instructions": [
+    "Swing the kettlebell up to chest height from a hip hinge.",
+    "Catch it at your chest in a goblet hold.",
+    "Sit into a deep squat.",
+    "Stand up and lower the bell back between your legs.",
+    "Hinge and swing again."
+  ],
+  "textSource": "opengym"
+}

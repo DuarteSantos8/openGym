@@ -1,0 +1,24 @@
+{
+  "id": "4730",
+  "name": "dumbbell bent over single arm row v. 2",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "rhomboids",
+    "biceps",
+    "rear deltoids",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A one-arm row from a hinged position, pulling a dumbbell toward your hip. It trains the lats and mid back.",
+  "instructions": [
+    "Hold a dumbbell in one hand and hinge forward with a flat back, knees slightly bent.",
+    "Let the weight hang with your arm straight below your shoulder.",
+    "Pull the dumbbell toward your hip, leading with your elbow.",
+    "Pause briefly, then lower slowly.",
+    "Finish all reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

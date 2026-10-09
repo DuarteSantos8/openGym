@@ -1,0 +1,23 @@
+{
+  "id": "1555",
+  "name": "dumbbell squat v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A simple squat holding a dumbbell in each hand. It is a solid all-round leg builder that is easy to load.",
+  "instructions": [
+    "Stand with feet shoulder-width apart, holding a dumbbell in each hand at your sides.",
+    "Push your hips back and bend your knees to lower down.",
+    "Go until your thighs are parallel to the floor or a bit lower.",
+    "Keep your chest up and your heels planted.",
+    "Press through your feet to stand back up."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "2942",
+  "name": "kettlebell angled press",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A kettlebell press at an angle between a front and a side raise path. It suits natural shoulder movement and builds pressing strength.",
+  "instructions": [
+    "Hold a kettlebell at your shoulder and stand tall.",
+    "Brace your abs and squeeze your glutes.",
+    "Press the bell up and slightly out to the side in a diagonal path.",
+    "Lock out your arm without leaning back.",
+    "Lower under control, finish the reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

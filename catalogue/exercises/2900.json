@@ -1,0 +1,22 @@
+{
+  "id": "2900",
+  "name": "ez barbell standing preacher curl",
+  "bodyPart": "upper arms",
+  "equipment": "ez barbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A preacher style curl performed standing at an angled pad. Isolates the biceps with strict form.",
+  "instructions": [
+    "Stand facing a preacher pad and hold an EZ bar with an underhand grip.",
+    "Rest your upper arms on the pad with the arms extended.",
+    "Curl the bar up toward your shoulders.",
+    "Squeeze your biceps at the top.",
+    "Lower slowly until the arms are almost straight."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "7232",
+  "name": "standing scapular rotation",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "trapezius",
+    "shoulders"
+  ],
+  "category": "mobility",
+  "description": "A standing drill that moves the shoulder blades in circles. It improves shoulder mobility and control.",
+  "instructions": [
+    "Stand tall with arms relaxed at your sides.",
+    "Lift your shoulders up toward your ears.",
+    "Roll them back, then down.",
+    "Bring them forward and up again in a circle.",
+    "Reverse the direction after several reps."
+  ],
+  "textSource": "opengym"
+}

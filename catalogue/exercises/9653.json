@@ -1,0 +1,22 @@
+{
+  "id": "9653",
+  "name": "standing torso twist arms swing",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "lower back"
+  ],
+  "category": "mobility",
+  "description": "A dynamic standing twist where your arms swing with the rotation. It loosens up the spine and obliques.",
+  "instructions": [
+    "Stand with feet shoulder-width apart and arms relaxed.",
+    "Rotate your torso to one side, letting your arms swing around.",
+    "Let your back heel lift slightly if needed.",
+    "Rotate smoothly to the other side.",
+    "Continue at an easy rhythm for 30 seconds."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "9694",
+  "name": "barbell half kneeling shoulders press",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "An overhead press from a half-kneeling stance, which demands core and hip stability.",
+  "instructions": [
+    "Kneel on one knee with the other foot forward and a barbell at your shoulder.",
+    "Squeeze your glutes and brace your core.",
+    "Press the bar overhead until your arms are straight.",
+    "Lower under control to your shoulder.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "10536",
+  "name": "resistance band standing single leg knee extension",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "core",
+    "ankles"
+  ],
+  "category": "strength",
+  "description": "Standing on one leg with a band behind the knee, you straighten the other knee. It builds quad strength with gentle load.",
+  "instructions": [
+    "Anchor a band behind you and loop it around one ankle or behind the knee.",
+    "Stand tall and hold on for balance if needed.",
+    "Straighten your knee against the band.",
+    "Pause with the leg extended.",
+    "Bend slowly back, then switch legs after your reps."
+  ],
+  "textSource": "opengym"
+}

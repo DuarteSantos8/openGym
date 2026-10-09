@@ -1,0 +1,23 @@
+{
+  "id": "1623",
+  "name": "dumbbell palms in incline bench press",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "An incline bench press with palms facing in. It trains the triceps and the front delts with a shoulder-friendly grip.",
+  "instructions": [
+    "Set up an incline bench at a 45-degree angle.",
+    "Sit on the bench with your back against the backrest and feet flat on the ground.",
+    "Hold a dumbbell in each hand with an overhand grip, palms facing inwards.",
+    "Extend your arms straight up above your chest, keeping a slight bend in your elbows.",
+    "Lower the dumbbells slowly towards your shoulders, keeping your elbows close to your body.",
+    "Pause for a moment at the bottom, then press the dumbbells back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

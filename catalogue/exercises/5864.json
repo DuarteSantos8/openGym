@@ -1,0 +1,22 @@
+{
+  "id": "5864",
+  "name": "bodyweight swing",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A hip hinge swing with your arms moving like a kettlebell swing, but with no weight. It teaches the hip drive and warms up the glutes.",
+  "instructions": [
+    "Stand with feet shoulder-width apart and arms hanging.",
+    "Hinge back at your hips and swing your arms between your legs.",
+    "Snap your hips forward and stand tall.",
+    "Let your arms float up to chest height.",
+    "Repeat in a smooth rhythm."
+  ],
+  "textSource": "opengym"
+}

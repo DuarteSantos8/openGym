@@ -1,0 +1,23 @@
+{
+  "id": "0143",
+  "name": "bridge (straight arm)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "glutes",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "A bridge hold on straight arms like the top of a push-up. It trains the abs and shoulder stability.",
+  "instructions": [
+    "Start in a high plank with your hands under your shoulders.",
+    "Extend your legs behind you with your toes on the floor.",
+    "Squeeze your glutes and brace your abs.",
+    "Keep your body in a straight line.",
+    "Hold for 20-30 seconds.",
+    "Lower your knees to rest."
+  ],
+  "textSource": "opengym"
+}

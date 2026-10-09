@@ -1,0 +1,21 @@
+{
+  "id": "1982",
+  "name": "rotation shoulder stretch",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "chest"
+  ],
+  "category": "stretching",
+  "description": "A gentle rotation stretch for the shoulder joint.",
+  "instructions": [
+    "Stand tall and bend one elbow to 90 degrees at your side.",
+    "Slowly rotate your forearm outward or inward, using the other hand to assist, until you feel the shoulder stretch.",
+    "Keep your elbow tucked in close to your body.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

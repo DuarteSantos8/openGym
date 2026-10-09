@@ -1,0 +1,22 @@
+{
+  "id": "4346",
+  "name": "bodyweight standing military press",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A standing overhead press without weight, good for learning the pressing path or warming up.",
+  "instructions": [
+    "Stand tall with feet shoulder-width apart and fists at your shoulders.",
+    "Brace your core and squeeze your glutes.",
+    "Press your arms straight overhead.",
+    "Lower back to your shoulders with control.",
+    "Avoid leaning back."
+  ],
+  "textSource": "opengym"
+}

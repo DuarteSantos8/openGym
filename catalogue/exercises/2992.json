@@ -1,0 +1,20 @@
+{
+  "id": "2992",
+  "name": "calf self massage with barbell",
+  "bodyPart": "lower legs",
+  "equipment": "barbell",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus"
+  ],
+  "category": "mobility",
+  "description": "A self-massage for the calves using a barbell to roll over tight spots.",
+  "instructions": [
+    "Sit on the floor with one calf resting on a barbell.",
+    "Support yourself with your hands behind you.",
+    "Roll your calf slowly back and forth over the bar.",
+    "Pause on tender spots for a few breaths.",
+    "Switch to the other leg."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4078",
+  "name": "band alternate low chest fly",
+  "bodyPart": "chest",
+  "equipment": "band",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "Alternating single arm chest fly from a low anchor.",
+  "instructions": [
+    "Anchor the band low behind you and hold the ends.",
+    "Stand in a staggered stance.",
+    "Sweep one arm up and across in front of your chest.",
+    "Return slowly.",
+    "Alternate arms."
+  ],
+  "textSource": "opengym"
+}

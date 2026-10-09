@@ -1,0 +1,24 @@
+{
+  "id": "4739",
+  "name": "dumbbell hang power clean",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "trapezius",
+    "quadriceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "olympic",
+  "description": "An explosive pull that takes dumbbells from the hang position to your shoulders. It builds power in the hips and back.",
+  "instructions": [
+    "Stand holding dumbbells and hinge until they hang just above your knees.",
+    "Keep your back flat and arms straight.",
+    "Drive your hips forward and shrug as you pull the weights up.",
+    "Drop under them and catch at your shoulders in a quarter squat.",
+    "Stand tall, then lower to the hang and repeat."
+  ],
+  "textSource": "opengym"
+}

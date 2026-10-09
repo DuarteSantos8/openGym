@@ -1,0 +1,22 @@
+{
+  "id": "3999",
+  "name": "standing air bike",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A standing cycling crunch bringing the elbow to the opposite knee. It trains the abs and obliques.",
+  "instructions": [
+    "Stand with hands behind your head.",
+    "Lift one knee while rotating your torso.",
+    "Touch your elbow to the knee.",
+    "Switch sides in a pedaling rhythm.",
+    "Stay upright."
+  ],
+  "femaleVariant": "4275",
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "3652",
+  "name": "trap bar split stance rdl",
+  "bodyPart": "upper legs",
+  "equipment": "trap bar",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A Romanian deadlift in a staggered stance using a trap bar for hamstring and glute strength.",
+  "instructions": [
+    "Stand inside a trap bar with one foot slightly behind.",
+    "Hinge at the hips with a flat back.",
+    "Lower the bar along your legs.",
+    "Drive your hips forward to stand.",
+    "Finish reps, then switch the stance."
+  ],
+  "textSource": "opengym"
+}

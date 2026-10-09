@@ -1,0 +1,22 @@
+{
+  "id": "3419",
+  "name": "l-sit on floor",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "isometric",
+  "description": "A seated hold on the floor, hands beside the hips, with the legs lifted straight out. It trains the abs, hip flexors and triceps.",
+  "instructions": [
+    "Sit on the floor with your legs extended in front of you.",
+    "Place your hands on the floor beside your hips, fingers pointing forward.",
+    "Engage your core and lift your legs off the ground, keeping them straight.",
+    "Try to bring your legs parallel to the floor, forming an 'L' shape with your body.",
+    "Hold this position for as long as you can.",
+    "Slowly lower your legs back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

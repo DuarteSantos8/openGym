@@ -1,0 +1,42 @@
+{
+  "id": "1464",
+  "name": "sled 45° leg press (back pov)",
+  "bodyPart": "upper legs",
+  "equipment": "sled machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A leg press on a 45 degree sled, shown from behind. It loads the quads and glutes with your back supported.",
+  "instructions": [
+    "Adjust the seat of the sled machine so that your knees are at a 45-degree angle.",
+    "Sit on the sled machine with your back against the backrest and your feet shoulder-width apart on the footplate.",
+    "Grip the handles on the sides of the seat for stability.",
+    "Push the footplate away from your body by extending your legs, keeping your heels on the footplate.",
+    "Pause for a moment at the fully extended position.",
+    "Slowly bend your knees and lower the footplate back towards your body, controlling the movement.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "adductors"
+    ],
+    "secondaries": [
+      "hamstring",
+      "calves"
+    ],
+    "weights": {
+      "quadriceps": 1,
+      "gluteal": 1,
+      "adductors": 1,
+      "hamstring": 0.4,
+      "calves": 0
+    }
+  },
+  "textSource": "exercisedb"
+}

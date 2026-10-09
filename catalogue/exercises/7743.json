@@ -1,0 +1,23 @@
+{
+  "id": "7743",
+  "name": "cable half kneeling face pull",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rotator cuff",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A face pull from a half-kneeling stance. The stable position keeps the focus on your rear delts and upper back.",
+  "instructions": [
+    "Set a rope at head height and half kneel facing the stack.",
+    "Hold the rope ends with your palms facing in.",
+    "Pull the rope toward your face, elbows high and wide.",
+    "Squeeze your shoulder blades together.",
+    "Return slowly. Switch the leading knee after your set."
+  ],
+  "textSource": "opengym"
+}

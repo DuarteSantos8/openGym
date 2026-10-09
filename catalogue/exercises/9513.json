@@ -1,0 +1,22 @@
+{
+  "id": "9513",
+  "name": "countermovement jump arms pull",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hamstrings"
+  ],
+  "category": "plyometrics",
+  "description": "A vertical jump with a quick dip and an arm swing that adds momentum. It builds explosive leg power.",
+  "instructions": [
+    "Stand with feet shoulder-width apart and arms back.",
+    "Dip quickly into a quarter squat while swinging your arms down and back.",
+    "Swing your arms forward and up as you explode off the floor.",
+    "Extend fully through hips, knees and ankles.",
+    "Land softly with bent knees and reset."
+  ],
+  "textSource": "opengym"
+}

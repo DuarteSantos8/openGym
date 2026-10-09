@@ -1,0 +1,32 @@
+{
+  "id": "0638",
+  "name": "one arm chin-up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "An advanced pull-up using only one arm. Builds big lat and biceps strength and takes lots of practice.",
+  "instructions": [
+    "Stand facing a pull-up bar with your feet shoulder-width apart.",
+    "Reach up and grab the bar with an underhand grip, with one hand gripping the bar and the other hand holding your wrist for support.",
+    "Hang from the bar with your arm fully extended, keeping your body straight and your core engaged.",
+    "Pull yourself up towards the bar by bending your elbow and squeezing your back muscles.",
+    "Continue pulling until your chin is above the bar, then slowly lower yourself back down to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms and repeat."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm"
+    ]
+  },
+  "textSource": "exercisedb"
+}

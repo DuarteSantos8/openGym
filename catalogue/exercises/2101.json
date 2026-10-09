@@ -1,0 +1,21 @@
+{
+  "id": "2101",
+  "name": "front cross over shin stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "shins",
+    "ankles"
+  ],
+  "category": "stretching",
+  "description": "Crossing one foot in front and pressing the toes down to stretch the front of the shin.",
+  "instructions": [
+    "Stand tall and cross one leg in front of the other.",
+    "Point the toes of the back foot against the floor and gently bend the knee until the shin and ankle stretch.",
+    "Hold a wall or chair for balance.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "1801",
+  "name": "one arm lat stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "triceps"
+  ],
+  "category": "stretching",
+  "description": "Reaching one arm overhead and leaning to the side stretches a single lat. Good for finding tight spots on each side.",
+  "instructions": [
+    "Stand tall and hold a pole or frame with one hand above head height.",
+    "Lean away from the arm and sit your hips slightly back to feel a stretch along your side.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

@@ -19,7 +19,7 @@ vi.mock('../store/useStore.js', () => ({ useStore: { getState: () => ({ S: {}, c
 vi.mock('../store/useUI.js', () => ({ useUI: { getState: () => ({ toast: vi.fn() }) } }))
 
 const { JOB_ERRORS, BYOK_ERRORS, jobErrorText } = await import('./coach-api.js')
-const { setLang, getLang } = await import('./i18n.js')
+const { setLang, getLang, LANGS, DERIVED_LOCALES } = await import('./i18n.js')
 
 const PACKS = Object.fromEntries(Object.entries(import.meta.glob('../locales/*.js', { eager: true }))
   .map(([path, mod]) => [path.match(/([^/]+)\.js$/)[1], mod.default]))
@@ -37,8 +37,11 @@ afterEach(async () => {
 })
 
 describe('every failure line, in every pack', () => {
-  it('reads all seventeen packs', () => {
-    expect(Object.keys(PACKS)).toHaveLength(17)
+  // Every language but English and a derived locale (de-CH) ships a pack. Counted from LANGS, so
+  // a new language is read here without anyone remembering to bump a number.
+  it('reads every pack', () => {
+    const packLangs = Object.keys(LANGS).filter(l => l !== 'en' && !DERIVED_LOCALES[l]).sort()
+    expect(Object.keys(PACKS).sort()).toEqual(packLangs)
   })
 
   it.each(Object.keys(PACKS).sort())('%s translates each one, and the map reads it from the pack', async lang => {

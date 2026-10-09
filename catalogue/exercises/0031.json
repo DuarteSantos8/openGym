@@ -1,0 +1,22 @@
+{
+  "id": "0031",
+  "name": "barbell curl",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "The standard standing barbell curl. A simple and effective way to build the biceps.",
+  "instructions": [
+    "Stand up straight with your feet shoulder-width apart and hold a barbell with an underhand grip, palms facing forward.",
+    "Keep your elbows close to your torso and exhale as you curl the weights while contracting your biceps.",
+    "Continue to raise the bar until your biceps are fully contracted and the bar is at shoulder level.",
+    "Hold the contracted position for a brief pause as you squeeze your biceps.",
+    "Inhale as you slowly begin to lower the bar back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3592",
+  "textSource": "exercisedb"
+}

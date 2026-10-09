@@ -1,0 +1,22 @@
+{
+  "id": "2097",
+  "name": "separation finger stretch",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "hands",
+    "wrist flexors"
+  ],
+  "category": "stretching",
+  "description": "Spreads the fingers wide apart to open up the hand and loosen the small muscles between the fingers.",
+  "instructions": [
+    "Hold one hand up in front of you with the palm facing you.",
+    "Spread your fingers as far apart as feels comfortable.",
+    "If you want more stretch, press between the fingers with your other hand.",
+    "Keep the wrist straight and the shoulder relaxed.",
+    "Hold for 20-30 seconds.",
+    "Relax the hand and switch sides."
+  ],
+  "textSource": "opengym"
+}

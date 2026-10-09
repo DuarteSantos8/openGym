@@ -1,0 +1,22 @@
+{
+  "id": "0716",
+  "name": "side push neck stretch",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "trapezius",
+    "sternocleidomastoid"
+  ],
+  "category": "stretching",
+  "description": "Tilting your head to one side, you add gentle pressure with your hand. Stretches the side of the neck.",
+  "instructions": [
+    "Stand or sit up straight with your shoulders relaxed.",
+    "Tilt your head to the right, bringing your right ear towards your right shoulder.",
+    "Place your right hand on the left side of your head and gently apply pressure to increase the stretch.",
+    "Hold the stretch for 15-30 seconds.",
+    "Repeat on the other side, tilting your head to the left and applying pressure with your left hand.",
+    "Repeat the stretch 2-3 times on each side."
+  ],
+  "textSource": "exercisedb"
+}

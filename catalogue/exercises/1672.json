@@ -1,0 +1,22 @@
+{
+  "id": "1672",
+  "name": "dumbbell one arm zottman preacher curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A one-arm Zottman curl over a preacher bench: curl up palm up, turn the palm down to lower. It works biceps and forearms.",
+  "instructions": [
+    "Sit on a preacher curl bench and hold a dumbbell in one hand with an underhand grip.",
+    "Rest your upper arm on the preacher bench pad, allowing your arm to fully extend.",
+    "Curl the dumbbell up towards your shoulder, keeping your upper arm stationary.",
+    "At the top of the curl, rotate your wrist so that your palm faces up.",
+    "Slowly lower the dumbbell back down to the starting position, rotating your wrist back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms."
+  ],
+  "femaleVariant": "3763",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "1896",
+  "name": "standing raised leg hip adductor stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "groin",
+    "inner thighs",
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "A standing stretch with one leg raised on a support that opens the inner thigh.",
+  "instructions": [
+    "Stand tall and place one foot on a bench or raised surface to the side.",
+    "Keep your standing leg straight and your toes forward.",
+    "Shift your weight toward the raised leg side until you feel a stretch.",
+    "Keep your chest upright and your hips square.",
+    "Hold for 20-30 seconds, then switch legs."
+  ],
+  "textSource": "opengym"
+}

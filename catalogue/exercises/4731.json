@@ -1,0 +1,23 @@
+{
+  "id": "4731",
+  "name": "dumbbell bridge bench press",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "glutes",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A dumbbell bench press performed with your hips lifted in a glute bridge. It trains the chest while your glutes and core hold you stable.",
+  "instructions": [
+    "Lie on the floor or a bench holding a dumbbell in each hand.",
+    "Plant your feet and drive your hips up into a bridge.",
+    "Press the dumbbells up until your arms are straight.",
+    "Lower them to chest level under control.",
+    "Keep your hips high for the whole set."
+  ],
+  "textSource": "opengym"
+}

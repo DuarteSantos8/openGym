@@ -1,0 +1,21 @@
+{
+  "id": "1228",
+  "name": "dumbbell standing inner biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A standing dumbbell curl with the elbows turned slightly out to emphasise the inner head of the biceps.",
+  "instructions": [
+    "Stand tall with a dumbbell in each hand, elbows slightly out from your sides.",
+    "Curl the weights toward your shoulders.",
+    "Squeeze at the top.",
+    "Lower them slowly to the start.",
+    "Keep your upper arms still."
+  ],
+  "textSource": "opengym"
+}

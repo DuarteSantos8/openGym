@@ -1,0 +1,38 @@
+{
+  "id": "0069",
+  "name": "barbell overhead squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "olympic",
+  "description": "A squat with the bar held locked out overhead. Builds mobility, stability and leg strength.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and toes slightly turned out.",
+    "Hold the barbell with a wide grip, positioning it overhead with your arms fully extended.",
+    "Engage your core and lower your body down into a squat position, keeping your chest up and knees tracking over your toes.",
+    "Pause for a moment at the bottom, then push through your heels to return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "bodyPart": "full body",
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "adductors"
+    ],
+    "secondaries": [
+      "hamstring",
+      "calves",
+      "lower-back",
+      "abs",
+      "obliques"
+    ]
+  },
+  "textSource": "exercisedb"
+}

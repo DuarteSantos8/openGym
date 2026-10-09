@@ -1,0 +1,25 @@
+{
+  "id": "3183",
+  "name": "barbell hang clean below the knees v. 2",
+  "bodyPart": "full body",
+  "equipment": "olympic barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "trapezius",
+    "quadriceps",
+    "lats",
+    "core"
+  ],
+  "category": "olympic",
+  "description": "A clean started with the bar hanging below the knees. It builds explosive hip power.",
+  "instructions": [
+    "Stand with the bar hanging below your knees in an overhand grip.",
+    "Hinge back with a flat back and shoulders over the bar.",
+    "Drive your hips forward and jump explosively.",
+    "Shrug and pull your elbows high.",
+    "Drop under the bar and catch it on your shoulders.",
+    "Stand tall, then lower the bar under control."
+  ],
+  "textSource": "opengym"
+}

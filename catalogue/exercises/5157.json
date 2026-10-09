@@ -1,0 +1,22 @@
+{
+  "id": "5157",
+  "name": "plank jack on elbows",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "glutes",
+    "hip flexors"
+  ],
+  "category": "plyometrics",
+  "description": "Hold a forearm plank and jump your feet apart and together. It trains the core while raising your heart rate.",
+  "instructions": [
+    "Get into a forearm plank with your elbows under your shoulders.",
+    "Keep your body in a straight line.",
+    "Jump your feet wide apart.",
+    "Jump them back together.",
+    "Keep your hips level and continue for 20-40 seconds."
+  ],
+  "textSource": "opengym"
+}

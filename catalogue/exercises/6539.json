@@ -1,0 +1,21 @@
+{
+  "id": "6539",
+  "name": "armless prayer stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "shoulders",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "A kneeling stretch that opens up your shoulders and lats as you sink your chest toward the floor.",
+  "instructions": [
+    "Kneel on the floor and sit your hips back toward your heels.",
+    "Reach your arms forward and lower your chest.",
+    "Let your forehead rest near the floor.",
+    "Relax your shoulders and breathe deeply.",
+    "Hold for 20-30 seconds."
+  ],
+  "textSource": "opengym"
+}

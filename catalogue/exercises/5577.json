@@ -1,0 +1,24 @@
+{
+  "id": "5577",
+  "name": "barbell paused sumo deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "adductors",
+    "quadriceps",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "Sumo deadlift with a pause just off the floor to build strength out of the bottom.",
+  "instructions": [
+    "Stand with a wide stance, toes out, and grip the bar inside your knees.",
+    "Brace and pull the slack out of the bar.",
+    "Lift the bar a few centimetres and pause for 1-2 seconds.",
+    "Drive your hips forward and stand tall.",
+    "Lower the bar under control."
+  ],
+  "textSource": "opengym"
+}

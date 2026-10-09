@@ -1,0 +1,23 @@
+{
+  "id": "5216",
+  "name": "sprint",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes",
+    "quadriceps",
+    "calves"
+  ],
+  "category": "cardio",
+  "description": "Short, all-out running efforts. It builds speed and conditioning.",
+  "instructions": [
+    "Warm up well with jogging and dynamic stretches.",
+    "Start in a staggered stance and lean slightly forward.",
+    "Drive your arms and knees as you accelerate.",
+    "Run at maximum effort for 10-30 seconds.",
+    "Slow down gradually and rest fully before the next sprint."
+  ],
+  "textSource": "opengym"
+}

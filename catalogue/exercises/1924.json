@@ -1,0 +1,21 @@
+{
+  "id": "1924",
+  "name": "standing toe up calf stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "Standing with the toes lifted against a surface to stretch the calf.",
+  "instructions": [
+    "Stand facing a wall or step and place the ball of one foot against it with the heel on the floor.",
+    "Keep the leg straight.",
+    "Lean your hips gently toward the wall until you feel a stretch in the calf.",
+    "Keep your heel down and your back tall.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

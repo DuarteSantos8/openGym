@@ -1,0 +1,22 @@
+{
+  "id": "3583",
+  "name": "single leg bridge with hip flexion",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A one-legged glute bridge with the other knee drawn up, building glute strength and pelvic control.",
+  "instructions": [
+    "Lie on your back with knees bent and feet flat.",
+    "Lift one knee toward your chest.",
+    "Press through the other foot to raise your hips.",
+    "Keep your hips level and avoid arching.",
+    "Lower slowly and switch sides after the set."
+  ],
+  "textSource": "opengym"
+}

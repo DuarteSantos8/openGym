@@ -1,0 +1,23 @@
+{
+  "id": "0448",
+  "name": "ez barbell decline close grip face press",
+  "bodyPart": "upper arms",
+  "equipment": "ez barbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Lying on a decline bench, you lower an EZ bar toward your face with a close grip and press up. It strongly works the triceps.",
+  "instructions": [
+    "Lie on a decline bench with your head lower than your feet.",
+    "Grasp the ez barbell with a close grip, palms facing each other.",
+    "Extend your arms straight up above your chest, keeping your elbows close to your body.",
+    "Lower the barbell towards your forehead by bending your elbows.",
+    "Pause for a moment, then press the barbell back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2884",
+  "textSource": "exercisedb"
+}

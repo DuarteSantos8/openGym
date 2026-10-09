@@ -1,0 +1,23 @@
+{
+  "id": "1597",
+  "name": "smith stiff legged deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A stiff-legged deadlift using the smith machine bar. The fixed path lets you focus on feeling the hamstrings work.",
+  "instructions": [
+    "Stand close to the smith bar with feet hip-width apart and grip the bar overhand.",
+    "Unrack it and keep your knees nearly straight.",
+    "Push your hips back and slide the bar down your legs.",
+    "Lower until you feel a deep stretch in your hamstrings.",
+    "Squeeze your glutes to stand tall."
+  ],
+  "femaleVariant": "11217",
+  "textSource": "opengym"
+}

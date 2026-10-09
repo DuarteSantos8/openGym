@@ -1,0 +1,21 @@
+{
+  "id": "1930",
+  "name": "crouching heel back calf stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles"
+  ],
+  "category": "stretching",
+  "description": "A deep crouch with the heels pressed back to stretch the calves and Achilles area.",
+  "instructions": [
+    "Crouch down with your feet flat and hands on the floor for balance.",
+    "Shift one heel backward and press it toward the floor.",
+    "Keep the other leg bent and supporting your weight.",
+    "Feel the stretch in the calf of the pressing leg.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

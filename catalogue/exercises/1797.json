@@ -1,0 +1,22 @@
+{
+  "id": "1797",
+  "name": "reach up back stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "shoulders",
+    "triceps"
+  ],
+  "category": "stretching",
+  "description": "Reaching both arms up and slightly back lengthens the lats and upper back. A simple stretch to open your sides.",
+  "instructions": [
+    "Stand tall and reach both arms overhead with your palms facing each other.",
+    "Reach up and lean slightly back, keeping your lower back relaxed and your ribs down.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

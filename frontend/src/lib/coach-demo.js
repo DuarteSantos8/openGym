@@ -13,7 +13,7 @@
 // replaces at build time.
 
 import { EXIDX, EXDB } from './exercises.js'
-import { modeOf, workoutVolume } from './history.js'
+import { modeOf, workoutVolume, workoutAt } from './history.js'
 import { isWarmupRow } from './workout-model.js'
 import { best1RM } from './onerm.js'
 import { fmtNum } from './format.js'
@@ -156,7 +156,7 @@ function buildDebrief(S, workoutId) {
 /** What "the room" would say on a busy instance — five people, plausible medians, your real bests. */
 export function demoCohort(S) {
   const since = Date.now() - 56 * 864e5
-  const you = Math.round((S.workouts || []).filter(w => (w.start || new Date(w.d).getTime()) > since).length / 8 * 10) / 10
+  const you = Math.round((S.workouts || []).filter(w => workoutAt(w) > since).length / 8 * 10) / 10
   const ids = [...new Set((S.routines || []).flatMap(r => (r.ex || []).map(e => e.id)))].slice(0, 5)
   const exercises = ids.map(id => {
     const b = best1RM(S, id)

@@ -1,0 +1,24 @@
+{
+  "id": "3671",
+  "name": "ski step",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "glutes",
+    "calves"
+  ],
+  "category": "cardio",
+  "description": "A side-to-side hopping drill that imitates a skier. It raises the heart rate and builds leg stamina.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart.",
+    "Bend your knees slightly and keep your back straight.",
+    "Jump to the right, landing on your right foot while swinging your left leg behind your right leg.",
+    "Immediately jump to the left, landing on your left foot while swinging your right leg behind your left leg.",
+    "Continue alternating jumps from side to side, mimicking a skiing motion.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

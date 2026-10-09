@@ -1,0 +1,21 @@
+{
+  "id": "2755",
+  "name": "cable hip abduction (toe out)",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A cable leg raise to the side with the toes turned out, targeting the outer hip.",
+  "instructions": [
+    "Attach an ankle cuff to a low cable and stand side-on to the stack.",
+    "Hold a support for balance.",
+    "Turn your toes out slightly.",
+    "Lift the working leg out to the side.",
+    "Return slowly, then switch legs."
+  ],
+  "textSource": "opengym"
+}

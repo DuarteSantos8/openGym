@@ -1,0 +1,22 @@
+{
+  "id": "0187",
+  "name": "cable lying triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "forearms",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A lying triceps extension using a cable, which keeps constant tension on the back of the arms. Good for building triceps size and strength.",
+  "instructions": [
+    "Set a low pulley with a bar or rope and lie on a bench with your head near the stack.",
+    "Hold the handle with arms extended above your chest.",
+    "Keep your upper arms still and bend only at the elbows to lower the handle toward your forehead.",
+    "Pause when your forearms pass parallel to the floor.",
+    "Press back up by straightening your arms.",
+    "Keep your elbows pointing at the ceiling and don't flare them."
+  ],
+  "textSource": "opengym"
+}

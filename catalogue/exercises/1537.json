@@ -1,0 +1,24 @@
+{
+  "id": "1537",
+  "name": "barbell split clean",
+  "bodyPart": "full body",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "trapezius",
+    "shoulders",
+    "core"
+  ],
+  "category": "olympic",
+  "description": "A clean caught in a split stance instead of a squat. It trains the explosive pull and the catch.",
+  "instructions": [
+    "Grip the bar just outside your legs with a flat back, shoulders over the bar.",
+    "Brace your core and keep the bar close to your body.",
+    "Extend your hips and knees powerfully and shrug your shoulders.",
+    "Split your feet front and back and catch the bar on your front shoulders.",
+    "Stand tall to finish, then lower the bar with control."
+  ],
+  "textSource": "opengym"
+}

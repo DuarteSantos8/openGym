@@ -1,0 +1,22 @@
+{
+  "id": "1403",
+  "name": "neck side stretch",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "trapezius",
+    "sternocleidomastoid"
+  ],
+  "category": "stretching",
+  "description": "Gently tilt your head sideways to stretch the side of your neck. It eases tension in the neck and upper shoulder.",
+  "instructions": [
+    "Stand or sit up straight with your shoulders relaxed.",
+    "Tilt your head to one side, bringing your ear towards your shoulder.",
+    "Hold the stretch for 15-30 seconds.",
+    "Repeat on the other side.",
+    "Perform 2-4 sets on each side."
+  ],
+  "femaleVariant": "4289",
+  "textSource": "exercisedb"
+}

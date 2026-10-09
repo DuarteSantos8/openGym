@@ -1,0 +1,21 @@
+{
+  "id": "4719",
+  "name": "band assisted dip (version 2)",
+  "bodyPart": "upper arms",
+  "equipment": "band",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A dip with a band under your knees to help with the load while building triceps and chest strength.",
+  "instructions": [
+    "Loop a band across dip bars and place your knees in it.",
+    "Support yourself with straight arms.",
+    "Lower until your elbows reach about 90 degrees.",
+    "Press back up.",
+    "Keep your shoulders away from your ears."
+  ],
+  "textSource": "opengym"
+}

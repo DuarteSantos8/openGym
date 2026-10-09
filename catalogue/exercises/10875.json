@@ -1,0 +1,22 @@
+{
+  "id": "10875",
+  "name": "weighted plate 45 degrees side bend",
+  "bodyPart": "waist",
+  "equipment": "weight plate",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A side bend holding a plate, done with the body at a 45 degree angle. It works the obliques.",
+  "instructions": [
+    "Set up on a 45 degree bench or hyperextension frame, side-on, feet secured.",
+    "Hold a plate against your chest.",
+    "Lower your torso sideways with control.",
+    "Bend back up until your body is in a straight line.",
+    "Avoid twisting. Finish your reps and switch sides."
+  ],
+  "femaleVariant": "10876",
+  "textSource": "opengym"
+}

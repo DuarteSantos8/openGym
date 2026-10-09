@@ -1,0 +1,24 @@
+{
+  "id": "1146",
+  "name": "suspender star push up",
+  "bodyPart": "waist",
+  "equipment": "suspension trainer",
+  "target": "abs",
+  "secondaryMuscles": [
+    "chest",
+    "triceps",
+    "shoulders",
+    "glutes"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up with the feet spread in the straps, which adds a big core and hip challenge.",
+  "instructions": [
+    "Place your feet in the straps spread wide in a high plank.",
+    "Keep your core tight.",
+    "Lower your chest toward the floor.",
+    "Keep elbows at about 45 degrees.",
+    "Press back up.",
+    "Hold the wide leg position the whole set."
+  ],
+  "textSource": "opengym"
+}

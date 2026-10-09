@@ -1,0 +1,23 @@
+{
+  "id": "1611",
+  "name": "dumbbell behind back finger curl",
+  "bodyPart": "lower arms",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "grip muscles",
+    "hands"
+  ],
+  "category": "strength",
+  "description": "Holding a dumbbell behind your back, you roll it down to your fingertips and curl it back up. It builds finger and forearm flexor strength and grip.",
+  "instructions": [
+    "Stand tall with a light dumbbell held in one hand behind your back.",
+    "Let the dumbbell roll down until it rests on your fingertips.",
+    "Close your fingers and curl the weight back into your palm.",
+    "Keep your wrist still and your arm close to your body.",
+    "Lower under control and repeat, then switch hands."
+  ],
+  "femaleVariant": "3756",
+  "textSource": "opengym"
+}

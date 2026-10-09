@@ -1,0 +1,23 @@
+{
+  "id": "5142",
+  "name": "smith hang clean",
+  "bodyPart": "full body",
+  "equipment": "smith machine",
+  "target": "traps",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "shoulders",
+    "quadriceps"
+  ],
+  "category": "olympic",
+  "description": "Pull a Smith machine bar from the knees up to your shoulders. The fixed track helps you learn the hang clean pattern.",
+  "instructions": [
+    "Stand at the bar with it hanging at your knees, hands just outside your legs.",
+    "Keep your back flat.",
+    "Extend your hips and shrug explosively.",
+    "Pull your elbows high and catch the bar on your shoulders.",
+    "Lower the bar back to your knees and repeat."
+  ],
+  "textSource": "opengym"
+}

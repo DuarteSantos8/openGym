@@ -1,0 +1,21 @@
+{
+  "id": "0195",
+  "name": "cable preacher curl",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A cable curl with the upper arms resting on a preacher pad. The pad stops swinging so the biceps do the work.",
+  "instructions": [
+    "Adjust the cable machine so that the preacher curl pad is at chest height.",
+    "Sit on the preacher curl bench and place your upper arms on the pad, gripping the cable attachment with an underhand grip.",
+    "Keep your back straight and your elbows tucked in at your sides.",
+    "Slowly curl the cable attachment up towards your shoulders, squeezing your biceps at the top of the movement.",
+    "Pause for a moment, then slowly lower the cable attachment back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

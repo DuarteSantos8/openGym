@@ -1,0 +1,23 @@
+{
+  "id": "4225",
+  "name": "cable lying upright row",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "biceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "An upright row done lying on your back with a low cable. The lying position takes your lower back out of the movement.",
+  "instructions": [
+    "Lie on your back with your feet toward a low pulley.",
+    "Hold a bar or handle with an overhand grip, arms straight.",
+    "Pull the handle up toward your chin, leading with your elbows.",
+    "Keep the handle close to your body.",
+    "Pause at the top.",
+    "Lower slowly until your arms are straight."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "4244",
+  "name": "kettlebell overhead carry",
+  "bodyPart": "full body",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "core",
+    "trapezius",
+    "forearms",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "Walking while holding a kettlebell locked out overhead. It builds shoulder stability, core control and grip.",
+  "instructions": [
+    "Clean and press a kettlebell overhead with one arm.",
+    "Lock out your elbow with the bell stable.",
+    "Stand tall with your ribs down.",
+    "Walk forward with slow, controlled steps.",
+    "Keep your wrist straight and avoid leaning.",
+    "Lower the bell and repeat on the other arm."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "6158",
+  "name": "dumbbell seated single arm overhead triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A seated overhead extension with one dumbbell. It isolates the triceps.",
+  "instructions": [
+    "Sit upright holding a dumbbell in one hand overhead.",
+    "Keep the upper arm close to your head.",
+    "Lower the dumbbell behind your head by bending the elbow.",
+    "Extend the arm back to full lockout.",
+    "Keep your core braced.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

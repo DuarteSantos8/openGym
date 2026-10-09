@@ -1,0 +1,22 @@
+{
+  "id": "5057",
+  "name": "kneeling forward hip circles",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core",
+    "adductors"
+  ],
+  "category": "mobility",
+  "description": "Circle your hips in a kneeling position. It warms up the hip joints and glutes.",
+  "instructions": [
+    "Kneel with your hands on your hips.",
+    "Push your hips forward slightly.",
+    "Draw large circles with your hips, leading forward and around.",
+    "Do several circles in one direction.",
+    "Switch direction and repeat."
+  ],
+  "textSource": "opengym"
+}

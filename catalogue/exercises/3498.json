@@ -1,0 +1,23 @@
+{
+  "id": "3498",
+  "name": "sliding floor bridge curl on towel",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A glute bridge with the heels on towels, sliding the feet in and out. It strongly works the hamstrings and glutes.",
+  "instructions": [
+    "Lie on your back with your heels on towels on a smooth floor.",
+    "Lift your hips into a bridge.",
+    "Slide your heels away until your legs are nearly straight.",
+    "Pull your heels back toward your glutes.",
+    "Keep your hips high throughout.",
+    "Lower your hips to finish the set."
+  ],
+  "textSource": "opengym"
+}

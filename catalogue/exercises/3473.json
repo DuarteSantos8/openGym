@@ -1,0 +1,23 @@
+{
+  "id": "3473",
+  "name": "standing balance outer hip stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "ankles"
+  ],
+  "category": "stretching",
+  "description": "A standing stretch for the outer hip that also challenges balance.",
+  "instructions": [
+    "Stand tall near a support.",
+    "Cross one ankle over the opposite knee.",
+    "Sit back slightly.",
+    "Feel the stretch in your outer hip.",
+    "Hold for 20-30 seconds.",
+    "Switch sides."
+  ],
+  "textSource": "opengym"
+}

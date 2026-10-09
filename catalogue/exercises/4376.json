@@ -1,0 +1,24 @@
+{
+  "id": "4376",
+  "name": "handstand walk",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "core",
+    "upper back",
+    "wrist extensors",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "An advanced bodyweight skill where you walk on your hands while inverted. It builds shoulder strength, balance and body control.",
+  "instructions": [
+    "Kick up into a handstand against a wall or with a spotter, hands shoulder-width apart.",
+    "Squeeze your glutes and legs together and push tall through your shoulders.",
+    "Shift your weight onto one hand and move the other forward a small step.",
+    "Alternate hands in short, controlled steps, keeping your core tight.",
+    "Come down safely with control, and practise on soft ground."
+  ],
+  "textSource": "opengym"
+}

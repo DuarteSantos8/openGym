@@ -1,0 +1,21 @@
+{
+  "id": "8303",
+  "name": "seated upright twists on a chair",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "A seated trunk twist done tall on a chair. It loosens the spine and works the obliques gently.",
+  "instructions": [
+    "Sit tall with feet flat and arms crossed over your chest.",
+    "Rotate your torso to one side.",
+    "Pause briefly.",
+    "Rotate to the other side.",
+    "Keep your hips still."
+  ],
+  "textSource": "opengym"
+}

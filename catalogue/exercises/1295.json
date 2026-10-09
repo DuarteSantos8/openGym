@@ -1,0 +1,21 @@
+{
+  "id": "1295",
+  "name": "dumbbell pullover on exercise ball",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "latissimus dorsi"
+  ],
+  "category": "strength",
+  "description": "A dumbbell pullover performed on a stability ball. The arc behind your head stretches the chest and lats and keeps your core busy.",
+  "instructions": [
+    "Sit on an exercise ball and hold a dumbbell with both hands above your chest, arms extended.",
+    "Slowly lower the dumbbell behind your head while keeping your arms straight.",
+    "Pause for a moment, then raise the dumbbell back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2621",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "2093",
+  "name": "seated wrist ulnar deviator and flexor stretch",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "hands"
+  ],
+  "category": "stretching",
+  "description": "A seated wrist stretch for the inner forearm and the little finger side of the wrist.",
+  "instructions": [
+    "Sit tall and extend one arm forward with the palm facing up.",
+    "Use the other hand to bend the wrist back and tilt it toward the thumb side until the forearm stretches.",
+    "Keep the elbow straight.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "2461",
+  "name": "side lying clam",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "Lying on your side with knees bent, you open the top knee like a clam to strengthen the outer hip and glutes.",
+  "instructions": [
+    "Lie on your side with knees bent and feet stacked, head on your arm.",
+    "Keep your hips stacked and your core lightly braced.",
+    "Lift the top knee while keeping your feet together.",
+    "Pause at the top, then lower slowly.",
+    "Do all reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

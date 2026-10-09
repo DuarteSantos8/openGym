@@ -1,0 +1,21 @@
+{
+  "id": "0399",
+  "name": "dumbbell seated one arm rotate",
+  "bodyPart": "lower arms",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "shoulders",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "Seated, you rotate a dumbbell with one forearm, turning the palm up and down. It trains forearm control and wrist strength.",
+  "instructions": [
+    "Sit on a bench with your back straight and hold a dumbbell in one hand, resting it on your thigh.",
+    "Raise the dumbbell up to shoulder height, keeping your elbow close to your body.",
+    "Rotate your forearm outward, away from your body, while keeping your upper arm stationary.",
+    "Pause for a moment at the top, then slowly rotate your forearm back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch to the other arm."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "3653",
+  "name": "band assisted sprinter run",
+  "bodyPart": "cardio",
+  "equipment": "band",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves",
+    "glutes"
+  ],
+  "category": "cardio",
+  "description": "A sprinting drill with band assistance to practice fast leg turnover.",
+  "instructions": [
+    "Anchor a band behind you and loop it around your waist.",
+    "Lean forward into a sprint position.",
+    "Drive your knees and pump your arms.",
+    "Stay light on your feet.",
+    "Repeat for short bursts."
+  ],
+  "textSource": "opengym"
+}

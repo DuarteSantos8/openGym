@@ -1,0 +1,23 @@
+{
+  "id": "3874",
+  "name": "smith kneeling hip thrust",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "A kneeling hip thrust on the Smith machine that trains hip extension and the glutes.",
+  "instructions": [
+    "Set the bar on the Smith machine at a low height and kneel facing away from it.",
+    "Place the bar across your hips with a pad for comfort.",
+    "Keep your torso upright and your core braced.",
+    "Thrust your hips forward and squeeze your glutes.",
+    "Slowly return to the start.",
+    "Keep your ribs down and avoid leaning back."
+  ],
+  "textSource": "opengym"
+}

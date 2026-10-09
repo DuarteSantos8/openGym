@@ -1,0 +1,22 @@
+{
+  "id": "3853",
+  "name": "resistance band standing hip abduction",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A standing leg lift to the side against band tension. It trains your outer hips and glutes.",
+  "instructions": [
+    "Loop the band around your ankles or anchor it to one foot.",
+    "Stand tall holding a support if needed.",
+    "Lift one leg out to the side, keeping your toes forward.",
+    "Return slowly.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

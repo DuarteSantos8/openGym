@@ -1,0 +1,24 @@
+{
+  "id": "1140",
+  "name": "suspender sprinter",
+  "bodyPart": "upper legs",
+  "equipment": "suspension trainer",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "You hold the straps and drive the knees like a sprinter, a quick leg and cardio move.",
+  "instructions": [
+    "Hold the handles and lean slightly forward.",
+    "Stand on one leg with the other knee raised.",
+    "Drive one knee up as the opposite arm moves.",
+    "Switch legs with a quick hop.",
+    "Stay on the balls of your feet.",
+    "Keep your core tight and pace steady."
+  ],
+  "textSource": "opengym"
+}

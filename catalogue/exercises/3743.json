@@ -1,0 +1,23 @@
+{
+  "id": "3743",
+  "name": "bulgarian split squat with chair",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A single-leg squat with your rear foot resting on a chair, which builds strength and balance.",
+  "instructions": [
+    "Stand facing away from a chair and rest the top of one foot on it.",
+    "Step your front foot forward so it is stable.",
+    "Lower your back knee toward the floor.",
+    "Push through your front foot to stand.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

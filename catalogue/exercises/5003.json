@@ -1,0 +1,22 @@
+{
+  "id": "5003",
+  "name": "standing single leg calf raise (on a staircase)",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "calisthenics",
+  "description": "One-legged calf raise from a stair step for a deep stretch. It builds calf strength and ankle stability.",
+  "instructions": [
+    "Stand on the edge of a stair on one foot, holding the rail for balance.",
+    "Let your heel drop below the step.",
+    "Rise up onto your toes as high as you can.",
+    "Pause at the top.",
+    "Lower slowly, then switch legs after your set."
+  ],
+  "textSource": "opengym"
+}

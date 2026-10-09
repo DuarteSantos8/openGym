@@ -1,0 +1,21 @@
+{
+  "id": "5583",
+  "name": "lever ab coaster crunch",
+  "bodyPart": "waist",
+  "equipment": "leverage machine",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A machine crunch on a curved track that lets you curl your trunk and knees together. Builds the abs under load.",
+  "instructions": [
+    "Sit on the machine, set the seat and grab the handles.",
+    "Place your legs on the pads and keep your back against the support.",
+    "Exhale and crunch your torso and knees toward each other.",
+    "Pause when your abs are fully squeezed.",
+    "Return slowly without letting the weight stack touch down."
+  ],
+  "textSource": "opengym"
+}

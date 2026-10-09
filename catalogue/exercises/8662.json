@@ -1,0 +1,21 @@
+{
+  "id": "8662",
+  "name": "cable incline close grip shoulder press with v bar",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A close-grip incline cable press using a V bar that trains the shoulders and triceps.",
+  "instructions": [
+    "Sit on an incline bench with a cable and V bar anchored low behind you.",
+    "Hold the bar at chest height with a narrow grip.",
+    "Press upward until your arms are straight.",
+    "Lower back to the chest slowly.",
+    "Keep your back against the pad."
+  ],
+  "textSource": "opengym"
+}

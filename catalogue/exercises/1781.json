@@ -1,0 +1,22 @@
+{
+  "id": "1781",
+  "name": "corner wall chest stretch",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "stretching",
+  "description": "Using a wall corner to lean into, you stretch both sides of the chest at once. The corner lets you control the depth easily.",
+  "instructions": [
+    "Stand facing a wall corner and place a forearm on each wall at about shoulder height.",
+    "Step one foot forward and lean your chest into the corner until you feel a stretch.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "femaleVariant": "9600",
+  "textSource": "opengym"
+}

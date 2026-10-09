@@ -1,0 +1,21 @@
+{
+  "id": "0897",
+  "name": "band hammer curl",
+  "bodyPart": "upper arms",
+  "equipment": "band",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A hammer curl with a band. The neutral grip hits the brachialis and forearms along with the biceps.",
+  "instructions": [
+    "Stand on the band and hold the ends with palms facing in.",
+    "Keep your elbows at your sides.",
+    "Curl your hands up toward your shoulders.",
+    "Pause briefly.",
+    "Lower slowly without swinging."
+  ],
+  "textSource": "opengym"
+}

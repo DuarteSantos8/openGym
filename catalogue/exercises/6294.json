@@ -1,0 +1,23 @@
+{
+  "id": "6294",
+  "name": "half frog pose ardha bhekasana",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "chest",
+    "shoulders",
+    "core"
+  ],
+  "category": "yoga",
+  "description": "A prone backbend with one foot pulled toward your hip. It stretches the quads and hip flexors.",
+  "instructions": [
+    "Lie on your belly, propped on your forearms.",
+    "Bend one knee and reach back to hold that foot.",
+    "Gently press the foot toward your hip.",
+    "Keep your hips grounded.",
+    "Hold for 20-30 seconds, then switch legs."
+  ],
+  "textSource": "opengym"
+}

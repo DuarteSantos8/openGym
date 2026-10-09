@@ -1,0 +1,23 @@
+{
+  "id": "5900",
+  "name": "revolved side angle pose",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "adductors",
+    "shoulders"
+  ],
+  "category": "yoga",
+  "description": "A deep lunge with a twist and the arms stretched wide. Builds leg strength and opens the spine.",
+  "instructions": [
+    "Step into a lunge with your back heel lifted.",
+    "Bring your palms together at your chest.",
+    "Twist and hook your elbow outside the front knee.",
+    "Hold for 5 slow breaths.",
+    "Switch sides."
+  ],
+  "textSource": "opengym"
+}

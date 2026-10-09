@@ -1,0 +1,22 @@
+{
+  "id": "5135",
+  "name": "seated rotation stretch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "A seated twist held as a stretch. It opens the spine and the muscles around your waist.",
+  "instructions": [
+    "Sit tall with legs crossed or extended.",
+    "Place one hand behind you and the other on the opposite knee.",
+    "Rotate your torso toward the back hand.",
+    "Keep your spine long.",
+    "Hold for 20-30 seconds.",
+    "Switch sides."
+  ],
+  "textSource": "opengym"
+}

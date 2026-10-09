@@ -1,0 +1,22 @@
+{
+  "id": "3834",
+  "name": "handboard half crimp",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "grip muscles",
+    "hands",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "A hang from a hangboard in a half crimp grip. It builds finger strength for climbing.",
+  "instructions": [
+    "Place your fingers on the edge with the knuckles bent at about 90 degrees.",
+    "Step off and hang with straight arms.",
+    "Keep your shoulders engaged.",
+    "Hold for 5-10 seconds.",
+    "Rest fully between hangs."
+  ],
+  "textSource": "opengym"
+}

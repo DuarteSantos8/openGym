@@ -1,0 +1,22 @@
+{
+  "id": "5130",
+  "name": "triceps dip floor v. 2",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A floor dip with hands behind you and hips lifted. It trains the triceps with just your bodyweight.",
+  "instructions": [
+    "Sit on the floor with knees bent and hands behind you.",
+    "Lift your hips off the floor.",
+    "Bend your elbows to lower your hips.",
+    "Push through your palms to straighten your arms.",
+    "Keep your elbows pointing back.",
+    "Keep your shoulders away from your ears."
+  ],
+  "textSource": "opengym"
+}

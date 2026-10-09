@@ -1,0 +1,21 @@
+{
+  "id": "0697",
+  "name": "self assisted inverse leg curl",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "Lying on your back, you curl your heels toward your glutes. A body weight move for the hamstrings.",
+  "instructions": [
+    "Lie flat on your back on a mat or bench with your legs extended.",
+    "Place your hands by your sides or under your glutes for support.",
+    "Bend your knees and lift your feet off the ground, bringing your thighs towards your chest.",
+    "Pause for a moment at the top, then slowly lower your legs back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

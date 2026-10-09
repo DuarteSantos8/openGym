@@ -1,0 +1,22 @@
+{
+  "id": "5938",
+  "name": "russian twist chop",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A seated twist with a diagonal chopping arm motion. Works the abs and obliques.",
+  "instructions": [
+    "Sit with your knees bent and lean back slightly.",
+    "Clasp your hands together in front of you.",
+    "Twist and chop your arms diagonally across your body.",
+    "Return to center and chop the other way.",
+    "Keep your chest tall and your core tight."
+  ],
+  "textSource": "opengym"
+}

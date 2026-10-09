@@ -1,0 +1,23 @@
+{
+  "id": "0476",
+  "name": "hanging straight twisting leg hip raise",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "Hanging from a bar, you raise your straight legs while twisting your hips. It trains the abs and obliques.",
+  "instructions": [
+    "Hang from a pull-up bar with your arms fully extended and your legs straight.",
+    "Engage your core and lift your legs up towards your chest, keeping them straight.",
+    "Once your legs are parallel to the ground, twist your hips to one side, bringing your legs towards that side.",
+    "Pause for a moment, then return to the starting position.",
+    "Repeat the movement, but this time twist your hips to the opposite side.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "femaleVariant": "2702",
+  "textSource": "exercisedb"
+}

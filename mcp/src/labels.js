@@ -26,7 +26,9 @@ export function exLine(cfg, unit) {
   // A double-progression range is stored as its top (`reps`) and bottom (`repsMin`); it reads
   // as the range, the way the app's routine editor shows it ("3 × 8–12").
   const reps = cfg.repsMin > 0 && cfg.repsMin < cfg.reps ? `${cfg.repsMin}–${cfg.reps}` : `${cfg.reps}`
-  return `${n} × ${reps}${load}`
+  // Triple progression's set range reads the same way ("3–5 × 8–12").
+  const sets = cfg.setsMax > n ? `${n}–${cfg.setsMax}` : n
+  return `${sets} × ${reps}${load}`
 }
 
 export function muscleName(slug) {

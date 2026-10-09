@@ -1,0 +1,22 @@
+{
+  "id": "3746",
+  "name": "rear delt row with bed sheet",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A rowing pattern that uses a bed sheet anchored around a door handle or post to work the upper back.",
+  "instructions": [
+    "Loop a bed sheet around a sturdy anchor and hold the ends.",
+    "Lean back with your arms straight.",
+    "Pull your hands toward your chest, elbows flared out.",
+    "Squeeze your shoulder blades.",
+    "Return slowly."
+  ],
+  "textSource": "opengym"
+}

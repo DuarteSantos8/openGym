@@ -1,0 +1,23 @@
+{
+  "id": "2561",
+  "name": "side up jump top bench",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hamstrings"
+  ],
+  "category": "plyometrics",
+  "description": "A side-on jump onto a bench that builds explosive leg power.",
+  "instructions": [
+    "Stand beside a sturdy bench.",
+    "Bend your knees and swing your arms back.",
+    "Jump up and sideways onto the bench.",
+    "Land softly with your knees bent.",
+    "Step down carefully.",
+    "Repeat, alternating sides."
+  ],
+  "textSource": "opengym"
+}

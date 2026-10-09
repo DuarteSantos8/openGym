@@ -1,0 +1,22 @@
+{
+  "id": "5873",
+  "name": "ez barbell lying triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "ez barbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Lie on a bench and lower an EZ bar toward your forehead, then press back up. It builds the triceps with minimal wrist strain.",
+  "instructions": [
+    "Lie on a bench holding an EZ bar above your chest.",
+    "Keep your upper arms vertical.",
+    "Bend your elbows to lower the bar toward your forehead.",
+    "Extend your arms back to the start.",
+    "Keep your elbows from flaring."
+  ],
+  "femaleVariant": "3646",
+  "textSource": "opengym"
+}

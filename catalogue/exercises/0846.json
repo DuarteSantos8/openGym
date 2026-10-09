@@ -1,0 +1,23 @@
+{
+  "id": "0846",
+  "name": "weighted russian twist",
+  "bodyPart": "waist",
+  "equipment": "weighted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A seated Russian twist holding a weight, rotating side to side. It trains the obliques and abs.",
+  "instructions": [
+    "Sit on the ground with your knees bent and your feet flat on the floor.",
+    "Hold a weight or medicine ball with both hands in front of your chest.",
+    "Lean back slightly, keeping your back straight and your core engaged.",
+    "Slowly twist your torso to the right, bringing the weight or medicine ball towards the floor on your right side.",
+    "Pause for a moment, then twist your torso to the left, bringing the weight or medicine ball towards the floor on your left side.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "femaleVariant": "2559",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4415",
+  "name": "band resisted chin up",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "rhomboids",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A chin-up with a band adding resistance, building the lats and biceps.",
+  "instructions": [
+    "Attach a band to the bar and loop it around your body or waist.",
+    "Hang from the bar with an underhand grip.",
+    "Pull yourself up until your chin clears the bar.",
+    "Squeeze your back at the top.",
+    "Lower with control to a full hang."
+  ],
+  "textSource": "opengym"
+}

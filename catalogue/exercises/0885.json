@@ -1,0 +1,20 @@
+{
+  "id": "0885",
+  "name": "smith lying lift (on hip)",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A side-lying lift using the smith machine for resistance. It targets the outer hip and glutes.",
+  "instructions": [
+    "Lie on your side under the bar and set it at a comfortable height.",
+    "Place your top foot or leg against the bar.",
+    "Lift the leg up smoothly against the resistance.",
+    "Lower with control.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "2926",
+  "name": "x band side walk",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "quadriceps",
+    "hip flexors",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "Stepping sideways against a band anchored in an X pattern. It fires up the hips and outer glutes.",
+  "instructions": [
+    "Cross the band into an X and place it around your feet or lower legs, holding the ends as needed.",
+    "Stand in a quarter squat with your chest up.",
+    "Step sideways, keeping tension on the band.",
+    "Bring the trailing foot in without letting your feet touch.",
+    "Walk the set distance, then return the other way."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "2864",
+  "name": "side bend",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core"
+  ],
+  "category": "pilates",
+  "description": "A Pilates side bend from a seated or side-supported position that works the obliques and the sides of the trunk.",
+  "instructions": [
+    "Sit tall on your side with your bottom hand pressed into the mat and your legs stacked.",
+    "Lift your hips so your body forms a long diagonal line.",
+    "Reach your top arm overhead and bend sideways over the supporting arm.",
+    "Lift back up to the long line while keeping your hips high.",
+    "Lower with control and repeat, then switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "5901",
+  "name": "revolved triangle pose",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "lower back",
+    "calves"
+  ],
+  "category": "yoga",
+  "description": "A standing forward bend with a twist. Stretches the back of the legs and rotates the spine.",
+  "instructions": [
+    "Stand with your feet wide, back foot turned slightly.",
+    "Hinge forward with a flat back.",
+    "Place one hand down and reach the other arm up as you twist.",
+    "Hold for 5 slow breaths.",
+    "Come up and switch sides."
+  ],
+  "textSource": "opengym"
+}

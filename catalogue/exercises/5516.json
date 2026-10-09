@@ -1,0 +1,22 @@
+{
+  "id": "5516",
+  "name": "lever hack squat",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "Plate-loaded hack squat machine that lets you load the quads and glutes with back support.",
+  "instructions": [
+    "Set your shoulders under the pads and feet shoulder width on the platform.",
+    "Release the safety handles.",
+    "Lower until your thighs are at least parallel to the platform.",
+    "Press through your whole foot to stand.",
+    "Do not lock your knees hard at the top."
+  ],
+  "textSource": "opengym"
+}

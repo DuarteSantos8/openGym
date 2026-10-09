@@ -1,0 +1,22 @@
+{
+  "id": "9977",
+  "name": "lying supine abdominal breathing",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "obliques"
+  ],
+  "category": "rehab",
+  "description": "A calm lying breathing drill that focuses on belly breathing. It helps you relax and learn core control.",
+  "instructions": [
+    "Lie on your back with your knees bent and your hands on your belly.",
+    "Breathe in slowly through your nose.",
+    "Feel your belly rise under your hands.",
+    "Breathe out slowly through your mouth.",
+    "Let your belly lower gently.",
+    "Continue for 1 to 2 minutes."
+  ],
+  "textSource": "opengym"
+}

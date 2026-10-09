@@ -1,0 +1,22 @@
+{
+  "id": "4411",
+  "name": "barbell seated high front raise",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "trapezius",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A seated barbell raise that lifts the bar high in front of you, working the front delts.",
+  "instructions": [
+    "Sit on a bench holding a barbell with an overhand grip, in front of your thighs.",
+    "Keep your back straight and your core braced.",
+    "Lift the bar forward and up to eye level or higher.",
+    "Pause briefly.",
+    "Lower slowly under control."
+  ],
+  "textSource": "opengym"
+}

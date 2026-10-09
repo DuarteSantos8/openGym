@@ -1,0 +1,22 @@
+{
+  "id": "5857",
+  "name": "kettlebell biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "kettlebell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A standard curl holding a kettlebell, which pulls the weight slightly forward of the hand. It builds the biceps and grip.",
+  "instructions": [
+    "Stand holding a kettlebell by the handle with both hands or one.",
+    "Keep your elbows at your sides.",
+    "Curl the kettlebell toward your chest.",
+    "Squeeze your biceps.",
+    "Lower with control."
+  ],
+  "textSource": "opengym"
+}

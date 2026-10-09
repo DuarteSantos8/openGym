@@ -1,0 +1,25 @@
+{
+  "id": "3153",
+  "name": "side kick burpee",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "chest",
+    "quadriceps",
+    "glutes",
+    "triceps",
+    "core"
+  ],
+  "category": "cardio",
+  "description": "A burpee that finishes with a side kick. It's a tough full-body conditioning move.",
+  "instructions": [
+    "Stand with your feet shoulder width apart.",
+    "Drop your hands to the floor and jump your feet back to a plank.",
+    "Do a push-up, then jump your feet back in.",
+    "Stand up and kick one leg out to the side.",
+    "Land and go straight into the next rep.",
+    "Alternate kicking sides."
+  ],
+  "textSource": "opengym"
+}

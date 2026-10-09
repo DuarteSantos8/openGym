@@ -1,0 +1,23 @@
+{
+  "id": "0683",
+  "name": "rotational jacks",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "obliques",
+    "calves",
+    "shoulders"
+  ],
+  "category": "cardio",
+  "description": "Jumping jacks with a twist added to the upper body. They raise your heart rate and engage the trunk.",
+  "instructions": [
+    "Stand tall with feet together and arms at your sides.",
+    "Jump your feet wide and twist your torso to one side.",
+    "Jump back together.",
+    "Repeat and twist to the other side.",
+    "Keep your knees soft.",
+    "Maintain a steady pace."
+  ],
+  "textSource": "opengym"
+}

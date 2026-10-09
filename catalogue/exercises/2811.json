@@ -1,0 +1,23 @@
+{
+  "id": "2811",
+  "name": "barbell leg twist press",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "obliques",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A combined move where a leg rotation pairs with an overhead press with a barbell. Trains legs, trunk and shoulders together.",
+  "instructions": [
+    "Hold a barbell at your shoulders with feet shoulder width apart.",
+    "Step one foot out and rotate your hips and torso with it, bending into a rotated lunge.",
+    "Drive back up and press the bar overhead as you stand.",
+    "Lower the bar to your shoulders.",
+    "Alternate sides on each rep."
+  ],
+  "textSource": "opengym"
+}

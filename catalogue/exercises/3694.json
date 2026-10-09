@@ -1,0 +1,23 @@
+{
+  "id": "3694",
+  "name": "dumbbell incline alternate reverse fly",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids",
+    "upper back",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A chest-supported reverse fly done one arm at a time, aimed at the rear delts and upper back.",
+  "instructions": [
+    "Lie chest down on an incline bench with a dumbbell in each hand, arms hanging.",
+    "Raise one arm out to the side with a soft elbow until it is level with your shoulder.",
+    "Squeeze your shoulder blade, then lower slowly.",
+    "Repeat with the other arm.",
+    "Keep your neck relaxed and avoid swinging."
+  ],
+  "textSource": "opengym"
+}

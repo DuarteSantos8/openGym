@@ -1,0 +1,23 @@
+{
+  "id": "4368",
+  "name": "cable bent over row with rope attachment",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rhomboids",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A bent-over row with a cable rope, allowing a neutral grip and a good squeeze at the end.",
+  "instructions": [
+    "Attach a rope to a low pulley and hinge forward with a flat back.",
+    "Grip the rope with palms facing each other.",
+    "Pull the rope toward your lower chest.",
+    "Spread the rope as you squeeze your back.",
+    "Lower with control."
+  ],
+  "textSource": "opengym"
+}

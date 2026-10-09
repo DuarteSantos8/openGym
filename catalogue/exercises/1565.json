@@ -1,0 +1,23 @@
+{
+  "id": "1565",
+  "name": "kettlebell dead clean",
+  "bodyPart": "full body",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "upper back",
+    "shoulders",
+    "grip muscles"
+  ],
+  "category": "olympic",
+  "description": "A clean that starts from a dead stop on the floor each rep, with no swing. It builds explosive hip drive and pulling power.",
+  "instructions": [
+    "Stand over a kettlebell with feet hip-width apart and hinge down to grab the handle.",
+    "Brace your core and keep your back flat.",
+    "Drive your hips forward and pull the bell up close to your body.",
+    "Rotate your hand around the handle and catch the bell at your shoulder.",
+    "Lower it back to the floor under control and reset before the next rep."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "5449",
+  "name": "dumbbell standing drag curl v. 2",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "Curl the dumbbells while dragging them up along your body, with elbows moving back. Keeps tension on the biceps.",
+  "instructions": [
+    "Stand tall with a dumbbell in each hand, palms forward.",
+    "Curl the weights up, keeping them close to your torso.",
+    "Let your elbows travel slightly back.",
+    "Squeeze the biceps at the top.",
+    "Lower slowly along the same path.",
+    "Keep your torso still."
+  ],
+  "textSource": "opengym"
+}

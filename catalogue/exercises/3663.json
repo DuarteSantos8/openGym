@@ -1,0 +1,23 @@
+{
+  "id": "3663",
+  "name": "reverse plank with leg lift",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A reverse plank where you lift one leg at a time. It trains the abs, glutes and the back of the body.",
+  "instructions": [
+    "Sit on the ground with your legs extended in front of you and your hands resting on the ground behind you, fingers pointing towards your feet.",
+    "Press through your hands and lift your hips off the ground, coming into a reverse plank position.",
+    "Engage your core and lift one leg off the ground, extending it straight up towards the ceiling.",
+    "Hold for a moment, then lower your leg back down.",
+    "Repeat with the other leg.",
+    "Continue alternating legs for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

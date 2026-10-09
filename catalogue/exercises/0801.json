@@ -1,0 +1,22 @@
+{
+  "id": "0801",
+  "name": "step up",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "Stepping onto a bench or box one leg at a time. It builds leg strength and single-leg control.",
+  "instructions": [
+    "Stand facing a sturdy step or bench.",
+    "Place one foot fully on it.",
+    "Press through that heel to lift your body up until the leg is straight.",
+    "Lower back down slowly.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "5375",
+  "name": "roll triceps side lying on floor",
+  "bodyPart": "upper arms",
+  "equipment": "roller",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "lats"
+  ],
+  "category": "mobility",
+  "description": "Self-massage with a foam roller to ease tightness in the triceps. Good before training or on rest days to loosen up.",
+  "instructions": [
+    "Lie on your side with the roller under the back of your upper arm.",
+    "Place the roller under the triceps and let your body weight settle onto it.",
+    "Roll slowly from the elbow toward the armpit.",
+    "Pause on tender spots and breathe slowly for 20-30 seconds.",
+    "Keep your core braced and avoid rolling over joints or bone.",
+    "Roll for 30-60 seconds, then switch sides if needed."
+  ],
+  "femaleVariant": "5414",
+  "textSource": "opengym"
+}

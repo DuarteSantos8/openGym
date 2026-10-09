@@ -1,0 +1,23 @@
+{
+  "id": "6210",
+  "name": "elbow to knee side plank crunch (left)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "glutes",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A side plank on the left with a crunch that brings elbow and knee together. It challenges the obliques.",
+  "instructions": [
+    "Set up in a left side plank on your forearm, top hand behind your head.",
+    "Lift your top leg slightly.",
+    "Bring your top elbow and knee together in front of you.",
+    "Extend back out to the straight position.",
+    "Repeat for reps, then do the other side."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4200",
+  "name": "fly against chains",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A chest fly with chains adding load.",
+  "instructions": [
+    "Lie on a bench with chains.",
+    "Hold weights above your chest.",
+    "Open arms.",
+    "Stretch your chest.",
+    "Bring weights together.",
+    "Keep elbows soft."
+  ],
+  "textSource": "opengym"
+}

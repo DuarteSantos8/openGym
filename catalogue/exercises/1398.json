@@ -1,0 +1,24 @@
+{
+  "id": "1398",
+  "name": "standing calves calf stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "Stand facing a wall and step one foot back with the heel down. It stretches the calf of the back leg.",
+  "instructions": [
+    "Stand facing a wall or sturdy object, about an arm's length away.",
+    "Place your hands on the wall or object at shoulder height.",
+    "Step back with one foot, keeping your heel flat on the ground.",
+    "Bend your front knee slightly and lean forward, keeping your back leg straight.",
+    "You should feel a stretch in your calf muscle.",
+    "Hold the stretch for 20-30 seconds.",
+    "Repeat on the other leg."
+  ],
+  "femaleVariant": "4319",
+  "textSource": "exercisedb"
+}

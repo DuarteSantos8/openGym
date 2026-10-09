@@ -1,0 +1,21 @@
+{
+  "id": "0821",
+  "name": "twist sit up",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A sit up with a twist at the top. It adds oblique work to the usual abs focus.",
+  "instructions": [
+    "Lie on your back with knees bent and hands by your head.",
+    "Curl your torso up off the floor.",
+    "Rotate to bring one elbow toward the opposite knee.",
+    "Lower back down with control.",
+    "Alternate sides each rep."
+  ],
+  "textSource": "opengym"
+}

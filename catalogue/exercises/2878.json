@@ -1,0 +1,22 @@
+{
+  "id": "2878",
+  "name": "prone press swan",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "triceps",
+    "shoulders"
+  ],
+  "category": "pilates",
+  "description": "A Pilates back extension on your belly that lifts the chest and strengthens the spine.",
+  "instructions": [
+    "Lie face down with hands beside your chest and legs together.",
+    "Press your pubic bone into the mat and engage your glutes.",
+    "Press through your hands to lift your chest.",
+    "Keep your neck long and shoulders away from your ears.",
+    "Lower slowly with control and repeat."
+  ],
+  "textSource": "opengym"
+}

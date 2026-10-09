@@ -1,0 +1,20 @@
+{
+  "id": "2768",
+  "name": "hip adduction",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "inner thighs"
+  ],
+  "category": "mobility",
+  "description": "Bringing the leg inward across the body, working the inner thigh.",
+  "instructions": [
+    "Stand or sit tall with a relaxed posture and the joint in a neutral starting position.",
+    "Stand tall holding a support, with your weight on one leg.",
+    "Lift the other leg slightly out to the side.",
+    "Bring it back in and across the front of the standing leg, then pause.",
+    "Repeat for 10-15 smooth reps, then switch sides if you are working one side at a time."
+  ],
+  "textSource": "opengym"
+}

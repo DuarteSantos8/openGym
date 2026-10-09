@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { uid } from '../lib/format.js'
 import { beep, chime, vibrate, alertBuzz } from '../lib/sound.js'
+import { restSoundOf } from '../lib/rest-sounds.js'
 import { api } from '../lib/api.js'
 import { t } from '../lib/i18n.js'
 import { deviceId } from '../lib/push.js'
@@ -26,7 +27,7 @@ const bookRestEnd = (endsAt, totalSec, kind) => {
   const switching = kind === 'switch'
   if (!MOBILE) { if (!switching) pushRestTimer(Math.max(1, Math.round((endsAt - Date.now()) / 1000))); return }
   const { S } = useStore.getState()
-  armRestAlert(endsAt, { title: switching ? t('Switch sides') : t('Rest’s over. Next set!'), countdownTitle: switching ? t('Switch sides') : t('Rest'), totalSec, accent: accentValue(S), sound: !!S.sound, vibrate: S.vibrate !== false, alarmBuzz: S.vibrate !== false && !!S.vibrateOnSilent })
+  armRestAlert(endsAt, { title: switching ? t('Switch sides') : t('Rest’s over. Next set!'), countdownTitle: switching ? t('Switch sides') : t('Rest'), totalSec, accent: accentValue(S), sound: !!S.sound, classic: restSoundOf(S) === 'classic', tone: restSoundOf(S), vibrate: S.vibrate !== false, alarmBuzz: S.vibrate !== false && !!S.vibrateOnSilent })
     .then(ok => {
       // Only for the rest that asked: one skipped or moved since then has booked its own end.
       const tm = useUI.getState().timer
@@ -105,10 +106,11 @@ const runWork = (set, get) => {
     const seenLive = !document.hidden && pageHiddenAt === null
     if (!document.hidden) pageHiddenAt = null
     if (left === wk.left) return
-    const { sound: snd, classicChime } = useStore.getState().S
+    const { S: st } = useStore.getState()
+    const snd = st.sound, endSound = restSoundOf(st)
     if (left <= 0) {
       if (seenLive && !wk.alerted) {
-        chime(snd, classicChime)
+        chime(snd, endSound)
         alertBuzz([200, 100, 200]); get().flashTimer()
       }
       if (wk.overtime && left > -MAX_WORK_OVERTIME_SEC) { set({ work: { ...wk, left, alerted: true } }); return }
@@ -167,11 +169,12 @@ const runRest = (set, get) => {
     const seenLive = !document.hidden && pageHiddenAt === null
     if (!document.hidden) pageHiddenAt = null
     if (left === tm.left) return
-    const { sound: snd, classicChime } = useStore.getState().S
+    const { S: st } = useStore.getState()
+    const snd = st.sound, endSound = restSoundOf(st)
     if (left <= 0 && tm.kind === 'switch') {
       // Over like a hold is: the chime and its buzz, then the bar goes. No "Ready", no toast:
       // the other side is the next thing, one tap away.
-      if (seenLive) { chime(snd, classicChime); alertBuzz([200, 100, 200]); get().flashTimer() }
+      if (seenLive) { chime(snd, endSound); alertBuzz([200, 100, 200]); get().flashTimer() }
       stopRestTicking()
       set({ timer: null })
       return
@@ -180,7 +183,7 @@ const runRest = (set, get) => {
       if (seenLive) {
         // The Android alarm for this end stays quiet while the app is on screen, so this chime is
         // the only one. Locked, this branch never runs and the alarm's tone does.
-        chime(snd, classicChime)
+        chime(snd, endSound)
         alertBuzz([200, 100, 200]); get().flashTimer()
       }
       // The toast stays even when the rest ran out while the app was hidden: a guest, or anyone
@@ -324,12 +327,13 @@ export const useUI = create((set, get) => ({
     // taking off more than is left means "I'm ready now" — same as skipping, and it keeps a
     // negative duration out of both the progress bar and the server-side push schedule
     if (left <= 0) { get().stopRest(); return }
+    const total = Math.max(tm.total || left, left)
     // Paused, there is no end to move and nothing booked on the server: the time is simply held,
     // and the notification holds the new figure.
-    if (tm.paused) { set({ timer: { ...tm, left, total: tm.total + sec } }); holdRestAlert(left, tm.total + sec); return }
+    if (tm.paused) { set({ timer: { ...tm, left, total } }); holdRestAlert(left, total); return }
     const endsAt = tm.endsAt + sec * 1000
-    set({ timer: { ...tm, left, total: tm.total + sec, endsAt } })
-    bookRestEnd(endsAt, tm.total + sec, tm.kind)
+    set({ timer: { ...tm, left, total, endsAt } })
+    bookRestEnd(endsAt, total, tm.kind)
   },
   // The active list changed shape (an exercise removed or inserted at `at`): keep the rest
   // pointing at the same exercise. Returns nothing; the caller decides whether to stop instead.

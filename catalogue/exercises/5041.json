@@ -1,0 +1,23 @@
+{
+  "id": "5041",
+  "name": "lying prone t",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids",
+    "trapezius",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "Lying face down, arms out to the sides in a T and lifted. It trains the muscles between the shoulder blades.",
+  "instructions": [
+    "Lie face down with arms straight out to the sides, thumbs up.",
+    "Keep your neck neutral.",
+    "Lift your arms off the floor by squeezing your shoulder blades.",
+    "Hold briefly.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "4888",
+  "name": "dumbbell standing high windmill",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A windmill with the weight held high overhead while you hinge sideways. It trains the obliques and shoulder stability.",
+  "instructions": [
+    "Stand with feet wide and press a dumbbell overhead with one arm.",
+    "Turn your feet slightly away from the weighted side.",
+    "Push your hips toward the weighted side and hinge forward.",
+    "Slide your free hand down your leg while your eyes stay on the dumbbell.",
+    "Reverse the movement to stand tall again.",
+    "Keep the arm locked and stacked over your shoulder, then switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "10915",
+  "name": "bodyweight single leg deadlift hold",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "A one-legged hinge held at the bottom. It builds balance and the hamstrings.",
+  "instructions": [
+    "Stand on one leg with a soft knee.",
+    "Hinge forward from the hips as the other leg extends behind you.",
+    "Keep your back flat until your torso is nearly parallel to the floor.",
+    "Hold for several seconds, hips level.",
+    "Return upright and switch legs."
+  ],
+  "textSource": "opengym"
+}

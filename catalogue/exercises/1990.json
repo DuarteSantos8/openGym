@@ -1,0 +1,21 @@
+{
+  "id": "1990",
+  "name": "external shoulder rotation stretch",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "chest"
+  ],
+  "category": "stretching",
+  "description": "A stretch that eases the shoulder into outward rotation.",
+  "instructions": [
+    "Stand next to a doorframe and bend your elbow to 90 degrees with your forearm on the frame.",
+    "Slowly turn your body away from the arm until you feel the front of the shoulder stretch.",
+    "Keep your elbow level with your shoulder.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

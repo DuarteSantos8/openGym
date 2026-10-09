@@ -1,0 +1,24 @@
+{
+  "id": "3564",
+  "name": "seated shoulder flexor depressor retractor stretch (bent knee)",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "chest",
+    "upper back",
+    "lats"
+  ],
+  "category": "stretching",
+  "description": "A seated stretch that opens the front of the shoulder and lengthens the muscles that lift and pull the arm.",
+  "instructions": [
+    "Sit on the floor with one knee bent and the other leg comfortable.",
+    "Place your hands behind you on the floor, fingers pointing away.",
+    "Slowly slide your hips forward while keeping your chest tall.",
+    "Feel the stretch in the front of your shoulders.",
+    "Hold for 20-30 seconds while breathing steadily.",
+    "Release slowly and repeat on the other side if needed."
+  ],
+  "femaleVariant": "4676",
+  "textSource": "opengym"
+}

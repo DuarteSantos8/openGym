@@ -1,0 +1,22 @@
+{
+  "id": "10858",
+  "name": "dumbbell lu raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper back",
+    "trapezius",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "A dumbbell raise that lifts the arms out and up in an L to U path. It builds shoulder strength and upper back control.",
+  "instructions": [
+    "Stand tall holding a light dumbbell in each hand, arms by your sides.",
+    "Raise both arms out to the sides until they reach shoulder height, elbows bent to 90 degrees.",
+    "Rotate your forearms upward so the dumbbells point to the ceiling.",
+    "Pause, then lower back down the same path with control.",
+    "Keep your ribs down and avoid shrugging."
+  ],
+  "textSource": "opengym"
+}

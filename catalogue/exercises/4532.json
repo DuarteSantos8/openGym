@@ -1,0 +1,23 @@
+{
+  "id": "4532",
+  "name": "kettlebell snatch",
+  "bodyPart": "full body",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "shoulders",
+    "trapezius",
+    "core"
+  ],
+  "category": "olympic",
+  "description": "Swinging a kettlebell from between your legs to overhead in one motion. It builds power through the whole body.",
+  "instructions": [
+    "Stand over the kettlebell and hinge to grip it with one hand.",
+    "Swing it back between your legs.",
+    "Drive your hips forward and pull the bell up close to your body.",
+    "Punch your hand through to catch it overhead with a straight arm.",
+    "Lower it back under control and repeat, then switch arms."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "6032",
+  "name": "cable low seated row with v bar",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rhomboids",
+    "biceps",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A seated cable row with a V handle and a neutral grip. It builds the mid back and lats.",
+  "instructions": [
+    "Sit at the low pulley, feet on the platform, knees slightly bent, and hold the V bar.",
+    "Sit tall with your chest up and arms straight.",
+    "Pull the handle to your lower ribs, squeezing your shoulder blades together.",
+    "Pause briefly, keeping your torso still.",
+    "Extend your arms slowly until you feel a stretch in your back."
+  ],
+  "textSource": "opengym"
+}

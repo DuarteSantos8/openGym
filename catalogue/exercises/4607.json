@@ -1,0 +1,22 @@
+{
+  "id": "4607",
+  "name": "pvc pass through",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "chest",
+    "upper back",
+    "rotator cuff"
+  ],
+  "category": "mobility",
+  "description": "Swinging a pipe from the front of your thighs to behind your back to open the shoulders and chest.",
+  "instructions": [
+    "Stand holding a PVC pipe in front of your thighs with a wide overhand grip.",
+    "Keep your arms straight and raise the pipe overhead.",
+    "Continue moving it down behind your back as far as comfortable.",
+    "Reverse the path back to the front with control.",
+    "Widen your grip if the shoulders feel pinched."
+  ],
+  "textSource": "opengym"
+}

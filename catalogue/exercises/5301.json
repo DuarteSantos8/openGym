@@ -1,0 +1,23 @@
+{
+  "id": "5301",
+  "name": "kettlebell full squat from deficit",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A deep squat with a kettlebell while standing on a raised platform. It increases range of motion for the legs.",
+  "instructions": [
+    "Stand on a low platform holding a kettlebell at chest height.",
+    "Brace your core.",
+    "Sit your hips down as deep as you can.",
+    "Keep your chest up and heels down.",
+    "Drive through your feet to stand.",
+    "Keep the kettlebell close to your body."
+  ],
+  "textSource": "opengym"
+}

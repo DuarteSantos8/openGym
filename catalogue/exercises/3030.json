@@ -1,0 +1,25 @@
+{
+  "id": "3030",
+  "name": "barbell split squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A split-stance squat with a barbell on your back. It works each leg on its own and builds strength and balance.",
+  "instructions": [
+    "Rest a barbell across your upper back and step one foot forward.",
+    "Stand with a long stride and your torso upright.",
+    "Bend both knees and lower your back knee toward the floor.",
+    "Keep your front heel down and your front knee over your foot.",
+    "Press through the front foot to rise.",
+    "Finish your reps, then switch legs."
+  ],
+  "femaleVariant": "2370",
+  "textSource": "opengym"
+}

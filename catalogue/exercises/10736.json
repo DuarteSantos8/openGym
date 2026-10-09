@@ -1,0 +1,23 @@
+{
+  "id": "10736",
+  "name": "headbanger",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "upper back",
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "mobility",
+  "description": "A gentle bending drill that works the back and hips. The motion loosens your spine and posterior chain.",
+  "instructions": [
+    "Stand with feet hip-width apart and hands behind your head.",
+    "Soften your knees.",
+    "Hinge forward at the hips with a flat back.",
+    "Nod your head slightly and return to standing.",
+    "Move at a smooth pace.",
+    "Keep your neck relaxed."
+  ],
+  "textSource": "opengym"
+}

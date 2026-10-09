@@ -1,0 +1,21 @@
+{
+  "id": "6833",
+  "name": "kettlebell seated lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "A seated side raise using kettlebells. It isolates the side delts without leg drive.",
+  "instructions": [
+    "Sit upright on a bench holding a kettlebell in each hand at your sides.",
+    "Keep a slight bend in your elbows.",
+    "Raise your arms out to the sides to shoulder height.",
+    "Pause at the top.",
+    "Lower slowly without swinging."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "8896",
+  "name": "bent over back extension scapular adduction",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "rhomboids",
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "calisthenics",
+  "description": "From a bent over position you raise your torso and squeeze the shoulder blades together. It strengthens the whole back chain.",
+  "instructions": [
+    "Stand and hinge forward with a flat back and your arms hanging.",
+    "Keep your knees softly bent.",
+    "Raise your torso toward upright.",
+    "At the top, pull your shoulder blades together.",
+    "Lower back to the bent over position slowly.",
+    "Keep your neck in line with your spine."
+  ],
+  "textSource": "opengym"
+}

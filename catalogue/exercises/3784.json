@@ -1,0 +1,22 @@
+{
+  "id": "3784",
+  "name": "cross arms push up",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up with your hands crossed under your chest. It puts extra load on the triceps.",
+  "instructions": [
+    "Start in a high plank with your hands crossed under your chest.",
+    "Keep your body in a straight line from head to heels.",
+    "Lower your chest toward the floor with your elbows close.",
+    "Press back up until your arms are straight.",
+    "Switch which hand is on top each set."
+  ],
+  "textSource": "opengym"
+}

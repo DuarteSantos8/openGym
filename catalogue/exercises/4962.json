@@ -1,0 +1,23 @@
+{
+  "id": "4962",
+  "name": "barbell box squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A squat to a box behind you. It trains the hips and legs while teaching depth control.",
+  "instructions": [
+    "Place a box behind you and a barbell on your upper back.",
+    "Push your hips back and sit onto the box.",
+    "Pause briefly without relaxing.",
+    "Drive through your feet to stand.",
+    "Keep your chest up.",
+    "Keep your knees tracking over your toes."
+  ],
+  "textSource": "opengym"
+}

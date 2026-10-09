@@ -1,0 +1,23 @@
+{
+  "id": "2153",
+  "name": "resistance band full squat",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A deep squat with a band for added resistance, training the thighs and glutes.",
+  "instructions": [
+    "Stand on the band with your feet shoulder width apart and hold the handles at your shoulders.",
+    "Keep your chest up and your core braced.",
+    "Sit your hips back and down into a full squat.",
+    "Keep your knees tracking over your toes and heels on the floor.",
+    "Drive up through your feet to stand tall."
+  ],
+  "textSource": "opengym"
+}

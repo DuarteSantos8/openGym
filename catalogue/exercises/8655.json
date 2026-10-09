@@ -1,0 +1,21 @@
+{
+  "id": "8655",
+  "name": "seated underhand arm circle on a chair",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "upper back"
+  ],
+  "category": "mobility",
+  "description": "A seated arm circle with palms up to warm up the shoulder joints.",
+  "instructions": [
+    "Sit tall near the front of a sturdy chair with your feet flat on the floor.",
+    "Brace your core and keep your shoulders relaxed.",
+    "Extend your arms out to the sides with palms facing up.",
+    "Draw small circles, then gradually bigger.",
+    "Reverse the direction after a set."
+  ],
+  "textSource": "opengym"
+}

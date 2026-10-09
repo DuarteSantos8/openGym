@@ -471,6 +471,29 @@ describe('freestyleConfig', () => {
     expect(rows.slice(3).every(r => r.phase === undefined)).toBe(true)
   })
 
+  // A 55 lb bench used to get warm-ups at 25 and 40 lb, lighter than the 45 lb bar it is done
+  // with. A barbell rung never goes under the bar; everything without a bar ramps as before.
+  it('never ramps a barbell warm-up below the bar it is done with', () => {
+    const S = { unit: 'lb', exWeights: {}, workouts: [] }
+    const bench = { id: '0025', mode: 'reps', sets: 3, reps: 10, weight: 55, warmupSets: 1 }
+    expect(buildSets(S, bench, { step: 5 }).map(r => r.w)).toEqual([45, 55, 55, 55])
+    // two rungs from the bar: 45, then half the gap left
+    expect(buildSets(S, { ...bench, warmupSets: 2 }, { step: 5 }).map(r => r.w).slice(0, 2)).toEqual([45, 50])
+    // heavy lifts ramp exactly as before: every rung is above the bar anyway
+    expect(buildSets(S, { ...bench, weight: 135, warmupSets: 3 }, { step: 5 }).map(r => r.w).slice(0, 3)).toEqual([65, 100, 115])
+    // the athlete's own bar weight wins, and "no bar" (0) floors nothing
+    expect(buildSets({ ...S, barWeights: { '0025': 35 } }, bench, { step: 5 })[0].w).toBe(35)
+    expect(buildSets({ ...S, barWeights: { '0025': 0 } }, bench, { step: 5 })[0].w).toBe(25)
+    // a bar heavier than the work weight still never makes a warm-up heavier than the work set
+    expect(buildSets({ ...S, barWeights: { '0025': 65 } }, bench, { step: 5 })[0].w).toBe(55)
+    // a dumbbell lift has no bar: half, as always
+    expect(buildSets(S, { id: '0289', mode: 'reps', sets: 1, reps: 10, weight: 50, warmupSets: 1 }, { step: 5 })[0].w).toBe(25)
+    // the in-session button takes the same floor
+    const rows = [{ w: 55, r: 10, done: false }]
+    expect(insertWarmupRow(rows, 'reps', bench, 5, 45)[0].w).toBe(45)
+    expect(insertWarmupRow(rows, 'reps', bench, 5)[0].w).toBe(25)
+  })
+
   it('caps the planned warm-ups and ignores nonsense values', () => {
     const S = { exWeights: {}, workouts: [] }
     const base = { id: '0025', mode: 'reps', sets: 1, reps: 5, weight: 100 }
@@ -966,6 +989,32 @@ describe('session row helpers', () => {
     expect(next[1].w).toBe(20)             // different flag (warm-up) untouched
   })
 
+  // Editing warm-up 1 of an incline bench ramp used to copy the new load onto the later
+  // warm-ups, so each one had to be put back by hand. Each rung keeps its own load.
+  it('cascadeWeight leaves the later warm-up rungs on their ramp loads', () => {
+    const S = { unit: 'lb', exWeights: {}, workouts: [] }
+    const rows = buildSets(S, { id: '0047', mode: 'reps', sets: 4, reps: 8, weight: 125, warmupSets: 3 }, { step: 5 })
+    expect(rows.map(r => r.w)).toEqual([60, 90, 105, 125, 125, 125, 125])
+    const next = cascadeWeight(rows, 0, 70)   // the caller writes the edited row itself
+    expect(next.map(r => r.w)).toEqual([60, 90, 105, 125, 125, 125, 125])
+    const later = cascadeWeight(rows, 1, 100)
+    expect(later.map(r => r.w)).toEqual([60, 90, 105, 125, 125, 125, 125])
+    // a work-set edit still carries through the work sets and never reaches back into the ramp
+    expect(cascadeWeight(rows, 3, 130).map(r => r.w)).toEqual([60, 90, 105, 125, 130, 130, 130])
+  })
+
+  it('cascadeWeight leaves later one-side warm-up rungs alone too', () => {
+    const rows = [
+      { ...makeSideSet({ w: 10, r: 16 }), phase: 'warmup' },
+      { ...makeSideSet({ w: 15, r: 16 }), phase: 'warmup' },
+      makeSideSet({ w: 25, r: 16 }),
+    ]
+    const next = cascadeWeight(rows, 0, 5, 'L')
+    expect(next[1].sides.L.w).toBe(15)
+    expect(next[1].sides.R.w).toBe(15)
+    expect(next[2].sides.L.w).toBe(25)
+  })
+
   it('cascadeWeight deleting the weight removes the key from following undone rows only', () => {
     const rows = [
       { w: 60, done: true },
@@ -1070,14 +1119,14 @@ describe('warm-up rows identified by phase alone', () => {
     expect(workSetsDone({ entries: [{ sets: [imported, work] }] })).toBe(1)
   })
 
-  it('cascadeWeight keeps phase-only warm-ups in their own lane', () => {
+  it('cascadeWeight treats a phase-only warm-up as a warm-up: the edit stays on its row', () => {
     const rows = [
       { w: 40, r: 10, phase: 'warmup' },
       { w: 45, r: 10, phase: 'warmup' },
       { w: 100, r: 5 },
     ]
     const next = cascadeWeight(rows, 0, 50)
-    expect(next[1].w).toBe(50)
+    expect(next[1].w).toBe(45)
     expect(next[2].w).toBe(100)
   })
 })

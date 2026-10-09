@@ -1,0 +1,22 @@
+{
+  "id": "1867",
+  "name": "lever seated hip adduction v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "inner thighs",
+    "groin"
+  ],
+  "category": "strength",
+  "description": "Seated machine move that squeezes the legs together to train the inner thighs.",
+  "instructions": [
+    "Sit on the machine with your back against the pad.",
+    "Place your legs against the pads, set wide.",
+    "Squeeze your legs together smoothly.",
+    "Pause for a moment when they meet.",
+    "Open slowly back to the start."
+  ],
+  "femaleVariant": "2552",
+  "textSource": "opengym"
+}

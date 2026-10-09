@@ -1,0 +1,24 @@
+{
+  "id": "4587",
+  "name": "front snap kick kickboxing (with boxing bag)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "hamstrings",
+    "core",
+    "calves"
+  ],
+  "category": "combat",
+  "description": "A quick snapping front kick at a bag that trains speed and control in the thigh and hip.",
+  "instructions": [
+    "Stand in a fighting stance facing the bag.",
+    "Raise your knee quickly.",
+    "Snap your lower leg out to hit the bag with the ball of your foot.",
+    "Recoil right away to bend the knee again.",
+    "Keep your hands up.",
+    "Set your foot down and switch sides."
+  ],
+  "textSource": "opengym"
+}

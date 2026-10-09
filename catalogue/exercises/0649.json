@@ -1,0 +1,23 @@
+{
+  "id": "0649",
+  "name": "pretzel stretch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "A twisting stretch lying on your side. It loosens the hips, trunk and lower back.",
+  "instructions": [
+    "Lie on one side and bend your top knee.",
+    "Pull the bottom foot toward your glutes.",
+    "Rotate your top knee back toward the floor behind you.",
+    "Keep your shoulders relaxed.",
+    "Hold for 20-30 seconds.",
+    "Switch sides."
+  ],
+  "textSource": "opengym"
+}

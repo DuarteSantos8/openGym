@@ -1,0 +1,22 @@
+{
+  "id": "1297",
+  "name": "isometric chest squeeze",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "Press your palms or arms together in front of your chest and hold the squeeze. A simple way to feel and train the chest with no equipment.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and your knees slightly bent.",
+    "Extend your arms straight out in front of you, parallel to the ground, with your palms facing each other.",
+    "Squeeze your chest muscles together as hard as you can, while keeping your arms straight.",
+    "Hold this position for a few seconds, focusing on contracting your chest muscles.",
+    "Release the squeeze and relax your chest muscles.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "3964",
+  "name": "twist push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A push up with a rotation at the top. It trains the chest and arms and adds core work.",
+  "instructions": [
+    "Start in a high plank with hands under your shoulders.",
+    "Lower your chest to the floor.",
+    "Push up and rotate one arm toward the ceiling.",
+    "Return the hand to the floor.",
+    "Alternate sides each rep."
+  ],
+  "textSource": "opengym"
+}

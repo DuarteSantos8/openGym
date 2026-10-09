@@ -1,0 +1,24 @@
+{
+  "id": "4552",
+  "name": "diagonal lunge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A lunge stepped out at an angle that trains the legs and hips in a different plane, with a quick, springy pace.",
+  "instructions": [
+    "Stand tall with feet hip-width apart.",
+    "Step one foot out diagonally, about 45 degrees away from you.",
+    "Bend both knees and lower into a lunge, keeping your chest up.",
+    "Push off the front foot to return to the start.",
+    "Alternate legs each rep.",
+    "Keep your front knee pointing the same way as your toes."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "1166",
+  "name": "jump split",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "An explosive lunge jump where you switch legs in the air. It builds power and conditioning.",
+  "instructions": [
+    "Start in a split stance with a slight lunge dip.",
+    "Drop down and jump up powerfully.",
+    "Switch leg positions in mid-air.",
+    "Land softly in a lunge with the other leg in front.",
+    "Keep your torso upright and repeat at a steady pace."
+  ],
+  "femaleVariant": "0512",
+  "textSource": "opengym"
+}

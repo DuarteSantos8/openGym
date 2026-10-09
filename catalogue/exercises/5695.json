@@ -1,0 +1,21 @@
+{
+  "id": "5695",
+  "name": "lean forward stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "A forward-leaning stretch that opens the hips and the back of the legs.",
+  "instructions": [
+    "Stand or sit in a stable position with one leg in front of the other.",
+    "Keep your back long and chest open.",
+    "Hinge forward from your hips until you feel a stretch in the glutes and hamstrings.",
+    "Hold for 20-30 seconds.",
+    "Return upright and switch sides."
+  ],
+  "textSource": "opengym"
+}

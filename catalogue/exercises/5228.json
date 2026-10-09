@@ -1,0 +1,21 @@
+{
+  "id": "5228",
+  "name": "myotatic crunch on bosu ball",
+  "bodyPart": "waist",
+  "equipment": "bosu ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A deep, stretched crunch over a Bosu ball. The extra range loads the abs strongly.",
+  "instructions": [
+    "Lie back over a Bosu ball with your lower back supported.",
+    "Place your hands beside your head and your feet flat.",
+    "Let your torso extend gently over the ball.",
+    "Crunch up, bringing your ribs toward your hips.",
+    "Lower slowly through the full range."
+  ],
+  "textSource": "opengym"
+}

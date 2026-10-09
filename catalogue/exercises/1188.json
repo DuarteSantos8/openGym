@@ -1,0 +1,22 @@
+{
+  "id": "1188",
+  "name": "weighted twisting crunch (on bench)",
+  "bodyPart": "waist",
+  "equipment": "weighted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A weighted crunch with a rotation done on a bench that trains the abs and obliques.",
+  "instructions": [
+    "Lie back on a bench with your knees bent and a weight held on your chest.",
+    "Brace your abs and curl your upper body up.",
+    "Rotate your torso so one elbow moves toward the opposite knee.",
+    "Lower back down slowly without letting go of tension.",
+    "Alternate sides each rep."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "6358",
+  "name": "ez barbell standing wrist curl",
+  "bodyPart": "lower arms",
+  "equipment": "ez barbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "Wrist curls with an EZ bar held in front of you, targeting the muscles on the underside of your forearms.",
+  "instructions": [
+    "Stand holding an EZ bar with an underhand grip, arms hanging in front.",
+    "Keep your elbows still and close to your body.",
+    "Curl your wrists upward, lifting the bar a short distance.",
+    "Squeeze at the top.",
+    "Lower the bar slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

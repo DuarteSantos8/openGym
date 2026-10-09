@@ -51,6 +51,10 @@ describe('convertStateUnit', () => {
   it('is a no-op for the unit already in use', () => {
     expect(convertStateUnit(S, 'kg')).toBe(S)
   })
+  it('converts a pyramid’s weight per set, leaving a set at 0 at 0 (#445)', () => {
+    const state = { ...S, routines: [{ id: 'r', ex: [{ id: '0025', sets: 3, reps: 12, weight: 0, pyramid: [12, 10, 8], pyramidWeight: [60, 0, 80] }] }] }
+    expect(convertStateUnit(state, 'lb').routines[0].ex[0].pyramidWeight).toEqual([132.5, 0, 176.5])
+  })
   // History rows, the detail header, the month calendar and the heatmap tooltips read the
   // cached `vol` and `bw` off the saved workout rather than summing sets, so a conversion that
   // skips them shows kg totals under an lb label (QA C11).

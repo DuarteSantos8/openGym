@@ -1,0 +1,21 @@
+{
+  "id": "3740",
+  "name": "kettlebell lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "A lateral raise using a kettlebell, which trains the side delts.",
+  "instructions": [
+    "Stand holding a kettlebell in one hand at your side.",
+    "Keep a soft bend in your elbow.",
+    "Raise your arm out to the side to shoulder height.",
+    "Lower it slowly.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

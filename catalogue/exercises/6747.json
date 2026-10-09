@@ -1,0 +1,22 @@
+{
+  "id": "6747",
+  "name": "kneeling glute press",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A kneeling move pressing one leg back to fire the glute. Great for learning to feel the glutes work.",
+  "instructions": [
+    "Get on all fours with hands under shoulders and knees under hips.",
+    "Brace your core and keep your back flat.",
+    "Press one foot back and up, leading with the heel.",
+    "Squeeze the glute at the top without arching your back.",
+    "Lower with control.",
+    "Finish the reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

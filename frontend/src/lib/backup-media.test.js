@@ -30,6 +30,23 @@ describe('export with photos & videos', () => {
     expect(entries.map(e => e.name)).toEqual([BACKUP_JSON, `media/${main.poster.hash}.png`, `media/${main.hash}.jpg`, `media/${vid.hash}.mov`, 'README.txt'])
     expect(JSON.parse(await entries[0].blob.text())).toEqual(JSON.parse(JSON.stringify(S, null, 2)))
   })
+
+  it('only exports archives the import path accepts at the entry limit', async () => {
+    const media = createMediaStore(memoryBackend())
+    const S = stateWith([])
+    for (let i = 1; i <= 1999; i++) {
+      const bytes = png(i, 1)
+      const hash = await sha256Hex(bytes)
+      await media.put(hash, new Blob([bytes]), { mime: 'image/png' })
+      S.customEx.push({ id: `e${i}`, media: { kind: 'image', hash, mime: 'image/png', size: bytes.length, width: i, height: 1, at: 1 } })
+      if (i === 1998) {
+        const out = await exportBackupZip(S, { media })
+        expect(out).toMatchObject({ included: 1998, missing: 0 })
+        expect((await readBackupFile(new File([out.blob], 'backup.zip'))).files).toHaveLength(1998)
+      }
+    }
+    await expect(exportBackupZip(S, { media })).rejects.toMatchObject({ code: 'too-many' })
+  })
 })
 
 describe('import', () => {

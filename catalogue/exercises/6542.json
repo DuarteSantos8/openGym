@@ -1,0 +1,21 @@
+{
+  "id": "6542",
+  "name": "cable kneeling high to low fly",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A kneeling cable fly pulling from high to low across your body, working the lower chest.",
+  "instructions": [
+    "Set the cables high and kneel between them, holding a handle in each hand.",
+    "Keep a slight bend in your elbows.",
+    "Sweep your arms down and together in front of your hips.",
+    "Squeeze your chest at the bottom.",
+    "Return slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

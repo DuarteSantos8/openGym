@@ -1,0 +1,22 @@
+{
+  "id": "11264",
+  "name": "cable incline bench press v. 3",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A cable press on an incline bench. It shifts the work toward the upper chest with constant tension.",
+  "instructions": [
+    "Set an incline bench between two low pulleys and hold a handle in each hand.",
+    "Plant your feet and pull your shoulder blades back.",
+    "Press the handles up and slightly together.",
+    "Squeeze your upper chest at the top.",
+    "Lower slowly to a comfortable stretch."
+  ],
+  "textSource": "opengym"
+}

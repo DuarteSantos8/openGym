@@ -1,0 +1,22 @@
+{
+  "id": "6790",
+  "name": "shoulder external rotation test",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "upper back"
+  ],
+  "category": "mobility",
+  "description": "A simple check of how far the shoulder turns outward. Move slowly and stay in a pain-free range.",
+  "instructions": [
+    "Stand or lie with your elbow bent 90 degrees and tucked at your side.",
+    "Keep your elbow against your body.",
+    "Rotate your forearm outward slowly.",
+    "Stop where you feel a stretch or end of range.",
+    "Note how far each side goes.",
+    "Repeat on the other arm."
+  ],
+  "textSource": "opengym"
+}

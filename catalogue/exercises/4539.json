@@ -1,0 +1,23 @@
+{
+  "id": "4539",
+  "name": "diamond press",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A narrow push-up variation with the hands close together, putting extra load on the triceps and inner chest.",
+  "instructions": [
+    "Start in a plank position with your hands under your chest, thumbs and index fingers forming a diamond.",
+    "Keep your body in a straight line from head to heels.",
+    "Lower your chest toward your hands, elbows tracking back close to your ribs.",
+    "Pause briefly just above your hands.",
+    "Press back up until your arms are straight.",
+    "Keep your core tight so your hips do not sag."
+  ],
+  "textSource": "opengym"
+}

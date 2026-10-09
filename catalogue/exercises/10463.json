@@ -1,0 +1,22 @@
+{
+  "id": "10463",
+  "name": "seated squeeze shoulder blades chest stretch on a chair",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper back",
+    "rhomboids"
+  ],
+  "category": "stretching",
+  "description": "Sit on a chair and squeeze your shoulder blades together to open the chest. It eases tight pecs from desk posture.",
+  "instructions": [
+    "Sit tall on a chair with your feet flat.",
+    "Reach your hands behind you and clasp them or hold the chair back.",
+    "Pull your shoulder blades together and lift your chest.",
+    "Hold for 20-30 seconds without arching your lower back.",
+    "Relax and repeat."
+  ],
+  "textSource": "opengym"
+}

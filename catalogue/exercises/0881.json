@@ -1,0 +1,24 @@
+{
+  "id": "0881",
+  "name": "dumbbell curtsey lunge",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "adductors",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A lunge where you step back and across behind you, like a curtsey. It works the glutes and outer hips from a different angle.",
+  "instructions": [
+    "Stand tall holding a dumbbell in each hand at your sides.",
+    "Step one leg back and across behind the other.",
+    "Bend both knees and lower until your front thigh is near parallel.",
+    "Keep your chest up and hips square.",
+    "Push through your front foot to return to standing.",
+    "Repeat on the other side and alternate."
+  ],
+  "textSource": "opengym"
+}

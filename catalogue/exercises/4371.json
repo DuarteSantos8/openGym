@@ -1,0 +1,22 @@
+{
+  "id": "4371",
+  "name": "lever incline one arm chest press (plate loaded)",
+  "bodyPart": "chest",
+  "equipment": "leverage machine",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A one-armed incline press on a plate-loaded lever machine. It trains the upper chest one side at a time.",
+  "instructions": [
+    "Sit on the machine and grip one handle.",
+    "Set your back firmly against the pad.",
+    "Press the handle forward and up.",
+    "Squeeze your chest at the top.",
+    "Return slowly, then switch arms."
+  ],
+  "textSource": "opengym"
+}

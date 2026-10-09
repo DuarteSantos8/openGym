@@ -1,0 +1,21 @@
+{
+  "id": "0446",
+  "name": "ez barbell close-grip curl",
+  "bodyPart": "upper arms",
+  "equipment": "ez barbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "You curl an EZ bar with a narrow grip. It emphasises the outer part of the biceps.",
+  "instructions": [
+    "Stand up straight with your feet shoulder-width apart and hold the ez barbell with an underhand grip, hands shoulder-width apart.",
+    "Keep your elbows close to your torso and your upper arms stationary throughout the movement.",
+    "Curl the barbell up towards your shoulders, contracting your biceps.",
+    "Pause for a moment at the top, then slowly lower the barbell back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2499",
+  "textSource": "exercisedb"
+}

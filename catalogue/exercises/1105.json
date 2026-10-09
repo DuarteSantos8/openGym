@@ -1,0 +1,23 @@
+{
+  "id": "1105",
+  "name": "suspension twist",
+  "bodyPart": "waist",
+  "equipment": "suspension trainer",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "From a plank with feet in straps, you twist the hips side to side. It trains the obliques.",
+  "instructions": [
+    "Start in a plank with your feet in the straps.",
+    "Keep your arms straight.",
+    "Rotate your hips to one side.",
+    "Return to centre.",
+    "Rotate to the other side.",
+    "Keep your shoulders steady."
+  ],
+  "textSource": "opengym"
+}

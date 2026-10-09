@@ -1,0 +1,22 @@
+{
+  "id": "4791",
+  "name": "single leg glute bridge (arms on chest)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A one-legged glute bridge with arms crossed on the chest. It focuses the work on the glutes and tests hip stability.",
+  "instructions": [
+    "Lie on your back with one knee bent, foot flat, and the other leg extended or raised.",
+    "Cross your arms over your chest.",
+    "Push through the planted heel and lift your hips.",
+    "Squeeze the glute at the top so your body forms a straight line.",
+    "Lower your hips slowly without touching the floor fully.",
+    "Complete your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

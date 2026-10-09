@@ -1,0 +1,23 @@
+{
+  "id": "3703",
+  "name": "frogger",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "core",
+    "shoulders"
+  ],
+  "category": "cardio",
+  "description": "A fast floor drill where you hop your feet out and in from a squat to a plank. It works your legs, core and heart at once.",
+  "instructions": [
+    "Start in a deep squat with your hands on the floor.",
+    "Jump or step your feet back into a plank.",
+    "Hop your feet to the outside of your hands.",
+    "Stand up or jump up from the squat.",
+    "Repeat at a steady quick pace."
+  ],
+  "textSource": "opengym"
+}

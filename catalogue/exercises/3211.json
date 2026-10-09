@@ -1,0 +1,21 @@
+{
+  "id": "3211",
+  "name": "kneeling push-up (male)",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A beginner-friendly push-up with the knees on the floor. It builds chest, shoulder and triceps strength with less load than a standard push-up.",
+  "instructions": [
+    "Start by kneeling on the ground with your hands shoulder-width apart, fingers pointing forward.",
+    "Extend your legs behind you, resting on the balls of your feet, so that your body forms a straight line from head to heels.",
+    "Engage your core and lower your body towards the ground by bending your elbows, keeping them close to your sides.",
+    "Continue lowering until your chest is just above the ground, then push back up to the starting position by straightening your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

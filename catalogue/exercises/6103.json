@@ -1,0 +1,24 @@
+{
+  "id": "6103",
+  "name": "jackknife",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs",
+    "core"
+  ],
+  "category": "pilates",
+  "description": "A Pilates move where you lift your legs and trunk together to fold at the hips. It challenges the abs and balance.",
+  "instructions": [
+    "Lie on your back with your legs extended and your arms by your sides.",
+    "Lift both legs up toward the ceiling.",
+    "Press your arms into the floor and lift your hips slightly.",
+    "Raise your trunk and reach toward your toes.",
+    "Roll back down slowly with control.",
+    "Keep your movement smooth, without swinging."
+  ],
+  "femaleVariant": "2847",
+  "textSource": "opengym"
+}

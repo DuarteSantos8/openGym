@@ -1,0 +1,20 @@
+{
+  "id": "3679",
+  "name": "sit-up with arms on chest",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A sit-up with the arms crossed on the chest. It trains the abs and hip flexors.",
+  "instructions": [
+    "Lie flat on your back with your knees bent and feet flat on the ground.",
+    "Cross your arms over your chest.",
+    "Engaging your abs, lift your upper body off the ground towards your knees.",
+    "Pause for a moment at the top, then slowly lower your upper body back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

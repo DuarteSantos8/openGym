@@ -1,0 +1,24 @@
+{
+  "id": "6220",
+  "name": "suspender row",
+  "bodyPart": "back",
+  "equipment": "suspension trainer",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "biceps",
+    "rhomboids"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight row on suspension straps. It builds the back and biceps.",
+  "instructions": [
+    "Hold the straps and lean back.",
+    "Keep your body in a straight line.",
+    "Pull your chest toward your hands.",
+    "Squeeze your shoulder blades.",
+    "Lower slowly.",
+    "Keep your core tight."
+  ],
+  "femaleVariant": "1092",
+  "textSource": "opengym"
+}

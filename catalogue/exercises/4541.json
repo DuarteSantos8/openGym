@@ -1,0 +1,24 @@
+{
+  "id": "4541",
+  "name": "kettlebell one arm thruster",
+  "bodyPart": "full body",
+  "equipment": "kettlebell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A kettlebell squat-to-press combo done with one arm that works the legs, shoulders and core in one flow.",
+  "instructions": [
+    "Hold a kettlebell in the rack position at one shoulder, feet shoulder-width apart.",
+    "Squat down with your torso upright and elbow close to your body.",
+    "Stand up powerfully through your heels.",
+    "Press the kettlebell overhead as you rise, finishing with a straight arm.",
+    "Lower it back to the rack and go into the next squat.",
+    "Switch arms after your set."
+  ],
+  "textSource": "opengym"
+}

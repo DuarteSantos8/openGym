@@ -1,0 +1,23 @@
+{
+  "id": "5075",
+  "name": "barbell muscle clean",
+  "bodyPart": "full body",
+  "equipment": "olympic barbell",
+  "target": "traps",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "shoulders",
+    "quadriceps"
+  ],
+  "category": "olympic",
+  "description": "Pull a barbell from the floor to your shoulders using only arm and hip drive, with no re-bending of the knees. A good clean-technique builder.",
+  "instructions": [
+    "Set up over the bar with hands just outside your knees and your back flat.",
+    "Pull the bar off the floor, extending your hips and knees.",
+    "Shrug and pull the elbows high, keeping the bar close.",
+    "Rotate your elbows under and catch the bar on your shoulders without dropping into a squat.",
+    "Lower the bar back down under control."
+  ],
+  "textSource": "opengym"
+}

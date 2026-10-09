@@ -1,0 +1,22 @@
+{
+  "id": "3587",
+  "name": "weighted single leg lift",
+  "bodyPart": "upper legs",
+  "equipment": "weighted",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "Lift one leg while loaded with ankle weight, targeting the glutes and hip extensors.",
+  "instructions": [
+    "Wear ankle weights and get on hands and knees or lie face down.",
+    "Brace your core and keep your hips level.",
+    "Raise the weighted leg without swinging.",
+    "Pause at the top and squeeze.",
+    "Lower slowly and switch legs."
+  ],
+  "textSource": "opengym"
+}

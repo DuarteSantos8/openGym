@@ -1,0 +1,22 @@
+{
+  "id": "3405",
+  "name": "standing w raise",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "rear deltoids",
+    "rhomboids"
+  ],
+  "category": "calisthenics",
+  "description": "Pull your elbows back into a W shape to strengthen the mid-back and rotator cuff.",
+  "instructions": [
+    "Stand tall with elbows bent and hands in front of your chest.",
+    "Pull your elbows back and down, forming a W.",
+    "Squeeze your shoulder blades together and rotate your hands outward.",
+    "Pause briefly.",
+    "Return slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

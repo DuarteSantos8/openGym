@@ -1,0 +1,24 @@
+{
+  "id": "7205",
+  "name": "resistance band squat jump",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A squat jump with a band around the thighs to keep the knees driving outward.",
+  "instructions": [
+    "Place the band above your knees and stand with feet shoulder-width.",
+    "Squat down with your chest up.",
+    "Explode upward into a jump.",
+    "Land softly, absorbing into the next squat.",
+    "Keep your knees pressing out against the band.",
+    "Repeat for the planned reps."
+  ],
+  "textSource": "opengym"
+}

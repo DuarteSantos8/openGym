@@ -1,0 +1,21 @@
+{
+  "id": "1216",
+  "name": "lever seated one leg calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "leverage machine",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles"
+  ],
+  "category": "strength",
+  "description": "A one-leg seated calf raise on a machine. Working each leg alone helps balance strength and targets the soleus.",
+  "instructions": [
+    "Sit on the machine and place the ball of one foot on the platform.",
+    "Set the pad on your thigh and release the safety.",
+    "Lower your heel for a stretch.",
+    "Press up as high as you can onto your toes.",
+    "Pause, lower slowly, then switch legs."
+  ],
+  "textSource": "opengym"
+}

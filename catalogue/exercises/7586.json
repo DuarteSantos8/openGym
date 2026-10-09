@@ -1,0 +1,23 @@
+{
+  "id": "7586",
+  "name": "cable ipsilateral glute dominant step up",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A step-up with a cable held on the same side as the working leg, leaning forward to bias the glutes.",
+  "instructions": [
+    "Stand in front of a box with a cable handle in the hand on your working side.",
+    "Place one foot fully on the box.",
+    "Lean your torso forward slightly.",
+    "Drive through the heel to stand up.",
+    "Lower slowly.",
+    "Finish all reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

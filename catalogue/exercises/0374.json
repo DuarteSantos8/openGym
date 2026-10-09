@@ -1,0 +1,24 @@
+{
+  "id": "0374",
+  "name": "dumbbell prone incline curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Chest down on an incline bench, you curl dumbbells from a hanging position. It stretches and works the biceps hard.",
+  "instructions": [
+    "Adjust the bench to a 45-degree incline.",
+    "Lie face down on the bench with your chest and stomach resting against it.",
+    "Hold a dumbbell in each hand with your palms facing down and your arms fully extended.",
+    "Keeping your upper arms stationary, exhale and curl the weights while contracting your biceps.",
+    "Continue to raise the weights until your biceps are fully contracted and the dumbbells are at shoulder level.",
+    "Hold the contracted position for a brief pause as you squeeze your biceps.",
+    "Inhale and slowly begin to lower the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2496",
+  "textSource": "exercisedb"
+}

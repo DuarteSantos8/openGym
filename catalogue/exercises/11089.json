@@ -1,0 +1,22 @@
+{
+  "id": "11089",
+  "name": "split stretch spine rolling",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "hamstrings",
+    "adductors",
+    "core"
+  ],
+  "category": "stretching",
+  "description": "A seated straddle position with a rolling spine movement. It loosens your back and inner thighs.",
+  "instructions": [
+    "Sit on the floor with your legs spread wide in a comfortable split.",
+    "Sit tall and reach your arms forward.",
+    "Round your spine and roll down slowly, one segment at a time.",
+    "Roll back up slowly until you are upright.",
+    "Repeat for 8-10 slow reps without forcing the stretch."
+  ],
+  "textSource": "opengym"
+}

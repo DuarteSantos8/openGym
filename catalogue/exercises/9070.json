@@ -1,0 +1,23 @@
+{
+  "id": "9070",
+  "name": "pogo jump 2 foot",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "quadriceps"
+  ],
+  "category": "plyometrics",
+  "description": "Small, quick hops off the balls of both feet. It builds calf and ankle stiffness and bounce.",
+  "instructions": [
+    "Stand tall with your knees nearly straight.",
+    "Hop off the balls of your feet.",
+    "Keep your heels off the ground.",
+    "Bounce quickly with minimal knee bend.",
+    "Stay light and quiet on landing.",
+    "Go for a set time or number of hops."
+  ],
+  "textSource": "opengym"
+}

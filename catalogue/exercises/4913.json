@@ -1,0 +1,23 @@
+{
+  "id": "4913",
+  "name": "narrow top half pull up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A partial pull-up with a narrow grip, done in the top half of the range. It focuses on the upper phase of the pull.",
+  "instructions": [
+    "Grab a pull-up bar with a narrow grip and pull up to the top position.",
+    "Lower yourself to about halfway.",
+    "Pull back up until your chin clears the bar.",
+    "Keep your chest up and your elbows close.",
+    "Avoid swinging.",
+    "Repeat for your reps."
+  ],
+  "textSource": "opengym"
+}

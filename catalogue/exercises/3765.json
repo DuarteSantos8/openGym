@@ -1,0 +1,24 @@
+{
+  "id": "3765",
+  "name": "jump step up",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "calves",
+    "hamstrings"
+  ],
+  "category": "plyometrics",
+  "description": "A step up with an explosive jump at the top, which builds leg power and raises your heart rate.",
+  "instructions": [
+    "Stand facing a sturdy box or step.",
+    "Place one foot on top.",
+    "Drive through it and jump up into the air.",
+    "Land softly on the box and step back down.",
+    "Switch legs and keep a steady rhythm."
+  ],
+  "femaleVariant": "0515",
+  "textSource": "opengym"
+}

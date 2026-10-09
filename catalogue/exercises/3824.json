@@ -1,0 +1,23 @@
+{
+  "id": "3824",
+  "name": "pseudo planche push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "core",
+    "upper chest"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up with your hands near your hips and your body leaning forward. It strongly loads shoulders and chest.",
+  "instructions": [
+    "Start in a plank with your hands turned out beside your lower ribs.",
+    "Lean your shoulders forward beyond your hands.",
+    "Lower your chest with your elbows close to your body.",
+    "Press up while keeping the lean.",
+    "Keep your core braced."
+  ],
+  "textSource": "opengym"
+}

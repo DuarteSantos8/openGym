@@ -1,0 +1,20 @@
+{
+  "id": "0978",
+  "name": "band front raise",
+  "bodyPart": "shoulders",
+  "equipment": "band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A front raise with a band, raising both arms forward. It builds the front shoulders.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold the band in front of your thighs with your palms facing down.",
+    "Keep your arms straight and slowly raise them forward until they are parallel to the ground.",
+    "Pause for a moment at the top, then slowly lower your arms back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

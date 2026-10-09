@@ -1,0 +1,26 @@
+{
+  "id": "0738",
+  "name": "sled 45° calf press",
+  "bodyPart": "lower legs",
+  "equipment": "sled machine",
+  "target": "calves",
+  "secondaryMuscles": [
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "On a 45 degree sled, you press the platform with your toes. Isolates the calves.",
+  "instructions": [
+    "Adjust the sled machine to a 45-degree angle.",
+    "Place your feet on the sled platform with your toes pointing forward.",
+    "Push the sled platform away from you by extending your ankles and calves.",
+    "Pause for a moment at the top, then slowly lower the sled platform back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "weights": {
+      "calves": 1,
+      "hamstring": 0
+    }
+  },
+  "textSource": "exercisedb"
+}

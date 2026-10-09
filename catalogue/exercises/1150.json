@@ -1,0 +1,23 @@
+{
+  "id": "1150",
+  "name": "suspender triceps kickback",
+  "bodyPart": "upper arms",
+  "equipment": "suspension trainer",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core",
+    "rear deltoids"
+  ],
+  "category": "calisthenics",
+  "description": "Leaning forward with the straps, you straighten the elbow behind you to isolate the triceps.",
+  "instructions": [
+    "Hold the handles and hinge forward with elbows by your sides.",
+    "Keep your upper arms still.",
+    "Straighten your arms and push them behind you.",
+    "Squeeze the triceps at the end.",
+    "Bend the elbows slowly to return.",
+    "Keep your back flat."
+  ],
+  "textSource": "opengym"
+}

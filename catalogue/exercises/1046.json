@@ -1,0 +1,23 @@
+{
+  "id": "1046",
+  "name": "cable elevated row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rhomboids",
+    "biceps",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A cable row where the handle sits higher than usual, pulled toward your upper chest. It targets the upper back.",
+  "instructions": [
+    "Set a cable handle at about head height and take a stable stance.",
+    "Grab the handle and lean back slightly with arms extended.",
+    "Pull toward your upper chest, driving your elbows back.",
+    "Squeeze your shoulder blades together.",
+    "Return slowly until your arms are straight."
+  ],
+  "textSource": "opengym"
+}

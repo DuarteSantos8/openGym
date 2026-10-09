@@ -1,0 +1,23 @@
+{
+  "id": "2381",
+  "name": "dumbbell one arm shoulder press v. 3",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A one-arm overhead press that builds the shoulders and challenges your core.",
+  "instructions": [
+    "Hold a dumbbell at shoulder height with your palm facing forward.",
+    "Stand or sit tall and brace your core.",
+    "Press the dumbbell overhead until your arm is straight.",
+    "Avoid leaning to the side.",
+    "Lower the dumbbell slowly back to your shoulder.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

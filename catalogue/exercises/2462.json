@@ -1,0 +1,21 @@
+{
+  "id": "2462",
+  "name": "chest dip on straight bar",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A chest dip on a bar, leaning forward and crossing your ankles. Targets the chest and triceps.",
+  "instructions": [
+    "Grab the parallel bars with your palms facing down and your arms fully extended.",
+    "Bend your knees and cross your ankles.",
+    "Lower your body by bending your arms until your shoulders are below your elbows.",
+    "Push yourself back up to the starting position by straightening your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

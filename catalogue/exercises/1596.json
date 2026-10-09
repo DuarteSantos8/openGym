@@ -1,0 +1,22 @@
+{
+  "id": "1596",
+  "name": "smith squat to bench",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A smith machine squat down to a bench behind you. The bench gives a consistent depth target.",
+  "instructions": [
+    "Place a bench behind you under the smith bar.",
+    "Rest the bar on your upper back and unrack it.",
+    "Sit your hips back and lower until you touch the bench lightly.",
+    "Keep your chest up and your knees tracking your toes.",
+    "Drive through your heels to stand and rerack when finished."
+  ],
+  "textSource": "opengym"
+}

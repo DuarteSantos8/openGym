@@ -1,0 +1,29 @@
+{
+  "id": "2335",
+  "name": "lever seated calf press",
+  "bodyPart": "lower legs",
+  "equipment": "leverage machine",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A seated machine calf press. Builds the calf muscles.",
+  "instructions": [
+    "Adjust the seat of the machine so that your shoulders are aligned with the lever pad.",
+    "Place your toes on the lower portion of the platform and position your knees under the lever pad.",
+    "Grasp the handles on the sides of the seat for stability.",
+    "Press the lever pad down by extending your ankles, lifting your heels as high as possible.",
+    "Pause for a moment at the top of the movement, then slowly lower your heels back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "weights": {
+      "calves": 1,
+      "hamstring": 0
+    }
+  },
+  "femaleVariant": "2558",
+  "textSource": "exercisedb"
+}

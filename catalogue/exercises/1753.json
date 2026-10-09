@@ -1,0 +1,21 @@
+{
+  "id": "1753",
+  "name": "three bench dip",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A bench dip with hands on the bench edge and body hanging off the front. A classic bodyweight move for the triceps.",
+  "instructions": [
+    "Sit on a bench with your hands gripping the edge, fingers pointing forward.",
+    "Slide your butt off the bench, supporting your weight with your hands.",
+    "Bend your elbows and lower your body until your upper arms are parallel to the ground.",
+    "Push yourself back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

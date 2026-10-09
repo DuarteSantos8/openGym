@@ -1,0 +1,22 @@
+{
+  "id": "9408",
+  "name": "repeated small jumps",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "calves",
+    "quadriceps",
+    "ankles"
+  ],
+  "category": "plyometrics",
+  "description": "Quick, low hops on the spot that keep your feet barely off the floor. They warm up the calves and ankles and build bouncy reactive strength.",
+  "instructions": [
+    "Stand tall with feet hip-width apart and arms relaxed at your sides.",
+    "Hop up a few centimetres by pushing through the balls of your feet.",
+    "Land softly on the balls of your feet and rebound straight away.",
+    "Keep your knees almost straight and your chest tall.",
+    "Continue for 20-30 seconds at a quick, steady rhythm."
+  ],
+  "textSource": "opengym"
+}

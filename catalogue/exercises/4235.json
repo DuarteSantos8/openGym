@@ -1,0 +1,24 @@
+{
+  "id": "4235",
+  "name": "dumbbell seated bent over rear delt row",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A seated bent-over row with elbows flared wide to hit the rear delts. Sitting keeps your legs from helping.",
+  "instructions": [
+    "Sit at the end of a bench with a dumbbell in each hand.",
+    "Lean forward with a flat back, arms hanging.",
+    "Pull the weights toward your sides with elbows flared out.",
+    "Squeeze your rear delts and upper back.",
+    "Lower slowly.",
+    "Keep your chest close to your thighs."
+  ],
+  "textSource": "opengym"
+}

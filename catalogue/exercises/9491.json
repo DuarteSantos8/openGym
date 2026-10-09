@@ -1,0 +1,22 @@
+{
+  "id": "9491",
+  "name": "cable side lying single arm lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rotator cuff",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "Lying on your side, you raise a cable handle out and up to isolate the side delts with constant tension.",
+  "instructions": [
+    "Set a low pulley and lie on your side with the handle in your top hand.",
+    "Keep your arm straight or slightly bent.",
+    "Raise the handle in an arc up to about shoulder height or a bit higher.",
+    "Pause briefly at the top.",
+    "Lower slowly, finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "11259",
+  "name": "cable standing hip extension v. 3",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A standing cable kickback that targets the glutes. It teaches you to extend the hip without arching your back.",
+  "instructions": [
+    "Attach an ankle strap to a low pulley and stand facing the machine, holding on for balance.",
+    "Keep your core tight and your torso upright.",
+    "Push your working leg straight back.",
+    "Squeeze your glute at the top without arching.",
+    "Return slowly, finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

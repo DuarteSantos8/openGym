@@ -1,0 +1,23 @@
+{
+  "id": "8755",
+  "name": "split squat heel raise",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "calves",
+    "glutes",
+    "soleus"
+  ],
+  "category": "calisthenics",
+  "description": "A split squat with a heel raise added at the top. It works the quads, glutes and calves together.",
+  "instructions": [
+    "Stand in a split stance with one foot well forward.",
+    "Lower into a split squat with an upright torso.",
+    "Push up through your front foot to stand.",
+    "Rise onto the toes of your back foot or both feet.",
+    "Lower your heel and repeat.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

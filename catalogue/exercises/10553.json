@@ -1,0 +1,23 @@
+{
+  "id": "10553",
+  "name": "resistance band overhead hit",
+  "bodyPart": "chest",
+  "equipment": "resistance band",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "core",
+    "lats",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "Swing a resistance band from overhead down in front of you in a chopping motion. It builds powerful chest and core strength.",
+  "instructions": [
+    "Anchor a band overhead and hold the handles with both hands.",
+    "Stand with a staggered stance and your arms raised.",
+    "Pull the handles down and forward in a controlled hit.",
+    "Brace your core as you finish.",
+    "Return slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "3248",
+  "name": "front toe touching",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "obliques"
+  ],
+  "category": "mobility",
+  "description": "A standing movement reaching down to touch your toes for a warm-up of the hamstrings and back.",
+  "instructions": [
+    "Stand with feet hip-width apart.",
+    "Hinge forward and reach toward your toes.",
+    "Let your head hang relaxed.",
+    "Rise slowly.",
+    "Repeat at a steady pace."
+  ],
+  "textSource": "opengym"
+}

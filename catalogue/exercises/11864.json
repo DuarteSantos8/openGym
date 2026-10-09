@@ -1,0 +1,21 @@
+{
+  "id": "11864",
+  "name": "dumbbell single arm curl with isometric hold",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A one-arm curl that pauses at the halfway point to increase biceps tension.",
+  "instructions": [
+    "Stand holding a dumbbell at your side, palm forward.",
+    "Curl the weight up until your elbow is bent to 90 degrees.",
+    "Hold that position for 2-3 seconds.",
+    "Finish the curl, then lower slowly.",
+    "Complete your reps and switch arms."
+  ],
+  "textSource": "opengym"
+}

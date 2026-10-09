@@ -1,0 +1,22 @@
+{
+  "id": "0090",
+  "name": "barbell seated good morning",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A seated good morning with the bar on your back. Trains the lower back and glutes.",
+  "instructions": [
+    "Sit on a bench with your feet flat on the ground and a barbell resting on your upper back.",
+    "Keep your back straight and your chest up.",
+    "Slowly hinge forward at the hips, lowering your torso towards the ground.",
+    "Pause for a moment at the bottom, then push through your heels to return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2602",
+  "textSource": "exercisedb"
+}

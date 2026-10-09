@@ -1,0 +1,24 @@
+{
+  "id": "2944",
+  "name": "seal push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper back",
+    "lower back",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up where your hands lift off the floor and reach out at the top. It builds chest and back strength together.",
+  "instructions": [
+    "Lie face down with your hands under your shoulders and legs straight.",
+    "Push your upper body up with your arms like a seal.",
+    "Keep your hips on the floor and your core tight.",
+    "Lower slowly to the floor.",
+    "Repeat for smooth, controlled reps."
+  ],
+  "textSource": "opengym"
+}

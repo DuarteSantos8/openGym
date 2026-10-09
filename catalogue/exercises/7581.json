@@ -1,0 +1,22 @@
+{
+  "id": "7581",
+  "name": "kettlebell contralateral reverse lunge",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Reverse lunge with the kettlebell in the opposite hand to the working leg.",
+  "instructions": [
+    "Hold a kettlebell in one hand.",
+    "Step back with the opposite leg.",
+    "Lower until the back knee nears the floor.",
+    "Push through the front foot.",
+    "Finish reps and switch sides."
+  ],
+  "textSource": "opengym"
+}

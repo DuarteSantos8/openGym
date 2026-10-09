@@ -1,0 +1,23 @@
+{
+  "id": "0464",
+  "name": "front plank with twist",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "A front plank with a trunk twist. It works the abs, obliques and shoulders while you stay stable.",
+  "instructions": [
+    "Start in a high plank position with your hands directly under your shoulders and your body in a straight line from head to toe.",
+    "Engage your core and glutes to maintain a stable position.",
+    "Rotate your torso to the right, lifting your right arm and extending it towards the ceiling.",
+    "Keep your hips and legs stable as you twist.",
+    "Hold for a moment, then return to the starting position.",
+    "Repeat the twist on the left side.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

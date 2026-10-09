@@ -1,0 +1,24 @@
+{
+  "id": "3186",
+  "name": "barbell military press (with hanging band technique)",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "An overhead press with bands hanging weights from the bar. The unstable load trains control in the shoulders.",
+  "instructions": [
+    "Hang weights from each end of the bar with bands.",
+    "Hold the bar at your shoulders and stand tall.",
+    "Brace your core and squeeze your glutes.",
+    "Press the bar straight overhead.",
+    "Lower it slowly back to your shoulders.",
+    "Use a lighter load and keep the bar steady."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4975",
+  "name": "lying leg raise v. 3",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs"
+  ],
+  "category": "calisthenics",
+  "description": "Raising your legs while lying on your back. It works the lower abs and the hip flexors.",
+  "instructions": [
+    "Lie on your back with legs straight and arms by your sides.",
+    "Press your lower back gently into the floor.",
+    "Lift both legs together until they point to the ceiling.",
+    "Lower them slowly, stopping before your back arches.",
+    "Keep your legs as straight as you comfortably can.",
+    "Breathe steadily through each rep."
+  ],
+  "textSource": "opengym"
+}

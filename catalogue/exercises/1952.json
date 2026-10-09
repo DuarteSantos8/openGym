@@ -1,0 +1,21 @@
+{
+  "id": "1952",
+  "name": "assisted one leg extension",
+  "bodyPart": "upper legs",
+  "equipment": "assisted",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "hamstrings"
+  ],
+  "category": "mobility",
+  "description": "A partner-assisted leg movement that gently stretches the hip and thigh.",
+  "instructions": [
+    "Lie on your back and relax.",
+    "Have a partner support one leg and gently extend it.",
+    "Let the partner move the leg only to a mild stretch.",
+    "Keep your lower back flat on the floor.",
+    "Hold for 20-30 seconds, then switch legs."
+  ],
+  "textSource": "opengym"
+}

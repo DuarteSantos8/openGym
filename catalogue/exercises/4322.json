@@ -1,0 +1,21 @@
+{
+  "id": "4322",
+  "name": "standing side bend (bent arm) v. 2",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A bodyweight side bend with one arm bent behind your head, working the obliques.",
+  "instructions": [
+    "Stand with feet shoulder-width apart and one hand behind your head, elbow bent.",
+    "Place your other hand on your hip.",
+    "Bend sideways toward the hand on your hip without leaning forward.",
+    "Squeeze your side to return upright.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

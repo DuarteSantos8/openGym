@@ -1,0 +1,21 @@
+{
+  "id": "5297",
+  "name": "cable kneeling preacher curl",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms",
+    "brachialis"
+  ],
+  "category": "strength",
+  "description": "A kneeling curl with the arms propped on a bench and a cable. It isolates the biceps.",
+  "instructions": [
+    "Kneel in front of a bench with a low cable beside you.",
+    "Rest your upper arms on the pad.",
+    "Curl the handle up toward your shoulders.",
+    "Squeeze your biceps at the top.",
+    "Lower slowly until your arms are straight."
+  ],
+  "textSource": "opengym"
+}

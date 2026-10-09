@@ -1,0 +1,22 @@
+{
+  "id": "10042",
+  "name": "dumbbell lying floor squeeze press",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A floor press with the dumbbells pressed together. The squeeze keeps your chest working throughout the lift.",
+  "instructions": [
+    "Lie on the floor with a dumbbell in each hand, pressed together above your chest.",
+    "Squeeze the dumbbells against each other.",
+    "Lower them until your upper arms touch the floor.",
+    "Press back up while still squeezing.",
+    "Keep your wrists straight and elbows tucked.",
+    "Lower slowly each rep."
+  ],
+  "textSource": "opengym"
+}

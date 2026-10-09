@@ -1,0 +1,21 @@
+{
+  "id": "10780",
+  "name": "lying neck flexion",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "sternocleidomastoid"
+  ],
+  "category": "strength",
+  "description": "Gentle chin tuck while lying on your back. It strengthens the front neck muscles.",
+  "instructions": [
+    "Lie on your back with your knees bent.",
+    "Relax your shoulders.",
+    "Tuck your chin and lift your head slightly off the floor.",
+    "Hold for a second.",
+    "Lower slowly.",
+    "Keep the motion small and smooth."
+  ],
+  "textSource": "opengym"
+}

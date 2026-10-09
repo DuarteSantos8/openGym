@@ -1,0 +1,21 @@
+{
+  "id": "1264",
+  "name": "cable one arm incline fly on exercise ball",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "deltoids",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A one-arm incline cable fly on an exercise ball. It trains the upper chest.",
+  "instructions": [
+    "Sit on an exercise ball with your feet flat on the ground and your back against an incline bench.",
+    "Hold a cable handle in one hand with your arm extended and palm facing inward.",
+    "Keeping a slight bend in your elbow, slowly lower your arm out to the side until your hand is in line with your shoulder.",
+    "Pause for a moment, then squeeze your chest muscles to bring your arm back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms."
+  ],
+  "textSource": "exercisedb"
+}

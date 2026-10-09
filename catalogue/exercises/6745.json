@@ -1,0 +1,23 @@
+{
+  "id": "6745",
+  "name": "cable seated foot eversion",
+  "bodyPart": "lower legs",
+  "equipment": "cable",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "feet",
+    "shins"
+  ],
+  "category": "strength",
+  "description": "A seated ankle move turning the foot outward against a cable. It strengthens the outer ankle and lower leg.",
+  "instructions": [
+    "Sit with your leg extended and a cable cuff on your foot.",
+    "Position the cable so it pulls the foot inward.",
+    "Keep your leg still.",
+    "Turn the sole of your foot outward against the cable.",
+    "Pause, then return slowly.",
+    "Finish the reps and switch feet."
+  ],
+  "textSource": "opengym"
+}

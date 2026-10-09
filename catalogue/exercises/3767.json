@@ -1,0 +1,24 @@
+{
+  "id": "3767",
+  "name": "dumbbell single leg squat v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "ankles"
+  ],
+  "category": "strength",
+  "description": "A single-leg squat holding a dumbbell for balance and extra load.",
+  "instructions": [
+    "Hold a dumbbell at your chest and stand on one leg.",
+    "Extend your other leg in front of you.",
+    "Lower into a squat as far as you can control.",
+    "Push through your heel to stand.",
+    "Finish your reps, then switch legs."
+  ],
+  "femaleVariant": "3766",
+  "textSource": "opengym"
+}

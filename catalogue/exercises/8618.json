@@ -1,0 +1,21 @@
+{
+  "id": "8618",
+  "name": "seated chest press on a chair",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A seated pressing motion done with bodyweight tension to work the chest and triceps.",
+  "instructions": [
+    "Sit tall near the front of a sturdy chair with your feet flat on the floor.",
+    "Brace your core and keep your shoulders relaxed.",
+    "Bring your hands to chest height and press your palms together.",
+    "Press forward until your arms are straight.",
+    "Draw them back to your chest slowly."
+  ],
+  "textSource": "opengym"
+}

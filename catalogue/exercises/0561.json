@@ -1,0 +1,21 @@
+{
+  "id": "0561",
+  "name": "kneeling wrist flexor stretch",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors"
+  ],
+  "category": "stretching",
+  "description": "Kneeling on the floor, you press your palms down to stretch the underside of the forearms. Useful for lifters with tight wrists.",
+  "instructions": [
+    "Kneel on the floor and place your palms down with fingers pointing toward your knees.",
+    "Keep your palms flat and arms straight.",
+    "Slowly sit your hips back to increase the stretch.",
+    "Stop when you feel a pull along the inner forearms.",
+    "Hold for 20-30 seconds.",
+    "Ease off gently and shake out your hands."
+  ],
+  "textSource": "opengym"
+}

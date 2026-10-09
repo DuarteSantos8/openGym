@@ -1,0 +1,23 @@
+{
+  "id": "9009",
+  "name": "reverse hyperextension on stability ball",
+  "bodyPart": "upper legs",
+  "equipment": "stability ball",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Lying face down over a ball, you lift your legs behind you to work the glutes and lower back.",
+  "instructions": [
+    "Lie face down over the ball with your hands on the floor.",
+    "Let your legs hang down with your toes light on the floor.",
+    "Squeeze your glutes and raise both legs until they are in line with your body.",
+    "Pause at the top.",
+    "Lower slowly without swinging.",
+    "Keep your hands planted and your core tight."
+  ],
+  "textSource": "opengym"
+}

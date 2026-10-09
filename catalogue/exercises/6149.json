@@ -1,0 +1,23 @@
+{
+  "id": "6149",
+  "name": "dumbbell seated drag curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A curl where the elbows move back and the dumbbells drag up along your torso. It hits the biceps with less shoulder help.",
+  "instructions": [
+    "Sit holding dumbbells with your palms forward.",
+    "Keep the weights close to your body.",
+    "Pull your elbows back as you curl.",
+    "Drag the dumbbells up along your torso.",
+    "Squeeze at the top.",
+    "Lower with control."
+  ],
+  "textSource": "opengym"
+}

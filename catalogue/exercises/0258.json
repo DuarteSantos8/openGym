@@ -1,0 +1,23 @@
+{
+  "id": "0258",
+  "name": "clock push-up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up that moves around like a clock, with an arm reaching out to the side on each rep. It works the chest, shoulders and core.",
+  "instructions": [
+    "Start in a high plank position with your hands directly under your shoulders and your body in a straight line.",
+    "Lower your body towards the ground by bending your elbows, keeping them close to your sides.",
+    "As you lower, rotate your body to the left, extending your left arm straight out to the side.",
+    "Push back up to the starting position, while rotating your body to the center.",
+    "Repeat the push-up, this time rotating your body to the right and extending your right arm out to the side.",
+    "Continue alternating sides with each repetition."
+  ],
+  "textSource": "exercisedb"
+}

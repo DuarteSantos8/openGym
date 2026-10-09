@@ -1,0 +1,23 @@
+{
+  "id": "3390",
+  "name": "calf raise from deficit with chair supported",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "calisthenics",
+  "description": "A calf raise from a raised step with a chair for balance, giving a deeper stretch and fuller range.",
+  "instructions": [
+    "Stand with the balls of your feet on a step edge, holding a chair for balance.",
+    "Let your heels drop below the step to stretch your calves.",
+    "Rise as high onto your toes as you can.",
+    "Pause for a second at the top.",
+    "Lower slowly into the deep stretch.",
+    "Keep your knees almost straight."
+  ],
+  "textSource": "opengym"
+}

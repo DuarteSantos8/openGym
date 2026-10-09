@@ -1,0 +1,22 @@
+{
+  "id": "5025",
+  "name": "serratus wall slide",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "serratus anterior",
+  "secondaryMuscles": [
+    "trapezius",
+    "shoulders",
+    "rotator cuff"
+  ],
+  "category": "mobility",
+  "description": "Sliding the forearms up a wall to wake up the serratus anterior. It helps with shoulder blade movement.",
+  "instructions": [
+    "Stand facing a wall with your forearms resting on it.",
+    "Keep your elbows at shoulder width.",
+    "Press into the wall and slide your arms up as high as you can.",
+    "Keep your ribs down and neck relaxed.",
+    "Slide back down slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

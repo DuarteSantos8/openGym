@@ -1,0 +1,23 @@
+{
+  "id": "5680",
+  "name": "side mountain climber",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "core",
+    "obliques",
+    "hip flexors",
+    "shoulders"
+  ],
+  "category": "cardio",
+  "description": "A mountain climber where the knees drive toward the elbows on the side. It raises your heart rate and works the obliques and hips.",
+  "instructions": [
+    "Start in a high plank with hands under your shoulders.",
+    "Drive one knee out toward the same-side elbow.",
+    "Return that foot and switch quickly to the other leg.",
+    "Keep your hips low and your core tight.",
+    "Continue at a brisk pace for the set time."
+  ],
+  "textSource": "opengym"
+}

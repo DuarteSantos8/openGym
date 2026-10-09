@@ -1,0 +1,21 @@
+{
+  "id": "2994",
+  "name": "self anterior calf foam rolling",
+  "bodyPart": "lower legs",
+  "equipment": "roller",
+  "target": "calves",
+  "secondaryMuscles": [
+    "shins",
+    "soleus"
+  ],
+  "category": "mobility",
+  "description": "A foam roller technique for the front of the lower leg that eases tightness.",
+  "instructions": [
+    "Kneel on a mat with the foam roller under your shins.",
+    "Support yourself with your hands in front.",
+    "Shift your weight to roll along the front of your lower leg.",
+    "Move slowly and pause on tight spots.",
+    "Roll for 30-60 seconds per leg."
+  ],
+  "textSource": "opengym"
+}

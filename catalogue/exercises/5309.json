@@ -1,0 +1,24 @@
+{
+  "id": "5309",
+  "name": "ez bar shoulder press sit up",
+  "bodyPart": "waist",
+  "equipment": "ez barbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "hip flexors",
+    "lower abs"
+  ],
+  "category": "strength",
+  "description": "Combine a sit-up with an overhead press using an EZ bar. Trains the abs, shoulders and triceps in one flowing rep.",
+  "instructions": [
+    "Lie on your back with knees bent, holding the EZ bar at your chest.",
+    "Sit up while keeping the bar close to your body.",
+    "Once upright, press the bar overhead.",
+    "Lower the bar back to your chest.",
+    "Roll back down slowly to the floor.",
+    "Brace your core and avoid yanking with your neck."
+  ],
+  "textSource": "opengym"
+}

@@ -8,7 +8,9 @@ import { uid, exerciseNameText } from '../lib/format.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { supersetUnits, moveRoutineEntry, cleanupSg, exLine, defaultConfig } from '../lib/history.js'
 import { Thumb } from '../components/Media.jsx'
-import { glyphPicker, exercisePicker, exConfigSheet, confirmSheet } from '../sheets.jsx'
+import { glyphPicker, exercisePicker, exConfigSheet, confirmSheet, supersetSheet } from '../sheets.jsx'
+import { supersetMeta, setSupersetMeta } from '../lib/superset-meta.js'
+import { fmtRest } from '../lib/duration.js'
 import Icon from '../components/Icon.jsx'
 import { glyphOf } from '../lib/glyphs.js'
 import { Button, Row, SelectRow, Switch } from '../components/ui.jsx'
@@ -414,7 +416,7 @@ export default function RoutineEdit() {
       if (quick) { commit(ex, current => replaceSlotExercise(current, ex.id, live, id)); return }
       const next = replaceSlotExercise(slot, ex.id, live, id)
       exConfigSheet(ex, next, cfg => commit(ex, current => ({ id: ex.id, sg: current.sg, ...cfg })), null, r, null, null, t('Replace'))
-    }, { title: t('Replace exercise') })
+    }, { title: t('Replace exercise'), like: openedOn })
   }
   // This routine on paper (#282): the weekly printout's page for one session, through the same
   // two print paths — the browser's print dialog (→ Save as PDF) on the web, the native Print
@@ -445,6 +447,16 @@ export default function RoutineEdit() {
 
   const units = supersetUnits(r.ex)
   const unitFirst = new Set(units.filter(u => u.length > 1).map(u => u[0]))
+  // Each superset gets a letter and each member its place in the round (A1, A2, B1…), so the
+  // order you do them in reads off the list (#293).
+  const ssPos = new Map()
+  units.filter(u => u.length > 1).forEach((u, k) => u.forEach((idx, n) => ssPos.set(idx, String.fromCharCode(65 + (k % 26)) + (n + 1))))
+  const unitOf = new Map(units.flatMap(u => u.map(idx => [idx, u])))
+  const editSuperset = i => {
+    const sg = r.ex[i]?.sg
+    if (!sg) return
+    supersetSheet(supersetMeta(r.ex, unitOf.get(i)), meta => edit(ex => { setSupersetMeta(ex, sg, meta) }))
+  }
   const inSS = new Set(units.filter(u => u.length > 1).flat())
   const profile = activeProfile(S)
   const missingCount = profile ? r.ex.filter(e => !exAvailable(S, exOr(e.id))).length : 0
@@ -514,11 +526,12 @@ export default function RoutineEdit() {
       // screen reader would lose inside one): the name is, a real <button> a click bubbles up
       // from. The long press treats it as the row (data-row-open, useRoutineReorder).
       const item = <div className={'item' + (inSS.has(i) ? ' in-ss' : '')} onClick={() => {
-          exConfigSheet(ex, e, cfg => edit(x => { x[i] = { id: x[i].id, sg: x[i].sg, ...cfg } }), removeHere, r, null, () => replace(i))
+          exConfigSheet(ex, e, cfg => edit(x => { x[i] = { id: x[i].id, sg: x[i].sg, ...(x[i].sg ? { sgName: x[i].sgName, sgRest: x[i].sgRest } : {}), ...cfg }; cleanupSg(x) }), removeHere, r, null, () => replace(i))
         }}>
           {/* Shown on pointer devices only (index.css .routine-grip); the Move buttons and the
               long press stay the way in for a keyboard and a finger. */}
           <span className="routine-grip" data-drag-handle aria-hidden="true" title={t('Reorder exercises')}><Icon name="grip" /></span>
+          {ssPos.has(i) && <span className="ss-pos" aria-label={t('Superset position {0}', ssPos.get(i))}>{ssPos.get(i)}</span>}
           <Thumb ex={ex} />
           <button type="button" className="grow item-open" data-row-open><span className={`tt ${exerciseNameClass(ex)}`}>{exerciseNameFor(ex)}</span><span className="ss">{exLine(e, S.unit, speedUnitOf(S))}</span>
             {e.note && <span className="small dim" style={{ marginTop: 2 }}>{e.note}</span>}</button>
@@ -534,7 +547,14 @@ export default function RoutineEdit() {
       return <div key={i} data-routine-row data-ex-index={i}
         className={'routine-drag-row' + (isDragging ? ' is-dragging' : '')}
         style={isDragging ? { transform: `translate3d(0, ${reorder.drag.deltaY}px, 0)` } : undefined}>
-        {unitFirst.has(i) && <div className="ss-label"><Icon name="link" />{t('Superset')}</div>}
+        {unitFirst.has(i) && (() => {
+          const meta = supersetMeta(r.ex, unitOf.get(i))
+          return <button type="button" className="ss-label ss-label-btn" onClick={() => editSuperset(i)} title={t('Name and rest of this superset')}>
+            <Icon name="link" /><span className="ss-label-name">{meta.name || t('Superset')}</span>
+            {meta.rest > 0 && <span className="dim">· {t('{0} rest after each round', fmtRest(meta.rest))}</span>}
+            <Icon name="pencil" />
+          </button>
+        })()}
         {/* Swipe (v1.3.11, Settings → Swipe actions): toward the start takes the exercise out,
             with an Undo; nothing on the other side. The long press still picks the row up to
             reorder it (a press that has lifted keeps the swipe out), and the row's sheet keeps

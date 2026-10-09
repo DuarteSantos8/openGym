@@ -1,0 +1,22 @@
+{
+  "id": "1389",
+  "name": "posterior tibialis stretch",
+  "bodyPart": "lower legs",
+  "equipment": "rope",
+  "target": "calves",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps"
+  ],
+  "category": "stretching",
+  "description": "A seated stretch that opens the inner side of the lower leg. It targets the posterior tibialis along your shin and ankle.",
+  "instructions": [
+    "Sit on the ground with your legs extended in front of you.",
+    "Loop the rope around the ball of your foot and hold the ends of the rope with your hands.",
+    "Gently pull the rope towards you, flexing your foot and stretching your calf muscles.",
+    "Hold the stretch for 20-30 seconds.",
+    "Release the tension on the rope and relax your foot.",
+    "Repeat the stretch on the other leg."
+  ],
+  "textSource": "exercisedb"
+}

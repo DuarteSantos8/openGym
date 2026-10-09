@@ -1,0 +1,22 @@
+{
+  "id": "0428",
+  "name": "dumbbell standing preacher curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A standing curl with the upper arms supported on a preacher pad. It isolates the biceps through a strict range.",
+  "instructions": [
+    "Stand upright with your feet shoulder-width apart and hold a dumbbell in each hand, palms facing forward.",
+    "Rest the back of your upper arms against the preacher bench or an incline bench, with your elbows slightly bent.",
+    "Keeping your upper arms stationary, exhale and curl the weights while contracting your biceps.",
+    "Continue to raise the dumbbells until your biceps are fully contracted and the dumbbells are at shoulder level.",
+    "Hold the contracted position for a brief pause as you squeeze your biceps.",
+    "Inhale and slowly begin to lower the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "5607",
+  "name": "band face pull",
+  "bodyPart": "shoulders",
+  "equipment": "band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rotator cuff",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "Face pull using a band to train the rear delts and upper back.",
+  "instructions": [
+    "Anchor a band at head height and hold the ends.",
+    "Step back to create tension.",
+    "Pull the band toward your face, elbows high.",
+    "Squeeze your shoulder blades.",
+    "Return slowly."
+  ],
+  "femaleVariant": "0896",
+  "textSource": "opengym"
+}

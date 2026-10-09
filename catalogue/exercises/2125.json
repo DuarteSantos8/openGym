@@ -1,0 +1,21 @@
+{
+  "id": "2125",
+  "name": "lateral stretch on floor lying down",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lats"
+  ],
+  "category": "stretching",
+  "description": "A lying side stretch that gently lengthens one side of the body.",
+  "instructions": [
+    "Lie on your back with your arms extended overhead.",
+    "Shift your feet and your upper body to one side to form a gentle banana curve until the opposite side stretches.",
+    "Keep both shoulders and hips on the floor.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

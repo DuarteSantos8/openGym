@@ -1,0 +1,23 @@
+{
+  "id": "0323",
+  "name": "dumbbell incline one arm lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A one-arm lateral raise on an incline bench. It isolates the side delt, one arm at a time.",
+  "instructions": [
+    "Sit on an incline bench with a dumbbell in one hand, resting it on your thigh.",
+    "Lean forward and position your upper arm against the inside of your thigh.",
+    "Raise the dumbbell to the side, keeping your arm slightly bent and your palm facing down.",
+    "Continue lifting until your arm is parallel to the floor.",
+    "Pause for a moment at the top, then slowly lower the dumbbell back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch to the other arm."
+  ],
+  "femaleVariant": "2818",
+  "textSource": "exercisedb"
+}

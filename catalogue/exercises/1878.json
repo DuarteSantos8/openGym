@@ -1,0 +1,21 @@
+{
+  "id": "1878",
+  "name": "standing leg cross abductor stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "Cross one leg behind the other to stretch the outer hip and thigh.",
+  "instructions": [
+    "Stand tall, next to a wall if you need balance.",
+    "Cross one leg behind the other.",
+    "Lean your hips toward the side of your back leg.",
+    "Feel the stretch along the outer hip.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

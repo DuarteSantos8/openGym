@@ -1,0 +1,22 @@
+{
+  "id": "0521",
+  "name": "kettlebell alternating renegade row",
+  "bodyPart": "back",
+  "equipment": "kettlebell",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "core",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "In a push-up position holding kettlebells, you row one at a time. It builds the back and core.",
+  "instructions": [
+    "Start in a high plank position with your hands gripping the kettlebells and your feet hip-width apart.",
+    "Engage your core and keep your body in a straight line from head to heels.",
+    "Pull one kettlebell up towards your chest, keeping your elbow close to your body.",
+    "Lower the kettlebell back down to the starting position and repeat with the other arm.",
+    "Continue alternating arms for the desired number of repetitions."
+  ],
+  "femaleVariant": "2533",
+  "textSource": "exercisedb"
+}

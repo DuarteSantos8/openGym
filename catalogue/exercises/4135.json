@@ -1,0 +1,22 @@
+{
+  "id": "4135",
+  "name": "band split squat",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A split squat with a band adding resistance for the legs.",
+  "instructions": [
+    "Stand on the band in a split stance and hold the ends at your shoulders.",
+    "Lower your back knee toward the floor.",
+    "Keep your front shin vertical.",
+    "Push back up.",
+    "Switch legs after your set."
+  ],
+  "textSource": "opengym"
+}

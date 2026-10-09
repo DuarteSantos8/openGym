@@ -1,0 +1,23 @@
+{
+  "id": "10902",
+  "name": "eccentric single arm pull up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms",
+    "grip muscles",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A slow lowering phase of a one-arm pull-up. It builds the strength needed for the full move.",
+  "instructions": [
+    "Get into the top position of a pull-up, with one hand on the bar and the other assisting or at rest.",
+    "Let go of any help and shift your weight onto the working arm.",
+    "Lower yourself as slowly as you can until your arm is straight.",
+    "Keep your body tight and avoid swinging.",
+    "Step back up to the top and repeat, then switch arms."
+  ],
+  "textSource": "opengym"
+}

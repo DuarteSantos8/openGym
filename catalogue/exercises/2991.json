@@ -1,0 +1,24 @@
+{
+  "id": "2991",
+  "name": "rollball seated single leg shoulder flexor depressor retractor",
+  "bodyPart": "shoulders",
+  "equipment": "stability ball",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rhomboids",
+    "lats",
+    "trapezius",
+    "core"
+  ],
+  "category": "rehab",
+  "description": "A seated shoulder control drill on a ball with one leg lifted. It challenges balance while you raise, lower and pull back the shoulder blades.",
+  "instructions": [
+    "Sit tall on a stability ball with your feet on the floor.",
+    "Lift one foot slightly off the ground and hold your balance.",
+    "Raise your arms forward, then press your shoulders down away from your ears.",
+    "Pull your shoulder blades back and together without arching your back.",
+    "Return slowly to the start and complete your reps.",
+    "Switch legs and repeat on the other side."
+  ],
+  "textSource": "opengym"
+}

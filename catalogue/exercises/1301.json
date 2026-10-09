@@ -1,0 +1,38 @@
+{
+  "id": "1301",
+  "name": "machine inner chest press",
+  "bodyPart": "chest",
+  "equipment": "leverage machine",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A seated machine chest press where the handles bring your hands together. It emphasises the inner chest in a stable path.",
+  "instructions": [
+    "Adjust the seat height and position yourself on the machine with your back flat against the pad.",
+    "Grasp the handles with an overhand grip and position your elbows at a 90-degree angle.",
+    "Push the handles forward until your arms are fully extended, exhaling during the movement.",
+    "Pause for a moment at the end of the movement, then slowly return to the starting position, inhaling as you do so.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "chest"
+    ],
+    "secondaries": [
+      "deltoids",
+      "triceps",
+      "biceps"
+    ],
+    "weights": {
+      "chest": 1,
+      "deltoids": 0.4,
+      "triceps": 0.4,
+      "biceps": 0
+    }
+  },
+  "femaleVariant": "11440",
+  "textSource": "exercisedb"
+}

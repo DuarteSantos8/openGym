@@ -1,0 +1,22 @@
+{
+  "id": "3631",
+  "name": "sitting sumo mobility stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "groin",
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "mobility",
+  "description": "Sit with legs wide and lean forward to open the inner thighs and hips.",
+  "instructions": [
+    "Sit on the floor with legs spread wide.",
+    "Keep your back straight and toes pointing up.",
+    "Lean forward from the hips.",
+    "Place your hands on the floor in front of you.",
+    "Stay for 20-30 seconds, then return slowly."
+  ],
+  "textSource": "opengym"
+}

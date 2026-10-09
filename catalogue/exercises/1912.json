@@ -1,0 +1,21 @@
+{
+  "id": "1912",
+  "name": "standing high leg bent knee hamstring stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "calves"
+  ],
+  "category": "stretching",
+  "description": "A hamstring stretch with the foot raised high and the knee slightly bent for a deeper but friendlier pull.",
+  "instructions": [
+    "Stand tall and place one heel on a high support with the knee slightly bent.",
+    "Lean your chest toward your thigh with a flat back until you feel the stretch behind the thigh.",
+    "Straighten the knee a little more as you get looser.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

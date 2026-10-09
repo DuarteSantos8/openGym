@@ -1,0 +1,22 @@
+{
+  "id": "0269",
+  "name": "crunch (legs on stability ball)",
+  "bodyPart": "waist",
+  "equipment": "stability ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A crunch with your calves resting on a stability ball. The raised legs fix the hips and focus the work on the abs.",
+  "instructions": [
+    "Lie on your back with your calves on a stability ball and your knees bent at 90 degrees.",
+    "Place your hands by your head or across your chest.",
+    "Curl your shoulders off the floor.",
+    "Squeeze your abs at the top.",
+    "Lower slowly.",
+    "Keep your neck relaxed and the ball steady."
+  ],
+  "textSource": "opengym"
+}

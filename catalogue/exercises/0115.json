@@ -1,0 +1,22 @@
+{
+  "id": "0115",
+  "name": "barbell stiff leg good morning",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A straight-leg good morning with the bar on the upper back. Trains the glutes, hamstrings and lower back.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and your knees slightly bent.",
+    "Hold the barbell across your upper back, resting it on your traps.",
+    "Keeping your back straight, hinge forward at the hips, pushing your glutes back.",
+    "Lower your torso until it is parallel to the ground, feeling a stretch in your hamstrings.",
+    "Engage your glutes and hamstrings to return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

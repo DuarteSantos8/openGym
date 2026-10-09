@@ -1,0 +1,23 @@
+{
+  "id": "1076",
+  "name": "suspension hamstring runner",
+  "bodyPart": "upper legs",
+  "equipment": "suspension trainer",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A hamstring curl with heels in straps, alternating legs like running. It trains the hamstrings and core control.",
+  "instructions": [
+    "Lie on your back with both heels in the straps and lift your hips.",
+    "Press your arms into the floor for balance.",
+    "Curl one heel toward your glutes while the other leg extends.",
+    "Switch legs in a smooth running rhythm.",
+    "Keep your hips high and level.",
+    "Continue for the set."
+  ],
+  "textSource": "opengym"
+}

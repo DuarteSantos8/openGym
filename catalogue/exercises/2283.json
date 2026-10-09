@@ -1,0 +1,22 @@
+{
+  "id": "2283",
+  "name": "lever neck left side flexion (plate loaded)",
+  "bodyPart": "neck",
+  "equipment": "leverage machine",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "trapezius",
+    "sternocleidomastoid"
+  ],
+  "category": "strength",
+  "description": "A plate-loaded neck exercise that bends the head sideways to the left to strengthen the side neck muscles.",
+  "instructions": [
+    "Set the weight light and position the pad against the left side of your head.",
+    "Sit tall with your shoulders relaxed.",
+    "Tilt your head to the left against the resistance.",
+    "Keep the movement small and smooth.",
+    "Return slowly to the centre.",
+    "Repeat for the planned reps with control."
+  ],
+  "textSource": "opengym"
+}

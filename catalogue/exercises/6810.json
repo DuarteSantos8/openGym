@@ -1,0 +1,21 @@
+{
+  "id": "6810",
+  "name": "band lying bent knee raise",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs"
+  ],
+  "category": "strength",
+  "description": "A lying knee raise against band resistance. It builds the lower abs and hip flexors.",
+  "instructions": [
+    "Lie on your back with a band looped around your feet or anchored.",
+    "Place your hands by your sides and brace your core.",
+    "Bring your knees toward your chest against the band.",
+    "Pause briefly at the top.",
+    "Lower your feet slowly without arching your back."
+  ],
+  "textSource": "opengym"
+}

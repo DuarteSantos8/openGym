@@ -1,0 +1,24 @@
+{
+  "id": "0611",
+  "name": "lunge push up",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "quadriceps",
+    "glutes",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A lunge flowing into a push-up. It combines leg and upper body work for a full-body challenge.",
+  "instructions": [
+    "Stand tall with feet together.",
+    "Step back into a lunge and lower your back knee toward the floor.",
+    "Place your hands on the floor and step into a plank.",
+    "Lower into a push-up and press back up.",
+    "Step back into the lunge and stand up.",
+    "Alternate the lunging leg each rep."
+  ],
+  "textSource": "opengym"
+}

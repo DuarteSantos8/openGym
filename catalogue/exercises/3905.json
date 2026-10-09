@@ -1,0 +1,23 @@
+{
+  "id": "3905",
+  "name": "arm circles",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "trapezius",
+    "upper back"
+  ],
+  "category": "mobility",
+  "description": "A simple warm-up that loosens the shoulder joints by moving the arms in circles.",
+  "instructions": [
+    "Stand tall with your arms out to the sides at shoulder height.",
+    "Make small circles forward.",
+    "Gradually make the circles larger.",
+    "Do 10 to 15 circles, then reverse direction.",
+    "Keep your shoulders relaxed.",
+    "Breathe normally."
+  ],
+  "textSource": "opengym"
+}

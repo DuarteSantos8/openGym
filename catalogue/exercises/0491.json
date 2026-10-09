@@ -1,0 +1,21 @@
+{
+  "id": "0491",
+  "name": "incline leg hip raise (leg straight)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "Lying on an incline with straight legs, you raise your hips by lifting the legs. It works the lower abs.",
+  "instructions": [
+    "Lie on an incline bench with your back flat against the bench and your legs extended straight out in front of you.",
+    "Place your hands on the sides of the bench for support.",
+    "Engaging your abs, lift your legs off the bench, raising them as high as you can while keeping them straight.",
+    "Pause for a moment at the top, then slowly lower your legs back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2703",
+  "textSource": "exercisedb"
+}

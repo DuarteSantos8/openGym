@@ -7,7 +7,7 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
-import { exerciseNoteSheet } from '../sheets.jsx'
+import { exerciseNoteSheet, setNoteSheet } from '../sheets.jsx'
 
 const activeWith = entry => ({ id: 'w1', d: '2026-08-25', start: 1, routineId: 'r1', name: 'Push', entries: [entry] })
 
@@ -17,6 +17,16 @@ const mounted = []
 
 function renderSheet() {
   exerciseNoteSheet(0)
+  const sheet = useUI.getState().sheets.at(-1)
+  const host = document.createElement('div')
+  document.body.appendChild(host)
+  const root = createRoot(host)
+  mounted.push(root)
+  act(() => root.render(sheet.render(sheet_close(sheet))))
+  return host
+}
+function renderSetNoteSheet(entryIdx = 0, setIdx = 0) {
+  setNoteSheet(entryIdx, setIdx)
   const sheet = useUI.getState().sheets.at(-1)
   const host = document.createElement('div')
   document.body.appendChild(host)
@@ -85,5 +95,21 @@ describe('exercise note sheet', () => {
     const e = useStore.getState().S.active.entries[0]
     expect(e.note).toBeUndefined()
     expect(e.notePin).toBeUndefined()
+  })
+
+  it('saves and clears a note on one set', () => {
+    useStore.setState(s => ({
+      S: { ...s.S, active: activeWith({ id: 'bench', sets: [{ w: 60, r: 5, done: false }] }) },
+    }))
+
+    let host = renderSetNoteSheet()
+    act(() => { type(host.querySelector('textarea'), 'Paused at the bottom') })
+    act(() => { [...host.querySelectorAll('button')].find(b => b.textContent === 'Save').click() })
+    expect(useStore.getState().S.active.entries[0].sets[0].note).toBe('Paused at the bottom')
+
+    host = renderSetNoteSheet()
+    act(() => { type(host.querySelector('textarea'), '') })
+    act(() => { [...host.querySelectorAll('button')].find(b => b.textContent === 'Save').click() })
+    expect(useStore.getState().S.active.entries[0].sets[0].note).toBeUndefined()
   })
 })

@@ -1,0 +1,23 @@
+{
+  "id": "0136",
+  "name": "boat yoga pose",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower back",
+    "quadriceps"
+  ],
+  "category": "yoga",
+  "description": "A seated yoga balance where you lift your legs and chest into a V shape. It builds core and hip flexor strength.",
+  "instructions": [
+    "Sit on the floor with your knees bent and your feet flat.",
+    "Lean back slightly while keeping your chest open.",
+    "Lift your feet off the floor and straighten your legs if you can.",
+    "Reach your arms forward alongside your knees.",
+    "Hold for 20-30 seconds while breathing steadily.",
+    "Lower your feet gently to rest."
+  ],
+  "textSource": "opengym"
+}

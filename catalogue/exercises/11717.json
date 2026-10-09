@@ -1,0 +1,22 @@
+{
+  "id": "11717",
+  "name": "plyo push up v. 2",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "An explosive push-up variation where your hands leave the floor, building upper-body power.",
+  "instructions": [
+    "Start in a high plank with hands under your shoulders.",
+    "Lower your chest toward the floor with control.",
+    "Explode upward so your hands leave the ground.",
+    "Land softly with slightly bent elbows.",
+    "Reset your body line and repeat."
+  ],
+  "textSource": "opengym"
+}

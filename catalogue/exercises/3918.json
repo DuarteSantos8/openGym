@@ -1,0 +1,23 @@
+{
+  "id": "3918",
+  "name": "landmine single leg landmine rdl",
+  "bodyPart": "upper legs",
+  "equipment": "landmine",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A single-leg Romanian deadlift holding a landmine bar, challenging balance and the hamstrings.",
+  "instructions": [
+    "Hold the end of a landmine bar with both hands.",
+    "Stand on one leg with a soft knee.",
+    "Hinge at the hips and extend the other leg behind you.",
+    "Lower the bar toward the floor with a flat back.",
+    "Squeeze your glute to stand.",
+    "Switch legs after your reps."
+  ],
+  "textSource": "opengym"
+}

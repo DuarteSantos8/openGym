@@ -1,0 +1,23 @@
+{
+  "id": "8299",
+  "name": "cable half kneeling single arm row v. 2",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "biceps",
+    "core",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A one-arm cable row from a half-kneeling stance. It works the lats and challenges your core stability.",
+  "instructions": [
+    "Half kneel facing the cable with the handle in one hand.",
+    "Keep your torso tall.",
+    "Row your elbow back past your ribs.",
+    "Squeeze your shoulder blade.",
+    "Return slowly and switch sides."
+  ],
+  "textSource": "opengym"
+}

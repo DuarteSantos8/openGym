@@ -1,0 +1,23 @@
+{
+  "id": "5094",
+  "name": "landmine single arm press",
+  "bodyPart": "shoulders",
+  "equipment": "landmine",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Press the end of a landmine barbell with one arm. The angled path is shoulder friendly and challenges your trunk.",
+  "instructions": [
+    "Anchor a barbell and hold the free end at your shoulder with one hand.",
+    "Stand with feet staggered and core tight.",
+    "Press the bar up and forward until your arm is straight.",
+    "Lower it back to your shoulder.",
+    "Complete your reps, then switch arms."
+  ],
+  "femaleVariant": "10766",
+  "textSource": "opengym"
+}

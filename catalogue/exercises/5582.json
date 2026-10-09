@@ -1,0 +1,22 @@
+{
+  "id": "5582",
+  "name": "rear shift lunge from deficit",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors"
+  ],
+  "category": "calisthenics",
+  "description": "Lunge stepping backward from a raised surface, which increases the range of motion.",
+  "instructions": [
+    "Stand on a low step with feet together.",
+    "Step one leg back and down to the floor.",
+    "Lower into a lunge with the front knee over the foot.",
+    "Push through the front heel to step back up.",
+    "Complete reps and switch legs."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "5630",
+  "name": "bodyweight narrow stance squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors"
+  ],
+  "category": "calisthenics",
+  "description": "Squat with feet close together to emphasise the quads.",
+  "instructions": [
+    "Stand with feet close together.",
+    "Extend your arms forward for balance.",
+    "Sit down and back, keeping your heels down.",
+    "Descend until your thighs are parallel.",
+    "Press up to stand."
+  ],
+  "textSource": "opengym"
+}

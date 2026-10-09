@@ -1,0 +1,23 @@
+{
+  "id": "6194",
+  "name": "kettlebell shrug",
+  "bodyPart": "back",
+  "equipment": "kettlebell",
+  "target": "traps",
+  "secondaryMuscles": [
+    "upper back",
+    "forearms",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A shrug holding kettlebells at your sides. It builds the upper traps and grip.",
+  "instructions": [
+    "Stand holding kettlebells at your sides.",
+    "Keep your arms straight.",
+    "Lift your shoulders straight up toward your ears.",
+    "Pause for a second at the top.",
+    "Lower slowly.",
+    "Keep your chest tall and neck relaxed."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "5154",
+  "name": "lateral step up",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "hamstrings"
+  ],
+  "category": "calisthenics",
+  "description": "Step sideways onto a box or step. It works the quads and glutes and builds single-leg strength.",
+  "instructions": [
+    "Stand sideways next to a box.",
+    "Place your near foot on the box.",
+    "Press through that foot to step up.",
+    "Lower back down slowly.",
+    "Finish your reps, then switch sides."
+  ],
+  "femaleVariant": "0566",
+  "textSource": "opengym"
+}

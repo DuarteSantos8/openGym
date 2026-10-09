@@ -1,0 +1,24 @@
+{
+  "id": "7624",
+  "name": "flying lizard yoga pose utthan pristhasana",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "hip flexors",
+    "hamstrings",
+    "glutes",
+    "core"
+  ],
+  "category": "yoga",
+  "description": "A deep lunge-based hip opener with a twist and reach, stretching the hips and inner thighs.",
+  "instructions": [
+    "Start in a low lunge with your front foot between your hands.",
+    "Lower your forearms to the floor or blocks.",
+    "Drop your back knee or keep it lifted.",
+    "Let your hips sink.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Step back and switch sides."
+  ],
+  "textSource": "opengym"
+}

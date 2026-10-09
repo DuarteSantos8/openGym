@@ -1,0 +1,23 @@
+{
+  "id": "2298",
+  "name": "inverted row on bench",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight row hanging beneath a bench or bar, pulling your chest up. Trains the upper back and biceps.",
+  "instructions": [
+    "Set up a bench at a height that allows your body to hang freely underneath it.",
+    "Lie face up on the ground with your head towards the bench.",
+    "Reach up and grab the bench with an overhand grip, slightly wider than shoulder-width apart.",
+    "Position your body so that your heels are on the ground and your arms are fully extended.",
+    "Engage your core and squeeze your shoulder blades together as you pull your chest up towards the bench.",
+    "Pause for a moment at the top of the movement, then slowly lower your body back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "3383",
+  "name": "pike push up (on bench) v. 2",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A pike push-up with your feet on a bench, loading the shoulders more than a flat push-up does.",
+  "instructions": [
+    "Place your feet on a bench and your hands on the floor, hips piked high.",
+    "Walk your hands back until your body forms an inverted V.",
+    "Bend your elbows and lower your head toward the floor.",
+    "Keep your elbows at about 45 degrees from your body.",
+    "Press back up until your arms are straight.",
+    "Keep your core tight throughout."
+  ],
+  "textSource": "opengym"
+}

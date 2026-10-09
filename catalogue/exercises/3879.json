@@ -1,0 +1,23 @@
+{
+  "id": "3879",
+  "name": "dumbbell poliquin lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rotator cuff",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A lateral raise variation with a slight forward lean that hits the side delts with extra range.",
+  "instructions": [
+    "Hold a dumbbell in each hand, standing with a slight forward lean.",
+    "Start with the dumbbells in front of your thighs, palms facing in.",
+    "Raise your arms out and up in a slight arc until about shoulder height.",
+    "Lead with your elbows and keep your wrists neutral.",
+    "Pause briefly, then lower slowly.",
+    "Avoid swinging your torso."
+  ],
+  "textSource": "opengym"
+}

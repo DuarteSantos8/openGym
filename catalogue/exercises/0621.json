@@ -1,0 +1,22 @@
+{
+  "id": "0621",
+  "name": "lying scissor crunch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A crunch combined with alternating leg scissors. It targets the abs and lower belly.",
+  "instructions": [
+    "Lie on your back with hands behind your head.",
+    "Lift your legs a few inches off the floor.",
+    "Crunch your shoulders up.",
+    "Scissor your legs, crossing one over the other.",
+    "Keep your lower back pressed down.",
+    "Switch which leg crosses on top each rep."
+  ],
+  "textSource": "opengym"
+}

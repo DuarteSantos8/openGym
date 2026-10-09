@@ -1,0 +1,22 @@
+{
+  "id": "4127",
+  "name": "weighted dead bug",
+  "bodyPart": "waist",
+  "equipment": "weighted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A dead bug with added weight to increase core work.",
+  "instructions": [
+    "Lie on your back holding a weight above your chest.",
+    "Raise your knees over your hips.",
+    "Extend the opposite arm and leg.",
+    "Return to the start.",
+    "Alternate sides, keeping your back flat."
+  ],
+  "textSource": "opengym"
+}

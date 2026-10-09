@@ -1,0 +1,23 @@
+{
+  "id": "4058",
+  "name": "leg raise dragon flag",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "lats",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Advanced core move where the body stays straight while you raise and lower the legs from a bench. It strongly trains the abs.",
+  "instructions": [
+    "Lie on a bench and grip it behind your head.",
+    "Lift your hips and legs so your body is straight from shoulders to toes.",
+    "Keep your body rigid and lower slowly without sitting.",
+    "Raise your legs back up under control.",
+    "Stop before your lower back arches."
+  ],
+  "textSource": "opengym"
+}

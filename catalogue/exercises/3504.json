@@ -1,0 +1,23 @@
+{
+  "id": "3504",
+  "name": "standing balance quadriceps stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "ankles",
+    "core"
+  ],
+  "category": "stretching",
+  "description": "A standing quad stretch with balance. It lengthens the front of the thigh and hips.",
+  "instructions": [
+    "Stand tall, holding a wall for balance if needed.",
+    "Bend one knee and grab your ankle behind you.",
+    "Pull your heel toward your glutes with knees together.",
+    "Keep your hips tucked and your chest up.",
+    "Hold for 20-30 seconds.",
+    "Release and switch legs."
+  ],
+  "textSource": "opengym"
+}

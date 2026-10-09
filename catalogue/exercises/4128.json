@@ -1,0 +1,22 @@
+{
+  "id": "4128",
+  "name": "weighted counterbalanced squat",
+  "bodyPart": "upper legs",
+  "equipment": "weighted",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A squat holding a weight out in front as a counterweight, helping you stay upright.",
+  "instructions": [
+    "Hold a weight at chest height and stand with feet shoulder-width apart.",
+    "Extend your arms forward as you descend.",
+    "Squat until thighs are parallel.",
+    "Keep your chest tall.",
+    "Stand back up through your heels."
+  ],
+  "textSource": "opengym"
+}

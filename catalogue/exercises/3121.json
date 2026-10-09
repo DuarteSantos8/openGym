@@ -1,0 +1,22 @@
+{
+  "id": "3121",
+  "name": "band seated straight back row",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "rhomboids",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A seated row with a band and a straight back that trains the lats and mid back.",
+  "instructions": [
+    "Sit on the floor with legs extended and a band around your feet.",
+    "Hold the ends with your arms straight.",
+    "Sit tall with a flat back.",
+    "Pull the band toward your waist, squeezing your shoulder blades.",
+    "Return slowly."
+  ],
+  "textSource": "opengym"
+}

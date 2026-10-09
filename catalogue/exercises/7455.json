@@ -1,0 +1,22 @@
+{
+  "id": "7455",
+  "name": "single leg lateral hop",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "ankles"
+  ],
+  "category": "plyometrics",
+  "description": "One-legged sideways hop that builds power and ankle stability.",
+  "instructions": [
+    "Stand on one leg with a slight knee bend.",
+    "Hop sideways a short distance.",
+    "Land softly on the same foot and hold your balance.",
+    "Hop back the other way.",
+    "Complete reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

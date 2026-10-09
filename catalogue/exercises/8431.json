@@ -1,0 +1,22 @@
+{
+  "id": "8431",
+  "name": "seated overhead stretch on a chair",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "obliques"
+  ],
+  "category": "stretching",
+  "description": "A simple seated stretch that opens up the sides of your back and shoulders.",
+  "instructions": [
+    "Sit tall near the front of a sturdy chair with your feet flat on the floor.",
+    "Brace your core and keep your shoulders relaxed.",
+    "Interlace your fingers and raise your arms overhead.",
+    "Turn your palms to the ceiling and reach up tall.",
+    "Hold for 20-30 seconds while breathing steadily."
+  ],
+  "textSource": "opengym"
+}

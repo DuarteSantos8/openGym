@@ -1,0 +1,23 @@
+{
+  "id": "10750",
+  "name": "kneeling to stand",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "calves"
+  ],
+  "category": "mobility",
+  "description": "A smooth transition from kneeling to standing. It builds leg strength and control.",
+  "instructions": [
+    "Kneel with your torso upright.",
+    "Place one foot forward into a lunge.",
+    "Push through that foot to stand.",
+    "Bring your back foot to meet it.",
+    "Reverse the motion to return to kneeling.",
+    "Alternate the lead leg."
+  ],
+  "textSource": "opengym"
+}

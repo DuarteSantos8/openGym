@@ -1,0 +1,22 @@
+{
+  "id": "5741",
+  "name": "cable kneeling crunch v. 2",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower abs",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A kneeling cable crunch that curls the spine toward the hips. It loads the abs against steady resistance.",
+  "instructions": [
+    "Kneel below a high cable with the rope held beside your head.",
+    "Keep your hips still and your back slightly rounded.",
+    "Crunch down, bringing your elbows toward your knees.",
+    "Squeeze your abs at the bottom.",
+    "Return slowly to the start without sitting back on your heels."
+  ],
+  "textSource": "opengym"
+}

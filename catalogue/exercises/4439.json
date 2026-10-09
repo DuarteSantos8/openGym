@@ -1,0 +1,24 @@
+{
+  "id": "4439",
+  "name": "dumbbell power clean and jerk",
+  "bodyPart": "full body",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "shoulders",
+    "triceps",
+    "upper back"
+  ],
+  "category": "olympic",
+  "description": "An explosive lift pulling dumbbells from the floor to the shoulders and then overhead.",
+  "instructions": [
+    "Stand over dumbbells with feet hip-width apart.",
+    "Hinge down and grip them with a flat back.",
+    "Pull explosively, extend your hips and shrug.",
+    "Catch the dumbbells at your shoulders, then dip and drive them overhead.",
+    "Lower to your shoulders, then the floor with control."
+  ],
+  "textSource": "opengym"
+}

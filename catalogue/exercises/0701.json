@@ -1,0 +1,24 @@
+{
+  "id": "0701",
+  "name": "side bridge (bent knee)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "glutes",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "An easier side plank with the knees bent. It builds the obliques and side stability.",
+  "instructions": [
+    "Lie on your side with your knees bent.",
+    "Place your forearm under your shoulder.",
+    "Lift your hips off the floor.",
+    "Keep your body in a straight line from knees to head.",
+    "Hold for 20-30 seconds.",
+    "Lower and switch sides."
+  ],
+  "textSource": "opengym"
+}

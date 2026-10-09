@@ -1,0 +1,21 @@
+{
+  "id": "3978",
+  "name": "seated side to side leg raise crunch on floor",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "Seated crunch with the legs swinging to one side and then the other. It works the abs and obliques.",
+  "instructions": [
+    "Sit and lean back on your hands, legs lifted.",
+    "Swing both knees to one side while crunching in.",
+    "Return through the middle.",
+    "Swing to the other side.",
+    "Keep the motion smooth and controlled."
+  ],
+  "textSource": "opengym"
+}

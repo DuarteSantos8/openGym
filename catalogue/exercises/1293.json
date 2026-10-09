@@ -1,0 +1,23 @@
+{
+  "id": "1293",
+  "name": "dumbbell press on exercise ball",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "Press two dumbbells up while your upper back rests on a stability ball. A good way to train the chest with extra core and balance demand.",
+  "instructions": [
+    "Sit on an exercise ball with your feet flat on the ground and dumbbells in each hand, resting on your thighs.",
+    "Slowly walk your feet forward, rolling the exercise ball until your lower back is supported on the ball and your knees are at a 90-degree angle.",
+    "Raise the dumbbells to shoulder height, palms facing forward.",
+    "Press the dumbbells upward until your arms are fully extended.",
+    "Pause for a moment at the top, then slowly lower the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3081",
+  "textSource": "exercisedb"
+}

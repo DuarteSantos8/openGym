@@ -1,0 +1,22 @@
+{
+  "id": "7229",
+  "name": "kettlebell plank pass through",
+  "bodyPart": "waist",
+  "equipment": "kettlebell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "obliques",
+    "core"
+  ],
+  "category": "strength",
+  "description": "From a plank you slide a kettlebell under your body from one hand to the other. It works the core and shoulder stability.",
+  "instructions": [
+    "Start in a high plank with a kettlebell beside one hand.",
+    "Spread your feet wide for balance.",
+    "Grab the kettlebell and slide it across under your body.",
+    "Place it down on the other side.",
+    "Keep your hips level and repeat in the other direction."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4145",
+  "name": "band close grip row",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A row with the hands close together against band tension. It works the mid back and lats with extra focus on the elbows staying tight to the body.",
+  "instructions": [
+    "Anchor the band at chest height and hold both ends with hands close together.",
+    "Step back until the band is taut and stand tall with soft knees.",
+    "Row your hands toward your lower ribs, elbows brushing your sides.",
+    "Squeeze your shoulder blades together at the end.",
+    "Extend your arms slowly back to the start.",
+    "Keep your shoulders down and avoid leaning back."
+  ],
+  "textSource": "opengym"
+}

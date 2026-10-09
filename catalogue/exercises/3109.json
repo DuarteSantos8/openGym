@@ -1,0 +1,25 @@
+{
+  "id": "3109",
+  "name": "skater",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hip flexors",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A side-to-side leap like a speed skater. It trains leg power, balance and stamina.",
+  "instructions": [
+    "Stand on one leg with a slight bend in the knee.",
+    "Leap sideways to the other leg.",
+    "Land softly and sweep the back leg behind you.",
+    "Swing your arms across your body for balance.",
+    "Immediately bound back the other way.",
+    "Keep your hips low and your chest forward."
+  ],
+  "femaleVariant": "0737",
+  "textSource": "opengym"
+}

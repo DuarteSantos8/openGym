@@ -1,0 +1,21 @@
+{
+  "id": "3546",
+  "name": "dumbbell seated alternate shoulder",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A seated dumbbell shoulder press with the arms alternating. It trains the delts and triceps.",
+  "instructions": [
+    "Sit on a bench with your back straight and feet flat on the ground.",
+    "Hold a dumbbell in each hand, palms facing inwards, and raise them to shoulder height.",
+    "Press one dumbbell up overhead while keeping the other dumbbell at shoulder height.",
+    "Lower the raised dumbbell back to shoulder height while simultaneously pressing the other dumbbell up overhead.",
+    "Continue alternating between arms for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

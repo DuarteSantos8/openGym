@@ -1,0 +1,21 @@
+{
+  "id": "2205",
+  "name": "roller hip lat stretch",
+  "bodyPart": "upper legs",
+  "equipment": "roller",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps"
+  ],
+  "category": "mobility",
+  "description": "A kneeling roller stretch that opens the hips and glutes. Helps release tension around the hips.",
+  "instructions": [
+    "Start by kneeling on the ground with the roller positioned under your hips.",
+    "Place your hands on the roller for support.",
+    "Slowly roll the roller forward, extending your hips and stretching your glutes.",
+    "Hold the stretch for a few seconds, then roll back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

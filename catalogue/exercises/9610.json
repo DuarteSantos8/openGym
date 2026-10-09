@@ -1,0 +1,23 @@
+{
+  "id": "9610",
+  "name": "weighted plate overhead forward lunge",
+  "bodyPart": "upper legs",
+  "equipment": "weight plate",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A forward lunge holding a plate overhead. It trains the legs while challenging shoulder stability and the core.",
+  "instructions": [
+    "Hold a weight plate overhead with straight arms.",
+    "Step forward into a long stride.",
+    "Lower your back knee toward the floor.",
+    "Keep your torso upright and the plate steady.",
+    "Push back to the start and alternate legs."
+  ],
+  "textSource": "opengym"
+}

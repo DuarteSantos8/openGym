@@ -1,0 +1,23 @@
+{
+  "id": "4159",
+  "name": "kick through push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A push up followed by a quick kick of one leg through underneath your body. It builds chest strength with coordination.",
+  "instructions": [
+    "Start in a push up position with hands under your shoulders.",
+    "Lower your chest and press back up.",
+    "Lift one hand and rotate, sweeping the opposite leg through underneath you.",
+    "Return the leg and hand to the starting position.",
+    "Repeat the push up and kick on the other side.",
+    "Stay controlled and keep your core braced."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "8652",
+  "name": "seated shoulder tap on a chair",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "core",
+    "obliques"
+  ],
+  "category": "cardio",
+  "description": "A seated drill where you tap each shoulder with the opposite hand, adding light coordination and shoulder work.",
+  "instructions": [
+    "Sit tall near the front of a sturdy chair with your feet flat on the floor.",
+    "Brace your core and keep your shoulders relaxed.",
+    "Reach one hand across to tap the opposite shoulder.",
+    "Return and tap with the other hand.",
+    "Keep the pace steady."
+  ],
+  "textSource": "opengym"
+}

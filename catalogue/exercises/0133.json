@@ -1,0 +1,23 @@
+{
+  "id": "0133",
+  "name": "bent knee side plank",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "glutes"
+  ],
+  "category": "isometric",
+  "description": "A side plank with the knees bent, a more approachable version of the full move. It strengthens the obliques and the side of the hip.",
+  "instructions": [
+    "Lie on your side with your knees bent and your elbow under your shoulder.",
+    "Stack your hips and knees.",
+    "Lift your hips so your body forms a straight line from knee to head.",
+    "Hold for 20-30 seconds.",
+    "Lower your hips with control.",
+    "Repeat on the other side."
+  ],
+  "textSource": "opengym"
+}

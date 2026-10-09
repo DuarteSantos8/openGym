@@ -46,6 +46,22 @@ test('a plan referencing an unknown exercise is rejected, not quietly trimmed', 
   assert.ok(r.errors.some(e => e.includes('not-a-real-id')));
 });
 
+test('a plan naming a machine the person does not have goes back for repair', () => {
+  // 0009 is a leverage machine, 1274 a dumbbell lift, 0001 body weight.
+  const ctx = { equipment: ['dumbbell'], offered: new Set(['1274', '0001']) };
+  const r = validatePlan({ routines: [{ name: 'A', ex: [{ id: '1274', sets: 3, reps: 10 }, { id: '0009', sets: 3, reps: 10 }] }] }, ctx);
+  assert.equal(r.ok, false);
+  assert.ok(r.errors.some(e => e.includes('0009') && e.includes('equipment')));
+  // Body weight is never gated, and nothing is gated when no equipment was stated.
+  assert.equal(validatePlan({ routines: [{ name: 'A', ex: [{ id: '0001', sets: 3, reps: 10 }] }] }, { equipment: ['dumbbell'], offered: new Set() }).ok, true);
+  assert.equal(validatePlan({ routines: [{ name: 'A', ex: [{ id: '0009', sets: 3, reps: 10 }] }] }, { equipment: [] }).ok, true);
+  // A machine they already train was in the slice they were offered, so it stays allowed.
+  assert.equal(validatePlan({ routines: [{ name: 'A', ex: [{ id: '0009', sets: 3, reps: 10 }] }] }, { equipment: ['dumbbell'], offered: new Set(['0009']) }).ok, true);
+  // The same rule holds for a swap in a review.
+  const sw = validateReview({ changes: [change({ type: 'swap-exercise', after: { id: '0009' } })] }, PLAN, { equipment: ['dumbbell'], offered: new Set() });
+  assert.equal(sw.ok, false);
+});
+
 test('a plan may reference a custom exercise it defines in the same answer', () => {
   const r = validatePlan({
     routines: [{ name: 'A', ex: [{ id: 'cx1', sets: 3, reps: 10 }] }],
@@ -122,6 +138,16 @@ test('a created plan carries the rep ceiling and the two flags through unchanged
   assert.equal(bw.bodyweight, true);
   assert.equal(side.side, true);
   assert.equal(bw.side, undefined, 'a flag nobody set stays absent, so the catalogue still decides');
+});
+
+test('triple progression and its set ceiling survive a created plan', () => {
+  const r = validatePlan({ routines: [{ id: 'r1', name: 'A', ex: [{ id: '0043', sets: 3, setsMax: 5, reps: 12, repsMin: 8, prog: 'triple' }] }] });
+  assert.equal(r.ok, true);
+  assert.equal(r.bundle.routines[0].ex[0].prog, 'triple');
+  assert.equal(r.bundle.routines[0].ex[0].setsMax, 5);
+  // A ceiling past what a plan holds is not one.
+  const wild = validatePlan({ routines: [{ id: 'r1', name: 'A', ex: [{ id: '0043', sets: 3, setsMax: 40, reps: 12, prog: 'triple' }] }] });
+  assert.equal(wild.bundle.routines[0].ex[0].setsMax, undefined);
 });
 
 test('unilateral reps are a total across both sides, so an odd one is refused', () => {

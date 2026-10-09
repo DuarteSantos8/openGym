@@ -1,0 +1,25 @@
+{
+  "id": "3457",
+  "name": "burpee with push up",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "chest",
+    "triceps",
+    "quadriceps",
+    "core"
+  ],
+  "category": "cardio",
+  "description": "A burpee that includes a full push-up for conditioning.",
+  "instructions": [
+    "Stand with feet shoulder-width apart.",
+    "Squat and place your hands on the floor.",
+    "Jump your feet back to a plank.",
+    "Do a push-up.",
+    "Jump your feet in and leap up.",
+    "Repeat at a steady pace."
+  ],
+  "femaleVariant": "3456",
+  "textSource": "opengym"
+}

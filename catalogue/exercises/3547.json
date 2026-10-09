@@ -1,0 +1,22 @@
+{
+  "id": "3547",
+  "name": "dumbbell seated biceps curl to shoulder press",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A seated dumbbell curl that flows straight into an overhead press. It trains the biceps and shoulders in one rep.",
+  "instructions": [
+    "Sit on a bench with your back straight and feet flat on the ground.",
+    "Hold a dumbbell in each hand with your palms facing forward and arms fully extended.",
+    "Keeping your elbows close to your sides, curl the dumbbells up towards your shoulders.",
+    "Once your forearms are vertical, rotate your wrists so that your palms are facing forward.",
+    "Press the dumbbells overhead until your arms are fully extended.",
+    "Lower the dumbbells back down to the starting position by reversing the movement.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

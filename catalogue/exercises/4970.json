@@ -1,0 +1,23 @@
+{
+  "id": "4970",
+  "name": "assisted chin up (squat position)",
+  "bodyPart": "back",
+  "equipment": "assisted",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A chin up where you use your legs in a squat position to assist. It helps you build toward full chin ups.",
+  "instructions": [
+    "Grab a bar with an underhand grip.",
+    "Bend your knees into a squat position.",
+    "Pull your chest toward the bar.",
+    "Use your legs only as much as you need.",
+    "Lower slowly.",
+    "Keep your shoulders down."
+  ],
+  "textSource": "opengym"
+}

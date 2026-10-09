@@ -1,0 +1,22 @@
+{
+  "id": "6208",
+  "name": "side plank with raised leg v. 2 (left)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "A side plank on the left side with the top leg lifted. It trains the obliques, hips and shoulder stability.",
+  "instructions": [
+    "Lie on your left side and prop up on your left forearm, elbow under your shoulder.",
+    "Stack your feet and lift your hips into a straight line.",
+    "Raise your top leg to hip height.",
+    "Hold for 20-30 seconds.",
+    "Lower and repeat, then switch sides if you like."
+  ],
+  "textSource": "opengym"
+}

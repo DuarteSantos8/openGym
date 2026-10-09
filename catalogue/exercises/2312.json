@@ -1,0 +1,23 @@
+{
+  "id": "2312",
+  "name": "lying elbow to knee",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "A floor crunch that brings elbow to opposite knee. Works the abs and obliques.",
+  "instructions": [
+    "Lie flat on your back with your knees bent and feet flat on the ground.",
+    "Place your hands behind your head with your elbows pointing outwards.",
+    "Engage your abs and lift your upper body off the ground, bringing your right elbow towards your left knee.",
+    "At the same time, extend your right leg straight out and lift it off the ground.",
+    "Pause for a moment, then return to the starting position.",
+    "Repeat the movement, this time bringing your left elbow towards your right knee and extending your left leg.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

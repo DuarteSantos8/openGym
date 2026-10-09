@@ -1,0 +1,22 @@
+{
+  "id": "11374",
+  "name": "sleepers stretch",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "rear deltoids"
+  ],
+  "category": "stretching",
+  "description": "A side-lying stretch that opens up the back of the shoulder. Handy for keeping internal rotation smooth.",
+  "instructions": [
+    "Lie on your side with the bottom arm in front of you, elbow bent to 90 degrees.",
+    "Keep your shoulder stacked and the upper arm at chest height.",
+    "Use your top hand to gently press the bottom forearm toward the floor.",
+    "Stop where you feel a mild stretch at the back of the shoulder.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "femaleVariant": "9212",
+  "textSource": "opengym"
+}

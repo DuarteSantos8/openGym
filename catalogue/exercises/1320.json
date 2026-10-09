@@ -1,0 +1,35 @@
+{
+  "id": "1320",
+  "name": "cable rope crossover seated row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A seated cable row using a rope so your hands can cross and finish wide. It works the upper back and lats with a longer range of motion.",
+  "instructions": [
+    "Sit on the rowing machine with your feet flat on the footrests and your knees slightly bent.",
+    "Grasp the cable ropes with an overhand grip, palms facing each other.",
+    "Lean back slightly, keeping your back straight and your core engaged.",
+    "Pull the cable ropes towards your chest, squeezing your shoulder blades together.",
+    "Pause for a moment at the peak of the movement, then slowly release the tension and return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm",
+      "trapezius",
+      "chest",
+      "triceps"
+    ]
+  },
+  "textSource": "exercisedb"
+}

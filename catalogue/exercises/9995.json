@@ -1,0 +1,22 @@
+{
+  "id": "9995",
+  "name": "isometric wrist extension",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist extensors",
+    "grip muscles"
+  ],
+  "category": "isometric",
+  "description": "A static hold where you press the back of your hand upward against resistance. It strengthens the wrist extensors without moving the joint.",
+  "instructions": [
+    "Sit with your forearm resting on a table, palm down and wrist at the edge.",
+    "Place your other hand on top of the working hand.",
+    "Try to lift the hand up while the top hand resists.",
+    "Hold for 5-10 seconds with no movement.",
+    "Relax slowly.",
+    "Repeat, then switch arms."
+  ],
+  "textSource": "opengym"
+}

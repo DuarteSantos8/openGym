@@ -1,0 +1,22 @@
+{
+  "id": "2234",
+  "name": "dumbbell standing lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "Raising dumbbells out to your sides to build the middle part of the shoulders.",
+  "instructions": [
+    "Stand tall with a dumbbell in each hand at your sides, palms facing in.",
+    "Keep a slight bend in your elbows and brace your core.",
+    "Raise both arms out to the sides until they reach shoulder height.",
+    "Lead with your elbows and avoid shrugging.",
+    "Pause briefly at the top.",
+    "Lower slowly to the start and repeat."
+  ],
+  "textSource": "opengym"
+}

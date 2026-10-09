@@ -1,0 +1,24 @@
+{
+  "id": "5307",
+  "name": "landmine one leg stiff leg deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "landmine",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A single-leg hip hinge holding a landmine bar. It trains hamstrings and glutes and challenges your balance.",
+  "instructions": [
+    "Hold the end of the landmine bar in front of you with both hands.",
+    "Stand on one leg with a slight knee bend.",
+    "Hinge at the hips and lower the bar while your free leg reaches back.",
+    "Keep your back flat and hips square.",
+    "Squeeze your glutes to return to standing.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

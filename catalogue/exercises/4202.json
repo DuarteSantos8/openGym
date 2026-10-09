@@ -1,0 +1,23 @@
+{
+  "id": "4202",
+  "name": "landmine resistance band one arm shoulder press",
+  "bodyPart": "shoulders",
+  "equipment": "landmine",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "One arm landmine press with a band.",
+  "instructions": [
+    "Hold the landmine end at your shoulder.",
+    "Brace your core.",
+    "Press up and forward.",
+    "Lock out.",
+    "Lower slowly.",
+    "Switch arms."
+  ],
+  "textSource": "opengym"
+}

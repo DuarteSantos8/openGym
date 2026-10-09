@@ -1,0 +1,21 @@
+{
+  "id": "0917",
+  "name": "band reverse curl",
+  "bodyPart": "lower arms",
+  "equipment": "band",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "brachialis",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A curl with an overhand grip using a band. It builds the forearms and brachialis.",
+  "instructions": [
+    "Stand on the band and hold the ends with palms down.",
+    "Keep your elbows at your sides.",
+    "Curl your hands up toward your shoulders.",
+    "Lower slowly.",
+    "Avoid swinging."
+  ],
+  "textSource": "opengym"
+}

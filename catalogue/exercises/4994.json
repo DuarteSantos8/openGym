@@ -1,0 +1,22 @@
+{
+  "id": "4994",
+  "name": "lying leg cross",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "adductors",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "Lying on your back, you cross straight legs over each other. It works the lower abs and inner thighs.",
+  "instructions": [
+    "Lie on your back with your hands by your sides.",
+    "Lift both legs a little off the floor with your lower back pressed down.",
+    "Open them wide, then cross one leg over the other.",
+    "Open again and cross with the other leg on top.",
+    "Keep your core tight throughout."
+  ],
+  "textSource": "opengym"
+}

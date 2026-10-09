@@ -1,0 +1,22 @@
+{
+  "id": "1575",
+  "name": "sled 45° narrow stance leg press",
+  "bodyPart": "upper legs",
+  "equipment": "sled machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A 45 degree sled leg press with feet close together. The narrow stance puts the focus on the quads.",
+  "instructions": [
+    "Sit in the sled with your back flat against the pad and feet close together on the platform.",
+    "Release the safety handles.",
+    "Lower the sled by bending your knees toward your chest.",
+    "Stop before your lower back lifts off the pad.",
+    "Press through your heels to extend your legs without locking the knees."
+  ],
+  "textSource": "opengym"
+}

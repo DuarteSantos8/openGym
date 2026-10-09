@@ -1,0 +1,22 @@
+{
+  "id": "8361",
+  "name": "resistance band standing shoulder external rotation",
+  "bodyPart": "shoulders",
+  "equipment": "resistance band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "rear deltoids",
+    "upper back"
+  ],
+  "category": "rehab",
+  "description": "A band drill that strengthens the small rotator cuff muscles on the back of the shoulder.",
+  "instructions": [
+    "Anchor the band at elbow height and stand sideways to it.",
+    "Hold the handle with the elbow tucked at your side, bent 90 degrees.",
+    "Rotate your forearm outward away from your belly, keeping the elbow fixed.",
+    "Pause, then return slowly.",
+    "Complete the reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4425",
+  "name": "dumbbell lying close grip parallel row on rack",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "rhomboids",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A chest-supported row lying on a rack with a neutral grip, working the lats and mid back.",
+  "instructions": [
+    "Lie face down on a high bench or rack with a dumbbell in each hand.",
+    "Let your arms hang with palms facing each other.",
+    "Row the dumbbells toward your ribs, keeping elbows close.",
+    "Squeeze your shoulder blades at the top.",
+    "Lower slowly to full extension."
+  ],
+  "textSource": "opengym"
+}

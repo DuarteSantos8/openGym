@@ -1,0 +1,24 @@
+{
+  "id": "3396",
+  "name": "flexion and extension hip stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "A gentle hip stretch that moves through flexion and extension to loosen the hips and glutes.",
+  "instructions": [
+    "Lie on your back with your legs extended.",
+    "Pull one knee toward your chest with both hands.",
+    "Hold for 20-30 seconds.",
+    "Extend the leg again and press it down to the floor.",
+    "Repeat on the other leg.",
+    "Breathe slowly and stay relaxed."
+  ],
+  "femaleVariant": "1950",
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "2998",
+  "name": "seated ankle stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "shins",
+    "feet"
+  ],
+  "category": "stretching",
+  "description": "A gentle seated stretch for the front of the ankle and shin that eases stiffness after sitting or training.",
+  "instructions": [
+    "Sit on a chair or the floor with one leg extended.",
+    "Point your toes away from you so the top of the foot lengthens.",
+    "Slowly circle or press the foot until you feel a comfortable stretch.",
+    "Hold for 20-30 seconds without forcing it.",
+    "Release and switch legs.",
+    "Repeat 2-3 times on each side."
+  ],
+  "textSource": "opengym"
+}

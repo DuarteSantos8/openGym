@@ -1,0 +1,21 @@
+{
+  "id": "1631",
+  "name": "cable concentration curl",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A concentration curl using a cable. The elbow stays braced so the biceps do the work.",
+  "instructions": [
+    "Sit on a bench or chair with your feet flat on the floor and your knees slightly bent.",
+    "Hold the cable handle with an underhand grip and rest your elbow against the inside of your thigh.",
+    "Keeping your upper arm stationary, exhale and curl the cable handle towards your shoulder while contracting your biceps.",
+    "Pause for a moment at the top of the movement, then inhale and slowly lower the cable handle back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms."
+  ],
+  "femaleVariant": "3042",
+  "textSource": "exercisedb"
+}

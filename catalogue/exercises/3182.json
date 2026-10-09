@@ -1,0 +1,21 @@
+{
+  "id": "3182",
+  "name": "weighted frog pump",
+  "bodyPart": "upper legs",
+  "equipment": "weighted",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A frog-style glute bridge with extra weight on your hips for stronger glutes.",
+  "instructions": [
+    "Lie on your back with the soles of your feet together and knees open.",
+    "Rest a weight on your hips.",
+    "Drive your hips up by squeezing your glutes.",
+    "Pause at the top.",
+    "Lower and repeat."
+  ],
+  "textSource": "opengym"
+}

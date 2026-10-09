@@ -1,0 +1,24 @@
+{
+  "id": "5099",
+  "name": "kettlebell unilateral farmers walk",
+  "bodyPart": "full body",
+  "equipment": "kettlebell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "grip muscles",
+    "obliques",
+    "trapezius",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Walk while carrying a kettlebell in one hand. It builds grip and demands a strong trunk to stay upright.",
+  "instructions": [
+    "Pick up a kettlebell in one hand and stand tall.",
+    "Brace your core and keep your shoulders level.",
+    "Walk with steady steps without leaning to the loaded side.",
+    "Walk for a set distance or time.",
+    "Switch hands and repeat."
+  ],
+  "femaleVariant": "4529",
+  "textSource": "opengym"
+}

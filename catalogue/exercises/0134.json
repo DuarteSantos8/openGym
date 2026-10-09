@@ -1,0 +1,24 @@
+{
+  "id": "0134",
+  "name": "bent side knee push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up with the knees bent and turned to one side, adding a gentle twist to the trunk. It trains the chest and the obliques.",
+  "instructions": [
+    "Start in a push-up position with your knees bent and both hands under your shoulders.",
+    "Rotate your knees and hips slightly to one side.",
+    "Lower your chest to the floor with your elbows at about 45 degrees.",
+    "Push back up to the start.",
+    "Keep your core tight and your hips from sagging.",
+    "Switch the side of your knees between sets."
+  ],
+  "textSource": "opengym"
+}

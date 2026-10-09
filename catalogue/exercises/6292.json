@@ -1,0 +1,23 @@
+{
+  "id": "6292",
+  "name": "frog pose mandukasana",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "groin",
+    "inner thighs",
+    "hip flexors",
+    "glutes"
+  ],
+  "category": "yoga",
+  "description": "A deep hip opener on all fours with knees wide. It stretches the inner thighs and groin.",
+  "instructions": [
+    "Start on hands and knees on a mat.",
+    "Slide your knees wide, with feet turned out and inline with knees.",
+    "Lower onto your forearms.",
+    "Push your hips back gently.",
+    "Hold for 20-30 seconds, breathing slowly."
+  ],
+  "textSource": "opengym"
+}

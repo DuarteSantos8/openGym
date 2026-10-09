@@ -1,0 +1,24 @@
+{
+  "id": "4899",
+  "name": "lever bent over wide row (plate loaded)",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rear deltoids",
+    "biceps",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A plate loaded machine row with a wide grip while bent over. It builds the upper back and rear shoulders.",
+  "instructions": [
+    "Load the machine and set your chest against the support.",
+    "Grab the wide handles with arms extended.",
+    "Pull the handles toward your lower chest, elbows flaring out.",
+    "Squeeze your shoulder blades together.",
+    "Return slowly until your arms are straight.",
+    "Keep your chest on the pad throughout."
+  ],
+  "textSource": "opengym"
+}

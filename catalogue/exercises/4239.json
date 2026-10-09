@@ -1,0 +1,24 @@
+{
+  "id": "4239",
+  "name": "dumbbell one arm reverse fly (with support) v. 2",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A supported one-arm reverse fly that isolates the rear delts. Bracing with your other hand helps you keep a steady torso.",
+  "instructions": [
+    "Hinge forward and brace your free hand on a bench or support.",
+    "Hold a light dumbbell hanging straight down.",
+    "Raise the dumbbell out to the side with a slight elbow bend.",
+    "Lift until your arm is about parallel to the floor.",
+    "Pause and lower slowly.",
+    "Finish your reps and switch arms."
+  ],
+  "textSource": "opengym"
+}

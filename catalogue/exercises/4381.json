@@ -1,0 +1,22 @@
+{
+  "id": "4381",
+  "name": "legs up the wall yoga pose",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "lower back",
+    "calves",
+    "glutes"
+  ],
+  "category": "yoga",
+  "description": "A restful pose where your legs rest up a wall, gently stretching the backs of the legs and easing tension in the lower back.",
+  "instructions": [
+    "Sit sideways next to a wall and lie back as you swing your legs up the wall.",
+    "Move your hips close to the wall, with your arms relaxed at your sides.",
+    "Keep your knees soft if the hamstrings feel tight.",
+    "Breathe slowly and relax your shoulders and jaw.",
+    "Hold for 1-5 minutes, then bend your knees and roll to one side to come up."
+  ],
+  "textSource": "opengym"
+}

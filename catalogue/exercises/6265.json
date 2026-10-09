@@ -1,0 +1,23 @@
+{
+  "id": "6265",
+  "name": "dumbbell standing alternate reverse curl",
+  "bodyPart": "lower arms",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "brachialis",
+    "biceps",
+    "wrist extensors"
+  ],
+  "category": "strength",
+  "description": "An alternating standing curl with an overhand grip. It builds the forearms.",
+  "instructions": [
+    "Stand holding dumbbells with an overhand grip.",
+    "Keep your elbows at your sides.",
+    "Curl one dumbbell up.",
+    "Lower slowly.",
+    "Alternate arms.",
+    "Keep your wrists straight."
+  ],
+  "textSource": "opengym"
+}

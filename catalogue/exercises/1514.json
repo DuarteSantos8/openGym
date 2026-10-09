@@ -1,0 +1,22 @@
+{
+  "id": "1514",
+  "name": "barbell quarter squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A short-range squat that goes only a quarter of the way down. It lets you handle heavier loads and builds leg strength.",
+  "instructions": [
+    "Rest the bar on your upper back and stand with feet shoulder-width apart.",
+    "Brace your core and keep your chest up.",
+    "Bend your knees and hips a short way, about a quarter of the full depth.",
+    "Keep your knees tracking over your toes.",
+    "Drive up through your feet to stand tall."
+  ],
+  "textSource": "opengym"
+}

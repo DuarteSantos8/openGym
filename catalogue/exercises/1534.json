@@ -1,0 +1,24 @@
+{
+  "id": "1534",
+  "name": "barbell snatch balance",
+  "bodyPart": "full body",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "glutes",
+    "core",
+    "upper back"
+  ],
+  "category": "olympic",
+  "description": "A drill where you drop under a bar on your back into an overhead squat. It builds overhead stability and speed.",
+  "instructions": [
+    "Rest the bar on your upper back and take a wide snatch grip.",
+    "Dip a short way and drive up.",
+    "Drop into a squat while pressing the bar overhead.",
+    "Catch it with locked arms and your chest up.",
+    "Stand up with control and return the bar to your back."
+  ],
+  "textSource": "opengym"
+}

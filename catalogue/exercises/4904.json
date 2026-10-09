@@ -1,0 +1,22 @@
+{
+  "id": "4904",
+  "name": "toe jump",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "feet"
+  ],
+  "category": "plyometrics",
+  "description": "Quick small hops on the balls of your feet. It trains the calves and ankles and builds a springy stride.",
+  "instructions": [
+    "Stand tall with feet close together and knees slightly bent.",
+    "Rise onto the balls of your feet.",
+    "Hop up quickly using mainly your ankles.",
+    "Land softly on the balls of your feet.",
+    "Keep your hops small and rhythmic.",
+    "Continue for 20-30 seconds."
+  ],
+  "textSource": "opengym"
+}

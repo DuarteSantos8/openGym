@@ -1,0 +1,24 @@
+{
+  "id": "3873",
+  "name": "barbell hip thrust with resistance band",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "core",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A barbell hip thrust with a band adding extra tension at the top, focused on the glutes.",
+  "instructions": [
+    "Sit with your upper back against a bench and the loaded bar across your hips.",
+    "Set a band over your hips or around your thighs as the setup allows.",
+    "Plant your feet hip-width apart.",
+    "Drive your hips up until your torso is level with the floor.",
+    "Squeeze your glutes at the top.",
+    "Lower with control and repeat."
+  ],
+  "textSource": "opengym"
+}

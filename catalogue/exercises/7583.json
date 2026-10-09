@@ -1,0 +1,23 @@
+{
+  "id": "7583",
+  "name": "cable neutral grip lat pulldown",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "rhomboids",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Pull a neutral-grip handle down to your upper chest on a cable stack. It builds the lats and the muscles between your shoulder blades.",
+  "instructions": [
+    "Sit at the lat pulldown station, thighs secured, and grab the neutral-grip handle.",
+    "Lean back slightly and brace your core.",
+    "Pull the handle down to your upper chest, driving your elbows toward your ribs.",
+    "Squeeze your shoulder blades together at the bottom.",
+    "Let the handle rise slowly until your arms are fully extended."
+  ],
+  "textSource": "opengym"
+}

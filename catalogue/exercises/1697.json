@@ -1,0 +1,23 @@
+{
+  "id": "1697",
+  "name": "medicine ball reverse wood chop squat",
+  "bodyPart": "waist",
+  "equipment": "medicine ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "quadriceps",
+    "glutes",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A squat combined with a diagonal chop from high to low, working legs and core together.",
+  "instructions": [
+    "Hold a medicine ball overhead to one side and stand with your feet shoulder width apart.",
+    "Squat down while chopping the ball diagonally across your body.",
+    "Rotate your torso and bring the ball toward the opposite knee.",
+    "Stand up as you return the ball overhead.",
+    "Alternate sides each set."
+  ],
+  "textSource": "opengym"
+}

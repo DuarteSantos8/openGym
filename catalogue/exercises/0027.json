@@ -1,0 +1,33 @@
+{
+  "id": "0027",
+  "name": "barbell bent over row",
+  "bodyPart": "back",
+  "equipment": "barbell",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A hip-hinged row pulling the bar to your lower chest. A staple for the upper back and lats.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and knees slightly bent.",
+    "Bend forward at the hips while keeping your back straight and chest up.",
+    "Grasp the barbell with an overhand grip, hands slightly wider than shoulder-width apart.",
+    "Pull the barbell towards your lower chest by retracting your shoulder blades and squeezing your back muscles.",
+    "Pause for a moment at the top, then slowly lower the barbell back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm"
+    ]
+  },
+  "femaleVariant": "2242",
+  "textSource": "exercisedb"
+}

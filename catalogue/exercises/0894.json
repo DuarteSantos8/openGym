@@ -1,0 +1,21 @@
+{
+  "id": "0894",
+  "name": "band calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "band",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles"
+  ],
+  "category": "strength",
+  "description": "A calf raise with band resistance. It builds the calves and ankle strength.",
+  "instructions": [
+    "Sit or stand with the band looped under the balls of your feet.",
+    "Hold the ends firmly.",
+    "Press up onto your toes against the band.",
+    "Pause at the top.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

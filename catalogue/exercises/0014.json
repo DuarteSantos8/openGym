@@ -1,0 +1,22 @@
+{
+  "id": "0014",
+  "name": "assisted motion russian twist",
+  "bodyPart": "waist",
+  "equipment": "medicine ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A seated medicine ball twist, from side to side, that trains the obliques and abs with a leaned-back torso.",
+  "instructions": [
+    "Sit on the ground with your knees bent and feet flat on the floor.",
+    "Hold the medicine ball with both hands in front of your chest.",
+    "Lean back slightly, engaging your abs and keeping your back straight.",
+    "Slowly twist your torso to the right, bringing the medicine ball towards the right side of your body.",
+    "Pause for a moment, then twist your torso to the left, bringing the medicine ball towards the left side of your body.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

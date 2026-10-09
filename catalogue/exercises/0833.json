@@ -1,0 +1,21 @@
+{
+  "id": "0833",
+  "name": "weighted donkey calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "weighted",
+  "target": "calves",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A donkey calf raise with extra weight, bent at the hips with the toes on a platform. It works the calves through a long range of motion.",
+  "instructions": [
+    "Stand on a raised platform with your toes on the edge and your heels hanging off.",
+    "Hold onto a stable object for support.",
+    "Raise your heels as high as possible by extending your ankles.",
+    "Pause for a moment at the top, then slowly lower your heels back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

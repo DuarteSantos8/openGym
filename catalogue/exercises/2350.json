@@ -1,0 +1,22 @@
+{
+  "id": "2350",
+  "name": "push up start position (form check)",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A side-by-side form check for the starting position of a push-up, showing the common mistake next to the correct technique so you can spot it in your own sets.",
+  "instructions": [
+    "Set your hands on the floor under your shoulders and extend your legs back.",
+    "Compare the faulty version with the correct one: your body forms one straight line from head to heels with hands under the shoulders.",
+    "Perform the lift slowly with a light load and keep the correct position throughout.",
+    "Use a mirror or film a set from the side to check your own position.",
+    "Fix the cue before adding weight, and rest between sets so form stays clean."
+  ],
+  "textSource": "opengym"
+}

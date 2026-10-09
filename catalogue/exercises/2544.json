@@ -1,0 +1,24 @@
+{
+  "id": "2544",
+  "name": "cable wide grip rear pulldown behind neck v. 2",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "rhomboids",
+    "biceps",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A wide pulldown to the back of the neck that works the lats and upper back.",
+  "instructions": [
+    "Sit at the pulldown station with your thighs secured.",
+    "Grab the bar with a wide overhand grip.",
+    "Lean forward slightly and pull the bar down behind your head to the base of your neck.",
+    "Squeeze your shoulder blades together.",
+    "Control the bar back up.",
+    "Move gently and keep your neck neutral."
+  ],
+  "textSource": "opengym"
+}

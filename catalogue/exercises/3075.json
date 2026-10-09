@@ -1,0 +1,22 @@
+{
+  "id": "3075",
+  "name": "dumbbell close grip press v. 2",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A press with dumbbells held close together that shifts the work toward the triceps and inner chest.",
+  "instructions": [
+    "Lie on a bench with a dumbbell in each hand pressed together over your chest.",
+    "Keep your palms facing each other.",
+    "Lower the dumbbells to your chest with your elbows tucked.",
+    "Press back up while keeping the weights touching.",
+    "Keep your wrists straight."
+  ],
+  "textSource": "opengym",
+  "maleVariant": "1731"
+}

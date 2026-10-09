@@ -1,0 +1,24 @@
+{
+  "id": "4171",
+  "name": "smith rack pull",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "upper back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A partial deadlift from knee height on a Smith machine. It overloads the back and hips.",
+  "instructions": [
+    "Set the bar at knee height in the Smith machine.",
+    "Grip the bar and set your back flat.",
+    "Drive through your feet and extend your hips.",
+    "Stand tall and squeeze your glutes.",
+    "Lower the bar to the start with control.",
+    "Keep the bar close to your legs."
+  ],
+  "textSource": "opengym"
+}

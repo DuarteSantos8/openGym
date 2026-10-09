@@ -1,0 +1,23 @@
+{
+  "id": "0466",
+  "name": "gironda sternum chin",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "rhomboids",
+    "rear deltoids"
+  ],
+  "category": "calisthenics",
+  "description": "A chin-up variation where you pull toward the sternum. It builds the lats, upper back and biceps.",
+  "instructions": [
+    "Stand facing a high bar with your feet shoulder-width apart.",
+    "Reach up and grab the bar with an overhand grip, slightly wider than shoulder-width apart.",
+    "Hang from the bar with your arms fully extended and your body straight.",
+    "Engage your lats and biceps to pull your chest up towards the bar, leading with your sternum.",
+    "Pause for a moment at the top, then slowly lower yourself back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

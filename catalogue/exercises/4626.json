@@ -1,0 +1,21 @@
+{
+  "id": "4626",
+  "name": "dumbbell seated tuck crunch on floor",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs"
+  ],
+  "category": "strength",
+  "description": "A seated tuck crunch holding a dumbbell to work the abs and hip flexors under load.",
+  "instructions": [
+    "Sit on the floor holding a dumbbell at your chest and lean back slightly.",
+    "Extend your legs and lift your feet off the floor.",
+    "Pull your knees in toward your chest.",
+    "Extend your legs back out under control.",
+    "Keep your spine long throughout."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "5700",
+  "name": "bodyweight walking calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "calisthenics",
+  "description": "Walk forward staying high on your toes with every step. It builds calf endurance and ankle control without any equipment.",
+  "instructions": [
+    "Stand tall with your feet hip-width apart.",
+    "Rise onto the balls of your feet as high as you can.",
+    "Take a step forward, staying on your toes.",
+    "Keep alternating steps without dropping your heels.",
+    "Lower your heels when you reach the end of the set."
+  ],
+  "textSource": "opengym"
+}

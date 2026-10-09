@@ -1,0 +1,23 @@
+{
+  "id": "0947",
+  "name": "crescent moon pose",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lats",
+    "shoulders",
+    "core"
+  ],
+  "category": "yoga",
+  "description": "Stand and arch sideways with arms overhead to lengthen one side of the body. It opens the ribs, sides and shoulders.",
+  "instructions": [
+    "Stand tall with feet together and raise your arms overhead, palms joined.",
+    "Reach up through your fingertips and keep your hips level.",
+    "Lean your upper body slowly to one side in a gentle curve.",
+    "Hold for 3 to 5 breaths without twisting forward or back.",
+    "Return to center and repeat on the other side."
+  ],
+  "textSource": "opengym"
+}

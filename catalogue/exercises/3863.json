@@ -1,0 +1,24 @@
+{
+  "id": "3863",
+  "name": "bulgarian jump squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A single-leg squat jump with the rear foot elevated, building explosive power and balance in each leg.",
+  "instructions": [
+    "Stand facing away from a bench and rest the top of one foot on it.",
+    "Lower into a split squat until your front thigh is about parallel.",
+    "Drive up explosively through your front foot so it leaves the floor.",
+    "Land softly and sink straight back into the next rep.",
+    "Keep your torso upright and your front knee stable.",
+    "Finish all reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "9890",
+  "name": "standing pelvic lift",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "core",
+    "hamstrings",
+    "lower abs"
+  ],
+  "category": "rehab",
+  "description": "A gentle standing move where you tilt and lift the pelvis by squeezing the glutes and abs. It teaches pelvic control and activates the hips.",
+  "instructions": [
+    "Stand tall with your feet hip width apart and your hands on your hips.",
+    "Soften your knees slightly.",
+    "Tuck your tailbone under and lift the front of your pelvis by squeezing your glutes and lower abs.",
+    "Hold for 2 seconds.",
+    "Release slowly to a neutral pelvis.",
+    "Keep your upper body still and breathe normally."
+  ],
+  "textSource": "opengym"
+}

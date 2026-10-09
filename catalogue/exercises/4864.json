@@ -1,0 +1,23 @@
+{
+  "id": "4864",
+  "name": "barbell sumo deadlift from deficit",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "adductors",
+    "quadriceps",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A sumo deadlift standing on a low platform. It increases range of motion off the floor.",
+  "instructions": [
+    "Stand on a low platform with a wide stance and toes out.",
+    "Grip the bar inside your knees.",
+    "Brace and push the floor away.",
+    "Lock your hips out.",
+    "Lower the bar under control."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4116",
+  "name": "barbell reeves deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "adductors",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A wide stance deadlift variation using a very wide grip, training hips and back.",
+  "instructions": [
+    "Stand with a wide stance and hold the bar with a wide grip.",
+    "Set a flat back and chest up.",
+    "Drive through your feet to lift.",
+    "Lock out your hips at the top.",
+    "Lower the bar with control."
+  ],
+  "textSource": "opengym"
+}

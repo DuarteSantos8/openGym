@@ -1,0 +1,23 @@
+{
+  "id": "4393",
+  "name": "kettlebell russian twist",
+  "bodyPart": "waist",
+  "equipment": "kettlebell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "hip flexors",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A seated twisting exercise with a kettlebell that targets the abs and obliques.",
+  "instructions": [
+    "Sit on the floor with knees bent and lean back a little.",
+    "Hold a kettlebell by the horns at your chest.",
+    "Lift your feet slightly if you can, and keep your back straight.",
+    "Rotate your torso to one side, then the other.",
+    "Move with control and keep your chest lifted."
+  ],
+  "textSource": "opengym"
+}

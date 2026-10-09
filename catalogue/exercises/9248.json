@@ -1,0 +1,23 @@
+{
+  "id": "9248",
+  "name": "forward backward shuffle",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "Quick shuffling steps forward and back build footwork and conditioning. It keeps your heart rate up.",
+  "instructions": [
+    "Stand in an athletic stance with soft knees.",
+    "Shuffle forward a few steps on the balls of your feet.",
+    "Shuffle back to the start without crossing your feet.",
+    "Keep your hips low and your chest up.",
+    "Move quickly but stay balanced.",
+    "Repeat for a set time."
+  ],
+  "textSource": "opengym"
+}

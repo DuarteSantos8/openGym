@@ -1,0 +1,21 @@
+{
+  "id": "1056",
+  "name": "lying glute stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "Pull a knee toward your chest while lying down. It releases the glutes.",
+  "instructions": [
+    "Lie on your back.",
+    "Cross one ankle over the opposite knee.",
+    "Pull the bottom leg toward your chest.",
+    "Keep your head and shoulders relaxed.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

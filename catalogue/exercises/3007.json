@@ -1,0 +1,21 @@
+{
+  "id": "3007",
+  "name": "resistance band leg extension",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A leg extension with a resistance band around your ankle. Builds the quads.",
+  "instructions": [
+    "Attach the resistance band to a sturdy anchor point and secure it around your ankle.",
+    "Stand facing the anchor point with your feet shoulder-width apart.",
+    "Keeping your core engaged and your upper body stable, extend your leg straight out in front of you.",
+    "Pause for a moment at the top, then slowly return your leg to the starting position.",
+    "Repeat for the desired number of repetitions, then switch legs."
+  ],
+  "femaleVariant": "3008",
+  "textSource": "exercisedb"
+}

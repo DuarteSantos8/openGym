@@ -1,0 +1,21 @@
+{
+  "id": "4086",
+  "name": "band standard biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "band",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "The classic standing curl with a band underfoot. It builds the biceps with smooth, rising resistance.",
+  "instructions": [
+    "Stand on the middle of the band with your feet hip-width apart and grip the ends.",
+    "Keep your elbows at your sides and your chest tall.",
+    "Curl your hands up toward your shoulders without swinging.",
+    "Pause briefly, then lower slowly until your arms are straight.",
+    "Keep your wrists neutral throughout."
+  ],
+  "textSource": "opengym"
+}

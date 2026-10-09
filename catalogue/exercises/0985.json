@@ -1,0 +1,21 @@
+{
+  "id": "0985",
+  "name": "band kneeling twisting crunch",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A kneeling crunch with a twist using a band. It trains the abs and obliques.",
+  "instructions": [
+    "Attach the band to a sturdy anchor point at waist height.",
+    "Kneel down facing away from the anchor point and hold the band with both hands, keeping your elbows bent and close to your sides.",
+    "Engage your abs and slowly twist your torso to one side, bringing your hands towards your opposite hip.",
+    "Pause for a moment, then slowly return to the starting position.",
+    "Repeat on the other side.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

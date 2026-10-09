@@ -1,0 +1,23 @@
+{
+  "id": "2945",
+  "name": "scapular slide back to wall",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "serratus anterior",
+  "secondaryMuscles": [
+    "trapezius",
+    "rhomboids",
+    "shoulders",
+    "rotator cuff"
+  ],
+  "category": "mobility",
+  "description": "Sliding your shoulder blades along a wall to improve their control. It helps shoulder blade mobility and posture.",
+  "instructions": [
+    "Stand with your back flat against a wall and your elbows bent at your sides.",
+    "Press your forearms and head lightly into the wall.",
+    "Slide your arms up the wall while keeping your shoulder blades down.",
+    "Stop before your back arches.",
+    "Slide down slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "1907",
+  "name": "assisted lying adductors stretch",
+  "bodyPart": "upper legs",
+  "equipment": "assisted",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "inner thighs",
+    "groin"
+  ],
+  "category": "stretching",
+  "description": "Partner-assisted stretch for the inner thighs.",
+  "instructions": [
+    "Lie on your back with your legs straight.",
+    "Have your partner lift one leg slightly and move it out to the side.",
+    "Keep your hips level.",
+    "Tell your partner to stop at a comfortable stretch.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "9317",
+  "name": "seated isometric hold pull up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "grip muscles"
+  ],
+  "category": "isometric",
+  "description": "Holding the top of a pull up while seated helps you build pulling strength. It works the lats and arms.",
+  "instructions": [
+    "Set up a bar so you can sit under it.",
+    "Grab the bar with an overhand grip.",
+    "Pull yourself up until your chin is above the bar.",
+    "Hold the top position.",
+    "Hold for 5-10 seconds.",
+    "Lower down slowly."
+  ],
+  "textSource": "opengym"
+}

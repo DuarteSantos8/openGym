@@ -1,0 +1,21 @@
+{
+  "id": "1855",
+  "name": "leg raise hip lift with head up",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "Lying leg raise finished with a hip lift while the head stays raised, working the whole abdominal wall.",
+  "instructions": [
+    "Lie on your back with your legs straight and your hands by your sides.",
+    "Lift your head and shoulders slightly off the floor.",
+    "Raise your legs to vertical.",
+    "Push your hips a little off the floor, lifting your feet toward the ceiling.",
+    "Lower your hips and legs slowly with control."
+  ],
+  "textSource": "opengym"
+}

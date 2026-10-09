@@ -1,0 +1,23 @@
+{
+  "id": "0565",
+  "name": "lateral speed step",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "ankles"
+  ],
+  "category": "plyometrics",
+  "description": "Quick side-to-side steps that build foot speed and agility. It warms up the legs and trains coordination.",
+  "instructions": [
+    "Stand in a slight athletic stance with knees bent.",
+    "Step quickly to one side, pushing off the opposite foot.",
+    "Bring the trailing foot in and step back the other way.",
+    "Stay on the balls of your feet.",
+    "Keep your chest up and arms moving naturally.",
+    "Work at a fast but controlled pace for the set."
+  ],
+  "textSource": "opengym"
+}

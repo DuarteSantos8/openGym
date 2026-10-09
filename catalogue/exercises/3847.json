@@ -1,0 +1,23 @@
+{
+  "id": "3847",
+  "name": "band twist (up down)",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A diagonal twisting movement against band tension. It trains your obliques and rotational strength.",
+  "instructions": [
+    "Anchor the band at a low point and stand side-on to it.",
+    "Hold the handle with both hands.",
+    "Rotate your torso and pull the band diagonally upward across your body.",
+    "Return slowly.",
+    "Finish your reps, then switch sides."
+  ],
+  "femaleVariant": "0932",
+  "textSource": "opengym"
+}

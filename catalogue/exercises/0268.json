@@ -1,0 +1,23 @@
+{
+  "id": "0268",
+  "name": "crunch (leg raise)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A crunch combined with a leg lift so the lower abs work along with the upper. It is a compact full-abs move.",
+  "instructions": [
+    "Lie on your back with your hands by your head and your legs up.",
+    "Curl your shoulders off the floor while keeping your legs raised.",
+    "Squeeze your abs.",
+    "Lower your shoulders slowly.",
+    "Lift your legs slightly higher at the top for extra work.",
+    "Keep your lower back pressed down."
+  ],
+  "textSource": "opengym"
+}

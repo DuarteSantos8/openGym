@@ -1,0 +1,24 @@
+{
+  "id": "3492",
+  "name": "kneeling rotational push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "obliques",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A kneeling push-up that ends with a rotation and one arm reaching up. It trains the chest and trunk control.",
+  "instructions": [
+    "Start in a kneeling push-up position, hands under shoulders.",
+    "Lower your chest toward the floor.",
+    "Press up and rotate your torso, lifting one arm toward the ceiling.",
+    "Look at your raised hand for a moment.",
+    "Bring the hand back down and lower for the next rep.",
+    "Alternate sides each rep."
+  ],
+  "textSource": "opengym"
+}

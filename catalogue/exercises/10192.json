@@ -1,0 +1,23 @@
+{
+  "id": "10192",
+  "name": "kettlebell side swing",
+  "bodyPart": "waist",
+  "equipment": "kettlebell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "hamstrings",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A kettlebell swing that travels to the side, adding rotation work for the obliques to the hip snap.",
+  "instructions": [
+    "Stand with feet wider than shoulders and a kettlebell in both hands.",
+    "Hinge at the hips and swing the bell back between your legs.",
+    "Snap your hips forward and swing the bell up toward chest height, angled to one side.",
+    "Let it swing back down with a flat back.",
+    "Finish the reps on one side, then switch."
+  ],
+  "textSource": "opengym"
+}

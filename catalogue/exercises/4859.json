@@ -1,0 +1,23 @@
+{
+  "id": "4859",
+  "name": "push up to side plank v. 2",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "obliques",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up that finishes by rotating into a side plank. It trains the chest and trunk.",
+  "instructions": [
+    "Start in a high plank.",
+    "Lower into a push-up.",
+    "Push up and rotate into a side plank, raising one arm.",
+    "Return to plank.",
+    "Alternate sides each rep."
+  ],
+  "textSource": "opengym"
+}

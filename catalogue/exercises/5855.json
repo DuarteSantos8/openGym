@@ -1,0 +1,24 @@
+{
+  "id": "5855",
+  "name": "kettlebell clean and press",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "glutes",
+    "hamstrings",
+    "core",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "Clean a kettlebell to the shoulder and press it overhead. It combines a hip drive with a shoulder press for full-body power.",
+  "instructions": [
+    "Stand with a kettlebell between your feet and hinge to grip it.",
+    "Drive your hips forward and pull the bell up to your shoulder.",
+    "Brace your core and press the bell overhead.",
+    "Lock out your arm with the bicep near your ear.",
+    "Lower to the shoulder, then back to the floor, and switch sides."
+  ],
+  "textSource": "opengym"
+}

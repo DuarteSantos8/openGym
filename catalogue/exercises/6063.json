@@ -1,0 +1,22 @@
+{
+  "id": "6063",
+  "name": "bottle weighted concentration curl",
+  "bodyPart": "upper arms",
+  "equipment": "weighted",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A seated one-arm curl with your elbow braced on your thigh. It isolates the biceps.",
+  "instructions": [
+    "Sit with feet wide, a bottle in one hand, and rest your elbow on your inner thigh.",
+    "Let your arm hang fully.",
+    "Curl the bottle toward your shoulder.",
+    "Squeeze your biceps at the top.",
+    "Lower slowly, then switch arms."
+  ],
+  "textSource": "opengym"
+}

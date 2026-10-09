@@ -1,0 +1,22 @@
+{
+  "id": "3012",
+  "name": "scapula dips",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "traps",
+  "secondaryMuscles": [
+    "rhomboids",
+    "deltoids"
+  ],
+  "category": "calisthenics",
+  "description": "A scapular dip, moving the shoulder blades while your arms stay straight. Strengthens the traps and shoulder stabilisers.",
+  "instructions": [
+    "Start by standing with your feet shoulder-width apart and your arms extended in front of you.",
+    "Bend your knees slightly and hinge forward at the hips, keeping your back straight.",
+    "Lower your body by bending your elbows and retracting your shoulder blades, as if you are trying to squeeze a pencil between them.",
+    "Pause for a moment at the bottom, then push through your hands to extend your elbows and return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3937",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "10987",
+  "name": "dumbbell jump box",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hamstrings"
+  ],
+  "category": "plyometrics",
+  "description": "A box jump holding dumbbells. It builds explosive leg power.",
+  "instructions": [
+    "Stand in front of a sturdy box holding a dumbbell in each hand.",
+    "Dip into a quarter squat and swing your arms back.",
+    "Jump onto the box, landing softly with bent knees.",
+    "Stand tall on top.",
+    "Step down carefully and reset."
+  ],
+  "textSource": "opengym"
+}

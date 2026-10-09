@@ -1,0 +1,23 @@
+{
+  "id": "11269",
+  "name": "cable bent over single arm row v. 3",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "rhomboids",
+    "biceps",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A bent-over one-arm row with a low cable. It builds the lats and mid back with steady tension.",
+  "instructions": [
+    "Face a low pulley, hinge forward with a flat back and hold the handle.",
+    "Brace your core and keep your hips back.",
+    "Row the handle toward your hip.",
+    "Squeeze your back at the top.",
+    "Lower slowly, finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

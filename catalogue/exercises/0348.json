@@ -1,0 +1,21 @@
+{
+  "id": "0348",
+  "name": "dumbbell lying rear lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "traps",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "Chest-down on a bench, you raise dumbbells out to the sides. It targets the rear shoulders and upper back muscles.",
+  "instructions": [
+    "Lie face down on a flat bench with a dumbbell in each hand, palms facing each other.",
+    "Extend your arms straight down towards the floor, keeping a slight bend in your elbows.",
+    "Engaging your shoulder muscles, lift your arms out to the sides until they are parallel to the floor.",
+    "Pause for a moment at the top, then slowly lower your arms back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

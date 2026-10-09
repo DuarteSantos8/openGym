@@ -1,0 +1,23 @@
+{
+  "id": "6288",
+  "name": "dolphin pose",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "hamstrings",
+    "upper back",
+    "triceps",
+    "calves"
+  ],
+  "category": "yoga",
+  "description": "A yoga inverted V on your forearms. It stretches the shoulders and hamstrings and builds shoulder strength.",
+  "instructions": [
+    "Start on hands and knees, then lower to your forearms.",
+    "Tuck your toes and lift your hips up high.",
+    "Press your forearms into the floor.",
+    "Let your head hang between your arms.",
+    "Hold for 20-30 seconds."
+  ],
+  "textSource": "opengym"
+}

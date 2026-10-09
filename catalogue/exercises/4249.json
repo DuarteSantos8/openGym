@@ -1,0 +1,23 @@
+{
+  "id": "4249",
+  "name": "dumbbell straight leg russian twist",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A Russian twist with your legs straight and a dumbbell in hand. The longer lever makes it a tough oblique exercise.",
+  "instructions": [
+    "Sit with your legs straight out and heels just off the floor.",
+    "Lean back slightly with a flat back.",
+    "Hold a dumbbell in both hands in front of your chest.",
+    "Rotate your torso to one side, then the other.",
+    "Keep your legs steady.",
+    "Move smoothly and breathe."
+  ],
+  "textSource": "opengym"
+}

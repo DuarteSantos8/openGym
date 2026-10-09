@@ -1,0 +1,22 @@
+{
+  "id": "1229",
+  "name": "cable standing lat pushdown (rope equipment)",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "triceps",
+    "rear deltoids",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A straight-arm pushdown with a rope on a high cable. It isolates the lats with almost no help from the arms.",
+  "instructions": [
+    "Attach a rope to a high pulley and stand facing it, hinging slightly forward.",
+    "Grab the rope with straight arms.",
+    "Push the rope down to your thighs, keeping your arms nearly straight.",
+    "Squeeze your lats at the bottom.",
+    "Let the rope rise slowly to shoulder height."
+  ],
+  "textSource": "opengym"
+}

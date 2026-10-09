@@ -1,0 +1,24 @@
+{
+  "id": "4444",
+  "name": "kettlebell assisted bulgarian split squat",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A rear-foot-elevated split squat holding a kettlebell, with a free hand on a support. Builds single-leg strength in the quads and glutes.",
+  "instructions": [
+    "Hold a kettlebell at your chest in one hand and rest the other hand on a sturdy support, standing away from a bench.",
+    "Place the top of your rear foot on a bench behind you.",
+    "Step your front foot far enough forward to stay balanced.",
+    "Lower straight down until your front thigh is about parallel to the floor.",
+    "Keep your torso upright and your front knee tracking over your toes.",
+    "Drive through the front heel to stand, then switch legs after your set."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "6734",
+  "name": "sled angled single leg press",
+  "bodyPart": "upper legs",
+  "equipment": "sled machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A one-leg press on an angled sled. It loads each leg separately for strength and balance.",
+  "instructions": [
+    "Sit in the angled sled and place one foot in the middle of the platform.",
+    "Release the safety and lower the sled by bending the knee.",
+    "Go as deep as you can with your back against the pad.",
+    "Press through your heel to straighten the leg without locking out.",
+    "Keep your hips flat on the seat.",
+    "Finish the reps and switch legs."
+  ],
+  "textSource": "opengym"
+}

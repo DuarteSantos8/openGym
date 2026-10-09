@@ -1,0 +1,21 @@
+{
+  "id": "8221",
+  "name": "dumbbell lateral raise plank",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "In a plank, you raise a dumbbell out to the side. It challenges the core and shoulders together.",
+  "instructions": [
+    "Set up in a plank with your hands on dumbbells.",
+    "Brace your core and widen your feet.",
+    "Lift one dumbbell out to the side.",
+    "Avoid twisting your hips.",
+    "Lower and alternate arms."
+  ],
+  "textSource": "opengym"
+}

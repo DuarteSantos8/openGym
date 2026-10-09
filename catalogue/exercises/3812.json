@@ -1,0 +1,23 @@
+{
+  "id": "3812",
+  "name": "elevated push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core",
+    "upper chest"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up with your hands on a raised surface. It is easier than a floor push-up and a good way to build chest strength.",
+  "instructions": [
+    "Place your hands on a bench or box slightly wider than your shoulders.",
+    "Step back so your body forms a straight line.",
+    "Lower your chest to the edge with your elbows at about 45 degrees.",
+    "Press back up until your arms are straight.",
+    "Keep your hips from sagging."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "3543",
+  "name": "bodyweight drop jump squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "A squat that ends with an explosive jump, bringing the feet together in the air. It builds leg power and cardio.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart.",
+    "Lower your body into a squat position by bending your knees and pushing your hips back.",
+    "Jump up explosively, extending your hips, knees, and ankles.",
+    "While in mid-air, quickly bring your feet together.",
+    "Land softly on the balls of your feet and immediately drop back into a squat position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

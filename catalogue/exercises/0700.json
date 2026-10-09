@@ -1,0 +1,23 @@
+{
+  "id": "0700",
+  "name": "side bend (on stability ball)",
+  "bodyPart": "waist",
+  "equipment": "stability ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "Lying sideways over a stability ball, you bend toward the ceiling. It targets the side of the waist.",
+  "instructions": [
+    "Lie sideways over a stability ball with feet braced.",
+    "Place your hands behind your head.",
+    "Lower your upper body over the ball.",
+    "Lift back up by contracting the obliques.",
+    "Keep your hips steady.",
+    "Finish reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

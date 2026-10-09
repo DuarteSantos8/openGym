@@ -1,0 +1,23 @@
+{
+  "id": "4004",
+  "name": "place jog",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "calves",
+    "hip flexors"
+  ],
+  "category": "cardio",
+  "description": "Jogging on the spot as a warm-up or light cardio. It raises your heart rate without equipment.",
+  "instructions": [
+    "Stand tall with your arms bent.",
+    "Jog in place, lifting your knees.",
+    "Land softly on the balls of your feet.",
+    "Keep a steady pace.",
+    "Continue for 1-5 minutes."
+  ],
+  "femaleVariant": "0644",
+  "textSource": "opengym"
+}

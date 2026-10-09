@@ -1,0 +1,22 @@
+{
+  "id": "5606",
+  "name": "dumbbell prone rear delt swing",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "Prone swing with dumbbells to target the rear delts.",
+  "instructions": [
+    "Lie face down on an incline bench with dumbbells hanging.",
+    "Keep a soft bend in your elbows.",
+    "Swing the weights out and up to shoulder height.",
+    "Lower slowly.",
+    "Keep your torso still."
+  ],
+  "textSource": "opengym"
+}

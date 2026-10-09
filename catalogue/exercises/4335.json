@@ -1,0 +1,21 @@
+{
+  "id": "4335",
+  "name": "dumbbell side bend v. 2",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A weighted side bend using a dumbbell to load the obliques.",
+  "instructions": [
+    "Stand tall holding a dumbbell in one hand at your side.",
+    "Place your other hand behind your head.",
+    "Bend sideways toward the weighted side, keeping your hips still.",
+    "Squeeze the opposite side to return upright.",
+    "Finish your reps, then switch hands."
+  ],
+  "textSource": "opengym"
+}

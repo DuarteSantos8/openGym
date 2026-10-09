@@ -1,0 +1,22 @@
+{
+  "id": "0996",
+  "name": "band seated hip internal rotation",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "A seated hip rotation against a band around the thighs. It works the glutes and hip muscles.",
+  "instructions": [
+    "Sit on a chair or bench with your back straight and feet flat on the ground.",
+    "Place a resistance band around your thighs, just above your knees.",
+    "Keep your knees bent at a 90-degree angle and your feet shoulder-width apart.",
+    "Engage your glutes and slowly rotate your knees outward, pushing against the resistance of the band.",
+    "Pause for a moment at the end of the movement, then slowly return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

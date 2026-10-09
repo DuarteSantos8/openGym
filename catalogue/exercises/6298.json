@@ -1,0 +1,23 @@
+{
+  "id": "6298",
+  "name": "one legged upward bow pose eka pada urdhva dhanurasana",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "shoulders",
+    "hip flexors"
+  ],
+  "category": "yoga",
+  "description": "A wheel pose with one leg lifted into the air. It adds balance and strength demand to the backbend.",
+  "instructions": [
+    "Come into wheel pose with hands and feet pressing down.",
+    "Shift weight onto one foot.",
+    "Lift the other leg toward the ceiling.",
+    "Keep your hips high and level.",
+    "Hold briefly, lower, then switch legs."
+  ],
+  "textSource": "opengym"
+}

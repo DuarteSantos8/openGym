@@ -1,0 +1,22 @@
+{
+  "id": "3161",
+  "name": "bodyweight standing one arm row (with towel)",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A standing one arm row using a towel as the handle, pulled toward the chest. It trains the upper back with very little equipment.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, knees slightly bent, and hold a towel with one hand.",
+    "Bend forward at the hips, keeping your back straight and your core engaged.",
+    "Pull the towel towards your chest, squeezing your shoulder blades together.",
+    "Pause for a moment at the top, then slowly lower the towel back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch to the other arm."
+  ],
+  "femaleVariant": "3160",
+  "textSource": "exercisedb"
+}

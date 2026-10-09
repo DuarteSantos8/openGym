@@ -1,0 +1,22 @@
+{
+  "id": "9180",
+  "name": "stick standing shoulder mobilization in extension",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "chest",
+    "rotator cuff"
+  ],
+  "category": "mobility",
+  "description": "Holding a stick behind your back, you lift it away to open the front of the shoulders. It improves shoulder extension.",
+  "instructions": [
+    "Stand tall holding a stick behind your back with an overhand grip.",
+    "Keep your arms straight.",
+    "Lift the stick back and away from your body.",
+    "Stay tall and avoid leaning forward.",
+    "Hold for a moment.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "9044",
+  "name": "hanging advanced tucked front lever hold",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lats",
+    "core",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "A harder front lever hold with the knees tucked but the hips open. It demands strong lats and core.",
+  "instructions": [
+    "Hang from a pull-up bar with straight arms.",
+    "Lift your body to horizontal in a tucked position.",
+    "Open your hips slightly so your back is flat.",
+    "Keep your shoulder blades pulled down.",
+    "Hold for 5-10 seconds.",
+    "Lower down slowly."
+  ],
+  "textSource": "opengym"
+}

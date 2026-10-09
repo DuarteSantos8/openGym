@@ -1,0 +1,31 @@
+{
+  "id": "0185",
+  "name": "cable lying fly",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "deltoids",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A cable fly done lying on a flat bench. The arms open in a wide arc and close again, working the chest through a deep stretch.",
+  "instructions": [
+    "Attach the handles to the cables and lie flat on a bench with your feet flat on the ground.",
+    "Hold the handles with your palms facing each other and your arms extended straight above your chest.",
+    "Keeping a slight bend in your elbows, lower your arms out to the sides in a wide arc until you feel a stretch in your chest.",
+    "Pause for a moment, then squeeze your chest muscles to bring your arms back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "chest"
+    ],
+    "secondaries": [
+      "upper-back",
+      "trapezius"
+    ]
+  },
+  "femaleVariant": "2426",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "9929",
+  "name": "leverage single leg squat on hack squat machine",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A single leg squat on a hack squat machine. It adds stability while loading one leg at a time.",
+  "instructions": [
+    "Set your back against the pad and step onto the platform.",
+    "Place one foot on the platform and lift the other slightly.",
+    "Lower into a squat with control.",
+    "Keep your knee tracking over your toes.",
+    "Press back up through the working leg.",
+    "Do your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

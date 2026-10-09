@@ -1,0 +1,23 @@
+{
+  "id": "9304",
+  "name": "cable neutral grip wide pulldown v. 3",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A wide, neutral grip pulldown on a cable machine that builds the lats and upper back.",
+  "instructions": [
+    "Sit at the pulldown station with your thighs under the pads.",
+    "Grab the wide neutral grip handles.",
+    "Lean back slightly and keep your chest up.",
+    "Pull the handles down toward your upper chest.",
+    "Squeeze your lats at the bottom.",
+    "Let the handles rise slowly with control."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4884",
+  "name": "side lying outward knee kick",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "hip flexors",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "From a side lying position you swing the top knee out and kick the leg outward. It works the outer hips and glutes.",
+  "instructions": [
+    "Lie on your side with your hips stacked and bottom leg bent.",
+    "Bend the top knee and bring it toward your chest.",
+    "Kick the top leg straight out to the side.",
+    "Pull the knee back in under control.",
+    "Keep your torso still the whole time.",
+    "Complete your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

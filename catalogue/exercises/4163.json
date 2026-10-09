@@ -1,0 +1,22 @@
+{
+  "id": "4163",
+  "name": "cable one arm wrist curl",
+  "bodyPart": "lower arms",
+  "equipment": "cable",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A wrist curl using cable resistance on one arm. It strengthens the forearm flexors.",
+  "instructions": [
+    "Sit by a low pulley with your forearm resting on your thigh.",
+    "Hold the handle with your palm facing up.",
+    "Curl your wrist up as far as you can.",
+    "Pause at the top.",
+    "Lower slowly under control.",
+    "Complete all reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

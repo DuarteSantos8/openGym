@@ -1,0 +1,22 @@
+{
+  "id": "10031",
+  "name": "finger flexion while extending thumb",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "hands"
+  ],
+  "category": "mobility",
+  "description": "A small hand mobility drill where you curl your fingers while holding the thumb straight. It helps finger and thumb control.",
+  "instructions": [
+    "Hold one hand out with your palm open.",
+    "Extend your thumb out to the side and keep it straight.",
+    "Curl your four fingers slowly toward your palm.",
+    "Open the fingers again.",
+    "Repeat 10-15 times, then switch hands.",
+    "Keep the movement smooth and pain free."
+  ],
+  "textSource": "opengym"
+}

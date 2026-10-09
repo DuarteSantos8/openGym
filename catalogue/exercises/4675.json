@@ -1,0 +1,23 @@
+{
+  "id": "4675",
+  "name": "plyo side lunge stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "glutes",
+    "quadriceps",
+    "groin"
+  ],
+  "category": "plyometrics",
+  "description": "A bouncy side lunge that stretches the inner thighs and trains light explosive movement.",
+  "instructions": [
+    "Stand with feet wide apart.",
+    "Shift your weight to one side and sit into a side lunge.",
+    "Straighten the other leg and feel the inner thigh stretch.",
+    "Push off to hop to the other side.",
+    "Continue alternating at a controlled pace."
+  ],
+  "femaleVariant": "0646",
+  "textSource": "opengym"
+}

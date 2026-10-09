@@ -1,0 +1,22 @@
+{
+  "id": "0362",
+  "name": "dumbbell one arm triceps extension (on bench)",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "With one arm supported on a bench, you extend the other arm to work the back of the upper arm. A strict triceps isolation move.",
+  "instructions": [
+    "Sit on a bench with your back straight and feet flat on the ground.",
+    "Hold a dumbbell in one hand and place your other hand on the bench for support.",
+    "Raise the dumbbell overhead, keeping your upper arm close to your head and your elbow pointing forward.",
+    "Lower the dumbbell behind your head by bending your elbow, keeping your upper arm stationary.",
+    "Extend your arm back up to the starting position, fully straightening your elbow.",
+    "Repeat for the desired number of repetitions, then switch arms."
+  ],
+  "femaleVariant": "2601",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "2271",
+  "name": "left hook. boxing",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "biceps",
+    "triceps",
+    "forearms"
+  ],
+  "category": "combat",
+  "description": "A boxing left hook thrown with a hip and torso rotation. Builds rotational power and conditioning.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and your knees slightly bent.",
+    "Keep your left hand up to protect your face and your right hand by your chin.",
+    "Rotate your hips and pivot on your left foot as you extend your left arm forward in a punching motion.",
+    "Twist your torso and engage your core muscles to generate power in the punch.",
+    "Snap your arm back to the starting position and repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

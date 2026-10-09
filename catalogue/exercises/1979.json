@@ -1,0 +1,22 @@
+{
+  "id": "1979",
+  "name": "shoulder adductor elevator and protractor stretch",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids",
+    "trapezius"
+  ],
+  "category": "stretching",
+  "description": "A cross body stretch that loosens the back of the shoulder and the muscles between the shoulder blades.",
+  "instructions": [
+    "Stand or sit tall and bring one arm across your chest.",
+    "Use the opposite hand to press the arm toward you until the shoulder and upper back stretch.",
+    "Keep your shoulders down away from your ears.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

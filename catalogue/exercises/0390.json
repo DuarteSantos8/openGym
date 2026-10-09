@@ -1,0 +1,22 @@
+{
+  "id": "0390",
+  "name": "dumbbell seated biceps curl (on stability ball)",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "You curl dumbbells while sitting on a stability ball. It works the biceps and challenges your balance and core.",
+  "instructions": [
+    "Sit on a stability ball with your feet flat on the ground and your back straight.",
+    "Hold a dumbbell in each hand with your palms facing forward and your arms fully extended.",
+    "Keeping your upper arms stationary, exhale and curl the dumbbells while contracting your biceps.",
+    "Continue to raise the dumbbells until your biceps are fully contracted and the dumbbells are at shoulder level.",
+    "Hold the contracted position for a brief pause as you squeeze your biceps.",
+    "Inhale and slowly begin to lower the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

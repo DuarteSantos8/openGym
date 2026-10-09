@@ -1,0 +1,22 @@
+{
+  "id": "4900",
+  "name": "elevated seated calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles"
+  ],
+  "category": "calisthenics",
+  "description": "A seated calf raise with the balls of the feet on a raised surface for a deeper stretch. It targets the lower calf muscle.",
+  "instructions": [
+    "Sit on a bench with the balls of your feet on a raised step.",
+    "Rest weight or your hands on your thighs.",
+    "Lower your heels as far as you comfortably can.",
+    "Press up onto your toes as high as possible.",
+    "Pause briefly at the top.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

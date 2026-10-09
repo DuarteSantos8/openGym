@@ -1,0 +1,23 @@
+{
+  "id": "4842",
+  "name": "trap bar banded deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "trap bar",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A trap bar deadlift with bands adding resistance toward the top. It builds hip and leg power.",
+  "instructions": [
+    "Attach bands to the trap bar and stand inside the bar.",
+    "Grip the handles with a flat back and chest up.",
+    "Drive through your feet to stand up.",
+    "Lock your hips out at the top against the band.",
+    "Lower slowly back to the floor."
+  ],
+  "textSource": "opengym"
+}

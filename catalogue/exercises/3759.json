@@ -1,0 +1,30 @@
+{
+  "id": "3759",
+  "name": "lever seated good morning",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A seated good morning on a lever machine, hinging forward at the hips and back up. It trains the glutes, hamstrings and lower back.",
+  "instructions": [
+    "Adjust the seat height so that your hips are slightly higher than your knees.",
+    "Sit on the machine with your back against the pad and your feet flat on the footrests.",
+    "Grasp the handles or the sides of the seat for stability.",
+    "Keeping your back straight, slowly lean forward from your hips until your upper body is parallel to the ground.",
+    "Pause for a moment, then slowly return to the starting position by pushing through your glutes and hamstrings.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "gluteal",
+      "hamstring",
+      "lower-back"
+    ],
+    "secondaries": []
+  },
+  "textSource": "exercisedb"
+}

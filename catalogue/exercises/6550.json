@@ -1,0 +1,22 @@
+{
+  "id": "6550",
+  "name": "incline push up on a smith bar",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up with your hands on a Smith bar, making it easier than a floor push-up while still training your chest.",
+  "instructions": [
+    "Set the Smith bar at about waist height and rack it securely.",
+    "Place your hands on the bar slightly wider than your shoulders.",
+    "Keep your body in a straight line.",
+    "Lower your chest to the bar.",
+    "Push back up to straight arms."
+  ],
+  "textSource": "opengym"
+}

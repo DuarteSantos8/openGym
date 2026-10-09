@@ -1,0 +1,22 @@
+{
+  "id": "3928",
+  "name": "bodyweight single leg deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Hinge forward on one leg while the other reaches back. It builds hamstring and glute strength and trains balance.",
+  "instructions": [
+    "Stand on one foot with a soft knee and your arms hanging in front.",
+    "Hinge at the hips and extend the free leg straight behind you.",
+    "Lower your torso until it is nearly parallel to the floor, back flat.",
+    "Squeeze your glute to stand tall again.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

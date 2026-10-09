@@ -1,0 +1,44 @@
+{
+  "id": "3418",
+  "name": "l-pull-up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A pull-up with the legs held out straight in an L shape. It trains the lats, biceps and core.",
+  "instructions": [
+    "Grab the pull-up bar with an overhand grip, slightly wider than shoulder-width apart.",
+    "Hang with your arms fully extended and your body straight.",
+    "Engage your lats and biceps to pull your body up towards the bar, keeping your elbows close to your body.",
+    "Continue pulling until your chin is above the bar.",
+    "Pause for a moment at the top, then slowly lower your body back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "bodyPart": "full body",
+    "primaries": [
+      "upper-back",
+      "abs"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm",
+      "hip-flexors"
+    ],
+    "weights": {
+      "upper-back": 1,
+      "abs": 1,
+      "biceps": 0.4,
+      "deltoids": 0.4,
+      "forearm": 0.4,
+      "hip-flexors": 0.4,
+      "triceps": 0
+    }
+  },
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "0639",
+  "name": "one arm dip",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A dip using one arm on a bench or chair behind you. Works the triceps and shoulders on one side at a time.",
+  "instructions": [
+    "Stand facing away from a bench or chair, with your feet shoulder-width apart.",
+    "Place one hand on the bench or chair behind you, fingers pointing towards your body.",
+    "Extend your legs out in front of you, keeping your heels on the ground.",
+    "Bend your elbows and lower your body towards the ground, keeping your back close to the bench or chair.",
+    "Pause for a moment at the bottom, then push through your palms to straighten your arms and return to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides and repeat with the other arm."
+  ],
+  "textSource": "exercisedb"
+}

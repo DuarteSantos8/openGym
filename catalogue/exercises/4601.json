@@ -1,0 +1,22 @@
+{
+  "id": "4601",
+  "name": "open book stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "chest"
+  ],
+  "category": "stretching",
+  "description": "A lying rotation that opens the chest and mid back, good for thoracic mobility and tight shoulders.",
+  "instructions": [
+    "Lie on your side with your knees bent and stacked, arms straight in front of you.",
+    "Keep your knees together and lift the top arm up and over.",
+    "Rotate your chest open toward the ceiling, following your hand with your eyes.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Return the arm and repeat, then switch sides."
+  ],
+  "textSource": "opengym"
+}

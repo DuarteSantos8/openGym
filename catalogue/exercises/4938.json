@@ -1,0 +1,22 @@
+{
+  "id": "4938",
+  "name": "wrist abduction",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist extensors",
+    "wrist flexors"
+  ],
+  "category": "mobility",
+  "description": "A gentle wrist movement that tilts the hand toward the thumb side. It improves wrist mobility.",
+  "instructions": [
+    "Rest your forearm on a table with your hand off the edge.",
+    "Keep your palm facing in.",
+    "Tilt your hand up toward the thumb side.",
+    "Return to neutral slowly.",
+    "Keep your forearm still.",
+    "Do equal reps on both wrists."
+  ],
+  "textSource": "opengym"
+}

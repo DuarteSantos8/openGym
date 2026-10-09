@@ -156,9 +156,9 @@ reading one row:
 
 - `workoutVolume` (`history.js`) — adds `extraVolumeOf(s)` on top of `w×r` per row. Drop-set
   drops count; rest-pause clusters don't (see above — they're already inside the row's own `r`).
-- `setTonnage` (`recovery.js`) — same split: `extraTonnage(...)` prices a drop-set's drops with
-  the same intensity-weighted formula (`load × reps × min(1, load/1RM)^1.5`) as the main set, and
-  is a no-op for rest-pause for the same double-counting reason.
+- `sessionEffSets` (`recovery.js`) — same split: each drop-set drop counts as an extra
+  set at its own RIR weight against the 90-day anchor, and rest-pause is a no-op
+  for the same double-counting reason.
 - `applyPrescription` (`progression.js`) — when a policy grows the set count (bodyweight double
   progression, issue #33), the newly appended row keeps the seed's `type` (that's the exercise's
   plan) but never its already-logged `drops`/`clusters` (that's specific work the new row never
@@ -186,3 +186,23 @@ All new strings are translated in `locales/es.js` (the other ten locales fall ba
 - Planning which *specific* sets of an exercise get the intensifier — it's all-or-nothing per
   exercise (every set), which is what was asked for; a "last set only" option would need a
   per-row opt-out on top of this.
+
+## Sets to failure (v1.4.0)
+
+A third, independent mark: `failure: true` on a row (written only when on), for a set taken to
+failure. It is not a `type`, because a drop-set or a rest-pause set can be taken to failure too.
+
+- `isFailureSet(set)` / `toggleFailure(set)` in `workout-model.js`. A warm-up is never one, even
+  if it carries the key.
+- Effort: `effort.js rirOf` reads a failure set as RIR 0 when nothing was rated by hand, so the
+  effort stats, the "hard sets" filter and the fatigue model (`recovery.js resolveSetRir`, which
+  calls `rirOf` first) all agree. A logged RIR/RPE wins.
+- Everything that reads `w`/`r` is unchanged: volume, records, 1RM and progression treat it as the
+  work set it is.
+- Shown as an "F": on the set number in the workout (cards, list, compact), on the focus card, in
+  `setLabel` (history, text export, the set menu, MCP labels) and on the finish summary.
+- Planned with `cfg.lastToFailure: true` ("Last set to failure" in `ExConfig`): `applyFailurePlan`
+  in `history.js`, run inside `applyIntensifierPlan`, marks the last work row (both halves of a
+  timed per-side pair) of a freshly built exercise. Choosing Greyskull in the sheet turns it on.
+- Imports: a Hevy or CSV "failure" set type becomes `failure: true`.
+

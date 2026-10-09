@@ -1,0 +1,24 @@
+{
+  "id": "2984",
+  "name": "pistol squat to box",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "adductors"
+  ],
+  "category": "calisthenics",
+  "description": "A single-leg squat down to a box. The box gives you a target for depth as you build strength.",
+  "instructions": [
+    "Stand in front of a box with one leg extended forward.",
+    "Brace your core and reach your arms forward for balance.",
+    "Sit back and down slowly on the standing leg until you touch the box.",
+    "Drive through your heel to stand.",
+    "Finish the reps, then switch legs."
+  ],
+  "femaleVariant": "2985",
+  "textSource": "opengym"
+}

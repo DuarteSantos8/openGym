@@ -1,0 +1,23 @@
+{
+  "id": "8899",
+  "name": "cable standing y raise v. 2",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rotator cuff",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "Raising the arms in a Y shape against cable tension works the lower traps and shoulders. It supports healthy overhead movement.",
+  "instructions": [
+    "Stand facing the low cable with a handle in each hand or one handle at a time.",
+    "Start with your arms low and a slight bend in your elbows.",
+    "Lift your arms up and out to form a Y shape.",
+    "Keep your thumbs pointing up and your ribs down.",
+    "Lower slowly back to the start.",
+    "Avoid shrugging toward your ears."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "5393",
+  "name": "roll quadriceps (vastus lateralis) lying on floor",
+  "bodyPart": "upper legs",
+  "equipment": "roller",
+  "target": "quads",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hip flexors"
+  ],
+  "category": "mobility",
+  "description": "Self-massage with a foam roller to ease tightness in the outer thigh. Good before training or on rest days to loosen up.",
+  "instructions": [
+    "Lie on your side with the roller under the outer thigh.",
+    "Place the roller under the outer thigh and let your body weight settle onto it.",
+    "Roll from the hip down to above the knee.",
+    "Pause on tender spots and breathe slowly for 20-30 seconds.",
+    "Keep your core braced and avoid rolling over joints or bone.",
+    "Roll for 30-60 seconds, then switch sides if needed."
+  ],
+  "femaleVariant": "5432",
+  "textSource": "opengym"
+}

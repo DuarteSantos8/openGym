@@ -1,0 +1,23 @@
+{
+  "id": "5917",
+  "name": "happy baby pose",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "hamstrings",
+    "groin",
+    "lower back",
+    "glutes"
+  ],
+  "category": "yoga",
+  "description": "Lying on your back and holding your feet with knees wide. Opens the hips and relaxes the lower back.",
+  "instructions": [
+    "Lie on your back and bend your knees toward your chest.",
+    "Hold the outsides of your feet.",
+    "Open your knees wide toward your armpits.",
+    "Rock gently side to side and hold for 5 slow breaths.",
+    "Release your feet and rest."
+  ],
+  "textSource": "opengym"
+}

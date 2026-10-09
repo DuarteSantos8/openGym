@@ -26,9 +26,34 @@ COPY frontend/ ./
 ARG APP_BUILD=""
 RUN APP_BUILD="$APP_BUILD" npm run build
 
-FROM nginx:alpine
+FROM nginxinc/nginx-unprivileged:alpine
 # Same reason as in api/Dockerfile: alpine fixes land faster than the nginx image is rebuilt.
-RUN apk upgrade --no-cache
+# The base's last instruction is USER 101, and apk then exits 99 — it cannot open its log as
+# that user. Upgrade as root, then switch back. 101 has to be the last USER in this file so
+# the entrypoint and the nginx master both stay uid 101. It can bind port 80 under Docker,
+# which sets net.ipv4.ip_unprivileged_port_start=0; the base image's EXPOSE 8080 is metadata,
+# and nothing here listens on it. Another runtime (most Kubernetes ones, Podman rootless)
+# needs NGINX_PORT=1024 or higher, or that sysctl: helm/ and kubernetes/ use 8080.
+#
+# An upgrade can put the packaged nginx.conf back (a `user` directive, pid under /run) and
+# recreate /var/cache/nginx as root, which is the mkdir a non-root master dies on. Restore
+# the layout the base established, still as root, and idempotently: drop a user directive
+# if one is present, point pid at /tmp/nginx.pid, and insert the /tmp temp paths only when
+# client_body_temp_path is absent — a second insert duplicates them and nginx refuses the
+# config. chown/chmod cover /var/cache/nginx and /etc/nginx only, so uid 101 can render the
+# template. The static tree keeps the default modes; uid 101 only reads it.
+USER root
+RUN apk upgrade --no-cache \
+ && sed -i '/^[[:space:]]*user[[:space:]]/d' /etc/nginx/nginx.conf \
+ && sed -i 's,\(/var\)\{0\,1\}/run/nginx.pid,/tmp/nginx.pid,' /etc/nginx/nginx.conf \
+ && if ! grep -q 'client_body_temp_path' /etc/nginx/nginx.conf; then \
+      sed -i "/^http {/a \    proxy_temp_path /tmp/proxy_temp;\n    client_body_temp_path /tmp/client_temp;\n    fastcgi_temp_path /tmp/fastcgi_temp;\n    uwsgi_temp_path /tmp/uwsgi_temp;\n    scgi_temp_path /tmp/scgi_temp;\n" /etc/nginx/nginx.conf; \
+    fi \
+ && chown -R nginx:root /var/cache/nginx /etc/nginx \
+ && chmod -R g+w /var/cache/nginx /etc/nginx \
+ && grep -Eq '^[[:space:]]*pid[[:space:]]+/tmp/nginx\.pid;' /etc/nginx/nginx.conf \
+ && ! grep -Eq '^[[:space:]]*user[[:space:]]' /etc/nginx/nginx.conf
+USER 101
 ARG VERSION=dev
 ARG VCS_REF=dev
 ARG BUILD_DATE=unknown
@@ -50,7 +75,9 @@ COPY web/nginx.conf.template /etc/nginx/templates/default.conf.template
 # before the template rendering at 20.
 COPY --chmod=755 web/05-check-base-path.sh /docker-entrypoint.d/
 COPY --from=build /app/frontend/dist /usr/share/nginx/html
-# exercise media (img/gif) is mounted at runtime from the media volume
+# The exercise stills and animations, 180 px, licensed from Gym visual for openGym only: see
+# catalogue/media/NOTICE.md. They ship inside the image; nothing is downloaded at start-up.
+COPY catalogue/media/ /usr/share/nginx/html/exercise-media/
 
 # Set Default ENVs for nginx
 ENV NGINX_PORT=80

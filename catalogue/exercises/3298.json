@@ -1,0 +1,22 @@
+{
+  "id": "3298",
+  "name": "straddle planche",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "chest"
+  ],
+  "category": "isometric",
+  "description": "A planche hold with the legs spread wide, which makes the lever shorter. It trains the shoulders, chest and core.",
+  "instructions": [
+    "Start in a push-up position with your hands shoulder-width apart and your feet spread wide apart.",
+    "Engage your core and slowly shift your weight forward, bringing your shoulders over your hands.",
+    "Bend your elbows and lower your body towards the ground, keeping your elbows close to your sides.",
+    "Pause for a moment at the bottom, then push through your hands to straighten your arms and lift your body back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "8895",
+  "name": "45 degrees back extension scapular adduction",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "rhomboids",
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "calisthenics",
+  "description": "On a 45 degree bench you lift your torso and pull your shoulder blades together. It works the lower back and upper back at once.",
+  "instructions": [
+    "Set up on the 45 degree bench with your hips on the pad and your feet locked in.",
+    "Cross your arms or hold them out wide.",
+    "Raise your torso until your body forms a straight line.",
+    "At the top, pull your shoulder blades together.",
+    "Lower back down slowly without rounding.",
+    "Do not overarch at the top."
+  ],
+  "textSource": "opengym"
+}

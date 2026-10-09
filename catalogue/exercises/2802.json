@@ -1,0 +1,24 @@
+{
+  "id": "2802",
+  "name": "twisted leg raise",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A lying leg raise with a hip twist and hands under the glutes. Works the abs and obliques.",
+  "instructions": [
+    "Lie flat on your back with your legs extended and your arms by your sides.",
+    "Place your hands under your glutes for support.",
+    "Engage your abs and lift both legs off the ground, keeping them straight.",
+    "As you lift your legs, twist your hips to one side, bringing your legs towards your opposite shoulder.",
+    "Pause for a moment at the top, then slowly lower your legs back down to the starting position.",
+    "Repeat the movement, this time twisting your hips to the other side.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb",
+  "femaleVariant": "2801"
+}

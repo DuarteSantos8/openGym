@@ -1,0 +1,24 @@
+{
+  "id": "4286",
+  "name": "hip circles stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core",
+    "lower back"
+  ],
+  "category": "mobility",
+  "description": "Big circles with your hips that loosen the joint and the muscles around it. A good warm-up for leg days.",
+  "instructions": [
+    "Stand with your feet slightly wider than shoulder width.",
+    "Place your hands on your hips.",
+    "Rotate your hips in a wide circle.",
+    "Do 10 circles in one direction.",
+    "Reverse and circle the other way.",
+    "Keep your shoulders still and your knees soft."
+  ],
+  "femaleVariant": "1847",
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "0112",
+  "name": "barbell standing twist",
+  "bodyPart": "waist",
+  "equipment": "barbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A standing torso twist with the bar on your shoulders. Works the obliques.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold a barbell in front of your chest with both hands, palms facing down.",
+    "Engage your core and keep your back straight throughout the exercise.",
+    "Slowly twist your torso to the right, pivoting on your feet and hips, while keeping your lower body stable.",
+    "Pause for a moment at the end of the twist, then slowly return to the starting position.",
+    "Repeat the twist to the left side.",
+    "Continue alternating twists for the desired number of repetitions."
+  ],
+  "femaleVariant": "2320",
+  "textSource": "exercisedb"
+}

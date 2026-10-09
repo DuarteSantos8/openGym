@@ -1,0 +1,22 @@
+{
+  "id": "6068",
+  "name": "bottle weighted alternate biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "weighted",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "Alternating curls with a bottle in each hand. It builds the biceps and keeps the pace easy.",
+  "instructions": [
+    "Stand tall with a bottle in each hand, palms forward.",
+    "Curl one bottle toward your shoulder.",
+    "Lower it slowly as you curl the other.",
+    "Keep your elbows by your sides.",
+    "Avoid swinging your torso."
+  ],
+  "textSource": "opengym"
+}

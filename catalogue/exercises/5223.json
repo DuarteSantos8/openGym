@@ -1,0 +1,22 @@
+{
+  "id": "5223",
+  "name": "smith wide shrug",
+  "bodyPart": "back",
+  "equipment": "smith machine",
+  "target": "traps",
+  "secondaryMuscles": [
+    "forearms",
+    "grip muscles",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A shrug on the Smith machine with a wide grip. It builds the upper traps.",
+  "instructions": [
+    "Set the bar at thigh height and grip it wider than shoulder width.",
+    "Stand tall with your arms straight.",
+    "Shrug your shoulders straight up toward your ears.",
+    "Pause at the top.",
+    "Lower slowly without rolling your shoulders."
+  ],
+  "textSource": "opengym"
+}

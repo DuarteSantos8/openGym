@@ -1,0 +1,21 @@
+{
+  "id": "1882",
+  "name": "lying abductor stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "Floor stretch that pulls one leg across the body to open the outer hip.",
+  "instructions": [
+    "Lie on your back with your legs straight.",
+    "Bring one knee up and across your body.",
+    "Use the opposite hand to ease it toward the floor.",
+    "Keep your shoulders flat on the ground.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

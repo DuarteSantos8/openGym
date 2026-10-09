@@ -1,0 +1,38 @@
+{
+  "id": "0099",
+  "name": "barbell single leg split squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A split squat with the rear foot raised and a bar on your back. Strong work for the quads and glutes.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a barbell across your upper back.",
+    "Take a large step forward with one leg, keeping your torso upright.",
+    "Lower your body by bending your front knee and hip, while keeping your back leg straight.",
+    "Continue lowering until your front thigh is parallel to the ground.",
+    "Pause for a moment, then push through your front heel to return to the starting position.",
+    "Repeat for the desired number of repetitions, then switch legs."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "adductors"
+    ],
+    "secondaries": [
+      "hamstring",
+      "calves",
+      "lower-back",
+      "abs",
+      "obliques"
+    ]
+  },
+  "femaleVariant": "2227",
+  "textSource": "exercisedb"
+}

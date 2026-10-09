@@ -1,0 +1,23 @@
+{
+  "id": "9409",
+  "name": "standing bent knee calf raise with a chair support",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "calisthenics",
+  "description": "A calf raise with the knees slightly bent while holding a chair. It targets the deeper soleus muscle.",
+  "instructions": [
+    "Stand behind a chair and hold it for balance.",
+    "Bend your knees slightly.",
+    "Raise your heels as high as you can.",
+    "Pause at the top.",
+    "Lower your heels slowly.",
+    "Keep your knees bent throughout."
+  ],
+  "textSource": "opengym"
+}

@@ -24,6 +24,15 @@ export const webauthnOK = () => typeof window.PublicKeyCredential !== 'undefined
 let remoteBase = ''
 let remoteToken = null
 export function setRemoteAuth(base, token) { remoteBase = base || ''; remoteToken = token || null }
+// A Cloudflare Access service token (lib/cf-access.js): sent only to the origin it was entered
+// for, never on a same-origin request, where the browser's own Access session cookie already
+// does the job, and never to a server that merely happens to be paired or typed in.
+let accessHeaders = {}
+let accessOrigin = ''
+export function setAccessHeaders(h, origin) { accessHeaders = Object.assign({}, h); accessOrigin = origin || '' }
+const originOf = base => { try { return new URL(base).origin } catch { return '' } }
+const accessFor = base => (base && accessOrigin && originOf(base) === accessOrigin ? accessHeaders : {})
+const remoteHeaders = () => Object.assign({}, accessFor(remoteBase), remoteToken ? { Authorization: 'Bearer ' + remoteToken } : {})
 
 export { appBase }
 
@@ -46,8 +55,7 @@ export async function api(path, opts) {
   // there and the change was marked as synced while the server never saw it. status 0, not
   // undefined: this is not "offline", and the store must not show it as such.
   if (MOBILE && !remoteBase) throw failure(t('This phone is not connected to a server.'), 'not-paired', 0)
-  const headers = Object.assign({ 'Content-Type': 'application/json' }, init.headers)
-  if (remoteToken) headers.Authorization = 'Bearer ' + remoteToken
+  const headers = Object.assign({ 'Content-Type': 'application/json' }, init.headers, remoteHeaders())
   // A paired phone has an absolute base of its own; everyone else is relative to where the app
   // is served, so a subpath deployment reaches its own API instead of the proxy's root.
   const url = remoteBase ? remoteBase + path : appBase().replace(/\/$/, '') + path
@@ -106,7 +114,7 @@ export function beacon(path, body) {
    answer allows it for GET and PUT); both refuse to run on a phone without a server, like api(). */
 
 const mediaUrl = path => (remoteBase ? remoteBase + path : appBase().replace(/\/$/, '') + path)
-const mediaHeaders = () => (remoteToken ? { Authorization: 'Bearer ' + remoteToken } : {})
+const mediaHeaders = remoteHeaders
 const notPaired = () => failure(t('This phone is not connected to a server.'), 'not-paired', 0)
 const timedOut = () => failure(t('The server did not answer in time.'), 'timeout')
 
@@ -272,29 +280,42 @@ async function whyUnreachable(base, ms) {
     const origin = globalThis.location?.origin || 'https://localhost'
     return failure(t('Your server was reached, but it refused the app’s request (CORS). If a reverse proxy such as Traefik adds CORS headers, let requests from {0} through to openGym unchanged. See “Phone app and CORS” in docs/SELF_HOSTING.md.', origin), 'cors')
   }
+  // An address typed without a scheme is tried as https://. A home server on plain http gives
+  // that try nothing to talk to, while the phone's browser, which tries http, opens it (#428).
+  let u = null
+  try { u = new URL(base) } catch { /* said as it is below */ }
+  if (u && u.protocol === 'https:' && looksLocal(u.hostname)) {
+    return failure(t('Could not reach {0} over https://. If your server runs on plain http (common at home), type http://{0} instead.', hostOfBase(base)), 'unreachable')
+  }
   return failure(t('Could not reach {0}. Check the address and that this phone can reach it.', hostOfBase(base)), 'unreachable')
 }
 
-// The app's WebView is an https:// page with mixed content off, so a plain http:// server is
-// refused before a single byte goes out, and the probes above would only say "could not reach".
-// localhost counts as secure and is let through.
-async function blockedAsMixedContent(base) {
-  let u
-  try { u = new URL(base) } catch { return false }
-  if (u.protocol !== 'http:' || /^(localhost|127\.\d+\.\d+\.\d+|\[::1\])$/i.test(u.hostname)) return false
-  try {
-    const cap = await import('@capacitor/core')
-    return !!(cap && cap.Capacitor && cap.Capacitor.isNativePlatform())
-  } catch { return false }
+// An address that only makes sense on a home network: a private or link-local IP, a name
+// without a dot ("nas"), or a LAN-only suffix (.local, .lan, .home.arpa, .internal). Those are
+// where a server most often runs on plain http, so an https:// try that got nowhere is worth a
+// hint about http:// (#428). A public name gets the plain "could not reach" instead.
+export function looksLocal(hostname) {
+  const h = String(hostname || '').toLowerCase().replace(/^\[|\]$/g, '').replace(/\.$/, '')
+  if (!h) return false
+  const v4 = /^(\d{1,3})\.(\d{1,3})\.\d{1,3}\.\d{1,3}$/.exec(h)
+  if (v4) {
+    const a = +v4[1], b = +v4[2]
+    return a === 10 || a === 127 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) ||
+      (a === 169 && b === 254) || (a === 100 && b >= 64 && b <= 127)
+  }
+  if (h.includes(':')) return h === '::1' || /^f[cd]/.test(h) || /^fe[89ab]/.test(h)
+  return !h.includes('.') || /\.(local|lan|home|home\.arpa|internal|localdomain)$/.test(h)
 }
 
 // Bootstraps the connection itself: the base isn't configured yet (that's what this call decides),
-// so it talks straight to the server the user typed in, no Authorization header.
+// so it talks straight to the server the user typed in, no Authorization header. A Cloudflare
+// Access token goes along when it was entered for that server: without it Access never lets
+// the code through, and to any other server it would be handed to a stranger.
 export async function pairRedeem(serverBase, code, { probeMs = PROBE_MS } = {}) {
   let data
   try {
     data = await request(serverBase + '/api/pair/redeem', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code })
+      method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, accessFor(serverBase)), body: JSON.stringify({ code })
     }, TIMEOUT_GET_MS)
   } catch (e) {
     // A wrong, spent or expired code is the one refusal a person can fix, and the server says it
@@ -302,9 +323,6 @@ export async function pairRedeem(serverBase, code, { probeMs = PROBE_MS } = {}) 
     if (e && e.status === 400) throw failure(t('That code didn’t work. Codes last 5 minutes and work once, so grab a fresh one.'), 'pair-invalid', 400)
     // The server answered (any status) or did not answer in time: that error says it already.
     if (e && (e.status != null || e.code)) throw e
-    if (await blockedAsMixedContent(serverBase)) {
-      throw failure(t('The app can only pair with an https:// address. Your phone blocks plain http:// before anything is even sent.'), 'insecure')
-    }
     throw await whyUnreachable(serverBase, probeMs)
   }
   // Anything that is not a pairing would be saved as one — and the phone would then send every

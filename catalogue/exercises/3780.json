@@ -1,0 +1,23 @@
+{
+  "id": "3780",
+  "name": "band standing chest press",
+  "bodyPart": "chest",
+  "equipment": "band",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A standing press against band tension. It builds your chest, shoulders and triceps.",
+  "instructions": [
+    "Anchor the band behind you at chest height and hold the handles at your chest.",
+    "Stand in a staggered stance with your core braced.",
+    "Press both hands forward until your arms are straight.",
+    "Pause briefly, then return slowly to your chest.",
+    "Keep your shoulders down and your back still."
+  ],
+  "femaleVariant": "0920",
+  "textSource": "opengym"
+}

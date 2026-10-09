@@ -1,0 +1,23 @@
+{
+  "id": "3513",
+  "name": "resistance band shoulder stretch behind the back",
+  "bodyPart": "shoulders",
+  "equipment": "resistance band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "chest",
+    "biceps",
+    "rotator cuff"
+  ],
+  "category": "stretching",
+  "description": "A shoulder and chest stretch holding a band behind the back. It opens the front of the shoulders.",
+  "instructions": [
+    "Stand tall holding a band behind your back with both hands.",
+    "Keep your arms straight and your hands wide.",
+    "Lift your hands away from your back gently.",
+    "Keep your chest open and your ribs down.",
+    "Hold for 20-30 seconds.",
+    "Release slowly."
+  ],
+  "textSource": "opengym"
+}

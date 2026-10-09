@@ -1,0 +1,23 @@
+{
+  "id": "9320",
+  "name": "isometric hold close grip chin up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms",
+    "upper back"
+  ],
+  "category": "isometric",
+  "description": "A close grip chin-up held at the top or halfway. It builds pulling strength and grip.",
+  "instructions": [
+    "Grip the bar with palms facing you and hands close together.",
+    "Pull yourself up until your chin is over the bar.",
+    "Hold for 5 to 15 seconds.",
+    "Keep your shoulders down and core tight.",
+    "Lower slowly under control.",
+    "Rest and repeat."
+  ],
+  "textSource": "opengym"
+}

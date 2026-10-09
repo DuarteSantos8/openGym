@@ -1,0 +1,23 @@
+{
+  "id": "4678",
+  "name": "band swing",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A hip-hinge swing using a resisted band. It builds hip power and glute strength.",
+  "instructions": [
+    "Stand on the band holding the other end with both hands.",
+    "Hinge your hips back with a flat back.",
+    "Drive your hips forward to swing your arms up to chest height.",
+    "Squeeze your glutes at the top.",
+    "Control the return and repeat."
+  ],
+  "textSource": "opengym"
+}

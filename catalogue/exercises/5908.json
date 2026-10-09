@@ -1,0 +1,22 @@
+{
+  "id": "5908",
+  "name": "revolved head to knee pose",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "obliques",
+    "hamstrings",
+    "lats"
+  ],
+  "category": "yoga",
+  "description": "A seated side bend and twist over one extended leg. Stretches the side body and hamstrings.",
+  "instructions": [
+    "Sit with one leg extended and the other foot against your inner thigh.",
+    "Rotate your chest toward the extended leg.",
+    "Reach one arm overhead and bend over the leg.",
+    "Hold for 5 slow breaths.",
+    "Rise and switch sides."
+  ],
+  "textSource": "opengym"
+}

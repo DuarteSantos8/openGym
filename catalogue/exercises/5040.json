@@ -1,0 +1,23 @@
+{
+  "id": "5040",
+  "name": "lying prone a",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids",
+    "trapezius",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "Lying face down, arms form an A shape and lift. It strengthens the upper back and shoulder blade muscles.",
+  "instructions": [
+    "Lie face down with your arms out at about 45 degrees, palms down.",
+    "Rest your forehead lightly or look at the floor.",
+    "Lift your arms and chest slightly while squeezing your shoulder blades.",
+    "Hold for a second.",
+    "Lower with control and repeat."
+  ],
+  "textSource": "opengym"
+}

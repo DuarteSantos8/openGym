@@ -1,0 +1,22 @@
+{
+  "id": "11904",
+  "name": "standing half kneeling hip flexors stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "glutes",
+    "core"
+  ],
+  "category": "stretching",
+  "description": "A half-kneeling position that opens the front of the hip and the quad of the back leg.",
+  "instructions": [
+    "Kneel on one knee with the other foot forward and a pad under your knee.",
+    "Keep your torso upright and tuck your pelvis under.",
+    "Shift your weight forward until you feel a stretch at the front of the back hip.",
+    "Keep your front knee over your ankle and your core engaged.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

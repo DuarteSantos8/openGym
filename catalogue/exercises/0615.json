@@ -1,0 +1,22 @@
+{
+  "id": "0615",
+  "name": "lying crossover stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "lower back",
+    "obliques"
+  ],
+  "category": "stretching",
+  "description": "Lying on your back, you cross one leg over the other. It stretches the outer hip and lower back.",
+  "instructions": [
+    "Lie on your back with arms out to the sides.",
+    "Bend one knee and bring it across your body.",
+    "Let it lower toward the floor on the opposite side.",
+    "Keep both shoulders flat on the floor.",
+    "Hold for 20-30 seconds.",
+    "Switch sides."
+  ],
+  "textSource": "opengym"
+}

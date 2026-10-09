@@ -1,0 +1,24 @@
+{
+  "id": "4258",
+  "name": "backwards run",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "calves",
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "cardio",
+  "description": "Running backwards at a comfortable pace. It raises your heart rate and strengthens the quads and calves.",
+  "instructions": [
+    "Find a clear, flat area or treadmill at a low speed.",
+    "Stand tall with your arms bent.",
+    "Run backwards, landing on the balls of your feet.",
+    "Glance over your shoulder from time to time.",
+    "Keep a steady, controlled pace.",
+    "Slow down gradually to finish."
+  ],
+  "textSource": "opengym"
+}

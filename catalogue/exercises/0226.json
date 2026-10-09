@@ -1,0 +1,22 @@
+{
+  "id": "0226",
+  "name": "cable standing crunch",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A standing cable crunch with the rope held behind the head. You round the torso down toward the knees to work the abs.",
+  "instructions": [
+    "Attach a cable handle to a high pulley and stand facing away from the machine.",
+    "Hold the handle with both hands and place it behind your head, keeping your elbows bent.",
+    "Stand with your feet shoulder-width apart and your knees slightly bent.",
+    "Keeping your abs engaged, exhale and crunch your torso down towards your knees, bringing your elbows towards your thighs.",
+    "Pause for a moment at the bottom of the movement, then slowly return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2578",
+  "textSource": "exercisedb"
+}

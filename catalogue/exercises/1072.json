@@ -1,0 +1,22 @@
+{
+  "id": "1072",
+  "name": "suspender chest dip",
+  "bodyPart": "chest",
+  "equipment": "suspension trainer",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Dip between straps. It works the chest and triceps.",
+  "instructions": [
+    "Support yourself on the straps with arms straight.",
+    "Lean slightly forward.",
+    "Lower until elbows reach 90 degrees.",
+    "Press back up.",
+    "Keep the straps steady."
+  ],
+  "textSource": "opengym"
+}

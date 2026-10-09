@@ -1,0 +1,23 @@
+{
+  "id": "4064",
+  "name": "barbell squat with chains",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Back squat with chains hanging from the bar, so the load grows as you stand. It builds leg strength through the whole range.",
+  "instructions": [
+    "Set chains on the bar and unrack it onto your upper back.",
+    "Stand with feet shoulder-width apart.",
+    "Squat down with your chest up until your thighs are at least parallel.",
+    "Drive up through your feet.",
+    "Keep your core braced throughout."
+  ],
+  "textSource": "opengym"
+}

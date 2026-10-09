@@ -1,0 +1,22 @@
+{
+  "id": "2157",
+  "name": "resistance band lying leg raise",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "hip flexors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A side lying leg raise against a band that works the outer hip and glutes.",
+  "instructions": [
+    "Place a band around your thighs or ankles and lie on your side with your legs straight.",
+    "Rest your head on your arm and keep your hips stacked.",
+    "Raise the top leg against the band without rolling backward.",
+    "Pause at the top.",
+    "Lower slowly, finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

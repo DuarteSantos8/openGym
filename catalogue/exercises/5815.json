@@ -1,0 +1,21 @@
+{
+  "id": "5815",
+  "name": "lever one arm side chest press",
+  "bodyPart": "chest",
+  "equipment": "leverage machine",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A single-arm press on a chest press machine. Training one side at a time helps balance strength between arms.",
+  "instructions": [
+    "Sit in the machine with your back against the pad.",
+    "Grip one handle at chest level.",
+    "Press the handle forward until your arm is straight.",
+    "Squeeze your chest at the end.",
+    "Return slowly and switch arms after your set."
+  ],
+  "textSource": "opengym"
+}

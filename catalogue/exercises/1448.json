@@ -1,0 +1,22 @@
+{
+  "id": "1448",
+  "name": "barbell pullover hold",
+  "bodyPart": "back",
+  "equipment": "barbell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "chest",
+    "triceps",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "Hold a barbell overhead behind you while lying on a bench. It builds lat and chest control in the stretched position.",
+  "instructions": [
+    "Lie on a bench holding a light barbell above your chest with arms nearly straight.",
+    "Lower the bar back over your head until you feel a deep stretch in your lats.",
+    "Brace your core and keep your ribs down and your elbows softly bent.",
+    "Hold the position for 15-30 seconds without letting the bar drift.",
+    "Return the bar over your chest with control and set it down safely."
+  ],
+  "textSource": "opengym"
+}

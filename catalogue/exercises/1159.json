@@ -1,0 +1,23 @@
+{
+  "id": "1159",
+  "name": "suspender abduction lunge",
+  "bodyPart": "upper legs",
+  "equipment": "suspension trainer",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "quadriceps",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A side lunge with the straps for balance, working the outer hips and legs.",
+  "instructions": [
+    "Hold the handles and stand tall.",
+    "Step out wide to one side.",
+    "Bend that knee and push the hips back.",
+    "Keep your chest up and the other leg straight.",
+    "Push off to return.",
+    "Alternate sides."
+  ],
+  "textSource": "opengym"
+}

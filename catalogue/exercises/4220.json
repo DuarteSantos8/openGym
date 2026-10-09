@@ -1,0 +1,22 @@
+{
+  "id": "4220",
+  "name": "tiger tail forearm",
+  "bodyPart": "lower arms",
+  "equipment": "roller",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "wrist extensors"
+  ],
+  "category": "mobility",
+  "description": "Rolling a handheld foam roller along your forearm to ease tight muscles. It is a quick self-massage for grip and wrists.",
+  "instructions": [
+    "Rest your forearm on a table, palm up.",
+    "Hold the tiger tail roller in your other hand.",
+    "Roll slowly from wrist to elbow with moderate pressure.",
+    "Pause on tender spots for a few seconds.",
+    "Turn your palm down and repeat.",
+    "Switch arms and roll for 30-60 seconds each."
+  ],
+  "textSource": "opengym"
+}

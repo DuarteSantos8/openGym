@@ -1,0 +1,22 @@
+{
+  "id": "10914",
+  "name": "bodyweight quarter squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A shallow squat that goes only a quarter of the way down. Good for beginners and for warm-ups.",
+  "instructions": [
+    "Stand with feet shoulder-width apart.",
+    "Push your hips back and bend your knees a short way.",
+    "Keep your chest up and heels down.",
+    "Press through your feet to stand tall.",
+    "Repeat at a steady pace."
+  ],
+  "textSource": "opengym"
+}

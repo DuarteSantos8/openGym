@@ -1,0 +1,22 @@
+{
+  "id": "4849",
+  "name": "banded glute ham raise v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A glute-ham raise with a band assisting the movement. It strengthens the hamstrings and glutes.",
+  "instructions": [
+    "Set up on a glute-ham bench or anchor your feet with a band assisting you.",
+    "Start with your torso down and hips locked.",
+    "Curl up using your hamstrings.",
+    "Squeeze your glutes at the top.",
+    "Lower with control."
+  ],
+  "textSource": "opengym"
+}

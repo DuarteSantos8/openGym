@@ -1,0 +1,23 @@
+{
+  "id": "9511",
+  "name": "box assisted pull up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A pull-up with your feet on a box for light assistance. It helps you build up to full pull-ups.",
+  "instructions": [
+    "Place a box under a pull-up bar.",
+    "Grip the bar and rest one or both feet on the box.",
+    "Pull up until your chin clears the bar.",
+    "Use your legs as little as possible.",
+    "Lower slowly.",
+    "Keep your core tight."
+  ],
+  "textSource": "opengym"
+}

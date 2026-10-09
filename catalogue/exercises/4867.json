@@ -1,0 +1,22 @@
+{
+  "id": "4867",
+  "name": "butterfly yoga flaps",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "groin",
+    "inner thighs",
+    "hip flexors"
+  ],
+  "category": "yoga",
+  "description": "Seated butterfly pose with gentle knee flapping. It loosens the inner thighs and hips.",
+  "instructions": [
+    "Sit with the soles of your feet together.",
+    "Hold your feet.",
+    "Gently flap your knees up and down.",
+    "Keep your spine tall.",
+    "Continue for 30 seconds."
+  ],
+  "textSource": "opengym"
+}

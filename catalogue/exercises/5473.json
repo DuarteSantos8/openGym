@@ -1,0 +1,23 @@
+{
+  "id": "5473",
+  "name": "shoulder width neutral grip pull up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "brachialis",
+    "upper back",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "Pull-up with palms facing each other at shoulder width, a joint-friendly grip that builds the lats and arms.",
+  "instructions": [
+    "Grab neutral-grip handles about shoulder width apart and hang with arms straight.",
+    "Brace your core and pull your shoulder blades down.",
+    "Pull your chest toward your hands until your chin clears the bar.",
+    "Lower yourself slowly to a full hang.",
+    "Avoid swinging or kicking."
+  ],
+  "textSource": "opengym"
+}

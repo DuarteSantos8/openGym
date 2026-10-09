@@ -1,0 +1,23 @@
+{
+  "id": "0810",
+  "name": "toe touch sit (wall)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A wall sit with a toe touch added. The reach makes your trunk work while your legs hold the squat.",
+  "instructions": [
+    "Lean against a wall and slide down into a wall sit.",
+    "Hold the squat position with your feet flat.",
+    "Reach forward and down with your hands toward your toes.",
+    "Return to an upright position against the wall.",
+    "Repeat for the set, keeping the sit steady.",
+    "Slide back up when finished and keep your knees at about 90 degrees."
+  ],
+  "textSource": "opengym"
+}

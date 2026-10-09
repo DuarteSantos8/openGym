@@ -1,0 +1,22 @@
+{
+  "id": "4559",
+  "name": "kneeling lat stretch on bench",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "stretching",
+  "description": "A kneeling stretch with the arms on a bench that opens the lats and shoulders.",
+  "instructions": [
+    "Kneel in front of a bench and place both elbows on top of it.",
+    "Keep your hands together or hold a light stick.",
+    "Sit your hips back and let your chest sink toward the floor.",
+    "Keep your lower back relaxed.",
+    "Hold for 20-30 seconds while breathing slowly.",
+    "Come back up carefully."
+  ],
+  "textSource": "opengym"
+}

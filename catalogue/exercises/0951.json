@@ -1,0 +1,23 @@
+{
+  "id": "0951",
+  "name": "garland pose malasana",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "adductors",
+    "groin",
+    "ankles",
+    "lower back"
+  ],
+  "category": "yoga",
+  "description": "A deep squat with elbows pressing the knees apart and palms together. It stretches the hips, groin and ankles.",
+  "instructions": [
+    "Stand with feet slightly wider than hips and toes turned out.",
+    "Lower into a deep squat, keeping your heels down if you can.",
+    "Bring your palms together at your chest.",
+    "Press your elbows against your inner knees and lengthen your spine.",
+    "Hold for 20-30 seconds while breathing slowly."
+  ],
+  "textSource": "opengym"
+}

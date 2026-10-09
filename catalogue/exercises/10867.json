@@ -1,0 +1,23 @@
+{
+  "id": "10867",
+  "name": "lever incline prone neutral grip row",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rhomboids",
+    "biceps",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A chest-supported machine row on an incline with a neutral grip. It builds the mid back without loading the lower back.",
+  "instructions": [
+    "Lie face down on the incline pad with your chest supported.",
+    "Grip the neutral handles and extend your arms.",
+    "Pull your elbows back past your torso, squeezing the shoulder blades together.",
+    "Pause for a moment.",
+    "Let the handles return slowly until your arms are straight."
+  ],
+  "textSource": "opengym"
+}

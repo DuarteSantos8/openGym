@@ -1,0 +1,23 @@
+{
+  "id": "1211",
+  "name": "cable twisting standing one arm chest press",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "obliques",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A standing single-arm cable press with a rotation. It trains the chest and the core's ability to resist and produce twist.",
+  "instructions": [
+    "Set the cable at chest height and stand sideways with the handle in your inside hand.",
+    "Take a stable stance and hold the handle at your chest.",
+    "Press the handle forward while rotating your torso toward the press.",
+    "Return to the start with control.",
+    "Complete your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

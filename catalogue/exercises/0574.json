@@ -1,0 +1,23 @@
+{
+  "id": "0574",
+  "name": "lever bent over row",
+  "bodyPart": "back",
+  "equipment": "barbell",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A lever machine version of the bent over row. You pull the handles toward your torso to train the back and lats.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and knees slightly bent.",
+    "Hold the barbell with an overhand grip, hands slightly wider than shoulder-width apart.",
+    "Bend forward at the hips, keeping your back straight and chest up.",
+    "Pull the barbell towards your lower chest, squeezing your shoulder blades together.",
+    "Pause for a moment at the top, then slowly lower the barbell back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3097",
+  "textSource": "exercisedb"
+}

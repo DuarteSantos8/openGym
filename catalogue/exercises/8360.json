@@ -1,0 +1,22 @@
+{
+  "id": "8360",
+  "name": "resistance band standing shoulder internal rotation",
+  "bodyPart": "shoulders",
+  "equipment": "resistance band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "chest",
+    "lats"
+  ],
+  "category": "rehab",
+  "description": "A light band drill that strengthens the internal rotators of the shoulder, handy for joint health.",
+  "instructions": [
+    "Anchor the band at elbow height and stand sideways to it.",
+    "Tuck your elbow against your side with the forearm pointing forward.",
+    "Rotate your forearm across your belly, keeping the elbow fixed.",
+    "Return slowly to the start.",
+    "Finish the reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

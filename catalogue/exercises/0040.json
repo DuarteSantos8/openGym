@@ -1,0 +1,22 @@
+{
+  "id": "0040",
+  "name": "barbell front raise and pullover",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "deltoids",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "Two moves in one: raise the bar in front to shoulder height, then take it back overhead. Hits the shoulders and chest.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold a barbell with an overhand grip, palms facing down.",
+    "Keep your arms straight and raise the barbell in front of you until it reaches shoulder height.",
+    "Pause for a moment at the top, then slowly lower the barbell back down to the starting position.",
+    "Next, lower the barbell behind your head, keeping your arms straight.",
+    "Pause for a moment at the bottom, then raise the barbell back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

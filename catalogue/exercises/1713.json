@@ -1,0 +1,21 @@
+{
+  "id": "1713",
+  "name": "assisted prone lying quads stretch",
+  "bodyPart": "upper legs",
+  "equipment": "assisted",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "A partner-assisted stretch lying face down for the quads. It lengthens the front of the thigh.",
+  "instructions": [
+    "Lie face down on the ground with your legs extended.",
+    "Bend your left knee and reach back with your left hand to grab your left foot or ankle.",
+    "Gently pull your left foot towards your glutes, feeling a stretch in your left quad.",
+    "Hold the stretch for 20-30 seconds, then release.",
+    "Repeat with your right leg."
+  ],
+  "textSource": "exercisedb"
+}

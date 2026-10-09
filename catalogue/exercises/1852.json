@@ -1,0 +1,22 @@
+{
+  "id": "1852",
+  "name": "leg raise hip lift",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "glutes"
+  ],
+  "category": "calisthenics",
+  "description": "A lying leg raise finished with a hip lift that targets the lower abs.",
+  "instructions": [
+    "Lie on your back with your legs straight and your hands by your sides.",
+    "Raise your legs to vertical.",
+    "Curl your hips up off the floor, pushing your feet toward the ceiling.",
+    "Lower your hips, then your legs, with control.",
+    "Keep your movement smooth and avoid swinging."
+  ],
+  "textSource": "opengym"
+}

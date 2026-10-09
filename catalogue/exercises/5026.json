@@ -1,0 +1,22 @@
+{
+  "id": "5026",
+  "name": "resistance band serratus wall slide with foam roll",
+  "bodyPart": "back",
+  "equipment": "resistance band",
+  "target": "serratus anterior",
+  "secondaryMuscles": [
+    "trapezius",
+    "shoulders",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "Wall slide with a band and a foam roller between your forearms and the wall. It adds stability and serratus activation.",
+  "instructions": [
+    "Put a band around your forearms and place a foam roller on the wall under them.",
+    "Press your forearms into the roller and push slightly out against the band.",
+    "Roll the roller up the wall as you reach overhead.",
+    "Keep your ribs down and shoulders away from your ears.",
+    "Roll back down slowly."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "0223",
+  "name": "cable side crunch",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A cable side crunch from a low pulley, bringing the elbow toward the hip. It works the obliques with steady tension.",
+  "instructions": [
+    "Attach a cable handle to a low pulley and stand sideways to the machine.",
+    "Grasp the handle with the hand furthest from the machine and place your other hand on your hip.",
+    "Keep your feet shoulder-width apart and your knees slightly bent.",
+    "With your abs engaged, bend sideways at the waist, bringing your elbow down towards your hip.",
+    "Pause for a moment at the bottom, then slowly return to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides."
+  ],
+  "femaleVariant": "2577",
+  "textSource": "exercisedb"
+}

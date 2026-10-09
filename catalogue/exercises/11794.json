@@ -1,0 +1,21 @@
+{
+  "id": "11794",
+  "name": "single arm fingers press with ball v. 2",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "hands",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A second version of the fingers-on-ball drill for forearm and hand strength.",
+  "instructions": [
+    "Place a ball under one hand on a table or hold it in your palm.",
+    "Spread your fingers over the ball.",
+    "Press down and hold for 2-3 seconds.",
+    "Release with control.",
+    "Repeat for reps, then switch hands."
+  ],
+  "textSource": "opengym"
+}

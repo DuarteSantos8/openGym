@@ -1,0 +1,23 @@
+{
+  "id": "3526",
+  "name": "kneeling t spine mobility",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "obliques",
+    "upper back",
+    "shoulders"
+  ],
+  "category": "mobility",
+  "description": "A kneeling rotation drill for upper back mobility.",
+  "instructions": [
+    "Kneel on all fours.",
+    "Place one hand behind your head.",
+    "Rotate your elbow toward the opposite arm.",
+    "Open up and rotate toward the ceiling.",
+    "Follow your elbow with your eyes.",
+    "Do your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

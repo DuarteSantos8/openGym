@@ -1,0 +1,23 @@
+{
+  "id": "2163",
+  "name": "resistance band reverse hyperextension",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Swings the legs up behind you against a band to train the glutes and the muscles along the lower back.",
+  "instructions": [
+    "Lie face down over a bench or box with a band anchored near your feet.",
+    "Hold the bench edge and loop the band around your ankles.",
+    "Squeeze your glutes and lift your legs until they are in line with your body.",
+    "Avoid swinging or arching the lower back.",
+    "Lower the legs slowly.",
+    "Repeat for the planned reps."
+  ],
+  "textSource": "opengym"
+}

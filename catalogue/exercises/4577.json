@@ -1,0 +1,24 @@
+{
+  "id": "4577",
+  "name": "dumbbell half kneeling military press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "An overhead dumbbell press from a half kneeling stance, adding core and hip stability.",
+  "instructions": [
+    "Kneel on one knee with the other foot in front and dumbbells at your shoulders.",
+    "Squeeze the glute of the kneeling leg.",
+    "Brace your core and keep your ribs down.",
+    "Press the dumbbells overhead until your arms are straight.",
+    "Lower slowly to shoulder height.",
+    "Switch your lead leg halfway through or on the next set."
+  ],
+  "textSource": "opengym"
+}

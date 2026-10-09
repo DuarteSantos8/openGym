@@ -1,0 +1,23 @@
+{
+  "id": "2751",
+  "name": "kettlebell dumbbell sumo squat off stepbox",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "adductors",
+    "hamstrings",
+    "inner thighs"
+  ],
+  "category": "strength",
+  "description": "A sumo squat from a raised step box, adding range of motion for deeper work on the glutes and inner thighs.",
+  "instructions": [
+    "Stand on a step box in a wide stance with toes out.",
+    "Hold a kettlebell or dumbbell in front of you.",
+    "Sit down between your legs, keeping your chest up.",
+    "Lower as far as comfortable.",
+    "Push through your feet to stand."
+  ],
+  "textSource": "opengym"
+}

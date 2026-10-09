@@ -1,0 +1,23 @@
+{
+  "id": "6914",
+  "name": "sitting scapular adduction v. 2",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rhomboids",
+    "trapezius",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A variation of the seated shoulder blade squeeze with the arms held out. It strengthens the upper back and posture muscles.",
+  "instructions": [
+    "Sit tall with elbows bent and hands by your ribs.",
+    "Keep your neck relaxed.",
+    "Draw your elbows back and pinch your shoulder blades together.",
+    "Hold for 2-3 seconds.",
+    "Return slowly and repeat."
+  ],
+  "femaleVariant": "6615",
+  "textSource": "opengym"
+}

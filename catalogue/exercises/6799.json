@@ -1,0 +1,22 @@
+{
+  "id": "6799",
+  "name": "dumbbell lying oblique v up",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A lying V-up to the side while holding a dumbbell. It works the abs and obliques hard.",
+  "instructions": [
+    "Lie on your back holding a dumbbell with both hands overhead.",
+    "Lift your legs and torso together, angling toward one side.",
+    "Reach the dumbbell toward your feet.",
+    "Lower back down slowly.",
+    "Alternate sides each rep."
+  ],
+  "textSource": "opengym"
+}

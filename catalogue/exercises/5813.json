@@ -1,0 +1,23 @@
+{
+  "id": "5813",
+  "name": "45 degree hyperextension (arms in front of chest)",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A back extension on a 45 degree bench with arms crossed at the chest. It strengthens the lower back and glutes.",
+  "instructions": [
+    "Set the pad at hip height and hook your heels under the rollers.",
+    "Cross your arms over your chest.",
+    "Lower your torso with a straight back.",
+    "Raise yourself until your body forms a straight line.",
+    "Squeeze your glutes at the top and lower slowly."
+  ],
+  "femaleVariant": "0877",
+  "textSource": "opengym"
+}

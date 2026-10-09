@@ -1,0 +1,20 @@
+{
+  "id": "1727",
+  "name": "cable standing reverse grip one arm overhead tricep extension",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A standing one-arm overhead triceps extension with a reverse grip. It trains the triceps, long head included.",
+  "instructions": [
+    "Stand facing away from the cable machine with your feet shoulder-width apart.",
+    "Hold the cable handle with an underhand grip and extend your arm overhead, keeping your elbow close to your head.",
+    "Keep your upper arm stationary and slowly lower the cable handle behind your head by bending your elbow.",
+    "Pause for a moment at the bottom, then extend your arm back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms."
+  ],
+  "textSource": "exercisedb"
+}

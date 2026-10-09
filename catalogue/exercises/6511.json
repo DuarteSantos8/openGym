@@ -1,0 +1,22 @@
+{
+  "id": "6511",
+  "name": "cable single arm high scapular row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rhomboids",
+    "trapezius",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A high cable row focused on moving your shoulder blade, building control in your upper back.",
+  "instructions": [
+    "Set a cable high and hold the handle with one hand.",
+    "Stand tall with your core braced.",
+    "Pull your shoulder blade back and down, bending the elbow slightly.",
+    "Squeeze at the end.",
+    "Release slowly, then switch arms."
+  ],
+  "textSource": "opengym"
+}

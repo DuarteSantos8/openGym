@@ -1,0 +1,21 @@
+{
+  "id": "5557",
+  "name": "standing chest stretch against door",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "biceps"
+  ],
+  "category": "stretching",
+  "description": "Doorway stretch for the chest and front of the shoulders.",
+  "instructions": [
+    "Stand in a doorway with your forearm against the frame, elbow at shoulder height.",
+    "Step through gently with the opposite foot.",
+    "Turn away until you feel a chest stretch.",
+    "Hold for 20-30 seconds.",
+    "Switch sides."
+  ],
+  "textSource": "opengym"
+}

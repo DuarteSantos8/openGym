@@ -1,0 +1,22 @@
+{
+  "id": "3986",
+  "name": "ez bar front twist raise",
+  "bodyPart": "shoulders",
+  "equipment": "ez barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "forearms",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Raise an EZ bar forward while rotating it. It trains the front delts with a twist.",
+  "instructions": [
+    "Stand holding an EZ bar at thigh height.",
+    "Raise it forward to chest height.",
+    "Rotate your wrists as you lift.",
+    "Pause at the top.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "0806",
+  "name": "suspended push-up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up with the hands in suspension handles, so the body has to stay stable. It trains the chest, shoulders, triceps and core.",
+  "instructions": [
+    "Find a suspension trainer and adjust it to an appropriate height.",
+    "Stand facing away from the anchor point and hold the handles with an overhand grip.",
+    "Walk your feet forward, leaning your body forward until your weight is supported by the suspension trainer.",
+    "Keep your body straight from head to heels, engage your core, and lower your chest towards the handles.",
+    "Push through your chest and arms to return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

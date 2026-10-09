@@ -1,0 +1,24 @@
+{
+  "id": "10189",
+  "name": "weighted plate deadlift rear lunge with overhead press",
+  "bodyPart": "full body",
+  "equipment": "weight plate",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "shoulders",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A plate flow that links a deadlift, a reverse lunge and an overhead press for a full body hit.",
+  "instructions": [
+    "Stand holding a weight plate in front of your thighs.",
+    "Hinge at the hips and lower the plate toward your shins, then stand up.",
+    "Step one foot back into a reverse lunge as you press the plate overhead.",
+    "Return the foot and bring the plate back to your thighs.",
+    "Keep a flat back and repeat, alternating the lunging leg."
+  ],
+  "textSource": "opengym"
+}

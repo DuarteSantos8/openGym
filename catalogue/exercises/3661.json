@@ -1,0 +1,21 @@
+{
+  "id": "3661",
+  "name": "static position seated back",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "core"
+  ],
+  "category": "isometric",
+  "description": "Hold an upright seated posture with no pad.",
+  "instructions": [
+    "Sit tall with feet flat on the floor.",
+    "Keep your back straight.",
+    "Place your hands on your thighs.",
+    "Relax your shoulders.",
+    "Hold and breathe."
+  ],
+  "femaleVariant": "3140",
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "0964",
+  "name": "warrior pose i virabhadrasana",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hip flexors",
+    "shoulders",
+    "core"
+  ],
+  "category": "stretching",
+  "description": "A lunge with arms raised overhead. It stretches the hip flexors and chest and strengthens the legs.",
+  "instructions": [
+    "Step one foot back into a long stance, with the back foot turned out slightly.",
+    "Bend the front knee over the ankle.",
+    "Square your hips toward the front.",
+    "Raise both arms overhead and lift your chest.",
+    "Hold for 5 breaths, then switch sides."
+  ],
+  "textSource": "opengym"
+}

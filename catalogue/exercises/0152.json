@@ -1,0 +1,21 @@
+{
+  "id": "0152",
+  "name": "cable concentration extension (on knee)",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A cable triceps extension while kneeling, which keeps the body steady and isolates the triceps.",
+  "instructions": [
+    "Sit on a bench or chair with your knees bent and feet flat on the ground.",
+    "Hold the cable handle with your right hand and place your elbow on the inside of your right knee.",
+    "Extend your arm fully, keeping your elbow stationary and close to your knee.",
+    "Pause for a moment at the top, then slowly lower your arm back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides."
+  ],
+  "femaleVariant": "3043",
+  "textSource": "exercisedb"
+}

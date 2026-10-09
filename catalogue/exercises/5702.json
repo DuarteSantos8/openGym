@@ -1,0 +1,24 @@
+{
+  "id": "5702",
+  "name": "barbell deadlift from deficit",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "quadriceps",
+    "grip muscles",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A deadlift performed while standing on a low platform. The longer range of motion trains the start of the pull and the legs.",
+  "instructions": [
+    "Stand on a low plate or platform with the bar over mid-foot.",
+    "Hinge down and grip the bar just outside your legs.",
+    "Flatten your back and brace your core.",
+    "Push the floor away and stand tall.",
+    "Lower the bar back under control."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "4130",
+  "name": "ez bar california skullcrusher",
+  "bodyPart": "upper arms",
+  "equipment": "ez barbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A skullcrusher that mixes a pullover motion, loading the triceps from a long position.",
+  "instructions": [
+    "Lie on a bench holding an ez bar above your chest.",
+    "Lower the bar toward your forehead.",
+    "Let it travel back past your head slightly.",
+    "Extend your arms to return.",
+    "Keep your upper arms still."
+  ],
+  "textSource": "opengym"
+}

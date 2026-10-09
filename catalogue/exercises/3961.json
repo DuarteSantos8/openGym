@@ -1,0 +1,23 @@
+{
+  "id": "3961",
+  "name": "forward to side to rear lunge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A lunge sequence that steps forward, to the side and then back with the same leg. It trains the legs and hips from three directions and challenges your balance.",
+  "instructions": [
+    "Stand tall with your feet together and hands on your hips.",
+    "Step one foot forward into a lunge, then push back to standing.",
+    "Step the same foot out to the side, sit back into the hip, then return to center.",
+    "Step the same foot backward into a lunge and push back to standing.",
+    "Keep your chest up and knees tracking over your toes, then switch legs after your set."
+  ],
+  "textSource": "opengym"
+}

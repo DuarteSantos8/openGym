@@ -1,0 +1,24 @@
+{
+  "id": "10660",
+  "name": "resistance band assisted single arm pull up",
+  "bodyPart": "back",
+  "equipment": "resistance band",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "forearms",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A one-arm pull-up with a band under your foot or knee to reduce the load. It builds toward unassisted single-arm pulling.",
+  "instructions": [
+    "Loop a band over the bar and place your foot or knee in it.",
+    "Hang with one hand on the bar and the other holding your wrist or the band.",
+    "Pull your chin toward the bar, driving the elbow down.",
+    "Pause at the top.",
+    "Lower with control to a full hang.",
+    "Switch arms after each set."
+  ],
+  "textSource": "opengym"
+}

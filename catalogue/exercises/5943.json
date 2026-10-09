@@ -1,0 +1,21 @@
+{
+  "id": "5943",
+  "name": "cable single arm neutral grip front raise",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A one-arm cable front raise with a palm-in grip, giving steady tension to the front of the shoulder.",
+  "instructions": [
+    "Stand facing away from a low pulley and hold the handle with a neutral grip.",
+    "Keep your arm nearly straight and your core braced.",
+    "Raise your arm forward to about shoulder height.",
+    "Pause briefly, then lower slowly.",
+    "Finish your reps and switch arms."
+  ],
+  "textSource": "opengym"
+}

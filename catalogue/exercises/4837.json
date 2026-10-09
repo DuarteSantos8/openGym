@@ -1,0 +1,23 @@
+{
+  "id": "4837",
+  "name": "dumbbell single arm bent over row",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "biceps",
+    "rhomboids",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A one-arm row in a hinged position. It builds the lats and upper back, one side at a time.",
+  "instructions": [
+    "Hold a dumbbell in one hand and hinge forward with a flat back.",
+    "Let the arm hang straight down.",
+    "Pull the dumbbell toward your hip, leading with your elbow.",
+    "Squeeze your back at the top.",
+    "Lower slowly and switch sides after your reps."
+  ],
+  "textSource": "opengym"
+}

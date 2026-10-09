@@ -1,0 +1,21 @@
+{
+  "id": "10657",
+  "name": "pilates machine lying calf raise",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles"
+  ],
+  "category": "pilates",
+  "description": "Press the carriage with just your toes on a reformer. It builds calf strength.",
+  "instructions": [
+    "Lie on the carriage with legs straight, balls of feet on the bar.",
+    "Press your heels down.",
+    "Rise up onto your toes.",
+    "Return slowly.",
+    "Keep your knees locked softly."
+  ],
+  "textSource": "opengym"
+}

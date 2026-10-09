@@ -1,0 +1,22 @@
+{
+  "id": "0502",
+  "name": "jack knife floor",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "Lying on your back, you fold up to bring hands and feet together over your hips. It works the abs hard and builds hip flexor strength.",
+  "instructions": [
+    "Lie on your back with legs straight and arms extended overhead.",
+    "Brace your abs and press your lower back into the floor.",
+    "Lift your arms and legs at the same time, folding up at the hips.",
+    "Reach your hands toward your toes at the top.",
+    "Lower with control until arms and legs hover just above the floor.",
+    "Keep your movement smooth and avoid swinging."
+  ],
+  "textSource": "opengym"
+}

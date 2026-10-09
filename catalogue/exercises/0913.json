@@ -1,0 +1,21 @@
+{
+  "id": "0913",
+  "name": "band middle fly",
+  "bodyPart": "chest",
+  "equipment": "band",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A chest fly with the band at mid-chest height. It works the pecs through a sweeping motion.",
+  "instructions": [
+    "Anchor the band at chest height and stand facing away.",
+    "Hold the ends with slightly bent elbows.",
+    "Bring your hands together in front of your chest.",
+    "Squeeze your pecs.",
+    "Return slowly."
+  ],
+  "textSource": "opengym"
+}

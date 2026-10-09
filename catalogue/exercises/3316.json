@@ -1,0 +1,24 @@
+{
+  "id": "3316",
+  "name": "barbell weightlifting complex",
+  "bodyPart": "full body",
+  "equipment": "barbell",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "shoulders",
+    "upper back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A flowing series of barbell lifts done back to back without putting the bar down. It works your whole body and your conditioning.",
+  "instructions": [
+    "Load a light to moderate barbell and stand over it with feet hip width apart.",
+    "Perform the first lift of your chosen sequence, such as a deadlift.",
+    "Move straight into the next lift without setting the bar down.",
+    "Keep each rep crisp with a braced core and a flat back.",
+    "Finish all lifts for one round, then lower the bar and rest before repeating."
+  ],
+  "textSource": "opengym"
+}

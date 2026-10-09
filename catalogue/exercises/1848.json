@@ -1,0 +1,22 @@
+{
+  "id": "1848",
+  "name": "calves stretch static position",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "hamstrings",
+    "ankles"
+  ],
+  "category": "stretching",
+  "description": "A static calf stretch that lengthens the lower leg muscles and the Achilles area.",
+  "instructions": [
+    "Stand facing a wall with one foot back and your heel on the floor.",
+    "Keep your back leg straight and lean toward the wall.",
+    "Press your back heel down until you feel a stretch in the calf.",
+    "Keep your hips square and your toes pointing forward.",
+    "Hold for 20-30 seconds, then switch legs."
+  ],
+  "textSource": "opengym"
+}

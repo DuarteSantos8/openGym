@@ -1,0 +1,23 @@
+{
+  "id": "8882",
+  "name": "neutral wrist roller",
+  "bodyPart": "lower arms",
+  "equipment": "weighted",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "wrist extensors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "You wind a rope with a weight on it by turning a bar with a neutral grip. It builds forearm and grip endurance.",
+  "instructions": [
+    "Hold the wrist roller with a neutral, thumbs-up grip and your arms out in front.",
+    "Let the weight hang from the rope with the rope unwound.",
+    "Roll the bar with your wrists to wind the rope up.",
+    "Keep your arms steady and your shoulders relaxed.",
+    "When the weight reaches the bar, lower it slowly by unwinding.",
+    "Stop if your forearms burn too much to keep control."
+  ],
+  "textSource": "opengym"
+}

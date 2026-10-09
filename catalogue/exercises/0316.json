@@ -1,0 +1,23 @@
+{
+  "id": "0316",
+  "name": "dumbbell incline breeding",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "An incline dumbbell move that lowers the weights to the chest sides and presses up. It targets the upper chest.",
+  "instructions": [
+    "Set up an incline bench at a 45-degree angle.",
+    "Sit on the bench with your back against the pad and feet flat on the ground.",
+    "Hold a dumbbell in each hand with an overhand grip, palms facing forward.",
+    "Start with your arms fully extended, perpendicular to the ground.",
+    "Lower the dumbbells slowly to the sides of your chest, keeping your elbows at a 90-degree angle.",
+    "Pause for a moment at the bottom, then push the dumbbells back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

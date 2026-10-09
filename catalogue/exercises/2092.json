@@ -1,0 +1,21 @@
+{
+  "id": "2092",
+  "name": "wall flexors stretch",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "hands"
+  ],
+  "category": "stretching",
+  "description": "Pressing the palm against a wall to stretch the forearm flexors.",
+  "instructions": [
+    "Stand facing a wall and place one palm on it with the fingers pointing down.",
+    "Keep your arm straight.",
+    "Slowly turn your body away until you feel the stretch in the forearm.",
+    "Keep your fingers flat on the wall.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

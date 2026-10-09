@@ -1,0 +1,22 @@
+{
+  "id": "7155",
+  "name": "cable seated reverse shrug",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "traps",
+  "secondaryMuscles": [
+    "trapezius",
+    "rhomboids",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A seated shrug with the cable pulling from behind the body. It trains the traps and the upper back.",
+  "instructions": [
+    "Sit with a low cable behind you, holding the handle behind your back.",
+    "Keep your arms straight and chest tall.",
+    "Shrug your shoulders up and slightly back.",
+    "Hold for a second.",
+    "Lower slowly to the start."
+  ],
+  "textSource": "opengym"
+}

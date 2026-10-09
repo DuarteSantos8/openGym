@@ -1,0 +1,24 @@
+{
+  "id": "3870",
+  "name": "frog reverse hyperextension (on a bench)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A reverse hyperextension with the legs in a frog position, aimed at the glutes and lower back.",
+  "instructions": [
+    "Lie face down on a bench with your hips at the edge and hold the bench for support.",
+    "Let your legs hang and bring the soles of your feet together, knees out.",
+    "Squeeze your glutes and lift your legs up behind you.",
+    "Pause when your thighs are in line with your torso.",
+    "Lower slowly and repeat.",
+    "Avoid arching your lower back too far."
+  ],
+  "femaleVariant": "3179",
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "2987",
+  "name": "weighted close grip chin-up on dip cage",
+  "bodyPart": "back",
+  "equipment": "weighted",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A weighted close-grip chin-up on a dip cage. Builds the lats, biceps and upper back.",
+  "instructions": [
+    "Stand in front of the dip cage and grab the parallel bars with an underhand grip, hands shoulder-width apart.",
+    "Hang from the bars with your arms fully extended, feet off the ground, and body straight.",
+    "Engage your back muscles and pull your body up towards the bars, keeping your elbows close to your sides.",
+    "Continue pulling until your chin is above the bars, then pause for a moment.",
+    "Slowly lower your body back down to the starting position, fully extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

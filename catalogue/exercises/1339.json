@@ -1,0 +1,21 @@
+{
+  "id": "1339",
+  "name": "exercise ball lat stretch",
+  "bodyPart": "back",
+  "equipment": "stability ball",
+  "target": "lats",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "stretching",
+  "description": "Sit on a stability ball and reach one arm overhead as you lean to the other side. It stretches the lat and the side of your torso.",
+  "instructions": [
+    "Sit on a stability ball with your feet flat on the ground and your back straight.",
+    "Hold a dumbbell in one hand and extend your arm straight up overhead.",
+    "Slowly lean to the opposite side, feeling a stretch in your lat muscle.",
+    "Hold the stretch for 20-30 seconds, then return to the starting position.",
+    "Repeat on the other side."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "8874",
+  "name": "resistance band speed step",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "calves"
+  ],
+  "category": "cardio",
+  "description": "A quick lateral stepping drill with a band around the legs to speed up the feet and fire the glutes.",
+  "instructions": [
+    "Place a band around your thighs or ankles.",
+    "Stand in a quarter squat.",
+    "Take quick small steps to the side.",
+    "Keep tension on the band and your chest up.",
+    "Move in both directions."
+  ],
+  "textSource": "opengym"
+}

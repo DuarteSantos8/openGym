@@ -1,0 +1,22 @@
+{
+  "id": "1943",
+  "name": "pigeon hip stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower back"
+  ],
+  "category": "yoga",
+  "description": "A yoga-style hip opener with one shin folded in front, stretching the glutes and the hip flexors of the back leg.",
+  "instructions": [
+    "Start on hands and knees and slide one knee forward behind your wrist.",
+    "Extend the other leg straight behind you.",
+    "Lower your hips toward the floor and keep your chest tall.",
+    "Fold forward over the front leg for a deeper stretch if comfortable.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "femaleVariant": "2280",
+  "textSource": "opengym"
+}

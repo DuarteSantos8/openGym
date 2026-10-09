@@ -1,0 +1,21 @@
+{
+  "id": "1870",
+  "name": "lever lateral pulldown (plate loaded)",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "Plate-loaded machine pulldown that trains the lats and upper back.",
+  "instructions": [
+    "Adjust the seat and grip the handles overhead.",
+    "Sit tall with your chest up.",
+    "Pull down until the handles reach chest level.",
+    "Squeeze your shoulder blades together.",
+    "Return slowly to full stretch."
+  ],
+  "textSource": "opengym"
+}

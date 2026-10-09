@@ -1,0 +1,23 @@
+{
+  "id": "2526",
+  "name": "vibrate plate plank",
+  "bodyPart": "waist",
+  "equipment": "weighted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "shoulders",
+    "glutes"
+  ],
+  "category": "isometric",
+  "description": "A plank held on a vibrating platform that adds challenge to your core.",
+  "instructions": [
+    "Place your forearms or hands on the vibrating plate.",
+    "Extend your legs behind you.",
+    "Form a straight line from head to heels.",
+    "Brace your abs and squeeze your glutes.",
+    "Hold for 20-40 seconds.",
+    "Come down carefully."
+  ],
+  "textSource": "opengym"
+}

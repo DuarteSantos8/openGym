@@ -1,0 +1,21 @@
+{
+  "id": "1834",
+  "name": "neck protraction stretch",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "sternocleidomastoid",
+    "upper back"
+  ],
+  "category": "stretching",
+  "description": "A gentle stretch that glides the head forward to open the back of the neck and the base of the skull.",
+  "instructions": [
+    "Sit or stand tall with your shoulders relaxed.",
+    "Keep your eyes level and slide your chin and head straight forward.",
+    "Stop when you feel a stretch at the back of the neck.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Draw your head back to neutral and relax."
+  ],
+  "textSource": "opengym"
+}

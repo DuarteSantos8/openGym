@@ -1,0 +1,23 @@
+{
+  "id": "3158",
+  "name": "bodyweight standing close-grip row",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A bent-over standing row with a close grip, pulling the hands toward your body. It builds the upper back and the muscles that squeeze the shoulder blades together.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and knees slightly bent.",
+    "Bend forward at the waist, keeping your back straight and your core engaged.",
+    "Extend your arms straight in front of you, gripping the bar or handles with a close grip.",
+    "Pull the bar or handles towards your body, squeezing your shoulder blades together.",
+    "Pause for a moment at the top of the movement, then slowly release and return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3157",
+  "textSource": "exercisedb"
+}

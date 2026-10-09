@@ -1,0 +1,24 @@
+{
+  "id": "0114",
+  "name": "barbell step-up",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "Step up onto a box with the bar on your back. Works the glutes and quads, one leg at a time.",
+  "instructions": [
+    "Stand in front of a bench or step with a barbell resting on your upper back.",
+    "Place one foot on the bench or step, ensuring your entire foot is in contact with the surface.",
+    "Push through your heel and step up onto the bench or step, fully extending your hip and knee.",
+    "Pause briefly at the top, then lower yourself back down to the starting position.",
+    "Repeat with the opposite leg.",
+    "Continue alternating legs for the desired number of repetitions."
+  ],
+  "femaleVariant": "2501",
+  "textSource": "exercisedb"
+}

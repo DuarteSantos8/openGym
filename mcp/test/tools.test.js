@@ -4,7 +4,7 @@
 // (rest-day override, missing routine, zero-workout history, no synced state, superset links).
 import { describe, beforeAll, afterAll, beforeEach, test, expect, vi } from 'vitest'
 import { buildDemoState } from '../../frontend/src/lib/demoSeed.js'
-import { EXDB } from '../../frontend/src/lib/exercises.js'
+import { EXDB, exOr } from '../../frontend/src/lib/exercises.js'
 import { _seedStateForTests } from '../src/state.js'
 import { TOOLS } from '../src/tools.js'
 import { bestSetOf } from '../../frontend/src/lib/onerm.js'
@@ -141,6 +141,15 @@ describe('get_routine', () => {
     delete cfg.repsMin
     const r = call('get_routine', { routine_id: S.routines[0].id })
     expect(r.exercises[0]).toMatchObject({ pyramid: [12, 8, 6, 'max', 12], policy: 'off', summary: '12 · 8 · 6 · Max · 12' })
+  })
+
+  test('reports a pyramid\'s planned weight per set, and leaves it out when none is planned (#445)', () => {
+    const cfg = S.routines[0].ex[0]
+    Object.assign(cfg, { mode: 'reps', sets: 3, reps: 12, weight: 0, pyramid: [12, 8, 6], pyramidWeight: [40, 0, 60] })
+    delete cfg.repsMin
+    expect(call('get_routine', { routine_id: S.routines[0].id }).exercises[0].pyramid_weight).toEqual([40, 0, 60])
+    delete cfg.pyramidWeight
+    expect(call('get_routine', { routine_id: S.routines[0].id }).exercises[0].pyramid_weight).toBeUndefined()
   })
 
   test('reports an exercise\'s own rest, and leaves it out when it inherits the timer', () => {
@@ -525,6 +534,19 @@ describe('get_workout', () => {
     expect(w.entries[1].sets[0].label).toBe('1:30')             // 90 s in mm:ss, no weight
     expect(w.entries[2].sets[0].label).toBe('1:30 · 20')        // weighted plank
     expect(w.entries[3].sets[0].label).toBe('20 min @ 8 km/h')   // cardio
+  })
+
+  test('a set taken to failure says so, in its label and as a flag', () => {
+    S.workouts = [{
+      id: 'synth-f', d: '2026-07-25', start: 0, end: 1800000, routineId: 'x', name: 'Synth',
+      bw: 78, vol: 0, prs: [],
+      entries: [{ id: 'squat', target: { mode: 'reps' }, sets: [{ w: 60, r: 5, done: true }, { w: 60, r: 9, done: true, failure: true }] }]
+    }]
+    const [plain, failed] = call('get_workout', { date: '2026-07-25' }).entries[0].sets
+    expect(plain.label).toBe('60×5')
+    expect('failure' in plain).toBe(false)
+    expect(failed.label).toBe('60×9 F')
+    expect(failed.failure).toBe(true)
   })
 
   test('infers cardio mode from the exercise id when the target has no mode key', () => {
@@ -953,6 +975,32 @@ describe('preview_session', () => {
     S.exWeights = exWeights
     _seedStateForTests(S)
   }
+
+  // The session builder reads equipment and body part from the global exercise index, which holds
+  // no custom exercises here (see customOf in tools.js). A custom leg lift then ramped on the small
+  // load step, where the app, which registers its customs, takes the larger one for legs.
+  test('a custom leg lift ramps on the same load step as in the app, and the index is left as it was', () => {
+    const custom = { id: 'c-hack', n: 'Hack Squat (mine)', bp: 'upper legs', eq: 'barbell', tg: 'quads', sm: [], custom: true }
+    S.customEx = [custom]
+    only({ id: 'c-hack', sets: 3, reps: 8, weight: 90, warmupSets: 2 }, { prog: 'off' })
+    try {
+      const r = call('preview_session')
+      expect(r.exercises[0].opening_sets.filter(x => x.phase === 'warmup').map(x => x.w)).toEqual([45, 65])
+      expect(exOr('c-hack').missing).toBe(true)   // taken back out of the index
+    } finally {
+      S.customEx = []
+      _seedStateForTests(S)
+    }
+  })
+
+  test('triple progression previews its per-set aims and failure plan', () => {
+    only({ id: '0025', sets: 3, setsMax: 5, reps: 12, repsMin: 8, weight: 50, lastToFailure: true }, { prog: 'triple' })
+    const e = call('preview_session').exercises[0]
+    expect(e.prescription).toMatchObject({ kind: 'first', sets: 3, reps: 8, row_reps: [8, 8, 8] })
+    expect(e.opening_sets.map(s => s.r)).toEqual([8, 8, 8])
+    expect(e.opening_sets.map(s => !!s.failure)).toEqual([false, false, true])
+    expect(e.planned.summary).toBe('3–5 × 8–12 · 50 kg')
+  })
 
   test('defaults to the routine scheduled for today', () => {
     only({ id: '0025', sets: 3, reps: 8, weight: 50 })

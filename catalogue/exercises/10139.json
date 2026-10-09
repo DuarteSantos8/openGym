@@ -1,0 +1,21 @@
+{
+  "id": "10139",
+  "name": "sitting isometric hamstring curl hold with exercise ball",
+  "bodyPart": "upper legs",
+  "equipment": "stability ball",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "calves"
+  ],
+  "category": "isometric",
+  "description": "Hold a ball under your heels in a curled position. It builds endurance in the back of the thighs.",
+  "instructions": [
+    "Sit on the floor with legs out and the ball under your heels.",
+    "Lean back on your hands.",
+    "Press your heels into the ball and slide it in until knees bend.",
+    "Hold the position steadily.",
+    "Slowly extend your legs again."
+  ],
+  "textSource": "opengym"
+}

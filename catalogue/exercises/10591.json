@@ -1,0 +1,22 @@
+{
+  "id": "10591",
+  "name": "resistance band seated single leg hugging knee flexion",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "Seated knee flexion with a band under your foot, hugging one knee. It adds resistance to the bend.",
+  "instructions": [
+    "Sit tall on a chair with a band around one foot.",
+    "Hold the band ends in your hands.",
+    "Pull the knee up and bend it toward your chest.",
+    "Hold for a moment, then release slowly.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

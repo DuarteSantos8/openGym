@@ -1,0 +1,24 @@
+{
+  "id": "0798",
+  "name": "stationary bike walk",
+  "bodyPart": "cardio",
+  "equipment": "leverage machine",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "cardio",
+  "description": "Easy, steady pedaling on a stationary bike at a walking-like pace. It builds endurance and warms up the legs.",
+  "instructions": [
+    "Adjust the seat height and position on the stationary bike to ensure proper alignment.",
+    "Place your feet on the pedals and secure them with the straps if available.",
+    "Start pedaling at a comfortable pace, keeping your back straight and core engaged.",
+    "Maintain a steady rhythm and increase the resistance level if desired.",
+    "Continue pedaling for the desired duration of your cardio workout.",
+    "Cool down by gradually reducing your pace and resistance level.",
+    "Stretch your leg muscles after the workout to prevent tightness and promote recovery."
+  ],
+  "textSource": "exercisedb"
+}

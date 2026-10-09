@@ -1,0 +1,22 @@
+{
+  "id": "3729",
+  "name": "barbell chest press on stability ball",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A barbell press with your upper back on a stability ball, which adds a core and balance challenge.",
+  "instructions": [
+    "Sit on a stability ball and walk your feet out until your upper back rests on it.",
+    "Keep your hips up and take the barbell above your chest.",
+    "Lower the bar to your chest.",
+    "Press it back up to full extension.",
+    "Keep your core tight and feet planted."
+  ],
+  "textSource": "opengym"
+}

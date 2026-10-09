@@ -1,0 +1,23 @@
+{
+  "id": "5385",
+  "name": "roll shoulder blade reach lying on floor",
+  "bodyPart": "back",
+  "equipment": "roller",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rhomboids",
+    "shoulders"
+  ],
+  "category": "mobility",
+  "description": "Self-massage with a foam roller to ease tightness in the shoulder blade. Good before training or on rest days to loosen up.",
+  "instructions": [
+    "Lie on your side with the roller under your shoulder blade.",
+    "Place the roller under the shoulder blade and let your body weight settle onto it.",
+    "Reach your top arm forward and back as you roll.",
+    "Pause on tender spots and breathe slowly for 20-30 seconds.",
+    "Keep your core braced and avoid rolling over joints or bone.",
+    "Roll for 30-60 seconds, then switch sides if needed."
+  ],
+  "femaleVariant": "5424",
+  "textSource": "opengym"
+}

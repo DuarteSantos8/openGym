@@ -1,0 +1,25 @@
+{
+  "id": "4030",
+  "name": "dumbbell bar grip sumo squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "adductors",
+    "inner thighs",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Wide stance squat holding one dumbbell by its bar between the legs. It hits the glutes and inner thighs.",
+  "instructions": [
+    "Stand with feet wider than shoulders and toes turned out.",
+    "Hold the dumbbell vertically by its bar with both hands in front of you.",
+    "Sit your hips down while keeping your chest up.",
+    "Push your knees out over your toes.",
+    "Drive through your heels to stand and squeeze your glutes."
+  ],
+  "femaleVariant": "2430",
+  "textSource": "opengym"
+}

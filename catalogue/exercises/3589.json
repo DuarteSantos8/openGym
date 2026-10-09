@@ -1,0 +1,22 @@
+{
+  "id": "3589",
+  "name": "quickly trot in place",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "calves",
+    "quadriceps",
+    "hip flexors"
+  ],
+  "category": "cardio",
+  "description": "Trot in place at a quick pace to warm up and get your heart rate up.",
+  "instructions": [
+    "Stand tall with arms bent at your sides.",
+    "Lift your knees and run lightly on the spot.",
+    "Land softly on the balls of your feet.",
+    "Pump your arms with each step.",
+    "Keep the pace for 30-60 seconds or longer."
+  ],
+  "textSource": "opengym"
+}

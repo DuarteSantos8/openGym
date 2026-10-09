@@ -1,0 +1,22 @@
+{
+  "id": "10592",
+  "name": "half kneeling hamstrings stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "glutes",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "From half kneeling, straighten the front leg and lean forward to stretch the hamstring. It lengthens the back of the thigh.",
+  "instructions": [
+    "Kneel on one knee with the other leg extended, heel on the floor.",
+    "Keep your toes pointing up.",
+    "Hinge forward from your hips with a flat back.",
+    "Hold for 20-30 seconds.",
+    "Switch legs and repeat."
+  ],
+  "textSource": "opengym"
+}

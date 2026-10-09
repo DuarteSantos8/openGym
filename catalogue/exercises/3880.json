@@ -1,0 +1,23 @@
+{
+  "id": "3880",
+  "name": "cable leaning lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rotator cuff",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A one-arm lateral raise leaning away from a cable stack, giving constant tension on the side delt.",
+  "instructions": [
+    "Stand sideways to a low pulley and hold the handle with the far hand.",
+    "Hold the upright support with the other hand and lean away from the machine.",
+    "Start with your working arm across your body.",
+    "Raise it out to shoulder height with a soft elbow.",
+    "Lower slowly under control.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

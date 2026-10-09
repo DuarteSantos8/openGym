@@ -1,0 +1,22 @@
+{
+  "id": "2894",
+  "name": "front plank with arm lift",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "glutes",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "A plank where one arm lifts at a time, challenging core stability and anti-rotation.",
+  "instructions": [
+    "Set up in a forearm plank with elbows under shoulders.",
+    "Squeeze your glutes and keep a straight line from head to heels.",
+    "Lift one arm forward without letting your hips twist.",
+    "Return it and lift the other arm.",
+    "Alternate in a slow, controlled rhythm."
+  ],
+  "textSource": "opengym"
+}

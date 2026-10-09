@@ -1,0 +1,23 @@
+{
+  "id": "3374",
+  "name": "battling ropes outside circle",
+  "bodyPart": "shoulders",
+  "equipment": "rope",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper back",
+    "core",
+    "forearms"
+  ],
+  "category": "cardio",
+  "description": "Drawing outward circles with the ropes, training shoulders and conditioning.",
+  "instructions": [
+    "Stand with knees bent and a rope end in each hand.",
+    "Move your arms in circles that turn outward.",
+    "Keep the movement smooth and even.",
+    "Keep your core tight.",
+    "Continue for a set time."
+  ],
+  "textSource": "opengym"
+}

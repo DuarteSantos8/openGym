@@ -1,0 +1,23 @@
+{
+  "id": "3415",
+  "name": "assisted inverse leg curl",
+  "bodyPart": "upper legs",
+  "equipment": "assisted",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A supported nordic-style curl where assistance lets you control the lowering for the hamstrings.",
+  "instructions": [
+    "Kneel with your ankles secured and your torso upright.",
+    "Use the assistance as needed.",
+    "Lean forward slowly, resisting with your hamstrings.",
+    "Lower as far as you can control.",
+    "Pull yourself back up with your hamstrings and hands if needed.",
+    "Keep your hips extended."
+  ],
+  "textSource": "opengym"
+}

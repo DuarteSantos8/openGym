@@ -1,0 +1,24 @@
+{
+  "id": "0667",
+  "name": "raise single leg push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "glutes",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up performed with one leg lifted. It challenges the chest, shoulders and core stability.",
+  "instructions": [
+    "Start in a push-up position.",
+    "Lift one leg off the floor.",
+    "Lower your chest toward the floor.",
+    "Press back up without twisting your hips.",
+    "Keep your body in a line.",
+    "Switch the lifted leg every set."
+  ],
+  "textSource": "opengym"
+}

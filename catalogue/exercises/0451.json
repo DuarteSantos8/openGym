@@ -1,0 +1,23 @@
+{
+  "id": "0451",
+  "name": "ez barbell reverse grip curl",
+  "bodyPart": "upper arms",
+  "equipment": "ez barbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "You curl an EZ bar with an overhand grip. It works the biceps, the muscle under them and the forearms.",
+  "instructions": [
+    "Stand up straight with your feet shoulder-width apart and hold the ez barbell with an underhand grip.",
+    "Keep your elbows close to your torso and your upper arms stationary throughout the exercise.",
+    "Curl the barbell upwards by contracting your biceps, while exhaling.",
+    "Continue to raise the barbell until your biceps are fully contracted and the barbell is at shoulder level.",
+    "Hold the contracted position for a brief pause as you squeeze your biceps.",
+    "Slowly begin to bring the barbell back to the starting position as you inhale.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2498",
+  "textSource": "exercisedb"
+}

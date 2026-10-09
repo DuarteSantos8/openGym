@@ -1,0 +1,23 @@
+{
+  "id": "4816",
+  "name": "dumbbell goblet 2 sec hold squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "core",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A goblet squat with a two-second pause in the bottom. The pause builds leg strength and control out of the hole.",
+  "instructions": [
+    "Hold one dumbbell vertically against your chest with both hands.",
+    "Stand with feet shoulder-width apart and toes slightly out.",
+    "Squat down with your chest tall until your thighs are at least parallel.",
+    "Hold the bottom position for two seconds.",
+    "Drive through your heels to stand."
+  ],
+  "textSource": "opengym"
+}

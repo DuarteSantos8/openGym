@@ -1,0 +1,21 @@
+{
+  "id": "0349",
+  "name": "dumbbell lying supination",
+  "bodyPart": "lower arms",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "biceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A lying forearm rotation with a dumbbell, turning the palm up. It trains the muscles that rotate the forearm and supports elbow and wrist control.",
+  "instructions": [
+    "Lie flat on a bench with your feet flat on the ground.",
+    "Hold a dumbbell in each hand with your palms facing up and your arms fully extended.",
+    "Keeping your upper arms stationary, curl the dumbbells towards your shoulders by contracting your forearms.",
+    "Pause for a moment at the top, then slowly lower the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

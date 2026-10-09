@@ -1,0 +1,23 @@
+{
+  "id": "1569",
+  "name": "kettlebell one legged deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A single-leg hip hinge holding a kettlebell. It trains the hamstrings and glutes and challenges your balance.",
+  "instructions": [
+    "Hold a kettlebell in one hand and stand on the opposite leg with a soft knee.",
+    "Hinge forward at the hip and extend your free leg straight back.",
+    "Lower the bell toward the floor while keeping your back flat.",
+    "Stop when your torso is about parallel to the floor.",
+    "Squeeze your glute to return upright, then switch legs."
+  ],
+  "textSource": "opengym"
+}

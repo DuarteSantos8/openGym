@@ -1,0 +1,23 @@
+{
+  "id": "3700",
+  "name": "tuck jump v. 2",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "An explosive jump where you pull your knees toward your chest in the air. It builds power and gets your heart rate up quickly.",
+  "instructions": [
+    "Stand with your feet shoulder width apart and arms ready.",
+    "Dip into a quarter squat and swing your arms up.",
+    "Jump as high as you can and pull your knees toward your chest.",
+    "Land softly on the balls of your feet with bent knees.",
+    "Reset briefly and repeat."
+  ],
+  "textSource": "opengym"
+}

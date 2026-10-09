@@ -1,0 +1,39 @@
+{
+  "id": "0651",
+  "name": "pull up (neutral grip)",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "You hang from a bar with a neutral grip and pull your chin above it. Works the lats and biceps with a shoulder friendly grip.",
+  "instructions": [
+    "Hang from a pull-up bar with a neutral grip (palms facing each other) and your arms fully extended.",
+    "Engage your core and squeeze your shoulder blades together.",
+    "Pull your body up towards the bar by bending your elbows and driving your elbows down towards your hips.",
+    "Continue pulling until your chin is above the bar.",
+    "Pause for a moment at the top, then slowly lower your body back down to the starting position with control.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm"
+    ],
+    "weights": {
+      "upper-back": 1,
+      "biceps": 0.4,
+      "deltoids": 0.4,
+      "forearm": 0.4,
+      "triceps": 0
+    }
+  },
+  "textSource": "exercisedb"
+}

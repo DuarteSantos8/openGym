@@ -1,0 +1,37 @@
+{
+  "id": "0578",
+  "name": "lever deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "A machine deadlift that lets you hinge and stand up against a set load. Works the glutes, hamstrings and lower back.",
+  "instructions": [
+    "Adjust the seat height and foot platform to your desired position.",
+    "Sit on the machine with your back against the pad and your feet flat on the foot platform.",
+    "Grasp the handles or the sides of the seat for stability.",
+    "Engage your glutes and hamstrings, and push through your heels to lift the weight up.",
+    "Keep your back straight and avoid rounding your shoulders.",
+    "Extend your hips fully at the top of the movement, squeezing your glutes.",
+    "Lower the weight back down in a controlled manner, keeping tension on your glutes and hamstrings.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "gluteal",
+      "hamstring"
+    ],
+    "secondaries": [
+      "lower-back",
+      "quadriceps",
+      "adductors",
+      "calves"
+    ]
+  },
+  "femaleVariant": "3099",
+  "textSource": "exercisedb"
+}

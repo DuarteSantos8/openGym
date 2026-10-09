@@ -1,0 +1,23 @@
+{
+  "id": "10294",
+  "name": "heel walk",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "shins",
+    "ankles",
+    "feet"
+  ],
+  "category": "mobility",
+  "description": "Walking on your heels with the toes lifted, strengthening the shins and loosening the ankles.",
+  "instructions": [
+    "Stand tall with arms relaxed at your sides.",
+    "Lift your toes and forefoot off the floor so you balance on your heels.",
+    "Walk forward with small, controlled steps.",
+    "Keep your toes pulled up the whole time.",
+    "Walk for 20-30 seconds, then rest."
+  ],
+  "femaleVariant": "11539",
+  "textSource": "opengym"
+}

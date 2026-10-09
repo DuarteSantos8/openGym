@@ -1,0 +1,23 @@
+{
+  "id": "4184",
+  "name": "dumbbell banded bench press",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A dumbbell bench press with a band adding tension at lockout. It builds chest strength.",
+  "instructions": [
+    "Lie on a bench with a band across your upper back and hands.",
+    "Hold dumbbells at chest level.",
+    "Press up against the band.",
+    "Lock out at the top.",
+    "Lower slowly.",
+    "Keep your feet flat."
+  ],
+  "textSource": "opengym"
+}

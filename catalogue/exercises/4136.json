@@ -1,0 +1,21 @@
+{
+  "id": "4136",
+  "name": "band cross abduction",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A hip abduction with a band that crosses the body, working the outer hips.",
+  "instructions": [
+    "Attach the band to a low anchor and loop it around your outer ankle.",
+    "Stand tall and hold support if needed.",
+    "Move that leg across then out to the side.",
+    "Control the return.",
+    "Switch legs after your set."
+  ],
+  "textSource": "opengym"
+}

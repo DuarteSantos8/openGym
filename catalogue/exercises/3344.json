@@ -1,0 +1,22 @@
+{
+  "id": "3344",
+  "name": "lever crossovers",
+  "bodyPart": "chest",
+  "equipment": "leverage machine",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A machine crossover that brings your arms together across the body, isolating the chest.",
+  "instructions": [
+    "Set the seat height and grip the handles with a slight elbow bend.",
+    "Sit tall with your back against the pad.",
+    "Sweep your arms together in front of your chest.",
+    "Squeeze your chest at the center.",
+    "Return slowly until you feel a stretch."
+  ],
+  "textSource": "opengym"
+}

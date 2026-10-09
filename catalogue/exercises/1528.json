@@ -1,0 +1,24 @@
+{
+  "id": "1528",
+  "name": "barbell power clean from blocks",
+  "bodyPart": "full body",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "trapezius",
+    "shoulders",
+    "core"
+  ],
+  "category": "olympic",
+  "description": "A clean caught above parallel, started from blocks. It builds explosive power.",
+  "instructions": [
+    "Set the bar on blocks and grip it just outside your knees with a flat back.",
+    "Brace your core and keep the bar close to your body.",
+    "Extend your hips and knees powerfully and shrug your shoulders.",
+    "Pull and catch the bar on your front shoulders in a quarter squat.",
+    "Stand tall to finish, then lower the bar with control."
+  ],
+  "textSource": "opengym"
+}

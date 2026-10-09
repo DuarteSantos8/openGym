@@ -1,0 +1,23 @@
+{
+  "id": "10384",
+  "name": "weighted sandbag squat",
+  "bodyPart": "upper legs",
+  "equipment": "sandbag",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A squat holding a sandbag against the chest, training the legs and the core.",
+  "instructions": [
+    "Hold a sandbag in a bear hug against your chest.",
+    "Stand with feet shoulder width apart.",
+    "Sit back and down into a squat with your chest up.",
+    "Drive through your heels to stand up.",
+    "Keep the bag tight to your body."
+  ],
+  "textSource": "opengym"
+}

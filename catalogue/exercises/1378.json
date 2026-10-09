@@ -1,0 +1,22 @@
+{
+  "id": "1378",
+  "name": "calf stretch with rope",
+  "bodyPart": "lower legs",
+  "equipment": "rope",
+  "target": "calves",
+  "secondaryMuscles": [
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "A calf stretch where you use a rope to help pull your toes toward you. It stretches the calf and the back of the lower leg.",
+  "instructions": [
+    "Stand facing a wall or sturdy object with your feet hip-width apart.",
+    "Hold the ends of the rope in each hand and place the middle of the rope around the ball of your right foot.",
+    "Step back with your left foot, keeping your heel on the ground and your leg straight.",
+    "Lean forward, keeping your back straight, and gently pull on the rope to stretch your calf.",
+    "Hold the stretch for 20-30 seconds, then release.",
+    "Repeat on the other leg."
+  ],
+  "femaleVariant": "4277",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "0809",
+  "name": "suspended split squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A split squat with the rear foot in a suspension strap. It builds the quads and glutes and challenges balance.",
+  "instructions": [
+    "Stand facing away from a suspension trainer with your feet shoulder-width apart.",
+    "Extend one leg forward and place the top of your foot in the foot cradle of the suspension trainer.",
+    "Bend your standing leg and lower your body down into a lunge position, keeping your chest up and your knee in line with your toes.",
+    "Push through your heel to return to the starting position.",
+    "Repeat for the desired number of repetitions, then switch legs."
+  ],
+  "textSource": "exercisedb"
+}

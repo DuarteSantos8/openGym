@@ -1,0 +1,23 @@
+{
+  "id": "1039",
+  "name": "lever full squat",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A full range machine squat that builds the thighs and glutes with a guided path.",
+  "instructions": [
+    "Step into the machine with the pads on your shoulders and feet shoulder width apart.",
+    "Release the safety and brace your core.",
+    "Squat as deep as you comfortably can.",
+    "Drive through your heels to stand.",
+    "Keep your chest up and knees over your toes."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "3566",
+  "name": "roll upper back",
+  "bodyPart": "back",
+  "equipment": "roller",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "trapezius",
+    "rhomboids",
+    "lats"
+  ],
+  "category": "mobility",
+  "description": "Roll your upper back over a foam roller to loosen tight spots and improve thoracic mobility.",
+  "instructions": [
+    "Sit with a foam roller behind your upper back and lie back onto it.",
+    "Cross your arms over your chest and lift your hips.",
+    "Roll slowly between your shoulder blades and mid back.",
+    "Pause on tender spots for a few breaths.",
+    "Avoid rolling your lower back and continue for about a minute."
+  ],
+  "textSource": "opengym"
+}

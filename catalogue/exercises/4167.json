@@ -1,0 +1,23 @@
+{
+  "id": "4167",
+  "name": "kettlebell banded swing",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A kettlebell swing with a band adding tension at the hips. It builds hip drive and posterior chain power.",
+  "instructions": [
+    "Set up with the band around your hips and the kettlebell in front of you.",
+    "Hinge back and swing the bell between your legs.",
+    "Drive your hips forward powerfully.",
+    "Let the kettlebell rise to chest height.",
+    "Guide it back between your legs as you hinge.",
+    "Keep your back flat and arms relaxed."
+  ],
+  "textSource": "opengym"
+}

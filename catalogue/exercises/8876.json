@@ -1,0 +1,23 @@
+{
+  "id": "8876",
+  "name": "cable lying hip flexion (reverse squat)",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "glutes",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Lying on your back, you pull both knees toward your chest against cable resistance, like a squat in reverse. It works the hip flexors and lower abs.",
+  "instructions": [
+    "Lie on your back with the cable attached to both ankles or a strap around your feet.",
+    "Start with your legs extended and your core braced.",
+    "Pull your knees toward your chest in a smooth curl.",
+    "Pause at the top without lifting your head.",
+    "Lower your legs slowly until they are almost straight.",
+    "Keep your lower back flat on the floor throughout."
+  ],
+  "textSource": "opengym"
+}

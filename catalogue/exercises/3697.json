@@ -1,0 +1,23 @@
+{
+  "id": "3697",
+  "name": "cable kneeling rear delt row (with rope) (male)",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rhomboids",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A kneeling cable row with a rope that targets the rear delts. It trains the shoulders and upper back.",
+  "instructions": [
+    "Attach a rope handle to a low cable pulley and kneel down facing the machine.",
+    "Grasp the rope with a neutral grip (palms facing each other) and extend your arms fully in front of you.",
+    "Keeping your back straight and core engaged, pull the rope towards your body by retracting your shoulder blades.",
+    "Squeeze your shoulder blades together at the end of the movement and hold for a brief pause.",
+    "Slowly release the tension and return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

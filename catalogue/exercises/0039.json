@@ -1,0 +1,24 @@
+{
+  "id": "0039",
+  "name": "barbell front chest squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A front squat holding the bar at the front of the chest. Trains the quads, glutes and core.",
+  "instructions": [
+    "Start by standing with your feet shoulder-width apart, toes slightly turned out.",
+    "Hold the barbell in front of your chest with your hands shoulder-width apart, elbows pointing forward.",
+    "Engage your core and keep your chest up as you lower your body down into a squat position, pushing your hips back and bending your knees.",
+    "Lower until your thighs are parallel to the ground, or as low as you can comfortably go.",
+    "Pause for a moment at the bottom, then push through your heels to return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

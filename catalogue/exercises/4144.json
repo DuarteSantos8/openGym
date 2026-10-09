@@ -1,0 +1,23 @@
+{
+  "id": "4144",
+  "name": "band bent over lat pulldown",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "biceps",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "Hinge forward and pull a band down toward your hips, like a lat pulldown from a bent over position. It trains the lats and the muscles between your shoulder blades.",
+  "instructions": [
+    "Anchor the band high and hold it with both hands, arms extended.",
+    "Hinge at the hips with a flat back and soft knees.",
+    "Pull the band down toward your hips, driving your elbows back.",
+    "Squeeze your lats at the bottom for a moment.",
+    "Let the band rise slowly until your arms are straight again.",
+    "Keep your torso still and your neck neutral."
+  ],
+  "textSource": "opengym"
+}

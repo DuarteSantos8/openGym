@@ -1,0 +1,22 @@
+{
+  "id": "6053",
+  "name": "bottle weighted frog crunch",
+  "bodyPart": "waist",
+  "equipment": "weighted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A crunch that draws knees and chest together while holding a bottle. It trains the whole abdominal wall.",
+  "instructions": [
+    "Lie on your back with soles together, knees open, holding a bottle on your chest.",
+    "Curl your upper body up as you pull your knees in.",
+    "Bring your chest toward your knees.",
+    "Hold for a moment.",
+    "Lower with control and repeat."
+  ],
+  "textSource": "opengym"
+}

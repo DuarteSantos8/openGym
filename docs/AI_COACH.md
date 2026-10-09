@@ -40,12 +40,13 @@ enabling the Coach is a decision you make in the app.
 
 ### Where people find it
 
-The Coach has one door: a **Coach** card at the top of the **Plan** tab (*Plan design and
-reviews, from your own training*), which opens the chat. The phone app also has
+The Coach has one door: the **Coach** entry in the **Plan** menu (the button in the top-right
+corner of the Plan header, last entry: *Plan design and reviews, from your own training*), which
+opens the chat. Up to v1.3.9 it was a card at the top of Plan. The phone app also has
 **Settings → AI Coach**, where the phone chooses between your server's Coach and a key of its
 own (see [On the phone](#on-the-phone)).
 
-The card appears only when all of these hold:
+The entry appears only when all of these hold:
 
 - **The master switch is on.** That is **Set up the Coach** on the admin card
   (**Settings → Account → Admin dashboard**, the **AI Coach** card), and afterwards the toggle at the top
@@ -73,7 +74,13 @@ answers on instead, and a key only if it wants one.
 - Pick the provider chip.
 - For a compatible endpoint, enter the **Endpoint** — `http://` or `https://`, no username or
   password in it, no query string. The host is written into the job log so you can see where
-  jobs went.
+  jobs went. Paste the base the way the provider documents it: a bare host
+  (`http://ollama.lan:11434`) gets `/v1` added, and a base that already carries its version
+  (`https://openrouter.ai/api/v1`, Zhipu's `…/paas/v4`, Gemini's `…/v1beta/openai`) is used
+  as it is.
+- A gateway that demands extra headers gets them under **Extra headers**: one `Name: value`
+  per line (e.g. opencode Go's `x-opencode-session`), sent with the list, test and job
+  calls. `Authorization` and `Content-Type` are refused there — auth framing always wins.
 - **Use an API key** → paste it. It is encrypted into `./data/coach.json` and is never shown
   again.
 - **List models** asks the endpoint what it serves and turns the model field into a picker.
@@ -126,6 +133,16 @@ that way:
   of the answer is enforced while it is generated and the repair round is rarely needed.
   Servers that reject schemas get plain JSON mode automatically, then no JSON mode — the
   validator is the gate either way.
+
+#### When a plan comes back cut off
+
+Every answer has a ceiling on how much the provider may write, set on **Settings → Admin
+dashboard → AI Coach → Advanced → Max output tokens** (16000 by default). A reasoning model — a
+DeepSeek V3/R1-class endpoint, or a "thinking" Gemini or OpenAI model — counts its hidden
+reasoning against that same ceiling, so a `create` or `refine` can be cut off even though the
+plan itself is short. If a job fails with *"the answer was cut off at the output limit"*, raise
+it; keep it within the model's own output limit (65536 on most current hosted models, lower on a
+small local one).
 
 ### With a runtime in the container (Claude Agent SDK, Codex CLI)
 

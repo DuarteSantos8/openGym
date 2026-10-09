@@ -1,0 +1,23 @@
+{
+  "id": "1111",
+  "name": "suspender close grip chest press",
+  "bodyPart": "chest",
+  "equipment": "suspension trainer",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A narrow-hand push on the straps that shifts work toward the triceps and inner chest.",
+  "instructions": [
+    "Hold the handles close together and lean forward with arms straight.",
+    "Keep your body in a straight line.",
+    "Lower your chest between the handles, elbows tucked close.",
+    "Pause when your chest is near your hands.",
+    "Press back up until the arms are straight.",
+    "Move your feet back to increase difficulty."
+  ],
+  "textSource": "opengym"
+}

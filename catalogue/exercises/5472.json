@@ -1,0 +1,21 @@
+{
+  "id": "5472",
+  "name": "lying bent legs raise",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs"
+  ],
+  "category": "calisthenics",
+  "description": "Floor ab exercise where you lift bent knees toward your chest, working the lower abs with less lever length than straight legs.",
+  "instructions": [
+    "Lie on your back with hands under your hips or by your sides.",
+    "Bend your knees and lift your feet off the floor.",
+    "Curl your hips up slightly as you bring your knees toward your chest.",
+    "Lower your legs slowly without letting your lower back arch.",
+    "Repeat for the target reps."
+  ],
+  "textSource": "opengym"
+}

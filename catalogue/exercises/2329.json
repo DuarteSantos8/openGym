@@ -1,0 +1,23 @@
+{
+  "id": "2329",
+  "name": "spine twist",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "mobility",
+  "description": "A seated torso rotation, twisting side to side. Loosens the spine and works the obliques.",
+  "instructions": [
+    "Sit on the ground with your legs extended in front of you.",
+    "Bend your knees and place your feet flat on the ground, hip-width apart.",
+    "Place your hands behind your head with your elbows pointing outwards.",
+    "Engage your abs and slowly twist your torso to the right, bringing your right elbow towards your left knee.",
+    "Pause for a moment at the end of the twist, then slowly return to the starting position.",
+    "Repeat the twist to the left side, bringing your left elbow towards your right knee.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4248",
+  "name": "dumbbell straight arm crunch",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "core",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A crunch holding a dumbbell straight above your chest. It loads the abs while your arms stay locked.",
+  "instructions": [
+    "Lie on your back with your knees bent and feet flat.",
+    "Hold a dumbbell with both hands, arms straight up.",
+    "Curl your shoulders off the floor, reaching toward the ceiling.",
+    "Squeeze your abs at the top.",
+    "Lower slowly.",
+    "Keep your arms straight and your neck relaxed."
+  ],
+  "textSource": "opengym"
+}

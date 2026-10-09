@@ -1,0 +1,23 @@
+{
+  "id": "4149",
+  "name": "dumbbell floor fly",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "biceps",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A chest fly performed lying on the floor, which limits the range at the bottom to protect the shoulders. It isolates the pecs.",
+  "instructions": [
+    "Lie on your back with knees bent and a dumbbell in each hand above your chest.",
+    "Soften your elbows slightly and keep that bend.",
+    "Open your arms wide until your upper arms touch the floor.",
+    "Pause briefly without resting your weight.",
+    "Squeeze your chest to bring the dumbbells back together above you.",
+    "Move slowly and keep your wrists stacked over your elbows."
+  ],
+  "textSource": "opengym"
+}

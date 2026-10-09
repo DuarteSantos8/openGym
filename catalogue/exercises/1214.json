@@ -1,0 +1,23 @@
+{
+  "id": "1214",
+  "name": "dumbbell incline reverse grip 30 degrees bench press",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "triceps",
+    "shoulders",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A low-incline dumbbell press with palms facing you. The reverse grip puts extra focus on the upper chest.",
+  "instructions": [
+    "Set a bench to about 30 degrees and lie back with dumbbells held palms facing you.",
+    "Start with the dumbbells at your chest.",
+    "Press them up until your arms are almost straight.",
+    "Lower slowly back to your chest.",
+    "Keep your elbows close to your body."
+  ],
+  "textSource": "opengym"
+}

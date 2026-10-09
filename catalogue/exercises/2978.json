@@ -1,0 +1,24 @@
+{
+  "id": "2978",
+  "name": "elbow up and down dynamic plank",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "shoulders",
+    "triceps",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "Moving between a forearm plank and a high plank, one arm at a time. It builds the core and shoulders under constant tension.",
+  "instructions": [
+    "Start in a forearm plank with your body in a straight line.",
+    "Place one hand on the floor and press up to a high plank.",
+    "Place the other hand down.",
+    "Lower back to your forearms one arm at a time.",
+    "Alternate the leading arm and keep your hips still."
+  ],
+  "femaleVariant": "2979",
+  "textSource": "opengym"
+}

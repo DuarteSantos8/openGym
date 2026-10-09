@@ -1,0 +1,22 @@
+{
+  "id": "9486",
+  "name": "dish hold",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "A gymnastics-style hollow position on your back with arms and legs reaching away. It builds strong, braced abs.",
+  "instructions": [
+    "Lie on your back with arms overhead and legs straight.",
+    "Press your lower back into the floor and tighten your abs.",
+    "Lift your arms, shoulders and legs a few centimetres off the floor.",
+    "Keep your body in a shallow dish shape and breathe.",
+    "Hold for 20-30 seconds, then relax."
+  ],
+  "textSource": "opengym"
+}

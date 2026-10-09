@@ -1,0 +1,34 @@
+{
+  "id": "0019",
+  "name": "assisted triceps dip (kneeling)",
+  "bodyPart": "upper arms",
+  "equipment": "leverage machine",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A kneeling machine-assisted triceps dip that lowers the load, so you can build pressing strength in the triceps.",
+  "instructions": [
+    "Adjust the machine to your desired weight and height.",
+    "Kneel down on the pad facing the machine, with your hands gripping the handles.",
+    "Lower your body by bending your elbows, keeping your back straight and close to the machine.",
+    "Pause for a moment at the bottom, then push yourself back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "triceps"
+    ],
+    "secondaries": [
+      "deltoids",
+      "chest",
+      "upper-back",
+      "trapezius",
+      "biceps"
+    ]
+  },
+  "femaleVariant": "2575",
+  "textSource": "exercisedb"
+}

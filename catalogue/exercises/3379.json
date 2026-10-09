@@ -1,0 +1,23 @@
+{
+  "id": "3379",
+  "name": "battling ropes high waves",
+  "bodyPart": "shoulders",
+  "equipment": "rope",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper back",
+    "core",
+    "forearms"
+  ],
+  "category": "cardio",
+  "description": "Big overhead wave style rope slams that fire up the shoulders and heart.",
+  "instructions": [
+    "Stand with feet shoulder width apart and a rope end in each hand.",
+    "Bend your knees slightly.",
+    "Raise both arms overhead and slam the ropes down.",
+    "Repeat quickly to make big waves.",
+    "Keep your core braced for the set time."
+  ],
+  "textSource": "opengym"
+}

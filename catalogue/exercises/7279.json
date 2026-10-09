@@ -1,0 +1,24 @@
+{
+  "id": "7279",
+  "name": "suspension trainer squat power pull",
+  "bodyPart": "upper legs",
+  "equipment": "suspension trainer",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "lats",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "Squat paired with an explosive pull on the straps, linking legs and back in one move.",
+  "instructions": [
+    "Hold the straps with arms extended and sink into a squat.",
+    "Keep your chest tall and knees tracking over toes.",
+    "Drive up through your legs.",
+    "As you rise, pull the straps toward your chest.",
+    "Lower your arms and sit back into the next squat."
+  ],
+  "femaleVariant": "1142",
+  "textSource": "opengym"
+}

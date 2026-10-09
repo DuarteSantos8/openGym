@@ -1,0 +1,24 @@
+{
+  "id": "4193",
+  "name": "cable half kneeling pallof press",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Press a cable away from your chest while kneeling on one knee. It trains anti rotation.",
+  "instructions": [
+    "Kneel on one knee side on to a cable at chest height.",
+    "Hold the handle at your chest.",
+    "Press it straight out.",
+    "Resist the twist.",
+    "Bring it back.",
+    "Switch sides."
+  ],
+  "femaleVariant": "10441",
+  "textSource": "opengym"
+}

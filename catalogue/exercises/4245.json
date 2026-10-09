@@ -1,0 +1,23 @@
+{
+  "id": "4245",
+  "name": "single leg board jump",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hamstrings"
+  ],
+  "category": "plyometrics",
+  "description": "A one-leg jump over or onto a board to build power and landing control. It trains single-leg explosiveness.",
+  "instructions": [
+    "Stand on one leg next to or in front of a board.",
+    "Bend slightly and swing your arms.",
+    "Jump up and across or onto the board.",
+    "Land softly on the same leg with a bent knee.",
+    "Hold the landing for a second.",
+    "Finish your reps and switch legs."
+  ],
+  "textSource": "opengym"
+}

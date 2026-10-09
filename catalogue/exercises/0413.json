@@ -1,0 +1,37 @@
+{
+  "id": "0413",
+  "name": "dumbbell squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "Holding a dumbbell at your chest or sides, you squat down and stand back up. It builds the thighs and glutes.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in each hand at your sides.",
+    "Keeping your chest up and core engaged, lower your body down by bending at the knees and hips, as if sitting back into a chair.",
+    "Continue lowering until your thighs are parallel to the ground, or as low as you can comfortably go.",
+    "Pause for a moment at the bottom, then push through your heels to return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "adductors"
+    ],
+    "secondaries": [
+      "hamstring",
+      "calves",
+      "lower-back",
+      "abs",
+      "obliques"
+    ]
+  },
+  "femaleVariant": "2220",
+  "textSource": "exercisedb"
+}

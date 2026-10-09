@@ -1,0 +1,23 @@
+{
+  "id": "1101",
+  "name": "suspension single leg squat",
+  "bodyPart": "upper legs",
+  "equipment": "suspension trainer",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A single-leg squat holding the handles for balance. It builds leg strength.",
+  "instructions": [
+    "Hold the handles and stand on one leg.",
+    "Extend the other leg forward.",
+    "Sit back and lower.",
+    "Keep your knee over your toes.",
+    "Stand up.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

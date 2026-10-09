@@ -1,0 +1,21 @@
+{
+  "id": "2410",
+  "name": "weighted standing neck extension (with head harness)",
+  "bodyPart": "neck",
+  "equipment": "weighted",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "upper back",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "Standing and bent forward with a weighted harness, you raise your head against the load to build the back of the neck.",
+  "instructions": [
+    "Fit the head harness with a light weight hanging in front.",
+    "Stand and hinge forward, resting your hands on your thighs.",
+    "Let your chin drop toward your chest.",
+    "Lift your head until your gaze is forward.",
+    "Lower slowly and keep the movement small and controlled."
+  ],
+  "textSource": "opengym"
+}

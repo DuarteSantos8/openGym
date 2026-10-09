@@ -1,0 +1,23 @@
+{
+  "id": "1532",
+  "name": "barbell romanian deadlift from deficit",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "grip muscles",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A Romanian deadlift standing on a small platform for extra range. It builds the hamstrings and glutes.",
+  "instructions": [
+    "Stand on a low platform holding the bar at your thighs.",
+    "Keep your knees soft and your back flat.",
+    "Push your hips back and slide the bar down your legs.",
+    "Lower as far as you can with a flat back.",
+    "Drive your hips forward to stand tall."
+  ],
+  "textSource": "opengym"
+}

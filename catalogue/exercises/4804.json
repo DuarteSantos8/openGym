@@ -1,0 +1,22 @@
+{
+  "id": "4804",
+  "name": "triceps press (low bar position)",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A barbell triceps press where the bar travels lower, closer to your face or chest. It hits the triceps hard through the bottom of the movement.",
+  "instructions": [
+    "Hold a barbell at arm's length over your chest, hands about shoulder-width apart.",
+    "Keep your upper arms vertical and your elbows tucked.",
+    "Bend only at the elbows to lower the bar toward your forehead.",
+    "Pause briefly when the bar is low.",
+    "Extend your arms to return the bar to the start."
+  ],
+  "textSource": "opengym"
+}

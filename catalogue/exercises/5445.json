@@ -1,0 +1,21 @@
+{
+  "id": "5445",
+  "name": "standing abdominal vacuum",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "obliques"
+  ],
+  "category": "isometric",
+  "description": "Drawing your belly in as far as you can while standing. Trains the deep abdominal muscles that keep your trunk tight.",
+  "instructions": [
+    "Stand tall with your hands on your hips and feet hip-width apart.",
+    "Exhale fully until your lungs feel empty.",
+    "Pull your belly button toward your spine and hold it there.",
+    "Hold for 10-20 seconds without breathing in deeply.",
+    "Relax and breathe normally, then repeat."
+  ],
+  "textSource": "opengym"
+}

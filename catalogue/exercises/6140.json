@@ -1,0 +1,22 @@
+{
+  "id": "6140",
+  "name": "dumbbell seated external rotation",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A seated rotator cuff exercise using a light dumbbell. It strengthens the small muscles that stabilize the shoulder.",
+  "instructions": [
+    "Sit on a bench holding a light dumbbell.",
+    "Rest your elbow on your thigh or bent at your side at 90 degrees.",
+    "Rotate your forearm upward and outward.",
+    "Pause at the top.",
+    "Lower slowly back to the start.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

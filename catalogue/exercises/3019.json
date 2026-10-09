@@ -1,0 +1,24 @@
+{
+  "id": "3019",
+  "name": "bench pull-ups",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight bench pull-up variation hanging beneath a bar. Works the lats and biceps.",
+  "instructions": [
+    "Position yourself under a bar or a sturdy horizontal surface that is at chest height.",
+    "Grab the bar or surface with an overhand grip, slightly wider than shoulder-width apart.",
+    "Hang with your arms fully extended and your body straight.",
+    "Pull your chest towards the bar or surface by squeezing your shoulder blades together and bending your elbows.",
+    "Continue pulling until your chin is above the bar or surface.",
+    "Lower yourself back down to the starting position with control.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3020",
+  "textSource": "exercisedb"
+}

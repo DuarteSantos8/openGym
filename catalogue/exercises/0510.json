@@ -1,0 +1,25 @@
+{
+  "id": "0510",
+  "name": "jump lunge to feet jack",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "hamstrings",
+    "calves",
+    "shoulders"
+  ],
+  "category": "plyometrics",
+  "description": "A jumping lunge that finishes with a jumping jack. It is a high-intensity move for legs and conditioning.",
+  "instructions": [
+    "Start standing tall with feet together.",
+    "Step into a lunge and drop your back knee toward the floor.",
+    "Jump and switch legs in the air, landing in a lunge on the other side.",
+    "Jump up and land with feet wide as you swing your arms overhead, like a jumping jack.",
+    "Jump the feet back together and return to the start.",
+    "Land softly and keep your chest up."
+  ],
+  "textSource": "opengym"
+}

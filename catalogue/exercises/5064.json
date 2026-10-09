@@ -1,0 +1,22 @@
+{
+  "id": "5064",
+  "name": "dumbbell kneeling hold to stand clean grip",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "core",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "Hold dumbbells at your shoulders from a half-kneeling position and rise to standing. It builds single-leg strength, hip drive and balance.",
+  "instructions": [
+    "Kneel on one knee with the other foot flat in front and hold dumbbells at your shoulders.",
+    "Brace your core and keep your chest up.",
+    "Drive through the front foot to stand tall.",
+    "Lower back down under control to half kneeling.",
+    "Finish all reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

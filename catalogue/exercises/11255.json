@@ -1,0 +1,22 @@
+{
+  "id": "11255",
+  "name": "cable lateral lunge v. 3",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "adductors",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A side lunge with cable resistance. It builds strength in your hips and thighs through a sideways step.",
+  "instructions": [
+    "Stand side-on to a low pulley and hold the handle at your chest.",
+    "Step wide to the side and sit your hips back.",
+    "Keep the other leg straight and your chest up.",
+    "Push through the bent leg to return to standing.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

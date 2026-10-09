@@ -1,0 +1,22 @@
+{
+  "id": "3656",
+  "name": "short stride run",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "cardio",
+  "description": "A run with short, quick strides. It raises the heart rate and builds foot speed.",
+  "instructions": [
+    "Find an open space or a treadmill to perform the exercise.",
+    "Stand tall with your feet hip-width apart.",
+    "Start jogging in place, lifting your knees high and pumping your arms.",
+    "After a few seconds, start taking short strides forward, maintaining a quick pace.",
+    "Continue running with short strides for the desired duration or distance."
+  ],
+  "textSource": "exercisedb"
+}

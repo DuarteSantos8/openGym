@@ -1,0 +1,24 @@
+{
+  "id": "1138",
+  "name": "suspender spiderman push up",
+  "bodyPart": "chest",
+  "equipment": "suspension trainer",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "obliques",
+    "core",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up with feet in the straps where one knee drives toward the elbow as you lower.",
+  "instructions": [
+    "Put your feet in the straps and set a high plank.",
+    "Lower into a push-up.",
+    "As you descend, bring one knee toward the same elbow.",
+    "Press up and extend the leg back.",
+    "Alternate sides each rep.",
+    "Keep your hips low and steady."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "0589",
+  "name": "lever one arm bent over row",
+  "bodyPart": "back",
+  "equipment": "barbell",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A one arm row on a lever machine, pulling the handle toward your hip. Works the lats and upper back one side at a time.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, knees slightly bent, and hold a barbell with an overhand grip.",
+    "Bend forward at the hips, keeping your back straight and your head up.",
+    "Let the barbell hang in front of you with your arms fully extended.",
+    "Pull the barbell up towards your chest, keeping your elbows close to your body.",
+    "Squeeze your shoulder blades together at the top of the movement.",
+    "Lower the barbell back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

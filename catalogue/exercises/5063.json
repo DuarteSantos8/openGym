@@ -1,0 +1,21 @@
+{
+  "id": "5063",
+  "name": "seated chin tuck",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "sternocleidomastoid",
+    "upper back"
+  ],
+  "category": "mobility",
+  "description": "Gently glide your chin straight back while seated to wake up the deep neck flexors and ease a forward head posture.",
+  "instructions": [
+    "Sit tall on a chair with your shoulders relaxed and eyes forward.",
+    "Keep your chin level, not tilted up or down.",
+    "Slide your head straight back as if making a double chin.",
+    "Hold for 2-3 seconds without tensing your jaw.",
+    "Return slowly to the start and repeat for 10-12 reps."
+  ],
+  "textSource": "opengym"
+}

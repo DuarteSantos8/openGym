@@ -1,0 +1,22 @@
+{
+  "id": "5169",
+  "name": "standing hip adduction v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "inner thighs",
+    "groin",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Standing leg swings across the body to work the inner thigh. A simple move for the adductors.",
+  "instructions": [
+    "Stand tall next to a wall or chair and hold on for balance.",
+    "Lift the outer leg slightly off the floor.",
+    "Swing it across the front of your standing leg.",
+    "Return slowly to the start without leaning.",
+    "Finish your reps, then turn around and switch legs."
+  ],
+  "textSource": "opengym"
+}

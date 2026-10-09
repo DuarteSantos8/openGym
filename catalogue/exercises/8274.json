@@ -1,0 +1,22 @@
+{
+  "id": "8274",
+  "name": "biceps curl under table",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms",
+    "upper back"
+  ],
+  "category": "calisthenics",
+  "description": "Lie under a sturdy table and curl your body up by gripping the edge. A bodyweight biceps exercise.",
+  "instructions": [
+    "Lie under a strong table and grip its edge with an underhand grip.",
+    "Keep your body straight with heels on the floor.",
+    "Pull your chest toward the table by bending the elbows.",
+    "Squeeze your biceps.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

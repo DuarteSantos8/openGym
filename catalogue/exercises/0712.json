@@ -1,0 +1,22 @@
+{
+  "id": "0712",
+  "name": "side lying feet raise",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "inner thighs",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A side-lying lift of both feet at once. It works the inner thighs and the sides of the waist.",
+  "instructions": [
+    "Lie on your side with legs straight.",
+    "Support your head with your arm.",
+    "Lift both feet off the floor together.",
+    "Hold briefly.",
+    "Lower slowly.",
+    "Finish reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

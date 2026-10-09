@@ -1,0 +1,22 @@
+{
+  "id": "4743",
+  "name": "dumbbell incline biceps curl v. 3",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A biceps curl sitting back on an incline bench. The stretch position works the biceps hard.",
+  "instructions": [
+    "Sit back on an incline bench with a dumbbell in each hand, arms hanging straight.",
+    "Keep your elbows back and your shoulders against the bench.",
+    "Curl both dumbbells toward your shoulders.",
+    "Squeeze your biceps at the top.",
+    "Lower slowly until your arms are fully extended and repeat."
+  ],
+  "textSource": "opengym"
+}

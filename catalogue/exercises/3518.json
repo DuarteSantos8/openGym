@@ -1,0 +1,23 @@
+{
+  "id": "3518",
+  "name": "band seated leg extension",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A seated leg extension with a loop band around the ankle. It isolates the quadriceps.",
+  "instructions": [
+    "Sit on a chair with a band anchored behind and looped around one ankle.",
+    "Start with your knee bent to 90 degrees.",
+    "Extend your leg until it is straight.",
+    "Squeeze the quad at the top.",
+    "Lower with control.",
+    "Complete your reps, then switch legs."
+  ],
+  "femaleVariant": "3519",
+  "textSource": "opengym"
+}

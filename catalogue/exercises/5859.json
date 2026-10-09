@@ -1,0 +1,22 @@
+{
+  "id": "5859",
+  "name": "kettlebell front raise",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "trapezius",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Lift a kettlebell straight in front of you to shoulder height. It works the front of the shoulder.",
+  "instructions": [
+    "Stand tall holding a kettlebell with both hands by the sides of the handle.",
+    "Keep your arms nearly straight.",
+    "Raise the kettlebell to shoulder height.",
+    "Pause briefly.",
+    "Lower slowly without swinging."
+  ],
+  "textSource": "opengym"
+}

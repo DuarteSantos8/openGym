@@ -1,0 +1,25 @@
+{
+  "id": "1705",
+  "name": "squat on bosu ball",
+  "bodyPart": "upper legs",
+  "equipment": "bosu ball",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A squat on a bosu ball. It trains the quads and glutes and tests balance.",
+  "instructions": [
+    "Place the bosu ball on the ground with the flat side up.",
+    "Stand with your feet shoulder-width apart and position yourself on top of the bosu ball.",
+    "Lower your body down by bending your knees and hips, as if sitting back into a chair.",
+    "Keep your chest up and your weight on your heels.",
+    "Lower yourself until your thighs are parallel to the ground.",
+    "Pause for a moment, then push through your heels to return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "8373",
+  "textSource": "exercisedb"
+}

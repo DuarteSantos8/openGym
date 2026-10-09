@@ -1,0 +1,22 @@
+{
+  "id": "6959",
+  "name": "band assisted push up",
+  "bodyPart": "chest",
+  "equipment": "band",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up with a band supporting the body to make the rep easier. It helps you build toward full push-ups.",
+  "instructions": [
+    "Anchor a band across a rack or set of bars at chest height.",
+    "Rest your torso on the band in a plank position.",
+    "Lower your chest toward the floor, elbows at 45 degrees.",
+    "Press up using the bounce of the band as help.",
+    "Keep your body in a straight line."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "9990",
+  "name": "standing isometric shoulder internal rotation against wall",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "chest",
+    "lats"
+  ],
+  "category": "isometric",
+  "description": "An isometric hold pressing the inner forearm into a wall to work the shoulder rotators. There is no movement, only steady tension.",
+  "instructions": [
+    "Stand sideways to a wall with your elbow bent to 90 degrees and tucked at your side.",
+    "Place the inside of your fist or forearm against the wall.",
+    "Press into the wall as if rotating your arm inward.",
+    "Hold the contraction for 5-10 seconds.",
+    "Relax and rest briefly.",
+    "Keep your elbow at your side, then switch arms."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "5803",
+  "name": "reverse hyperextension on bench",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Lie face down over a bench and lift your legs behind you. It strengthens the glutes and lower back.",
+  "instructions": [
+    "Lie face down on a bench with your hips at the edge and legs hanging.",
+    "Hold the bench for support.",
+    "Squeeze your glutes and lift your legs until level with your body.",
+    "Pause at the top.",
+    "Lower your legs slowly without swinging."
+  ],
+  "textSource": "opengym"
+}

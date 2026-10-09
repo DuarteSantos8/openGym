@@ -1,0 +1,23 @@
+{
+  "id": "4830",
+  "name": "push up in child pose",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core",
+    "lats"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up performed from a kneeling child's pose position. It trains the chest and triceps with a gentle range.",
+  "instructions": [
+    "Kneel and sit back on your heels with your arms stretched forward.",
+    "Place your hands on the floor at chest height.",
+    "Shift forward and lower your chest between your hands.",
+    "Push the floor away to rise.",
+    "Sit back to the starting pose and repeat."
+  ],
+  "textSource": "opengym"
+}

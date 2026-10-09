@@ -1,0 +1,24 @@
+{
+  "id": "3516",
+  "name": "shoulder backbend stretch",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "chest",
+    "upper chest",
+    "biceps",
+    "upper back"
+  ],
+  "category": "stretching",
+  "description": "A gentle backbend stretch that opens the shoulders and chest.",
+  "instructions": [
+    "Stand tall with your feet hip-width apart.",
+    "Clasp your hands behind your back.",
+    "Lift your arms up behind you and open your chest.",
+    "Tilt back slightly if comfortable.",
+    "Hold for 20-30 seconds.",
+    "Release slowly."
+  ],
+  "textSource": "opengym"
+}

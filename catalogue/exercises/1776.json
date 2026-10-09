@@ -1,0 +1,22 @@
+{
+  "id": "1776",
+  "name": "lying single straight leg hip extension",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Lying face down, you lift one straight leg off the floor. It strengthens your glutes and hamstrings with a gentle load on the lower back.",
+  "instructions": [
+    "Lie face down with your legs straight and your forehead on your hands.",
+    "Tighten your abs and glutes.",
+    "Raise one straight leg a few inches off the floor.",
+    "Pause briefly at the top without arching your lower back.",
+    "Lower under control and repeat, then switch legs."
+  ],
+  "textSource": "opengym"
+}

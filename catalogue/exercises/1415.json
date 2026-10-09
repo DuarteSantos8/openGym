@@ -1,0 +1,22 @@
+{
+  "id": "1415",
+  "name": "dumbbell one arm seated neutral wrist curl",
+  "bodyPart": "lower arms",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "biceps",
+    "brachialis"
+  ],
+  "category": "strength",
+  "description": "Sit with your forearm supported and curl a dumbbell with your wrist in a neutral position. It strengthens the forearms and builds grip.",
+  "instructions": [
+    "Sit on a bench with your feet flat on the ground and hold a dumbbell in one hand, palm facing up.",
+    "Rest your forearm on your thigh, allowing your wrist to hang off the edge.",
+    "Keeping your forearm stationary, curl your wrist upward as far as possible.",
+    "Pause for a moment at the top, then slowly lower your wrist back down to the starting position.",
+    "Repeat for the desired number of repetitions, then switch to the other hand."
+  ],
+  "femaleVariant": "2685",
+  "textSource": "exercisedb"
+}

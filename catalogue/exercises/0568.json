@@ -1,0 +1,24 @@
+{
+  "id": "0568",
+  "name": "leg bench side bridge",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "glutes",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "A side plank with the top leg resting on a bench. It hits the obliques and builds side-body stability.",
+  "instructions": [
+    "Lie on your side with your top leg resting on a bench.",
+    "Place your forearm on the floor under your shoulder.",
+    "Lift your hips so your body forms a straight line.",
+    "Keep your hips stacked and your core tight.",
+    "Hold for 20-30 seconds.",
+    "Lower and repeat on the other side."
+  ],
+  "textSource": "opengym"
+}

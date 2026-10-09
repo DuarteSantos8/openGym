@@ -1,0 +1,23 @@
+{
+  "id": "3567",
+  "name": "roll recumbent hip external rotator and hip extensor stretch (crossed leg)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "Lying on your back with one ankle crossed over the other knee, pull the legs in to stretch the glutes and deep hip rotators.",
+  "instructions": [
+    "Lie on your back with both knees bent and feet flat.",
+    "Cross one ankle over the opposite knee.",
+    "Pull the bottom thigh toward your chest with both hands.",
+    "Keep your head and shoulders relaxed on the floor.",
+    "Hold for 20-30 seconds while breathing steadily.",
+    "Release slowly and repeat on the other side if needed."
+  ],
+  "femaleVariant": "2201",
+  "textSource": "opengym"
+}

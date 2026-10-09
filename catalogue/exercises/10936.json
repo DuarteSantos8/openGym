@@ -1,0 +1,22 @@
+{
+  "id": "10936",
+  "name": "stick shoulder rotation over head",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "chest",
+    "upper back"
+  ],
+  "category": "mobility",
+  "description": "Passing a stick overhead and around the body. It opens up the shoulders.",
+  "instructions": [
+    "Hold a stick with a wide grip in front of your thighs.",
+    "Raise it overhead with straight arms.",
+    "Continue the arc behind your back as far as comfortable.",
+    "Return along the same path.",
+    "Narrow your grip over time."
+  ],
+  "textSource": "opengym"
+}

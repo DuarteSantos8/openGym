@@ -1,0 +1,22 @@
+{
+  "id": "1808",
+  "name": "reclining lower trunk extensor stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "lower back",
+    "glutes",
+    "hip flexors"
+  ],
+  "category": "stretching",
+  "description": "Lying on your back and pulling your knees in stretches your lower back and hips. A soothing option after long periods of sitting.",
+  "instructions": [
+    "Lie on your back with your knees bent and your feet flat.",
+    "Draw both knees toward your chest and hold them with your hands.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

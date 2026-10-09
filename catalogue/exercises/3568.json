@@ -1,0 +1,21 @@
+{
+  "id": "3568",
+  "name": "roll ball piriformis release",
+  "bodyPart": "upper legs",
+  "equipment": "roller",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "hamstrings"
+  ],
+  "category": "mobility",
+  "description": "Use a small ball under the buttock to ease tension in the piriformis and deep hip muscles.",
+  "instructions": [
+    "Sit on the floor and place a ball under one buttock.",
+    "Cross that ankle over the opposite knee for more access.",
+    "Shift your weight to find a tender spot and stay there.",
+    "Breathe slowly for 20-30 seconds, then roll gently.",
+    "Switch sides."
+  ],
+  "textSource": "opengym"
+}

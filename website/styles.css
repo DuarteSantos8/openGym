@@ -674,6 +674,13 @@ section { padding: var(--sec) 0 0; }
 .pad.bmc     { --brand: #ffdd00; }
 .pad.discord { --brand: #5865f2; }
 .pad.dead .pad-go::after { display: none; }
+/* The support card holds two destinations, so it is a box with two links instead of one
+   big link; each link carries its own brand colour. */
+.pad-links { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 18px; }
+.pad-links .pad-go { margin-top: 0; }
+.pad-links .pad-go:hover { text-decoration: none; filter: brightness(1.15); }
+.pad-go.kofi { --brand: #ff5e5b; color: var(--brand); }
+.pad-go.kofi svg { width: 17px; height: 17px; fill: currentColor; }
 .pad-body .tag {
   display: inline-block; padding: 2px 7px; border-radius: 6px;
   background: rgba(255, 159, 10, .14); color: #ffb340;
@@ -692,6 +699,8 @@ section { padding: var(--sec) 0 0; }
      seven lines. The identity and the destination survive; the detail does not. */
   .pad .rest { display: none; }
   .pad-go { font-size: 13px; margin-top: 14px; }
+  .pad-links { margin-top: 14px; }
+  .pad-links .pad-go { margin-top: 0; }
 }
 
 /* ------------------------------------------------------------------ footer */

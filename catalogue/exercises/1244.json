@@ -1,0 +1,23 @@
+{
+  "id": "1244",
+  "name": "flutter kicks v. 3",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Small alternating leg kicks while lying down. They fire up the lower abs and hip flexors.",
+  "instructions": [
+    "Lie on your back with your legs straight and hands under your hips.",
+    "Lift your legs a few inches off the floor.",
+    "Kick your legs up and down in small alternating motions.",
+    "Keep your lower back pressed to the floor.",
+    "Continue for a set time and breathe steadily."
+  ],
+  "femaleVariant": "4643",
+  "textSource": "opengym"
+}

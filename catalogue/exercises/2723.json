@@ -1,0 +1,23 @@
+{
+  "id": "2723",
+  "name": "strongman wheelbarrow",
+  "bodyPart": "full body",
+  "equipment": "weight plate",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "Pushing a loaded wheelbarrow over a distance, building leg drive and grip.",
+  "instructions": [
+    "Grip the wheelbarrow handles and lift them with a flat back.",
+    "Brace your core.",
+    "Push forward with strong steps.",
+    "Keep your arms straight and your body in line.",
+    "Set it down under control at the end."
+  ],
+  "textSource": "opengym"
+}

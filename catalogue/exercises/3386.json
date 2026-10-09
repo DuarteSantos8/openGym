@@ -1,0 +1,21 @@
+{
+  "id": "3386",
+  "name": "lever seated leg extension v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A machine isolation move for the front of the thighs.",
+  "instructions": [
+    "Sit on the machine with your back against the pad.",
+    "Hook your lower shins under the roller and align your knees with the pivot.",
+    "Extend your legs until they are nearly straight.",
+    "Squeeze your quads briefly at the top.",
+    "Lower slowly back to the start.",
+    "Avoid swinging or lifting your hips."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "10646",
+  "name": "lever incline prone row",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rhomboids",
+    "biceps",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A chest-supported row on an incline lever machine. The support keeps your back steady so the upper back does the work.",
+  "instructions": [
+    "Lie chest-down on the incline pad and grab the handles.",
+    "Let your arms extend fully.",
+    "Pull the handles back, driving your elbows toward your hips.",
+    "Squeeze your shoulder blades together.",
+    "Lower slowly until your arms are straight.",
+    "Keep your head neutral."
+  ],
+  "textSource": "opengym"
+}

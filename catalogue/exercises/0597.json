@@ -1,0 +1,35 @@
+{
+  "id": "0597",
+  "name": "lever seated hip abduction",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "Seated on a machine, you push your knees apart against pads. Works the outer hips and glutes.",
+  "instructions": [
+    "Adjust the seat height so that your knees are at a 90-degree angle.",
+    "Sit on the machine with your back against the backrest and your feet on the footrests.",
+    "Place your hands on the side handles for stability.",
+    "Engage your abductors and slowly push your legs apart, away from the midline of your body.",
+    "Pause for a moment at the end of the movement, then slowly bring your legs back together to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "gluteal"
+    ],
+    "secondaries": [
+      "hamstring"
+    ],
+    "weights": {
+      "gluteal": 1,
+      "hamstring": 0
+    }
+  },
+  "femaleVariant": "3611",
+  "textSource": "exercisedb"
+}

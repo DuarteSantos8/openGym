@@ -1,0 +1,20 @@
+{
+  "id": "0011",
+  "name": "assisted hanging knee raise",
+  "bodyPart": "waist",
+  "equipment": "assisted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A hanging knee raise with machine or band assistance. Builds lower ab and hip flexor strength.",
+  "instructions": [
+    "Hang from a pull-up bar with your arms fully extended and your palms facing away from you.",
+    "Engage your core muscles and lift your knees towards your chest, bending at the hips and knees.",
+    "Pause for a moment at the top of the movement, squeezing your abs.",
+    "Slowly lower your legs back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

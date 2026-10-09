@@ -1,0 +1,22 @@
+{
+  "id": "3438",
+  "name": "decline leg hip raise",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A leg raise on a decline bench, finishing with a hip lift for the lower abs.",
+  "instructions": [
+    "Lie on a decline bench and hold the top edge.",
+    "Bring your legs up over your hips.",
+    "Lift your hips toward the ceiling.",
+    "Lower your hips first.",
+    "Lower your legs with control.",
+    "Avoid swinging."
+  ],
+  "textSource": "opengym"
+}

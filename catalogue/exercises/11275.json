@@ -1,0 +1,23 @@
+{
+  "id": "11275",
+  "name": "cable side plank row v. 3",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lats",
+    "upper back",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A side plank held while you row a cable. It trains the core, shoulders and back at the same time.",
+  "instructions": [
+    "Set up in a side plank with a low cable handle in your top hand.",
+    "Lift your hips so your body is in a straight line.",
+    "Row the handle toward your ribs.",
+    "Keep your hips high and stable.",
+    "Extend slowly, finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

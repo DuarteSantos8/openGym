@@ -1,0 +1,23 @@
+{
+  "id": "6301",
+  "name": "eagle pose garudasana",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "shoulders",
+    "upper back",
+    "ankles"
+  ],
+  "category": "yoga",
+  "description": "A balancing pose with legs and arms wrapped. It stretches the hips and shoulders and trains balance.",
+  "instructions": [
+    "Stand and bend your knees slightly.",
+    "Cross one thigh over the other, hooking the foot behind the calf if you can.",
+    "Wrap your arms, one under the other, palms together.",
+    "Sit your hips low and lift your elbows.",
+    "Hold for 20-30 seconds, then switch."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "0789",
+  "name": "standing hamstring stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "A simple standing stretch for the back of the thigh. It helps loosen tight hamstrings.",
+  "instructions": [
+    "Stand tall and place one heel forward on the floor with the toes up.",
+    "Keep that leg straight and the other knee slightly bent.",
+    "Hinge forward at the hips with a flat back until you feel a stretch.",
+    "Hold for 20-30 seconds.",
+    "Switch legs and repeat."
+  ],
+  "textSource": "opengym"
+}

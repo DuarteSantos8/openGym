@@ -1,0 +1,22 @@
+{
+  "id": "6264",
+  "name": "dumbbell prone alternate hammer curl",
+  "bodyPart": "lower arms",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "brachialis",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A hammer curl lying face down on an incline bench, alternating arms. It builds the forearms and brachialis.",
+  "instructions": [
+    "Lie chest down on an incline bench.",
+    "Hold dumbbells with palms facing in.",
+    "Curl one dumbbell up.",
+    "Lower it slowly.",
+    "Alternate arms.",
+    "Keep your elbows still."
+  ],
+  "textSource": "opengym"
+}

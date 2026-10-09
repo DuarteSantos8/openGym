@@ -1,0 +1,24 @@
+{
+  "id": "2110",
+  "name": "standing abs rotation stretch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "Rotates the upper body from a standing position to stretch the abs and obliques and loosen the trunk.",
+  "instructions": [
+    "Stand tall with feet hip-width apart and arms relaxed.",
+    "Place your hands on your hips or hold them out to the sides.",
+    "Keep the hips facing forward and turn your upper body slowly to one side.",
+    "Look over your shoulder and breathe steadily.",
+    "Hold for 20-30 seconds.",
+    "Return to the front and rotate to the other side."
+  ],
+  "femaleVariant": "4268",
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "5524",
+  "name": "cable standing one arm face pull",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rotator cuff",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "One-arm face pull on a cable that trains the rear delts and rotator cuff for healthy shoulders.",
+  "instructions": [
+    "Set a cable at upper chest height with a single handle.",
+    "Stand tall and grab the handle with one hand.",
+    "Pull toward your face, elbow high and out.",
+    "Rotate your hand back slightly at the end.",
+    "Return slowly and switch sides after the set."
+  ],
+  "textSource": "opengym"
+}

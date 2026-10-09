@@ -1,0 +1,22 @@
+{
+  "id": "6607",
+  "name": "band lateral walk",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "Side stepping with a loop band around the legs. It fires up the hip abductors and glutes.",
+  "instructions": [
+    "Put a loop band around your legs just above the knees or ankles.",
+    "Stand in a quarter squat with feet hip-width apart.",
+    "Step sideways with the lead foot, keeping tension on the band.",
+    "Bring the trailing foot in without letting the feet touch.",
+    "Walk several steps one way, then return the other way."
+  ],
+  "femaleVariant": "2460",
+  "textSource": "opengym"
+}

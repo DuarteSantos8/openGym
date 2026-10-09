@@ -1,0 +1,22 @@
+{
+  "id": "6543",
+  "name": "cable front raise (rope attachment)",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A front raise using a rope on a low cable. The cable keeps tension on the front shoulder through the whole lift.",
+  "instructions": [
+    "Attach a rope to a low pulley and face away from the machine.",
+    "Hold the rope ends and let your arms hang with the cable between your legs.",
+    "Raise your arms forward to shoulder height with soft elbows.",
+    "Pause briefly at the top.",
+    "Lower slowly without letting the stack rest.",
+    "Keep your torso still, no swinging."
+  ],
+  "textSource": "opengym"
+}

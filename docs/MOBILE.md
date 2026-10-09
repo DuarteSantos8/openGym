@@ -17,7 +17,7 @@ openGym ships in two flavors from the same codebase:
 | Accounts | passkey sign-in, one profile per person | none — the phone *is* the account |
 | Data | synced to your server, readable on desktop | stays on the device (file in the app's private storage) |
 | Reminders | Web Push from your server | native local notifications, no server involved |
-| Exercise media | served by your server (`img/`, `gif/`) | loaded from the jsDelivr CDN |
+| Exercise media | served by your server (`exercise-media/`) | packed into the app (`exercise-media/`) |
 
 The mobile flavor never talks to a backend by default: no sign-in screen, no sync, no
 telemetry. State is mirrored from `localStorage` into `opengym-state.json` in the app's
@@ -40,9 +40,13 @@ or Settings → Account → **"Connect to my server"** later) to finish. Notes:
 
 - Works offline too: the phone keeps its copy (and the file mirror) while connected, and
   changes made without a network go to the server as soon as it is reachable again.
-- Use an `https://` address. The app's WebView is an https page, so the phone blocks a plain
-  `http://` server before anything is sent, and pairing says so. It also keeps the bearer token
-  (the connection carries one instead of a cookie) off the network in plain text.
+- `https://` is best: it keeps the pairing code and the bearer token (the connection carries one
+  instead of a cookie) off the network in plain text. A plain `http://` server on your home
+  network works too since v1.3.11 (Android; #428): type the address with `http://` in front, for
+  example `http://192.168.1.20:8080`. An address without a scheme is tried as `https://`, and when
+  that gets nowhere on a home address, pairing tells you to add `http://`. The app also reminds
+  you that http is not encrypted, so keep it to your own network. Your browser still needs a
+  password to sign in there and make the code: passkeys only work over https (or `localhost`).
 - Pairing says your server "refused the app's request (CORS)", or that "a login page or proxy
   rule replied instead of openGym", or fails with "Failed to fetch" on an older version, while
   the browser works? Something in front of openGym is answering the app instead: a reverse proxy
@@ -63,6 +67,31 @@ or Settings → Account → **"Connect to my server"** later) to finish. Notes:
   offers **Try again**, **Export backup**, or **Disconnect anyway** — which keeps those
   changes on the phone and adds them back the next time it is paired with the same server
   and account.
+
+### A server behind Cloudflare Access
+
+If your server sits behind [Cloudflare Access](https://developers.cloudflare.com/cloudflare-one/policies/access/)
+(Zero Trust), the app can't do Access's interactive sign-in from inside its WebView. Use a
+**service token** instead:
+
+1. In Zero Trust → Access → Service Auth, create a service token and note its Client ID and
+   Client Secret.
+2. In the Access application for your openGym host, add a policy with the **Service Auth**
+   action that includes that token.
+3. In the application's **CORS settings**, enable **Bypass OPTIONS requests to origin**. The
+   app runs on its own origin, so every request is preceded by a CORS preflight, and a
+   preflight never carries the token — without the bypass, Access refuses it and nothing
+   gets through. The openGym API answers the preflight itself and allows both headers.
+4. In the app, before connecting: first-launch screen → **Connection settings** (or the
+   **Cloudflare Access** button in the Connect sheet), enter your server's address and the two
+   values, then pair as usual. They can be changed later under Settings → **Server & sync** →
+   **Cloudflare Access**.
+
+The app then sends `CF-Access-Client-Id` and `CF-Access-Client-Secret` with every request to
+the server address they were entered for (scheme, host and port), including the pairing itself,
+and with nothing else: a pairing with any other address goes without them. Disconnecting from
+the server removes them. Both are kept in the phone's secure storage (Android Keystore / iOS
+Keychain), never in synced data or backups.
 
 ### Connection states
 
@@ -148,6 +177,47 @@ video autoplays muted in the Android WebView; a long video seeks from its `_capa
 URL on both platforms; an iPhone photo arrives as JPEG and an iPhone video (HEVC or H.264 MOV)
 plays; the zip export opens the share sheet.
 
+### Health Connect (Android)
+
+Settings → **Health Connect** writes finished workouts and weigh-ins to Health Connect, Android's
+on-device store for health data, where other apps (Google Fit, Samsung Health, a smartwatch app…)
+can read them. It is off until the user turns it on, and nothing is asked of Health Connect before
+that.
+
+- **What is written:** each finished workout as an exercise session — its start and end, its name
+  as the title, the exercises and sets as "Copy as text" writes them as the notes, and a type
+  (strength training as soon as one exercise is not cardio; walking, running, stationary bike,
+  elliptical or stair machine for a cardio-only workout on a catalogue machine; "other" otherwise).
+  Each weigh-in as a weight record, in kilograms. A workout without a real start and end is left
+  out rather than given made-up times. `src/lib/health-connect.js` works this out; its tests
+  pin it.
+- **Write-only.** The manifest declares `WRITE_EXERCISE` and `WRITE_WEIGHT` and nothing else, and
+  openGym reads nothing back.
+- **No duplicates.** Every record carries openGym's own id as its `clientRecordId`
+  (`opengym-w-<workout id>`, `opengym-bw-<day>`), so writing it again replaces it. An edited workout
+  or weigh-in is written again; a deleted one is removed from Health Connect.
+- **This phone only.** Whether it is on, and a fingerprint of each record already written, live in
+  `opengym-health.json` in the app's data directory, never in the synced state: it does not travel
+  to a server, into a backup export, or to a second phone. It works the same in local mode and
+  paired with a server, because the writing happens on the phone.
+- **When it writes:** after each save (finishing a workout, a weigh-in, an edit), when the app comes
+  back to the foreground, and once at launch. While it is off, a save costs nothing: the file is
+  read once at launch and kept in memory.
+- **Turning it off** asks whether to keep what openGym wrote in Health Connect, as the user's own
+  data, or to remove exactly those records.
+- **Where it shows:** Android 14 and later have Health Connect built in. On Android 9–13 it is an
+  app of its own, and the card offers its store page until it is installed. Below Android 9 (the
+  app supports Android 6) Health Connect does not exist and the card is not shown.
+- **The library:** `androidx.health.connect:connect-client` 1.1.0-alpha12, called from Java
+  (`HealthConnectPlugin.java`) through `runBlocking` on a worker thread, so the Android project stays
+  Java-only. 1.1.0 stable needs compileSdk 36 and AGP 8.9.1, a toolchain bump left for its own
+  change. The library asks for minSdk 26; `tools:overrideLibrary` keeps the app at 23 and the plugin
+  checks the version before touching it.
+
+Worth checking on a real device after changes here: turning it on shows Health Connect's own
+permission screen; a finished workout appears in Health Connect within a few seconds; deleting it
+in openGym removes it there; turning it off with "remove" leaves no openGym record behind.
+
 ## Prerequisites
 
 - Node 20+
@@ -195,7 +265,7 @@ accounts, no store rules, no yearly fees between you and an open-source app.
 
 The official signed APK is in four places, all the same file:
 
-- **[opengym.duarte-santos.ch](https://opengym.duarte-santos.ch)** — the download page.
+- **[opengym.ch](https://opengym.ch)** — the download page.
 - **[GitLab's package registry](https://gitlab.com/DuarteSantos8/opengym/-/packages)** — every
   build under `opengym-android/<version>/`, with a `.sha256` beside it. Direct link, no login:
   `https://gitlab.com/api/v4/projects/85678327/packages/generic/opengym-android/<version>/openGym-<version>.apk`

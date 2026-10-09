@@ -1,0 +1,22 @@
+{
+  "id": "10331",
+  "name": "resistance band weighted standing pronation twist curl (arm wrestler)",
+  "bodyPart": "upper arms",
+  "equipment": "resistance band",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms",
+    "brachialis",
+    "wrist flexors"
+  ],
+  "category": "strength",
+  "description": "A curl that adds a forearm twist, mimicking arm wrestling to build the biceps and forearms.",
+  "instructions": [
+    "Stand on a resistance band and hold the handle with your palm turned to the side.",
+    "Curl the handle up while rotating your wrist.",
+    "Finish with your palm facing you and the biceps squeezed.",
+    "Lower slowly and untwist back to the start.",
+    "Keep your elbow tucked. Finish the reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "3364",
+  "name": "cable seating close press",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A seated close grip cable press for the triceps with a stable base.",
+  "instructions": [
+    "Sit on a bench facing away from a cable at chest height.",
+    "Hold the handle with a narrow grip.",
+    "Press forward until your arms are straight.",
+    "Keep your back against the pad.",
+    "Return slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

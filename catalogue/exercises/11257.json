@@ -1,0 +1,23 @@
+{
+  "id": "11257",
+  "name": "cable seated high row v. 3",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rhomboids",
+    "rear deltoids",
+    "biceps",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A seated row with the handle pulled toward your upper chest. It targets the upper back and rear shoulders.",
+  "instructions": [
+    "Sit at a cable station with the pulley set high and grab the handles.",
+    "Sit tall with your chest up.",
+    "Pull the handles toward your upper chest, elbows flaring slightly.",
+    "Squeeze your shoulder blades together.",
+    "Return slowly to full arm extension."
+  ],
+  "textSource": "opengym"
+}

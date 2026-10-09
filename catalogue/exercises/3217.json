@@ -1,0 +1,22 @@
+{
+  "id": "3217",
+  "name": "modified hindu push-up (male)",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A modified hindu push-up that flows from a pike through a low dive to a lifted chest. It trains the chest, shoulders and triceps while opening up the spine.",
+  "instructions": [
+    "Start in a push-up position with your hands slightly wider than shoulder-width apart and your feet hip-width apart.",
+    "Lower your body towards the ground, bending your elbows and keeping your core engaged.",
+    "As you lower your body, shift your weight back and lift your hips up towards the ceiling, creating an inverted V shape with your body.",
+    "Continue to lower your body until your chest is just above the ground, then reverse the movement, pushing your hips back down and extending your arms to return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

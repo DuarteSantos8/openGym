@@ -1,0 +1,23 @@
+{
+  "id": "0388",
+  "name": "dumbbell seated alternate press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "chest"
+  ],
+  "category": "strength",
+  "description": "Seated, you press dumbbells overhead one arm after the other. It builds the shoulders and triceps.",
+  "instructions": [
+    "Sit on a bench with a dumbbell in each hand, palms facing forward.",
+    "Raise the dumbbells to shoulder height, with your elbows bent and palms facing forward.",
+    "Press one dumbbell up overhead, fully extending your arm.",
+    "Lower the dumbbell back down to shoulder height.",
+    "Repeat with the other arm.",
+    "Continue alternating arms for the desired number of repetitions."
+  ],
+  "femaleVariant": "2594",
+  "textSource": "exercisedb"
+}

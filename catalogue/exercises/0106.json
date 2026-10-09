@@ -1,0 +1,22 @@
+{
+  "id": "0106",
+  "name": "barbell standing close grip curl",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A standing curl with a narrow grip. Builds the biceps.",
+  "instructions": [
+    "Stand up straight with your feet shoulder-width apart and hold a barbell with an underhand grip, hands close together.",
+    "Keep your elbows close to your torso and your upper arms stationary throughout the movement.",
+    "Exhale as you curl the weights while contracting your biceps. Continue to raise the bar until your biceps are fully contracted and the bar is at shoulder level.",
+    "Hold the contracted position for a brief pause as you squeeze your biceps.",
+    "Inhale as you slowly begin to bring the barbell back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2693",
+  "textSource": "exercisedb"
+}

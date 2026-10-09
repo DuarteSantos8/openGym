@@ -1,0 +1,21 @@
+{
+  "id": "3726",
+  "name": "barbell seated front raise",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A seated front raise with a barbell that trains the front delts without using leg drive.",
+  "instructions": [
+    "Sit on a bench holding a barbell with an overhand grip, resting on your thighs.",
+    "Raise the bar straight in front of you to shoulder height.",
+    "Pause at the top.",
+    "Lower it slowly to your thighs.",
+    "Keep your back straight and avoid swinging."
+  ],
+  "textSource": "opengym"
+}

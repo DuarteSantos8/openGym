@@ -1,0 +1,22 @@
+{
+  "id": "2713",
+  "name": "strongman iron block press",
+  "bodyPart": "shoulders",
+  "equipment": "weight plate",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "An overhead press using a heavy iron block, building shoulder and arm strength.",
+  "instructions": [
+    "Lift the block to your shoulders and set your feet hip width apart.",
+    "Brace your core and squeeze your glutes.",
+    "Press the block overhead until your arms lock out.",
+    "Pause at the top.",
+    "Lower it back to your shoulders under control."
+  ],
+  "textSource": "opengym"
+}

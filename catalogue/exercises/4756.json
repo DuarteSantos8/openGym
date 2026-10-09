@@ -1,0 +1,23 @@
+{
+  "id": "4756",
+  "name": "dumbbell sit up",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A sit-up holding a dumbbell against your chest for extra resistance.",
+  "instructions": [
+    "Lie on your back with knees bent and feet flat or anchored.",
+    "Hold a dumbbell against your chest with both hands.",
+    "Curl your torso up until you are sitting.",
+    "Keep your neck neutral.",
+    "Lower back down slowly."
+  ],
+  "femaleVariant": "10713",
+  "textSource": "opengym"
+}

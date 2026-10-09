@@ -1,0 +1,23 @@
+{
+  "id": "1503",
+  "name": "band pull apart",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids",
+    "trapezius",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "A simple band move pulling the arms apart in front of you. It strengthens the upper back and rear shoulders and helps posture.",
+  "instructions": [
+    "Hold a band in front of you at shoulder height with your arms straight.",
+    "Keep your ribs down and your shoulders away from your ears.",
+    "Pull the band apart by moving your hands out to the sides.",
+    "Squeeze your shoulder blades together at the end.",
+    "Return slowly with control."
+  ],
+  "textSource": "opengym"
+}

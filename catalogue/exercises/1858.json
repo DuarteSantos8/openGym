@@ -1,0 +1,21 @@
+{
+  "id": "1858",
+  "name": "lever decline sit up",
+  "bodyPart": "waist",
+  "equipment": "leverage machine",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "Decline sit-up on a lever machine that adds resistance for stronger abdominal work.",
+  "instructions": [
+    "Lie back on the decline seat and hook your feet under the pads.",
+    "Cross your arms or hold the handles.",
+    "Curl your torso up toward your knees.",
+    "Squeeze your abs at the top.",
+    "Lower back slowly under control."
+  ],
+  "textSource": "opengym"
+}

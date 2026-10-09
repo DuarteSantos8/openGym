@@ -1,0 +1,22 @@
+{
+  "id": "6513",
+  "name": "lever bent over row (with chest support)",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rear deltoids",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A chest-supported lever row that lets you pull heavy while your lower back stays out of the way.",
+  "instructions": [
+    "Lean your chest against the pad and grab the handles.",
+    "Keep your shoulders relaxed.",
+    "Pull the handles toward your body, driving your elbows back.",
+    "Squeeze your shoulder blades together.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

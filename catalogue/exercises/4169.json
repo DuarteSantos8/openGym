@@ -1,0 +1,23 @@
+{
+  "id": "4169",
+  "name": "jumping pistol squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "A single leg squat with an explosive jump at the top. It trains leg power and balance.",
+  "instructions": [
+    "Stand on one leg with the other extended forward.",
+    "Lower into a single leg squat.",
+    "Explode upward off the standing leg.",
+    "Land softly on the same leg.",
+    "Sink back into the next squat.",
+    "Complete reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

@@ -15,7 +15,8 @@ import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import CoachIntake from './CoachIntake.jsx'
 import { requestPlan, disclosure } from '../lib/coach-api.js'
-import { CONSENT_VERSION } from '../lib/coach.js'
+import { CONSENT_VERSION, CATEGORY_TEXT } from '../lib/coach.js'
+import { setLang } from '../lib/i18n.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -211,6 +212,19 @@ describe('CoachIntake — the consent screen', () => {
     expect(all('.ob-consent-row').map(r => r.querySelector('b').textContent)).toEqual(['Your plan', 'sleep'])
   })
 
+  it('names every category in the app’s language', async () => {
+    // The screen used to pass these lines to t() as variables, which check-source-strings cannot
+    // see, and eight of the ten had no translation in any pack.
+    const english = Object.values(CATEGORY_TEXT).map(text => text())
+    const de = (await import('../locales/de.js')).default
+    await setLang('de')
+    try {
+      mount()
+      expect(all('.ob-consent-row').map(r => [r.querySelector('b').textContent, r.querySelector('span').textContent]))
+        .toEqual(english.map(([title, sub]) => [de[title], de[sub]]))
+    } finally { await setLang('en') }
+  })
+
   it('is skipped entirely once consent is on file', () => {
     mocks.S.coach = { consent: { agreedAt: '2026-09-01T00:00:00Z', version: CONSENT_VERSION }, profile: null, chat: [] }
     mount()
@@ -241,6 +255,34 @@ describe('CoachIntake — the two answers that gate the flow', () => {
     tap('.ob-choice', 'New to lifting')
     cont()
     expect(eyebrow()).toBe('Schedule')
+  })
+
+  it('names and describes every goal and starting point in the app’s language', async () => {
+    // The screen used to pass these lines to t() as variables, which check-source-strings cannot
+    // see, and the eight descriptions had no translation in any pack.
+    const goals = [
+      ['Get stronger', 'Heavier lifts, lower reps.'],
+      ['Build muscle', 'Volume and progression.'],
+      ['General fitness', 'Balanced, sustainable training.'],
+      ['Lose fat', 'Keep strength while leaning out.'],
+      ['Endurance', 'Higher reps, less rest, cardio.']
+    ]
+    const experience = [
+      ['New to lifting', 'First months in the gym.'],
+      ['Coming back after a break', 'You know the movements; the numbers need rebuilding.'],
+      ['Training regularly', 'Consistent for a while now.']
+    ]
+    const choices = () => all('.ob-choice').map(c => [c.querySelector('.ob-choice-t').firstChild.textContent, c.querySelector('.ob-choice-s').textContent])
+    const de = (await import('../locales/de.js')).default
+    mocks.S.coach = { consent: { agreedAt: '2026-09-01T00:00:00Z', version: CONSENT_VERSION }, profile: null, chat: [] }
+    await setLang('de')
+    try {
+      mount()
+      expect(choices()).toEqual(goals.map(([title, sub]) => [de[title], de[sub]]))
+      act(() => host.querySelector('.ob-choice').click())
+      cont()
+      expect(choices()).toEqual(experience.map(([title, sub]) => [de[title], de[sub]]))
+    } finally { await setLang('en') }
   })
 
   it('refuses a session shorter than ten minutes', () => {

@@ -1,0 +1,37 @@
+{
+  "id": "0588",
+  "name": "lever narrow grip seated row",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Seated on a machine, you pull a narrow grip handle toward your torso. Trains the lats and mid back.",
+  "instructions": [
+    "Adjust the seat height and footrests to ensure proper form.",
+    "Sit on the machine with your feet flat on the footrests and your knees slightly bent.",
+    "Grasp the handles with a narrow grip, palms facing each other.",
+    "Keep your back straight and lean slightly forward.",
+    "Pull the handles towards your torso, squeezing your shoulder blades together.",
+    "Pause for a moment at the peak of the movement.",
+    "Slowly release the handles and return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm",
+      "trapezius",
+      "chest",
+      "triceps"
+    ]
+  },
+  "textSource": "exercisedb"
+}

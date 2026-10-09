@@ -1,0 +1,23 @@
+{
+  "id": "0381",
+  "name": "dumbbell rear lunge",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "You step back into a lunge while holding dumbbells. It works the glutes and thighs with less knee strain than a forward lunge.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in each hand.",
+    "Take a step backward with your right foot, lowering your body into a lunge position.",
+    "Bend your left knee and lower your body until your left thigh is parallel to the ground.",
+    "Pause for a moment, then push through your left heel to return to the starting position.",
+    "Repeat on the other side, stepping back with your left foot."
+  ],
+  "femaleVariant": "2219",
+  "textSource": "exercisedb"
+}

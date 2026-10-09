@@ -1,0 +1,23 @@
+{
+  "id": "3369",
+  "name": "battling ropes alternate arms squat",
+  "bodyPart": "full body",
+  "equipment": "rope",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "shoulders",
+    "core"
+  ],
+  "category": "cardio",
+  "description": "Squatting while whipping the battle ropes with alternating arms. It raises your heart rate and works legs and shoulders.",
+  "instructions": [
+    "Hold one rope end in each hand and stand with feet shoulder width apart.",
+    "Sit into a squat position.",
+    "Whip the ropes up and down with alternating arms.",
+    "Keep your chest tall and your knees stable.",
+    "Continue for a set time at a steady pace."
+  ],
+  "textSource": "opengym"
+}

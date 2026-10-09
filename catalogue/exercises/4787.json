@@ -1,0 +1,22 @@
+{
+  "id": "4787",
+  "name": "side crunch with hands on chest",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A side-lying crunch with the arms crossed over the chest. It works the obliques along the side of the trunk.",
+  "instructions": [
+    "Lie on your side with knees slightly bent and arms crossed over your chest.",
+    "Brace your core and lift your shoulders and legs toward each other.",
+    "Crunch sideways, squeezing the side of your waist.",
+    "Pause at the top, then lower slowly.",
+    "Keep the movement small and controlled, without pulling on your neck.",
+    "Complete your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

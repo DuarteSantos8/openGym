@@ -1,0 +1,23 @@
+{
+  "id": "4546",
+  "name": "smith drag curl",
+  "bodyPart": "upper arms",
+  "equipment": "smith machine",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A biceps curl where the bar is dragged up along the body, keeping the load on the biceps and reducing shoulder swing.",
+  "instructions": [
+    "Stand close to the smith bar with an underhand shoulder-width grip.",
+    "Let the bar hang at arm length against your thighs.",
+    "Pull your elbows back and drag the bar up along your torso.",
+    "Squeeze your biceps at the top.",
+    "Lower the bar along the same line with control.",
+    "Keep your torso still and avoid leaning back."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4536",
+  "name": "kettlebell rear delt row",
+  "bodyPart": "back",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper back",
+    "rhomboids",
+    "rear deltoids",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A bent-over row with elbows flared to hit the rear shoulders. It builds upper back and posture muscles.",
+  "instructions": [
+    "Hinge forward with a flat back holding a kettlebell in each hand.",
+    "Let the weights hang below your chest.",
+    "Pull your elbows out wide and up toward the ceiling.",
+    "Squeeze your shoulder blades together at the top.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

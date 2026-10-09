@@ -34,6 +34,25 @@ export function setType(set) {
 export const isDropSet = set => setType(set) === 'dropset'
 export const isRestPauseSet = set => setType(set) === 'restpause'
 
+// A set taken to failure (Discord request, roadmap "a universal AMRAP / to failure flag"). Not a
+// third `type`: a drop-set or a rest-pause set can be taken to failure as well, so it is its own
+// optional `failure: true` on the row, written only when on. Everything that reads `w`/`r` keeps
+// treating the row as the work set it is (volume, records, progression); only effort reads it, as
+// RIR 0 when nothing was rated by hand (effort.js rirOf). A warm-up is never one, whatever it
+// carries: the phase decides first, the way it does for every other reader.
+export const isFailureSet = set => {
+  const source = objectOf(set)
+  return source.failure === true && !isWarmupRow(source)
+}
+
+/** Flip a row's to-failure mark, dropping the key when it goes off so the row is what it was. */
+export function toggleFailure(set) {
+  const out = { ...objectOf(set) }
+  if (out.failure === true) delete out.failure
+  else out.failure = true
+  return out
+}
+
 /** A drop-set's weight drops, oldest first; empty for anything else. */
 export function dropsOf(set) {
   const source = objectOf(set)

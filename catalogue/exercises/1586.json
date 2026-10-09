@@ -1,0 +1,20 @@
+{
+  "id": "1586",
+  "name": "lever seated one leg curl",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A seated hamstring curl on a machine with one leg at a time. It isolates each hamstring.",
+  "instructions": [
+    "Sit on the machine with your back against the pad and adjust the leg pad above your heel.",
+    "Place one leg under the pad and rest the other foot on the footrest.",
+    "Curl your heel down and back as far as you can.",
+    "Squeeze your hamstring at the bottom.",
+    "Return slowly, then switch legs after your reps."
+  ],
+  "textSource": "opengym"
+}

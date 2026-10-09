@@ -1,0 +1,25 @@
+{
+  "id": "1064",
+  "name": "sumo squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "adductors",
+    "quadriceps",
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight squat in a wide stance with toes turned out. It targets the glutes and inner thighs.",
+  "instructions": [
+    "Stand with feet wide and toes turned out.",
+    "Hold your hands together at your chest.",
+    "Sit your hips down and back between your legs.",
+    "Keep your knees over your toes and chest upright.",
+    "Lower to thigh level.",
+    "Push through your heels to stand and squeeze your glutes."
+  ],
+  "femaleVariant": "0802",
+  "textSource": "opengym"
+}

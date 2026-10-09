@@ -1,0 +1,23 @@
+{
+  "id": "6232",
+  "name": "suspender biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "suspension trainer",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms",
+    "brachialis",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight biceps curl on suspension straps. It builds the biceps.",
+  "instructions": [
+    "Hold the straps and lean back.",
+    "Extend your arms.",
+    "Curl your hands toward your forehead.",
+    "Keep your elbows high.",
+    "Lower slowly.",
+    "Keep your body straight."
+  ],
+  "textSource": "opengym"
+}

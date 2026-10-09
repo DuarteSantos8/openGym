@@ -1,0 +1,21 @@
+{
+  "id": "1854",
+  "name": "leg raise slightly bent knee",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A leg raise with slightly bent knees, a gentler version for the lower abs.",
+  "instructions": [
+    "Lie on your back with your hands under your hips.",
+    "Bend your knees slightly and lift your feet off the floor.",
+    "Raise your legs until they are above your hips.",
+    "Lower slowly without letting your back arch.",
+    "Keep your core tight throughout."
+  ],
+  "textSource": "opengym"
+}

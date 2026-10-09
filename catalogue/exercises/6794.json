@@ -1,0 +1,22 @@
+{
+  "id": "6794",
+  "name": "thomas test",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "groin"
+  ],
+  "category": "stretching",
+  "description": "A hip flexor length test where you lie on the edge of a bench and see how freely the thigh hangs.",
+  "instructions": [
+    "Sit at the end of a bench, then lie back and hug one knee to your chest.",
+    "Let the other leg hang off the edge with the thigh relaxed.",
+    "Keep your lower back flat on the bench.",
+    "Notice whether the hanging thigh rises above the bench or the knee straightens.",
+    "Hold for 20-30 seconds, breathing calmly.",
+    "Switch legs and compare."
+  ],
+  "textSource": "opengym"
+}

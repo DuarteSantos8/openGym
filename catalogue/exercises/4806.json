@@ -1,0 +1,23 @@
+{
+  "id": "4806",
+  "name": "wide seated pull up",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "rhomboids",
+    "forearms",
+    "grip muscles"
+  ],
+  "category": "calisthenics",
+  "description": "A wide-grip pull from a seated start position. It trains the lats and upper back with a lower starting load than a full pull-up.",
+  "instructions": [
+    "Sit under a pull-up bar and take a wide overhand grip.",
+    "Hang with arms extended and your chest lifted.",
+    "Pull your elbows down and toward your ribs to bring your chest toward the bar.",
+    "Squeeze your shoulder blades together at the top.",
+    "Lower yourself slowly to full arm extension."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "0718",
+  "name": "side sit up",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A sit-up performed with a sideways angle. It emphasizes the obliques.",
+  "instructions": [
+    "Lie on your back with knees bent.",
+    "Place your hands behind your head.",
+    "Sit up while reaching one elbow toward the opposite knee.",
+    "Lower slowly.",
+    "Keep your feet planted.",
+    "Alternate sides."
+  ],
+  "textSource": "opengym"
+}

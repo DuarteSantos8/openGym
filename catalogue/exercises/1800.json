@@ -1,0 +1,22 @@
+{
+  "id": "1800",
+  "name": "cable suspension back stretch",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "shoulders",
+    "forearms"
+  ],
+  "category": "stretching",
+  "description": "Holding a cable attachment, you lean back and let your weight stretch your lats and back. Good for opening up the upper body.",
+  "instructions": [
+    "Hold the cable attachment or handles with both hands at about chest height.",
+    "Lean back with straight arms and sit your hips back until you feel your back lengthen.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

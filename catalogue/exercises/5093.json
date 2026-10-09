@@ -1,0 +1,22 @@
+{
+  "id": "5093",
+  "name": "dumbbell single arm floor press",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Press one dumbbell up from the floor. Lying on the floor limits the range of motion and challenges your core to stay still.",
+  "instructions": [
+    "Lie on your back with your knees bent, holding a dumbbell at chest level.",
+    "Rest your other arm on the floor.",
+    "Press the dumbbell straight up until your arm is straight.",
+    "Lower it until your upper arm touches the floor.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

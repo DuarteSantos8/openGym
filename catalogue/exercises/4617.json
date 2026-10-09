@@ -1,0 +1,22 @@
+{
+  "id": "4617",
+  "name": "single arm push up (wall supported)",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "An easier one-arm push-up using a wall, building the strength and stability needed for the full floor version.",
+  "instructions": [
+    "Stand facing a wall at arm's length and place one hand on it at chest height.",
+    "Keep your other arm behind your back or at your side.",
+    "Bend your elbow to lower your chest toward the wall, body in a straight line.",
+    "Press back to the start.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

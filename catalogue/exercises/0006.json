@@ -1,0 +1,21 @@
+{
+  "id": "0006",
+  "name": "alternate heel touchers",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "Lying on your back, you crunch sideways to reach each hand toward its heel in turn. Works the obliques and abs.",
+  "instructions": [
+    "Lie flat on your back with your knees bent and feet flat on the ground.",
+    "Extend your arms straight out to the sides, parallel to the ground.",
+    "Engaging your abs, lift your shoulders off the ground and reach your right hand towards your right heel.",
+    "Return to the starting position and repeat on the left side, reaching your left hand towards your left heel.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "femaleVariant": "3801",
+  "textSource": "exercisedb"
+}

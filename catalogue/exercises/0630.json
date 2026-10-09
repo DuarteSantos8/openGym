@@ -1,0 +1,23 @@
+{
+  "id": "0630",
+  "name": "mountain climber",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "core",
+    "shoulders",
+    "triceps"
+  ],
+  "category": "calisthenics",
+  "description": "From a high plank, you drive your knees toward your chest one after another. Works the core, shoulders and gets your heart rate up.",
+  "instructions": [
+    "Start in a high plank position with your hands directly under your shoulders and your body in a straight line.",
+    "Engage your core and bring your right knee towards your chest, then quickly switch and bring your left knee towards your chest.",
+    "Continue alternating legs in a running motion, keeping your hips low and your core engaged.",
+    "Maintain a steady pace and breathe evenly throughout the exercise.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "4645",
+  "textSource": "exercisedb"
+}

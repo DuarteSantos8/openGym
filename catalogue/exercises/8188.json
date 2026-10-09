@@ -1,0 +1,23 @@
+{
+  "id": "8188",
+  "name": "standing ankle circles v. 2",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "feet",
+    "shins"
+  ],
+  "category": "mobility",
+  "description": "A standing mobility drill that rotates the ankle through its full range. It warms up the ankle joints.",
+  "instructions": [
+    "Stand tall and hold a wall or chair for balance.",
+    "Lift one foot slightly off the floor.",
+    "Draw slow circles with your toes.",
+    "Do about 10 circles in one direction.",
+    "Switch to the other direction.",
+    "Change feet and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "9185",
+  "name": "standing alternating shoulder flexion with rope",
+  "bodyPart": "shoulders",
+  "equipment": "rope",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper back",
+    "core",
+    "forearms"
+  ],
+  "category": "mobility",
+  "description": "A standing drill that lifts one arm at a time in front of you while holding a rope. It warms the shoulders and improves control.",
+  "instructions": [
+    "Stand tall holding a rope in one hand at your side.",
+    "Raise your arm forward to shoulder height or above.",
+    "Hold briefly at the top.",
+    "Lower it slowly.",
+    "Alternate arms each rep.",
+    "Keep your ribs down and shoulders relaxed."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "8880",
+  "name": "cable standing jab",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A quick punch thrown against cable resistance builds fast, explosive pushing power. It also trains the trunk to resist twisting.",
+  "instructions": [
+    "Stand facing away from the cable with the handle at chest height in one hand.",
+    "Take a staggered stance and keep your core tight.",
+    "Punch the handle forward quickly, rotating your hips a little.",
+    "Stop just before your elbow locks out.",
+    "Return the hand with control to your chin.",
+    "Do all reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

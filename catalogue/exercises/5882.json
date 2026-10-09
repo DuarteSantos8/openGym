@@ -1,0 +1,23 @@
+{
+  "id": "5882",
+  "name": "bodyweight wood chop squat",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "quadriceps",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A squat with a diagonal chopping arm motion that trains the legs and teaches the trunk to rotate with control.",
+  "instructions": [
+    "Stand with feet shoulder-width apart and hands clasped above one shoulder.",
+    "Squat down while chopping your hands diagonally toward the opposite knee.",
+    "Rotate through your trunk and let your back foot pivot.",
+    "Stand up as you swing your arms back up.",
+    "Finish all reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

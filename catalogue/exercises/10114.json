@@ -1,0 +1,22 @@
+{
+  "id": "10114",
+  "name": "weighted plate lu raise",
+  "bodyPart": "shoulders",
+  "equipment": "weight plate",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper back",
+    "trapezius",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "A plate raise that sweeps the weight out and up in a U shape, working the shoulders and upper traps.",
+  "instructions": [
+    "Stand tall holding a weight plate with both hands at thigh height.",
+    "Raise the plate out and up in a wide arc until it is about overhead.",
+    "Pause briefly, keeping your ribs down and core tight.",
+    "Lower the plate back along the same path with control.",
+    "Use a light plate and avoid leaning back."
+  ],
+  "textSource": "opengym"
+}

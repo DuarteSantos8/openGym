@@ -1,0 +1,22 @@
+{
+  "id": "2899",
+  "name": "side plank (beginner)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "glutes"
+  ],
+  "category": "isometric",
+  "description": "A bent-knee side plank that builds oblique and hip strength for beginners.",
+  "instructions": [
+    "Lie on your side with knees bent and your elbow under your shoulder.",
+    "Stack your hips and knees.",
+    "Press into your forearm to lift your hips off the floor.",
+    "Hold a straight line from knees to head.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

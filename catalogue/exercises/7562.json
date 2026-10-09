@@ -1,0 +1,20 @@
+{
+  "id": "7562",
+  "name": "seated quadriceps stretch v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "stretching",
+  "description": "Seated stretch for the front of your thigh.",
+  "instructions": [
+    "Sit sideways on a bench or chair edge.",
+    "Bend one knee, tucking your foot behind you.",
+    "Hold your ankle and gently pull it toward your glutes.",
+    "Hold for 20-30 seconds.",
+    "Switch sides."
+  ],
+  "textSource": "opengym"
+}

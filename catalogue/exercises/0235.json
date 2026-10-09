@@ -1,0 +1,23 @@
+{
+  "id": "0235",
+  "name": "cable standing shoulder external rotation",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A standing cable external rotation. The forearm turns outward while the elbow stays fixed, strengthening the rotator cuff.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and your knees slightly bent.",
+    "Hold the cable handle with your arm extended in front of you, parallel to the ground.",
+    "Keep your elbow slightly bent and your shoulder blades pulled back.",
+    "Slowly rotate your arm outward, away from your body, while keeping your elbow in the same position.",
+    "Pause for a moment at the end of the movement, then slowly return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2675",
+  "textSource": "exercisedb"
+}

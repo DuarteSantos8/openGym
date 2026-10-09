@@ -1,0 +1,23 @@
+{
+  "id": "8225",
+  "name": "dumbbell renegade row walk",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lats",
+    "core",
+    "shoulders",
+    "chest"
+  ],
+  "category": "strength",
+  "description": "A renegade row combined with walking forward in plank. It is a demanding move for core and shoulder stability.",
+  "instructions": [
+    "Start in a plank with a dumbbell in each hand.",
+    "Row one dumbbell up.",
+    "Place it down and step the hands forward.",
+    "Repeat with the other arm.",
+    "Keep your hips level."
+  ],
+  "textSource": "opengym"
+}

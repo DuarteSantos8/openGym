@@ -1,0 +1,22 @@
+{
+  "id": "4477",
+  "name": "roll ball iliacus abdominal region",
+  "bodyPart": "waist",
+  "equipment": "roller",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "Self-massage with a small ball to ease tension in the iliacus area at the inner hip bone. A simple way to loosen tight spots before or after training.",
+  "instructions": [
+    "Place the ball under your iliacus area at the inner hip bone while lying face down.",
+    "Shift your weight onto the ball until you feel moderate, tolerable pressure.",
+    "Roll slowly back and forth over a short range, about 2-3 cm at a time.",
+    "When you find a tender spot, pause on it and breathe for 20-30 seconds.",
+    "Use gentle pressure and breathe slowly so your stomach stays relaxed.",
+    "Repeat on the other side if needed."
+  ],
+  "textSource": "opengym"
+}

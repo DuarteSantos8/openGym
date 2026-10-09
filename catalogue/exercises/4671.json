@@ -1,0 +1,23 @@
+{
+  "id": "4671",
+  "name": "dynamic back stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "obliques",
+    "shoulders"
+  ],
+  "category": "stretching",
+  "description": "A moving stretch for the back and sides that warms up the spine and shoulders.",
+  "instructions": [
+    "Stand with feet wider than hips and arms overhead.",
+    "Reach up and over to one side.",
+    "Return to center and reach to the other side.",
+    "Let your torso rotate slightly as you go.",
+    "Move smoothly for the reps."
+  ],
+  "femaleVariant": "0440",
+  "textSource": "opengym"
+}

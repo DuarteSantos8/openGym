@@ -1,0 +1,21 @@
+{
+  "id": "0539",
+  "name": "kettlebell one arm military press to the side",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A standing one arm kettlebell press where the path drifts out to the side. Works the shoulder and upper back while your core resists leaning.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a kettlebell in one hand at shoulder height.",
+    "Engage your core and keep your back straight.",
+    "Press the kettlebell overhead, extending your arm fully.",
+    "Pause for a moment at the top, then slowly lower the kettlebell back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides."
+  ],
+  "textSource": "exercisedb"
+}

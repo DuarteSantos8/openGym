@@ -1,0 +1,22 @@
+{
+  "id": "3977",
+  "name": "push up toe touch",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A push up followed by a hand reaching to the opposite toe. It adds core and mobility work to the chest drill.",
+  "instructions": [
+    "Start in a high plank.",
+    "Lower your chest and push back up.",
+    "Lift your hips and reach one hand to the opposite foot.",
+    "Return to plank.",
+    "Alternate hands each rep."
+  ],
+  "textSource": "opengym"
+}

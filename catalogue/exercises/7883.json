@@ -1,0 +1,25 @@
+{
+  "id": "7883",
+  "name": "landmine deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "landmine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "quadriceps",
+    "core",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A deadlift with the end of a landmine bar, easier on the back and good for hips and hamstrings.",
+  "instructions": [
+    "Load one end of the barbell in a landmine and stand facing it, feet hip-width.",
+    "Hinge back and grip the bar end with both hands.",
+    "Brace your abs and keep your back flat.",
+    "Drive your hips forward to stand.",
+    "Lower the bar under control.",
+    "Repeat for the planned reps."
+  ],
+  "textSource": "opengym"
+}

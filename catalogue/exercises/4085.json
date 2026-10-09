@@ -1,0 +1,21 @@
+{
+  "id": "4085",
+  "name": "band kneeling preacher curl",
+  "bodyPart": "upper arms",
+  "equipment": "band",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A curl performed kneeling with your upper arms braced on a bench or pad, so the biceps do the work without momentum.",
+  "instructions": [
+    "Anchor the band low and kneel facing it with your upper arms resting on a bench or pad.",
+    "Hold the band ends with palms up and arms extended.",
+    "Curl your hands toward your shoulders.",
+    "Squeeze at the top, then lower slowly until your arms are nearly straight.",
+    "Keep your upper arms pressed down on the pad."
+  ],
+  "textSource": "opengym"
+}

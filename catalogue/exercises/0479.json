@@ -1,0 +1,24 @@
+{
+  "id": "0479",
+  "name": "high knee step up",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "hip flexors",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A step-up on a bench or box finishing with a high knee drive. It trains the legs and balance.",
+  "instructions": [
+    "Stand in front of a sturdy bench or step.",
+    "Place one foot fully on it.",
+    "Drive through that foot to step up and lift the other knee high.",
+    "Step back down with control.",
+    "Keep your torso upright.",
+    "Repeat, then switch legs."
+  ],
+  "textSource": "opengym"
+}

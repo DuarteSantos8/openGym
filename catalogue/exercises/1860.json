@@ -1,0 +1,21 @@
+{
+  "id": "1860",
+  "name": "hyperextension v. 2",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "calisthenics",
+  "description": "Back extension on a bench that strengthens the lower back, glutes and hamstrings.",
+  "instructions": [
+    "Set the pad at hip level and hook your heels under the rollers.",
+    "Cross your arms over your chest and keep your body straight.",
+    "Bend forward at the hips with a flat back.",
+    "Lift your torso until it forms a straight line with your legs.",
+    "Do not overarch at the top, then lower with control."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "2735",
+  "name": "strongman yoke walk",
+  "bodyPart": "full body",
+  "equipment": "barbell",
+  "target": "traps",
+  "secondaryMuscles": [
+    "core",
+    "glutes",
+    "quadriceps",
+    "upper back",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "Carrying a heavy yoke frame across your upper back and walking with it. Strengthens the legs, trunk and traps.",
+  "instructions": [
+    "Step under the yoke so it rests across your upper back and grip the frame.",
+    "Brace your core and stand up to lift it off the supports.",
+    "Walk forward in quick, controlled steps, keeping your torso upright.",
+    "At the end, lower the yoke back onto the supports with care."
+  ],
+  "textSource": "opengym"
+}

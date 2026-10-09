@@ -1,0 +1,23 @@
+{
+  "id": "9930",
+  "name": "barbell california press",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A hybrid of a skull crusher and a bench press where the bar lowers toward the forehead then presses up and back over the chest. It hits the chest and triceps together.",
+  "instructions": [
+    "Lie on a flat bench and hold a barbell above your chest with a shoulder width grip.",
+    "Bend your elbows to lower the bar toward your forehead like a skull crusher.",
+    "As it nears your head, let the elbows travel down so the bar moves toward the upper chest.",
+    "Press the bar up and slightly back over your shoulders.",
+    "Lower again along the same path and repeat.",
+    "Use a lighter weight and keep your wrists straight."
+  ],
+  "textSource": "opengym"
+}

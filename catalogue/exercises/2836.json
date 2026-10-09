@@ -1,0 +1,22 @@
+{
+  "id": "2836",
+  "name": "cable stiff leg deadlift from stepbox",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A straight-leg hinge from a raised box for a longer range on the hamstrings.",
+  "instructions": [
+    "Stand on a step box facing a low cable and hold the handle.",
+    "Keep your knees nearly straight.",
+    "Hinge at the hips and lower the handle.",
+    "Keep your back flat.",
+    "Squeeze your glutes to stand."
+  ],
+  "textSource": "opengym"
+}

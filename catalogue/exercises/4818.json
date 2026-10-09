@@ -1,0 +1,23 @@
+{
+  "id": "4818",
+  "name": "ring elevated row",
+  "bodyPart": "back",
+  "equipment": "suspension trainer",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rhomboids",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A ring row with the feet raised, making the bodyweight pull harder. It builds the upper back and biceps.",
+  "instructions": [
+    "Set the rings at about chest height and rest your heels on a bench.",
+    "Grab the rings and hang with arms extended and body straight.",
+    "Pull your chest toward your hands, driving your elbows back.",
+    "Squeeze your shoulder blades together at the top.",
+    "Lower with control without letting your hips sag."
+  ],
+  "textSource": "opengym"
+}

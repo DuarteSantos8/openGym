@@ -1,0 +1,22 @@
+{
+  "id": "10905",
+  "name": "hamstring bridge leg kick v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "A hamstring bridge with an added leg extension. It adds a balance challenge for hips and thighs.",
+  "instructions": [
+    "Lie on your back with knees bent and heels on the floor.",
+    "Lift your hips into a bridge.",
+    "Straighten one leg out in front, keeping hips level.",
+    "Bring the foot back to the floor without dropping your hips.",
+    "Alternate legs or finish one side first."
+  ],
+  "textSource": "opengym"
+}

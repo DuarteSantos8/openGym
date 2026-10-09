@@ -1,0 +1,24 @@
+{
+  "id": "4210",
+  "name": "kettlebell split snatch",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "shoulders",
+    "hamstrings",
+    "quadriceps",
+    "core"
+  ],
+  "category": "olympic",
+  "description": "A snatch where you drop into a split stance as the kettlebell goes overhead. It trains hip power, shoulder stability and coordination.",
+  "instructions": [
+    "Stand over a kettlebell in a hip hinge with a flat back.",
+    "Swing it back, then drive your hips forward.",
+    "As the bell rises, step into a split stance and punch it overhead.",
+    "Lock out your arm with the bell resting behind your wrist.",
+    "Stand up, bring your feet together and lower the bell to a swing.",
+    "Switch arms after your reps."
+  ],
+  "textSource": "opengym"
+}

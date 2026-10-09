@@ -1,0 +1,21 @@
+{
+  "id": "1266",
+  "name": "cable one arm incline press on exercise ball",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A one-arm incline cable press on an exercise ball. It trains the upper chest and balance.",
+  "instructions": [
+    "Sit on an exercise ball with your feet flat on the ground and your back resting against an incline bench.",
+    "Hold a cable handle in one hand and position your arm at a 90-degree angle with your elbow bent.",
+    "Press the cable handle forward and upward, extending your arm fully.",
+    "Pause for a moment at the top, then slowly lower the cable handle back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch to the other arm."
+  ],
+  "textSource": "exercisedb"
+}

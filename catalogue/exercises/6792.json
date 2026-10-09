@@ -1,0 +1,21 @@
+{
+  "id": "6792",
+  "name": "shoulder level test",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "upper back"
+  ],
+  "category": "mobility",
+  "description": "A quick posture check to see whether one shoulder sits higher than the other.",
+  "instructions": [
+    "Stand relaxed with your feet hip-width apart and arms hanging loose.",
+    "Look straight ahead and let your shoulders settle naturally.",
+    "Check in a mirror, or ask a friend, whether both shoulders are at the same height.",
+    "Roll the shoulders once and re-check without shrugging.",
+    "Note any difference and repeat now and then to track it."
+  ],
+  "textSource": "opengym"
+}

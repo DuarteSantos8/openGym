@@ -1,0 +1,24 @@
+{
+  "id": "3499",
+  "name": "self assisted inverted pullover",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "triceps",
+    "core",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A pullover-style move hanging under a bar, with the legs helping a bit. It builds the lats and shoulder strength.",
+  "instructions": [
+    "Set a sturdy bar at hip height or lower and hang beneath it with an overhand grip.",
+    "Keep your feet on the floor to help as needed.",
+    "Pull your chest toward the bar and let your hips rise.",
+    "Continue to rotate your torso up and over the bar toward your hands, as your range allows.",
+    "Reverse slowly back to the start.",
+    "Use your legs only as needed."
+  ],
+  "textSource": "opengym"
+}

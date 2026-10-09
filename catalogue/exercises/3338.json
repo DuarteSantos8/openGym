@@ -1,0 +1,23 @@
+{
+  "id": "3338",
+  "name": "dumbbell single stiff leg deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A single leg hinge holding a dumbbell, which trains your hamstrings, glutes and balance.",
+  "instructions": [
+    "Stand on one leg with a dumbbell in the opposite hand or both hands.",
+    "Keep a soft bend in your standing knee.",
+    "Hinge forward while your free leg extends behind you.",
+    "Lower the dumbbell toward the floor with a flat back.",
+    "Squeeze your glute to stand back up, then switch legs."
+  ],
+  "textSource": "opengym"
+}

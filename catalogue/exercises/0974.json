@@ -1,0 +1,22 @@
+{
+  "id": "0974",
+  "name": "band close-grip pulldown",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A close-grip pulldown with a band, pulling down toward the chest. It trains the lats and biceps.",
+  "instructions": [
+    "Attach the band to a high anchor point, such as a pull-up bar or sturdy beam.",
+    "Stand facing the anchor point and grab the band with an underhand grip, hands shoulder-width apart.",
+    "Step back to create tension in the band, keeping your feet hip-width apart.",
+    "Engage your core and keep your back straight as you pull the band down towards your chest, squeezing your shoulder blades together.",
+    "Pause for a moment at the bottom of the movement, then slowly release the band back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

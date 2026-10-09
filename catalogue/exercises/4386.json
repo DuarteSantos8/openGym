@@ -1,0 +1,23 @@
+{
+  "id": "4386",
+  "name": "leg extension plank",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "glutes",
+    "shoulders",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A plank where you lift and extend one leg at a time, testing core stability and strengthening the glutes.",
+  "instructions": [
+    "Get into a forearm or high plank with a flat back.",
+    "Brace your abs and squeeze your glutes.",
+    "Lift one leg straight behind you without rotating your hips.",
+    "Lower it with control.",
+    "Repeat on the other leg and alternate."
+  ],
+  "textSource": "opengym"
+}

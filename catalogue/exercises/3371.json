@@ -1,0 +1,23 @@
+{
+  "id": "3371",
+  "name": "battling ropes side to side arms",
+  "bodyPart": "shoulders",
+  "equipment": "rope",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "shoulders",
+    "core",
+    "obliques",
+    "upper back"
+  ],
+  "category": "cardio",
+  "description": "Swinging the ropes from side to side to condition your shoulders and trunk.",
+  "instructions": [
+    "Hold the rope ends in an athletic stance with knees bent.",
+    "Swing both ropes to one side.",
+    "Swing them across to the other side in a flowing motion.",
+    "Rotate through your torso a little.",
+    "Keep a steady rhythm for the set time."
+  ],
+  "textSource": "opengym"
+}

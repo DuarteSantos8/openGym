@@ -1,0 +1,24 @@
+{
+  "id": "5232",
+  "name": "dumbbell deadlift bent over row",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "rhomboids",
+    "biceps",
+    "hamstrings",
+    "glutes",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A deadlift position held into a bent-over row. It trains your back and hamstrings together.",
+  "instructions": [
+    "Stand holding dumbbells in front of your thighs.",
+    "Hinge at the hips with a flat back and soft knees.",
+    "Row the dumbbells toward your lower ribs.",
+    "Squeeze your shoulder blades.",
+    "Lower the weights slowly and stand back up."
+  ],
+  "textSource": "opengym"
+}

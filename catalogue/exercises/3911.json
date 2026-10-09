@@ -1,0 +1,23 @@
+{
+  "id": "3911",
+  "name": "dumbbell low fly",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "shoulders",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A dumbbell fly with a low path that emphasizes the lower chest.",
+  "instructions": [
+    "Lie on a flat bench or stand and hold dumbbells with palms facing each other.",
+    "Keep a slight bend in your elbows.",
+    "Move the dumbbells in a wide arc.",
+    "Bring them together in front of your lower chest.",
+    "Squeeze your chest.",
+    "Lower slowly under control."
+  ],
+  "textSource": "opengym"
+}

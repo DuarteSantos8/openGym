@@ -1,0 +1,22 @@
+{
+  "id": "1798",
+  "name": "lying whole body stretch",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "core",
+    "shoulders",
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "Lying flat and reaching long through your arms and legs gives your whole body a gentle stretch. A nice reset after training.",
+  "instructions": [
+    "Lie on your back with your arms overhead and your legs straight.",
+    "Reach your fingertips up and your toes down, as if you want to get taller.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "5061",
+  "name": "prone cervical extension isometric hold",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "trapezius",
+    "upper back",
+    "sternocleidomastoid"
+  ],
+  "category": "isometric",
+  "description": "Hold your head lifted while lying face down. It builds endurance in the neck extensors.",
+  "instructions": [
+    "Lie face down with your arms by your sides.",
+    "Tuck your chin slightly.",
+    "Lift your head a few inches off the floor.",
+    "Hold steady while breathing normally.",
+    "Hold for 10-20 seconds, then lower slowly."
+  ],
+  "textSource": "opengym"
+}

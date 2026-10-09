@@ -1,0 +1,22 @@
+{
+  "id": "3727",
+  "name": "barbell front bench squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A front squat to a bench behind you, which helps with depth control and keeps the load in front.",
+  "instructions": [
+    "Place a bench behind you and rest the bar across your front shoulders.",
+    "Keep your elbows high and your chest up.",
+    "Sit back and down until you lightly touch the bench.",
+    "Drive through your feet to stand.",
+    "Avoid rocking or collapsing onto the bench."
+  ],
+  "textSource": "opengym"
+}

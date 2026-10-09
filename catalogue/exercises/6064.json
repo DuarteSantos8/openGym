@@ -1,0 +1,23 @@
+{
+  "id": "6064",
+  "name": "bottle weighted reverse grip concentration curl",
+  "bodyPart": "lower arms",
+  "equipment": "weighted",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "biceps",
+    "brachialis",
+    "wrist extensors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A seated concentration curl with an overhand grip. It targets the forearms and brachialis.",
+  "instructions": [
+    "Sit with feet wide, holding a bottle with an overhand grip, elbow resting on your inner thigh.",
+    "Let your arm hang straight.",
+    "Curl the bottle up without bending your wrist.",
+    "Pause at the top.",
+    "Lower slowly, then switch arms."
+  ],
+  "textSource": "opengym"
+}

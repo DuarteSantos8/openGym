@@ -1,0 +1,20 @@
+{
+  "id": "0969",
+  "name": "band alternating v-up",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A V-up with a band, alternating the leg position each rep. It trains the abs and hip flexors.",
+  "instructions": [
+    "Lie flat on your back with your legs straight and your arms extended overhead, holding the band.",
+    "Engage your abs and lift your legs and upper body off the ground simultaneously, reaching your hands towards your toes.",
+    "As you lower your legs and upper body back down, switch the position of your legs, crossing one over the other.",
+    "Repeat the movement, alternating the position of your legs with each repetition.",
+    "Continue for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

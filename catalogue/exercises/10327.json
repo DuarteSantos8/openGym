@@ -1,0 +1,22 @@
+{
+  "id": "10327",
+  "name": "kettlebell strong russian twist",
+  "bodyPart": "waist",
+  "equipment": "kettlebell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A seated Russian twist with a kettlebell, taking the weight side to side to work the obliques and abs.",
+  "instructions": [
+    "Sit on the floor with knees bent and lean back slightly.",
+    "Hold a kettlebell at your chest with both hands.",
+    "Rotate your torso to bring the bell beside one hip.",
+    "Rotate to the other side in a smooth motion.",
+    "Keep your chest lifted and feet raised for more challenge."
+  ],
+  "textSource": "opengym"
+}

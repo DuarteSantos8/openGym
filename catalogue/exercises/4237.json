@@ -1,0 +1,23 @@
+{
+  "id": "4237",
+  "name": "dumbbell seated close grip press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A seated overhead press with the dumbbells held close together, palms facing in. It works the front delts and triceps.",
+  "instructions": [
+    "Sit upright on a bench with back support, dumbbells at shoulder height.",
+    "Hold them close together with palms facing each other.",
+    "Press them overhead until your arms are straight.",
+    "Keep your core tight and ribs down.",
+    "Lower slowly back to your shoulders.",
+    "Do not arch your lower back."
+  ],
+  "textSource": "opengym"
+}

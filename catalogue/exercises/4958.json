@@ -1,0 +1,23 @@
+{
+  "id": "4958",
+  "name": "cable overhead single arm triceps extension (rope attachment)",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A one arm overhead triceps extension with a rope. It isolates the triceps.",
+  "instructions": [
+    "Hold a rope with one hand overhead and face away from the stack.",
+    "Keep your upper arm close to your head.",
+    "Extend your elbow until the arm is straight.",
+    "Squeeze the triceps.",
+    "Lower slowly.",
+    "Finish reps, then switch arms."
+  ],
+  "femaleVariant": "11319",
+  "textSource": "opengym"
+}

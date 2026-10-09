@@ -1,0 +1,23 @@
+{
+  "id": "3668",
+  "name": "dumbbell lying on floor chest press",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A dumbbell press performed lying on the floor, which limits the range of motion and is easy on the shoulders.",
+  "instructions": [
+    "Lie on the floor holding dumbbells above your chest.",
+    "Lower them until your upper arms touch the floor.",
+    "Pause briefly.",
+    "Press back up to straight arms.",
+    "Keep your wrists straight."
+  ],
+  "femaleVariant": "7428",
+  "textSource": "opengym"
+}

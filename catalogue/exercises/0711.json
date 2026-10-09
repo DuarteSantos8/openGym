@@ -1,0 +1,22 @@
+{
+  "id": "0711",
+  "name": "side lunge stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "groin",
+    "hamstrings"
+  ],
+  "category": "stretching",
+  "description": "A wide lunge to the side that stretches the inner thigh. It improves hip mobility.",
+  "instructions": [
+    "Stand with your feet wide apart.",
+    "Shift your weight to one side and bend that knee.",
+    "Keep the other leg straight.",
+    "Keep your chest up.",
+    "Hold for 20-30 seconds.",
+    "Switch sides."
+  ],
+  "textSource": "opengym"
+}

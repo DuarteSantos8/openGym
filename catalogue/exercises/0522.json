@@ -1,0 +1,21 @@
+{
+  "id": "0522",
+  "name": "kettlebell alternating row",
+  "bodyPart": "back",
+  "equipment": "kettlebell",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "You row a kettlebell with one arm after the other. It builds the back, biceps and grip.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, knees slightly bent, and hold a kettlebell in each hand with your palms facing your body.",
+    "Bend forward at the hips, keeping your back straight and your core engaged.",
+    "Pull one kettlebell up towards your chest, keeping your elbow close to your body and squeezing your shoulder blades together.",
+    "Lower the kettlebell back down to the starting position and repeat with the other arm.",
+    "Continue alternating arms for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

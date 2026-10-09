@@ -1,0 +1,22 @@
+{
+  "id": "0279",
+  "name": "decline push-up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up with the feet raised on a surface. The incline puts more load on the upper chest and shoulders.",
+  "instructions": [
+    "Place your hands on the ground slightly wider than shoulder-width apart, with your feet elevated on a stable surface.",
+    "Keep your body in a straight line from head to toe, engaging your core muscles.",
+    "Lower your chest towards the ground by bending your elbows, keeping them close to your body.",
+    "Push through your palms to extend your arms and return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "0280",
+  "textSource": "exercisedb"
+}

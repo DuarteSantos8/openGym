@@ -1,0 +1,22 @@
+{
+  "id": "5226",
+  "name": "barbell back wide shrug",
+  "bodyPart": "back",
+  "equipment": "barbell",
+  "target": "traps",
+  "secondaryMuscles": [
+    "rhomboids",
+    "forearms",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A wide-grip shrug with the barbell held behind your body. It hits the traps from a slightly different angle.",
+  "instructions": [
+    "Hold a barbell behind your thighs with a wide overhand grip.",
+    "Stand tall with your chest up.",
+    "Shrug your shoulders straight up.",
+    "Squeeze at the top for a second.",
+    "Lower slowly without leaning forward."
+  ],
+  "textSource": "opengym"
+}

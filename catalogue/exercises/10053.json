@@ -1,0 +1,23 @@
+{
+  "id": "10053",
+  "name": "jump from seated position",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hamstrings"
+  ],
+  "category": "plyometrics",
+  "description": "An explosive jump that starts from a seated position on a box or chair, building power in the legs.",
+  "instructions": [
+    "Sit on a sturdy box or bench with feet flat.",
+    "Lean slightly forward with arms ready.",
+    "Explode upward, swinging your arms.",
+    "Land softly on both feet with bent knees.",
+    "Sit back down and reset.",
+    "Repeat with a short pause each time."
+  ],
+  "textSource": "opengym"
+}

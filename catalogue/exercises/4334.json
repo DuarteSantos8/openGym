@@ -1,0 +1,22 @@
+{
+  "id": "4334",
+  "name": "side plank oblique crunch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "glutes"
+  ],
+  "category": "calisthenics",
+  "description": "A side plank with a knee-to-elbow crunch. It trains the obliques and shoulder stability together.",
+  "instructions": [
+    "Set up in a side plank on one forearm, feet stacked or staggered.",
+    "Put your free hand behind your head.",
+    "Bring your top knee and elbow together beneath your torso.",
+    "Extend back to the side plank position.",
+    "Complete your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

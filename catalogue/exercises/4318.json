@@ -1,0 +1,22 @@
+{
+  "id": "4318",
+  "name": "dumbbell pullover on floor",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "lats",
+  "secondaryMuscles": [
+    "chest",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A pullover lying on the floor, which limits the stretch range and keeps the focus on the lats and chest.",
+  "instructions": [
+    "Lie on your back with knees bent and hold one dumbbell with both hands above your chest.",
+    "Keep a slight bend in your elbows.",
+    "Lower the weight in an arc behind your head until your upper arms touch the floor.",
+    "Pull it back over your chest using your lats.",
+    "Keep your ribs down and core tight throughout."
+  ],
+  "textSource": "opengym"
+}

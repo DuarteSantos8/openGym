@@ -1,0 +1,21 @@
+{
+  "id": "2342",
+  "name": "chest bench press elbows (form check)",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A side-by-side form check for elbow position during the bench press, showing the common mistake next to the correct technique so you can spot it in your own sets.",
+  "instructions": [
+    "Lie on the bench with the bar unracked above your chest.",
+    "Compare the faulty version with the correct one: your elbows sit at roughly 45 degrees from the torso instead of flaring wide.",
+    "Perform the lift slowly with a light load and keep the correct position throughout.",
+    "Use a mirror or film a set from the side to check your own position.",
+    "Fix the cue before adding weight, and rest between sets so form stays clean."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "10548",
+  "name": "standing single leg concentration calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "calisthenics",
+  "description": "A one-legged calf raise performed slowly with full focus. It builds calf strength and ankle control.",
+  "instructions": [
+    "Stand on one leg and hold a wall or rail lightly.",
+    "Lower your heel slightly for a stretch.",
+    "Rise high onto your toes, squeezing the calf.",
+    "Pause for a second at the top.",
+    "Lower slowly, finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

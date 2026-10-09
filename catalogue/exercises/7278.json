@@ -1,0 +1,23 @@
+{
+  "id": "7278",
+  "name": "suspension trainer lat stretch",
+  "bodyPart": "back",
+  "equipment": "suspension trainer",
+  "target": "lats",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper back",
+    "core"
+  ],
+  "category": "stretching",
+  "description": "Hanging stretch using straps that opens the sides of your back and your shoulders.",
+  "instructions": [
+    "Hold the straps and lean back with straight arms.",
+    "Sit your hips back and drop your chest between your arms.",
+    "Feel the stretch along the sides of your back.",
+    "Hold for 20-30 seconds.",
+    "Return slowly to standing."
+  ],
+  "femaleVariant": "1118",
+  "textSource": "opengym"
+}

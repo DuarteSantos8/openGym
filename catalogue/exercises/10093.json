@@ -1,0 +1,24 @@
+{
+  "id": "10093",
+  "name": "dumbbell half kneeling thor lift",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "glutes",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A diagonal lift from low to high while half kneeling, working the trunk, hips and shoulders together.",
+  "instructions": [
+    "Kneel in a half-kneeling position and hold a dumbbell near the outside of your back hip.",
+    "Brace your abs and keep your torso upright.",
+    "Lift the dumbbell diagonally up and across your body.",
+    "Finish with it above the opposite shoulder.",
+    "Lower along the same path.",
+    "Finish reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

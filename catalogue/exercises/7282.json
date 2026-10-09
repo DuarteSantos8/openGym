@@ -1,0 +1,23 @@
+{
+  "id": "7282",
+  "name": "resistance band walk",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "quadriceps",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "Walking with a band around the legs to fire up the outer hips and glutes.",
+  "instructions": [
+    "Place a band around your thighs or ankles.",
+    "Sit into a slight squat with feet hip width apart.",
+    "Step sideways, keeping tension in the band.",
+    "Bring the trailing foot in without letting the band go slack.",
+    "Walk back the other way to even it out."
+  ],
+  "femaleVariant": "2416",
+  "textSource": "opengym"
+}

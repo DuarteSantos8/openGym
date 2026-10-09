@@ -1,0 +1,36 @@
+{
+  "id": "1318",
+  "name": "cable incline bench row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A cable row done on an incline bench so your torso is supported. It works the upper back and biceps without lower back strain.",
+  "instructions": [
+    "Set up an incline bench at a 45-degree angle and attach a cable handle to the low pulley.",
+    "Sit on the bench facing the cable machine with your feet flat on the floor and your knees slightly bent.",
+    "Grasp the cable handle with an overhand grip and extend your arms fully in front of you.",
+    "Lean forward from your hips while keeping your back straight and your core engaged.",
+    "Pull the cable handle towards your chest by retracting your shoulder blades and bending your elbows.",
+    "Squeeze your back muscles at the top of the movement, then slowly extend your arms back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm",
+      "trapezius",
+      "chest",
+      "triceps"
+    ]
+  },
+  "textSource": "exercisedb"
+}

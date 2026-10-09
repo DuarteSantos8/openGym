@@ -1,0 +1,22 @@
+{
+  "id": "9490",
+  "name": "step up on box",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A simple step onto a box that trains the thighs and glutes one leg at a time.",
+  "instructions": [
+    "Stand facing a sturdy box or bench at a comfortable height.",
+    "Place one foot fully on the box.",
+    "Press through that heel and stand up on the box.",
+    "Step back down with control.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

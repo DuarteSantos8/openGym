@@ -1,0 +1,23 @@
+{
+  "id": "4170",
+  "name": "bear plank",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "shoulders",
+    "quadriceps"
+  ],
+  "category": "isometric",
+  "description": "A plank on hands and toes with knees hovering just off the floor. It challenges the core and shoulders.",
+  "instructions": [
+    "Start on hands and knees with wrists under shoulders.",
+    "Tuck your toes and lift your knees a few centimetres off the floor.",
+    "Keep your back flat and hips level.",
+    "Brace your abs and breathe steadily.",
+    "Hold for 20-30 seconds.",
+    "Lower your knees to rest."
+  ],
+  "textSource": "opengym"
+}

@@ -1,7 +1,8 @@
-import { metricEntriesForExercise, metricRowsForEntry, bestWeightForEntry, completedRepsOf, modeOf } from './history.js'
+import { metricEntriesForExercise, metricRowsForEntry, bestWeightForEntry, completedRepsOf, modeOf, workoutAt } from './history.js'
 import { completedVolumeOf } from './workout-model.js'
 import { bestSetOf } from './onerm.js'
 import { beatsWeight } from './exercises.js'
+import { currentDbLoad, historyAs, volumeFactor, workoutAs } from './dumbbells.js'
 
 // One exercise's past, read back for the history sheet (issue #43): a chart series and the
 // last few sessions, derived in a single pass over the log so the sheet can memoise the
@@ -21,14 +22,15 @@ import { beatsWeight } from './exercises.js'
 
 export const HISTORY_SESSIONS = 10
 
-const startOf = w => (Number.isFinite(w.start) ? w.start : new Date(w.d + 'T12:00:00').getTime())
-
 // Volume of the exercise in one session: main set plus its drops/bursts, reps mode only —
 // there is no honest tonnage for a hold or a run.
-const entryVolume = rows => rows.reduce((v, s) => v + completedVolumeOf(s), 0)
+// A dumbbell entry logged per bell counts both bells (lib/dumbbells.js volumeFactor).
+const entryVolume = (rows, en) => rows.reduce((v, s) => v + completedVolumeOf(s), 0) * volumeFactor(en)
 
 export function exerciseHistory(S, exId, { limit = HISTORY_SESSIONS } = {}) {
-  const workouts = S?.workouts || []
+  // Dumbbell weights are read in the exercise's current meaning (lib/dumbbells.js), so the curve,
+  // the best and the sessions compare like with like after a switch between each and total.
+  const workouts = historyAs(S, exId, currentDbLoad(S, exId))?.workouts || []
   // Chronological pairs of (workout, entry); the sort covers backfilled sessions, which are
   // inserted by date rather than appended.
   const logged = []
@@ -43,7 +45,7 @@ export function exerciseHistory(S, exId, { limit = HISTORY_SESSIONS } = {}) {
     const en = { ...sameMode.at(-1).entry, sets: rows }
     if (rows.length) logged.push({ w, en, mode, rows })
   })
-  logged.sort((a, b) => startOf(a.w) - startOf(b.w))
+  logged.sort((a, b) => workoutAt(a.w) - workoutAt(b.w))
 
   const empty = { mode: modeOf({ id: exId }), metric: 'weight', best: 0, prId: null, total: 0, sessions: [], points: [], e1rmPoints: [] }
   if (!logged.length) return empty
@@ -64,7 +66,7 @@ export function exerciseHistory(S, exId, { limit = HISTORY_SESSIONS } = {}) {
     const same = m === mode
     const value = same ? valueOf({ en, rows }) : null
     const e1rm = m === 'reps' ? (bestSetOf(en)?.est ?? null) : null
-    const t = startOf(w)
+    const t = workoutAt(w)
     // "PR" goes on the session that first reached the all-time best, not on every session
     // that later matched it — one marker says where the record was set.
     if (value != null && value > best) { best = value; prId = w.id }
@@ -72,7 +74,7 @@ export function exerciseHistory(S, exId, { limit = HISTORY_SESSIONS } = {}) {
     if (e1rm != null) e1rmPoints.push({ t, d: w.d, y: e1rm })
     sessions.push({
       id: w.id, d: w.d, t, mode: m, target: en.target || null, sets: rows, value, e1rm,
-      volume: m === 'reps' ? entryVolume(rows) : null,
+      volume: m === 'reps' ? entryVolume(rows, en) : null,
     })
   })
   // The "first reached" rule only holds for records above zero: a bodyweight session with
@@ -97,9 +99,11 @@ export function exerciseHistory(S, exId, { limit = HISTORY_SESSIONS } = {}) {
  * Unlike "Last time" this looks across every routine: a record belongs to the exercise, not to
  * the slot it was set in. Only sets logged in `mode` count, so a hold is never measured against
  * a rep set. A tie keeps the first time it was reached, as the PR marker does.
+ * `as` reads dumbbell weights in that meaning (lib/dumbbells.js): the session's own, so a past
+ * "40 total" is held against today's sets as the "20 each" it was.
  * Returns { d, set, target } or null.
  */
-export function bestSetFor(S, exId, mode = modeOf({ id: exId })) {
+export function bestSetFor(S, exId, mode = modeOf({ id: exId }), as) {
   const keys = s => mode === 'cardio' ? [Number(s.min) || 0, Number(s.speed) || 0]
     : mode === 'time' ? [Number(s.sec) || 0, Number(s.w) || 0]
       : [Number(s.w) || 0, Number(s.r) || 0]
@@ -115,12 +119,13 @@ export function bestSetFor(S, exId, mode = modeOf({ id: exId })) {
   // until it is filed again), so a tie is settled by the start time, not by which came first
   // in the array; within one session the set logged first keeps it.
   let best = null
-  for (const w of S?.workouts || []) {
+  for (const stored of S?.workouts || []) {
+    const w = as ? workoutAs(stored, exId, as) : stored
     let t = null
     for (const en of w.entries || []) {
       if (en.id !== exId) continue
       for (const set of metricRowsForEntry(en, mode)) {
-        t ??= startOf(w)
+        t ??= workoutAt(w)
         if (!best || better(set, best.set) || (!better(best.set, set) && t < best.t)) best = { d: w.d, set, target: en.target || null, t }
       }
     }

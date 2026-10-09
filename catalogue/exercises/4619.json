@@ -1,0 +1,21 @@
+{
+  "id": "4619",
+  "name": "band standing hammer curl",
+  "bodyPart": "upper arms",
+  "equipment": "band",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A neutral-grip curl against band tension that builds the biceps, brachialis and forearms.",
+  "instructions": [
+    "Stand on the band and hold the ends with palms facing each other.",
+    "Keep your elbows at your sides.",
+    "Curl your hands up toward your shoulders without turning your wrists.",
+    "Pause briefly at the top.",
+    "Lower slowly back to the start."
+  ],
+  "textSource": "opengym"
+}

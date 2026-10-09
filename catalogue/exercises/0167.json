@@ -1,0 +1,36 @@
+{
+  "id": "0167",
+  "name": "cable high row (kneeling)",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A kneeling high cable row. Targets the upper back and rear delts.",
+  "instructions": [
+    "Attach a straight bar to a cable machine at chest height.",
+    "Kneel down in front of the cable machine and grab the bar with an overhand grip, hands shoulder-width apart.",
+    "Sit back on your heels, keeping your back straight and your core engaged.",
+    "Pull the bar towards your upper abdomen, squeezing your shoulder blades together.",
+    "Pause for a moment at the top of the movement, then slowly release the bar back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm",
+      "trapezius",
+      "chest",
+      "triceps"
+    ]
+  },
+  "femaleVariant": "2244",
+  "textSource": "exercisedb"
+}

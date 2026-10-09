@@ -1,0 +1,24 @@
+{
+  "id": "5971",
+  "name": "l drill",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves",
+    "glutes"
+  ],
+  "category": "plyometrics",
+  "description": "A cone drill run in an L shape that sharpens sprinting, backpedaling and quick cuts.",
+  "instructions": [
+    "Place three cones in an L shape, about 5 yards apart.",
+    "Sprint from the start cone to the second and touch it.",
+    "Backpedal to the start.",
+    "Sprint to the second again, turn around the cone and weave around the third.",
+    "Return to the start along the same line.",
+    "Stay low through turns."
+  ],
+  "textSource": "opengym"
+}

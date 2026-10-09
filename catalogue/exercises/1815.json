@@ -1,0 +1,21 @@
+{
+  "id": "1815",
+  "name": "forearm pronator stretch",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "biceps"
+  ],
+  "category": "stretching",
+  "description": "Rotating your forearm outward stretches the muscles that turn the palm down. Handy for anyone who types or lifts a lot.",
+  "instructions": [
+    "Extend one arm in front of you with your elbow straight and palm down.",
+    "Use your other hand to rotate the palm outward until you feel a stretch along your forearm.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

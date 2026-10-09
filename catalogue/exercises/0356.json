@@ -1,0 +1,24 @@
+{
+  "id": "0356",
+  "name": "dumbbell one arm lateral raise with support",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "A one-arm lateral raise with your free hand braced on a support. The support lets you focus on the side shoulder without swinging.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold a dumbbell in one hand, with your palm facing your body.",
+    "Place your other hand on a stable surface, such as a bench or wall, for support.",
+    "Keep your back straight and engage your core.",
+    "Raise the dumbbell out to the side, keeping your arm straight and your palm facing down.",
+    "Continue lifting until your arm is parallel to the ground.",
+    "Pause for a moment at the top, then slowly lower the dumbbell back down to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides."
+  ],
+  "textSource": "exercisedb",
+  "femaleVariant": "2690"
+}

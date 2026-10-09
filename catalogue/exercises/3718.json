@@ -1,0 +1,22 @@
+{
+  "id": "3718",
+  "name": "split lateral squat with roll",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A lateral squat done from a split position, followed by a roll, for leg strength and coordination.",
+  "instructions": [
+    "Stand with feet wide and toes forward.",
+    "Shift your weight to one side and squat on that leg, keeping the other leg straight.",
+    "Roll back with control and roll up again.",
+    "Push back to the centre.",
+    "Alternate sides."
+  ],
+  "textSource": "opengym"
+}

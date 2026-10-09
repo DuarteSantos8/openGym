@@ -1,0 +1,22 @@
+{
+  "id": "1513",
+  "name": "band good morning",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A hip hinge with a band across your shoulders. It strengthens the hamstrings, glutes and lower back.",
+  "instructions": [
+    "Stand on the band and loop it behind your neck across your shoulders.",
+    "Keep your knees softly bent and your back flat.",
+    "Push your hips back and lean your torso forward.",
+    "Stop when you feel a stretch in the hamstrings.",
+    "Drive your hips forward to stand tall again."
+  ],
+  "textSource": "opengym"
+}

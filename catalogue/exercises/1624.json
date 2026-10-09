@@ -1,0 +1,23 @@
+{
+  "id": "1624",
+  "name": "dumbbell reverse bench press",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A bench press with a reverse grip using dumbbells. It targets the upper chest and the triceps.",
+  "instructions": [
+    "Lie flat on a bench with your feet flat on the ground and your knees bent.",
+    "Hold a dumbbell in each hand with an overhand grip, palms facing towards your feet.",
+    "Extend your arms straight up towards the ceiling, keeping a slight bend in your elbows.",
+    "Slowly lower the dumbbells towards your chest, allowing your elbows to flare out to the sides.",
+    "Pause for a moment at the bottom, then push the dumbbells back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3451",
+  "textSource": "exercisedb"
+}

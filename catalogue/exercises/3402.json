@@ -1,0 +1,23 @@
+{
+  "id": "3402",
+  "name": "pike push up (between chairs)",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A pike push-up with your hands on two chairs so your head can drop lower.",
+  "instructions": [
+    "Set two sturdy chairs shoulder-width apart and grip them.",
+    "Walk your feet back and lift your hips into a pike.",
+    "Bend your elbows to lower your head between the chairs.",
+    "Keep your back flat and elbows slightly in.",
+    "Press back up.",
+    "Make sure the chairs are stable."
+  ],
+  "textSource": "opengym"
+}

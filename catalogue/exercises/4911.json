@@ -1,0 +1,24 @@
+{
+  "id": "4911",
+  "name": "inverted wide to narrow row",
+  "bodyPart": "back",
+  "equipment": "suspension trainer",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rear deltoids",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "An inverted row where you start with a wide grip and finish narrow. It trains the whole back and the arms.",
+  "instructions": [
+    "Set a bar or straps at waist height and lie underneath.",
+    "Grab it with a wide grip and straighten your body.",
+    "Pull your chest toward the bar.",
+    "Bring your hands closer on the way up or between reps.",
+    "Lower yourself with control.",
+    "Keep your body in a straight line."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "4092",
+  "name": "weighted seated triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "weighted",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A seated overhead extension with added weight that isolates the triceps.",
+  "instructions": [
+    "Sit upright on a bench and hold the weight overhead with both hands.",
+    "Keep your elbows pointing forward and close to your head.",
+    "Lower the weight behind your head by bending your elbows.",
+    "Extend your arms to straighten them fully.",
+    "Keep your back straight and core tight."
+  ],
+  "textSource": "opengym"
+}

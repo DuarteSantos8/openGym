@@ -1,0 +1,24 @@
+{
+  "id": "3491",
+  "name": "decline push up against wall",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up with the feet up the wall and hands on the floor. The raised feet put more load on the upper chest and shoulders.",
+  "instructions": [
+    "Place your hands on the floor and walk your feet up a wall behind you.",
+    "Set your hands under your shoulders in a straight body line.",
+    "Lower your chest toward the floor with elbows tucked.",
+    "Press back up to straight arms.",
+    "Keep your core tight and your hips level.",
+    "Walk your feet down to finish."
+  ],
+  "textSource": "opengym"
+}

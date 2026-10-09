@@ -1,0 +1,23 @@
+{
+  "id": "1156",
+  "name": "suspender pendulum",
+  "bodyPart": "waist",
+  "equipment": "suspension trainer",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "Lying or planking with the feet in the straps, you swing the legs side to side like a pendulum to train the obliques.",
+  "instructions": [
+    "Put your feet in the straps and set a high plank.",
+    "Brace your core.",
+    "Swing your legs together to one side.",
+    "Swing back through the center to the other side.",
+    "Keep the movement slow and controlled.",
+    "Keep your shoulders stable."
+  ],
+  "textSource": "opengym"
+}

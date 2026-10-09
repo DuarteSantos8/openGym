@@ -1,0 +1,21 @@
+{
+  "id": "0186",
+  "name": "cable lying triceps extension v. 2",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Lying cable triceps extension with a rope. You lower the rope toward the forehead and extend again, isolating the triceps.",
+  "instructions": [
+    "Attach a rope handle to a low pulley cable machine.",
+    "Lie down on a flat bench facing up, with your head towards the cable machine.",
+    "Grasp the rope handle with both hands, palms facing each other, and extend your arms straight up over your chest.",
+    "Keeping your upper arms stationary, slowly lower the rope handle towards your forehead by bending your elbows.",
+    "Pause for a moment at the bottom, then extend your arms back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "3404",
+  "name": "standing t raise",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids",
+    "trapezius"
+  ],
+  "category": "calisthenics",
+  "description": "Lift your arms out to the sides into a T shape to train the upper back and rear shoulders.",
+  "instructions": [
+    "Stand tall with arms in front of you at chest height.",
+    "Open your arms out to the sides into a T.",
+    "Squeeze your shoulder blades together.",
+    "Pause, then return slowly.",
+    "Keep your ribs down and avoid leaning back."
+  ],
+  "textSource": "opengym"
+}

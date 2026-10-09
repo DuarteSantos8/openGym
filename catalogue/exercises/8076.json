@@ -1,0 +1,22 @@
+{
+  "id": "8076",
+  "name": "weighted plate push up",
+  "bodyPart": "chest",
+  "equipment": "weighted",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A push-up with a weight plate on your upper back. The added load makes it harder once regular push-ups feel easy.",
+  "instructions": [
+    "Have a partner place a plate on your upper back, or set it carefully yourself.",
+    "Get into a high plank.",
+    "Lower your chest to the floor, elbows at about 45 degrees.",
+    "Press back up to straight arms.",
+    "Keep your body in a straight line."
+  ],
+  "textSource": "opengym"
+}

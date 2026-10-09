@@ -1,0 +1,22 @@
+{
+  "id": "6751",
+  "name": "side lying diagonal backward leg raise",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A side-lying leg lift that goes back on a diagonal. It focuses on the glutes and outer hip.",
+  "instructions": [
+    "Lie on your side with legs stacked and your bottom arm supporting your head.",
+    "Brace your core and keep your hips stacked.",
+    "Lift the top leg up and slightly back on a diagonal.",
+    "Squeeze your glute at the top.",
+    "Lower slowly.",
+    "Finish the reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

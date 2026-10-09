@@ -1,0 +1,23 @@
+{
+  "id": "4673",
+  "name": "hip extension stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "quadriceps",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "A standing or kneeling stretch that lengthens the front of the hip while the glutes work.",
+  "instructions": [
+    "Stand or kneel with one foot forward in a lunge position.",
+    "Tuck your pelvis under and squeeze the back glute.",
+    "Lean slightly forward to feel the stretch at the front of the hip.",
+    "Hold for 20-30 seconds.",
+    "Switch sides."
+  ],
+  "femaleVariant": "0483",
+  "textSource": "opengym"
+}

@@ -1,0 +1,42 @@
+{
+  "id": "0538",
+  "name": "kettlebell one arm jerk",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "core"
+  ],
+  "category": "olympic",
+  "description": "Dip and drive with your legs to throw a kettlebell from the shoulder to overhead with one arm. Builds explosive shoulder and leg power.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a kettlebell in one hand at shoulder height.",
+    "Bend your knees slightly and engage your core.",
+    "Press the kettlebell overhead in a straight line, fully extending your arm.",
+    "As you press the kettlebell overhead, simultaneously dip your knees and quickly straighten them to generate momentum.",
+    "As the kettlebell reaches its highest point, quickly drop underneath it by bending your knees and hips.",
+    "Catch the kettlebell with a slight bend in your knees and hips, and your arm fully extended overhead.",
+    "Stand up straight, fully extending your knees and hips, and stabilize the kettlebell overhead.",
+    "Lower the kettlebell back to the starting position by bending your knees and hips, and repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "bodyPart": "full body",
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "deltoids",
+      "triceps"
+    ],
+    "secondaries": [
+      "hamstring",
+      "calves",
+      "trapezius",
+      "forearm",
+      "lower-back",
+      "abs",
+      "obliques"
+    ]
+  },
+  "textSource": "exercisedb"
+}

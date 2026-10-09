@@ -1,0 +1,23 @@
+{
+  "id": "4509",
+  "name": "chin to chest stretch",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "trapezius",
+    "sternocleidomastoid"
+  ],
+  "category": "stretching",
+  "description": "A gentle neck stretch that lengthens the muscles at the back of the neck. Useful after long periods of sitting.",
+  "instructions": [
+    "Sit or stand tall with your shoulders relaxed.",
+    "Slowly lower your chin toward your chest.",
+    "Place your hands lightly on the back of your head if you want a deeper stretch.",
+    "Keep your shoulders down away from your ears.",
+    "Hold for 20-30 seconds.",
+    "Return slowly to neutral."
+  ],
+  "femaleVariant": "0252",
+  "textSource": "opengym"
+}

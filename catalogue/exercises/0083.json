@@ -1,0 +1,22 @@
+{
+  "id": "0083",
+  "name": "barbell rollerout from bench",
+  "bodyPart": "waist",
+  "equipment": "barbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "Kneeling at a bench, you roll the barbell out and back. A tough core exercise for the abs.",
+  "instructions": [
+    "Start by kneeling on the floor with a barbell placed on a bench in front of you.",
+    "Grasp the barbell with an overhand grip, slightly wider than shoulder-width apart.",
+    "Keeping your core engaged and your back straight, slowly roll the barbell forward, extending your arms in front of you.",
+    "Continue rolling the barbell forward until your body is fully extended and your arms are overhead.",
+    "Pause for a moment at the fully extended position, then slowly roll the barbell back towards your body, returning to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "2966",
+  "name": "dumbbell front squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A squat with dumbbells held at your shoulders. The front load keeps your chest upright and challenges the quads and core.",
+  "instructions": [
+    "Hold a dumbbell in each hand at your shoulders, elbows forward.",
+    "Stand with your feet shoulder-width apart.",
+    "Squat down until your thighs are about parallel.",
+    "Keep your chest up and knees tracking your toes.",
+    "Drive through your heels to stand."
+  ],
+  "femaleVariant": "2967",
+  "textSource": "opengym"
+}

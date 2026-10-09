@@ -1,0 +1,22 @@
+{
+  "id": "4557",
+  "name": "couch stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "A deep kneeling stretch with the back foot raised, aimed at the thighs and hip flexors.",
+  "instructions": [
+    "Kneel facing away from a wall or couch with one shin up against it.",
+    "Place your other foot flat on the floor in front in a lunge.",
+    "Squeeze your glute and tuck your pelvis under.",
+    "Lift your torso upright until you feel the stretch in the front of your rear thigh.",
+    "Hold for 30-60 seconds.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

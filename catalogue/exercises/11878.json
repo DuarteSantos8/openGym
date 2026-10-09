@@ -1,0 +1,22 @@
+{
+  "id": "11878",
+  "name": "stall bar leg raise",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A hanging leg raise performed on stall bars.",
+  "instructions": [
+    "Hang on a stall bar with arms straight.",
+    "Brace your core and keep your body still.",
+    "Raise your legs up in front of you.",
+    "Lift as high as you can without swinging.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

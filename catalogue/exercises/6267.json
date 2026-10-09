@@ -1,0 +1,23 @@
+{
+  "id": "6267",
+  "name": "dumbbell standing arms rotate",
+  "bodyPart": "lower arms",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "wrist extensors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A standing rotation of the forearms holding dumbbells. It builds forearm strength.",
+  "instructions": [
+    "Stand holding light dumbbells at your sides.",
+    "Bend your elbows to 90 degrees.",
+    "Rotate your palms up.",
+    "Rotate your palms down.",
+    "Repeat smoothly.",
+    "Keep your elbows pinned."
+  ],
+  "textSource": "opengym"
+}

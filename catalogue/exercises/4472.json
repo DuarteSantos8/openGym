@@ -1,0 +1,22 @@
+{
+  "id": "4472",
+  "name": "roll ball gluteus medius",
+  "bodyPart": "upper legs",
+  "equipment": "roller",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower back"
+  ],
+  "category": "mobility",
+  "description": "Self-massage with a small ball to ease tension in the side of the glutes (gluteus medius). A simple way to loosen tight spots before or after training.",
+  "instructions": [
+    "Place the ball under your side of the glutes (gluteus medius) while lying on your side or leaning on a wall.",
+    "Shift your weight onto the ball until you feel moderate, tolerable pressure.",
+    "Roll slowly back and forth over a short range, about 2-3 cm at a time.",
+    "When you find a tender spot, pause on it and breathe for 20-30 seconds.",
+    "Keep your breathing steady and avoid rolling over bone or joints.",
+    "Repeat on the other side if needed."
+  ],
+  "textSource": "opengym"
+}

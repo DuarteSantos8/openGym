@@ -1,0 +1,23 @@
+{
+  "id": "2310",
+  "name": "spin back kick",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "calves"
+  ],
+  "category": "combat",
+  "description": "A kick where you turn your back to the target and thrust the heel straight back, building rotation and balance.",
+  "instructions": [
+    "Stand in a fighting stance with your hands up.",
+    "Turn your head and shoulders to look behind you.",
+    "Pivot on your supporting foot.",
+    "Kick your leg straight back with the heel leading.",
+    "Keep your torso leaning slightly forward for balance.",
+    "Return to stance and repeat, then switch sides."
+  ],
+  "textSource": "opengym"
+}

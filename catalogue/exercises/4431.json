@@ -1,0 +1,21 @@
+{
+  "id": "4431",
+  "name": "weighted lying neck side to side",
+  "bodyPart": "neck",
+  "equipment": "weighted",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "sternocleidomastoid",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A lying neck exercise moving the head side to side against light resistance to strengthen the neck.",
+  "instructions": [
+    "Lie face up with a light weight on your forehead.",
+    "Keep your shoulders relaxed.",
+    "Slowly turn your head toward one side.",
+    "Return to the middle and turn the other way.",
+    "Use light weight and smooth movement."
+  ],
+  "textSource": "opengym"
+}

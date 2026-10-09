@@ -1,0 +1,22 @@
+{
+  "id": "1512",
+  "name": "all fours squad stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "On all fours you pull one foot toward your glutes to stretch the front of the thigh. It eases tight quads.",
+  "instructions": [
+    "Start on all fours with your hands directly under your shoulders and your knees directly under your hips.",
+    "Extend one leg straight back, keeping your knee bent and your foot flexed.",
+    "Slowly lower your hips towards the ground, feeling a stretch in your quads.",
+    "Hold this position for 20-30 seconds.",
+    "Switch legs and repeat the stretch on the other side."
+  ],
+  "femaleVariant": "4513",
+  "textSource": "exercisedb"
+}

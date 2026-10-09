@@ -1,0 +1,23 @@
+{
+  "id": "4060",
+  "name": "bird dog push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core",
+    "glutes"
+  ],
+  "category": "calisthenics",
+  "description": "A push up combined with extending an opposite arm and leg. It builds the chest while testing core balance.",
+  "instructions": [
+    "Start in a high plank.",
+    "Lower into a push up with elbows about 45 degrees from your body.",
+    "Press back up.",
+    "Lift one arm and the opposite leg and hold briefly.",
+    "Return and alternate sides each rep."
+  ],
+  "textSource": "opengym"
+}

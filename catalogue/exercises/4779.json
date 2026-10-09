@@ -1,0 +1,21 @@
+{
+  "id": "4779",
+  "name": "reverse flutter kick on floor (hand under head)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs"
+  ],
+  "category": "calisthenics",
+  "description": "Lying face up with your hands under your head, you do small alternating kicks. It works the lower abs.",
+  "instructions": [
+    "Lie on your back and place your hands under your head.",
+    "Lift your legs a few inches off the floor.",
+    "Kick up and down alternately in small, quick motions.",
+    "Keep your lower back pressed down.",
+    "Continue for the set time."
+  ],
+  "textSource": "opengym"
+}

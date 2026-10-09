@@ -1,0 +1,20 @@
+{
+  "id": "0523",
+  "name": "kettlebell arnold press",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "You press kettlebells overhead while rotating your palms. It trains all three parts of the shoulder.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a kettlebell in each hand at shoulder height with your palms facing towards you.",
+    "Engage your core and press the kettlebells overhead, rotating your palms to face forward as you extend your arms.",
+    "Pause at the top of the movement, then slowly lower the kettlebells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

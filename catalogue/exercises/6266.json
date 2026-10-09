@@ -1,0 +1,22 @@
+{
+  "id": "6266",
+  "name": "cable seated overhead curl (sz bar)",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A seated cable curl with an SZ bar, with the cable set up overhead. It targets the biceps.",
+  "instructions": [
+    "Sit facing the cable machine.",
+    "Grip the SZ bar and extend your arms.",
+    "Curl the bar toward your head.",
+    "Squeeze the biceps.",
+    "Lower slowly.",
+    "Keep your elbows high."
+  ],
+  "textSource": "opengym"
+}

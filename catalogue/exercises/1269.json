@@ -1,0 +1,31 @@
+{
+  "id": "1269",
+  "name": "cable standing up straight crossovers",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "deltoids",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "Standing cable crossovers with the hands crossing in front. It trains the chest.",
+  "instructions": [
+    "Stand in the middle of a cable machine with your feet shoulder-width apart.",
+    "Hold the handles of the cables with your palms facing down and your arms extended straight out to the sides.",
+    "Keeping your arms straight, bring your hands together in front of your body, crossing them over each other.",
+    "Pause for a moment, then slowly return to the starting position, keeping your arms extended.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "chest"
+    ],
+    "secondaries": [
+      "upper-back",
+      "trapezius"
+    ]
+  },
+  "femaleVariant": "2387",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "4336",
+  "name": "lever biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "leverage machine",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A biceps curl on a plate-loaded lever machine that guides the path. It builds the front of the upper arm.",
+  "instructions": [
+    "Adjust the seat so your elbows line up with the machine pivot.",
+    "Grip the handles with palms up.",
+    "Curl the handles toward your shoulders.",
+    "Squeeze your biceps at the top.",
+    "Lower slowly until your arms are nearly straight."
+  ],
+  "textSource": "opengym"
+}

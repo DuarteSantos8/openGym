@@ -1,0 +1,24 @@
+{
+  "id": "3876",
+  "name": "weighted squat jump with plate",
+  "bodyPart": "upper legs",
+  "equipment": "weight plate",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A jump squat holding a plate at your chest, building leg power.",
+  "instructions": [
+    "Hold a weight plate close to your chest.",
+    "Stand with feet shoulder-width apart.",
+    "Squat down until your thighs are near parallel.",
+    "Jump up explosively, extending your hips, knees and ankles.",
+    "Land softly and go straight into the next rep.",
+    "Keep your chest up throughout."
+  ],
+  "textSource": "opengym"
+}

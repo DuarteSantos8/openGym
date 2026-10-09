@@ -1,0 +1,21 @@
+{
+  "id": "4856",
+  "name": "barbell pin close grip bench press",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A close-grip bench press from pins. It builds triceps strength off the dead stop.",
+  "instructions": [
+    "Set the bar on pins at chest height.",
+    "Lie on the bench and grip the bar shoulder-width.",
+    "Press the bar up.",
+    "Lock out your elbows.",
+    "Lower back to the pins."
+  ],
+  "textSource": "opengym"
+}

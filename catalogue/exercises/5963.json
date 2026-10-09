@@ -1,0 +1,21 @@
+{
+  "id": "5963",
+  "name": "vertical sit up",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A sit-up performed with the legs raised vertically, which keeps the focus on the abs by taking the hip flexors out of the pull.",
+  "instructions": [
+    "Lie on your back with your legs raised straight toward the ceiling.",
+    "Place your hands behind your head or across your chest.",
+    "Curl your torso up and reach toward your feet.",
+    "Pause at the top.",
+    "Lower your upper body slowly to the floor."
+  ],
+  "textSource": "opengym"
+}

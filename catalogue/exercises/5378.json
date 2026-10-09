@@ -1,0 +1,24 @@
+{
+  "id": "5378",
+  "name": "roll front shoulder and chest lying on floor",
+  "bodyPart": "chest",
+  "equipment": "roller",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest",
+    "biceps"
+  ],
+  "category": "mobility",
+  "description": "Self-massage with a foam roller to ease tightness in the front shoulder and chest. Good before training or on rest days to loosen up.",
+  "instructions": [
+    "Lie face down with the roller under your front shoulder.",
+    "Place the roller under the front shoulder and chest and let your body weight settle onto it.",
+    "Roll small amounts toward the chest and back.",
+    "Pause on tender spots and breathe slowly for 20-30 seconds.",
+    "Keep your core braced and avoid rolling over joints or bone.",
+    "Roll for 30-60 seconds, then switch sides if needed."
+  ],
+  "femaleVariant": "5417",
+  "textSource": "opengym"
+}

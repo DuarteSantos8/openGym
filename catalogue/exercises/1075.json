@@ -1,0 +1,22 @@
+{
+  "id": "1075",
+  "name": "suspender front raise",
+  "bodyPart": "shoulders",
+  "equipment": "suspension trainer",
+  "target": "delts",
+  "secondaryMuscles": [
+    "core",
+    "upper back",
+    "chest"
+  ],
+  "category": "calisthenics",
+  "description": "Raise your body with arms in front using straps. It works the front delts.",
+  "instructions": [
+    "Hold the handles and lean back with arms down.",
+    "Keep your body straight.",
+    "Raise your arms overhead.",
+    "Pause.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

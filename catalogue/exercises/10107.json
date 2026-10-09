@@ -1,0 +1,25 @@
+{
+  "id": "10107",
+  "name": "barbell hang clean high pull",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "traps",
+  "secondaryMuscles": [
+    "shoulders",
+    "biceps",
+    "glutes",
+    "hamstrings",
+    "forearms"
+  ],
+  "category": "olympic",
+  "description": "A high pull starting from the hang position above the knees, training explosive hip and shoulder power.",
+  "instructions": [
+    "Hold a barbell just above the knees with an overhand grip.",
+    "Hinge at the hips and keep your back flat.",
+    "Explode up through the legs and shrug.",
+    "Pull the bar to chest height with high elbows.",
+    "Lower to the hang position.",
+    "Reset and repeat. Keep the bar close."
+  ],
+  "textSource": "opengym"
+}

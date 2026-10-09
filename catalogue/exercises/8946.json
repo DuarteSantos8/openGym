@@ -1,0 +1,22 @@
+{
+  "id": "8946",
+  "name": "seated single leg raise",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Seated on a bench or floor, you lift one straight leg to train the hip flexors and thigh. It is a simple core and leg exercise.",
+  "instructions": [
+    "Sit tall on the edge of a bench with your hands beside you.",
+    "Extend one leg straight out in front.",
+    "Lift the leg a few inches higher while keeping the knee straight.",
+    "Pause and lower it slowly.",
+    "Keep your back straight and your core tight.",
+    "Finish all reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

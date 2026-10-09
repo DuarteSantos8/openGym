@@ -1,0 +1,22 @@
+{
+  "id": "0827",
+  "name": "vertical mountain climber",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "core",
+    "hip flexors",
+    "quadriceps"
+  ],
+  "category": "cardio",
+  "description": "A standing take on the mountain climber with fast knee drives. It lifts your heart rate and works the core.",
+  "instructions": [
+    "Stand tall with hands raised in front of you at chest height.",
+    "Drive one knee up toward your hands.",
+    "Switch legs quickly, running in place.",
+    "Stay on the balls of your feet.",
+    "Keep a steady, brisk pace."
+  ],
+  "textSource": "opengym"
+}

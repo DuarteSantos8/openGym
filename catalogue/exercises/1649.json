@@ -1,0 +1,21 @@
+{
+  "id": "1649",
+  "name": "dumbbell alternating bicep curl with leg raised on exercise ball",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Alternating dumbbell curls with one leg lifted while sitting on an exercise ball. It trains the biceps and challenges balance.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold a dumbbell in each hand, palms facing forward.",
+    "Place an exercise ball behind you and position one foot on top of it, keeping your balance.",
+    "With your arms fully extended and elbows close to your sides, curl one dumbbell towards your shoulder while keeping your upper arm stationary.",
+    "Lower the dumbbell back down to the starting position and repeat with the other arm.",
+    "Continue alternating arms for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

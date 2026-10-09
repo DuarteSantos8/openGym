@@ -1,0 +1,22 @@
+{
+  "id": "5224",
+  "name": "barbell wide shrug",
+  "bodyPart": "back",
+  "equipment": "barbell",
+  "target": "traps",
+  "secondaryMuscles": [
+    "forearms",
+    "grip muscles",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A barbell shrug with a wide grip. It targets the upper traps.",
+  "instructions": [
+    "Stand holding a barbell in front with a wide overhand grip.",
+    "Keep your arms straight and your chest up.",
+    "Lift your shoulders straight toward your ears.",
+    "Hold the top for a second.",
+    "Lower slowly under control."
+  ],
+  "textSource": "opengym"
+}

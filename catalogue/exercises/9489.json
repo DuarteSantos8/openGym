@@ -1,0 +1,22 @@
+{
+  "id": "9489",
+  "name": "hanging side lean",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lats",
+    "grip muscles"
+  ],
+  "category": "calisthenics",
+  "description": "While hanging from a bar, you lean your body to each side to work the obliques and grip.",
+  "instructions": [
+    "Hang from a pull-up bar with an overhand grip and legs together.",
+    "Brace your abs and keep your arms straight.",
+    "Lean your legs and hips toward one side, bending through the waist.",
+    "Return to centre under control.",
+    "Lean to the other side and alternate for the planned reps."
+  ],
+  "textSource": "opengym"
+}

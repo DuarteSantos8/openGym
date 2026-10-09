@@ -1,0 +1,21 @@
+{
+  "id": "5863",
+  "name": "kettlebell standing one arm extension",
+  "bodyPart": "upper arms",
+  "equipment": "kettlebell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Hold a kettlebell overhead in one hand and lower it behind your head. It isolates one triceps at a time.",
+  "instructions": [
+    "Stand tall with a kettlebell held overhead in one hand.",
+    "Keep your upper arm close to your head.",
+    "Lower the weight behind your head by bending the elbow.",
+    "Straighten your arm back to the top.",
+    "Switch sides after your set."
+  ],
+  "textSource": "opengym"
+}

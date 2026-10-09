@@ -1,0 +1,21 @@
+{
+  "id": "1856",
+  "name": "lever lying leg raise (bent knee)",
+  "bodyPart": "waist",
+  "equipment": "leverage machine",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "Machine-based lying leg raise with bent knees that loads the lower abs and hip flexors.",
+  "instructions": [
+    "Lie back on the machine and grip the handles.",
+    "Bend your knees and place your legs under the pads.",
+    "Curl your knees up toward your chest.",
+    "Pause briefly at the top.",
+    "Lower slowly until you feel tension, then repeat."
+  ],
+  "textSource": "opengym"
+}

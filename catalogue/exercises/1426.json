@@ -1,0 +1,22 @@
+{
+  "id": "1426",
+  "name": "smith seated wrist curl",
+  "bodyPart": "lower arms",
+  "equipment": "smith machine",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "biceps",
+    "brachialis"
+  ],
+  "category": "strength",
+  "description": "Sit in front of a smith machine and curl the bar with your wrists. It strengthens the forearms and builds grip.",
+  "instructions": [
+    "Sit on a bench in front of a Smith machine with your feet flat on the ground.",
+    "Grasp the barbell with an underhand grip, hands shoulder-width apart.",
+    "Rest your forearms on your thighs, allowing your wrists to hang off.",
+    "Slowly curl your wrists upward, bringing the barbell towards your forearms.",
+    "Pause for a moment at the top, then slowly lower the barbell back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

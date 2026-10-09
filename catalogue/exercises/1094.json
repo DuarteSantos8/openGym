@@ -1,0 +1,23 @@
+{
+  "id": "1094",
+  "name": "suspension self assisted pull up",
+  "bodyPart": "back",
+  "equipment": "suspension trainer",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A pull-up using your legs for help. It builds back and arms.",
+  "instructions": [
+    "Hold the handles with feet on the floor.",
+    "Lean back.",
+    "Pull your chest toward your hands.",
+    "Use your legs for light help.",
+    "Lower slowly.",
+    "Keep your core tight."
+  ],
+  "textSource": "opengym"
+}

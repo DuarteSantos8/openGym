@@ -1,0 +1,23 @@
+{
+  "id": "7411",
+  "name": "weighted full squat from deficit",
+  "bodyPart": "upper legs",
+  "equipment": "weighted",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Deep weighted squat with heels raised to increase depth and quad work.",
+  "instructions": [
+    "Stand with your heels on a low plate or platform, holding a weight at your chest.",
+    "Brace your core and keep your chest up.",
+    "Squat as deep as comfortable.",
+    "Keep your knees tracking over your toes.",
+    "Drive up to standing."
+  ],
+  "textSource": "opengym"
+}

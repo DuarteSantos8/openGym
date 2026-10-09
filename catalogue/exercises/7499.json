@@ -1,0 +1,23 @@
+{
+  "id": "7499",
+  "name": "double plank jack to 4 mountain climber",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "core",
+    "shoulders",
+    "hip flexors",
+    "quadriceps"
+  ],
+  "category": "plyometrics",
+  "description": "Conditioning combo of two plank jacks followed by four mountain climbers.",
+  "instructions": [
+    "Start in a high plank.",
+    "Jump your feet wide and together twice.",
+    "Do four mountain climbers, driving your knees alternately.",
+    "Keep your hips level.",
+    "Flow through the sequence at a steady pace."
+  ],
+  "textSource": "opengym"
+}

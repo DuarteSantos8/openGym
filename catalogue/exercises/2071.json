@@ -1,0 +1,21 @@
+{
+  "id": "2071",
+  "name": "single leg hip thrusts",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A one-leg hip thrust that works the glutes hard and challenges balance and hip stability.",
+  "instructions": [
+    "Sit with your upper back against a bench and one foot flat on the floor.",
+    "Extend the other leg or hold it up.",
+    "Drive through the heel to lift your hips until your body is flat.",
+    "Squeeze your glute at the top, then lower under control.",
+    "Complete the reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

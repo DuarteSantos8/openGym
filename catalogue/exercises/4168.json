@@ -1,0 +1,23 @@
+{
+  "id": "4168",
+  "name": "jump pistol squat box",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "A single leg squat to a box followed by a jump. It builds balance and explosive leg strength.",
+  "instructions": [
+    "Stand in front of a box on one leg, other leg forward.",
+    "Squat down on one leg to touch the box.",
+    "Drive through your heel and jump upward.",
+    "Land softly on the same leg.",
+    "Control your balance and reset.",
+    "Complete reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

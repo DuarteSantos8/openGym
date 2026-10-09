@@ -1,0 +1,23 @@
+{
+  "id": "6958",
+  "name": "lateral hurdle jump",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hamstrings",
+    "adductors"
+  ],
+  "category": "plyometrics",
+  "description": "A side-to-side jump over a low hurdle. It builds explosive power and quick landings.",
+  "instructions": [
+    "Stand beside a low hurdle with feet together.",
+    "Swing your arms and jump sideways over it.",
+    "Land softly on both feet with knees bent.",
+    "Jump straight back over the other way.",
+    "Keep your ground contact quick and controlled."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "2209",
+  "name": "roller seated single leg shoulder flexor depresor retractor",
+  "bodyPart": "chest",
+  "equipment": "roller",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "deltoids",
+    "triceps"
+  ],
+  "category": "mobility",
+  "description": "A seated single-leg roller drill for shoulder control. Helps with shoulder mobility and posture.",
+  "instructions": [
+    "Sit on a flat surface with your legs extended in front of you.",
+    "Hold the roller with both hands, palms facing down, and place it on your thighs.",
+    "Lean back slightly and engage your core muscles.",
+    "Raise the roller up to shoulder level, keeping your arms straight.",
+    "Slowly lower the roller back down to your thighs.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "5439",
+  "textSource": "exercisedb"
+}

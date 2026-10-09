@@ -1,0 +1,24 @@
+{
+  "id": "1743",
+  "name": "dumbbell twisting bench press",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A dumbbell bench press with a wrist twist through the rep. Works chest and triceps while adding a rotating element.",
+  "instructions": [
+    "Lie flat on a bench with your feet flat on the ground and your back pressed against the bench.",
+    "Hold a dumbbell in each hand with an overhand grip, palms facing away from you.",
+    "Extend your arms straight up over your chest, keeping a slight bend in your elbows.",
+    "Lower the dumbbells down towards your chest, keeping your elbows close to your body.",
+    "As you lower the dumbbells, twist your wrists so that your palms face towards you at the bottom of the movement.",
+    "Pause for a moment at the bottom, then reverse the movement by pressing the dumbbells back up to the starting position.",
+    "As you press the dumbbells up, twist your wrists back to the starting position with palms facing away from you.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

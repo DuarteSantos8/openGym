@@ -1,0 +1,23 @@
+{
+  "id": "4576",
+  "name": "band standing straight arm pulldown",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "lats",
+  "secondaryMuscles": [
+    "triceps",
+    "core",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A straight-arm band pulldown that isolates the lats.",
+  "instructions": [
+    "Anchor a band overhead and hold the ends with arms extended in front of you.",
+    "Stand with a slight forward lean and a braced core.",
+    "Keep your arms nearly straight.",
+    "Pull the band down in an arc until your hands reach your thighs.",
+    "Squeeze your lats.",
+    "Return slowly to the start."
+  ],
+  "textSource": "opengym"
+}

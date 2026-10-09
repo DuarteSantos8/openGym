@@ -1,0 +1,38 @@
+{
+  "id": "0811",
+  "name": "trap bar deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "trap bar",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A deadlift standing inside a hex bar, lifting by extending the hips and knees. It builds the glutes, quads and back with a friendly lifting position.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and the trap bar on the ground in front of you.",
+    "Bend at the hips and knees to lower yourself down and grip the handles of the trap bar with an overhand grip.",
+    "Keep your back straight and chest up as you begin to lift the trap bar off the ground by extending your hips and knees.",
+    "As you lift, focus on driving through your heels and squeezing your glutes at the top of the movement.",
+    "Lower the trap bar back down to the ground by bending at the hips and knees, keeping your back straight throughout the movement.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "bodyPart": "full body",
+    "primaries": [
+      "gluteal",
+      "hamstring",
+      "lower-back"
+    ],
+    "secondaries": [
+      "quadriceps",
+      "adductors",
+      "calves",
+      "abs",
+      "obliques"
+    ]
+  },
+  "textSource": "exercisedb"
+}

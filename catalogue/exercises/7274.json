@@ -1,0 +1,24 @@
+{
+  "id": "7274",
+  "name": "suspension trainer pike",
+  "bodyPart": "waist",
+  "equipment": "suspension trainer",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "shoulders",
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Plank with feet in suspension straps, piking the hips up to work the abs and shoulders.",
+  "instructions": [
+    "Place your feet in the straps and get into a plank with hands on the floor.",
+    "Keep your arms straight and body in a line.",
+    "Lift your hips toward the ceiling, pulling your feet in.",
+    "Pause at the top with legs fairly straight.",
+    "Lower back to plank with control."
+  ],
+  "femaleVariant": "1085",
+  "textSource": "opengym"
+}

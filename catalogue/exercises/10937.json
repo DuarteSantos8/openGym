@@ -1,0 +1,21 @@
+{
+  "id": "10937",
+  "name": "standing wall shoulder rotation",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "upper back"
+  ],
+  "category": "mobility",
+  "description": "Rotating the shoulder against a wall. It gives gentle mobility and awareness.",
+  "instructions": [
+    "Stand facing a wall and place your forearm against it.",
+    "Bend your elbow to 90 degrees.",
+    "Rotate your forearm up and down against the wall.",
+    "Keep your shoulder relaxed.",
+    "Switch arms after your reps."
+  ],
+  "textSource": "opengym"
+}

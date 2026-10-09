@@ -1,0 +1,21 @@
+{
+  "id": "0306",
+  "name": "dumbbell decline triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A dumbbell triceps extension on a decline bench. You lower the weights behind the head and extend to work the triceps.",
+  "instructions": [
+    "Lie on a decline bench with your head lower than your feet and hold a dumbbell in each hand, palms facing each other.",
+    "Extend your arms fully, keeping your elbows close to your head.",
+    "Lower the dumbbells slowly behind your head, bending your elbows.",
+    "Pause for a moment, then raise the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2673",
+  "textSource": "exercisedb"
+}

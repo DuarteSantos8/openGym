@@ -1,0 +1,23 @@
+{
+  "id": "4788",
+  "name": "side split squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "hamstrings",
+    "inner thighs"
+  ],
+  "category": "calisthenics",
+  "description": "A wide side-to-side squat on one leg at a time. It builds the thighs and mobilises the hips.",
+  "instructions": [
+    "Stand with feet wide and toes slightly out.",
+    "Shift your weight to one side and bend that knee.",
+    "Keep the other leg straight with the foot flat or toes up.",
+    "Lower until your thigh is parallel.",
+    "Push back to the middle and alternate sides."
+  ],
+  "textSource": "opengym"
+}

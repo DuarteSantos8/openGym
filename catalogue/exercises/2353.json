@@ -1,0 +1,21 @@
+{
+  "id": "2353",
+  "name": "concentration curl arms (form check)",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms",
+    "brachialis"
+  ],
+  "category": "strength",
+  "description": "A side-by-side form check for arm position during a concentration curl, showing the common mistake next to the correct technique so you can spot it in your own sets.",
+  "instructions": [
+    "Sit on a bench, lean forward and brace your elbow against your inner thigh.",
+    "Compare the faulty version with the correct one: your upper arm rests against the inner thigh and only the forearm moves.",
+    "Perform the lift slowly with a light load and keep the correct position throughout.",
+    "Use a mirror or film a set from the side to check your own position.",
+    "Fix the cue before adding weight, and rest between sets so form stays clean."
+  ],
+  "textSource": "opengym"
+}

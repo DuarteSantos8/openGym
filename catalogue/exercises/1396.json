@@ -1,0 +1,25 @@
+{
+  "id": "1396",
+  "name": "smith toe raise",
+  "bodyPart": "lower legs",
+  "equipment": "smith machine",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "shins"
+  ],
+  "category": "strength",
+  "description": "A smith machine toe raise where you rise onto the balls of your feet. It builds the calves and ankle strength.",
+  "instructions": [
+    "Adjust the smith machine bar to a height that allows you to comfortably stand with your feet flat on the ground.",
+    "Position yourself under the bar with your shoulders directly below it and your feet shoulder-width apart.",
+    "Place the balls of your feet on a raised platform or weight plates, with your heels hanging off the edge.",
+    "Grasp the bar with an overhand grip, slightly wider than shoulder-width apart.",
+    "Engage your core and keep your back straight throughout the exercise.",
+    "Slowly raise your heels as high as possible, lifting your body weight onto the balls of your feet.",
+    "Pause for a moment at the top, then slowly lower your heels back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3112",
+  "textSource": "exercisedb"
+}

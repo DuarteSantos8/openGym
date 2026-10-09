@@ -225,3 +225,11 @@ test('a proposal nobody has answered is not replaced by the next scheduled revie
   await settle(uid);
   assert.equal(jobs.readUser(uid).history.filter(h => h.outcome === 'ready').length, 2);
 });
+
+test('a rejected answer tells the admin which rule broke, without quoting the plan', async () => {
+  const { whyUnusable } = await import('../coach/jobs.js');
+  assert.equal(whyUnusable([]), null);
+  const why = whyUnusable(['routines[0].ex[1].id "0009" needs equipment the user does not have', 'routines[1].name is required']);
+  assert.ok(why.includes('needs equipment') && why.includes('routines[1].name is required'));
+  assert.ok(!why.includes('0009'), 'quoted values are cut out');
+});

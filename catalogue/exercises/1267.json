@@ -1,0 +1,22 @@
+{
+  "id": "1267",
+  "name": "cable one arm press on exercise ball",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A one-arm cable press on an exercise ball. It trains the chest and core.",
+  "instructions": [
+    "Sit on an exercise ball with your feet flat on the ground and your back straight.",
+    "Hold a cable handle in one hand and position your arm at chest height, elbow bent.",
+    "Place your other hand on your hip for stability.",
+    "Press the cable handle forward, extending your arm fully.",
+    "Pause for a moment, then slowly return to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms."
+  ],
+  "textSource": "exercisedb"
+}

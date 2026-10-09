@@ -1,0 +1,23 @@
+{
+  "id": "5482",
+  "name": "single leg hopping",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "calves",
+    "glutes",
+    "hamstrings",
+    "ankles"
+  ],
+  "category": "plyometrics",
+  "description": "Low-impact hopping on one leg to build ankle stiffness, balance and leg power.",
+  "instructions": [
+    "Stand on one leg with a slight knee bend and arms ready.",
+    "Hop up and forward or in place using your ankle and knee.",
+    "Land softly on the ball of the same foot.",
+    "Stay balanced and keep your hips level.",
+    "Complete your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

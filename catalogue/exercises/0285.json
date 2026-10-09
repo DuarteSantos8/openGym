@@ -1,0 +1,22 @@
+{
+  "id": "0285",
+  "name": "dumbbell alternate biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A standing dumbbell curl that alternates arms. Each rep isolates the biceps through a full range.",
+  "instructions": [
+    "Stand up straight with a dumbbell in each hand, palms facing forward and arms fully extended.",
+    "Keeping your upper arms stationary, exhale and curl the weights while contracting your biceps.",
+    "Continue to raise the dumbbells until your biceps are fully contracted and the dumbbells are at shoulder level.",
+    "Hold the contracted position for a brief pause as you squeeze your biceps.",
+    "Inhale and slowly begin to lower the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions, alternating arms."
+  ],
+  "femaleVariant": "2584",
+  "textSource": "exercisedb"
+}

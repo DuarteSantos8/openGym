@@ -1,0 +1,22 @@
+{
+  "id": "0749",
+  "name": "smith bent knee good morning",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "On the smith machine, you bend your knees slightly and hinge forward with the bar on your upper back. Works the hamstrings, glutes and lower back.",
+  "instructions": [
+    "Start by standing with your feet shoulder-width apart, toes pointing forward.",
+    "Place the barbell across your upper back, resting it on your traps.",
+    "Bend your knees slightly and hinge forward at the hips, keeping your back straight.",
+    "Lower your torso until it is parallel to the ground, feeling a stretch in your hamstrings.",
+    "Engage your glutes and hamstrings to raise your torso back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

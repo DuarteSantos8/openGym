@@ -1,0 +1,21 @@
+{
+  "id": "1782",
+  "name": "reverse chest stretch",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "stretching",
+  "description": "Clasping your hands behind your back and lifting them stretches the chest and front of the shoulders. It is a classic posture reset.",
+  "instructions": [
+    "Stand tall and clasp your hands behind your back with straight arms.",
+    "Lift your hands up and away from your body while opening your chest.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

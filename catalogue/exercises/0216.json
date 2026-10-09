@@ -1,0 +1,22 @@
+{
+  "id": "0216",
+  "name": "cable seated shoulder internal rotation",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A seated cable shoulder rotation where the arm turns inward. It builds control of the rotator cuff and the shoulder.",
+  "instructions": [
+    "Sit on a bench or chair facing the cable machine with your feet flat on the ground.",
+    "Hold the cable handle with your arm extended straight out in front of you, parallel to the ground.",
+    "Keep your elbow slightly bent and your shoulder blades pulled back and down.",
+    "Slowly rotate your arm inward, bringing the cable handle towards the center of your body.",
+    "Pause for a moment at the end of the movement, then slowly return to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms."
+  ],
+  "textSource": "exercisedb"
+}

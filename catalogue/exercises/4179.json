@@ -1,0 +1,23 @@
+{
+  "id": "4179",
+  "name": "smith banded full squat",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A deep Smith machine squat with a band adding resistance. It builds quads and glutes.",
+  "instructions": [
+    "Attach the band to the Smith machine and set the bar on your back.",
+    "Place feet slightly forward of the bar.",
+    "Squat as deep as you can with control.",
+    "Keep your chest up.",
+    "Drive up through your heels.",
+    "Stand tall without locking hard."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "10729",
+  "name": "aquabike",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "core"
+  ],
+  "category": "cardio",
+  "description": "Pedal your legs in the water as if cycling. It raises your heart rate with low impact.",
+  "instructions": [
+    "Stand in chest-deep water, holding the pool edge.",
+    "Lift your knees alternately.",
+    "Pedal at a steady rhythm.",
+    "Keep your core tight.",
+    "Continue for several minutes."
+  ],
+  "textSource": "opengym"
+}

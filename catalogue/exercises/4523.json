@@ -1,0 +1,23 @@
+{
+  "id": "4523",
+  "name": "kettlebell single leg deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A balance-focused hip hinge on one leg with a kettlebell. It trains the hamstrings and glutes.",
+  "instructions": [
+    "Hold a kettlebell in one hand and stand on the opposite leg.",
+    "Hinge forward at the hips while extending the free leg back.",
+    "Lower the kettlebell toward the floor with a flat back.",
+    "Keep your hips level and your standing knee slightly bent.",
+    "Drive your hips forward to stand, then switch legs."
+  ],
+  "textSource": "opengym"
+}

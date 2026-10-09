@@ -16,7 +16,7 @@ import com.getcapacitor.annotation.CapacitorPlugin;
  * Usage from JS:
  *   import { registerPlugin } from '@capacitor/core';
  *   const RestAlert = registerPlugin('RestAlert');
- *   await RestAlert.schedule({ id, at, title, sound, vibrate, channelId, visibility, importance, localOnly });
+ *   await RestAlert.schedule({ id, at, title, sound, tone, classic, vibrate, channelId, visibility, importance, localOnly });
  *   await RestAlert.cancel({ id });
  *   await RestAlert.buzz({ pattern: [200, 100, 200] });   // navigator.vibrate's shape, as an alarm
  */
@@ -84,6 +84,8 @@ public class RestAlertPlugin extends Plugin {
                 (int) number(call, "id", RestAlert.NOTIFICATION_ID),
                 call.getString("title", "Rest over"),
                 !Boolean.FALSE.equals(call.getBoolean("sound", Boolean.TRUE)),
+                // Settings → Sound (#306): the sound by name; a page from before it sends only `classic`.
+                call.getString("tone", Boolean.TRUE.equals(call.getBoolean("classic", Boolean.FALSE)) ? "classic" : "chime"),
                 !Boolean.FALSE.equals(call.getBoolean("vibrate", Boolean.TRUE)),
                 Boolean.TRUE.equals(call.getBoolean("alarmBuzz", Boolean.FALSE)),
                 call.getString("channelId", RestAlert.CHANNEL_ID),

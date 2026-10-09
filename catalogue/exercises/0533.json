@@ -1,0 +1,38 @@
+{
+  "id": "0533",
+  "name": "kettlebell front squat",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A squat with a kettlebell held at chest height. The front load builds the quads and glutes and keeps your torso upright.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, toes slightly turned out.",
+    "Hold the kettlebell with both hands in front of your chest, close to your body.",
+    "Engage your core and keep your chest up as you lower your hips down and back, as if sitting into a chair.",
+    "Lower until your thighs are parallel to the ground, or as low as you can comfortably go.",
+    "Drive through your heels to stand back up, squeezing your glutes at the top.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "adductors"
+    ],
+    "secondaries": [
+      "hamstring",
+      "calves",
+      "lower-back",
+      "abs",
+      "obliques"
+    ]
+  },
+  "femaleVariant": "2639",
+  "textSource": "exercisedb"
+}

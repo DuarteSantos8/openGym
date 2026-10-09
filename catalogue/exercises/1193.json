@@ -1,0 +1,22 @@
+{
+  "id": "1193",
+  "name": "iron cross plank",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "shoulders",
+    "glutes"
+  ],
+  "category": "isometric",
+  "description": "A plank variation with arms and legs spread wide to challenge the core.",
+  "instructions": [
+    "Start in a plank position with hands under your shoulders.",
+    "Spread your arms and legs wide in an X shape.",
+    "Brace your core and keep your hips level.",
+    "Breathe steadily.",
+    "Hold for 20-40 seconds."
+  ],
+  "textSource": "opengym"
+}

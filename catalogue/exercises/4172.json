@@ -1,0 +1,23 @@
+{
+  "id": "4172",
+  "name": "bodyweight bent over rear delt fly",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids"
+  ],
+  "category": "calisthenics",
+  "description": "A bent over fly using only your arms as resistance. It trains the rear shoulders and upper back.",
+  "instructions": [
+    "Hinge forward with a flat back and arms hanging down.",
+    "Keep a slight bend in your elbows.",
+    "Raise your arms out to the sides to shoulder height.",
+    "Squeeze your shoulder blades.",
+    "Lower slowly.",
+    "Keep your neck neutral."
+  ],
+  "textSource": "opengym"
+}

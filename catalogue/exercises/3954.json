@@ -1,0 +1,22 @@
+{
+  "id": "3954",
+  "name": "front to side plank",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Rotate from a front plank into a side plank to train the core.",
+  "instructions": [
+    "Start in a front plank on your forearms or hands.",
+    "Rotate your body to one side, lifting one arm up.",
+    "Hold briefly in a side plank.",
+    "Return to the front plank.",
+    "Alternate sides."
+  ],
+  "textSource": "opengym"
+}

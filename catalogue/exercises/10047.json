@@ -1,0 +1,24 @@
+{
+  "id": "10047",
+  "name": "barbell split stance rdl",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "grip muscles",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A Romanian deadlift in a split stance, with most of the load on the front leg. It builds hamstrings and glutes and tests balance.",
+  "instructions": [
+    "Hold a barbell at your thighs and stand with one foot a step ahead of the other.",
+    "Put most of your weight on the front leg.",
+    "Hinge at the hips and slide the bar down your front leg.",
+    "Lower until you feel a stretch in your hamstring.",
+    "Drive your hips forward to stand tall.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

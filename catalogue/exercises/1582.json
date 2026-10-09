@@ -1,0 +1,22 @@
+{
+  "id": "1582",
+  "name": "reclining big toe pose with rope",
+  "bodyPart": "upper legs",
+  "equipment": "rope",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "Lying on your back, you hold your big toe with a rope and raise the leg straight. It stretches the hamstrings.",
+  "instructions": [
+    "Lie on your back with your legs extended and your arms by your sides.",
+    "Loop the rope around the ball of your right foot and hold the ends of the rope with your hands.",
+    "Slowly raise your right leg towards your chest, keeping your knee straight and your foot flexed.",
+    "Hold the stretch for a few seconds, then slowly lower your leg back down to the starting position.",
+    "Repeat with your left leg.",
+    "Continue alternating legs for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

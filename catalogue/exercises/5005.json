@@ -1,0 +1,23 @@
+{
+  "id": "5005",
+  "name": "band seated underhand grip row",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "rhomboids",
+    "upper back",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "Seated row using a band and an underhand grip. This grip adds extra work for the lats and biceps.",
+  "instructions": [
+    "Sit with your legs extended and the band looped around your feet.",
+    "Hold the band ends with an underhand grip, arms straight.",
+    "Pull your hands toward your lower ribs, keeping elbows close.",
+    "Squeeze your shoulder blades together.",
+    "Return slowly to the start."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,34 @@
+{
+  "id": "0202",
+  "name": "cable rear delt row (stirrups)",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rhomboids",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A one-arm cable row with a stirrup handle, aimed at the rear delts. You pull back and squeeze the shoulder blade, then switch sides.",
+  "instructions": [
+    "Attach a stirrup handle to a low cable pulley and stand facing the machine.",
+    "Grasp the handle with your left hand and take a step back with your right foot, positioning your body at a slight angle.",
+    "Bend your knees slightly and hinge forward at the hips, keeping your back straight and your core engaged.",
+    "With your left arm extended and your palm facing down, pull the handle towards your chest by retracting your shoulder blade.",
+    "Pause for a moment at the top of the movement, squeezing your shoulder blade.",
+    "Slowly release the handle back to the starting position and repeat for the desired number of repetitions.",
+    "Switch sides and repeat the exercise with your right arm."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "deltoids"
+    ],
+    "secondaries": [
+      "trapezius",
+      "upper-back"
+    ]
+  },
+  "femaleVariant": "3058",
+  "textSource": "exercisedb"
+}

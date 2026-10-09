@@ -1,0 +1,23 @@
+{
+  "id": "1283",
+  "name": "dumbbell incline press on exercise ball",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A two-dumbbell press with your upper back on a stability ball. It trains the chest and shoulders while your core works to keep you balanced.",
+  "instructions": [
+    "Sit on an exercise ball with a dumbbell in each hand, palms facing forward.",
+    "Slowly walk your feet forward, rolling your body down the ball until your head, neck, and upper back are supported on the ball.",
+    "Hold the dumbbells at shoulder level, elbows bent and pointing out to the sides.",
+    "Press the dumbbells upward, extending your arms fully.",
+    "Pause for a moment at the top, then slowly lower the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2627",
+  "textSource": "exercisedb"
+}

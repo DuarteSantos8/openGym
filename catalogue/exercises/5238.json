@@ -1,0 +1,23 @@
+{
+  "id": "5238",
+  "name": "medicine ball lunge with biceps curl",
+  "bodyPart": "upper legs",
+  "equipment": "medicine ball",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "biceps",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A lunge combined with a medicine ball curl. It trains the legs and arms in one go.",
+  "instructions": [
+    "Stand holding a medicine ball at your thighs.",
+    "Step forward into a lunge.",
+    "Curl the ball up toward your chest as you lower.",
+    "Push back to standing while lowering the ball.",
+    "Alternate legs on each rep."
+  ],
+  "textSource": "opengym"
+}

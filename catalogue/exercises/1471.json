@@ -1,0 +1,22 @@
+{
+  "id": "1471",
+  "name": "inchworm",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "hamstrings"
+  ],
+  "category": "calisthenics",
+  "description": "You walk your hands out from standing into a plank and walk them back. It warms up the hamstrings, shoulders and core in one go.",
+  "instructions": [
+    "Start in a standing position with your feet hip-width apart.",
+    "Bend forward at the waist and place your hands on the ground in front of you.",
+    "Walk your hands forward until you are in a high plank position, with your body in a straight line from head to toe.",
+    "Pause for a moment, then walk your hands back towards your feet, keeping your legs as straight as possible.",
+    "Once your hands reach your feet, stand back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

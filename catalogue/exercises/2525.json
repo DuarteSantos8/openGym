@@ -1,0 +1,23 @@
+{
+  "id": "2525",
+  "name": "vibrate plate standing",
+  "bodyPart": "full body",
+  "equipment": "weighted",
+  "target": "quads",
+  "secondaryMuscles": [
+    "calves",
+    "glutes",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "A standing hold on a vibrating platform that engages the legs and core.",
+  "instructions": [
+    "Step onto the vibrating plate with your feet shoulder-width apart.",
+    "Keep your knees slightly bent.",
+    "Hold your posture tall and your core braced.",
+    "Keep your weight balanced over your feet.",
+    "Hold for 30-60 seconds.",
+    "Step off carefully."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4701",
+  "name": "band single leg reverse hyperextension",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A leg lift from a face-down position against a band. It trains the glutes and lower back.",
+  "instructions": [
+    "Lie face down with a band looped around one foot and anchored under you.",
+    "Rest your arms under your head.",
+    "Lift one leg up, keeping it straight.",
+    "Squeeze your glute at the top.",
+    "Lower slowly, repeat, then switch legs."
+  ],
+  "textSource": "opengym"
+}

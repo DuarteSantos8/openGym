@@ -1,0 +1,21 @@
+{
+  "id": "4300",
+  "name": "quadriceps stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "shins"
+  ],
+  "category": "stretching",
+  "description": "A standing stretch for the front of the thigh. Easy to do anywhere to ease tight quads.",
+  "instructions": [
+    "Stand tall, using a wall or support for balance if needed.",
+    "Bend one knee and grab the ankle behind you.",
+    "Pull your heel toward your glutes, keeping your knees together and hips square.",
+    "Hold for 20-30 seconds, then switch legs."
+  ],
+  "femaleVariant": "0940",
+  "textSource": "opengym"
+}

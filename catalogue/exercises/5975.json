@@ -1,0 +1,24 @@
+{
+  "id": "5975",
+  "name": "single leg balance cross punch",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "calves",
+    "shoulders"
+  ],
+  "category": "combat",
+  "description": "Cross punches thrown while balancing on one leg, which trains balance, rotation and core control.",
+  "instructions": [
+    "Stand on one leg with a slight knee bend and fists up.",
+    "Brace your core.",
+    "Throw a cross punch, rotating your hips and shoulders.",
+    "Pull your fist back to guard.",
+    "Keep your standing foot steady.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "2362",
+  "name": "squat back (form check)",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A side-by-side form check for back position during a squat, showing the common mistake next to the correct technique so you can spot it in your own sets.",
+  "instructions": [
+    "Set the bar on your upper back, brace your core and squat down.",
+    "Compare the faulty version with the correct one: your back stays flat and braced without rounding at the bottom.",
+    "Perform the lift slowly with a light load and keep the correct position throughout.",
+    "Use a mirror or film a set from the side to check your own position.",
+    "Fix the cue before adding weight, and rest between sets so form stays clean."
+  ],
+  "textSource": "opengym"
+}

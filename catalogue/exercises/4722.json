@@ -1,0 +1,21 @@
+{
+  "id": "4722",
+  "name": "bodyweight kneeling sissy squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A kneeling lean-back that isolates the quads with a deep stretch at the front of the thigh.",
+  "instructions": [
+    "Kneel with your knees hip-width apart and a support nearby.",
+    "Squeeze your glutes to keep your hips forward.",
+    "Lean back slowly as far as you can.",
+    "Pull back up with your quads.",
+    "Keep a straight line from knees to head."
+  ],
+  "textSource": "opengym"
+}

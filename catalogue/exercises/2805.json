@@ -1,0 +1,35 @@
+{
+  "id": "2805",
+  "name": "dumbbell single leg deadlift with stepbox support",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A single leg dumbbell deadlift with the rear foot supported on a step box. Works the glutes and hamstrings.",
+  "instructions": [
+    "Stand with your feet hip-width apart, holding a dumbbell in your right hand.",
+    "Place your left foot on a stepbox or elevated surface behind you.",
+    "Keeping your back straight and core engaged, hinge forward at the hips, lowering the dumbbell towards the ground.",
+    "As you lower the dumbbell, simultaneously lift your left leg behind you, maintaining a straight line from head to heel.",
+    "Lower the dumbbell until you feel a stretch in your right hamstring, then return to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "gluteal",
+      "hamstring"
+    ],
+    "secondaries": [
+      "lower-back",
+      "quadriceps",
+      "adductors",
+      "calves"
+    ]
+  },
+  "textSource": "exercisedb",
+  "maleVariant": "2806"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4076",
+  "name": "band cross body one arm chest press",
+  "bodyPart": "chest",
+  "equipment": "band",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "Single arm band press that travels across the body, working the chest and core.",
+  "instructions": [
+    "Anchor the band behind you and hold the end in one hand.",
+    "Stand in a staggered stance.",
+    "Press your hand forward and across your body.",
+    "Return slowly while resisting rotation.",
+    "Finish the reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

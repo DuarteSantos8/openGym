@@ -1,0 +1,22 @@
+{
+  "id": "0021",
+  "name": "ball sit up (on stability ball)",
+  "bodyPart": "waist",
+  "equipment": "stability ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A sit-up with your back resting on a stability ball. The curved surface lets you move through more range than on the floor.",
+  "instructions": [
+    "Sit on a stability ball and walk your feet out until your lower back is supported.",
+    "Place your hands by your head or across your chest.",
+    "Curl your torso up, bringing your ribs toward your hips.",
+    "Squeeze your abs at the top.",
+    "Lower slowly back over the ball.",
+    "Keep your feet planted and your neck relaxed."
+  ],
+  "textSource": "opengym"
+}

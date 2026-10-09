@@ -1,0 +1,22 @@
+{
+  "id": "11781",
+  "name": "jump step box",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hamstrings"
+  ],
+  "category": "plyometrics",
+  "description": "An explosive jump onto a low step box that builds power in the legs and trains soft, controlled landings.",
+  "instructions": [
+    "Stand facing a step box with your feet hip width apart.",
+    "Dip into a quarter squat and swing your arms back.",
+    "Jump explosively up onto the box, landing softly with bent knees.",
+    "Stand tall on top, then step back down one foot at a time.",
+    "Reset and repeat, staying quick but controlled."
+  ],
+  "textSource": "opengym"
+}

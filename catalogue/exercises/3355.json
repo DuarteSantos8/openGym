@@ -1,0 +1,23 @@
+{
+  "id": "3355",
+  "name": "cable lateral lunge v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "adductors",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A second variation of the cable side lunge for the glutes and inner thighs.",
+  "instructions": [
+    "Hold a cable handle at chest height, standing sideways to the stack.",
+    "Step wide to the side and bend that knee.",
+    "Push your hips back and keep your chest up.",
+    "Push off the bent leg to return.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

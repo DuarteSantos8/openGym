@@ -1,0 +1,24 @@
+{
+  "id": "3887",
+  "name": "jump box over",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A jump onto and over a box that builds explosive leg power and coordination.",
+  "instructions": [
+    "Stand facing a sturdy box with feet shoulder-width apart.",
+    "Swing your arms back and load your hips.",
+    "Jump onto the box and land softly with bent knees.",
+    "Step or hop down on the other side.",
+    "Turn around and repeat in the other direction.",
+    "Reset your balance between reps."
+  ],
+  "textSource": "opengym"
+}

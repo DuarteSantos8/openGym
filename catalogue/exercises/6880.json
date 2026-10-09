@@ -1,0 +1,24 @@
+{
+  "id": "6880",
+  "name": "forearms stand yoga pose pincha mayurasana",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "core",
+    "upper back",
+    "lats",
+    "triceps"
+  ],
+  "category": "yoga",
+  "description": "A forearm balance that builds strong shoulders and core, also known as feathered peacock pose.",
+  "instructions": [
+    "Start on your forearms and knees with your elbows under your shoulders.",
+    "Press your forearms into the floor and tuck your toes.",
+    "Lift your hips high and walk your feet toward your elbows.",
+    "Swing or float one leg up, then bring the other to meet it.",
+    "Keep your ribs in and your gaze between your hands.",
+    "Hold briefly, then lower with control."
+  ],
+  "textSource": "opengym"
+}

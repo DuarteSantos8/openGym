@@ -1,0 +1,22 @@
+{
+  "id": "8433",
+  "name": "seated forward bend stretch on a chair",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "lower back",
+    "glutes",
+    "calves"
+  ],
+  "category": "stretching",
+  "description": "A seated forward fold that stretches the hamstrings and lower back.",
+  "instructions": [
+    "Sit near the front of a sturdy chair and extend one leg with the heel on the floor.",
+    "Keep your back long.",
+    "Hinge forward from the hips and reach toward your toes.",
+    "Hold for 20-30 seconds.",
+    "Switch legs and repeat."
+  ],
+  "textSource": "opengym"
+}

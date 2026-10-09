@@ -1,0 +1,23 @@
+{
+  "id": "3857",
+  "name": "resistance band cable squat",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A squat against band tension that builds the quads and glutes while the band pulls you forward, so your core has to work too.",
+  "instructions": [
+    "Anchor the band at chest height and hold the handles at your chest, facing away from the anchor.",
+    "Stand with feet shoulder-width apart and brace your core.",
+    "Sit your hips back and down until your thighs are about parallel to the floor.",
+    "Keep your chest tall and knees tracking over your toes.",
+    "Push through your heels to stand up.",
+    "Repeat for the desired reps."
+  ],
+  "textSource": "opengym"
+}

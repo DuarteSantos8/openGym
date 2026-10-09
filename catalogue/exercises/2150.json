@@ -1,0 +1,23 @@
+{
+  "id": "2150",
+  "name": "resistance band clam",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A side-lying clam with a band around the thighs that strengthens the outer hip and glutes.",
+  "instructions": [
+    "Lie on your side with a loop band just above your knees and knees bent.",
+    "Stack your hips and keep your feet together.",
+    "Open the top knee away from the bottom one like a clam.",
+    "Keep your pelvis still and do not roll backward.",
+    "Lower the knee slowly.",
+    "Complete the reps, then switch sides."
+  ],
+  "femaleVariant": "5780",
+  "textSource": "opengym"
+}

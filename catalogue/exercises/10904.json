@@ -1,0 +1,21 @@
+{
+  "id": "10904",
+  "name": "hamstring bridge v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "A bridge with heels planted that emphasises the back of the thighs. Good for the hamstrings and glutes.",
+  "instructions": [
+    "Lie on your back with knees bent and heels on the floor, a bit further from your hips.",
+    "Press through your heels.",
+    "Lift your hips until your body forms a straight line from shoulders to knees.",
+    "Squeeze your hamstrings and glutes at the top.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

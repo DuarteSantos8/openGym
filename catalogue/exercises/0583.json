@@ -1,0 +1,22 @@
+{
+  "id": "0583",
+  "name": "lever kneeling twist",
+  "bodyPart": "waist",
+  "equipment": "leverage machine",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "Kneeling on a machine, you rotate your torso against resistance. Trains the obliques and core.",
+  "instructions": [
+    "Adjust the seat height and position yourself on the machine with your knees resting on the pads and your upper body facing forward.",
+    "Grasp the handles or the sides of the machine for stability.",
+    "Keeping your core engaged, twist your torso to one side as far as comfortably possible.",
+    "Pause for a moment, then slowly return to the starting position.",
+    "Repeat the twist to the opposite side.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

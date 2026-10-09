@@ -1,0 +1,22 @@
+{
+  "id": "4015",
+  "name": "dumbbell incline close grip press variation",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "upper chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A close grip dumbbell press on an incline. It targets the triceps and upper chest.",
+  "instructions": [
+    "Lie on an incline bench with dumbbells together over your chest.",
+    "Keep your elbows tucked.",
+    "Lower to your chest.",
+    "Press up.",
+    "Keep the dumbbells touching."
+  ],
+  "textSource": "opengym"
+}

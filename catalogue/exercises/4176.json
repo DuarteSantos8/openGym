@@ -1,0 +1,22 @@
+{
+  "id": "4176",
+  "name": "shrug (on parallel bars)",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "traps",
+  "secondaryMuscles": [
+    "upper back",
+    "trapezius"
+  ],
+  "category": "calisthenics",
+  "description": "A shrug performed supported on parallel bars. It lifts and lowers the shoulders to train the traps.",
+  "instructions": [
+    "Support yourself on parallel bars with straight arms.",
+    "Let your shoulders sink down.",
+    "Push up to elevate your shoulders toward your ears.",
+    "Pause at the top.",
+    "Lower with control.",
+    "Keep your elbows locked."
+  ],
+  "textSource": "opengym"
+}

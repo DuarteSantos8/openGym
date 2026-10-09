@@ -1,0 +1,22 @@
+{
+  "id": "9931",
+  "name": "dumbbell spider curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A curl performed chest-down on an incline bench so the arms hang straight. It removes swing and puts the stress on the biceps.",
+  "instructions": [
+    "Lie face down on an incline bench with a dumbbell in each hand and your arms hanging straight down.",
+    "Keep your upper arms vertical and your palms facing forward.",
+    "Curl the dumbbells up toward your shoulders.",
+    "Squeeze your biceps at the top.",
+    "Lower slowly until your arms are fully extended.",
+    "Keep your chest on the pad and avoid swinging."
+  ],
+  "textSource": "opengym"
+}

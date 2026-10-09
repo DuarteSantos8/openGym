@@ -1,0 +1,22 @@
+{
+  "id": "3367",
+  "name": "skater squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A single-leg squat with the free leg swept behind, like a speed skater, for leg strength and balance.",
+  "instructions": [
+    "Stand on one leg with the other knee bent and the foot lifted behind you.",
+    "Swing your arms forward for balance.",
+    "Sit your hips back and lower on the standing leg.",
+    "Lightly tap the back knee near the floor.",
+    "Stand up through the front foot, then switch legs after your reps."
+  ],
+  "textSource": "opengym"
+}

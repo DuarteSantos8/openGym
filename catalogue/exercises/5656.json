@@ -1,0 +1,22 @@
+{
+  "id": "5656",
+  "name": "cable standing face pull (with rope)",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rotator cuff",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "Face pull with a rope attachment to hit the rear delts.",
+  "instructions": [
+    "Attach a rope to a high pulley.",
+    "Grab it with both hands.",
+    "Pull toward your face, splitting the rope.",
+    "Squeeze your shoulder blades.",
+    "Return slowly."
+  ],
+  "textSource": "opengym"
+}

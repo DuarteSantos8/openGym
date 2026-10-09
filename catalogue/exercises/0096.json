@@ -1,0 +1,22 @@
+{
+  "id": "0096",
+  "name": "barbell side bent v. 2",
+  "bodyPart": "waist",
+  "equipment": "barbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A side bend with the bar on your shoulders. Works the obliques.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold a barbell with both hands, palms facing down.",
+    "Keep your back straight and core engaged throughout the exercise.",
+    "Slowly bend your torso to the right side, lowering the barbell towards your right knee.",
+    "Pause for a moment, then return to the starting position.",
+    "Repeat the movement on the left side.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "1793",
+  "name": "cross over shoulder stretch",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids"
+  ],
+  "category": "stretching",
+  "description": "Pulling one arm across your chest stretches the rear shoulder. It is a staple warm-up and cooldown stretch.",
+  "instructions": [
+    "Stand tall and bring one straight arm across your chest.",
+    "Use your other hand to hold it just above the elbow and draw it closer to you.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

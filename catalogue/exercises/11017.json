@@ -1,0 +1,23 @@
+{
+  "id": "11017",
+  "name": "dumbbell kneeling single arm shoulder press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A one-arm overhead press done on both knees. The kneeling position takes the legs out so your shoulder and core do the work.",
+  "instructions": [
+    "Kneel on both knees with your hips tall and hold a dumbbell at shoulder height.",
+    "Brace your abs and keep your ribs down.",
+    "Press the dumbbell overhead until your arm is straight.",
+    "Lower it slowly back to your shoulder without leaning sideways.",
+    "Complete your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "1795",
+  "name": "reaching upper back stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rhomboids",
+    "lats",
+    "shoulders"
+  ],
+  "category": "stretching",
+  "description": "Reaching your arms out as you round your upper back stretches the muscles between and around your shoulder blades.",
+  "instructions": [
+    "Stand with your feet hip-width apart and reach both arms forward at chest height.",
+    "Round your upper back and spread your shoulder blades apart as you reach farther.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

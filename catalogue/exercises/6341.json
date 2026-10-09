@@ -1,0 +1,23 @@
+{
+  "id": "6341",
+  "name": "humble warrior pose",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "shoulders",
+    "chest"
+  ],
+  "category": "yoga",
+  "description": "A lunge with a forward fold and clasped hands behind you. It stretches the hips, hamstrings and shoulders.",
+  "instructions": [
+    "Step into a wide lunge with the front knee bent.",
+    "Clasp your hands behind your back.",
+    "Fold your torso inside your front thigh.",
+    "Let your arms float overhead.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

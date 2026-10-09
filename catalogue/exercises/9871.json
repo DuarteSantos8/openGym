@@ -1,0 +1,23 @@
+{
+  "id": "9871",
+  "name": "cable incline single arm y raise wrist straps with back support",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "upper back",
+    "rotator cuff",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A single-arm cable Y raise using wrist straps, so your grip does not limit the shoulder work.",
+  "instructions": [
+    "Lie face down on an incline bench with the strap on one wrist.",
+    "Let your arm hang down.",
+    "Raise it up and out in a Y shape.",
+    "Pause at the top.",
+    "Lower slowly, then switch arms."
+  ],
+  "textSource": "opengym"
+}

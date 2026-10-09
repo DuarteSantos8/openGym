@@ -1,0 +1,23 @@
+{
+  "id": "9325",
+  "name": "isometric hold push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "A push-up held in place at the top or bottom. It builds chest, arm and core strength.",
+  "instructions": [
+    "Start in a straight-arm plank with hands under your shoulders.",
+    "Lower halfway down until your elbows are bent.",
+    "Hold the position for 10 to 20 seconds.",
+    "Keep your body straight from head to heels.",
+    "Press back up.",
+    "Rest and repeat."
+  ],
+  "textSource": "opengym"
+}

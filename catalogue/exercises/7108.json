@@ -1,0 +1,21 @@
+{
+  "id": "7108",
+  "name": "lever seated leg extension v. 3",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A machine leg extension that isolates the front of the thigh. It builds quad size and strength.",
+  "instructions": [
+    "Sit with your back against the pad and shins behind the roller.",
+    "Align your knees with the machine pivot.",
+    "Extend your legs until they are nearly straight.",
+    "Squeeze your quads at the top.",
+    "Lower with control."
+  ],
+  "textSource": "opengym"
+}

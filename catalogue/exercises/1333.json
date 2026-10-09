@@ -1,0 +1,21 @@
+{
+  "id": "1333",
+  "name": "exercise ball back extension with arms extended",
+  "bodyPart": "back",
+  "equipment": "stability ball",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "Lie face down on a stability ball with your arms reaching forward and lift your torso. It strengthens the lower back and glutes with extra leverage.",
+  "instructions": [
+    "Place the stability ball on the ground and lie face down on top of it, with your hips resting on the ball and your feet against a wall for stability.",
+    "Extend your arms straight out in front of you, with your palms facing down.",
+    "Engage your core and slowly lift your upper body off the ball, keeping your back straight and your neck in line with your spine.",
+    "Pause for a moment at the top, then slowly lower your upper body back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

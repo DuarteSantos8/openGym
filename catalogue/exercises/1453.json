@@ -1,0 +1,22 @@
+{
+  "id": "1453",
+  "name": "lever seated twist",
+  "bodyPart": "waist",
+  "equipment": "leverage machine",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A seated machine twist that trains the trunk rotators and abs against a controlled load.",
+  "instructions": [
+    "Sit on the machine, adjust the pads and place your arms or hands as designed.",
+    "Sit tall with your hips facing forward.",
+    "Rotate your torso to one side with a smooth, controlled turn.",
+    "Pause briefly, then return to the centre without letting the weight stack slam.",
+    "Repeat to the other side and keep alternating."
+  ],
+  "femaleVariant": "2444",
+  "textSource": "opengym"
+}

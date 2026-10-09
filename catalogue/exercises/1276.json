@@ -1,0 +1,21 @@
+{
+  "id": "1276",
+  "name": "dumbbell decline one arm fly",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Lying on a decline bench, you open one arm out to the side with a dumbbell and bring it back over your chest. It works the lower chest one side at a time.",
+  "instructions": [
+    "Lie down on a decline bench with a dumbbell in one hand, resting it on your thigh.",
+    "Using your thigh to help raise the dumbbell, lift it up to shoulder width with your palm facing your torso.",
+    "Rotate your wrist so that the palm of your hand is facing forward.",
+    "As you breathe in, lower the dumbbell slowly to the side until you feel a stretch in your chest.",
+    "Exhale and use your chest muscles to bring the dumbbell back up to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "7589",
+  "name": "cable kneeling glute kickback",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A kneeling cable kickback that isolates the glutes.",
+  "instructions": [
+    "Attach an ankle cuff to a low cable and kneel on hands and knees facing it.",
+    "Brace your core and keep your back flat.",
+    "Kick the cuffed leg back and up.",
+    "Squeeze at the top.",
+    "Return slowly.",
+    "Finish all reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

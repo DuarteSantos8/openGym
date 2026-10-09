@@ -1,0 +1,23 @@
+{
+  "id": "3875",
+  "name": "resistance band 45 degrees hyperextension",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A hyperextension on an angled bench with a band adding load for the lower back and glutes.",
+  "instructions": [
+    "Set up on a 45 degree hyperextension bench with your hips just over the pad.",
+    "Loop a band across your upper back and under your feet or the base.",
+    "Cross your arms over your chest or hold them lightly.",
+    "Lower your torso with a straight back.",
+    "Raise your torso until your body is in a straight line.",
+    "Do not over-arch at the top."
+  ],
+  "textSource": "opengym"
+}

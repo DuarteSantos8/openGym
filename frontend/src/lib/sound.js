@@ -19,6 +19,8 @@
 // The context is suspended again a second after the last tone: an idle context otherwise keeps
 // rendering silence for the rest of the page, and under 'playback' keeps the phone's audio
 // session busy. (Suspending does NOT hand the phone back to a paused music app — see 1.)
+import { REST_SOUNDS } from './rest-sounds.js'
+
 let audioCtx = null
 let idleTm = null
 let idleAt = 0
@@ -47,31 +49,37 @@ const sleepAfter = endSec => {
   }, at - Date.now())
 }
 
-// A timbre brighter than a sine: the fundamental plus three falling harmonics. It carries over
-// music and through a phone speaker's weak low end without a square wave's buzz. The browser
-// normalises a periodic wave to a peak of 1, so the gain alone decides how loud it gets. Built
-// once per context; a browser without createPeriodicWave gets the nearest built-in shape.
-let brightWave = null
-let brightCtx = null
-const setBright = (ctx, o) => {
+// Timbres richer than a sine, as the strengths of the fundamental and its harmonics. `bright`
+// (the fundamental plus three falling harmonics) carries over music and through a phone
+// speaker's weak low end without a square wave's buzz; `bell` leans on the 3rd and 5th for a
+// struck, glassy ring. The browser normalises a periodic wave to a peak of 1, so the gain alone
+// decides how loud it gets. Built once per context; a browser without createPeriodicWave gets
+// the nearest built-in shape. android/.../RestTone.java renders the same harmonics.
+export const TIMBRES = { bright: [1, 0.6, 0.35, 0.2], bell: [1, 0.25, 0.5, 0.1, 0.3] }
+let waves = {}
+let wavesCtx = null
+const setTimbre = (ctx, o, name) => {
   if (typeof ctx.createPeriodicWave !== 'function') { o.type = 'triangle'; return }
-  if (brightCtx !== ctx) {
-    brightCtx = ctx
-    brightWave = ctx.createPeriodicWave(new Float32Array([0, 0, 0, 0, 0]), new Float32Array([0, 1, 0.6, 0.35, 0.2]))
+  if (wavesCtx !== ctx) { wavesCtx = ctx; waves = {} }
+  if (!waves[name]) {
+    const h = TIMBRES[name]
+    waves[name] = ctx.createPeriodicWave(new Float32Array(h.length + 1), new Float32Array([0, ...h]))
   }
-  o.setPeriodicWave(brightWave)
+  o.setPeriodicWave(waves[name])
 }
 
 // One tone. The defaults are every beep the app has always made: a sine that reaches 0.35 and
 // fades from there at once. `peak`, `hold` (the share of the tone kept at its peak before the
-// fade) and `bright` exist for the timer chime below.
-const tone = (freq, dur, when, { peak = 0.35, hold = 0, bright = false } = {}) => {
+// fade), `timbre` (one of TIMBRES; `bright: true` is the chime's) and `glide` (a frequency the
+// tone slides to by its end, for the whistle) exist for the end-of-rest sounds below.
+const tone = (freq, dur, when, { peak = 0.35, hold = 0, bright = false, timbre = bright ? 'bright' : null, glide = 0 } = {}) => {
   const ctx = wake()
   const o = ctx.createOscillator(), g = ctx.createGain()
   o.connect(g); g.connect(ctx.destination)
-  o.frequency.value = freq
-  if (bright) setBright(ctx, o); else o.type = 'sine'
+  if (timbre && TIMBRES[timbre]) setTimbre(ctx, o, timbre); else o.type = 'sine'
   const t0 = ctx.currentTime + when
+  o.frequency.value = freq
+  if (glide > 0) { o.frequency.setValueAtTime(freq, t0); o.frequency.linearRampToValueAtTime(glide, t0 + dur) }
   g.gain.setValueAtTime(0.001, t0)
   g.gain.exponentialRampToValueAtTime(peak, t0 + 0.02)
   if (hold > 0) g.gain.setValueAtTime(peak, t0 + dur * hold)
@@ -102,14 +110,25 @@ export function beep(enabled, freq, dur, when) {
 // sound" (S.classicChime) picks between the two without reviving the three separate beep() calls
 // this replaced: CLASSIC is the exact same three tones, just driven through the same tone() path
 // as the chime below, so both share one gating/try-catch and one sleepAfter bookkeeping.
-export const CHIME_PEAK = 0.9
-const CHIME = [[1319, 0.16, 0], [988, 0.16, 0.22], [1319, 0.5, 0.44]]
-const CLASSIC = [[880, 0.15, 0], [880, 0.15, 0.25], [1320, 0.4, 0.5]]
-export function chime(enabled, classic) {
+// The Android app plays this end tone natively while the app is in the background or the screen
+// is off (android/.../RestTone.java). Change the notes or the shape here, change them there too.
+//
+// Settings → Sound (#306) adds a few more to pick from. Each is notes of [freq, dur, when] (and a
+// frequency to glide to, for the whistle) played with one shape: a peak, a hold and a timbre.
+// Notes that overlap (the bell's ring, the soft one's) have peaks low enough that, decaying from
+// the first millisecond, they still stay under 1 when they add up. RestTone.java mirrors every
+// one of these, number for number. The table itself is lib/rest-sounds.js, which has no audio in
+// it, so the store and the native alarm can read the choice without this module.
+export { CHIME_PEAK, REST_SOUNDS, REST_SOUND_IDS, restSoundOf } from './rest-sounds.js'
+// `kind` is a REST_SOUNDS id; `true` (the old "classic" switch) still means the classic beeps.
+export function chime(enabled, kind) {
   if (!enabled) return
+  const id = kind === true ? 'classic' : kind
+  const snd = Object.hasOwn(REST_SOUNDS, id) ? REST_SOUNDS[id] : REST_SOUNDS.chime
   try {
-    if (classic) CLASSIC.forEach(([freq, dur, when]) => tone(freq, dur, when))
-    else CHIME.forEach(([freq, dur, when]) => tone(freq, dur, when, { peak: CHIME_PEAK, hold: 0.6, bright: true }))
+    for (const [freq, dur, when, glide] of snd.notes) {
+      tone(freq, dur, when, snd === REST_SOUNDS.classic ? {} : { peak: snd.peak, hold: snd.hold, timbre: snd.timbre, glide })
+    }
   } catch (e) { /* */ }
 }
 

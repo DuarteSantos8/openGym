@@ -1,0 +1,21 @@
+{
+  "id": "5555",
+  "name": "bodyweight good morning",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back"
+  ],
+  "category": "mobility",
+  "description": "Hip-hinge pattern with no load that warms up the hamstrings and lower back.",
+  "instructions": [
+    "Stand with feet hip width and hands behind your head.",
+    "Soften your knees and push your hips back.",
+    "Lower your torso with a flat back until you feel a hamstring stretch.",
+    "Drive your hips forward to stand.",
+    "Keep your spine neutral."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "5167",
+  "name": "single leg glute bridge with external rotation",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A one-legged glute bridge with the hip turned outward. It targets the glutes and the small hip stabilisers.",
+  "instructions": [
+    "Lie on your back with one knee bent and the other leg lifted.",
+    "Press through your planted heel and raise your hips.",
+    "Turn the raised knee gently outward as you hold the top.",
+    "Keep your hips level and squeeze your glutes.",
+    "Lower with control, finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

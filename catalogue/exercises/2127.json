@@ -1,0 +1,24 @@
+{
+  "id": "2127",
+  "name": "weighted captain's chair leg raise",
+  "bodyPart": "waist",
+  "equipment": "weighted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A captain's chair leg raise with added weight, building lower ab and hip flexor strength.",
+  "instructions": [
+    "Position yourself on a captain's chair with your forearms on the pads and back against the backrest.",
+    "Hold the weight securely between your feet or on your ankles.",
+    "Brace your core and raise your knees or legs up toward your chest.",
+    "Curl your pelvis slightly at the top.",
+    "Lower your legs slowly without swinging.",
+    "Repeat for the planned reps."
+  ],
+  "femaleVariant": "11009",
+  "textSource": "opengym"
+}

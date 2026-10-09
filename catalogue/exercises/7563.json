@@ -1,0 +1,25 @@
+{
+  "id": "7563",
+  "name": "kettlebell swing clean grip front squat",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "core",
+    "shoulders",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A combo that swings the kettlebell into a clean grip and finishes with a front squat for legs and hips.",
+  "instructions": [
+    "Stand with feet shoulder-width apart and the kettlebell on the floor in front of you.",
+    "Hinge back and swing the bell between your legs.",
+    "Drive your hips forward to swing, catching it in a clean position at your chest.",
+    "Squat down with your chest tall.",
+    "Stand back up and lower the bell to swing again.",
+    "Keep your back flat throughout."
+  ],
+  "textSource": "opengym"
+}

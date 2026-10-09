@@ -1,0 +1,23 @@
+{
+  "id": "0256",
+  "name": "elbow arm circles",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "upper back",
+    "trapezius"
+  ],
+  "category": "mobility",
+  "description": "A shoulder warm-up where you draw circles with your elbows. It loosens the joint and prepares it for training.",
+  "instructions": [
+    "Stand tall with your fingertips on your shoulders.",
+    "Raise your elbows out to the sides.",
+    "Draw big circles with your elbows.",
+    "Do several circles forward.",
+    "Reverse and circle backward.",
+    "Keep your neck relaxed and your breathing steady."
+  ],
+  "textSource": "opengym"
+}

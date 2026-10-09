@@ -1,0 +1,21 @@
+{
+  "id": "7327",
+  "name": "lever leg extension (inward toes)",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "shins"
+  ],
+  "category": "strength",
+  "description": "Leg extension with toes angled in to shift the emphasis on the quads.",
+  "instructions": [
+    "Sit in the machine with the pad on your lower shins.",
+    "Turn your toes slightly inward.",
+    "Extend your knees until your legs are straight.",
+    "Squeeze your quads for a second.",
+    "Lower the weight slowly."
+  ],
+  "textSource": "opengym"
+}

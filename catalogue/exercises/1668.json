@@ -1,0 +1,20 @@
+{
+  "id": "1668",
+  "name": "dumbbell one arm seated bicep curl on exercise ball",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A one-arm seated dumbbell curl on an exercise ball. It trains the biceps and your balance.",
+  "instructions": [
+    "Sit on an exercise ball with your feet flat on the ground and your back straight.",
+    "Hold a dumbbell in one hand with your palm facing up and your arm fully extended.",
+    "Keeping your upper arm stationary, curl the dumbbell towards your shoulder by contracting your biceps.",
+    "Pause for a moment at the top, then slowly lower the dumbbell back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms."
+  ],
+  "textSource": "exercisedb"
+}

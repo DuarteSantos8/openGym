@@ -1,0 +1,22 @@
+{
+  "id": "1221",
+  "name": "lever shrug (bench press machine)",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "traps",
+  "secondaryMuscles": [
+    "upper back",
+    "trapezius",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Shrugging with a lever press machine as the load. It builds the upper traps with a stable, guided path.",
+  "instructions": [
+    "Set the machine so the handles are at your sides and grip them firmly.",
+    "Stand or sit tall with your arms straight.",
+    "Lift your shoulders straight up toward your ears.",
+    "Pause at the top for a moment.",
+    "Lower your shoulders slowly without rolling them."
+  ],
+  "textSource": "opengym"
+}

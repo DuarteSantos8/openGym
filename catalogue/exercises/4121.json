@@ -1,0 +1,22 @@
+{
+  "id": "4121",
+  "name": "single arm push up on medicine ball",
+  "bodyPart": "chest",
+  "equipment": "medicine ball",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A hard push up with one hand on a medicine ball, challenging balance and chest strength.",
+  "instructions": [
+    "Place one hand on the ball and the other on the floor in a plank.",
+    "Spread your feet for balance.",
+    "Lower your chest toward the ball.",
+    "Press back up.",
+    "Finish your reps, then switch hands."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "8875",
+  "name": "cable lying single leg hip flexion",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Lying on your back with a cable strapped to one ankle, you pull the knee toward your chest. It builds hip flexor strength.",
+  "instructions": [
+    "Lie on your back with the ankle strap attached to the low cable and one foot in it.",
+    "Brace your core and press your lower back into the floor.",
+    "Pull the knee up toward your chest with control.",
+    "Pause briefly, then lower the leg slowly against the cable.",
+    "Keep the other leg relaxed and your hips still.",
+    "Finish all reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

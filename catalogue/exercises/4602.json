@@ -1,0 +1,21 @@
+{
+  "id": "4602",
+  "name": "pvc external rotation",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "rear deltoids"
+  ],
+  "category": "mobility",
+  "description": "Using a light pipe to practice rotating the shoulders outward, building control and range for overhead lifts.",
+  "instructions": [
+    "Hold a PVC pipe in both hands with your elbows tucked at your sides and bent to 90 degrees.",
+    "Keep your elbows pinned and rotate the pipe so one hand moves outward.",
+    "Return to the start and rotate the other way.",
+    "Move slowly and keep your ribs down and your wrists straight.",
+    "Continue alternating for the planned reps."
+  ],
+  "textSource": "opengym"
+}

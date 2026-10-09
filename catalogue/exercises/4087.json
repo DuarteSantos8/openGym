@@ -1,0 +1,21 @@
+{
+  "id": "4087",
+  "name": "band 45 degrees biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "band",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A band curl with your arms angled about 45 degrees behind your body, which stretches the biceps and works the long head.",
+  "instructions": [
+    "Stand on the band and hold the ends, then set your arms about 45 degrees behind your torso.",
+    "Keep your chest up and shoulders back.",
+    "Curl your hands up while your upper arms stay in that angled position.",
+    "Squeeze at the top and lower slowly.",
+    "Avoid leaning back to finish the rep."
+  ],
+  "textSource": "opengym"
+}

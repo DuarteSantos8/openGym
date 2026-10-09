@@ -1,0 +1,21 @@
+{
+  "id": "3407",
+  "name": "standing low body rotation",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "mobility",
+  "description": "A standing trunk rotation at lower body level to loosen the hips and waist.",
+  "instructions": [
+    "Stand with feet slightly wider than your hips and knees soft.",
+    "Hold your hands in front of your waist.",
+    "Rotate your hips and trunk to one side.",
+    "Return through the centre and rotate to the other side.",
+    "Move smoothly for 10-15 reps per side."
+  ],
+  "textSource": "opengym"
+}

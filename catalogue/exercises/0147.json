@@ -1,0 +1,22 @@
+{
+  "id": "0147",
+  "name": "bicycle twisting crunch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A crunch where the knees pedal while the elbow reaches for the opposite knee. It works the abs and the obliques.",
+  "instructions": [
+    "Lie on your back with your hands behind your head and your legs lifted.",
+    "Bring one knee toward your chest and rotate to touch the opposite elbow to it.",
+    "Extend the other leg straight.",
+    "Switch sides in a pedalling motion.",
+    "Keep your lower back pressed to the floor.",
+    "Move at a steady pace without pulling on your neck."
+  ],
+  "textSource": "opengym"
+}

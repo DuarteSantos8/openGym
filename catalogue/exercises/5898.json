@@ -1,0 +1,22 @@
+{
+  "id": "5898",
+  "name": "pyramid pose",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "lower back",
+    "glutes"
+  ],
+  "category": "yoga",
+  "description": "A standing forward fold with one leg back. Deeply stretches the back of the front leg.",
+  "instructions": [
+    "Step one foot back with both feet facing forward.",
+    "Keep both legs straight and your hips square.",
+    "Hinge forward from your hips with a long back.",
+    "Hold for 5 slow breaths.",
+    "Rise slowly and switch legs."
+  ],
+  "textSource": "opengym"
+}

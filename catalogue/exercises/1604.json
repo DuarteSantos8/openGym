@@ -1,0 +1,23 @@
+{
+  "id": "1604",
+  "name": "world greatest stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "quadriceps",
+    "calves"
+  ],
+  "category": "mobility",
+  "description": "A flowing lunge with a twist and reach that opens the hips, hamstrings and upper back. A favorite warm-up move.",
+  "instructions": [
+    "Start in a lunge position with your right foot forward and your left foot back.",
+    "Place your hands on the ground on either side of your right foot.",
+    "Lower your left knee to the ground and extend your right leg, keeping your right foot flat on the ground.",
+    "Rotate your torso to the right, reaching your right arm up towards the ceiling.",
+    "Hold this position for a few seconds, then return to the starting position.",
+    "Switch sides and repeat the stretch with your left foot forward."
+  ],
+  "textSource": "exercisedb"
+}

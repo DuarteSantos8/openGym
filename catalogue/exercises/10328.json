@@ -1,0 +1,23 @@
+{
+  "id": "10328",
+  "name": "lever belt bulgarian split squat",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A split squat with your back foot raised, loaded through a belt machine to hit the quads and glutes.",
+  "instructions": [
+    "Set up in the belt squat machine and place your back foot on the bench behind you.",
+    "Stand tall with the front foot far enough forward.",
+    "Lower straight down until your front thigh is parallel.",
+    "Press through the front heel to stand.",
+    "Keep your torso upright. Finish the reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

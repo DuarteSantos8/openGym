@@ -1,0 +1,23 @@
+{
+  "id": "6252",
+  "name": "ring face pull",
+  "bodyPart": "shoulders",
+  "equipment": "suspension trainer",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rotator cuff"
+  ],
+  "category": "calisthenics",
+  "description": "A face pull on rings. It builds the rear delts and upper back.",
+  "instructions": [
+    "Hold the rings and lean back.",
+    "Extend your arms.",
+    "Pull the rings toward your face.",
+    "Flare your elbows out.",
+    "Squeeze your shoulder blades.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

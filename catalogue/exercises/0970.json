@@ -1,0 +1,39 @@
+{
+  "id": "0970",
+  "name": "band assisted pull-up",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A pull-up with a band looped under the feet for assistance. It builds the lats and biceps while you work toward unassisted pull-ups.",
+  "instructions": [
+    "Attach the band to a pull-up bar or sturdy anchor point.",
+    "Step onto the band and grip the bar with your palms facing away from you, hands slightly wider than shoulder-width apart.",
+    "Hang with your arms fully extended, keeping your core engaged and your shoulders down and back.",
+    "Pull your body up towards the bar by squeezing your shoulder blades together and driving your elbows down towards your hips.",
+    "Continue pulling until your chin is above the bar, then slowly lower yourself back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm"
+    ],
+    "weights": {
+      "upper-back": 1,
+      "biceps": 0.4,
+      "deltoids": 0.4,
+      "forearm": 0.4,
+      "triceps": 0
+    }
+  },
+  "textSource": "exercisedb"
+}

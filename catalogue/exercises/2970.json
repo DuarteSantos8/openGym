@@ -1,0 +1,25 @@
+{
+  "id": "2970",
+  "name": "band thruster",
+  "bodyPart": "full body",
+  "equipment": "band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "triceps",
+    "core",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A squat into an overhead press using a band for resistance. It trains the legs, shoulders and heart in one move.",
+  "instructions": [
+    "Stand on the band and hold the ends at your shoulders.",
+    "Squat down with your chest up.",
+    "Drive up and press your hands overhead in one motion.",
+    "Lock out your arms at the top.",
+    "Lower your hands to your shoulders and repeat."
+  ],
+  "femaleVariant": "2971",
+  "textSource": "opengym"
+}

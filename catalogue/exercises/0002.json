@@ -1,0 +1,20 @@
+{
+  "id": "0002",
+  "name": "45° side bend",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A standing side bend that works the obliques by leaning the torso sideways and coming back up.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and your arms extended straight down by your sides.",
+    "Keeping your back straight and your core engaged, slowly bend your torso to one side, lowering your hand towards your knee.",
+    "Pause for a moment at the bottom, then slowly return to the starting position.",
+    "Repeat on the other side.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

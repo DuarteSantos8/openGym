@@ -1,0 +1,22 @@
+{
+  "id": "8191",
+  "name": "cable standing hip flexion",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "A standing leg raise to the front against cable resistance. It trains the hip flexors and front thigh.",
+  "instructions": [
+    "Attach an ankle strap and face away from a low cable.",
+    "Hold a support for balance.",
+    "Lift your knee in front of you.",
+    "Pause at the top.",
+    "Lower slowly. Switch legs after your set."
+  ],
+  "textSource": "opengym"
+}

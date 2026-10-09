@@ -1,0 +1,22 @@
+{
+  "id": "4716",
+  "name": "assisted chin up (low bar position)",
+  "bodyPart": "back",
+  "equipment": "assisted",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A chin-up from a low bar with your feet helping, a stepping stone toward full chin-ups.",
+  "instructions": [
+    "Set a bar at about chest height and sit or lie beneath it.",
+    "Grip the bar with palms facing you.",
+    "Pull your chest toward the bar using your arms and back.",
+    "Use your legs only as much as needed.",
+    "Lower with control."
+  ],
+  "textSource": "opengym"
+}

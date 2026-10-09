@@ -1,0 +1,46 @@
+name: Exercise fix or translation
+description: A wrong name, muscle, body part or step, a missing translation, or an exercise that should be split or merged
+labels: ["catalogue"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping with the exercise catalogue! If you're comfortable with GitHub, a pull request that edits
+        `catalogue/exercises/<id>.json` or `catalogue/i18n/<lang>.json` directly is even better: see
+        [catalogue/README.md](https://github.com/DuarteSantos8/openGym/blob/main/catalogue/README.md).
+        Please write in your own words and don't paste text from other websites or apps.
+  - type: input
+    id: exercise
+    attributes:
+      label: Exercise
+      description: The id (in the app's exercise sheet, or the file name in catalogue/exercises) or the exact name.
+      placeholder: "0025, barbell bench press"
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What's wrong or missing?
+      options:
+        - Name
+        - Target or secondary muscles
+        - Body part or equipment
+        - Description
+        - Instructions
+        - Translation
+        - Duplicate / should be merged
+        - Something else
+    validations:
+      required: true
+  - type: input
+    id: lang
+    attributes:
+      label: Language (for translations)
+      placeholder: "de, pt-BR, ..."
+  - type: textarea
+    id: change
+    attributes:
+      label: What should it say?
+      description: The corrected text or values. A short reason helps the review.
+    validations:
+      required: true

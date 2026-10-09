@@ -1,0 +1,22 @@
+{
+  "id": "4154",
+  "name": "weighted seated neutral wrist curl",
+  "bodyPart": "lower arms",
+  "equipment": "weighted",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A seated wrist curl with palms facing each other. It strengthens the forearms and wrists.",
+  "instructions": [
+    "Sit with your forearm resting on your thigh, hand hanging past the knee.",
+    "Hold the weight with a neutral grip, thumb up.",
+    "Curl your wrist up toward your forearm.",
+    "Pause at the top.",
+    "Lower slowly until your wrist is extended.",
+    "Complete all reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

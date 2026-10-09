@@ -1,0 +1,23 @@
+{
+  "id": "0868",
+  "name": "cable curl",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A standing curl using a cable and an underhand grip. It keeps constant tension on the biceps.",
+  "instructions": [
+    "Stand facing the cable machine with your feet shoulder-width apart.",
+    "Grasp the cable attachment with an underhand grip, palms facing up.",
+    "Keep your elbows close to your sides and your upper arms stationary.",
+    "Exhale and curl the cable attachment towards your shoulders, contracting your biceps.",
+    "Pause for a moment at the top of the movement, squeezing your biceps.",
+    "Inhale and slowly lower the cable attachment back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "0156",
+  "textSource": "exercisedb"
+}

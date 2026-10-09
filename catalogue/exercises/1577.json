@@ -1,0 +1,21 @@
+{
+  "id": "1577",
+  "name": "lying hip flexor",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "groin"
+  ],
+  "category": "stretching",
+  "description": "A lying stretch that opens the front of the hip. Handy after long periods of sitting.",
+  "instructions": [
+    "Lie on your back near the edge of a bench or bed.",
+    "Hug one knee to your chest.",
+    "Let the other leg hang off the edge with the knee relaxed.",
+    "Keep your lower back pressed down and breathe slowly.",
+    "Hold for 20-30 seconds, then switch legs."
+  ],
+  "textSource": "opengym"
+}

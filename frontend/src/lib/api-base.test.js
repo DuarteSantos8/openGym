@@ -76,10 +76,34 @@ function blocksOf(conf) {
 describe('the cache lifetime nginx gives an image', () => {
   it('is said once, by the explicit header, with no expires beside it', () => {
     expect(NGINX.replace(/#.*$/gm, '')).not.toMatch(/\bexpires\b/)
+    // the exercise media's own block and every other image's
     const media = blocksOf(NGINX).filter(b => /\bimmutable\b/.test(b))
-    expect(media.length).toBe(1)
-    expect(media[0]).toMatch(/\badd_header\s+Cache-Control\s+"public, max-age=2592000, immutable"\s*;/)
+    expect(media.length).toBe(2)
+    for (const b of media) expect(b).toMatch(/\badd_header\s+Cache-Control\s+"public, max-age=2592000, immutable"\s*;/)
   })
+})
+
+// The exercise media are licensed for openGym only: Cross-Origin-Resource-Policy keeps another
+// site from embedding them, on every answer under /exercise-media/, at the site root and under a
+// BASE_PATH alike. An add_header in a block replaces the inherited ones, so the nested block
+// that sets the media's caching has to say it again.
+describe('the exercise media', () => {
+  const CORP = /\badd_header\s+Cross-Origin-Resource-Policy\s+"same-origin"\s+always\s*;/
+  for (const base of ['', '/gym']) {
+    it(`are same-origin only${base ? ' under ' + base : ''}, files and anything else in the folder`, () => {
+      const conf = render(base)
+      const at = conf.indexOf(`location ^~ ${base}/exercise-media/ {`)
+      expect(at).toBeGreaterThan(-1)
+      const blocks = blocksOf(conf.slice(at))
+      const nested = blocks[0], outer = blocks[1]
+      for (const b of [outer, nested]) {
+        expect(b).toMatch(CORP)
+        expect(b).toMatch(/\badd_header\s+X-Content-Type-Options\s+"nosniff"\s+always\s*;/)
+        expect(b).toMatch(/\brewrite\s+\^\\Q/)
+      }
+      expect(nested).toMatch(/immutable/)
+    })
+  }
 })
 
 // The template as nginx gets it for a given BASE_PATH, comments left out. Its PCRE patterns are
@@ -150,13 +174,14 @@ describe('what nginx forwards to the API', () => {
 // to @root, and @root sent it back to /g+ym/, forever; the assets and images 404'd.
 describe('the file nginx looks for under BASE_PATH', () => {
   const REWRITE = /\brewrite\s+(\S+)\s+(\S+)\s+break\s*;/g
-  // All three rewrites (the app's prefix block and the two cache blocks) give the same answer.
+  // All five rewrites (the app's prefix block, the two cache blocks, and the exercise media's
+  // block and its nested cache block) give the same answer.
   function onDisk(base, uri) {
     const got = [...render(base).matchAll(REWRITE)].map(([, pattern, to]) => {
       const m = new RegExp(quoted(pattern)).exec(uri)
       return m ? to.replace(/\$(\d)/g, (_, i) => m[i]) : uri
     })
-    expect(got.length).toBe(3)
+    expect(got.length).toBe(5)
     expect(new Set(got).size).toBe(1)
     return got[0]
   }
@@ -167,6 +192,7 @@ describe('the file nginx looks for under BASE_PATH', () => {
     expect(onDisk('/g+ym', '/g+ym/icon-180.png')).toBe('/icon-180.png')
     expect(onDisk('/gym', '/gym/icon-180.png')).toBe('/icon-180.png')
     expect(onDisk('/a/b', '/a/b/index.html')).toBe('/index.html')
+    expect(onDisk('/gym', '/gym/exercise-media/clip/0001.mp4')).toBe('/exercise-media/clip/0001.mp4')
   })
 
   it('reads BASE_PATH as text, not as a pattern', () => {
@@ -222,5 +248,26 @@ describe('the web container refuses a BASE_PATH it cannot serve', () => {
     // sorts before 20-envsubst-on-templates.sh, nginx's own step that renders the template.
     const dockerfile = readFileSync(join(WEB, 'Dockerfile'), 'utf8')
     expect(dockerfile).toMatch(/^COPY --chmod=755 web\/05-check-base-path\.sh \/docker-entrypoint\.d\/$/m)
+  })
+
+  it('runs nginx as uid 101 and still listens on port 80', () => {
+    // nginx:alpine starts its master as root so it can create /var/cache/nginx, and a non-root
+    // master there dies on mkdir. The unprivileged base is uid 101, but apk cannot upgrade as
+    // that user, so the upgrade runs as root and 101 is the last USER — the entrypoint and the
+    // master both stay there. The listen port stays 80: compose, the probes and the healthcheck
+    // all address NGINX_PORT. The base image's EXPOSE 8080 is only metadata.
+    const dockerfile = readFileSync(join(WEB, 'Dockerfile'), 'utf8')
+    expect(dockerfile).toMatch(/^FROM --platform=\$BUILDPLATFORM node:22-alpine AS build$/m)
+    expect(dockerfile).toMatch(/^FROM nginxinc\/nginx-unprivileged:alpine$/m)
+    const users = [...dockerfile.matchAll(/^USER \S+$/gm)].map(m => m[0])
+    expect(users.at(-1)).toBe('USER 101')
+    const root = dockerfile.search(/^USER root$/m)
+    const upgrade = dockerfile.search(/^RUN apk upgrade --no-cache/m)
+    const finalUser = dockerfile.lastIndexOf('USER 101')
+    expect(root).toBeGreaterThanOrEqual(0)
+    expect(upgrade).toBeGreaterThan(root)
+    expect(finalUser).toBeGreaterThan(upgrade)
+    expect(dockerfile).toMatch(/^ENV NGINX_PORT=80$/m)
+    expect(dockerfile).toMatch(/^COPY web\/nginx\.conf\.template \/etc\/nginx\/templates\/default\.conf\.template$/m)
   })
 })

@@ -1,0 +1,22 @@
+{
+  "id": "0622",
+  "name": "lying scissor kick",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "quadriceps"
+  ],
+  "category": "calisthenics",
+  "description": "Alternating small leg kicks while lying down. It challenges the lower abs and hip flexors.",
+  "instructions": [
+    "Lie on your back with hands under your hips.",
+    "Lift both legs a few inches off the floor.",
+    "Raise one leg higher while the other stays low.",
+    "Switch legs in a smooth scissor motion.",
+    "Keep your lower back pressed to the floor.",
+    "Breathe steadily throughout."
+  ],
+  "textSource": "opengym"
+}

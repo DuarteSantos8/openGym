@@ -1,0 +1,21 @@
+{
+  "id": "1250",
+  "name": "weighted crunch (behind head)",
+  "bodyPart": "waist",
+  "equipment": "weighted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A crunch with a weight held behind your head. The extra load makes it harder on the abs.",
+  "instructions": [
+    "Lie on your back with your knees bent and feet flat.",
+    "Hold a weight behind your head with your elbows out.",
+    "Curl your shoulders up, contracting your abs.",
+    "Pause at the top.",
+    "Lower slowly without pulling on your neck."
+  ],
+  "textSource": "opengym"
+}

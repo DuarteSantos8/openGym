@@ -1,0 +1,23 @@
+{
+  "id": "4254",
+  "name": "single leg vertical jump",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hamstrings"
+  ],
+  "category": "plyometrics",
+  "description": "A vertical jump from one leg to build explosive power and balance. Each side gets its own work.",
+  "instructions": [
+    "Stand on one leg with a slight knee bend.",
+    "Swing your arms back.",
+    "Jump straight up as high as you can.",
+    "Land softly on the same leg.",
+    "Reset your balance.",
+    "Finish your reps and switch legs."
+  ],
+  "textSource": "opengym"
+}

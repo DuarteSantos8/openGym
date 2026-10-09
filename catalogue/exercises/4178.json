@@ -1,0 +1,23 @@
+{
+  "id": "4178",
+  "name": "barbell elevated heel squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A barbell squat with heels on a plate for extra knee travel. It emphasises the quads.",
+  "instructions": [
+    "Place your heels on small plates under the bar.",
+    "Set the bar on your upper back.",
+    "Brace your core and squat down.",
+    "Keep your torso upright.",
+    "Drive through your feet to stand.",
+    "Keep your knees tracking over your toes."
+  ],
+  "textSource": "opengym"
+}

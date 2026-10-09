@@ -1,0 +1,22 @@
+{
+  "id": "4012",
+  "name": "cable incline cross rear fly",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A rear fly using crossed cables on an incline bench. It targets the rear delts.",
+  "instructions": [
+    "Lie chest down on an incline bench between two cables, holding opposite handles.",
+    "Keep elbows slightly bent.",
+    "Pull your arms out and back.",
+    "Pause.",
+    "Return slowly."
+  ],
+  "textSource": "opengym"
+}

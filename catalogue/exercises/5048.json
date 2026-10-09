@@ -1,0 +1,24 @@
+{
+  "id": "5048",
+  "name": "superman w to y",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "rear deltoids",
+    "upper back",
+    "trapezius",
+    "hamstrings"
+  ],
+  "category": "calisthenics",
+  "description": "Lying face down, lift your body and move your arms from a W to a Y. It trains the whole back side.",
+  "instructions": [
+    "Lie face down, arms in a W with elbows bent.",
+    "Lift your chest and legs slightly off the floor.",
+    "Reach your arms forward into a Y.",
+    "Return to the W while keeping the lift.",
+    "Lower fully after your reps."
+  ],
+  "textSource": "opengym"
+}

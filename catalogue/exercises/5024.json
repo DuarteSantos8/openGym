@@ -1,0 +1,22 @@
+{
+  "id": "5024",
+  "name": "resistance band serratus wall slide",
+  "bodyPart": "back",
+  "equipment": "resistance band",
+  "target": "serratus anterior",
+  "secondaryMuscles": [
+    "trapezius",
+    "shoulders",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "Wall slide with a band around the forearms to engage the serratus. It improves shoulder blade control.",
+  "instructions": [
+    "Stand facing a wall with a band around your forearms just below the elbows.",
+    "Place your forearms on the wall and push slightly outward against the band.",
+    "Slide your arms up the wall, reaching overhead.",
+    "Keep your ribs down and shoulder blades moving freely.",
+    "Slide back down slowly."
+  ],
+  "textSource": "opengym"
+}

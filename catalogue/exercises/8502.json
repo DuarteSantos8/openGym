@@ -1,0 +1,22 @@
+{
+  "id": "8502",
+  "name": "dumbbell kneeling opposite shoulder press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "core",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A kneeling one-arm press where the opposite knee is down, adding core and hip stability to the shoulder work.",
+  "instructions": [
+    "Kneel on one knee and hold a dumbbell at shoulder height in the hand opposite the raised knee.",
+    "Keep your torso tall and glutes tight.",
+    "Press the dumbbell overhead until your arm is straight.",
+    "Lower under control to your shoulder.",
+    "Finish the reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

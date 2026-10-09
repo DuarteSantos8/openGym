@@ -1,0 +1,23 @@
+{
+  "id": "1732",
+  "name": "dumbbell forward lunge triceps extension",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A forward lunge combined with a triceps extension. It trains the triceps and legs.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell in each hand.",
+    "Take a step forward with your right foot, lowering your body into a lunge position.",
+    "Keep your back straight and your chest up.",
+    "Extend your arms straight overhead, keeping your elbows close to your ears.",
+    "Lower the dumbbells behind your head by bending your elbows.",
+    "Pause for a moment, then straighten your arms to return to the starting position.",
+    "Repeat the movement for the desired number of repetitions, then switch legs and repeat."
+  ],
+  "textSource": "exercisedb"
+}

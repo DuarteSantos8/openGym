@@ -1,0 +1,21 @@
+{
+  "id": "4345",
+  "name": "cable incline close grip curl",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A biceps curl on an incline bench with a cable and a narrow grip. It keeps constant tension and a deep stretch.",
+  "instructions": [
+    "Lean back on an incline bench in front of a low cable with a straight bar.",
+    "Grip the bar close together with palms up.",
+    "Curl the bar toward your shoulders, upper arms still.",
+    "Squeeze at the top.",
+    "Lower slowly until your arms are nearly straight."
+  ],
+  "textSource": "opengym"
+}

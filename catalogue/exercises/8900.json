@@ -1,0 +1,23 @@
+{
+  "id": "8900",
+  "name": "cable standing jab v. 2",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A second variation of the cable punch, built for quick power in the pushing muscles. Your trunk works to stay stable.",
+  "instructions": [
+    "Stand facing away from the cable and hold the handle at chest height.",
+    "Step into a staggered stance and brace your core.",
+    "Punch forward fast and rotate your torso slightly.",
+    "Stop short of locking out your elbow.",
+    "Pull the hand back under control.",
+    "Repeat, then switch arms."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "5370",
+  "name": "cable standing one arm hammer curl (with rope)",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A one-arm hammer curl on a cable using a rope. Hits the biceps and forearm muscles with a neutral grip.",
+  "instructions": [
+    "Attach the rope to a low pulley and hold it with one hand, thumb up.",
+    "Stand tall with your elbow tucked in.",
+    "Curl the rope toward your shoulder.",
+    "Squeeze the top for a second.",
+    "Lower slowly.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

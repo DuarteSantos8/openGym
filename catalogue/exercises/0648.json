@@ -1,0 +1,42 @@
+{
+  "id": "0648",
+  "name": "power clean",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "quadriceps",
+    "calves"
+  ],
+  "category": "olympic",
+  "description": "You pull the bar from the floor and catch it on your shoulders in a quarter squat. Builds explosive power in the legs, hips and back.",
+  "instructions": [
+    "Start with the barbell on the ground in front of you, with your feet shoulder-width apart.",
+    "Bend down and grip the barbell with an overhand grip, slightly wider than shoulder-width apart.",
+    "Keep your back straight and chest up as you lift the barbell off the ground, extending your hips and knees.",
+    "As the barbell reaches your mid-thigh, explosively pull it upwards, shrugging your shoulders and pulling your elbows high and to the sides.",
+    "As the barbell reaches its highest point, quickly drop underneath it, rotating your elbows around and catching the barbell on your shoulders in a front squat position.",
+    "Stand up with the barbell, fully extending your hips and knees.",
+    "Lower the barbell back down to the starting position, keeping control of the weight throughout the movement.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "bodyPart": "full body",
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "hamstring",
+      "trapezius"
+    ],
+    "secondaries": [
+      "calves",
+      "forearm",
+      "deltoids",
+      "lower-back",
+      "abs",
+      "obliques"
+    ]
+  },
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "3555",
+  "name": "power push aways",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rhomboids",
+    "trapezius",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "An explosive push away from a wall or support to train the upper back.",
+  "instructions": [
+    "Stand facing a wall and lean in with arms extended.",
+    "Push away from the wall forcefully.",
+    "Retract your shoulder blades as you reach back.",
+    "Return to the wall with control.",
+    "Keep your core tight.",
+    "Reset between reps."
+  ],
+  "textSource": "opengym"
+}

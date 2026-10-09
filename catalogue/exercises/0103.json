@@ -1,0 +1,22 @@
+{
+  "id": "0103",
+  "name": "barbell standing ab rollerout",
+  "bodyPart": "waist",
+  "equipment": "barbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A standing roll-out with the barbell. Requires strong abs and a firm back.",
+  "instructions": [
+    "Stand upright with your feet shoulder-width apart and hold the barbell with both hands in front of your thighs.",
+    "Engage your core and slowly roll the barbell down towards the ground, keeping your back straight and your arms extended.",
+    "Continue rolling the barbell forward until your body is fully extended and your hands are directly above your head.",
+    "Pause for a moment, then slowly roll the barbell back towards your thighs, maintaining control and keeping your core engaged.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2826",
+  "textSource": "exercisedb"
+}

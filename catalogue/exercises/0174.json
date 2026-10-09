@@ -1,0 +1,25 @@
+{
+  "id": "0174",
+  "name": "cable judo flip",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A rotational cable move where you sweep the handle across the body and up over the shoulder. It builds twisting power and trains the core and obliques.",
+  "instructions": [
+    "Stand facing the cable machine with your feet shoulder-width apart.",
+    "Hold the cable handle with both hands at chest level, palms facing down.",
+    "Engage your core and rotate your torso to the right, pulling the cable across your body.",
+    "As you rotate, pivot your back foot and allow your hips to rotate naturally.",
+    "Extend your arms fully and finish the movement by flipping the cable handle over your shoulder.",
+    "Return to the starting position by reversing the movement, rotating your torso back to the center.",
+    "Repeat the movement on the opposite side.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "femaleVariant": "3053",
+  "textSource": "exercisedb"
+}

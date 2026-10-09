@@ -1,0 +1,22 @@
+{
+  "id": "4887",
+  "name": "dumbbells glute bridge v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A glute bridge with dumbbells resting on your hips, a second variation. The added weight makes the glutes work harder.",
+  "instructions": [
+    "Lie on your back with knees bent and feet flat.",
+    "Rest a dumbbell on each hip and hold them in place.",
+    "Push through your heels and lift your hips.",
+    "Squeeze your glutes at the top in a straight line from knees to shoulders.",
+    "Lower your hips slowly.",
+    "Keep your ribs down and avoid arching your back."
+  ],
+  "textSource": "opengym"
+}

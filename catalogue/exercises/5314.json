@@ -1,0 +1,23 @@
+{
+  "id": "5314",
+  "name": "dumbbell glute dominant step up",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A step-up with a forward lean and a high box that shifts the work onto the glutes.",
+  "instructions": [
+    "Hold a dumbbell in each hand and face a bench or box.",
+    "Place one foot fully on the box and lean your torso slightly forward.",
+    "Push through the heel of that foot to stand up.",
+    "Squeeze your glute at the top.",
+    "Lower with control.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

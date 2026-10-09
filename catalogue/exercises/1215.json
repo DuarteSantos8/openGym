@@ -1,0 +1,23 @@
+{
+  "id": "1215",
+  "name": "dumbbell side lunge",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "adductors",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A lateral lunge with dumbbells that trains the glutes, quads and inner thighs in the frontal plane.",
+  "instructions": [
+    "Hold a dumbbell in each hand or one at your chest and stand tall.",
+    "Step out wide to one side and sit your hips back.",
+    "Keep the other leg straight and your chest upright.",
+    "Push through the bent leg to return to the middle.",
+    "Alternate sides or finish all reps on one side before switching."
+  ],
+  "textSource": "opengym"
+}

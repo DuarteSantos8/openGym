@@ -1,0 +1,22 @@
+{
+  "id": "5408",
+  "name": "stick twist lunge stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "obliques",
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "A lunge with a trunk twist while holding a stick. Stretches the hip flexors and loosens the spine.",
+  "instructions": [
+    "Hold the stick across your chest or in front with both hands and step into a lunge.",
+    "Keep your front knee over your ankle.",
+    "Twist your torso over the front leg.",
+    "Hold for 15-20 seconds, breathing evenly.",
+    "Untwist, step back and switch legs."
+  ],
+  "textSource": "opengym"
+}

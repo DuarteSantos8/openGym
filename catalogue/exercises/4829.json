@@ -1,0 +1,23 @@
+{
+  "id": "4829",
+  "name": "jump skip rope",
+  "bodyPart": "cardio",
+  "equipment": "rope",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "calves",
+    "shoulders",
+    "forearms",
+    "feet"
+  ],
+  "category": "cardio",
+  "description": "Skipping rope with a jump on each turn. It builds stamina, coordination and calf strength.",
+  "instructions": [
+    "Hold the rope handles at hip height with elbows near your sides.",
+    "Swing the rope over your head using your wrists.",
+    "Jump just high enough to clear the rope.",
+    "Land softly on the balls of your feet.",
+    "Keep a steady rhythm for 30-60 seconds, rest, and repeat."
+  ],
+  "textSource": "opengym"
+}

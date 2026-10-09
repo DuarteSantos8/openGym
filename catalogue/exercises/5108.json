@@ -1,0 +1,23 @@
+{
+  "id": "5108",
+  "name": "dumbbell wood chop squat",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "quadriceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Squat down and swing a dumbbell diagonally across your body. It trains legs, trunk rotation and shoulders in one movement.",
+  "instructions": [
+    "Stand with feet shoulder-width apart, holding a dumbbell with both hands by one hip.",
+    "Sit into a squat.",
+    "Stand up and swing the dumbbell diagonally across to overhead on the other side.",
+    "Rotate your torso and pivot your back foot as you go.",
+    "Return and repeat, then switch sides."
+  ],
+  "textSource": "opengym"
+}

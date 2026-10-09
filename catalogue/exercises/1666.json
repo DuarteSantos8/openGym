@@ -1,0 +1,19 @@
+{
+  "id": "1666",
+  "name": "dumbbell one arm prone hammer curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A one-arm hammer curl lying chest down on a bench. It trains the brachialis and biceps.",
+  "instructions": [
+    "Lie face down on a flat bench with a dumbbell in one hand, palm facing your body and arm fully extended.",
+    "Keep your upper arm stationary and curl the dumbbell towards your shoulder, contracting your biceps.",
+    "Pause for a moment at the top, then slowly lower the dumbbell back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms."
+  ],
+  "textSource": "exercisedb"
+}

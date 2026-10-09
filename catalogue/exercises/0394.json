@@ -1,0 +1,22 @@
+{
+  "id": "0394",
+  "name": "dumbbell seated kickback",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "Seated and bent forward, you straighten your arms behind you with dumbbells. It isolates the triceps.",
+  "instructions": [
+    "Sit on a bench with your feet flat on the ground and hold a dumbbell in each hand.",
+    "Bend your knees slightly and lean forward from your hips, keeping your back straight.",
+    "Bring your upper arms close to your sides and keep your elbows bent at a 90-degree angle.",
+    "Extend your arms straight back, squeezing your triceps at the top of the movement.",
+    "Pause for a moment, then slowly lower the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3421",
+  "textSource": "exercisedb"
+}

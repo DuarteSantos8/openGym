@@ -1,0 +1,23 @@
+{
+  "id": "10988",
+  "name": "dumbbell kneeling to jump box",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "Starting kneeling, you jump onto a box holding dumbbells. A very explosive move.",
+  "instructions": [
+    "Kneel in front of a box holding dumbbells at your sides.",
+    "Swing your arms and drive up to your feet.",
+    "Jump onto the box, landing softly.",
+    "Stand tall.",
+    "Step down carefully and reset to kneeling."
+  ],
+  "textSource": "opengym"
+}

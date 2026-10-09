@@ -1,0 +1,22 @@
+{
+  "id": "1961",
+  "name": "squatting toe stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "feet",
+    "ankles",
+    "shins"
+  ],
+  "category": "stretching",
+  "description": "A deep squat on the balls of the feet that stretches the toes and the bottom of the feet.",
+  "instructions": [
+    "Crouch down with your heels lifted and toes tucked under.",
+    "Place your hands on the floor in front of you for support.",
+    "Slowly sit back toward your heels until you feel the toes and soles stretch.",
+    "Ease off if the stretch is too sharp.",
+    "Hold for 20-30 seconds, then release."
+  ],
+  "textSource": "opengym"
+}

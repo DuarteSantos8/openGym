@@ -1,0 +1,21 @@
+{
+  "id": "1428",
+  "name": "wrist circles",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "hands",
+    "wrists"
+  ],
+  "category": "mobility",
+  "description": "Hold your arms out and move your wrists in slow circles. It warms up the wrist joints and forearm muscles.",
+  "instructions": [
+    "Extend your arms straight out in front of you.",
+    "Make a fist with both hands.",
+    "Rotate your wrists in a circular motion, keeping your arms still.",
+    "Continue the wrist circles for the desired number of repetitions."
+  ],
+  "femaleVariant": "4323",
+  "textSource": "exercisedb"
+}

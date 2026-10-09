@@ -1,0 +1,22 @@
+{
+  "id": "6486",
+  "name": "band bent over rear lateral raise v. 2",
+  "bodyPart": "shoulders",
+  "equipment": "band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "Bent over with a band, you raise your arms out wide to work the back of your shoulders and upper back.",
+  "instructions": [
+    "Stand on a band and hinge forward with a flat back.",
+    "Hold the band ends in each hand.",
+    "Raise your arms out to the sides up to shoulder height.",
+    "Squeeze your shoulder blades together.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

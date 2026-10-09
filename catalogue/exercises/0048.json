@@ -1,0 +1,21 @@
+{
+  "id": "0048",
+  "name": "barbell incline reverse-grip press",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "An incline press with a reverse grip, loading the upper chest and triceps.",
+  "instructions": [
+    "Set up an incline bench at a 45-degree angle.",
+    "Lie back on the bench and grasp the barbell with a reverse grip, hands slightly wider than shoulder-width apart.",
+    "Unrack the barbell and lower it towards your upper chest, keeping your elbows tucked in.",
+    "Pause for a moment at the bottom, then push the barbell back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

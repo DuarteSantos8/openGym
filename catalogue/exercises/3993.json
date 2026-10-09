@@ -1,0 +1,22 @@
+{
+  "id": "3993",
+  "name": "dumbbell push up front raise",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A push up on dumbbells followed by a front raise. It trains the chest, arms and core.",
+  "instructions": [
+    "Start in a high plank gripping two dumbbells.",
+    "Do a push up.",
+    "Lift one dumbbell forward to shoulder height.",
+    "Return it to the floor.",
+    "Alternate arms."
+  ],
+  "textSource": "opengym"
+}

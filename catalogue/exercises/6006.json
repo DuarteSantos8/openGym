@@ -1,0 +1,24 @@
+{
+  "id": "6006",
+  "name": "half squat side reach",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "quadriceps",
+    "glutes"
+  ],
+  "category": "calisthenics",
+  "description": "A half squat with a side bend that trains the obliques and legs while loosening the trunk.",
+  "instructions": [
+    "Stand with feet wider than shoulder-width.",
+    "Sit into a half squat.",
+    "Reach one arm overhead and lean sideways.",
+    "Return to center.",
+    "Reach to the other side.",
+    "Keep your chest up."
+  ],
+  "femaleVariant": "5937",
+  "textSource": "opengym"
+}

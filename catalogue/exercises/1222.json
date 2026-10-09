@@ -1,0 +1,23 @@
+{
+  "id": "1222",
+  "name": "assisted close grip underhand chin up",
+  "bodyPart": "back",
+  "equipment": "assisted",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "brachialis",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A chin-up with machine assistance and a narrow underhand grip. It lets you build pulling strength with less bodyweight.",
+  "instructions": [
+    "Set the assistance weight and kneel or stand on the platform.",
+    "Grip the bar with palms facing you, hands close together.",
+    "Pull yourself up until your chin clears the bar.",
+    "Squeeze your back and biceps at the top.",
+    "Lower slowly until your arms are straight."
+  ],
+  "femaleVariant": "2543",
+  "textSource": "opengym"
+}

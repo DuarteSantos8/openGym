@@ -1,0 +1,33 @@
+{
+  "id": "0573",
+  "name": "lever back extension",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "On a machine, you extend your torso against a pad to work the lower back. Also brings in the glutes and hamstrings.",
+  "instructions": [
+    "Adjust the machine to fit your body size and range of motion.",
+    "Sit on the machine with your back against the pad and your feet secured.",
+    "Place your hands on the handles or grip bars.",
+    "Engage your core and slowly lean forward, allowing your back to round slightly.",
+    "Pause for a moment at the bottom position, feeling a stretch in your lower back.",
+    "Using your back muscles, slowly raise your torso back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "lower-back"
+    ],
+    "secondaries": [
+      "gluteal",
+      "hamstring"
+    ]
+  },
+  "femaleVariant": "3607",
+  "textSource": "exercisedb"
+}

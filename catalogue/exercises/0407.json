@@ -1,0 +1,20 @@
+{
+  "id": "0407",
+  "name": "dumbbell side bend",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "Standing with a dumbbell in one hand, you bend sideways and return. It works the side abs, the obliques.",
+  "instructions": [
+    "Stand up straight with your feet shoulder-width apart and hold a dumbbell in one hand, letting it hang down by your side.",
+    "Keeping your back straight and your core engaged, slowly bend sideways at the waist towards the opposite side of the dumbbell, lowering the weight as far as you comfortably can.",
+    "Pause for a moment, then slowly return to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides and repeat."
+  ],
+  "femaleVariant": "2597",
+  "textSource": "exercisedb"
+}

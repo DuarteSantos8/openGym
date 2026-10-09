@@ -1,0 +1,23 @@
+{
+  "id": "1594",
+  "name": "smith frankenstein squat",
+  "bodyPart": "upper legs",
+  "equipment": "smith machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "shoulders",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A front-loaded squat on the smith machine with your arms stretched straight in front. It strongly challenges the quads and upper back posture.",
+  "instructions": [
+    "Set the bar at upper chest height and rest it on your front shoulders.",
+    "Extend your arms straight forward, like a zombie, to keep the bar in place.",
+    "Unrack the bar and step into a stable stance.",
+    "Squat down with your chest up and your torso upright.",
+    "Drive through your heels to stand and rerack when finished."
+  ],
+  "textSource": "opengym"
+}

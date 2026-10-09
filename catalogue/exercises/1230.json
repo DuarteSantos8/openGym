@@ -1,0 +1,21 @@
+{
+  "id": "1230",
+  "name": "dumbbell standing alternate vertical front raises",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Raising one dumbbell at a time in front of you with a neutral grip. It works the front shoulders.",
+  "instructions": [
+    "Stand holding dumbbells at your thighs with palms facing in.",
+    "Raise one dumbbell straight up to shoulder height.",
+    "Pause, then lower it slowly.",
+    "Repeat with the other arm and keep alternating.",
+    "Avoid swinging your body."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "6560",
+  "name": "90 to 90 stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "adductors",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "A seated hip stretch with both legs bent at right angles. It loosens the hip rotators and the glutes.",
+  "instructions": [
+    "Sit on the floor with one leg bent in front and the other bent out to the side, both at about 90 degrees.",
+    "Sit tall with your hands on the floor.",
+    "Hinge forward over the front shin until you feel a stretch in the hip.",
+    "Hold for 20-30 seconds, breathing calmly.",
+    "Come back up slowly.",
+    "Switch sides."
+  ],
+  "textSource": "opengym"
+}

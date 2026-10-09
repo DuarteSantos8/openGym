@@ -1,0 +1,24 @@
+{
+  "id": "3506",
+  "name": "bodyweight row in doorway",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rhomboids",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A row done by holding both sides of a doorframe and leaning back. It trains the back and arms.",
+  "instructions": [
+    "Stand in a doorway and grip both sides of the frame firmly.",
+    "Lean back with arms straight and feet close to the frame.",
+    "Keep your body in a straight line.",
+    "Pull your chest toward the frame, squeezing your shoulder blades.",
+    "Lower with control.",
+    "Use a sturdy frame and a non-slip grip."
+  ],
+  "textSource": "opengym"
+}

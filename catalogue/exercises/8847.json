@@ -1,0 +1,21 @@
+{
+  "id": "8847",
+  "name": "lever standing lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "leverage machine",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "A standing machine lateral raise that isolates the side shoulders.",
+  "instructions": [
+    "Stand in the machine with pads against your arms.",
+    "Keep your torso upright.",
+    "Raise your arms out to the sides to shoulder height.",
+    "Pause at the top.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

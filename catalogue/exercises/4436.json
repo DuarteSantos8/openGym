@@ -1,0 +1,23 @@
+{
+  "id": "4436",
+  "name": "alternating step out",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "calves",
+    "core"
+  ],
+  "category": "cardio",
+  "description": "A low-impact move stepping one leg out at a time, raising your heart rate while working the legs.",
+  "instructions": [
+    "Stand with feet together and hands in front of your chest.",
+    "Step one foot out to the side.",
+    "Bring it back and step the other foot out.",
+    "Keep your knees slightly bent.",
+    "Keep a steady rhythm for 30-60 seconds."
+  ],
+  "textSource": "opengym"
+}

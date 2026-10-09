@@ -1,0 +1,24 @@
+{
+  "id": "4377",
+  "name": "dumbbell hang clean and jerk",
+  "bodyPart": "full body",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "shoulders",
+    "triceps",
+    "upper back"
+  ],
+  "category": "olympic",
+  "description": "An explosive lift that takes a dumbbell from the hang to your shoulder and then overhead. It builds power through the hips, legs and shoulders.",
+  "instructions": [
+    "Stand with feet hip-width apart, holding a dumbbell hanging in front of your thighs.",
+    "Hinge at the hips, then drive them forward and shrug as you pull the dumbbell up.",
+    "Drop under it and catch it at your shoulder with a slight knee bend.",
+    "Dip a little, then drive up through your legs and press the dumbbell overhead.",
+    "Lower it back to your shoulder, then to the hang under control."
+  ],
+  "textSource": "opengym"
+}

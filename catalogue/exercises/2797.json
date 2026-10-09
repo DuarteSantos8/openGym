@@ -1,0 +1,24 @@
+{
+  "id": "2797",
+  "name": "barbell squat jump step rear lunge v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A barbell squat, a small jump and a step back into a rear lunge. A demanding combo for leg strength and power.",
+  "instructions": [
+    "Rest the barbell across your upper back and stand with feet shoulder width apart.",
+    "Squat down, then jump up lightly and land softly.",
+    "Step one foot back into a rear lunge, lowering your back knee toward the floor.",
+    "Push through the front foot to return to standing.",
+    "Alternate legs on each rep, keeping your chest tall."
+  ],
+  "textSource": "opengym",
+  "femaleVariant": "2798"
+}

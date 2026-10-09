@@ -1,0 +1,24 @@
+{
+  "id": "3286",
+  "name": "weighted muscle up",
+  "bodyPart": "back",
+  "equipment": "weighted",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "triceps",
+    "shoulders",
+    "chest"
+  ],
+  "category": "calisthenics",
+  "description": "A muscle up with added weight, pulling from a hang up and over the bar into a dip position. It is an advanced move for lats, chest and triceps.",
+  "instructions": [
+    "Start by hanging from a pull-up bar with your palms facing away from you and your hands slightly wider than shoulder-width apart.",
+    "Engage your core and pull your body up towards the bar, leading with your chest.",
+    "As you reach the top of the movement, transition your grip so that your palms are facing towards you.",
+    "Continue pulling yourself up until your chest reaches the bar, then pause for a moment.",
+    "Slowly lower yourself back down to the starting position, maintaining control throughout the movement.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

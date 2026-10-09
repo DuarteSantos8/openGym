@@ -1,0 +1,22 @@
+{
+  "id": "1989",
+  "name": "depression in parallel bars stretch",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders",
+    "triceps"
+  ],
+  "category": "stretching",
+  "description": "A hanging stretch between parallel bars that opens the shoulders and lengthens the lats.",
+  "instructions": [
+    "Stand between parallel bars and grip them at hip height.",
+    "Walk back slightly, letting your arms straighten.",
+    "Lower your chest toward the floor and press your head between your arms.",
+    "Feel the stretch in the lats and shoulders.",
+    "Hold for 20-30 seconds, then walk forward to release."
+  ],
+  "textSource": "opengym"
+}

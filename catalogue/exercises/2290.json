@@ -1,0 +1,24 @@
+{
+  "id": "2290",
+  "name": "dumbbell bulgarian split squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A single-leg squat with the back foot raised, building leg strength and balance.",
+  "instructions": [
+    "Stand a stride length in front of a bench holding a dumbbell in each hand.",
+    "Rest the top of your back foot on the bench.",
+    "Lower straight down until your front thigh is about parallel to the floor.",
+    "Keep your torso upright and your front knee tracking over your toes.",
+    "Drive through your front heel to stand back up.",
+    "Finish all reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

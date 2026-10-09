@@ -1,0 +1,22 @@
+{
+  "id": "1182",
+  "name": "push up (on knees)",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "An easier push-up variation from the knees that builds chest, shoulder and arm strength.",
+  "instructions": [
+    "Kneel on the floor with your hands slightly wider than shoulder width.",
+    "Keep your body in a straight line from your head to your knees.",
+    "Lower your chest toward the floor by bending your elbows.",
+    "Press back up until your arms are straight.",
+    "Keep your core tight and your hips from sagging."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "5298",
+  "name": "dumbbell preacher curl (turned torso)",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms",
+    "brachialis"
+  ],
+  "category": "strength",
+  "description": "A preacher curl with your torso turned slightly. The changed angle puts extra tension on the biceps.",
+  "instructions": [
+    "Sit at a preacher bench with a dumbbell in one hand.",
+    "Rotate your torso slightly toward the working arm.",
+    "Curl the dumbbell up to shoulder height.",
+    "Squeeze your biceps.",
+    "Lower slowly, finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

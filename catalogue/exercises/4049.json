@@ -1,0 +1,23 @@
+{
+  "id": "4049",
+  "name": "inverted shrug",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "traps",
+  "secondaryMuscles": [
+    "upper back",
+    "rhomboids",
+    "shoulders",
+    "grip muscles"
+  ],
+  "category": "calisthenics",
+  "description": "Hanging inverted, you move your shoulder blades to lift the body slightly. It builds the traps and scapular control.",
+  "instructions": [
+    "Set up under a bar or rings and hang with straight arms.",
+    "Keep your body in a straight line.",
+    "Pull your shoulder blades down and back to rise a little.",
+    "Hold briefly, then lower to a full hang.",
+    "Repeat for controlled reps."
+  ],
+  "textSource": "opengym"
+}

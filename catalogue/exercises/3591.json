@@ -1,0 +1,23 @@
+{
+  "id": "3591",
+  "name": "band twist",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A standing rotation against band resistance for the obliques and core.",
+  "instructions": [
+    "Anchor a band at chest height and hold the handle with both hands.",
+    "Stand sideways with arms extended.",
+    "Rotate your torso away from the anchor.",
+    "Return under control.",
+    "Finish reps, then switch sides."
+  ],
+  "femaleVariant": "0933",
+  "textSource": "opengym"
+}

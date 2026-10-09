@@ -1,0 +1,23 @@
+{
+  "id": "6295",
+  "name": "sage marichi i pose marichyasana",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "obliques",
+    "hamstrings",
+    "glutes",
+    "shoulders"
+  ],
+  "category": "yoga",
+  "description": "A seated forward fold with a twist and a bent knee. It stretches the back, hips and hamstrings.",
+  "instructions": [
+    "Sit with one leg straight and the other knee bent, foot flat beside the straight leg.",
+    "Wrap your opposite arm around the bent knee.",
+    "Sit tall, then twist toward the bent knee.",
+    "Keep your spine long.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

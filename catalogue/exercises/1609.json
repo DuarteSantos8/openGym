@@ -1,0 +1,20 @@
+{
+  "id": "1609",
+  "name": "cable one arm side triceps pushdown",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A one-armed cable pushdown done from the side. It isolates each triceps and lets you focus on form.",
+  "instructions": [
+    "Attach a handle to a high pulley and stand sideways to the machine.",
+    "Grip the handle with the arm closest to the stack and keep your elbow at your side.",
+    "Push the handle down until your arm is straight.",
+    "Squeeze your triceps at the bottom.",
+    "Return slowly, finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

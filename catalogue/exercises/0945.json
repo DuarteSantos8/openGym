@@ -1,0 +1,22 @@
+{
+  "id": "0945",
+  "name": "child pose",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "lower back",
+    "glutes",
+    "shoulders"
+  ],
+  "category": "stretching",
+  "description": "Fold forward over your knees with arms extended on the floor. A restful stretch for the back, hips and shoulders.",
+  "instructions": [
+    "Kneel on the floor with big toes touching and knees apart.",
+    "Sit your hips back toward your heels.",
+    "Fold forward and slide your arms out in front of you.",
+    "Rest your forehead on the floor and relax your shoulders.",
+    "Hold for 20-30 seconds while breathing slowly."
+  ],
+  "textSource": "opengym"
+}

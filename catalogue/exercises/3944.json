@@ -1,0 +1,21 @@
+{
+  "id": "3944",
+  "name": "seated alternate crunch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A seated crunch where you bring one knee and the opposite elbow together, then switch sides. It works the abs and obliques.",
+  "instructions": [
+    "Sit on the floor, lean back slightly and lift your feet.",
+    "Place your hands behind your head.",
+    "Bring one knee in while rotating your torso toward it.",
+    "Return and repeat on the other side.",
+    "Keep your chest open and move with control."
+  ],
+  "textSource": "opengym"
+}

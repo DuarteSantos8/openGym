@@ -1,0 +1,24 @@
+{
+  "id": "3215",
+  "name": "hands reversed clasped circular toe touch (male)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "calves"
+  ],
+  "category": "mobility",
+  "description": "A toe touch with the hands clasped in reverse and moved in a circle. It opens the hamstrings and back while warming up the hips.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and your arms extended to the sides.",
+    "Bend forward at the waist, keeping your back straight and your knees slightly bent.",
+    "Reach down with your hands and clasp them together behind your legs.",
+    "Slowly raise your hands up and over your head in a circular motion, keeping your legs straight.",
+    "Continue the circular motion until your hands touch your toes.",
+    "Reverse the motion and bring your hands back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

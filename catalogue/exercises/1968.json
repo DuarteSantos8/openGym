@@ -1,0 +1,21 @@
+{
+  "id": "1968",
+  "name": "standing toe flexor stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "feet",
+    "soleus"
+  ],
+  "category": "stretching",
+  "description": "Pulling the toes back against a wall to stretch the sole of the foot and the calf.",
+  "instructions": [
+    "Stand facing a wall and place the toes of one foot on it with the heel on the floor.",
+    "Lean forward gently until you feel the stretch along the bottom of the foot and into the calf.",
+    "Keep your heel firmly on the floor.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

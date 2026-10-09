@@ -1,0 +1,23 @@
+{
+  "id": "5240",
+  "name": "ez barbell deadlift with biceps curl",
+  "bodyPart": "upper legs",
+  "equipment": "ez barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "biceps",
+    "lower back",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Deadlifting an EZ bar and finishing with a curl. It combines a hip hinge and an arm exercise.",
+  "instructions": [
+    "Stand with an EZ bar in front of your thighs.",
+    "Hinge at the hips and lower the bar along your legs.",
+    "Stand tall by driving your hips forward.",
+    "Curl the bar up to your chest.",
+    "Lower it and repeat."
+  ],
+  "textSource": "opengym"
+}

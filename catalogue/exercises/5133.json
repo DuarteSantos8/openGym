@@ -1,0 +1,22 @@
+{
+  "id": "5133",
+  "name": "seated behind back raise",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "triceps"
+  ],
+  "category": "calisthenics",
+  "description": "Lifting your arms behind your back while seated. It strengthens the upper back and rear shoulders.",
+  "instructions": [
+    "Sit tall with hands clasped behind your back.",
+    "Straighten your arms.",
+    "Lift your hands slightly away from your body.",
+    "Squeeze your shoulder blades together.",
+    "Lower slowly.",
+    "Keep your chest lifted."
+  ],
+  "textSource": "opengym"
+}

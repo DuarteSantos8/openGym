@@ -1,0 +1,21 @@
+{
+  "id": "1601",
+  "name": "standing straight leg hamstring contract relax on exercise ball",
+  "bodyPart": "upper legs",
+  "equipment": "stability ball",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "lower back"
+  ],
+  "category": "stretching",
+  "description": "A hamstring stretch with the heel on a stability ball, using a contract and relax method. It helps you ease deeper into the stretch.",
+  "instructions": [
+    "Stand and rest one heel on a stability ball in front of you with your knee straight.",
+    "Hinge forward at the hips until you feel a stretch in the back of the thigh.",
+    "Gently press your heel into the ball for about 5 seconds, then relax.",
+    "Lean a little deeper into the stretch.",
+    "Hold for 20-30 seconds, then switch legs."
+  ],
+  "textSource": "opengym"
+}

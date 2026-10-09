@@ -27,6 +27,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { HTTP_PROVIDERS, baseUrlFor } from './core/providers.js';
+import { MAX_OUTPUT_TOKENS } from './core/adapters/http.js';
 
 const DATA = process.env.DATA_DIR || '/data';
 const FILE = path.join(DATA, 'coach.json');
@@ -91,10 +92,18 @@ const DEFAULTS = {
   // payload.js's own MAX_NOTE_CHARS ceiling has to stay at or above the latter, or a raised
   // limit here would still get clipped back down at build().
   maxMessageLen: 1000,
+  // The ceiling on one provider answer. A reasoning model — a DeepSeek V3/R1-class endpoint, or
+  // a "thinking" Gemini/OpenAI model — counts its hidden reasoning against this, so a plan can be
+  // cut off at the old 16000 constant even though the plan itself is short (one report spent
+  // ~12k of the 16k thinking). The admin route clamps a write to [floor, ceiling]; the adapter's
+  // own MAX_OUTPUT_TOKENS is the fallback for callers that configure nothing (the phone, warmup).
+  maxOutputTokens: MAX_OUTPUT_TOKENS,
   log: []
 };
 export const MAX_MESSAGE_LEN_FLOOR = 200;
 export const MAX_MESSAGE_LEN_CEILING = 4000;
+export const MAX_OUTPUT_TOKENS_FLOOR = 1024;
+export const MAX_OUTPUT_TOKENS_CEILING = 65536;
 const PER_PROVIDER = ['auth', 'models', 'providerOptions', 'boundUid'];
 const isPlainObj = v => !!v && typeof v === 'object' && !Array.isArray(v);
 const LOG_MAX = 100;

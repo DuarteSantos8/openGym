@@ -1,0 +1,21 @@
+{
+  "id": "2338",
+  "name": "chest bench press butt (form check)",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A side-by-side form check for keeping your butt on the bench during a chest press, showing the common mistake next to the correct technique so you can spot it in your own sets.",
+  "instructions": [
+    "Lie on the bench with your eyes under the bar and your feet flat on the floor.",
+    "Compare the faulty version with the correct one: your hips stay planted on the pad and never lift off.",
+    "Perform the lift slowly with a light load and keep the correct position throughout.",
+    "Use a mirror or film a set from the side to check your own position.",
+    "Fix the cue before adding weight, and rest between sets so form stays clean."
+  ],
+  "textSource": "opengym"
+}

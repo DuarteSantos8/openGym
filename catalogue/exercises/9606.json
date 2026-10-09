@@ -1,0 +1,22 @@
+{
+  "id": "9606",
+  "name": "box drop jump",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hamstrings"
+  ],
+  "category": "plyometrics",
+  "description": "A plyometric where you step off a box, land, and jump up immediately. It trains reactive strength in the legs.",
+  "instructions": [
+    "Stand on the edge of a low box with feet hip-width apart.",
+    "Step off, do not jump, and land on both feet.",
+    "Absorb the landing by bending your knees and hips.",
+    "Immediately explode upward into a jump.",
+    "Land softly and reset."
+  ],
+  "textSource": "opengym"
+}

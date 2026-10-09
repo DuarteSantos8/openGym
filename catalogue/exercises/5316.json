@@ -1,0 +1,25 @@
+{
+  "id": "5316",
+  "name": "smith bent over narrow pronated grip row",
+  "bodyPart": "back",
+  "equipment": "smith machine",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "rhomboids",
+    "biceps",
+    "lower back",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A bent-over row on the smith machine using a narrow overhand grip. Hits the lats and mid back.",
+  "instructions": [
+    "Set the bar at knee height and grip it with hands close together, palms down.",
+    "Hinge forward with a flat back and unlock the bar.",
+    "Pull the bar toward your lower ribs.",
+    "Squeeze your shoulder blades together.",
+    "Lower the bar slowly.",
+    "Keep your hips back and torso still."
+  ],
+  "textSource": "opengym"
+}

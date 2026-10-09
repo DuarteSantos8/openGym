@@ -1,0 +1,23 @@
+{
+  "id": "4390",
+  "name": "barbell front rack rear lunge",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "core",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A reverse lunge with the barbell in a front rack. Stepping back keeps the load on the glutes and quads with less knee stress.",
+  "instructions": [
+    "Rest the barbell across your front shoulders with elbows high.",
+    "Stand tall with your feet hip-width apart.",
+    "Step one leg back and lower until both knees are around 90 degrees.",
+    "Push through the front foot to return to standing.",
+    "Alternate legs and keep your torso upright."
+  ],
+  "textSource": "opengym"
+}

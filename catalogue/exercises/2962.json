@@ -1,0 +1,22 @@
+{
+  "id": "2962",
+  "name": "lever seated hammer grip shoulder press",
+  "bodyPart": "shoulders",
+  "equipment": "leverage machine",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A seated machine shoulder press with a neutral hammer grip. It trains the delts with a joint-friendly hand position.",
+  "instructions": [
+    "Sit with your back against the pad and grip the neutral handles.",
+    "Keep your feet flat on the floor.",
+    "Press the handles overhead until your arms are almost straight.",
+    "Pause briefly.",
+    "Lower slowly to shoulder height and repeat."
+  ],
+  "textSource": "opengym"
+}

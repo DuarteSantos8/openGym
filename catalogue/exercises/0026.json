@@ -1,0 +1,26 @@
+{
+  "id": "0026",
+  "name": "barbell bench squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A barbell squat with a bench behind you as a depth target. Trains the quads and glutes.",
+  "instructions": [
+    "Set up a barbell on a squat rack at chest height.",
+    "Stand facing away from the rack, with your feet shoulder-width apart.",
+    "Bend your knees and lower your body down into a squat position, keeping your back straight and chest up.",
+    "Grasp the barbell with an overhand grip, slightly wider than shoulder-width apart.",
+    "Lift the barbell off the rack and step back, ensuring your feet are still shoulder-width apart.",
+    "Lower your body down into a squat, keeping your knees in line with your toes.",
+    "Pause for a moment at the bottom, then push through your heels to return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2225",
+  "textSource": "exercisedb"
+}

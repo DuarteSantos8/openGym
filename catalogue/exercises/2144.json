@@ -1,0 +1,39 @@
+{
+  "id": "2144",
+  "name": "cable seated chest press",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A seated cable press pushing the handles away from your chest. Builds the chest, shoulders and triceps.",
+  "instructions": [
+    "Adjust the seat height and cable handles to a comfortable position.",
+    "Sit on the bench with your back straight and feet flat on the floor.",
+    "Grasp the cable handles with an overhand grip at shoulder height.",
+    "Push the handles forward and away from your body, extending your arms fully.",
+    "Pause for a moment, then slowly bring the handles back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "chest"
+    ],
+    "secondaries": [
+      "deltoids",
+      "triceps",
+      "biceps"
+    ],
+    "weights": {
+      "chest": 1,
+      "deltoids": 0.4,
+      "triceps": 0.4,
+      "biceps": 0
+    }
+  },
+  "femaleVariant": "3061",
+  "textSource": "exercisedb"
+}

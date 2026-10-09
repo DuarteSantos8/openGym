@@ -1,0 +1,22 @@
+{
+  "id": "9187",
+  "name": "stick standing front raise",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "trapezius"
+  ],
+  "category": "mobility",
+  "description": "Raising a stick in front of you with straight arms warms up the shoulders. It is a light, controlled drill.",
+  "instructions": [
+    "Stand tall holding a stick at your thighs with an overhand grip.",
+    "Keep your arms straight.",
+    "Raise the stick in front of you to shoulder height or above.",
+    "Keep your ribs down and your core tight.",
+    "Lower slowly to the start.",
+    "Repeat for smooth reps."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "3593",
+  "name": "barbell squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "core",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "The classic barbell squat that builds strength in the thighs and hips.",
+  "instructions": [
+    "Set the bar on your upper back and stand with feet shoulder-width apart.",
+    "Brace your core and keep your chest up.",
+    "Sit your hips back and down until your thighs are about parallel to the floor.",
+    "Keep your knees tracking over your toes.",
+    "Drive through your feet to stand tall."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "1562",
+  "name": "exercise ball wall squat",
+  "bodyPart": "upper legs",
+  "equipment": "stability ball",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A squat with a stability ball between your back and the wall. The ball keeps the movement smooth and supports your back.",
+  "instructions": [
+    "Place a stability ball between your lower back and a wall.",
+    "Walk your feet forward about a step and stand shoulder-width apart.",
+    "Bend your knees and let the ball roll down your back as you squat.",
+    "Lower until your thighs are about parallel to the floor.",
+    "Press through your heels to rise back up."
+  ],
+  "textSource": "opengym"
+}

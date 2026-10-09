@@ -1,0 +1,24 @@
+{
+  "id": "3306",
+  "name": "strongman fingal's fingers",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "grip muscles",
+    "hands",
+    "wrist flexors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A strongman grip challenge based on the legend of Fingal's fingers. It tests hand and forearm strength.",
+  "instructions": [
+    "Set up the implement in front of you.",
+    "Grip it firmly with both hands.",
+    "Brace your core and keep your back flat.",
+    "Lift it using your legs and hips.",
+    "Hold it steady for a moment.",
+    "Lower it under control."
+  ],
+  "textSource": "opengym"
+}

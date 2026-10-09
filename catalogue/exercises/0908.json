@@ -1,0 +1,21 @@
+{
+  "id": "0908",
+  "name": "band low fly",
+  "bodyPart": "chest",
+  "equipment": "band",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A fly where your arms sweep upward from low to high. It targets the upper chest.",
+  "instructions": [
+    "Anchor the band low and stand with a staggered stance.",
+    "Hold the ends with arms slightly bent.",
+    "Sweep your arms up and together in front of your chest.",
+    "Squeeze your chest at the top.",
+    "Return slowly."
+  ],
+  "textSource": "opengym"
+}

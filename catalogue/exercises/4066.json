@@ -1,0 +1,22 @@
+{
+  "id": "4066",
+  "name": "dumbbell seated bent over alternate rear delt fly",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "Seated bent over fly done one arm at a time to hit the rear delts.",
+  "instructions": [
+    "Sit at the edge of a bench and lean forward with dumbbells hanging below your knees.",
+    "Keep your back flat and elbows slightly bent.",
+    "Raise one arm out to the side to shoulder height.",
+    "Lower slowly.",
+    "Alternate arms."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "4142",
+  "name": "band lying reverse grip pressdown",
+  "bodyPart": "upper arms",
+  "equipment": "band",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "forearms",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A lying pressdown with an underhand grip, targeting the triceps.",
+  "instructions": [
+    "Lie on your back with the band anchored overhead and grip it palms up.",
+    "Keep your elbows pointing at the ceiling.",
+    "Press your hands down toward your thighs.",
+    "Squeeze your triceps.",
+    "Return slowly."
+  ],
+  "textSource": "opengym"
+}

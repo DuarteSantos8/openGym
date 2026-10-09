@@ -1,0 +1,21 @@
+{
+  "id": "5916",
+  "name": "cable seated high pulley overhead tricep extension",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A seated overhead triceps extension on a high pulley that keeps constant tension on the back of the arms.",
+  "instructions": [
+    "Sit facing away from a high pulley and hold the handle overhead with both hands.",
+    "Keep your upper arms close to your ears and elbows pointing forward.",
+    "Straighten your arms to extend the handle up.",
+    "Slowly bend your elbows to lower it behind your head.",
+    "Keep your torso upright and your upper arms still."
+  ],
+  "textSource": "opengym"
+}

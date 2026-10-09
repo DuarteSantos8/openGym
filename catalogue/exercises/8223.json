@@ -1,0 +1,23 @@
+{
+  "id": "8223",
+  "name": "dumbbell renegade row on stability ball",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lats",
+    "upper back",
+    "core",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A renegade row with your feet on a stability ball. The unstable base makes the core work harder.",
+  "instructions": [
+    "Place your feet on a stability ball and your hands on dumbbells.",
+    "Brace into a strong plank.",
+    "Row one dumbbell up to your ribs.",
+    "Keep your hips level.",
+    "Lower and alternate arms."
+  ],
+  "textSource": "opengym"
+}

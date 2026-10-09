@@ -1,0 +1,23 @@
+{
+  "id": "9611",
+  "name": "bodyweight overhead forward lunge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A forward lunge with your arms stretched overhead, adding a core and shoulder challenge to the leg work.",
+  "instructions": [
+    "Stand tall with your arms extended overhead.",
+    "Step forward into a long stride.",
+    "Lower your back knee toward the floor.",
+    "Keep your ribs down and arms in line with your ears.",
+    "Push back to the start and alternate legs."
+  ],
+  "textSource": "opengym"
+}

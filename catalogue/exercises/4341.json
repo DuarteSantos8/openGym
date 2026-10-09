@@ -1,0 +1,22 @@
+{
+  "id": "4341",
+  "name": "dumbbell alternate front raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "trapezius",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Raising one dumbbell at a time in front of you to shoulder height. It targets the front of the shoulders.",
+  "instructions": [
+    "Stand holding a dumbbell in each hand in front of your thighs.",
+    "Keep a slight bend in your elbows and your torso still.",
+    "Raise one arm forward to shoulder height.",
+    "Lower it slowly as you raise the other arm.",
+    "Avoid swinging; keep alternating for your reps."
+  ],
+  "textSource": "opengym"
+}

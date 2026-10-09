@@ -1,0 +1,21 @@
+{
+  "id": "5703",
+  "name": "cable incline biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A cable curl done leaning back on an incline bench. The arms hang behind the body, which stretches the biceps at the start.",
+  "instructions": [
+    "Set a low cable and lie back on an incline bench facing away from the stack.",
+    "Hold the handles with your arms hanging behind you.",
+    "Curl the handles up toward your shoulders.",
+    "Keep your elbows back and still.",
+    "Lower slowly until your arms are straight."
+  ],
+  "textSource": "opengym"
+}

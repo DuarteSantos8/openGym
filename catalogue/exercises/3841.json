@@ -1,0 +1,23 @@
+{
+  "id": "3841",
+  "name": "band side bend",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A standing side bend against band tension. It trains your obliques.",
+  "instructions": [
+    "Stand on the band and hold the handle in one hand.",
+    "Keep your chest up and your hips square.",
+    "Bend sideways toward the band hand.",
+    "Return to upright.",
+    "Finish your reps, then switch sides."
+  ],
+  "femaleVariant": "1019",
+  "textSource": "opengym"
+}

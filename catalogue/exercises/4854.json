@@ -1,0 +1,22 @@
+{
+  "id": "4854",
+  "name": "barbell sitting on floor oblique twist",
+  "bodyPart": "waist",
+  "equipment": "barbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A seated twist with a barbell across your shoulders. It trains the obliques and core rotation.",
+  "instructions": [
+    "Sit on the floor with legs bent and a bar across your shoulders.",
+    "Lean back slightly and brace.",
+    "Rotate your torso to one side.",
+    "Return to center.",
+    "Rotate to the other side."
+  ],
+  "textSource": "opengym"
+}

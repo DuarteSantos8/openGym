@@ -1,0 +1,21 @@
+{
+  "id": "3181",
+  "name": "bodyweight frog pump",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "adductors"
+  ],
+  "category": "calisthenics",
+  "description": "A glute bridge with the soles of your feet together, taking glute work to the next level.",
+  "instructions": [
+    "Lie on your back with the soles of your feet together and knees dropped open.",
+    "Bring your heels close to your hips.",
+    "Drive your hips up by squeezing your glutes.",
+    "Pause at the top.",
+    "Lower and repeat in quick pumps."
+  ],
+  "textSource": "opengym"
+}

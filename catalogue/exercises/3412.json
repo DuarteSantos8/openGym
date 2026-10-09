@@ -1,0 +1,22 @@
+{
+  "id": "3412",
+  "name": "lying glute squeeze",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Squeeze your glutes while lying down to activate them before heavier lower body work.",
+  "instructions": [
+    "Lie on your back with knees bent and feet flat on the floor.",
+    "Squeeze your glutes and lift your hips slightly.",
+    "Hold the squeeze for 2 seconds.",
+    "Lower your hips without relaxing completely.",
+    "Repeat for 12-15 reps."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "10658",
+  "name": "pilates machine hundred",
+  "bodyPart": "waist",
+  "equipment": "leverage machine",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "core"
+  ],
+  "category": "pilates",
+  "description": "Pump your arms against the straps while holding your legs up. It builds core endurance.",
+  "instructions": [
+    "Lie on the carriage holding the straps.",
+    "Lift your head and legs.",
+    "Pump your arms in small movements.",
+    "Breathe in for five counts and out for five.",
+    "Continue for 100 pumps."
+  ],
+  "textSource": "opengym"
+}

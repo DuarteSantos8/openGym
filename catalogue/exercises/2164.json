@@ -1,0 +1,22 @@
+{
+  "id": "2164",
+  "name": "resistance band side plank",
+  "bodyPart": "waist",
+  "equipment": "resistance band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "shoulders"
+  ],
+  "category": "isometric",
+  "description": "A side plank with a band around the legs to fire up the hips and the sides of the waist.",
+  "instructions": [
+    "Place a band around your thighs and lie on one side with your legs straight.",
+    "Put your elbow under your shoulder.",
+    "Lift your hips so your body forms a straight line from head to feet.",
+    "Press your top leg gently up against the band.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "4115",
+  "name": "cable overhead tricep extension straight bar",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "An overhead cable extension with a straight bar, stretching and loading the triceps.",
+  "instructions": [
+    "Set a straight bar on a low pulley and face away from it.",
+    "Hold the bar overhead with elbows bent.",
+    "Keep your elbows pointing forward.",
+    "Extend your arms to straighten them fully.",
+    "Lower the bar back behind your head slowly."
+  ],
+  "textSource": "opengym"
+}

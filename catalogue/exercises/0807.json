@@ -1,0 +1,19 @@
+{
+  "id": "0807",
+  "name": "suspended reverse crunch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "calisthenics",
+  "description": "A hanging reverse crunch, curling the knees and pelvis up toward the chest. It targets the lower abs.",
+  "instructions": [
+    "Hang from a pull-up bar with your arms fully extended and your palms facing away from you.",
+    "Engage your core and lift your knees up towards your chest, curling your pelvis towards your ribcage.",
+    "Pause for a moment at the top, then slowly lower your knees back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

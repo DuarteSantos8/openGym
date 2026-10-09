@@ -1,0 +1,22 @@
+{
+  "id": "4942",
+  "name": "stationary arms throw",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "An arm swing from a stationary stance. It warms up the shoulders and upper back.",
+  "instructions": [
+    "Stand with feet shoulder width apart and arms at your sides.",
+    "Swing your arms up and back in a throwing motion.",
+    "Rotate through your torso slightly.",
+    "Keep the movement smooth and rhythmic.",
+    "Switch arms or alternate.",
+    "Continue for 20-30 seconds."
+  ],
+  "textSource": "opengym"
+}

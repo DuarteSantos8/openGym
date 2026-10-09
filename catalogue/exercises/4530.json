@@ -1,0 +1,23 @@
+{
+  "id": "4530",
+  "name": "kettlebell single arm clean",
+  "bodyPart": "full body",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "shoulders",
+    "biceps",
+    "core"
+  ],
+  "category": "olympic",
+  "description": "Pulling a kettlebell from the floor to the shoulder with one arm. It trains explosive hip power and coordination.",
+  "instructions": [
+    "Stand over a kettlebell and hinge to grip it with one hand.",
+    "Swing it back slightly between your legs.",
+    "Drive your hips forward and pull the bell up close to your body.",
+    "Rotate your hand around so it lands softly in the rack position.",
+    "Lower it back down under control, repeat, then switch arms."
+  ],
+  "textSource": "opengym"
+}

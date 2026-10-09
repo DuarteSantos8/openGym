@@ -1,0 +1,21 @@
+{
+  "id": "5401",
+  "name": "stick shoulders stretch",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "chest",
+    "upper back"
+  ],
+  "category": "stretching",
+  "description": "Stretches the front of your shoulders and chest using a stick for leverage. Helps with posture and overhead reach.",
+  "instructions": [
+    "Stand tall and hold the stick behind your back with both hands.",
+    "Keep your arms straight and lift the stick slightly away from your body.",
+    "Stay tall and avoid arching your lower back.",
+    "Hold for 20-30 seconds.",
+    "Release slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "1605",
+  "name": "cable triceps pushdown (sz bar)",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A cable pushdown using an SZ bar, a staple for building the back of the arm.",
+  "instructions": [
+    "Attach an SZ bar to a high pulley and grip it with your hands shoulder-width apart.",
+    "Pin your elbows to your sides.",
+    "Push the bar down until your arms are fully straight.",
+    "Squeeze your triceps for a moment.",
+    "Let the bar rise slowly until your forearms are just above parallel."
+  ],
+  "textSource": "opengym"
+}

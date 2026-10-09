@@ -1,0 +1,23 @@
+{
+  "id": "2315",
+  "name": "lever rotary calf",
+  "bodyPart": "lower legs",
+  "equipment": "leverage machine",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankle stabilizers"
+  ],
+  "category": "strength",
+  "description": "A seated rotary calf raise on a machine. Builds the calf muscles.",
+  "instructions": [
+    "Adjust the seat height so that your knees are slightly bent and your feet are flat on the footplate.",
+    "Place your toes on the footplate, with your heels hanging off the edge.",
+    "Grasp the handles or the sides of the machine for stability.",
+    "Push through the balls of your feet, raising your heels as high as possible.",
+    "Pause for a moment at the top, then slowly lower your heels back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3105",
+  "textSource": "exercisedb"
+}

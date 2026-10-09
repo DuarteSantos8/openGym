@@ -1,0 +1,21 @@
+{
+  "id": "10563",
+  "name": "knee to box calf stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles"
+  ],
+  "category": "stretching",
+  "description": "Press one knee forward toward a box with your foot flat to stretch the calf. It improves ankle flexibility.",
+  "instructions": [
+    "Place a foot flat a short distance from a box or step.",
+    "Keep your heel down.",
+    "Push your knee forward to touch the box.",
+    "Hold for 20-30 seconds, feeling a calf stretch.",
+    "Switch legs and repeat."
+  ],
+  "textSource": "opengym"
+}

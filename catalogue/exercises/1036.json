@@ -1,0 +1,21 @@
+{
+  "id": "1036",
+  "name": "lever standing leg raise",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A standing machine raise that lifts the leg forward to train the hip flexors and the front of the thigh.",
+  "instructions": [
+    "Stand facing the machine with your hands on the support.",
+    "Place the front of your thigh against the pad.",
+    "Raise your leg forward until the thigh is about parallel with the floor.",
+    "Lower slowly to the start.",
+    "Keep your torso tall. Finish the reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

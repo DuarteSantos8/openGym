@@ -1,0 +1,24 @@
+{
+  "id": "4057",
+  "name": "kettlebell turkish get up to hand",
+  "bodyPart": "full body",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "core",
+    "glutes",
+    "quadriceps",
+    "shoulders",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "The first part of a Turkish get up, rising from the floor to a seated position on your hand while holding a kettlebell overhead.",
+  "instructions": [
+    "Lie on your back with a kettlebell pressed up in one hand and the same-side knee bent.",
+    "Keep your eyes on the kettlebell.",
+    "Roll up onto your opposite elbow, then onto your hand.",
+    "Hold the seated position with your arm vertical.",
+    "Reverse the steps to lie back down, then switch sides."
+  ],
+  "textSource": "opengym"
+}

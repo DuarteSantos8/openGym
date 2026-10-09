@@ -1,0 +1,22 @@
+{
+  "id": "3985",
+  "name": "push up hand by hand",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push up where your hands shift one at a time to walk in and out. It adds shoulder stability to the chest drill.",
+  "instructions": [
+    "Start in a high plank.",
+    "Lower into a push up.",
+    "Step one hand wider, then the other.",
+    "Do another push up.",
+    "Step your hands back in."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "5014",
+  "name": "barbell pause deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "quadriceps",
+    "grip muscles",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "Deadlift with a pause just off the floor. It strengthens the start of the pull and teaches strong positions.",
+  "instructions": [
+    "Stand with the bar over midfoot and grip just outside your legs.",
+    "Brace your core and flatten your back.",
+    "Lift the bar a few inches and hold the pause for a second.",
+    "Keep your back flat, then drive through your legs to stand tall.",
+    "Lower the bar under control."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "2890",
+  "name": "front plank to push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A move that moves from forearm plank to full push-up position, training the chest, arms and core.",
+  "instructions": [
+    "Start in a forearm plank with elbows under shoulders.",
+    "Place one hand on the floor and press up, then the other.",
+    "Reach a high plank with straight arms.",
+    "Lower back to your forearms one arm at a time.",
+    "Alternate the leading arm each rep and keep your hips level."
+  ],
+  "textSource": "opengym"
+}

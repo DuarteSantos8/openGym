@@ -1,0 +1,24 @@
+{
+  "id": "4445",
+  "name": "resistance band seated face pull",
+  "bodyPart": "shoulders",
+  "equipment": "resistance band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids",
+    "rotator cuff",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A seated band pull toward the face that targets the rear delts and upper back. Good for shoulder health and posture.",
+  "instructions": [
+    "Anchor a band at chest height and sit facing it, holding the ends with both hands.",
+    "Sit tall with arms extended and the band under light tension.",
+    "Pull the band toward your face, flaring your elbows out and high.",
+    "Squeeze your shoulder blades together at the end.",
+    "Pause briefly, then return slowly with control.",
+    "Keep your ribs down and avoid leaning back."
+  ],
+  "textSource": "opengym"
+}

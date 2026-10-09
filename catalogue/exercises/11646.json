@@ -1,0 +1,22 @@
+{
+  "id": "11646",
+  "name": "static glutes contraction (isometric)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "Squeezing the glutes and holding without moving, a simple way to activate the hips.",
+  "instructions": [
+    "Lie on your back or stand with your body relaxed.",
+    "Squeeze both glute muscles together.",
+    "Keep your legs and back still.",
+    "Hold the squeeze for 5-10 seconds.",
+    "Release fully.",
+    "Repeat for several reps."
+  ],
+  "textSource": "opengym"
+}

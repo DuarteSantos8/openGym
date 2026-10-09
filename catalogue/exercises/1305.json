@@ -1,0 +1,20 @@
+{
+  "id": "1305",
+  "name": "medicine ball chest push single response",
+  "bodyPart": "chest",
+  "equipment": "medicine ball",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "plyometrics",
+  "description": "Push a medicine ball away from your chest in one strong effort, reset, then go again. It trains explosive power in the chest and arms.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding the medicine ball at chest level.",
+    "Extend your arms forward, pushing the medicine ball away from your chest.",
+    "Pause for a moment, then slowly bring the medicine ball back to your chest.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "3410",
+  "name": "standing wring the towel",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "forearms"
+  ],
+  "category": "mobility",
+  "description": "Twist your torso with arms wrapped as if wringing a towel, mobilising the waist and shoulders.",
+  "instructions": [
+    "Stand with feet hip-width apart and hands clasped in front of you.",
+    "Rotate your torso to one side while your hands twist across.",
+    "Return to the centre and rotate the other way.",
+    "Keep your hips mostly facing forward.",
+    "Continue for 10-15 reps per side."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "0698",
+  "name": "shoulder press (with band)",
+  "bodyPart": "shoulders",
+  "equipment": "band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "An overhead press using a band for resistance. It builds the shoulders and triceps.",
+  "instructions": [
+    "Stand on the band with feet shoulder-width apart.",
+    "Hold the band at shoulder height.",
+    "Press your hands overhead until your arms are straight.",
+    "Keep your core tight.",
+    "Lower slowly back to the shoulders.",
+    "Avoid leaning back."
+  ],
+  "textSource": "opengym"
+}

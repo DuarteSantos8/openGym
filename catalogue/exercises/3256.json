@@ -1,0 +1,22 @@
+{
+  "id": "3256",
+  "name": "standing two side bend (bent arm)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lats",
+    "shoulders"
+  ],
+  "category": "mobility",
+  "description": "A standing side bend with your elbows bent that loosens the sides of the trunk.",
+  "instructions": [
+    "Stand with feet shoulder-width apart.",
+    "Place your hands behind your head with elbows out.",
+    "Bend to one side without twisting.",
+    "Return to the center.",
+    "Bend to the other side and repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "2340",
+  "name": "chest bench press shoulders (form check)",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A side-by-side form check for shoulder position during the bench press, showing the common mistake next to the correct technique so you can spot it in your own sets.",
+  "instructions": [
+    "Lie on the bench and pinch your shoulder blades together before unracking.",
+    "Compare the faulty version with the correct one: your shoulder blades stay pulled back and down against the bench.",
+    "Perform the lift slowly with a light load and keep the correct position throughout.",
+    "Use a mirror or film a set from the side to check your own position.",
+    "Fix the cue before adding weight, and rest between sets so form stays clean."
+  ],
+  "textSource": "opengym"
+}

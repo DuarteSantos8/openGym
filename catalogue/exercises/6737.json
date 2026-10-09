@@ -1,0 +1,23 @@
+{
+  "id": "6737",
+  "name": "resistance band side plank glute raise",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A side plank with a band around the legs while raising the top leg. It works the outer hip and the side of the trunk.",
+  "instructions": [
+    "Put a band around your thighs or ankles and get into a side plank on your forearm.",
+    "Lift your hips so your body forms a straight line.",
+    "Raise the top leg up against the band.",
+    "Pause briefly.",
+    "Lower the leg with control.",
+    "Finish the reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

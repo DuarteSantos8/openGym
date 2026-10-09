@@ -1,0 +1,24 @@
+{
+  "id": "2347",
+  "name": "front plank butt (form check)",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "glutes",
+    "shoulders",
+    "lower back"
+  ],
+  "category": "isometric",
+  "description": "A front plank form check that compares a raised butt with a straight body line.",
+  "instructions": [
+    "Place your forearms on the floor with elbows under your shoulders.",
+    "Extend your legs behind you with your toes on the floor.",
+    "Lift your body into a straight line from head to heels.",
+    "Avoid pushing your butt up or letting your hips sag.",
+    "Squeeze your abs and glutes to keep the line.",
+    "Hold for 20-40 seconds and breathe steadily."
+  ],
+  "textSource": "opengym"
+}

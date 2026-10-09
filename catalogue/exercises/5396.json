@@ -1,0 +1,23 @@
+{
+  "id": "5396",
+  "name": "roll peroneal side lying on floor",
+  "bodyPart": "lower legs",
+  "equipment": "roller",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "shins"
+  ],
+  "category": "mobility",
+  "description": "Self-massage with a foam roller to ease tightness in the outer lower leg. Good before training or on rest days to loosen up.",
+  "instructions": [
+    "Lie on your side with the roller under your outer lower leg.",
+    "Place the roller under the outer lower leg and let your body weight settle onto it.",
+    "Roll gently from the knee to the ankle.",
+    "Pause on tender spots and breathe slowly for 20-30 seconds.",
+    "Keep your core braced and avoid rolling over joints or bone.",
+    "Roll for 30-60 seconds, then switch sides if needed."
+  ],
+  "femaleVariant": "5440",
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "3048",
+  "name": "cable hip abduction v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "obliques",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Standing hip abduction against a low cable that trains the outer hip and glutes.",
+  "instructions": [
+    "Attach an ankle cuff to a low pulley and strap it to your outer ankle.",
+    "Stand sideways to the machine and hold a support.",
+    "Keep your torso upright and your standing leg slightly bent.",
+    "Lift the cuffed leg out to the side.",
+    "Pause at the top, then lower slowly.",
+    "Finish your reps and switch legs."
+  ],
+  "femaleVariant": "0879",
+  "textSource": "opengym"
+}

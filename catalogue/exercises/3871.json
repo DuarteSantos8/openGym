@@ -1,0 +1,24 @@
+{
+  "id": "3871",
+  "name": "barbell front chest squat with resistance band",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "hamstrings",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A front squat with a band adding resistance, building strong quads and a tall, braced torso.",
+  "instructions": [
+    "Set up a band under your feet or anchored to the floor and attach it to the bar.",
+    "Rest the bar on your front shoulders with elbows high.",
+    "Stand with feet shoulder-width apart and brace your core.",
+    "Squat down until your thighs are about parallel.",
+    "Drive up through your heels against the band tension.",
+    "Keep your chest tall throughout."
+  ],
+  "textSource": "opengym"
+}

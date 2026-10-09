@@ -1,0 +1,23 @@
+{
+  "id": "3193",
+  "name": "glute-ham raise",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A hamstring exercise where you lift your torso from a face-down position on a glute-ham bench. It strengthens the hamstrings, glutes and lower back.",
+  "instructions": [
+    "Adjust the glute-ham raise machine to fit your body.",
+    "Position yourself face down on the machine with your ankles secured.",
+    "Place your hands on your chest or cross them over your chest.",
+    "Engage your hamstrings and glutes to lift your upper body up towards the ceiling.",
+    "Continue lifting until your body is in a straight line from your head to your heels.",
+    "Pause for a moment at the top, then slowly lower your body back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

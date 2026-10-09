@@ -1,0 +1,21 @@
+{
+  "id": "0831",
+  "name": "weighted crunch (bent knee)",
+  "bodyPart": "waist",
+  "equipment": "weighted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A crunch with a weight held on your chest. The added load makes the abs work harder.",
+  "instructions": [
+    "Lie on your back with knees bent and feet flat.",
+    "Hold a weight against your chest.",
+    "Curl your shoulders up off the floor.",
+    "Pause briefly at the top.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

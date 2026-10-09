@@ -1,0 +1,22 @@
+{
+  "id": "6300",
+  "name": "half boat pose ardha navasana",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower back",
+    "quadriceps"
+  ],
+  "category": "yoga",
+  "description": "A V-shaped balance on your sit bones. It strengthens the abs and hip flexors.",
+  "instructions": [
+    "Sit with knees bent and lean back a little.",
+    "Lift your feet so your shins are parallel to the floor.",
+    "Extend your arms forward.",
+    "Keep your chest open and spine long.",
+    "Hold for 15-30 seconds."
+  ],
+  "textSource": "opengym"
+}

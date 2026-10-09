@@ -1,0 +1,23 @@
+{
+  "id": "9933",
+  "name": "dumbbell seated alternating lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rotator cuff",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A seated lateral raise lifting one dumbbell at a time. Sitting reduces body swing so the side delts do the work.",
+  "instructions": [
+    "Sit upright on a bench with a dumbbell in each hand at your sides.",
+    "Keep a slight bend in your elbows.",
+    "Raise one arm out to the side until it reaches shoulder height.",
+    "Lower it slowly, then raise the other arm.",
+    "Keep your torso still and avoid shrugging.",
+    "Alternate sides for your reps."
+  ],
+  "textSource": "opengym"
+}

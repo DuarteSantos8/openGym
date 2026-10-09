@@ -1,0 +1,21 @@
+{
+  "id": "0902",
+  "name": "band hyperextension",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A hyperextension with band resistance. It strengthens the lower back and glutes.",
+  "instructions": [
+    "Secure the band over your shoulders and under your feet or anchor.",
+    "Hinge at the hips with a flat back.",
+    "Rise until your torso is in line with your legs.",
+    "Squeeze your glutes.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

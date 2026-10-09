@@ -1,0 +1,21 @@
+{
+  "id": "5861",
+  "name": "kettlebell lying triceps extension skull crusher",
+  "bodyPart": "upper arms",
+  "equipment": "kettlebell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Lie back and lower a kettlebell toward your forehead, then extend. It builds the triceps with elbows fixed.",
+  "instructions": [
+    "Lie on a bench holding a kettlebell above your chest.",
+    "Keep your upper arms still.",
+    "Bend your elbows to lower the weight toward your forehead.",
+    "Extend your arms back to the start.",
+    "Repeat with control."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "2166",
+  "name": "resistance band supine hip bridge march",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A glute bridge held while you march your knees one at a time against a band, testing hip stability.",
+  "instructions": [
+    "Lie on your back with a band around your thighs and your knees bent.",
+    "Lift your hips into a bridge and squeeze your glutes.",
+    "Lift one foot off the floor, drawing the knee toward your chest.",
+    "Lower it and lift the other foot, keeping your hips level.",
+    "Continue alternating at a steady pace, then lower your hips."
+  ],
+  "textSource": "opengym"
+}

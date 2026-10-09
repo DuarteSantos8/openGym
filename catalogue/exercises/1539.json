@@ -1,0 +1,23 @@
+{
+  "id": "1539",
+  "name": "barbell split jump",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A jump with a barbell on the back where you switch the front and back leg in the air. It builds leg power.",
+  "instructions": [
+    "Rest a light bar on your upper back and take a split stance.",
+    "Lower into a shallow lunge.",
+    "Jump explosively and switch your legs in the air.",
+    "Land softly in the opposite split stance.",
+    "Keep your torso upright and continue alternating."
+  ],
+  "textSource": "opengym"
+}

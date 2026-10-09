@@ -1,0 +1,24 @@
+{
+  "id": "1494",
+  "name": "butterfly yoga pose",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "hamstrings",
+    "groin"
+  ],
+  "category": "yoga",
+  "description": "A seated pose with the soles of your feet together and knees dropped out. It opens the inner thighs and hips.",
+  "instructions": [
+    "Sit on the floor with your legs extended in front of you.",
+    "Bend your knees and bring the soles of your feet together, allowing your knees to fall out to the sides.",
+    "Hold onto your ankles or feet with your hands.",
+    "Sit up tall and lengthen your spine.",
+    "Gently press your knees down towards the floor, feeling a stretch in your inner thighs.",
+    "Hold this position for a few breaths.",
+    "To release, slowly bring your knees back up and extend your legs."
+  ],
+  "femaleVariant": "4508",
+  "textSource": "exercisedb"
+}

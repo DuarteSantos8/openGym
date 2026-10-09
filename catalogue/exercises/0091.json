@@ -1,0 +1,34 @@
+{
+  "id": "0091",
+  "name": "barbell seated overhead press",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A seated overhead press with the barbell. Builds the shoulders and triceps.",
+  "instructions": [
+    "Sit on a bench with your back straight and feet flat on the ground.",
+    "Hold the barbell with an overhand grip, slightly wider than shoulder-width apart.",
+    "Lift the barbell off the rack and bring it to shoulder level, with your elbows bent and palms facing forward.",
+    "Press the barbell overhead by extending your arms fully.",
+    "Pause for a moment at the top, then slowly lower the barbell back to shoulder level.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "deltoids"
+    ],
+    "secondaries": [
+      "chest",
+      "triceps",
+      "trapezius",
+      "serratus"
+    ]
+  },
+  "femaleVariant": "2604",
+  "textSource": "exercisedb"
+}

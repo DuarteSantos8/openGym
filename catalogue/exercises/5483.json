@@ -1,0 +1,20 @@
+{
+  "id": "5483",
+  "name": "weighted seated calf raise v. 2",
+  "bodyPart": "lower legs",
+  "equipment": "weighted",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus"
+  ],
+  "category": "strength",
+  "description": "Seated calf raise with weight on your thighs that targets the soleus muscle under the calf.",
+  "instructions": [
+    "Sit with the balls of your feet on a raised edge and weight resting on your knees.",
+    "Lower your heels until you feel a calf stretch.",
+    "Press up through the balls of your feet as high as you can.",
+    "Pause at the top, then lower slowly.",
+    "Keep your knees bent throughout."
+  ],
+  "textSource": "opengym"
+}

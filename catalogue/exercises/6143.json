@@ -1,0 +1,23 @@
+{
+  "id": "6143",
+  "name": "dumbbell seated single arm front raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "biceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A seated front raise done one arm at a time. It targets the front of the shoulder.",
+  "instructions": [
+    "Sit tall holding a dumbbell at your side.",
+    "Raise the dumbbell forward to shoulder height with a soft elbow.",
+    "Pause at the top.",
+    "Lower with control.",
+    "Avoid leaning back.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

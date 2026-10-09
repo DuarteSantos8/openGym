@@ -1,0 +1,22 @@
+{
+  "id": "1892",
+  "name": "kneeling heel down achilles stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles"
+  ],
+  "category": "stretching",
+  "description": "Kneeling stretch with the heel pressed down to lengthen the Achilles.",
+  "instructions": [
+    "Kneel on one knee with the other foot forward.",
+    "Lean forward, keeping your front heel on the floor.",
+    "Press your front knee over your toes.",
+    "Feel the stretch behind the ankle.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

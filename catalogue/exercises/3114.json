@@ -1,0 +1,24 @@
+{
+  "id": "3114",
+  "name": "straight leg kickback (kneeling)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "From all fours, you extend one straight leg back and up. It isolates the glutes and hamstrings.",
+  "instructions": [
+    "Start on hands and knees with a flat back.",
+    "Brace your core.",
+    "Extend one leg straight back.",
+    "Lift it to hip height and squeeze your glute.",
+    "Lower without letting your back arch.",
+    "Finish your reps, then switch legs."
+  ],
+  "femaleVariant": "1477",
+  "textSource": "opengym"
+}

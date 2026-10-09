@@ -1,0 +1,21 @@
+{
+  "id": "1958",
+  "name": "standing toe extensor stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "shins",
+    "feet"
+  ],
+  "category": "stretching",
+  "description": "Pressing the tops of the toes against the floor to stretch the front of the foot and shin.",
+  "instructions": [
+    "Stand next to a support and place the top of one foot on the floor behind you with the toes curled under.",
+    "Gently bend your standing knee and press the toes down until you feel the stretch on top of the foot and shin.",
+    "Keep the pressure light and controlled.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

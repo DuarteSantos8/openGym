@@ -1,0 +1,22 @@
+{
+  "id": "2705",
+  "name": "dumbbell lying pronation on floor",
+  "bodyPart": "lower arms",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "biceps",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A lying dumbbell forearm pronation on the floor. Works the forearm muscles.",
+  "instructions": [
+    "Lie flat on the floor with your face down and your arms extended straight out in front of you, holding a dumbbell in each hand.",
+    "Rotate your palms so they are facing down towards the floor.",
+    "Keeping your arms straight, lift the dumbbells off the floor by contracting your forearms.",
+    "Continue lifting until your forearms are fully contracted and the dumbbells are at shoulder level.",
+    "Hold for a moment, then slowly lower the dumbbells back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

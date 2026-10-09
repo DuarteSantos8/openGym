@@ -1,0 +1,24 @@
+{
+  "id": "3188",
+  "name": "dumbbell straight arm pullover (with hanging band technique)",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "lats",
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A straight-arm pullover with weights hung from the dumbbell by a band. The swing makes your shoulders and trunk work harder.",
+  "instructions": [
+    "Hang a weight from the dumbbell with a band.",
+    "Lie on a bench and hold it above your chest with straight arms.",
+    "Lower it in an arc behind your head.",
+    "Pull it back over your chest slowly.",
+    "Keep your ribs down and your core tight.",
+    "Use a light load to stay controlled."
+  ],
+  "textSource": "opengym"
+}

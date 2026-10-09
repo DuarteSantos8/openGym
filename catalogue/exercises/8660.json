@@ -1,0 +1,22 @@
+{
+  "id": "8660",
+  "name": "sled side leg press",
+  "bodyPart": "upper legs",
+  "equipment": "sled machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "adductors",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A sideways leg press on a sled that targets the glutes and outer hips.",
+  "instructions": [
+    "Position yourself on the sled in a side-facing posture with one foot on the platform.",
+    "Brace your core and keep your hips stable.",
+    "Push the platform away with the working leg.",
+    "Return slowly under control.",
+    "Finish the reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

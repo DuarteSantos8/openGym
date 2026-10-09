@@ -1,0 +1,21 @@
+{
+  "id": "1220",
+  "name": "lever calf raise (bench press machine)",
+  "bodyPart": "lower legs",
+  "equipment": "leverage machine",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles"
+  ],
+  "category": "strength",
+  "description": "A calf raise done on a chest press style lever machine, using the seat and handles to load the calves.",
+  "instructions": [
+    "Sit on the machine and place the balls of your feet on the lower platform or press plate.",
+    "Push to straighten your legs and release the safety.",
+    "Lower your heels as far as is comfortable.",
+    "Rise up onto your toes as high as possible.",
+    "Pause at the top and lower under control."
+  ],
+  "textSource": "opengym"
+}

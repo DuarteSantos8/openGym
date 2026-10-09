@@ -1,0 +1,25 @@
+{
+  "id": "4889",
+  "name": "dumbbell power clean",
+  "bodyPart": "full body",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "trapezius",
+    "shoulders",
+    "core"
+  ],
+  "category": "olympic",
+  "description": "An explosive pull that takes a pair of dumbbells from the floor to your shoulders. It builds power through the hips.",
+  "instructions": [
+    "Stand over the dumbbells with feet hip width and grab them with a flat back.",
+    "Push through the floor and extend your hips and knees fast.",
+    "Shrug and pull the dumbbells up close to your body.",
+    "Drop under them and catch them on your shoulders in a quarter squat.",
+    "Stand tall, then lower with control to the floor.",
+    "Keep your back flat and the weights close throughout."
+  ],
+  "textSource": "opengym"
+}

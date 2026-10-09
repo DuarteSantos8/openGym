@@ -1,0 +1,23 @@
+{
+  "id": "9848",
+  "name": "leverage standing hip thrust",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A standing hip thrust on a lever machine. It targets the glutes with a smooth, guided path.",
+  "instructions": [
+    "Adjust the machine so the pad sits across your hips.",
+    "Stand with your feet hip width apart.",
+    "Lower your hips back slightly.",
+    "Drive your hips forward and squeeze your glutes.",
+    "Return slowly to the start.",
+    "Keep your ribs down."
+  ],
+  "textSource": "opengym"
+}

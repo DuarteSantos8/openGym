@@ -1,0 +1,24 @@
+{
+  "id": "3482",
+  "name": "split sprinter high lunge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "hip flexors",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "A high lunge with the arms driving like a sprinter's. It builds leg strength, balance and hip stability.",
+  "instructions": [
+    "Stand tall and step one foot well back into a staggered stance.",
+    "Bend both knees and lower into a lunge, back heel lifted.",
+    "Swing the arm opposite the front leg forward and the other arm back, like sprinting.",
+    "Keep your torso upright and the front knee over the ankle.",
+    "Push through the front foot to rise, then repeat all reps.",
+    "Switch legs and do the same number."
+  ],
+  "textSource": "opengym"
+}

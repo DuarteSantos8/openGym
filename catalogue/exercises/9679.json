@@ -1,0 +1,23 @@
+{
+  "id": "9679",
+  "name": "hopping high knee tap",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "hip flexors",
+    "quadriceps",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A hopping drill where you drive a knee up and tap it with your hand. It raises the heart rate and builds coordination.",
+  "instructions": [
+    "Stand tall with one hand held out in front at waist height.",
+    "Hop on one leg while driving the opposite knee up to tap your hand.",
+    "Land softly and quickly switch legs.",
+    "Keep your chest upright.",
+    "Continue at a lively pace for 20-30 seconds."
+  ],
+  "textSource": "opengym"
+}

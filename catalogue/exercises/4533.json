@@ -1,0 +1,23 @@
+{
+  "id": "4533",
+  "name": "kettlebell forward lunge and press",
+  "bodyPart": "full body",
+  "equipment": "kettlebell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "triceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A forward lunge combined with an overhead press of a kettlebell. It trains legs and shoulders together.",
+  "instructions": [
+    "Hold a kettlebell at your shoulder in the rack position.",
+    "Step forward into a lunge.",
+    "As you push back up, press the kettlebell overhead.",
+    "Lower the bell to your shoulder as you step back.",
+    "Alternate legs or finish one side before switching."
+  ],
+  "textSource": "opengym"
+}

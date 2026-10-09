@@ -1,0 +1,22 @@
+{
+  "id": "0545",
+  "name": "kettlebell plyo push-up",
+  "bodyPart": "chest",
+  "equipment": "kettlebell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "An explosive push-up with your hands on kettlebells. You push hard enough to lift off, which trains chest and arm power.",
+  "instructions": [
+    "Start in a high plank position with your hands on the kettlebells, shoulder-width apart.",
+    "Lower your chest towards the ground, keeping your elbows close to your body.",
+    "Push through your hands explosively, lifting your hands off the kettlebells and extending your arms fully.",
+    "Land softly back on the kettlebells and immediately lower your chest back down for the next repetition.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "8956",
+  "name": "heels squat slide wall",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "calisthenics",
+  "description": "Sliding down a wall into a squat with your heels planted teaches good squat depth and control. It trains the quads and glutes.",
+  "instructions": [
+    "Stand with your back against a wall and your feet a little forward.",
+    "Press your heels into the floor.",
+    "Slide down the wall until your thighs are near parallel.",
+    "Keep your knees tracking over your toes.",
+    "Press through your heels to slide back up.",
+    "Keep your back in contact with the wall."
+  ],
+  "textSource": "opengym"
+}

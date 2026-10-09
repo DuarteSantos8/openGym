@@ -1,0 +1,21 @@
+{
+  "id": "5513",
+  "name": "bench dip on stability ball",
+  "bodyPart": "upper arms",
+  "equipment": "stability ball",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "Bench dip with your feet on a stability ball for extra instability, hammering the triceps.",
+  "instructions": [
+    "Sit on a bench edge with hands beside your hips and heels on a stability ball.",
+    "Slide your hips off the bench with arms straight.",
+    "Bend your elbows to about 90 degrees, keeping them close.",
+    "Press back up until your arms are straight.",
+    "Keep your shoulders down and the ball steady."
+  ],
+  "textSource": "opengym"
+}

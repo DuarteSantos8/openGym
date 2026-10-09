@@ -1,0 +1,24 @@
+{
+  "id": "3174",
+  "name": "barbell bench press (knees at 90 degrees)",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A bench press with your feet up and your knees bent to 90 degrees. This keeps your lower back flat and your trunk working.",
+  "instructions": [
+    "Lie on a bench and lift your feet with your knees bent to 90 degrees.",
+    "Grip the bar slightly wider than your shoulders.",
+    "Unrack and hold it over your chest.",
+    "Lower the bar to your mid chest with control.",
+    "Press it back up until your arms are straight.",
+    "Keep your lower back flat on the bench."
+  ],
+  "textSource": "opengym"
+}

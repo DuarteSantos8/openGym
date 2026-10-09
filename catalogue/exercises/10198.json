@@ -1,0 +1,22 @@
+{
+  "id": "10198",
+  "name": "sled alternating single leg negative press",
+  "bodyPart": "upper legs",
+  "equipment": "sled machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A sled leg press done one leg at a time, with a slow lowering phase to build leg strength.",
+  "instructions": [
+    "Sit in the sled with feet on the platform and release the safety.",
+    "Press the platform up with both legs and lock out gently.",
+    "Shift the load to one leg and lower it slowly for 3-4 seconds.",
+    "Press back up with both legs.",
+    "Alternate the lowering leg each rep and never let your lower back round."
+  ],
+  "textSource": "opengym"
+}

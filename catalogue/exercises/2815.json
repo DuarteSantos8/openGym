@@ -1,0 +1,23 @@
+{
+  "id": "2815",
+  "name": "v up down (with stability ball)",
+  "bodyPart": "waist",
+  "equipment": "stability ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A V up where you pass a stability ball between hands and feet. Works the abs and builds control.",
+  "instructions": [
+    "Lie on your back holding the stability ball overhead with straight arms.",
+    "Lift your arms and legs up together, curling into a V.",
+    "Pass the ball from your hands to your feet.",
+    "Lower back down slowly, holding the ball between your feet.",
+    "Repeat, passing the ball back to your hands."
+  ],
+  "femaleVariant": "2816",
+  "textSource": "opengym"
+}

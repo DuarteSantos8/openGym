@@ -1,0 +1,23 @@
+{
+  "id": "7882",
+  "name": "plate push",
+  "bodyPart": "chest",
+  "equipment": "weight plate",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "An explosive push of a weight plate out from your chest for upper-body power.",
+  "instructions": [
+    "Stand with a weight plate held at your chest, elbows bent.",
+    "Brace your abs and bend your knees slightly.",
+    "Push the plate out explosively with both arms.",
+    "Fully extend your arms.",
+    "Pull the plate back to your chest with control.",
+    "Repeat for the planned reps."
+  ],
+  "textSource": "opengym"
+}

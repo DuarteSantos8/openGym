@@ -1,0 +1,24 @@
+{
+  "id": "1522",
+  "name": "barbell hang snatch",
+  "bodyPart": "full body",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "trapezius",
+    "shoulders",
+    "core"
+  ],
+  "category": "olympic",
+  "description": "A snatch that starts from the hang at the thighs. It trains the explosive pull and catching the bar overhead.",
+  "instructions": [
+    "Hold the bar at mid-thigh with a wide snatch grip and a flat back.",
+    "Brace your core and keep the bar close to your body.",
+    "Extend your hips and knees powerfully and shrug your shoulders.",
+    "Pull under the bar and catch it overhead with locked arms in a squat.",
+    "Stand tall to finish, then lower the bar with control."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4861",
+  "name": "kettlebell romanian deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A hip hinge with a kettlebell. It builds the hamstrings and glutes.",
+  "instructions": [
+    "Hold a kettlebell in front of your thighs.",
+    "Soften your knees.",
+    "Push your hips back and lower the bell along your legs.",
+    "Keep your back flat.",
+    "Squeeze your glutes to stand."
+  ],
+  "textSource": "opengym"
+}

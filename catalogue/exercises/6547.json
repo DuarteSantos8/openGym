@@ -1,0 +1,23 @@
+{
+  "id": "6547",
+  "name": "hanging hollow hold",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "grip muscles"
+  ],
+  "category": "isometric",
+  "description": "A hold hanging from a bar with the body in a slight hollow curve. It builds deep abdominal tension and grip.",
+  "instructions": [
+    "Grab a pull-up bar with an overhand grip and hang with straight arms.",
+    "Brace your abs and tuck your pelvis slightly.",
+    "Lift your legs forward a little so your body forms a gentle hollow shape.",
+    "Keep your shoulders active and avoid swinging.",
+    "Hold the position for as long as you can with good form.",
+    "Lower down under control."
+  ],
+  "textSource": "opengym"
+}

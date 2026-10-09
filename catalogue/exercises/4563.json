@@ -1,0 +1,23 @@
+{
+  "id": "4563",
+  "name": "dumbbell squat hold calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "dumbbell",
+  "target": "calves",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "soleus"
+  ],
+  "category": "strength",
+  "description": "A calf raise done from a held squat position, mixing calf work with leg endurance.",
+  "instructions": [
+    "Hold dumbbells at your sides and sink into a half squat.",
+    "Keep your chest tall and weight over your feet.",
+    "Lift your heels as high as you can.",
+    "Pause briefly at the top.",
+    "Lower your heels slowly without standing up.",
+    "Stay in the squat for the full set."
+  ],
+  "textSource": "opengym"
+}

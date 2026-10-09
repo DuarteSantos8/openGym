@@ -1,0 +1,22 @@
+{
+  "id": "5818",
+  "name": "weighted full can exercise",
+  "bodyPart": "shoulders",
+  "equipment": "weighted",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "upper chest",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "Raise light weights in front at a diagonal with thumbs up. It trains the shoulder muscles that lift the arm.",
+  "instructions": [
+    "Hold a light weight in each hand with thumbs pointing up.",
+    "Stand tall with arms at your sides.",
+    "Raise your arms diagonally forward to about shoulder height.",
+    "Pause briefly.",
+    "Lower slowly with control."
+  ],
+  "textSource": "opengym"
+}

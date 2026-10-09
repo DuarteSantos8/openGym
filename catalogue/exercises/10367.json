@@ -1,0 +1,22 @@
+{
+  "id": "10367",
+  "name": "kettlebell sitting tibialis press",
+  "bodyPart": "lower legs",
+  "equipment": "kettlebell",
+  "target": "calves",
+  "secondaryMuscles": [
+    "shins",
+    "ankles",
+    "feet"
+  ],
+  "category": "strength",
+  "description": "A seated press that lifts a kettlebell on the top of the foot to strengthen the muscles at the front of the shin.",
+  "instructions": [
+    "Sit on a bench or box with a kettlebell hanging from the top of one foot.",
+    "Plant your heel on the floor.",
+    "Lift the toes up toward your shin to raise the kettlebell.",
+    "Pause, then lower slowly.",
+    "Use a light weight. Finish the reps, then switch feet."
+  ],
+  "textSource": "opengym"
+}

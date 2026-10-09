@@ -1,0 +1,25 @@
+{
+  "id": "4506",
+  "name": "kneeling shoulder tap",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "shoulders",
+    "core",
+    "obliques",
+    "chest"
+  ],
+  "category": "calisthenics",
+  "description": "A kneeling plank with alternating shoulder taps. Trains anti-rotation core control and shoulder stability.",
+  "instructions": [
+    "Start on hands and knees, then lift your knees slightly into a kneeling plank.",
+    "Keep a straight line from head to knees.",
+    "Lift one hand and tap the opposite shoulder.",
+    "Place it back down without rocking your hips.",
+    "Alternate sides at a steady pace.",
+    "Keep your abs tight throughout."
+  ],
+  "femaleVariant": "4661",
+  "textSource": "opengym"
+}

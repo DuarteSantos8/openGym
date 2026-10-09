@@ -33,6 +33,18 @@ describe('nudgeFor', () => {
     expect(nudgeFor(s, '2026-09-09')).toEqual(['pull'])
   })
 
+  // #261: a day with a note on it (sick, travelling, …) is excused, not missed.
+  it('leaves a noted day alone, and a noted day does not count towards the back-off', () => {
+    const notes = { '2026-09-07': { tag: 'sick', _ts: 1 } }
+    expect(nudgeFor(S({ workouts: [w('2026-09-04')], dayNotes: notes }), '2026-09-07')).toBeNull()
+    expect(nudgeFor(S({ workouts: [w('2026-09-04')], dayNotes: { '2026-09-07': { text: 'Flight to Lisbon', _ts: 1 } } }), '2026-09-07')).toBeNull()
+    // a cleared note (a stamped empty entry) is no excuse
+    expect(nudgeFor(S({ workouts: [w('2026-09-04')], dayNotes: { '2026-09-07': { _ts: 2 } } }), '2026-09-07')).toEqual(['push'])
+    // Monday excused: Wednesday, Friday and the next Monday are the three misses that count
+    const s = S({ workouts: [w('2026-09-04')], dayNotes: notes })
+    expect(['2026-09-09', '2026-09-11', '2026-09-14', '2026-09-16'].map(d => !!nudgeFor(s, d))).toEqual([true, true, true, false])
+  })
+
   it('times the evening and reads the tone tolerantly', () => {
     expect(nudgeMinute('08:00')).toBe(1200)
     expect(nudgeMinute('19:15')).toBe(1275)
@@ -65,6 +77,10 @@ describe('buildNudgeNotifications (mobile)', () => {
     expect(late[0].schedule.at.getDate()).toBe(9)
     const live = buildNudgeNotifications(S({ workouts: [w('2026-09-04')], active: { rid: 'push' } }), now)
     expect(live[0].schedule.at.getDate()).toBe(9)
+  })
+  it('skips today once it carries a day note (#261)', () => {
+    const n = buildNudgeNotifications(S({ workouts: [w('2026-09-04')], dayNotes: { '2026-09-07': { tag: 'travel', _ts: 1 } } }), now)
+    expect(n[0].schedule.at.getDate()).toBe(9)
   })
   it('takes the tone, and runs 2 hours after a late reminder', () => {
     const n = buildNudgeNotifications(S({ workouts: [w('2026-09-04')], reminder: { on: true, time: '19:00', nudge: true, tone: 'drill' } }), now)

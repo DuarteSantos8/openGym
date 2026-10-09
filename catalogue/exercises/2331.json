@@ -1,0 +1,22 @@
+{
+  "id": "2331",
+  "name": "cycle cross trainer",
+  "bodyPart": "cardio",
+  "equipment": "leverage machine",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "cardio",
+  "description": "Pedalling a cycle cross trainer with arms and legs moving together. Steady, low-impact cardio.",
+  "instructions": [
+    "Adjust the seat height and position yourself on the cycle cross trainer.",
+    "Place your feet on the pedals and grip the handlebars.",
+    "Start pedaling in a smooth and controlled motion.",
+    "Maintain a steady pace and increase the resistance if desired.",
+    "Continue pedaling for the desired duration of your cardio workout."
+  ],
+  "textSource": "exercisedb"
+}

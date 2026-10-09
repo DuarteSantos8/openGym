@@ -3,10 +3,16 @@
      Since API 24 an app trusts system CAs only, so the WebView refused the handshake while
      Chrome on the same phone, which honours user-installed CAs, opened the server fine.
      Trust both. A user CA is something the owner of the phone installed on purpose, behind a
-     system warning; this is the same trust the browser already gives it. Cleartext is left at
-     the platform default (off). -->
+     system warning; this is the same trust the browser already gives it.
+
+     Issues #428, #329: cleartext is allowed. The only servers this app talks to are the ones
+     its user typed in (their own openGym, their own Coach endpoint), and plenty of them run on
+     a home network over plain http, which the phone's browser opens fine. Android cannot scope
+     this to "private addresses", so it is app wide; the app's own downloads (exercise media)
+     use https addresses anyway. capacitor.config.json lets the WebView, an https page, make
+     those http requests (allowMixedContent), and pairing warns that http is not encrypted. -->
 <network-security-config>
-    <base-config>
+    <base-config cleartextTrafficPermitted="true">
         <trust-anchors>
             <certificates src="system" />
             <certificates src="user" />

@@ -1,0 +1,20 @@
+{
+  "id": "1033",
+  "name": "lever triceps extension v. 2",
+  "bodyPart": "upper arms",
+  "equipment": "leverage machine",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A seated machine extension that isolates the triceps through a stable path.",
+  "instructions": [
+    "Sit and adjust the seat so your upper arms rest on the pad.",
+    "Grab the handles with your elbows bent.",
+    "Press the handles down until your arms are straight.",
+    "Squeeze the triceps for a second.",
+    "Return slowly without lifting your shoulders."
+  ],
+  "textSource": "opengym"
+}

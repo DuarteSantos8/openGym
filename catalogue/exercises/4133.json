@@ -1,0 +1,23 @@
+{
+  "id": "4133",
+  "name": "kettlebell suitcase deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "obliques",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A one-sided deadlift holding the kettlebell at your side like a suitcase, training the core as well.",
+  "instructions": [
+    "Stand beside a kettlebell and hinge to grip it.",
+    "Keep your back flat.",
+    "Stand up without leaning sideways.",
+    "Lower it back to the floor.",
+    "Switch hands after your set."
+  ],
+  "textSource": "opengym"
+}

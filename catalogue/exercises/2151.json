@@ -1,0 +1,23 @@
+{
+  "id": "2151",
+  "name": "resistance band external rotation",
+  "bodyPart": "shoulders",
+  "equipment": "resistance band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "rear deltoids",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "Rotates the arm outward against band tension to strengthen the small muscles that stabilise the shoulder.",
+  "instructions": [
+    "Anchor a band at elbow height and stand sideways to it.",
+    "Hold the handle with the hand farther from the anchor.",
+    "Tuck your elbow against your side with the elbow bent to 90 degrees.",
+    "Rotate your forearm outward, away from your belly.",
+    "Return slowly to the start.",
+    "Finish the reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

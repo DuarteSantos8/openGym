@@ -1,0 +1,23 @@
+{
+  "id": "11286",
+  "name": "kettlebell half kneeling side lunge",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "glutes",
+    "quadriceps",
+    "groin",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "A half kneeling side lunge with a kettlebell. It opens the inner thigh and hips while loading the legs.",
+  "instructions": [
+    "Start in a half kneeling position holding a kettlebell at your chest.",
+    "Straighten the front leg to the side as you shift your weight back.",
+    "Feel a stretch in your inner thigh.",
+    "Return to the start.",
+    "Finish your reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

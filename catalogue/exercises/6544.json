@@ -1,0 +1,23 @@
+{
+  "id": "6544",
+  "name": "cable goblet squat",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "core",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A squat holding a low cable at your chest. The front load helps you stay upright and drives the thighs and glutes.",
+  "instructions": [
+    "Attach a handle or rope to a low pulley and hold it against your chest.",
+    "Step back until there is tension and set your feet shoulder-width apart.",
+    "Sit your hips down and back, keeping your chest tall.",
+    "Lower until your thighs are about parallel to the floor.",
+    "Push through your feet to stand up.",
+    "Keep your elbows pointing down throughout."
+  ],
+  "textSource": "opengym"
+}

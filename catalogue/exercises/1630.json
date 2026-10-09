@@ -1,0 +1,24 @@
+{
+  "id": "1630",
+  "name": "cable close grip curl",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A cable curl with a close grip. It keeps constant tension on the biceps.",
+  "instructions": [
+    "Attach a straight bar to a low pulley cable machine.",
+    "Stand facing the machine with your feet shoulder-width apart and your knees slightly bent.",
+    "Grasp the bar with an underhand grip, hands shoulder-width apart.",
+    "Keep your elbows close to your sides and your upper arms stationary throughout the exercise.",
+    "Exhale and curl the bar up towards your shoulders, contracting your biceps.",
+    "Pause for a moment at the top of the movement, squeezing your biceps.",
+    "Inhale and slowly lower the bar back to the starting position, fully extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3041",
+  "textSource": "exercisedb"
+}

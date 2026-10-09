@@ -1,0 +1,21 @@
+{
+  "id": "1841",
+  "name": "lying neck extensor stretch",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "upper back",
+    "trapezius"
+  ],
+  "category": "stretching",
+  "description": "Lets gravity help stretch the back of the neck while you lie on your back.",
+  "instructions": [
+    "Lie on your back with your knees bent.",
+    "Clasp your hands behind your head.",
+    "Gently lift your head and ease your chin toward your chest.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Lower your head back down slowly."
+  ],
+  "textSource": "opengym"
+}

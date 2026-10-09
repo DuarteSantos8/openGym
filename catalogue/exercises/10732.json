@@ -1,0 +1,23 @@
+{
+  "id": "10732",
+  "name": "side to side jump over stepbox",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A lateral jump back and forth over a step box. It builds agility and leg power.",
+  "instructions": [
+    "Stand beside a low box with your feet together.",
+    "Bend your knees and swing your arms.",
+    "Jump sideways over the box.",
+    "Land softly on both feet.",
+    "Jump back the other way at once.",
+    "Keep the pace fast but controlled."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "0717",
+  "name": "side push-up",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "chest",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Lying on your side, you push your body away from the floor with one arm. Works the chest, shoulder and triceps.",
+  "instructions": [
+    "Start by lying on your side with your legs extended and stacked on top of each other.",
+    "Place your bottom hand on the ground directly under your shoulder, fingers pointing forward.",
+    "Press through your bottom hand to lift your body off the ground, keeping your legs straight and your core engaged.",
+    "Extend your top arm straight up towards the ceiling, creating a straight line from your head to your heels.",
+    "Lower your body back down to the starting position with control.",
+    "Repeat for the desired number of repetitions, then switch sides."
+  ],
+  "textSource": "exercisedb"
+}

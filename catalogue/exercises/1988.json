@@ -1,0 +1,21 @@
+{
+  "id": "1988",
+  "name": "kneeling one arm cross body stretch",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back"
+  ],
+  "category": "stretching",
+  "description": "A kneeling stretch where you reach one arm across the body to open the back of the shoulder.",
+  "instructions": [
+    "Kneel on a mat and slide one arm across the floor in front of you, palm down.",
+    "Sink your chest toward the floor and keep reaching until the shoulder and upper back stretch.",
+    "Keep your hips over your knees.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

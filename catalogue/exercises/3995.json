@@ -1,0 +1,22 @@
+{
+  "id": "3995",
+  "name": "back slaps wrap around stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "shoulders",
+    "rhomboids",
+    "lats"
+  ],
+  "category": "stretching",
+  "description": "Swing your arms across your body, wrapping them around the trunk. It loosens the upper back and shoulders.",
+  "instructions": [
+    "Stand with your feet shoulder width apart.",
+    "Swing your arms wide.",
+    "Wrap them around your body so the hands slap your upper back.",
+    "Open them wide again.",
+    "Keep it loose and rhythmic."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "2292",
+  "name": "dumbbell rear delt raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A bent-over dumbbell raise to the sides. Trains the rear delts and upper back.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold a dumbbell in each hand, palms facing your body.",
+    "Bend your knees slightly and hinge forward at the hips, keeping your back straight.",
+    "Raise your arms out to the sides, keeping a slight bend in your elbows, until they are parallel to the floor.",
+    "Pause for a moment at the top, then slowly lower your arms back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3429",
+  "textSource": "exercisedb"
+}

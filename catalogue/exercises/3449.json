@@ -1,0 +1,24 @@
+{
+  "id": "3449",
+  "name": "dumbbell russian twist",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A seated rotation with a dumbbell for the obliques.",
+  "instructions": [
+    "Sit with knees bent and lean back slightly.",
+    "Hold a dumbbell with both hands in front of you.",
+    "Rotate your torso to one side.",
+    "Rotate to the other side.",
+    "Keep your chest lifted.",
+    "Move with control."
+  ],
+  "femaleVariant": "3450",
+  "textSource": "opengym"
+}

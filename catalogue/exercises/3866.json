@@ -1,0 +1,24 @@
+{
+  "id": "3866",
+  "name": "resistance band anti rotation dead bug",
+  "bodyPart": "waist",
+  "equipment": "resistance band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "core",
+    "hip flexors",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A dead bug with a band pulling you sideways, so your core works hard to keep your torso from twisting.",
+  "instructions": [
+    "Anchor a band at the side and lie on your back, holding the band above your chest with both hands.",
+    "Raise your knees to a tabletop position.",
+    "Brace your core so the band does not pull you sideways.",
+    "Slowly extend one leg and the opposite arm back.",
+    "Return and switch sides.",
+    "Keep your lower back flat on the floor."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4097",
+  "name": "reverse crunch to dead bug",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A reverse crunch that flows into a dead bug, training lower abs and control of the trunk.",
+  "instructions": [
+    "Lie on your back with knees bent over your hips.",
+    "Curl your pelvis off the floor in a reverse crunch.",
+    "Lower your hips and extend one leg and the opposite arm.",
+    "Return to the start, then repeat on the other side.",
+    "Keep your lower back flat."
+  ],
+  "textSource": "opengym"
+}

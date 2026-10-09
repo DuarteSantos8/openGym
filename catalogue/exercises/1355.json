@@ -1,0 +1,21 @@
+{
+  "id": "1355",
+  "name": "one arm against wall",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "isometric",
+  "description": "Stand facing a wall and press one arm into it while you lean in. It switches on the lats and shoulder with no equipment.",
+  "instructions": [
+    "Stand facing a wall with your feet shoulder-width apart.",
+    "Extend one arm straight out in front of you and place your palm against the wall.",
+    "Engage your core and lean your body forward, keeping your arm straight and your back flat.",
+    "Slowly push against the wall with your palm, activating your lat muscles.",
+    "Hold the position for a few seconds, then release and repeat with the other arm."
+  ],
+  "textSource": "exercisedb"
+}

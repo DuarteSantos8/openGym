@@ -1,0 +1,22 @@
+{
+  "id": "2719",
+  "name": "strongman viking press",
+  "bodyPart": "shoulders",
+  "equipment": "weight plate",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "An overhead press with a heavy viking-press frame, building shoulders and triceps.",
+  "instructions": [
+    "Stand inside the frame and grab the handles.",
+    "Lift the handles to shoulder height and set your feet.",
+    "Brace your core and press overhead.",
+    "Lock out your arms.",
+    "Lower back to shoulder height under control."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "3994",
+  "name": "neck circle stretch",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "sternocleidomastoid",
+    "trapezius"
+  ],
+  "category": "stretching",
+  "description": "Gentle circles of the head to loosen the neck. It eases stiffness in the neck muscles.",
+  "instructions": [
+    "Stand or sit tall with relaxed shoulders.",
+    "Drop your chin toward your chest.",
+    "Slowly roll your head to one side.",
+    "Continue in a smooth circle.",
+    "Do 5 circles, then reverse."
+  ],
+  "textSource": "opengym"
+}

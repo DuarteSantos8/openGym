@@ -1,0 +1,21 @@
+{
+  "id": "4084",
+  "name": "band horizontal biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "band",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A band curl done with the band pulling horizontally, which keeps constant tension on your biceps through the whole range.",
+  "instructions": [
+    "Anchor the band at chest height and face away from the anchor, holding the ends.",
+    "Step out until the band is taut and raise your arms out to the sides at shoulder height.",
+    "Bend your elbows to bring your hands toward your head.",
+    "Squeeze your biceps, then slowly extend your arms again.",
+    "Keep your elbows level with your shoulders the whole time."
+  ],
+  "textSource": "opengym"
+}

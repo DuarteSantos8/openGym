@@ -1,0 +1,24 @@
+{
+  "id": "3002",
+  "name": "single arm push up (on knees)",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A one-arm push-up from the knees, a stepping stone toward the full single-arm version. It builds chest and trunk strength.",
+  "instructions": [
+    "Kneel and place one hand under your shoulder, with the other arm behind your back.",
+    "Spread your knees a bit wider for balance.",
+    "Keep a straight line from your head to your knees.",
+    "Lower your chest toward the floor with control.",
+    "Press back up without twisting your hips.",
+    "Switch arms and repeat."
+  ],
+  "textSource": "opengym"
+}

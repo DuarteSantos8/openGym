@@ -1,0 +1,22 @@
+{
+  "id": "1238",
+  "name": "cable seated row (bent bar)",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A seated cable row using a bent bar. The angled bar suits many wrists while you train the back.",
+  "instructions": [
+    "Sit at a low cable station with your feet on the platform and knees slightly bent.",
+    "Grab the bent bar with both hands.",
+    "Pull the bar to your lower ribs, keeping your back straight.",
+    "Squeeze your shoulder blades.",
+    "Extend your arms slowly without rounding forward."
+  ],
+  "textSource": "opengym"
+}

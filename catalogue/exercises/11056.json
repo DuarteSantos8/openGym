@@ -1,0 +1,22 @@
+{
+  "id": "11056",
+  "name": "lever seated scapular retraction (plate loaded)",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rhomboids",
+    "trapezius",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A seated machine move where you pull your shoulder blades together. It strengthens the muscles between your shoulder blades.",
+  "instructions": [
+    "Sit with your chest against the pad and grab the handles with straight arms.",
+    "Let your shoulder blades spread forward slightly.",
+    "Squeeze your shoulder blades together without bending your elbows.",
+    "Hold the squeeze for a second.",
+    "Return slowly to the start."
+  ],
+  "textSource": "opengym"
+}

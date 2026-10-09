@@ -1,0 +1,22 @@
+{
+  "id": "4348",
+  "name": "abdominal 4 points",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "shoulders",
+    "hip flexors"
+  ],
+  "category": "isometric",
+  "description": "A four-point hold on hands and knees where you engage the abs. A gentle way to learn core bracing.",
+  "instructions": [
+    "Start on hands and knees with wrists under shoulders and knees under hips.",
+    "Keep your back flat and neck neutral.",
+    "Draw your belly button toward your spine.",
+    "Hold for 15-30 seconds while breathing normally.",
+    "Relax and repeat."
+  ],
+  "textSource": "opengym"
+}

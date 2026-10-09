@@ -1,0 +1,20 @@
+{
+  "id": "3288",
+  "name": "korean dips",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A deep dip variation performed on parallel bars with a different hand and body position. It trains the chest and triceps.",
+  "instructions": [
+    "Position yourself between two parallel bars with your arms extended and supporting your body weight.",
+    "Lower your body by bending your elbows until your upper arms are parallel to the ground.",
+    "Pause for a moment, then push yourself back up to the starting position by straightening your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "0815",
+  "name": "triceps dips floor",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A triceps dip with the hands on a chair behind you and the body lowered toward the floor. It builds the triceps and shoulders.",
+  "instructions": [
+    "Sit on the edge of a chair or bench with your hands next to your hips, fingers pointing forward.",
+    "Slide your butt off the front of the chair with your legs extended in front of you.",
+    "Straighten your arms, keeping a little bend in your elbows to keep tension on your triceps and off your elbow joints.",
+    "Slowly bend your elbows to lower your body toward the floor until your elbows are at about a 90-degree angle.",
+    "Once you reach the bottom of the movement, press down into the chair to straighten your elbows, returning to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "3319",
+  "name": "dumbbell lying on floor hammer press",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "A floor press with palms facing each other, which is kind to your shoulders. It trains the chest and triceps through a short range.",
+  "instructions": [
+    "Lie on the floor with knees bent and a dumbbell in each hand, palms facing in.",
+    "Start with your upper arms resting on the floor.",
+    "Press the dumbbells straight up over your chest.",
+    "Pause briefly at the top without locking out hard.",
+    "Lower slowly until your triceps touch the floor and repeat."
+  ],
+  "femaleVariant": "3425",
+  "textSource": "opengym"
+}

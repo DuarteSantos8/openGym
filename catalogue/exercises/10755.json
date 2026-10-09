@@ -1,0 +1,23 @@
+{
+  "id": "10755",
+  "name": "single leg calf jump step box supported",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "plyometrics",
+  "description": "A single-leg calf hop with a step box nearby for balance. It trains ankle power with extra stability.",
+  "instructions": [
+    "Stand beside a step box and rest a hand lightly on it for balance.",
+    "Lift one foot off the floor.",
+    "Hop up using mostly your ankle and calf.",
+    "Land softly on the ball of your foot.",
+    "Keep the hops small and quick.",
+    "Switch legs after your set."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "6263",
+  "name": "barbell standing wrist reverse curl",
+  "bodyPart": "lower arms",
+  "equipment": "barbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist extensors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A standing wrist curl with an overhand grip. It builds the forearm extensors.",
+  "instructions": [
+    "Stand holding a barbell with an overhand grip.",
+    "Let your hands hang.",
+    "Extend your wrists up.",
+    "Squeeze the forearms.",
+    "Lower slowly.",
+    "Keep your arms still."
+  ],
+  "textSource": "opengym"
+}

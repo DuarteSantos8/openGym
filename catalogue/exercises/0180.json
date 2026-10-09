@@ -1,0 +1,33 @@
+{
+  "id": "0180",
+  "name": "cable low seated row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Seated cable row from a low pulley. You pull the handles to your torso and squeeze the shoulder blades, building the mid back.",
+  "instructions": [
+    "Sit on the machine with your feet flat on the footrests and your knees slightly bent.",
+    "Grasp the handles with an overhand grip, palms facing down.",
+    "Keep your back straight and lean slightly forward, maintaining a slight bend in your elbows.",
+    "Pull the handles towards your body, squeezing your shoulder blades together.",
+    "Pause for a moment at the peak of the movement, then slowly release the handles back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm"
+    ]
+  },
+  "femaleVariant": "5964",
+  "textSource": "exercisedb"
+}

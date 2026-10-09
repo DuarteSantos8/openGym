@@ -1,0 +1,22 @@
+{
+  "id": "8146",
+  "name": "lying pelvic floor relaxation and deep breathing",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "hip flexors"
+  ],
+  "category": "rehab",
+  "description": "A gentle lying breathing drill that lets the pelvic floor and belly relax. It helps you learn calm, deep breathing.",
+  "instructions": [
+    "Lie on your back with your knees bent and feet flat.",
+    "Rest your hands on your lower belly.",
+    "Breathe in slowly through your nose and let your belly rise.",
+    "Let your pelvic floor and hips soften as you inhale.",
+    "Breathe out slowly through your mouth.",
+    "Continue for 1 to 2 minutes at a relaxed pace."
+  ],
+  "textSource": "opengym"
+}

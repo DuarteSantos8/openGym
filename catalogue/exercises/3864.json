@@ -1,0 +1,25 @@
+{
+  "id": "3864",
+  "name": "kettlebell burpee",
+  "bodyPart": "full body",
+  "equipment": "kettlebell",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "shoulders",
+    "chest",
+    "quadriceps",
+    "core",
+    "glutes"
+  ],
+  "category": "cardio",
+  "description": "A burpee that adds a kettlebell for extra load, giving you a hard full-body conditioning move.",
+  "instructions": [
+    "Stand with a kettlebell on the floor between your feet.",
+    "Squat down and place your hands on the floor beside it, or on the handle if you prefer.",
+    "Jump your feet back into a plank.",
+    "Lower your chest, push up, then jump your feet back in.",
+    "Grab the kettlebell and stand, then press or swing it overhead if you like.",
+    "Return it to the floor and repeat."
+  ],
+  "textSource": "opengym"
+}

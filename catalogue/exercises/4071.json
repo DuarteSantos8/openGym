@@ -1,0 +1,22 @@
+{
+  "id": "4071",
+  "name": "dumbbell incline one arm front raise with chest support",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "trapezius",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "Front raise with your chest supported on an incline bench to reduce swinging. It isolates the front delts.",
+  "instructions": [
+    "Set an incline bench and lie chest down on it.",
+    "Hold a dumbbell in one hand hanging straight down.",
+    "Raise the dumbbell forward to shoulder height with a slight elbow bend.",
+    "Lower slowly.",
+    "Finish the reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

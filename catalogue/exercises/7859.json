@@ -1,0 +1,23 @@
+{
+  "id": "7859",
+  "name": "explosive dynamic plank",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "shoulders",
+    "chest",
+    "hip flexors"
+  ],
+  "category": "plyometrics",
+  "description": "A plank with fast, powerful movements from the hands or feet. It builds core strength and shoulder stability.",
+  "instructions": [
+    "Start in a high plank, hands under shoulders.",
+    "Brace your core and squeeze your glutes.",
+    "Move quickly, hopping or shifting your hands and feet.",
+    "Keep your hips level and avoid sagging.",
+    "Rest when your form slips."
+  ],
+  "textSource": "opengym"
+}

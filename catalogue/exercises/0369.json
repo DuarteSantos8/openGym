@@ -1,0 +1,22 @@
+{
+  "id": "0369",
+  "name": "dumbbell over bench wrist curl",
+  "bodyPart": "lower arms",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "biceps",
+    "brachialis"
+  ],
+  "category": "strength",
+  "description": "Forearms rest over a bench with palms up, and you curl the dumbbells with your wrists. A direct move for forearm size and grip.",
+  "instructions": [
+    "Sit on a bench with your forearms resting on the bench and your palms facing up, holding a dumbbell in each hand.",
+    "Allow your wrists to hang over the edge of the bench.",
+    "Slowly curl your wrists upward, squeezing your forearms at the top of the movement.",
+    "Pause for a moment, then slowly lower your wrists back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2631",
+  "textSource": "exercisedb"
+}

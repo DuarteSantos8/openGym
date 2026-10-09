@@ -1,0 +1,24 @@
+{
+  "id": "1526",
+  "name": "barbell muscle snatch",
+  "bodyPart": "full body",
+  "equipment": "barbell",
+  "target": "traps",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "trapezius",
+    "shoulders",
+    "core"
+  ],
+  "category": "olympic",
+  "description": "A snatch lifted overhead with straight arms and no re-bend of the knees. It trains the upper pull and arm turnover.",
+  "instructions": [
+    "Hold the bar at the hips with a wide grip, shoulders over the bar.",
+    "Brace your core and keep the bar close to your body.",
+    "Extend your hips and knees powerfully and shrug your shoulders.",
+    "Pull the bar up high with your elbows, turn it over and press to locked arms overhead without squatting.",
+    "Stand tall to finish, then lower the bar with control."
+  ],
+  "textSource": "opengym"
+}

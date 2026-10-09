@@ -1,0 +1,180 @@
+# openGym Helm chart. Mirrors kubernetes/ (the plain manifests); docs/SELF_HOSTING_KUBERNETES.md
+# explains the choices. Always one replica: the API keeps its data in JSON files on one volume,
+# so a second pod would be a second writer.
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  # openGym never talks to the Kubernetes API.
+  automount: false
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # runAsNonRoot: true
+
+service:
+  type: ClusterIP
+  port: 80
+
+# The PVC is kept on `helm uninstall` (helm.sh/resource-policy: keep). Delete it by hand
+# if you really mean to.
+persistence:
+  # Accounts, passkeys, per-user state, session secret, uploads. BACK THIS UP.
+  data:
+    existingClaim: ""        # use a PVC you already have instead of creating one
+    storageClass: ""         # "" = cluster default
+    accessModes: [ReadWriteOnce]
+    size: 2Gi
+  # There is no media volume any more: the exercise stills and animations ship in the web image
+  # since v1.4.0. A `media` block left here from an older values file is ignored.
+
+# Classic Ingress. Passkeys need HTTPS and a host equal to api.env.RP_ID.
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # cert-manager.io/cluster-issuer: letsencrypt
+    # ingress-nginx caps request bodies at 1m; uploads need MEDIA_UPLOAD_MAX (48m):
+    # nginx.ingress.kubernetes.io/proxy-body-size: 48m
+  hosts:
+    - host: opengym.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  #  - secretName: opengym-tls
+  #    hosts:
+  #      - opengym.example.com
+
+# Gateway API HTTPRoute (what kubernetes/httproute.yaml does).
+httpRoute:
+  enabled: false
+  annotations: {}
+  parentRefs:
+    - name: eg
+      namespace: envoy-gateway-system
+      sectionName: https
+  hostnames:
+    - opengym.example.com
+
+# cert-manager Certificate for the HTTPRoute's listener. Ingress users usually want the
+# cert-manager.io/cluster-issuer annotation instead.
+certificate:
+  enabled: false
+  secretName: opengym-tls
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt
+  dnsNames:
+    - opengym.example.com
+  # Lets a Gateway in another namespace read the certificate Secret. Drop if your listener
+  # carries its own (e.g. wildcard) certificate.
+  referenceGrant:
+    enabled: true
+    gatewayNamespace: envoy-gateway-system
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+api:
+  image:
+    repository: ghcr.io/duartesantos8/opengym-api
+    pullPolicy: IfNotPresent
+    tag: 1.4.0               # keep in step with web.image.tag
+  service:
+    port: 3000
+  resources:
+    requests:
+      memory: 128Mi
+    limits:
+      memory: 512Mi
+  # Rendered into the api ConfigMap (see .env.example for what each does).
+  # An empty value is left out, so the app default applies. PORT comes from api.service.port.
+  env:
+    DATA_DIR: /data
+    RP_ID: opengym.example.com
+    ORIGIN: https://opengym.example.com
+    RP_NAME: openGym
+    INVITE_ONLY: ""          # "1" = signup needs an invite code
+    ALLOW_GUEST: ""          # "0" = no "Continue without account"
+    DEFAULT_LANG: ""         # en, de, pt-BR, th, ...
+    PASSWORD_LOGIN: ""       # "1" = password sign-in next to passkeys
+    # TRUST_PROXY stays off here on purpose, see kubernetes/deployment.yaml.
+    TRUST_PROXY: ""
+    SESSION_DAYS: ""         # default 90
+    AUDIT_LOG: ""            # "0" = off
+    AUDIT_MAX: ""            # default 5000
+    AUDIT_DAYS: ""           # default 90
+    AUDIT_IP: ""             # off | net | full
+    MEDIA_UPLOADS: ""        # "0" = off
+    MEDIA_QUOTA_MB: ""
+    MEDIA_IMAGE_MAX_MB: ""
+    MEDIA_GIF_MAX_MB: ""
+    MEDIA_VIDEO_MAX_MB: ""
+    MEDIA_VIDEO_MAX_SEC: ""
+    MEDIA_GC_GRACE_DAYS: ""
+    MEDIA_UPLOADS_PER_HOUR: ""
+    MEDIA_MIN_FREE_MB: ""
+    VAPID_SUBJECT: ""        # e.g. mailto:you@example.com
+    COACH_DISABLED: ""       # "1" = Coach kill switch
+    COACH_JOB_TIMEOUT_MS: ""
+  # Rendered into the Secret. Same rule: empty = left out.
+  secretEnv:
+    ADMIN_UIDS: ""           # comma-separated user ids from db.json
+  livenessProbe:
+    httpGet:
+      path: /api/health
+      port: api
+    initialDelaySeconds: 30
+  readinessProbe:
+    httpGet:
+      path: /api/health
+      port: api
+
+web:
+  image:
+    repository: ghcr.io/duartesantos8/opengym-web
+    pullPolicy: IfNotPresent
+    tag: 1.4.0
+  service:
+    # The port nginx listens on inside the pod: NGINX_PORT and the container's `web` port, which
+    # the Service and the probes follow by name. Not the image's default 80: the image runs as
+    # uid 101, which can bind a port below 1024 only where the runtime sets
+    # net.ipv4.ip_unprivileged_port_start=0. Docker does; most Kubernetes runtimes do not.
+    port: 8080
+  # Rendered into the web ConfigMap. NGINX_PORT, PORT and BACKEND (127.0.0.1, same pod) are set
+  # by the chart.
+  env:
+    BASE_PATH: ""            # "/gym" if your proxy passes a subpath prefix through
+    MEDIA_UPLOAD_MAX: ""     # default 48m, keep above MEDIA_VIDEO_MAX_MB
+    CF_CONNECTING_IP: ""     # "$http_cf_connecting_ip" only behind Cloudflare
+  resources:
+    requests:
+      memory: 32Mi
+    limits:
+      memory: 128Mi
+  livenessProbe:
+    httpGet:
+      path: /
+      port: web
+    initialDelaySeconds: 30
+  readinessProbe:
+    httpGet:
+      path: /
+      port: web

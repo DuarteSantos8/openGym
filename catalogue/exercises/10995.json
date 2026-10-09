@@ -1,0 +1,23 @@
+{
+  "id": "10995",
+  "name": "forward and backward crab walk",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "triceps",
+    "glutes",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A walk on hands and feet facing up. It works the arms, glutes and core.",
+  "instructions": [
+    "Sit with hands behind you and feet flat, then lift your hips.",
+    "Keep your chest open and hips high.",
+    "Walk forward with alternating hands and feet.",
+    "Then walk backward the same way.",
+    "Keep your core braced."
+  ],
+  "textSource": "opengym"
+}

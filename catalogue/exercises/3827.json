@@ -1,0 +1,22 @@
+{
+  "id": "3827",
+  "name": "lying floor hyperextension",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "Lying face down, you lift your chest and legs off the floor. It strengthens your lower back and glutes.",
+  "instructions": [
+    "Lie face down with your arms extended or by your sides.",
+    "Squeeze your glutes and lift your chest and legs slightly.",
+    "Pause briefly at the top.",
+    "Lower back down with control.",
+    "Keep your neck neutral."
+  ],
+  "textSource": "opengym"
+}

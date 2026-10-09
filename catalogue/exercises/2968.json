@@ -1,0 +1,24 @@
+{
+  "id": "2968",
+  "name": "dumbbell thruster",
+  "bodyPart": "full body",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "triceps",
+    "core",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A front squat that flows into an overhead press. It is a hard whole-body move that raises your heart rate.",
+  "instructions": [
+    "Hold dumbbells at your shoulders and stand with your feet shoulder-width apart.",
+    "Squat down with your chest up.",
+    "Drive up through your heels and press the dumbbells overhead in one motion.",
+    "Lock out your arms at the top.",
+    "Lower the weights to your shoulders and go straight into the next rep."
+  ],
+  "textSource": "opengym"
+}

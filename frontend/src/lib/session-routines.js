@@ -122,7 +122,8 @@ function copiedEntry(entry, source) {
   return cfg
 }
 
-const SESSION_ONLY = ['planned', 'plan', 'carried', 'rid', 'noProg', 'muscleSnapshot']
+// `rowReps` is one session's per-set aim under triple progression (progression.js), not a plan.
+const SESSION_ONLY = ['planned', 'plan', 'carried', 'rid', 'noProg', 'muscleSnapshot', 'rowReps']
 
 // `routines` are the ones the session was built from, when they still exist: the rule each copied
 // exercise is read under comes from there (see copiedEntry).

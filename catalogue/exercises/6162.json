@@ -1,0 +1,23 @@
+{
+  "id": "6162",
+  "name": "dumbbell incline low fly",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "shoulders",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A fly on an incline bench with the dumbbells traveling low. It stretches and works the chest.",
+  "instructions": [
+    "Set a bench to a low incline and lie back.",
+    "Hold dumbbells above your chest with a soft elbow bend.",
+    "Open your arms out and down in an arc.",
+    "Stop at a comfortable chest stretch.",
+    "Bring the dumbbells back together.",
+    "Keep the elbow bend constant."
+  ],
+  "textSource": "opengym"
+}

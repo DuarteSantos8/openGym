@@ -1,0 +1,21 @@
+{
+  "id": "10183",
+  "name": "dumbbell standing front raise twist",
+  "bodyPart": "waist",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A front raise combined with a torso twist, working the shoulders and the obliques together.",
+  "instructions": [
+    "Stand with feet shoulder width apart, holding a dumbbell in both hands at thigh level.",
+    "Raise the dumbbell in front of you to chest height.",
+    "Rotate your torso to one side, turning from the ribs while your hips face forward.",
+    "Rotate back to the center and lower the dumbbell with control.",
+    "Alternate sides each rep and keep the weight light."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "5967",
+  "name": "agility ball drill",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A footwork and reaction drill with a ball that sharpens agility, balance and quick direction changes.",
+  "instructions": [
+    "Set up with a ball in front of you in an athletic stance.",
+    "Move quickly around or over the ball with short, light steps.",
+    "Keep your hips low and eyes up.",
+    "Change direction without crossing your feet.",
+    "Work for 20-30 seconds, rest, then repeat."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "10753",
+  "name": "resistance band seated knee raise",
+  "bodyPart": "upper legs",
+  "equipment": "resistance band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "Seated knee raise against band tension. It works the hip flexors and lower abs.",
+  "instructions": [
+    "Sit tall on a bench or chair with a band looped around your foot and anchored low.",
+    "Hold the seat edge and brace your core.",
+    "Lift one knee toward your chest against the band.",
+    "Pause briefly at the top.",
+    "Lower the foot slowly with control.",
+    "Finish all reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

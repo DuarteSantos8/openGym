@@ -1,0 +1,23 @@
+{
+  "id": "10095",
+  "name": "cable single arm bear fly",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A single-arm cable fly done in a braced, staggered stance, working the chest and keeping the trunk steady.",
+  "instructions": [
+    "Set a cable at chest height and stand with a staggered stance.",
+    "Grab the handle with one hand and brace your core.",
+    "Keep your elbow slightly bent and sweep your arm across your body.",
+    "Squeeze your chest at the end.",
+    "Return slowly to the start.",
+    "Finish reps and switch arms."
+  ],
+  "textSource": "opengym"
+}

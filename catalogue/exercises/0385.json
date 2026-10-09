@@ -1,0 +1,22 @@
+{
+  "id": "0385",
+  "name": "dumbbell reverse wrist curl",
+  "bodyPart": "lower arms",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "biceps",
+    "brachialis"
+  ],
+  "category": "strength",
+  "description": "With palms down and forearms supported, you curl the dumbbells up with your wrists. It builds the top of the forearms.",
+  "instructions": [
+    "Sit on a bench or chair with your feet flat on the ground.",
+    "Hold a dumbbell in each hand with an overhand grip, palms facing down.",
+    "Rest your forearms on your thighs, allowing your wrists to hang off the edge.",
+    "Slowly curl your wrists upward, bringing the dumbbells towards your body.",
+    "Pause for a moment at the top, then slowly lower the dumbbells back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

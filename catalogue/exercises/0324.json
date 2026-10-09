@@ -1,0 +1,24 @@
+{
+  "id": "0324",
+  "name": "dumbbell incline palm-in press",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "An incline dumbbell press with the palms facing in. It works the upper chest and the front shoulders.",
+  "instructions": [
+    "Set up an incline bench at a 45-degree angle.",
+    "Sit on the bench with a dumbbell in each hand, palms facing each other.",
+    "Plant your feet firmly on the ground and keep your back straight against the bench.",
+    "Start with the dumbbells at shoulder level, elbows bent and palms facing each other.",
+    "Press the dumbbells up and away from your body, extending your arms fully.",
+    "Pause for a moment at the top, then slowly lower the dumbbells back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2505",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4112",
+  "name": "battling ropes seated",
+  "bodyPart": "cardio",
+  "equipment": "rope",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "shoulders",
+    "core",
+    "forearms",
+    "upper back"
+  ],
+  "category": "cardio",
+  "description": "Seated battle rope waves that raise your heart rate while working the arms and core.",
+  "instructions": [
+    "Sit tall on the floor or a bench holding the ends of the ropes.",
+    "Brace your core.",
+    "Whip the ropes up and down in alternating waves.",
+    "Keep a steady fast rhythm for 20-30 seconds.",
+    "Rest, then repeat."
+  ],
+  "textSource": "opengym"
+}

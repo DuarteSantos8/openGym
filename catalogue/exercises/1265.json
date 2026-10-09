@@ -1,0 +1,23 @@
+{
+  "id": "1265",
+  "name": "cable one arm incline press",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "deltoids",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A one-arm incline cable press. It trains the upper chest and shoulders.",
+  "instructions": [
+    "Adjust the cable machine to a low pulley position.",
+    "Sit on an incline bench facing away from the cable machine.",
+    "Grasp the handle with one hand and bring it up to shoulder height.",
+    "Position your feet firmly on the ground and maintain a stable position.",
+    "Press the handle forward and upward, extending your arm fully.",
+    "Pause for a moment at the top, then slowly lower the handle back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides."
+  ],
+  "textSource": "exercisedb"
+}

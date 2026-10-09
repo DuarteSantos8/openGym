@@ -1,0 +1,23 @@
+{
+  "id": "0963",
+  "name": "warrior pose virabhadrasana v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "shoulders",
+    "core"
+  ],
+  "category": "yoga",
+  "description": "A wide lunge with arms stretched to the sides. It strengthens the legs and builds stamina.",
+  "instructions": [
+    "Stand with feet wide and turn your front foot out.",
+    "Bend the front knee over the ankle.",
+    "Extend your arms out to the sides at shoulder height.",
+    "Turn your head to look over the front hand.",
+    "Hold for 5 breaths, then switch sides."
+  ],
+  "textSource": "opengym"
+}

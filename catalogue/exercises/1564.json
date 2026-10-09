@@ -1,0 +1,23 @@
+{
+  "id": "1564",
+  "name": "intermediate hip flexor and quad stretch",
+  "bodyPart": "upper legs",
+  "equipment": "rope",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "stretching",
+  "description": "A deeper stretch for the hip flexors and quads, using a rope or strap to pull the foot toward you.",
+  "instructions": [
+    "Stand upright with your feet shoulder-width apart.",
+    "Hold onto a stable object for support.",
+    "Bend your right knee and bring your right foot towards your glutes, grabbing the rope with your right hand.",
+    "Slowly pull your right foot towards your glutes, feeling a stretch in your right quad.",
+    "Hold the stretch for 20-30 seconds.",
+    "Release the stretch and repeat on the left side."
+  ],
+  "femaleVariant": "4281",
+  "textSource": "exercisedb"
+}

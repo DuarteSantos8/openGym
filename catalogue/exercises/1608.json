@@ -1,0 +1,21 @@
+{
+  "id": "1608",
+  "name": "cable standing reverse curl (sz bar)",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A standing curl with an overhand grip on a cable SZ bar. It targets the brachialis and forearms.",
+  "instructions": [
+    "Attach an SZ bar to a low pulley and grip it overhand with your hands shoulder-width apart.",
+    "Stand tall with your elbows pinned to your sides.",
+    "Curl the bar up while keeping your wrists straight.",
+    "Pause at the top.",
+    "Lower slowly and keep your torso still."
+  ],
+  "textSource": "opengym"
+}

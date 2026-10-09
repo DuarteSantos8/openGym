@@ -1,0 +1,22 @@
+{
+  "id": "5406",
+  "name": "stick side to front bend stretch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "obliques",
+    "hamstrings",
+    "lats"
+  ],
+  "category": "stretching",
+  "description": "Combines a side bend with a forward fold while holding a stick overhead. Stretches the side body, lower back and hamstrings.",
+  "instructions": [
+    "Stand with feet hip-width apart and hold the stick overhead.",
+    "Bend sideways to one side and hold briefly.",
+    "Then turn the torso forward and fold from your hips with a long back.",
+    "Hold for 15-20 seconds, then rise slowly.",
+    "Repeat on the other side."
+  ],
+  "textSource": "opengym"
+}

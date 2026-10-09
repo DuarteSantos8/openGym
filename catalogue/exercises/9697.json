@@ -1,0 +1,23 @@
+{
+  "id": "9697",
+  "name": "kettlebell bottoms up single arm overhead carry",
+  "bodyPart": "shoulders",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "forearms",
+    "grip muscles",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Carrying a kettlebell upside down overhead with one arm. It builds shoulder stability and a strong grip.",
+  "instructions": [
+    "Clean a kettlebell so it is upside down with the bell above your fist.",
+    "Press it overhead with a firm wrist.",
+    "Brace your core and stand tall.",
+    "Walk slowly in a straight line.",
+    "Lower it safely and switch arms."
+  ],
+  "textSource": "opengym"
+}

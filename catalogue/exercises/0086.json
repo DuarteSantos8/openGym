@@ -1,0 +1,34 @@
+{
+  "id": "0086",
+  "name": "barbell seated behind head military press",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A seated overhead press with the bar lowered behind your head. Works the shoulders and triceps.",
+  "instructions": [
+    "Sit on a bench with your back straight and feet flat on the ground.",
+    "Hold the barbell with an overhand grip, slightly wider than shoulder-width apart.",
+    "Lift the barbell off the rack and bring it down to shoulder level, behind your head.",
+    "Press the barbell upward until your arms are fully extended.",
+    "Lower the barbell back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "deltoids"
+    ],
+    "secondaries": [
+      "chest",
+      "triceps",
+      "trapezius",
+      "serratus"
+    ]
+  },
+  "femaleVariant": "2603",
+  "textSource": "exercisedb"
+}

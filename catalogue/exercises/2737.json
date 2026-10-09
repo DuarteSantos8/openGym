@@ -1,0 +1,22 @@
+{
+  "id": "2737",
+  "name": "standing hip extension (straight leg)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A standing kickback with a straight leg that targets the glutes.",
+  "instructions": [
+    "Stand tall and hold a support for balance.",
+    "Keep your standing knee slightly soft.",
+    "Lift one straight leg back behind you without arching your lower back.",
+    "Squeeze the glute at the top.",
+    "Lower with control and switch legs after your reps."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "2206",
+  "name": "roller reverse crunch",
+  "bodyPart": "waist",
+  "equipment": "roller",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A reverse crunch where you roll a roller toward you with your feet. Trains the lower abs.",
+  "instructions": [
+    "Lie flat on your back with your arms extended straight above your head and your legs straight out in front of you.",
+    "Place the roller between your feet and grip it with your toes.",
+    "Engaging your abs, lift your legs off the ground and curl your knees towards your chest, rolling the roller towards your body.",
+    "Pause for a moment at the top, then slowly lower your legs back down to the starting position, rolling the roller away from your body.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "5438",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "11091",
+  "name": "single arm hanging toes to bar",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs",
+    "grip muscles",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A hanging core move done from one hand. Lifting your toes to the bar trains the abs and grip.",
+  "instructions": [
+    "Hang from a bar with one hand and keep your shoulder active.",
+    "Brace your core and keep your legs together.",
+    "Lift your toes up toward the bar.",
+    "Lower your legs slowly without swinging.",
+    "Finish your reps, then switch hands."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "2143",
+  "name": "dumbbell standing around world",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Dumbbell circles around the body with straight arms, going out to the side and overhead. Works the shoulders through a wide range.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and hold a dumbbell in each hand.",
+    "Extend your arms straight out to the sides at shoulder height, palms facing down.",
+    "Keeping your arms straight, slowly rotate your arms in a circular motion, bringing the dumbbells in front of your body and then overhead.",
+    "Continue the circular motion, bringing the dumbbells back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

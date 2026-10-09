@@ -1,0 +1,21 @@
+{
+  "id": "10899",
+  "name": "resistance band lying abduction",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A lying leg lift against a band that works the outer hip. Good for glute and hip stability.",
+  "instructions": [
+    "Loop a band around both legs just above the knees and lie on your side.",
+    "Stack your hips and bend your knees slightly.",
+    "Lift the top knee or leg away from the bottom one against the band.",
+    "Pause at the top.",
+    "Lower slowly. Finish your reps and switch sides."
+  ],
+  "femaleVariant": "2421",
+  "textSource": "opengym"
+}

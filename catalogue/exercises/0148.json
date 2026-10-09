@@ -1,0 +1,35 @@
+{
+  "id": "0148",
+  "name": "cable alternate shoulder press",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A cable shoulder press alternating arms. Trains the delts and triceps.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and grasp the handles of the cable machine with an overhand grip.",
+    "Position your hands at shoulder height, with your palms facing forward.",
+    "Keep your core engaged and your back straight.",
+    "Press one handle up and forward until your arm is fully extended.",
+    "Pause for a moment at the top, then slowly lower the handle back to the starting position.",
+    "Repeat with the other arm.",
+    "Alternate between arms for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "deltoids"
+    ],
+    "secondaries": [
+      "chest",
+      "triceps",
+      "trapezius",
+      "serratus"
+    ]
+  },
+  "femaleVariant": "3038",
+  "textSource": "exercisedb"
+}

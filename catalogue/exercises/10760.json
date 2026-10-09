@@ -1,0 +1,23 @@
+{
+  "id": "10760",
+  "name": "resistance band toe walk",
+  "bodyPart": "lower legs",
+  "equipment": "band",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "feet",
+    "shins"
+  ],
+  "category": "strength",
+  "description": "A walk on your toes with a band around your feet. It builds calf and ankle strength.",
+  "instructions": [
+    "Place a band around your forefeet or ankles.",
+    "Rise onto the balls of your feet.",
+    "Walk forward in small controlled steps.",
+    "Stay high on your toes.",
+    "Keep your hips level.",
+    "Walk for 20-30 steps."
+  ],
+  "textSource": "opengym"
+}

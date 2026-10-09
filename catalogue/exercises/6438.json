@@ -1,0 +1,22 @@
+{
+  "id": "6438",
+  "name": "bent over shoulder pendulum",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "upper back"
+  ],
+  "category": "mobility",
+  "description": "A gentle pendulum swing for the shoulder joint. It loosens the shoulder and warms it up without any load.",
+  "instructions": [
+    "Stand beside a bench and rest one hand on it, hinging forward at the hips.",
+    "Let the other arm hang straight down, relaxed.",
+    "Swing the arm gently forward and back in a small arc using your body's motion.",
+    "Then swing it side to side and in small circles.",
+    "Keep the shoulder loose and the movement easy.",
+    "Do equal time on both sides."
+  ],
+  "textSource": "opengym"
+}

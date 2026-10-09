@@ -1,0 +1,21 @@
+{
+  "id": "1947",
+  "name": "standing outer hip stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "obliques"
+  ],
+  "category": "stretching",
+  "description": "A standing side stretch that lengthens the outer hip and thigh.",
+  "instructions": [
+    "Stand next to a wall and cross one leg behind the other.",
+    "Push your hips sideways toward the wall.",
+    "Lean your upper body away from the hips until you feel the outer hip stretch.",
+    "Keep both feet flat on the floor.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "5910",
+  "name": "weighted chain sumo deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "adductors",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A sumo deadlift with chains hung on the bar, so the load gets heavier as you stand up. It builds the glutes, inner thighs and back.",
+  "instructions": [
+    "Hang chains on a barbell and stand with a wide stance, toes pointed out.",
+    "Grip the bar inside your knees with a flat back.",
+    "Push the floor away and drive your knees out.",
+    "Stand tall as the chains lift and the load increases.",
+    "Lock out with your glutes, then lower the bar under control."
+  ],
+  "textSource": "opengym"
+}

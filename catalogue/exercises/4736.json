@@ -1,0 +1,24 @@
+{
+  "id": "4736",
+  "name": "dumbbell deep push up and renegade row",
+  "bodyPart": "full body",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "lats",
+    "core",
+    "shoulders",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A combo of a deep push-up on dumbbells and a renegade row. It trains chest, back and core together.",
+  "instructions": [
+    "Start in a plank with hands on two dumbbells, feet wide.",
+    "Lower your chest between the dumbbells in a deep push-up.",
+    "Press back up to a plank.",
+    "Row one dumbbell to your ribs while bracing to stay level.",
+    "Lower it, row the other side, and repeat."
+  ],
+  "textSource": "opengym"
+}

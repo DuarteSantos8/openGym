@@ -1,0 +1,22 @@
+{
+  "id": "3214",
+  "name": "arms apart circular toe touch (male)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "calves"
+  ],
+  "category": "mobility",
+  "description": "A standing toe touch with a circular path and a leg lifting behind you. It loosens the hamstrings and challenges balance.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and arms extended to the sides.",
+    "Keeping your legs straight, bend forward at the waist and reach down towards your toes with your right hand.",
+    "As you reach down, simultaneously lift your left leg straight up behind you, maintaining balance.",
+    "Return to the starting position and repeat the movement with your left hand reaching towards your toes and your right leg lifting up behind you.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

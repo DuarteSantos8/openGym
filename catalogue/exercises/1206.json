@@ -1,0 +1,22 @@
+{
+  "id": "1206",
+  "name": "cable pull through",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A hip hinge facing away from a low cable. It builds the glutes and hamstrings and teaches a good hinge.",
+  "instructions": [
+    "Attach a rope to a low pulley and face away from the stack, holding the rope between your legs.",
+    "Step forward until the cable is taut and bend your knees slightly.",
+    "Push your hips back, letting the rope travel behind you.",
+    "Drive your hips forward and squeeze your glutes to stand tall.",
+    "Keep your back flat throughout."
+  ],
+  "textSource": "opengym"
+}

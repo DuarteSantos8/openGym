@@ -1,0 +1,21 @@
+{
+  "id": "1275",
+  "name": "drop push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "plyometrics",
+  "description": "A push-up that drops to the knees and presses back up. It trains the chest and triceps.",
+  "instructions": [
+    "Start in a high plank position with your hands slightly wider than shoulder-width apart.",
+    "Lower your chest towards the ground, keeping your elbows close to your body.",
+    "Once your chest is just above the ground, quickly drop your knees to the ground.",
+    "Push yourself back up to the starting position by extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "0975",
+  "name": "band close-grip push-up",
+  "bodyPart": "upper arms",
+  "equipment": "band",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A push-up with a band around the upper arms to keep the elbows in. It trains the triceps and chest.",
+  "instructions": [
+    "Place a band around your upper arms, just above the elbows.",
+    "Assume a push-up position with your hands directly under your shoulders and your body in a straight line from head to heels.",
+    "Bend your elbows and lower your chest towards the ground, keeping your elbows close to your sides.",
+    "Push through your palms to extend your arms and return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "3196",
+  "name": "quick feet run",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "calves",
+    "quadriceps",
+    "hip flexors",
+    "core"
+  ],
+  "category": "cardio",
+  "description": "Running on the spot with very fast, small steps. It's a classic warm-up and speed drill.",
+  "instructions": [
+    "Stand tall with your knees slightly bent.",
+    "Run on the spot as fast as you can with small steps.",
+    "Stay on the balls of your feet.",
+    "Pump your arms.",
+    "Keep your chest up.",
+    "Continue for 20-30 seconds."
+  ],
+  "femaleVariant": "6102",
+  "textSource": "opengym"
+}

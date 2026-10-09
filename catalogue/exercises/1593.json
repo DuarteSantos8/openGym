@@ -1,0 +1,21 @@
+{
+  "id": "1593",
+  "name": "sit squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings"
+  ],
+  "category": "calisthenics",
+  "description": "A squat down to a seat and back up. The chair gives you a depth target and builds confidence.",
+  "instructions": [
+    "Stand in front of a chair or bench with feet shoulder-width apart.",
+    "Push your hips back and lower yourself toward the seat.",
+    "Lightly touch the seat without relaxing completely.",
+    "Keep your chest up and your knees over your toes.",
+    "Press through your heels to stand back up."
+  ],
+  "textSource": "opengym"
+}

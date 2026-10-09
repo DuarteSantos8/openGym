@@ -1,0 +1,22 @@
+{
+  "id": "5107",
+  "name": "captains chair leg raise",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "grip muscles"
+  ],
+  "category": "calisthenics",
+  "description": "Raise your legs while supported by the arm pads of a captain's chair. It is a classic lower-ab exercise.",
+  "instructions": [
+    "Rest your forearms on the pads and press your back against the support.",
+    "Let your legs hang straight down.",
+    "Raise your knees or straight legs to hip height or higher.",
+    "Pause briefly at the top.",
+    "Lower your legs slowly without swinging."
+  ],
+  "textSource": "opengym"
+}

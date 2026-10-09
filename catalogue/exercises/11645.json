@@ -1,0 +1,21 @@
+{
+  "id": "11645",
+  "name": "static quadriceps contraction (isometric)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "quadriceps"
+  ],
+  "category": "isometric",
+  "description": "Seated or lying with your leg straight, you tighten the thigh muscle and hold, an easy way to activate the quads.",
+  "instructions": [
+    "Sit or lie with one leg straight in front.",
+    "Relax your upper body.",
+    "Tighten the front of the thigh and press the knee down.",
+    "Hold for 5-10 seconds.",
+    "Relax fully.",
+    "Repeat, then switch legs."
+  ],
+  "textSource": "opengym"
+}

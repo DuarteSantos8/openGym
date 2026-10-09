@@ -1,0 +1,23 @@
+{
+  "id": "4581",
+  "name": "boxing block",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "forearms",
+    "core",
+    "upper back"
+  ],
+  "category": "combat",
+  "description": "A defensive boxing guard that covers your head and body from incoming punches.",
+  "instructions": [
+    "Stand in a boxing stance with feet staggered and knees slightly bent.",
+    "Bring your fists up to your cheeks with elbows tucked in.",
+    "Keep your chin down.",
+    "Raise your forearms to cover your face as if blocking a punch.",
+    "Bring your elbows together to cover your ribs.",
+    "Reset to your guard and repeat."
+  ],
+  "textSource": "opengym"
+}

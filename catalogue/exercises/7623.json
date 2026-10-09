@@ -1,0 +1,22 @@
+{
+  "id": "7623",
+  "name": "single arm lat stretch against wall",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "shoulders",
+    "obliques",
+    "triceps"
+  ],
+  "category": "stretching",
+  "description": "Stretch one side of your back by reaching an arm overhead against a wall. It lengthens the lat and side of the torso.",
+  "instructions": [
+    "Stand beside a wall and place one hand on it above head height.",
+    "Step your feet back slightly.",
+    "Press your hips away and lean your chest down toward the floor.",
+    "Feel the stretch along your side and under the armpit.",
+    "Hold for 20-30 seconds, then switch arms."
+  ],
+  "textSource": "opengym"
+}

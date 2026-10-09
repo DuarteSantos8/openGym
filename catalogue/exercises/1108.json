@@ -1,0 +1,23 @@
+{
+  "id": "1108",
+  "name": "suspender arm curl to ears",
+  "bodyPart": "upper arms",
+  "equipment": "suspension trainer",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms",
+    "brachialis",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "You curl your body up toward your hands with the straps at head height, a bodyweight biceps builder.",
+  "instructions": [
+    "Hold the handles with palms up and lean back with arms extended.",
+    "Keep your body straight from head to heels.",
+    "Bend your elbows and pull your hands toward your ears.",
+    "Keep elbows high and out to the sides.",
+    "Squeeze the biceps at the top.",
+    "Lower with control until the arms are straight."
+  ],
+  "textSource": "opengym"
+}

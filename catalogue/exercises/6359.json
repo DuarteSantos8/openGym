@@ -1,0 +1,21 @@
+{
+  "id": "6359",
+  "name": "dumbbell standing wrist curl",
+  "bodyPart": "lower arms",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A standing wrist curl with dumbbells that builds forearm strength and grip.",
+  "instructions": [
+    "Stand with a dumbbell in each hand, palms facing forward.",
+    "Keep your arms still at your sides.",
+    "Curl your wrists up, bringing the dumbbells toward your forearms.",
+    "Squeeze at the top.",
+    "Lower slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

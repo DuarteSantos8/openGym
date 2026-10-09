@@ -1,0 +1,35 @@
+{
+  "id": "0208",
+  "name": "cable reverse-grip straight back seated high row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A seated row from a high pulley with an underhand grip. Pull to the torso and squeeze the back, keeping the back straight.",
+  "instructions": [
+    "Sit on the seat facing the cable machine with your feet flat on the floor.",
+    "Grasp the cable attachment with an underhand grip, palms facing up, and your hands shoulder-width apart.",
+    "Keep your back straight and lean slightly forward from your hips.",
+    "Pull the cable towards your torso by retracting your shoulder blades and squeezing your back muscles.",
+    "Pause for a moment at the peak of the contraction, then slowly release the cable back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "upper-back"
+    ],
+    "secondaries": [
+      "biceps",
+      "deltoids",
+      "forearm",
+      "trapezius",
+      "chest",
+      "triceps"
+    ]
+  },
+  "textSource": "exercisedb"
+}

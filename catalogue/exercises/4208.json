@@ -1,0 +1,23 @@
+{
+  "id": "4208",
+  "name": "2 to 1 jump box",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "Jump up onto a box with both feet and step or drop down with one. It builds explosive leg power and single-leg control.",
+  "instructions": [
+    "Stand facing a sturdy box with your feet shoulder-width apart.",
+    "Swing your arms and jump up, landing softly on the box with both feet.",
+    "Stand tall on top of the box.",
+    "Step down with one leg first, then the other.",
+    "Reset and repeat, alternating the leading leg.",
+    "Land quietly with bent knees."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "4138",
+  "name": "band close grip biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "band",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A band curl with a narrow hand position to emphasize the outer biceps.",
+  "instructions": [
+    "Stand on the band and grip it close to your feet with a narrow hold.",
+    "Keep your elbows at your sides.",
+    "Curl your hands to your shoulders.",
+    "Squeeze the top.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

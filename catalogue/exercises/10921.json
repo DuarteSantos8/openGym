@@ -1,0 +1,20 @@
+{
+  "id": "10921",
+  "name": "resistance band seated single leg knee extension hold",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "isometric",
+  "description": "A seated band-resisted knee extension that you hold at the top. It builds quad endurance.",
+  "instructions": [
+    "Sit on a chair with a band anchored around one ankle behind you.",
+    "Straighten that knee against the band.",
+    "Hold the leg straight for 10-20 seconds.",
+    "Keep the thigh tight and your back upright.",
+    "Lower slowly and switch legs."
+  ],
+  "textSource": "opengym"
+}

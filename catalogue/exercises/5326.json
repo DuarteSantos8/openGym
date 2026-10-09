@@ -1,0 +1,24 @@
+{
+  "id": "5326",
+  "name": "lever multy mode rope lat pulldown",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "rhomboids",
+    "upper back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A lat pulldown on a lever machine using rope handles. The multi-mode setup lets you vary the pulling path.",
+  "instructions": [
+    "Sit at the machine and grab the rope handles.",
+    "Set your thighs under the pads and sit tall.",
+    "Pull the handles down toward your upper chest.",
+    "Drive your elbows down and back.",
+    "Let the handles rise slowly until your arms are straight.",
+    "Avoid leaning back too far."
+  ],
+  "textSource": "opengym"
+}

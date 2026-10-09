@@ -1,0 +1,22 @@
+{
+  "id": "4535",
+  "name": "kettlebell single arm sit up",
+  "bodyPart": "waist",
+  "equipment": "kettlebell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "shoulders",
+    "obliques"
+  ],
+  "category": "strength",
+  "description": "A sit-up while holding a kettlebell overhead with one arm. It adds shoulder stability to an abdominal move.",
+  "instructions": [
+    "Lie on your back with knees bent and a kettlebell held straight up in one hand.",
+    "Keep your eyes on the kettlebell and your arm locked.",
+    "Curl up and sit all the way to standing or upright.",
+    "Control your descent back to the floor.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

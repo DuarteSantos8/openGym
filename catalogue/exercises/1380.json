@@ -1,0 +1,22 @@
+{
+  "id": "1380",
+  "name": "dumbbell seated one leg calf raise - hammer grip",
+  "bodyPart": "lower legs",
+  "equipment": "dumbbell",
+  "target": "calves",
+  "secondaryMuscles": [
+    "hamstrings",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A one-leg seated calf raise with a dumbbell held in a hammer grip. It trains the soleus under the calf one side at a time.",
+  "instructions": [
+    "Sit on a bench or chair with your feet flat on the ground and a dumbbell resting on your thighs.",
+    "Place one foot on a raised surface, such as a step or block, with your heel hanging off the edge.",
+    "Hold the dumbbell with a hammer grip, meaning your palms are facing each other and your fingers are wrapped around the handle.",
+    "Keeping your core engaged and your back straight, slowly raise your heel as high as possible by pushing through the ball of your foot.",
+    "Pause for a moment at the top, then slowly lower your heel back down to the starting position.",
+    "Repeat for the desired number of repetitions, then switch to the other leg."
+  ],
+  "textSource": "exercisedb"
+}

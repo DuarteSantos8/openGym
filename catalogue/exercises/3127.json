@@ -1,0 +1,23 @@
+{
+  "id": "3127",
+  "name": "resistance band foot eversion",
+  "bodyPart": "lower legs",
+  "equipment": "resistance band",
+  "target": "calves",
+  "secondaryMuscles": [
+    "ankles",
+    "shins",
+    "feet"
+  ],
+  "category": "rehab",
+  "description": "Turning the sole of the foot outward against a band to train the muscles on the outer side of the ankle.",
+  "instructions": [
+    "Sit with your leg extended and a band around your forefoot.",
+    "Anchor the band on the inside of your foot.",
+    "Keep your leg still.",
+    "Turn the sole of your foot outward against the band.",
+    "Return slowly.",
+    "Complete your reps, then switch feet."
+  ],
+  "textSource": "opengym"
+}

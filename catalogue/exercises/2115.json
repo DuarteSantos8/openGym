@@ -1,0 +1,23 @@
+{
+  "id": "2115",
+  "name": "hip extension on knees",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core",
+    "quadriceps"
+  ],
+  "category": "mobility",
+  "description": "Opens the front of the hips from a kneeling position by pushing the pelvis forward, which also wakes up the glutes.",
+  "instructions": [
+    "Kneel on a soft surface with knees hip-width apart and thighs upright.",
+    "Place your hands on your hips or the back of your pelvis.",
+    "Squeeze your glutes and push your hips forward.",
+    "Keep your ribs down and avoid over-arching your lower back.",
+    "Hold for a moment, then return to the start.",
+    "Repeat for 8-12 reps."
+  ],
+  "textSource": "opengym"
+}

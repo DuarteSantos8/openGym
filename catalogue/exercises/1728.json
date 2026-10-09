@@ -1,0 +1,21 @@
+{
+  "id": "1728",
+  "name": "cable two arm tricep kickback",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A two-arm triceps kickback with cables. It gives constant tension to the triceps.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and knees slightly bent.",
+    "Hold the cable handle in each hand with your palms facing inwards and your arms bent at a 90-degree angle.",
+    "Keeping your upper arms stationary, extend your forearms backwards until your arms are fully extended.",
+    "Pause for a moment, then slowly return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3070",
+  "textSource": "exercisedb"
+}

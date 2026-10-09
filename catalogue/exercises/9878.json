@@ -1,0 +1,24 @@
+{
+  "id": "9878",
+  "name": "cable zercher squat",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "core",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A squat holding a low cable in the crook of your elbows in front of you. The front load keeps you upright and works the quads, glutes and core.",
+  "instructions": [
+    "Attach a bar or handle to a low cable and hook it in the bends of your elbows, close to your chest.",
+    "Stand facing away from the stack with your feet shoulder width apart.",
+    "Brace your core and sit down and back until your thighs are about parallel.",
+    "Keep your chest tall and your knees tracking over your toes.",
+    "Push through your whole foot to stand back up.",
+    "Keep your elbows tucked and the load close to your body."
+  ],
+  "textSource": "opengym"
+}

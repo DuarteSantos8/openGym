@@ -1,0 +1,21 @@
+{
+  "id": "4687",
+  "name": "resistance band hammer curl",
+  "bodyPart": "upper arms",
+  "equipment": "resistance band",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A curl with palms facing each other against tube resistance, training the biceps and forearms.",
+  "instructions": [
+    "Stand on the middle of the band and hold the handles with palms facing in.",
+    "Keep your elbows at your sides.",
+    "Curl the handles up toward your shoulders.",
+    "Squeeze at the top.",
+    "Lower slowly under tension."
+  ],
+  "textSource": "opengym"
+}

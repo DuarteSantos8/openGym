@@ -1,0 +1,22 @@
+{
+  "id": "3352",
+  "name": "cable kneeling pull through",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A kneeling hip hinge with a cable pulled between your legs. It teaches the hinge and trains glutes with little spinal load.",
+  "instructions": [
+    "Kneel facing away from a low cable with a rope held between your legs.",
+    "Sit your hips back with a flat back.",
+    "Let the rope pull your hands back between your knees.",
+    "Drive your hips forward to a tall kneeling position.",
+    "Squeeze your glutes at the top and repeat."
+  ],
+  "textSource": "opengym"
+}

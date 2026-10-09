@@ -1,0 +1,21 @@
+{
+  "id": "4733",
+  "name": "dumbbell decline lying leg curl",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "calves",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A leg curl lying on a decline bench with a dumbbell gripped between your feet. It isolates the hamstrings.",
+  "instructions": [
+    "Lie face down on a decline bench with the dumbbell held between your feet.",
+    "Let your legs hang straight with your hips pressed to the bench.",
+    "Curl your heels up toward your glutes.",
+    "Squeeze at the top without lifting your hips.",
+    "Lower slowly to full extension."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "0463",
+  "name": "front plank",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "core",
+    "shoulders",
+    "glutes"
+  ],
+  "category": "isometric",
+  "description": "The classic forearm plank. Holding a straight line from head to heels builds core endurance and stability.",
+  "instructions": [
+    "Lie face down and prop yourself on your forearms, elbows under your shoulders.",
+    "Lift your hips and knees off the floor, resting on your toes.",
+    "Keep your body in a straight line from head to heels.",
+    "Squeeze your abs and glutes.",
+    "Hold for 20-60 seconds while breathing steadily.",
+    "Don't let your hips sag or pike up."
+  ],
+  "femaleVariant": "0465",
+  "textSource": "opengym"
+}

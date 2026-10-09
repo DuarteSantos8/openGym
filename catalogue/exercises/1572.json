@@ -1,0 +1,22 @@
+{
+  "id": "1572",
+  "name": "lever seated one leg wide squat",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A seated machine squat using one leg in a wide stance. It loads the quads, glutes and inner thighs with back support.",
+  "instructions": [
+    "Sit in the machine with your back against the pad and shoulders under the supports.",
+    "Place one foot wide on the platform and keep the other leg off the load.",
+    "Lower by bending your working knee as far as is comfortable.",
+    "Keep your knee tracking over your toes.",
+    "Press back up, then switch legs after your reps."
+  ],
+  "textSource": "opengym"
+}

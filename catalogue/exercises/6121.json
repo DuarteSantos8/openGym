@@ -1,0 +1,23 @@
+{
+  "id": "6121",
+  "name": "ardha matsyendrasana yoga pose",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "hip flexors"
+  ],
+  "category": "yoga",
+  "description": "The half spinal twist, a seated yoga pose. It stretches the spine and outer hip and improves rotation.",
+  "instructions": [
+    "Sit tall with your legs extended.",
+    "Bend one knee and place that foot outside the opposite thigh.",
+    "Hug the bent knee with the opposite arm.",
+    "Place your other hand behind you and twist toward it.",
+    "Lengthen the spine and hold for 20-30 seconds.",
+    "Release and repeat on the other side."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "9492",
+  "name": "cable lying upright row (sz bar)",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "biceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "An upright row done lying on your back with a cambered bar on a low cable. It hits the delts and traps with steady tension.",
+  "instructions": [
+    "Lie on your back with your feet toward a low pulley and grip the SZ bar.",
+    "Start with arms extended over your thighs.",
+    "Pull the bar up toward your chin, leading with your elbows.",
+    "Pause when your elbows reach shoulder height.",
+    "Lower the bar slowly to the start."
+  ],
+  "textSource": "opengym"
+}

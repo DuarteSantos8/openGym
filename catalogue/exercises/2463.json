@@ -1,0 +1,23 @@
+{
+  "id": "2463",
+  "name": "resistance band toe touch",
+  "bodyPart": "waist",
+  "equipment": "band",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "hamstrings",
+    "lower abs"
+  ],
+  "category": "strength",
+  "description": "A crunch variation where you reach up to your toes with band tension.",
+  "instructions": [
+    "Lie on your back with a band around your feet.",
+    "Lift your legs toward the ceiling.",
+    "Hold the band ends and reach toward your toes.",
+    "Curl your shoulders off the floor.",
+    "Lower with control.",
+    "Repeat for the planned reps."
+  ],
+  "textSource": "opengym"
+}

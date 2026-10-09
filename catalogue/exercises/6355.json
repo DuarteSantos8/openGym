@@ -1,0 +1,21 @@
+{
+  "id": "6355",
+  "name": "lever outdoor seated chest press",
+  "bodyPart": "chest",
+  "equipment": "leverage machine",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A seated chest press on an outdoor lever machine that works your chest, front shoulders and triceps.",
+  "instructions": [
+    "Sit with your back flat against the pad and grip the handles at chest height.",
+    "Keep your shoulders down and back.",
+    "Press the handles forward until your arms are almost straight.",
+    "Pause briefly.",
+    "Let the handles come back slowly and repeat."
+  ],
+  "textSource": "opengym"
+}

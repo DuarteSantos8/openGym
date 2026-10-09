@@ -1,0 +1,24 @@
+{
+  "id": "1430",
+  "name": "chest dip (on dip-pull-up cage)",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A chest dip done on a dip station with a forward lean. It works the lower chest, triceps and front shoulders.",
+  "instructions": [
+    "Adjust the dip bars to a height that allows you to comfortably grip them.",
+    "Stand between the bars and place your hands on each bar, slightly wider than shoulder-width apart.",
+    "Jump up and straighten your arms, supporting your body weight on the bars.",
+    "Bend your knees and cross your ankles behind you.",
+    "Lower your body by bending your elbows, keeping your chest up and your shoulders down.",
+    "Continue lowering until your shoulders are below your elbows or until you feel a stretch in your chest.",
+    "Push through your palms and extend your elbows to raise your body back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

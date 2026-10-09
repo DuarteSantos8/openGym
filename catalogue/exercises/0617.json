@@ -1,0 +1,22 @@
+{
+  "id": "0617",
+  "name": "lying hip leg raise (on floor)",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A side-lying leg lift done on the floor. It works the outer hip and glutes.",
+  "instructions": [
+    "Lie on your side with your legs straight and stacked.",
+    "Rest your head on your arm and keep your core tight.",
+    "Raise your top leg toward the ceiling.",
+    "Keep your toes pointing forward.",
+    "Lower slowly without touching the other leg.",
+    "Finish all reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

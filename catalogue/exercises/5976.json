@@ -1,0 +1,25 @@
+{
+  "id": "5976",
+  "name": "t drill",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "glutes",
+    "calves",
+    "adductors"
+  ],
+  "category": "plyometrics",
+  "description": "A cone drill in a T shape that trains sprinting, side shuffling and backpedaling.",
+  "instructions": [
+    "Set four cones in a T with the top cones 5 yards apart.",
+    "Sprint forward to the center cone and touch it.",
+    "Shuffle sideways to the left cone and touch it.",
+    "Shuffle across to the right cone, then back to the middle.",
+    "Backpedal to the start.",
+    "Keep your hips low and feet from crossing."
+  ],
+  "textSource": "opengym"
+}

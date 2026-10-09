@@ -1,0 +1,24 @@
+{
+  "id": "2807",
+  "name": "dumbbell sumo pull through v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "adductors",
+    "hamstrings",
+    "quadriceps",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A wide stance hinge where a dumbbell swings between the legs. Trains glutes, inner thighs and hamstrings.",
+  "instructions": [
+    "Stand with feet wide and toes turned out, holding one dumbbell with both hands.",
+    "Hinge at the hips and swing the dumbbell back between your legs.",
+    "Keep your back flat and chest up.",
+    "Drive your hips forward and stand tall, swinging the dumbbell to hip height.",
+    "Squeeze your glutes at the top."
+  ],
+  "textSource": "opengym",
+  "femaleVariant": "2808"
+}

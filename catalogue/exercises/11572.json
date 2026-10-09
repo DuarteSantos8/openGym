@@ -1,0 +1,23 @@
+{
+  "id": "11572",
+  "name": "lying thoracic extensions on foam roller",
+  "bodyPart": "back",
+  "equipment": "roller",
+  "target": "spine",
+  "secondaryMuscles": [
+    "upper back",
+    "rhomboids",
+    "core"
+  ],
+  "category": "mobility",
+  "description": "Lying over a foam roller, you gently arch the upper back to open up the thoracic spine.",
+  "instructions": [
+    "Lie on your back with the roller under your upper back.",
+    "Support your head with your hands.",
+    "Keep your hips on the floor and knees bent.",
+    "Gently lean back over the roller.",
+    "Return to neutral and shift the roller up or down.",
+    "Move slowly and breathe out as you extend."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "4917",
+  "name": "high bar inverted row",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rear deltoids",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "An inverted row on a high bar, which makes the pull more upright and easier. It builds the back and arms.",
+  "instructions": [
+    "Set a bar at about chest height and grab it overhand.",
+    "Walk your feet forward until your arms are straight.",
+    "Keep your body in a straight line.",
+    "Pull your chest toward the bar.",
+    "Squeeze your shoulder blades together.",
+    "Lower yourself slowly."
+  ],
+  "textSource": "opengym"
+}

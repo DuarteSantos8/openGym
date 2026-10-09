@@ -1,0 +1,22 @@
+{
+  "id": "9451",
+  "name": "lying floor 6 inch hold",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "A floor hold where you lie on your back with your legs and shoulders lifted about six inches. It trains deep abdominal tension and endurance.",
+  "instructions": [
+    "Lie on your back with your legs straight and arms by your sides.",
+    "Press your lower back into the floor and brace your abs.",
+    "Lift your heels and shoulders about 15 cm off the floor.",
+    "Keep your lower back flat and breathe steadily.",
+    "Hold for 20-30 seconds, then lower and rest."
+  ],
+  "textSource": "opengym"
+}

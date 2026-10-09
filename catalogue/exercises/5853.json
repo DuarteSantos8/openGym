@@ -1,0 +1,23 @@
+{
+  "id": "5853",
+  "name": "barbell incline rear delt row",
+  "bodyPart": "shoulders",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A row lying chest-down on an incline bench with elbows flared. It targets the rear shoulders and upper back.",
+  "instructions": [
+    "Lie face down on an incline bench holding a barbell with a wide grip.",
+    "Let your arms hang straight down.",
+    "Row the bar up with elbows flared out.",
+    "Squeeze your shoulder blades at the top.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

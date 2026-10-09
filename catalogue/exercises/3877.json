@@ -1,0 +1,24 @@
+{
+  "id": "3877",
+  "name": "medicine ball squat jump",
+  "bodyPart": "upper legs",
+  "equipment": "medicine ball",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A squat jump while holding a medicine ball, building explosive power in the legs.",
+  "instructions": [
+    "Hold a medicine ball at your chest with both hands.",
+    "Stand with feet shoulder-width apart.",
+    "Sink into a squat with your chest up.",
+    "Jump up as high as you can.",
+    "Land softly with bent knees.",
+    "Reset and repeat."
+  ],
+  "textSource": "opengym"
+}

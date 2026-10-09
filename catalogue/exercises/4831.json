@@ -1,0 +1,23 @@
+{
+  "id": "4831",
+  "name": "sliding floor pulldown on towel v. 2",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "core",
+    "rhomboids"
+  ],
+  "category": "calisthenics",
+  "description": "A floor pulldown where you slide your hands on a towel from overhead to your sides. It works the lats without any equipment.",
+  "instructions": [
+    "Kneel with your hands on a towel placed on a smooth floor, arms stretched forward.",
+    "Brace your core and keep your back flat.",
+    "Pull your elbows down and back as your hands slide toward you.",
+    "Squeeze your lats at the bottom.",
+    "Slide back out slowly to the start."
+  ],
+  "textSource": "opengym"
+}

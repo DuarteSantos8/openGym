@@ -1,0 +1,23 @@
+{
+  "id": "9698",
+  "name": "dumbbell chest supported row",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rhomboids",
+    "rear deltoids",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A two-arm dumbbell row with your chest on an incline bench. It isolates the back without strain on the lower spine.",
+  "instructions": [
+    "Lie face down on an incline bench with a dumbbell in each hand.",
+    "Let your arms hang straight down.",
+    "Row the weights toward your ribs.",
+    "Squeeze your shoulder blades together.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

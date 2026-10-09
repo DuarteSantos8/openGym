@@ -1,0 +1,21 @@
+{
+  "id": "8362",
+  "name": "resistance band standing single arm lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "resistance band",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "A one-arm side raise using band tension to train the middle part of the shoulder.",
+  "instructions": [
+    "Stand on the band and hold the handle in one hand at your side.",
+    "Keep a slight bend in the elbow and your torso still.",
+    "Raise your arm out to the side up to shoulder height.",
+    "Lower slowly against the band.",
+    "Complete the reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "2683",
+  "name": "barbell reverse wrist curl v. 2",
+  "bodyPart": "lower arms",
+  "equipment": "barbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist extensors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A wrist curl with an overhand grip that builds the muscles on top of the forearm.",
+  "instructions": [
+    "Sit and rest your forearms on your thighs or a bench, palms down, holding a barbell.",
+    "Let your wrists drop so the bar hangs down.",
+    "Extend your wrists to raise the bar as high as you can.",
+    "Pause briefly at the top.",
+    "Lower slowly and keep your forearms still."
+  ],
+  "textSource": "opengym"
+}

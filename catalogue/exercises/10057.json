@@ -1,0 +1,24 @@
+{
+  "id": "10057",
+  "name": "table top bridge jack",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "From a reverse tabletop, you hop your feet apart and together like a jumping jack. It works the glutes and legs.",
+  "instructions": [
+    "Sit with hands behind you, then lift hips into a tabletop with knees bent.",
+    "Squeeze your glutes to keep your hips high.",
+    "Hop your feet wide.",
+    "Hop them back together.",
+    "Keep going at a steady pace.",
+    "Keep your hips high and don't let them sag."
+  ],
+  "textSource": "opengym"
+}

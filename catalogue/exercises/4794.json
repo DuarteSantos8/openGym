@@ -1,0 +1,23 @@
+{
+  "id": "4794",
+  "name": "single leg jumping glute bridge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "An explosive one-leg glute bridge where you pop your hips off the floor. It builds glute power and balance.",
+  "instructions": [
+    "Lie on your back with one foot planted and the other leg lifted.",
+    "Drive through the planted heel and thrust your hips up.",
+    "Push hard enough that your hips leave the floor.",
+    "Land softly back in the bridge.",
+    "Finish the reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

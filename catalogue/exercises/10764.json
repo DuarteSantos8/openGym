@@ -1,0 +1,23 @@
+{
+  "id": "10764",
+  "name": "sled lying single leg squat",
+  "bodyPart": "upper legs",
+  "equipment": "sled machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A single-leg press-like squat on a sled while lying back. It builds leg strength with back support.",
+  "instructions": [
+    "Lie back on the sled with one foot on the platform.",
+    "Hold the handles and brace your core.",
+    "Bend your knee and lower the sled toward you.",
+    "Stop before your lower back lifts.",
+    "Push through your heel to extend the leg.",
+    "Do all reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

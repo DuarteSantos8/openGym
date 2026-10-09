@@ -1,0 +1,33 @@
+{
+  "id": "0405",
+  "name": "dumbbell seated shoulder press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "Seated with back support, you press dumbbells from shoulder height to overhead. It builds the shoulders and triceps.",
+  "instructions": [
+    "Sit on a bench with a dumbbell in each hand, resting on your thighs.",
+    "Raise the dumbbells to shoulder height, palms facing forward.",
+    "Press the dumbbells upward until your arms are fully extended overhead.",
+    "Pause for a moment at the top, then slowly lower the dumbbells back to shoulder height.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "deltoids"
+    ],
+    "secondaries": [
+      "chest",
+      "triceps",
+      "trapezius",
+      "serratus"
+    ]
+  },
+  "femaleVariant": "2237",
+  "textSource": "exercisedb"
+}

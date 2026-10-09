@@ -1,0 +1,22 @@
+{
+  "id": "1356",
+  "name": "lever one arm lateral high row",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "biceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A one-arm high row on a lever machine. It works the upper back and lats and lets you train each side on its own.",
+  "instructions": [
+    "Adjust the seat height and position yourself facing the machine.",
+    "Grasp the handle with one hand and keep your back straight.",
+    "Pull the handle towards your body, keeping your elbow close to your side.",
+    "Squeeze your back muscles at the top of the movement.",
+    "Slowly release the handle back to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

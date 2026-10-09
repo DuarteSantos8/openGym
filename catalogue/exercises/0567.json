@@ -1,0 +1,23 @@
+{
+  "id": "0567",
+  "name": "lateral twist box jump",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "obliques"
+  ],
+  "category": "plyometrics",
+  "description": "A box jump with a twist in the air that adds rotation. It builds explosive leg power and trunk control.",
+  "instructions": [
+    "Stand facing a sturdy box with feet shoulder-width apart.",
+    "Dip into a quarter squat and swing your arms back.",
+    "Jump up and rotate your hips to land sideways on the box.",
+    "Land softly with bent knees.",
+    "Step down and reset.",
+    "Alternate the twist direction each rep."
+  ],
+  "textSource": "opengym"
+}

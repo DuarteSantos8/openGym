@@ -1,0 +1,21 @@
+{
+  "id": "4370",
+  "name": "smith seated calf raise",
+  "bodyPart": "lower legs",
+  "equipment": "smith machine",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles"
+  ],
+  "category": "strength",
+  "description": "A seated calf raise with a barbell on a Smith machine, working the lower calf muscle.",
+  "instructions": [
+    "Sit on a bench under the bar with the balls of your feet on a raised block.",
+    "Rest the bar across your thighs with a pad.",
+    "Lift your heels as high as possible.",
+    "Pause at the top.",
+    "Lower slowly for a full stretch."
+  ],
+  "textSource": "opengym"
+}

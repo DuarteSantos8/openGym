@@ -1,0 +1,23 @@
+{
+  "id": "10383",
+  "name": "weighted sandbag deadlift",
+  "bodyPart": "upper legs",
+  "equipment": "sandbag",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back",
+    "grip muscles",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A deadlift with a sandbag, building hip and back strength with an awkward, grippy load.",
+  "instructions": [
+    "Stand over a sandbag with feet hip width apart.",
+    "Hinge at your hips, bend your knees and grip the bag.",
+    "Brace your core and drive through your feet to stand tall with the bag.",
+    "Push your hips back and lower the bag to the floor.",
+    "Keep your back flat throughout."
+  ],
+  "textSource": "opengym"
+}

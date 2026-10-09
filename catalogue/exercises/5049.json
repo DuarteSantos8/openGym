@@ -1,0 +1,24 @@
+{
+  "id": "5049",
+  "name": "superman w",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "rear deltoids",
+    "upper back",
+    "trapezius",
+    "hamstrings"
+  ],
+  "category": "calisthenics",
+  "description": "Face down, lift your chest and legs with arms in a W. It builds the lower back and upper back.",
+  "instructions": [
+    "Lie face down with elbows bent and hands by your head.",
+    "Squeeze your glutes.",
+    "Lift your chest, arms and legs slightly off the floor.",
+    "Pull your shoulder blades together and hold for a second.",
+    "Lower slowly."
+  ],
+  "textSource": "opengym"
+}

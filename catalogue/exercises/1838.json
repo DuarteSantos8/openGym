@@ -1,0 +1,21 @@
+{
+  "id": "1838",
+  "name": "neck extensor and rotational stretch",
+  "bodyPart": "neck",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "secondaryMuscles": [
+    "trapezius",
+    "upper back"
+  ],
+  "category": "stretching",
+  "description": "Combines forward bending with a turn of the head to stretch the back and side of the neck.",
+  "instructions": [
+    "Sit tall with your shoulders relaxed.",
+    "Turn your head about 45 degrees to one side.",
+    "Rest a hand on the back of your head and ease your nose toward your armpit.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

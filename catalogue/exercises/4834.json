@@ -1,0 +1,23 @@
+{
+  "id": "4834",
+  "name": "dumbbell alternate chest press on stability ball",
+  "bodyPart": "chest",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core",
+    "upper chest"
+  ],
+  "category": "strength",
+  "description": "Alternating dumbbell presses while resting on a stability ball. It builds the chest and trains core balance.",
+  "instructions": [
+    "Sit on a stability ball holding dumbbells and walk out until your upper back rests on it.",
+    "Lift your hips so your body forms a bridge.",
+    "Press one dumbbell up over your chest.",
+    "Lower it slowly while keeping your hips steady.",
+    "Alternate arms for each rep."
+  ],
+  "textSource": "opengym"
+}

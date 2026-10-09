@@ -1,0 +1,21 @@
+{
+  "id": "3258",
+  "name": "standing arms circling",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "upper back"
+  ],
+  "category": "mobility",
+  "description": "Big arm circles with both arms to warm up the shoulders.",
+  "instructions": [
+    "Stand tall with feet shoulder-width apart.",
+    "Extend both arms out to the sides.",
+    "Make slow circles forward.",
+    "Then reverse direction.",
+    "Keep your shoulders relaxed."
+  ],
+  "textSource": "opengym"
+}

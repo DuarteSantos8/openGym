@@ -1,0 +1,24 @@
+{
+  "id": "3505",
+  "name": "camel pose",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "chest",
+    "quadriceps",
+    "lower back"
+  ],
+  "category": "yoga",
+  "description": "A kneeling backbend that opens the chest, abs and front of the hips.",
+  "instructions": [
+    "Kneel with knees hip-width apart and hands on your lower back.",
+    "Push your hips forward and lift your chest.",
+    "Lean back and reach for your heels if comfortable.",
+    "Let your head relax back gently.",
+    "Hold for 20-30 seconds, breathing evenly.",
+    "Come up slowly, leading with your chest."
+  ],
+  "textSource": "opengym"
+}

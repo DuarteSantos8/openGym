@@ -1,0 +1,23 @@
+{
+  "id": "9312",
+  "name": "high bar incline push up",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "With your hands on a high bar, you do an easier incline push up. A great stepping stone toward floor push ups.",
+  "instructions": [
+    "Set a bar at about waist or chest height.",
+    "Place your hands on it slightly wider than your shoulders.",
+    "Walk your feet back so your body is in a straight line.",
+    "Lower your chest to the bar.",
+    "Press back up to straight arms.",
+    "Keep your core and glutes tight."
+  ],
+  "textSource": "opengym"
+}

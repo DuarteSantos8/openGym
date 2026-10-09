@@ -1,0 +1,22 @@
+{
+  "id": "5635",
+  "name": "dumbbell bent arm lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "trapezius",
+    "rotator cuff"
+  ],
+  "category": "strength",
+  "description": "Bent-arm lateral raise that shifts load onto the side delts.",
+  "instructions": [
+    "Stand with dumbbells and elbows bent.",
+    "Raise your elbows out to shoulder height.",
+    "Pause at the top.",
+    "Lower slowly.",
+    "Keep your torso still."
+  ],
+  "femaleVariant": "4659",
+  "textSource": "opengym"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "4366",
+  "name": "standing side crunch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A standing crunch where you lift a knee to the side toward your elbow. It works the obliques.",
+  "instructions": [
+    "Stand tall with your hands behind your head.",
+    "Lift one knee out to the side.",
+    "Crunch your elbow down toward it.",
+    "Return to standing.",
+    "Repeat on both sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4932",
+  "name": "lying bent knee figure 8",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core",
+    "adductors"
+  ],
+  "category": "mobility",
+  "description": "A lying hip mobility move where you draw a figure eight with the bent knee. It loosens the hips.",
+  "instructions": [
+    "Lie on your back with knees bent.",
+    "Lift one knee above the hip.",
+    "Trace a slow figure eight in the air with your knee.",
+    "Keep the movement smooth and controlled.",
+    "Keep your pelvis steady on the floor.",
+    "Switch legs after a set."
+  ],
+  "textSource": "opengym"
+}

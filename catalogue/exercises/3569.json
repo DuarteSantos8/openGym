@@ -1,0 +1,21 @@
+{
+  "id": "3569",
+  "name": "roll ball pectoral release",
+  "bodyPart": "chest",
+  "equipment": "roller",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "shoulders",
+    "upper chest"
+  ],
+  "category": "mobility",
+  "description": "Pin a ball between your chest and a wall to release tight pectoral muscles.",
+  "instructions": [
+    "Place a ball between your chest and a wall, just below the collarbone.",
+    "Lean in until you feel pressure on the chest muscle.",
+    "Roll slowly in small circles or up and down.",
+    "Hold on tender spots for a few breaths.",
+    "Switch sides after about 30-60 seconds."
+  ],
+  "textSource": "opengym"
+}

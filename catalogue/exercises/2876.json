@@ -1,0 +1,22 @@
+{
+  "id": "2876",
+  "name": "boomerang",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core",
+    "lower back"
+  ],
+  "category": "pilates",
+  "description": "An advanced Pilates sequence of rolling and balancing that tests core control.",
+  "instructions": [
+    "Sit tall with legs extended and crossed at the ankles.",
+    "Roll back and lift your legs overhead, then switch the cross.",
+    "Roll up to a teaser with your legs lifted.",
+    "Hold your hands behind you and then reach forward over your legs.",
+    "Move smoothly, using your abs to control each roll."
+  ],
+  "textSource": "opengym"
+}

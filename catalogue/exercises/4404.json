@@ -1,0 +1,22 @@
+{
+  "id": "4404",
+  "name": "swaying palm tree yoga pose",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lats",
+    "shoulders",
+    "core"
+  ],
+  "category": "yoga",
+  "description": "A standing side stretch with your arms overhead that lengthens the sides of the body and opens the shoulders.",
+  "instructions": [
+    "Stand tall with feet together and arms overhead, palms joined.",
+    "Reach up through your fingertips.",
+    "Lean gently to one side without twisting.",
+    "Breathe and hold for 15-20 seconds.",
+    "Return to center and repeat on the other side."
+  ],
+  "textSource": "opengym"
+}

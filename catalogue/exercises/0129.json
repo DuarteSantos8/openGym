@@ -1,0 +1,22 @@
+{
+  "id": "0129",
+  "name": "bench dip (knees bent)",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A bench dip with knees bent. A manageable way to train the triceps.",
+  "instructions": [
+    "Sit on the edge of a bench or chair with your hands gripping the edge next to your hips.",
+    "Slide your butt off the bench and straighten your legs in front of you, keeping your heels on the ground.",
+    "Bend your elbows and lower your body towards the ground, keeping your back close to the bench.",
+    "Pause for a moment at the bottom, then push yourself back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2376",
+  "textSource": "exercisedb"
+}

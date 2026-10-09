@@ -1,0 +1,21 @@
+{
+  "id": "3242",
+  "name": "lying lower back stretch (bent knee)",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "hip flexors"
+  ],
+  "category": "stretching",
+  "description": "A gentle lying stretch that draws the knee toward your chest to ease the lower back.",
+  "instructions": [
+    "Lie on your back with your knees bent.",
+    "Pull one knee toward your chest with both hands.",
+    "Keep your lower back relaxed on the floor.",
+    "Hold for 20-30 seconds.",
+    "Switch legs."
+  ],
+  "textSource": "opengym"
+}

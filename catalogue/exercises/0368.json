@@ -1,0 +1,22 @@
+{
+  "id": "0368",
+  "name": "dumbbell over bench revers wrist curl",
+  "bodyPart": "lower arms",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "biceps",
+    "brachialis"
+  ],
+  "category": "strength",
+  "description": "Forearms over a bench with palms down, you lift the dumbbells with your wrists. It strengthens the top of the forearms.",
+  "instructions": [
+    "Sit on a bench with your feet flat on the ground and hold a dumbbell in each hand, palms facing down.",
+    "Rest your forearms on the bench, allowing your wrists to hang off the edge.",
+    "Slowly curl your wrists upward, bringing the dumbbells towards your body.",
+    "Pause for a moment at the top, then slowly lower the dumbbells back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2630",
+  "textSource": "exercisedb"
+}

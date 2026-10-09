@@ -1,0 +1,22 @@
+{
+  "id": "2840",
+  "name": "control balance",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "hamstrings",
+    "core"
+  ],
+  "category": "pilates",
+  "description": "A challenging Pilates move where you balance on your shoulders while switching legs, building control and core strength.",
+  "instructions": [
+    "Lie on your back and roll your legs overhead.",
+    "Hold one ankle with both hands.",
+    "Extend the other leg out above you.",
+    "Switch legs with control.",
+    "Roll down slowly."
+  ],
+  "textSource": "opengym"
+}

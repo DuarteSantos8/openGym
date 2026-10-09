@@ -1,0 +1,21 @@
+{
+  "id": "5671",
+  "name": "bodyweight single leg kas glute bridge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A one-leg glute bridge with the knee kept forward. Works each glute on its own and tests hip balance.",
+  "instructions": [
+    "Lie on your back with one foot flat and the other leg lifted.",
+    "Keep your standing shin close to vertical.",
+    "Drive through your heel and lift your hips until in line with your torso.",
+    "Squeeze your glute at the top without arching.",
+    "Lower slowly, finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

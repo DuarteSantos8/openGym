@@ -1,0 +1,24 @@
+{
+  "id": "5972",
+  "name": "ladder drill",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "calves",
+    "quadriceps",
+    "ankles",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A footwork drill through an agility ladder that builds quick feet, rhythm and coordination.",
+  "instructions": [
+    "Lay an agility ladder flat on the ground.",
+    "Stand at the start in an athletic stance.",
+    "Step quickly with both feet into each square, one after another.",
+    "Stay light on the balls of your feet.",
+    "Pump your arms and keep your eyes up.",
+    "Jog back and repeat for several rounds."
+  ],
+  "textSource": "opengym"
+}

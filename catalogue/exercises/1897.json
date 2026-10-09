@@ -1,0 +1,22 @@
+{
+  "id": "1897",
+  "name": "standing leg up adductor stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "inner thighs",
+    "groin"
+  ],
+  "category": "stretching",
+  "description": "Stretch for the inner thigh with one leg raised and out to the side.",
+  "instructions": [
+    "Stand next to a bench or low support.",
+    "Place one foot on it with the leg out to the side.",
+    "Keep your hips square.",
+    "Shift your weight toward the raised leg.",
+    "Hold for 20-30 seconds, breathing slowly.",
+    "Switch sides and repeat."
+  ],
+  "textSource": "opengym"
+}

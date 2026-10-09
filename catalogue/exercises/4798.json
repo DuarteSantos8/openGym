@@ -1,0 +1,23 @@
+{
+  "id": "4798",
+  "name": "suspender alternate superman",
+  "bodyPart": "waist",
+  "equipment": "suspension trainer",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes",
+    "rear deltoids",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A superman variation with the feet in suspension straps, lifting opposite arm and leg in turn. It trains the lower back and core.",
+  "instructions": [
+    "Place your feet in the suspension straps and get into a plank face down.",
+    "Brace your core and keep your hips level.",
+    "Lift one arm forward while keeping your body steady.",
+    "Return it, then lift the other arm.",
+    "Move slowly and avoid sagging your lower back.",
+    "Alternate sides for the full set."
+  ],
+  "textSource": "opengym"
+}

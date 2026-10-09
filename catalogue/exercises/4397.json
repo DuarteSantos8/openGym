@@ -1,0 +1,24 @@
+{
+  "id": "4397",
+  "name": "barbell front rack split squat",
+  "bodyPart": "upper legs",
+  "equipment": "barbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "A split squat with the bar in a front rack position, building leg strength and core control.",
+  "instructions": [
+    "Rest the barbell on your front shoulders with elbows high.",
+    "Take a split stance with one foot well in front of the other.",
+    "Lower your back knee toward the floor while keeping your torso upright.",
+    "Press through the front foot to rise.",
+    "Finish your reps, then switch legs."
+  ],
+  "femaleVariant": "6556",
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "1078",
+  "name": "suspension hip bridge",
+  "bodyPart": "upper legs",
+  "equipment": "suspension trainer",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A glute bridge with heels in straps, which adds an instability challenge. It builds glutes and hamstrings.",
+  "instructions": [
+    "Lie on your back with your heels in the straps and knees bent.",
+    "Place your arms by your sides.",
+    "Drive through your heels and lift your hips.",
+    "Squeeze your glutes at the top in a straight line from shoulders to knees.",
+    "Lower slowly without touching down.",
+    "Repeat for reps."
+  ],
+  "textSource": "opengym"
+}

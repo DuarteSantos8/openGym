@@ -1,0 +1,22 @@
+{
+  "id": "0830",
+  "name": "weighted bench dip",
+  "bodyPart": "upper arms",
+  "equipment": "weighted",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A bench dip with added weight on the lap or hips. It builds the triceps and chest.",
+  "instructions": [
+    "Sit on a bench with your hands gripping the edge, fingers pointing forward.",
+    "Slide your butt off the bench, supporting your weight with your hands.",
+    "Lower your body by bending your elbows until your upper arms are parallel to the floor.",
+    "Push yourself back up to the starting position by straightening your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "11442",
+  "textSource": "exercisedb"
+}

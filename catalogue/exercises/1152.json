@@ -1,0 +1,23 @@
+{
+  "id": "1152",
+  "name": "suspender twist up",
+  "bodyPart": "waist",
+  "equipment": "suspension trainer",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "You pull the knees up and twist across the body from a plank with the feet in the straps.",
+  "instructions": [
+    "Put your feet in the straps and set a high plank.",
+    "Pull your knees up and rotate them toward one elbow.",
+    "Pause and squeeze the obliques.",
+    "Extend your legs back to plank.",
+    "Repeat to the other side.",
+    "Keep your hands firmly planted."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "5160",
+  "name": "incline close grip push up",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up with hands close together on a raised surface. The easier angle keeps the focus on your triceps.",
+  "instructions": [
+    "Place your hands close together on a bench or sturdy box, just under your chest.",
+    "Step back until your body is straight from head to heels.",
+    "Lower your chest toward the edge, elbows tucked close to your ribs.",
+    "Press back up until your arms are straight.",
+    "Keep your hips from sagging throughout."
+  ],
+  "textSource": "opengym"
+}

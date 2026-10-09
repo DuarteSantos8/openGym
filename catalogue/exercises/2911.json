@@ -1,0 +1,24 @@
+{
+  "id": "2911",
+  "name": "dumbbell high low carry",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "shoulders",
+    "core",
+    "obliques",
+    "forearms",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A walking carry with one dumbbell overhead and one at your side. The mismatch trains shoulder stability and trunk control.",
+  "instructions": [
+    "Hold one dumbbell overhead with a locked, stable arm and the other at your side.",
+    "Stand tall with your ribs down and abs braced.",
+    "Walk with steady steps and keep the top arm stacked over your shoulder.",
+    "Walk the set distance, then lower the weights carefully.",
+    "Swap positions and repeat."
+  ],
+  "textSource": "opengym"
+}

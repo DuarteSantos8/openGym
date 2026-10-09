@@ -1,0 +1,21 @@
+{
+  "id": "1504",
+  "name": "band skull crusher",
+  "bodyPart": "upper arms",
+  "equipment": "band",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "forearms",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A lying triceps extension using a band for resistance. It isolates the back of the upper arm.",
+  "instructions": [
+    "Anchor the band behind your head and lie on your back holding the ends.",
+    "Start with your arms straight above your chest.",
+    "Bend only your elbows to lower your hands toward your forehead.",
+    "Extend your arms back up against the band.",
+    "Keep your upper arms still throughout."
+  ],
+  "textSource": "opengym"
+}

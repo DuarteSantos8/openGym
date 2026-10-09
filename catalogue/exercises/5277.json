@@ -1,0 +1,22 @@
+{
+  "id": "5277",
+  "name": "bodyweight glute dominant step up",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A step-up that emphasises the glutes by leaning slightly forward. It builds single-leg strength.",
+  "instructions": [
+    "Stand in front of a bench and place one foot on it.",
+    "Lean your torso slightly forward.",
+    "Press through your heel and step up until standing.",
+    "Lower slowly back down.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

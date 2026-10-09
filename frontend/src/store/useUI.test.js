@@ -266,3 +266,40 @@ describe('rest readiness and optional timed-set overtime', () => {
     expect(replacement).not.toHaveBeenCalled()
   })
 })
+
+describe('addRest adjustments', () => {
+  beforeEach(() => { vi.useFakeTimers(); useUI.setState({ timer: null }) })
+  afterEach(() => { useUI.getState().stopRest(); vi.useRealTimers() })
+
+  it('reduces left without shrinking total so progress bar reflects the decrement', () => {
+    useUI.getState().startRest(60)
+    expect(useUI.getState().timer.left).toBe(60)
+    expect(useUI.getState().timer.total).toBe(60)
+
+    useUI.getState().addRest(-15)
+    expect(useUI.getState().timer.left).toBe(45)
+    expect(useUI.getState().timer.total).toBe(60)
+  })
+
+  it('stops timer if subtraction reaches zero or below', () => {
+    useUI.getState().startRest(15)
+    useUI.getState().addRest(-15)
+    expect(useUI.getState().timer).toBe(null)
+  })
+
+  it('increases left and keeps total if still within initial total', () => {
+    useUI.getState().startRest(60)
+    useUI.getState().addRest(-15) // left: 45, total: 60
+    useUI.getState().addRest(10)  // left: 55, total: 60
+    expect(useUI.getState().timer.left).toBe(55)
+    expect(useUI.getState().timer.total).toBe(60)
+  })
+
+  it('expands total if time added exceeds the initial total', () => {
+    useUI.getState().startRest(60)
+    useUI.getState().addRest(15)
+    expect(useUI.getState().timer.left).toBe(75)
+    expect(useUI.getState().timer.total).toBe(75)
+  })
+})
+

@@ -1,0 +1,23 @@
+{
+  "id": "4771",
+  "name": "jump split with hands on hip",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A jumping lunge where you switch your legs in the air with hands on hips. It builds explosive leg power.",
+  "instructions": [
+    "Stand tall with hands on your hips.",
+    "Step into a lunge position.",
+    "Jump and switch legs in the air.",
+    "Land softly in a lunge on the other leg.",
+    "Keep your chest up and repeat."
+  ],
+  "textSource": "opengym"
+}

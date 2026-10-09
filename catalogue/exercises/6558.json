@@ -1,0 +1,22 @@
+{
+  "id": "6558",
+  "name": "dumbbell banded wall sit",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "hamstrings"
+  ],
+  "category": "isometric",
+  "description": "A wall sit with a band around the knees and a dumbbell held in your lap, adding glute work to the hold.",
+  "instructions": [
+    "Put a band around your thighs and stand with your back against a wall.",
+    "Slide down until your thighs are about parallel.",
+    "Hold a dumbbell in both hands in front of you.",
+    "Push your knees out against the band.",
+    "Hold for 20-40 seconds."
+  ],
+  "textSource": "opengym"
+}

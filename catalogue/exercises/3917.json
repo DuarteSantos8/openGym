@@ -1,0 +1,24 @@
+{
+  "id": "3917",
+  "name": "barbell reverse grip floor press",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "upper chest",
+    "shoulders",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A floor press with a reverse grip, which shifts more work to the triceps and upper chest.",
+  "instructions": [
+    "Lie on the floor with a barbell above your chest, hands in an underhand grip.",
+    "Plant your feet and brace your core.",
+    "Lower the bar until your upper arms touch the floor.",
+    "Pause briefly.",
+    "Press the bar back up.",
+    "Keep your wrists straight."
+  ],
+  "textSource": "opengym"
+}

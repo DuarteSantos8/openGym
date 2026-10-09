@@ -1,0 +1,21 @@
+{
+  "id": "11653",
+  "name": "standing glute squeeze",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "core"
+  ],
+  "category": "isometric",
+  "description": "A simple standing contraction that wakes up the glutes and helps you feel them working before heavier lifts.",
+  "instructions": [
+    "Stand tall with your feet hip width apart and your arms relaxed.",
+    "Tighten your abs lightly so your ribs stay stacked over your hips.",
+    "Squeeze your glutes together as hard as you comfortably can.",
+    "Hold for 3-5 seconds without leaning back or tucking your hips excessively.",
+    "Relax fully, then repeat for 10-15 reps."
+  ],
+  "textSource": "opengym"
+}

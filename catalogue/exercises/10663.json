@@ -1,0 +1,24 @@
+{
+  "id": "10663",
+  "name": "ring skin the cat",
+  "bodyPart": "back",
+  "equipment": "suspension trainer",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "shoulders",
+    "lats",
+    "core",
+    "biceps"
+  ],
+  "category": "mobility",
+  "description": "A gymnastic move where you rotate backward through the rings. It builds shoulder mobility and control.",
+  "instructions": [
+    "Hang from the rings with a firm grip.",
+    "Tuck your knees and lift your hips overhead.",
+    "Rotate backward, passing your legs between your arms.",
+    "Lower your feet toward the floor until you stretch your shoulders.",
+    "Pause, then reverse the motion with control.",
+    "Move slowly and stop if you feel pinching."
+  ],
+  "textSource": "opengym"
+}

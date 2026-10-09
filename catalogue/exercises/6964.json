@@ -1,0 +1,24 @@
+{
+  "id": "6964",
+  "name": "dumbbell standing t spine press",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "core",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A standing dumbbell press that adds upper back extension, training shoulder strength and posture together.",
+  "instructions": [
+    "Stand with your feet hip-width apart and the dumbbells at shoulder height.",
+    "Brace your abs and lift your chest tall.",
+    "Press the dumbbells overhead while gently extending your upper back.",
+    "Keep your ribs down and avoid arching your lower back.",
+    "Lower to your shoulders with control.",
+    "Repeat for the planned reps."
+  ],
+  "textSource": "opengym"
+}

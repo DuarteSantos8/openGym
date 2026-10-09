@@ -1,0 +1,23 @@
+{
+  "id": "4383",
+  "name": "medicine ball step behind rotational throw",
+  "bodyPart": "full body",
+  "equipment": "medicine ball",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "glutes",
+    "shoulders",
+    "quadriceps"
+  ],
+  "category": "plyometrics",
+  "description": "An explosive rotational throw that starts with a step behind. It builds power through the hips and trunk.",
+  "instructions": [
+    "Stand sideways to a wall, holding a medicine ball at hip height.",
+    "Step your rear foot behind you and load your weight onto it.",
+    "Rotate your hips and torso toward the wall.",
+    "Throw the ball hard into the wall at chest height.",
+    "Catch it, reset, and switch sides after your set."
+  ],
+  "textSource": "opengym"
+}

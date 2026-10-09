@@ -1,0 +1,22 @@
+{
+  "id": "4331",
+  "name": "crunch single leg lift",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "lower abs",
+    "hip flexors",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A crunch where one leg lifts as you curl up. It adds a lower-abs challenge to the basic crunch.",
+  "instructions": [
+    "Lie on your back with knees bent and hands behind your head.",
+    "Extend one leg and lift it a few inches off the floor.",
+    "Curl your shoulders up toward your hips.",
+    "Lower slowly, then repeat.",
+    "Switch legs halfway through or alternate each rep."
+  ],
+  "textSource": "opengym"
+}

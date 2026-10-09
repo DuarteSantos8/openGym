@@ -1,0 +1,23 @@
+{
+  "id": "0505",
+  "name": "jack split crunches",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "obliques",
+    "quadriceps"
+  ],
+  "category": "calisthenics",
+  "description": "A crunch with legs that split apart like a jumping jack while lying down. It trains the abs and keeps the legs working.",
+  "instructions": [
+    "Lie on your back with your arms extended overhead and legs together.",
+    "Lift your shoulders and legs as you crunch up.",
+    "Open your legs wide in a split while your hands reach forward.",
+    "Bring the legs back together as you lower.",
+    "Keep your lower back pressed down.",
+    "Repeat at a smooth, steady pace."
+  ],
+  "textSource": "opengym"
+}

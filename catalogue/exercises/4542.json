@@ -1,0 +1,25 @@
+{
+  "id": "4542",
+  "name": "kettlebell clean and jerk",
+  "bodyPart": "full body",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "quadriceps",
+    "triceps",
+    "core"
+  ],
+  "category": "olympic",
+  "description": "A kettlebell version of the classic lift: swing it to the shoulder, then drive it overhead with a leg push.",
+  "instructions": [
+    "Stand over a kettlebell with feet shoulder-width apart and hinge to grab it.",
+    "Swing it back between your legs, then drive your hips forward.",
+    "Pull the bell up and guide it into the rack position at your shoulder.",
+    "Dip slightly with your knees, then explode up.",
+    "Punch the kettlebell overhead and lock out your arm.",
+    "Lower it back to the rack, then to the floor with control. Switch sides."
+  ],
+  "textSource": "opengym"
+}

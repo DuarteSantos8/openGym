@@ -1,0 +1,23 @@
+{
+  "id": "6237",
+  "name": "ring one arm biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "suspension trainer",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms",
+    "brachialis",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A one-arm curl on a ring. It builds the biceps with a lot of control.",
+  "instructions": [
+    "Hold one ring and lean back.",
+    "Extend your arm.",
+    "Curl your hand toward your head.",
+    "Keep your elbow up.",
+    "Lower slowly.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

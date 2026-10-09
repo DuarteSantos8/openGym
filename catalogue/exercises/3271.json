@@ -1,0 +1,22 @@
+{
+  "id": "3271",
+  "name": "run and half knee bend",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "calves"
+  ],
+  "category": "cardio",
+  "description": "Alternate running in place with a shallow knee bend to keep the heart rate up while the legs work.",
+  "instructions": [
+    "Stand tall with feet hip-width apart.",
+    "Jog on the spot for a few steps.",
+    "Pause into a shallow knee bend, hips back and chest up.",
+    "Stand tall and go straight back into running.",
+    "Repeat for 30-60 seconds."
+  ],
+  "textSource": "opengym"
+}

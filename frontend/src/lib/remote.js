@@ -8,6 +8,7 @@
 // /api/pair/create + /api/pair/redeem.
 import { pairRedeem, setRemoteAuth } from './api.js'
 import { loadRemoteFile, saveRemoteFile } from './mobile.js'
+import { clearCfAccess } from './cf-access.js'
 
 // Accepts what someone actually types: bare host, no scheme, trailing slash, stray whitespace.
 // Defaults to https:// (self-hosting docs already push for HTTPS; the one exception, localhost,
@@ -31,9 +32,11 @@ export async function chooseLocal() {
   await saveRemoteFile({ mode: 'local' })
 }
 
+// The server's Cloudflare Access token goes with it (lib/cf-access.js).
 export async function forgetRemote() {
   await saveRemoteFile({ mode: 'local' })
   setRemoteAuth('', null)
+  await clearCfAccess()
 }
 
 // The server renewed the token (GET /api/me hands one out once the old is past half its life):

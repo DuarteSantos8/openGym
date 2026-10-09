@@ -1,0 +1,24 @@
+{
+  "id": "2560",
+  "name": "bench full squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A deep squat down to a bench that builds the legs and hips.",
+  "instructions": [
+    "Stand in front of a bench with your feet shoulder-width apart.",
+    "Keep your chest up.",
+    "Sit your hips back and lower until you touch the bench.",
+    "Pause briefly without relaxing.",
+    "Push through your heels to stand.",
+    "Repeat for the planned reps."
+  ],
+  "textSource": "opengym"
+}

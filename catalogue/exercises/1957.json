@@ -1,0 +1,22 @@
+{
+  "id": "1957",
+  "name": "standing shin stretch",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "shins",
+    "ankles",
+    "feet"
+  ],
+  "category": "stretching",
+  "description": "Standing with the top of the foot on the floor to stretch the muscles at the front of the shin.",
+  "instructions": [
+    "Stand tall and hold a wall for balance.",
+    "Place the top of one foot on the floor behind you with the toes curled under.",
+    "Gently press the foot down by bending the standing knee.",
+    "Feel the stretch along the front of the shin and ankle.",
+    "Hold for 20-30 seconds, then switch sides."
+  ],
+  "textSource": "opengym"
+}

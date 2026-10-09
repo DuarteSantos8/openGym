@@ -1,0 +1,23 @@
+{
+  "id": "4754",
+  "name": "dumbbell side squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "hamstrings",
+    "inner thighs"
+  ],
+  "category": "strength",
+  "description": "A wide side squat with a dumbbell, bending one leg while the other stays straight. It works the thighs and inner legs.",
+  "instructions": [
+    "Stand with feet wide holding a dumbbell at your chest.",
+    "Shift to one side and bend that knee, sitting your hips back.",
+    "Keep the other leg straight and both feet flat.",
+    "Lower until your thigh is parallel to the floor.",
+    "Push back to the middle and alternate sides."
+  ],
+  "textSource": "opengym"
+}

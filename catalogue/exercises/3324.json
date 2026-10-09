@@ -1,0 +1,24 @@
+{
+  "id": "3324",
+  "name": "band alternate incline chest press with twist",
+  "bodyPart": "chest",
+  "equipment": "band",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "upper chest",
+    "triceps",
+    "shoulders",
+    "obliques",
+    "core"
+  ],
+  "category": "strength",
+  "description": "An alternating band press angled upward, with a torso twist added to bring in your core. It works the upper chest and trunk together.",
+  "instructions": [
+    "Anchor a band low behind you and hold the handles at chest height.",
+    "Stand in a split stance with your core braced.",
+    "Press one hand up and forward while rotating your torso slightly.",
+    "Return under control and press with the other arm.",
+    "Keep your hips steady and alternate sides for the full set."
+  ],
+  "textSource": "opengym"
+}

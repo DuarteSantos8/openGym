@@ -1,0 +1,22 @@
+{
+  "id": "11254",
+  "name": "cable standing reverse fly v. 3",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "rhomboids",
+    "trapezius"
+  ],
+  "category": "strength",
+  "description": "A standing cable reverse fly aimed at the rear shoulders and upper back. It helps balance all the pressing you do.",
+  "instructions": [
+    "Set the pulleys at shoulder height and hold the opposite handles, arms crossed.",
+    "Stand tall with soft elbows.",
+    "Pull your hands apart and back in a wide arc.",
+    "Squeeze your shoulder blades together.",
+    "Return slowly to the crossed start."
+  ],
+  "textSource": "opengym"
+}

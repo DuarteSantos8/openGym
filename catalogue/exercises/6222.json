@@ -1,0 +1,23 @@
+{
+  "id": "6222",
+  "name": "suspender squat jump",
+  "bodyPart": "upper legs",
+  "equipment": "suspension trainer",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hamstrings"
+  ],
+  "category": "plyometrics",
+  "description": "A squat jump holding suspension straps for balance. It builds explosive leg power.",
+  "instructions": [
+    "Hold the straps with your arms extended.",
+    "Lower into a squat.",
+    "Jump up explosively.",
+    "Land softly.",
+    "Go straight into the next squat.",
+    "Keep your chest tall."
+  ],
+  "textSource": "opengym"
+}

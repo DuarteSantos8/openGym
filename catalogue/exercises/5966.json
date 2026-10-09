@@ -1,0 +1,23 @@
+{
+  "id": "5966",
+  "name": "jump twist",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "obliques",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A jump with a midair trunk rotation that trains explosive leg power and core control.",
+  "instructions": [
+    "Stand with feet shoulder-width apart in a slight squat.",
+    "Jump up and rotate your hips and feet to one side.",
+    "Land softly with bent knees.",
+    "Jump again and twist to the other side.",
+    "Keep your chest up and land quietly."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "1538",
+  "name": "barbell split jerk",
+  "bodyPart": "full body",
+  "equipment": "barbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "quadriceps",
+    "glutes",
+    "core",
+    "calves"
+  ],
+  "category": "olympic",
+  "description": "An overhead lift where you dip, drive and catch the bar with locked arms in a split stance.",
+  "instructions": [
+    "Rack the bar on your front shoulders with elbows slightly forward.",
+    "Dip a short way with your torso upright.",
+    "Drive up explosively and press the bar overhead.",
+    "Split your feet front and back and catch with locked arms.",
+    "Bring your feet back together and lower the bar with control."
+  ],
+  "textSource": "opengym"
+}

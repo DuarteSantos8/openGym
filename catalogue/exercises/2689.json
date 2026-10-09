@@ -1,0 +1,22 @@
+{
+  "id": "2689",
+  "name": "cable one arm front raise",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A single-arm front raise with constant cable tension, training the front of the shoulder.",
+  "instructions": [
+    "Stand facing away from a low cable pulley with the handle in one hand.",
+    "Keep your arm nearly straight and raise it forward to shoulder height.",
+    "Pause briefly at the top.",
+    "Lower with control.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

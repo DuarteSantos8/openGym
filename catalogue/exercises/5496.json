@@ -1,0 +1,23 @@
+{
+  "id": "5496",
+  "name": "kettlebell elevated goblet squat",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "adductors"
+  ],
+  "category": "strength",
+  "description": "Goblet squat with your heels raised on a plate or wedge so the knees travel forward and the quads work harder.",
+  "instructions": [
+    "Stand with heels on a low plate, holding a kettlebell at your chest.",
+    "Keep your chest tall and elbows pointing down.",
+    "Squat down between your knees as deep as comfortable.",
+    "Drive through your feet to stand up.",
+    "Keep your torso upright throughout."
+  ],
+  "textSource": "opengym"
+}

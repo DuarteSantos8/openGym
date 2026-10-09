@@ -1,0 +1,25 @@
+{
+  "id": "3361",
+  "name": "skater hops",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "glutes",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "A side-to-side hop that mimics a speed skater, landing on one foot at a time. It builds leg power and balance.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart.",
+    "Bend your knees slightly and jump to the right, landing on your right foot.",
+    "As you land, swing your left leg behind your right leg and tap the ground with your left toes.",
+    "Immediately jump to the left, landing on your left foot.",
+    "As you land, swing your right leg behind your left leg and tap the ground with your right toes.",
+    "Continue alternating sides, jumping and tapping the ground with each leg.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,26 @@
+{
+  "id": "3116",
+  "name": "band fixed back underhand pulldown",
+  "bodyPart": "back",
+  "equipment": "band",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "rhomboids",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A band pulldown with an underhand grip from an overhead anchor. Builds the lats and biceps.",
+  "instructions": [
+    "Attach the band to a sturdy anchor point above your head.",
+    "Stand facing the anchor point with your feet shoulder-width apart.",
+    "Grasp the band with an underhand grip, hands slightly wider than shoulder-width apart.",
+    "Step back to create tension in the band, keeping your arms fully extended.",
+    "Engage your core and squeeze your shoulder blades together.",
+    "Pull the band down towards your chest, leading with your elbows.",
+    "Pause for a moment at the bottom of the movement, feeling the contraction in your lats.",
+    "Slowly release the tension in the band and return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

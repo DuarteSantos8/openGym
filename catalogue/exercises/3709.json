@@ -1,0 +1,23 @@
+{
+  "id": "3709",
+  "name": "dumbbell overhead squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "core",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A squat with dumbbells held locked out overhead. It builds leg strength and demands strong shoulders and core.",
+  "instructions": [
+    "Press two dumbbells overhead with your arms straight.",
+    "Stand with your feet shoulder width apart.",
+    "Sit down into a squat while keeping the weights above your head.",
+    "Keep your chest up and ribs down.",
+    "Stand back up, driving through your heels."
+  ],
+  "textSource": "opengym"
+}

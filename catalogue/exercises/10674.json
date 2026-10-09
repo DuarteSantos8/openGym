@@ -1,0 +1,24 @@
+{
+  "id": "10674",
+  "name": "kettlebell back squat",
+  "bodyPart": "upper legs",
+  "equipment": "kettlebell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "core",
+    "upper back"
+  ],
+  "category": "strength",
+  "description": "A squat with a kettlebell held across your upper back. It loads the legs and challenges your trunk.",
+  "instructions": [
+    "Hold the kettlebell behind your neck on your upper back with both hands.",
+    "Stand with feet shoulder-width apart.",
+    "Brace your core and sit down and back.",
+    "Lower to parallel while keeping your chest up.",
+    "Drive through your heels to stand.",
+    "Keep your elbows pointing down."
+  ],
+  "textSource": "opengym"
+}

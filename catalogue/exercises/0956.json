@@ -1,0 +1,23 @@
+{
+  "id": "0956",
+  "name": "lotus yoga pose padmasana",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors",
+    "adductors",
+    "ankles",
+    "core"
+  ],
+  "category": "yoga",
+  "description": "Sit cross-legged with each foot resting on the opposite thigh. It opens the hips and encourages a calm, upright posture.",
+  "instructions": [
+    "Sit tall with legs stretched out in front of you.",
+    "Bend one knee and place that foot high on the opposite thigh.",
+    "Bend the other knee and place that foot on top, if your hips allow it.",
+    "Rest your hands on your knees and lengthen your spine.",
+    "Breathe slowly for 30-60 seconds, then switch which leg goes on top."
+  ],
+  "textSource": "opengym"
+}

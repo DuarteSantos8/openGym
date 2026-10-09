@@ -1,0 +1,22 @@
+{
+  "id": "11050",
+  "name": "resistance band seated bent knee abduction feet floor off",
+  "bodyPart": "upper legs",
+  "equipment": "band",
+  "target": "abductors",
+  "secondaryMuscles": [
+    "glutes",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Seated knee abduction against band resistance with feet lifted. It trains the outer hips.",
+  "instructions": [
+    "Sit tall with a band around your thighs and feet off the floor.",
+    "Hold the seat edge.",
+    "Open your knees against the band.",
+    "Pause.",
+    "Close slowly.",
+    "Keep your back straight."
+  ],
+  "textSource": "opengym"
+}

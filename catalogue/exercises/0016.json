@@ -1,0 +1,21 @@
+{
+  "id": "0016",
+  "name": "assisted prone hamstring",
+  "bodyPart": "upper legs",
+  "equipment": "assisted",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "Lying face down, you curl your legs toward your glutes against assistance. Trains the hamstrings.",
+  "instructions": [
+    "Lie face down on a mat or bench with your legs fully extended.",
+    "Have a partner or use a resistance band to secure your ankles.",
+    "Engage your hamstrings and lift your legs towards your glutes, keeping your knees straight.",
+    "Pause for a moment at the top, then slowly lower your legs back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "6913",
+  "name": "sitting scapular adduction",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rhomboids",
+    "trapezius",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A seated drill squeezing the shoulder blades together. It strengthens the muscles that support good posture.",
+  "instructions": [
+    "Sit tall with arms relaxed at your sides or held in front.",
+    "Keep your neck relaxed.",
+    "Pull your shoulder blades together and slightly down.",
+    "Hold the squeeze for 2-3 seconds.",
+    "Release slowly and repeat."
+  ],
+  "femaleVariant": "6614",
+  "textSource": "opengym"
+}

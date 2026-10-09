@@ -1,0 +1,23 @@
+{
+  "id": "5282",
+  "name": "landmine kneeling thruster press",
+  "bodyPart": "shoulders",
+  "equipment": "landmine",
+  "target": "delts",
+  "secondaryMuscles": [
+    "quadriceps",
+    "triceps",
+    "glutes",
+    "core"
+  ],
+  "category": "strength",
+  "description": "From a kneeling position, you drive the landmine bar up into a press. It builds shoulder power.",
+  "instructions": [
+    "Kneel facing the landmine and hold the end of the bar at your chest.",
+    "Sit your hips back toward your heels.",
+    "Drive through your hips and press the bar up.",
+    "Straighten your arms fully at the top.",
+    "Lower back to your chest with control."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "2301",
+  "name": "rear leg hook kick",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "hip flexors",
+    "core"
+  ],
+  "category": "combat",
+  "description": "A martial arts kick with the back leg that swings in an arc to strike with the heel, training hip mobility and control.",
+  "instructions": [
+    "Stand in a fighting stance with your hands up.",
+    "Shift your weight onto the lead foot.",
+    "Lift the rear knee and extend the leg across the target.",
+    "Hook the heel around in an arc.",
+    "Bring the leg back under control.",
+    "Return to stance and repeat, then switch sides."
+  ],
+  "textSource": "opengym"
+}

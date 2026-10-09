@@ -1,0 +1,22 @@
+{
+  "id": "10003",
+  "name": "resistance band sitting floor ankle dorsi flexion",
+  "bodyPart": "lower legs",
+  "equipment": "resistance band",
+  "target": "calves",
+  "secondaryMuscles": [
+    "shins",
+    "ankles",
+    "feet"
+  ],
+  "category": "rehab",
+  "description": "Pull your toes toward your shin against a band while seated. It strengthens the muscles at the front of the lower leg.",
+  "instructions": [
+    "Sit on the floor with your legs straight and loop the band around the top of one foot.",
+    "Hold the band ends or anchor them so there is light tension.",
+    "Pull your toes toward your shin.",
+    "Pause, then return slowly.",
+    "Complete all reps, then switch feet."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "4600",
+  "name": "roll ball lower back",
+  "bodyPart": "back",
+  "equipment": "roller",
+  "target": "spine",
+  "secondaryMuscles": [
+    "glutes"
+  ],
+  "category": "mobility",
+  "description": "Rolling a small ball under your lower back to release tight spots and loosen the muscles beside the spine.",
+  "instructions": [
+    "Lie on your back with a small ball under one side of your lower back.",
+    "Bend your knees and keep your feet flat on the floor.",
+    "Shift your weight slowly so the ball rolls along the muscle next to the spine.",
+    "Pause on tender spots for a few breaths, then move on.",
+    "Switch sides and keep the pressure comfortable, never on the spine itself."
+  ],
+  "textSource": "opengym"
+}

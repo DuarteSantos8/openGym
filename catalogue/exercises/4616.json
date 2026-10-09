@@ -1,0 +1,22 @@
+{
+  "id": "4616",
+  "name": "leg front kick",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "quadriceps"
+  ],
+  "category": "mobility",
+  "description": "A standing leg swing forward that warms up the hip flexors and hamstrings and challenges your balance.",
+  "instructions": [
+    "Stand tall with your arms out for balance or hands on your hips.",
+    "Shift your weight onto one foot.",
+    "Swing the other leg forward and up in a controlled kick, keeping it fairly straight.",
+    "Lower it with control without leaning back.",
+    "Complete your reps, then switch legs."
+  ],
+  "femaleVariant": "5082",
+  "textSource": "opengym"
+}

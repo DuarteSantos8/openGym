@@ -1,0 +1,24 @@
+{
+  "id": "4214",
+  "name": "lever low row (plate loaded)",
+  "bodyPart": "back",
+  "equipment": "leverage machine",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "biceps",
+    "rhomboids",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A plate-loaded machine row pulling from low to your torso. It builds the mid back and lats with a guided path.",
+  "instructions": [
+    "Sit with your chest against the pad and your feet planted.",
+    "Grab both handles with straight arms.",
+    "Pull the handles toward your lower ribs, squeezing your shoulder blades.",
+    "Pause for a moment at the end.",
+    "Let the arms extend slowly under control.",
+    "Do not lean back to move the weight."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "4948",
+  "name": "cable kneeling one arm lat pulldown",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "rhomboids",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A one arm lat pulldown from a kneeling position. It builds the lats and tests your core control.",
+  "instructions": [
+    "Kneel facing the cable stack and grab the handle with one hand.",
+    "Sit tall with your chest up.",
+    "Pull the handle down toward your shoulder.",
+    "Squeeze your lat at the bottom.",
+    "Let the arm rise back up slowly.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

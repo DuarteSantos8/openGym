@@ -1,0 +1,24 @@
+{
+  "id": "4229",
+  "name": "assault run",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings",
+    "calves",
+    "glutes"
+  ],
+  "category": "cardio",
+  "description": "A run on a self-powered curved treadmill where your effort sets the speed. It is a hard cardio workout for the legs and lungs.",
+  "instructions": [
+    "Step onto the curved treadmill and hold the handles.",
+    "Lean slightly forward and begin to run.",
+    "Drive your knees and push the belt back with each stride.",
+    "Keep a steady rhythm, or alternate sprints and rest.",
+    "Land on the balls of your feet.",
+    "Slow down gradually to finish."
+  ],
+  "textSource": "opengym"
+}

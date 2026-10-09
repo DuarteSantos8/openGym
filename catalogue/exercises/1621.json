@@ -1,0 +1,22 @@
+{
+  "id": "1621",
+  "name": "dumbbell one arm hammer press on exercise ball",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "chest"
+  ],
+  "category": "strength",
+  "description": "A one-arm neutral-grip press while lying on an exercise ball. It trains the triceps while the core keeps you stable.",
+  "instructions": [
+    "Sit on an exercise ball with your feet flat on the ground and your back straight.",
+    "Hold a dumbbell in one hand with your palm facing inwards and your elbow bent at a 90-degree angle.",
+    "Place your other hand on your hip for stability.",
+    "Press the dumbbell upwards, extending your arm fully.",
+    "Pause for a moment at the top, then slowly lower the dumbbell back to the starting position.",
+    "Repeat for the desired number of repetitions, then switch arms."
+  ],
+  "textSource": "exercisedb"
+}

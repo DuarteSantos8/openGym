@@ -1,0 +1,24 @@
+{
+  "id": "4740",
+  "name": "dumbbell hang power clean and jerk",
+  "bodyPart": "full body",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "shoulders",
+    "triceps",
+    "quadriceps",
+    "hamstrings",
+    "trapezius"
+  ],
+  "category": "olympic",
+  "description": "A hang power clean followed by an overhead jerk. It is a full-body power move for hips, legs and shoulders.",
+  "instructions": [
+    "Hold dumbbells hanging just above your knees with a flat back.",
+    "Explode up and pull the weights to your shoulders, catching in a quarter squat.",
+    "Stand tall, then dip slightly with your knees.",
+    "Drive up and press the dumbbells overhead.",
+    "Lower to your shoulders, then to the hang, and reset."
+  ],
+  "textSource": "opengym"
+}

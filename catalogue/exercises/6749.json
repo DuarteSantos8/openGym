@@ -1,0 +1,21 @@
+{
+  "id": "6749",
+  "name": "seated hip external rotation",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "mobility",
+  "description": "A seated rotation turning the thigh outward. It improves hip mobility and activates the deep rotators.",
+  "instructions": [
+    "Sit tall on a bench or chair with feet flat.",
+    "Lift one foot slightly off the floor.",
+    "Keep your knee still and rotate the lower leg inward so the thigh turns outward.",
+    "Pause when you feel the hip working.",
+    "Return slowly.",
+    "Finish the reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

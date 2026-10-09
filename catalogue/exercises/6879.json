@@ -1,0 +1,24 @@
+{
+  "id": "6879",
+  "name": "supported headstand yoga pose sirsasana",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "core",
+    "upper back",
+    "trapezius",
+    "rotator cuff"
+  ],
+  "category": "yoga",
+  "description": "An inversion where your forearms and head share the load, building shoulder strength and balance.",
+  "instructions": [
+    "Kneel and place your forearms on the mat with your fingers interlaced.",
+    "Set the crown of your head lightly on the floor against your hands.",
+    "Lift your knees and walk your feet toward your face.",
+    "Lift your legs slowly, using your core, until they point to the ceiling.",
+    "Keep most of the weight in your forearms and shoulders.",
+    "Hold briefly, then lower with control and rest in child's pose."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "8990",
+  "name": "lever side seated single arm rear delt fly",
+  "bodyPart": "shoulders",
+  "equipment": "leverage machine",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "Seated sideways on a machine, you pull one arm back in a wide arc. It isolates the rear delt.",
+  "instructions": [
+    "Sit sideways on the machine with your chest against the pad.",
+    "Grab the handle with the outside hand.",
+    "Start with your arm in front of you and a soft bend in your elbow.",
+    "Pull the handle out and back until your arm is in line with your shoulder.",
+    "Return slowly without letting the weight stack touch down.",
+    "Finish the reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

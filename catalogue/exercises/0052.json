@@ -1,0 +1,22 @@
+{
+  "id": "0052",
+  "name": "barbell jm bench press",
+  "bodyPart": "upper arms",
+  "equipment": "barbell",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A hybrid between a close-grip bench press and a skull crusher. Heavily loads the triceps.",
+  "instructions": [
+    "Lie flat on a bench with your feet flat on the ground and your back pressed against the bench.",
+    "Grasp the barbell with an overhand grip, slightly wider than shoulder-width apart.",
+    "Lower the barbell to your chest, keeping your elbows tucked in close to your body.",
+    "Push the barbell back up to the starting position, fully extending your arms.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "3028",
+  "textSource": "exercisedb"
+}

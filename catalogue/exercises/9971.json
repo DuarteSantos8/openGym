@@ -1,0 +1,22 @@
+{
+  "id": "9971",
+  "name": "lying supine straight knee raise",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "hip flexors",
+    "core"
+  ],
+  "category": "rehab",
+  "description": "A lying straight-leg raise that lifts the leg with the knee locked. It wakes up the quads and hip flexors in a gentle way.",
+  "instructions": [
+    "Lie on your back with one knee bent and the other leg straight.",
+    "Tighten the thigh of the straight leg so the knee is locked.",
+    "Lift the leg to the height of your bent knee.",
+    "Hold for a moment.",
+    "Lower slowly to the floor.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

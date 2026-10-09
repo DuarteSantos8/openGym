@@ -1,0 +1,23 @@
+{
+  "id": "11647",
+  "name": "single leg pogo jump",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "quadriceps",
+    "feet"
+  ],
+  "category": "plyometrics",
+  "description": "Small, springy hops on one leg that build calf and ankle stiffness, elasticity and balance.",
+  "instructions": [
+    "Stand on one leg with a soft knee and your arms relaxed at your sides.",
+    "Hop straight up by pushing through the ball of your foot, keeping the knee almost straight.",
+    "Land softly on the ball of the same foot and rebound right away.",
+    "Keep your hops small and quick, with your hips level and your core tight.",
+    "Hop for the planned time or reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

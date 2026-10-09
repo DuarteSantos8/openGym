@@ -1,0 +1,25 @@
+{
+  "id": "1687",
+  "name": "posterior step to overhead reach",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "quadriceps",
+    "shoulders"
+  ],
+  "category": "mobility",
+  "description": "A step back with an overhead reach. It warms up the hips and core and stretches the front of the body.",
+  "instructions": [
+    "Stand with your feet hip-width apart and your arms by your sides.",
+    "Take a step back with your right foot, landing on the ball of your foot.",
+    "Bend your left knee and lower your body into a lunge position.",
+    "As you lower into the lunge, simultaneously reach your arms overhead.",
+    "Pause for a moment at the bottom of the lunge, then return to the starting position by pushing through your left heel and bringing your right foot forward.",
+    "Repeat the movement on the other side, stepping back with your left foot and bending your right knee.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

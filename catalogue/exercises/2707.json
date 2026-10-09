@@ -1,0 +1,24 @@
+{
+  "id": "2707",
+  "name": "strongman log lift",
+  "bodyPart": "full body",
+  "equipment": "weight plate",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "upper back",
+    "glutes",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Lifting a heavy log from the ground to overhead, building full-body strength and power.",
+  "instructions": [
+    "Stand over the log with feet shoulder width apart and grip it with a firm hold.",
+    "Lift it to your lap with a flat back and drive the hips forward.",
+    "Rack it on your chest with elbows high.",
+    "Dip your knees, then drive up and press the log overhead.",
+    "Lock out, then lower with control.",
+    "Start light and keep your core braced."
+  ],
+  "textSource": "opengym"
+}

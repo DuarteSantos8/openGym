@@ -1,0 +1,23 @@
+{
+  "id": "4102",
+  "name": "weighted chin up",
+  "bodyPart": "back",
+  "equipment": "weighted",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "forearms",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A chin up with added load, building pulling strength in your lats and biceps.",
+  "instructions": [
+    "Attach the weight with a belt and grip the bar with palms facing you.",
+    "Hang with arms straight.",
+    "Pull your chest toward the bar by driving your elbows down.",
+    "Pause with your chin above the bar.",
+    "Lower under control to full extension."
+  ],
+  "textSource": "opengym"
+}

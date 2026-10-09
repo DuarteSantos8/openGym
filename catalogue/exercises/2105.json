@@ -1,0 +1,21 @@
+{
+  "id": "2105",
+  "name": "lower trunk flexor stretch",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs"
+  ],
+  "category": "stretching",
+  "description": "A backbend style stretch that lengthens the front of the abdomen and hips.",
+  "instructions": [
+    "Lie face down with your hands under your shoulders.",
+    "Press up through your hands and let your hips sink toward the floor until the lower abdomen stretches.",
+    "Keep your hips on the floor and your shoulders relaxed.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

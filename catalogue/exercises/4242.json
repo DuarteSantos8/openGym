@@ -1,0 +1,24 @@
+{
+  "id": "4242",
+  "name": "broad jump to vertical",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A forward jump followed straight away by a jump up. It trains explosive power in two directions.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart and swing your arms back.",
+    "Jump forward as far as you can.",
+    "Land softly with bent knees.",
+    "Immediately explode into a vertical jump with your arms up.",
+    "Land softly and reset.",
+    "Take a short rest between reps."
+  ],
+  "textSource": "opengym"
+}

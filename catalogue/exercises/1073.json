@@ -1,0 +1,22 @@
+{
+  "id": "1073",
+  "name": "suspender chest press",
+  "bodyPart": "chest",
+  "equipment": "suspension trainer",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Press yourself away from the straps. It works the chest.",
+  "instructions": [
+    "Face away from the anchor and hold the handles at chest level.",
+    "Lean forward in a straight line.",
+    "Press your body away.",
+    "Squeeze the chest.",
+    "Return slowly."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4545",
+  "name": "cable bent over single arm kickback",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "shoulders",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A one-arm cable kickback that isolates the triceps with constant tension.",
+  "instructions": [
+    "Set a low pulley with a single handle and hinge forward at the hips.",
+    "Hold the handle with your elbow bent at your side, upper arm parallel to the floor.",
+    "Keep your upper arm still and straighten your elbow back.",
+    "Squeeze your triceps at full extension.",
+    "Return slowly to the start.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

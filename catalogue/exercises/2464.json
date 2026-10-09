@@ -1,0 +1,23 @@
+{
+  "id": "2464",
+  "name": "cable thibaudeau kayak row",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "rhomboids",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A one-arm cable row with a rotating kayak-style pull. Trains the lats and upper back.",
+  "instructions": [
+    "Attach a cable handle to a low pulley and sit facing the machine with your feet flat on the floor.",
+    "Grasp the handle with your right hand and extend your arm fully, keeping a slight bend in your elbow.",
+    "Lean forward from your hips, keeping your back straight and your abs engaged.",
+    "Pull the handle towards your torso by retracting your shoulder blade and bending your elbow, keeping your arm close to your body.",
+    "Squeeze your back muscles at the top of the movement, then slowly return to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides and perform with your left arm."
+  ],
+  "textSource": "exercisedb"
+}

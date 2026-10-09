@@ -1,0 +1,22 @@
+{
+  "id": "6268",
+  "name": "ez barbell standing single arm neutral wrist curl",
+  "bodyPart": "lower arms",
+  "equipment": "ez barbell",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A one-arm wrist curl with a neutral grip on an EZ barbell. It targets the forearms.",
+  "instructions": [
+    "Stand holding one end of an EZ bar.",
+    "Keep your arm at your side.",
+    "Curl your wrist up.",
+    "Squeeze the forearm.",
+    "Lower slowly.",
+    "Finish your reps, then switch arms."
+  ],
+  "textSource": "opengym"
+}

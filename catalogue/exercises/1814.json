@@ -1,0 +1,22 @@
+{
+  "id": "1814",
+  "name": "elbow flexor stretch",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms",
+    "shoulders"
+  ],
+  "category": "stretching",
+  "description": "Extending your arm and turning the palm outward stretches the muscles that bend your elbow. It targets the biceps and brachialis.",
+  "instructions": [
+    "Extend one arm in front of you with your palm facing up.",
+    "Use your other hand to gently press the fingers down and back until you feel the stretch.",
+    "Keep your shoulders relaxed and your breathing slow and steady.",
+    "Hold for 20-30 seconds without bouncing.",
+    "Release gently and repeat, switching sides if the stretch is one-sided."
+  ],
+  "textSource": "opengym"
+}

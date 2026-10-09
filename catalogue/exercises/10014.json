@@ -1,0 +1,22 @@
+{
+  "id": "10014",
+  "name": "ball assisted lying supine hip adduction",
+  "bodyPart": "upper legs",
+  "equipment": "stability ball",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "inner thighs",
+    "groin",
+    "core"
+  ],
+  "category": "strength",
+  "description": "Squeeze a ball between your knees while lying on your back. It targets the inner thighs.",
+  "instructions": [
+    "Lie on your back with knees bent and a ball between your knees.",
+    "Rest your arms by your sides and keep your lower back relaxed.",
+    "Squeeze the ball with your inner thighs.",
+    "Hold for a moment, then release slowly.",
+    "Keep your hips level throughout."
+  ],
+  "textSource": "opengym"
+}

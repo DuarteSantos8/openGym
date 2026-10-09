@@ -1,0 +1,23 @@
+{
+  "id": "5381",
+  "name": "roll rhomboids",
+  "bodyPart": "back",
+  "equipment": "roller",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "rhomboids",
+    "trapezius"
+  ],
+  "category": "mobility",
+  "description": "Self-massage with a foam roller to ease tightness in the rhomboids. Good before training or on rest days to loosen up.",
+  "instructions": [
+    "Sit with the roller behind your upper back and cross your arms.",
+    "Place the roller under the rhomboids and let your body weight settle onto it.",
+    "Roll up and down between your shoulder blades.",
+    "Pause on tender spots and breathe slowly for 20-30 seconds.",
+    "Keep your core braced and avoid rolling over joints or bone.",
+    "Roll for 30-60 seconds, then switch sides if needed."
+  ],
+  "femaleVariant": "5420",
+  "textSource": "opengym"
+}

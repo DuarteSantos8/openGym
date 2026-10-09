@@ -1,0 +1,22 @@
+{
+  "id": "1032",
+  "name": "lever alternate biceps curl",
+  "bodyPart": "upper arms",
+  "equipment": "leverage machine",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "brachialis",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A machine curl done one arm at a time, so each biceps works independently.",
+  "instructions": [
+    "Sit with your upper arms resting on the pad and grab the handles.",
+    "Curl one handle up toward your shoulder.",
+    "Squeeze the biceps at the top.",
+    "Lower it slowly while curling the other arm.",
+    "Keep your shoulders relaxed and avoid swinging."
+  ],
+  "femaleVariant": "11658",
+  "textSource": "opengym"
+}

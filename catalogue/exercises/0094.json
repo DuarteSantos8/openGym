@@ -1,0 +1,22 @@
+{
+  "id": "0094",
+  "name": "barbell seated twist",
+  "bodyPart": "waist",
+  "equipment": "barbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A seated torso twist with the bar on your back. Works the obliques and abs.",
+  "instructions": [
+    "Sit on a flat bench with your feet flat on the ground and your knees bent.",
+    "Hold a barbell with both hands in front of your chest, keeping your elbows slightly bent.",
+    "Engage your core and slowly twist your torso to one side, keeping your back straight.",
+    "Pause for a moment at the end of the twist, then slowly rotate back to the starting position.",
+    "Repeat the twist to the other side.",
+    "Continue alternating sides for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

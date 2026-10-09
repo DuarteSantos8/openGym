@@ -1,0 +1,22 @@
+{
+  "id": "0283",
+  "name": "diamond push-up",
+  "bodyPart": "upper arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "secondaryMuscles": [
+    "chest",
+    "shoulders"
+  ],
+  "category": "calisthenics",
+  "description": "A push-up with the hands forming a diamond under the chest. It puts heavy focus on the triceps.",
+  "instructions": [
+    "Start in a high plank position with your hands close together, forming a diamond shape with your thumbs and index fingers.",
+    "Keep your body in a straight line from head to toe, engaging your core and glutes.",
+    "Lower your chest towards the diamond shape formed by your hands, keeping your elbows close to your body.",
+    "Pause for a moment at the bottom, then push yourself back up to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2697",
+  "textSource": "exercisedb"
+}

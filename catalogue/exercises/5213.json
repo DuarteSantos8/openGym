@@ -1,0 +1,23 @@
+{
+  "id": "5213",
+  "name": "mountain climber v. 2",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "shoulders",
+    "quadriceps"
+  ],
+  "category": "cardio",
+  "description": "A mountain climber in plank position, a second variation. It raises your heart rate and works the core.",
+  "instructions": [
+    "Start in a high plank with hands under shoulders.",
+    "Brace your core.",
+    "Drive one knee toward your chest.",
+    "Switch legs quickly.",
+    "Keep your hips low and level.",
+    "Continue for 20-40 seconds."
+  ],
+  "textSource": "opengym"
+}

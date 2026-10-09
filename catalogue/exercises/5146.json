@@ -1,0 +1,21 @@
+{
+  "id": "5146",
+  "name": "hangback bar stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "shoulders",
+    "grip muscles"
+  ],
+  "category": "stretching",
+  "description": "Hang from a bar with your body leaning back to stretch your lats and shoulders.",
+  "instructions": [
+    "Hold a bar with an overhand grip.",
+    "Lean your body back and let your arms and shoulders lengthen.",
+    "Relax your ribs and breathe slowly.",
+    "Hold for 20-30 seconds.",
+    "Step out of the stretch carefully."
+  ],
+  "textSource": "opengym"
+}

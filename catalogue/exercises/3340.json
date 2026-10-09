@@ -1,0 +1,23 @@
+{
+  "id": "3340",
+  "name": "dumbbell stiff leg deadlift v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "grip muscles"
+  ],
+  "category": "strength",
+  "description": "A hip hinge with nearly straight legs holding dumbbells. It stretches and strengthens the hamstrings and glutes.",
+  "instructions": [
+    "Stand with feet hip width apart holding dumbbells in front of your thighs.",
+    "Keep your knees slightly bent and back flat.",
+    "Push your hips back and slide the dumbbells down your legs.",
+    "Stop when you feel a hamstring stretch.",
+    "Drive your hips forward to stand tall."
+  ],
+  "textSource": "opengym",
+  "femaleVariant": "3894"
+}

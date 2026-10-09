@@ -1,0 +1,22 @@
+{
+  "id": "4916",
+  "name": "reverse leg extension",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "calisthenics",
+  "description": "A prone or quadruped move where you extend the leg backward. It focuses on the glutes.",
+  "instructions": [
+    "Get on all fours with your hands under your shoulders.",
+    "Brace your core and keep your back flat.",
+    "Extend one leg back and up.",
+    "Squeeze the glute at the top.",
+    "Lower the leg without touching the floor.",
+    "Finish your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

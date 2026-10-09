@@ -7,16 +7,18 @@ export const LANGS = {
   en: 'English', de: 'Deutsch', 'de-CH': 'Deutsch (Schweiz)', es: 'Español', fr: 'Français',
   it: 'Italiano', pt: 'Português (Portugal)', 'pt-BR': 'Português (Brasil)', pl: 'Polski',
   tr: 'Türkçe', ru: 'Русский', uk: 'Українська', zh: '简体中文', 'zh-TW': '繁體中文',
-  ko: '한국어', hi: 'हिन्दी', th: 'ไทย', hu: 'Magyar', ar: 'العربية'
+  ko: '한국어', hi: 'हिन्दी', bn: 'বাংলা', th: 'ไทย', hu: 'Magyar', ar: 'العربية'
 }
-export const INSTR_LANGS = ['en', 'es', 'fr', 'it', 'tr', 'ru', 'zh', 'zh-TW', 'hi', 'pl', 'ko', 'pt-BR', 'hu', 'ar']
-export const EXERCISE_NAME_LANGS = ['pt-BR', 'hu', 'de', 'es', 'ru', 'it', 'fr']
+// Languages with exercise instructions / names, generated from catalogue/i18n by
+// scripts/catalogue/build.mjs. A pack can be partial; what it lacks shows in English.
+import { INSTR_LANGS, EXERCISE_NAME_LANGS } from './catalogue-langs.js'
+export { INSTR_LANGS, EXERCISE_NAME_LANGS }
 // Languages rendered right-to-left; i18n.js setLang applies the direction from this.
 export const RTL_LANGS = new Set(['ar'])
 export const DATE_LOCALES = {
   en: 'en-GB', de: 'de-DE', 'de-CH': 'de-CH', es: 'es-ES', fr: 'fr-FR', it: 'it-IT',
   pt: 'pt-PT', 'pt-BR': 'pt-BR',
-  pl: 'pl-PL', tr: 'tr-TR', ru: 'ru-RU', uk: 'uk-UA', zh: 'zh-CN', 'zh-TW': 'zh-TW', ko: 'ko-KR', hi: 'hi-IN', th: 'th-TH', hu: 'hu-HU', ar: 'ar-u-nu-latn'
+  pl: 'pl-PL', tr: 'tr-TR', ru: 'ru-RU', uk: 'uk-UA', zh: 'zh-CN', 'zh-TW': 'zh-TW', ko: 'ko-KR', hi: 'hi-IN', bn: 'bn-BD-u-nu-latn', th: 'th-TH', hu: 'hu-HU', ar: 'ar-u-nu-latn'
 }
 
 // Locales derived from another language by a pure text transform rather than carried as their
@@ -59,6 +61,11 @@ let lang = 'en'                 // set only by _setLangState, called from i18n.j
 let dict = {}                   // current locale pack (empty = English fallback)
 let instr = null                // { exId: [steps] } for the current language, null = English
 let exerciseNames = null        // { exId: translated name }, null = original catalogue name
+let enInstr = null              // { exId: [steps] } in English, loaded on first need (instr/en.js)
+let descs = null                // { exId: description } for the current language, when it has any
+let enDescs = null              // { exId: description } in English (exercise-desc/en.js)
+let detailsLoader = null        // registered by i18n.js; fetches the two English packs above
+let detailsAsked = false
 let enParens = true               // whether translated names show the English original in parentheses
 let enOnly = false                // whether translated names are replaced entirely by the English original
 let version = 0                 // bumped on every setLang; drives the React subscription selector
@@ -120,8 +127,74 @@ export function tn(one, other, n, ...rest) {
   return t(n === 1 ? one : other, n, ...rest)
 }
 
-// Instructions for an exercise in the current language (English steps as fallback).
-export const instrFor = ex => (instr && instr[ex.id]) || ex.st || []
+// The English steps and descriptions of 5,000+ exercises are too big to sit in the bundle every
+// screen loads, so they come in their own chunk the first time an exercise's details are shown.
+// Until it lands the readers return nothing, and the loader's notify re-renders whoever asked.
+const askDetails = () => {
+  if (detailsAsked || !detailsLoader) return
+  detailsAsked = true
+  detailsLoader()
+}
+
+// A load that failed: the next reader to ask after a pause tries again, and so does the browser
+// coming back online. Not at once: every render asks, and offline every try fails at once.
+let retryTimer = null
+let onOnline = null
+function clearRetry() {
+  clearTimeout(retryTimer)
+  retryTimer = null
+  if (onOnline && typeof globalThis.removeEventListener === 'function') globalThis.removeEventListener('online', onOnline)
+  onOnline = null
+}
+export function _detailsFailed(retryMs = 20000) {
+  clearRetry()
+  retryTimer = setTimeout(() => { clearRetry(); detailsAsked = false }, retryMs)
+  if (typeof globalThis.addEventListener === 'function') {
+    onOnline = () => { clearRetry(); detailsAsked = false; askDetails() }
+    globalThis.addEventListener('online', onOnline)
+  }
+}
+
+// Instructions for an exercise in the current language (English steps as fallback). `st` on the
+// exercise itself still wins over nothing: a custom exercise or an older plan file carries its own.
+export const instrFor = ex => {
+  const own = instr && instr[ex.id]
+  if (own) return own
+  if (!enInstr) askDetails()
+  return (enInstr && enInstr[ex.id]) || ex.st || []
+}
+
+// Whether the steps instrFor shows are in the current language rather than the English fallback.
+export const instrTranslated = ex => !!(instr && ex && instr[ex.id])
+
+// A sentence or two on what the exercise is, in the current language when someone has written
+// it, otherwise in English. Empty for exercises nobody has described yet and for custom ones.
+export const descFor = ex => {
+  if (!ex) return ''
+  const own = descs && descs[ex.id]
+  if (own) return own
+  if (!enDescs) askDetails()
+  return (enDescs && enDescs[ex.id]) || ex.desc || ''
+}
+
+// i18n.js hands over the loader here; core itself never imports a chunk.
+export function _setDetailsLoader(fn) { detailsLoader = fn; detailsAsked = false; clearRetry() }
+
+// Called once the English packs (and the language's descriptions, if any) have loaded. A pack
+// that did not come (offline, before the worker had it) stays missing, not empty: an empty one
+// would show no steps until the next reload. `forLang` is the language the descriptions were
+// loaded for: switched away from while they loaded, they are not this language's and are not
+// kept (the English packs are the same for every language). False then, and the caller loads
+// the current language's own.
+export function _setDetails(newEnInstr, newEnDescs, newDescs, forLang = lang) {
+  enInstr = newEnInstr || enInstr
+  enDescs = newEnDescs || enDescs
+  if (enInstr && enDescs) clearRetry()
+  const current = forLang === lang
+  if (current) descs = lang === 'en' ? null : (newDescs || null)
+  version++
+  return current
+}
 
 // Built-in catalogue names are bilingual when a translated name pack is active. A pack need not
 // be complete: German covers the equipment exercises and not the body-weight ones, and an
@@ -175,7 +248,10 @@ export const exerciseNameSearchText = ex => {
 // exported as setLang because loading packs requires import.meta.glob, which is Vite-only.
 // `dict`, `instr` and `exerciseNames` may be null to reset to their English fallbacks.
 export function _setLangState(newLang, newDict, newInstr, newExerciseNames, showEn = true, enOnlyFlag = false) {
+  const was = lang
   lang = LANGS[newLang] ? newLang : 'en'
+  // The old language's descriptions are not this one's: English until its own have loaded.
+  if (lang !== was) descs = null
   dict = lang === 'en' ? {} : (newDict || {})
   instr = lang === 'en' || !INSTR_LANGS.includes(baseLang(lang)) ? null : (newInstr || null)
   exerciseNames = lang === 'en' || !EXERCISE_NAME_LANGS.includes(baseLang(lang))

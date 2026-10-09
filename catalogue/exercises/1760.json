@@ -1,0 +1,37 @@
+{
+  "id": "1760",
+  "name": "dumbbell goblet squat",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A squat holding one dumbbell at your chest. Trains the quads and glutes while keeping your torso upright.",
+  "instructions": [
+    "Stand with your feet shoulder-width apart, holding a dumbbell vertically against your chest with both hands.",
+    "Keeping your chest up and core engaged, lower your body down into a squat position by pushing your hips back and bending your knees.",
+    "Continue lowering until your thighs are parallel to the ground, or as low as you can comfortably go.",
+    "Pause for a moment at the bottom, then push through your heels to return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "quadriceps",
+      "gluteal",
+      "adductors"
+    ],
+    "secondaries": [
+      "hamstring",
+      "calves",
+      "lower-back",
+      "abs",
+      "obliques"
+    ]
+  },
+  "femaleVariant": "2281",
+  "textSource": "exercisedb"
+}

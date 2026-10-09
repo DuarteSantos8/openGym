@@ -1,0 +1,23 @@
+{
+  "id": "3720",
+  "name": "stair jump",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hamstrings",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "Explosive jumps up a flight of stairs that build leg power and speed.",
+  "instructions": [
+    "Stand at the bottom of a staircase with your feet together.",
+    "Bend your knees and swing your arms back.",
+    "Jump up onto a step, landing softly with both feet.",
+    "Step back down carefully.",
+    "Reset and repeat."
+  ],
+  "textSource": "opengym"
+}

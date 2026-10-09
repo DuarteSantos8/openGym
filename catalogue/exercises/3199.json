@@ -1,0 +1,24 @@
+{
+  "id": "3199",
+  "name": "skips",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "calves",
+    "quadriceps",
+    "hip flexors",
+    "core"
+  ],
+  "category": "cardio",
+  "description": "A simple skipping step with a hop on each foot. A playful way to warm up and lift your heart rate.",
+  "instructions": [
+    "Stand tall and relaxed.",
+    "Step forward and hop on the same foot.",
+    "Switch and hop on the other foot.",
+    "Swing the opposite arm forward with each step.",
+    "Stay light on the balls of your feet.",
+    "Keep a steady rhythm."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "6327",
+  "name": "bodyweight low split squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors"
+  ],
+  "category": "calisthenics",
+  "description": "A split squat with a deep, low range that challenges your front thigh and glutes while building balance and hip mobility.",
+  "instructions": [
+    "Step one foot forward into a long split stance.",
+    "Keep your torso upright and your hands on your hips.",
+    "Lower your back knee toward the floor as far as you can control.",
+    "Drive through your front foot to stand back up.",
+    "Finish all reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

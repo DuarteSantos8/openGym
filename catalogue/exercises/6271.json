@@ -1,0 +1,21 @@
+{
+  "id": "6271",
+  "name": "barbell close grip larsen press",
+  "bodyPart": "chest",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders"
+  ],
+  "category": "strength",
+  "description": "A larsen press with a close grip: you bench with your feet off the floor, which removes leg drive and puts the work on chest and triceps.",
+  "instructions": [
+    "Lie on a bench and hold the bar with a close, shoulder-width grip.",
+    "Lift your feet off the floor and stretch your legs out in front of you.",
+    "Lower the bar to your lower chest under control.",
+    "Press the bar back up until your arms are straight.",
+    "Keep your back flat on the bench and your core tight throughout."
+  ],
+  "textSource": "opengym"
+}

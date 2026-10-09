@@ -1,0 +1,23 @@
+{
+  "id": "10754",
+  "name": "single leg calf jump",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "soleus",
+    "ankles",
+    "feet"
+  ],
+  "category": "plyometrics",
+  "description": "Hopping on one leg using mostly the ankles. It builds calf power and springy ankles.",
+  "instructions": [
+    "Stand on one leg with a slight knee bend and arms relaxed.",
+    "Push through the ball of your foot and jump up using mainly your ankles.",
+    "Keep the knee nearly straight in the air.",
+    "Land softly on the ball of the same foot.",
+    "Rebound right away into the next hop.",
+    "Complete your reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

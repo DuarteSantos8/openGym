@@ -1,0 +1,23 @@
+{
+  "id": "10117",
+  "name": "dumbbell half kneeling single arm clean press",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "triceps",
+    "core",
+    "upper back",
+    "glutes"
+  ],
+  "category": "strength",
+  "description": "A half kneeling clean and press that trains the shoulder while the stance forces your core and hips to stay stable.",
+  "instructions": [
+    "Kneel on one knee with the dumbbell on the floor by your front foot and grab it.",
+    "Pull the dumbbell up to your shoulder in one smooth motion, rotating your wrist.",
+    "Press it overhead until your arm is straight.",
+    "Lower it back to your shoulder, then to the floor with control.",
+    "Keep your torso upright. Finish the reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

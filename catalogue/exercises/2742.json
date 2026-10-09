@@ -1,0 +1,22 @@
+{
+  "id": "2742",
+  "name": "lever hip thrust (with stepbox) v. 2",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "quadriceps",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A machine hip thrust with the feet raised on a step box, for a deeper glute contraction.",
+  "instructions": [
+    "Sit in the machine with your feet on the step box and the pad across your hips.",
+    "Brace your core and drive through your heels.",
+    "Lift your hips until your body is straight from shoulders to knees.",
+    "Squeeze your glutes at the top.",
+    "Lower slowly to the start."
+  ],
+  "textSource": "opengym"
+}

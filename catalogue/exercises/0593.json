@@ -1,0 +1,32 @@
+{
+  "id": "0593",
+  "name": "lever reverse hyperextension",
+  "bodyPart": "upper legs",
+  "equipment": "leverage machine",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "hamstrings",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "Lying on a machine, you swing your legs up behind you. Works the glutes and lower back.",
+  "instructions": [
+    "Adjust the leverage machine to fit your body and secure your feet in the foot pads.",
+    "Lie face down on the machine with your upper body hanging off the edge and your hips resting on the pad.",
+    "Cross your arms over your chest or place them behind your head.",
+    "Engage your glutes and hamstrings to lift your legs upward until they are parallel to the ground.",
+    "Pause for a moment at the top, then slowly lower your legs back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "gluteal",
+      "hamstring"
+    ],
+    "secondaries": [
+      "lower-back"
+    ]
+  },
+  "femaleVariant": "3177",
+  "textSource": "exercisedb"
+}

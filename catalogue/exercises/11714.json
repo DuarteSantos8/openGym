@@ -1,0 +1,23 @@
+{
+  "id": "11714",
+  "name": "bodyweight rope pull up",
+  "bodyPart": "back",
+  "equipment": "rope",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "forearms",
+    "grip muscles",
+    "upper back"
+  ],
+  "category": "calisthenics",
+  "description": "A pull-up done hanging from ropes, which adds a big grip challenge to the vertical pull.",
+  "instructions": [
+    "Hang from two ropes with arms straight and legs together.",
+    "Brace your core and pull your shoulder blades down.",
+    "Pull yourself up until your hands reach chest or chin level.",
+    "Keep your elbows pointing down and close.",
+    "Lower under control to a full hang."
+  ],
+  "textSource": "opengym"
+}

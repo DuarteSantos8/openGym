@@ -1,0 +1,21 @@
+{
+  "id": "2348",
+  "name": "preacher curl wrists (form check)",
+  "bodyPart": "upper arms",
+  "equipment": "ez barbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms",
+    "brachialis"
+  ],
+  "category": "strength",
+  "description": "A side-by-side form check for wrist position during a preacher curl, showing the common mistake next to the correct technique so you can spot it in your own sets.",
+  "instructions": [
+    "Sit at the preacher bench with your upper arms flat on the pad.",
+    "Compare the faulty version with the correct one: your wrists stay neutral and straight rather than bending back or curling in.",
+    "Perform the lift slowly with a light load and keep the correct position throughout.",
+    "Use a mirror or film a set from the side to check your own position.",
+    "Fix the cue before adding weight, and rest between sets so form stays clean."
+  ],
+  "textSource": "opengym"
+}

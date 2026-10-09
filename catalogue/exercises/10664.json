@@ -1,0 +1,24 @@
+{
+  "id": "10664",
+  "name": "planche press",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "chest",
+    "core",
+    "triceps",
+    "wrist flexors"
+  ],
+  "category": "calisthenics",
+  "description": "An advanced gymnastics skill where you press from a lean into a planche shape. It builds shoulder strength and a strong core.",
+  "instructions": [
+    "Start in a deep planche lean with hands under your shoulders.",
+    "Protract your shoulders and squeeze your glutes.",
+    "Lean forward and lift your feet from the floor.",
+    "Press into the ground and hold the position.",
+    "Lower under control.",
+    "Warm up your wrists first."
+  ],
+  "textSource": "opengym"
+}

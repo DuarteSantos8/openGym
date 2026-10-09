@@ -1,0 +1,22 @@
+{
+  "id": "2750",
+  "name": "dumbbell single leg deadlift with wall support",
+  "bodyPart": "upper legs",
+  "equipment": "dumbbell",
+  "target": "hamstrings",
+  "secondaryMuscles": [
+    "glutes",
+    "lower back",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A one-legged deadlift where a wall helps you balance while the hamstrings and glutes do the work.",
+  "instructions": [
+    "Stand near a wall, holding a dumbbell and resting one hand on it for balance.",
+    "Lift one leg behind you.",
+    "Hinge at the hips and lower the dumbbell down your standing leg.",
+    "Keep your back flat.",
+    "Squeeze your glute to stand tall, then switch legs."
+  ],
+  "textSource": "opengym"
+}

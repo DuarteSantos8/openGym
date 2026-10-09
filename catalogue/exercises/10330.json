@@ -1,0 +1,22 @@
+{
+  "id": "10330",
+  "name": "dumbbell powell raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A side-lying raise that targets the rear shoulder with a long range of motion.",
+  "instructions": [
+    "Lie on your side on a bench holding a light dumbbell in your top hand.",
+    "Start with the arm hanging in front of your body.",
+    "Raise the arm out and back in an arc until it is in line with your torso.",
+    "Pause briefly, then lower with control.",
+    "Use a light weight and switch sides after your set."
+  ],
+  "textSource": "opengym"
+}

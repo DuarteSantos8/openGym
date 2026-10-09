@@ -1,0 +1,32 @@
+{
+  "id": "0168",
+  "name": "cable hip adduction",
+  "bodyPart": "upper legs",
+  "equipment": "cable",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "glutes",
+    "quadriceps"
+  ],
+  "category": "strength",
+  "description": "A cable hip adduction, bringing the leg across the body. Works the inner thighs.",
+  "instructions": [
+    "Attach the ankle cuff to your ankle and stand facing the cable machine.",
+    "Position yourself far enough away from the machine so that there is tension on the cable.",
+    "Place your hands on the machine for support.",
+    "Keeping your leg straight, slowly move your leg across your body towards the midline.",
+    "Pause for a moment at the end of the movement, then slowly return to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "adductors"
+    ],
+    "secondaries": [
+      "gluteal",
+      "hamstring"
+    ]
+  },
+  "femaleVariant": "2313",
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "7412",
+  "name": "reverse lunge high knee forward lunge",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "hip flexors",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "Combo lunge: step back, drive the knee up, then step forward into a lunge.",
+  "instructions": [
+    "Stand tall with hands on hips.",
+    "Step back into a reverse lunge.",
+    "Drive that back leg forward into a high knee.",
+    "Step the same leg forward into a forward lunge.",
+    "Push back to standing and switch legs after your reps."
+  ],
+  "textSource": "opengym"
+}

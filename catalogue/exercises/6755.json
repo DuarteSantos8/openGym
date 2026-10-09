@@ -1,0 +1,21 @@
+{
+  "id": "6755",
+  "name": "cable kneeling shoulder external rotation",
+  "bodyPart": "shoulders",
+  "equipment": "cable",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "rear deltoids"
+  ],
+  "category": "strength",
+  "description": "A light rotation drill with a cable that turns the arm outward. It strengthens the rotator cuff.",
+  "instructions": [
+    "Kneel side-on to a low cable and hold the handle with the far hand.",
+    "Tuck your elbow at your side, bent to 90 degrees.",
+    "Rotate your forearm outward, away from your belly.",
+    "Pause briefly at the end.",
+    "Return slowly and switch arms after your reps."
+  ],
+  "textSource": "opengym"
+}

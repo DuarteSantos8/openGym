@@ -1,0 +1,22 @@
+{
+  "id": "3623",
+  "name": "vertical leg raise (on parallel bars) v. 3",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower abs",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "Support yourself on parallel bars and lift your legs to train the lower abs and hip flexors.",
+  "instructions": [
+    "Support yourself on parallel bars with straight arms and shoulders down.",
+    "Let your legs hang together.",
+    "Raise your legs in front of you until they are about parallel to the floor or higher.",
+    "Lower slowly without swinging.",
+    "Keep your torso still."
+  ],
+  "textSource": "opengym"
+}

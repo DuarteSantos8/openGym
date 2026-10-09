@@ -1,0 +1,23 @@
+{
+  "id": "2718",
+  "name": "strongman front hold",
+  "bodyPart": "shoulders",
+  "equipment": "weight plate",
+  "target": "delts",
+  "secondaryMuscles": [
+    "upper chest",
+    "forearms",
+    "core",
+    "grip muscles"
+  ],
+  "category": "isometric",
+  "description": "Holding a load out in front of your body, building shoulder and core endurance.",
+  "instructions": [
+    "Pick up the weights and stand tall.",
+    "Raise your arms forward to shoulder height.",
+    "Hold with a braced core.",
+    "Keep your shoulders down and avoid leaning back.",
+    "Hold as long as you can, then lower with control."
+  ],
+  "textSource": "opengym"
+}

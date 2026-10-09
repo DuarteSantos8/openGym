@@ -1,0 +1,21 @@
+{
+  "id": "0242",
+  "name": "cable tuck reverse crunch",
+  "bodyPart": "waist",
+  "equipment": "cable",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A cable reverse crunch lying on a mat. You tuck the knees in and curl the hips up to work the lower abs.",
+  "instructions": [
+    "Attach a cable to a low pulley and lie down on a mat facing up.",
+    "Hold the cable with both hands and extend your arms straight up above your chest.",
+    "Bend your knees and lift your legs up, bringing your knees towards your chest.",
+    "At the same time, curl your pelvis up towards your chest, lifting your hips off the ground.",
+    "Pause for a moment at the top, then slowly lower your legs and hips back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

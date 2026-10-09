@@ -1,0 +1,23 @@
+{
+  "id": "0461",
+  "name": "frog squat",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "adductors",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "A wide squat that finishes with a jump, landing back in a deep position like a frog. It builds leg power and endurance.",
+  "instructions": [
+    "Stand with your feet wider than shoulders and your toes turned out.",
+    "Lower into a deep squat with your hands between your knees.",
+    "Explode up into a jump.",
+    "Land softly back in the deep squat.",
+    "Keep your chest up and your knees out.",
+    "Rest briefly between sets."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "2224",
+  "name": "sled 45 degrees leg press",
+  "bodyPart": "upper legs",
+  "equipment": "sled machine",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "adductors",
+    "calves"
+  ],
+  "category": "strength",
+  "description": "A leg press on a 45 degree sled that loads the thighs and hips while your back stays supported.",
+  "instructions": [
+    "Sit in the seat with your back and head flat against the pad.",
+    "Place your feet shoulder-width apart in the middle of the platform.",
+    "Release the safety handles and lower the sled until your knees are bent to about 90 degrees.",
+    "Keep your lower back pressed into the pad as you descend.",
+    "Push through your whole foot to extend your legs without locking your knees.",
+    "Lower under control and repeat."
+  ],
+  "textSource": "opengym"
+}

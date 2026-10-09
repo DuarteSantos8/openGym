@@ -1,0 +1,23 @@
+{
+  "id": "7597",
+  "name": "cable high row with chest support",
+  "bodyPart": "back",
+  "equipment": "cable",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "lats",
+    "rear deltoids",
+    "biceps",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A two-handed cable row from a high pulley with your chest braced on a pad. It trains the upper back and rear shoulders.",
+  "instructions": [
+    "Set the cable high and lean your chest against the support pad.",
+    "Grab the handles and extend your arms.",
+    "Pull your elbows back and slightly down.",
+    "Squeeze your shoulder blades together at the end.",
+    "Let your arms extend slowly to the start."
+  ],
+  "textSource": "opengym"
+}

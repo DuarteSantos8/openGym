@@ -1,0 +1,23 @@
+{
+  "id": "4053",
+  "name": "dumbbell seated gittleson shrug",
+  "bodyPart": "back",
+  "equipment": "dumbbell",
+  "target": "traps",
+  "secondaryMuscles": [
+    "upper back",
+    "rhomboids",
+    "grip muscles",
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "Seated shrug variation with a dumbbell in each hand that builds the upper traps.",
+  "instructions": [
+    "Sit upright on a bench holding a dumbbell in each hand at your sides.",
+    "Keep your arms straight and chest up.",
+    "Shrug your shoulders straight up toward your ears.",
+    "Pause at the top.",
+    "Lower slowly and repeat without rolling your shoulders."
+  ],
+  "textSource": "opengym"
+}

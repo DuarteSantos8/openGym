@@ -1,0 +1,33 @@
+{
+  "id": "0179",
+  "name": "cable low fly",
+  "bodyPart": "chest",
+  "equipment": "cable",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "deltoids",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A cable fly from low pulleys, sweeping the arms up and together in front of you. It emphasises the upper chest with constant tension.",
+  "instructions": [
+    "Attach the handles to the low pulleys of a cable machine and select an appropriate weight.",
+    "Stand in the middle of the machine with your feet shoulder-width apart and a slight bend in your knees.",
+    "Grasp the handles with an overhand grip and extend your arms out to the sides, keeping a slight bend in your elbows.",
+    "Maintaining control, slowly bring your arms forward in a sweeping motion, crossing them in front of your body.",
+    "Pause for a moment at the peak of the movement, feeling the stretch in your chest muscles.",
+    "Reverse the motion and slowly return your arms to the starting position, keeping tension on your chest muscles throughout.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "muscleMap": {
+    "primaries": [
+      "chest"
+    ],
+    "secondaries": [
+      "upper-back",
+      "trapezius"
+    ]
+  },
+  "femaleVariant": "2252",
+  "textSource": "exercisedb"
+}

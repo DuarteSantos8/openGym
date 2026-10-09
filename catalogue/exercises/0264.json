@@ -1,0 +1,24 @@
+{
+  "id": "0264",
+  "name": "cross jacks",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "calves",
+    "glutes",
+    "shoulders",
+    "quadriceps"
+  ],
+  "category": "cardio",
+  "description": "A jumping-jack variation where the arms and legs cross in front of the body. It raises your heart rate and coordination.",
+  "instructions": [
+    "Stand with your feet together and your arms at your sides.",
+    "Jump your feet apart while raising your arms overhead.",
+    "Jump back crossing your arms and one leg in front.",
+    "Alternate which leg crosses on the next rep.",
+    "Land softly on the balls of your feet.",
+    "Keep a steady rhythm for 30-60 seconds."
+  ],
+  "textSource": "opengym"
+}

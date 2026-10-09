@@ -1,0 +1,21 @@
+{
+  "id": "0976",
+  "name": "band concentration curl",
+  "bodyPart": "upper arms",
+  "equipment": "band",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A seated concentration curl with a band, with the elbow braced on the thigh. It isolates the biceps.",
+  "instructions": [
+    "Sit on a bench or chair with your legs spread apart and your feet flat on the ground.",
+    "Hold one end of the band in your hand and step on the other end with your foot on the same side.",
+    "Lean forward slightly and rest your elbow on the inside of your thigh, just above the knee.",
+    "With your palm facing up, slowly curl your hand towards your shoulder, keeping your upper arm stationary.",
+    "Pause for a moment at the top, then slowly lower your hand back down to the starting position.",
+    "Repeat for the desired number of repetitions, then switch sides."
+  ],
+  "textSource": "exercisedb"
+}

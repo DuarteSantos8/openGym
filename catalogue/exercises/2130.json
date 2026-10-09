@@ -1,0 +1,22 @@
+{
+  "id": "2130",
+  "name": "weighted decline crunch",
+  "bodyPart": "waist",
+  "equipment": "weighted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "hip flexors"
+  ],
+  "category": "strength",
+  "description": "A decline bench crunch with a weight held at the chest, adding resistance for the abs.",
+  "instructions": [
+    "Lie on a decline bench and hook your feet under the pads.",
+    "Hold a weight plate or dumbbell against your chest.",
+    "Curl your upper body up by contracting the abs.",
+    "Pause briefly at the top without pulling on your neck.",
+    "Lower back down with control.",
+    "Repeat for the planned reps."
+  ],
+  "textSource": "opengym"
+}

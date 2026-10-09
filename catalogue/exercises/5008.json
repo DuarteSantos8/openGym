@@ -1,0 +1,23 @@
+{
+  "id": "5008",
+  "name": "suspension chin up",
+  "bodyPart": "back",
+  "equipment": "suspension trainer",
+  "target": "lats",
+  "secondaryMuscles": [
+    "biceps",
+    "upper back",
+    "forearms"
+  ],
+  "category": "calisthenics",
+  "description": "A chin-up on suspension straps. It builds the lats and arms with a natural hand path.",
+  "instructions": [
+    "Hold the handles palms facing you and lean back.",
+    "Brace your core and keep your body straight.",
+    "Pull your chest toward the handles.",
+    "Squeeze your elbows close to your sides.",
+    "Lower under control.",
+    "Adjust your foot position to change difficulty."
+  ],
+  "textSource": "opengym"
+}

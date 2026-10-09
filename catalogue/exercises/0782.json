@@ -1,0 +1,22 @@
+{
+  "id": "0782",
+  "name": "square hop",
+  "bodyPart": "cardio",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "calves",
+    "quadriceps",
+    "glutes"
+  ],
+  "category": "plyometrics",
+  "description": "A quick hopping drill where you jump around the corners of an imaginary square. It builds foot speed, agility and leg power.",
+  "instructions": [
+    "Imagine a square on the floor and stand at one corner.",
+    "Hop on both feet to the next corner, staying light on your toes.",
+    "Keep hopping around the square in order.",
+    "Land softly with slightly bent knees.",
+    "Reverse direction halfway through your set."
+  ],
+  "textSource": "opengym"
+}

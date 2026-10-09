@@ -1,0 +1,22 @@
+{
+  "id": "10126",
+  "name": "standing isometric shoulder external rotation with towel",
+  "bodyPart": "shoulders",
+  "equipment": "body weight",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rotator cuff",
+    "rear deltoids",
+    "upper back"
+  ],
+  "category": "isometric",
+  "description": "Press the back of your hand into a towel on a wall while standing. It trains the rotator cuff without moving the joint.",
+  "instructions": [
+    "Stand next to a wall with a towel between the back of your hand and the wall.",
+    "Bend your elbow to 90 degrees, tucked at your side.",
+    "Press your hand outward into the towel.",
+    "Hold the effort for 10 to 20 seconds.",
+    "Relax, then switch sides."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "11790",
+  "name": "balance 3 point toe tap",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "glutes",
+  "secondaryMuscles": [
+    "quadriceps",
+    "core",
+    "ankles"
+  ],
+  "category": "mobility",
+  "description": "A balance drill where you stand on one leg and tap the other foot to three points, training hip control and stability.",
+  "instructions": [
+    "Stand on one leg with a slight knee bend and your hands on your hips.",
+    "Tap the free foot out in front of you, then lightly out to the side.",
+    "Tap it behind you, keeping your torso upright.",
+    "Return to center and repeat the sequence under control.",
+    "Complete all reps, then switch legs."
+  ],
+  "textSource": "opengym"
+}

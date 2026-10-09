@@ -1,0 +1,21 @@
+{
+  "id": "5286",
+  "name": "standing hands position (pronation supination neutral)",
+  "bodyPart": "lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "secondaryMuscles": [
+    "wrist flexors",
+    "wrist extensors"
+  ],
+  "category": "mobility",
+  "description": "A forearm drill that rotates the hands through pronation, neutral and supination. It builds wrist and forearm control.",
+  "instructions": [
+    "Stand tall with your arms hanging by your sides.",
+    "Bend your elbows and hold your forearms in front of you.",
+    "Rotate your palms down, then to neutral, then up.",
+    "Move slowly and keep your elbows still.",
+    "Repeat for several smooth rounds."
+  ],
+  "textSource": "opengym"
+}

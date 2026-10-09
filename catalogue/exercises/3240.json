@@ -1,0 +1,23 @@
+{
+  "id": "3240",
+  "name": "exercise ball on the wall calf raise (tennis ball between knees)",
+  "bodyPart": "lower legs",
+  "equipment": "dumbbell",
+  "target": "calves",
+  "secondaryMuscles": [
+    "quadriceps",
+    "hamstrings"
+  ],
+  "category": "strength",
+  "description": "A standing calf raise with your back on an exercise ball against a wall, dumbbells in hand, and a ball squeezed between the knees. It trains the calves and inner thighs.",
+  "instructions": [
+    "Stand with your back against a wall and place an exercise ball between your lower back and the wall.",
+    "Position your feet shoulder-width apart and slightly in front of you.",
+    "Hold a dumbbell in each hand, with your arms extended by your sides.",
+    "Place a tennis ball between your knees.",
+    "Raise your heels off the ground, lifting your body up onto your toes.",
+    "Pause for a moment at the top, then slowly lower your heels back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "4564",
+  "name": "dumbbell squat lunges jump complex",
+  "bodyPart": "full body",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A leg-burning chain of squat, lunge and jump with dumbbells for strength and conditioning.",
+  "instructions": [
+    "Hold dumbbells at your sides and stand with feet shoulder-width apart.",
+    "Do a squat and stand back up.",
+    "Step into a lunge on each leg.",
+    "Finish with a jump, landing softly with bent knees.",
+    "Continue the chain without putting the weights down.",
+    "Rest, then repeat the sequence."
+  ],
+  "textSource": "opengym"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "0190",
+  "name": "cable one arm curl",
+  "bodyPart": "upper arms",
+  "equipment": "cable",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "A one-arm standing cable curl. The cable keeps the biceps under tension from bottom to top.",
+  "instructions": [
+    "Stand facing the cable machine with your feet shoulder-width apart.",
+    "Grasp the cable handle with an underhand grip, palm facing up.",
+    "Keep your elbow close to your side and slowly curl your forearm up towards your shoulder.",
+    "Pause for a moment at the top, then slowly lower your forearm back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "femaleVariant": "2581",
+  "textSource": "exercisedb"
+}

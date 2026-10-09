@@ -1,0 +1,21 @@
+{
+  "id": "1365",
+  "name": "upper back stretch",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "upper back",
+  "secondaryMuscles": [
+    "shoulders"
+  ],
+  "category": "stretching",
+  "description": "Reach your arms forward and round your upper back to open up the space between your shoulder blades. It stretches the upper back.",
+  "instructions": [
+    "Stand up straight with your feet shoulder-width apart.",
+    "Extend your arms straight in front of you, parallel to the ground.",
+    "Interlace your fingers and rotate your palms away from your body.",
+    "Slowly raise your arms overhead, keeping them straight and parallel to each other.",
+    "As you raise your arms, squeeze your shoulder blades together.",
+    "Hold the stretch for 15-30 seconds, then release and repeat."
+  ],
+  "textSource": "exercisedb"
+}

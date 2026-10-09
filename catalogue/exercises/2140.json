@@ -1,0 +1,24 @@
+{
+  "id": "2140",
+  "name": "walk wave machine",
+  "bodyPart": "cardio",
+  "equipment": "elliptical machine",
+  "target": "cardiovascular system",
+  "secondaryMuscles": [
+    "quadriceps",
+    "glutes",
+    "calves"
+  ],
+  "category": "cardio",
+  "description": "A low-impact cardio machine session that works the legs in a smooth walking motion to raise your heart rate.",
+  "instructions": [
+    "Step onto the machine and hold the handles lightly.",
+    "Start moving your legs in a smooth walking rhythm.",
+    "Keep your posture tall and your core lightly braced.",
+    "Pick a pace that lets you breathe steadily.",
+    "Keep going for 10-30 minutes depending on your fitness.",
+    "Slow down for the last minute before stepping off."
+  ],
+  "femaleVariant": "3625",
+  "textSource": "opengym"
+}

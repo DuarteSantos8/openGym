@@ -1,0 +1,21 @@
+{
+  "id": "1901",
+  "name": "kneeling face down adductor stretch",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "adductors",
+  "secondaryMuscles": [
+    "groin",
+    "hip flexors"
+  ],
+  "category": "stretching",
+  "description": "A floor stretch that opens up the inner thighs while you rest face down on your forearms.",
+  "instructions": [
+    "Kneel on a mat, then lower your chest and forearms to the floor.",
+    "Slide your knees wide apart and sink your hips back toward your heels until you feel the inner thighs stretch.",
+    "Keep your breathing slow and stay relaxed, without bouncing.",
+    "Hold for 20-30 seconds, feeling a gentle pull rather than pain.",
+    "Release slowly and repeat, switching sides if the stretch is one sided."
+  ],
+  "textSource": "opengym"
+}

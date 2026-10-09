@@ -1,0 +1,22 @@
+{
+  "id": "3265",
+  "name": "kneeling push up to child pose",
+  "bodyPart": "chest",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "secondaryMuscles": [
+    "triceps",
+    "shoulders",
+    "glutes"
+  ],
+  "category": "calisthenics",
+  "description": "A knee push-up that ends by sitting your hips back into child pose, building the chest and giving the back a stretch.",
+  "instructions": [
+    "Start on your hands and knees with hands slightly wider than your shoulders.",
+    "Lower your chest toward the floor, elbows at about 45 degrees.",
+    "Press back up to the start.",
+    "Push your hips back onto your heels and reach your arms forward into child pose.",
+    "Return to the start and repeat."
+  ],
+  "textSource": "opengym"
+}

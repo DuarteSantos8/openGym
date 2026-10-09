@@ -1,0 +1,22 @@
+{
+  "id": "0326",
+  "name": "dumbbell incline rear lateral raise",
+  "bodyPart": "shoulders",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "secondaryMuscles": [
+    "traps",
+    "rhomboids"
+  ],
+  "category": "strength",
+  "description": "A chest-supported rear lateral raise on an incline bench. It isolates the rear delts and the upper back.",
+  "instructions": [
+    "Set up an incline bench at a 45-degree angle.",
+    "Sit on the bench with your chest against the backrest and hold a dumbbell in each hand.",
+    "Extend your arms straight down with your palms facing each other.",
+    "Keeping a slight bend in your elbows, raise your arms out to the sides until they are parallel to the ground.",
+    "Pause for a moment at the top, then slowly lower your arms back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

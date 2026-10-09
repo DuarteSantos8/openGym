@@ -1,0 +1,22 @@
+{
+  "id": "7414",
+  "name": "crunch against wall",
+  "bodyPart": "waist",
+  "equipment": "body weight",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "obliques"
+  ],
+  "category": "calisthenics",
+  "description": "A crunch with your legs against a wall that keeps your hips steady and works the abs.",
+  "instructions": [
+    "Lie on your back with your feet and calves resting on a wall, knees bent about 90 degrees.",
+    "Place your hands lightly behind your head.",
+    "Curl your shoulders off the floor.",
+    "Pause at the top.",
+    "Lower with control.",
+    "Repeat for the planned reps."
+  ],
+  "textSource": "opengym"
+}

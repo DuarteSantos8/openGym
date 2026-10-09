@@ -1,0 +1,21 @@
+{
+  "id": "0439",
+  "name": "dumbbell zottman curl",
+  "bodyPart": "upper arms",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "secondaryMuscles": [
+    "forearms"
+  ],
+  "category": "strength",
+  "description": "You curl up with palms up, rotate the palms down, and lower slowly. It works the biceps on the way up and the forearms on the way down.",
+  "instructions": [
+    "Stand up straight with a dumbbell in each hand, palms facing your body.",
+    "Keep your elbows close to your torso and rotate your palms to face forward.",
+    "Curl the dumbbells up to your shoulders while keeping your upper arms stationary.",
+    "At the top of the movement, rotate your wrists so that your palms are facing away from your body.",
+    "Slowly lower the dumbbells back to the starting position, rotating your palms back to facing your body.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

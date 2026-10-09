@@ -1,0 +1,23 @@
+{
+  "id": "10195",
+  "name": "barbell half kneeling thor lift",
+  "bodyPart": "waist",
+  "equipment": "barbell",
+  "target": "abs",
+  "secondaryMuscles": [
+    "obliques",
+    "shoulders",
+    "glutes",
+    "core"
+  ],
+  "category": "strength",
+  "description": "A half kneeling barbell lift that sweeps the bar diagonally up, training the core to control rotation.",
+  "instructions": [
+    "Kneel on one knee holding one end of a barbell in a landmine setup near your hip.",
+    "Brace your core and stay tall.",
+    "Lift the bar diagonally across your body and up toward the opposite shoulder.",
+    "Return the bar slowly to the start.",
+    "Keep your hips square. Finish the reps, then switch sides."
+  ],
+  "textSource": "opengym"
+}

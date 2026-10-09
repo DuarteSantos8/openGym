@@ -1,0 +1,23 @@
+{
+  "id": "4198",
+  "name": "depth jump to hurdle hop",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hamstrings"
+  ],
+  "category": "plyometrics",
+  "description": "Drop off a box and hop over a hurdle.",
+  "instructions": [
+    "Stand on a box.",
+    "Step off.",
+    "Land softly.",
+    "Jump over the hurdle immediately.",
+    "Land softly.",
+    "Reset."
+  ],
+  "textSource": "opengym"
+}

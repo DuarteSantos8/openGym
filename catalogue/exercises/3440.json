@@ -1,0 +1,23 @@
+{
+  "id": "3440",
+  "name": "split jump to box",
+  "bodyPart": "upper legs",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "hamstrings",
+    "calves"
+  ],
+  "category": "plyometrics",
+  "description": "A jump from a split stance onto a box, building leg power.",
+  "instructions": [
+    "Stand in a lunge position facing a box.",
+    "Swing your arms and jump up.",
+    "Land with both feet softly on the box.",
+    "Stand tall.",
+    "Step down carefully.",
+    "Switch your front leg and repeat."
+  ],
+  "textSource": "opengym"
+}

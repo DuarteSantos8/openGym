@@ -1,0 +1,23 @@
+{
+  "id": "10187",
+  "name": "jump up side jump",
+  "bodyPart": "full body",
+  "equipment": "body weight",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "calves",
+    "hamstrings",
+    "core"
+  ],
+  "category": "plyometrics",
+  "description": "A vertical jump followed by a hop to the side, building leg power and agility.",
+  "instructions": [
+    "Stand with feet hip width apart and your knees slightly bent.",
+    "Jump straight up, swinging your arms for momentum.",
+    "Land softly and immediately hop sideways to one side.",
+    "Land on both feet with soft knees and reset your balance.",
+    "Alternate the side of each hop and keep a steady rhythm."
+  ],
+  "textSource": "opengym"
+}

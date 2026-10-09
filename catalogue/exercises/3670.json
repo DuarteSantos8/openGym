@@ -1,0 +1,21 @@
+{
+  "id": "3670",
+  "name": "weighted decline sit-up",
+  "bodyPart": "waist",
+  "equipment": "weighted",
+  "target": "abs",
+  "secondaryMuscles": [
+    "hip flexors",
+    "lower back"
+  ],
+  "category": "strength",
+  "description": "A weighted sit-up on a decline bench. It trains the abs through a long range.",
+  "instructions": [
+    "Lie flat on a decline bench with your feet secured under the foot pads.",
+    "Place your hands behind your head or across your chest.",
+    "Engage your abs and slowly lift your upper body off the bench, curling forward until your torso is perpendicular to the ground.",
+    "Pause for a moment at the top, then slowly lower your upper body back down to the starting position.",
+    "Repeat for the desired number of repetitions."
+  ],
+  "textSource": "exercisedb"
+}

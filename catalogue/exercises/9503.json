@@ -1,0 +1,24 @@
+{
+  "id": "9503",
+  "name": "suspender rear delt row",
+  "bodyPart": "shoulders",
+  "equipment": "suspension trainer",
+  "target": "delts",
+  "secondaryMuscles": [
+    "rear deltoids",
+    "upper back",
+    "rhomboids",
+    "biceps"
+  ],
+  "category": "strength",
+  "description": "A suspension-strap row with wide elbows that targets the rear delts and upper back.",
+  "instructions": [
+    "Hold the handles and lean back with arms straight and body in a line.",
+    "Brace your core and glutes.",
+    "Pull your hands toward your chest with elbows flared out wide.",
+    "Squeeze your shoulder blades together.",
+    "Lower slowly until your arms are straight again."
+  ],
+  "femaleVariant": "1089",
+  "textSource": "opengym"
+}

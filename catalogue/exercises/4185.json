@@ -1,0 +1,23 @@
+{
+  "id": "4185",
+  "name": "weighted overhead press step up",
+  "bodyPart": "upper legs",
+  "equipment": "weighted",
+  "target": "quads",
+  "secondaryMuscles": [
+    "glutes",
+    "shoulders",
+    "triceps"
+  ],
+  "category": "strength",
+  "description": "A step up combined with an overhead press. It trains legs and shoulders together.",
+  "instructions": [
+    "Hold weight at your shoulders and stand facing a bench.",
+    "Step up with one foot.",
+    "As you stand, press the weight overhead.",
+    "Lower the weight as you step down.",
+    "Alternate legs.",
+    "Keep your core braced."
+  ],
+  "textSource": "opengym"
+}

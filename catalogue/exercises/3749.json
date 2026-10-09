@@ -1,0 +1,23 @@
+{
+  "id": "3749",
+  "name": "inverted row with bed sheet",
+  "bodyPart": "back",
+  "equipment": "body weight",
+  "target": "lats",
+  "secondaryMuscles": [
+    "upper back",
+    "biceps",
+    "rhomboids",
+    "core"
+  ],
+  "category": "calisthenics",
+  "description": "A bodyweight row using a bed sheet looped around a sturdy anchor, such as a closed door.",
+  "instructions": [
+    "Anchor a bed sheet securely and hold both ends.",
+    "Lean back with your body straight.",
+    "Pull your chest toward your hands.",
+    "Squeeze your shoulder blades together.",
+    "Lower yourself slowly."
+  ],
+  "textSource": "opengym"
+}
