@@ -25,14 +25,16 @@ export function adjustRestSheet() {
 }
 
 // What the wheel's Done does to the rest as it is by then: a new time left, the rest ended at
-// 0:00, or a fresh rest when the old one has run out (Ready) or was skipped meanwhile.
+// 0:00, or a fresh rest when the old one has run out (Ready) or was skipped meanwhile. A fresh
+// rest from Ready is +15 s's on Ready (useUI.addRest): it keeps what the old one led into, and
+// so the sound it ends with.
 export function applyRestLeft(v, opened) {
   if (opened !== undefined && v === opened) return
   const ui = useUI.getState()
   const now = ui.timer
   if (!now) { if (v > 0) ui.startRest(v); return }
   if (v <= 0) { ui.stopRest(); return }
-  if (now.ready) { ui.startRest(v, now.forIdx); return }
+  if (now.ready) { ui.addRest(v); return }
   if (v !== now.left) ui.addRest(v - now.left)
 }
 

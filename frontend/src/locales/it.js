@@ -2414,4 +2414,11 @@ export default {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'Su questo dispositivo c’è 1 allenamento che non è in questo backup. Sostituire lo elimina.',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'Su questo dispositivo ci sono {0} allenamenti che non sono in questo backup. Sostituire li elimina.',
+  // --- a sound for each kind of rest (#165) ---
+  'A sound for each kind of rest': 'Un suono per ogni tipo di riposo',
+  'Hear what comes next without looking. Until you pick one, each plays the sound above, as holds and the switch-sides pause always do.': 'Senti cosa viene dopo senza guardare. Finché non ne scegli uno, ognuno suona come quello sopra, come fanno sempre le tenute e la pausa per cambiare lato.',
+  'Next round': 'Giro successivo',
+  'Next exercise': 'Esercizio successivo',
+  'Same as above': 'Come sopra',
+  'Same as {0}': 'Come {0}',
 }

@@ -2469,4 +2469,11 @@ export default {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'على هذا الجهاز تمرين واحد ليس في هذه النسخة الاحتياطية. الاستبدال يحذفه.',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'على هذا الجهاز {0} تمارين ليست في هذه النسخة الاحتياطية. الاستبدال يحذفها.',
+  // --- a sound for each kind of rest (#165) ---
+  'A sound for each kind of rest': 'صوت لكل نوع من الراحة',
+  'Hear what comes next without looking. Until you pick one, each plays the sound above, as holds and the switch-sides pause always do.': 'اعرف ما التالي دون أن تنظر. إلى أن تختار صوتًا، يُشغّل كل نوع الصوت أعلاه، كما يفعل التثبيت واستراحة تبديل الجهة دائمًا.',
+  'Next round': 'الجولة التالية',
+  'Next exercise': 'التمرين التالي',
+  'Same as above': 'كما في الأعلى',
+  'Same as {0}': 'مثل {0}',
 }

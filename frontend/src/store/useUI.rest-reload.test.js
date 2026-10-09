@@ -60,6 +60,20 @@ describe('the rest timer across a reload', () => {
     expect(useUI.getState().timer.left).toBe(33)
   })
 
+  // The kind picks the sound the rest ends with (Settings → Sound): a reload keeps it.
+  it('keeps what the rest leads into across a reload, and ends with that kind\'s sound', () => {
+    useStore.setState({ S: { ...useStore.getState().S, restSound: 'bell', restSoundByKind: { block: 'whistle' } } })
+    useUI.getState().startRest(90, 2, { kind: 'block' })
+    expect(saved()).toMatchObject({ kind: 'block' })
+    const kept = saved()
+    useUI.setState({ timer: null })
+    localStorage.setItem(REST_KEY, JSON.stringify(kept))
+    expect(restoreRest()).toBe(true)
+    expect(useUI.getState().timer).toMatchObject({ kind: 'block', forIdx: 2 })
+    vi.advanceTimersByTime(91_000)
+    expect(chime).toHaveBeenCalledWith(true, 'whistle')
+  })
+
   it('a rest that ended meanwhile, or one with no session running, is dropped', () => {
     localStorage.setItem(REST_KEY, JSON.stringify({ endsAt: Date.now() - 1, total: 90, forIdx: 0, paused: false, left: 3 }))
     expect(restoreRest()).toBe(false)

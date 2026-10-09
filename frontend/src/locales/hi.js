@@ -2414,4 +2414,11 @@ export default {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'इस डिवाइस पर 1 वर्कआउट है जो इस बैकअप में नहीं है। बदलने से यह मिट जाएगा।',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'इस डिवाइस पर {0} वर्कआउट हैं जो इस बैकअप में नहीं हैं। बदलने से ये मिट जाएँगे।',
+  // --- a sound for each kind of rest (#165) ---
+  'A sound for each kind of rest': 'हर तरह के आराम के लिए अलग आवाज़',
+  'Hear what comes next without looking. Until you pick one, each plays the sound above, as holds and the switch-sides pause always do.': 'बिना देखे सुनकर जानें कि आगे क्या है। जब तक आप कोई न चुनें, हर एक ऊपर वाली आवाज़ बजाता है, जैसे होल्ड और साइड बदलने का ठहराव हमेशा बजाते हैं।',
+  'Next round': 'अगला राउंड',
+  'Next exercise': 'अगला व्यायाम',
+  'Same as above': 'ऊपर जैसा',
+  'Same as {0}': '{0} जैसा',
 }
