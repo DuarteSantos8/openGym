@@ -44,6 +44,37 @@ a named human reviewer completes that review.
 
 ---
 
+# Chinese exercise names
+
+`zh.json` is the editable source for the Simplified Chinese (`zh`) exercise-name
+pack, and `GLOSSARY.zh.md` beside it fixes the terminology. Equipment terms
+match the labels the zh UI already shows in the equipment filter (`杠铃`, `哑铃`,
+`绳索`, `史密斯机`, `壶铃`, `弹力带` …), so a name and the chip above it agree.
+It covers the complete catalogue:
+
+```text
+杠铃卧推 (barbell bench press)
+```
+
+Chinese exercise names are written without spaces between words (`杠铃卧推`,
+not `杠铃 卧推`). `frontend/src/lib/zh-exercise-names.test.js` fails on any
+whitespace between two Chinese characters, so a name edited in by hand later
+cannot reintroduce one.
+
+```sh
+node scripts/translate-zh-exercise-names.mjs --apply   # fills in what is missing
+node scripts/build-zh-exercise-names.mjs               # regenerates the runtime pack
+```
+
+The translations were produced from the English EXDB titles with LLM
+assistance and have **not** been reviewed by a native speaker. A native
+Chinese speaker (@Black-Cyan, who requested the pack in issue #419) has offered
+to review them; until a named human reviewer completes that review they must
+not be described as native-reviewed. They are original translations and were
+not copied from another Chinese exercise dataset.
+
+---
+
 # German exercise names
 
 `de.json` is the editable source for the German exercise-name pack, and it
