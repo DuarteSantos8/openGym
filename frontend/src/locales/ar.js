@@ -2303,4 +2303,10 @@ export default {
   'Next exercise': 'التمرين التالي',
   'Same as above': 'كما في الأعلى',
   'Same as {0}': 'مثل {0}',
+  // --- what the timer bar says it times (#165) ---
+  'Set': 'مجموعة',
+  'Round': 'جولة',
+  'Hold': 'تثبيت',
+  'Hold {0} of {1}': 'التثبيت {0} من {1}',
+  'Warm-up hold {0} of {1}': 'تثبيت الإحماء {0} من {1}',
 }

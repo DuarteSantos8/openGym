@@ -2248,4 +2248,10 @@ export default {
   'Next exercise': 'Ejercicio siguiente',
   'Same as above': 'Igual que arriba',
   'Same as {0}': 'Igual que {0}',
+  // --- what the timer bar says it times (#165) ---
+  'Set': 'Serie',
+  'Round': 'Ronda',
+  'Hold': 'Mantener',
+  'Hold {0} of {1}': 'Mantener {0} de {1}',
+  'Warm-up hold {0} of {1}': 'Calentamiento: mantener {0} de {1}',
 }

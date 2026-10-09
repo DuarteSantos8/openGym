@@ -2248,4 +2248,10 @@ export default {
   'Next exercise': 'Sonraki egzersiz',
   'Same as above': 'Yukarıdakiyle aynı',
   'Same as {0}': '{0} ile aynı',
+  // --- what the timer bar says it times (#165) ---
+  'Set': 'Set',
+  'Round': 'Tur',
+  'Hold': 'Tutuş',
+  'Hold {0} of {1}': 'Tutuş {0}/{1}',
+  'Warm-up hold {0} of {1}': 'Isınma tutuşu {0}/{1}',
 }

@@ -327,6 +327,8 @@ describe('the sound a rest ends with, by its kind', () => {
   it('keeps the kind on the running timer, and drops one it does not know', () => {
     useUI.getState().startRest(90, 2, { kind: 'round' })
     expect(useUI.getState().timer).toMatchObject({ forIdx: 2, kind: 'round' })
+    useUI.getState().startRest(45, 1, { kind: 'set', phase: 'warmup' })
+    expect(useUI.getState().timer).toMatchObject({ forIdx: 1, kind: 'set', phase: 'warmup' })
     useUI.getState().startRest(90, 2, { kind: 'nonsense' })
     expect(useUI.getState().timer.kind).toBeUndefined()
   })
@@ -364,18 +366,18 @@ describe('the sound a rest ends with, by its kind', () => {
     expect(chime).toHaveBeenCalledWith(false, 'beep')
   })
 
-  it('keeps the kind when the rest is extended, started again from Ready, or followed from the Android notification', () => {
-    useUI.getState().startRest(60, 1, { kind: 'set' })
+  it('keeps the kind and phase when the rest is extended, started again from Ready, or followed from the Android notification', () => {
+    useUI.getState().startRest(60, 1, { kind: 'set', phase: 'warmup' })
     useUI.getState().addRest(30)
-    expect(useUI.getState().timer.kind).toBe('set')
-    useUI.getState().startRest(1, 1, { kind: 'round', forSet: 2 })
+    expect(useUI.getState().timer).toMatchObject({ kind: 'set', phase: 'warmup' })
+    useUI.getState().startRest(1, 1, { kind: 'set', phase: 'work', forSet: 2 })
     vi.advanceTimersByTime(1000)
-    expect(useUI.getState().timer).toMatchObject({ ready: true, kind: 'round' })
+    expect(useUI.getState().timer).toMatchObject({ ready: true, kind: 'set', phase: 'work' })
     useUI.getState().addRest(15)
-    expect(useUI.getState().timer).toMatchObject({ left: 15, forIdx: 1, forSet: 2, kind: 'round' })
+    expect(useUI.getState().timer).toMatchObject({ left: 15, forIdx: 1, forSet: 2, kind: 'set', phase: 'work' })
     expect(useUI.getState().timer.ready).toBeUndefined()
     useUI.getState().followNativeRest({ endsAt: Date.now() + 40_000, left: 40, total: 60, paused: false })
-    expect(useUI.getState().timer).toMatchObject({ left: 40, kind: 'round', forSet: 2 })
+    expect(useUI.getState().timer).toMatchObject({ left: 40, kind: 'set', phase: 'work', forSet: 2 })
   })
 })
 

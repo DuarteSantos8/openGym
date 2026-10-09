@@ -388,3 +388,20 @@ export function modeForEntry(entry, fallback = null) {
   if (targetMode) return targetMode
   return fallback == null ? modeForSet(source, target) : normalizeMode(fallback)
 }
+
+// Where a timed set sits among its exercise's sets of the same phase ("Hold 2 of 3", or "Warm-up
+// hold 1 of 2"), the same numbering the set rows show: warm-up rows count separately, and a
+// per-side hold's left and right rows are one set.
+export function holdPosition(sets, setIdx) {
+  const rows = Array.isArray(sets) ? sets : []
+  const set = rows[setIdx]
+  if (!set) return null
+  const warm = isWarmupRow(set)
+  const numberAt = k => {
+    const n = rows.slice(0, k + 1).filter(x => isWarmupRow(x) === warm).length
+    return rows[k]?.side ? Math.ceil(n / 2) : n
+  }
+  const last = rows.reduce((at, x, k) => (isWarmupRow(x) === warm ? k : at), setIdx)
+  return { phase: warm ? 'warmup' : 'work', n: numberAt(setIdx), of: numberAt(last) }
+}
+

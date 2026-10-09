@@ -2248,4 +2248,10 @@ export default {
   'Next exercise': 'अगला व्यायाम',
   'Same as above': 'ऊपर जैसा',
   'Same as {0}': '{0} जैसा',
+  // --- what the timer bar says it times (#165) ---
+  'Set': 'सेट',
+  'Round': 'राउंड',
+  'Hold': 'होल्ड',
+  'Hold {0} of {1}': 'होल्ड {0}/{1}',
+  'Warm-up hold {0} of {1}': 'वार्म-अप होल्ड {0}/{1}',
 }

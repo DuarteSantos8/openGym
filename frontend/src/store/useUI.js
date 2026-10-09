@@ -121,6 +121,7 @@ let timerTick = null
 let hiddenOver = false
 // The kinds a rest can carry: the switch-sides pause, and what a rest after a set leads into.
 const knownKind = kind => kind === 'switch' || REST_KINDS.includes(kind)
+const knownPhase = phase => phase === 'warmup' || phase === 'work'
 let workInt = null
 let workTick = null
 // The same for the running hold (see runWork): its audio session already let go on a hidden page.
@@ -311,6 +312,9 @@ export const useUI = create((set, get) => ({
                        // kind: 'switch' for the short pause between the two sides of a timed set;
                        //   otherwise what the rest leads into, 'set' | 'round' | 'block'
                        //   (supersetFlow.restKind), which picks the sound it ends with
+                       // phase: 'warmup' when the set a rest leads into is a warm-up (ramp) set, else
+                       //   'work', on an exercise that has warm-up rows (supersetFlow.restSetPhase);
+                       //   the bar then says "Warm-up" instead of "Set"
                        // forIdx: index of the active entry whose set started the rest (undefined when unknown)
                        // forSet: index of that set in the entry's rows, so removing the set stops its rest
                        // paused: held at `left`; `endsAt` means nothing until resumeRest sets it again
@@ -362,7 +366,7 @@ export const useUI = create((set, get) => ({
     if (get().toastMsg) runToast(set)
   },
 
-  startRest(sec, forIdx, { kind, forSet, since } = {}) {
+  startRest(sec, forIdx, { kind, forSet, phase, since } = {}) {
     get().stopRest()
     // Rest timer set to Off. Stopping and returning rather than starting a zero-length timer
     // keeps every caller honest: the four places that start a rest do not each need to know.
@@ -392,7 +396,7 @@ export const useUI = create((set, get) => ({
     const late = since != null && since < Date.now()
     if (late) pageHiddenAt = since
     const endsAt = (late ? since : Date.now()) + sec * 1000
-    set({ timer: { left: sec, total: sec, endsAt, forIdx, ...(forSet != null ? { forSet } : {}), ...(knownKind(kind) ? { kind } : {}) } })
+    set({ timer: { left: sec, total: sec, endsAt, forIdx, ...(forSet != null ? { forSet } : {}), ...(knownKind(kind) ? { kind } : {}), ...(knownPhase(phase) ? { phase } : {}) } })
     if (late) {
       if (Math.round((endsAt - Date.now()) / 1000) > 0) { holdAudio(); bookRestEnd(endsAt, sec, kind) }
       runRest(set, get)
@@ -446,8 +450,8 @@ export const useUI = create((set, get) => ({
   addRest(sec) {
     const tm = get().timer
     if (!tm) return
-    // A fresh rest from Ready keeps what the old one led into, so it ends with the same sound.
-    if (tm.ready) { if (sec > 0) get().startRest(Math.min(sec, REST_MAX), tm.forIdx, { forSet: tm.forSet, kind: tm.kind }); else get().stopRest(); return }
+    // A fresh rest from Ready keeps what the old one led into: the sound it ends with, and the bar's word.
+    if (tm.ready) { if (sec > 0) get().startRest(Math.min(sec, REST_MAX), tm.forIdx, { forSet: tm.forSet, kind: tm.kind, phase: tm.phase }); else get().stopRest(); return }
     // +15 s stops where the wheel does (15:00), so the two never disagree about a rest's length.
     if (sec > 0) sec = Math.min(sec, Math.max(0, REST_MAX - tm.left))
     if (!sec) return
@@ -479,7 +483,7 @@ export const useUI = create((set, get) => ({
   followNativeRest({ endsAt, left, total, paused }) {
     const tm = get().timer
     const forIdx = tm?.forIdx
-    const kind = { ...(knownKind(tm?.kind) ? { kind: tm.kind } : {}), ...(tm?.forSet != null ? { forSet: tm.forSet } : {}) }
+    const kind = { ...(knownKind(tm?.kind) ? { kind: tm.kind } : {}), ...(knownPhase(tm?.phase) ? { phase: tm.phase } : {}), ...(tm?.forSet != null ? { forSet: tm.forSet } : {}) }
     if (paused) {
       stopRestTicking()
       hush()
@@ -615,7 +619,7 @@ const saveRest = tm => {
   if (!ss) return
   try {
     if (!tm || tm.ready) ss.removeItem(REST_KEY)
-    else ss.setItem(REST_KEY, JSON.stringify({ endsAt: tm.endsAt, total: tm.total, forIdx: tm.forIdx ?? null, forSet: tm.forSet ?? null, kind: tm.kind || null, paused: !!tm.paused, left: tm.left, pushed: restPushBooked }))
+    else ss.setItem(REST_KEY, JSON.stringify({ endsAt: tm.endsAt, total: tm.total, forIdx: tm.forIdx ?? null, forSet: tm.forSet ?? null, kind: tm.kind || null, phase: tm.phase || null, paused: !!tm.paused, left: tm.left, pushed: restPushBooked }))
   } catch { /* the rest just does not outlive a reload */ }
 }
 export function restoreRest(now = Date.now()) {
@@ -626,7 +630,7 @@ export function restoreRest(now = Date.now()) {
   const total = Math.round(Number(saved.total))
   const ok = useStore.getState().S?.active && total > 0 && (saved.paused ? saved.left > 0 : saved.endsAt > now)
   if (!ok) { try { ss.removeItem(REST_KEY) } catch { /* nothing to drop */ } return false }
-  const base = { total, forIdx: saved.forIdx ?? undefined, ...(saved.forSet != null ? { forSet: saved.forSet } : {}), ...(knownKind(saved.kind) ? { kind: saved.kind } : {}) }
+  const base = { total, forIdx: saved.forIdx ?? undefined, ...(saved.forSet != null ? { forSet: saved.forSet } : {}), ...(knownKind(saved.kind) ? { kind: saved.kind } : {}), ...(knownPhase(saved.phase) ? { phase: saved.phase } : {}) }
   if (saved.paused) {
     useUI.setState({ timer: { ...base, left: Math.round(saved.left), endsAt: saved.endsAt, paused: true } })
     if (MOBILE) holdRestAlert(Math.round(saved.left), total)
