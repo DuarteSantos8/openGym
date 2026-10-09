@@ -67,7 +67,7 @@ vi.mock('../lib/mobile.js', () => ({ get MOBILE() { return mocks.MOBILE } }))
 vi.mock('../components/CameraScan.jsx', () => ({ default: props => { mocks.camera = props; return null } }))
 // lean-qr loads through a dynamic import and draws to a real canvas. The value it is asked to
 // draw is the part that matters here, so the stub simply reflects it back into the DOM.
-vi.mock('../components/QrCanvas.jsx', () => ({ default: ({ value }) => <i data-qr={value} /> }))
+vi.mock('../components/CardCode.jsx', () => ({ default: ({ value, fmt }) => <i data-qr={value} data-fmt={fmt} /> }))
 
 import CheckIn, { openAddCard, openEditCard } from './CheckIn.jsx'
 
@@ -372,9 +372,19 @@ describe('CheckIn — adding a card', () => {
     mocks.scanCode.mockResolvedValue({ value: '5901234123457', fmt: 'EAN_13' })
     await openAdd()
     await tap(sheetBtn('Scan'))
-    expect(mocks.toast).toHaveBeenCalledWith("That's not a QR code. Only QR cards can be shown here")
+    expect(mocks.toast).toHaveBeenCalledWith("That code type can't be shown here. Only QR codes and Code 128 barcodes work")
     expect(sheetBtn('Save card').disabled).toBe(true)
     expect(sheetHost.querySelector('[data-qr]')).toBeFalsy()
+  })
+
+  it('a scanned Code 128 barcode is saved as one, so the card face draws bars a laser reader can read', async () => {
+    mocks.MOBILE = true
+    mocks.scanCode.mockResolvedValue({ value: '1000009779', fmt: 'CODE_128' })
+    await openAdd()
+    await tap(sheetBtn('Scan'))
+    await tap(sheetBtn('Save card'))
+    expect(mocks.S.gymCards[0]).toMatchObject({ value: '1000009779', fmt: 'code128' })
+    expect(mocks.toast).toHaveBeenCalledWith('Card added')
   })
 
   it('backing out of the native scanner leaves the form as it was and re-enables the buttons', async () => {
@@ -427,7 +437,7 @@ describe('CheckIn — adding a card', () => {
     act(() => { camRoot.render(mocks.sheets.at(-1)(closeCam)) })
     await act(async () => { mocks.camera.onFound({ value: '5901234123457', fmt: 'EAN_13' }) })
     expect(closeCam).toHaveBeenCalledTimes(1)
-    expect(mocks.toast).toHaveBeenCalledWith("That's not a QR code. Only QR cards can be shown here")
+    expect(mocks.toast).toHaveBeenCalledWith("That code type can't be shown here. Only QR codes and Code 128 barcodes work")
     expect(sheetBtn('Save card').disabled).toBe(true)
   })
 })
@@ -480,16 +490,26 @@ describe('CheckIn — importing a photo', () => {
     mocks.importCodeFromImage.mockResolvedValue(null)
     await openAdd()
     await pickFile()
-    expect(mocks.toast).toHaveBeenCalledWith('No QR code found in that image')
+    expect(mocks.toast).toHaveBeenCalledWith('No QR code or barcode found in that image')
     expect(sheetBtn('Save card').disabled).toBe(true)
   })
 
-  it('a photo of a non-QR barcode is refused for the same reason a scan of one is', async () => {
-    mocks.importCodeFromImage.mockResolvedValue({ value: '5901234123457', fmt: 'CODE_128' })
+  it('a photo of a barcode we cannot redraw is refused for the same reason a scan of one is', async () => {
+    mocks.importCodeFromImage.mockResolvedValue({ value: '5901234123457', fmt: 'EAN_13' })
     await openAdd()
     await pickFile()
-    expect(mocks.toast).toHaveBeenCalledWith("That's not a QR code. Only QR cards can be shown here")
+    expect(mocks.toast).toHaveBeenCalledWith("That code type can't be shown here. Only QR codes and Code 128 barcodes work")
     expect(sheetBtn('Save card').disabled).toBe(true)
+  })
+
+  it('a photo of a Code 128 card is kept as a barcode, not turned into a QR', async () => {
+    mocks.importCodeFromImage.mockResolvedValue({ value: '1000009779', fmt: 'code_128' })
+    await openAdd()
+    await pickFile()
+    expect(mocks.toast).not.toHaveBeenCalled()
+    expect(sheetHost.querySelector('[data-qr]').getAttribute('data-fmt')).toBe('code128')
+    await tap(sheetBtn('Save card'))
+    expect(mocks.S.gymCards[0]).toMatchObject({ value: '1000009779', fmt: 'code128' })
   })
 
   it('a decoder that throws is reported, not swallowed, and the buttons come back', async () => {
@@ -549,6 +569,15 @@ describe('CheckIn — editing a card', () => {
     expect(mocks.S.gymCards[1]).toMatchObject({ id: 'b', label: 'B', value: 'RENEWED-2027' })
   })
 
+  it('a re-scan can switch a card from QR to a Code 128 barcode', async () => {
+    mocks.MOBILE = true
+    mocks.scanCode.mockResolvedValue({ value: '1000009779', fmt: 'CODE_128' })
+    await openEdit('b')
+    await tap(sheetBtn('Re-scan'))
+    await tap(sheetBtn('Save card'))
+    expect(mocks.S.gymCards[1]).toMatchObject({ id: 'b', value: '1000009779', fmt: 'code128' })
+  })
+
   it('clearing the name gives it the fallback name rather than an empty label', async () => {
     await openEdit('b')
     typeInto(labelField(), '  ')
@@ -556,7 +585,7 @@ describe('CheckIn — editing a card', () => {
     expect(mocks.S.gymCards[1].label).toBe('Gym card')
   })
 
-  it('a re-scan that is not a QR code cannot overwrite the working code already on the card', async () => {
+  it('a re-scan we cannot redraw cannot overwrite the working code already on the card', async () => {
     mocks.MOBILE = true
     mocks.scanCode.mockResolvedValue({ value: '5901234123457', fmt: 'EAN_13' })
     await openEdit('b')

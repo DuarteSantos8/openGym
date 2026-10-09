@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { normalizeFmt, canRenderFmt } from './qr.js'
 
 // The QR helpers decide which scanned/typed codes the check-in feature will store: it can read
-// many symbologies but only redraw QR, so canRenderFmt is the gate, and normalizeFmt is what
+// many symbologies but only redraw QR and Code 128, so canRenderFmt is the gate, and normalizeFmt is what
 // folds every spelling mlkit might report into the single token everything else compares on.
 
 describe('normalizeFmt', () => {
@@ -29,16 +29,19 @@ describe('normalizeFmt', () => {
 })
 
 describe('canRenderFmt', () => {
-  it('accepts only QR, in any spelling', () => {
+  it('accepts QR and Code 128, in any spelling', () => {
     expect(canRenderFmt('QR_CODE')).toBe(true)
     expect(canRenderFmt('QrCode')).toBe(true)
     expect(canRenderFmt('qr')).toBe(true)
+    // BarcodeDetector says 'code_128', mlkit 'CODE_128'
+    expect(canRenderFmt('code_128')).toBe(true)
+    expect(canRenderFmt('CODE_128')).toBe(true)
   })
 
   it('rejects 1D and other 2D symbologies we cannot faithfully redraw', () => {
-    // These are readable by the scanner but lean-qr can't reproduce them, so a card in one of
+    // These are readable by the scanner but we can't reproduce them, so a card in one of
     // these formats must never be stored — it would display as the wrong bars at the turnstile.
-    for (const fmt of ['EAN_13', 'EAN_8', 'CODE_128', 'CODE_39', 'ITF', 'UPC_A', 'PDF_417', 'AZTEC', 'DATA_MATRIX']) {
+    for (const fmt of ['EAN_13', 'EAN_8', 'CODE_39', 'ITF', 'UPC_A', 'PDF_417', 'AZTEC', 'DATA_MATRIX']) {
       expect(canRenderFmt(fmt)).toBe(false)
     }
   })

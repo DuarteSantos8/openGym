@@ -7,10 +7,10 @@
 // lean-qr (MIT, see NOTICE.md) is loaded with a dynamic import so its ~4kB only loads when a
 // card is actually shown, on every platform — the PWA renders the same code as the app.
 //
-// Scope: lean-qr generates QR codes only. A gym card is virtually always a QR code, and the
-// capture flow (lib/scan.js) refuses any symbology we cannot faithfully reproduce, so a stored
-// card is guaranteed renderable here — canRenderFmt() is the single source of that truth, shared
-// by both sides.
+// Scope: lean-qr generates QR codes; Code 128 barcodes are drawn by lib/code128.js (see
+// components/CardCode.jsx). The capture flow (lib/scan.js) refuses any symbology we cannot
+// faithfully reproduce, so a stored card is guaranteed renderable — canRenderFmt() is the single
+// source of that truth, shared by both sides.
 
 let _leanqr = null
 
@@ -20,12 +20,14 @@ async function loadLeanQr() {
   return _leanqr
 }
 
-// The symbologies we can both read (mlkit) AND redraw (lean-qr). Stored `fmt` is a lower-cased
-// BarcodeFormat. Only QR qualifies: reproducing an EAN/Code128/etc. would need a 1D renderer we
-// deliberately did not add, and a code we can't redraw faithfully is worse than not storing it —
-// it would look scannable but carry the wrong bars.
+// The symbologies we can both read (mlkit / BarcodeDetector) AND redraw. Stored `fmt` is a
+// lower-cased BarcodeFormat. QR is drawn by lean-qr; Code 128 - the 1D barcode many gyms use, and
+// the only kind a laser turnstile can read - by lib/code128.js. Other 1D kinds (EAN, Code 39...)
+// are still refused: a code we can't redraw faithfully is worse than not storing it - it would
+// look scannable but carry the wrong bars.
 export function canRenderFmt(fmt) {
-  return normalizeFmt(fmt) === 'qrcode'
+  const f = normalizeFmt(fmt)
+  return f === 'qrcode' || f === 'code128'
 }
 
 // mlkit reports BarcodeFormat as e.g. 'QR_CODE' | 'QrCode'; older callers may pass 'qr'. Fold
