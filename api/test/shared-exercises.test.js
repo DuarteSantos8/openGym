@@ -49,6 +49,14 @@ test('invalid or absent definitions are rejected', t => {
   const { store } = setup(t);
   for (const value of [null, [], {}, exercise({ n: ' ' }), exercise({ eq: '' })]) assert.throws(() => store.put(value, admin), status(400));
 });
+test('publishing and withdrawing cannot replace official catalogue identifiers', t => {
+  const { store } = setup(t);
+  for (const id of ['0025', '10000']) {
+    assert.throws(() => store.put(exercise({ id }), admin), status(400));
+    assert.throws(() => store.remove(id), status(400));
+  }
+  assert.deepEqual(store.list(), []);
+});
 test('a failed atomic write preserves the previous catalogue', t => {
   let fail = false; const { store } = setup(t, { atomicWrite: (file, bytes) => { if (fail) throw new Error('disk full'); fs.writeFileSync(file, bytes); } });
   const old = store.put(exercise(), admin); fail = true;

@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { CATALOGUE, EXIDX, allExercises, registerCustom, searchExercises } from './exercises.js'
 const calls = vi.hoisted(() => ({ api: vi.fn(), upload: vi.fn(), blob: vi.fn(), synced: vi.fn(), fetch: vi.fn() }))
 vi.mock('./api.js', () => ({ api: calls.api, apiUpload: calls.upload }))
 vi.mock('./media-store.js', () => ({ mediaStore: { get: calls.blob, markSynced: calls.synced } }))
@@ -14,6 +15,7 @@ const store = (customEx = []) => {
   return { getState: () => state }
 }
 beforeEach(() => vi.resetAllMocks())
+afterEach(() => registerCustom([]))
 describe('shared exercise cache', () => {
   it('only admins edit shared exercises, while private customs stay editable', () => {
     expect(canEditExercise(exercise(), { admin: true })).toBe(true)
@@ -45,6 +47,23 @@ describe('shared exercise cache', () => {
   })
 })
 describe('account and server isolation', () => {
+  it('keeps the official catalogue intact and searchable beside shared exercises', async () => {
+    const official = CATALOGUE[0], before = JSON.stringify(CATALOGUE), st = store()
+    const shared = exercise({ n: 'Instance practice drill', bp: 'full body', eq: 'macebell' })
+    calls.api.mockResolvedValue({ exercises: [shared,
+      exercise({ id: official.id, n: 'Forged official exercise' })] })
+    await refreshServerExercises(st)
+    expect(st.getState().S.customEx).toEqual([shared])
+    registerCustom(st.getState().S.customEx)
+    const list = allExercises(st.getState().S)
+    expect(list).toHaveLength(CATALOGUE.length + 1)
+    expect(EXIDX[official.id]).toBe(official)
+    expect(EXIDX[shared.id]).toEqual(shared)
+    expect(searchExercises(list, 'Instance practice drill')).toContain(shared)
+    expect(JSON.stringify(CATALOGUE)).toBe(before)
+    await refreshServerExercises(st)
+    expect(allExercises(st.getState().S)).toHaveLength(CATALOGUE.length + 1)
+  })
   for (const field of ['account', 'server']) it(`cancels edits after a ${field} change`, () => {
     const st = store(), guard = exerciseAccountGuard(st); guard()
     if (field === 'account') st.getState().user = { id: 'other' }; else st.getState().sync.server = 'other'
