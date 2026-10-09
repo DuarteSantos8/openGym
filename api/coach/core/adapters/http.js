@@ -18,6 +18,10 @@
  *   no key and one required  → spawnError                             "missing", like an absent CLI
  *
  * A provider is described by a spec (see anthropic.js etc.); this file owns the transport.
+ *
+ * `spec.headers(key, base)` is given the resolved endpoint as well as the credential: a spec
+ * that attributes its traffic has to key that on where the request is actually going, since a
+ * configured baseUrl can move a provider off its own host. Specs that do not care ignore it.
  */
 import { HTTP_PROVIDERS, baseUrlFor } from '../providers.js';
 
@@ -101,7 +105,7 @@ export function httpAdapter(spec) {
       if (!key && !meta.keyOptional) return { ok: false, error: 'no API key configured', models: [] };
       let res;
       try {
-        res = await call(fetchImpl, base + spec.modelsPath, { method: 'GET', headers: spec.headers(key) }, timeoutMs, signal);
+        res = await call(fetchImpl, base + spec.modelsPath, { method: 'GET', headers: spec.headers(key, base) }, timeoutMs, signal);
       } catch (e) {
         return { ok: false, error: e.name === 'AbortError' ? 'timed out' : `could not reach ${hostOf(base)}: ${trim(e.message, 120)}`, models: [] };
       }
@@ -135,7 +139,7 @@ export function httpAdapter(spec) {
         try {
           res = await call(fetchImpl, base + spec.path(chosen), {
             method: 'POST',
-            headers: { 'content-type': 'application/json', ...spec.headers(key) },
+            headers: { 'content-type': 'application/json', ...spec.headers(key, base) },
             body: JSON.stringify(body)
           }, timeoutMs, signal);
         } catch (e) {
