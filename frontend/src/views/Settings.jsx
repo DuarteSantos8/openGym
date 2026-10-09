@@ -576,8 +576,13 @@ export default function Settings({ page = null, find = null, via = null }) {
         <Section title={t('When a rest ends')}>
           <Row icon="speaker" iconTint="var(--pink)" title={t('Play a sound')}>
             {/* Turning the sound on is a tap: unlock the audio context now so a timer that ends
-                before the next set check can already sound (iOS, #152). */}
-            <Switch checked={!!S.sound} onChange={v => { if (v) unlock(true); update(s => { s.sound = v }) }} />
+                before the next set check can already sound (iOS, #152). A timer already running
+                had its count-in queued when it started, so it is queued again (or called off). */}
+            <Switch checked={!!S.sound} onChange={v => {
+              if (v) unlock(true)
+              update(s => { s.sound = v })
+              useUI.getState().restartCountdown()
+            }} />
           </Row>
           {/* The chime that replaced the original three beeps (Discord: "too quiet under music")
               is not an improvement for everyone: louder is a cost with headphones or in a quiet

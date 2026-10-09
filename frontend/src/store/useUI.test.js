@@ -3,9 +3,9 @@
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 import { useUI } from './useUI.js'
 import { useStore } from './useStore.js'
-import { chime } from '../lib/sound.js'
+import { beep, chime, countdown, hush } from '../lib/sound.js'
 
-vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn() }))
+vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn(), countdown: vi.fn(), hush: vi.fn() }))
 
 // "Off" has to hold at the timer itself, not at the four places that start one — the same
 // reason the rest-after-a-set rule is a shared condition rather than four copies.
@@ -375,3 +375,156 @@ describe('the sound a rest ends with, by its kind', () => {
     expect(useUI.getState().timer).toMatchObject({ left: 40, kind: 'round', forSet: 2 })
   })
 })
+
+// The last seconds of every timer are counted in out loud, queued when it starts (lib/sound.js
+// countdown): the one-second tick that used to beep them is throttled to nothing in a pocket.
+describe('the count-in a timer queues', () => {
+  let originalSettings
+  beforeEach(() => {
+    vi.useFakeTimers()
+    countdown.mockClear(); hush.mockClear(); beep.mockClear()
+    originalSettings = useStore.getState().S
+    useStore.setState({ S: { ...originalSettings, sound: true, timerFlash: false } })
+    useUI.setState({ timer: null, work: null })
+  })
+  afterEach(() => {
+    useUI.getState().stopRest(); useUI.getState().stopWork()
+    useStore.setState({ S: originalSettings }); vi.useRealTimers()
+  })
+
+  it('a rest queues one for its whole length', () => {
+    useUI.getState().startRest(90, 0, { kind: 'set' })
+    expect(countdown).toHaveBeenCalledWith(true, 90)
+  })
+
+  it('a timed hold queues one too: every timer counts you in, not just the rest', () => {
+    useUI.getState().startWork(45, 'Plank', () => {})
+    expect(countdown).toHaveBeenCalledWith(true, 45)
+  })
+
+  it('so does the switch-sides pause', () => {
+    useUI.getState().startRest(10, 0, { kind: 'switch' })
+    expect(countdown).toHaveBeenCalledWith(true, 10)
+  })
+
+  it('passes the Sounds setting through, so off stays off', () => {
+    useStore.setState({ S: { ...useStore.getState().S, sound: false } })
+    useUI.getState().startRest(90, 0, { kind: 'set' })
+    expect(countdown).toHaveBeenCalledWith(false, 90)
+  })
+
+  it('a rest set to Off queues nothing', () => {
+    useUI.getState().startRest(0, 0, { kind: 'set' })
+    expect(countdown).not.toHaveBeenCalled()
+  })
+
+  it('+15 s moves the end, so the count-in is queued again for the new one', () => {
+    useUI.getState().startRest(90, 0, { kind: 'set' })
+    useUI.getState().addRest(15)
+    expect(countdown).toHaveBeenLastCalledWith(true, 105)
+  })
+
+  it('the tick no longer beeps its own way through the last seconds', () => {
+    useUI.getState().startRest(6, 0, { kind: 'set' })
+    vi.advanceTimersByTime(4000)
+    useUI.getState().startWork(6, 'Plank', () => {})
+    vi.advanceTimersByTime(4000)
+    expect(beep).not.toHaveBeenCalled()
+  })
+
+  it('skipping a rest calls the count-in off, so it cannot tick after you have moved on', () => {
+    useUI.getState().startRest(90, 0, { kind: 'set' })
+    hush.mockClear()
+    useUI.getState().stopRest()
+    expect(hush).toHaveBeenCalled()
+  })
+
+  it('a rest that runs out calls it off as it goes, and so does a switch-sides pause', () => {
+    useUI.getState().startRest(1, 0, { kind: 'set' })
+    hush.mockClear()
+    vi.advanceTimersByTime(1000)
+    expect(hush).toHaveBeenCalled()
+    useUI.getState().startRest(1, 0, { kind: 'switch' })
+    hush.mockClear()
+    vi.advanceTimersByTime(1000)
+    expect(hush).toHaveBeenCalled()
+  })
+
+  it('cancelling or finishing a hold calls it off', () => {
+    useUI.getState().startWork(45, 'Plank', () => {})
+    hush.mockClear()
+    useUI.getState().finishWorkEarly()
+    expect(hush).toHaveBeenCalled()
+  })
+
+  it('switching Sounds mid-rest queues what is left again (or calls it off)', () => {
+    useUI.getState().startRest(90, 0, { kind: 'set' })
+    vi.advanceTimersByTime(3000)
+    useUI.getState().restartCountdown()
+    expect(countdown).toHaveBeenLastCalledWith(true, 87)
+    useStore.setState({ S: { ...useStore.getState().S, sound: false } })
+    useUI.getState().restartCountdown()
+    expect(countdown).toHaveBeenLastCalledWith(false, 87)
+  })
+
+  it('and mid-hold', () => {
+    useUI.getState().startWork(45, 'Plank', () => {})
+    vi.advanceTimersByTime(5000)
+    useUI.getState().restartCountdown()
+    expect(countdown).toHaveBeenLastCalledWith(true, 40)
+  })
+
+  it('with no timer running there is nothing to queue again', () => {
+    useUI.getState().restartCountdown()
+    expect(countdown).not.toHaveBeenCalled()
+  })
+
+  it('coming back on screen queues it again, against the time that is really left', () => {
+    const hide = () => { Object.defineProperty(document, 'hidden', { value: true, configurable: true }); document.dispatchEvent(new Event('visibilitychange')) }
+    const show = () => { Object.defineProperty(document, 'hidden', { value: false, configurable: true }); document.dispatchEvent(new Event('visibilitychange')) }
+    useUI.getState().startRest(90, 0, { kind: 'set' })
+    hide()
+    vi.advanceTimersByTime(60000)     // the phone was locked: the queue froze with the audio clock
+    countdown.mockClear()
+    show()
+    expect(countdown).toHaveBeenCalledWith(true, 30)
+    vi.advanceTimersByTime(1000)      // and only once: the next tick is an ordinary one
+    expect(countdown).toHaveBeenCalledTimes(1)
+  })
+
+  // The two never run together, but each is stopped where the other may be running: a move up or
+  // down mid-rest stops "the hold" to drop its callback before the indexes shift, and the closing
+  // set of one exercise stops "the rest" while a hold runs on another. The count-in is shared, so
+  // stopping the timer that was not running silenced the other's.
+  it('stopping the hold mid-rest leaves the rest\'s count-in alone', () => {
+    useUI.getState().startRest(90, 0, { kind: 'set' })
+    hush.mockClear()
+    useUI.getState().stopWork()
+    useUI.getState().abandonWork()
+    expect(hush).not.toHaveBeenCalled()
+    expect(useUI.getState().timer).toMatchObject({ left: 90 })
+  })
+
+  it('and stopping the rest mid-hold leaves the hold\'s alone', () => {
+    useUI.getState().startWork(45, 'Plank', () => {})
+    hush.mockClear()
+    useUI.getState().stopRest()
+    expect(hush).not.toHaveBeenCalled()
+    expect(useUI.getState().work).toMatchObject({ left: 45 })
+  })
+
+  // A held rest must not tick on; resuming queues what is left again.
+  it('a pause calls it off, and a resume queues what is left again', () => {
+    useUI.getState().startRest(90, 0, { kind: 'set' })
+    vi.advanceTimersByTime(30_000)
+    hush.mockClear(); countdown.mockClear()
+    useUI.getState().pauseRest()
+    expect(hush).toHaveBeenCalled()
+    useUI.getState().restartCountdown()               // Sounds changed while paused: nothing to queue
+    expect(countdown).not.toHaveBeenCalled()
+    vi.advanceTimersByTime(5 * 60_000)
+    useUI.getState().resumeRest()
+    expect(countdown).toHaveBeenLastCalledWith(true, 60)
+  })
+})
+

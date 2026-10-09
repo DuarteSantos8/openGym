@@ -4,8 +4,8 @@
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({ ok: true })) }))
-const { chime } = vi.hoisted(() => ({ chime: vi.fn() }))
-vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime, vibrate: vi.fn(), alertBuzz: vi.fn() }))
+const { chime, countdown } = vi.hoisted(() => ({ chime: vi.fn(), countdown: vi.fn() }))
+vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime, vibrate: vi.fn(), alertBuzz: vi.fn(), countdown, hush: vi.fn() }))
 
 import { api } from '../lib/api.js'
 import { useUI, restoreRest, REST_KEY } from './useUI.js'
@@ -50,6 +50,18 @@ describe('the rest timer across a reload', () => {
     expect(useUI.getState().timer).toMatchObject({ ready: true, left: 0 })
     expect(chime).toHaveBeenCalledTimes(1)
     expect(saved()).toBeNull()
+  })
+
+  it('queues the count-in again for the time that is left, and none for a paused one', () => {
+    localStorage.setItem(REST_KEY, JSON.stringify({ endsAt: Date.now() + 40_000, total: 90, forIdx: 1, kind: null, paused: false, left: 50 }))
+    countdown.mockClear()
+    expect(restoreRest()).toBe(true)
+    expect(countdown).toHaveBeenLastCalledWith(true, 40)
+    useUI.setState({ timer: null })
+    countdown.mockClear()
+    localStorage.setItem(REST_KEY, JSON.stringify({ endsAt: Date.now() - 5000, total: 90, forIdx: 0, kind: null, paused: true, left: 33 }))
+    expect(restoreRest()).toBe(true)
+    expect(countdown).not.toHaveBeenCalled()
   })
 
   it('a paused rest comes back held', () => {

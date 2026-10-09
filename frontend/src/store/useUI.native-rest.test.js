@@ -14,14 +14,14 @@ vi.mock('../lib/rest-alert.js', () => ({
   disarmRestAlert: vi.fn(),
   bindNativeRest: vi.fn(cb => { h.native = cb }),
 }))
-vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn() }))
+vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), countdown: vi.fn(), hush: vi.fn() }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({ ok: true })) }))
 
 import { useUI } from './useUI.js'
 import { useStore } from './useStore.js'
 import { api } from '../lib/api.js'
 import { armRestAlert, disarmRestAlert, holdRestAlert } from '../lib/rest-alert.js'
-import { beep, chime } from '../lib/sound.js'
+import { beep, chime, countdown } from '../lib/sound.js'
 
 const hide = hidden => {
   Object.defineProperty(document, 'hidden', { configurable: true, get: () => hidden })
@@ -114,8 +114,7 @@ describe('the rest the app starts, pauses and ends', () => {
 
   it('plays the last-seconds ticks', () => {
     useUI.getState().startRest(5)
-    vi.advanceTimersByTime(3000)
-    expect(beep).toHaveBeenCalled()
+    expect(countdown).toHaveBeenLastCalledWith(true, 5)   // queued once, when the rest starts
   })
 
   it('still schedules an alert when sound is off', () => {
