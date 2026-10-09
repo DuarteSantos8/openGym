@@ -2383,6 +2383,8 @@ export default {
   'All sets done': 'Alla set klara',
   'Log set': 'Logga set',
   'Next exercise': 'Nästa övning',
+  'Same as above': 'Samma som ovan',
+  'Same as {0}': 'Samma som {0}',
   'Skip rest': 'Hoppa över vilan',
   'Open openGym for the next set': 'Öppna openGym för nästa set',
   'On the watch': 'På klockan',
@@ -2413,6 +2415,9 @@ export default {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'Den här enheten har 1 pass som inte finns i den här backupen. Att ersätta tar bort det.',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'Den här enheten har {0} pass som inte finns i den här backupen. Att ersätta tar bort dem.',
+  'A sound for each kind of rest': 'Ett ljud för varje slags vila',
+  'Hear what comes next without looking. Until you pick one, each plays the sound above, as holds and the switch-sides pause always do.': 'Hör vad som kommer härnäst utan att titta. Tills du väljer ett spelar var och en ljudet ovan, som hållningar och sidbytespausen alltid gör.',
+  'Next round': 'Nästa varv',
 
   // --- PDF exports and the performance report ---
   'Page {0} of {1}': 'Sida {0} av {1}',

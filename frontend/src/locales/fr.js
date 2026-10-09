@@ -2348,6 +2348,8 @@ export default {
   'All sets done': 'Toutes les séries faites',
   'Log set': 'Noter la série',
   'Next exercise': 'Exercice suivant',
+  'Same as above': 'Comme au-dessus',
+  'Same as {0}': 'Comme {0}',
   'Skip rest': 'Passer le repos',
   'Open openGym for the next set': 'Ouvre openGym pour la série suivante',
   'On the watch': 'Sur la montre',
@@ -2375,6 +2377,9 @@ export default {
   // --- import with no account: workouts on this device ---
   'This device has 1 workout that is not in this backup. Replacing deletes it.': 'Cet appareil a 1 séance absente de cette sauvegarde. Remplacer la supprime.',
   'This device has {0} workouts that are not in this backup. Replacing deletes them.': 'Cet appareil a {0} séances absentes de cette sauvegarde. Remplacer les supprime.',
+  'A sound for each kind of rest': 'Un son pour chaque type de repos',
+  'Hear what comes next without looking. Until you pick one, each plays the sound above, as holds and the switch-sides pause always do.': 'Entends ce qui vient sans regarder. Tant que tu n’en choisis pas, chacun joue le son du dessus, comme le font toujours les maintiens et la pause pour changer de côté.',
+  'Next round': 'Tour suivant',
   // --- PDF exports and the performance report ---
   'Page {0} of {1}': 'Page {0} sur {1}',
   'Training plan': 'Programme d’entraînement',
