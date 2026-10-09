@@ -27,7 +27,7 @@ export const CHANGE_TYPES = [
   'add-routine', 'remove-routine', 'rename-routine',
   'week'
 ];
-const POLICIES = ['off', 'linear', 'greyskull', 'double', 'time'];
+const POLICIES = ['off', 'linear', 'greyskull', 'double', 'time', 'repeat'];
 const MODES = ['reps', 'time', 'cardio'];
 const MAX_INC = 50;
 // A prescription, not a world record. Anything past this is a model slip or a hostile answer,

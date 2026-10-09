@@ -1947,4 +1947,8 @@ export default {
   'Greys show darker in light mode, so buttons don’t look switched off.': 'Сірі відтінки у світлій темі темніші, щоб кнопки не здавалися вимкненими.',
   'custom color picker': 'свій колір власний палітра вибір кольору',
   'Signed in from another tab. Your workout came along, keep going here.': 'Вхід виконано в іншій вкладці. Тренування збережено, продовжуй тут.',
+  // --- Progression: repeat last session ---
+  'Repeat last session': 'Повторювати останнє тренування',
+  'Every set opens with the weight and reps you logged last time in this routine. Nothing goes up or down on its own.': 'Кожен підхід починається з ваги й повторень, записаних минулого разу в цій програмі. Нічого не зростає й не знижується саме.',
+  'Same weight and reps as last time in this routine.': 'Та сама вага й повторення, що й минулого разу в цій програмі.',
 }

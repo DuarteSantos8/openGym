@@ -1943,4 +1943,8 @@ export default {
   'Greys show darker in light mode, so buttons don’t look switched off.': '淺色模式下灰色會調暗一些，免得按鈕看起來像被停用了。',
   'custom color picker': '自訂顏色 自己的顏色 取色器 調色盤',
   'Signed in from another tab. Your workout came along, keep going here.': '已在另一個分頁登入。你的訓練也一起帶過去了，在這裡繼續吧。',
+  // --- Progression: repeat last session ---
+  'Repeat last session': '重複上次訓練',
+  'Every set opens with the weight and reps you logged last time in this routine. Nothing goes up or down on its own.': '每組都以你上次在此課表記錄的重量和次數開始，不會自動增加或減少。',
+  'Same weight and reps as last time in this routine.': '與上次在此課表的重量和次數相同。',
 }

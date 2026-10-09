@@ -78,7 +78,7 @@ const weekday = d => (typeof d === 'number' ? d : typeof d === 'string' && /^\d$
 // any id an import or an older build ever wrote, and no room for a paragraph.
 export const ID_MAX = 64;
 // The progression engine's policies (frontend/src/lib/progression.js POLICIES, validate.js).
-const POLICIES = ['off', 'linear', 'greyskull', 'double', 'time'];
+const POLICIES = ['off', 'linear', 'greyskull', 'double', 'time', 'repeat'];
 const ident = v => (typeof v === 'string' ? v.slice(0, ID_MAX) : typeof v === 'number' && Number.isFinite(v) ? v : null);
 const policy = v => (POLICIES.includes(v) ? v : null);
 // A finite number, or a number written as a short string (the app writes numbers, but a
