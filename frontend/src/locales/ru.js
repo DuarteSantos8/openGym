@@ -2253,4 +2253,10 @@ export default {
   'Next exercise': 'Следующее упражнение',
   'Same as above': 'Как выше',
   'Same as {0}': 'Как {0}',
+  // --- what the timer bar says it times (#165) ---
+  'Set': 'Подход',
+  'Round': 'Круг',
+  'Hold': 'Удержание',
+  'Hold {0} of {1}': 'Удержание {0} из {1}',
+  'Warm-up hold {0} of {1}': 'Разминочное удержание {0} из {1}',
 }
