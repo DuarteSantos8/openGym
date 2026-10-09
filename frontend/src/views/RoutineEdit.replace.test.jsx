@@ -45,7 +45,8 @@ function openReplace() {
   act(() => onReplace())
   expect(sheets.exercisePicker).toHaveBeenCalledOnce()
   const [onPick, opts] = sheets.exercisePicker.mock.calls[0]
-  expect(opts).toEqual({ title: 'Replace exercise' })
+  // The picker starts from the slot's exercise: its body part, its closest alternatives (#473).
+  expect(opts).toEqual({ title: 'Replace exercise', like: EXIDX[BENCH] })
   return onPick
 }
 
