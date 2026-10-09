@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useStore } from '../store/useStore.js'
+import { useUI } from '../store/useUI.js'
 import { exOr } from '../lib/exercises.js'
 import { clampIncline, hasIncline, inclineFits, INCLINE_MAX, INCLINE_STEP } from '../lib/incline.js'
 import { exerciseNameFor, t } from '../lib/i18n.js'
@@ -123,7 +124,11 @@ export default function FocusView({
   const [pointerState, setPointerState] = useState(() => ({ epoch: pointerEpoch, pointers: new Map() }))
   const pointers = pointerState.epoch === pointerEpoch ? pointerState.pointers : new Map()
   const stored = pointers.get(entryIdx)
-  const setIdx = clampSet(entry, Number.isInteger(stored) ? stored : firstIncomplete(entry))
+  // A hold that started itself (a timed exercise runs itself: Workout.jsx chainHold) runs on a row
+  // this view's own pointer never moved to, so while it runs the view shows the set being held.
+  const work = useUI(state => state.work)
+  const heldRow = work?.owner && work.owner.idx === entryIdx && work.owner.id === entry.id ? work.owner.i : null
+  const setIdx = clampSet(entry, heldRow ?? (Number.isInteger(stored) ? stored : firstIncomplete(entry)))
   const set = entry.sets[setIdx]
   const firstOpenSet = firstIncomplete(entry)
   const locked = !set.done && setIdx > firstOpenSet
@@ -199,7 +204,9 @@ export default function FocusView({
     </section>
   }
 
-  const onProgress = ({ unitDone }) => {
+  // `i`: the set that was just completed. A hold that started itself (Workout.jsx chainHold)
+  // reports through the callback of the hold that began the chain, whose own setIdx is older.
+  const onProgress = ({ unitDone, i }) => {
     const active = useStore.getState().S.active
     if (!active) return
     if (unitDone) {
@@ -207,7 +214,7 @@ export default function FocusView({
       const nextEntryIdx = useStore.getState().S.active?.cur
       if (nextEntryIdx !== entryIdx) clearPointer(nextEntryIdx)
     }
-    else if (unit.length === 1) selectSet(setIdx + 1)
+    else if (unit.length === 1) selectSet((Number.isInteger(i) ? i : setIdx) + 1)
     else clearPointer(active.cur)
   }
 

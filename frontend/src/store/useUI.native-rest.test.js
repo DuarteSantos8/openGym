@@ -247,6 +247,18 @@ describe('the notification’s own buttons', () => {
     expect(useUI.getState().timer).toMatchObject({ left: 0, ready: true })
   })
 
+  // The notification's Skip is pressed with the phone in a pocket: it ends the rest like Skip in
+  // the app, but starts no hold nobody is watching (a timed exercise that runs itself).
+  it('Skip from the notification hands nothing over', () => {
+    const done = vi.fn()
+    useUI.getState().bindRest(done)
+    useUI.getState().startRest(90, 0, { kind: 'set', chain: { id: 'plank', i: 1, n: 3, cur: 0 } })
+    h.native({ type: 'skip' })
+    expect(useUI.getState().timer).toBeNull()
+    expect(done).not.toHaveBeenCalled()
+    useUI.getState().bindRest(null)
+  })
+
   it('Skip ends the rest in the app', () => {
     useUI.getState().startRest(90)
     h.native({ type: 'skip' })

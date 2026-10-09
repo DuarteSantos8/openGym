@@ -141,6 +141,38 @@ describe('the docked rest bar', () => {
     expect(useUI.getState().timer).toMatchObject({ left: 60, forIdx: 2, forSet: 1, kind: 'block' })
   })
 
+  it('a fresh rest from Ready keeps its phase and the hold it hands over to', () => {
+    const chain = { id: 'x', i: 1, n: 2, cur: 2 }
+    act(() => useUI.getState().startRest(1, 2, { kind: 'set', phase: 'warmup', forSet: 1, chain }))
+    act(() => vi.advanceTimersByTime(1000))
+    act(() => applyRestLeft(45))
+    expect(useUI.getState().timer).toMatchObject({ left: 45, kind: 'set', phase: 'warmup', chain })
+  })
+
+  // The rest ran out under the open wheel and its hand-over started the next hold: Done must not
+  // start a rest over it, which would cut the hold off.
+  it('Done on the wheel after the rest ran out into a hold leaves the hold alone', () => {
+    useUI.getState().bindRest(() => useUI.getState().startWork(30, 'Plank', vi.fn()))
+    act(() => useUI.getState().startRest(1, 1, { kind: 'set', chain: { id: 'x', i: 1, n: 2, cur: 1 } }))
+    act(() => vi.advanceTimersByTime(1000))
+    expect(useUI.getState().work).toMatchObject({ total: 30 })
+    act(() => applyRestLeft(60, 1))
+    expect(useUI.getState().timer).toBeNull()
+    expect(useUI.getState().work).toMatchObject({ total: 30 })
+    useUI.getState().stopWork()
+    useUI.getState().bindRest(null)
+  })
+
+  it('0:00 on the wheel hands over like Skip', () => {
+    const done = vi.fn()
+    useUI.getState().bindRest(done)
+    act(() => useUI.getState().startRest(30, 1, { kind: 'set', chain: { id: 'x', i: 1, n: 2, cur: 1 } }))
+    act(() => applyRestLeft(0))
+    expect(useUI.getState().timer).toBeNull()
+    expect(done).toHaveBeenCalledTimes(1)
+    useUI.getState().bindRest(null)
+  })
+
   it('Done on an untouched wheel leaves the rest alone', () => {
     // still counting: the seconds that passed while the wheel was open are not given back
     act(() => useUI.getState().startRest(60, 0))

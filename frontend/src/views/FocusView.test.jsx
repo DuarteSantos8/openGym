@@ -160,4 +160,18 @@ describe('Focus view cardio speed', () => {
     act(() => container.querySelector('button[aria-label="Increase speed"]').click())
     expect(stored()).toBe(8.5)
   })
+
+  // A timed exercise runs itself (Workout.jsx chainHold): the next hold starts on a row this
+  // view's pointer never moved to, and while it runs the view shows the set being held.
+  it('shows the set a running hold is on, for this exercise only', () => {
+    mount({ id: 'plank', target: { mode: 'time', sec: 30 }, sets: [{ sec: 30, w: 0, done: true }, { sec: 30, w: 0, done: true }, { sec: 30, w: 0, done: false }] })
+    const active = () => [...container.querySelectorAll('.focus-dots button')].findIndex(b => b.classList.contains('active'))
+    expect(active()).toBe(2)                                      // the first open set, as before
+    act(() => useUI.setState({ work: { left: 20, total: 30, endsAt: Date.now() + 20_000, label: 'Plank', owner: { idx: 0, i: 1, id: 'plank' } } }))
+    expect(active()).toBe(1)
+    act(() => useUI.setState({ work: { left: 20, total: 30, endsAt: Date.now() + 20_000, label: 'x', owner: { idx: 0, i: 0, id: 'not-this-one' } } }))
+    expect(active()).toBe(2)
+    act(() => useUI.setState({ work: null }))
+    expect(active()).toBe(2)
+  })
 })
