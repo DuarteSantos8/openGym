@@ -4,6 +4,12 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  "The matching workout saved by openGym in Apple Health will also be deleted.": "O treino correspondente salvo pelo openGym no Saúde da Apple também será excluído.",
+  "Sync with Apple Health": "Sincronizar com o Saúde da Apple",
+  "Sync body weight both ways and save finished workouts to Health.": "Sincroniza o peso nos dois sentidos e salva os treinos concluídos no Saúde.",
+  "Apple Health: {0}": "Saúde da Apple: {0}",
+  "Sync Apple Health now": "Sincronizar com o Saúde da Apple agora",
+
   '{0} set brings an {1} with it. Switch on Effort per set in Settings to see it.': '{0} série traz um {1} junto. Ative “Esforço por série” nas Configurações para ver.',
   'Add to this set': 'Adicionar a esta série',
   'Copy this exercise’s warm-up sets, and the rest and note from its Exercise settings, into the routine. A note added for today stays with this workout. Your workout history is kept.': 'Copia para a rotina as séries de aquecimento deste exercício, e o descanso e a anotação das Configurações do exercício dele. Uma anotação adicionada para hoje fica com este treino. Seu histórico de treinos é mantido.',

@@ -1,5 +1,11 @@
 // Hindi UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "The matching workout saved by openGym in Apple Health will also be deleted.": "openGym द्वारा Apple Health में सहेजा गया संबंधित वर्कआउट भी हटा दिया जाएगा।",
+  "Sync with Apple Health": "Apple Health के साथ सिंक करें",
+  "Sync body weight both ways and save finished workouts to Health.": "वज़न दोनों दिशाओं में सिंक करें और पूरे हुए वर्कआउट Health में सहेजें।",
+  "Apple Health: {0}": "Apple Health: {0}",
+  "Sync Apple Health now": "अभी Apple Health सिंक करें",
+
   'Confirm': 'पुष्टि करें',
   'Cancel': 'रद्द करें',
   'Press back again to exit': 'बाहर निकलने के लिए फिर से बैक दबाएँ',

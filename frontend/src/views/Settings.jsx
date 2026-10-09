@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, forwardRef, useSyncExternalStore } from 'react'
+import AppleHealthSettings from '../components/AppleHealthSettings.jsx'
+import { appleHealthAvailable } from '../lib/apple-health.js'
 import { useNavigate, useParams, useLocation, Navigate } from 'react-router-dom'
 import { useStore, DEF, hasData } from '../store/useStore.js'
 import { workoutControls } from '../lib/workout-controls.js'
@@ -146,6 +148,12 @@ export default function Settings({ page = null, find = null, via = null }) {
   // --- update check state ---
   const [updateInfo, setUpdateInfo] = useState(null) // { hasUpdate, latestVersion, apkUrl, hashUrl } | null
   const [android, setAndroid] = useState(false)
+  const [healthAvailable, setHealthAvailable] = useState(false)
+  useEffect(() => {
+    let alive = true
+    appleHealthAvailable().then(value => { if (alive) setHealthAvailable(value) })
+    return () => { alive = false }
+  }, [])
   const [checking, setChecking] = useState(false)
   // Where auto-backup writes on this Android phone, for the Auto-backup row's own subtitle.
   const [backupDir] = useBackupFolder(MOBILE && android && !!S.autoBackup)
@@ -390,6 +398,7 @@ export default function Settings({ page = null, find = null, via = null }) {
   /* ---------------- what the pages and the search need to know about this device ---------------- */
   const canVibrate = vibrateSupported()
   const ctx = {
+    healthAvailable,
     user, mobile: MOBILE, android, demo: DEMO, wakeOK, hasMedia, pwOn, webauthn: webauthnOK(),
     sound: !!S.sound, playOnSilent: playOnSilentSupported(), canVibrate, vibrate: S.vibrate !== false,
     profiles: (S.equipProfiles || []).length > 0, nameLang: EXERCISE_NAME_LANGS.includes(baseLang(lang)),
@@ -737,6 +746,7 @@ export default function Settings({ page = null, find = null, via = null }) {
 
     data: () => <>
       <Section title={t('Back up')}>
+        <AppleHealthSettings available={healthAvailable} />
         <Row icon="share" iconTint="var(--blue)" title={t('Export backup (JSON)')} subtitle={hasMedia ? t('Without photos and videos') : undefined} accessory="chevron" onClick={doExport} />
         {hasMedia && <Row icon="share" iconTint="var(--blue)" title={t('Export with photos & videos (.zip)')} accessory="chevron" onClick={doExportZip} />}
         {/* 14 is AUTO_BACKUP_KEEP in lib/mobile.js, written out because the Settings tests mock

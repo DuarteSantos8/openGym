@@ -1,4 +1,10 @@
 export default {
+  "The matching workout saved by openGym in Apple Health will also be deleted.": "openGym 儲存在 Apple 健康中的對應訓練也會一併刪除。",
+  "Sync with Apple Health": "與 Apple 健康同步",
+  "Sync body weight both ways and save finished workouts to Health.": "雙向同步體重，並將完成的訓練儲存至健康 App。",
+  "Apple Health: {0}": "Apple 健康：{0}",
+  "Sync Apple Health now": "立即同步 Apple 健康",
+
   'Confirm': '確認',
   'Cancel': '取消',
   'Press back again to exit': '再按一次返回以退出',

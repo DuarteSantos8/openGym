@@ -1,5 +1,11 @@
 // German UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "The matching workout saved by openGym in Apple Health will also be deleted.": "Das entsprechende von openGym in Apple Health gespeicherte Training wird ebenfalls gelöscht.",
+  "Sync with Apple Health": "Mit Apple Health synchronisieren",
+  "Sync body weight both ways and save finished workouts to Health.": "Körpergewicht in beide Richtungen synchronisieren und abgeschlossene Trainings in Health speichern.",
+  "Apple Health: {0}": "Apple Health: {0}",
+  "Sync Apple Health now": "Apple Health jetzt synchronisieren",
+
   // --- generic ---
   'Confirm': 'Bestätigen',
   'Cancel': 'Abbrechen',
