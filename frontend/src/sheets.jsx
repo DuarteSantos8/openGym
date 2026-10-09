@@ -1064,7 +1064,7 @@ function CustomExForm({ existing, prefill, onDone, close }) {
     // spelled the same (an imported "trap bar deadlift"): only a new or changed name is checked.
     const renamed = !existing || name.toLowerCase() !== String(existing.n || '').trim().toLowerCase()
     const dup = renamed && allExercises(S()).find(e => e.n.toLowerCase() === name.toLowerCase() && e.id !== (existing || {}).id)
-    if (dup) { toast(t('“{0}” already exists', dup.n)); return }
+    if (dup) { toast(t('“{0}” already exists', exerciseNameText(dup))); return }
     const d = desc.trim().slice(0, 1000)
     // An empty field removes the link; anything else has to be a web address.
     const link = url.trim() ? cleanUrl(url) : null

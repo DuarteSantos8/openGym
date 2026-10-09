@@ -14,11 +14,11 @@
 
 import { EXIDX } from './exercises.js'
 import { modeOf, isBw, isPerSide, cleanupSg } from './history.js'
-import { uid, todayISO, DAYN } from './format.js'
+import { uid, todayISO, DAYN, exerciseNameText } from './format.js'
 import { mergePlan } from './plan-share.js'
 import { deleteRoutine } from './routines.js'
 import { POLICIES } from './progression.js'
-import { t, tn } from './i18n.js'
+import { t, tn, exerciseNameFor } from './i18n.js'
 
 // Bumping this re-prompts everyone: it means what we share, or who we share it with, changed.
 // 2: the training line names the session notes, which the payload carries and version 1 never
@@ -596,11 +596,8 @@ export function recordDebrief(s, proposal) {
 
 /* ============================ display helpers ============================ */
 
-export const exName = id => EXIDX[id]?.n || t('Unknown exercise')
-// Catalogue names are lower-case; a title reads better with each word capitalised, and doing it
-// here rather than with CSS keeps a German sentence around the name from being Title Cased too.
-const cap = s => String(s || '').replace(/(^|\s)(\p{L})/gu, (m, sp, ch) => sp + ch.toUpperCase())
-export const exTitle = id => cap(exName(id))
+export const exName = id => EXIDX[id]?.n ? exerciseNameFor(EXIDX[id]) : t('Unknown exercise')
+export const exTitle = id => EXIDX[id]?.n ? exerciseNameText(EXIDX[id]) : t('Unknown exercise')
 
 /** Human label for a change, used on the review screen and in the log. */
 export function changeTitle(c, S) {
@@ -646,5 +643,9 @@ export function changeValues(c, S) {
   }
   if (['add-exercise', 'add-routine', 'reorder'].includes(c.type)) return null
   if (['remove-exercise', 'remove-routine'].includes(c.type)) return null
-  return { before: fmt(c.before), after: fmt(c.after) }
+  const oldExercise = c.type === 'swap-exercise' ? EXIDX[c.target?.exId] : null
+  const before = oldExercise && typeof c.before === 'string'
+    && c.before.trim().toLocaleLowerCase('en') === oldExercise.n.trim().toLocaleLowerCase('en')
+    ? exTitle(oldExercise.id) : fmt(c.before)
+  return { before, after: fmt(c.after) }
 }

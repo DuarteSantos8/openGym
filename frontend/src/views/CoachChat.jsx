@@ -18,7 +18,8 @@ import { closeThenNav } from '../lib/nav.js'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t, tn } from '../lib/i18n.js'
-import { fmtDate, fmtNum, DAYS, weekOrder, weekStartOf } from '../lib/format.js'
+import { fmtDate, fmtNum, DAYS, weekOrder, weekStartOf, exerciseNameText } from '../lib/format.js'
+import { EXIDX, isCustomEx } from '../lib/exercises.js'
 import { exLine } from '../lib/history.js'
 import { speedUnitOf } from '../lib/speed.js'
 import { DEMO } from '../lib/demo.js'
@@ -494,7 +495,7 @@ function Insights({ S, window: win, compact }) {
     {!!ins.strength.length && <div className="ins-block">
       <div className="ins-h"><span>{t('Estimated 1RM')}</span><span className="dim">{t('first → last session')}</span></div>
       {ins.strength.map(x => <div key={x.id} className="ins-row">
-        <span className="ins-row-n">{x.name}</span>
+        <span className="ins-row-n">{EXIDX[x.id] && !isCustomEx(EXIDX[x.id]) ? exerciseNameText(EXIDX[x.id]) : x.name}</span>
         <span className="ins-row-v"><span className="tag">{fmtNum(x.first)}</span><Icon name="chevronRight" /><span className="tag acc">{fmtNum(x.last)}</span></span>
         <span className={'ins-delta' + (x.delta > 0 ? ' up' : x.delta < 0 ? ' down' : '')}>{x.delta > 0 ? '▲' : x.delta < 0 ? '▼' : '•'} {Math.abs(x.pct)}%</span>
       </div>)}
@@ -539,7 +540,7 @@ function DebriefBody({ p, S }) {
       {!!live.lifts.length && <div className="ins-block">
         <div className="ins-h"><span>{t('Best set, estimated 1RM')}</span></div>
         {live.lifts.slice(0, 6).map(x => <div key={x.id} className="ins-row">
-          <span className="ins-row-n">{x.name} <span className="dim">{fmtNum(x.w)}×{x.r}</span></span>
+          <span className="ins-row-n">{EXIDX[x.id] && !isCustomEx(EXIDX[x.id]) ? exerciseNameText(EXIDX[x.id]) : x.name} <span className="dim">{fmtNum(x.w)}×{x.r}</span></span>
           <span className="ins-row-v"><span className="tag acc">{fmtNum(x.est)}</span></span>
           {x.prev != null && <span className={'ins-delta' + (x.est > x.prev ? ' up' : x.est < x.prev ? ' down' : '')}>{x.est > x.prev ? '▲' : x.est < x.prev ? '▼' : '•'} {fmtNum(Math.abs(x.est - x.prev))}</span>}
         </div>)}
@@ -721,7 +722,7 @@ function CohortSheet({ S, update, toast }) {
         {d.exercises.map(x => {
           const max = Math.max(x.median, x.you || 0) || 1
           return <div key={x.id} className="cmp">
-            <div className="cmp-h"><span>{x.name}</span><span className="dim">{x.people} {t('people')}</span></div>
+            <div className="cmp-h"><span>{EXIDX[x.id] && !isCustomEx(EXIDX[x.id]) ? exerciseNameText(EXIDX[x.id]) : x.name}</span><span className="dim">{x.people} {t('people')}</span></div>
             <div className="cmp-bar you"><i style={{ width: Math.round((x.you || 0) / max * 100) + '%' }} /><span>{t('You')} · {x.you != null ? fmtNum(x.you) : '–'}</span></div>
             <div className="cmp-bar"><i style={{ width: Math.round(x.median / max * 100) + '%' }} /><span>{t('Median')} · {fmtNum(x.median)}</span></div>
           </div>
