@@ -10,7 +10,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const sound = vi.hoisted(() => ({ canVibrate: true, iPhone: false }))
 vi.mock('../lib/sound.js', () => ({
-  unlock: vi.fn(), beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), countdown: vi.fn(), hush: vi.fn(),
+  unlock: vi.fn(), beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), countdown: vi.fn(), hush: vi.fn(), holdSession: vi.fn(),
   vibrateSupported: () => sound.canVibrate, appleTouchDevice: () => sound.iPhone,
 }))
 vi.mock('../lib/wakelock.js', () => ({ wakeLockSupported: () => true }))
