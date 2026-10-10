@@ -1389,7 +1389,7 @@ export default {
   'Couldn’t check for updates. Are you online?': 'अपडेट जाँच नहीं हो सकी। क्या आप ऑनलाइन हैं?',
   'Get the Android app': 'Android ऐप लें',
   'Download the APK from opengym.ch': 'opengym.ch से APK डाउनलोड करें',
-  'Releases are checked on gitlab.com. The download is verified against its checksum before the installer opens.': 'रिलीज़ gitlab.com पर जाँची जाती हैं। इंस्टॉलर खुलने से पहले डाउनलोड की चेकसम से पुष्टि होती है।',
+  'Releases are checked on GitHub. The download is verified against its checksum before the installer opens.': 'रिलीज़ GitHub पर जाँची जाती हैं। इंस्टॉलर खुलने से पहले डाउनलोड की चेकसम से पुष्टि होती है।',
   'The web app updates together with your server. The Android app installs its own updates from here.': 'वेब ऐप आपके सर्वर के साथ अपडेट होता है। Android ऐप अपने अपडेट यहीं से इंस्टॉल करता है।',
   'Starting download…': 'डाउनलोड शुरू हो रहा है…',
   'Downloading update…': 'अपडेट डाउनलोड हो रहा है…',

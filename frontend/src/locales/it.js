@@ -1389,7 +1389,7 @@ export default {
   'Couldn’t check for updates. Are you online?': 'Impossibile controllare gli aggiornamenti. Sei online?',
   'Get the Android app': 'Scarica l’app Android',
   'Download the APK from opengym.ch': 'Scarica l’APK da opengym.ch',
-  'Releases are checked on gitlab.com. The download is verified against its checksum before the installer opens.': 'Le release vengono controllate su gitlab.com. Il download è verificato con il suo checksum prima di aprire l’installer.',
+  'Releases are checked on GitHub. The download is verified against its checksum before the installer opens.': 'Le release vengono controllate su GitHub. Il download è verificato con il suo checksum prima di aprire l’installer.',
   'The web app updates together with your server. The Android app installs its own updates from here.': 'L’app web si aggiorna insieme al tuo server. L’app Android installa i suoi aggiornamenti da qui.',
   'Starting download…': 'Avvio del download…',
   'Downloading update…': 'Download dell’aggiornamento…',

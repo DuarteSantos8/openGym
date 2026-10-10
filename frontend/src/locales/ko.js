@@ -1389,7 +1389,7 @@ export default {
   'Couldn’t check for updates. Are you online?': '업데이트를 확인할 수 없어요. 온라인 상태인가요?',
   'Get the Android app': 'Android 앱 받기',
   'Download the APK from opengym.ch': 'opengym.ch에서 APK 다운로드',
-  'Releases are checked on gitlab.com. The download is verified against its checksum before the installer opens.': '릴리스는 gitlab.com에서 확인합니다. 설치 프로그램이 열리기 전에 다운로드의 체크섬을 검증합니다.',
+  'Releases are checked on GitHub. The download is verified against its checksum before the installer opens.': '릴리스는 GitHub에서 확인합니다. 설치 프로그램이 열리기 전에 다운로드의 체크섬을 검증합니다.',
   'The web app updates together with your server. The Android app installs its own updates from here.': '웹 앱은 서버와 함께 업데이트됩니다. Android 앱은 여기서 직접 업데이트를 설치합니다.',
   'Starting download…': '다운로드 시작 중…',
   'Downloading update…': '업데이트 다운로드 중…',

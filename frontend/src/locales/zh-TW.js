@@ -1377,7 +1377,7 @@ export default {
   'Couldn’t check for updates. Are you online?': '無法檢查更新。你有連上網路嗎？',
   'Get the Android app': '下載 Android App',
   'Download the APK from opengym.ch': '從 opengym.ch 下載 APK 檔',
-  'Releases are checked on gitlab.com. The download is verified against its checksum before the installer opens.': '發行版本由 gitlab.com 驗證。安裝前會主動核對雜湊檢查碼以保證安全。',
+  'Releases are checked on GitHub. The download is verified against its checksum before the installer opens.': '發行版本由 GitHub 驗證。安裝前會主動核對雜湊檢查碼以保證安全。',
   'The web app updates together with your server. The Android app installs its own updates from here.': '網頁版將隨伺服器自動更新。Android App 則可直接在此安裝專屬更新。',
   'Starting download…': '開始下載…',
   'Downloading update…': '正在下載更新檔案…',
