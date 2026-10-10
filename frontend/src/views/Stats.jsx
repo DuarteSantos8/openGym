@@ -411,6 +411,13 @@ export default function Stats() {
   }, [])
   const [exId, setExId] = useState(null)
   const [exMetric, setExMetric] = useState('top')
+  // The stretch of history the Exercise progress chart draws, in days (#511): 0 is all of it, as
+  // it always was. An imported history years long squeezes the last month into the right edge.
+  const [exRange, setExRange] = useState(0)
+  // Fixed until the range changes, not read from the clock on every render: the memoised chart
+  // arrays below depend on it, and LineChart drops its hover whenever `points` changes identity.
+  const exSince = useMemo(() => (exRange ? Date.now() - exRange * 86400000 : 0), [exRange])
+  const inExRange = pts => (exSince ? pts.filter(p => (p.t || new Date(p.d).getTime()) > exSince) : pts)
   const now = Date.now()
   const kind = displayScale(S)
   const hd = scaleName(kind)
@@ -549,7 +556,7 @@ export default function Stats() {
     () => (curEx && curMode === 'reps' ? e1rmSeries(S, curEx) : []),
     [S, curEx, curMode],
   )
-  const e1ChartPts = useMemo(() => e1Pts.map(p => ({ t: p.t, y: p.y, d: p.d })), [e1Pts])
+  const e1ChartPts = useMemo(() => inExRange(e1Pts).map(p => ({ t: p.t, y: p.y, d: p.d })), [e1Pts, exSince])
   const e1Best = curEx && curMode === 'reps' ? best1RM(S, curEx) : null
   const showE1 = e1Pts.length > 0
   // Effort on this exercise, per session. It rides on the top-set curve as well as having a
@@ -557,7 +564,7 @@ export default function Stats() {
   // with more left in the tank is progress a weight-only chart draws as a flat line.
   const exRir = exPts.map(p => avgRir(p.sets))
   const showEff = exRir.filter(v => v != null).length >= 3
-  const effPts = exPts.map((p, i) => (exRir[i] == null ? null : { t: p.t, y: toScale(kind, exRir[i]), d: p.d })).filter(Boolean)
+  const effPts = inExRange(exPts.map((p, i) => (exRir[i] == null ? null : { t: p.t, y: toScale(kind, exRir[i]), d: p.d })).filter(Boolean))
   // Pyramid sets' Max sets: the most reps in one, per workout — the point of a Max set is seeing
   // that number climb, which the top-set weight line does not show.
   const maxPts = useMemo(
@@ -566,6 +573,7 @@ export default function Stats() {
   )
   const showMax = maxPts.length > 0
   const maxBest = showMax ? Math.max(...maxPts.map(p => p.y)) : 0
+  const maxChartPts = useMemo(() => inExRange(maxPts), [maxPts, exSince])
   // Per set (issue #145): one line per set number, to see which set you drop off on — often not
   // the last. Offered once two sessions are logged and one of them has two sets or more.
   // Memoised like e1Pts: LineChart drops its hover whenever `points` changes identity.
@@ -594,16 +602,23 @@ export default function Stats() {
       drop: dropOffSet(sessions),
     }
   }, [workouts, curEx, curMode, repsOnly, oneRmFormula])
+  // The range only narrows what is drawn. Every set keeps its line (and so its colour and its
+  // width) even when it has no point in the range; the drop-off line stays the all-time reading.
+  const perSetChart = useMemo(() => perSet && {
+    anchors: inExRange(perSet.anchors),
+    series: perSet.series.map(s => ({ ...s, points: inExRange(s.points) })),
+  }, [perSet, exSince])
   const onSets = !!perSet && exMetric === 'sets'
   const onE1 = showE1 && exMetric === 'e1rm'
   const onEff = showEff && exMetric === 'effort'
   const onMax = showMax && exMetric === 'max'
-  const topPts = exPts.map((p, i) => ({
+  const topPts = inExRange(exPts.map((p, i) => ({
     t: p.t, y: p.y, d: p.d,
     // 0 RIR (nothing left) is a full dot, 4+ a faint one; unrated sessions keep the plain line.
     m: exRir[i] == null ? null : 1 - Math.min(4, Math.max(0, exRir[i])) / 4,
     note: exRir[i] == null ? undefined : hd + ' ' + fmtNum(toScale(kind, exRir[i]))
-  }))
+  })))
+  const exChartPts = onSets ? perSetChart.anchors : onMax ? maxChartPts : onEff ? effPts : onE1 ? e1ChartPts : topPts
   const exOpts = [{ value: 'top', label: t('Top set') }]
   if (perSet) exOpts.push({ value: 'sets', label: t('Per set') })
   if (showE1) exOpts.push({ value: 'e1rm', label: t('Est. 1RM') })
@@ -685,11 +700,17 @@ export default function Stats() {
               }} />
           </div>
           {exOpts.length > 1 && <Segmented className="seg-range" value={onMax ? 'max' : onEff ? 'effort' : onE1 ? 'e1rm' : onSets ? 'sets' : 'top'} onChange={setExMetric} options={exOpts} />}
+          {/* The same ranges as Body weight. It narrows the chart only: the sessions listed below
+              and "Best:" stay the latest and the all-time ones. */}
+          <Segmented className="seg-range" value={exRange} onChange={setExRange}
+            options={[{ value: 30, label: '1M' }, { value: 90, label: '3M' }, { value: 365, label: '1Y' }, { value: 0, label: t('All') }]} />
           <div className="chart">
-            {onSets
-              ? <LineChart points={perSet.anchors} series={perSet.series} h={150} unit={perSet.metric === 'reps' ? t('reps') : S.unit} />
+            {exRange !== 0 && exChartPts.length === 0
+              ? <div className="empty small">{t('No workouts in this period yet.')}</div>
+              : onSets
+              ? <LineChart points={perSetChart.anchors} series={perSetChart.series} h={150} unit={perSet.metric === 'reps' ? t('reps') : S.unit} />
               : onMax
-              ? <LineChart points={maxPts} h={150} unit={t('reps')} color="var(--blue)" />
+              ? <LineChart points={maxChartPts} h={150} unit={t('reps')} color="var(--blue)" />
               : onEff
               ? <LineChart points={effPts} h={150} unit={hd} color="var(--yellow)" invert={kind === 'rir'} />
               : <LineChart points={onE1 ? e1ChartPts : topPts} h={150} unit={exUnit} color="var(--blue)" />}
