@@ -15,13 +15,14 @@ import { isBw } from './history.js'
 import { weightIncrement } from './progression.js'
 import { ownedWeightsFor, ownedFloor } from './dumbbells.js'
 
-/** The plate sizes the inventory editor lists, heaviest first, per unit. */
+/** The plate sizes the inventory editor lists, heaviest first, per unit. The 2, 1.5 and 1 kg
+ *  are the change plates of a gym that stocks whole and half kilos instead of the 1.25 (#510). */
 export const PLATE_SIZES = {
-  kg: [25, 20, 15, 10, 5, 2.5, 1.25, 0.5],
+  kg: [25, 20, 15, 10, 5, 2.5, 2, 1.5, 1.25, 1, 0.5],
   lb: [45, 35, 25, 15, 10, 5, 2.5, 1.25],
 }
 /** Sizes a gym without an inventory of its own is assumed NOT to have. */
-const UNCOMMON = { kg: new Set([0.5]), lb: new Set([15, 1.25]) }
+const UNCOMMON = { kg: new Set([2, 1.5, 1, 0.5]), lb: new Set([15, 1.25]) }
 /** Pairs of each size the default inventory holds — plenty, the way a rack is. */
 export const DEFAULT_PAIRS = 6
 
