@@ -31,6 +31,20 @@ final class OpenGymUITests: XCTestCase {
         app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", prefix)).firstMatch
     }
 
+    /**
+     * "Use on this device", until home shows. On a slow simulator the first tap can land while the
+     * page is still starting and go nowhere.
+     */
+    private func chooseLocal() {
+        let local = app.buttons["Use on this device"]
+        XCTAssertTrue(local.waitForExistence(timeout: 60), "the onboarding choice did not show up")
+        for _ in 0..<5 {
+            if local.exists { local.tap() }
+            if app.buttons["Log"].waitForExistence(timeout: 8) { return }
+        }
+        XCTFail("home never showed after the onboarding choice")
+    }
+
     /** "Allow" on the notification question, whenever iOS asks it. */
     private func allowNotificationsIfAsked() {
         let allow = springboard.alerts.buttons["Allow"]
@@ -39,7 +53,7 @@ final class OpenGymUITests: XCTestCase {
 
     func testRestEndsWithANotificationInTheBackground() {
         app.launch()
-        tap(app.buttons["Use on this device"], "the onboarding choice", timeout: 40)
+        chooseLocal()
         shot("1-home")
         tap(app.buttons["Load starter plan"], "Load starter plan")
         tap(button(startingWith: "Full Body"), "the Full Body plan")
@@ -62,8 +76,7 @@ final class OpenGymUITests: XCTestCase {
 
     func testWeighInSheetStaysAboveTheKeyboard() {
         app.launch()
-        let local = app.buttons["Use on this device"]
-        if local.waitForExistence(timeout: 40) { local.tap() }
+        chooseLocal()
         tap(app.buttons["Log"], "Log (body weight)")
         let field = app.textFields.firstMatch
         tap(field, "the weight field")

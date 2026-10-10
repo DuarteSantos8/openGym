@@ -64,8 +64,11 @@ jobs:
           xcrun simctl boot "$UDID"
           xcrun simctl bootstatus "$UDID" -b
           xcrun simctl install "$UDID" build/dd/Build/Products/Debug-iphonesimulator/App.app
+          # A busy runner can still be starting the simulator's own apps: give the page up to three
+          # minutes to reach its plugins rather than a fixed wait.
           xcrun simctl launch --console-pty "$UDID" ch.duartesantos.opengym > build/console.log 2>&1 &
-          sleep 45
+          for i in $(seq 36); do grep -q "RestAlert" build/console.log && break; sleep 5; done
+          sleep 5
           xcrun simctl io "$UDID" screenshot build/first-screen.png || true
           kill %1 || true
           cat build/console.log | grep -v "^\s*$" | head -200
