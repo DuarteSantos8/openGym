@@ -495,7 +495,7 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
 
   const resolved = new Map()          // exercise name -> dataset id | null, resolved once
   const prior = new Map()             // exercise name -> the user's own custom exercise for it
-  const byDate = new Map()
+  const byDate = new Map()           // session key -> the workout being built (see `sessionKey` below)
   const created = new Map()
   const unmatched = new Set()
   let sets = 0, skipped = 0, matched = 0, warmups = 0, rpeSets = 0, rirSets = 0
@@ -595,10 +595,16 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
       else if (rpe != null) { set.rpe = rpe; rpeSets++ }
     }
 
-    let day = byDate.get(when.d)
+    // Strong and Hevy write the workout's start on every row, so two sessions on one day are
+    // told apart by it (and by the name) and stay two workouts (#505). FitNotes has no times, and
+    // a generic file may stamp each set with its own, so everything else stays one per day.
+    const sessionKey = (source === 'Strong' || source === 'Hevy') && when.t != null
+      ? when.d + '|' + when.t + '|' + (cell(r, 'workoutName') || '')
+      : when.d
+    let day = byDate.get(sessionKey)
     if (!day) {
-      day = { ex: new Map(), name: cell(r, 'workoutName') || '', start: when.t, end: null, note: '', notes: new Map(), sg: new Map(), groups: new Map() }
-      byDate.set(when.d, day)
+      day = { d: when.d, ex: new Map(), name: cell(r, 'workoutName') || '', start: when.t, end: null, note: '', notes: new Map(), sg: new Map(), groups: new Map() }
+      byDate.set(sessionKey, day)
     }
     if (!day.name) day.name = cell(r, 'workoutName') || ''
     if (!day.note) day.note = cell(r, 'workoutNote')
@@ -621,7 +627,7 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
     }
     const ss = cell(r, 'superset')
     if (ss && !day.sg.has(id)) {
-      if (!day.groups.has(ss)) day.groups.set(ss, importId('is', when.d + '|' + ss))
+      if (!day.groups.has(ss)) day.groups.set(ss, importId('is', sessionKey + '|' + ss))
       day.sg.set(id, day.groups.get(ss))
     }
     sets++
@@ -645,9 +651,11 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
   }
   const converted = (!!fileUnit && fileUnit !== unit) || mixedUnits
 
-  const dates = [...byDate.keys()].sort()
-  const workouts = dates.map(d => {
-    const day = byDate.get(d)
+  // By day, and within a day by start, the order the history keeps (sync-merge byDayStart).
+  const days = [...byDate.values()].sort((a, b) => (a.d === b.d ? (a.start ?? 0) - (b.start ?? 0) : a.d < b.d ? -1 : 1))
+  const dates = days.map(day => day.d)
+  const workouts = days.map(day => {
+    const d = day.d
     const entries = [...day.ex.entries()].map(([id, ss]) => {
       const conv2 = ss.map(({ u, ...s }) => (s.w !== undefined ? { ...s, w: convRow({ ...s, u }) } : s))
       const mx = Math.max(0, ...conv2.filter(s => !isWarmupRow(s)).map(s => s.w || 0))
@@ -769,7 +777,11 @@ export function parseImport(text, opts) {
 
 /* --------------------------------------------------------------- merge ---- */
 
-/** Merge into state. Existing days win — importing twice never duplicates a workout. */
+/**
+ * Merge into state. Existing days win — importing twice never duplicates a workout. A day the
+ * file has two sessions on brings both (they are checked against the state before the merge,
+ * not against each other); a day already in the history brings neither.
+ */
 export function mergeImport(S, parsed) {
   if (parsed.kind === 'bodyweight') {
     const have = new Set(S.bodyweight.map(b => b.d))
@@ -796,7 +808,7 @@ export function mergeImport(S, parsed) {
   const known = new Set(S.customEx.map(c => c?.id))
   const customs = parsed.customEx.filter(c => used.has(c.id) && !EXIDX[c.id] && !known.has(c.id))
   S.customEx = [...S.customEx, ...customs]
-  S.workouts = [...S.workouts, ...fresh].sort((a, b) => (a.d < b.d ? -1 : 1))
+  S.workouts = [...S.workouts, ...fresh].sort((a, b) => (a.d === b.d ? (a.start || 0) - (b.start || 0) : a.d < b.d ? -1 : 1))
   // seed the weight suggestions from the newest imported set of each lift
   fresh.forEach(w => w.entries.forEach(e => {
     const mx = Math.max(0, ...e.sets.map(s => s.w || 0), e.topW || 0)
