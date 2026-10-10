@@ -12,6 +12,8 @@
 // faithfully reproduce, so a stored card is guaranteed renderable — canRenderFmt() is the single
 // source of that truth, shared by both sides.
 
+import { code128Symbols } from './code128.js'
+
 let _leanqr = null
 
 // Cached loader for lean-qr. Resolves once; every card after the first reuses the same module.
@@ -28,6 +30,26 @@ async function loadLeanQr() {
 export function canRenderFmt(fmt) {
   const f = normalizeFmt(fmt)
   return f === 'qrcode' || f === 'code128'
+}
+
+// The value as a card stores it. A QR's value is trimmed (stray whitespace from a decoder, as
+// before), but a Code 128 value is kept byte for byte: every character, edge spaces included, is
+// in the bars, so trimming it would make a different code from the one on the card.
+export function cardCodeValue(value, fmt) {
+  const s = String(value ?? '')
+  return normalizeFmt(fmt) === 'code128' ? s : s.trim()
+}
+
+// Whether this exact value can be redrawn in this symbology - the check a scan, the preview and a
+// save all go through, so a card is never stored that would show a blank plate at the turnstile.
+// canRenderFmt alone isn't enough: a decoder can report Code 128 with characters set B can't carry
+// (a GS1 FNC1 separator comes out as \u001d). We don't claim GS1-128: without the decoder's FNC1
+// metadata it can't be redrawn faithfully, so it is refused like any other code we can't draw.
+export function canRenderCode(value, fmt) {
+  if (!canRenderFmt(fmt)) return false
+  const v = cardCodeValue(value, fmt)
+  if (!v) return false
+  return normalizeFmt(fmt) === 'code128' ? code128Symbols(v) !== null : true
 }
 
 // mlkit reports BarcodeFormat as e.g. 'QR_CODE' | 'QrCode'; older callers may pass 'qr'. Fold

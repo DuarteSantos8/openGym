@@ -1179,6 +1179,7 @@ export default {
   'Card added': 'تمت إضافة البطاقة',
   'Nothing to save yet': 'لا شيء للحفظ بعد',
   'That code type can\'t be shown here. Only QR codes and Code 128 barcodes work': 'لا يمكن عرض هذا النوع من الرموز هنا. تعمل رموز QR والرموز الشريطية Code 128 فقط',
+  'This code can\'t be drawn as a barcode. Scan the card again': 'لا يمكن رسم هذا الرمز كرمز شريطي. امسح البطاقة مرة أخرى',
   'No QR code or barcode found in that image': 'لم يُعثر على رمز QR أو رمز شريطي في تلك الصورة',
   'Could not read that image': 'تعذرت قراءة تلك الصورة',
   'Camera permission is needed to scan. Enable it in Settings.': 'يلزم إذن الكاميرا للمسح. فعّله في الإعدادات.',

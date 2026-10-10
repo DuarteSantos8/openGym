@@ -1404,6 +1404,7 @@ export default {
   'Card added': 'কার্ড যোগ হয়েছে',
   'Nothing to save yet': 'এখনও সেভ করার কিছু নেই',
   'That code type can\'t be shown here. Only QR codes and Code 128 barcodes work': 'এই ধরনের কোড এখানে দেখানো যায় না। শুধু QR কোড আর Code 128 বারকোড কাজ করে',
+  'This code can\'t be drawn as a barcode. Scan the card again': 'এই কোডটি বারকোড হিসেবে আঁকা যায় না। কার্ডটি আবার স্ক্যান করুন',
   'No QR code or barcode found in that image': 'ওই ছবিতে কোনো QR কোড বা বারকোড পাওয়া যায়নি',
   'Could not read that image': 'ছবিটি পড়া যায়নি',
   'Camera permission is needed to scan. Enable it in Settings.': 'স্ক্যান করতে ক্যামেরার অনুমতি লাগবে। সেটিংসে চালু করুন।',

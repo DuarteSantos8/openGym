@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { normalizeFmt, canRenderFmt } from './qr.js'
+import { normalizeFmt, canRenderFmt, canRenderCode, cardCodeValue } from './qr.js'
 
 // The QR helpers decide which scanned/typed codes the check-in feature will store: it can read
 // many symbologies but only redraw QR and Code 128, so canRenderFmt is the gate, and normalizeFmt is what
@@ -50,5 +50,36 @@ describe('canRenderFmt', () => {
     expect(canRenderFmt('')).toBe(false)
     expect(canRenderFmt(null)).toBe(false)
     expect(canRenderFmt('something-else')).toBe(false)
+  })
+})
+
+describe('cardCodeValue', () => {
+  it('trims a QR value, as cards always have been', () => {
+    expect(cardCodeValue('  MEMBER-9931  ', 'qrcode')).toBe('MEMBER-9931')
+    expect(cardCodeValue(' x ', undefined)).toBe('x')
+  })
+  it('keeps a Code 128 value byte for byte: the edge spaces are in the bars', () => {
+    expect(cardCodeValue(' 42 ', 'CODE_128')).toBe(' 42 ')
+  })
+  it('treats a missing value as empty', () => {
+    expect(cardCodeValue(undefined, 'code128')).toBe('')
+    expect(cardCodeValue(null, 'qrcode')).toBe('')
+  })
+})
+
+describe('canRenderCode', () => {
+  it('accepts a QR value and a Code 128 value set B or C can carry', () => {
+    expect(canRenderCode('MEMBER\u001d42', 'qrcode')).toBe(true)     // a QR carries any text
+    expect(canRenderCode('1000009779', 'code128')).toBe(true)
+    expect(canRenderCode(' 42 ', 'code_128')).toBe(true)
+  })
+  it('refuses a Code 128 value with a control character (a GS1 FNC1 separator) or non-ASCII', () => {
+    expect(canRenderCode('MEMBER\u001d42', 'code128')).toBe(false)
+    expect(canRenderCode('CAFÉ-1', 'code128')).toBe(false)
+  })
+  it('refuses an empty value, and a symbology we cannot draw at all', () => {
+    expect(canRenderCode('   ', 'qrcode')).toBe(false)
+    expect(canRenderCode('', 'code128')).toBe(false)
+    expect(canRenderCode('5901234123457', 'ean13')).toBe(false)
   })
 })

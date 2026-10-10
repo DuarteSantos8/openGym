@@ -1346,6 +1346,7 @@ export default {
   'Card added': '카드가 추가되었습니다',
   'Nothing to save yet': '아직 저장할 내용이 없습니다',
   'That code type can\'t be shown here. Only QR codes and Code 128 barcodes work': '이 유형의 코드는 여기에 표시할 수 없습니다. QR 코드와 Code 128 바코드만 사용할 수 있습니다',
+  'This code can\'t be drawn as a barcode. Scan the card again': '이 코드는 바코드로 그릴 수 없습니다. 카드를 다시 스캔하세요',
   'No QR code or barcode found in that image': '이미지에서 QR 코드나 바코드를 찾을 수 없습니다',
   'Could not read that image': '이미지를 읽을 수 없습니다',
   'Camera permission is needed to scan. Enable it in Settings.': '스캔하려면 카메라 권한이 필요합니다. 설정에서 켜세요.',

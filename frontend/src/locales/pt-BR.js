@@ -1146,6 +1146,7 @@ export const PT_BR_OVERRIDES = {
   '{0} sets of {1}. Time to add weight or try a harder variation.': '{0} séries de {1}. Hora de colocar mais peso ou partir para uma variação mais difícil.',
   'Test sent! Should pop up any second': 'Teste enviado! Deve aparecer a qualquer momento',
   'That code type can\'t be shown here. Only QR codes and Code 128 barcodes work': 'Esse tipo de código não pode ser mostrado aqui. Só funcionam códigos QR e códigos de barras Code 128',
+  'This code can\'t be drawn as a barcode. Scan the card again': 'Esse código não pode ser desenhado como código de barras. Escaneie o cartão de novo',
   'No QR code or barcode found in that image': 'Nenhum código QR ou código de barras encontrado nessa imagem',
   'A clean printout, one page per plan. No exercise ever gets split across pages.': 'Uma impressão limpa, uma página por plano. Nenhum exercício fica dividido entre páginas.',
   '{1} animated exercises + 1 of your own': '{1} exercícios animados + 1 seu',

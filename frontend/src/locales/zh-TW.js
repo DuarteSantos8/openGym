@@ -1334,6 +1334,7 @@ export default {
   'Card added': '卡片已新增',
   'Nothing to save yet': '尚無內容可供儲存',
   'That code type can\'t be shown here. Only QR codes and Code 128 barcodes work': '此處無法顯示這種條碼。僅支援 QR Code 和 Code 128 條碼',
+  'This code can\'t be drawn as a barcode. Scan the card again': '此代碼無法繪製成條碼。請重新掃描卡片',
   'No QR code or barcode found in that image': '在該圖片中未偵測到 QR Code 或條碼',
   'Could not read that image': '無法讀取該圖片',
   'Camera permission is needed to scan. Enable it in Settings.': '需要相機權限才能進行掃描。請至系統設定中開啟權限。',

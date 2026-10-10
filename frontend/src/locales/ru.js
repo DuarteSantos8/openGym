@@ -1317,6 +1317,7 @@ export default {
   'Card added': 'Карта добавлена',
   'Nothing to save yet': 'Пока нечего сохранять',
   'That code type can\'t be shown here. Only QR codes and Code 128 barcodes work': 'Этот тип кода здесь показать нельзя. Работают только QR-коды и штрихкоды Code 128',
+  'This code can\'t be drawn as a barcode. Scan the card again': 'Этот код нельзя нарисовать как штрихкод. Отсканируйте карту ещё раз',
   'No QR code or barcode found in that image': 'На изображении не найден QR-код или штрихкод',
   'Could not read that image': 'Не удалось прочитать изображение',
   'Camera permission is needed to scan. Enable it in Settings.': 'Для сканирования нужен доступ к камере. Включите его в настройках.',

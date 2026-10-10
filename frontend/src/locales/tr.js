@@ -1346,6 +1346,7 @@ export default {
   'Card added': 'Kart eklendi',
   'Nothing to save yet': 'Henüz kaydedilecek bir şey yok',
   'That code type can\'t be shown here. Only QR codes and Code 128 barcodes work': 'Bu kod türü burada gösterilemez. Yalnızca QR kodlar ve Code 128 barkodlar çalışır',
+  'This code can\'t be drawn as a barcode. Scan the card again': 'Bu kod barkod olarak çizilemiyor. Kartı yeniden tara',
   'No QR code or barcode found in that image': 'Bu görüntüde QR kod veya barkod bulunamadı',
   'Could not read that image': 'Bu görüntü okunamadı',
   'Camera permission is needed to scan. Enable it in Settings.': 'Taramak için kamera izni gerekir. Ayarlar’dan etkinleştir.',

@@ -996,6 +996,7 @@ export default {
   'Card added': 'Kártya hozzáadva',
   'Nothing to save yet': 'Még nincs mit menteni',
   'That code type can\'t be shown here. Only QR codes and Code 128 barcodes work': 'Ez a kódtípus itt nem jeleníthető meg. Csak QR-kódok és Code 128 vonalkódok működnek',
+  'This code can\'t be drawn as a barcode. Scan the card again': 'Ezt a kódot nem lehet vonalkódként megrajzolni. Olvasd be újra a kártyát',
   'No QR code or barcode found in that image': 'Nem található QR-kód vagy vonalkód a képen',
   'Could not read that image': 'A kép nem olvasható be',
   'Camera permission is needed to scan. Enable it in Settings.': 'A beolvasáshoz kameraengedély szükséges. Engedélyezd a Beállításokban.',

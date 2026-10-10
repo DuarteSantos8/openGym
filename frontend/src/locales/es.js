@@ -1346,6 +1346,7 @@ export default {
   'Card added': 'Tarjeta añadida',
   'Nothing to save yet': 'Nada que guardar todavía',
   'That code type can\'t be shown here. Only QR codes and Code 128 barcodes work': 'Este tipo de código no se puede mostrar aquí. Solo funcionan códigos QR y códigos de barras Code 128',
+  'This code can\'t be drawn as a barcode. Scan the card again': 'Este código no se puede dibujar como código de barras. Vuelve a escanear la tarjeta',
   'No QR code or barcode found in that image': 'No se encontró ningún código QR ni código de barras en esa imagen',
   'Could not read that image': 'No se pudo leer esa imagen',
   'Camera permission is needed to scan. Enable it in Settings.': 'Se necesita permiso de cámara para escanear. Actívalo en Ajustes.',

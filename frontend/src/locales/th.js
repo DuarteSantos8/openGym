@@ -1004,6 +1004,7 @@ export default {
   'Card added': 'เพิ่มบัตรแล้ว',
   'Nothing to save yet': 'ยังไม่มีอะไรให้บันทึก',
   'That code type can\'t be shown here. Only QR codes and Code 128 barcodes work': 'ไม่สามารถแสดงโค้ดประเภทนี้ที่นี่ได้ ใช้ได้เฉพาะคิวอาร์โค้ดและบาร์โค้ด Code 128 เท่านั้น',
+  'This code can\'t be drawn as a barcode. Scan the card again': 'ไม่สามารถวาดโค้ดนี้เป็นบาร์โค้ดได้ สแกนบัตรอีกครั้ง',
   'No QR code or barcode found in that image': 'ไม่พบคิวอาร์โค้ดหรือบาร์โค้ดในรูปภาพนั้น',
   'Could not read that image': 'ไม่สามารถอ่านรูปภาพนั้นได้',
   'Camera permission is needed to scan. Enable it in Settings.': 'ต้องมีสิทธิ์กล้องเพื่อสแกน เปิดใช้งานในการตั้งค่า',

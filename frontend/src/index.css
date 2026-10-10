@@ -1966,7 +1966,9 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 /* The QR itself: lean-qr paints 1 module per pixel, so scale it up with the browser's
    nearest-neighbour so every module stays a crisp square instead of a blurred blob. White
    quiet-zone padding is baked in by the renderer; the plate underneath just frames it. */
-.ci-qr-plate{background:#fff;border-radius:var(--r-lg);padding:16px}
+.ci-qr-plate{background:#fff;border-radius:var(--r-lg);padding:16px;max-width:100%;box-sizing:border-box;overflow-x:auto}
+/* a stored code that can't be drawn: an honest message in the plate's place, not a blank plate */
+.ci-unusable{border:2px dashed var(--surface-3);border-radius:var(--r-lg);padding:24px 16px;color:var(--label-2);text-align:center;font-size:14px;line-height:1.4}
 .qr-canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;transition:opacity var(--fast)}
 /* the trailing add card — a big + on a dashed outline, same footprint as a real card */
 .ci-add{

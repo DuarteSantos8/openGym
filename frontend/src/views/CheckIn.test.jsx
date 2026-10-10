@@ -217,6 +217,13 @@ describe('CheckIn — the rail reopens where you left it', () => {
     expect(host.querySelector('.ci-value').textContent).toBe('MEMBER-9931')
   })
 
+  it('a card saved before the scan was checked, whose code cannot be drawn, says so instead of showing a blank plate', () => {
+    mocks.S = { gymCards: [card('a', { value: 'MEMBER\u001d42', fmt: 'code128' })], lastGymCardId: 'a' }
+    mount()
+    expect(host.querySelector('[data-qr]')).toBeFalsy()
+    expect(host.textContent).toContain("This code can't be drawn as a barcode. Scan the card again")
+  })
+
   it('the back button goes home', async () => {
     mount()
     await tap(byLabel(host, 'Home')[0])
@@ -385,6 +392,29 @@ describe('CheckIn — adding a card', () => {
     await tap(sheetBtn('Save card'))
     expect(mocks.S.gymCards[0]).toMatchObject({ value: '1000009779', fmt: 'code128' })
     expect(mocks.toast).toHaveBeenCalledWith('Card added')
+  })
+
+  // Reported on #495: a decoder can hand back a Code 128 value with a control character in it
+  // (an FNC1 / GS1 separator comes out as \u001d). Code set B can't carry it, so the card would
+  // save and then draw nothing at the turnstile.
+  it('a Code 128 value the barcode cannot carry is refused at the scan, not saved as an invisible card', async () => {
+    mocks.MOBILE = true
+    mocks.scanCode.mockResolvedValue({ value: 'MEMBER\u001d42', fmt: 'CODE_128' })
+    await openAdd()
+    await tap(sheetBtn('Scan'))
+    expect(mocks.toast).toHaveBeenCalledWith("This code can't be drawn as a barcode. Scan the card again")
+    expect(sheetBtn('Save card').disabled).toBe(true)
+    expect(sheetHost.querySelector('[data-qr]')).toBeFalsy()
+  })
+
+  it('a Code 128 value keeps its edge spaces: the bars carry every byte, so trimming would change the code', async () => {
+    mocks.MOBILE = true
+    mocks.scanCode.mockResolvedValue({ value: ' 42 ', fmt: 'CODE_128' })
+    await openAdd()
+    await tap(sheetBtn('Scan'))
+    expect(sheetHost.querySelector('[data-qr]').getAttribute('data-qr')).toBe(' 42 ')
+    await tap(sheetBtn('Save card'))
+    expect(mocks.S.gymCards[0]).toMatchObject({ value: ' 42 ', fmt: 'code128' })
   })
 
   it('backing out of the native scanner leaves the form as it was and re-enables the buttons', async () => {
@@ -592,6 +622,16 @@ describe('CheckIn — editing a card', () => {
     await tap(sheetBtn('Re-scan'))
     await tap(sheetBtn('Save card'))
     expect(mocks.S.gymCards[1].value).toBe('code-b')
+  })
+
+  it('a re-scan whose Code 128 value cannot be drawn keeps the working code already on the card', async () => {
+    mocks.MOBILE = true
+    mocks.scanCode.mockResolvedValue({ value: 'MEMBER\u001d42', fmt: 'CODE_128' })
+    await openEdit('b')
+    await tap(sheetBtn('Re-scan'))
+    expect(sheetHost.querySelector('[data-qr]').getAttribute('data-qr')).toBe('code-b')
+    await tap(sheetBtn('Save card'))
+    expect(mocks.S.gymCards[1]).toMatchObject({ value: 'code-b', fmt: 'qrcode' })
   })
 
   // If the card is removed on another device while this sheet is open, there is nothing to

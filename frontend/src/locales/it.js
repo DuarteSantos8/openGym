@@ -1346,6 +1346,7 @@ export default {
   'Card added': 'Tessera aggiunta',
   'Nothing to save yet': 'Ancora niente da salvare',
   'That code type can\'t be shown here. Only QR codes and Code 128 barcodes work': 'Questo tipo di codice non si può mostrare qui. Funzionano solo codici QR e codici a barre Code 128',
+  'This code can\'t be drawn as a barcode. Scan the card again': 'Questo codice non si può disegnare come codice a barre. Scansiona di nuovo la tessera',
   'No QR code or barcode found in that image': 'Nessun codice QR o codice a barre trovato nell’immagine',
   'Could not read that image': 'Impossibile leggere l’immagine',
   'Camera permission is needed to scan. Enable it in Settings.': 'Per scansionare serve l’autorizzazione alla fotocamera. Attivala nelle Impostazioni.',
