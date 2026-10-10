@@ -25,6 +25,7 @@ import UIKit
  *   await AH.requestPermissions();  // { granted }
  *   await AH.write({ sessions: [...], weights: [...] });
  *   await AH.remove({ sessions: [ids], weights: [ids] });
+ *   await AH.readWeights({ anchor }); // { samples: [{ t, kg }], anchor } — weigh-ins from other apps
  *   await AH.openSettings();        // the Health app
  */
 @objc(AppleHealthPlugin)
@@ -132,6 +133,43 @@ public class AppleHealthPlugin: CAPPlugin {
                 self.reject(call, error)
             }
         }
+    }
+
+    // Weigh-ins other apps and scales wrote since `anchor` (all of them without one), for
+    // Settings → "Take weigh-ins from Apple Health". What openGym wrote itself is left out, or
+    // every weigh-in would come straight back. The anchor goes back to JS as base64 and is kept in
+    // opengym-health.json, so each sample is handed over once: a weigh-in deleted in openGym is
+    // not brought back by the next read. Without read access HealthKit answers with nothing at all.
+    @objc func readWeights(_ call: CAPPluginCall) {
+        guard usable else {
+            call.reject("Apple Health is not available", "unavailable")
+            return
+        }
+        var anchor: HKQueryAnchor?
+        if let b64 = call.getString("anchor"), let data = Data(base64Encoded: b64) {
+            anchor = try? NSKeyedUnarchiver.unarchivedObject(ofClass: HKQueryAnchor.self, from: data)
+        }
+        let own = Bundle.main.bundleIdentifier ?? ""
+        let query = HKAnchoredObjectQuery(type: massType, predicate: nil, anchor: anchor, limit: HKObjectQueryNoLimit) { _, samples, _, next, error in
+            if let error = error {
+                self.reject(call, error)
+                return
+            }
+            let kg = HKUnit.gramUnit(with: .kilo)
+            let out: JSArray = (samples ?? []).compactMap { sample -> JSValue? in
+                guard let q = sample as? HKQuantitySample else { return nil }
+                if q.sourceRevision.source.bundleIdentifier == own { return nil }
+                if let id = q.metadata?[HKMetadataKeySyncIdentifier] as? String, id.hasPrefix("opengym-") { return nil }
+                let entry: JSObject = ["t": q.startDate.timeIntervalSince1970 * 1000, "kg": q.quantity.doubleValue(for: kg)]
+                return entry
+            }
+            var result: JSObject = ["samples": out]
+            if let next = next, let data = try? NSKeyedArchiver.archivedData(withRootObject: next, requiringSecureCoding: true) {
+                result["anchor"] = data.base64EncodedString()
+            }
+            call.resolve(result)
+        }
+        store.execute(query)
     }
 
     // There is no deep link to one app's data in Health; this opens the Health app, where

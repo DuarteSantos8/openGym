@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { healthRecords, planSync, recordKey, sessionRecord, sessionType, SESSION_TYPES, TEXT_MAX, weightRecord, writtenIds } from './health-connect.js'
+import { FROM_APPLE_HEALTH, healthRecords, healthWeightsToBodyweight, planSync, recordKey, sessionRecord, sessionType, SESSION_TYPES, TEXT_MAX, weightRecord, writtenIds } from './health-connect.js'
+import { mergeImport } from './import-csv.js'
 
 // #200: what the Android app writes to Health Connect, worked out from the state alone.
 const nameOf = e => ({ '0025': 'barbell bench press', '3666': 'walking on incline treadmill', '2138': 'stationary bike run v. 3' })[e.id] || e.id
@@ -137,5 +138,36 @@ describe('writtenIds', () => {
   it('lists what this phone wrote, by type', () => {
     expect(writtenIds({ a: { k: 'session', h: '1' }, b: { k: 'weight', h: '2' }, c: { k: 'other' } }))
       .toEqual({ sessions: ['a'], weights: ['b'] })
+  })
+})
+
+describe('weigh-ins read from Apple Health (iOS)', () => {
+  const t = (d, h) => new Date(2026, 8, d, h).getTime()
+
+  it('keeps one a day, the last one taken, marked as taken from there', () => {
+    const out = healthWeightsToBodyweight([{ t: t(17, 7), kg: 80.04 }, { t: t(17, 21), kg: 81.26 }, { t: t(16, 8), kg: 79.5 }], 'kg')
+    expect(out).toEqual([
+      { d: '2026-09-16', w: 79.5, t: t(16, 8), src: FROM_APPLE_HEALTH },
+      { d: '2026-09-17', w: 81.3, t: t(17, 21), src: FROM_APPLE_HEALTH },
+    ])
+  })
+  it('converts to pounds for a log kept in pounds', () => {
+    expect(healthWeightsToBodyweight([{ t: t(17, 7), kg: 80 }], 'lb')[0].w).toBe(176.4)
+  })
+  it('leaves out what no person weighs, and what is not a weigh-in at all', () => {
+    expect(healthWeightsToBodyweight([{ t: t(17, 7), kg: 0 }, { t: t(17, 7), kg: 700 }, { t: 0, kg: 80 }, null, { t: t(17, 8), kg: 'x' }])).toEqual([])
+    expect(healthWeightsToBodyweight(undefined)).toEqual([])
+  })
+  it('never writes one back to Apple Health, until it is edited in openGym', () => {
+    const S = { unit: 'kg', workouts: [], bodyweight: [{ d: '2026-09-17', w: 80, t: t(17, 7), src: FROM_APPLE_HEALTH }, { d: '2026-09-18', w: 81, t: t(18, 7) }] }
+    expect(healthRecords(S, { nameOf: e => e.id }).weights.map(w => w.id)).toEqual(['opengym-bw-2026-09-18'])
+    delete S.bodyweight[0].src
+    expect(healthRecords(S, { nameOf: e => e.id }).weights).toHaveLength(2)
+  })
+  it('merges like an import: a day openGym has keeps its own weigh-in', () => {
+    const S = { bodyweight: [{ d: '2026-09-17', w: 82, t: t(17, 9) }] }
+    const r = mergeImport(S, { kind: 'bodyweight', bodyweight: healthWeightsToBodyweight([{ t: t(17, 7), kg: 80 }, { t: t(18, 7), kg: 80.5 }]) })
+    expect(r).toEqual({ added: 1, skipped: 1 })
+    expect(S.bodyweight.map(b => [b.d, b.w])).toEqual([['2026-09-17', 82], ['2026-09-18', 80.5]])
   })
 })

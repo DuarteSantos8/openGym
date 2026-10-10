@@ -10,6 +10,12 @@ import { modeForEntry, hasCompletedWork } from './workout-model.js'
 import { isoOf } from './format.js'
 
 const LB_PER_KG = 2.2046226218
+// A weigh-in a person could have, as import-csv.js bounds one (MAX_BODY_KG).
+const MAX_BODY_KG = 650
+// A weigh-in taken from Apple Health (Settings → "Take weigh-ins from Apple Health", iOS) carries
+// this as its `src`: it is already there, so it is never written back as openGym's own. Editing
+// it in openGym makes it openGym's (sheets.jsx drops the mark), and it is written then.
+export const FROM_APPLE_HEALTH = 'apple-health'
 // Health Connect refuses a title or notes over 1000 characters (ExerciseSessionRecord).
 export const TEXT_MAX = 1000
 
@@ -85,7 +91,7 @@ export function healthRecords(S, { nameOf, speedUnit }) {
   const unit = S?.unit === 'lb' ? 'lb' : 'kg'
   return {
     sessions: (S?.workouts || []).map(w => sessionRecord(w, { unit, nameOf, speedUnit })).filter(Boolean),
-    weights: (S?.bodyweight || []).map(b => weightRecord(b, unit)).filter(Boolean),
+    weights: (S?.bodyweight || []).filter(b => b?.src !== FROM_APPLE_HEALTH).map(b => weightRecord(b, unit)).filter(Boolean),
   }
 }
 
@@ -143,4 +149,27 @@ export function writtenIds(written = {}) {
     else if (was?.k === 'weight') out.weights.push(id)
   }
   return out
+}
+
+/**
+ * Weigh-ins read from Apple Health ({ t, kg }, any number a day, from any scale or app) as
+ * body-weight entries: one a day, the last one taken that day, in the log's unit to a tenth, and
+ * marked as taken from there. The day is the phone's local day, as for a weigh-in typed in.
+ * Merged with mergeImport (lib/import-csv.js), where a day openGym already has keeps its entry.
+ */
+export function healthWeightsToBodyweight(samples, unit = 'kg') {
+  const byDay = new Map()
+  for (const s of Array.isArray(samples) ? samples : []) {
+    const t = Number(s?.t), kg = Number(s?.kg)
+    if (!(t > 0) || !(kg > 0) || kg > MAX_BODY_KG) continue
+    const d = isoOf(new Date(t))
+    const cur = byDay.get(d)
+    if (!cur || t > cur.t) byDay.set(d, { t, kg })
+  }
+  return [...byDay.entries()].sort(([a], [b]) => (a < b ? -1 : 1)).map(([d, { t, kg }]) => ({
+    d,
+    w: Math.round((unit === 'lb' ? kg * LB_PER_KG : kg) * 10) / 10,
+    t,
+    src: FROM_APPLE_HEALTH,
+  }))
 }

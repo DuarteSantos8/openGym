@@ -1,11 +1,11 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // #200: the Android app keeping Health Connect in step with the log, and the iOS app Apple Health
 // the same way. The native plugin (HealthConnectPlugin.java / AppleHealthPlugin.swift) and the
 // app's data directory are played in memory.
 const h = vi.hoisted(() => {
   vi.stubEnv('VITE_MOBILE', '1')
-  return { files: new Map(), calls: [], status: { status: 'available', granted: false }, grant: true, fail: null, platform: 'android', registered: [] }
+  return { files: new Map(), calls: [], status: { status: 'available', granted: false }, grant: true, fail: null, platform: 'android', registered: [], samples: [], anchorOut: 'A1', readFail: null }
 })
 
 vi.mock('@capacitor/filesystem', () => ({
@@ -30,6 +30,11 @@ vi.mock('@capacitor/core', () => ({
       if (h.fail) throw Object.assign(new Error('refused'), { code: h.fail })
     },
     remove: async arg => { h.calls.push(['remove', arg]) },
+    readWeights: async arg => {
+      h.calls.push(['read', arg])
+      if (h.readFail) throw Object.assign(new Error('refused'), { code: h.readFail })
+      return { samples: h.samples, anchor: h.anchorOut }
+    },
     openSettings: async () => {},
   }),
 }))
@@ -45,7 +50,7 @@ const file = () => JSON.parse(h.files.get('opengym-health.json') || 'null')
 let hs
 beforeEach(async () => {
   vi.resetModules()
-  h.files.clear(); h.calls = []; h.status = { status: 'available', granted: false }; h.grant = true; h.fail = null; h.platform = 'android'; h.registered = []
+  h.files.clear(); h.calls = []; h.status = { status: 'available', granted: false }; h.grant = true; h.fail = null; h.platform = 'android'; h.registered = []; h.samples = []; h.anchorOut = 'A1'; h.readFail = null
   hs = await import('./health-sync.js')
 })
 
@@ -162,5 +167,68 @@ describe('which store', () => {
     h.platform = 'web'
     expect(await hs.healthStatus()).toEqual({ status: 'unsupported', granted: false, store: null })
     expect(h.registered).toEqual([])
+  })
+})
+
+describe('weigh-ins from Apple Health (iOS)', () => {
+  let S, added
+  const reads = () => h.calls.filter(c => c[0] === 'read').map(c => c[1])
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['setTimeout'] })   // initHealthSync's launch pass stays out of the way
+    h.platform = 'ios'
+    S = { unit: 'kg', workouts: [], bodyweight: [] }
+    added = []
+    hs.initHealthSync(() => S, { addWeights: list => { added.push(...list); return list.length } })
+  })
+  afterEach(() => { vi.useRealTimers() })
+
+  it('reads nothing until switched on', async () => {
+    await hs.loadHealth()
+    expect(await hs.readHealth()).toBeNull()
+    expect(reads()).toEqual([])
+  })
+  it('switched on: asks to read, takes everything once, and keeps the anchor', async () => {
+    h.samples = [{ t: new Date(2026, 8, 17, 7).getTime(), kg: 80 }]
+    const r = await hs.enableHealthRead()
+    expect(r).toMatchObject({ ok: true, added: 1 })
+    expect(h.calls[0]).toEqual(['request'])
+    expect(reads()).toEqual([{ anchor: null }])
+    expect(added.map(b => [b.d, b.w, b.src])).toEqual([['2026-09-17', 80, 'apple-health']])
+    expect(file()).toMatchObject({ read: true, anchor: 'A1' })
+  })
+  it('then reads on from the anchor only', async () => {
+    await hs.enableHealthRead()
+    h.samples = []
+    h.anchorOut = 'A2'
+    await hs.readHealth()
+    expect(reads().at(-1)).toEqual({ anchor: 'A1' })
+    expect(file().anchor).toBe('A2')
+  })
+  it('converts to the unit of the log', async () => {
+    S.unit = 'lb'
+    h.samples = [{ t: new Date(2026, 8, 17, 7).getTime(), kg: 80 }]
+    await hs.enableHealthRead()
+    expect(added[0].w).toBe(176.4)
+  })
+  it('keeps the anchor when a read fails, and says so', async () => {
+    await hs.enableHealthRead()
+    h.readFail = 'permission'
+    await hs.readHealth()
+    expect(file()).toMatchObject({ anchor: 'A1', readError: 'permission' })
+  })
+  it('switched off: stops reading and forgets the anchor, keeping what it took', async () => {
+    h.samples = [{ t: new Date(2026, 8, 17, 7).getTime(), kg: 80 }]
+    await hs.enableHealthRead()
+    await hs.disableHealthRead()
+    expect(file()).toMatchObject({ read: false, anchor: null })
+    expect(await hs.readHealth()).toBeNull()
+    expect(added).toHaveLength(1)
+  })
+  it('is not there in the Android app', async () => {
+    h.platform = 'android'
+    vi.resetModules()
+    hs = await import('./health-sync.js')
+    expect(await hs.enableHealthRead()).toEqual({ ok: false, reason: 'unsupported' })
+    expect(reads()).toEqual([])
   })
 })

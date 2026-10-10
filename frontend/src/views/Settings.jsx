@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, forwardRef, useSyncExternalStore } from 'react'
 import { useNavigate, useParams, useLocation, Navigate } from 'react-router-dom'
 import { useStore, DEF, hasData } from '../store/useStore.js'
-import { healthStatus, loadHealth, enableHealth, disableHealth, openHealthConnect, onHealthChange } from '../lib/health-sync.js'
+import { healthStatus, loadHealth, enableHealth, disableHealth, enableHealthRead, disableHealthRead, openHealthConnect, onHealthChange } from '../lib/health-sync.js'
 import { workoutControls } from '../lib/workout-controls.js'
 import { speedUnitOf } from '../lib/speed.js'
 import { formulaOf, FORMULA_NAMES } from '../lib/onerm.js'
@@ -1516,6 +1516,20 @@ function HealthCard({ S, toast }) {
     ],
   })
 
+  // iOS only: weigh-ins from the scale and other apps, taken into the log (lib/health-sync.js).
+  const setRead = async v => {
+    setBusy(true)
+    try {
+      if (!v) setH(await disableHealthRead())
+      else {
+        const r = await enableHealthRead()
+        if (r.health) setH(r.health)
+        toast(r.added ? t('Weigh-ins from Apple Health added: {0}', r.added) : t('No new weigh-ins in Apple Health'))
+      }
+    } catch { toast(t('Could not read from Apple Health')) }
+    setBusy(false)
+  }
+
   return (
     <Section title={L.name} footer={h.on ? L.footer : null}>
       <Row icon="heart" iconTint="var(--red)" title={L.write}
@@ -1524,7 +1538,11 @@ function HealthCard({ S, toast }) {
       </Row>
       {h.on && h.error === 'permission' && <Row icon="warning" iconTint="var(--orange)"
         title={t('Permission withdrawn. Tap to allow again')} accessory="chevron" onClick={turnOn} />}
-      {h.on && <Row icon="list" iconTint="var(--blue)" title={L.open}
+      {st.store === 'apple-health' && <Row icon="download" iconTint="var(--teal)" title={t('Take weigh-ins from Apple Health')}
+        subtitle={t('From your scale and other apps, on days openGym has none.')}>
+        <Switch checked={!!h.read} disabled={busy} onChange={setRead} />
+      </Row>}
+      {(h.on || h.read) && <Row icon="list" iconTint="var(--blue)" title={L.open}
         accessory="chevron" onClick={() => openHealthConnect().catch(() => {})} />}
     </Section>
   )

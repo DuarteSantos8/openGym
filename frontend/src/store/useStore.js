@@ -8,6 +8,7 @@ import { rememberDefaultLang } from '../lib/default-lang.js'
 import { guestAllowed } from '../lib/guest.js'
 import { MOBILE, initReminderSync, nativeLoad, nativeSave, onAppActive, readJsonFile, syncReminder, writeAutoBackup, writeJsonFile } from '../lib/mobile.js'
 import { initHealthSync, syncHealth } from '../lib/health-sync.js'
+import { mergeImport } from '../lib/import-csv.js'
 import { refillIfComplete } from '../lib/rotation.js'
 import { liftLegacy } from '../lib/sync-legacy.js'
 import { mergeStates, localExtras, stampChange, highestStamp, stampRestore, stampReplace, inUnitOf, keepReset, resetIdsOf, mergeResetIds, entryKey } from '../lib/sync-merge.js'
@@ -473,7 +474,14 @@ export const useStore = create((set, get) => {
   }
 
   initReminderSync(() => get().S)
-  initHealthSync(() => get().S)
+  // Weigh-ins taken from Apple Health (iOS) go in like an import: a day already logged keeps its own.
+  initHealthSync(() => get().S, {
+    addWeights: list => {
+      let added = 0
+      get().update(S => { added = mergeImport(S, { kind: 'bodyweight', bodyweight: list }).added })
+      return added
+    },
+  })
 
   // Mobile build: the file mirror, and beside it whose copy it is and which one (its `_ts`) —
   // restoreFromMirror takes the file back only for that account, and only while the two agree,

@@ -19,6 +19,8 @@ const mocks = vi.hoisted(() => {
   state.enableHealth = vi.fn(async () => { state.health = { ...state.health, on: true }; return { ok: true, health: state.health } })
   state.disableHealth = vi.fn(async ({ removeWritten }) => { state.health = { ...state.health, on: false, written: removeWritten ? {} : state.health.written }; return state.health })
   state.openHealthConnect = vi.fn(async () => {})
+  state.enableHealthRead = vi.fn(async () => { state.health = { ...state.health, read: true }; return { ok: true, added: 3, health: state.health } })
+  state.disableHealthRead = vi.fn(async () => { state.health = { ...state.health, read: false }; return state.health })
   state.menuSheet = vi.fn()
   state.toast = vi.fn()
   return state
@@ -50,6 +52,8 @@ vi.mock('../lib/health-sync.js', () => ({
   enableHealth: (...a) => mocks.enableHealth(...a),
   disableHealth: (...a) => mocks.disableHealth(...a),
   openHealthConnect: (...a) => mocks.openHealthConnect(...a),
+  enableHealthRead: (...a) => mocks.enableHealthRead(...a),
+  disableHealthRead: (...a) => mocks.disableHealthRead(...a),
   onHealthChange: () => () => {},
 }))
 vi.mock('./MobileOnboarding.jsx', () => ({ ConnectSheet: () => null }))
@@ -67,7 +71,7 @@ beforeEach(() => {
   mocks.android = true
   mocks.status = { status: 'available', granted: false }
   mocks.health = { on: false, written: {}, error: null }
-  for (const k of ['enableHealth', 'disableHealth', 'openHealthConnect', 'menuSheet', 'toast']) mocks[k].mockClear()
+  for (const k of ['enableHealth', 'disableHealth', 'enableHealthRead', 'disableHealthRead', 'openHealthConnect', 'menuSheet', 'toast']) mocks[k].mockClear()
   host = document.createElement('div')
   document.body.appendChild(host)
   root = createRoot(host)
@@ -98,6 +102,7 @@ describe('Settings — Health Connect', () => {
 
   it('starts off, and turning it on goes through enableHealth', async () => {
     await mount()
+    expect(row('Take weigh-ins from Apple Health')).toBeUndefined()
     expect(writeSwitch().getAttribute('aria-checked')).toBe('false')
     expect(row('Open Health Connect')).toBeUndefined()
     await act(async () => { writeSwitch().click() })
@@ -154,6 +159,18 @@ describe('Settings — Apple Health (iOS app)', () => {
     expect(mocks.enableHealth).toHaveBeenCalledTimes(1)
     expect(mocks.toast).toHaveBeenCalledWith('Writing to Apple Health')
     expect(row('Open Apple Health')).toBeTruthy()
+  })
+
+  it('takes weigh-ins from Apple Health with a switch of its own, and says how many', async () => {
+    await mount()
+    const sw = () => row('Take weigh-ins from Apple Health').querySelector('[role="switch"]')
+    expect(sw().getAttribute('aria-checked')).toBe('false')
+    await act(async () => { sw().click() })
+    expect(mocks.enableHealthRead).toHaveBeenCalledTimes(1)
+    expect(mocks.toast).toHaveBeenCalledWith('Weigh-ins from Apple Health added: 3')
+    expect(sw().getAttribute('aria-checked')).toBe('true')
+    await act(async () => { sw().click() })
+    expect(mocks.disableHealthRead).toHaveBeenCalledTimes(1)
   })
 
   it('asks what to do with what it wrote when turned off', async () => {
