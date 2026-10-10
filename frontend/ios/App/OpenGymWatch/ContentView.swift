@@ -8,11 +8,11 @@ struct ContentView: View {
         if let snap = link.snapshot, snap.active {
             if let rest = snap.rest {
                 RestView(snap: snap, rest: rest)
-            } else if let set = snap.current {
-                if set.loggable {
-                    SetView(snap: snap, set: set)
+            } else if let row = snap.current {
+                if row.loggable {
+                    SetView(snap: snap, row: row)
                 } else {
-                    Message(title: set.exercise, text: snap.text("onPhone", "Log this set on your iPhone"))
+                    Message(title: row.exercise, text: snap.text("onPhone", "Log this set on your iPhone"))
                 }
             } else {
                 Message(title: snap.workout ?? "", text: snap.text("complete", "Workout complete!"))
@@ -40,7 +40,7 @@ private struct Message: View {
 struct SetView: View {
     @EnvironmentObject var link: PhoneLink
     let snap: Snapshot
-    let set: Snapshot.SetInfo
+    let row: Snapshot.SetInfo
 
     @State private var crown: Double = 0
     @State private var weight: Double = 0
@@ -51,8 +51,8 @@ struct SetView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 6) {
-                Text(set.exercise).font(.headline).lineLimit(2).multilineTextAlignment(.center)
-                Text(set.warmup ? "\(set.label ?? "") · \(snap.text("warmup", "Warm-up"))" : (set.label ?? ""))
+                Text(row.exercise).font(.headline).lineLimit(2).multilineTextAlignment(.center)
+                Text(row.warmup ? "\(row.label ?? "") · \(snap.text("warmup", "Warm-up"))" : (row.label ?? ""))
                     .font(.footnote).foregroundColor(.secondary)
                 VStack(spacing: 0) {
                     Text("\(reps)").font(.system(size: 40, weight: .semibold, design: .rounded))
@@ -70,7 +70,7 @@ struct SetView: View {
                     Button("+") { weight += step }.frame(width: 40)
                 }
                 Button(snap.text("done", "Done")) {
-                    link.send(["type": "done", "entryIdx": set.entryIdx, "setIdx": set.setIdx, "reps": reps, "weight": weight])
+                    link.send(["type": "done", "entryIdx": row.entryIdx, "setIdx": row.setIdx, "reps": reps, "weight": weight])
                     WKInterfaceDevice.current().play(.click)
                 }
                 .tint(.green)
@@ -81,12 +81,12 @@ struct SetView: View {
             }
         }
         .onAppear(perform: reset)
-        .onChange(of: set) { _ in reset() }
+        .onChange(of: row) { _ in reset() }
     }
 
     private func reset() {
-        crown = Double(set.reps)
-        weight = set.weight
+        crown = Double(row.reps)
+        weight = row.weight
     }
 
     private func format(_ w: Double) -> String {
