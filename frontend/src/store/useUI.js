@@ -19,8 +19,8 @@ const pushRestTimer = sec => { if (useStore.getState().user) api('/api/push/rest
 const cancelPushRestTimer = () => { if (useStore.getState().user) api('/api/push/rest-timer/cancel', { method: 'POST', body: JSON.stringify({ deviceId: deviceId() }) }).catch(() => {}) }
 
 // Books the end of a rest with whatever can announce it while the app is not looking: in the
-// Android app a native alarm and the countdown notification, everywhere else (and wherever that
-// alarm could not be set) the server's push. The web build books the push at once, as before.
+// Android app a native alarm and the countdown notification, in the iOS app a local notification,
+// everywhere else (and wherever neither could be set) the server's push. The web build books the push at once, as before.
 // A switch-sides pause (Workout.jsx SWITCH_SIDES_SEC) books no server push, whose words are "rest over":
 // it is ten seconds between the two sides of a hold, and the app is in your hand.
 const bookRestEnd = (endsAt, totalSec, kind) => {
