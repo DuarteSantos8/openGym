@@ -11,7 +11,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
 // flips the two gates (MOBILE flag, Capacitor platform) and watches whether Settings even
 // asks gitlab.com for the latest release.
 const mocks = vi.hoisted(() => {
-  const state = { S: null, MOBILE: false, android: false }
+  const state = { S: null, MOBILE: false, android: false, channel: 'sideload' }
   state.snapshot = () => ({
     S: state.S,
     user: null,
@@ -54,6 +54,7 @@ vi.mock('../lib/update.js', () => ({
   checkForUpdate: (...a) => mocks.checkForUpdate(...a),
   downloadAndInstall: vi.fn(),
 }))
+vi.mock('../lib/channel.js', () => ({ selfUpdates: () => Promise.resolve(mocks.channel === 'sideload') }))
 vi.mock('./MobileOnboarding.jsx', () => ({ ConnectSheet: () => null }))
 vi.mock('../sheets.jsx', () => ({
   starterPlanSheet: vi.fn(), confirmSheet: (...a) => mocks.confirmSheet(...a), importFromApp: vi.fn(),
@@ -70,6 +71,7 @@ beforeEach(() => {
   }
   mocks.MOBILE = false
   mocks.android = false
+  mocks.channel = 'sideload'
   mocks.checkForUpdate.mockClear()
   mocks.confirmSheet.mockClear()
   host = document.createElement('div')
@@ -84,7 +86,7 @@ afterEach(() => {
 // The effect resolves two promises (isAndroid, then checkForUpdate) before the row can render.
 const mount = async () => {
   await act(async () => { root.render(<Settings page="about" />) })
-  await act(async () => { await Promise.resolve(); await Promise.resolve() })
+  await act(async () => { for (let i = 0; i < 4; i++) await Promise.resolve() })
 }
 const updateRow = () => [...host.querySelectorAll('.lrow')].find(r => r.textContent.includes('Update to openGym v9.9.9'))
 const checkRow = () => [...host.querySelectorAll('.lrow')].find(r => r.textContent.includes('Check for updates'))
@@ -106,6 +108,16 @@ describe('Settings — in-app update check', () => {
     expect(updateRow()).toBeUndefined()
     expect(checkRow()).toBeUndefined()
     expect(webRow()).toBeUndefined()
+  })
+
+  it('Google Play build: Play installs the updates, so no check and no row', async () => {
+    mocks.MOBILE = true
+    mocks.android = true
+    mocks.channel = 'play'
+    await mount()
+    expect(mocks.checkForUpdate).not.toHaveBeenCalled()
+    expect(updateRow()).toBeUndefined()
+    expect(checkRow()).toBeUndefined()
   })
 
   it('mobile build on Android: checks once and shows the row, tapping it asks before downloading', async () => {

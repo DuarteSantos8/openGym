@@ -1,8 +1,11 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "ch.duartesantos.opengym"
-    compileSdk rootProject.ext.compileSdkVersion
+    namespace = "ch.duartesantos.opengym"
+    compileSdk = rootProject.ext.compileSdkVersion
+    buildFeatures {
+        buildConfig = true
+    }
     defaultConfig {
         applicationId "ch.duartesantos.opengym"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -13,7 +16,7 @@ android {
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
              // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
-            ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
+            ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
     buildTypes {
@@ -35,6 +38,24 @@ android {
             applicationIdSuffix ".test"
         }
     }
+    // Where the app is installed from. "sideload" is the APK on GitHub and opengym.ch: it checks
+    // GitHub for a newer release and installs it itself (InstallPlugin, REQUEST_INSTALL_PACKAGES).
+    // "play" is the Google Play build: Play installs the updates, so the updater, its permission
+    // and its plugin are left out (Play does not allow an app to update itself). Same
+    // applicationId and the same signing key, so a phone can move from one to the other without
+    // losing its data. The page asks which one it runs in (ChannelPlugin, lib/channel.js).
+    flavorDimensions = ["channel"]
+    productFlavors {
+        sideload {
+            dimension = "channel"
+            isDefault = true
+            buildConfigField "String", "CHANNEL", '"sideload"'
+        }
+        play {
+            dimension = "channel"
+            buildConfigField "String", "CHANNEL", '"play"'
+        }
+    }
 }
 
 repositories {
@@ -49,8 +70,7 @@ dependencies {
     implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
     implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
     // Writing workouts and weigh-ins to Health Connect (#200, HealthConnectPlugin). Off until the
-    // user turns it on. 1.1.0-alpha12 is the last release that builds with compileSdk 35 and AGP
-    // 8.7; 1.1.0 stable asks for compileSdk 36 and AGP 8.9.1.
+    // user turns it on.
     implementation "androidx.health.connect:connect-client:$healthConnectVersion"
     implementation project(':capacitor-android')
     testImplementation "junit:junit:$junitVersion"

@@ -19,10 +19,10 @@ import com.getcapacitor.annotation.CapacitorPlugin;
  * own background and there is nothing to change.
  *
  * Usage from JS:
- *   registerPlugin('SystemBars').setStyle({ light: true })
+ *   registerPlugin('BarIcons').setStyle({ light: true })
  */
-@CapacitorPlugin(name = "SystemBars")
-public class SystemBarsPlugin extends Plugin {
+@CapacitorPlugin(name = "BarIcons")
+public class BarIconsPlugin extends Plugin {
 
     @PluginMethod
     public void setStyle(PluginCall call) {

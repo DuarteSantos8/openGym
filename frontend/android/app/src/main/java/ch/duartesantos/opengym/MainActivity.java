@@ -21,13 +21,19 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(HealthConnectPlugin.class);
-        registerPlugin(InstallPlugin.class);
+        registerPlugin(ChannelPlugin.class);
+        FlavorPlugins.register(this);
         registerPlugin(PrintPlugin.class);
         registerPlugin(RestAlertPlugin.class);
         registerPlugin(BackupFolderPlugin.class);
-        registerPlugin(SystemBarsPlugin.class);
+        registerPlugin(BarIconsPlugin.class);
         super.onCreate(savedInstanceState);
         passSystemBarsToPage();
+    }
+
+    /** For FlavorPlugins: registerPlugin is protected in BridgeActivity. */
+    void registerFlavorPlugin(Class<? extends com.getcapacitor.Plugin> plugin) {
+        registerPlugin(plugin);
     }
 
     /**

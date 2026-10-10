@@ -32,6 +32,7 @@ import { limitsFrom, fmtMB, MB } from '../lib/media-limits.js'
 import { setRestAccent } from '../lib/rest-alert.js'
 import { CUSTOM, accentKey, adjustedIn, applyAccent, cleanHex, inkOn, isGrey } from '../lib/accent.js'
 import { checkForUpdate, downloadAndInstall, fetchChecksum, RELEASES_PAGE } from '../lib/update.js'
+import { selfUpdates } from '../lib/channel.js'
 import { forgetCoach } from '../lib/coach-api.js'
 import { REST_MAX, REST_PAUSE_MIN, REST_PAUSE_MAX, fmtRest, fmtDuration } from '../lib/duration.js'
 import { starterPlanSheet, confirmSheet, importFromApp, importFromHevy, equipmentProfileSheet, plateInventorySheet, dumbbellInventorySheet, menuSheet } from '../sheets.jsx'
@@ -151,6 +152,7 @@ export default function Settings({ page = null, find = null, via = null }) {
   // --- update check state ---
   const [updateInfo, setUpdateInfo] = useState(null) // { hasUpdate, latestVersion, apkUrl, hashUrl } | null
   const [android, setAndroid] = useState(false)
+  const [selfUpdate, setSelfUpdate] = useState(false)   // the sideloaded APK, which updates itself
   const [checking, setChecking] = useState(false)
   // Where auto-backup writes on this Android phone, for the Auto-backup row's own subtitle.
   const [backupDir] = useBackupFolder(MOBILE && android && !!S.autoBackup)
@@ -161,8 +163,14 @@ export default function Settings({ page = null, find = null, via = null }) {
     // already answers false off the mobile build; the MOBILE check on top keeps the web bundle
     // from even asking (and from calling GitHub on every Settings visit). Only the pages
     // that show it ask: the root (for nothing but `android`) skips the release check.
+    // The Google Play build is updated by Play (lib/channel.js): no update row there either.
     if (!MOBILE) return
-    isAndroid().then(ok => { setAndroid(ok); if (ok && page === 'about') checkForUpdate().then(setUpdateInfo).catch(() => {}) })
+    isAndroid().then(async ok => {
+      setAndroid(ok)
+      const own = ok && await selfUpdates()
+      setSelfUpdate(own)
+      if (own && page === 'about') checkForUpdate().then(setUpdateInfo).catch(() => {})
+    })
   }, [page])
 
   // A search hit: scroll its row (or button) into view and flash it once. A row that shows only
@@ -807,11 +815,12 @@ export default function Settings({ page = null, find = null, via = null }) {
     about: () => <>
       {/* Updates. On Android the row is always there: it checks on demand and installs when a
           release is newer (checksum verified, see onUpdateRowClick). On the web the app updates
-          with its server, so the row points at the APK for the phone instead. iOS has no APK. */}
-      <Section footer={MOBILE ? (android ? t('Releases are checked on GitHub. The download is verified against its checksum before the installer opens.') : null) : t('The web app updates together with your server. The Android app installs its own updates from here.')}>
+          with its server, so the row points at the APK for the phone instead. iOS and the Google
+          Play build are updated by their store. */}
+      <Section footer={MOBILE ? (selfUpdate ? t('Releases are checked on GitHub. The download is verified against its checksum before the installer opens.') : null) : t('The web app updates together with your server. The Android app installs its own updates from here.')}>
         <Row icon="info" iconTint="var(--grey)" title={t('Version')} value={'v' + __APP_VERSION__} />
         {MOBILE
-          ? android && <Row icon="download" iconTint="var(--green)"
+          ? selfUpdate && <Row icon="download" iconTint="var(--green)"
               title={updateInfo?.hasUpdate ? t('Update to openGym v{0}', updateInfo.latestVersion) : t('Check for updates')}
               subtitle={checking ? t('Checking…') : t('You have v{0}', __APP_VERSION__)}
               accessory="chevron"
