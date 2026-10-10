@@ -2,6 +2,22 @@ import { uid } from './format.js'
 import { defaultConfig, isBw, modeOf } from './history.js'
 import { isAssisted, isBodyweightEq, isCardio } from './exercises.js'
 import { sessionsFor } from './progression.js'
+export const ROUTINE_TYPE_NORMAL = 'normal'
+export const ROUTINE_TYPE_INTERVAL = 'interval'
+
+export function isIntervalRoutine(routine) {
+  return routine?.type === ROUTINE_TYPE_INTERVAL
+}
+
+export function intervalConfigOf(routine) {
+  const cfg = routine?.interval || {}
+
+  return {
+    rounds: Math.max(1, Number(cfg.rounds) || 4),
+    workSec: Math.max(1, Number(cfg.workSec) || 30),
+    restSec: Math.max(0, Number(cfg.restSec) || 15),
+  }
+}
 
 /**
  * Create a deep copy of a routine with a new id and a "(Copy)" suffix.

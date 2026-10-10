@@ -1663,4 +1663,12 @@ export default {
   'Teal': 'Turkuaz',
   'Yellow': 'Sarı',
   'Enter how long it took — at least 1 minute.': 'Ne kadar sürdüğünü gir — en az 1 dakika.',
+  "Normal": "Normal",
+  "Routine type": "Rutin türü",
+  "Interval Training": "Aralıklı antrenman",
+  "Interval configuration": "Aralık ayarları",
+  "Rounds": "Turlar",
+  "Work": "Çalışma",
+  "sec": "sn",
+
 }

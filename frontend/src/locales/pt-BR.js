@@ -1008,6 +1008,13 @@ export const PT_BR_OVERRIDES = {
   'Teal': 'Turquesa',
   'Yellow': 'Amarelo',
   'Enter how long it took — at least 1 minute.': 'Informe quanto tempo levou — pelo menos 1 minuto.',
+  'Normal': 'Normal',
+  'Routine type': 'Tipo de rotina',
+  'Interval Training': 'Treinamento intervalado',
+  'Interval configuration': 'Configuração de intervalos',
+  'Rounds': 'Rodadas',
+  'Work': 'Trabalho',
+  'sec': 's',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

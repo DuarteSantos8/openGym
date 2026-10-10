@@ -44,6 +44,7 @@ import { isFav, toggleFav, sortFavouritesFirst } from './lib/favourites.js'
 import { buildSessionEntries, buildPlannedEntry, builtOutOfProgression } from './lib/session-start.js'
 import { joinSessionNoProg } from './lib/session-noprog.js'
 import { buildCombinedEntries, deriveSessionName } from './lib/session-merge.js'
+import { intervalStateFromRoutine } from './lib/intervalFlow.js'
 import { workoutsOn, backfillStart, backfillEnd, completeBackfill, historyAsOf, sessionHistory } from './lib/backfill.js'
 import { moveWorkout, sameWorkout, startTimeOf, durationMinOf, setWorkoutDuration, rebuildPrHistory } from './lib/workout-date.js'
 import { editCompletedSession, editLeftEmpty, editedRecord, editChangesNothing } from './lib/session-edit.js'
@@ -2175,6 +2176,20 @@ export function startFlow(routineIds) {
 export function beginWorkout(routineIds, bw) {
   const st = S()
   const { entries, routineIds: rids, routines } = buildCombinedEntries(st, routineIds)
+  const interval = routines.length === 1
+    ? intervalStateFromRoutine(routines[0])
+    : null
+console.log('INTERVAL DEBUG JSON', JSON.stringify({
+  routine: routines[0],
+  interval,
+}, null, 2))
+
+console.log('BEGIN WORKOUT', {
+  routineIds,
+  routines,
+  interval,
+})
+
   update(s => {
     s.active = {
       id: uid(), d: todayISO(), start: Date.now(),
@@ -2183,6 +2198,7 @@ export function beginWorkout(routineIds, bw) {
       routineIds: rids,
       name: routines.length ? deriveSessionName(routines.map(r => r.name)) : t('Freestyle'),
       bw: bw || null, cur: 0, entries,
+      ...(interval ? { interval } : {}),
       // Snapshot the layout at start so the header ⋮ can change it for this session only —
       // changing the saved default (Settings → Workout view) mid-session leaves it alone.
       workoutView: st.workoutView || 'cards',
@@ -2629,6 +2645,10 @@ export function finishWorkout() {
   if (S().active?.editingWorkoutId) { saveWorkoutEdits(); return }
   const A = S().active
   if (!A) return
+  if (A.interval) {
+    doFinishWorkout()
+    return
+  }
   const done = setsDoneActive(A)
   const total = setUnitsTotal(A.entries)
   if (!done) { confirmSheet({ title: t('Nothing logged yet'), message: t('You haven’t checked off any sets. Finish the workout anyway?'), confirmText: t('Finish anyway'), onConfirm: doFinishWorkout }); return }

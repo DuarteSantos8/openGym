@@ -1663,4 +1663,12 @@ export default {
   'Teal': 'फ़िरोज़ी',
   'Yellow': 'पीला',
   'Enter how long it took — at least 1 minute.': 'बताएँ कि इसमें कितना समय लगा — कम से कम 1 मिनट।',
+  "Normal": "सामान्य",
+  "Routine type": "रूटीन का प्रकार",
+  "Interval Training": "इंटरवल ट्रेनिंग",
+  "Interval configuration": "इंटरवल कॉन्फ़िगरेशन",
+  "Rounds": "राउंड",
+  "Work": "कार्य",
+  "sec": "सेकंड",
+
 }

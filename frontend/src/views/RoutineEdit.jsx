@@ -11,9 +11,16 @@ import { Thumb } from '../components/Media.jsx'
 import { glyphPicker, exercisePicker, exConfigSheet, confirmSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { glyphOf } from '../lib/glyphs.js'
-import { Button, Row, SelectRow, Switch } from '../components/ui.jsx'
+import { Button, Row, SelectRow, Switch, Stepper } from '../components/ui.jsx'
 import SwipeToDelete from '../components/SwipeToDelete.jsx'
-import { copyRoutine, deleteRoutine, replaceSlotExercise } from '../lib/routines.js'
+import {
+  copyRoutine,
+  deleteRoutine,
+  replaceSlotExercise,
+  ROUTINE_TYPE_INTERVAL,
+  isIntervalRoutine,
+  intervalConfigOf,
+} from '../lib/routines.js'
 import { planPrintHTML, printPlan } from '../lib/plan-share.js'
 import { MOBILE, printHtml } from '../lib/mobile.js'
 import { speedUnitOf } from '../lib/speed.js'
@@ -408,6 +415,89 @@ export default function RoutineEdit() {
       <SelectRow icon="chartLine" title={t('Progression')} sheetTitle={t('Progression')}
         value={r.prog || 'linear'} onChange={v => update(s => { s.routines.find(x => x.id === id).prog = v })}
         options={POLICIES_FOR.reps.map(p => ({ value: p, label: t(POLICY_NAME[p]), subtitle: t(POLICY_DESC[p]) }))} />
+
+      <SelectRow
+        icon="timer"
+        title={t('Routine type')}
+        sheetTitle={t('Routine type')}
+        value={isIntervalRoutine(r) ? ROUTINE_TYPE_INTERVAL : 'normal'}
+        onChange={v => update(s => {
+          const routine = s.routines.find(x => x.id === id)
+
+          if (v === ROUTINE_TYPE_INTERVAL) {
+            routine.type = ROUTINE_TYPE_INTERVAL
+            routine.interval = intervalConfigOf(routine)
+          } else {
+            delete routine.type
+            delete routine.interval
+          }
+        })}
+        options={[
+          { value: 'normal', label: t('Normal') },
+          { value: ROUTINE_TYPE_INTERVAL, label: t('Interval Training') },
+        ]}
+      />
+
+      {isIntervalRoutine(r) && (() => {
+        const cfg = intervalConfigOf(r)
+
+        const setIntervalConfig = (key, value) => update(s => {
+          const routine = s.routines.find(x => x.id === id)
+          if (!routine) return
+          routine.interval = {
+            ...intervalConfigOf(routine),
+            [key]: value,
+          }
+
+        })
+
+        return (
+          <div className="card" style={{ marginTop: 8, marginBottom: 8 }}>
+            <div className="small dim" style={{ marginBottom: 10 }}>
+              {t('Interval configuration')}
+            </div>
+
+            <div className="row" style={{ justifyContent: 'space-between', gap: 12 }}>
+              <span>{t('Rounds')}</span>
+              <Stepper
+                value={cfg.rounds}
+                min={1}
+                max={100}
+                step={1}
+                decimal={false}
+                onChange={v => setIntervalConfig('rounds', v)}
+              />
+            </div>
+
+            <div className="row" style={{ justifyContent: 'space-between', gap: 12 }}>
+              <span>{t('Work')}</span>
+              <Stepper
+                value={cfg.workSec}
+                min={1}
+                max={3600}
+                step={5}
+                decimal={false}
+                unit={t('sec')}
+                onChange={v => setIntervalConfig('workSec', v)}
+              />
+            </div>
+
+            <div className="row" style={{ justifyContent: 'space-between', gap: 12 }}>
+              <span>{t('Rest')}</span>
+              <Stepper
+                value={cfg.restSec}
+                min={0}
+                max={3600}
+                step={5}
+                decimal={false}
+                unit={t('sec')}
+                onChange={v => setIntervalConfig('restSec', v)}
+              />
+            </div>
+          </div>
+        )
+      })()}
+
       {/* Two controls that read alike and are not (issue #294). Progression picks how this
           routine's own targets move, and "No automatic progression" keeps them where they are.
           This switch decides whether the routine's workouts count at all: a deload routine's

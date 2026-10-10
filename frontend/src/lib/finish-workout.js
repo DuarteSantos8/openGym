@@ -29,39 +29,32 @@ function finishedRow(set) {
 }
 
 export function buildCompletedWorkout(active, { end = Date.now(), prs = [], snapshotFor } = {}) {
+
+  const isInterval = active?.interval != null
+
   const entries = (active?.entries || []).map(entry => {
     const completed = {
       id: entry.id,
-      // Only what was logged — the live-session bookkeeping on a row stays behind (finishedRow).
       sets: (entry.sets || []).map(finishedRow),
       topW: bestWeightForEntry(entry) || null,
       target: entry.target || null,
-      // Which routine this entry came from, and whether it counts for progression. Written
-      // only when set/true, so a single-routine non-excluded session is byte-for-byte the
-      // shape it always was. Without this the whitelist drops both at finish.
       ...(entry.rid ? { rid: entry.rid } : {}),
       ...(entry.noProg === true ? { noProg: true } : {}),
-      // What the routine asked for when the session was built (session-start.js), next to the
-      // target the prescription moved — how the next session tells an edited plan (#275).
       ...(entry.planned ? { planned: entry.planned } : {}),
-      // The superset the exercise was done in, so the history can show the pairing. Without it
-      // the workout forgot at finish what it had been all session.
       ...(entry.sg ? { sg: entry.sg } : {}),
     }
     const snapshot = typeof snapshotFor === 'function' ? snapshotFor(entry) : null
     if (snapshot && typeof snapshot === 'object' && !Array.isArray(snapshot) && Object.keys(snapshot).length) {
       completed.muscleSnapshot = { ...snapshot }
     }
-    // What you typed about this exercise today, and whether you asked to see it again next
-    // time. Written only when there is something to keep, so an untouched entry is byte-for-byte
-    // the shape it always was.
     const note = (entry.note || '').trim()
     if (note) {
       completed.note = note
       if (entry.notePin) completed.notePin = true
     }
     return completed
-  }).filter(entry => entry.sets.some(hasCompletedWork))
+  }).filter(entry => isInterval || entry.sets.some(hasCompletedWork))
+
   // An exercise left without a single set drops out above, and its partner is then a superset
   // of one. cleanupSg clears the tag it no longer shares with a neighbour; the entries are this
   // function's own copies, so the running session is left alone.
@@ -84,8 +77,16 @@ export function buildCompletedWorkout(active, { end = Date.now(), prs = [], snap
     routineId: routineIds[0] ?? null,
     name: active.name,
     bw: active.bw,
+    ...(isInterval ? {
+      type: 'interval',
+      interval: {
+        rounds: active.interval.rounds,
+        workSec: active.interval.workSec,
+        restSec: active.interval.restSec,
+      },
+    } : {}),
     entries,
-    prs,
+prs,
     ...(allNoProg ? { excludeFromProgression: true } : {}),
     ...(sessionNote ? { note: sessionNote } : {}),
   }
