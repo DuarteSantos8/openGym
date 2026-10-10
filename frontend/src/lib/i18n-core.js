@@ -158,6 +158,7 @@ export function _detailsFailed(retryMs = 20000) {
 // Instructions for an exercise in the current language (English steps as fallback). `st` on the
 // exercise itself still wins over nothing: a custom exercise or an older plan file carries its own.
 export const instrFor = ex => {
+  if (ex?._ov?.st) return ex._ov.st
   const own = instr && instr[ex.id]
   if (own) return own
   if (!enInstr) askDetails()
@@ -165,12 +166,13 @@ export const instrFor = ex => {
 }
 
 // Whether the steps instrFor shows are in the current language rather than the English fallback.
-export const instrTranslated = ex => !!(instr && ex && instr[ex.id])
+export const instrTranslated = ex => !!(ex?._ov?.st || (instr && ex && instr[ex.id]))
 
 // A sentence or two on what the exercise is, in the current language when someone has written
 // it, otherwise in English. Empty for exercises nobody has described yet and for custom ones.
 export const descFor = ex => {
   if (!ex) return ''
+  if (Object.hasOwn(ex._ov || {}, 'desc')) return ex._ov.desc
   const own = descs && descs[ex.id]
   if (own) return own
   if (!enDescs) askDetails()
@@ -201,6 +203,11 @@ export function _setDetails(newEnInstr, newEnDescs, newDescs, forLang = lang) {
 // exercise the pack has no entry for keeps its English title, one exercise at a time.
 // User-created exercises have no entry in the pack and keep their exact chosen name.
 export const exerciseNameFor = ex => {
+  // Same reasoning as instrFor: an override to a built-in's name is the resolved, intentional
+  // value — show it as-is rather than letting the pack (or the loanword parenthetical logic
+  // below, which exists only to compare a pack translation against the pristine English name)
+  // second-guess it.
+  if (ex?._ov?.n) return ex._ov.n
   // A language that chose "English names only" sees the canonical catalogue title, not the
   // translation — and never the parenthetical either. Custom exercises keep their exact name.
   if (enOnly) return ex?.n || ''
