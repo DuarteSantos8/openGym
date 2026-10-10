@@ -188,6 +188,17 @@ const nextExerciseName = nextEntry
     <div className="small dim" style={{ marginTop: 4 }}>
       {completed + 1} / {total}
     </div>
+
+    <div className="small dim" style={{ marginTop: 6 }}>
+      {t('Exercise {0} of {1}', flow.exercise + 1, flow.exerciseCount)}
+    </div>
+
+    <div className="small dim">
+      {t(
+        '{0} remaining this round',
+        Math.max(0, flow.exerciseCount - flow.exercise - 1)
+      )}
+    </div>
   </div>
 )}
 
