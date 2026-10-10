@@ -278,7 +278,7 @@ Android asks you to allow installs from the browser the first time — that's st
 app outside the Play Store. Check the `.sha256` if you got the file from anywhere else.
 
 Both come out of CI: the `build:apk` job in [`.gitlab-ci.yml`](../.gitlab-ci.yml) runs
-`npm run build:mobile` and `./gradlew assembleRelease`, then `zipalign`s and signs the result
+`npm run build:mobile` and `./gradlew assembleSideloadRelease`, then `zipalign`s and signs the result
 with the release key. The job runs on every push to `main` too, so the newest unreleased
 build is always one click away (signed with the same key, installs over a release):
 `https://gitlab.com/DuarteSantos8/opengym/-/jobs/artifacts/main/browse?job=build:apk`
@@ -297,18 +297,20 @@ To build and sign your own:
 
 ```sh
 cd frontend && npm run build:mobile
-cd android && ./gradlew assembleRelease            # → app/build/outputs/apk/release/app-release-unsigned.apk
+cd android && ./gradlew assembleSideloadRelease    # → app/build/outputs/apk/sideload/release/app-sideload-release-unsigned.apk
 
 # one-time: create a keystore. KEEP IT — updates must be signed with the same key,
 # or Android refuses to install the new version over the old one.
 keytool -genkeypair -keystore my.keystore -alias opengym -keyalg RSA -validity 10950
 
 # align + sign (zipalign/apksigner ship with the Android SDK build-tools)
-zipalign -f -p 4 app-release-unsigned.apk aligned.apk
+zipalign -f -p 4 app-sideload-release-unsigned.apk aligned.apk
 apksigner sign --ks my.keystore --ks-key-alias opengym --out openGym.apk aligned.apk
 ```
 
 ### iPhone — what's actually possible
+
+> The App Store and Google Play builds, and how a release gets there: [APP_STORES.md](APP_STORES.md).
 
 Apple does not allow installing apps outside the App Store, so there is no `.ipa` download
 that would simply install. Your free options:

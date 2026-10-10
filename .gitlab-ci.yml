@@ -503,7 +503,8 @@ build:web-check:
 
 # The official signed APK. Signing keys live in protected CI variables, so they only
 # exist on protected refs (main and v* tags) — a fork's MR builds an unsigned APK and
-# cannot get at the key. Sideload-only by design: openGym is on no app store.
+# cannot get at the key. This is the sideloaded APK; the store builds are made on the release
+# machine (docs/APP_STORES.md).
 #
 # Needs three CI/CD variables (Settings → CI/CD → Variables), all *protected*:
 #   ANDROID_KEYSTORE_B64       file    base64 of opengym-release.keystore
@@ -538,8 +539,10 @@ build:apk:
       npm run build:mobile
       VER="$(node -p "require('./package.json').version")"
       cd android
-      ./gradlew --no-daemon assembleRelease
-      UNSIGNED=app/build/outputs/apk/release/app-release-unsigned.apk
+      # The sideload flavour: the APK that updates itself (the play flavour is the Google Play
+      # build, built and signed on the release machine as an .aab, docs/APP_STORES.md).
+      ./gradlew --no-daemon assembleSideloadRelease
+      UNSIGNED=app/build/outputs/apk/sideload/release/app-sideload-release-unsigned.apk
       BT="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
       if [ -n "${ANDROID_KEYSTORE_B64:-}" ]; then
         base64 -d "$ANDROID_KEYSTORE_B64" > "$CI_PROJECT_DIR/.ks.jks"

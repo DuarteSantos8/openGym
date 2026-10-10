@@ -112,7 +112,7 @@ jobs:
           # The web assets are put back on the release machine; leave the repo's out of the zip.
           rm -rf App.app/public/exercise-media
           mkdir -p ../../../Payload && cp -R App.app ../../../Payload/
-          cd ../../.. && zip -qry App-unsigned.ipa Payload
+          cd ../../.. && echo "$GITHUB_SHA" > ci-commit.txt && zip -qry App-unsigned.ipa Payload ci-commit.txt
           ls -la App-unsigned.ipa
       - uses: actions/upload-artifact@v6
         with:
