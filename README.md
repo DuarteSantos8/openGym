@@ -191,8 +191,9 @@ on the phone, with native reminders and a rest countdown in the notification sha
 - **Android:** download the signed APK from the [latest release](https://github.com/DuarteSantos8/openGym/releases/latest)
   or the [website](https://opengym.ch). Each build sits next to its `.sha256`, and
   the app checks for updates itself. openGym is deliberately not on the Play Store.
-- **iPhone:** Apple doesn't allow installs outside the App Store. Self-host and add the PWA to your
-  home screen from Safari, or build the native app onto your own device with Xcode.
+- **iPhone:** not in the App Store. Install the native app with AltStore, signed with your own
+  Apple ID — with an Apple Watch app for the next set and the rest, and Apple Health with a paid
+  developer account — or self-host and add the PWA to your home screen from Safari.
 
 Details and build instructions: [docs/MOBILE.md](docs/MOBILE.md).
 

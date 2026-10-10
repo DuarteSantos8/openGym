@@ -247,16 +247,17 @@
      away, stays quiet. The missed-workout nudge, when switched on, is scheduled the same way.</p>
 
   <h2 id="iphone">Use on iPhone</h2>
-  <p>Apple does not allow installing apps outside the App Store, so there is no iOS download —
-     that's a platform rule, not a choice we made. What works instead:</p>
+  <p>openGym is not in the App Store, and Apple allows no other store. What works instead:</p>
   <ul>
     <li><b>Self-host + home screen (recommended):</b> open your own openGym instance in
         Safari → <b>Share</b> → <b>Add to Home Screen</b>. You get a full-screen app with its
         own icon, passkey sign-in and sync — no expiry, no fees.</li>
-    <li><b>Build it onto your own iPhone:</b> with a Mac and Xcode 15+, the native Capacitor
-        app runs on your device with a free Apple ID (Apple expires the signature after
-        7 days; re-run from Xcode to renew — <b>AltStore</b> can automate that re-signing over
-        Wi-Fi). See <a href="https://github.com/DuarteSantos8/openGym/blob/main/docs/MOBILE.md" rel="noopener">docs/MOBILE.md</a>.</li>
+    <li><b>AltStore:</b> the native app, signed with your own Apple ID by
+        <a href="https://altstore.io" rel="noopener">AltStore</a> (or SideStore), which renews the
+        7-day signature of a free Apple ID for you. It comes with an <b>Apple Watch app</b> — the next
+        set, reps on the Digital Crown, the rest counting down — and, with a paid Apple Developer
+        account, writes workouts and weigh-ins to <b>Apple Health</b>. Or build it with Xcode on a Mac.
+        See <a href="https://github.com/DuarteSantos8/openGym/blob/main/docs/MOBILE.md#iphone--altstore" rel="noopener">docs/MOBILE.md</a>.</li>
     <li><b>Just looking?</b> Try the <a href="/demo/">in-browser demo</a> — the real app with
         example data, no account and nothing to install.</li>
   </ul>

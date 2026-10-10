@@ -614,11 +614,13 @@ build:apk:
 # in the next main/tag pipeline on that machine. Until then nothing here runs, so treat the
 # script as the plan it is: it has not been through a pipeline yet.
 #
-# What comes out is an *unsigned* .ipa (CODE_SIGNING_ALLOWED=NO): the thing AltStore /
-# Sideloadly users install with their own Apple ID, and the honest maximum without an Apple
-# Developer Program membership. TestFlight or a signed build would add: an exportOptions
-# plist, the distribution certificate + provisioning profile as protected file variables,
-# and `xcodebuild -exportArchive` — none of which exists yet.
+# The work is frontend/scripts/build-ipa.sh, the same script a maintainer runs on a Mac by hand.
+# What comes out is an .ipa signed ad hoc with the entitlements the app asks for (HealthKit) and
+# the Apple Watch app inside, for AltStore / SideStore / Sideloadly users to re-sign with their
+# own Apple ID, and altstore.json, the AltStore source that lists it. On a tag all three go to the
+# generic package registry under opengym-ios/<version>/; the website deploy puts altstore.json at
+# opengym.ch/altstore.json (website/README.md). TestFlight or an App Store build would need an
+# Apple Developer Program membership, its certificate and profile — none of that exists.
 build:ios:
   stage: package
   tags:
@@ -636,25 +638,18 @@ build:ios:
       set -eu
       cd frontend
       npm ci
-      # `cap sync` also runs `pod install` for ios/ on macOS.
-      npm run build:mobile
       VER="$(node -p "require('./package.json').version")"
-      # Build number = the Android versionCode, so both apps count the same way.
-      BUILD="$(sed -n 's/^ *versionCode \([0-9]*\).*/\1/p' android/app/build.gradle | sed -n 1p)"
-      [ -n "$BUILD" ] || { echo "could not read versionCode from android/app/build.gradle" >&2; exit 1; }
-      cd ios/App
-      xcodebuild -workspace App.xcworkspace -scheme App -configuration Release         -destination 'generic/platform=iOS'         -archivePath "$PWD/build/App.xcarchive"         MARKETING_VERSION="$VER" CURRENT_PROJECT_VERSION="$BUILD"         CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""         archive | tail -40
-      # An .ipa is a zip with the .app under Payload/.
-      rm -rf Payload && mkdir Payload
-      cp -R build/App.xcarchive/Products/Applications/App.app Payload/
-      zip -qr "$CI_PROJECT_DIR/openGym-$VER-unsigned.ipa" Payload
+      # `cap sync` (inside build:mobile) also runs `pod install` for ios/ on macOS.
+      scripts/build-ipa.sh --out "$CI_PROJECT_DIR" \
+        --url "$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/opengym-ios/%v/%f"
       cd "$CI_PROJECT_DIR"
-      sha256sum "openGym-$VER-unsigned.ipa" > "openGym-$VER-unsigned.ipa.sha256"
-      cat "openGym-$VER-unsigned.ipa.sha256"
       echo "IPA_VERSION=$VER" > ipa.env
       if [ -n "${CI_COMMIT_TAG:-}" ]; then
-        for f in "openGym-$VER-unsigned.ipa" "openGym-$VER-unsigned.ipa.sha256"; do
-          curl --fail --silent --show-error             --header "JOB-TOKEN: $CI_JOB_TOKEN"             --upload-file "$f"             "$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/opengym-ios/$VER/$f"
+        for f in "openGym-$VER.ipa" "openGym-$VER.ipa.sha256" altstore.json; do
+          curl --fail --silent --show-error \
+            --header "JOB-TOKEN: $CI_JOB_TOKEN" \
+            --upload-file "$f" \
+            "$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/opengym-ios/$VER/$f"
           echo "uploaded $f to the generic package registry"
         done
       fi
@@ -663,6 +658,7 @@ build:ios:
     paths:
       - "openGym-*.ipa"
       - "openGym-*.ipa.sha256"
+      - altstore.json
     reports:
       dotenv: ipa.env
     expire_in: 30 days
@@ -877,6 +873,10 @@ release:
 
       Both images are linux/amd64 + linux/arm64. Android: \`openGym-$APK_VERSION.apk\`, SHA-256 \`$APK_SHA256\` — check it with \`sha256sum -c openGym-$APK_VERSION.apk.sha256\`. Built from $CI_COMMIT_SHA.
       EOF
+      # The iPhone app exists only where a Mac runner built it (build:ios).
+      if [ -n "${IOS_RUNNER_TAG:-}" ]; then
+        printf '\niPhone: add the AltStore source https://opengym.ch/altstore.json in AltStore (or SideStore), or take `openGym-%s.ipa` from the package registry (opengym-ios/%s/) for Sideloadly. See docs/MOBILE.md.\n' "$SEMVER" "$SEMVER" >> release-notes.md
+      fi
       cat release-notes.md
   release:
     tag_name: $CI_COMMIT_TAG

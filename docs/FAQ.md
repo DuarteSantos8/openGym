@@ -20,9 +20,11 @@ No, there are three ways to use it:
 
 ### Is there an iPhone app?
 
-Not in the App Store, and Apple doesn't allow installing apps from anywhere else. On an iPhone you can
-self-host and add openGym to your home screen from Safari (it's a full PWA that works offline), or
-build the native app onto your own phone with Xcode. Both are described in [MOBILE.md](MOBILE.md).
+Not in the App Store. The native app installs with [AltStore](https://altstore.io) (or SideStore,
+Sideloadly), signed with your own Apple ID, and comes with an Apple Watch app; with a paid Apple
+Developer account it also writes your workouts to Apple Health. You can also self-host and add
+openGym to your home screen from Safari (it's a full PWA that works offline), or build the app onto
+your phone with Xcode. All of it is described in [MOBILE.md](MOBILE.md#iphone--altstore).
 An App Store build is on the [roadmap](../ROADMAP.md).
 
 ### Why isn't it on the Play Store?
