@@ -9,5 +9,6 @@ class OpenGymViewController: CAPBridgeViewController {
     override func capacitorDidLoad() {
         bridge?.registerPluginInstance(PrintPlugin())
         bridge?.registerPluginInstance(AppleHealthPlugin())
+        bridge?.registerPluginInstance(WatchPlugin())
     }
 }

@@ -8,6 +8,7 @@ import { deviceId } from '../lib/push.js'
 import { MOBILE } from '../lib/mobile.js'
 import { armRestAlert, bindNativeRest, disarmRestAlert, holdRestAlert } from '../lib/rest-alert.js'
 import { useStore } from './useStore.js'
+import { initWatchSync } from '../lib/watch-sync.js'
 import { REST_MAX } from '../lib/duration.js'
 import { accentValue } from '../lib/accent.js'
 
@@ -524,6 +525,9 @@ restoreWork()
 // Buttons on the rest notification (pause, ±15s, skip) change the countdown in the
 // service first, then mirror that into the in-app timer. skip ends it. Seconds round up, as the
 // notification's clock does, so a pause in the last half second still holds a second here.
+// The Apple Watch app (iOS): the snapshot it shows, and its skip, ±15 s and pause on the rest.
+initWatchSync({ store: useStore, ui: useUI })
+
 bindNativeRest(ev => {
   if (!ev) return
   if (ev.type === 'skip') { useUI.getState().stopRest(); return }
