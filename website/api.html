@@ -29,7 +29,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="styles.css?v=25">
+<link rel="stylesheet" href="styles.css?v=24">
 <script>document.documentElement.className += ' js'</script>
 <!-- Umami web analytics for opengym.ch (self-hosted, cookieless). -->
 <script defer src="https://stats.duarte-santos.ch/script.js" data-website-id="db36019e-50f4-453c-9c56-d0588aefe233"></script>
@@ -212,6 +212,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <p class="side-label">On this page</p>
   <a class="side-link" href="#overview"><b>Overview</b><span>Auth model, sessions, conventions</span></a>
+  <a class="side-link" href="#social"><b>Social</b><span>Friends &amp; progress</span></a>
   <a class="side-link" href="#meta"><b>Meta</b><span>Health &amp; public config</span></a>
   <a class="side-link" href="#auth"><b>Auth</b><span>Passkeys &amp; sessions</span></a>
   <a class="side-link" href="#pairing"><b>Pairing</b><span>Connect the mobile app</span></a>
@@ -245,7 +246,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.4.0</span>
-    <span>69 endpoints</span>
+    <span>75 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -290,6 +291,249 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <button data-xall="1">Expand all</button>
     <button data-xall="0">Collapse all</button>
   </div>
+
+<section class="api-sec" id="social">
+  <h2>Social</h2>
+  <p class="sub">Same-instance friendships and accepted-friend training summaries</p>
+  <div class="eps">
+
+<details class="ep" id="op-undefined">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/social</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Friends, requests, discovery and blocks</span>
+  </summary>
+  <div class="ep-body">
+<p>Discovery and pending requests contain only id and name. Accepted friends additionally expose weekly workout count, weekly streak, last workout date and number of exercise records. Plans, photos, notes, body weight and individual record values are excluded. Disabled users and either direction of a block are excluded from discovery and progress.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Social dashboard<span class="r-sig"><a href="#schema-SocialDashboard">SocialDashboard</a></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">Not signed in</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-undefined">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/social/request</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Send a friend request</span>
+  </summary>
+  <div class="ep-body">
+<p>Targets an enabled account on this server. Self requests are rejected. Either account may have at most 100 pending or accepted connections. Existing requests are not accepted automatically.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body</p><p class="p-desc"><a href="#schema-SocialTarget">SocialTarget</a></p>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Connection state saved<span class="r-sig">{ ok: always true }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">Invalid target or self request</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">Not signed in</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Cross-origin request or blocked connection</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">Account or incoming request not found</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">Existing connection or connection limit reached</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-undefined">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/social/accept</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Accept an incoming friend request</span>
+  </summary>
+  <div class="ep-body">
+<p>Only the recipient may accept. The sender must remain enabled and neither account may block the other. Acceptance enables the derived progress summary in both directions.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body</p><p class="p-desc"><a href="#schema-SocialTarget">SocialTarget</a></p>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Connection state saved<span class="r-sig">{ ok: always true }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">Invalid target or self request</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">Not signed in</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Cross-origin request or blocked connection</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">Account or incoming request not found</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">Existing connection or connection limit reached</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-undefined">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/social/remove</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Decline, cancel or remove a connection</span>
+  </summary>
+  <div class="ep-body">
+<p>Removes the connection in either direction and immediately revokes progress access. Also used to decline incoming requests and cancel outgoing requests.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body</p><p class="p-desc"><a href="#schema-SocialTarget">SocialTarget</a></p>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Connection state saved<span class="r-sig">{ ok: always true }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">Invalid target or self request</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">Not signed in</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Cross-origin request or blocked connection</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">Account or incoming request not found</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">Existing connection or connection limit reached</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-undefined">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/social/block</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Block a profile</span>
+  </summary>
+  <div class="ep-body">
+<p>Removes the connection and prevents discovery and new requests in both directions. Only the blocker sees the blocked profile in their block list.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body</p><p class="p-desc"><a href="#schema-SocialTarget">SocialTarget</a></p>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Connection state saved<span class="r-sig">{ ok: always true }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">Invalid target or self request</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">Not signed in</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Cross-origin request or blocked connection</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">Account or incoming request not found</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">Existing connection or connection limit reached</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-undefined">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/social/unblock</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Unblock a profile</span>
+  </summary>
+  <div class="ep-body">
+<p>Removes only the caller’s block. Does not restore a connection; a new request and acceptance are required. A block in the opposite direction continues to apply.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body</p><p class="p-desc"><a href="#schema-SocialTarget">SocialTarget</a></p>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Connection state saved<span class="r-sig">{ ok: always true }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">Invalid target or self request</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">Not signed in</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Cross-origin request or blocked connection</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">Account or incoming request not found</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">Existing connection or connection limit reached</span>
+  </div>
+    </div>
+  </div>
+</details>
+  </div>
+</section>
 
 <section class="api-sec" id="meta">
   <h2>Meta</h2>
@@ -3166,6 +3410,128 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
        grows it over time.</p>
     <div class="eps">
 
+<details class="ep sch" id="schema-SocialTarget">
+  <summary>
+    <span class="sch-name"><code>SocialTarget</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum"></span>
+  </summary>
+  <div class="ep-body">
+
+<div class="ptab">
+  <div class="prow">
+    <span class="p-name">userId<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Account id on this instance</span>
+  </div>
+</div>
+  </div>
+</details>
+
+<details class="ep sch" id="schema-SocialPerson">
+  <summary>
+    <span class="sch-name"><code>SocialPerson</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum"></span>
+  </summary>
+  <div class="ep-body">
+
+<div class="ptab">
+  <div class="prow">
+    <span class="p-name">id<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">name<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+  </div>
+</details>
+
+<details class="ep sch" id="schema-SocialFriend">
+  <summary>
+    <span class="sch-name"><code>SocialFriend</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum"></span>
+  </summary>
+  <div class="ep-body">
+
+<div class="ptab">
+  <div class="prow">
+    <span class="p-name">id<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">name<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">thisWeek<em class="p-req" title="required">required</em></span>
+    <span class="p-type">integer <span class="p-hint">(0&ndash;)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">weekStreak<em class="p-req" title="required">required</em></span>
+    <span class="p-type">integer <span class="p-hint">(0&ndash;)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">lastWorkout<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string | null <span class="p-hint">(date)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">recordCount<em class="p-req" title="required">required</em></span>
+    <span class="p-type">integer <span class="p-hint">(0&ndash;)</span></span>
+    <span class="p-desc">Exercises with an eligible personal record; completed work only</span>
+  </div>
+</div>
+  </div>
+</details>
+
+<details class="ep sch" id="schema-SocialDashboard">
+  <summary>
+    <span class="sch-name"><code>SocialDashboard</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum"></span>
+  </summary>
+  <div class="ep-body">
+
+<div class="ptab">
+  <div class="prow">
+    <span class="p-name">friends<em class="p-req" title="required">required</em></span>
+    <span class="p-type"><a href="#schema-SocialFriend">SocialFriend</a>[]</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">incoming<em class="p-req" title="required">required</em></span>
+    <span class="p-type"><a href="#schema-SocialPerson">SocialPerson</a>[]</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">outgoing<em class="p-req" title="required">required</em></span>
+    <span class="p-type"><a href="#schema-SocialPerson">SocialPerson</a>[]</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">suggestions<em class="p-req" title="required">required</em></span>
+    <span class="p-type"><a href="#schema-SocialPerson">SocialPerson</a>[]</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">blocks<em class="p-req" title="required">required</em></span>
+    <span class="p-type"><a href="#schema-SocialPerson">SocialPerson</a>[]</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+  </div>
+</details>
+
 <details class="ep sch" id="schema-Error">
   <summary>
     <span class="sch-name"><code>Error</code></span>
@@ -5126,7 +5492,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
 </div></footer>
 
-<script src="site.js?v=25" defer></script>
+<script src="site.js?v=24" defer></script>
 <script>
 /* Jumping to an anchor inside a collapsed card opens the card and re-aligns, since
    the browser scrolled to where the target was while it was still collapsed. */

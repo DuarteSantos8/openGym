@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Profile replaces the Stats bottom-tab label, retaining existing progress charts and `/stats` links
+- Social inside Profile supports same-instance requests, acceptance, removal and blocks
+- Accepted friends see weekly workouts, streak, last workout and exercise-record count; plans, notes, photos and body weight remain private
+
 ## v1.4.0 (2026-10-09)
 
 The biggest update openGym has had: a new exercise database with 5,632 exercises and new

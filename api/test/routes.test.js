@@ -9,6 +9,123 @@ import { tempData } from './helpers.mjs';
 tempData();
 const cfg = await import('../coach/config.js');
 const { coachRoutes } = await import('../coach/routes.js');
+const { socialRoutes } = await import('../social/routes.js');
+const { socialSummary } = await import('../social/summary.js');
+
+function socialHarness() {
+  const people = [
+    { id: 'alice', name: 'Alice', pw: 'private' }, { id: 'bob', name: 'Bob', avatar: 'private' },
+    { id: 'carol', name: 'Carol' }, { id: 'disabled', name: 'Disabled', disabled: true }
+  ];
+  let data = { connections: [], blocks: [] };
+  const routes = socialRoutes({
+    json: (res, status, body) => { res.status = status; res.body = body; },
+    readBody: async req => req.body,
+    readSession: req => people.find(p => p.id === req.uid && !p.disabled),
+    users: () => people,
+    readState: () => ({ bodyweight: [{ d: '2026-10-10', w: 75 }], notes: 'private', routines: [{ name: 'private' }],
+      workouts: [{ d: '2026-10-09', note: 'private', entries: [{ id: 'strength', sets: [{ done: true, w: 50, r: 8 }] }] }] }),
+    load: () => JSON.parse(JSON.stringify(data)),
+    save: value => { data = JSON.parse(JSON.stringify(value)); },
+    userNow: () => ({ date: '2026-10-10' })
+  });
+  return {
+    people, routes,
+    seed: value => { data = value; },
+    call: async (key, uid, body = {}) => { const res = {}; await routes[key]({ uid, body }, res); return res; }
+  };
+}
+
+test('Social discloses only identity before acceptance and the four summary fields afterwards', async () => {
+  const h = socialHarness();
+  assert.equal((await h.call('GET /api/social')).status, 401);
+  assert.equal((await h.call('GET /api/social', 'disabled')).status, 401);
+  const before = await h.call('GET /api/social', 'alice');
+  assert.deepEqual(before.body.suggestions, [{ id: 'bob', name: 'Bob' }, { id: 'carol', name: 'Carol' }]);
+  assert.equal((await h.call('POST /api/social/request', 'alice', { userId: 'bob' })).status, 200);
+  assert.deepEqual((await h.call('GET /api/social', 'bob')).body.incoming, [{ id: 'alice', name: 'Alice' }]);
+  assert.deepEqual((await h.call('GET /api/social', 'alice')).body.friends, []);
+  assert.equal((await h.call('POST /api/social/accept', 'carol', { userId: 'alice' })).status, 404);
+  assert.equal((await h.call('POST /api/social/accept', 'alice', { userId: 'bob' })).status, 404);
+  assert.equal((await h.call('POST /api/social/accept', 'bob', { userId: 'alice' })).status, 200);
+  assert.deepEqual((await h.call('GET /api/social', 'alice')).body.friends, [{
+    id: 'bob', name: 'Bob', weekStreak: 1, thisWeek: 1, lastWorkout: '2026-10-09', recordCount: 1
+  }]);
+  assert.deepEqual(Object.keys(h.routes).sort(), [
+    'GET /api/social', 'POST /api/social/accept', 'POST /api/social/block',
+    'POST /api/social/remove', 'POST /api/social/request', 'POST /api/social/unblock'
+  ]);
+});
+
+test('Social removal revokes progress and requests can be declined or cancelled', async () => {
+  const h = socialHarness();
+  await h.call('POST /api/social/request', 'alice', { userId: 'bob' });
+  await h.call('POST /api/social/remove', 'bob', { userId: 'alice' });
+  assert.deepEqual((await h.call('GET /api/social', 'alice')).body.outgoing, []);
+  await h.call('POST /api/social/request', 'alice', { userId: 'bob' });
+  await h.call('POST /api/social/remove', 'alice', { userId: 'bob' });
+  assert.deepEqual((await h.call('GET /api/social', 'bob')).body.incoming, []);
+  await h.call('POST /api/social/request', 'alice', { userId: 'bob' });
+  await h.call('POST /api/social/accept', 'bob', { userId: 'alice' });
+  await h.call('POST /api/social/remove', 'alice', { userId: 'bob' });
+  assert.deepEqual((await h.call('GET /api/social', 'alice')).body.friends, []);
+  assert.deepEqual((await h.call('GET /api/social', 'bob')).body.friends, []);
+});
+
+test('Social blocks revoke both directions and unblocking never restores a friendship', async () => {
+  const h = socialHarness();
+  await h.call('POST /api/social/request', 'alice', { userId: 'bob' });
+  await h.call('POST /api/social/accept', 'bob', { userId: 'alice' });
+  await h.call('POST /api/social/block', 'alice', { userId: 'bob' });
+  await h.call('POST /api/social/block', 'bob', { userId: 'alice' });
+  for (const [uid, target] of [['alice', 'bob'], ['bob', 'alice']]) {
+    const r = await h.call('GET /api/social', uid);
+    assert.deepEqual(r.body.friends, []);
+    assert.ok(!r.body.suggestions.some(p => p.id === target));
+    assert.equal((await h.call('POST /api/social/request', uid, { userId: target })).status, 403);
+  }
+  await h.call('POST /api/social/unblock', 'alice', { userId: 'bob' });
+  assert.equal((await h.call('POST /api/social/request', 'alice', { userId: 'bob' })).status, 403);
+  await h.call('POST /api/social/unblock', 'bob', { userId: 'alice' });
+  assert.deepEqual((await h.call('GET /api/social', 'alice')).body.friends, []);
+  assert.equal((await h.call('POST /api/social/request', 'alice', { userId: 'bob' })).status, 200);
+});
+
+test('Social rejects self, disabled, missing and duplicate targets and enforces both account limits', async () => {
+  const h = socialHarness();
+  for (const [target, status] of [['alice', 400], ['disabled', 404], ['missing', 404]]) {
+    assert.equal((await h.call('POST /api/social/request', 'alice', { userId: target })).status, status);
+  }
+  await h.call('POST /api/social/request', 'alice', { userId: 'bob' });
+  assert.equal((await h.call('POST /api/social/request', 'alice', { userId: 'bob' })).status, 409);
+  assert.equal((await h.call('POST /api/social/request', 'bob', { userId: 'alice' })).status, 409);
+  h.people.find(p => p.id === 'bob').disabled = true;
+  assert.equal((await h.call('POST /api/social/accept', 'alice', { userId: 'bob' })).status, 404);
+  for (const capped of ['alice', 'carol']) {
+    h.seed({ connections: Array.from({ length: 100 }, (_, i) => ({ from: capped, to: `person-${i}`, status: 'pending' })), blocks: [] });
+    assert.equal((await h.call('POST /api/social/request', 'alice', { userId: 'carol' })).status, 409);
+  }
+});
+
+test('Social summaries ignore unfinished/warm-up work, count repeated exercises once and share no raw values', () => {
+  const state = { notes: 'private', bodyweight: [{ d: '2026-10-09', w: 80 }], workouts: [
+    { d: '2026-10-01', entries: [{ id: 'strength', sets: [{ done: true, w: 40, r: 8 }] }] },
+    { d: '2026-10-09', entries: [
+      { id: 'strength', sets: [{ done: true, w: 45, r: 8 }] },
+      { id: 'strength', sets: [{ done: true, w: 50, r: 8 }] },
+      { id: 'warmup', topW: 100, sets: [{ done: true, warmup: true, w: 100, r: 8 }] },
+      { id: 'unfinished', sets: [{ done: false, w: 100, r: 8 }] },
+      { id: 'limbs', sets: [{ sides: { L: { done: true, w: 10, r: 8 }, R: { done: false, w: 20, r: 8 } } }] },
+      { id: 'cardio', target: { mode: 'cardio' }, sets: [{ done: true, min: 20, speed: 8 }] },
+      { id: 'hold', target: { mode: 'time' }, sets: [{ done: true, sec: 30 }] },
+      null
+    ] },
+    { d: '2026-11-01', entries: [{ id: 'future', topW: 50 }] },
+    { d: '2026-02-31', entries: [] }, null
+  ] };
+  assert.deepEqual(socialSummary(state, '2026-10-10'), { weekStreak: 2, thisWeek: 1, lastWorkout: '2026-10-09', recordCount: 4 });
+  assert.deepEqual(socialSummary(null, '2026-10-10'), { weekStreak: 0, thisWeek: 0, lastWorkout: null, recordCount: 0 });
+});
 
 // Every test starts from an empty coach.json: reset() only forgets the cache, and save() merges
 // over what is on disk, so a key filed by the previous test would otherwise still be there.

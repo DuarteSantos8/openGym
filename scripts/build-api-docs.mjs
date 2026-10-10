@@ -122,6 +122,7 @@ function ptab (rows) {
 /* ------------------------------------------------------------ endpoint cards */
 
 const TAGS = {
+  social: { title: 'Social', side: 'Friends &amp; progress' },
   meta: { title: 'Meta', side: 'Health &amp; public config' },
   auth: { title: 'Auth', side: 'Passkeys &amp; sessions' },
   pairing: { title: 'Pairing', side: 'Connect the mobile app' },
