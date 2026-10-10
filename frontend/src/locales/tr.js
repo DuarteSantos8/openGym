@@ -1475,7 +1475,7 @@ export default {
   'Planned sessions start from': 'Planlı seansların çıkış noktası',
   'The routine’s sets and reps. Your history decides the weight.': 'Rutinin setleri ve tekrarları. Ağırlığı geçmişin belirler.',
   'Your last session': 'Son seansın',
-  'The reps you logged last time in that routine, carried over.': 'O rutinde geçen sefer kaydettiğin tekrarlar aynen aktarılır.',
+  'The reps you logged last time in that routine, carried over. With progression off, the weight too.': 'O rutinde geçen sefer kaydettiğin tekrarlar aktarılır. İlerleme kapalıysa ağırlık da.',
   'Plan changed, so starting from your new target.': 'Plan değişti, bu yüzden yeni hedefinden başlıyorsun.',
   'First time in this routine, so starting from its own target.': 'Bu rutinde ilk kez, bu yüzden rutinin kendi hedefinden başlıyorsun.',
   'No weight logged last time. Enter what you lift and progression takes it from there.': 'Geçen sefer ağırlık kaydedilmedi. Kaldırdığın ağırlığı gir, ilerleme oradan devralsın.',

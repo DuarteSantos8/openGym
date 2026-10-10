@@ -1475,7 +1475,7 @@ export default {
   'Planned sessions start from': 'A tervezett edzések kiindulópontja',
   'The routine’s sets and reps. Your history decides the weight.': 'A rutin sorozatai és ismétlései. A súlyt az előzményeid döntik el.',
   'Your last session': 'Az utolsó edzésed',
-  'The reps you logged last time in that routine, carried over.': 'Az abban a rutinban legutóbb rögzített ismétlések kerülnek át.',
+  'The reps you logged last time in that routine, carried over. With progression off, the weight too.': 'A rutin legutóbbi ismétlései átkerülnek. Kikapcsolt haladásnál a súly is.',
   'Plan changed, so starting from your new target.': 'A terv megváltozott, így az új célodtól indulsz.',
   'First time in this routine, so starting from its own target.': 'Először ebben a rutinban, így a saját céljától indulsz.',
   'No weight logged last time. Enter what you lift and progression takes it from there.': 'Legutóbb nem volt súly rögzítve. Add meg, mennyit emelsz, és onnan a progresszió viszi tovább.',

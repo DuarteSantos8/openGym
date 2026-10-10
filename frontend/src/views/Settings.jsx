@@ -527,13 +527,14 @@ export default function Settings({ page = null, find = null, via = null }) {
         <Section title={t('Sessions and timed sets')}>
           {/* Whose reps a planned session opens with (lib/session-start.js). The plan's by default:
               the routine is what you said you would do, and history and progression decide the
-              weight. The other choice is the old behaviour, reps carried over from last time.
-              Absent (an older profile) reads as the plan. */}
+              weight. The other choice is the old behaviour, reps carried over from last time, and
+              the weight too for an exercise with progression off. Absent (an older profile) reads
+              as the plan. */}
           <SelectRow icon="clipboard" iconTint="var(--green)" title={t('Planned sessions start from')}
             value={S.startFrom === 'last' ? 'last' : 'plan'} onChange={v => update(s => { s.startFrom = v })}
             options={[
               { value: 'plan', label: t('Your plan'), subtitle: t('The routine’s sets and reps. Your history decides the weight.') },
-              { value: 'last', label: t('Your last session'), subtitle: t('The reps you logged last time in that routine, carried over.') },
+              { value: 'last', label: t('Your last session'), subtitle: t('The reps you logged last time in that routine, carried over. With progression off, the weight too.') },
             ]} />
           <Row icon="stopwatch" iconTint="var(--orange)" title={t('Keep timing after target')}
             subtitle={t('Timed sets continue up to 15 extra minutes. Tap Done to log the actual duration.')}>

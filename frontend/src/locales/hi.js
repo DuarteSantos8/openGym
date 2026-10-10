@@ -1475,7 +1475,7 @@ export default {
   'Planned sessions start from': 'प्लान किए गए सेशन की शुरुआत',
   'The routine’s sets and reps. Your history decides the weight.': 'रूटीन के सेट और रेप्स। वज़न आपका इतिहास तय करता है।',
   'Your last session': 'आपका पिछला सेशन',
-  'The reps you logged last time in that routine, carried over.': 'उस रूटीन में पिछली बार दर्ज किए गए रेप्स आगे ले जाए जाते हैं।',
+  'The reps you logged last time in that routine, carried over. With progression off, the weight too.': 'उस रूटीन में पिछली बार दर्ज किए गए रेप्स आगे लाए जाते हैं। प्रगति बंद हो तो वज़न भी।',
   'Plan changed, so starting from your new target.': 'प्लान बदला, इसलिए आपके नए लक्ष्य से शुरुआत।',
   'First time in this routine, so starting from its own target.': 'इस रूटीन में पहली बार, इसलिए इसके अपने लक्ष्य से शुरुआत।',
   'No weight logged last time. Enter what you lift and progression takes it from there.': 'पिछली बार कोई वज़न दर्ज नहीं हुआ। जितना उठाते हैं उतना दर्ज करें, प्रगति वहीं से आगे बढ़ेगी।',

@@ -1444,7 +1444,7 @@ export default {
   'Planned sessions start from': 'Основа запланированных тренировок',
   'The routine’s sets and reps. Your history decides the weight.': 'Подходы и повторения из программы. Вес определяет ваша история.',
   'Your last session': 'Ваша последняя тренировка',
-  'The reps you logged last time in that routine, carried over.': 'Повторения, записанные в прошлый раз в этой программе, переносятся.',
+  'The reps you logged last time in that routine, carried over. With progression off, the weight too.': 'Повторения с прошлого раза в этой программе переносятся. При выключенной прогрессии — и вес.',
   'Plan changed, so starting from your new target.': 'План изменён, поэтому начинаем с новой цели.',
   'First time in this routine, so starting from its own target.': 'Впервые в этой программе, поэтому начинаем с её собственной цели.',
   'No weight logged last time. Enter what you lift and progression takes it from there.': 'В прошлый раз вес не был записан. Укажите, с каким весом работаете, и дальше прогрессия подхватит.',

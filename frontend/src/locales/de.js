@@ -1495,7 +1495,7 @@ export default {
   'Planned sessions start from': 'Ausgangspunkt geplanter Einheiten',
   'The routine’s sets and reps. Your history decides the weight.': 'Die Sätze und Wiederholungen der Routine. Das Gewicht ergibt sich aus deinem Verlauf.',
   'Your last session': 'Deine letzte Einheit',
-  'The reps you logged last time in that routine, carried over.': 'Die Wiederholungen, die du zuletzt in dieser Routine eingetragen hast, werden übernommen.',
+  'The reps you logged last time in that routine, carried over. With progression off, the weight too.': 'Die Wiederholungen der letzten Einheit dieser Routine werden übernommen. Bei ausgeschalteter Progression auch das Gewicht.',
   'Plan changed, so starting from your new target.': 'Plan geändert, also geht es mit deiner neuen Vorgabe los.',
   'First time in this routine, so starting from its own target.': 'Zum ersten Mal in dieser Routine, also geht es mit ihrer eigenen Vorgabe los.',
   'No weight logged last time. Enter what you lift and progression takes it from there.': 'Letztes Mal kein Gewicht eingetragen. Trag ein, was du bewegst, dann übernimmt die Progression.',
