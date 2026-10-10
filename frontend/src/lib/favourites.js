@@ -27,3 +27,24 @@ export function sortFavouritesFirst(list, S) {
   const set = new Set(fav)
   return [...list.filter(e => set.has(e.id)), ...list.filter(e => !set.has(e.id))]
 }
+
+/**
+ * A search's results the way a person scans them: favourites, then the exercises they have
+ * already logged or planned (`usage`: id -> count, the picker's "Chosen"), then the rest. Each
+ * group keeps the search's own order. Someone who imported years of history types "press" and
+ * wants their press on top, not the best name match among 5,000.
+ */
+export function sortYoursFirst(list, S, usage) {
+  const fav = new Set(favIds(S))
+  const group = e => (fav.has(e.id) ? 0 : usage?.[e.id] ? 1 : 2)
+  if (!fav.size && !list.some(e => usage?.[e.id])) return list
+  return [0, 1, 2].flatMap(g => list.filter(e => group(e) === g))
+}
+
+/** How often each exercise sits in a routine or a logged workout: id -> count. */
+export function usageOf(S) {
+  const u = {}
+  for (const r of S?.routines || []) for (const e of r.ex || []) u[e.id] = (u[e.id] || 0) + 1
+  for (const w of S?.workouts || []) for (const e of w.entries || []) u[e.id] = (u[e.id] || 0) + 1
+  return u
+}

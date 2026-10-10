@@ -48,7 +48,35 @@ const VERSION_SEGMENT = /\/v\d+(?:(?:alpha|beta)\d*)?(?=\/|$)/i;
 export function endpointUrl(base, path) {
   const basePath = base.replace(/^[a-z][a-z0-9+.-]*:\/\/[^/]*/i, '');
   if (!VERSION_SEGMENT.test(basePath)) return base + path;
-  return base + path.replace(new RegExp('^' + VERSION_SEGMENT.source, 'i'), '');
+  return base + path.replace(LEADING_VERSION, '');
+}
+const LEADING_VERSION = new RegExp('^' + VERSION_SEGMENT.source, 'i');
+
+// The third shape (#508): a prefix but no version at all, like Open WebUI's /openai mount, which
+// answers {base}/chat/completions and 404s anything with /v1 in it. A spec that opts in
+// (`versionlessFallback`) tries the other form once on a 404, and the base that answered
+// without the version is remembered so the next request goes there first. A bare host and every
+// base that works today still gets exactly the request it got before.
+const versionlessBases = new Set();
+function candidateUrls(spec, base, path) {
+  const url = endpointUrl(base, path);
+  if (!spec.versionlessFallback) return [url];
+  const bare = base + path.replace(LEADING_VERSION, '');
+  if (bare === url) return [url];
+  return versionlessBases.has(base) ? [bare, url] : [url, bare];
+}
+
+/** `send(url)` with the fallback above. When the other form fails as well, the first answer is
+ *  the one returned, so Ollama's "model not found" 404 still reaches the person unchanged. */
+async function reach(spec, base, path, send) {
+  const urls = candidateUrls(spec, base, path);
+  const first = await send(urls[0]);
+  if (first.status !== 404 || urls.length < 2) return first;
+  const second = await send(urls[1]);
+  if (!second.ok) { try { await second.text(); } catch { /* drained or gone */ } return first; }
+  if (urls[1] === endpointUrl(base, path)) versionlessBases.delete(base);
+  else versionlessBases.add(base);
+  return second;
 }
 
 /** A fetch, bounded by AbortController. Never throws for HTTP status; throws for transport. */
@@ -111,7 +139,7 @@ export function httpAdapter(spec) {
       if (!key && !meta.keyOptional) return { ok: false, error: 'no API key configured', models: [] };
       let res;
       try {
-        res = await call(fetchImpl, endpointUrl(base, spec.modelsPath), { method: 'GET', headers: { ...extraHeadersFor(id, cfg), ...spec.headers(key) } }, timeoutMs, signal);
+        res = await reach(spec, base, spec.modelsPath, url => call(fetchImpl, url, { method: 'GET', headers: { ...extraHeadersFor(id, cfg), ...spec.headers(key) } }, timeoutMs, signal));
       } catch (e) {
         return { ok: false, error: e.name === 'AbortError' ? 'timed out' : `could not reach ${hostOf(base)}: ${trim(e.message, 120)}`, models: [] };
       }
@@ -143,11 +171,11 @@ export function httpAdapter(spec) {
       for (;;) {
         let res;
         try {
-          res = await call(fetchImpl, endpointUrl(base, spec.path(chosen)), {
+          res = await reach(spec, base, spec.path(chosen), url => call(fetchImpl, url, {
             method: 'POST',
             headers: { ...extraHeadersFor(id, cfg), 'content-type': 'application/json', ...spec.headers(key) },
             body: JSON.stringify(body)
-          }, timeoutMs, signal);
+          }, timeoutMs, signal));
         } catch (e) {
           if (e.name === 'AbortError') return { code: -1, text: '', stderr: 'timed out', timedOut: true };
           return { code: 1, text: '', stderr: `could not reach ${hostOf(base)}: ${trim(e.message, 200)}` };

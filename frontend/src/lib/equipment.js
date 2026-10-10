@@ -1,4 +1,4 @@
-import { t } from './i18n.js'
+import { t } from './i18n-core.js'
 import { EXDB } from './exercises-data.js'
 
 // Pieces of kit the catalogue never names as an exercise's equipment — "dumbbell bench press" is

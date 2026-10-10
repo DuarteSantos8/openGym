@@ -1401,6 +1401,8 @@ export const PT_BR_OVERRIDES = {
   'Your sports watch, calling you back.': 'Seu relógio esportivo chamando você de volta.',
   'Coach wants you back on the bar.': 'O coach quer você de volta na barra.',
   'Gentle, for headphones or a quiet room.': 'Suave, para fones de ouvido ou um lugar silencioso.',
+  'Fewer than two workouts in this period. Pick a longer one.': 'Menos de dois treinos neste período. Escolha um mais longo.',
+  'Releases are checked on GitHub. The download is verified against its checksum before the installer opens.': 'As versões são verificadas no GitHub. O download é conferido pela soma de verificação antes de abrir o instalador.',
   // --- Strava (components/Strava.jsx) ---
   'Already on Strava': 'Já está no Strava',
   'Connect Strava': 'Conectar ao Strava',

@@ -205,7 +205,8 @@ describe('a strength workout as FIT', () => {
     expect([lap[0], lap[1], lap[2], lap[7], lap[25], lap[39]]).toEqual([9, 1, fitTime(T0), min(50), SPORT.training, SUB_SPORT.strengthTraining])
     const [activity] = of(d, MSG.activity)
     expect([activity[0], activity[1], activity[2], activity[3], activity[4]]).toEqual([min(50), 1, 0, 26, 1])
-    expect(activity[5] - activity[253]).toBe(-new Date(T0 + min(50)).getTimezoneOffset() * 60)
+    // `|| 0`: in UTC the offset is -0, and the encoder writes a plain 0.
+    expect(activity[5] - activity[253]).toBe((-new Date(T0 + min(50)).getTimezoneOffset() * 60) || 0)
   })
 
   it('writes every set that was done, with its reps, weight and category, and leaves the rest out', () => {
