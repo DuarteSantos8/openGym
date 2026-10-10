@@ -4,7 +4,7 @@
 // the page plays from: a note changed on one side only fails here.
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { REST_SOUNDS, REST_SOUND_IDS } from './rest-sounds.js'
+import { REST_SOUNDS, REST_SOUND_IDS, REST_KINDS, restSoundFor } from './rest-sounds.js'
 import { TIMBRES } from './sound.js'
 
 const java = name => readFileSync(new URL(`../../android/app/src/main/java/ch/duartesantos/opengym/${name}.java`, import.meta.url), 'utf8')
@@ -61,5 +61,36 @@ describe('RestTone.java plays what the page plays', () => {
     const alert = java('RestAlert')
     expect(alert).toMatch(/intent\.getStringExtra\("tone"\)/)
     expect(alert).toMatch(/RestTone\.render\(tone\)/)
+  })
+})
+
+// A kind of rest can end with a sound of its own (Settings → Sound): S.restSoundByKind holds the
+// kinds given one, and every other kind, the switch-sides pause and a hold play the profile's.
+describe('the sound a kind of rest ends with', () => {
+  it('is the kind\'s own when it has one', () => {
+    const S = { restSound: 'bell', restSoundByKind: { set: 'beep', block: 'whistle' } }
+    expect(restSoundFor(S, 'set')).toBe('beep')
+    expect(restSoundFor(S, 'block')).toBe('whistle')
+  })
+
+  it('is the profile\'s for a kind without one, for no kind and for the switch-sides pause', () => {
+    const S = { restSound: 'bell', restSoundByKind: { set: 'beep' } }
+    expect(restSoundFor(S, 'round')).toBe('bell')
+    expect(restSoundFor(S, undefined)).toBe('bell')
+    expect(restSoundFor(S, 'switch')).toBe('bell')
+    expect(restSoundFor({}, 'set')).toBe('chime')
+    expect(restSoundFor(undefined, 'set')).toBe('chime')
+  })
+
+  it('ignores a name it does not know, and an older app\'s Classic switch still reaches the kinds without one', () => {
+    expect(restSoundFor({ restSound: 'soft', restSoundByKind: { set: 'kazoo' } }, 'set')).toBe('soft')
+    expect(restSoundFor({ restSoundByKind: 'beep' }, 'set')).toBe('chime')
+    const S = { restSound: 'bell', classicChime: true, restSoundByKind: { block: 'soft' } }
+    expect(restSoundFor(S, 'set')).toBe('classic')
+    expect(restSoundFor(S, 'block')).toBe('soft')
+  })
+
+  it('names the three kinds the settings offer', () => {
+    expect(REST_KINDS).toEqual(['set', 'round', 'block'])
   })
 })

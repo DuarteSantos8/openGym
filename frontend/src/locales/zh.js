@@ -2241,4 +2241,17 @@ export default {
   'Your sports watch, calling you back.': '你的运动手表在叫你回来。',
   'Coach wants you back on the bar.': '教练等你回到杠铃前。',
   'Gentle, for headphones or a quiet room.': '轻柔，适合耳机或安静的房间。',
+  // --- a sound for each kind of rest (#165) ---
+  'A sound for each kind of rest': '每种休息各有提示音',
+  'Hear what comes next without looking. Until you pick one, each plays the sound above, as holds and the switch-sides pause always do.': '不用看屏幕就知道接下来做什么。在你选择之前，每种都播放上方的声音，静力动作和换边的暂停也一直如此。',
+  'Next round': '下一轮',
+  'Next exercise': '下一个动作',
+  'Same as above': '同上',
+  'Same as {0}': '与{0}相同',
+  // --- what the timer bar says it times (#165) ---
+  'Set': '组',
+  'Round': '轮',
+  'Hold': '保持',
+  'Hold {0} of {1}': '保持 {0}/{1}',
+  'Warm-up hold {0} of {1}': '热身保持 {0}/{1}',
 }

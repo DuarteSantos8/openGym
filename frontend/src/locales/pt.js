@@ -2241,4 +2241,17 @@ export default {
   'Your sports watch, calling you back.': 'O teu relógio desportivo a chamar-te de volta.',
   'Coach wants you back on the bar.': 'O coach quer-te de volta à barra.',
   'Gentle, for headphones or a quiet room.': 'Suave, para auscultadores ou uma sala sossegada.',
+  // --- a sound for each kind of rest (#165) ---
+  'A sound for each kind of rest': 'Um som para cada tipo de descanso',
+  'Hear what comes next without looking. Until you pick one, each plays the sound above, as holds and the switch-sides pause always do.': 'Ouve o que vem a seguir sem olhar. Até escolheres um, cada um toca o som acima, como fazem sempre as isometrias e a pausa para trocar de lado.',
+  'Next round': 'Ronda seguinte',
+  'Next exercise': 'Exercício seguinte',
+  'Same as above': 'Igual ao de cima',
+  'Same as {0}': 'Igual a {0}',
+  // --- what the timer bar says it times (#165) ---
+  'Set': 'Série',
+  'Round': 'Ronda',
+  'Hold': 'Sustentação',
+  'Hold {0} of {1}': 'Sustentação {0} de {1}',
+  'Warm-up hold {0} of {1}': 'Sustentação de aquecimento {0} de {1}',
 }

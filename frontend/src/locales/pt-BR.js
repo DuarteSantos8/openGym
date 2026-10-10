@@ -1401,6 +1401,12 @@ export const PT_BR_OVERRIDES = {
   'Your sports watch, calling you back.': 'Seu relógio esportivo chamando você de volta.',
   'Coach wants you back on the bar.': 'O coach quer você de volta na barra.',
   'Gentle, for headphones or a quiet room.': 'Suave, para fones de ouvido ou um lugar silencioso.',
+  // --- a sound for each kind of rest (#165) ---
+  'Hear what comes next without looking. Until you pick one, each plays the sound above, as holds and the switch-sides pause always do.': 'Ouça o que vem a seguir sem olhar. Até você escolher um, cada um toca o som acima, como sempre fazem as isometrias e a pausa para trocar de lado.',
+  'Next round': 'Próxima rodada',
+  'Next exercise': 'Próximo exercício',
+  // --- what the timer bar says it times (#165) ---
+  'Round': 'Rodada',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

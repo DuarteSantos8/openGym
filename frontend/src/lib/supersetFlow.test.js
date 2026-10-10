@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor } from './supersetFlow.js'
+import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, restKind, restSetPhase } from './supersetFlow.js'
 
 const entry = done => ({ sets: done.map(value => ({ done: value })) })
 
@@ -90,6 +90,61 @@ describe('rest on a re-check', () => {
 
   it('rests after closing an exercise that is not the last one', () => {
     expect(restOnRecheck({ timerRunning: false, unitDone: true, lastUnit: false })).toBe(true)
+  })
+})
+
+// What a rest leads into, which picks the sound it ends with when a kind of rest has one of its
+// own (lib/rest-sounds.js restSoundFor). Decided here, beside restAfterSet, so the places that
+// start a rest cannot drift apart.
+describe('restKind', () => {
+  it('between the sets of an ordinary exercise: set', () => {
+    expect(restKind({ unitDone: false, superset: false })).toBe('set')
+  })
+
+  it('after a superset round, and on a re-check inside an unfinished superset: round', () => {
+    expect(restKind({ unitDone: false, superset: true })).toBe('round')
+  })
+
+  it('after the closing set of an exercise or superset when more follows: block', () => {
+    expect(restKind({ unitDone: true, superset: false })).toBe('block')
+    expect(restKind({ unitDone: true, superset: true })).toBe('block')
+  })
+})
+
+// The rest bar says "Warm-up" before a ramp set and "Set" before a working one (RestTimer.jsx).
+describe('restSetPhase', () => {
+  const ramped = done => ({ sets: [
+    { w: 60, r: 8, done: done[0], phase: 'warmup' },
+    { w: 95, r: 5, done: done[1], phase: 'warmup' },
+    { w: 125, r: 6, done: done[2] },
+    { w: 125, r: 6, done: done[3] },
+  ] })
+
+  it('warm-up while the next set is a ramp set', () => {
+    expect(restSetPhase(ramped([true, false, false, false]), 0)).toBe('warmup')
+  })
+
+  it('work once the ramp is done and working sets follow', () => {
+    expect(restSetPhase(ramped([true, true, false, false]), 1)).toBe('work')
+    expect(restSetPhase(ramped([true, true, true, false]), 2)).toBe('work')
+  })
+
+  it('a skipped ramp row does not turn a working rest into a warm-up one', () => {
+    // ramp 2 left unticked, working set 1 just checked: the rest leads into working set 2.
+    expect(restSetPhase(ramped([true, false, true, false]), 2)).toBe('work')
+  })
+
+  it('never null on an exercise that has ramp rows, even after its last set', () => {
+    expect(restSetPhase(ramped([true, true, true, true]), 3)).toBe('work')
+  })
+
+  it('nothing to say for an exercise without warm-up rows, or no entry', () => {
+    expect(restSetPhase({ sets: [{ done: true }, { done: false }] }, 0)).toBe(null)
+    expect(restSetPhase(undefined, 0)).toBe(null)
+  })
+
+  it('reads the legacy warmup flag too', () => {
+    expect(restSetPhase({ sets: [{ done: true, warmup: true }, { done: false, warmup: true }, { done: false }] }, 0)).toBe('warmup')
   })
 })
 

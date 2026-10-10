@@ -4,8 +4,8 @@
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({ ok: true })) }))
-const { chime } = vi.hoisted(() => ({ chime: vi.fn() }))
-vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime, vibrate: vi.fn(), alertBuzz: vi.fn() }))
+const { chime, countdown } = vi.hoisted(() => ({ chime: vi.fn(), countdown: vi.fn() }))
+vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime, vibrate: vi.fn(), alertBuzz: vi.fn(), countdown, hush: vi.fn(), holdSession: vi.fn() }))
 
 import { api } from '../lib/api.js'
 import { useUI, restoreRest, REST_KEY } from './useUI.js'
@@ -52,12 +52,39 @@ describe('the rest timer across a reload', () => {
     expect(saved()).toBeNull()
   })
 
+  it('queues the count-in again for the time that is left, and none for a paused one', () => {
+    localStorage.setItem(REST_KEY, JSON.stringify({ endsAt: Date.now() + 40_000, total: 90, forIdx: 1, kind: null, paused: false, left: 50 }))
+    countdown.mockClear()
+    expect(restoreRest()).toBe(true)
+    expect(countdown).toHaveBeenLastCalledWith(true, 40)
+    useUI.setState({ timer: null })
+    countdown.mockClear()
+    localStorage.setItem(REST_KEY, JSON.stringify({ endsAt: Date.now() - 5000, total: 90, forIdx: 0, kind: null, paused: true, left: 33 }))
+    expect(restoreRest()).toBe(true)
+    expect(countdown).not.toHaveBeenCalled()
+  })
+
   it('a paused rest comes back held', () => {
     localStorage.setItem(REST_KEY, JSON.stringify({ endsAt: Date.now() - 5000, total: 90, forIdx: 0, kind: null, paused: true, left: 33 }))
     expect(restoreRest()).toBe(true)
     expect(useUI.getState().timer).toMatchObject({ left: 33, total: 90, paused: true })
     vi.advanceTimersByTime(60_000)
     expect(useUI.getState().timer.left).toBe(33)
+  })
+
+  // The kind picks the sound the rest ends with (Settings → Sound), and with the phase the bar's
+  // word; the chain is the hold a timed exercise runs next. A reload keeps all three.
+  it('keeps what the rest leads into across a reload, and ends with that kind\'s sound', () => {
+    useStore.setState({ S: { ...useStore.getState().S, restSound: 'bell', restSoundByKind: { block: 'whistle' } } })
+    useUI.getState().startRest(90, 2, { kind: 'block', phase: 'work', chain: { id: 'plank', i: 1, n: 3, cur: 2 } })
+    expect(saved()).toMatchObject({ kind: 'block', phase: 'work', chain: { id: 'plank', i: 1, n: 3, cur: 2 } })
+    const kept = saved()
+    useUI.setState({ timer: null })
+    localStorage.setItem(REST_KEY, JSON.stringify(kept))
+    expect(restoreRest()).toBe(true)
+    expect(useUI.getState().timer).toMatchObject({ kind: 'block', phase: 'work', forIdx: 2, chain: { id: 'plank', i: 1, n: 3, cur: 2 } })
+    vi.advanceTimersByTime(91_000)
+    expect(chime).toHaveBeenCalledWith(true, 'whistle')
   })
 
   it('a rest that ended meanwhile, or one with no session running, is dropped', () => {

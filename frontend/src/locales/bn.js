@@ -2320,4 +2320,17 @@ export default {
   'Your sports watch, calling you back.': 'আপনার স্পোর্টস ঘড়ি আপনাকে ফিরে ডাকছে।',
   'Coach wants you back on the bar.': 'কোচ আপনাকে আবার বারে চান।',
   'Gentle, for headphones or a quiet room.': 'মৃদু, হেডফোন বা শান্ত ঘরের জন্য।',
+  // --- a sound for each kind of rest (#165) ---
+  'A sound for each kind of rest': 'প্রতিটি ধরনের বিশ্রামের জন্য আলাদা শব্দ',
+  'Hear what comes next without looking. Until you pick one, each plays the sound above, as holds and the switch-sides pause always do.': 'না তাকিয়েই শুনে বুঝুন এরপর কী। আপনি একটি না বাছা পর্যন্ত প্রতিটি উপরের শব্দটি বাজায়, যেমন হোল্ড আর পাশ বদলের বিরতি সবসময় বাজায়।',
+  'Next round': 'পরের রাউন্ড',
+  'Next exercise': 'পরের ব্যায়াম',
+  'Same as above': 'উপরের মতোই',
+  'Same as {0}': '{0}-এর মতোই',
+  // --- what the timer bar says it times (#165) ---
+  'Set': 'সেট',
+  'Round': 'রাউন্ড',
+  'Hold': 'হোল্ড',
+  'Hold {0} of {1}': 'হোল্ড {0}/{1}',
+  'Warm-up hold {0} of {1}': 'ওয়ার্ম-আপ হোল্ড {0}/{1}',
 }

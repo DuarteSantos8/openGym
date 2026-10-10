@@ -1,15 +1,41 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useUI } from '../store/useUI.js'
+import { useStore } from '../store/useStore.js'
+import { holdPosition } from '../lib/workout-model.js'
 import { t } from '../lib/i18n.js'
 import { REST_MAX } from '../lib/duration.js'
 import { durationSheet } from './DurationWheel.jsx'
+import { realign } from '../lib/viewport-guard.js'
 import { Button } from './ui.jsx'
 import Icon from './Icon.jsx'
 
 const clock = sec => Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0')
 
+// What a rest leads into, under the clock where "Rest" was: the kind decided where the rest
+// started (timer.kind, supersetFlow.restKind), the same kind that picks the sound it ends with
+// when Settings → Sound gives that kind one of its own. One word, and no exercise name: the label
+// line is only as wide as the clock's widest face (index.css #timer .lbl). A rest with no kind
+// (one started from the wheel with nothing running) says "Rest". A rest before a warm-up (ramp)
+// set says "Warm-up" instead of "Set" (timer.phase, decided where the rest started from the set
+// it leads into, supersetFlow.restSetPhase). Rounds do not: a superset's members can be at
+// different phases.
+const KIND_LABEL = { set: 'Set', round: 'Round', block: 'Exercise' }
+const restLabel = timer => timer.kind === 'set' && timer.phase === 'warmup' ? 'Warm-up' : KIND_LABEL[timer.kind] || 'Rest'
+// The hold's label follows the same rule: what is timed, short. Which hold of the exercise it is,
+// warm-up holds counted apart and a per-side pair as one set, as the set rows number them. Read
+// off the hold's owner (work.owner, the row it writes to, kept current when rows move), so a hold
+// restored after a reload says it too.
+const holdLabel = (S, work) => {
+  const o = work?.owner
+  const e = o ? S.active?.entries?.[o.idx] : null
+  const pos = e && e.id === o.id ? holdPosition(e.sets, o.i) : null
+  if (!pos) return t('Hold')
+  return pos.phase === 'warmup' ? t('Warm-up hold {0} of {1}', pos.n, pos.of) : t('Hold {0} of {1}', pos.n, pos.of)
+}
+
 // The clock is a button: a tap opens the wheel at the time that is left, for a rest that wants
-// to be a round 2:00 rather than eight taps of +15. 0:00 ends the rest, like Skip. What is left
+// to be a round 2:00 rather than eight taps of +15. 0:00 ends the rest, like Skip, and hands
+// over what Skip would (useUI.skipRest: a timed exercise's next hold). What is left
 // is read again at Done, since the rest kept counting while the wheel was open. Done on a wheel
 // nobody turned changes nothing: the rest keeps the seconds it counted down meanwhile, and one
 // that ran out (or a switch-sides pause that ended) is not started again.
@@ -25,14 +51,18 @@ export function adjustRestSheet() {
 }
 
 // What the wheel's Done does to the rest as it is by then: a new time left, the rest ended at
-// 0:00, or a fresh rest when the old one has run out (Ready) or was skipped meanwhile.
+// 0:00, or a fresh rest when the old one has run out (Ready) or was skipped meanwhile. A fresh
+// rest from Ready is +15 s's on Ready (useUI.addRest): it keeps what the old one led into, and
+// so the sound it ends with.
 export function applyRestLeft(v, opened) {
   if (opened !== undefined && v === opened) return
   const ui = useUI.getState()
   const now = ui.timer
-  if (!now) { if (v > 0) ui.startRest(v); return }
-  if (v <= 0) { ui.stopRest(); return }
-  if (now.ready) { ui.startRest(v, now.forIdx); return }
+  // Nothing running: a fresh rest, unless a hold took over while the wheel was open (a timed
+  // exercise that runs itself), which a rest would cut off.
+  if (!now) { if (v > 0 && !ui.work) ui.startRest(v); return }
+  if (v <= 0) { ui.skipRest(); return }
+  if (now.ready) { ui.addRest(v); return }
   if (v !== now.left) ui.addRest(v - now.left)
 }
 
@@ -78,7 +108,8 @@ function useSkipFits(actsRef, deps) {
 export default function RestTimer() {
   const timer = useUI(s => s.timer)
   const work = useUI(s => s.work)
-  const { addRest, stopRest, pauseRest, resumeRest, finishWorkEarly, stopWork } = useUI()
+  const { addRest, skipRest, pauseRest, resumeRest, finishWorkEarly, stopWork } = useUI()
+  const holdLbl = useStore(s => (work ? holdLabel(s.S, work) : ''))
   const on = work || timer
   const actsRef = useRef(null)
   const skipFits = useSkipFits(actsRef, [!!timer && !work, t('Skip'), t('Dismiss')])
@@ -86,7 +117,13 @@ export default function RestTimer() {
   // the Finish button can scroll clear of it.
   useEffect(() => {
     document.body.classList.toggle('resting', !!on)
-    return () => document.body.classList.remove('resting')
+    // The bar leaving takes that room back — the page gets shorter at once, often in the same
+    // commit that ticks a set or swaps the card. When that clamps the scroll position, iOS
+    // can be left with the two viewports apart: the bars mid-screen, scrolling with the page. Ask
+    // for them to be checked once the layout has settled; a no-op wherever they already agree
+    // (lib/viewport-guard.js).
+    const frame = on ? null : requestAnimationFrame(() => realign())
+    return () => { if (frame) cancelAnimationFrame(frame); document.body.classList.remove('resting') }
   }, [!!on])
   if (!on) return null
   const pct = Math.max(0, Math.min(100, (on.left / on.total) * 100))
@@ -96,7 +133,7 @@ export default function RestTimer() {
       <div className="bar" aria-hidden="true"><i style={{ width: pct + '%' }} /></div>
       <div className="tclock">
         <span className="t">{work.left <= 0 && work.overtime ? '+' + clock(-work.left) : clock(work.left)}</span>
-        {work.label && <span className="lbl">{work.label}</span>}
+        <span className="lbl">{holdLbl}</span>
       </div>
       <div className="acts">
         <Button size="sm" onClick={stopWork}>{t('Cancel')}</Button>
@@ -111,7 +148,7 @@ export default function RestTimer() {
   // (both labels share one cell, one of them hidden), and the clock keeps room for the other of
   // its two faces (data-alt, a hidden line in index.css): the row never reflows when the rest
   // turns Ready, so a thumb on +15 never lands on −15.
-  const label = timer.kind === 'switch' ? t('Switch sides') : timer.paused ? t('Paused') : t('Rest')
+  const label = timer.kind === 'switch' ? t('Switch sides') : timer.paused ? t('Paused') : t(restLabel(timer))
   return (
     <div id="timer" className={'rest' + (timer.paused ? ' paused' : '') + (timer.kind === 'switch' ? ' switch' : '') + (timer.ready ? ' ready' : '')}>
       <div className="bar" aria-hidden="true"><i style={{ width: pct + '%' }} /></div>
@@ -128,7 +165,7 @@ export default function RestTimer() {
           : <Button size="sm" className="pause" icon={timer.paused ? 'play' : 'pause'}
             aria-label={t(timer.paused ? 'Resume' : 'Pause')} aria-pressed={!!timer.paused}
             onClick={timer.paused ? resumeRest : pauseRest} />}
-        <button type="button" className={'btn primary sm skip' + (skipFits ? '' : ' icon-only')} onClick={stopRest}
+        <button type="button" className={'btn primary sm skip' + (skipFits ? '' : ' icon-only')} onClick={() => skipRest()}
           aria-label={skipFits ? undefined : t(timer.ready ? 'Dismiss' : 'Skip')}>
           {skipFits
             ? <span><span className="on">{t(timer.ready ? 'Dismiss' : 'Skip')}</span>
