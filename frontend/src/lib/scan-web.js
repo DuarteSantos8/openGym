@@ -5,9 +5,10 @@
 //
 // Two decoders, tried in order:
 //   1. BarcodeDetector — the browser's own (Chrome/Edge on Android, Samsung Internet). Native
-//      speed and quality when it exists; asked for QR only.
+//      speed and quality when it exists; asked for QR and Code 128 (the 1D barcode many gym
+//      cards carry - the only other kind lib/code128.js can redraw).
 //   2. jsQR (Apache-2.0, see NOTICE.md) — pure JS, works everywhere including iOS Safari, which
-//      has no BarcodeDetector. Loaded with a dynamic import so it only ships when someone scans.
+//      has no BarcodeDetector. QR only, so on iOS a barcode card has to be added from the app. Loaded with a dynamic import so it only ships when someone scans.
 //
 // decodeImageData is the pure core (pixels in, string out) and is what the unit test exercises;
 // decodeSource wraps it with the canvas plumbing the browser paths need.
@@ -23,7 +24,7 @@ let _detector = null
 function nativeDetector() {
   if (_detector !== null) return _detector
   try {
-    _detector = (typeof BarcodeDetector === 'function') ? new BarcodeDetector({ formats: ['qr_code'] }) : false
+    _detector = (typeof BarcodeDetector === 'function') ? new BarcodeDetector({ formats: ['qr_code', 'code_128'] }) : false
   } catch (e) { _detector = false }
   return _detector
 }
